@@ -343,6 +343,13 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 4. **HYPERLINK `#` syntax** — the `#` prefix for intra-workbook navigation works in modern Excel and LibreOffice but should be tested in both. If it fails in either, fall back to the `TEXT(Admin!B17,"DDMMYY")` formula approach for Home!B3
 5. **SE Short!G1 deadline year** — Apr25 has "31ST JANUARY 2024" which is wrong (should be 2026 for the 2024-25 tax year). The formula fix `=YEAR(Admin!B17)+1` resolves this permanently
 
+## Next Steps
+
+1. **Traceability report** — build `REPORT_TRACEABILITY.md` tracing between `SOURCES.md` (HMRC reference URLs) and the values in `app/data/*.toml`, so every threshold and rate can be verified against its authoritative source
+2. **Spike 2: test transactions** — inject sample transactions into a generated spreadsheet, recalculate via LibreOffice headless, and verify computed results (P&L, Income Tax, SE Short)
+3. **Screenshots for the guide** — once test transactions are flowing, capture screenshots of key sheets to include in `app/templates/bst/bst-guide.md`
+4. **Extend to additional products** — apply the same template + tax-data + generator pattern to Self Employed, Company (with monthly year-end variants), Taxi Driver, Payslip 05, Payslip 10
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -350,3 +357,6 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 | 2026-03-28 | Start with Basic Sole Trader | Simplest product (1 xlsx, no sheet renaming needed) |
 | 2026-03-28 | Generator only updates Admin cell values | All formulas reference Admin — no formula rewriting needed |
 | 2026-03-28 | Tax data in TOML | Human-readable, diffable, easy to review against HMRC publications |
+| 2026-03-28 | Zip-level XML surgery over ExcelJS write | ExcelJS round-trip corrupts XML packaging causing Excel repair prompts; zip-level edits preserve all original XML |
+| 2026-03-28 | HYPERLINK `#` syntax for intra-workbook nav | Eliminates hardcoded filename dependency; works in Excel and LibreOffice |
+| 2026-03-28 | Refactored to app/ structure | Separates templates, data, lib, bin, test; metadata in TOML; `npm run build` and `npm test` |

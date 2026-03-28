@@ -1,0 +1,12 @@
+# Shared metadata for all DIY Accounting spreadsheet packages
+# Used by the generator to populate guides and package naming
+
+[publisher]
+name = "DIY Accounting Limited"
+website = "https://spreadsheets.diyaccounting.co.uk"
+discussion = "https://github.com/antonycc/diy-accounting/discussions"
+donate = "https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW"
+
+[package]
+format = "Excel 2007"
+prefix = "GB Accounts"
