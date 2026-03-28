@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build sitemaps
+        run: node scripts/build-sitemaps.cjs
+
       - name: Run tests
         run: npm test
 
