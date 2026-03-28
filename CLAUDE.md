@@ -1,5 +1,7 @@
 # Claude Code Memory - DIY Accounting Spreadsheets
 
+> **Shared conventions** (git workflow, AWS accounts, code quality, confirm behavior, security): See `../CLAUDE.md`
+
 ## Context Survival (CRITICAL — read this first after every compaction)
 
 **After compaction or at session start:**
@@ -34,24 +36,9 @@ This repository manages the **spreadsheets AWS account** (064390746177) for spre
 
 **What this repo does NOT have**: Lambda, DynamoDB, Cognito, API Gateway, Docker, ngrok, HMRC. DNS records are managed by the root repo.
 
-## Account Structure
-
-```
-AWS Organization Root (887764105431) ── Management
-├── gateway ─────────── 283165661847 ── Workloads OU
-├── spreadsheets ────── 064390746177 ── Workloads OU  ← THIS ACCOUNT
-├── submit-ci ──────── 367191799875 ── Workloads OU
-├── submit-prod ────── 972912397388 ── Workloads OU
-└── submit-backup ──── 914216784828 ── Backup OU
-```
-
 ## Git Workflow
 
-**You may**: create branches, commit changes, push branches, open pull requests
-
-**You may NOT**: merge PRs, push to main, delete branches, rewrite history
-
-**Branch naming**: `claude/<short-description>`
+See `../CLAUDE.md` for full rules. Branch naming: `claude/<short-description>`.
 
 ## Build Commands
 
@@ -107,13 +94,6 @@ Excel workbook source files live in `packages/` organised by product and tax yea
 
 During deployment, zips are uploaded to S3 separately from the BucketDeployment (`prune(false)` prevents BucketDeployment from deleting them).
 
-## Formatting
-
-- Spotless with Palantir Java Format (100-column width)
-- Prettier for JS/YAML/JSON/TOML
-- Runs during Maven `install` phase (Spotless) and CI (both)
-- Fix: `./mvnw spotless:apply` and `npx prettier --write .` (only when asked)
-
 ## Compliance
 
 ```bash
@@ -150,28 +130,18 @@ aws --profile spreadsheets cloudfront list-distributions
 
 **Read-only AWS operations are always permitted.** Ask before any write operations.
 
-## AWS Write Operations (CRITICAL)
+## AWS Write Operations
 
-**ALWAYS ask before writing to AWS.** Any mutating operation (create, update, delete) requires explicit user approval.
+See `../CLAUDE.md` — always ask before any mutating AWS operation.
 
-## Confirm Means Stop and Wait (CRITICAL)
+## Confirm Means Stop and Wait
 
-When the user says "confirm each command" or similar:
-
-1. **Present the command** in a code block.
-2. **STOP. Do not execute.** Wait for the user to explicitly approve.
-3. Only after the user says "yes", "go ahead", "run it", or similar, execute that single command.
-4. Then present the next command and **STOP again**.
+See `../CLAUDE.md` — present the command, STOP, wait for explicit approval before executing.
 
 ## Code Quality Rules
 
-- **No unnecessary formatting** — don't reformat lines you're not changing
-- **No import reordering** — considered unnecessary formatting
-- **No backwards-compatible aliases** — update all callers consistently
-- Only run `./mvnw spotless:apply` when specifically asked
+See `../CLAUDE.md` for shared rules. Spreadsheets-specific: only run `./mvnw spotless:apply` when specifically asked.
 
 ## Security Checklist
 
-- Never commit secrets — use AWS Secrets Manager ARNs
-- Check IAM for least privilege (avoid `Resource: "*"`)
-- OIDC trust policies scoped to specific repository
+See `../CLAUDE.md` for shared rules. Spreadsheets-specific: OIDC trust policies scoped to this specific repository.
