@@ -7,7 +7,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["web/unit-tests/*.test.js"],
+    include: ["web/unit-tests/*.test.js", "app/test/*.test.js"],
     outputFile: "./target/test-results/vitest-results.json",
   },
 });

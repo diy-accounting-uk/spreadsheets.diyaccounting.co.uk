@@ -1,0 +1,27 @@
+# Basic Sole Trader product metadata
+# Used by the generator for package naming, guide generation, and output structure
+
+[product]
+id = "BasicSoleTrader"
+name = "Basic Sole Trader"
+description = "Simple bookkeeping spreadsheet for sole traders not registered for VAT. Includes profit & loss, self assessment tax, and fixed assets."
+tax_regime = "se"  # self-employment — determines which tax-data file to use
+
+[template]
+spreadsheet = "bst-excel.xlsx"
+guide = "bst-guide.md"
+
+[output]
+# Pattern for generated package directory name
+# Placeholders: {prefix}, {name}, {year_end_date}, {short_label}, {format}
+dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+# Pattern for generated spreadsheet filename
+# Placeholders: {year_end_ddmmyy}
+spreadsheet_pattern = "Financialaccountsto{year_end_ddmmyy}.xlsx"
+guide_filename = "Basic Sole Trader User Guide.pdf"
+
+[sheets]
+# xlsx internal paths for XML surgery
+admin = "xl/worksheets/sheet33.xml"
+home = "xl/worksheets/sheet1.xml"
+se_short = "xl/worksheets/sheet3.xml"
