@@ -18,13 +18,7 @@
 
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
-import {
-  readFileSync,
-  writeFileSync,
-  mkdirSync,
-  cpSync,
-  readdirSync,
-} from "fs";
+import { readFileSync, writeFileSync, mkdirSync, cpSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -98,10 +92,7 @@ function generateAdminDates(startYear) {
 function setCellValue(xml, cellRef, value) {
   // Match the cell element for this ref
   // Pattern: <c r="B2" ...>...</c> or <c r="B2" ... />
-  const cellPattern = new RegExp(
-    `(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`,
-    "s",
-  );
+  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
   const match = xml.match(cellPattern);
 
   if (!match) {
@@ -121,10 +112,7 @@ function setCellValue(xml, cellRef, value) {
 
 function setCellString(xml, cellRef, str) {
   // For inline strings, use t="inlineStr" with <is><t>...</t></is>
-  const cellPattern = new RegExp(
-    `(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`,
-    "s",
-  );
+  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
   const match = xml.match(cellPattern);
 
   if (!match) {
@@ -143,11 +131,7 @@ function setCellString(xml, cellRef, str) {
 }
 
 function escapeXml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 // ── Tax data cell mapping ───────────────────────────────────────────────────
@@ -235,20 +219,7 @@ function formatDateYYYYMMDD(date) {
 }
 
 function shortLabel(date) {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[date.getUTCMonth()]}${(date.getUTCFullYear() % 100).toString().padStart(2, "0")}`;
 }
 
@@ -310,11 +281,7 @@ async function generateBST(templateZipBuffer, taxDataPath) {
   console.log(`           ${outFilename}`);
 
   // Copy PDFs from the template product directory
-  const pdfSrcDir = resolve(
-    ROOT,
-    "packages",
-    "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007",
-  );
+  const pdfSrcDir = resolve(ROOT, "packages", "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007");
   for (const file of readdirSync(pdfSrcDir)) {
     if (file.endsWith(".pdf")) {
       cpSync(resolve(pdfSrcDir, file), resolve(outDir, file));

@@ -13,12 +13,7 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import {
-  generateSpreadsheet,
-  formatDateDDMMYY,
-  formatDateYYYYMMDD,
-  shortLabel,
-} from "../lib/generator.js";
+import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -29,12 +24,8 @@ const OUTPUT_DIR = resolve(ROOT, "packages-generated");
 
 async function generateProduct(productDir, tomlPath, skipGuide) {
   // Load product metadata
-  const productMeta = parseTOML(
-    readFileSync(resolve(productDir, "meta.toml"), "utf8"),
-  );
-  const sharedMeta = parseTOML(
-    readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"),
-  );
+  const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
+  const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
   // Load tax data
   const taxData = parseTOML(readFileSync(tomlPath, "utf8"));
@@ -47,11 +38,7 @@ async function generateProduct(productDir, tomlPath, skipGuide) {
   const templatePath = resolve(productDir, productMeta.template.spreadsheet);
   const templateBuffer = readFileSync(templatePath);
 
-  const xlsxBuffer = await generateSpreadsheet(
-    templateBuffer,
-    taxData,
-    productMeta.sheets.admin,
-  );
+  const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
 
   // Build output paths from patterns
   const dateStr = formatDateYYYYMMDD(endDate);
@@ -65,10 +52,7 @@ async function generateProduct(productDir, tomlPath, skipGuide) {
     .replace("{short_label}", label)
     .replace("{format}", sharedMeta.package.format);
 
-  const xlsxFilename = productMeta.output.spreadsheet_pattern.replace(
-    "{year_end_ddmmyy}",
-    ddmmyy,
-  );
+  const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", ddmmyy);
 
   const outDir = resolve(OUTPUT_DIR, dirName);
   mkdirSync(outDir, { recursive: true });
@@ -131,9 +115,7 @@ async function main() {
   for (const tomlFile of tomlFiles) {
     // Check if this tax-data file matches the product's tax regime
     const tomlName = tomlFile.split("/").pop();
-    const bstMeta = parseTOML(
-      readFileSync(resolve(bstDir, "meta.toml"), "utf8"),
-    );
+    const bstMeta = parseTOML(readFileSync(resolve(bstDir, "meta.toml"), "utf8"));
     if (!tomlName.startsWith(bstMeta.product.tax_regime + "-")) continue;
 
     const result = await generateProduct(bstDir, tomlFile, skipGuide);

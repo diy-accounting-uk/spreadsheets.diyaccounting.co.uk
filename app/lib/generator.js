@@ -59,10 +59,7 @@ export function generateAdminDates(startYear) {
 // ── XML cell editing ────────────────────────────────────────────────────────
 
 export function setCellValue(xml, cellRef, value) {
-  const cellPattern = new RegExp(
-    `(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`,
-    "s",
-  );
+  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
   const match = xml.match(cellPattern);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
 
@@ -72,28 +69,18 @@ export function setCellValue(xml, cellRef, value) {
 }
 
 export function setCellString(xml, cellRef, str) {
-  const cellPattern = new RegExp(
-    `(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`,
-    "s",
-  );
+  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
   const match = xml.match(cellPattern);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
 
   const [fullMatch, openTag] = match;
   let newOpenTag = openTag.replace(/\s+t="[^"]*"/, "");
   newOpenTag += ` t="inlineStr"`;
-  return xml.replace(
-    fullMatch,
-    `${newOpenTag}><is><t>${escapeXml(str)}</t></is></c>`,
-  );
+  return xml.replace(fullMatch, `${newOpenTag}><is><t>${escapeXml(str)}</t></is></c>`);
 }
 
 function escapeXml(str) {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 // ── Tax data → cell edits ───────────────────────────────────────────────────
@@ -157,11 +144,7 @@ export function buildCellEdits(taxData, startYear) {
 
 // ── Generate one spreadsheet ────────────────────────────────────────────────
 
-export async function generateSpreadsheet(
-  templateBuffer,
-  taxData,
-  adminSheetPath,
-) {
+export async function generateSpreadsheet(templateBuffer, taxData, adminSheetPath) {
   const startDate = new Date(taxData.tax_year.start);
   const startYear = startDate.getUTCFullYear();
 
@@ -204,9 +187,6 @@ export function formatDateYYYYMMDD(date) {
 }
 
 export function shortLabel(date) {
-  const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-  ];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[date.getUTCMonth()]}${(date.getUTCFullYear() % 100).toString().padStart(2, "0")}`;
 }

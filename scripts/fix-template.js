@@ -36,10 +36,7 @@ async function main() {
 
   // Replace all HYPERLINK(B3&"' → HYPERLINK("#'
   // In the XML, the quotes are literal " not &quot;
-  homeXml = homeXml.replace(
-    /HYPERLINK\(B3&amp;"/g,
-    'HYPERLINK("#',
-  );
+  homeXml = homeXml.replace(/HYPERLINK\(B3&amp;"/g, 'HYPERLINK("#');
 
   const after = (homeXml.match(/HYPERLINK\(B3&amp;/g) || []).length;
   console.log(`Home HYPERLINKs: ${before} found, ${before - after} fixed`);
@@ -47,9 +44,7 @@ async function main() {
   // Clear B3 — replace its cell content with an empty cell
   // B3 currently has something like: <c r="B3" s="..."><f>...</f><v>...</v></c>
   // or <c r="B3" s="..." t="str"><v>...</v></c>
-  const b3Match = homeXml.match(
-    /(<c\s+r="B3"\s[^>]*?)(\/>|>(?:(?!<\/c>).)*<\/c>)/s,
-  );
+  const b3Match = homeXml.match(/(<c\s+r="B3"\s[^>]*?)(\/>|>(?:(?!<\/c>).)*<\/c>)/s);
   if (b3Match) {
     const [fullMatch, openTag] = b3Match;
     // Keep the style attribute but make it empty
@@ -64,16 +59,13 @@ async function main() {
 
   // G1 currently has a hardcoded string or a formula from the previous fix.
   // Replace with a formula that derives the year from Admin!B17.
-  const g1Match = seXml.match(
-    /(<c\s+r="G1"\s[^>]*?)(\/>|>(?:(?!<\/c>).)*<\/c>)/s,
-  );
+  const g1Match = seXml.match(/(<c\s+r="G1"\s[^>]*?)(\/>|>(?:(?!<\/c>).)*<\/c>)/s);
   if (g1Match) {
     const [fullMatch, openTag] = g1Match;
     // Remove any t= attribute, add t="str" for formula string result
     let newOpen = openTag.replace(/\s+t="[^"]*"/, "");
     newOpen += ` t="str"`;
-    const formula =
-      '"SUBMIT ONLINE RETURN TO HMRC BY 31ST JANUARY "&amp;TEXT(YEAR(Admin!B17)+1,"0000")';
+    const formula = '"SUBMIT ONLINE RETURN TO HMRC BY 31ST JANUARY "&amp;TEXT(YEAR(Admin!B17)+1,"0000")';
     const newCell = `${newOpen}><f>${formula}</f></c>`;
     seXml = seXml.replace(fullMatch, newCell);
     console.log("SE Short G1: replaced with formula");
@@ -92,14 +84,10 @@ async function main() {
 
   // Verify
   const verifyZip = await JSZip.loadAsync(readFileSync(TEMPLATE));
-  const verifyHome = await verifyZip
-    .file("xl/worksheets/sheet1.xml")
-    .async("string");
+  const verifyHome = await verifyZip.file("xl/worksheets/sheet1.xml").async("string");
   const remaining = (verifyHome.match(/HYPERLINK\(B3&amp;/g) || []).length;
   const hashLinks = (verifyHome.match(/HYPERLINK\("#/g) || []).length;
-  console.log(
-    `\nVerification: ${remaining} old-style HYPERLINKs remaining, ${hashLinks} #-style HYPERLINKs`,
-  );
+  console.log(`\nVerification: ${remaining} old-style HYPERLINKs remaining, ${hashLinks} #-style HYPERLINKs`);
 }
 
 main().catch((err) => {

@@ -19,12 +19,7 @@ const { Workbook } = ExcelJS;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-const SRC = resolve(
-  ROOT,
-  "packages",
-  "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007",
-  "Financialaccountsto050426.xlsx",
-);
+const SRC = resolve(ROOT, "packages", "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007", "Financialaccountsto050426.xlsx");
 const DST = resolve(ROOT, "target", "spike-roundtrip.xlsx");
 
 async function loadWorkbook(path) {
@@ -136,16 +131,11 @@ async function main() {
   console.log("\n--- Comparing defined names ---");
   const missingNames = [...origNames.keys()].filter((n) => !rtNames.has(n));
   const extraNames = [...rtNames.keys()].filter((n) => !origNames.has(n));
-  const changedNames = [...origNames.keys()].filter(
-    (n) => rtNames.has(n) && origNames.get(n) !== rtNames.get(n),
-  );
+  const changedNames = [...origNames.keys()].filter((n) => rtNames.has(n) && origNames.get(n) !== rtNames.get(n));
 
-  if (missingNames.length)
-    console.log("LOST defined names:", missingNames.join(", "));
-  if (extraNames.length)
-    console.log("EXTRA defined names:", extraNames.join(", "));
-  if (changedNames.length)
-    console.log("CHANGED defined names:", changedNames.join(", "));
+  if (missingNames.length) console.log("LOST defined names:", missingNames.join(", "));
+  if (extraNames.length) console.log("EXTRA defined names:", extraNames.join(", "));
+  if (changedNames.length) console.log("CHANGED defined names:", changedNames.join(", "));
   if (!missingNames.length && !extraNames.length && !changedNames.length) {
     console.log("All", origNames.size, "defined names preserved.");
   }
@@ -162,9 +152,7 @@ async function main() {
       if (d.type === "MISSING_SHEET") {
         console.log(`  MISSING SHEET: ${d.sheet}`);
       } else {
-        console.log(
-          `  ${d.sheet}!R${d.row}C${d.col}: ${d.original} -> ${d.roundtrip}`,
-        );
+        console.log(`  ${d.sheet}!R${d.row}C${d.col}: ${d.original} -> ${d.roundtrip}`);
       }
     }
   }
@@ -199,14 +187,8 @@ async function main() {
 
   let allPass = true;
   for (const check of checks) {
-    const oVal = orig
-      .getWorksheet(check.sheet)
-      .getRow(check.row)
-      .getCell(check.col).value;
-    const rVal = rt
-      .getWorksheet(check.sheet)
-      .getRow(check.row)
-      .getCell(check.col).value;
+    const oVal = orig.getWorksheet(check.sheet).getRow(check.row).getCell(check.col).value;
+    const rVal = rt.getWorksheet(check.sheet).getRow(check.row).getCell(check.col).value;
     const oStr = JSON.stringify(oVal);
     const rStr = JSON.stringify(rVal);
     const match = oStr === rStr ? "PASS" : "FAIL";
@@ -226,18 +208,10 @@ async function main() {
     missingNames.length === 0 && extraNames.length === 0 ? "PASS" : "FAIL",
     `(${origNames.size} -> ${rtNames.size})`,
   );
-  console.log(
-    "Cell values:",
-    totalDiffs === 0 ? "PASS" : "FAIL",
-    `(${totalDiffs} diffs out of ${totalChecked})`,
-  );
+  console.log("Cell values:", totalDiffs === 0 ? "PASS" : "FAIL", `(${totalDiffs} diffs out of ${totalChecked})`);
   console.log("Key cells:", allPass ? "PASS" : "FAIL");
 
-  const overallPass =
-    orig.worksheets.length === rt.worksheets.length &&
-    missingNames.length === 0 &&
-    totalDiffs === 0 &&
-    allPass;
+  const overallPass = orig.worksheets.length === rt.worksheets.length && missingNames.length === 0 && totalDiffs === 0 && allPass;
 
   console.log("\nSpike 1 result:", overallPass ? "PASS" : "FAIL");
   process.exit(overallPass ? 0 : 1);

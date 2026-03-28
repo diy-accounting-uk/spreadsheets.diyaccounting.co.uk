@@ -81,9 +81,7 @@ describe("generateAdminDates", () => {
 // ── Cell edits ──────────────────────────────────────────────────────────────
 
 describe("buildCellEdits", () => {
-  const taxData = parseTOML(
-    readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"),
-  );
+  const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
 
   it("produces numeric edits for all expected cells", () => {
     const { numericEdits } = buildCellEdits(taxData, 2025);
@@ -107,9 +105,7 @@ describe("buildCellEdits", () => {
 // ── Spreadsheet generation ──────────────────────────────────────────────────
 
 describe("generateSpreadsheet", () => {
-  const productMeta = parseTOML(
-    readFileSync(resolve(BST_DIR, "meta.toml"), "utf8"),
-  );
+  const productMeta = parseTOML(readFileSync(resolve(BST_DIR, "meta.toml"), "utf8"));
   const templatePath = resolve(BST_DIR, productMeta.template.spreadsheet);
   let templateBuffer;
 
@@ -118,14 +114,8 @@ describe("generateSpreadsheet", () => {
   });
 
   it("generates a valid xlsx buffer for 2025-26", async () => {
-    const taxData = parseTOML(
-      readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"),
-    );
-    const buffer = await generateSpreadsheet(
-      templateBuffer,
-      taxData,
-      productMeta.sheets.admin,
-    );
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(100000); // sanity check size
     // Verify it's a valid zip (xlsx) — starts with PK signature
@@ -134,27 +124,15 @@ describe("generateSpreadsheet", () => {
   });
 
   it("generates a valid xlsx buffer for 2024-25", async () => {
-    const taxData = parseTOML(
-      readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"),
-    );
-    const buffer = await generateSpreadsheet(
-      templateBuffer,
-      taxData,
-      productMeta.sheets.admin,
-    );
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(100000);
   });
 
   it("contains correct Admin cell values in generated xlsx", async () => {
-    const taxData = parseTOML(
-      readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"),
-    );
-    const buffer = await generateSpreadsheet(
-      templateBuffer,
-      taxData,
-      productMeta.sheets.admin,
-    );
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
 
     // Read back the Admin sheet XML from the generated zip
     const JSZip = (await import("jszip")).default;
@@ -200,9 +178,7 @@ describe("file structure", () => {
   });
 
   it("tax data files parse correctly", () => {
-    const data = parseTOML(
-      readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"),
-    );
+    const data = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
     expect(data.tax_year.label).toBe("2025-26");
     expect(data.income_tax.personal_allowance).toBe(12570);
     expect(data.national_insurance.class4_lower_rate).toBe(0.06);
