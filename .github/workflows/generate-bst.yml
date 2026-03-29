@@ -10,8 +10,8 @@ on:
       - 'app/data/se-*'
       - 'app/templates/bst/**'
       - 'app/templates/meta.toml'
-      - 'app/lib/**'
-      - 'app/bin/**'
+      #- 'app/lib/**'
+      #- 'app/bin/**'
   workflow_dispatch:
     inputs:
       skip-tests:
