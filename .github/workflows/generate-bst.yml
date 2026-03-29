@@ -85,13 +85,10 @@ jobs:
           npm test
           echo "=== Tests passed ==="
 
-  generate:
+  guide:
     runs-on: ubuntu-24.04
-    needs: [discover, test]
-    if: ${{ !cancelled() && needs.discover.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
-    strategy:
-      matrix:
-        year: ${{ fromJson(needs.discover.outputs.years) }}
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     steps:
 
       - name: Checkout
@@ -116,23 +113,64 @@ jobs:
           pandoc --version | head -1
           weasyprint --version
 
+      - name: Generate guide PDF
+        run: |
+          echo "=== Generating BST user guide ==="
+          GUIDE_EPOCH=$(git log -1 --format=%ct -- app/templates/bst/bst-guide.md)
+          echo "Source markdown: app/templates/bst/bst-guide.md"
+          echo "SOURCE_DATE_EPOCH: $GUIDE_EPOCH ($(date -d @$GUIDE_EPOCH --iso-8601=seconds 2>/dev/null || date -r $GUIDE_EPOCH '+%Y-%m-%dT%H:%M:%S'))"
+          mkdir -p target/guide
+          SOURCE_DATE_EPOCH="$GUIDE_EPOCH" pandoc app/templates/bst/bst-guide.md -o target/guide/bst-guide.pdf --pdf-engine=weasyprint
+          echo ""
+          echo "=== Generated guide ==="
+          ls -lh target/guide/bst-guide.pdf
+          md5sum target/guide/bst-guide.pdf
+
+      - name: Upload guide artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: bst-guide
+          retention-days: 1
+          path: target/guide/bst-guide.pdf
+
+  generate:
+    runs-on: ubuntu-24.04
+    needs: [discover, test]
+    if: ${{ !cancelled() && needs.discover.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    strategy:
+      matrix:
+        year: ${{ fromJson(needs.discover.outputs.years) }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Show inputs for ${{ matrix.year }}
         run: |
           echo "=== Generation inputs ==="
           echo "Package:       bst (Basic Sole Trader)"
           echo "Tax data file: app/data/${{ matrix.year }}.toml"
           echo "Template:      app/templates/bst/bst-excel.xlsx"
-          echo "Guide:         app/templates/bst/bst-guide.md"
           echo ""
           echo "=== Tax data contents ==="
           cat "app/data/${{ matrix.year }}.toml"
 
-      - name: Generate bst ${{ matrix.year }}
+      - name: Generate bst spreadsheet ${{ matrix.year }}
         run: |
-          echo "=== Generating Basic Sole Trader for ${{ matrix.year }} ==="
-          GUIDE_EPOCH=$(git log -1 --format=%ct -- app/templates/bst/bst-guide.md)
-          echo "Guide source date epoch: $GUIDE_EPOCH ($(date -d @$GUIDE_EPOCH --iso-8601=seconds 2>/dev/null || date -r $GUIDE_EPOCH '+%Y-%m-%dT%H:%M:%S'))"
-          node app/bin/generate.js --package bst --source-date-epoch "$GUIDE_EPOCH" --years ${{ matrix.year }}
+          echo "=== Generating Basic Sole Trader spreadsheet for ${{ matrix.year }} ==="
+          node app/bin/generate.js --package bst --years ${{ matrix.year }}
+          echo ""
+          echo "=== Removing any locally generated guide (will use guide job artifact instead) ==="
+          find packages-generated/ -name "*.pdf" -delete
           echo ""
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
@@ -141,7 +179,7 @@ jobs:
           find packages-generated/ -type f | wc -l | xargs echo "Total files:"
 
       - name: Upload generated package
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: package-${{ matrix.year }}
           retention-days: 1
@@ -155,22 +193,38 @@ jobs:
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [generate]
+    needs: [discover, generate, guide]
     steps:
 
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download all generated packages
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           pattern: package-*
           path: packages-generated/
           merge-multiple: true
 
-      - name: List all downloaded artifacts
+      - name: Download guide PDF
+        uses: actions/download-artifact@v8
+        with:
+          name: bst-guide
+          path: target/guide/
+
+      - name: Copy guide into each package directory
         run: |
-          echo "=== Downloaded and merged artifacts ==="
+          echo "=== Copying guide PDF into each package ==="
+          GUIDE_FILENAME=$(cat app/templates/bst/meta.toml | grep guide_filename | sed 's/.*= *"//' | sed 's/".*//')
+          echo "Guide filename from meta.toml: $GUIDE_FILENAME"
+          for dir in packages-generated/*/; do
+            cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
+            echo "  Copied to: $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
+          done
+
+      - name: List all packages
+        run: |
+          echo "=== Final package contents ==="
           find packages-generated/ -type d | while read dir; do
             count=$(find "$dir" -maxdepth 1 -type f | wc -l)
             if [ "$count" -gt 0 ]; then
