@@ -11,6 +11,7 @@ on:
       - 'infra/**'
       - 'behaviour-tests/**'
       - 'web/**'
+      - 'packages-generated/**'
       - 'packages/**'
       - 'scripts/**'
       - '**/cdk.json'
@@ -18,7 +19,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'pom.xml'
-      - '.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
       - '.prettierignore'
       - '.prettierrc'
       - 'eslint.config.js'
@@ -41,8 +42,9 @@ env:
 
 jobs:
 
-  build:
+  formatting:
     runs-on: ubuntu-24.04
+    continue-on-error: true
     steps:
 
       - name: Checkout
@@ -59,6 +61,44 @@ jobs:
 
       - name: Check formatting (JS/YAML/JSON)
         run: npx prettier --check .
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci
+
+      - name: Generate latest BST package
+        run: |
+          LATEST=$(ls app/data/se-*.toml | sort | tail -1 | xargs basename -s .toml)
+          echo "Generating: $LATEST"
+          node app/bin/generate.js --package bst --years "$LATEST"
+
+  deployment:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci
 
       - name: Build spreadsheets redirects
         run: node scripts/build-spreadsheets-redirects.cjs
