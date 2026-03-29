@@ -90,8 +90,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: ${{ inputs.generate-guides == true && 'false' || 'true' }}
 
       - name: Generate ${{ matrix.year }}
         run: node app/bin/generate.js ${{ inputs.generate-guides == true && ' ' || '--skip-guide' }} --years ${{ matrix.year }}
