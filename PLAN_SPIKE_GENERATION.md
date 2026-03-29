@@ -345,8 +345,49 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 
 ## Next Steps
 
-1. **Traceability report** — build `REPORT_TRACEABILITY.md` tracing between `SOURCES.md` (HMRC reference URLs) and the values in `app/data/*.toml`, so every threshold and rate can be verified against its authoritative source
-2. **Spike 2: test transactions** — inject sample transactions into a generated spreadsheet, recalculate via LibreOffice headless, and verify computed results (P&L, Income Tax, SE Short)
+1. **Traceability report** — DONE. `REPORT_TRACEABILITY.md` traces `SOURCES.md` to `app/data/*.toml`.
+
+2. **Spike 2: Spreadsheet testing and reconciliation** — 7 deliverables:
+
+   **2.1 Sheet-level unit tests** (`app/test/bst-sheets.test.js`)
+   Tests each sheet type in the BST template via LibreOffice headless recalculation:
+   - Sales sheets: enter transactions in rows 4–100, verify F1 (total), H (unpaid), I (days outstanding)
+   - Purchase sheets: enter transactions with all expense codes (S,D,E,P,R,G,M,T,A,L,B,I,O,F), verify columns J–W categorise correctly, E1 error check, row 1 totals
+   - Fixed Assets: enter acquisitions, verify capital allowance calculations
+   - PurchasesStock: enter opening/closing stock, verify cost of sales flows to P&L
+   - Debtors & Creditors: verify unpaid amounts propagate from Sales/Purchases
+   - Run with `npm test` (vitest)
+
+   **2.2 Whole-workbook end-to-end tests** (`app/test/bst-e2e.test.js`)
+   Enter a full set of transactions across multiple months touching every expense category plus fixed assets, then verify:
+   - P&L: turnover, cost of sales, each expense line, gross/net profit
+   - Income Tax: taxable profit, personal allowance, tax bands, NI Class 4
+   - SE Short: box values match P&L
+   - Run with `npm test` (vitest)
+
+   **2.3 Shared test scenario data** (`app/test/fixtures/` + `TEST_SCENARIOS.md`)
+   - `app/test/fixtures/bst-scenario-basic.toml` — a full year of transactions for a simple sole trader
+   - `TEST_SCENARIOS.md` — documents each scenario with expected outcomes
+   - Used by both unit/e2e tests and the reconciliation task
+
+   **2.4 Reconciliation task** (`npm run reconciliation`)
+   - `app/bin/reconcile.js` — exercises each generated package in `packages-generated/`
+   - Injects scenario data, recalculates via LibreOffice headless
+   - Compares computed results against expected values from `TEST_SCENARIOS.md`
+   - Writes results to `TEST_REPORTS/` (one report per package per scenario)
+
+   **2.5 Reconciliation compliance tests** (`app/test/reconciliation.test.js`)
+   - Asserts that reconciliation reports show compliance
+   - Tests at the level of "Is the tax paid as expected given these rates?"
+   - Run with `npm test`
+
+   **2.6 GitHub Actions workflow** (`.github/workflows/reconciliation.yml`)
+   - Triggers on push to `packages-generated/`, `app/test/fixtures/`, or `app/data/`
+   - Runs reconciliation, generates reports, commits to `TEST_REPORTS/`
+   - Fails the workflow if reports are non-compliant but still generates and commits them
+
+   **2.7 Screenshots** — reconciliation workflow also captures screenshots of key sheets and commits them alongside reports
+
 3. **Screenshots for the guide** — once test transactions are flowing, capture screenshots of key sheets to include in `app/templates/bst/bst-guide.md`
 4. **Extend to additional products** — apply the same template + tax-data + generator pattern to Self Employed, Company (with monthly year-end variants), Taxi Driver, Payslip 05, Payslip 10
 

@@ -9,6 +9,7 @@ Purpose: Keep the tax data files in `app/data/` current by researching HMRC publ
 Run using a prompt like:
 ```
 Please locate tax data for the coming financial year 2026 -2027 and update SOURCES.md and extend app/data and refresh REPORT_TRACEABILITY.md.
+Also add any new but missing tax years to .github/workflows/generate-bst.yml
 ```
 
 ## Scope and Inputs
