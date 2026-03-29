@@ -40,12 +40,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: List tax years
+      - name: List tax data files
+        run: |
+          echo "=== Tax data files found ==="
+          ls -la app/data/se-*.toml
+          echo ""
+          echo "=== Template files ==="
+          ls -la app/templates/bst/
+          echo ""
+          echo "=== Shared metadata ==="
+          cat app/templates/meta.toml
+          echo ""
+          echo "=== BST metadata ==="
+          cat app/templates/bst/meta.toml
+
+      - name: Build tax year matrix
         id: list
         run: |
+          echo "=== Discovering tax years for matrix ==="
           years=$(ls app/data/se-*.toml | xargs -I{} basename {} .toml | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "years=$years" >> "$GITHUB_OUTPUT"
-          echo "Found tax years: $years"
+          echo "Matrix years: $years"
+          echo "Total: $(echo "$years" | jq 'length') tax years will generate concurrently"
 
   test:
     runs-on: ubuntu-24.04
@@ -68,7 +84,10 @@ jobs:
         run: node scripts/build-sitemaps.cjs
 
       - name: Run tests
-        run: npm test
+        run: |
+          echo "=== Running all tests ==="
+          npm test
+          echo "=== Tests passed ==="
 
   generate:
     runs-on: ubuntu-24.04
@@ -91,8 +110,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Show inputs for ${{ matrix.year }}
+        run: |
+          echo "=== Generation inputs ==="
+          echo "Tax data file: app/data/${{ matrix.year }}.toml"
+          echo "Template:      app/templates/bst/bst-excel.xlsx"
+          echo "Skip guide:    ${{ inputs.generate-guides == true && 'no' || 'yes' }}"
+          echo ""
+          echo "=== Tax data contents ==="
+          cat "app/data/${{ matrix.year }}.toml"
+
       - name: Generate ${{ matrix.year }}
-        run: node app/bin/generate.js ${{ inputs.generate-guides == true && ' ' || '--skip-guide' }} --years ${{ matrix.year }}
+        run: |
+          echo "=== Generating spreadsheet for ${{ matrix.year }} ==="
+          node app/bin/generate.js ${{ inputs.generate-guides == true && ' ' || '--skip-guide' }} --years ${{ matrix.year }}
+          echo ""
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+          echo ""
+          echo "=== File count ==="
+          find packages-generated/ -type f | wc -l | xargs echo "Total files:"
 
       - name: Upload generated package
         uses: actions/upload-artifact@v6
@@ -100,6 +137,12 @@ jobs:
           name: package-${{ matrix.year }}
           retention-days: 1
           path: packages-generated/
+
+      - name: Confirm upload for ${{ matrix.year }}
+        run: |
+          echo "=== Uploaded artifact: package-${{ matrix.year }} ==="
+          echo "Contents:"
+          find packages-generated/ -type f -exec echo "  {}" \;
 
   commit:
     runs-on: ubuntu-24.04
@@ -116,20 +159,48 @@ jobs:
           path: packages-generated/
           merge-multiple: true
 
-      - name: List generated packages
-        run: ls -R packages-generated/
+      - name: List all downloaded artifacts
+        run: |
+          echo "=== Downloaded and merged artifacts ==="
+          find packages-generated/ -type d | while read dir; do
+            count=$(find "$dir" -maxdepth 1 -type f | wc -l)
+            if [ "$count" -gt 0 ]; then
+              echo ""
+              echo "--- $dir ($count files) ---"
+              ls -lh "$dir"
+            fi
+          done
+          echo ""
+          echo "=== Total files ==="
+          find packages-generated/ -type f | wc -l | xargs echo "Total:"
 
-      - name: Commit generated packages
+      - name: Stage changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages-generated/
+          echo "=== Staged changes ==="
+          git diff --staged --stat
+          echo ""
+          echo "=== Staged files ==="
+          git diff --staged --name-only | head -50
+
+      - name: Commit and push
+        run: |
           if git diff --staged --quiet; then
-            echo "No changes to packages-generated/"
+            echo "=== No changes to commit ==="
+            echo "packages-generated/ is already up to date"
           else
+            echo "=== Committing ==="
             git commit -m "Generate BST packages from app/data and app/templates
 
           Triggered by: ${{ github.sha }}
           Workflow: ${{ github.workflow }}"
+            echo ""
+            echo "=== Commit details ==="
+            git log -1 --stat
+            echo ""
+            echo "=== Pushing to ${{ github.ref_name }} ==="
             git push
+            echo "=== Push complete ==="
           fi
