@@ -4,8 +4,8 @@ Thank you for using DIY Accounting as your accounting system.
 
 Entering the data is no more complicated than entering your financial information in 2 lists:
 
-- Enter sales receipts on the sales spreadsheet.
-- Enter purchases on the purchase spreadsheet.
+- Enter sales receipts on the sales spreadsheet..
+- Enter purchases on the purchase spreadsheet..
 
 The spreadsheets were designed from the standard accounting format used for existing clients to make financial transactions fast, easy to enter and understand. Formula driven so that minimum data is entered with automated analysis producing monthly profit & loss accounts, live debtor and creditor reports, self-assessment tax returns.
 
