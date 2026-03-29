@@ -10,8 +10,6 @@ on:
       - 'app/data/se-*'
       - 'app/templates/bst/**'
       - 'app/templates/meta.toml'
-      #- 'app/lib/**'
-      #- 'app/bin/**'
   workflow_dispatch:
     inputs:
       skip-tests:
@@ -26,38 +24,6 @@ env:
   NODE_VERSION: '24'
 
 jobs:
-
-  discover:
-    runs-on: ubuntu-24.04
-    outputs:
-      years: ${{ steps.list.outputs.years }}
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: List tax data files
-        run: |
-          echo "=== Tax data files found ==="
-          ls -la app/data/se-*.toml
-          echo ""
-          echo "=== Template files ==="
-          ls -la app/templates/bst/
-          echo ""
-          echo "=== Shared metadata ==="
-          cat app/templates/meta.toml
-          echo ""
-          echo "=== BST metadata ==="
-          cat app/templates/bst/meta.toml
-
-      - name: Build tax year matrix
-        id: list
-        run: |
-          echo "=== Discovering tax years for matrix ==="
-          years=$(ls app/data/se-*.toml | xargs -I{} basename {} .toml | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "years=$years" >> "$GITHUB_OUTPUT"
-          echo "Matrix years: $years"
-          echo "Total: $(echo "$years" | jq 'length') tax years will generate concurrently"
 
   test:
     runs-on: ubuntu-24.04
@@ -85,115 +51,147 @@ jobs:
           npm test
           echo "=== Tests passed ==="
 
-  guide:
+  generate-se-2020-2021:
     runs-on: ubuntu-24.04
     needs: [test]
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Setup pandoc
-        uses: pandoc/actions/setup@v1
-
-      - name: Install weasyprint
+      - run: npm ci
+      - name: Generate bst se-2020-2021
         run: |
-          echo "=== Installing weasyprint ==="
-          pip install weasyprint
-          pandoc --version | head -1
-          weasyprint --version
-
-      - name: Generate guide PDF
-        run: |
-          echo "=== Generating BST user guide ==="
-          GUIDE_EPOCH=$(git log -1 --format=%ct -- app/templates/bst/bst-guide.md)
-          echo "Source markdown: app/templates/bst/bst-guide.md"
-          echo "SOURCE_DATE_EPOCH: $GUIDE_EPOCH ($(date -d @$GUIDE_EPOCH --iso-8601=seconds 2>/dev/null || date -r $GUIDE_EPOCH '+%Y-%m-%dT%H:%M:%S'))"
-          mkdir -p target/guide
-          SOURCE_DATE_EPOCH="$GUIDE_EPOCH" pandoc app/templates/bst/bst-guide.md -o target/guide/bst-guide.pdf --pdf-engine=weasyprint
-          echo ""
-          echo "=== Generated guide ==="
-          ls -lh target/guide/bst-guide.pdf
-          md5sum target/guide/bst-guide.pdf
-
-      - name: Upload guide artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: bst-guide
-          retention-days: 1
-          path: target/guide/bst-guide.pdf
-
-  generate:
-    runs-on: ubuntu-24.04
-    needs: [discover, test]
-    if: ${{ !cancelled() && needs.discover.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
-    strategy:
-      matrix:
-        year: ${{ fromJson(needs.discover.outputs.years) }}
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Show inputs for ${{ matrix.year }}
-        run: |
-          echo "=== Generation inputs ==="
-          echo "Package:       bst (Basic Sole Trader)"
-          echo "Tax data file: app/data/${{ matrix.year }}.toml"
-          echo "Template:      app/templates/bst/bst-excel.xlsx"
-          echo ""
-          echo "=== Tax data contents ==="
-          cat "app/data/${{ matrix.year }}.toml"
-
-      - name: Generate bst spreadsheet ${{ matrix.year }}
-        run: |
-          echo "=== Generating Basic Sole Trader spreadsheet for ${{ matrix.year }} ==="
-          node app/bin/generate.js --package bst --years ${{ matrix.year }}
-          echo ""
-          echo "=== Removing any locally generated guide (will use guide job artifact instead) ==="
-          find packages-generated/ -name "*.pdf" -delete
-          echo ""
+          echo "=== Generating Basic Sole Trader for se-2020-2021 ==="
+          node app/bin/generate.js --package bst --years se-2020-2021
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
-          echo ""
-          echo "=== File count ==="
-          find packages-generated/ -type f | wc -l | xargs echo "Total files:"
-
-      - name: Upload generated package
-        uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7
         with:
-          name: package-${{ matrix.year }}
+          name: bst-se-2020-2021
           retention-days: 1
           path: packages-generated/
 
-      - name: Confirm upload for ${{ matrix.year }}
+  generate-se-2021-2022:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Generate bst se-2021-2022
         run: |
-          echo "=== Uploaded artifact: package-${{ matrix.year }} ==="
-          echo "Contents:"
-          find packages-generated/ -type f -exec echo "  {}" \;
+          echo "=== Generating Basic Sole Trader for se-2021-2022 ==="
+          node app/bin/generate.js --package bst --years se-2021-2022
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2021-2022
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2022-2023:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Generate bst se-2022-2023
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2022-2023 ==="
+          node app/bin/generate.js --package bst --years se-2022-2023
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2022-2023
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2023-2024:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Generate bst se-2023-2024
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2023-2024 ==="
+          node app/bin/generate.js --package bst --years se-2023-2024
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2023-2024
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2024-2025:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Generate bst se-2024-2025
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2024-2025 ==="
+          node app/bin/generate.js --package bst --years se-2024-2025
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2024-2025
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2025-2026:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Generate bst se-2025-2026
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2025-2026 ==="
+          node app/bin/generate.js --package bst --years se-2025-2026
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2025-2026
+          retention-days: 1
+          path: packages-generated/
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [discover, generate, guide]
+    needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026]
     steps:
 
       - name: Checkout
@@ -202,53 +200,9 @@ jobs:
       - name: Download all generated packages
         uses: actions/download-artifact@v8
         with:
-          pattern: package-*
+          pattern: bst-*
           path: packages-generated/
           merge-multiple: true
-
-      - name: Download guide PDF
-        uses: actions/download-artifact@v8
-        with:
-          name: bst-guide
-          path: target/guide/
-
-      - name: Copy guide into each package directory (only if source changed)
-        run: |
-          GUIDE_FILENAME=$(cat app/templates/bst/meta.toml | grep guide_filename | sed 's/.*= *"//' | sed 's/".*//')
-          echo "Guide filename from meta.toml: $GUIDE_FILENAME"
-
-          # Check if guide markdown has changed compared to the last committed PDF
-          # Compare the git blob hash of the guide source at the time the PDF was last generated
-          # vs the current HEAD. If they differ, the guide needs regenerating.
-          GUIDE_CHANGED=false
-          LAST_PDF_COMMIT=$(git log -1 --format=%H -- "packages-generated/*/Basic Sole Trader User Guide.pdf" 2>/dev/null || echo "")
-          if [ -z "$LAST_PDF_COMMIT" ]; then
-            echo "No previous guide PDF commit found — guide is new"
-            GUIDE_CHANGED=true
-          else
-            GUIDE_HASH_AT_PDF=$(git rev-parse "$LAST_PDF_COMMIT:app/templates/bst/bst-guide.md" 2>/dev/null || echo "missing")
-            GUIDE_HASH_NOW=$(git rev-parse HEAD:app/templates/bst/bst-guide.md 2>/dev/null || echo "missing")
-            echo "Guide blob at last PDF commit: $GUIDE_HASH_AT_PDF"
-            echo "Guide blob at HEAD:            $GUIDE_HASH_NOW"
-            if [ "$GUIDE_HASH_AT_PDF" != "$GUIDE_HASH_NOW" ]; then
-              echo "Guide markdown has changed since PDF was last generated"
-              GUIDE_CHANGED=true
-            else
-              echo "Guide markdown unchanged — keeping existing committed PDFs"
-            fi
-          fi
-
-          for dir in packages-generated/*/; do
-            if [ "$GUIDE_CHANGED" = true ]; then
-              cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
-              echo "  Updated: $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
-            elif [ -f "$dir$GUIDE_FILENAME" ]; then
-              echo "  Kept existing: $dir$GUIDE_FILENAME"
-            else
-              cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
-              echo "  New (no existing): $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
-            fi
-          done
 
       - name: List all packages
         run: |
