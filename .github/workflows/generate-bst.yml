@@ -212,14 +212,34 @@ jobs:
           name: bst-guide
           path: target/guide/
 
-      - name: Copy guide into each package directory
+      - name: Copy guide into each package directory (only if source changed)
         run: |
-          echo "=== Copying guide PDF into each package ==="
           GUIDE_FILENAME=$(cat app/templates/bst/meta.toml | grep guide_filename | sed 's/.*= *"//' | sed 's/".*//')
           echo "Guide filename from meta.toml: $GUIDE_FILENAME"
+
+          # Check if guide markdown has changed since packages-generated was last updated
+          GUIDE_CHANGED=false
+          LAST_PKG_COMMIT=$(git log -1 --format=%H -- packages-generated/ 2>/dev/null || echo "")
+          if [ -z "$LAST_PKG_COMMIT" ]; then
+            echo "No previous packages-generated commit found — guide is new"
+            GUIDE_CHANGED=true
+          elif ! git diff --quiet "$LAST_PKG_COMMIT"..HEAD -- app/templates/bst/bst-guide.md 2>/dev/null; then
+            echo "Guide markdown changed since last packages-generated commit"
+            GUIDE_CHANGED=true
+          else
+            echo "Guide markdown unchanged — keeping existing committed PDFs"
+          fi
+
           for dir in packages-generated/*/; do
-            cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
-            echo "  Copied to: $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
+            if [ "$GUIDE_CHANGED" = true ]; then
+              cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
+              echo "  Updated: $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
+            elif [ -f "$dir$GUIDE_FILENAME" ]; then
+              echo "  Kept existing: $dir$GUIDE_FILENAME"
+            else
+              cp target/guide/bst-guide.pdf "$dir/$GUIDE_FILENAME"
+              echo "  New (no existing): $dir$GUIDE_FILENAME ($(ls -lh "$dir$GUIDE_FILENAME" | awk '{print $5}'))"
+            fi
           done
 
       - name: List all packages
