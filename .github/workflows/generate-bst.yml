@@ -225,9 +225,38 @@ jobs:
           retention-days: 1
           path: packages-generated/
 
+  generate-se-2026-2027:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2026-2027
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2026-2027 ==="
+          node app/bin/generate.js --package bst --years se-2026-2027
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2026-2027
+          retention-days: 1
+          path: packages-generated/
+
   commit:
     runs-on: ubuntu-24.04
-    needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026]
+    needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026, generate-se-2026-2027]
     steps:
 
       - name: Checkout
