@@ -161,7 +161,9 @@ export async function generateSpreadsheet(templateBuffer, taxData, adminSheetPat
     adminXml = setCellString(adminXml, cellRef, str);
   }
 
-  zip.file(adminSheetPath, adminXml);
+  // Preserve the original entry date so output is deterministic across runs
+  const originalDate = zip.file(adminSheetPath).date;
+  zip.file(adminSheetPath, adminXml, { date: originalDate });
 
   return zip.generateAsync({
     type: "nodebuffer",
