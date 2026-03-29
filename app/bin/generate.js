@@ -127,8 +127,7 @@ async function main() {
   const { packageFilter, tomlFiles, sourceDateEpoch } = parseArgs(process.argv);
 
   // Determine which products to generate
-  const productsToGenerate =
-    packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
+  const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
 
   for (const [key, product] of productsToGenerate) {
     if (!product) {
@@ -137,10 +136,7 @@ async function main() {
     }
   }
 
-  console.log(
-    "Package: ",
-    packageFilter === "all" ? "all" : packageFilter,
-  );
+  console.log("Package: ", packageFilter === "all" ? "all" : packageFilter);
   console.log(
     "Tax data:",
     tomlFiles.map((f) => f.split("/").pop()),

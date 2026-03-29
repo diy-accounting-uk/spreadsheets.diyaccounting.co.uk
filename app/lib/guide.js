@@ -16,14 +16,10 @@ export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
     throw new Error(`Markdown file not found: ${markdownPath}`);
   }
 
-  const epoch =
-    sourceDateEpoch ?? Math.floor(statSync(markdownPath).mtimeMs / 1000);
+  const epoch = sourceDateEpoch ?? Math.floor(statSync(markdownPath).mtimeMs / 1000);
 
-  execSync(
-    `pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint`,
-    {
-      stdio: "pipe",
-      env: { ...process.env, SOURCE_DATE_EPOCH: String(epoch) },
-    },
-  );
+  execSync(`pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint`, {
+    stdio: "pipe",
+    env: { ...process.env, SOURCE_DATE_EPOCH: String(epoch) },
+  });
 }
