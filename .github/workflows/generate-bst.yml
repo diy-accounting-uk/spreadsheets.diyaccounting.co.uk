@@ -18,6 +18,10 @@ on:
         description: 'Skip pre-generate tests'
         type: boolean
         default: false
+      generate-guides:
+        description: 'Also generate PDF user guides'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -88,7 +92,7 @@ jobs:
         run: npm ci
 
       - name: Generate ${{ matrix.year }}
-        run: node app/bin/generate.js --skip-guide --years ${{ matrix.year }}
+        run: node app/bin/generate.js ${{ inputs.generate-guides && ' ' || '--skip-guide' }} --years ${{ matrix.year }}
 
       - name: Upload generated package
         uses: actions/upload-artifact@v6
