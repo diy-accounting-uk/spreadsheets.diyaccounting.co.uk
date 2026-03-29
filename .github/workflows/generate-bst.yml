@@ -217,17 +217,25 @@ jobs:
           GUIDE_FILENAME=$(cat app/templates/bst/meta.toml | grep guide_filename | sed 's/.*= *"//' | sed 's/".*//')
           echo "Guide filename from meta.toml: $GUIDE_FILENAME"
 
-          # Check if guide markdown has changed since packages-generated was last updated
+          # Check if guide markdown has changed compared to the last committed PDF
+          # Compare the git blob hash of the guide source at the time the PDF was last generated
+          # vs the current HEAD. If they differ, the guide needs regenerating.
           GUIDE_CHANGED=false
-          LAST_PKG_COMMIT=$(git log -1 --format=%H -- packages-generated/ 2>/dev/null || echo "")
-          if [ -z "$LAST_PKG_COMMIT" ]; then
-            echo "No previous packages-generated commit found — guide is new"
-            GUIDE_CHANGED=true
-          elif ! git diff --quiet "$LAST_PKG_COMMIT"..HEAD -- app/templates/bst/bst-guide.md 2>/dev/null; then
-            echo "Guide markdown changed since last packages-generated commit"
+          LAST_PDF_COMMIT=$(git log -1 --format=%H -- "packages-generated/*/Basic Sole Trader User Guide.pdf" 2>/dev/null || echo "")
+          if [ -z "$LAST_PDF_COMMIT" ]; then
+            echo "No previous guide PDF commit found — guide is new"
             GUIDE_CHANGED=true
           else
-            echo "Guide markdown unchanged — keeping existing committed PDFs"
+            GUIDE_HASH_AT_PDF=$(git rev-parse "$LAST_PDF_COMMIT:app/templates/bst/bst-guide.md" 2>/dev/null || echo "missing")
+            GUIDE_HASH_NOW=$(git rev-parse HEAD:app/templates/bst/bst-guide.md 2>/dev/null || echo "missing")
+            echo "Guide blob at last PDF commit: $GUIDE_HASH_AT_PDF"
+            echo "Guide blob at HEAD:            $GUIDE_HASH_NOW"
+            if [ "$GUIDE_HASH_AT_PDF" != "$GUIDE_HASH_NOW" ]; then
+              echo "Guide markdown has changed since PDF was last generated"
+              GUIDE_CHANGED=true
+            else
+              echo "Guide markdown unchanged — keeping existing committed PDFs"
+            fi
           fi
 
           for dir in packages-generated/*/; do
