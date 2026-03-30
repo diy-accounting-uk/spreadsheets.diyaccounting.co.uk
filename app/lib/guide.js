@@ -20,7 +20,7 @@ export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
   const epoch = sourceDateEpoch ?? Math.floor(statSync(markdownPath).mtimeMs / 1000);
 
   const resourcePath = dirname(markdownPath);
-  execSync(`pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint --resource-path="${resourcePath}"`, {
+  execSync(`pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint --resource-path="${resourcePath}" --embed-resources`, {
     stdio: "pipe",
     env: { ...process.env, SOURCE_DATE_EPOCH: String(epoch) },
   });

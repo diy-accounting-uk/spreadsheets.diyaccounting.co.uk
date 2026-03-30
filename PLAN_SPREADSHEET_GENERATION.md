@@ -122,9 +122,41 @@ All corrected by the generator.
 
 ## Remaining Work
 
-### Next: Screenshots for the Guide
+### Done: Screenshots for the Guide
 
-Test transactions are flowing through LibreOffice. Capture screenshots of key sheets (Home, SalesApr with data, P&L with results, Income Tax) and embed in `app/templates/bst/bst-guide.md`.
+Screenshots from the populated bst-scenario-basic test fixture have been extracted and embedded in `app/templates/bst/bst-guide.md`. The guide PDF now includes 10 screenshots showing every key sheet with real data.
+
+**What was done:**
+
+1. **Extracted 10 PNG screenshots** from the reconciliation PDF (`reports/screenshots/populated/...bst-scenario-basic.pdf`) into `app/templates/bst/screenshots/`:
+   - `home.png` — Home sheet with navigation links
+   - `business-details.png` — Business Details form
+   - `sales-apr.png` — SalesApr with populated data (Client A, Client B, £3,000)
+   - `purchases-apr.png` — PurchasesApr with populated data (Landlord, BT, Hiscox, £870)
+   - `purchases-stock.png` — PurchasesStock with monthly stock values
+   - `fixed-assets.png` — Fixed Assets capital allowance schedule
+   - `profit-loss.png` — Profit & Loss Acc (£36k turnover, £29,870 net profit, £25,372 after tax)
+   - `debtors-creditors.png` — Debtors & Creditors monthly report
+   - `se-short.png` — SE Short tax return (populated with £36k turnover, £6,130 expenses)
+   - `income-tax.png` — Income Tax calculation (£3,460 tax, £1,038 NI, £4,498 total)
+
+2. **Updated guide content** from source PDFs (`Basic Sole Trader User Guide.pdf` and `Basic Sole Trader - Getting Started.pdf`):
+   - Added Home sheet navigation table
+   - Added Business Details section
+   - Listed all 12 monthly sheet names for Sales and Purchases
+   - Added Profit & Loss line-by-line explanation
+   - Added Debtors & Creditors layout description
+   - Added SE Short box reference breakdown
+   - Added Income Tax calculation walkthrough
+
+3. **Corrected cell/column references** to match the actual `bst-excel.xlsx` template:
+   - Stock opening: `C5` → `D5`
+   - Stock closing: `C30` → `D30`
+   - Sales sub-contractor columns: `L and M` → `J and K`
+   - Sales unpaid days formula reference: `column K` → `column H`
+   - Purchases automated columns: `J–X` → `J–W`
+
+4. **Updated `app/lib/guide.js`** to pass `--resource-path` so pandoc resolves image paths relative to the markdown file's directory
 
 ### Next: Extend to Additional Products
 
@@ -179,3 +211,5 @@ Apply the same pattern to the remaining 5 products. Each needs:
 | 2026-03-30 | Separated slow tests from unit tests | `npm test` (~12s) vs `npm run test:slow` (~120s) via vitest projects |
 | 2026-03-30 | Pandoc + weasyprint for PDF guides | npm dependency-free in CI (apt install), no Chromium download |
 | 2026-03-30 | Guide PDF only regenerated when source changed | Avoids non-deterministic weasyprint output causing spurious diffs |
+| 2026-03-30 | Screenshots in guide from populated scenario PDF | Extracts PNG pages from reconciliation screenshots; embedded via pandoc `--resource-path` |
+| 2026-03-30 | Guide cell references aligned to actual template | Corrected stock (D5/D30 not C5/C30), sales subcontractor (J/K not L/M), purchases analysis (J–W not J–X) |

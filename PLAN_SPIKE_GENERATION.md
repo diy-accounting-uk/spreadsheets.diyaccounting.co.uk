@@ -386,7 +386,11 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
    - Concurrent LibreOffice calls need unique `-env:UserInstallation` per invocation to avoid profile lock conflicts
    - Shared formulas (e.g. unpaid tracking H column) may not evaluate for inserted cells after xls roundtrip — assertions must be tolerant
 
-3. **Screenshots for the guide** — ready to implement. Test transactions are flowing; capture screenshots to include in `app/templates/bst/bst-guide.md`
+3. **Screenshots for the guide** — DONE. 10 PNG screenshots extracted from the populated scenario PDF and embedded in `app/templates/bst/bst-guide.md`:
+   - Home, Business Details, SalesApr, PurchasesApr, PurchasesStock, Fixed Assets, Profit & Loss Acc, Debtors & Creditors, SE Short, Income Tax
+   - Guide content enhanced with descriptions from source PDFs (User Guide + Getting Started)
+   - Cell/column references corrected to match actual template (stock D5/D30, sales subcontractor J/K, purchases analysis J–W)
+   - `app/lib/guide.js` updated with `--resource-path` for image resolution
 4. **Extend to additional products** — apply the same template + tax-data + generator pattern to Self Employed, Company (with monthly year-end variants), Taxi Driver, Payslip 05, Payslip 10
 
 ## Decision Log
@@ -403,3 +407,4 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 | 2026-03-29 | Unique UserInstallation per LibreOffice invocation | Prevents profile lock conflicts in concurrent/sequential test runs |
 | 2026-03-29 | Year-specific expected tax in reconciliation | Reconcile calculates expected tax/NI from each package's own tax data, not hardcoded fixture values |
 | 2026-03-30 | Separated slow tests from unit tests | `npm test` (unit-tests, ~12s) vs `npm run test:slow` (sheets-tests, ~120s) via vitest projects |
+| 2026-03-30 | Screenshots embedded in guide PDF | 10 PNGs from scenario PDF; guide.js passes `--resource-path` to pandoc; cell references corrected |
