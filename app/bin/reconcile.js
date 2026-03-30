@@ -212,7 +212,14 @@ async function main() {
       const writes = scenarioToCellWrites(scenario);
       const reads = standardReads();
 
-      const results = await runSpreadsheet(xlsxBuffer, writes, reads);
+      // Save the populated spreadsheet for screenshots
+      const populatedDir = resolve(REPORTS_DIR, "populated");
+      const populatedPath = resolve(populatedDir, `${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}_${scenarioName}.xlsx`);
+
+      const results = await runSpreadsheet(xlsxBuffer, writes, reads, {
+        saveRecalculatedTo: populatedPath,
+      });
+      console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
 
       // Find the tax-data TOML for this package's year
       // Package name contains the year-end date e.g. "2025-04-05"

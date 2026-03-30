@@ -71,25 +71,51 @@ jobs:
             echo "No reports generated"
           fi
 
-      - name: Generate screenshots
+      - name: Generate screenshots (empty and populated)
         if: always()
         run: |
           echo "=== Generating screenshots ==="
-          mkdir -p reports/screenshots
+          mkdir -p reports/screenshots/empty reports/screenshots/populated /tmp/screenshots
+
+          echo ""
+          echo "--- Empty (as-generated) spreadsheets ---"
           for xlsx in packages-generated/*/Financialaccountsto*.xlsx; do
-            dir=$(dirname "$xlsx")
-            name=$(basename "$dir" | sed 's/ /_/g')
+            name=$(basename "$(dirname "$xlsx")" | sed 's/ /_/g')
             echo "  Processing: $xlsx"
-            libreoffice --headless --calc --convert-to pdf --outdir "/tmp/screenshots" "$xlsx" 2>/dev/null || true
+            libreoffice --headless --norestore --calc \
+              -env:UserInstallation="file:///tmp/lo_screenshots_empty_$$" \
+              --convert-to pdf --outdir "/tmp/screenshots" "$xlsx" 2>/dev/null || true
             pdf="/tmp/screenshots/$(basename "${xlsx%.xlsx}.pdf")"
             if [ -f "$pdf" ]; then
-              cp "$pdf" "reports/screenshots/${name}.pdf"
-              echo "    Saved: reports/screenshots/${name}.pdf"
+              cp "$pdf" "reports/screenshots/empty/${name}.pdf"
+              echo "    Saved: reports/screenshots/empty/${name}.pdf"
+              rm "$pdf"
             fi
           done
+
+          echo ""
+          echo "--- Populated (with test data) spreadsheets ---"
+          if [ -d reports/populated ]; then
+            for xlsx in reports/populated/*.xlsx; do
+              name=$(basename "$xlsx" .xlsx)
+              echo "  Processing: $xlsx"
+              libreoffice --headless --norestore --calc \
+                -env:UserInstallation="file:///tmp/lo_screenshots_pop_$$" \
+                --convert-to pdf --outdir "/tmp/screenshots" "$xlsx" 2>/dev/null || true
+              pdf="/tmp/screenshots/$(basename "${xlsx%.xlsx}.pdf")"
+              if [ -f "$pdf" ]; then
+                cp "$pdf" "reports/screenshots/populated/${name}.pdf"
+                echo "    Saved: reports/screenshots/populated/${name}.pdf"
+                rm "$pdf"
+              fi
+            done
+          else
+            echo "  No populated spreadsheets found"
+          fi
+
           echo ""
           echo "=== Screenshots ==="
-          ls -lh reports/screenshots/ 2>/dev/null || echo "No screenshots generated"
+          find reports/screenshots/ -name "*.pdf" -exec ls -lh {} \; 2>/dev/null || echo "No screenshots generated"
 
       - name: Commit reports and screenshots
         if: always()

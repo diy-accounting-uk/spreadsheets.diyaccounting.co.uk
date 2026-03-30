@@ -10,7 +10,7 @@
 
 import JSZip from "jszip";
 import { execSync } from "child_process";
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, cpSync } from "fs";
 import { resolve, dirname, basename } from "path";
 import { tmpdir } from "os";
 import { randomBytes } from "crypto";
@@ -180,9 +180,10 @@ async function buildSheetMap(zip) {
  *   Numbers are written as numeric values. Strings are written as inline strings.
  *   Date-like values should be pre-converted to Excel serial numbers.
  * @param {Object} cellReads - { "SheetName": ["A1", "C4", ...], ... }
+ * @param {Object} [options] - { saveRecalculatedTo: "/path/to/save.xlsx" }
  * @returns {Object} - { "SheetName": { "A1": value, "C4": value, ... }, ... }
  */
-export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads) {
+export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options = {}) {
   const soffice = getLibreOffice();
   const workDir = resolve(tmpdir(), `bst-test-${randomBytes(4).toString("hex")}`);
   mkdirSync(workDir, { recursive: true });
@@ -248,6 +249,13 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads) {
       for (const cellRef of cellRefs) {
         results[sheetName][cellRef] = readCellValue(xml, cellRef);
       }
+    }
+
+    // Optionally save the recalculated xlsx
+    if (options.saveRecalculatedTo) {
+      const saveDir = dirname(options.saveRecalculatedTo);
+      mkdirSync(saveDir, { recursive: true });
+      cpSync(recalcPath, options.saveRecalculatedTo);
     }
 
     return results;
