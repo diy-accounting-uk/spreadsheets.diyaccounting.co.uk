@@ -39,9 +39,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify LibreOffice available
+      - name: Install LibreOffice
         run: |
-          echo "=== LibreOffice version ==="
+          echo "=== Installing LibreOffice Calc ==="
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-calc
           libreoffice --version
 
       - name: Run reconciliation
