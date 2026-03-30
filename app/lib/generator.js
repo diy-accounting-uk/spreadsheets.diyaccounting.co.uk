@@ -165,6 +165,15 @@ export async function generateSpreadsheet(templateBuffer, taxData, adminSheetPat
   const originalDate = zip.file(adminSheetPath).date;
   zip.file(adminSheetPath, adminXml, { date: originalDate });
 
+  // Force full recalculation on open so cached formula values (e.g. G2=B23) update
+  let wbXml = await zip.file("xl/workbook.xml").async("string");
+  wbXml = wbXml.replace(
+    /(<calcPr[^/]*)\/?>/,
+    '$1 fullCalcOnLoad="1"/>',
+  );
+  const wbDate = zip.file("xl/workbook.xml").date;
+  zip.file("xl/workbook.xml", wbXml, { date: wbDate });
+
   return zip.generateAsync({
     type: "nodebuffer",
     compression: "DEFLATE",

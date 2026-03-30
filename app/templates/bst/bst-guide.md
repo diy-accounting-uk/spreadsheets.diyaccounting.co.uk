@@ -4,8 +4,8 @@ Thank you for using DIY Accounting as your accounting system.
 
 Entering the data is no more complicated than entering your financial information in 2 lists:
 
-- Enter sales receipts on the sales spreadsheet..
-- Enter purchases on the purchase spreadsheet..
+- Enter sales receipts on the sales spreadsheet.
+- Enter purchases on the purchase spreadsheet.
 
 The spreadsheets were designed from the standard accounting format used for existing clients to make financial transactions fast, easy to enter and understand. Formula driven so that minimum data is entered with automated analysis producing monthly profit & loss accounts, live debtor and creditor reports, self-assessment tax returns.
 
@@ -42,6 +42,18 @@ This section details the steps required to install and run DIY Accounting Basic 
 3. The **Home** sheet provides navigation links to all worksheets.
 4. Click any link on the Home sheet to navigate to that worksheet.
 
+![Home sheet — navigation links to all worksheets](screenshots/home.png)
+
+The Home sheet organises the worksheets into four groups:
+
+| Preparation | Sales | Purchases | Results |
+|-------------|-------|-----------|---------|
+| Business Details | SalesApr – SalesMar | PurchasesApr – PurchasesMar | SE Short |
+| Fixed Assets | | | Profit & Loss Acc |
+| Debtors & Creditors | | | Income Tax |
+
+You can also navigate between sheets using the tabs along the bottom of the Excel window.
+
 ### First Sales and Purchases
 
 To get started with your first month of accounting:
@@ -54,7 +66,7 @@ To get started with your first month of accounting:
 
 ### First Stocktake
 
-If your business carries physical stock, go to the **PurchasesStock** sheet and enter your opening stock value. See the [Stock](#stock) section for details.
+If your business carries physical stock of goods for resale, go to the **PurchasesStock** sheet and enter your opening stock value. See the [Stock](#stock) section for details.
 
 ### Month End
 
@@ -69,9 +81,15 @@ At the end of each month:
 
 Before starting entries to the worksheets there is a small amount of customisation to be carried out in relation to updating of accounting information from your previous accounting year if applicable.
 
+### Business Details
+
+The **Business Details** sheet captures your business information — name, postcode, business start date, and accounts date. These details are transferred to the Self-Employment Tax Return.
+
+![Business Details sheet — enter your business information here](screenshots/business-details.png)
+
 ### Fixed Assets
 
-The fixed asset schedule is located on the financial accounts spreadsheet. Where the business has fixed assets acquired prior to the start of the financial year that have been subject to capital tax allowances the fixed asset schedule should be updated.
+The fixed asset schedule is located on the **Fixed Assets** sheet. Where the business has fixed assets acquired prior to the start of the financial year that have been subject to capital tax allowances the fixed asset schedule should be updated.
 
 In the first section of the fixed assets schedule (assets existing at the start of the tax year) record assets purchased prior to the tax year start showing the asset description, purchase invoice details, location (optional) and the date purchased.
 
@@ -118,9 +136,13 @@ To change the printing area to suit your own requirements:
 
 Transactions to be recorded are from the start to the end of the tax year. Record transactions 1–5 April in March.
 
+There are 12 monthly sales sheets: **SalesApr**, **SalesMay**, **SalesJun**, **SalesJul**, **SalesAug**, **SalesSep**, **SalesOct**, **SalesNov**, **SalesDec**, **SalesJan**, **SalesFeb**, **SalesMar**.
+
+![SalesApr sheet — enter sales transactions with date, customer, payment method, and gross value](screenshots/sales-apr.png)
+
 ### Data Entry
 
-The columns for entering details of your sales are A–G (Plus L and M in respect of sub contractors only).
+The columns for entering details of your sales are A–G (plus J and K for sub contractors only).
 
 - **Column A** — Enter the date of the sales transaction
 - **Column B** — Enter the customer name or source of sale e.g. a retail business with 2 shops might wish to simply record Shop A or Shop B
@@ -137,19 +159,23 @@ The columns for entering details of your sales are A–G (Plus L and M in respec
 No entries required in these columns:
 
 - **Column H** — Unpaid sales automatically shown if column D is left blank
-- **Column I** — Number of day's unpaid automatically produced if unpaid sales in column K
+- **Column I** — Number of days unpaid automatically produced if unpaid sales in column H
 
 ### What Happens to the Information Entered?
 
-Row 1 totals each column down to row 300. The totals of each sheet are then collected by the financial accounting spreadsheet to produce the monthly profit and loss account and self assessment tax return. The sales mileage if recorded is also automatically transferred to the purchases spreadsheet which adds the sales mileage to the purchase mileage and calculates the mileage allowance.
+Row 1 totals each column down to row 999. The totals of each sheet are then collected by the financial accounting spreadsheet to produce the monthly profit and loss account and self assessment tax return. The sales mileage if recorded is also automatically transferred to the purchases spreadsheet which adds the sales mileage to the purchase mileage and calculates the mileage allowance.
 
 ## Purchases Spreadsheet
 
 Transactions to be recorded are from the start to the end of the tax year. Record transactions 1–5 April in March.
 
+There are 12 monthly purchase sheets: **PurchasesApr**, **PurchasesMay**, **PurchasesJun**, **PurchasesJul**, **PurchasesAug**, **PurchasesSep**, **PurchasesOct**, **PurchasesNov**, **PurchasesDec**, **PurchasesJan**, **PurchasesFeb**, **PurchasesMar**.
+
+![PurchasesApr sheet — enter purchase transactions with date, supplier, expense code, and gross value](screenshots/purchases-apr.png)
+
 ### Data Entry
 
-The columns for entering details of your purchases are A–G and AA.
+The columns for entering details of your purchases are A–G and X.
 
 - **Column A** — Enter the date of the purchase transaction
 - **Column B** — Enter the supplier's name or source of purchase
@@ -168,7 +194,7 @@ No entries required in these columns:
 
 - **Column H** — Automatically shows unpaid purchases if column D payment method is left blank. Entering the payment method in column D blanks this entry
 - **Column I** — Automatically calculates the number of days the purchase has been outstanding
-- **Columns J–X** — The letters entered in column E automatically update the expense analysis
+- **Columns J–W** — The letters entered in column E automatically update the expense analysis
 
 ### Mileage Allowances
 
@@ -178,9 +204,11 @@ Claiming mileage allowance rather than the costs of the vehicles often works out
 
 ## Stock
 
-The Stock worksheet is only applicable to those businesses that carry physical stock of goods for resale.
+The **PurchasesStock** worksheet is only applicable to those businesses that carry physical stock of goods for resale.
 
-Cell C5 — Enter the physical value of stock on hand at the start of the tax year (opening stock).
+![PurchasesStock sheet — enter opening and closing stock values](screenshots/purchases-stock.png)
+
+Cell D5 — Enter the physical value of stock on hand at the start of the tax year (opening stock).
 
 Stock values are used to adjust the value of stock purchases to the cost of sales:
 
@@ -190,7 +218,7 @@ This calculation is automated on the financial accounts workbook.
 
 The formulae on this worksheet then assume the same stock value at the end of each month. Entering different stock values each month will increase the accuracy of the monthly profit and loss account and is only required as an option and personal preference of the business owner.
 
-Cell C30 — Enter the closing stock value at the end of the financial year in to enable the automated formulae to accurately calculate the annual net profit or loss.
+Cell D30 — Enter the closing stock value at the end of the financial year to enable the automated formulae to accurately calculate the annual net profit or loss.
 
 ## Bank Account Transactions
 
@@ -212,6 +240,8 @@ Repeat the same review procedure for any sales receipts that may not already hav
 
 Fixed items are physical items used by the business over a period of more than one year. Depreciation spreads the financial effect on profits over the life of the asset but does not have an effect on the business tax as depreciation is disallowed as an expense. Instead the business receives tax allowances on the cost of assets to set against its profit.
 
+![Fixed Assets sheet — existing and new fixed assets with automatic capital allowance calculations](screenshots/fixed-assets.png)
+
 When the fixed asset schedule is completed the capital allowances are automatically calculated and update the profit tax return. Capital allowances on vehicles are automatically reduced by the personal use %.
 
 100% of the cost of the asset can be set off against profits in the year purchased which is called Annual Investment Allowance. The remaining value of the asset and other written down values are then written off against future years profits at 18% of the book value remaining.
@@ -222,7 +252,7 @@ Businesses should set a consistent policy in the treatment of fixed assets and i
 
 Enter F in the expense code column of the purchases worksheet. Column X — Fixed assets automatically updates with the cost of the asset. Column Z — Enter asset description. Update the fixed asset schedule each month.
 
-#### Data Entry — Financial Accounts Fixed Asset Worksheet
+#### Data Entry — Fixed Assets Sheet
 
 Enter new acquisitions in the additions section of the schedule which is shaded in green.
 
@@ -253,21 +283,59 @@ No Entries required:
 
 No entries are required. All the financial information is generated automatically from the sales, purchases and payroll sheets each month to produce a monthly profit and loss account and the annual result to date.
 
+![Profit & Loss Acc sheet — automated monthly profit and loss with annual totals, income tax, and net income](screenshots/profit-loss.png)
+
+The Profit & Loss Acc sheet shows:
+
+- **Sales Turnover** — monthly and annual total from all SalesApr–SalesMar sheets
+- **Cost of sales** — stock purchases adjusted for opening/closing stock
+- **Gross Profit** — sales less cost of sales
+- **Expenses** — broken down by category (premises, admin, legal & professional, etc.)
+- **Net Profit/Loss** — gross profit less total expenses
+- **Capital Allowances** — deducted from net profit to give net taxable profit
+- **Income Tax and National Insurance** — estimated from the taxable profit
+- **Net Income after Tax** — the bottom line
+
 Its usefulness is to enable progress to a successful financial result to be monitored and should banks or other institutions request up to date accounts then you have exactly that at the touch of a print button.
 
 ### Debtors & Creditors
 
 No entries required. This report extracts from the sales and purchase spreadsheets the amounts still outstanding either from customers who haven't yet paid or suppliers awaiting payment. This report will only be accurate if the method of payment column has been maintained up to date.
 
+![Debtors & Creditors sheet — monthly outstanding sales and purchases](screenshots/debtors-creditors.png)
+
+The Debtors side (left) shows sales not yet received for each month. The Creditors side (right) shows purchases still to be paid. Totals at the bottom show the amount owed by customers and the amount owed to suppliers.
+
 ### Self Employment Tax Return (Short)
 
 No entries are required. All the information is updated automatically from the worksheets.
 
-This return is provided to assist in the completion of the year end self employed section of the tax return. All box references on this document are the same as the actual tax return.
+![SE Short sheet — self-employment tax return populated automatically from the worksheets](screenshots/se-short.png)
+
+This return is provided to assist in the completion of the year end self employed section of the tax return. All box references on this document are the same as the actual tax return. The SE Short sheet is laid out to match the HMRC Self-Employment (Short) form and includes:
+
+- **Business details** — description, postcode, start/cease dates, accounts date
+- **Business income** — turnover (box 8) and other business income (box 9)
+- **Allowable business expenses** — boxes 10–19 populated from the expense analysis
+- **Net profit or loss** — box 20 (profit) or box 21 (loss)
+- **Tax allowances** — capital allowances from the Fixed Assets sheet
+- **Taxable profit** — box 27, net business profit for tax purposes
+- **Total taxable profits** — box 30
 
 ### Draft Tax Calculation
 
 This section is provided as a Guide only to the income tax impact of the business profit. The actual tax payable is dependent on both individual tax allowances and income from other sources.
+
+![Income Tax sheet — provisional tax calculation showing income tax and national insurance](screenshots/income-tax.png)
+
+The Income Tax sheet shows:
+
+- **Profit from Self employment** — carried from the Profit & Loss Acc sheet
+- **Personal Allowance** — the tax-free amount for the tax year
+- **Income Tax** — calculated at the basic and higher rate bands
+- **Class 4 National Insurance** — calculated on profits above the lower threshold
+- **Total Income Tax & NI Liability** — the combined amount due
+- **Future Tax Liability** — payment on account dates and amounts (if liability exceeds £500)
 
 ## Taxation
 

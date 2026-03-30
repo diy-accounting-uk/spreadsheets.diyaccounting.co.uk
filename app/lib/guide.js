@@ -9,6 +9,7 @@
 //   - Override: pass sourceDateEpoch parameter (e.g. git commit timestamp)
 
 import { execSync } from "child_process";
+import { dirname } from "path";
 import { existsSync, statSync } from "fs";
 
 export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
@@ -18,7 +19,8 @@ export async function generatePdf(markdownPath, outputPath, sourceDateEpoch) {
 
   const epoch = sourceDateEpoch ?? Math.floor(statSync(markdownPath).mtimeMs / 1000);
 
-  execSync(`pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint`, {
+  const resourcePath = dirname(markdownPath);
+  execSync(`pandoc "${markdownPath}" -o "${outputPath}" --pdf-engine=weasyprint --resource-path="${resourcePath}"`, {
     stdio: "pipe",
     env: { ...process.env, SOURCE_DATE_EPOCH: String(epoch) },
   });
