@@ -374,7 +374,7 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
    - `app/bin/reconcile.js` — exercises each generated package in `packages-generated/`
    - Injects scenario data, recalculates via LibreOffice headless
    - Compares computed results against expected values from `TEST_SCENARIOS.md`
-   - Writes results to `TEST_REPORTS/` (one report per package per scenario)
+   - Writes results to `reports/` (one report per package per scenario)
 
    **2.5 Reconciliation compliance tests** (`app/test/reconciliation.test.js`)
    - Asserts that reconciliation reports show compliance
@@ -383,7 +383,7 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 
    **2.6 GitHub Actions workflow** (`.github/workflows/reconciliation.yml`)
    - Triggers on push to `packages-generated/`, `app/test/fixtures/`, or `app/data/`
-   - Runs reconciliation, generates reports, commits to `TEST_REPORTS/`
+   - Runs reconciliation, generates reports, commits to `reports/`
    - Fails the workflow if reports are non-compliant but still generates and commits them
 
    **2.7 Screenshots** — reconciliation workflow also captures screenshots of key sheets and commits them alongside reports

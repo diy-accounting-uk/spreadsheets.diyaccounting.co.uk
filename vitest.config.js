@@ -4,10 +4,28 @@
 // vitest.config.js
 import { defineConfig } from "vitest/config";
 
+const env = process.env;
+
 export default defineConfig({
   test: {
-    environment: "node",
-    include: ["web/unit-tests/*.test.js", "app/test/*.test.js"],
-    outputFile: "./target/test-results/vitest-results.json",
+    env,
+    projects: [
+      {
+        test: {
+          name: "unit-tests",
+          environment: "node",
+          include: ["web/unit-tests/*.test.js", "app/test/*.test.js"],
+          outputFile: "./target/test-results/vitest-results.json",
+        },
+      },
+      {
+        test: {
+          name: "slow-tests",
+          environment: "node",
+          include: ["app/sheets-tests/*.test.js"],
+          outputFile: "./target/test-results/vitest-results.json",
+        },
+      },
+    ],
   },
 });
