@@ -1,3 +1,28 @@
+# Test Scenarios
+
+## Implemented Scenario Fixtures
+
+| Fixture | Profile | Product | Description |
+|---------|---------|---------|-------------|
+| `app/test/fixtures/bst-scenario-basic.toml` | Side-hustle sole trader | BST | Web designer, £36k turnover, standard expenses + laptop |
+
+### bst-scenario-basic: Expected Results (2025-26 rates)
+
+| Metric | Value | Calculation |
+|--------|-------|-------------|
+| Total Sales | £36,000 | 12 × £3,000 |
+| Total Expenses | £6,130 | £4,800 rent + £480 phone + £850 professional |
+| Net Profit | £29,870 | £36,000 - £6,130 |
+| Capital Allowances (AIA) | £1,200 | 100% on laptop |
+| Net Taxable Profit | £28,670 | £29,870 - £1,200 |
+| Income Tax (20%) | £3,220 | (£28,670 - £12,570) × 20% |
+| NI Class 4 (6%) | £966 | (£28,670 - £12,570) × 6% |
+| Total Tax + NI | £4,186 | |
+
+---
+
+## Scenario Design Framework
+
 Good research done. Here are three interlocking lists, designed so any item from list 1 can be combined with a matching item from list 2 and verified against items from list 3.
 
 ---

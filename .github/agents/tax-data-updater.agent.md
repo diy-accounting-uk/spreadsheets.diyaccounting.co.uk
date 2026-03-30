@@ -6,6 +6,12 @@ description: Research current HMRC tax rates, update SOURCES.md, create new app/
 
 Purpose: Keep the tax data files in `app/data/` current by researching HMRC published rates and thresholds, updating `SOURCES.md` with new reference links, creating TOML data files for any tax years not yet covered, and updating `REPORT_TRACEABILITY.md`.
 
+Run using a prompt like:
+```
+Please locate tax data for the coming financial year 2026 -2027 and update SOURCES.md and extend app/data and refresh REPORT_TRACEABILITY.md.
+Also add any new but missing tax years to .github/workflows/generate-bst.yml
+```
+
 ## Scope and Inputs
 
 - Target: `SOURCES.md`, `app/data/se-*.toml`, `REPORT_TRACEABILITY.md`

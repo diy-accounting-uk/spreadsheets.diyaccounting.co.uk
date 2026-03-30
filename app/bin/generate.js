@@ -5,9 +5,19 @@
 // generate.js — CLI entry point for spreadsheet and guide generation.
 //
 // Usage:
-//   node app/bin/generate.js                              # all tax-data files
-//   node app/bin/generate.js --years se-2024-2025 se-2025-2026  # specific files
-//   node app/bin/generate.js --skip-guide                 # skip PDF guide generation
+//   node app/bin/generate.js                                          # all packages, all years
+//   node app/bin/generate.js --package bst                            # Basic Sole Trader only
+//   node app/bin/generate.js --years se-2024-2025 se-2025-2026        # specific years
+//   node app/bin/generate.js --package bst --years se-2025-2026       # specific package and year
+//   node app/bin/generate.js --source-date-epoch 1711670400           # override PDF timestamp
+//
+// Prerequisites:
+//   npm install          — Node dependencies (jszip, smol-toml)
+//   brew install pandoc  — Markdown to PDF converter
+//   brew install weasyprint  — PDF engine used by pandoc (or: pip3 install weasyprint)
+//
+// PDF guide generation requires pandoc + weasyprint. If either is missing the
+// spreadsheets are still generated and a warning is printed.
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
@@ -22,12 +32,14 @@ const ROOT = resolve(APP_DIR, "..");
 const DATA_DIR = resolve(APP_DIR, "data");
 const OUTPUT_DIR = resolve(ROOT, "packages-generated");
 
-async function generateProduct(productDir, tomlPath, skipGuide) {
-  // Load product metadata
+const PRODUCTS = {
+  bst: { dir: "bst", name: "Basic Sole Trader" },
+};
+
+async function generateProduct(productDir, tomlPath, sourceDateEpoch) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
-  // Load tax data
   const taxData = parseTOML(readFileSync(tomlPath, "utf8"));
   const ty = taxData.tax_year;
   const endDate = new Date(ty.end);
@@ -63,32 +75,32 @@ async function generateProduct(productDir, tomlPath, skipGuide) {
   console.log(`           ${xlsxFilename}`);
 
   // Generate PDF guide
-  if (!skipGuide) {
-    const guideMd = resolve(productDir, productMeta.template.guide);
-    const guidePdf = resolve(outDir, productMeta.output.guide_filename);
-    try {
-      await generatePdf(guideMd, guidePdf);
-      console.log(`  Guide:   ${productMeta.output.guide_filename}`);
-    } catch (e) {
-      console.warn(`  Warning: PDF guide generation skipped — ${e.message}`);
-    }
+  const guideMd = resolve(productDir, productMeta.template.guide);
+  const guidePdf = resolve(outDir, productMeta.output.guide_filename);
+  try {
+    await generatePdf(guideMd, guidePdf, sourceDateEpoch);
+    console.log(`  Guide:   ${productMeta.output.guide_filename}`);
+  } catch (e) {
+    console.warn(`  Warning: PDF guide generation failed — ${e.message}`);
   }
 
   return { dirName, xlsxFilename, taxYear: ty.label };
 }
 
-async function main() {
-  console.log("=== generate.js ===");
+function parseArgs(argv) {
+  const args = argv.slice(2);
 
-  const args = process.argv.slice(2);
-  const skipGuide = args.includes("--skip-guide");
+  let packageFilter = "all";
+  const pkgIdx = args.indexOf("--package");
+  if (pkgIdx !== -1 && args[pkgIdx + 1]) {
+    packageFilter = args[pkgIdx + 1];
+  }
 
-  // Determine which tax-data files to use
-  const yearsArgIdx = args.indexOf("--years");
   let tomlFiles;
-  if (yearsArgIdx !== -1) {
+  const yearsIdx = args.indexOf("--years");
+  if (yearsIdx !== -1) {
     const years = [];
-    for (let i = yearsArgIdx + 1; i < args.length; i++) {
+    for (let i = yearsIdx + 1; i < args.length; i++) {
       if (args[i].startsWith("--")) break;
       years.push(args[i]);
     }
@@ -100,26 +112,51 @@ async function main() {
       .map((f) => resolve(DATA_DIR, f));
   }
 
+  let sourceDateEpoch;
+  const epochIdx = args.indexOf("--source-date-epoch");
+  if (epochIdx !== -1 && args[epochIdx + 1]) {
+    sourceDateEpoch = parseInt(args[epochIdx + 1], 10);
+  }
+
+  return { packageFilter, tomlFiles, sourceDateEpoch };
+}
+
+async function main() {
+  console.log("=== generate.js ===");
+
+  const { packageFilter, tomlFiles, sourceDateEpoch } = parseArgs(process.argv);
+
+  // Determine which products to generate
+  const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
+
+  for (const [key, product] of productsToGenerate) {
+    if (!product) {
+      console.error(`Unknown package: ${key}. Available: ${Object.keys(PRODUCTS).join(", ")}`);
+      process.exit(1);
+    }
+  }
+
+  console.log("Package: ", packageFilter === "all" ? "all" : packageFilter);
   console.log(
-    "Tax data: ",
+    "Tax data:",
     tomlFiles.map((f) => f.split("/").pop()),
   );
-  console.log("Output:   ", OUTPUT_DIR);
+  console.log("Output:  ", OUTPUT_DIR);
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  // For now, only BST product
-  const bstDir = resolve(APP_DIR, "templates", "bst");
-
   const results = [];
-  for (const tomlFile of tomlFiles) {
-    // Check if this tax-data file matches the product's tax regime
-    const tomlName = tomlFile.split("/").pop();
-    const bstMeta = parseTOML(readFileSync(resolve(bstDir, "meta.toml"), "utf8"));
-    if (!tomlName.startsWith(bstMeta.product.tax_regime + "-")) continue;
+  for (const [, product] of productsToGenerate) {
+    const productDir = resolve(APP_DIR, "templates", product.dir);
+    const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
 
-    const result = await generateProduct(bstDir, tomlFile, skipGuide);
-    results.push(result);
+    for (const tomlFile of tomlFiles) {
+      const tomlName = tomlFile.split("/").pop();
+      if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
+
+      const result = await generateProduct(productDir, tomlFile, sourceDateEpoch);
+      results.push(result);
+    }
   }
 
   console.log(`\n=== Generated ${results.length} packages ===`);

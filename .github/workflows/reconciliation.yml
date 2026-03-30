@@ -1,0 +1,123 @@
+name: reconciliation
+run-name: "reconciliation from ${{ github.ref_name }}"
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!gh_pages'
+    paths:
+      - 'packages-generated/**'
+      - 'app/test/fixtures/**'
+      - 'app/data/**'
+      - 'app/lib/scenario-loader.js'
+      - 'app/lib/spreadsheet-runner.js'
+      - 'app/bin/reconcile.js'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  reconcile:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install LibreOffice
+        run: |
+          echo "=== Installing LibreOffice Calc ==="
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-calc
+          libreoffice --version
+
+      - name: Run reconciliation
+        id: reconcile
+        continue-on-error: true
+        run: |
+          echo "=== Running reconciliation ==="
+          npm run reconciliation 2>&1 | tee reconciliation.log
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      - name: List generated reports
+        if: always()
+        run: |
+          echo "=== Generated reports ==="
+          if [ -d reports ]; then
+            ls -lh reports/
+            echo ""
+            echo "=== Report contents ==="
+            for f in reports/*.md; do
+              echo "--- $f ---"
+              cat "$f"
+              echo ""
+            done
+          else
+            echo "No reports generated"
+          fi
+
+      - name: Generate screenshots
+        if: always()
+        run: |
+          echo "=== Generating screenshots ==="
+          mkdir -p reports/screenshots
+          for xlsx in packages-generated/*/Financialaccountsto*.xlsx; do
+            dir=$(dirname "$xlsx")
+            name=$(basename "$dir" | sed 's/ /_/g')
+            echo "  Processing: $xlsx"
+            libreoffice --headless --calc --convert-to pdf --outdir "/tmp/screenshots" "$xlsx" 2>/dev/null || true
+            pdf="/tmp/screenshots/$(basename "${xlsx%.xlsx}.pdf")"
+            if [ -f "$pdf" ]; then
+              cp "$pdf" "reports/screenshots/${name}.pdf"
+              echo "    Saved: reports/screenshots/${name}.pdf"
+            fi
+          done
+          echo ""
+          echo "=== Screenshots ==="
+          ls -lh reports/screenshots/ 2>/dev/null || echo "No screenshots generated"
+
+      - name: Commit reports and screenshots
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          echo "=== Staged changes ==="
+          git diff --staged --stat
+          if git diff --staged --quiet; then
+            echo "No changes to reports/"
+          else
+            git commit -m "Reconciliation reports and screenshots
+
+          Triggered by: ${{ github.sha }}
+          Workflow: ${{ github.workflow }}"
+            echo "=== Pushing ==="
+            git push
+            echo "=== Push complete ==="
+          fi
+
+      - name: Check compliance
+        if: always()
+        run: |
+          echo "=== Checking compliance ==="
+          if grep -r "NON-COMPLIANT" reports/*.md 2>/dev/null; then
+            echo "::error::Reconciliation found non-compliant packages"
+            exit 1
+          else
+            echo "All packages compliant"
+          fi

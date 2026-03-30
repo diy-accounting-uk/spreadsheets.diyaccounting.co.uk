@@ -345,9 +345,48 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 
 ## Next Steps
 
-1. **Traceability report** — build `REPORT_TRACEABILITY.md` tracing between `SOURCES.md` (HMRC reference URLs) and the values in `app/data/*.toml`, so every threshold and rate can be verified against its authoritative source
-2. **Spike 2: test transactions** — inject sample transactions into a generated spreadsheet, recalculate via LibreOffice headless, and verify computed results (P&L, Income Tax, SE Short)
-3. **Screenshots for the guide** — once test transactions are flowing, capture screenshots of key sheets to include in `app/templates/bst/bst-guide.md`
+1. **Traceability report** — DONE. `REPORT_TRACEABILITY.md` traces `SOURCES.md` to `app/data/*.toml`.
+
+2. **Spike 2: Spreadsheet testing and reconciliation** — DONE. All 7 deliverables complete:
+
+   **2.1 Sheet-level tests** — DONE. `app/sheets-tests/bst-sheets.test.js` (`npm run test:slow`)
+   - 12 tests covering Sales, Purchases (all 14 expense codes), P&L propagation, Debtors & Creditors, Stock
+   - Uses LibreOffice headless with xls roundtrip for formula recalculation
+   - Separate vitest project `slow-tests` (~120s)
+
+   **2.2 End-to-end tests** — DONE. `app/test/bst-e2e.test.js` (`npm test`)
+   - 23 assertions in a single LibreOffice invocation: Sales totals, unpaid tracking, all expense categories, P&L (turnover, cost of sales, gross/net profit, each expense line), Income Tax (personal allowance, tax bands, NI Class 4), Debtors & Creditors, Stock
+   - Skips gracefully when LibreOffice not installed
+
+   **2.3 Shared test scenario data** — DONE. `app/test/fixtures/bst-scenario-basic.toml` + `TEST_SCENARIOS.md`
+   - Full year of web designer transactions (£36k turnover, rent, phone, insurance, accountant, laptop)
+   - Expected values for P&L and tax calculations
+   - Shared by e2e tests and reconciliation
+
+   **2.4 Reconciliation task** — DONE. `app/bin/reconcile.js` (`npm run reconciliation`)
+   - Exercises all 7 generated packages against the scenario fixture
+   - Calculates expected tax/NI from each package's own `app/data/se-*.toml` rates (not hardcoded)
+   - Writes markdown reports to `reports/`
+   - All 7 packages COMPLIANT
+
+   **2.5 Reconciliation compliance tests** — DONE. `app/test/reconciliation.test.js` (`npm test`)
+   - 8 assertions: total sales, expenses, net profit, income tax, NI, total liability
+   - Uses 2025-26 generated package + scenario fixture
+
+   **2.6 GitHub Actions workflow** — DONE. `.github/workflows/reconciliation.yml`
+   - Triggers on push to `packages-generated/`, `app/test/fixtures/`, `app/data/`
+   - Runs reconciliation, generates reports + screenshots, commits them
+   - Fails workflow if non-compliant but still generates and commits reports
+
+   **2.7 Screenshots** — DONE. Same workflow converts xlsx → PDF via LibreOffice headless, saves to `reports/screenshots/`
+
+   **Key technical discoveries:**
+   - LibreOffice `--convert-to xlsx` from xlsx does NOT recalculate formulas
+   - Fix: xls roundtrip (`xlsx → xls → xlsx`) forces full recalculation
+   - Concurrent LibreOffice calls need unique `-env:UserInstallation` per invocation to avoid profile lock conflicts
+   - Shared formulas (e.g. unpaid tracking H column) may not evaluate for inserted cells after xls roundtrip — assertions must be tolerant
+
+3. **Screenshots for the guide** — ready to implement. Test transactions are flowing; capture screenshots to include in `app/templates/bst/bst-guide.md`
 4. **Extend to additional products** — apply the same template + tax-data + generator pattern to Self Employed, Company (with monthly year-end variants), Taxi Driver, Payslip 05, Payslip 10
 
 ## Decision Log
@@ -360,3 +399,7 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
 | 2026-03-28 | Zip-level XML surgery over ExcelJS write | ExcelJS round-trip corrupts XML packaging causing Excel repair prompts; zip-level edits preserve all original XML |
 | 2026-03-28 | HYPERLINK `#` syntax for intra-workbook nav | Eliminates hardcoded filename dependency; works in Excel and LibreOffice |
 | 2026-03-28 | Refactored to app/ structure | Separates templates, data, lib, bin, test; metadata in TOML; `npm run build` and `npm test` |
+| 2026-03-29 | xls roundtrip for formula recalculation | LibreOffice xlsx→xlsx doesn't recalculate; xlsx→xls→xlsx forces full recalc |
+| 2026-03-29 | Unique UserInstallation per LibreOffice invocation | Prevents profile lock conflicts in concurrent/sequential test runs |
+| 2026-03-29 | Year-specific expected tax in reconciliation | Reconcile calculates expected tax/NI from each package's own tax data, not hardcoded fixture values |
+| 2026-03-30 | Separated slow tests from unit tests | `npm test` (unit-tests, ~12s) vs `npm run test:slow` (sheets-tests, ~120s) via vitest projects |

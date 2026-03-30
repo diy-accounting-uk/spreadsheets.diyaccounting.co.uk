@@ -10,8 +10,6 @@ on:
       - 'app/data/se-*'
       - 'app/templates/bst/**'
       - 'app/templates/meta.toml'
-      - 'app/lib/**'
-      - 'app/bin/**'
   workflow_dispatch:
     inputs:
       skip-tests:
@@ -26,22 +24,6 @@ env:
   NODE_VERSION: '24'
 
 jobs:
-
-  discover:
-    runs-on: ubuntu-24.04
-    outputs:
-      years: ${{ steps.list.outputs.years }}
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: List tax years
-        id: list
-        run: |
-          years=$(ls app/data/se-*.toml | xargs -I{} basename {} .toml | jq -R -s -c 'split("\n") | map(select(length > 0))')
-          echo "years=$years" >> "$GITHUB_OUTPUT"
-          echo "Found tax years: $years"
 
   test:
     runs-on: ubuntu-24.04
@@ -64,68 +46,271 @@ jobs:
         run: node scripts/build-sitemaps.cjs
 
       - name: Run tests
-        run: npm test
+        run: |
+          echo "=== Running all tests ==="
+          npm test
+          echo "=== Tests passed ==="
 
-  generate:
+  generate-se-2020-2021:
     runs-on: ubuntu-24.04
-    needs: [discover, test]
-    if: ${{ !cancelled() && needs.discover.result == 'success' && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
-    strategy:
-      matrix:
-        year: ${{ fromJson(needs.discover.outputs.years) }}
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
     steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Generate ${{ matrix.year }}
-        run: node app/bin/generate.js --skip-guide --years ${{ matrix.year }}
-
-      - name: Upload generated package
-        uses: actions/upload-artifact@v6
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2020-2021
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2020-2021 ==="
+          node app/bin/generate.js --package bst --years se-2020-2021
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
         with:
-          name: package-${{ matrix.year }}
+          name: bst-se-2020-2021
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2021-2022:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2021-2022
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2021-2022 ==="
+          node app/bin/generate.js --package bst --years se-2021-2022
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2021-2022
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2022-2023:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2022-2023
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2022-2023 ==="
+          node app/bin/generate.js --package bst --years se-2022-2023
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2022-2023
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2023-2024:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2023-2024
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2023-2024 ==="
+          node app/bin/generate.js --package bst --years se-2023-2024
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2023-2024
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2024-2025:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2024-2025
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2024-2025 ==="
+          node app/bin/generate.js --package bst --years se-2024-2025
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2024-2025
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2025-2026:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2025-2026
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2025-2026 ==="
+          node app/bin/generate.js --package bst --years se-2025-2026
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2025-2026
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2026-2027:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Install pandoc and weasyprint
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
+          pip install weasyprint
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate bst se-2026-2027
+        run: |
+          echo "=== Generating Basic Sole Trader for se-2026-2027 ==="
+          node app/bin/generate.js --package bst --years se-2026-2027
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bst-se-2026-2027
           retention-days: 1
           path: packages-generated/
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [generate]
+    needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026, generate-se-2026-2027]
     steps:
 
       - name: Checkout
         uses: actions/checkout@v6
 
       - name: Download all generated packages
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
-          pattern: package-*
+          pattern: bst-*
           path: packages-generated/
           merge-multiple: true
 
-      - name: List generated packages
-        run: ls -R packages-generated/
+      - name: List all packages
+        run: |
+          echo "=== Final package contents ==="
+          find packages-generated/ -type d | while read dir; do
+            count=$(find "$dir" -maxdepth 1 -type f | wc -l)
+            if [ "$count" -gt 0 ]; then
+              echo ""
+              echo "--- $dir ($count files) ---"
+              ls -lh "$dir"
+            fi
+          done
+          echo ""
+          echo "=== Total files ==="
+          find packages-generated/ -type f | wc -l | xargs echo "Total:"
 
-      - name: Commit generated packages
+      - name: Stage changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages-generated/
+          echo "=== Staged changes ==="
+          git diff --staged --stat
+          echo ""
+          echo "=== Staged files ==="
+          git diff --staged --name-only | head -50
+
+      - name: Commit and push
+        run: |
           if git diff --staged --quiet; then
-            echo "No changes to packages-generated/"
+            echo "=== No changes to commit ==="
+            echo "packages-generated/ is already up to date"
           else
+            echo "=== Committing ==="
             git commit -m "Generate BST packages from app/data and app/templates
 
           Triggered by: ${{ github.sha }}
           Workflow: ${{ github.workflow }}"
+            echo ""
+            echo "=== Commit details ==="
+            git log -1 --stat
+            echo ""
+            echo "=== Pushing to ${{ github.ref_name }} ==="
             git push
+            echo "=== Push complete ==="
           fi

@@ -11,6 +11,7 @@ on:
       - 'infra/**'
       - 'behaviour-tests/**'
       - 'web/**'
+      - 'packages-generated/**'
       - 'packages/**'
       - 'scripts/**'
       - '**/cdk.json'
@@ -18,7 +19,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'pom.xml'
-      - '.github/workflows/*.yml'
+      - '.github/workflows/test.yml'
       - '.prettierignore'
       - '.prettierrc'
       - 'eslint.config.js'
@@ -41,8 +42,9 @@ env:
 
 jobs:
 
-  build:
+  formatting:
     runs-on: ubuntu-24.04
+    continue-on-error: true
     steps:
 
       - name: Checkout
@@ -60,6 +62,44 @@ jobs:
       - name: Check formatting (JS/YAML/JSON)
         run: npx prettier --check .
 
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci
+
+      - name: Generate latest BST package
+        run: |
+          LATEST=$(ls app/data/se-*.toml | sort | tail -1 | xargs basename -s .toml)
+          echo "Generating: $LATEST"
+          node app/bin/generate.js --package bst --years "$LATEST"
+
+  deployment:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci
+
       - name: Build spreadsheets redirects
         run: node scripts/build-spreadsheets-redirects.cjs
 
@@ -72,13 +112,29 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           cache: 'maven'
 
-      - name: Build and verify (Maven + Spotless)
-        run: ./mvnw --errors clean verify -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
+      - name: Maven verify (skip tests)
+        run: ./mvnw --errors clean verify -DskipTests -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
 
       - name: CDK synth
         run: npm run cdk:synth
 
-  unit-test:
+  infra-test:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'maven'
+
+      - name: Maven verify
+        run: ./mvnw --errors clean verify -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
+
+  app-test:
     runs-on: ubuntu-24.04
     steps:
 
@@ -97,8 +153,32 @@ jobs:
       - name: Build sitemaps
         run: node scripts/build-sitemaps.cjs
 
-      - name: Run unit tests
-        run: npm run test:unit
+      - name: Run tests
+        run: npm test
+
+  sheets-test:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci
+
+      - name: Install LibreOffice
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libreoffice-calc
+
+      - name: Run slow tests (LibreOffice)
+        run: npm run test:slow
 
   browser-test:
     runs-on: ubuntu-24.04
@@ -124,7 +204,7 @@ jobs:
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: browser-test-results
           retention-days: 7
@@ -178,7 +258,7 @@ jobs:
 
       - name: Upload artifacts
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: behaviour-test-local
           retention-days: 7

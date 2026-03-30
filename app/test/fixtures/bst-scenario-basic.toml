@@ -1,0 +1,264 @@
+# BST test scenario: basic sole trader (web designer)
+# A simple business with sales, standard expenses, and one fixed asset purchase.
+# Used by both unit/e2e tests and the reconciliation task.
+
+[metadata]
+name = "Basic web designer"
+description = "Sole trader web designer with steady monthly income, standard expenses, and a laptop purchase"
+product = "bst"
+tax_regime = "se"
+
+# === SALES ===
+# Total annual sales: 36000 (3000/month)
+
+[[sales.apr]]
+date = 2025-04-15
+customer = "Client A"
+payment = "Bank"
+amount = 1500
+
+[[sales.apr]]
+date = 2025-04-28
+customer = "Client B"
+payment = "Bank"
+amount = 1500
+
+[[sales.may]]
+date = 2025-05-15
+customer = "Client A"
+payment = "Bank"
+amount = 1500
+
+[[sales.may]]
+date = 2025-05-28
+customer = "Client C"
+payment = "Bank"
+amount = 1500
+
+[[sales.jun]]
+date = 2025-06-15
+customer = "Client A"
+payment = "Bank"
+amount = 3000
+
+[[sales.jul]]
+date = 2025-07-15
+customer = "Client B"
+payment = "Bank"
+amount = 3000
+
+[[sales.aug]]
+date = 2025-08-15
+customer = "Client A"
+payment = "Bank"
+amount = 3000
+
+[[sales.sep]]
+date = 2025-09-15
+customer = "Client C"
+payment = "Bank"
+amount = 3000
+
+[[sales.oct]]
+date = 2025-10-15
+customer = "Client A"
+payment = "Bank"
+amount = 3000
+
+[[sales.nov]]
+date = 2025-11-15
+customer = "Client B"
+payment = "Bank"
+amount = 3000
+
+[[sales.dec]]
+date = 2025-12-15
+customer = "Client A"
+payment = "Bank"
+amount = 3000
+
+[[sales.jan]]
+date = 2026-01-15
+customer = "Client C"
+payment = "Bank"
+amount = 3000
+
+[[sales.feb]]
+date = 2026-02-15
+customer = "Client A"
+payment = "Bank"
+amount = 3000
+
+[[sales.mar]]
+date = 2026-03-15
+customer = "Client B"
+payment = "Bank"
+amount = 3000
+
+# === PURCHASES ===
+
+# Premises (monthly rent, 12 × 400 = 4800)
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Landlord"
+payment = "DD"
+code = "p"
+amount = 400
+
+# Gen admin (phone/internet, quarterly)
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "BT"
+payment = "DD"
+code = "g"
+amount = 120
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "BT"
+payment = "DD"
+code = "g"
+amount = 120
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "BT"
+payment = "DD"
+code = "g"
+amount = 120
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "BT"
+payment = "DD"
+code = "g"
+amount = 120
+
+# Professional indemnity insurance (annual)
+[[purchases.apr]]
+date = 2025-04-06
+supplier = "Hiscox"
+payment = "Bank"
+code = "l"
+amount = 350
+
+# Laptop (fixed asset)
+[[purchases.jun]]
+date = 2025-06-10
+supplier = "Apple"
+payment = "Bank"
+code = "f"
+amount = 1200
+
+# Accountant (annual, paid in Jan)
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "Accountant"
+payment = "Bank"
+code = "l"
+amount = 500
+
+# === EXPECTED RESULTS ===
+# Calculated using 2025-26 tax rates
+
+[expected]
+total_sales = 36000
+total_premises = 4800
+total_gen_admin = 480
+total_legal = 850
+total_fixed_assets = 1200
+total_expenses_ex_cogs = 6130      # 4800 + 480 + 850
+gross_profit = 36000               # no cost of sales (no stock)
+net_profit = 29870                 # 36000 - 6130
+
+# Income Tax sheet uses SE Short D106 which is net profit (29870).
+# Capital allowances (AIA on laptop) are handled on SE Short boxes 22-23
+# but do NOT reduce the figure used by Income Tax E5 in this template.
+# So taxable profit for Income Tax = net_profit = 29870.
+
+# Income tax (2025-26 rates)
+personal_allowance = 12570
+taxable_income = 17300             # 29870 - 12570
+income_tax = 3460                  # 17300 × 20%
+
+# NI Class 4 (2025-26 rates: 6% on 12570-50270)
+ni_class4_lower = 1038             # (29870 - 12570) × 6% = 1038
+ni_class4_upper = 0                # below upper limit
+total_tax_and_ni = 4498            # 3460 + 1038
