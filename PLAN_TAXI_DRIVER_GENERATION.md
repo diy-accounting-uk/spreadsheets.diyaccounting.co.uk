@@ -510,15 +510,87 @@ Phase 1 (refactoring) is a prerequisite — it ensures the shared infrastructure
 
 ### setCellValue regex bug fixed
 
-The original regex for cell matching consumed adjacent cells when a self-closing cell (`<c ... />`) was followed by another cell. Fixed by using two-pass matching: first try self-closing, then open/close.
+The BST generator's `setCellValue` regex worked for BST because the BST Admin sheet had no self-closing `<c ... />` cells adjacent to cells being edited. The taxi Admin sheet DID — `<c r="M12" s="119"/>` immediately before `<c r="N12" ...>`. The regex's group 3 `((?:(?!</c>).)*(?:</c>)?)` greedily consumed the adjacent cell when matching a self-closing tag. Setting M12 silently deleted N12 from the XML.
+
+**Symptom:** "Cell N12 not found in XML" error during taxi generation — but N12 existed in the template.
+
+**Root cause:** The regex for self-closing cells (`/>`) allowed its optional trailing group to match content after the close, consuming adjacent cells.
+
+**Fix:** Two-pass cell matching — first try `<c .../>` (self-closing), then `<c ...>...</c>` (with content). Each pattern only matches its own cell.
+
+**Lesson:** Test template variations early. BST's Admin XML happened to avoid this edge case; taxi exposed it.
+
+### calcChain.xml causes Excel repair prompts
+
+When the generator replaces the entire `<sheetData>` of 12 Sales sheets, the `calcChain.xml` (which caches which cells have formulas) becomes stale — it references cells that no longer have formulas (e.g., date formulas replaced with values) and misses new formula cells (generated subtotals).
+
+**Symptom:** Excel shows "We found a problem with some content" repair dialog when opening the generated taxi xlsx.
+
+**Root cause:** `calcChain.xml` from the template references the original Sales sheet formulas (`A5=Admin!B4`, `A10=A7+1`, etc.), but the generator replaced those with direct values. Excel detects the mismatch.
+
+**Fix:** Remove `calcChain.xml` from the zip when generating Sales sheets. `fullCalcOnLoad="1"` (already set in workbook.xml) ensures Excel rebuilds the calc chain from scratch on first open.
+
+**Lesson:** BST didn't hit this because it only EDITS existing cells (preserving their formula/value type), never replaces entire sheet data. Any generator that replaces `<sheetData>` wholesale should strip `calcChain.xml`.
+
+### Home sheet HYPERLINK fix must be applied per product
+
+The BST template was manually fixed to use `#` HYPERLINK syntax before being stored. The taxi template was copied from an existing package that still had the old `HYPERLINK(B3&"'SheetName'!Cell")` syntax, where B3 contained the hardcoded filename `[Financialaccountsyearto050426.xlsx]`.
+
+**Symptom:** Clicking links on the Home sheet showed a security warning about an "unsafe location" pointing to the original xlsx path.
+
+**Fix:** The generator now fixes HYPERLINKs automatically when `sheetsConfig.home` is present — replaces `B3&"'` with `"#'` in the Home sheet XML. This applies to any product, not just taxi.
+
+**Lesson:** Don't rely on manual template preparation. The generator should fix known template issues programmatically so they're guaranteed correct regardless of which xlsx was used as the template source.
+
+### Scenario dates must be translated for cross-year reconciliation
+
+The taxi scenario fixture has absolute dates (e.g., `2025-04-07`). Reconciliation runs this scenario against ALL generated years (2020-2027). For the 2025-26 spreadsheet, the dates match the pre-filled rows. For other years, the row positions are different because the weekly layout depends on what day April 6 falls on.
+
+**Symptom:** Only the Apr26 (2025-26) package passed reconciliation. All others showed ~34,000-35,700 instead of 36,000 — some amounts landed on subtotal rows or blank separators instead of day rows.
+
+**Root cause:** `scenarioToCellWrites` built the date-to-row map for the scenario's year (2025) regardless of which year's spreadsheet was being tested. Row 10 in a 2025-26 spreadsheet is a day row; in a 2020-21 spreadsheet it might be a subtotal.
+
+**Fix:** `reconcile.js` now passes the target package's start year to `cellWrites()`. The taxi product module translates scenario dates by computing the day-offset between the scenario's April 6 and the target year's April 6, then looks up the translated date in the target year's row map.
+
+**Lesson:** BST scenarios don't have this problem because BST Sales sheets are blank — amounts go to sequential rows regardless of dates. Any product with pre-filled date rows needs year-aware scenario translation.
+
+### Each product's P&L has its own cell layout
+
+The plan assumed both products share the same P&L structure. They don't. BST P&L uses column C for annual totals (C4=sales, C9=gross profit, C24=net profit). Taxi P&L uses column B (B5=sales, B13=gross profit, B23=net profit). The P&L row assignments are also different — taxi has vehicle costs as a separate section above general expenses.
+
+**Lesson:** Never assume shared sheet structure between products without verifying the actual XML. Even sheets with the same name ("Profit & Loss Acc") can have fundamentally different layouts.
+
+### Month boundary algorithm correction
+
+The plan initially stated weeks are assigned to months based on "which month the Monday falls in." Analysis of the actual packages showed this is wrong — weeks are assigned based on which month the **Sunday** (last day) falls in. SalesMar then catches all remaining weeks (including those whose Sunday falls in April at the end of the tax year).
+
+**Lesson:** Verify algorithms against actual data, not documentation. The original spreadsheets were the source of truth for the grouping rule.
 
 ### Product architecture: explicit control, not IoC
 
 Product-specific scripts (`app/products/bst.js`, `app/products/taxi.js`) own their column mappings, cell references, and compliance checks. They call shared tools directly. `meta.toml` stays lean (structural facts only — file paths and output patterns). No config-driven inversion of control.
 
+**Pattern for adding a new product:**
+1. Create `app/products/{product}.js` with `PRODUCT`, `cellWrites`, `standardReads`, `checkCompliance`
+2. Create `app/templates/{product}/` with template xlsx, meta.toml, guide markdown, screenshots
+3. Create `app/test/fixtures/{product}-scenario-basic.toml`
+4. Create `app/test/{product}-e2e.test.js` and `app/sheets-tests/{product}-sheets.test.js`
+5. Add import + entry to `PRODUCTS` in `generate.js` and `reconcile.js`
+6. Create `.github/workflows/generate-{product}.yml`
+
+### Workflow push conflicts between concurrent generators
+
+When `generate-bst`, `generate-taxi`, and `reconciliation` workflows are all triggered by the same push, they each commit to different files but race to push. The second pusher fails because HEAD has moved.
+
+**Fix:** `git pull --rebase` before `git push` in all three workflow commit steps. Since BST packages, taxi packages, and reconciliation reports are non-overlapping files, the rebase always succeeds cleanly.
+
 ## Remaining Work
 
-- **Slow sheet tests** (`taxi-sheets.test.js`): Per-sheet formula verification via LibreOffice, similar to `bst-sheets.test.js`. Low priority — e2e tests already cover the critical paths.
+All phases complete. Future improvements:
+
+- **More products:** Apply the established pattern (Self Employed, Payslip, Company)
+- **Company product:** Most complex — 14 xlsx files, sheet tab renaming, VAT quarter calculation
+- **Guide improvements:** Higher-resolution screenshots, more detailed examples
 
 ## Decision Log
 
@@ -534,3 +606,7 @@ Product-specific scripts (`app/products/bst.js`, `app/products/taxi.js`) own the
 | 2026-03-31 | Taxi P&L reads from column B | Discovered during implementation — taxi P&L has fundamentally different cell layout from BST |
 | 2026-03-31 | Remove calcChain.xml for taxi | Stale calcChain entries from template caused Excel repair prompt |
 | 2026-03-31 | Product-specific scripts, not IoC | User preference: product modules call shared tools explicitly, meta.toml stays lean structural config |
+| 2026-03-31 | Fix HYPERLINKs in generator | Template may have hardcoded filename in B3; generator replaces with `#` syntax automatically |
+| 2026-03-31 | Translate scenario dates by day-offset | Enables cross-year reconciliation for products with pre-filled date rows |
+| 2026-03-31 | git pull --rebase in CI commit steps | Prevents push conflicts when multiple generators run from same trigger |
+| 2026-03-31 | Two-pass cell matching regex | Self-closing cells need separate regex from open/close cells to avoid consuming adjacent elements |
