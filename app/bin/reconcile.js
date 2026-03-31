@@ -4,24 +4,22 @@
 //
 // reconcile.js — Run test scenarios against generated packages, compare
 // computed results to expected values, generate compliance reports.
+// Dispatches to product modules in app/products/ for cell writes, reads,
+// and compliance checks.
 //
 // Usage:
 //   node app/bin/reconcile.js                              # all scenarios, all packages
 //   node app/bin/reconcile.js --package bst                # BST only
 //   node app/bin/reconcile.js --years se-2025-2026         # specific year
-//
-// Prerequisites:
-//   LibreOffice installed (brew install --cask libreoffice)
-//
-// Reads:  packages-generated/*, app/test/fixtures/*.toml
-// Writes: reports/
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
 import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { runSpreadsheet } from "../lib/spreadsheet-runner.js";
-import { loadScenario, scenarioToCellWrites, standardReads } from "../lib/scenario-loader.js";
+import { loadScenario } from "../lib/scenario-loader.js";
+import * as bst from "../products/bst.js";
+import * as taxi from "../products/taxi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -30,9 +28,10 @@ const PACKAGES_DIR = resolve(ROOT, "packages-generated");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const REPORTS_DIR = resolve(ROOT, "reports");
 
-const PRODUCT_PREFIXES = {
-  bst: "GB Accounts Basic Sole Trader",
-  taxi: "GB Accounts Taxi Driver",
+// Each product module owns its own prefix, cell writes, reads, and compliance checks.
+const PRODUCTS = {
+  bst,
+  taxi,
 };
 
 function findXlsx(packageDir) {
@@ -40,7 +39,8 @@ function findXlsx(packageDir) {
   return files.find((f) => f.endsWith(".xlsx"));
 }
 
-// Calculate expected tax/NI values from the package's own tax rates
+// Calculate expected tax/NI values from the package's own tax rates.
+// Shared across all SE products — passed to product checkCompliance as a callback.
 function calculateExpectedTax(profit, taxData) {
   const pa = taxData.income_tax.personal_allowance;
   const taxableIncome = Math.max(0, profit - pa);
@@ -64,59 +64,7 @@ function calculateExpectedTax(profit, taxData) {
   };
 }
 
-function checkCompliance(results, expected, taxData, product) {
-  const checks = [];
-
-  function check(name, actual, expectedVal, tolerance = 1) {
-    const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
-  }
-
-  // P&L checks — rate-independent, same for all years
-  // Taxi P&L uses column B with different rows; BST uses column C
-  const pl = results["Profit & Loss Acc"];
-  if (product === "taxi") {
-    if (expected.total_sales !== undefined) check("Total Sales", pl.B5, expected.total_sales);
-    if (expected.gross_profit !== undefined) check("Gross Profit", pl.B13, expected.gross_profit);
-    if (expected.net_profit !== undefined) check("Net Profit", pl.B23, expected.net_profit);
-    if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.B16, expected.total_gen_admin);
-    if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
-  } else {
-    if (expected.total_sales !== undefined) check("Total Sales", pl.C4, expected.total_sales);
-    if (expected.gross_profit !== undefined) check("Gross Profit", pl.C9, expected.gross_profit);
-    if (expected.net_profit !== undefined) check("Net Profit", pl.C24, expected.net_profit);
-    if (expected.total_premises !== undefined) check("Premises Costs", pl.C12, expected.total_premises);
-    if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.C14, expected.total_gen_admin);
-    if (expected.total_legal !== undefined) check("Legal & Professional", pl.C18, expected.total_legal);
-  }
-
-  // Tax checks — calculated from the package's own tax rates
-  if (taxData) {
-    if (product === "taxi") {
-      const taxSheet = results["Draft Tax calculation"];
-      if (taxSheet) {
-        const profit = taxSheet.E5 || 0;
-        const expectedTax = calculateExpectedTax(profit, taxData);
-
-        check("Income Tax", taxSheet.E10 || 0, expectedTax.income_tax);
-        check("NI Class 4 (lower)", taxSheet.E14 || 0, expectedTax.ni_class4_lower);
-        check("Total Tax + NI", taxSheet.E17 || 0, expectedTax.total_tax_and_ni);
-      }
-    } else {
-      const profit = results["Income Tax"].E5 || 0;
-      const expectedTax = calculateExpectedTax(profit, taxData);
-      const computedIncomeTax = (results["Income Tax"].E10 || 0) - (results["Income Tax"].E11 || 0);
-
-      check("Income Tax", computedIncomeTax, expectedTax.income_tax);
-      check("NI Class 4 (lower)", results["Income Tax"].E15 || 0, expectedTax.ni_class4_lower);
-      check("Total Tax + NI", results["Income Tax"].E18 || 0, expectedTax.total_tax_and_ni);
-    }
-  }
-
-  return checks;
-}
-
-function generateReport(packageName, scenarioName, results, checks) {
+function generateReport(packageName, scenarioName, results, checks, productMod) {
   const allPass = checks.every((c) => c.pass);
   const lines = [
     `# Reconciliation Report: ${packageName}`,
@@ -151,7 +99,7 @@ function generateReport(packageName, scenarioName, results, checks) {
     lines.push("");
   }
 
-  const taxSheetName = results["Draft Tax calculation"] ? "Draft Tax calculation" : "Income Tax";
+  const taxSheetName = productMod.TAX_SHEET;
   if (results[taxSheetName]) {
     lines.push(`### ${taxSheetName}`);
     lines.push("");
@@ -193,15 +141,15 @@ async function main() {
   let packageDirs;
   if (packageFilter === "all") {
     packageDirs = allPackageDirs.filter((d) =>
-      Object.values(PRODUCT_PREFIXES).some((prefix) => d.startsWith(prefix)),
+      Object.values(PRODUCTS).some((mod) => d.startsWith(mod.PRODUCT.prefix)),
     );
   } else {
-    const prefix = PRODUCT_PREFIXES[packageFilter];
-    if (!prefix) {
-      console.error(`Unknown package: ${packageFilter}. Available: ${Object.keys(PRODUCT_PREFIXES).join(", ")}`);
+    const mod = PRODUCTS[packageFilter];
+    if (!mod) {
+      console.error(`Unknown package: ${packageFilter}. Available: ${Object.keys(PRODUCTS).join(", ")}`);
       process.exit(1);
     }
-    packageDirs = allPackageDirs.filter((d) => d.startsWith(prefix));
+    packageDirs = allPackageDirs.filter((d) => d.startsWith(mod.PRODUCT.prefix));
   }
 
   // Filter by --years if specified
@@ -230,11 +178,13 @@ async function main() {
     const scenario = loadScenario(fixture);
     const scenarioName = basename(fixture, ".toml");
     const scenarioProduct = scenario.metadata?.product || "bst";
+    const productMod = PRODUCTS[scenarioProduct];
+    if (!productMod) continue;
+
     console.log(`\nScenario: ${scenarioName} (${scenario.metadata.description}) [${scenarioProduct}]`);
 
     // Only run scenario against matching product packages
-    const scenarioPrefix = PRODUCT_PREFIXES[scenarioProduct];
-    const matchingDirs = packageDirs.filter((d) => d.startsWith(scenarioPrefix));
+    const matchingDirs = packageDirs.filter((d) => d.startsWith(productMod.PRODUCT.prefix));
 
     for (const pkgDir of matchingDirs) {
       const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
@@ -251,8 +201,9 @@ async function main() {
       const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
       const startYear = endYear ? endYear - 1 : null;
 
-      const writes = scenarioToCellWrites(scenario, startYear);
-      const reads = standardReads(scenarioProduct);
+      // Product module owns cell writes and reads
+      const writes = productMod.cellWrites(scenario, startYear);
+      const reads = productMod.standardReads();
 
       // Save the populated spreadsheet for screenshots
       const populatedDir = resolve(REPORTS_DIR, "populated");
@@ -273,8 +224,9 @@ async function main() {
         }
       }
 
-      const checks = checkCompliance(results, scenario.expected, taxData, scenarioProduct);
-      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks);
+      // Product module owns compliance checks
+      const checks = productMod.checkCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
 
       const reportFile = `${scenarioName}_${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}.md`;
       writeFileSync(resolve(REPORTS_DIR, reportFile), content);

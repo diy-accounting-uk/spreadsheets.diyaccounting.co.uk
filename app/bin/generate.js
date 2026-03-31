@@ -3,21 +3,15 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // generate.js — CLI entry point for spreadsheet and guide generation.
+// Dispatches to product modules in app/products/ which define their own metadata.
 //
 // Usage:
 //   node app/bin/generate.js                                          # all packages, all years
 //   node app/bin/generate.js --package bst                            # Basic Sole Trader only
+//   node app/bin/generate.js --package taxi                           # Taxi Driver only
 //   node app/bin/generate.js --years se-2024-2025 se-2025-2026        # specific years
-//   node app/bin/generate.js --package bst --years se-2025-2026       # specific package and year
+//   node app/bin/generate.js --skip-guide                             # spreadsheets only, no PDF
 //   node app/bin/generate.js --source-date-epoch 1711670400           # override PDF timestamp
-//
-// Prerequisites:
-//   npm install          — Node dependencies (jszip, smol-toml)
-//   brew install pandoc  — Markdown to PDF converter
-//   brew install weasyprint  — PDF engine used by pandoc (or: pip3 install weasyprint)
-//
-// PDF guide generation requires pandoc + weasyprint. If either is missing the
-// spreadsheets are still generated and a warning is printed.
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
@@ -25,6 +19,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
+import { PRODUCT as BST } from "../products/bst.js";
+import { PRODUCT as TAXI } from "../products/taxi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -33,8 +29,8 @@ const DATA_DIR = resolve(APP_DIR, "data");
 const OUTPUT_DIR = resolve(ROOT, "packages-generated");
 
 const PRODUCTS = {
-  bst: { dir: "bst", name: "Basic Sole Trader" },
-  taxi: { dir: "taxi", name: "Taxi Driver" },
+  bst: BST,
+  taxi: TAXI,
 };
 
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {

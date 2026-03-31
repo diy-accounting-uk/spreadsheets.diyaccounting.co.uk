@@ -12,7 +12,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { runSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet, toExcelSerial, utcDate } from "../lib/generator.js";
-import { loadScenario, scenarioToCellWrites, standardReads } from "../lib/scenario-loader.js";
+import { loadScenario } from "../lib/scenario-loader.js";
+import { cellWrites as taxiCellWrites, standardReads as taxiReads } from "../products/taxi.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -36,9 +37,9 @@ describeCalc("Taxi Driver end-to-end: daily fares with expenses", () => {
 
     // Load scenario and run through spreadsheet
     const scenario = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-basic.toml"));
-    const writes = scenarioToCellWrites(scenario);
+    const writes = taxiCellWrites(scenario);
     const reads = {
-      ...standardReads("taxi"),
+      ...taxiReads(),
       // Read sales totals from each month
       SalesApr: ["E1"],
       SalesMay: ["E1"],
