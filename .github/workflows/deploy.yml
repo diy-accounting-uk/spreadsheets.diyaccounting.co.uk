@@ -122,10 +122,10 @@ jobs:
         run: npm ci
 
       - name: Build spreadsheets redirects
-        run: node scripts/build-spreadsheets-redirects.cjs
+        run: npm run build:redirects
 
       - name: Build sitemaps
-        run: node scripts/build-sitemaps.cjs
+        run: npm run build:sitemaps
 
       - uses: actions/setup-java@v5
         with:
@@ -137,7 +137,7 @@ jobs:
         run: ./mvnw --errors clean verify -DskipTests -Dmaven.compiler.source=${{ env.JAVA_VERSION }} -Dmaven.compiler.target=${{ env.JAVA_VERSION }}
 
       - name: Build packages (zips + catalogue)
-        run: node scripts/build-packages.cjs
+        run: npm run build:packages
 
       - name: Deploy SpreadsheetsStack (CDK)
         run: |

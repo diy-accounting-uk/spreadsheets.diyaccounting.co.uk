@@ -44,7 +44,7 @@ jobs:
         run: npm ci
 
       - name: Build sitemaps
-        run: node scripts/build-sitemaps.cjs
+        run: npm run build:sitemaps
 
       - name: Run tests
         run: |
@@ -72,7 +72,7 @@ jobs:
       - name: Generate taxi se-2020-2021
         run: |
           echo "=== Generating Taxi Driver for se-2020-2021 ==="
-          node app/bin/generate.js --package taxi --years se-2020-2021
+          npm run generate -- --package taxi --years se-2020-2021
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -101,7 +101,7 @@ jobs:
       - name: Generate taxi se-2021-2022
         run: |
           echo "=== Generating Taxi Driver for se-2021-2022 ==="
-          node app/bin/generate.js --package taxi --years se-2021-2022
+          npm run generate -- --package taxi --years se-2021-2022
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -130,7 +130,7 @@ jobs:
       - name: Generate taxi se-2022-2023
         run: |
           echo "=== Generating Taxi Driver for se-2022-2023 ==="
-          node app/bin/generate.js --package taxi --years se-2022-2023
+          npm run generate -- --package taxi --years se-2022-2023
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -159,7 +159,7 @@ jobs:
       - name: Generate taxi se-2023-2024
         run: |
           echo "=== Generating Taxi Driver for se-2023-2024 ==="
-          node app/bin/generate.js --package taxi --years se-2023-2024
+          npm run generate -- --package taxi --years se-2023-2024
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -188,7 +188,7 @@ jobs:
       - name: Generate taxi se-2024-2025
         run: |
           echo "=== Generating Taxi Driver for se-2024-2025 ==="
-          node app/bin/generate.js --package taxi --years se-2024-2025
+          npm run generate -- --package taxi --years se-2024-2025
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -217,7 +217,7 @@ jobs:
       - name: Generate taxi se-2025-2026
         run: |
           echo "=== Generating Taxi Driver for se-2025-2026 ==="
-          node app/bin/generate.js --package taxi --years se-2025-2026
+          npm run generate -- --package taxi --years se-2025-2026
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7
@@ -246,7 +246,7 @@ jobs:
       - name: Generate taxi se-2026-2027
         run: |
           echo "=== Generating Taxi Driver for se-2026-2027 ==="
-          node app/bin/generate.js --package taxi --years se-2026-2027
+          npm run generate -- --package taxi --years se-2026-2027
           echo "=== Generated files ==="
           find packages-generated/ -type f -exec ls -lh {} \;
       - uses: actions/upload-artifact@v7

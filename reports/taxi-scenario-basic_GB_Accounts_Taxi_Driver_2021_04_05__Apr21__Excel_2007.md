@@ -1,4 +1,4 @@
-# Reconciliation Report: GB Accounts Taxi Driver 2025-04-05 (Apr25) Excel 2007
+# Reconciliation Report: GB Accounts Taxi Driver 2021-04-05 (Apr21) Excel 2007
 
 Scenario: taxi-scenario-basic
 Status: COMPLIANT
@@ -9,9 +9,9 @@ Generated: 2026-03-31
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 36000 | 36000 | 0 | PASS |
-| Income Tax | 3414 | 3414 | 0 | PASS |
-| NI Class 4 (lower) | 1024.2 | 1024.2 | 0 | PASS |
-| Total Tax + NI | 4438 | 4438.2 | +0.1999999999998181 | PASS |
+| Income Tax | 3428 | 3428 | 0 | PASS |
+| NI Class 4 (lower) | 1812.6 | 1812.6 | 0 | PASS |
+| Total Tax + NI | 5241 | 5240.6 | -0.3999999999996362 | PASS |
 
 ## Raw Output Values
 
@@ -45,11 +45,11 @@ Generated: 2026-03-31
 | Cell | Value |
 |------|-------|
 | E5 | 29640 |
-| E6 | 12570 |
-| E7 | 17070 |
+| E6 | 12500 |
+| E7 | 17140 |
 | E8 | 0 |
-| E9 | 3414 |
-| E10 | 3414 |
-| E14 | 1024.2 |
+| E9 | 3428 |
+| E10 | 3428 |
+| E14 | 1812.6 |
 | E15 | 0 |
-| E17 | 4438.2 |
+| E17 | 5240.6 |

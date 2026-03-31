@@ -74,16 +74,26 @@ function buildTaxiDateRowMap(startYear) {
   return map;
 }
 
+// Find a date serial in any month's date-row map.
+function findRowInDateMap(dateRowMap, serial) {
+  for (const [monthKey, dateMap] of Object.entries(dateRowMap)) {
+    if (dateMap[serial] !== undefined) {
+      return { monthKey, row: dateMap[serial] };
+    }
+  }
+  return null;
+}
+
 export function loadScenario(path) {
   return parseTOML(readFileSync(path, "utf8"));
 }
 
-export function scenarioToCellWrites(scenario) {
+export function scenarioToCellWrites(scenario, targetStartYear = null) {
   const product = scenario.metadata?.product || "bst";
   const writes = {};
 
   if (product === "taxi") {
-    return taxiCellWrites(scenario, writes);
+    return taxiCellWrites(scenario, writes, targetStartYear);
   }
   return bstCellWrites(scenario, writes);
 }
@@ -136,25 +146,33 @@ function bstCellWrites(scenario, writes) {
   return writes;
 }
 
-function taxiCellWrites(scenario, writes) {
+function taxiCellWrites(scenario, writes, targetStartYear) {
   if (scenario.sales) {
-    const startYear = extractTaxYearStart(scenario);
+    const scenarioStartYear = extractTaxYearStart(scenario);
+    const startYear = targetStartYear || scenarioStartYear;
     const dateRowMap = buildTaxiDateRowMap(startYear);
 
-    for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
-      const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
-      if (!writes[sheetName]) writes[sheetName] = {};
-      const sheet = writes[sheetName];
-      const monthMap = dateRowMap[monthKey];
+    // Offset in days between the scenario's tax year and the target tax year.
+    // Used to translate scenario dates (e.g. 2025-04-07) to the equivalent day
+    // in the target year (e.g. 2020-04-07 for a 2020-21 spreadsheet).
+    const scenarioEpoch = Date.UTC(scenarioStartYear, 3, 6);
+    const targetEpoch = Date.UTC(startYear, 3, 6);
+    const dayOffsetMs = targetEpoch - scenarioEpoch;
 
+    for (const [, transactions] of Object.entries(scenario.sales)) {
       for (const tx of transactions) {
         const d = parseDate(tx.date);
-        const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-        const row = monthMap[serial];
-        if (!row) throw new Error(`Date ${d.toISOString().split("T")[0]} not found in ${sheetName} row map`);
+        const targetDate = new Date(d.getTime() + dayOffsetMs);
+        const serial = toExcelSerial(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1, targetDate.getUTCDate());
 
-        sheet[`E${row}`] = tx.amount;
-        if (tx.other_income) sheet[`F${row}`] = tx.other_income;
+        // Find which month sheet this date falls into
+        const match = findRowInDateMap(dateRowMap, serial);
+        if (!match) throw new Error(`Date ${targetDate.toISOString().split("T")[0]} (from ${d.toISOString().split("T")[0]}) not found in any Sales sheet row map`);
+
+        const sheetName = `Sales${MONTH_SHEETS[match.monthKey]}`;
+        if (!writes[sheetName]) writes[sheetName] = {};
+        writes[sheetName][`E${match.row}`] = tx.amount;
+        if (tx.other_income) writes[sheetName][`F${match.row}`] = tx.other_income;
       }
     }
   }

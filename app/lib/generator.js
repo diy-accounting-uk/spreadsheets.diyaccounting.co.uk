@@ -408,6 +408,13 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       const origDate = zip.file(sheetPath).date;
       zip.file(sheetPath, sheetXml, { date: origDate });
     }
+
+    // Remove calcChain.xml — the generated Sales sheets have different formulas
+    // than the template, so the cached chain is stale. fullCalcOnLoad="1" ensures
+    // Excel rebuilds it from scratch on first open.
+    if (zip.file("xl/calcChain.xml")) {
+      zip.remove("xl/calcChain.xml");
+    }
   }
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update

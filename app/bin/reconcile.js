@@ -245,7 +245,13 @@ async function main() {
 
       console.log(`  Testing: ${pkgDir}...`);
       const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
-      const writes = scenarioToCellWrites(scenario);
+
+      // Extract the tax year start from the package directory name
+      const yearEndMatch = pkgDir.match(/(\d{4})-\d{2}-\d{2}/);
+      const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
+      const startYear = endYear ? endYear - 1 : null;
+
+      const writes = scenarioToCellWrites(scenario, startYear);
       const reads = standardReads(scenarioProduct);
 
       // Save the populated spreadsheet for screenshots
@@ -258,11 +264,8 @@ async function main() {
       console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
 
       // Find the tax-data TOML for this package's year
-      const yearEndMatch = pkgDir.match(/(\d{4})-\d{2}-\d{2}/);
       let taxData = null;
-      if (yearEndMatch) {
-        const endYear = parseInt(yearEndMatch[1], 10);
-        const startYear = endYear - 1;
+      if (startYear) {
         const taxDataFile = resolve(APP_DIR, "data", `se-${startYear}-${endYear}.toml`);
         if (existsSync(taxDataFile)) {
           taxData = parseTOML(readFileSync(taxDataFile, "utf8"));

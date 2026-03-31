@@ -82,7 +82,7 @@ jobs:
         run: |
           LATEST=$(ls app/data/se-*.toml | sort | tail -1 | xargs basename -s .toml)
           echo "Generating: $LATEST"
-          node app/bin/generate.js --package bst --years "$LATEST"
+          npm run generate -- --package bst --years "$LATEST"
 
   deployment:
     runs-on: ubuntu-24.04
@@ -101,10 +101,10 @@ jobs:
         run: npm ci
 
       - name: Build spreadsheets redirects
-        run: node scripts/build-spreadsheets-redirects.cjs
+        run: npm run build:redirects
 
       - name: Build sitemaps
-        run: node scripts/build-sitemaps.cjs
+        run: npm run build:sitemaps
 
       - uses: actions/setup-java@v5
         with:
@@ -151,7 +151,7 @@ jobs:
         run: npm ci
 
       - name: Build sitemaps
-        run: node scripts/build-sitemaps.cjs
+        run: npm run build:sitemaps
 
       - name: Run tests
         run: npm test
@@ -234,10 +234,10 @@ jobs:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
       - name: Build packages (zips + catalogue)
-        run: node scripts/build-packages.cjs --years 2
+        run: npm run build:packages -- --years 2
 
       - name: Build sitemaps
-        run: node scripts/build-sitemaps.cjs
+        run: npm run build:sitemaps
 
       - name: Symlink zips into public directory
         run: ln -sfn ../../../target/zips web/spreadsheets.diyaccounting.co.uk/public/zips
