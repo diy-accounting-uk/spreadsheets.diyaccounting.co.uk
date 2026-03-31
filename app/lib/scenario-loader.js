@@ -192,6 +192,12 @@ export function standardReads(product = "bst") {
   };
 
   if (product === "taxi") {
+    // Taxi P&L uses column B with different row layout
+    reads["Profit & Loss Acc"] = [
+      "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12", "B13",
+      "B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21",
+      "B22", "B23", "B24",
+    ];
     reads["Draft Tax calculation"] = ["E5", "E6", "E7", "E8", "E9", "E10", "E14", "E15", "E17"];
   } else {
     reads["Income Tax"] = ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"];

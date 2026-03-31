@@ -72,24 +72,22 @@ function checkCompliance(results, expected, taxData, product) {
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
   }
 
-  // P&L checks — rate-independent, same for all years and products
-  if (expected.total_sales !== undefined) {
-    check("Total Sales", results["Profit & Loss Acc"].C4, expected.total_sales);
-  }
-  if (expected.gross_profit !== undefined) {
-    check("Gross Profit", results["Profit & Loss Acc"].C9, expected.gross_profit);
-  }
-  if (expected.net_profit !== undefined) {
-    check("Net Profit", results["Profit & Loss Acc"].C24, expected.net_profit);
-  }
-  if (expected.total_premises !== undefined) {
-    check("Premises Costs", results["Profit & Loss Acc"].C12, expected.total_premises);
-  }
-  if (expected.total_gen_admin !== undefined) {
-    check("Gen Admin", results["Profit & Loss Acc"].C14, expected.total_gen_admin);
-  }
-  if (expected.total_legal !== undefined) {
-    check("Legal & Professional", results["Profit & Loss Acc"].C18, expected.total_legal);
+  // P&L checks — rate-independent, same for all years
+  // Taxi P&L uses column B with different rows; BST uses column C
+  const pl = results["Profit & Loss Acc"];
+  if (product === "taxi") {
+    if (expected.total_sales !== undefined) check("Total Sales", pl.B5, expected.total_sales);
+    if (expected.gross_profit !== undefined) check("Gross Profit", pl.B13, expected.gross_profit);
+    if (expected.net_profit !== undefined) check("Net Profit", pl.B23, expected.net_profit);
+    if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.B16, expected.total_gen_admin);
+    if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
+  } else {
+    if (expected.total_sales !== undefined) check("Total Sales", pl.C4, expected.total_sales);
+    if (expected.gross_profit !== undefined) check("Gross Profit", pl.C9, expected.gross_profit);
+    if (expected.net_profit !== undefined) check("Net Profit", pl.C24, expected.net_profit);
+    if (expected.total_premises !== undefined) check("Premises Costs", pl.C12, expected.total_premises);
+    if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.C14, expected.total_gen_admin);
+    if (expected.total_legal !== undefined) check("Legal & Professional", pl.C18, expected.total_legal);
   }
 
   // Tax checks — calculated from the package's own tax rates

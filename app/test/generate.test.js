@@ -215,8 +215,9 @@ describe("groupWeeksIntoMonths", () => {
     const weeks = generateTaxYearWeeks(2020);
     const months = groupWeeksIntoMonths(weeks);
 
-    // First week is full Mon-Sun, Sunday is Apr 12 → April
-    expect(months.apr).toHaveLength(4);
+    // First week is full Mon-Sun (Apr 6-12), Sunday Apr 12 → April
+    // Weeks: Apr 6-12, Apr 13-19, Apr 20-26. Apr 27 Sunday = May 3 → goes to May
+    expect(months.apr).toHaveLength(3);
     // Last partial week (1 day: Mon Apr 5) goes to March
     expect(months.mar[months.mar.length - 1]).toHaveLength(1);
   });
@@ -232,8 +233,8 @@ describe("buildSalesSheetXml", () => {
     ];
     const { xml, lastRow } = buildSalesSheetXml([week]);
 
-    // Should have header (rows 1-4) + 7 days + rental + other income + subtotal = row 15
-    expect(lastRow).toBe(15);
+    // Header (rows 1-4) + 7 days (5-11) + rental (12) + other income (13) + subtotal (14)
+    expect(lastRow).toBe(14);
     // Contains date serials
     expect(xml).toContain(`<v>${toExcelSerial(utcDate(2025, 4, 7))}</v>`);
     expect(xml).toContain(`<v>${toExcelSerial(utcDate(2025, 4, 13))}</v>`);
@@ -244,14 +245,14 @@ describe("buildSalesSheetXml", () => {
     // Contains subtotal formula
     expect(xml).toContain(`SUM(E5:E13)`);
     // Contains column total formula with /2
-    expect(xml).toContain(`SUM(E4:E15)/2`);
+    expect(xml).toContain(`SUM(E4:E14)/2`);
   });
 
   it("generates correct XML for a partial week (1 day)", () => {
     const week = [utcDate(2025, 4, 6)]; // Sunday only
     const { xml, lastRow } = buildSalesSheetXml([week]);
 
-    // Header (rows 1-4) + 1 day + rental + other income + subtotal = row 8
+    // Header (rows 1-4) + 1 day (5) + rental (6) + other income (7) + subtotal (8)
     expect(lastRow).toBe(8);
     expect(xml).toContain(`SUM(E5:E7)`); // subtotal covers rows 5-7
     expect(xml).toContain(`SUM(E4:E8)/2`); // column total
@@ -262,12 +263,15 @@ describe("buildSalesSheetXml", () => {
     const months = groupWeeksIntoMonths(weeks);
     const { lastRow } = buildSalesSheetXml(months.apr);
 
-    // Apr 2025-26: 4 weeks (1 partial + 3 full)
-    // Week 1: 1 day + 2 extras + subtotal = 4 rows
-    // Week 2-4: 3 × (7 days + 2 extras + subtotal + blank sep) = 33 rows
-    // But last week has no trailing separator
-    // Total data rows: 4 + 1(sep) + 10 + 1 + 10 + 1 + 10 = 37
-    // Plus header rows 1-4 = row 41
+    // Apr 2025-26: 4 weeks (1-day partial + 3 full weeks)
+    // Header: rows 1-4 (4 rows)
+    // Week 1: 1 day + rental + other income + subtotal = 4 rows (5-8)
+    // Separator: 1 row (9)
+    // Week 2: 7 days + rental + other + subtotal = 10 rows (10-19)
+    // Separator: 1 row (20)
+    // Week 3: 7 days + rental + other + subtotal = 10 rows (21-30)
+    // Separator: 1 row (31)
+    // Week 4: 7 days + rental + other + subtotal = 10 rows (32-41) — no trailing separator
     expect(lastRow).toBe(41);
   });
 });

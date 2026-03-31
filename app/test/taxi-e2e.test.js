@@ -57,7 +57,8 @@ describeCalc("Taxi Driver end-to-end: daily fares with expenses", () => {
   }, 120000);
 
   it("P&L: total sales = 36000", () => {
-    expect(results["Profit & Loss Acc"].C4).toBe(36000);
+    // Taxi P&L has turnover in B5 (not C4 like BST)
+    expect(results["Profit & Loss Acc"].B5).toBe(36000);
   });
 
   it("SalesApr: monthly total matches expected", () => {

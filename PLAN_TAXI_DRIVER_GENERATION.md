@@ -413,6 +413,88 @@ Phase 1 (Refactor)  ──→  Phase 2 (Template)  ──→  Phase 3 (Sales Dat
 
 Phase 1 (refactoring) is a prerequisite — it ensures the shared infrastructure supports multiple products before adding taxi-specific code.
 
+## Implementation Status
+
+### Phase 1: Refactor — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 1.1 Generator (`generator.js`) | ✓ Done | `generateSpreadsheet` now accepts `sheetsConfig` object; added `generateTaxYearWeeks`, `groupWeeksIntoMonths`, `buildSalesSheetXml`, `replaceSalesSheetData`. Fixed `setCellValue`/`setCellString` regex bug with self-closing cells. |
+| 1.2 Product Registry (`generate.js`) | ✓ Done | Added `taxi: { dir: "taxi", name: "Taxi Driver" }` to PRODUCTS; passes `productMeta.sheets` instead of `productMeta.sheets.admin` |
+| 1.3 Reconciliation (`reconcile.js`) | ✓ Done | Product-aware package discovery via `PRODUCT_PREFIXES`; scenario `product` field matches packages; taxi P&L uses column B (not C) |
+| 1.4 Scenario Loader (`scenario-loader.js`) | ✓ Done | Taxi sales: amounts in column E, date-to-row mapping via `buildTaxiDateRowMap`. Taxi purchases: code in column D, amount in column F. `standardReads` product-aware. |
+| 1.5 Spreadsheet Runner (`spreadsheet-runner.js`) | ✓ Done | Changed `bst-test-` prefix to `spreadsheet-test-` |
+| 1.6 Tests | ✓ Done | All existing BST tests updated for new `generateSpreadsheet` signature. 97/97 pass. |
+
+### Phase 2: Template — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 2.1 Template file | ✓ Done | `app/templates/taxi/taxi-excel.xlsx` copied from Apr26 package |
+| 2.2 Product metadata | ✓ Done | `app/templates/taxi/meta.toml` with all 12 Sales sheet XML paths |
+
+### Phase 3: Sales Date Generation — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 3.1 Date calculation | ✓ Done | `generateTaxYearWeeks(startYear)` + `groupWeeksIntoMonths(weeks)` — handles partial first/last weeks, week-to-month assignment by Sunday's calendar month |
+| 3.2 Row layout | ✓ Done | `buildSalesSheetXml(monthWeeks)` generates headers, daily date rows, Rental/Other income rows, subtotal formulas, column totals with /2 correction |
+| 3.3 XML surgery | ✓ Done | `replaceSalesSheetData` replaces `<sheetData>` and updates `<dimension>` while preserving all other sheet XML (styles, merge cells, page setup) |
+
+**Verified:** Generated xlsx for 2025-26 matches original Apr26 dimension (A1:F41 for SalesApr). Different years produce different row counts (Apr25 SalesApr = A1:F42). All 97 unit tests pass including taxi-specific generation and e2e tests.
+
+### Phase 4: Guide Generation — NOT STARTED
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 4.1 Reconciliation screenshots | ☐ Pending | Need to run taxi scenario through LibreOffice and export screenshots |
+| 4.2 Extract PNGs | ☐ Pending | Extract from screenshot PDF into `app/templates/taxi/screenshots/` |
+| 4.3 Write taxi-guide.md | ☐ Pending | Markdown guide with screenshots, based on existing "Taxi Driver User Guide.pdf" |
+| 4.4 PDF generation | ☐ Pending | pandoc + weasyprint generates PDF (infrastructure already exists in `guide.js`) |
+
+### Phase 5: Tests — PARTIALLY COMPLETE
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 5.1 Taxi scenario fixture | ✓ Done | `app/test/fixtures/taxi-scenario-basic.toml` — 180 daily fares (£200/day = £36k/year), fuel, insurance, admin, legal expenses, vehicle purchase |
+| 5.2 Taxi E2E test | ✓ Done | `app/test/taxi-e2e.test.js` — verifies all 12 monthly Sales totals, P&L total sales, Draft Tax calculation |
+| 5.3 Generate unit tests | ✓ Done | `generateTaxYearWeeks`, `groupWeeksIntoMonths`, `buildSalesSheetXml` tests added to `generate.test.js`. Template existence tests for taxi added. |
+| 5.4 Reconciliation extension | ✓ Done | `reconcile.js` auto-discovers taxi packages and matches scenarios by product |
+| 5.5 Slow sheet tests | ☐ Pending | `taxi-sheets.test.js` for per-sheet formula verification (like `bst-sheets.test.js`) |
+
+### Phase 6: CI — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 6.1 Generation workflow | ✓ Done | `.github/workflows/generate-taxi.yml` — 7 concurrent jobs for all tax years |
+| 6.2 Reconciliation | ✓ Done | Existing reconciliation workflow auto-discovers taxi packages via product-aware `reconcile.js` |
+
+## Discovered During Implementation
+
+### Taxi P&L uses different cell layout from BST
+
+The taxi "Profit & Loss Acc" sheet uses **column B** for annual totals (BST uses column C), with different row assignments:
+
+| P&L Line | BST Cell | Taxi Cell | Formula Source |
+|----------|----------|-----------|----------------|
+| Total Sales | C4 | B5 | SalesXxx!$E$1 (taxi) vs SalesXxx!$F$1 (BST) |
+| Gross Profit | C9 | B13 | |
+| Gen Admin | C14 | B16 | PurchasesXxx!$M$1 |
+| Legal & Prof | C18 | B18 | PurchasesXxx!$O$1 |
+| Net Profit | C24 | B23 | |
+
+### Taxi Purchases column mapping
+
+| BST | Taxi | Purpose |
+|-----|------|---------|
+| D: Payment | D: Expense code | Different use of same column |
+| E: Expense code | — | BST only |
+| G: Amount | F: Amount | Different column for amounts |
+
+### setCellValue regex bug fixed
+
+The original regex for cell matching consumed adjacent cells when a self-closing cell (`<c ... />`) was followed by another cell. Fixed by using two-pass matching: first try self-closing, then open/close.
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -422,3 +504,6 @@ Phase 1 (refactoring) is a prerequisite — it ensures the shared infrastructure
 | 2026-03-31 | Same tax regime (se) as BST | Taxi uses self-employment tax data — no new tax data files needed |
 | 2026-03-31 | Blank Sales template, generator fills dates | Generator is single source of truth for date layout; avoids template having stale year-specific dates |
 | 2026-03-31 | Reuse reconciliation screenshot pipeline for guide | Same process as BST: scenario → LibreOffice → PDF screenshots → PNG extraction → markdown guide |
+| 2026-03-31 | Use direct date values, not formulas | Simpler XML generation; Admin and Sales both generated from same tax data so consistency is guaranteed |
+| 2026-03-31 | Month assignment by Sunday's calendar month | Verified against all 6 existing taxi packages; SalesMar catches remaining weeks including those with Sunday in April |
+| 2026-03-31 | Taxi P&L reads from column B | Discovered during implementation — taxi P&L has fundamentally different cell layout from BST |
