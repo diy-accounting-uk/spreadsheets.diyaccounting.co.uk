@@ -136,6 +136,7 @@ jobs:
           Triggered by: ${{ github.sha }}
           Workflow: ${{ github.workflow }}"
             echo "=== Pushing ==="
+            git pull --rebase
             git push
             echo "=== Push complete ==="
           fi
