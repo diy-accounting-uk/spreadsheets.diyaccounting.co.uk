@@ -34,7 +34,7 @@ describeCalc("Reconciliation: bst-scenario-basic against 2025-26", () => {
     const templateBuffer = readFileSync(resolve(BST_DIR, "bst-excel.xlsx"));
     taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
     const productMeta = parseTOML(readFileSync(resolve(BST_DIR, "meta.toml"), "utf8"));
-    const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
+    const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
 
     // Load scenario and run through spreadsheet
     scenario = loadScenario(resolve(FIXTURES_DIR, "bst-scenario-basic.toml"));

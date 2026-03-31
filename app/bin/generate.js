@@ -34,6 +34,7 @@ const OUTPUT_DIR = resolve(ROOT, "packages-generated");
 
 const PRODUCTS = {
   bst: { dir: "bst", name: "Basic Sole Trader" },
+  taxi: { dir: "taxi", name: "Taxi Driver" },
 };
 
 async function generateProduct(productDir, tomlPath, sourceDateEpoch) {
@@ -50,7 +51,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch) {
   const templatePath = resolve(productDir, productMeta.template.spreadsheet);
   const templateBuffer = readFileSync(templatePath);
 
-  const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
+  const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
 
   // Build output paths from patterns
   const dateStr = formatDateYYYYMMDD(endDate);

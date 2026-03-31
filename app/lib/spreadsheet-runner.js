@@ -185,7 +185,7 @@ async function buildSheetMap(zip) {
  */
 export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options = {}) {
   const soffice = getLibreOffice();
-  const workDir = resolve(tmpdir(), `bst-test-${randomBytes(4).toString("hex")}`);
+  const workDir = resolve(tmpdir(), `spreadsheet-test-${randomBytes(4).toString("hex")}`);
   mkdirSync(workDir, { recursive: true });
 
   try {

@@ -30,6 +30,11 @@ const PACKAGES_DIR = resolve(ROOT, "packages-generated");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const REPORTS_DIR = resolve(ROOT, "reports");
 
+const PRODUCT_PREFIXES = {
+  bst: "GB Accounts Basic Sole Trader",
+  taxi: "GB Accounts Taxi Driver",
+};
+
 function findXlsx(packageDir) {
   const files = readdirSync(packageDir);
   return files.find((f) => f.endsWith(".xlsx"));
@@ -59,7 +64,7 @@ function calculateExpectedTax(profit, taxData) {
   };
 }
 
-function checkCompliance(results, expected, taxData) {
+function checkCompliance(results, expected, taxData, product) {
   const checks = [];
 
   function check(name, actual, expectedVal, tolerance = 1) {
@@ -67,7 +72,7 @@ function checkCompliance(results, expected, taxData) {
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
   }
 
-  // P&L checks — rate-independent, same for all years
+  // P&L checks — rate-independent, same for all years and products
   if (expected.total_sales !== undefined) {
     check("Total Sales", results["Profit & Loss Acc"].C4, expected.total_sales);
   }
@@ -89,19 +94,31 @@ function checkCompliance(results, expected, taxData) {
 
   // Tax checks — calculated from the package's own tax rates
   if (taxData) {
-    const profit = results["Income Tax"].E5 || 0;
-    const expectedTax = calculateExpectedTax(profit, taxData);
-    const computedIncomeTax = (results["Income Tax"].E10 || 0) - (results["Income Tax"].E11 || 0);
+    if (product === "taxi") {
+      const taxSheet = results["Draft Tax calculation"];
+      if (taxSheet) {
+        const profit = taxSheet.E5 || 0;
+        const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", computedIncomeTax, expectedTax.income_tax);
-    check("NI Class 4 (lower)", results["Income Tax"].E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", results["Income Tax"].E18 || 0, expectedTax.total_tax_and_ni);
+        check("Income Tax", taxSheet.E10 || 0, expectedTax.income_tax);
+        check("NI Class 4 (lower)", taxSheet.E14 || 0, expectedTax.ni_class4_lower);
+        check("Total Tax + NI", taxSheet.E17 || 0, expectedTax.total_tax_and_ni);
+      }
+    } else {
+      const profit = results["Income Tax"].E5 || 0;
+      const expectedTax = calculateExpectedTax(profit, taxData);
+      const computedIncomeTax = (results["Income Tax"].E10 || 0) - (results["Income Tax"].E11 || 0);
+
+      check("Income Tax", computedIncomeTax, expectedTax.income_tax);
+      check("NI Class 4 (lower)", results["Income Tax"].E15 || 0, expectedTax.ni_class4_lower);
+      check("Total Tax + NI", results["Income Tax"].E18 || 0, expectedTax.total_tax_and_ni);
+    }
   }
 
   return checks;
 }
 
-function generateReport(packageName, scenarioName, results, checks, scenario) {
+function generateReport(packageName, scenarioName, results, checks) {
   const allPass = checks.every((c) => c.pass);
   const lines = [
     `# Reconciliation Report: ${packageName}`,
@@ -136,12 +153,13 @@ function generateReport(packageName, scenarioName, results, checks, scenario) {
     lines.push("");
   }
 
-  if (results["Income Tax"]) {
-    lines.push("### Income Tax");
+  const taxSheetName = results["Draft Tax calculation"] ? "Draft Tax calculation" : "Income Tax";
+  if (results[taxSheetName]) {
+    lines.push(`### ${taxSheetName}`);
     lines.push("");
     lines.push("| Cell | Value |");
     lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results["Income Tax"])) {
+    for (const [cell, val] of Object.entries(results[taxSheetName])) {
       lines.push(`| ${cell} | ${val} |`);
     }
     lines.push("");
@@ -168,20 +186,35 @@ async function main() {
     process.exit(1);
   }
 
-  const packageDirs = readdirSync(PACKAGES_DIR)
-    .filter((d) => d.startsWith("GB Accounts Basic Sole Trader"))
-    .sort();
+  // Package filter
+  const pkgIdx = args.indexOf("--package");
+  const packageFilter = pkgIdx !== -1 && args[pkgIdx + 1] ? args[pkgIdx + 1] : "all";
+
+  // Discover packages for each product
+  const allPackageDirs = readdirSync(PACKAGES_DIR).sort();
+  let packageDirs;
+  if (packageFilter === "all") {
+    packageDirs = allPackageDirs.filter((d) =>
+      Object.values(PRODUCT_PREFIXES).some((prefix) => d.startsWith(prefix)),
+    );
+  } else {
+    const prefix = PRODUCT_PREFIXES[packageFilter];
+    if (!prefix) {
+      console.error(`Unknown package: ${packageFilter}. Available: ${Object.keys(PRODUCT_PREFIXES).join(", ")}`);
+      process.exit(1);
+    }
+    packageDirs = allPackageDirs.filter((d) => d.startsWith(prefix));
+  }
 
   // Filter by --years if specified
   const yearsIdx = args.indexOf("--years");
-  let filteredDirs = packageDirs;
   if (yearsIdx !== -1) {
     const years = [];
     for (let i = yearsIdx + 1; i < args.length; i++) {
       if (args[i].startsWith("--")) break;
       years.push(args[i]);
     }
-    filteredDirs = packageDirs.filter((d) =>
+    packageDirs = packageDirs.filter((d) =>
       years.some((y) => {
         const [, endYear] = y.replace("se-", "").split("-");
         return d.includes(endYear);
@@ -189,7 +222,7 @@ async function main() {
     );
   }
 
-  console.log("Packages:", filteredDirs.length);
+  console.log("Packages:", packageDirs.length);
   mkdirSync(REPORTS_DIR, { recursive: true });
 
   let totalCompliant = 0;
@@ -198,9 +231,14 @@ async function main() {
   for (const fixture of fixtures) {
     const scenario = loadScenario(fixture);
     const scenarioName = basename(fixture, ".toml");
-    console.log(`\nScenario: ${scenarioName} (${scenario.metadata.description})`);
+    const scenarioProduct = scenario.metadata?.product || "bst";
+    console.log(`\nScenario: ${scenarioName} (${scenario.metadata.description}) [${scenarioProduct}]`);
 
-    for (const pkgDir of filteredDirs) {
+    // Only run scenario against matching product packages
+    const scenarioPrefix = PRODUCT_PREFIXES[scenarioProduct];
+    const matchingDirs = packageDirs.filter((d) => d.startsWith(scenarioPrefix));
+
+    for (const pkgDir of matchingDirs) {
       const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
       if (!xlsxFile) {
         console.log(`  Skip ${pkgDir}: no xlsx found`);
@@ -210,7 +248,7 @@ async function main() {
       console.log(`  Testing: ${pkgDir}...`);
       const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
       const writes = scenarioToCellWrites(scenario);
-      const reads = standardReads();
+      const reads = standardReads(scenarioProduct);
 
       // Save the populated spreadsheet for screenshots
       const populatedDir = resolve(REPORTS_DIR, "populated");
@@ -222,7 +260,6 @@ async function main() {
       console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
 
       // Find the tax-data TOML for this package's year
-      // Package name contains the year-end date e.g. "2025-04-05"
       const yearEndMatch = pkgDir.match(/(\d{4})-\d{2}-\d{2}/);
       let taxData = null;
       if (yearEndMatch) {
@@ -235,8 +272,8 @@ async function main() {
         }
       }
 
-      const checks = checkCompliance(results, scenario.expected, taxData);
-      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, scenario);
+      const checks = checkCompliance(results, scenario.expected, taxData, scenarioProduct);
+      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks);
 
       const reportFile = `${scenarioName}_${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}.md`;
       writeFileSync(resolve(REPORTS_DIR, reportFile), content);

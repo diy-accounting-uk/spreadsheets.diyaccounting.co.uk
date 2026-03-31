@@ -1,0 +1,878 @@
+# Taxi Driver test scenario: basic taxi driver
+# A taxi driver working 5 days/week with daily fares, weekly rental, and standard expenses.
+# Used by both unit/e2e tests and the reconciliation task.
+
+[metadata]
+name = "Basic taxi driver"
+description = "Taxi driver with steady daily fares, weekly rental payments, fuel, insurance, and a vehicle purchase"
+product = "taxi"
+tax_regime = "se"
+
+# === SALES ===
+# Daily fares entered on specific dates in the pre-filled Sales sheets.
+# Taxi Sales sheets have pre-filled dates — amounts go into column E (gross takings).
+# Total annual sales: 36000 (3000/month average)
+
+[[sales.apr]]
+date = 2025-04-07
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-08
+amount = 220
+
+[[sales.apr]]
+date = 2025-04-09
+amount = 180
+
+[[sales.apr]]
+date = 2025-04-10
+amount = 210
+
+[[sales.apr]]
+date = 2025-04-11
+amount = 190
+
+[[sales.apr]]
+date = 2025-04-14
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-15
+amount = 220
+
+[[sales.apr]]
+date = 2025-04-16
+amount = 180
+
+[[sales.apr]]
+date = 2025-04-17
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-18
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-21
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-22
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-23
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-24
+amount = 200
+
+[[sales.apr]]
+date = 2025-04-25
+amount = 200
+
+[[sales.may]]
+date = 2025-05-05
+amount = 200
+
+[[sales.may]]
+date = 2025-05-06
+amount = 200
+
+[[sales.may]]
+date = 2025-05-07
+amount = 200
+
+[[sales.may]]
+date = 2025-05-08
+amount = 200
+
+[[sales.may]]
+date = 2025-05-09
+amount = 200
+
+[[sales.may]]
+date = 2025-05-12
+amount = 200
+
+[[sales.may]]
+date = 2025-05-13
+amount = 200
+
+[[sales.may]]
+date = 2025-05-14
+amount = 200
+
+[[sales.may]]
+date = 2025-05-15
+amount = 200
+
+[[sales.may]]
+date = 2025-05-16
+amount = 200
+
+[[sales.may]]
+date = 2025-05-19
+amount = 200
+
+[[sales.may]]
+date = 2025-05-20
+amount = 200
+
+[[sales.may]]
+date = 2025-05-21
+amount = 200
+
+[[sales.may]]
+date = 2025-05-22
+amount = 200
+
+[[sales.may]]
+date = 2025-05-23
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-02
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-03
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-04
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-05
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-06
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-09
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-10
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-11
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-12
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-13
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-16
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-17
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-18
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-19
+amount = 200
+
+[[sales.jun]]
+date = 2025-06-20
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-07
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-08
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-09
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-10
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-11
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-14
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-15
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-16
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-17
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-18
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-21
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-22
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-23
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-24
+amount = 200
+
+[[sales.jul]]
+date = 2025-07-25
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-04
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-05
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-06
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-07
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-08
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-11
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-12
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-13
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-14
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-15
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-18
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-19
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-20
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-21
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-22
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-01
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-02
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-03
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-04
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-05
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-08
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-09
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-10
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-11
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-12
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-15
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-16
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-17
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-18
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-19
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-06
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-07
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-08
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-09
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-10
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-13
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-14
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-15
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-16
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-17
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-20
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-21
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-22
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-23
+amount = 200
+
+[[sales.oct]]
+date = 2025-10-24
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-03
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-04
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-05
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-06
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-07
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-10
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-11
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-12
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-13
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-14
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-17
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-18
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-19
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-20
+amount = 200
+
+[[sales.nov]]
+date = 2025-11-21
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-01
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-02
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-03
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-04
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-05
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-08
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-09
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-10
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-11
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-12
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-15
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-16
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-17
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-18
+amount = 200
+
+[[sales.dec]]
+date = 2025-12-19
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-05
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-06
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-07
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-08
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-09
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-12
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-13
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-14
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-15
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-16
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-19
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-20
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-21
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-22
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-23
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-02
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-03
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-04
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-05
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-06
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-09
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-10
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-11
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-12
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-13
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-16
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-17
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-18
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-19
+amount = 200
+
+[[sales.feb]]
+date = 2026-02-20
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-02
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-03
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-04
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-05
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-06
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-09
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-10
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-11
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-12
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-13
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-16
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-17
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-18
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-19
+amount = 200
+
+[[sales.mar]]
+date = 2026-03-20
+amount = 200
+
+# === PURCHASES ===
+# Taxi purchases use column D for expense code and column F for amount.
+# Expense codes: d=fuel, h=car hire, r=repairs, t=road tax, e=employee,
+# p=premises, g=general admin, a=advertising, l=legal, i=interest, b=bank, o=other, f=fixed asset
+
+# Fuel (monthly, 12 × 300 = 3600)
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.feb]]
+date = 2026-02-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+[[purchases.mar]]
+date = 2026-03-15
+supplier = "Shell"
+code = "d"
+amount = 300
+
+# Road tax and insurance (annual)
+[[purchases.apr]]
+date = 2025-04-06
+supplier = "DVLA"
+code = "t"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "Insurance Co"
+code = "t"
+amount = 1200
+
+# General admin (phone, quarterly)
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "Vodafone"
+code = "g"
+amount = 120
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "Vodafone"
+code = "g"
+amount = 120
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "Vodafone"
+code = "g"
+amount = 120
+
+[[purchases.apr]]
+date = 2025-04-20
+supplier = "Vodafone"
+code = "g"
+amount = 120
+
+# Legal & professional (taxi licence + accountant)
+[[purchases.apr]]
+date = 2025-04-08
+supplier = "Council"
+code = "l"
+amount = 400
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "Accountant"
+code = "l"
+amount = 500
+
+# Vehicle purchase (fixed asset)
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Car Dealer"
+code = "f"
+amount = 8000
+
+# === EXPECTED RESULTS ===
+# 180 working days × £200/day = £36,000 total sales
+# Expenses: fuel 3600 + road tax/insurance 1380 + admin 480 + legal 900 = 6360
+# Net profit: 36000 - 6360 = 29640
+
+[expected]
+total_sales = 36000

@@ -59,24 +59,39 @@ export function generateAdminDates(startYear) {
 // ── XML cell editing ────────────────────────────────────────────────────────
 
 export function setCellValue(xml, cellRef, value) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = matchCell(xml, cellRef);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
 
-  const [fullMatch, openTag] = match;
-  const newOpenTag = openTag.replace(/\s+t="[^"]*"/, "");
-  return xml.replace(fullMatch, `${newOpenTag}><v>${value}</v></c>`);
+  const openTag = match.openTag.replace(/\s+t="[^"]*"/, "");
+  return xml.replace(match.fullMatch, `${openTag}><v>${value}</v></c>`);
 }
 
 export function setCellString(xml, cellRef, str) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = matchCell(xml, cellRef);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
 
-  const [fullMatch, openTag] = match;
-  let newOpenTag = openTag.replace(/\s+t="[^"]*"/, "");
-  newOpenTag += ` t="inlineStr"`;
-  return xml.replace(fullMatch, `${newOpenTag}><is><t>${escapeXml(str)}</t></is></c>`);
+  let openTag = match.openTag.replace(/\s+t="[^"]*"/, "");
+  openTag += ` t="inlineStr"`;
+  return xml.replace(match.fullMatch, `${openTag}><is><t>${escapeXml(str)}</t></is></c>`);
+}
+
+// Match a cell element — handles both self-closing (<c .../>) and open/close (<c ...>...</c>).
+function matchCell(xml, cellRef) {
+  // Try self-closing first: <c r="X" .../>
+  const selfClosing = new RegExp(`<c\\s+r="${cellRef}"\\s[^>]*?/>`, "s");
+  let m = xml.match(selfClosing);
+  if (m) {
+    const openTag = m[0].replace(/\s*\/>$/, "");
+    return { fullMatch: m[0], openTag };
+  }
+  // Try open/close: <c r="X" ...>...</c>
+  const withContent = new RegExp(`<c\\s+r="${cellRef}"\\s[^>]*?>[\\s\\S]*?</c>`, "s");
+  m = xml.match(withContent);
+  if (m) {
+    const openTag = m[0].replace(/>[\s\S]*$/, "");
+    return { fullMatch: m[0], openTag };
+  }
+  return null;
 }
 
 function escapeXml(str) {
@@ -142,15 +157,227 @@ export function buildCellEdits(taxData, startYear) {
   return { numericEdits, stringEdits };
 }
 
+// ── Sales date generation (Taxi Driver) ────────────────────────────────────
+
+// Generate all weeks of the tax year as arrays of Date objects.
+// First week: April 6 to first Sunday. Full weeks: Mon-Sun.
+// Last week: last Monday to April 5 (may be partial).
+export function generateTaxYearWeeks(startYear) {
+  const taxYearStart = utcDate(startYear, 4, 6);
+  const taxYearEnd = utcDate(startYear + 1, 4, 5);
+
+  const weeks = [];
+  const current = new Date(taxYearStart);
+
+  // First week: April 6 to first Sunday (inclusive)
+  const firstWeek = [];
+  do {
+    firstWeek.push(new Date(current));
+    if (current.getUTCDay() === 0) break; // Sunday
+    current.setUTCDate(current.getUTCDate() + 1);
+  } while (current <= taxYearEnd);
+  weeks.push(firstWeek);
+  current.setUTCDate(current.getUTCDate() + 1);
+
+  // Full Monday-Sunday weeks (last week may be partial ending Apr 5)
+  while (current <= taxYearEnd) {
+    const week = [];
+    for (let d = 0; d < 7 && current <= taxYearEnd; d++) {
+      week.push(new Date(current));
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  return weeks;
+}
+
+// Group weeks into monthly Sales sheets.
+// Rule: a week belongs to the month containing its Sunday (last day if full).
+// SalesMar collects all remaining weeks after February.
+export function groupWeeksIntoMonths(weeks) {
+  const monthKeys = ["jan", "feb", "mar", "apr", "may", "jun",
+    "jul", "aug", "sep", "oct", "nov", "dec"];
+  const result = {};
+  for (const k of monthKeys) result[k] = [];
+
+  // Process Apr(3) through Feb(1) in tax-year order
+  const monthOrder = [3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 1];
+  let weekIdx = 0;
+
+  for (const monthIndex of monthOrder) {
+    while (weekIdx < weeks.length) {
+      const week = weeks[weekIdx];
+      const lastDay = week[week.length - 1];
+      if (lastDay.getUTCDay() !== 0) break; // no Sunday — partial last week
+      if (lastDay.getUTCMonth() !== monthIndex) break;
+      result[monthKeys[monthIndex]].push(week);
+      weekIdx++;
+    }
+  }
+
+  // All remaining weeks go to March (SalesMar)
+  while (weekIdx < weeks.length) {
+    result.mar.push(weeks[weekIdx]);
+    weekIdx++;
+  }
+
+  return result;
+}
+
+// Build the <sheetData> XML for one monthly Sales sheet.
+// Returns { xml, lastRow } where xml is the inner content of <sheetData>.
+export function buildSalesSheetXml(monthWeeks) {
+  const rows = [];
+  const weekCount = monthWeeks.length;
+
+  // Calculate total last row for column total formulas
+  let lastRow = 4; // start after header rows
+  for (let w = 0; w < weekCount; w++) {
+    const days = monthWeeks[w].length;
+    lastRow += days + 3; // days + rental + other income + subtotal
+    if (w < weekCount - 1) lastRow += 1; // blank separator (not after last week)
+  }
+
+  // Row 1: Column totals
+  rows.push(
+    `<row r="1" spans="1:6" s="302" customFormat="1" ht="12.75" customHeight="1" x14ac:dyDescent="0.15">` +
+    `<c r="A1" s="486" t="s"><v>241</v></c>` +
+    `<c r="B1" s="484" t="s"><v>240</v></c>` +
+    `<c r="C1" s="303" t="s"><v>239</v></c>` +
+    `<c r="D1" s="304"><f>SUM(D4:D${lastRow})</f><v>0</v></c>` +
+    `<c r="E1" s="303"><f>SUM(E4:E${lastRow})/2</f><v>0</v></c>` +
+    `<c r="F1" s="303"><f>SUM(F4:F${lastRow})/2</f><v>0</v></c>` +
+    `</row>`,
+  );
+
+  // Row 2: Column headers
+  rows.push(
+    `<row r="2" spans="1:6" s="302" customFormat="1" ht="12.75" customHeight="1" x14ac:dyDescent="0.15">` +
+    `<c r="A2" s="487"/><c r="B2" s="485"/>` +
+    `<c r="C2" s="482" t="s"><v>238</v></c>` +
+    `<c r="D2" s="488" t="s"><v>237</v></c>` +
+    `<c r="E2" s="482" t="s"><v>236</v></c>` +
+    `<c r="F2" s="482" t="s"><v>235</v></c>` +
+    `</row>`,
+  );
+
+  // Row 3: Column headers continued (merged)
+  rows.push(
+    `<row r="3" spans="1:6" s="301" customFormat="1" ht="24" customHeight="1" x14ac:dyDescent="0.15">` +
+    `<c r="A3" s="487"/><c r="B3" s="485"/>` +
+    `<c r="C3" s="490"/><c r="D3" s="489"/>` +
+    `<c r="E3" s="483"/><c r="F3" s="483"/>` +
+    `</row>`,
+  );
+
+  // Row 4: Blank separator
+  rows.push(`<row r="4" spans="1:6" ht="14" thickBot="1" x14ac:dyDescent="0.2"/>`);
+
+  let currentRow = 5;
+
+  for (let w = 0; w < weekCount; w++) {
+    const days = monthWeeks[w];
+    const firstDayRow = currentRow;
+
+    // Day rows
+    for (let d = 0; d < days.length; d++) {
+      const serial = toExcelSerial(days[d]);
+      const r = currentRow;
+      if (d === 0) {
+        // First day of week — special styles with empty editable cells
+        rows.push(
+          `<row r="${r}" spans="1:6" x14ac:dyDescent="0.15">` +
+          `<c r="A${r}" s="298"><v>${serial}</v></c>` +
+          `<c r="B${r}" s="297"><v>${serial}</v></c>` +
+          `<c r="C${r}" s="296"/><c r="D${r}" s="295"/>` +
+          `<c r="E${r}" s="294"/><c r="F${r}" s="293"/>` +
+          `</row>`,
+        );
+      } else {
+        rows.push(
+          `<row r="${r}" spans="1:6" x14ac:dyDescent="0.15">` +
+          `<c r="A${r}" s="292"><v>${serial}</v></c>` +
+          `<c r="B${r}" s="285"><v>${serial}</v></c>` +
+          `<c r="F${r}" s="291"/>` +
+          `</row>`,
+        );
+      }
+      currentRow++;
+    }
+
+    // Rental due row — date = last day of the week
+    const lastDaySerial = toExcelSerial(days[days.length - 1]);
+    rows.push(
+      `<row r="${currentRow}" spans="1:6" x14ac:dyDescent="0.15">` +
+      `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
+      `<c r="B${currentRow}" s="285" t="s"><v>234</v></c>` +
+      `<c r="F${currentRow}" s="291"/>` +
+      `</row>`,
+    );
+    currentRow++;
+
+    // Any other income row
+    rows.push(
+      `<row r="${currentRow}" spans="1:6" x14ac:dyDescent="0.15">` +
+      `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
+      `<c r="B${currentRow}" s="285" t="s"><v>233</v></c>` +
+      `<c r="F${currentRow}" s="291"/>` +
+      `</row>`,
+    );
+    const lastDataRow = currentRow;
+    currentRow++;
+
+    // Subtotal row
+    rows.push(
+      `<row r="${currentRow}" spans="1:6" ht="14" thickBot="1" x14ac:dyDescent="0.2">` +
+      `<c r="A${currentRow}" s="290"/><c r="B${currentRow}" s="289"/>` +
+      `<c r="C${currentRow}" s="287"/><c r="D${currentRow}" s="288"/>` +
+      `<c r="E${currentRow}" s="300"><f>SUM(E${firstDayRow}:E${lastDataRow})</f><v>0</v></c>` +
+      `<c r="F${currentRow}" s="299"><f>SUM(F${firstDayRow}:F${lastDataRow})</f><v>0</v></c>` +
+      `</row>`,
+    );
+    currentRow++;
+
+    // Blank separator (not after last week)
+    if (w < weekCount - 1) {
+      rows.push(`<row r="${currentRow}" spans="1:6" ht="14" thickBot="1" x14ac:dyDescent="0.2"/>`);
+      currentRow++;
+    }
+  }
+
+  return { xml: rows.join(""), lastRow: currentRow - 1 };
+}
+
+// Replace the <sheetData> and <dimension> in a Sales sheet XML.
+function replaceSalesSheetData(sheetXml, monthWeeks) {
+  const { xml: newData, lastRow } = buildSalesSheetXml(monthWeeks);
+
+  // Update dimension
+  sheetXml = sheetXml.replace(
+    /<dimension ref="[^"]*"\/>/,
+    `<dimension ref="A1:F${lastRow}"/>`,
+  );
+
+  // Replace sheetData content
+  sheetXml = sheetXml.replace(
+    /<sheetData>[\s\S]*<\/sheetData>/,
+    `<sheetData>${newData}</sheetData>`,
+  );
+
+  return sheetXml;
+}
+
 // ── Generate one spreadsheet ────────────────────────────────────────────────
 
-export async function generateSpreadsheet(templateBuffer, taxData, adminSheetPath) {
+export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig) {
   const startDate = new Date(taxData.tax_year.start);
   const startYear = startDate.getUTCFullYear();
 
   const zip = await JSZip.loadAsync(templateBuffer);
 
-  let adminXml = await zip.file(adminSheetPath).async("string");
+  // Admin sheet edits (shared between BST and Taxi)
+  let adminXml = await zip.file(sheetsConfig.admin).async("string");
 
   const { numericEdits, stringEdits } = buildCellEdits(taxData, startYear);
 
@@ -161,9 +388,27 @@ export async function generateSpreadsheet(templateBuffer, taxData, adminSheetPat
     adminXml = setCellString(adminXml, cellRef, str);
   }
 
-  // Preserve the original entry date so output is deterministic across runs
-  const originalDate = zip.file(adminSheetPath).date;
-  zip.file(adminSheetPath, adminXml, { date: originalDate });
+  const originalDate = zip.file(sheetsConfig.admin).date;
+  zip.file(sheetsConfig.admin, adminXml, { date: originalDate });
+
+  // Sales sheet generation (Taxi only — when sheetsConfig.sales is present)
+  if (sheetsConfig.sales) {
+    const weeks = generateTaxYearWeeks(startYear);
+    const monthlyData = groupWeeksIntoMonths(weeks);
+    const monthKeys = ["apr", "may", "jun", "jul", "aug", "sep",
+      "oct", "nov", "dec", "jan", "feb", "mar"];
+
+    for (const monthKey of monthKeys) {
+      const sheetPath = sheetsConfig.sales[monthKey];
+      if (!sheetPath || !monthlyData[monthKey].length) continue;
+
+      let sheetXml = await zip.file(sheetPath).async("string");
+      sheetXml = replaceSalesSheetData(sheetXml, monthlyData[monthKey]);
+
+      const origDate = zip.file(sheetPath).date;
+      zip.file(sheetPath, sheetXml, { date: origDate });
+    }
+  }
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   let wbXml = await zip.file("xl/workbook.xml").async("string");

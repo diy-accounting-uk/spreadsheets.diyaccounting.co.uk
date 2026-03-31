@@ -7,6 +7,7 @@
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync } from "fs";
 import { toExcelSerial } from "./spreadsheet-runner.js";
+import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSerial } from "./generator.js";
 
 const MONTH_SHEETS = {
   apr: "Apr",
@@ -30,21 +31,71 @@ function parseDate(d) {
   return new Date(Date.UTC(y, m - 1, day));
 }
 
+// Extract tax year start year from scenario dates.
+// Tax year runs April 6 to April 5: month >= 4 means this year, else last year.
+function extractTaxYearStart(scenario) {
+  for (const section of [scenario.sales, scenario.purchases]) {
+    if (!section) continue;
+    for (const transactions of Object.values(section)) {
+      for (const tx of transactions) {
+        const d = parseDate(tx.date);
+        const month = d.getUTCMonth() + 1;
+        return month >= 4 ? d.getUTCFullYear() : d.getUTCFullYear() - 1;
+      }
+    }
+  }
+  return null;
+}
+
+// Build a map of date serial → row number for each monthly Sales sheet.
+// Used by taxi to find which row a given date falls into.
+function buildTaxiDateRowMap(startYear) {
+  const weeks = generateTaxYearWeeks(startYear);
+  const monthly = groupWeeksIntoMonths(weeks);
+
+  const map = {};
+  for (const [monthKey, monthWeeks] of Object.entries(monthly)) {
+    if (!monthWeeks.length) continue;
+    const dateMap = {};
+    let row = 5;
+
+    for (let w = 0; w < monthWeeks.length; w++) {
+      for (const date of monthWeeks[w]) {
+        dateMap[dateToSerial(date)] = row;
+        row++;
+      }
+      row += 3; // rental + other income + subtotal
+      if (w < monthWeeks.length - 1) row += 1; // blank separator
+    }
+
+    map[monthKey] = dateMap;
+  }
+
+  return map;
+}
+
 export function loadScenario(path) {
   return parseTOML(readFileSync(path, "utf8"));
 }
 
 export function scenarioToCellWrites(scenario) {
+  const product = scenario.metadata?.product || "bst";
   const writes = {};
 
-  // Process sales
+  if (product === "taxi") {
+    return taxiCellWrites(scenario, writes);
+  }
+  return bstCellWrites(scenario, writes);
+}
+
+function bstCellWrites(scenario, writes) {
   if (scenario.sales) {
     for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
       const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
       if (!writes[sheetName]) writes[sheetName] = {};
       const sheet = writes[sheetName];
 
-      let row = 4; // Sales data starts at row 4
+      let row = 4;
       for (const tx of transactions) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -57,14 +108,13 @@ export function scenarioToCellWrites(scenario) {
     }
   }
 
-  // Process purchases
   if (scenario.purchases) {
     for (const [monthKey, transactions] of Object.entries(scenario.purchases)) {
       const sheetName = `Purchases${MONTH_SHEETS[monthKey]}`;
       if (!writes[sheetName]) writes[sheetName] = {};
       const sheet = writes[sheetName];
 
-      let row = 5; // Purchase data starts at row 5
+      let row = 5;
       for (const tx of transactions) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
@@ -77,7 +127,6 @@ export function scenarioToCellWrites(scenario) {
     }
   }
 
-  // Process stock
   if (scenario.stock) {
     writes.PurchasesStock = {};
     if (scenario.stock.opening !== undefined) writes.PurchasesStock.D5 = scenario.stock.opening;
@@ -87,15 +136,66 @@ export function scenarioToCellWrites(scenario) {
   return writes;
 }
 
+function taxiCellWrites(scenario, writes) {
+  if (scenario.sales) {
+    const startYear = extractTaxYearStart(scenario);
+    const dateRowMap = buildTaxiDateRowMap(startYear);
+
+    for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
+      const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
+      if (!writes[sheetName]) writes[sheetName] = {};
+      const sheet = writes[sheetName];
+      const monthMap = dateRowMap[monthKey];
+
+      for (const tx of transactions) {
+        const d = parseDate(tx.date);
+        const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        const row = monthMap[serial];
+        if (!row) throw new Error(`Date ${d.toISOString().split("T")[0]} not found in ${sheetName} row map`);
+
+        sheet[`E${row}`] = tx.amount;
+        if (tx.other_income) sheet[`F${row}`] = tx.other_income;
+      }
+    }
+  }
+
+  if (scenario.purchases) {
+    for (const [monthKey, transactions] of Object.entries(scenario.purchases)) {
+      const sheetName = `Purchases${MONTH_SHEETS[monthKey]}`;
+      if (!writes[sheetName]) writes[sheetName] = {};
+      const sheet = writes[sheetName];
+
+      let row = 5;
+      for (const tx of transactions) {
+        const d = parseDate(tx.date);
+        sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        if (tx.supplier) sheet[`B${row}`] = tx.supplier;
+        sheet[`D${row}`] = tx.code;
+        sheet[`F${row}`] = tx.amount;
+        row++;
+      }
+    }
+  }
+
+  return writes;
+}
+
 // Standard reads for reconciliation — all key output cells
-export function standardReads() {
-  return {
+export function standardReads(product = "bst") {
+  const reads = {
     "Profit & Loss Acc": [
       "C4", "C5", "C6", "C7", "C9",
       "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21",
       "C22", "C24", "C26", "C28", "C30",
       "C32", "C33", "C35",
     ],
-    "Income Tax": ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
   };
+
+  if (product === "taxi") {
+    reads["Draft Tax calculation"] = ["E5", "E6", "E7", "E8", "E9", "E10", "E14", "E15", "E17"];
+  } else {
+    reads["Income Tax"] = ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"];
+  }
+
+  return reads;
 }
