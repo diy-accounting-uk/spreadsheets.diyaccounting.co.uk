@@ -30,8 +30,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
 
-      - name: Checkout
+      - name: Checkout latest
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -58,7 +61,7 @@ jobs:
           echo "exit_code=$?" >> "$GITHUB_OUTPUT"
 
       - name: List generated reports
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           echo "=== Generated reports ==="
           if [ -d reports ]; then
@@ -75,7 +78,7 @@ jobs:
           fi
 
       - name: Generate screenshots (empty and populated)
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           echo "=== Generating screenshots ==="
           mkdir -p reports/screenshots/empty reports/screenshots/populated /tmp/screenshots
@@ -121,28 +124,29 @@ jobs:
           find reports/screenshots/ -name "*.pdf" -exec ls -lh {} \; 2>/dev/null || echo "No screenshots generated"
 
       - name: Commit reports and screenshots
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add reports/
-          echo "=== Staged changes ==="
-          git diff --staged --stat
           if git diff --staged --quiet; then
-            echo "No changes to reports/"
+            echo "=== No changes to commit ==="
+            echo "reports/ is already up to date"
           else
+            echo "=== Staged ==="
+            git diff --staged --name-only | head -50
             git commit -m "Reconciliation reports and screenshots
 
           Triggered by: ${{ github.sha }}
           Workflow: ${{ github.workflow }}"
-            echo "=== Pushing ==="
+            echo "=== Pushing to ${{ github.ref_name }} ==="
             git pull --rebase
             git push
             echo "=== Push complete ==="
           fi
 
       - name: Check compliance
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           echo "=== Checking compliance ==="
           if grep -r "NON-COMPLIANT" reports/*.md 2>/dev/null; then

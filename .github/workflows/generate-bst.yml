@@ -262,8 +262,11 @@ jobs:
     needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026, generate-se-2026-2027]
     steps:
 
-      - name: Checkout
+      - name: Checkout latest
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
 
       - name: Download all generated packages
         uses: actions/download-artifact@v8
@@ -287,32 +290,21 @@ jobs:
           echo "=== Total files ==="
           find packages-generated/ -type f | wc -l | xargs echo "Total:"
 
-      - name: Stage changes
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add packages-generated/
-          echo "=== Staged changes ==="
-          git diff --staged --stat
-          echo ""
-          echo "=== Staged files ==="
-          git diff --staged --name-only | head -50
-
-      - name: Commit and push
-        run: |
           if git diff --staged --quiet; then
             echo "=== No changes to commit ==="
             echo "packages-generated/ is already up to date"
           else
-            echo "=== Committing ==="
+            echo "=== Staged ==="
+            git diff --staged --name-only | head -50
             git commit -m "Generate BST packages from app/data and app/templates
 
           Triggered by: ${{ github.sha }}
           Workflow: ${{ github.workflow }}"
-            echo ""
-            echo "=== Commit details ==="
-            git log -1 --stat
-            echo ""
             echo "=== Pushing to ${{ github.ref_name }} ==="
             git pull --rebase
             git push
