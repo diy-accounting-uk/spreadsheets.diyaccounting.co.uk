@@ -1,0 +1,42 @@
+# Taxi Driver product metadata
+# Used by the generator for package naming, guide generation, and output structure
+
+[product]
+id = "TaxiDriver"
+name = "Taxi Driver"
+description = "Daily bookkeeping spreadsheet for taxi drivers. Pre-filled daily dates, vehicle cost comparison, profit forecast, and self-assessment tax return."
+tax_regime = "se"  # self-employment — determines which tax-data file to use
+
+[template]
+spreadsheet = "taxi-excel.xlsx"
+guide = "taxi-guide.md"
+
+[output]
+# Pattern for generated package directory name
+# Placeholders: {prefix}, {name}, {year_end_date}, {short_label}, {format}
+dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+# Pattern for generated spreadsheet filename
+# Placeholders: {year_end_ddmmyy}
+spreadsheet_pattern = "Financialaccountsyearto{year_end_ddmmyy}.xlsx"
+guide_filename = "Taxi Driver User Guide.pdf"
+
+[sheets]
+# xlsx internal paths for XML surgery
+admin = "xl/worksheets/sheet33.xml"
+home = "xl/worksheets/sheet1.xml"
+se_short = "xl/worksheets/sheet3.xml"
+
+[sheets.sales]
+# Sales sheet XML paths for date pre-filling (one per month)
+apr = "xl/worksheets/sheet9.xml"
+may = "xl/worksheets/sheet11.xml"
+jun = "xl/worksheets/sheet13.xml"
+jul = "xl/worksheets/sheet15.xml"
+aug = "xl/worksheets/sheet17.xml"
+sep = "xl/worksheets/sheet19.xml"
+oct = "xl/worksheets/sheet21.xml"
+nov = "xl/worksheets/sheet23.xml"
+dec = "xl/worksheets/sheet25.xml"
+jan = "xl/worksheets/sheet27.xml"
+feb = "xl/worksheets/sheet29.xml"
+mar = "xl/worksheets/sheet31.xml"

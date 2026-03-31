@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// scenario-loader.js — Load TOML scenario fixtures and convert them into
-// cell writes for the spreadsheet runner.
+// scenario-loader.js — Shared utilities for loading TOML scenario fixtures.
+// Product-specific cell writes, reads, and compliance checks live in app/products/.
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync } from "fs";
-import { toExcelSerial } from "./spreadsheet-runner.js";
 
-const MONTH_SHEETS = {
+export const MONTH_SHEETS = {
   apr: "Apr",
   may: "May",
   jun: "Jun",
@@ -23,79 +22,28 @@ const MONTH_SHEETS = {
   mar: "Mar",
 };
 
-function parseDate(d) {
-  // TOML dates come as Date objects from smol-toml
+export function parseDate(d) {
   if (d instanceof Date) return d;
   const [y, m, day] = String(d).split("-").map(Number);
   return new Date(Date.UTC(y, m - 1, day));
 }
 
+// Extract tax year start year from scenario dates.
+// Tax year runs April 6 to April 5: month >= 4 means this year, else last year.
+export function extractTaxYearStart(scenario) {
+  for (const section of [scenario.sales, scenario.purchases]) {
+    if (!section) continue;
+    for (const transactions of Object.values(section)) {
+      for (const tx of transactions) {
+        const d = parseDate(tx.date);
+        const month = d.getUTCMonth() + 1;
+        return month >= 4 ? d.getUTCFullYear() : d.getUTCFullYear() - 1;
+      }
+    }
+  }
+  return null;
+}
+
 export function loadScenario(path) {
   return parseTOML(readFileSync(path, "utf8"));
-}
-
-export function scenarioToCellWrites(scenario) {
-  const writes = {};
-
-  // Process sales
-  if (scenario.sales) {
-    for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
-      const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
-      if (!writes[sheetName]) writes[sheetName] = {};
-      const sheet = writes[sheetName];
-
-      let row = 4; // Sales data starts at row 4
-      for (const tx of transactions) {
-        const d = parseDate(tx.date);
-        sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-        if (tx.customer) sheet[`B${row}`] = tx.customer;
-        if (tx.payment) sheet[`D${row}`] = tx.payment;
-        sheet[`F${row}`] = tx.amount;
-        if (tx.other_income) sheet[`G${row}`] = tx.other_income;
-        row++;
-      }
-    }
-  }
-
-  // Process purchases
-  if (scenario.purchases) {
-    for (const [monthKey, transactions] of Object.entries(scenario.purchases)) {
-      const sheetName = `Purchases${MONTH_SHEETS[monthKey]}`;
-      if (!writes[sheetName]) writes[sheetName] = {};
-      const sheet = writes[sheetName];
-
-      let row = 5; // Purchase data starts at row 5
-      for (const tx of transactions) {
-        const d = parseDate(tx.date);
-        sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-        if (tx.supplier) sheet[`B${row}`] = tx.supplier;
-        if (tx.payment) sheet[`D${row}`] = tx.payment;
-        sheet[`E${row}`] = tx.code;
-        sheet[`G${row}`] = tx.amount;
-        row++;
-      }
-    }
-  }
-
-  // Process stock
-  if (scenario.stock) {
-    writes.PurchasesStock = {};
-    if (scenario.stock.opening !== undefined) writes.PurchasesStock.D5 = scenario.stock.opening;
-    if (scenario.stock.closing !== undefined) writes.PurchasesStock.D30 = scenario.stock.closing;
-  }
-
-  return writes;
-}
-
-// Standard reads for reconciliation — all key output cells
-export function standardReads() {
-  return {
-    "Profit & Loss Acc": [
-      "C4", "C5", "C6", "C7", "C9",
-      "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21",
-      "C22", "C24", "C26", "C28", "C30",
-      "C32", "C33", "C35",
-    ],
-    "Income Tax": ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
-  };
 }

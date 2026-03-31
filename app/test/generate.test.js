@@ -16,11 +16,15 @@ import {
   shortLabel,
   utcDate,
   monthEnd,
+  generateTaxYearWeeks,
+  groupWeeksIntoMonths,
+  buildSalesSheetXml,
 } from "../lib/generator.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const BST_DIR = resolve(APP_DIR, "templates", "bst");
+const TAXI_DIR = resolve(APP_DIR, "templates", "taxi");
 const DATA_DIR = resolve(APP_DIR, "data");
 
 // ── Date helpers ────────────────────────────────────────────────────────────
@@ -115,7 +119,7 @@ describe("generateSpreadsheet", () => {
 
   it("generates a valid xlsx buffer for 2025-26", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
-    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(100000); // sanity check size
     // Verify it's a valid zip (xlsx) — starts with PK signature
@@ -125,14 +129,14 @@ describe("generateSpreadsheet", () => {
 
   it("generates a valid xlsx buffer for 2024-25", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
-    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(100000);
   });
 
   it("contains correct Admin cell values in generated xlsx", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
-    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets.admin);
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
 
     // Read back the Admin sheet XML from the generated zip
     const JSZip = (await import("jszip")).default;
@@ -153,6 +157,178 @@ describe("generateSpreadsheet", () => {
   });
 });
 
+// ── Tax year weeks ─────────────────────────────────────────────────────────
+
+describe("generateTaxYearWeeks", () => {
+  it("generates 53 weeks for 2025-26 (Apr 6 = Sunday)", () => {
+    const weeks = generateTaxYearWeeks(2025);
+    // First week: just Sunday Apr 6 (1 day)
+    expect(weeks[0]).toHaveLength(1);
+    expect(weeks[0][0].getUTCDay()).toBe(0); // Sunday
+    // Second week: Mon Apr 7 - Sun Apr 13 (7 days)
+    expect(weeks[1]).toHaveLength(7);
+    expect(weeks[1][0].getUTCDay()).toBe(1); // Monday
+    // Total days = 365
+    const totalDays = weeks.reduce((sum, w) => sum + w.length, 0);
+    expect(totalDays).toBe(365);
+  });
+
+  it("generates 53 weeks for 2020-21 (Apr 6 = Monday)", () => {
+    const weeks = generateTaxYearWeeks(2020);
+    // First week: Mon-Sun (full 7 days)
+    expect(weeks[0]).toHaveLength(7);
+    expect(weeks[0][0].getUTCDay()).toBe(1); // Monday
+    // Last week: just Mon Apr 5 (1 day)
+    expect(weeks[weeks.length - 1]).toHaveLength(1);
+    expect(weeks[weeks.length - 1][0].getUTCDay()).toBe(1); // Monday
+    const totalDays = weeks.reduce((sum, w) => sum + w.length, 0);
+    expect(totalDays).toBe(365);
+  });
+
+  it("handles leap year 2023-24 (366 days)", () => {
+    const weeks = generateTaxYearWeeks(2023);
+    const totalDays = weeks.reduce((sum, w) => sum + w.length, 0);
+    expect(totalDays).toBe(366);
+  });
+});
+
+describe("groupWeeksIntoMonths", () => {
+  it("groups 2025-26 weeks correctly", () => {
+    const weeks = generateTaxYearWeeks(2025);
+    const months = groupWeeksIntoMonths(weeks);
+
+    // SalesApr: 4 weeks (1 partial + 3 full)
+    expect(months.apr).toHaveLength(4);
+    // SalesMay: 4 weeks
+    expect(months.may).toHaveLength(4);
+    // SalesJun: 5 weeks
+    expect(months.jun).toHaveLength(5);
+    // SalesMar: 6 weeks (last month collects remaining)
+    expect(months.mar).toHaveLength(6);
+
+    // Total weeks across all months = total weeks
+    const totalWeeks = Object.values(months).reduce((sum, m) => sum + m.length, 0);
+    expect(totalWeeks).toBe(weeks.length);
+  });
+
+  it("groups 2020-21 weeks correctly (Apr 6 = Monday)", () => {
+    const weeks = generateTaxYearWeeks(2020);
+    const months = groupWeeksIntoMonths(weeks);
+
+    // First week is full Mon-Sun (Apr 6-12), Sunday Apr 12 → April
+    // Weeks: Apr 6-12, Apr 13-19, Apr 20-26. Apr 27 Sunday = May 3 → goes to May
+    expect(months.apr).toHaveLength(3);
+    // Last partial week (1 day: Mon Apr 5) goes to March
+    expect(months.mar[months.mar.length - 1]).toHaveLength(1);
+  });
+});
+
+describe("buildSalesSheetXml", () => {
+  it("generates correct XML for a single full week", () => {
+    // One full week: Mon-Sun
+    const week = [
+      utcDate(2025, 4, 7), utcDate(2025, 4, 8), utcDate(2025, 4, 9),
+      utcDate(2025, 4, 10), utcDate(2025, 4, 11), utcDate(2025, 4, 12),
+      utcDate(2025, 4, 13),
+    ];
+    const { xml, lastRow } = buildSalesSheetXml([week]);
+
+    // Header (rows 1-4) + 7 days (5-11) + rental (12) + other income (13) + subtotal (14)
+    expect(lastRow).toBe(14);
+    // Contains date serials
+    expect(xml).toContain(`<v>${toExcelSerial(utcDate(2025, 4, 7))}</v>`);
+    expect(xml).toContain(`<v>${toExcelSerial(utcDate(2025, 4, 13))}</v>`);
+    // Contains "Rental due" shared string reference
+    expect(xml).toContain(`t="s"><v>234</v>`);
+    // Contains "Any other income" shared string reference
+    expect(xml).toContain(`t="s"><v>233</v>`);
+    // Contains subtotal formula
+    expect(xml).toContain(`SUM(E5:E13)`);
+    // Contains column total formula with /2
+    expect(xml).toContain(`SUM(E4:E14)/2`);
+  });
+
+  it("generates correct XML for a partial week (1 day)", () => {
+    const week = [utcDate(2025, 4, 6)]; // Sunday only
+    const { xml, lastRow } = buildSalesSheetXml([week]);
+
+    // Header (rows 1-4) + 1 day (5) + rental (6) + other income (7) + subtotal (8)
+    expect(lastRow).toBe(8);
+    expect(xml).toContain(`SUM(E5:E7)`); // subtotal covers rows 5-7
+    expect(xml).toContain(`SUM(E4:E8)/2`); // column total
+  });
+
+  it("generates correct row count for 4 weeks", () => {
+    const weeks = generateTaxYearWeeks(2025);
+    const months = groupWeeksIntoMonths(weeks);
+    const { lastRow } = buildSalesSheetXml(months.apr);
+
+    // Apr 2025-26: 4 weeks (1-day partial + 3 full weeks)
+    // Header: rows 1-4 (4 rows)
+    // Week 1: 1 day + rental + other income + subtotal = 4 rows (5-8)
+    // Separator: 1 row (9)
+    // Week 2: 7 days + rental + other + subtotal = 10 rows (10-19)
+    // Separator: 1 row (20)
+    // Week 3: 7 days + rental + other + subtotal = 10 rows (21-30)
+    // Separator: 1 row (31)
+    // Week 4: 7 days + rental + other + subtotal = 10 rows (32-41) — no trailing separator
+    expect(lastRow).toBe(41);
+  });
+});
+
+// ── Taxi spreadsheet generation ───────────────────────────────────────────
+
+describe("generateSpreadsheet (taxi)", () => {
+  const productMeta = parseTOML(readFileSync(resolve(TAXI_DIR, "meta.toml"), "utf8"));
+  const templatePath = resolve(TAXI_DIR, productMeta.template.spreadsheet);
+  let templateBuffer;
+
+  beforeAll(() => {
+    templateBuffer = readFileSync(templatePath);
+  });
+
+  it("generates a valid xlsx with Sales sheet dates for 2025-26", async () => {
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(100000);
+
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+
+    // Verify SalesApr has the correct dates
+    const salesAprXml = await zip.file("xl/worksheets/sheet9.xml").async("string");
+    const apr6Serial = toExcelSerial(utcDate(2025, 4, 6));
+    expect(salesAprXml).toContain(`<v>${apr6Serial}</v>`); // April 6 date
+
+    // Verify SalesMar extends to April 5
+    const salesMarXml = await zip.file("xl/worksheets/sheet31.xml").async("string");
+    const apr5Serial = toExcelSerial(utcDate(2026, 4, 5));
+    expect(salesMarXml).toContain(`<v>${apr5Serial}</v>`); // April 5 date
+  });
+
+  it("generates different row layouts for different years", async () => {
+    const JSZip = (await import("jszip")).default;
+
+    const taxData25 = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
+    const buffer25 = await generateSpreadsheet(templateBuffer, taxData25, productMeta.sheets);
+    const zip25 = await JSZip.loadAsync(buffer25);
+    const apr25Xml = await zip25.file("xl/worksheets/sheet9.xml").async("string");
+
+    const taxData26 = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const buffer26 = await generateSpreadsheet(templateBuffer, taxData26, productMeta.sheets);
+    const zip26 = await JSZip.loadAsync(buffer26);
+    const apr26Xml = await zip26.file("xl/worksheets/sheet9.xml").async("string");
+
+    // Different years have different dimension ranges (different number of rows)
+    const dim25 = apr25Xml.match(/<dimension ref="([^"]*)"/)[1];
+    const dim26 = apr26Xml.match(/<dimension ref="([^"]*)"/)[1];
+    // Apr 2024-25 (Apr 6 = Saturday, 2-day first week) vs Apr 2025-26 (Apr 6 = Sunday, 1-day first week)
+    // Both have 4 weeks in April but different row counts due to different partial week sizes
+    expect(dim25).not.toBe(dim26);
+  });
+});
+
 // ── Template and data file existence ────────────────────────────────────────
 
 describe("file structure", () => {
@@ -166,6 +342,14 @@ describe("file structure", () => {
 
   it("BST product metadata exists", () => {
     expect(existsSync(resolve(BST_DIR, "meta.toml"))).toBe(true);
+  });
+
+  it("Taxi template spreadsheet exists", () => {
+    expect(existsSync(resolve(TAXI_DIR, "taxi-excel.xlsx"))).toBe(true);
+  });
+
+  it("Taxi product metadata exists", () => {
+    expect(existsSync(resolve(TAXI_DIR, "meta.toml"))).toBe(true);
   });
 
   it("shared metadata exists", () => {

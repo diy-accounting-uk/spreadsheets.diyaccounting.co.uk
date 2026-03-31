@@ -9,6 +9,7 @@
     "start": "npx http-server web/spreadsheets.diyaccounting.co.uk/public -p 3000",
     "build": "node app/bin/generate.js",
     "generate": "node app/bin/generate.js",
+    "regenerate": "rm -rf packages-generated && node app/bin/generate.js",
     "generate:skip-guide": "node app/bin/generate.js --skip-guide",
     "test:generate": "npx vitest --run app/test/generate.test.js",
     "test:slow": "npx vitest --run --project slow-tests",
