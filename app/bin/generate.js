@@ -37,7 +37,7 @@ const PRODUCTS = {
   taxi: { dir: "taxi", name: "Taxi Driver" },
 };
 
-async function generateProduct(productDir, tomlPath, sourceDateEpoch) {
+async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
@@ -76,13 +76,15 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch) {
   console.log(`           ${xlsxFilename}`);
 
   // Generate PDF guide
-  const guideMd = resolve(productDir, productMeta.template.guide);
-  const guidePdf = resolve(outDir, productMeta.output.guide_filename);
-  try {
-    await generatePdf(guideMd, guidePdf, sourceDateEpoch);
-    console.log(`  Guide:   ${productMeta.output.guide_filename}`);
-  } catch (e) {
-    console.warn(`  Warning: PDF guide generation failed — ${e.message}`);
+  if (!skipGuide) {
+    const guideMd = resolve(productDir, productMeta.template.guide);
+    const guidePdf = resolve(outDir, productMeta.output.guide_filename);
+    try {
+      await generatePdf(guideMd, guidePdf, sourceDateEpoch);
+      console.log(`  Guide:   ${productMeta.output.guide_filename}`);
+    } catch (e) {
+      console.warn(`  Warning: PDF guide generation failed — ${e.message}`);
+    }
   }
 
   return { dirName, xlsxFilename, taxYear: ty.label };
@@ -119,13 +121,15 @@ function parseArgs(argv) {
     sourceDateEpoch = parseInt(args[epochIdx + 1], 10);
   }
 
-  return { packageFilter, tomlFiles, sourceDateEpoch };
+  const skipGuide = args.includes("--skip-guide");
+
+  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide };
 }
 
 async function main() {
   console.log("=== generate.js ===");
 
-  const { packageFilter, tomlFiles, sourceDateEpoch } = parseArgs(process.argv);
+  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide } = parseArgs(process.argv);
 
   // Determine which products to generate
   const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
@@ -155,7 +159,7 @@ async function main() {
       const tomlName = tomlFile.split("/").pop();
       if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
 
-      const result = await generateProduct(productDir, tomlFile, sourceDateEpoch);
+      const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
       results.push(result);
     }
   }

@@ -1,5 +1,8 @@
 name: generate-taxi
 run-name: "generate-taxi from ${{ github.ref_name }}"
+concurrency:
+  group: taxi-packages-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:
@@ -312,6 +315,7 @@ jobs:
             git log -1 --stat
             echo ""
             echo "=== Pushing to ${{ github.ref_name }} ==="
+            git pull --rebase
             git push
             echo "=== Push complete ==="
           fi

@@ -1,5 +1,8 @@
 name: reconciliation
 run-name: "reconciliation from ${{ github.ref_name }}"
+concurrency:
+  group: reconciliation-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   push:

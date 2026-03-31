@@ -417,6 +417,17 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     }
   }
 
+  // Fix Home sheet HYPERLINKs: replace filename-based links (HYPERLINK(B3&"'Sheet'!Cell"))
+  // with intra-workbook # links (HYPERLINK("#'Sheet'!Cell")) so they work regardless of filename.
+  if (sheetsConfig.home) {
+    let homeXml = await zip.file(sheetsConfig.home).async("string");
+    if (homeXml.includes('B3&amp;"')) {
+      homeXml = homeXml.replace(/HYPERLINK\(B3&amp;"'/g, `HYPERLINK("#'`);
+      const homeDate = zip.file(sheetsConfig.home).date;
+      zip.file(sheetsConfig.home, homeXml, { date: homeDate });
+    }
+  }
+
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   let wbXml = await zip.file("xl/workbook.xml").async("string");
   wbXml = wbXml.replace(
