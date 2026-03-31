@@ -12,6 +12,7 @@ Entering the data is no more complicated than entering your financial informatio
 
 Designed to be fast and easy to enter the accounting system is formula driven so that minimum data is entered with automated analysis producing monthly profit & loss accounts, and an excel copy of the all important self assessment tax return ready for printing and copying to the Inland Revenue paper copy or filing directly online.
 
+
 ## Contents
 
 - [Getting Started](#getting-started)
