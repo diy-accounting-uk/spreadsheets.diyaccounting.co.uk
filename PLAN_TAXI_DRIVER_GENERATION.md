@@ -371,10 +371,33 @@ Verified by extracting all formulas from the 3 taxi-specific sheets:
 
 **Conclusion:** The generator only needs to write to **Admin** (dates + tax rates, same as BST) and **12 Sales sheets** (full row structure with dates, labels, formulas). All other sheets are formula-driven.
 
-## Remaining Open Questions
+## Verified: All 12 Sales Sheets Formula Structure (Apr26)
 
-1. **SalesMay–SalesMar formula structure** — Need to verify whether all 12 monthly Sales sheets follow the same formula pattern as SalesApr, or whether later months have variations (e.g., more/fewer weeks)
-2. **Maximum rows per month** — A month with 6 weeks (like SalesMar in some years) needs ~66 rows. Need to verify the column total formulas (row 1) have ranges large enough to cover all possible weeks
+All open questions resolved. Full analysis of all 12 monthly Sales sheets:
+
+| Month | Weeks | Last Row | Dates | Row 1 E/F formula | Weekly subtotals |
+|-------|-------|----------|-------|-------------------|-----------------|
+| SalesApr | 4 (1 partial) | 41 | Sun 06-Apr → Sun 27-Apr | `SUM(E4:E44)/2` | E8, E19, E30, E41 |
+| SalesMay | 4 | 47 | Mon 28-Apr → Sun 25-May | `SUM(E4:E47)/2` | E14, E25, E36, E47 |
+| SalesJun | 5 | 58 | Mon 26-May → Sun 29-Jun | `SUM(E4:E58)/2` | E14, E25, E36, E47, E58 |
+| SalesJul | 4 | 48 | Mon 30-Jun → Sun 27-Jul | `SUM(E4:E49)/2` | E15, E26, E37, E48 |
+| SalesAug | 4 | 47 | Mon 28-Jul → Sun 24-Aug | `SUM(E4:E48)/2` | E14, E25, E36, E47 |
+| SalesSep | 5 | 58 | Mon 25-Aug → Sun 28-Sep | `SUM(E4:E58)/2` | E14, E25, E36, E47, E58 |
+| SalesOct | 4 | 48 | Mon 29-Sep → Sun 26-Oct | `SUM(E4:E48)/2` | E15, E26, E37, E48 |
+| SalesNov | 4 | 47 | Mon 27-Oct → Sun 23-Nov | `SUM(E4:E48)/2` | E14, E25, E36, E47 |
+| SalesDec | 5 | 58 | Mon 24-Nov → Sun 28-Dec | `SUM(E4:E59)/2` | E14, E25, E36, E47, E58 |
+| SalesJan | 4 | 47 | Mon 29-Dec → Sun 25-Jan | `SUM(E4:E47)/2` | E14, E25, E36, E47 |
+| SalesFeb | 4 | 47 | Mon 26-Jan → Sun 22-Feb | `SUM(E4:E47)/2` | E14, E25, E36, E47 |
+| SalesMar | 6 (1 partial) | 69 | Mon 23-Feb → Sun 05-Apr | `SUM(E4:E65)/2` | E14, E25, E36, E47, E58, E69 |
+
+**Key patterns confirmed:**
+
+1. **Each full week = 11 rows**: 7 day rows + Rental due + Any other income + subtotal + blank separator
+2. **Row 1 column totals** use `SUM(E4:Exx)/2` — the `/2` compensates for subtotal rows being in the range. The D column range varies (some appear to be bugs in the original — D1 ranges in Oct, Jan, Feb don't match E/F)
+3. **SalesApr** is special: first subtotal `SUM(E3:E7)` starts at row 3 (partial first week). Other months start at row 5
+4. **SalesMar** is special: last partial week (rows 63-68) ends on Apr 5 with subtotal `SUM(E63:E68)`
+5. **Maximum rows**: 69 (SalesMar with 6 weeks). Minimum: 41 (SalesApr with 4 weeks including partial)
+6. **Months with dates starting before their calendar month** are common (SalesJul starts June 30, SalesMar starts Feb 23) — this is the week-alignment effect
 
 ## Dependency Order
 
