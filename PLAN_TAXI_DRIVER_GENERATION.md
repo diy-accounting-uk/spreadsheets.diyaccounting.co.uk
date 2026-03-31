@@ -232,9 +232,9 @@ Output: 12 arrays of weekly-grouped daily dates, one per Sales sheet
 1. Start at April 6
 2. Find the first Sunday on or after April 6 → end of first partial week
 3. Generate full Monday–Sunday weeks until April 5 of next year
-4. Split into months: each month starts on a Monday (except first which starts Apr 6)
-   and ends on the last Sunday before the next month's Admin date boundary
-5. The last month (SalesMar) ends exactly on April 5
+4. Split into months: each month gets the weeks where Monday falls in that calendar month
+   (first month starts Apr 6, last month ends exactly Apr 5)
+5. Each month's sheet: SalesApr gets April weeks, SalesMay gets May weeks, etc.
 
 For each day:
   - Column A: date (Excel serial number)
@@ -258,13 +258,19 @@ Total: ~11 rows per full week. A month with 4 weeks ≈ 44 rows, 5 weeks ≈ 55 
 
 #### 3.3 XML Surgery for Sales Sheets
 
-Unlike BST (Admin-only edits), taxi generation must write to **12 Sales sheet XML files**. The approach:
+Unlike BST (Admin-only edits), taxi generation must **replace the entire `<sheetData>` of 12 Sales sheet XML files**. This is necessary because:
 
-**Option A:** Clear all existing rows and write new ones (zip-level XML replacement, same as BST Admin surgery but for more cells).
+- Subtotal formulas use hardcoded row references (e.g. `SUM(E10:E18)`)
+- The number of rows per month and per week varies by year (depends on what day April 6 falls on)
+- Option B (template with stub rows, only update dates) won't work because the formula ranges must match the actual row layout
 
-**Option B:** Template has stub rows with formulas; generator only updates date values.
+**Approach:** For each Sales sheet, the generator:
+1. Calculates which weeks belong to this month
+2. Builds the complete `<sheetData>` XML with header rows, daily date rows, Rental/Any other income rows, weekly subtotals, and column totals
+3. Preserves the existing sheet XML structure (formatting, merged cells, print settings) but replaces `<sheetData>` entirely
+4. The template retains all non-data elements (styles, column widths, etc.)
 
-Recommendation: **Option A** — write complete row XML for each Sales sheet. This is more work upfront but avoids template complexity and makes the generator the single source of truth for the layout.
+This is the same zip-level approach as BST Admin surgery, just applied to more sheets with generated XML content rather than single cell value edits.
 
 ### Phase 4: Guide Generation
 
@@ -313,19 +319,62 @@ The existing reconciliation workflow should auto-discover taxi packages if recon
 
 | Challenge | Complexity | Notes |
 |-----------|-----------|-------|
-| Sales date pre-filling | High | 365 date cells across 12 sheets, week-aligned month boundaries, partial first/last weeks |
-| Month boundary calculation | Medium | Which weeks belong to which month depends on Admin date boundaries and day-of-week for April 6 |
-| XML surgery for Sales sheets | Medium | Same zip-level approach as Admin, but must handle shared strings (day names, "Rental due") and row structure |
-| Template preparation | Low | Clear dates from Sales sheets, verify HYPERLINKs |
+| Sales sheet XML generation | High | Full `<sheetData>` replacement for 12 sheets — dates, labels, AND formulas with correct hardcoded row references. Row count varies by year. |
+| Month boundary calculation | Medium | Last complete week starting in calendar month. First/last months have partial weeks. |
+| Template preparation | Low | Template retains styles/formatting; Sales `<sheetData>` replaced entirely by generator |
 | Admin cell writes | None | Identical to BST — `generateAdminDates()` and `buildCellEdits()` already work |
 
-## Risks & Open Questions
+## Verified Facts (from xlsx analysis)
 
-1. **Sales row structure** — Do the weekly subtotal formulas reference specific row numbers, or are they relative? If hardcoded row references, the generator must produce exactly the same row layout as the original
-2. **Shared strings** — Day names ("Monday", "Tuesday", etc.) and labels ("Rental due", "Any other income") are in the xlsx shared strings table. The generator must either reuse existing shared string indices or add new ones
-3. **Month boundary algorithm** — Need to verify the exact rule for splitting weeks across months. Is it "last complete week starting in the calendar month" or based on Admin date boundaries?
-4. **Purchases sheet** — Does the taxi Purchases sheet need any pre-filled data, or is it free-form like BST?
-5. **VitalTax / Draft Tax calculation / Wages Forecast** — Do these sheets reference Admin cells the same way as BST's Income Tax sheet? Need to verify the generator doesn't need to touch them
+### Sales Row Structure — HARDCODED Row Numbers, Year-Specific Layout
+
+All subtotal formulas use **hardcoded absolute row references**:
+
+```
+SalesApr formulas (Apr26):
+  D1: SUM(D4:D44)           ← column total, fixed range
+  E1: SUM(E4:E44)/2         ← divides by 2 to exclude subtotal rows
+  F1: SUM(F4:F44)/2
+  A5: Admin!B4              ← tax year start date from Admin
+  B5: A5                    ← day column mirrors date
+  A6: A5, A7: A6            ← Rental/Any other income repeat the Sunday date
+  E8: SUM(E3:E7)            ← week 1 subtotal (rows 3-7)
+  A10: A7+1                 ← next Monday = previous Sunday + 1
+  E19: SUM(E10:E18)         ← week 2 subtotal
+  E30: SUM(E21:E29)         ← week 3 subtotal
+  E41: SUM(E32:E40)         ← week 4 subtotal
+```
+
+**The row structure varies by year.** Apr26 (Apr 6 = Sunday, 1-day first week) and Apr25 (Apr 6 = Saturday, 2-day first week) have different row counts and different formula ranges. This means the generator must write the **entire Sales sheet row structure** (dates, labels, AND formulas) — not just update date values in a fixed template.
+
+### Day Names and Labels — No Shared Strings Needed
+
+Dates in column A are Excel serial numbers formatted as `DD-Mmm-YY`. Column B also stores the date serial, formatted to display the day name (e.g. `dddd`). "Rental due" and "Any other income" are string literals in column C. No shared string indirection is needed — the generator writes these as inline strings.
+
+### Month Boundary Algorithm — Last Complete Week Starting in Calendar Month
+
+Confirmed by user. Each monthly Sales sheet covers weeks where the **Monday falls in that calendar month**. The first sheet (SalesApr) starts on April 6 regardless. The last sheet (SalesMar) ends exactly on April 5.
+
+### Purchases Sheet — Free-Form Like BST
+
+No pre-filled data. User enters transactions freely, same pattern as BST.
+
+### Taxi-Specific Sheets — All Formula-Driven from Admin and P&L
+
+Verified by extracting all formulas from the 3 taxi-specific sheets:
+
+| Sheet | Admin References | What It Does | Generator Action |
+|-------|-----------------|--------------|------------------|
+| **VitalTax** (sheet 5) | **None** | 93 formulas, all reference Profit & Loss Acc | None — fully driven by P&L |
+| **Draft Tax calculation** (sheet 7) | **Yes — 14 refs** to income tax rates (N4, N6, N7, N11, N12), NI rates (L20, N20, L23, N23), payment dates (B21, B22, B24), and tax year label (K2→G2→B23) | Income tax + NI calculation, same role as BST's Income Tax sheet | None — formula-driven from Admin |
+| **Wages Forecast** (sheet 8) | **Yes — 17 refs** to month-end dates (B5–B16, B17) and tax rates (N4, N6, N7, N12, L20) | Monthly P&L forecast, projects annual tax/NI | None — formula-driven from Admin |
+
+**Conclusion:** The generator only needs to write to **Admin** (dates + tax rates, same as BST) and **12 Sales sheets** (full row structure with dates, labels, formulas). All other sheets are formula-driven.
+
+## Remaining Open Questions
+
+1. **SalesMay–SalesMar formula structure** — Need to verify whether all 12 monthly Sales sheets follow the same formula pattern as SalesApr, or whether later months have variations (e.g., more/fewer weeks)
+2. **Maximum rows per month** — A month with 6 weeks (like SalesMar in some years) needs ~66 rows. Need to verify the column total formulas (row 1) have ranges large enough to cover all possible weeks
 
 ## Dependency Order
 
