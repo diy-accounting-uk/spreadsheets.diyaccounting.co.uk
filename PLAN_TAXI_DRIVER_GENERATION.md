@@ -419,12 +419,12 @@ Phase 1 (refactoring) is a prerequisite — it ensures the shared infrastructure
 
 | Item | Status | Notes |
 |------|--------|-------|
-| 1.1 Generator (`generator.js`) | ✓ Done | `generateSpreadsheet` now accepts `sheetsConfig` object; added `generateTaxYearWeeks`, `groupWeeksIntoMonths`, `buildSalesSheetXml`, `replaceSalesSheetData`. Fixed `setCellValue`/`setCellString` regex bug with self-closing cells. |
-| 1.2 Product Registry (`generate.js`) | ✓ Done | Added `taxi: { dir: "taxi", name: "Taxi Driver" }` to PRODUCTS; passes `productMeta.sheets` instead of `productMeta.sheets.admin` |
-| 1.3 Reconciliation (`reconcile.js`) | ✓ Done | Product-aware package discovery via `PRODUCT_PREFIXES`; scenario `product` field matches packages; taxi P&L uses column B (not C) |
-| 1.4 Scenario Loader (`scenario-loader.js`) | ✓ Done | Taxi sales: amounts in column E, date-to-row mapping via `buildTaxiDateRowMap`. Taxi purchases: code in column D, amount in column F. `standardReads` product-aware. |
+| 1.1 Generator (`generator.js`) | ✓ Done | `generateSpreadsheet` accepts `sheetsConfig` object; added `generateTaxYearWeeks`, `groupWeeksIntoMonths`, `buildSalesSheetXml`, `replaceSalesSheetData`. Fixed `setCellValue`/`setCellString` regex bug with self-closing cells. |
+| 1.2 Product Registry (`generate.js`) | ✓ Done | Imports PRODUCT from `app/products/bst.js` and `app/products/taxi.js` |
+| 1.3 Reconciliation (`reconcile.js`) | ✓ Done | Imports product modules; calls `productMod.cellWrites()`, `productMod.standardReads()`, `productMod.checkCompliance()` — no product if/else branches |
+| 1.4 Scenario Loader (`scenario-loader.js`) | ✓ Done | Slimmed to shared utilities only: `loadScenario`, `parseDate`, `MONTH_SHEETS`, `extractTaxYearStart`. Product-specific logic moved to `app/products/` |
 | 1.5 Spreadsheet Runner (`spreadsheet-runner.js`) | ✓ Done | Changed `bst-test-` prefix to `spreadsheet-test-` |
-| 1.6 Tests | ✓ Done | All existing BST tests updated for new `generateSpreadsheet` signature. 97/97 pass. |
+| 1.6 Tests | ✓ Done | All 97 tests pass. Tests import from product modules directly. |
 
 ### Phase 2: Template — COMPLETE ✓
 
@@ -437,43 +437,60 @@ Phase 1 (refactoring) is a prerequisite — it ensures the shared infrastructure
 
 | Item | Status | Notes |
 |------|--------|-------|
-| 3.1 Date calculation | ✓ Done | `generateTaxYearWeeks(startYear)` + `groupWeeksIntoMonths(weeks)` — handles partial first/last weeks, week-to-month assignment by Sunday's calendar month |
-| 3.2 Row layout | ✓ Done | `buildSalesSheetXml(monthWeeks)` generates headers, daily date rows, Rental/Other income rows, subtotal formulas, column totals with /2 correction |
-| 3.3 XML surgery | ✓ Done | `replaceSalesSheetData` replaces `<sheetData>` and updates `<dimension>` while preserving all other sheet XML (styles, merge cells, page setup) |
+| 3.1 Date calculation | ✓ Done | `generateTaxYearWeeks(startYear)` + `groupWeeksIntoMonths(weeks)` |
+| 3.2 Row layout | ✓ Done | `buildSalesSheetXml(monthWeeks)` generates complete sheet data |
+| 3.3 XML surgery | ✓ Done | `replaceSalesSheetData` replaces `<sheetData>` + `<dimension>` |
+| 3.4 calcChain removal | ✓ Done | Stale `calcChain.xml` removed from generated taxi xlsx to prevent Excel repair prompt |
+| 3.5 HYPERLINK fix | ✓ Done | `HYPERLINK(B3&"'Sheet'!Cell")` → `HYPERLINK("#'Sheet'!Cell")` for intra-workbook navigation |
 
-**Verified:** Generated xlsx for 2025-26 matches original Apr26 dimension (A1:F41 for SalesApr). Different years produce different row counts (Apr25 SalesApr = A1:F42). All 97 unit tests pass including taxi-specific generation and e2e tests.
-
-### Phase 4: Guide Generation — NOT STARTED
-
-| Item | Status | Notes |
-|------|--------|-------|
-| 4.1 Reconciliation screenshots | ☐ Pending | Need to run taxi scenario through LibreOffice and export screenshots |
-| 4.2 Extract PNGs | ☐ Pending | Extract from screenshot PDF into `app/templates/taxi/screenshots/` |
-| 4.3 Write taxi-guide.md | ☐ Pending | Markdown guide with screenshots, based on existing "Taxi Driver User Guide.pdf" |
-| 4.4 PDF generation | ☐ Pending | pandoc + weasyprint generates PDF (infrastructure already exists in `guide.js`) |
-
-### Phase 5: Tests — PARTIALLY COMPLETE
+### Phase 4: Guide Generation — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| 5.1 Taxi scenario fixture | ✓ Done | `app/test/fixtures/taxi-scenario-basic.toml` — 180 daily fares (£200/day = £36k/year), fuel, insurance, admin, legal expenses, vehicle purchase |
-| 5.2 Taxi E2E test | ✓ Done | `app/test/taxi-e2e.test.js` — verifies all 12 monthly Sales totals, P&L total sales, Draft Tax calculation |
-| 5.3 Generate unit tests | ✓ Done | `generateTaxYearWeeks`, `groupWeeksIntoMonths`, `buildSalesSheetXml` tests added to `generate.test.js`. Template existence tests for taxi added. |
-| 5.4 Reconciliation extension | ✓ Done | `reconcile.js` auto-discovers taxi packages and matches scenarios by product |
-| 5.5 Slow sheet tests | ☐ Pending | `taxi-sheets.test.js` for per-sheet formula verification (like `bst-sheets.test.js`) |
+| 4.1 Screenshots extracted | ✓ Done | 11 PNGs from populated Apr26 PDF via `pdftoppm` |
+| 4.2 Guide markdown written | ✓ Done | `app/templates/taxi/taxi-guide.md` — adapted from existing Taxi Driver User Guide PDF, with taxi-specific sections (daily dates, vehicle cost comparison, VitalTax, Wages Forecast, Draft Tax calculation) |
+| 4.3 PDF generation works | ✓ Done | pandoc + weasyprint produces 2.2MB `Taxi Driver User Guide.pdf` |
+
+### Phase 5: Tests — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 5.1 Taxi scenario fixture | ✓ Done | `app/test/fixtures/taxi-scenario-basic.toml` — 180 daily fares, expenses, vehicle purchase |
+| 5.2 Taxi E2E test | ✓ Done | `app/test/taxi-e2e.test.js` — 12 monthly Sales totals, P&L, Draft Tax |
+| 5.3 Generate unit tests | ✓ Done | Week generation, month grouping, Sales XML building, taxi spreadsheet generation |
+| 5.4 Reconciliation | ✓ Done | All 7 years COMPLIANT (28/28 checks). Date translation for cross-year scenario testing. |
+| 5.5 Slow sheet tests | ☐ Future | `taxi-sheets.test.js` for per-sheet formula verification (like `bst-sheets.test.js`) |
 
 ### Phase 6: CI — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| 6.1 Generation workflow | ✓ Done | `.github/workflows/generate-taxi.yml` — 7 concurrent jobs for all tax years |
-| 6.2 Reconciliation | ✓ Done | Existing reconciliation workflow auto-discovers taxi packages via product-aware `reconcile.js` |
+| 6.1 Generation workflow | ✓ Done | `.github/workflows/generate-taxi.yml` — 7 concurrent jobs, `npm run` scripts, `git pull --rebase` before push |
+| 6.2 Reconciliation | ✓ Done | Existing workflow auto-discovers taxi packages |
+| 6.3 Concurrent push support | ✓ Done | All 3 commit workflows (generate-bst, generate-taxi, reconciliation) use `git pull --rebase` before push |
+
+### Phase 7: Product Split Refactor — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 7.1 Product modules | ✓ Done | `app/products/bst.js` and `app/products/taxi.js` — each owns PRODUCT metadata, cellWrites, standardReads, checkCompliance |
+| 7.2 Shared tools | ✓ Done | `generator.js`, `spreadsheet-runner.js`, `guide.js` unchanged (already generic). `scenario-loader.js` slimmed to shared utilities. |
+| 7.3 CLI dispatchers | ✓ Done | `generate.js` and `reconcile.js` import product modules and dispatch — no product if/else |
+
+**Pattern for adding a 3rd product:** Create `app/products/landlord.js` with PRODUCT, cellWrites, standardReads, checkCompliance. Add import + PRODUCTS entry to generate.js and reconcile.js.
+
+### Other Fixes Applied
+
+| Fix | Notes |
+|-----|-------|
+| `--skip-guide` CLI flag | Skips PDF guide generation entirely |
+| `--package` for `npm run regenerate` | Fixed script to forward args via `node app/bin/generate.js` instead of `npm run build` |
+| Workflow npm scripts | All workflows use `npm run build:sitemaps`, `npm run generate`, `npm run build:packages`, `npm run build:redirects` instead of direct `node` invocations |
+| Scenario date translation | `taxiCellWrites` translates scenario dates by day-offset when target year differs from scenario year |
 
 ## Discovered During Implementation
 
 ### Taxi P&L uses different cell layout from BST
-
-The taxi "Profit & Loss Acc" sheet uses **column B** for annual totals (BST uses column C), with different row assignments:
 
 | P&L Line | BST Cell | Taxi Cell | Formula Source |
 |----------|----------|-----------|----------------|
@@ -495,6 +512,14 @@ The taxi "Profit & Loss Acc" sheet uses **column B** for annual totals (BST uses
 
 The original regex for cell matching consumed adjacent cells when a self-closing cell (`<c ... />`) was followed by another cell. Fixed by using two-pass matching: first try self-closing, then open/close.
 
+### Product architecture: explicit control, not IoC
+
+Product-specific scripts (`app/products/bst.js`, `app/products/taxi.js`) own their column mappings, cell references, and compliance checks. They call shared tools directly. `meta.toml` stays lean (structural facts only — file paths and output patterns). No config-driven inversion of control.
+
+## Remaining Work
+
+- **Slow sheet tests** (`taxi-sheets.test.js`): Per-sheet formula verification via LibreOffice, similar to `bst-sheets.test.js`. Low priority — e2e tests already cover the critical paths.
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -507,3 +532,5 @@ The original regex for cell matching consumed adjacent cells when a self-closing
 | 2026-03-31 | Use direct date values, not formulas | Simpler XML generation; Admin and Sales both generated from same tax data so consistency is guaranteed |
 | 2026-03-31 | Month assignment by Sunday's calendar month | Verified against all 6 existing taxi packages; SalesMar catches remaining weeks including those with Sunday in April |
 | 2026-03-31 | Taxi P&L reads from column B | Discovered during implementation — taxi P&L has fundamentally different cell layout from BST |
+| 2026-03-31 | Remove calcChain.xml for taxi | Stale calcChain entries from template caused Excel repair prompt |
+| 2026-03-31 | Product-specific scripts, not IoC | User preference: product modules call shared tools explicitly, meta.toml stays lean structural config |
