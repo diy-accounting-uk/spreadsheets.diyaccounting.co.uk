@@ -452,12 +452,93 @@ Key gov.uk pages for Corporation Tax:
 
 ## Tax Data Files Created
 
-- `app/data/ltd-2025.toml` — FY2025 (1 Apr 2025 – 31 Mar 2026)
-- `app/data/ltd-2026.toml` — FY2026 (1 Apr 2026 – 31 Mar 2027)
+- `app/data/ltd-2020.toml` — FY2020 (1 Apr 2020 – 31 Mar 2021) — 19% flat CT rate
+- `app/data/ltd-2021.toml` — FY2021 — 19% flat
+- `app/data/ltd-2022.toml` — FY2022 — 19% flat
+- `app/data/ltd-2023.toml` — FY2023 — 19% small profits / 25% main, marginal relief introduced
+- `app/data/ltd-2024.toml` — FY2024 — same as FY2023, VAT threshold raised to £90,000
+- `app/data/ltd-2025.toml` — FY2025 — employer NI raised to 15%, secondary threshold lowered to £5,000
+- `app/data/ltd-2026.toml` — FY2026 — same as FY2025
 
 Naming convention: `ltd-{year}.toml` where year is the FY number (the calendar year the FY starts in). FY2025 covers the accounting period ending 31 Mar 2026.
 
-Schema includes: corporation_tax (main/small rates, marginal relief), capital_allowances, depreciation, mileage, vat, employer_ni, dividend_tax.
+Schema includes: corporation_tax (main/small rates, marginal relief), capital_allowances (with full_expensing from FY2023), depreciation, mileage, vat, employer_ni (rate, secondary_threshold, employment_allowance), dividend_tax (allowance, basic/higher/additional rates).
+
+## Implementation Status
+
+### Phase 1: Analysis — COMPLETE ✓
+
+All open questions resolved via deep xlsx extraction:
+- F21 is the ONLY year-specific cell (verified across Mar21-Mar26)
+- Sales: E=code, F=gross. Purchases: E=code, F=gross.
+- MnthP&L: column B = annual totals, B9=sales, B16=gross profit, B45=profit before tax
+- CorporationTax: entirely formula-driven, K28=taxable profit, K35=CT, K39=tax outstanding
+- CT600: all formula-driven (134 layout numbers + 36 formulas)
+- Payslips: identical to SE
+
+### Phase 2: Tax Data — COMPLETE ✓
+
+7 TOML files (FY2020-FY2026) with historically correct rates from HMRC. Key transitions:
+- FY2023: two-tier CT (19%/25%) + marginal relief + full expensing introduced
+- FY2024: VAT threshold £85k → £90k, dividend allowance £1000 → £500
+- FY2025: employer NI 13.8% → 15%, secondary threshold £9100 → £5000
+
+### Phase 3: Template — COMPLETE ✓
+
+15 xlsx + 1 docx copied to `app/templates/ltd-mar/`. meta.toml with multi-file config, financialaccounts and payslips sheet mappings, vatreturns quarter config.
+
+### Phase 4: Generator — COMPLETE ✓
+
+- `buildLtdCellEdits()` — sets F21 + 19 tax rate cells (whole-number % for CT/AIA/WDA/VAT, fractions for depreciation)
+- VAT quarter default dates — G5 in VATQtr1-5 computed from year-end
+- Payslips calendar — reuses `generatePayslipsCalendar()` unchanged
+- Multi-file output via generate.js template.files path
+
+### Phase 5: Product Module — COMPLETE ✓
+
+`app/products/ltd-mar.js`: PRODUCT, MULTI_FILE, cellWrites (E=code, F=gross for Sales+Purchases), standardReads (MnthP&L + CorporationTax), checkCompliance (sales, gross profit, profit before tax, CT at small profits rate).
+
+### Phase 6: Guide — COMPLETE ✓
+
+`ltd-mar-guide.md` with small profits rate annotation, package contents, Sales/Purchases column references, all 21 purchase expense codes documented.
+
+### Phase 7: Tests — COMPLETE ✓
+
+| Test | Count | Notes |
+|------|-------|-------|
+| buildLtdCellEdits unit tests | 6 | F21 date, CT rate %, VAT %, AIA %, depreciation fractions, no string edits |
+| Ltd generateSpreadsheet | 1 | Verifies F21 and P6 in output XML |
+| Ltd E2E (cross-file) | 10 | MnthP&L sales/expenses/profit, CorporationTax profit/CT/outstanding |
+| **Total (all products)** | **137** | Was 120 before Ltd |
+
+Reconciliation: RECONCILES 2/2 for FY2025 (Total Sales 30000, Corporation Tax 4902).
+
+### Phase 8: CI Workflow — COMPLETE ✓
+
+`.github/workflows/generate-ltd.yml`: params → test → generate (+ Payslip 05 extraction) → reconcile (+ screenshots + compliance check) → commit. 7 packages generated (Mar21-Mar27).
+
+### Phase 9: VAT Quarter Dates — COMPLETE ✓
+
+VATQtr G5 defaults computed from year-end: Q1=+3mo, Q2=+6mo, Q3=+9mo, Q4=year-end, Q5=+1mo after. Verified against original Mar26 package — exact match.
+
+## What Remains
+
+### To Verify
+
+- [ ] Payslips calendar for years before the Mar26 template — do earlier years have different week/month schemes? (Same risk as SE Apr21-23 vs Apr25-26 discrepancy)
+- [ ] External link cache injection with 9 links — tested with basic scenario only. More complex scenarios with bank transactions, payroll, fixed assets may expose issues.
+- [ ] VATQtr G5 dates for non-March year-ends — the algorithm handles any month but hasn't been tested for Jun/Sep/Dec yet
+
+### To Do (Future)
+
+- [ ] **Other year-end months** — parameterise ltd.js for Apr/May/Jun/.../Feb year-ends. The Admin dates cascade from F21, so the main challenge is: Vatinterface formulas reference different Admin cells per year-end month (hardcoded in template), and Payslips calendar needs the correct PAYE tax year
+- [ ] **Marginal relief** — see PLAN_LTD_MARGINAL_RELIEF.md. The CorporationTax sheet currently uses a single rate (P6). Need to add marginal relief formula for profits between £50k-£250k.
+- [ ] **Guide screenshots** — extract from populated reconciliation PDFs (same approach as SE)
+- [ ] **"Any" packages** — `packages/GB Accounts Company 2025-2026 (Any) Excel 2007` contains the template for all 12 month variants. For non-March year-ends, the Vatinterface formulas and month-sheet assignments differ — need to understand how "Any" templates work before generating month variants.
+- [ ] **Company Secretary** — Companysecretary.xlsx is currently a template copy. Could it benefit from pre-filling company details from the scenario?
+- [ ] **Dividend Voucher** — Currently a .docx template copy. Could generate pre-filled vouchers from scenario data.
+- [ ] **expensesform.xlsx** — 12 monthly sheets (Month 01-12). Currently template copy. Verify no year-specific content.
+- [ ] **DIYA GL integration** — full business activity model in `examples/<book>/` conforming to diya-gl-book-v1.schema.json + diya-gl-lines-v1.schema.json. Subsets for testing at different levels. See PLAN_DIYA_GL.md.
 
 ## Decision Log
 
@@ -473,3 +554,9 @@ Schema includes: corporation_tax (main/small rates, marginal relief), capital_al
 | 2026-04-01 | Reuse generatePayslipsCalendar() unchanged | Payslips Admin confirmed identical structure to SE |
 | 2026-04-01 | 9 outbound external links from Financialaccounts | More than SE (6). Same cache injection approach for testing. |
 | 2026-04-01 | CT rate in Admin is stored as 19 (%) not 0.19 (fraction) | Unlike se-*.toml which stores rates as fractions. The ltd-*.toml stores as fractions; the generator must multiply by 100. |
+| 2026-04-01 | Small profits rate only (19%) — marginal relief is TODO | See PLAN_LTD_MARGINAL_RELIEF.md. Guide annotated with this limitation. |
+| 2026-04-01 | VAT quarter G5 dates generated from year-end | Q1=+3mo, Q2=+6mo, Q3=+9mo, Q4=year-end, Q5=+1mo. Verified exact match against original. |
+| 2026-04-01 | Historical tax data created (FY2020-FY2024) | 19% flat rate pre-FY2023, two-tier from FY2023. Employer NI tracked across all years. |
+| 2026-04-02 | 137 tests passing | 7 Ltd unit tests + 10 Ltd E2E + 120 existing |
+| 2026-04-02 | CI workflow created | generate-ltd.yml with Payslip 05 extraction, screenshots, reconciliation |
+| 2026-04-02 | DIYA GL plan started | Full business activity model in examples/ for comprehensive testing. See PLAN_DIYA_GL.md. |
