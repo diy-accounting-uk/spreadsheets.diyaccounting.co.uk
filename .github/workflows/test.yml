@@ -150,9 +150,6 @@ jobs:
       - name: Node dependencies
         run: npm ci
 
-      - name: Build sitemaps
-        run: npm run build:sitemaps
-
       - name: Run tests
         run: npm test
 
