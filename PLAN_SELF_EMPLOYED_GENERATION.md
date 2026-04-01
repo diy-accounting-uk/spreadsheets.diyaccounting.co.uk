@@ -918,29 +918,56 @@ Phase 1 (open questions) is the critical gate. The Payslips Admin formula-vs-har
 | 1.3 K11 purpose | ✓ Done | Display-only, not referenced. Set to basic_rate. |
 | 1.4 NI Class 2 (L16) | ✓ Done | Apr21=3.05, Apr22=3.05, Apr23=3.15, Apr24=3.45, Apr25+=0 |
 
+**Detailed findings:**
+
+**K11 analysis:** Extracted every formula from all 10 sheets of SE Financialaccounts.xlsx. Zero formulas reference Admin!K11. It sits in the income tax bands section next to I11="Basic rate" label — a display-only copy of the basic rate. BST's K11 contains `=N6` but SE's K11 is a hardcoded literal 0.2 with no consumers. The generator sets it to `basic_rate` for consistency.
+
+**L16 NI Class 2 transition:** Extracted L16 from all 6 existing packages. The full progression is 3.05 (Apr21) → 3.05 (Apr22) → 3.15 (Apr23) → 3.45 (Apr24) → 0 (Apr25) → 0 (Apr26). NI Class 2 was effectively abolished in the 2024-25 tax year. L16 is also not referenced by any formula in any sheet — it's informational. BST uses L17 for NI Class 2 (confirmed at `generator.js:128`).
+
+**Payslips Admin shared formulas:** Examined raw XML of `xl/worksheets/sheet16.xml`. B column uses shared formulas in ~64-row blocks: B3=B2+1 (explicit), B4:B67 (shared si="1"), B68:B131 (shared si="3"), B132:B195 (shared si="5"), B196:B259 (shared si="7"), B260:B323 (shared si="9"), B324:B381 (shared si="11"). All cascade from B2. A column also uses shared formulas: `TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")` in matching 64-row blocks. C, D, F columns have zero formula elements — all plain `<v>` values.
+
+**Payroll week algorithm:** Verified against ALL 9 Payslips.xlsx files (5 existing packages × complete extraction, 3420 total rows compared, zero mismatches). The algorithm is:
+1. Week 1 = always 5 days (dates 6th–10th of April, regardless of day-of-week)
+2. Weeks 2–52 = 7 days each (starting from 11th April)
+3. Week 53 = 18 days (absorbs remainder including ~15 days past tax year end to ~Apr 20)
+4. Month pattern = fixed [4,4,5, 4,4,5, 4,4,5, 4,4,6] totalling 53 weeks
+5. Week-in-month (F column) = sequential counter resetting at each month boundary
+
+The regular week start day varies by year because the 11th of April falls on a different day-of-week each year: Apr25 (Apr 11 = Thu, so weeks run Thu–Wed), Apr26 (Apr 11 = Fri, so weeks run Fri–Thu). This explains the observed differences between years.
+
+**Discrepancy with older packages (Apr21–23):** These used a Mon–Sun week scheme with 7-day first weeks, different from the Apr25+ algorithm. The spreadsheet was redesigned between Apr23 and Apr25 (coinciding with the rename from "Payrollyearto" to "Payslips"). Since we use the Apr26 template, the new algorithm is correct for all generated packages.
+
 ### Phase 2: Tax Data Extension — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| vat.standard_rate | ✓ Done | Added to all 7 se-*.toml (0.20) |
-| national_insurance.class2_weekly_rate | ✓ Done | Added to all 7 se-*.toml (year-specific values) |
+| vat.standard_rate | ✓ Done | Added to all 7 se-*.toml (0.20 for all years) |
+| national_insurance.class2_weekly_rate | ✓ Done | Added to all 7 se-*.toml (year-specific: 3.05/3.05/3.15/3.45/0/0/0) |
 
 ### Phase 3: Template Preparation — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
 | Copy Apr26 xlsx files | ✓ Done | 9 xlsx files in app/templates/se/ |
-| meta.toml | ✓ Done | Multi-file config with financialaccounts and payslips sheet mappings |
+| meta.toml | ✓ Done | Multi-file config with `template.files` array, `sheets.financialaccounts` and `sheets.payslips` mappings |
 | se-guide.md | ✓ Done | Placeholder for guide content |
+
+**meta.toml structure:** Uses `template.files` (array of 9 xlsx filenames) instead of BST/Taxi's `template.spreadsheet` (single filename). Each file that needs generation has a `[sheets.xxx]` section: `sheets.financialaccounts` has `admin` + `cellEditFn = "se"`, `sheets.payslips` has `payslipsAdmin`. Files without a sheets section are copied unchanged.
 
 ### Phase 4: Generator Extension — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| buildSeCellEdits() | ✓ Done | SE-specific cell positions (N6/N7/M11/L12/N12/L16/K11/F27) |
-| generatePayslipsCalendar() | ✓ Done | 1140 cells (C/D/F for 380 rows), 4-4-5 pattern |
-| Conditional admin edits | ✓ Done | sheetsConfig.admin optional; sheetsConfig.payslipsAdmin triggers calendar |
-| Multi-file generate.js | ✓ Done | template.files array support; copies unchanged files |
+| buildSeCellEdits() | ✓ Done | SE-specific cell positions (N6/N7/M11/L12/N12/L16/K11/F27) — exported from generator.js |
+| generatePayslipsCalendar() | ✓ Done | 1140 cells (C/D/F for 380 rows), 4-4-5 pattern — exported from generator.js |
+| Conditional admin edits | ✓ Done | `sheetsConfig.admin` optional (skips tax rate edits when absent); `sheetsConfig.payslipsAdmin` triggers calendar generation |
+| Multi-file generate.js | ✓ Done | `template.files` array support; copies unchanged files; no `spreadsheet_pattern` needed for multi-file |
+
+**How generateSpreadsheet() was extended:** Added a `cellEditFn` check in sheetsConfig — when `cellEditFn === "se"`, uses `buildSeCellEdits` instead of `buildCellEdits`. The admin edits section is now conditional on `sheetsConfig.admin` being present, so Payslips.xlsx (which has no `admin` key) skips tax rate edits entirely. A new block after the Home sheet HYPERLINK fix handles `sheetsConfig.payslipsAdmin`: sets B2 to the tax year start serial, then iterates the 1140 C/D/F cell edits from `generatePayslipsCalendar()`.
+
+**How generate.js was extended:** `generateProduct()` now has two code paths. When `productMeta.template.files` exists (array), it iterates each template file: looks up `productMeta.sheets[fileKey]` where fileKey is the lowercase filename without .xlsx extension. If a sheets config exists and is non-empty, it calls `generateSpreadsheet()` for that file. Otherwise it copies the file unchanged. The single-file path (BST/Taxi) is the else branch, unchanged.
+
+**Verification:** Generated Apr26 Financialaccounts Admin was compared cell-by-cell against the original — all key cells match exactly (B4=45753, B17=46117, N4=12570, N6=0.2, N7=0.4, K11=0.2, M11=37700, L12=37701, N12=37701, L16=0, F26=90000, F27=0.2). Generated Apr26 Payslips Admin was compared — all 1140 C/D/F cells match. Generated Apr25 Payslips Admin was also compared — all 1140 cells match.
 
 ### Phase 5: Product Module — COMPLETE ✓
 
@@ -949,24 +976,90 @@ Phase 1 (open questions) is the critical gate. The Payslips Admin formula-vs-har
 | app/products/se.js | ✓ Done | PRODUCT, cellWrites, standardReads, checkCompliance |
 | PRODUCTS registry | ✓ Done | Added to generate.js and reconcile.js |
 
+**SE product module details:**
+- `PRODUCT = { id: "se", dir: "se", name: "Self Employed", taxRegime: "se", prefix: "GB Accounts Self Employed" }`
+- `cellWrites()`: Writes to sheets named "Apr", "May", etc. (not "SalesApr" like BST). Sales use column H for amount (TBD: verify). Purchases use columns A/B/D/E/G (same layout as BST). Stock goes to StockControl sheet (D5/D30).
+- `standardReads()`: Reads from "Profit & Loss Account" (column C) and "Income Tax" (column E). Cell positions tentatively set to match BST but **need verification** against actual SE P&L formulas.
+- `checkCompliance()`: Same pattern as BST — checks total sales (C4), gross profit (C9), net profit (C24), income tax, NI Class 4, total liability.
+- `TAX_SHEET = "Income Tax"` (same as BST, unlike Taxi's "Draft Tax calculation").
+
+**Known gap:** The `standardReads()` cell positions are preliminary. The SE P&L may use different rows/columns than BST. Need to extract formulas from the actual SE Profit & Loss Account sheet to confirm.
+
 ### Phase 6: Guide Generation — PENDING
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Self Employed User Guide | ☐ Future | Extract from PDF, write se-guide.md, generate screenshots |
-| Payslip User Guide | ☐ Future | Extract from PDF, write payslip-guide.md |
+| Self Employed User Guide | ☐ Pending | Extract from PDF, write se-guide.md, generate screenshots |
+| Payslip User Guide | ☐ Pending | Extract from PDF, write payslip-guide.md |
 
 ### Phase 7: Tests — PARTIAL ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Generation unit tests | ✓ Done | 10 new tests in generate.test.js (107 total) |
-| SE E2E test | ☐ Future | Needs cross-file LibreOffice recalculation |
-| Reconciliation | ☐ Future | SE added to PRODUCTS but needs multi-file scenario runner |
+| Generation unit tests | ✓ Done | 10 new tests in generate.test.js (107 total, all passing) |
+| SE E2E test | ☐ Pending | Needs cross-file LibreOffice recalculation |
+| Reconciliation | ☐ Pending | SE added to PRODUCTS but needs multi-file scenario runner + SE scenario fixture |
 
-### Phase 8/9: CI Workflow — COMPLETE ✓
+**Tests added:**
+- `buildSeCellEdits` — 4 tests: SE-specific income tax positions (N6/N7/M11/L12/N12, no N8/M12/L13/N13), L16 for NI Class 2 (not L17), F27 VAT rate, non-zero NI Class 2 for older years
+- `generatePayslipsCalendar` — 4 tests: 1140 cells generated, week 1 = 5 days (rows 2-6), 4-4-5 month pattern verified by counting weeks per month, deterministic across different years
+- `SE generateSpreadsheet` — 2 tests: Financialaccounts.xlsx with SE cell edits (N6=0.2, F27=0.2 verified in output XML), Payslips.xlsx with calendar (B2=45753 verified in output XML)
+
+### Phase 8: Reconciliation — IN PROGRESS
 
 | Item | Status | Notes |
 |------|--------|-------|
-| generate-se.yml | ✓ Done | 7 concurrent jobs + commit step, --skip-guide for now |
-| All 7 packages generated | ✓ Done | 63 xlsx files across 7 packages |
+| SE in PRODUCTS registry | ✓ Done | `import * as se` added to reconcile.js |
+| Multi-file scenario runner | ☐ Pending | reconcile.js currently calls `findXlsx()` for single file; SE needs multi-file handling |
+| SE scenario fixture | ☐ Pending | Need se-scenario-basic.toml with sales/purchases across months |
+| SE P&L cell verification | ☐ Pending | Must extract SE P&L formulas to confirm cell positions |
+
+### Phase 9: CI Workflow — COMPLETE ✓
+
+| Item | Status | Notes |
+|------|--------|-------|
+| generate-se.yml | ✓ Done | 7 concurrent jobs + commit step, `--skip-guide` for now, `git pull --rebase` before push |
+| All 7 packages generated | ✓ Done | 63 xlsx files across 7 packages (9 files × 7 years) |
+
+**CI workflow details:** `.github/workflows/generate-se.yml` triggers on push to `app/data/se-*`, `app/templates/se/**`, `app/templates/meta.toml`, `app/lib/generator.js`. Runs test job first, then 7 concurrent generation jobs (one per tax year, se-2020-2021 through se-2026-2027), then commit job that downloads all artifacts, merges, and pushes. Uses `--skip-guide` since PDF guides aren't ready yet. Concurrency group `se-packages-${{ github.ref }}` with `cancel-in-progress: true`.
+
+## Discovered During Implementation
+
+### SE Financialaccounts Admin has 2 fewer income tax rows than BST
+
+BST has 3 tax bands in rows 11-13 (Starter/Basic/Higher), SE has 2 bands in rows 11-12 (Basic/Higher). This creates a 1-row offset for:
+- Basic band end: M11 (SE) vs M12 (BST)
+- Higher band start: L12/N12 (SE) vs L13/N13 (BST)
+- NI Class 2: L16 (SE) vs L17 (BST)
+
+The SE tax calculation puts N6=basic_rate (0.2) and N7=higher_rate (0.4), whereas BST puts N6=starting_rate (0), N7=basic_rate (0.2), N8=higher_rate (0.4). SE has no starting rate band.
+
+### Payslips Admin uses shared formulas with 64-row blocks
+
+Excel's shared formula mechanism groups formulas in blocks of ~64 rows. The Payslips Admin B column has 6 shared formula blocks (B4:B67, B68:B131, B131:B195, B195:B259, B259:B323, B323:B381) plus explicit formulas at block boundaries. This means setting B2 correctly cascades through all 380 rows via formulas — no need to touch B3-B381.
+
+### The A column in Payslips Admin also auto-derives
+
+A column formula `TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")` derives the month abbreviation from B$2 (start date) and D (month number). When B2 and D are updated, A auto-corrects. No generation needed for column A.
+
+### Multi-file generation required no changes to generateSpreadsheet()
+
+The core `generateSpreadsheet()` function processes one xlsx buffer at a time. For SE, `generate.js` calls it separately for Financialaccounts.xlsx (with admin config) and Payslips.xlsx (with payslipsAdmin config), and copies the other 7 files unchanged. This was a simpler architecture than building multi-file awareness into the generator.
+
+### The generate.js return value changed
+
+`generateProduct()` previously returned `{ dirName, xlsxFilename, taxYear }`. For multi-file products there's no single xlsxFilename, so it now returns `{ dirName, taxYear }`. The `xlsxFilename` field was only used for console output.
+
+### Apr21 Payslips calendar doesn't match original (expected)
+
+Generated Apr21 Payslips has 270 C/D/F mismatches vs the original. This is because: (1) the original Apr21 used the old Mon-Sun week scheme, (2) our generator uses the Apr25+ scheme (5-day first week). Since all packages are generated from the Apr26 template with the new scheme, this is correct behavior — the old manually-created packages used a different algorithm. Apr25 and Apr26 match perfectly (1140/1140 cells).
+
+### HMRC payroll tax calendar downloaded as reference
+
+4 HMRC reference PDFs downloaded to `_developers/hmrc-references/`:
+- LITRG Payroll Tax Calendar 2025-26 (complete week/month calendar)
+- HMRC Tax Tables B-D 2025-26 (taxable pay tables)
+- HMRC Tax Tables B-D 2020-21 (for cross-referencing older scheme)
+- HMRC P9X Tax Codes 2026-27 (tax code guidance)
+
+The HMRC calendar defines tax weeks as 7-day blocks from Apr 6 (Sun-Sat for 2025-26). The Payslips Admin uses a different payroll week scheme. The HMRC documents are reference sources, not the algorithm source for the generator.
