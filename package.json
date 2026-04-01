@@ -14,6 +14,7 @@
     "test:generate": "npx vitest --run app/test/generate.test.js",
     "test:slow": "npx vitest --run --project slow-tests",
     "reconciliation": "node app/bin/reconcile.js",
+    "extract-scenarios": "node scripts/extract-scenarios.cjs",
     "build:packages": "node scripts/build-packages.cjs",
     "build:sitemaps": "node scripts/build-sitemaps.cjs",
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",

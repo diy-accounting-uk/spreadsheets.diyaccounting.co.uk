@@ -55,20 +55,20 @@ describeCalc("Ltd Company (March) end-to-end: cross-file P&L and CT", () => {
     results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
   }, 300000);
 
-  it("MnthP&L: total sales = 30000 (12 months net of VAT)", () => {
-    expect(results["MnthP&L"].B9).toBe(30000);
+  it("MnthP&L: total sales = 33000 (12 months net of VAT)", () => {
+    expect(results["MnthP&L"].B9).toBe(33000);
   });
 
-  it("MnthP&L: sales Product A = 30000", () => {
-    expect(results["MnthP&L"].B4).toBe(30000);
+  it("MnthP&L: sales Product A = 33000", () => {
+    expect(results["MnthP&L"].B4).toBe(33000);
   });
 
   it("MnthP&L: admin expenses > 0", () => {
     expect(results["MnthP&L"].B41).toBeGreaterThan(0);
   });
 
-  it("MnthP&L: gross profit = 30000 (no cost of sales)", () => {
-    expect(results["MnthP&L"].B16).toBe(30000);
+  it("MnthP&L: gross profit = 33000 (no cost of sales)", () => {
+    expect(results["MnthP&L"].B16).toBe(33000);
   });
 
   it("MnthP&L: operating profit = gross - expenses", () => {
