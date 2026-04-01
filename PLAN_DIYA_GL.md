@@ -4,7 +4,7 @@ Model a full set of business activity and transactions for a small IT consultanc
 
 ## User Assertions (non-negotiable)
 
-1. Data format: book.toml conforms to diya-gl-book-v1.schema.json; transactions stored in lines.toml conforming to diya-gl-lines-v1.schema.json (all journals in one file)
+1. Data format: book.toml conforms to diya-gl-book-v1.schema.json; transactions stored in lines.jsonl (JSON Lines) conforming to diya-gl-lines-v1.schema.json (one JSON object per line, all journals in one file)
 2. Must exercise EVERY sales code, purchase code, bank receipt code, bank payment code, and P&L line in the Ltd package
 3. Transactions are realistic for a small IT consultancy trading Apr 2025 - Mar 2026
 4. Expected P&L totals, Corporation Tax, and balance sheet figures must be calculated from the designed transactions
@@ -247,9 +247,9 @@ higherRate = 0.3375
 additionalRate = 0.3935
 ```
 
-### 2.2 lines.toml (diya-gl-lines-v1.schema.json)
+### 2.2 lines.jsonl (diya-gl-lines-v1.schema.json)
 
-All transactions in a single TOML file using `[[lines]]` array-of-tables. Each line has the required fields (`postingDate`, `amount`, `accountMainID`, `sourceJournalID`) plus relevant optional fields. Company Accounts use `debitCreditCode` and `lineNumber` for double-entry.
+All transactions in a single JSON Lines file (one JSON object per line). Each line has the required fields (`postingDate`, `amount`, `accountMainID`, `sourceJournalID`) plus relevant optional fields. Company Accounts use `debitCreditCode` and `lineNumber` for double-entry.
 
 The sourceJournalID values map to the xlsx workbooks:
 - `"sales"` -> Sales.xlsx
@@ -296,7 +296,7 @@ The sourceJournalID values map to the xlsx workbooks:
 
 **This is the main design in Section 4 below.**
 
-**File**: `app/test/fixtures/ltd-mar-scenario-full.toml` (to create from the lines.toml design)
+**File**: `app/test/fixtures/ltd-mar-scenario-full.toml` (to create from the lines.jsonl design)
 
 ## 4. Transaction Design: Full Scenario
 
@@ -1166,23 +1166,23 @@ Note: Full balance sheet figures depend on the timing of all cash movements. The
 ## 6. Implementation Sequence
 
 1. **Create book.toml**: Entity details, chart of accounts, tax rates for Precision Code Ltd
-2. **Create lines.toml**: All transactions from Sections 4.2-4.8
+2. **Create lines.jsonl**: All transactions from Sections 4.2-4.8
 3. **Validate**: Run against diya-gl schemas
-4. **Extract basic subset**: Generate ltd-mar-scenario-basic.toml equivalent from lines.toml (sales + purchases only)
+4. **Extract basic subset**: Generate ltd-mar-scenario-basic.toml equivalent from lines.jsonl (sales + purchases only)
 5. **Extract extended subset**: Generate ltd-mar-scenario-extended.toml (+ bank + payroll)
 6. **Extract full subset**: Generate ltd-mar-scenario-full.toml (everything)
 7. **Reconcile**: Load into actual Ltd spreadsheets and verify P&L/CT/BS match expected values
 
-## 7. Open Questions
+## 7. Resolved Questions (with documented assumptions)
 
-1. **MnthP&L row 18-40 exact mapping**: The 23 admin expense rows need to be verified against the actual Financialaccounts.xlsx MnthP&L sheet to confirm which row corresponds to which purchase code. The mapping in Section 5.1 is assumed based on the purchase code order.
-2. **WagesInterface integration**: How do PAYE wages flow from Payslips.xlsx into MnthP&L? Which rows? Are they separate from codes D (directors wages) and W (employee wages)?
-3. **Bad debts (code O)**: Does code O reduce turnover on row 9, or is it shown on a separate "bad debts" row below?
-4. **Grants (code G)**: Are grants shown within Sales Turnover (rows 4-8) or separately?
-5. **Fixed asset sales (code FS)**: Does FS feed into the Fixedassets.xlsx reconciliation only, or also into a P&L row?
-6. **Depreciation rows**: Which rows within 18-40 contain the auto-calculated depreciation figures?
-7. **Bank account opening balances**: Are these entered as BC code receipts, or are they cell entries in A1?
-8. **Credit card**: Is the credit card balance negative (liability) or tracked as positive payments?
+1. **MnthP&L row 18-40 exact mapping**: **Assumed** based on purchase code order matching the Purchases analysis columns O-AI sequence. The mapping follows the order: D(18), W(19), R(20), P(21), T(22), Q(23), M(24), U(25), A(26), G(27), H(28), V(29), N(30), F(31), L(32), Y(33), Z(34), depreciation(35-36), loss on disposal(37), bank interest(38), HP interest(39), other(40). Will verify against actual spreadsheet when wiring up the full scenario.
+2. **WagesInterface integration**: **Assumed** PAYE wages from Payslips.xlsx feed into MnthP&L row 18 (directors) and row 19 (employees) via the WagesInterface sheet, which adds to (not replaces) codes D and W from Purchases. Non-PAYE wages go via Purchases D/W codes.
+3. **Bad debts (code O)**: **Assumed** code O in Sales reduces the net sales analysis column (column T = bad debts written off), which feeds into a P&L row below turnover (a contra-revenue item, not within turnover B9). Negative amounts in Sales are credit notes.
+4. **Grants (code G)**: **Assumed** grants feed into Sales row 8 (Investment Grants) via analysis column S, contributing to turnover B9 via SUM(B4:B8). However, grants may be outside scope of VAT (taxCode = "OS").
+5. **Fixed asset sales (code FS)**: **Assumed** FS in Sales feeds into the Fixedassets FAreconciliation for the capital allowances balancing charge calculation. The profit/loss on disposal appears on P&L row 37 (auto-calculated by Fixedassets.xlsx).
+6. **Depreciation rows**: **Assumed** rows 35-36 within admin expenses, auto-calculated from Fixedassets.xlsx Schedule. No manual entry needed.
+7. **Bank account opening balances**: **Assumed** entered as cell A1 values on each bank account's Apr sheet, not as coded transactions. The opening balance is a direct cell entry.
+8. **Credit card**: **Assumed** tracked as positive payments (amounts charged). The credit card balance is a liability shown on the balance sheet. Payments to the credit card company go via the bank account with code B (bank charges/leasing).
 
 ## 8. File Locations
 
@@ -1191,8 +1191,8 @@ Note: Full balance sheet figures depend on the timing of all cash movements. The
 | `_developers/schema/diya-gl-book-v1.schema.json` | Book configuration schema | Existing |
 | `_developers/schema/diya-gl-lines-v1.schema.json` | Transaction line schema | Existing |
 | `_developers/schema/diya-gl-docs.md` | Schema documentation | Existing |
-| `app/data/precision-code-ltd/book.toml` | Business configuration | To create |
-| `app/data/precision-code-ltd/lines.toml` | All transactions | To create |
+| `examples/precision-code-ltd/book.toml` | Business configuration | To create |
+| `examples/precision-code-ltd/lines.jsonl` | All transactions | To create |
 | `app/test/fixtures/ltd-mar-scenario-basic.toml` | Basic test scenario | Existing (update if needed) |
 | `app/test/fixtures/ltd-mar-scenario-extended.toml` | Extended test scenario | To create |
 | `app/test/fixtures/ltd-mar-scenario-full.toml` | Full test scenario | To create |
@@ -1209,5 +1209,5 @@ Note: Full balance sheet figures depend on the timing of all cash movements. The
 | 2026-03-31 | Quarterly dividends of 1,000 each | Exercises dividend voucher template and board minutes |
 | 2026-03-31 | Grant is outside scope of VAT | Correct VAT treatment for government grants |
 | 2026-03-31 | Insurance is VAT exempt | Correct VAT treatment for insurance premiums |
-| 2026-03-31 | All data in single lines.toml | Simpler than separate files per journal; sourceJournalID distinguishes journals |
+| 2026-03-31 | All data in single lines.jsonl | Simpler than separate files per journal; sourceJournalID distinguishes journals |
 | 2026-03-31 | Three test subsets defined | Basic mirrors existing test; extended adds bank/payroll; full exercises everything |

@@ -1,0 +1,219 @@
+[documentInfo]
+entriesType = "journal"
+language = "en"
+creationDate = 2026-04-01
+periodCoveredStart = 2025-04-01
+periodCoveredEnd = 2026-03-31
+defaultCurrency = "GBP"
+entriesComment = "Complete business activity for Precision Code Ltd FY2025/26"
+
+[entityInformation]
+organizationIdentifier = "Precision Code Ltd"
+organizationDescription = "IT consultancy and software development"
+taxRegistrationNumber = "1234567890"
+taxAuthorityIdentifier = "HMRC"
+"diy:product" = "Company"
+"diy:vatRegistered" = true
+"diy:basisOfAccounting" = "accrual"
+"diy:companyNumber" = "12345678"
+"diy:vatNumber" = "123456789"
+
+[accounts.sales."4000"]
+accountMainDescription = "Product A - Consultancy"
+"diy:column" = "O"
+
+[accounts.sales."4001"]
+accountMainDescription = "Product B - Software licences"
+"diy:column" = "P"
+
+[accounts.sales."4002"]
+accountMainDescription = "Product C - Training"
+"diy:column" = "Q"
+
+[accounts.sales."4003"]
+accountMainDescription = "Other Direct Income"
+"diy:column" = "R"
+
+[accounts.sales."4004"]
+accountMainDescription = "Grants received"
+"diy:column" = "S"
+
+[accounts.sales."4005"]
+accountMainDescription = "Bad debts written off"
+"diy:column" = "T"
+
+[accounts.sales."4006"]
+accountMainDescription = "Fixed asset sale proceeds"
+"diy:column" = "U"
+
+[accounts.purchases."5000"]
+accountMainDescription = "Direct materials for resale"
+"diy:column" = "O"
+
+[accounts.purchases."5001"]
+accountMainDescription = "Sub-contractor services"
+"diy:column" = "P"
+
+[accounts.purchases."5002"]
+accountMainDescription = "Other direct costs"
+"diy:column" = "Q"
+
+[accounts.purchases."5100"]
+accountMainDescription = "Directors wages (non-PAYE)"
+"diy:column" = "R"
+
+[accounts.purchases."5101"]
+accountMainDescription = "Employee wages (non-PAYE)"
+"diy:column" = "S"
+
+[accounts.purchases."5200"]
+accountMainDescription = "Premises - rent and rates"
+"diy:column" = "T"
+
+[accounts.purchases."5201"]
+accountMainDescription = "Light, heating, power"
+"diy:column" = "U"
+
+[accounts.purchases."5300"]
+accountMainDescription = "Distribution and transport"
+"diy:column" = "V"
+
+[accounts.purchases."5301"]
+accountMainDescription = "Equipment, tools, plant hire"
+"diy:column" = "W"
+
+[accounts.purchases."5400"]
+accountMainDescription = "Repairs and maintenance"
+"diy:column" = "X"
+
+[accounts.purchases."5401"]
+accountMainDescription = "Consumable materials"
+"diy:column" = "Y"
+
+[accounts.purchases."5500"]
+accountMainDescription = "Advertising and promotion"
+"diy:column" = "Z"
+
+[accounts.purchases."5501"]
+accountMainDescription = "General admin (telephone, postage, stationery)"
+"diy:column" = "AA"
+
+[accounts.purchases."5600"]
+accountMainDescription = "Travel and hotel expenses"
+"diy:column" = "AB"
+
+[accounts.purchases."5601"]
+accountMainDescription = "Motor vehicle expenses"
+"diy:column" = "AC"
+
+[accounts.purchases."5700"]
+accountMainDescription = "Insurance"
+"diy:column" = "AD"
+
+[accounts.purchases."5701"]
+accountMainDescription = "Leasing charges"
+"diy:column" = "AE"
+
+[accounts.purchases."5800"]
+accountMainDescription = "Legal and professional fees"
+"diy:column" = "AF"
+
+[accounts.purchases."5801"]
+accountMainDescription = "Charitable donations"
+"diy:column" = "AG"
+
+[accounts.purchases."5802"]
+accountMainDescription = "Goodwill amortisation"
+"diy:column" = "AH"
+
+[accounts.purchases."5900"]
+accountMainDescription = "Fixed asset purchases"
+"diy:column" = "AI"
+
+[accounts.bank."1200"]
+accountMainDescription = "Current account"
+accountType = "bank"
+
+[accounts.bank."1210"]
+accountMainDescription = "Savings account"
+accountType = "bank"
+
+[accounts.bank."1220"]
+accountMainDescription = "Cash account"
+accountType = "bank"
+
+[accounts.bank."1230"]
+accountMainDescription = "Credit card account"
+accountType = "bank"
+
+[accounts.capital."3000"]
+accountMainDescription = "Share capital"
+
+[accounts.capital."3100"]
+accountMainDescription = "Retained earnings"
+
+[accounts.capital."3200"]
+accountMainDescription = "Dividends"
+
+[accounts.assets."0010"]
+accountMainDescription = "Plant and machinery"
+
+[accounts.assets."0020"]
+accountMainDescription = "Fixtures and fittings"
+
+[accounts.assets."0030"]
+accountMainDescription = "Computer equipment"
+
+[accounts.assets."0040"]
+accountMainDescription = "Motor vehicles"
+
+[accounts.liabilities."2100"]
+accountMainDescription = "Trade creditors"
+
+[accounts.liabilities."2200"]
+accountMainDescription = "VAT liability"
+
+[accounts.liabilities."2300"]
+accountMainDescription = "Corporation Tax liability"
+
+[accounts.liabilities."2400"]
+accountMainDescription = "PAYE/NI liability"
+
+[accounts.liabilities."2500"]
+accountMainDescription = "Directors loan account"
+
+[tax.corporationTax]
+smallProfitsRate = 0.19
+smallProfitsLimit = 50000
+mainRate = 0.25
+mainRateThreshold = 250000
+associatedCompanies = 0
+
+[tax.capitalAllowances]
+annualInvestmentAllowance = 1000000
+mainRateWDA = 0.18
+specialRateWDA = 0.06
+
+[tax.vat]
+standardRate = 0.20
+reducedRate = 0.05
+registrationThreshold = 90000
+
+[tax.nationalInsurance]
+class1EmployeeMainRate = 0.08
+class1EmployeeUpperRate = 0.02
+class1EmployeePrimaryThreshold = 12570
+class1EmployeeUpperEarningsLimit = 50270
+class1EmployerRate = 0.15
+class1EmployerSecondaryThreshold = 5000
+employmentAllowance = 10500
+
+[tax.dividends]
+allowance = 500
+basicRate = 0.0875
+higherRate = 0.3375
+additionalRate = 0.3935
+
+[tax.mileage]
+carFirst10000 = 0.45
+carOver10000 = 0.25
