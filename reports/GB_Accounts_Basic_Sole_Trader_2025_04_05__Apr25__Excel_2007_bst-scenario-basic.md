@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Basic Sole Trader 2025-04-05 (Apr25) Excel 2007
 
 Scenario: bst-scenario-basic
-Status: COMPLIANT
+Status: RECONCILES
 Generated: 2026-04-01
 
 ## Compliance Checks

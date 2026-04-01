@@ -5,6 +5,9 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  schedule:
+    # Daily at 07:00 UTC (after test workflow runs at 06:00 UTC)
+    - cron: '0 7 * * *'
   push:
     branches:
       - '**'
@@ -36,6 +39,11 @@ on:
         description: 'Skip deployment and only run the smoke test'
         required: false
         default: false
+      skip-reconciliation-check:
+        type: boolean
+        description: 'Skip reconciliation report check'
+        required: false
+        default: false
 
 permissions:
   id-token: write
@@ -60,6 +68,8 @@ jobs:
         run: ":"
       - name: "inputs.skipDeploy=[${{ inputs.skipDeploy }}]"
         run: ":"
+      - name: "inputs.skip-reconciliation-check=[${{ inputs.skip-reconciliation-check }}]"
+        run: ":"
       - name: Normalise Params
         id: normalise
         shell: bash
@@ -76,16 +86,51 @@ jobs:
           # Default skipDeploy to false for non-dispatch triggers
           SKIP_DEPLOY='${{ inputs.skipDeploy }}'; [[ -z "$SKIP_DEPLOY" ]] && SKIP_DEPLOY="false"
           echo "skip-deploy=${SKIP_DEPLOY}" | tee -a "$GITHUB_OUTPUT"
+          SKIP_RECON='${{ inputs.skip-reconciliation-check }}'; [[ -z "$SKIP_RECON" ]] && SKIP_RECON="false"
+          echo "skip-reconciliation-check=${SKIP_RECON}" | tee -a "$GITHUB_OUTPUT"
     outputs:
       environment-name: ${{ steps.normalise.outputs.environment-name }}
       skip-deploy: ${{ steps.normalise.outputs.skip-deploy }}
+      skip-reconciliation-check: ${{ steps.normalise.outputs.skip-reconciliation-check }}
       github-environment: ${{ steps.normalise.outputs.github-environment }}
+
+  reconciliation-check:
+    name: 'check reconciliation reports'
+    if: ${{ needs.params.outputs.skip-reconciliation-check != 'true' }}
+    needs:
+      - params
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check all reports are RECONCILES
+        run: |
+          if [ ! -d reports ] || [ -z "$(ls reports/*.md 2>/dev/null)" ]; then
+            echo "::error::No reconciliation reports found in reports/"
+            exit 1
+          fi
+          echo "=== Reconciliation Reports ==="
+          FAIL=0
+          for f in reports/*.md; do
+            status=$(grep "^Status:" "$f" | head -1)
+            echo "  $(basename "$f"): $status"
+            if echo "$status" | grep -q "ANOMALYDETECTED"; then
+              FAIL=1
+            fi
+          done
+          echo ""
+          if [ "$FAIL" -eq 1 ]; then
+            echo "::error::Reconciliation reports contain ANOMALYDETECTED packages"
+            exit 1
+          fi
+          echo "All reconciliation reports are RECONCILES"
 
   deploy-spreadsheets:
     name: 'deploy spreadsheets stack'
-    if: ${{ needs.params.outputs.skip-deploy != 'true' }}
+    if: ${{ !cancelled() && (needs.reconciliation-check.result == 'success' || needs.reconciliation-check.result == 'skipped') && needs.params.outputs.skip-deploy != 'true' }}
     needs:
       - params
+      - reconciliation-check
     runs-on: ubuntu-24.04
     environment: ${{ needs.params.outputs.github-environment }}
     steps:

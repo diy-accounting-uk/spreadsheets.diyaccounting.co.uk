@@ -2,6 +2,9 @@ name: test
 run-name: "test from ${{ github.ref_name }}"
 
 on:
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: '0 6 * * *'
   push:
     branches:
       - '**'
@@ -28,9 +31,6 @@ on:
   pull_request:
     branches:
       - main
-  schedule:
-    # Daily at 06:00 UTC
-    - cron: '0 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -263,3 +263,31 @@ jobs:
           name: behaviour-test-local
           retention-days: 7
           path: target/behaviour-test-results/
+
+  reconciliation-check:
+    name: 'check reconciliation reports'
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check all reports are RECONCILES
+        run: |
+          if [ ! -d reports ] || [ -z "$(ls reports/*.md 2>/dev/null)" ]; then
+            echo "::error::No reconciliation reports found in reports/"
+            exit 1
+          fi
+          echo "=== Reconciliation Reports ==="
+          FAIL=0
+          for f in reports/*.md; do
+            status=$(grep "^Status:" "$f" | head -1)
+            echo "  $(basename "$f"): $status"
+            if echo "$status" | grep -q "ANOMALYDETECTED"; then
+              FAIL=1
+            fi
+          done
+          echo ""
+          if [ "$FAIL" -eq 1 ]; then
+            echo "::error::Reconciliation reports contain ANOMALYDETECTED packages"
+            exit 1
+          fi
+          echo "All reconciliation reports are RECONCILES"

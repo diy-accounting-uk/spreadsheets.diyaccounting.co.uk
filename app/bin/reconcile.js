@@ -72,7 +72,7 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
     `# Reconciliation Report: ${packageName}`,
     ``,
     `Scenario: ${scenarioName}`,
-    `Status: ${allPass ? "COMPLIANT" : "NON-COMPLIANT"}`,
+    `Status: ${allPass ? "RECONCILES" : "ANOMALYDETECTED"}`,
     `Generated: ${new Date().toISOString().split("T")[0]}`,
     ``,
     `## Compliance Checks`,
@@ -202,6 +202,8 @@ async function main() {
       const reads = productMod.standardReads();
 
       let results;
+      const pkgSlug = pkgDir.replace(/[^a-zA-Z0-9]/g, "_");
+      const populatedDir = resolve(REPORTS_DIR, "populated");
 
       if (productMod.MULTI_FILE) {
         // Multi-file product (SE): load all xlsx files, use cross-file runner
@@ -217,7 +219,10 @@ async function main() {
           fileBuffers[f] = readFileSync(resolve(pkgPath, f));
         }
 
-        results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
+        const saveDir = resolve(populatedDir, `${pkgSlug}_${scenarioName}`);
+        results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+          saveRecalculatedTo: saveDir,
+        });
       } else {
         // Single-file product (BST, Taxi)
         const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
@@ -227,7 +232,10 @@ async function main() {
         }
 
         const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
-        results = await runSpreadsheet(xlsxBuffer, writes, reads);
+        const savePath = resolve(populatedDir, `${pkgSlug}_${scenarioName}.xlsx`);
+        results = await runSpreadsheet(xlsxBuffer, writes, reads, {
+          saveRecalculatedTo: savePath,
+        });
       }
 
       // Find the tax-data TOML for this package's year
@@ -245,18 +253,17 @@ async function main() {
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
 
       // Report naming: <product>_<scenario>.md
-      const pkgSlug = pkgDir.replace(/[^a-zA-Z0-9]/g, "_");
       const reportFile = `${pkgSlug}_${scenarioName}.md`;
       writeFileSync(resolve(REPORTS_DIR, reportFile), content);
       console.log(`    Report: reports/${reportFile}`);
-      console.log(`    Status: ${compliant ? "COMPLIANT" : "NON-COMPLIANT"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`);
+      console.log(`    Status: ${compliant ? "RECONCILES" : "ANOMALYDETECTED"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`);
 
       if (compliant) totalCompliant++;
       else totalNonCompliant++;
     }
   }
 
-  console.log(`\n=== Summary: ${totalCompliant} compliant, ${totalNonCompliant} non-compliant ===`);
+  console.log(`\n=== Summary: ${totalCompliant} reconciled, ${totalNonCompliant} anomalies ===`);
 
   if (totalNonCompliant > 0) {
     process.exit(1);

@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007
 
 Scenario: taxi-scenario-basic
-Status: COMPLIANT
+Status: RECONCILES
 Generated: 2026-04-01
 
 ## Compliance Checks

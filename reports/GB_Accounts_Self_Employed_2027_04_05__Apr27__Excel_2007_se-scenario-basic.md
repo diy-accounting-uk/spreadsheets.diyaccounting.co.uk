@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-scenario-basic
-Status: COMPLIANT
+Status: RECONCILES
 Generated: 2026-04-01
 
 ## Compliance Checks
