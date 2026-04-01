@@ -14,6 +14,7 @@ on:
       - 'app/templates/taxi/**'
       - 'app/templates/meta.toml'
       - 'app/products/taxi.js'
+      - '.github/workflows/generate-taxi.yml'
   workflow_dispatch:
     inputs:
       skip-tests:

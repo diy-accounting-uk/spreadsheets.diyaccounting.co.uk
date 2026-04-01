@@ -14,6 +14,7 @@ on:
       - 'app/templates/bst/**'
       - 'app/templates/meta.toml'
       - 'app/products/bst.js'
+      - '.github/workflows/generate-bst.yml'
   workflow_dispatch:
     inputs:
       skip-tests:
