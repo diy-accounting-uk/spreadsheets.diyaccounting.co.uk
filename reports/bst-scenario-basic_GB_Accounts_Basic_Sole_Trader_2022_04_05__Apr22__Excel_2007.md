@@ -2,7 +2,7 @@
 
 Scenario: bst-scenario-basic
 Status: COMPLIANT
-Generated: 2026-03-31
+Generated: 2026-04-01
 
 ## Compliance Checks
 
