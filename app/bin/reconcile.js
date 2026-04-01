@@ -202,7 +202,6 @@ async function main() {
       const reads = productMod.standardReads();
 
       let results;
-      const populatedDir = resolve(REPORTS_DIR, "populated");
 
       if (productMod.MULTI_FILE) {
         // Multi-file product (SE): load all xlsx files, use cross-file runner
@@ -218,11 +217,7 @@ async function main() {
           fileBuffers[f] = readFileSync(resolve(pkgPath, f));
         }
 
-        const populatedPath = resolve(populatedDir, pkgDir.replace(/[^a-zA-Z0-9]/g, "_"));
-        results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
-          saveRecalculatedTo: populatedPath,
-        });
-        console.log(`    Populated: reports/populated/${basename(populatedPath)}/`);
+        results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
       } else {
         // Single-file product (BST, Taxi)
         const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
@@ -232,12 +227,7 @@ async function main() {
         }
 
         const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
-        const populatedPath = resolve(populatedDir, `${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}_${scenarioName}.xlsx`);
-
-        results = await runSpreadsheet(xlsxBuffer, writes, reads, {
-          saveRecalculatedTo: populatedPath,
-        });
-        console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
+        results = await runSpreadsheet(xlsxBuffer, writes, reads);
       }
 
       // Find the tax-data TOML for this package's year
@@ -254,7 +244,9 @@ async function main() {
       const checks = productMod.checkCompliance(results, scenario.expected, taxData, calculateExpectedTax);
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
 
-      const reportFile = `${scenarioName}_${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}.md`;
+      // Report naming: <product>_<scenario>.md
+      const pkgSlug = pkgDir.replace(/[^a-zA-Z0-9]/g, "_");
+      const reportFile = `${pkgSlug}_${scenarioName}.md`;
       writeFileSync(resolve(REPORTS_DIR, reportFile), content);
       console.log(`    Report: reports/${reportFile}`);
       console.log(`    Status: ${compliant ? "COMPLIANT" : "NON-COMPLIANT"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`);

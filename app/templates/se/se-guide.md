@@ -59,6 +59,8 @@ The Self Employed package contains these files:
 | **Fixedassets.xlsx** | Fixed asset schedule, depreciation, capital allowances |
 | **Salesinvoice.xlsx** | Sales invoice template with customer/product database |
 
+![Business Details — enter your business information for the SE tax return](screenshots/business-details.png)
+
 ### Previous Year Accounts
 
 As Self Employed businesses are not required to produce a Balance Sheet each year, entering previous year balances is optional. Entering previous year fixed assets is important to correctly calculate capital allowances due.
@@ -117,6 +119,8 @@ Record income from all sources, except bank interest received, in the Sales work
 
 Enter sales credit notes and bad debts written off as negative amounts.
 
+![Sales Apr sheet — enter sales transactions with date, customer, code letter, and gross value](screenshots/sales-apr.png)
+
 ### Data Entry
 
 | Column | Entry |
@@ -160,6 +164,8 @@ The **OpeningDebtors** worksheet maintains continuity of financial control for a
 Record expenses from all sources, except bank interest and charges, in the Purchases workbook using the separate spreadsheet provided for each month.
 
 Enter purchase credit notes as negative amounts.
+
+![Purchases Apr sheet — enter purchase transactions with date, supplier, code letter, and gross value](screenshots/purchases-apr.png)
 
 ### Data Entry
 
@@ -246,6 +252,8 @@ As Balance Sheets by Self Employed businesses are optional, recording cash and b
 
 Fixed items are physical items not bought for resale but used by the business for a period of more than one year.
 
+![Fixed Assets Schedule — asset categories with automatic depreciation and capital allowance calculations](screenshots/fixed-assets.png)
+
 ### Depreciation Rates
 
 The following depreciation rates have been preset:
@@ -273,6 +281,8 @@ Fixedassets > FAreconciliation compares Fixed Asset Purchases and Sales entered 
 ## VAT Returns
 
 No entries required. Sales and Purchase totals are collected by the Vatinterface. Five automated Vat Returns are provided for each of the potential quarters during the financial year.
+
+![VAT Return — automated quarterly VAT return generated from Sales and Purchases totals](screenshots/vat-return.png)
 
 To Generate a Vat Return:
 
@@ -311,6 +321,10 @@ Enter wages information manually at the Financialaccounts > WagesInterface for a
 | **G** | No Entry required -- Net Wages calculated |
 | **H** | Employers National Insurance contributions |
 | **I** | Statutory Deductions recoverable from HMRC |
+
+![SE Full — self-employment tax return populated automatically with turnover and tax calculations](screenshots/se-full.png)
+
+![SE Full — tax calculation showing taxable profit, capital allowances, losses and NI deductions](screenshots/se-full-tax.png)
 
 ### Income Tax
 
