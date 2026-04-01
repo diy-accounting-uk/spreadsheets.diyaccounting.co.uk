@@ -1,0 +1,38 @@
+[product]
+id = "ltd-mar"
+name = "Company"
+description = "Limited company accounts package (March year-end). Supports small profits rate only (profits up to 50000)."
+tax_regime = "ltd"
+year_end_month = 3
+
+[template]
+files = [
+  "Financialaccounts.xlsx",
+  "Sales.xlsx",
+  "Purchases.xlsx",
+  "Currentaccount.xlsx",
+  "Savingaccount.xlsx",
+  "Cashaccount.xlsx",
+  "Creditcardaccount.xlsx",
+  "Vatreturns.xlsx",
+  "Payslips.xlsx",
+  "Fixedassets.xlsx",
+  "CT600OnlineLookALike.xlsx",
+  "Companysecretary.xlsx",
+  "Salesinvoice.xlsx",
+  "expensesform.xlsx",
+  "Savingaccount.xlsx",
+  "Dividend Voucher.docx",
+]
+guide = "ltd-mar-guide.md"
+
+[output]
+dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+guide_filename = "Company Accounts User Guide.pdf"
+
+[sheets.financialaccounts]
+admin = "xl/worksheets/sheet12.xml"
+cellEditFn = "ltd"
+
+[sheets.payslips]
+payslipsAdmin = "xl/worksheets/sheet16.xml"

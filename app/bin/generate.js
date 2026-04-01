@@ -22,6 +22,7 @@ import { generatePdf } from "../lib/guide.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
+import { PRODUCT as LTD_MAR } from "../products/ltd-mar.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -33,6 +34,7 @@ const PRODUCTS = {
   bst: BST,
   taxi: TAXI,
   se: SE,
+  "ltd-mar": LTD_MAR,
 };
 
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {
@@ -40,7 +42,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
   const taxData = parseTOML(readFileSync(tomlPath, "utf8"));
-  const ty = taxData.tax_year;
+  const ty = taxData.tax_year || taxData.financial_year;
   const endDate = new Date(ty.end);
 
   console.log(`\nGenerating ${productMeta.product.name} for ${ty.label}...`);
