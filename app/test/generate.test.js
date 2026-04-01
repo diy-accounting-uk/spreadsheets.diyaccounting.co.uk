@@ -157,6 +157,138 @@ describe("generateSpreadsheet", () => {
   });
 });
 
+// ── SE cell edits ─────────────────────────────────────────────────────────
+
+import { buildSeCellEdits, generatePayslipsCalendar } from "../lib/generator.js";
+
+const SE_DIR = resolve(APP_DIR, "templates", "se");
+
+describe("buildSeCellEdits", () => {
+  const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+
+  it("uses SE-specific cell positions for income tax", () => {
+    const { numericEdits } = buildSeCellEdits(taxData, 2025);
+    // SE puts basic rate at N6 (BST puts starting_rate there)
+    expect(numericEdits.N6).toBe(0.2);
+    // SE puts higher rate at N7 (BST puts basic_rate there)
+    expect(numericEdits.N7).toBe(0.4);
+    // SE has no N8 (BST puts higher_rate there)
+    expect(numericEdits.N8).toBeUndefined();
+    // SE basic band end at M11 (BST uses M12)
+    expect(numericEdits.M11).toBe(37700);
+    expect(numericEdits.M12).toBeUndefined();
+    // SE higher band start at L12/N12 (BST uses L13/N13)
+    expect(numericEdits.L12).toBe(37701);
+    expect(numericEdits.N12).toBe(37701);
+  });
+
+  it("uses L16 for NI Class 2 (not L17)", () => {
+    const { numericEdits } = buildSeCellEdits(taxData, 2025);
+    expect(numericEdits.L16).toBe(0);
+    expect(numericEdits.L17).toBeUndefined();
+  });
+
+  it("includes VAT standard rate at F27", () => {
+    const { numericEdits } = buildSeCellEdits(taxData, 2025);
+    expect(numericEdits.F27).toBe(0.2);
+  });
+
+  it("handles non-zero NI Class 2 for older years", () => {
+    const taxData2021 = parseTOML(readFileSync(resolve(DATA_DIR, "se-2020-2021.toml"), "utf8"));
+    const { numericEdits } = buildSeCellEdits(taxData2021, 2020);
+    expect(numericEdits.L16).toBe(3.05);
+  });
+});
+
+describe("generatePayslipsCalendar", () => {
+  it("generates 380 rows of C, D, F values", () => {
+    const edits = generatePayslipsCalendar(2025);
+    // 380 rows * 3 columns = 1140 cells
+    expect(Object.keys(edits).length).toBe(1140);
+    // First row
+    expect(edits.C2).toBe(1);
+    expect(edits.D2).toBe(1);
+    expect(edits.F2).toBe(1);
+    // Last row
+    expect(edits.C381).toBe(53);
+    expect(edits.D381).toBe(12);
+    expect(edits.F381).toBe(6);
+  });
+
+  it("week 1 is always 5 days (rows 2-6)", () => {
+    const edits = generatePayslipsCalendar(2025);
+    for (let row = 2; row <= 6; row++) {
+      expect(edits[`C${row}`]).toBe(1);
+    }
+    expect(edits.C7).toBe(2); // week 2 starts at row 7
+  });
+
+  it("follows 4-4-5 month pattern", () => {
+    const edits = generatePayslipsCalendar(2025);
+    // Count weeks per month
+    const weeksPerMonth = {};
+    for (let row = 2; row <= 381; row++) {
+      const month = edits[`D${row}`];
+      const week = edits[`C${row}`];
+      if (!weeksPerMonth[month]) weeksPerMonth[month] = new Set();
+      weeksPerMonth[month].add(week);
+    }
+    const counts = Array.from({ length: 12 }, (_, i) => weeksPerMonth[i + 1].size);
+    expect(counts).toEqual([4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6]);
+  });
+
+  it("produces same values for different years", () => {
+    // The algorithm is deterministic regardless of day-of-week
+    const edits2020 = generatePayslipsCalendar(2020);
+    const edits2025 = generatePayslipsCalendar(2025);
+    // Both should have identical week/month/weekInMonth patterns
+    expect(edits2020.C2).toBe(edits2025.C2);
+    expect(edits2020.C7).toBe(edits2025.C7);
+    expect(edits2020.D381).toBe(edits2025.D381);
+  });
+});
+
+describe("SE generateSpreadsheet", () => {
+  it("generates valid SE Financialaccounts.xlsx", async () => {
+    if (!existsSync(resolve(SE_DIR, "Financialaccounts.xlsx"))) return;
+
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const seMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(SE_DIR, "Financialaccounts.xlsx"));
+
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, seMeta.sheets.financialaccounts);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer[0]).toBe(0x50); // PK zip signature
+
+    // Verify SE-specific cell values in Admin
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+    const adminXml = await zip.file(seMeta.sheets.financialaccounts.admin).async("string");
+
+    // N6 should be 0.2 (basic_rate in SE, not starting_rate like BST)
+    expect(adminXml).toMatch(/<c\s+r="N6"[^>]*><v>0\.2<\/v><\/c>/);
+    // F27 should be 0.2 (VAT rate, SE only)
+    expect(adminXml).toMatch(/<c\s+r="F27"[^>]*><v>0\.2<\/v><\/c>/);
+  });
+
+  it("generates valid SE Payslips.xlsx with calendar", async () => {
+    if (!existsSync(resolve(SE_DIR, "Payslips.xlsx"))) return;
+
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const seMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(SE_DIR, "Payslips.xlsx"));
+
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, seMeta.sheets.payslips);
+    expect(buffer).toBeInstanceOf(Buffer);
+
+    // Verify B2 = tax year start serial (45753 for Apr 6, 2025)
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+    const payslipsXml = await zip.file(seMeta.sheets.payslips.payslipsAdmin).async("string");
+    expect(payslipsXml).toMatch(/<c\s+r="B2"[^>]*><v>45753<\/v><\/c>/);
+  });
+});
+
 // ── Tax year weeks ─────────────────────────────────────────────────────────
 
 describe("generateTaxYearWeeks", () => {

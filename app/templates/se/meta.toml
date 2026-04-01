@@ -1,0 +1,28 @@
+[product]
+id = "se"
+name = "Self Employed"
+description = "Full bookkeeping package for self-employed businesses. Includes sales, purchases, bank, cash, VAT returns, payroll, fixed assets, and invoicing."
+tax_regime = "se"
+
+[template]
+files = [
+  "Financialaccounts.xlsx",
+  "Sales.xlsx",
+  "Purchases.xlsx",
+  "Bank.xlsx",
+  "Cash.xlsx",
+  "Vat.xlsx",
+  "Payslips.xlsx",
+  "Fixedassets.xlsx",
+  "Salesinvoice.xlsx",
+]
+
+[output]
+dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+
+[sheets.financialaccounts]
+admin = "xl/worksheets/sheet10.xml"
+cellEditFn = "se"
+
+[sheets.payslips]
+payslipsAdmin = "xl/worksheets/sheet16.xml"

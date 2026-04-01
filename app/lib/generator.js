@@ -98,7 +98,7 @@ function escapeXml(str) {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// ── Tax data → cell edits ───────────────────────────────────────────────────
+// ── Tax data → cell edits (BST/Taxi Admin) ─────────────────────────────────
 
 export function buildCellEdits(taxData, startYear) {
   const dates = generateAdminDates(startYear);
@@ -155,6 +155,127 @@ export function buildCellEdits(taxData, startYear) {
   };
 
   return { numericEdits, stringEdits };
+}
+
+// ── Tax data → cell edits (SE Financialaccounts Admin) ──────────────────────
+//
+// The SE Admin sheet has different cell positions from BST for income tax bands,
+// NI Class 2, and VAT rate. Dates and other rates use the same positions.
+
+export function buildSeCellEdits(taxData, startYear) {
+  const dates = generateAdminDates(startYear);
+  const ty = taxData.tax_year;
+  const it = taxData.income_tax;
+  const ni = taxData.national_insurance;
+  const ca = taxData.capital_allowances;
+  const dep = taxData.depreciation;
+  const mil = taxData.mileage;
+
+  const numericEdits = {};
+
+  // Dates — same positions as BST
+  for (const [cell, date] of Object.entries(dates)) {
+    numericEdits[cell] = toExcelSerial(date);
+  }
+
+  // Income tax — DIFFERENT cell positions from BST
+  numericEdits.N4 = it.personal_allowance;
+  numericEdits.N6 = it.basic_rate;           // BST: starting_rate at N6
+  numericEdits.N7 = it.higher_rate;          // BST: basic_rate at N7
+  // No N8 in SE (BST has higher_rate at N8)
+  numericEdits.K11 = it.basic_rate;          // Display-only copy of basic rate
+  numericEdits.N11 = it.starter_band_end;
+  numericEdits.M11 = it.basic_band_end;      // BST: M12
+  numericEdits.K12 = 0;
+  numericEdits.L12 = it.higher_band_start;   // BST: L13
+  numericEdits.N12 = it.higher_band_start;   // BST: N13
+
+  // NI — L16 not L17 for Class 2
+  numericEdits.L16 = ni.class2_weekly_rate;  // BST: class2_rate at L17
+  numericEdits.L20 = ni.class4_lower_rate;
+  numericEdits.N20 = ni.class4_lower_limit;
+  numericEdits.L23 = ni.class4_upper_rate;
+  numericEdits.N23 = ni.class4_upper_limit;
+
+  // Capital allowances — same as BST
+  numericEdits.G4 = ca.annual_investment_allowance;
+  numericEdits.G5 = ca.writing_down_allowance;
+  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
+  numericEdits.G8 = ca.motor_vehicle_restriction;
+
+  // Depreciation — same as BST
+  numericEdits.G13 = dep.land_and_property;
+  numericEdits.G14 = dep.plant_and_machinery;
+  numericEdits.G15 = dep.fixtures_and_fittings;
+  numericEdits.G16 = dep.computer_equipment;
+  numericEdits.G17 = dep.motor_vehicles;
+
+  // Mileage — same as BST
+  numericEdits.F21 = mil.higher_rate_limit;
+  numericEdits.G21 = mil.higher_rate_pence;
+  numericEdits.F22 = mil.lower_rate_start;
+  numericEdits.G22 = mil.lower_rate_pence;
+
+  // VAT — threshold same, standard rate is SE-only
+  numericEdits.F26 = taxData.vat.registration_threshold;
+  numericEdits.F27 = taxData.vat.standard_rate;
+
+  const stringEdits = {
+    B23: ty.label,
+    B24: ty.next_label,
+  };
+
+  return { numericEdits, stringEdits };
+}
+
+// ── Payslips Admin calendar generation ──────────────────────────────────────
+//
+// Generates the C (week), D (month), F (week-in-month) columns for the
+// Payslips Admin sheet. These are hardcoded values — no formulas.
+//
+// Algorithm (verified against all 9 existing packages with zero mismatches):
+//   Week 1 = always 5 days (Apr 6–10)
+//   Weeks 2–52 = 7 days each (starting Apr 11)
+//   Week 53 = remainder (18 days, extending ~15 days past tax year end)
+//   Month pattern = fixed [4,4,5, 4,4,5, 4,4,5, 4,4,6] totalling 53 weeks
+
+export function generatePayslipsCalendar(startYear) {
+  const WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+  const TOTAL_ROWS = 380; // Apr 6 through ~Apr 20 next year
+
+  const edits = {};
+  let week = 1;
+  let month = 1;
+  let weekInMonth = 1;
+  let dayInWeek = 1;
+  let weeksInCurrentMonth = WEEKS_PER_MONTH[0];
+
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    const row = i + 2; // rows start at 2
+    edits[`C${row}`] = week;
+    edits[`D${row}`] = month;
+    edits[`F${row}`] = weekInMonth;
+
+    dayInWeek++;
+
+    // Week 1 = 5 days, all other weeks = 7 days (week 53 = 18 days)
+    const weekLength = week === 1 ? 5 : week < 53 ? 7 : 18;
+    if (dayInWeek > weekLength) {
+      dayInWeek = 1;
+      week++;
+
+      // Check if we've completed enough weeks for this month
+      if (weekInMonth >= weeksInCurrentMonth && month < 12) {
+        month++;
+        weekInMonth = 1;
+        weeksInCurrentMonth = WEEKS_PER_MONTH[month - 1];
+      } else {
+        weekInMonth++;
+      }
+    }
+  }
+
+  return edits;
 }
 
 // ── Sales date generation (Taxi Driver) ────────────────────────────────────
@@ -376,20 +497,23 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
   const zip = await JSZip.loadAsync(templateBuffer);
 
-  // Admin sheet edits (shared between BST and Taxi)
-  let adminXml = await zip.file(sheetsConfig.admin).async("string");
+  // Admin sheet edits (BST/Taxi/SE Financialaccounts — when sheetsConfig.admin is present)
+  if (sheetsConfig.admin) {
+    let adminXml = await zip.file(sheetsConfig.admin).async("string");
 
-  const { numericEdits, stringEdits } = buildCellEdits(taxData, startYear);
+    const buildFn = sheetsConfig.cellEditFn === "se" ? buildSeCellEdits : buildCellEdits;
+    const { numericEdits, stringEdits } = buildFn(taxData, startYear);
 
-  for (const [cellRef, value] of Object.entries(numericEdits)) {
-    adminXml = setCellValue(adminXml, cellRef, value);
+    for (const [cellRef, value] of Object.entries(numericEdits)) {
+      adminXml = setCellValue(adminXml, cellRef, value);
+    }
+    for (const [cellRef, str] of Object.entries(stringEdits)) {
+      adminXml = setCellString(adminXml, cellRef, str);
+    }
+
+    const originalDate = zip.file(sheetsConfig.admin).date;
+    zip.file(sheetsConfig.admin, adminXml, { date: originalDate });
   }
-  for (const [cellRef, str] of Object.entries(stringEdits)) {
-    adminXml = setCellString(adminXml, cellRef, str);
-  }
-
-  const originalDate = zip.file(sheetsConfig.admin).date;
-  zip.file(sheetsConfig.admin, adminXml, { date: originalDate });
 
   // Sales sheet generation (Taxi only — when sheetsConfig.sales is present)
   if (sheetsConfig.sales) {
@@ -426,6 +550,24 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       const homeDate = zip.file(sheetsConfig.home).date;
       zip.file(sheetsConfig.home, homeXml, { date: homeDate });
     }
+  }
+
+  // Payslips Admin calendar generation (SE only — when sheetsConfig.payslipsAdmin is present)
+  if (sheetsConfig.payslipsAdmin) {
+    let payslipsXml = await zip.file(sheetsConfig.payslipsAdmin).async("string");
+
+    // Set B2 = tax year start date (all other dates cascade via shared formulas)
+    const taxYearStartSerial = toExcelSerial(utcDate(startYear, 4, 6));
+    payslipsXml = setCellValue(payslipsXml, "B2", taxYearStartSerial);
+
+    // Regenerate C (week), D (month), F (week-in-month) — hardcoded values
+    const calendarEdits = generatePayslipsCalendar(startYear);
+    for (const [cellRef, value] of Object.entries(calendarEdits)) {
+      payslipsXml = setCellValue(payslipsXml, cellRef, value);
+    }
+
+    const payslipsDate = zip.file(sheetsConfig.payslipsAdmin).date;
+    zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
   }
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update

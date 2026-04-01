@@ -20,6 +20,7 @@ import { runSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
+import * as se from "../products/se.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -32,6 +33,7 @@ const REPORTS_DIR = resolve(ROOT, "reports");
 const PRODUCTS = {
   bst,
   taxi,
+  se,
 };
 
 function findXlsx(packageDir) {

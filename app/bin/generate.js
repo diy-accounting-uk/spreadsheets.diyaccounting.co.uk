@@ -21,6 +21,7 @@ import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel }
 import { generatePdf } from "../lib/guide.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
+import { PRODUCT as SE } from "../products/se.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -31,6 +32,7 @@ const OUTPUT_DIR = resolve(ROOT, "packages-generated");
 const PRODUCTS = {
   bst: BST,
   taxi: TAXI,
+  se: SE,
 };
 
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {
@@ -43,13 +45,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
 
   console.log(`\nGenerating ${productMeta.product.name} for ${ty.label}...`);
 
-  // Generate spreadsheet
-  const templatePath = resolve(productDir, productMeta.template.spreadsheet);
-  const templateBuffer = readFileSync(templatePath);
-
-  const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
-
-  // Build output paths from patterns
+  // Build output directory
   const dateStr = formatDateYYYYMMDD(endDate);
   const label = shortLabel(endDate);
   const ddmmyy = formatDateDDMMYY(endDate);
@@ -61,18 +57,42 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
     .replace("{short_label}", label)
     .replace("{format}", sharedMeta.package.format);
 
-  const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", ddmmyy);
-
   const outDir = resolve(OUTPUT_DIR, dirName);
   mkdirSync(outDir, { recursive: true });
 
-  // Write spreadsheet
-  writeFileSync(resolve(outDir, xlsxFilename), xlsxBuffer);
-  console.log(`  Written: ${dirName}/`);
-  console.log(`           ${xlsxFilename}`);
+  if (productMeta.template.files) {
+    // Multi-file product (SE): process each template file
+    for (const templateFile of productMeta.template.files) {
+      const templateBuffer = readFileSync(resolve(productDir, templateFile));
+      const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
+      const sheetsConfig = productMeta.sheets?.[fileKey];
+
+      if (sheetsConfig && Object.keys(sheetsConfig).length > 0) {
+        // This file needs generation (has sheet config)
+        const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, sheetsConfig);
+        writeFileSync(resolve(outDir, templateFile), xlsxBuffer);
+      } else {
+        // Copy unchanged from template
+        writeFileSync(resolve(outDir, templateFile), templateBuffer);
+      }
+    }
+    console.log(`  Written: ${dirName}/`);
+    console.log(`           ${productMeta.template.files.length} files`);
+  } else {
+    // Single-file product (BST, Taxi)
+    const templatePath = resolve(productDir, productMeta.template.spreadsheet);
+    const templateBuffer = readFileSync(templatePath);
+
+    const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+
+    const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", ddmmyy);
+    writeFileSync(resolve(outDir, xlsxFilename), xlsxBuffer);
+    console.log(`  Written: ${dirName}/`);
+    console.log(`           ${xlsxFilename}`);
+  }
 
   // Generate PDF guide
-  if (!skipGuide) {
+  if (!skipGuide && productMeta.template.guide) {
     const guideMd = resolve(productDir, productMeta.template.guide);
     const guidePdf = resolve(outDir, productMeta.output.guide_filename);
     try {
@@ -83,7 +103,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
     }
   }
 
-  return { dirName, xlsxFilename, taxYear: ty.label };
+  return { dirName, taxYear: ty.label };
 }
 
 function parseArgs(argv) {
