@@ -20,7 +20,7 @@ Generated: 2026-04-01
 
 ## Raw Output Values
 
-### Profit & Loss
+### Profit & Loss Acc
 
 | Cell | Value |
 |------|-------|
