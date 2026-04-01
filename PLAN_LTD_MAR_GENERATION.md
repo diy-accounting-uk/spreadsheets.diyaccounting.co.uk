@@ -500,7 +500,7 @@ All open questions resolved via deep xlsx extraction:
 
 ### Phase 6: Guide — COMPLETE ✓
 
-`ltd-mar-guide.md` with small profits rate annotation, package contents, Sales/Purchases column references, all 21 purchase expense codes documented.
+`ltd-mar-guide.md` — comprehensive guide adapted from source PDF (31 pages). Includes 6 screenshots extracted from populated reconciliation via LibreOffice PDF conversion + pdftoppm PNG extraction: open-accounts, sales-apr, purchases-apr, bank-current, fixed-assets, vat-return. Covers: corporate details, previous year accounts, VAT (registered/non-registered/flat rate/cash accounting), sales (7 codes), purchases (21 codes), expenses claim form, 4 bank accounts with all receipt and payment codes, fixed assets (depreciation, additions, disposals, capital allowances, HP finance), VAT returns, payroll integration (WagesInterface), financial accounts (stock, trial balance, MnthP&L, PubP&L, PubBalSht, PubNotes, CorporationTax, CT600), Companies House and HMRC submission (online and paper), accruals and prepayments, sales invoice. Small profits rate annotation on first page. Generated PDF = 811KB.
 
 ### Phase 7: Tests — COMPLETE ✓
 
@@ -526,19 +526,25 @@ VATQtr G5 defaults computed from year-end: Q1=+3mo, Q2=+6mo, Q3=+9mo, Q4=year-en
 ### To Verify
 
 - [ ] Payslips calendar for years before the Mar26 template — do earlier years have different week/month schemes? (Same risk as SE Apr21-23 vs Apr25-26 discrepancy)
-- [ ] External link cache injection with 9 links — tested with basic scenario only. More complex scenarios with bank transactions, payroll, fixed assets may expose issues.
-- [ ] VATQtr G5 dates for non-March year-ends — the algorithm handles any month but hasn't been tested for Jun/Sep/Dec yet
+- [ ] External link cache injection with 9 links — tested with basic scenario only. More complex scenarios exercising bank transactions, payroll, and fixed assets may reveal issues with additional external links (Currentaccount, Savingaccount, Creditcardaccount, Cashaccount, Companysecretary, Payslips)
+- [ ] VATQtr G5 dates for non-March year-ends — algorithm handles any month but untested for Jun/Sep/Dec
+- [ ] MnthP&L row 18-40 mapping to purchase codes — assumed from analysis column order but not yet verified against actual formulas for all 23 admin expense lines
+- [ ] TrialBalance Row 91 audit check — should be zero when all code letters are valid. Not yet tested.
 
 ### To Do (Future)
 
-- [ ] **Other year-end months** — parameterise ltd.js for Apr/May/Jun/.../Feb year-ends. The Admin dates cascade from F21, so the main challenge is: Vatinterface formulas reference different Admin cells per year-end month (hardcoded in template), and Payslips calendar needs the correct PAYE tax year
-- [ ] **Marginal relief** — see PLAN_LTD_MARGINAL_RELIEF.md. The CorporationTax sheet currently uses a single rate (P6). Need to add marginal relief formula for profits between £50k-£250k.
-- [ ] **Guide screenshots** — extract from populated reconciliation PDFs (same approach as SE)
-- [ ] **"Any" packages** — `packages/GB Accounts Company 2025-2026 (Any) Excel 2007` contains the template for all 12 month variants. For non-March year-ends, the Vatinterface formulas and month-sheet assignments differ — need to understand how "Any" templates work before generating month variants.
-- [ ] **Company Secretary** — Companysecretary.xlsx is currently a template copy. Could it benefit from pre-filling company details from the scenario?
-- [ ] **Dividend Voucher** — Currently a .docx template copy. Could generate pre-filled vouchers from scenario data.
-- [ ] **expensesform.xlsx** — 12 monthly sheets (Month 01-12). Currently template copy. Verify no year-specific content.
-- [ ] **DIYA GL integration** — full business activity model in `examples/<book>/` conforming to diya-gl-book-v1.schema.json + diya-gl-lines-v1.schema.json. Subsets for testing at different levels. See PLAN_DIYA_GL.md.
+- [ ] **Other year-end months** — see PLAN_LTD_ALL_GENERATE.md (in progress). Key challenges: Vatinterface formulas reference different Admin cells per year-end month (hardcoded in template), Payslips calendar needs the correct PAYE tax year, CT period time-apportionment crosses FY boundaries for non-March year-ends
+- [ ] **Marginal relief** — see PLAN_LTD_MARGINAL_RELIEF.md. The CorporationTax sheet uses a single rate (P6=19). Need marginal relief formula for profits £50k-£250k
+- [ ] **"Any" packages** — `packages/GB Accounts Company 2025-2026 (Any) Excel 2007` is the template for all 12 month variants. Understanding how it works is prerequisite for non-March generation. See PLAN_LTD_ALL_GENERATE.md
+- [ ] **Company Secretary pre-filling** — Companysecretary.xlsx is currently a template copy. Could pre-fill company name, registered office, director names from scenario/book.toml data
+- [ ] **Dividend Voucher pre-filling** — Dividend Voucher.docx is a template copy. Could generate pre-filled vouchers with company name, shareholder, amount, date from scenario data
+- [ ] **expensesform.xlsx** — 12 monthly sheets (Month 01-12). Currently template copy. Verify no year-specific content
+- [ ] **Payslip User Guide** — SE generates a separate Payslip User Guide PDF. The Ltd package could also include this (same payslip-guide.md shared with SE, or Ltd-specific version). Currently no payslip guide in Ltd output.
+- [ ] **DIYA GL integration** — see PLAN_DIYA_GL.md. Precision Code Ltd example created in `examples/precision-code-ltd/` with book.toml (chart of accounts) and lines.jsonl (169 transactions covering all 7 sales codes, 21 purchase codes, bank codes). Next: extract test subsets, wire up to reconciliation
+- [ ] **Extended and full test scenarios** — basic scenario (sales + purchases only) is working. Extended (+ bank + payroll) and full (everything) scenarios need creating from the DIYA GL lines.jsonl subsets
+- [ ] **CT600OnlineLookALike verification** — the CT600 sheet references Financialaccounts via external links. Verify it populates correctly after cross-file recalculation
+- [ ] **Published Accounts verification** — PubP&L, PubBalSht, PubNotes are auto-generated. Verify they contain correct values after reconciliation with the basic scenario
+- [ ] **OpenAccounts sheet** — currently empty. For a complete test, need to enter opening balance sheet data (previous year balances, share capital, retained earnings)
 
 ## Decision Log
 
@@ -560,3 +566,6 @@ VATQtr G5 defaults computed from year-end: Q1=+3mo, Q2=+6mo, Q3=+9mo, Q4=year-en
 | 2026-04-02 | 137 tests passing | 7 Ltd unit tests + 10 Ltd E2E + 120 existing |
 | 2026-04-02 | CI workflow created | generate-ltd.yml with Payslip 05 extraction, screenshots, reconciliation |
 | 2026-04-02 | DIYA GL plan started | Full business activity model in examples/ for comprehensive testing. See PLAN_DIYA_GL.md. |
+| 2026-04-02 | DIYA GL example data created | examples/precision-code-ltd/ with book.toml (chart of accounts, tax rates) and lines.jsonl (169 transactions, JSON Lines format). Covers all 7 sales codes, 21 purchase codes, bank codes. |
+| 2026-04-02 | Guide with screenshots | 811KB PDF, 6 screenshots from populated reconciliation (open-accounts, sales-apr, purchases-apr, bank-current, fixed-assets, vat-return) |
+| 2026-04-02 | Ltd all-months plan started | PLAN_LTD_ALL_GENERATE.md investigating differences between Mar/Jun/Sep/Dec year-ends and the "Any" template approach |
