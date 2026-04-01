@@ -43,4 +43,6 @@ web/spreadsheets.diyaccounting.co.uk/public/zips
 
 # Test output and reports
 web/spreadsheets.diyaccounting.co.uk/public/tests/
+reports/populated/
+reports/screenshots/
 *.log
