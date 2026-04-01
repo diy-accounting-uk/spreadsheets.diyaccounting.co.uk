@@ -13,8 +13,12 @@ on:
       - 'app/data/se-*'
       - 'app/templates/taxi/**'
       - 'app/templates/meta.toml'
+      - 'app/lib/generator.js'
+      - 'app/test/fixtures/**'
+      - 'app/lib/scenario-loader.js'
+      - 'app/lib/spreadsheet-runner.js'
+      - 'app/bin/reconcile.js'
       - 'app/products/taxi.js'
-      - '.github/workflows/generate-taxi.yml'
   workflow_dispatch:
     inputs:
       skip-tests:
@@ -90,10 +94,11 @@ jobs:
       - run: npm run build:sitemaps
       - run: npm test
 
-  generate-se-2020-2021:
+  generate:
     runs-on: ubuntu-24.04
     needs: [params, test]
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -102,173 +107,24 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Install pandoc and weasyprint
+        timeout-minutes: 5
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
+          sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends pandoc
+          pip install --quiet weasyprint
       - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2020-2021
-      - run: npm run build:sitemaps
+      - run: npm run generate -- --package taxi
       - run: npm test
       - uses: actions/upload-artifact@v7
         with:
-          name: taxi-se-2020-2021
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2021-2022:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2021-2022
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2021-2022
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2022-2023:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2022-2023
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2022-2023
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2023-2024:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2023-2024
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2023-2024
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2024-2025:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2024-2025
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2024-2025
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2025-2026:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2025-2026
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2025-2026
-          retention-days: 1
-          path: packages-generated/
-
-  generate-se-2026-2027:
-    runs-on: ubuntu-24.04
-    needs: [params, test]
-    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
-      - name: Install pandoc and weasyprint
-        run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq pandoc
-          pip install weasyprint
-      - run: rm -rf packages-generated
-      - run: npm run generate -- --package taxi --years se-2026-2027
-      - run: npm run build:sitemaps
-      - run: npm test
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-se-2026-2027
+          name: taxi-packages
           retention-days: 1
           path: packages-generated/
 
   reconcile:
     runs-on: ubuntu-24.04
-    needs: [params, generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026, generate-se-2026-2027]
-    if: ${{ !cancelled() && needs.params.outputs.skip-reconciliation != 'true' }}
+    needs: [params, generate]
+    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -277,14 +133,12 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Install LibreOffice
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libreoffice-calc
+        timeout-minutes: 5
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc
       - uses: actions/download-artifact@v8
         with:
-          pattern: taxi-se-*
+          name: taxi-packages
           path: packages-generated/
-          merge-multiple: true
       - run: npm run reconciliation -- --package taxi
       - name: Generate empty screenshots
         run: |
@@ -312,14 +166,14 @@ jobs:
             [ -f "$pdf" ] && mv "$pdf" "reports/${name}.pdf"
           done
       - run: rm -rf reports/populated
-      - name: Check compliance
+      - name: Check reconciliation
         run: |
           FAIL=0
           for f in reports/*.md; do
             if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
           done
           if [ "$FAIL" -eq 1 ]; then
-            echo "::error::Reconciliation found anomalies in reconciliation"
+            echo "::error::Reconciliation found anomalies"
             exit 1
           fi
       - uses: actions/upload-artifact@v7
@@ -339,9 +193,8 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
-          pattern: taxi-se-*
+          name: taxi-packages
           path: packages-generated/
-          merge-multiple: true
       - uses: actions/download-artifact@v8
         with:
           name: taxi-reports
