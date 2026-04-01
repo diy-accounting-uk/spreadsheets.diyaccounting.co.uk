@@ -36,3 +36,10 @@ cellEditFn = "ltd"
 
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"
+
+[sheets.vatreturns]
+vatQtr1 = "xl/worksheets/sheet1.xml"
+vatQtr2 = "xl/worksheets/sheet2.xml"
+vatQtr3 = "xl/worksheets/sheet3.xml"
+vatQtr4 = "xl/worksheets/sheet4.xml"
+vatQtr5 = "xl/worksheets/sheet5.xml"

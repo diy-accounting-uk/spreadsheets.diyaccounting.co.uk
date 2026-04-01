@@ -630,6 +630,34 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
   }
 
+  // VAT quarter default dates (when sheetsConfig has vatQtr1..vatQtr5)
+  if (sheetsConfig.vatQtr1) {
+    // Accounting year start = month after year-end, one year earlier
+    // e.g. year-end Mar 2026 → start Apr 2025
+    const yearEndMonth = endDate.getUTCMonth() + 1; // 1-indexed
+    const yearEndYear = endDate.getUTCFullYear();
+    const startMonth = (yearEndMonth % 12) + 1; // month after year-end (1-indexed)
+    const startYear = startMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear;
+
+    for (let q = 1; q <= 5; q++) {
+      const sheetPath = sheetsConfig[`vatQtr${q}`];
+      if (!sheetPath) continue;
+
+      // Q1 = 3 months from start, Q2 = 6, Q3 = 9, Q4 = 12, Q5 = 13
+      const monthsFromStart = q <= 4 ? q * 3 : 13;
+      const totalMonth = startMonth + monthsFromStart - 1;
+      const qMonth = ((totalMonth - 1) % 12) + 1;
+      const qYear = startYear + Math.floor((totalMonth - 1) / 12);
+      const quarterEnd = monthEnd(qYear, qMonth);
+      const serial = toExcelSerial(quarterEnd);
+
+      let sheetXml = await zip.file(sheetPath).async("string");
+      sheetXml = setCellValue(sheetXml, "G5", serial);
+      const origDate = zip.file(sheetPath).date;
+      zip.file(sheetPath, sheetXml, { date: origDate });
+    }
+  }
+
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   let wbXml = await zip.file("xl/workbook.xml").async("string");
   wbXml = wbXml.replace(
