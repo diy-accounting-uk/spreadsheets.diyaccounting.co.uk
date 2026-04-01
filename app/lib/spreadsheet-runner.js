@@ -309,4 +309,224 @@ function hasLibreOffice() {
   }
 }
 
+// ── Helpers for multi-file recalculation ────────────────────────────────────
+
+function xslRoundtrip(soffice, userProfile, workDir, xlsxPath) {
+  const xlsName = basename(xlsxPath).replace(".xlsx", ".xls");
+  execSync(
+    `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xls --outdir "${workDir}" "${xlsxPath}"`,
+    { stdio: "pipe", timeout: 60000 },
+  );
+  const xlsPath = resolve(workDir, xlsName);
+  if (existsSync(xlsPath)) {
+    execSync(
+      `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xlsx --outdir "${workDir}" "${xlsPath}"`,
+      { stdio: "pipe", timeout: 60000 },
+    );
+  }
+}
+
+// Update external link caches in hub file with values from recalculated leaf files.
+// External links in xlsx are stored in xl/externalLinks/externalLinkN.xml with
+// cached cell values. The corresponding .rels file maps each link to a target file.
+async function updateExternalLinkCaches(workDir, hubFile) {
+  const hubPath = resolve(workDir, hubFile);
+  const hubZip = await JSZip.loadAsync(readFileSync(hubPath));
+
+  // Find all external links and their target files
+  const linkFiles = Object.keys(hubZip.files).filter((f) => f.match(/xl\/externalLinks\/externalLink\d+\.xml$/));
+  const relsFiles = Object.keys(hubZip.files).filter((f) => f.match(/xl\/externalLinks\/_rels\/externalLink\d+\.xml\.rels$/));
+
+  for (const relsPath of relsFiles) {
+    const relsXml = await hubZip.file(relsPath).async("string");
+    // Find the relative target filename (second Target attribute, without path)
+    const targets = [...relsXml.matchAll(/Target="([^"]+)"/g)].map((m) => m[1]);
+    const relativeTarget = targets.find((t) => !t.includes("/") && !t.includes("%"));
+    if (!relativeTarget) continue;
+
+    // Find the corresponding externalLink XML
+    const linkNum = relsPath.match(/externalLink(\d+)/)[1];
+    const linkPath = `xl/externalLinks/externalLink${linkNum}.xml`;
+    if (!hubZip.files[linkPath]) continue;
+
+    // Load the recalculated leaf file
+    const leafPath = resolve(workDir, relativeTarget);
+    if (!existsSync(leafPath)) continue;
+
+    const leafZip = await JSZip.loadAsync(readFileSync(leafPath));
+    const leafSheetMap = await buildSheetMap(leafZip);
+
+    // Parse the external link XML and update cached values
+    let linkXml = await hubZip.file(linkPath).async("string");
+
+    // External link XML has <sheetNames> listing sheets by index, and
+    // <sheetData sheetId="N"> with cached values. sheetId is the sequential
+    // index into <sheetNames>, NOT the workbook's sheetId attribute.
+    const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
+
+    const sheetDataPattern = /<sheetData sheetId="(\d+)">([\s\S]*?)<\/sheetData>/g;
+    let match;
+    const replacements = [];
+
+    while ((match = sheetDataPattern.exec(linkXml)) !== null) {
+      const sheetId = match[1];
+      const oldSheetData = match[2];
+
+      // Map sequential sheetId to sheet name from <sheetNames>
+      const sheetName = sheetNames[parseInt(sheetId, 10)];
+      if (!sheetName) continue;
+
+      const leafSheetPath = leafSheetMap.get(sheetName);
+      if (!leafSheetPath) continue;
+
+      const leafXml = await leafZip.file(leafSheetPath).async("string");
+
+      // Extract cell references from the cached data and read fresh values
+      const cellPattern = /<cell r="([A-Z]+\d+)"[^>]*(?:\/>|>[\s\S]*?<\/cell>)/g;
+      let cellMatch;
+      let newSheetData = oldSheetData;
+
+      while ((cellMatch = cellPattern.exec(oldSheetData)) !== null) {
+        const cellRef = cellMatch[1];
+        const freshValue = readCellValue(leafXml, cellRef);
+        if (freshValue !== null && typeof freshValue === "number") {
+          // Replace the cached value
+          const oldCell = cellMatch[0];
+          const newCell = `<cell r="${cellRef}"><v>${freshValue}</v></cell>`;
+          newSheetData = newSheetData.replace(oldCell, newCell);
+        }
+      }
+
+      replacements.push({ sheetId, oldSheetData, newSheetData });
+    }
+
+    for (const { sheetId, oldSheetData, newSheetData } of replacements) {
+      linkXml = linkXml.replace(
+        `<sheetData sheetId="${sheetId}">${oldSheetData}</sheetData>`,
+        `<sheetData sheetId="${sheetId}">${newSheetData}</sheetData>`,
+      );
+    }
+
+    const origDate = hubZip.file(linkPath).date;
+    hubZip.file(linkPath, linkXml, { date: origDate });
+  }
+
+  // Write back the updated hub file
+  const outBuffer = await hubZip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 1 },
+  });
+  writeFileSync(hubPath, outBuffer);
+}
+
+// ── Multi-file: write data, recalculate across files, read results ──────────
+//
+// For multi-file products like Self Employed where cross-file external links
+// must resolve. All xlsx files are placed in the same directory so relative
+// external link paths work.
+//
+// @param {Object} fileBuffers - { "Sales.xlsx": Buffer, "Purchases.xlsx": Buffer, "Financialaccounts.xlsx": Buffer, ... }
+// @param {Object} fileWrites - { "Sales.xlsx": { "Apr": { "A5": value, ... } }, "Purchases.xlsx": { ... } }
+// @param {Object} cellReads - { "Profit & Loss Account": ["C5", ...], ... } — reads from the readFile
+// @param {string} readFile - filename to read results from (e.g. "Financialaccounts.xlsx")
+// @param {Object} [options] - { saveRecalculatedTo: "/path/to/dir" }
+// @returns {Object} - { "SheetName": { "A1": value, ... }, ... }
+
+export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads, readFile, options = {}) {
+  const soffice = getLibreOffice();
+  const workDir = resolve(tmpdir(), `spreadsheet-multi-${randomBytes(4).toString("hex")}`);
+  mkdirSync(workDir, { recursive: true });
+
+  try {
+    // 1. Write all files to the work directory
+    for (const [filename, buffer] of Object.entries(fileBuffers)) {
+      const writes = fileWrites[filename];
+      if (writes && Object.keys(writes).length > 0) {
+        // This file has scenario data to inject
+        const zip = await JSZip.loadAsync(buffer);
+        const sheetMap = await buildSheetMap(zip);
+
+        for (const [sheetName, cells] of Object.entries(writes)) {
+          const sheetPath = sheetMap.get(sheetName);
+          if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in ${filename}`);
+
+          let xml = await zip.file(sheetPath).async("string");
+          for (const [cellRef, value] of Object.entries(cells)) {
+            if (typeof value === "string") {
+              xml = setCellString(xml, cellRef, value);
+            } else {
+              xml = setCellValue(xml, cellRef, value);
+            }
+          }
+          const originalDate = zip.file(sheetPath).date;
+          zip.file(sheetPath, xml, { date: originalDate });
+        }
+
+        const outBuffer = await zip.generateAsync({
+          type: "nodebuffer",
+          compression: "DEFLATE",
+          compressionOptions: { level: 1 },
+        });
+        writeFileSync(resolve(workDir, filename), outBuffer);
+      } else {
+        // Copy unchanged
+        writeFileSync(resolve(workDir, filename), buffer);
+      }
+    }
+
+    // 2. Recalculate via LibreOffice xls roundtrip
+    // LibreOffice --convert-to doesn't resolve external links between files.
+    // Strategy: recalculate leaf files first, then propagate their computed
+    // totals into the hub file's external link cache before recalculating it.
+    const userProfile = `file://${resolve(workDir, "lo_profile")}`;
+    const filenames = Object.keys(fileBuffers);
+
+    // Recalculate leaf files (everything except the readFile)
+    const leafFiles = filenames.filter((f) => f !== readFile);
+    for (const filename of leafFiles) {
+      const xlsxPath = resolve(workDir, filename);
+      if (!existsSync(xlsxPath)) continue;
+      xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
+    }
+
+    // Update external link caches in the readFile with recalculated values from leaves
+    await updateExternalLinkCaches(workDir, readFile);
+
+    // Now recalculate the readFile (its external link caches have fresh values)
+    xslRoundtrip(soffice, userProfile, workDir, resolve(workDir, readFile));
+
+    // 3. Read results from the specified readFile
+    const recalcPath = resolve(workDir, readFile);
+    const recalcBuffer = readFileSync(recalcPath);
+    const recalcZip = await JSZip.loadAsync(recalcBuffer);
+    const recalcSheetMap = await buildSheetMap(recalcZip);
+
+    const results = {};
+    for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
+      const sheetPath = recalcSheetMap.get(sheetName);
+      if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in recalculated ${readFile}`);
+
+      const xml = await recalcZip.file(sheetPath).async("string");
+      results[sheetName] = {};
+
+      for (const cellRef of cellRefs) {
+        results[sheetName][cellRef] = readCellValue(xml, cellRef);
+      }
+    }
+
+    // Optionally save recalculated files
+    if (options.saveRecalculatedTo) {
+      mkdirSync(options.saveRecalculatedTo, { recursive: true });
+      for (const filename of filenames) {
+        cpSync(resolve(workDir, filename), resolve(options.saveRecalculatedTo, filename));
+      }
+    }
+
+    return results;
+  } finally {
+    rmSync(workDir, { recursive: true, force: true });
+  }
+}
+
 export { toExcelSerial, buildSheetMap, readCellValue, getLibreOffice, hasLibreOffice };

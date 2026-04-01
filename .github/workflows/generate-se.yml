@@ -1,0 +1,285 @@
+name: generate-se
+run-name: "generate-se from ${{ github.ref_name }}"
+concurrency:
+  group: se-packages-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - '**'
+      - '!gh_pages'
+    paths:
+      - 'app/data/se-*'
+      - 'app/templates/se/**'
+      - 'app/templates/meta.toml'
+      - 'app/lib/generator.js'
+  workflow_dispatch:
+    inputs:
+      skip-tests:
+        description: 'Skip pre-generate tests'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  test:
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-tests }}
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build sitemaps
+        run: npm run build:sitemaps
+
+      - name: Run tests
+        run: |
+          echo "=== Running all tests ==="
+          npm test
+          echo "=== Tests passed ==="
+
+  generate-se-2020-2021:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2020-2021
+        run: |
+          echo "=== Generating Self Employed for se-2020-2021 ==="
+          npm run generate -- --package se --years se-2020-2021 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2020-2021
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2021-2022:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2021-2022
+        run: |
+          echo "=== Generating Self Employed for se-2021-2022 ==="
+          npm run generate -- --package se --years se-2021-2022 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2021-2022
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2022-2023:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2022-2023
+        run: |
+          echo "=== Generating Self Employed for se-2022-2023 ==="
+          npm run generate -- --package se --years se-2022-2023 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2022-2023
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2023-2024:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2023-2024
+        run: |
+          echo "=== Generating Self Employed for se-2023-2024 ==="
+          npm run generate -- --package se --years se-2023-2024 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2023-2024
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2024-2025:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2024-2025
+        run: |
+          echo "=== Generating Self Employed for se-2024-2025 ==="
+          npm run generate -- --package se --years se-2024-2025 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2024-2025
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2025-2026:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2025-2026
+        run: |
+          echo "=== Generating Self Employed for se-2025-2026 ==="
+          npm run generate -- --package se --years se-2025-2026 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2025-2026
+          retention-days: 1
+          path: packages-generated/
+
+  generate-se-2026-2027:
+    runs-on: ubuntu-24.04
+    needs: [test]
+    if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - name: Clean packages-generated
+        run: rm -rf packages-generated
+      - name: Generate SE se-2026-2027
+        run: |
+          echo "=== Generating Self Employed for se-2026-2027 ==="
+          npm run generate -- --package se --years se-2026-2027 --skip-guide
+          echo "=== Generated files ==="
+          find packages-generated/ -type f -exec ls -lh {} \;
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-se-2026-2027
+          retention-days: 1
+          path: packages-generated/
+
+  commit:
+    runs-on: ubuntu-24.04
+    needs: [generate-se-2020-2021, generate-se-2021-2022, generate-se-2022-2023, generate-se-2023-2024, generate-se-2024-2025, generate-se-2025-2026, generate-se-2026-2027]
+    steps:
+
+      - name: Checkout latest
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Download all generated packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: se-*
+          path: packages-generated/
+          merge-multiple: true
+
+      - name: List all packages
+        run: |
+          echo "=== Final package contents ==="
+          find packages-generated/ -type d | while read dir; do
+            count=$(find "$dir" -maxdepth 1 -type f | wc -l)
+            if [ "$count" -gt 0 ]; then
+              echo ""
+              echo "--- $dir ($count files) ---"
+              ls -lh "$dir"
+            fi
+          done
+          echo ""
+          echo "=== Total files ==="
+          find packages-generated/ -type f | wc -l | xargs echo "Total:"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages-generated/
+          if git diff --staged --quiet; then
+            echo "=== No changes to commit ==="
+            echo "packages-generated/ is already up to date"
+          else
+            echo "=== Staged ==="
+            git diff --staged --name-only | head -50
+            git commit -m "Generate Self Employed packages from app/data and app/templates
+
+          Triggered by: ${{ github.sha }}
+          Workflow: ${{ github.workflow }}"
+            echo "=== Pushing to ${{ github.ref_name }} ==="
+            git pull --rebase
+            git push
+            echo "=== Push complete ==="
+          fi

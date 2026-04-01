@@ -1,0 +1,172 @@
+# SE test scenario: self-employed graphic designer
+# A business using the full Self Employed package with sales, purchases, and expenses.
+# Sales go into Sales.xlsx, purchases into Purchases.xlsx, results read from Financialaccounts.xlsx.
+#
+# All amounts are VAT-inclusive gross (the spreadsheet auto-calculates VAT).
+# Sales code "a" = Product A (main business income).
+# Purchase codes: g=general admin, p=premises, l=legal, v=motor, m=repairs.
+
+[metadata]
+name = "Basic graphic designer"
+description = "Self-employed graphic designer with steady monthly income and standard expenses"
+product = "se"
+tax_regime = "se"
+
+# === SALES ===
+# Total annual gross sales: 36000 (3000/month, all code "a" = Product A)
+# Net of VAT at 20%: 30000
+
+[[sales.apr]]
+date = 2025-04-15
+customer = "Client A"
+code = "a"
+amount = 1500
+
+[[sales.apr]]
+date = 2025-04-28
+customer = "Client B"
+code = "a"
+amount = 1500
+
+[[sales.may]]
+date = 2025-05-15
+customer = "Client A"
+code = "a"
+amount = 1500
+
+[[sales.may]]
+date = 2025-05-28
+customer = "Client C"
+code = "a"
+amount = 1500
+
+[[sales.jun]]
+date = 2025-06-15
+customer = "Client A"
+code = "a"
+amount = 3000
+
+[[sales.jul]]
+date = 2025-07-15
+customer = "Client B"
+code = "a"
+amount = 3000
+
+[[sales.aug]]
+date = 2025-08-15
+customer = "Client A"
+code = "a"
+amount = 3000
+
+[[sales.sep]]
+date = 2025-09-15
+customer = "Client C"
+code = "a"
+amount = 3000
+
+[[sales.oct]]
+date = 2025-10-15
+customer = "Client A"
+code = "a"
+amount = 3000
+
+[[sales.nov]]
+date = 2025-11-15
+customer = "Client B"
+code = "a"
+amount = 3000
+
+[[sales.dec]]
+date = 2025-12-15
+customer = "Client A"
+code = "a"
+amount = 3000
+
+[[sales.jan]]
+date = 2026-01-15
+customer = "Client C"
+code = "a"
+amount = 3000
+
+[[sales.feb]]
+date = 2026-02-15
+customer = "Client A"
+code = "a"
+amount = 3000
+
+[[sales.mar]]
+date = 2026-03-15
+customer = "Client B"
+code = "a"
+amount = 3000
+
+# === PURCHASES ===
+# Mixed expense codes, total gross ~4200
+
+[[purchases.apr]]
+date = 2025-04-20
+supplier = "Office Supplies Ltd"
+code = "g"
+amount = 120
+
+[[purchases.may]]
+date = 2025-05-10
+supplier = "Landlord"
+code = "p"
+amount = 600
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Accountant"
+code = "l"
+amount = 480
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "Fuel Station"
+code = "v"
+amount = 300
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Landlord"
+code = "p"
+amount = 600
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "Office Supplies Ltd"
+code = "g"
+amount = 120
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "Plumber"
+code = "m"
+amount = 480
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Landlord"
+code = "p"
+amount = 600
+
+[[purchases.mar]]
+date = 2026-03-10
+supplier = "Accountant"
+code = "l"
+amount = 480
+
+[[purchases.mar]]
+date = 2026-03-20
+supplier = "Office Supplies Ltd"
+code = "g"
+amount = 420
+
+# === EXPECTED VALUES ===
+# These are approximate — cross-file recalculation needed for exact values.
+# Net sales = 36000 * (100/120) = 30000 (VAT at 20% extracted by formulas)
+# Net purchases vary by code — total gross 4200, net ~3500
+
+[expected]
+total_sales = 30000
