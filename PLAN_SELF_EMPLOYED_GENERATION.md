@@ -176,7 +176,7 @@ Verified by extracting `xl/worksheets/sheet10.xml` from both Apr21 and Apr26.
 | 15 | Payment | Payment instructions |
 | 16 | Admin | **Daily calendar + PAYE config** |
 
-### Payslips Admin — Complete Structure (Verified)
+### Payslips Admin — Complete Structure (RESOLVED)
 
 **Row 1 — Headers and computed values:**
 
@@ -192,16 +192,22 @@ Verified by extracting `xl/worksheets/sheet10.xml` from both Apr21 and Apr26.
 | I1 | 46117 | **=B366** | Tax year end date (derived) |
 | N1 | "2025-26" | **=TEXT(YEAR(I1)-1,"0") & "-" & TEXT(YEAR(I1)-2000,"0")** | Tax year label (derived) |
 
-**Rows 2–381 — Daily calendar (380 days):**
+**Rows 2–381 — Daily calendar (380 days) — FORMULA vs HARDCODED RESOLVED:**
 
-| Column | Example (Row 2) | Formula? | Purpose |
-|--------|----------------|----------|---------|
-| A | "Apr" | =TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D2-1),1),"Mmm") | Month abbreviation |
-| B | 45753 (2025-04-06) | B2=hardcoded, B3=B2+1 (shared formula?) | Sequential date |
-| C | 1 | TBD — may be hardcoded or formula | ISO week number |
-| D | 1 | TBD — may be hardcoded or formula | Month number (1=Apr, 12=Mar) |
-| E | 45753 | =B2 (only rows 2 and 366) | Date code (start/end markers) |
-| F | 1 | TBD — may be hardcoded or formula | Week within month |
+| Column | Example (Row 2) | Type | Purpose |
+|--------|----------------|------|---------|
+| A | "Apr" | **FORMULA** — `=TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D2-1),1),"Mmm")` shared in 64-row blocks | Month abbreviation (auto-derives from B$2 and D) |
+| B | 45753 (2025-04-06) | **FORMULA** — B2=hardcoded, B3=B2+1, B4:B67 shared `si="1"`, then B67:B131, B131:B195, etc. | Sequential date (only B2 needs setting) |
+| C | 1 | **HARDCODED** — no formula, plain numeric values | Payroll week number (1–53) |
+| D | 1 | **HARDCODED** — no formula, plain numeric values | Tax month number (1=Apr, 12=Mar) |
+| E | 45753 | **FORMULA** — `=B2` (only rows 2 and 366) | Date code (start/end markers) |
+| F | 1 | **HARDCODED** — no formula, plain numeric values | Week within tax month |
+
+**Key finding: B column is fully formula-driven (only B2 needs setting). C, D, F columns are hardcoded and must be regenerated per year via XML surgery.**
+
+The B column uses shared formulas in ~64-row blocks: B3=B2+1 (explicit), B4:B67 (shared si="1"), B68:B131 (shared si="3"), etc. All cascade from B2.
+
+The A column also auto-derives from B$2 and D via shared formulas — no generation needed.
 
 **Rows 6–12 — PAYE configuration (columns H–L):**
 
@@ -209,20 +215,75 @@ Verified by extracting `xl/worksheets/sheet10.xml` from both Apr21 and Apr26.
 |------|-------|-------|---------|
 | H6, I6, K6 | shared strings | same | Labels |
 | H8–H12 | 1, 2, 3, 4, 5 | same | Employee slot numbers |
-| I8–I12 | 4, 4, 5, 4, 4 | 4, 4, 4, 5, 4 | Day-of-week config (varies by year?) |
+| I8–I12 | 4, 4, 5, 4, 4 | 4, 4, 4, 5, 4 | Config values (vary by year) |
 | K8 | 5 | 5 | Config value |
 | K11, K12, L11, L12 | shared strings | same | Labels |
 
-**Key date range:** B2=45753 (Apr 6, 2025) through B381=46132 (Jun 30, 2026). That's 380 days = 365 tax year days + 15 days past year-end into June.
+**Key date range:** B2=45753 (Apr 6, 2025) through B381=46132 (Apr 20, 2026). That's 380 days = 365 tax year days + 15 days past year-end. Row 366 = Apr 5, 2026 (tax year end), rows 367–381 = post-year-end days (all marked Week=53, Month=12).
 
-**Apr21 vs Apr26 comparison:**
-- B2: 43927 (Apr 6, 2020) vs 45753 (Apr 6, 2025) — shifts by 1826 days (5 years)
-- Row count: 382 rows in both years
-- I1: formula =B366 (same in both)
-- N1: formula (same in both)
-- I8–I12 values differ slightly (day-of-week alignment effect)
+### Payslips Week Numbering — NOT HMRC Tax Weeks
 
-**CRITICAL OPEN QUESTION:** Are B3–B381 (daily dates), C2–C381 (week numbers), D2–D381 (month numbers), and F2–F381 (week-in-month) formula-driven or hardcoded? If B3 uses shared formula `=B2+1` extending to B381, then only B2 needs updating. If hardcoded, all 380 rows need regeneration. The C and D columns for week/month numbering may also be hardcoded since they depend on day-of-week alignment. **Must verify by examining raw XML for shared formula `si` attributes before implementation.**
+**Verified across 5 tax years.** The Payslips Admin uses a **payroll week** scheme that differs from HMRC's published tax weeks.
+
+**HMRC Tax Week definition** (from CWG2 Employer Further Guide to PAYE):
+- Week 1 = Apr 6 to Apr 12 (always 7 days)
+- Subsequent weeks = 7-day blocks
+- Week 53 = odd day(s) at the end (Apr 5, or Apr 4–5 in leap years)
+
+**Payslips Admin actual week boundaries:**
+
+| Tax Year | Apr 6 Day | Week 1 Size | Week 2 Starts | Regular Week Cycle |
+|----------|-----------|-------------|---------------|-------------------|
+| 2020-21 (Apr21) | Monday | 7 days | Mon Apr 13 | Mon–Sun |
+| 2021-22 (Apr22) | Tuesday | 6 days | Mon Apr 12 | Mon–Sun |
+| 2022-23 (Apr23) | Wednesday | 5 days | Mon Apr 11 | Mon–Sun |
+| 2024-25 (Apr25) | Saturday | 5 days | Thu Apr 11 | Thu–Wed |
+| 2025-26 (Apr26) | Sunday | 5 days | Fri Apr 11 | Fri–Thu |
+
+**Key observations:**
+1. **Apr21–23 (old "Payrollyearto" format):** Regular weeks aligned to Mon–Sun. First week is partial (Apr 6 to first Sunday).
+2. **Apr25–26 (new "Payslips" format):** Regular weeks use a different day boundary that varies by year. The scheme changed when the spreadsheet was redesigned.
+3. **Week 53:** Extends 15 days past tax year end (to ~Apr 20). All post-year-end days are marked Week=53, Month=12.
+
+### Payslips Month Numbering — 4-4-5 Calendar
+
+Tax months in the Payslips Admin align to **payroll week boundaries**, not HMRC's 6th-to-5th month boundaries.
+
+**Apr26 month transitions (verified):**
+
+| Month | Starts | Weeks | Pattern |
+|-------|--------|-------|---------|
+| 1 | Apr 6 (Sun) | 1–4 | 4 weeks |
+| 2 | May 2 (Fri) | 5–8 | 4 weeks |
+| 3 | May 30 (Fri) | 9–13 | 5 weeks |
+| 4 | Jul 4 (Fri) | 14–17 | 4 weeks |
+| 5 | Aug 1 (Fri) | 18–21 | 4 weeks |
+| 6 | Aug 29 (Fri) | 22–26 | 5 weeks |
+| 7 | Oct 3 (Fri) | 27–30 | 4 weeks |
+| 8 | Oct 31 (Fri) | 31–34 | 4 weeks |
+| 9 | Nov 28 (Fri) | 35–39 | 5 weeks |
+| 10 | Jan 2 (Fri) | 40–43 | 4 weeks |
+| 11 | Jan 30 (Fri) | 44–47 | 4 weeks |
+| 12 | Feb 27 (Fri) | 48–53 | 6 weeks (absorbs remainder) |
+
+**Pattern: 4-4-5, 4-4-5, 4-4-5, 4-4-6.** This is a standard retail/payroll **4-4-5 calendar** where months contain whole payroll weeks, with the last month absorbing any remaining weeks plus post-year-end days.
+
+### HMRC Reference: Payroll Tax Calendar
+
+Source: [LITRG Payroll Tax Calendar 2025-26](https://www.litrg.org.uk/sites/default/files/AST5800.pdf) — published by the Chartered Institute of Taxation.
+
+The official HMRC payroll calendar defines:
+- **Tax weeks:** 7-day periods starting Apr 6 (Sun–Sat for 2025-26)
+- **Tax months:** 6th to 5th (Month 1 = 6 Apr to 5 May, Month 2 = 6 May to 5 Jun, etc.)
+- **Quarterly boundaries:** Q1 = weeks 1–13, Q2 = weeks 14–26, Q3 = weeks 27–39, Q4 = weeks 40–53
+- **Week 53:** Apr 5 only (or Apr 4–5 in leap years)
+
+**The Payslips Admin uses payroll weeks (aligned to employer pay periods), not HMRC tax weeks.** The HMRC calendar is useful as a reference for PAYE tax band lookups but does NOT define the week numbering in the Payslips spreadsheet.
+
+See also:
+- [HMRC Rates and Thresholds for Employers 2025-26](https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2025-to-2026)
+- [HMRC CWG2 Employer Further Guide to PAYE 2025-26](https://www.gov.uk/government/publications/cwg2-further-guide-to-paye-and-national-insurance-contributions/2025-to-2026-employer-further-guide-to-paye-and-national-insurance-contributions)
+- [HMRC Tax Tables B-D 2025-26](https://assets.publishing.service.gov.uk/media/6865408de6557c544c74db53/Tax_Tables_B_D_2025_to_2026.pdf)
 
 ### Vat.xlsx — Entirely Formula-Driven (No Generation Needed)
 
@@ -263,20 +324,29 @@ None contain year-specific data. All are template copies.
 
 ## Implementation Plan
 
-### Phase 1: Resolve Open Questions (Before Coding)
+### Phase 1: Resolve Remaining Open Questions (Before Coding)
 
-Unlike BST/Taxi where the single-xlsx structure was straightforward, SE has unknowns that must be resolved first.
+Most Payslips Admin questions are now RESOLVED (see analysis above). Remaining items:
 
-#### 1.1 Determine Payslips Admin date generation strategy
+#### 1.1 ~~Determine Payslips Admin date generation strategy~~ — RESOLVED
 
-- [ ] Extract raw XML of Payslips Admin `xl/worksheets/sheet16.xml` and check for shared formula (`t="shared"`, `si` attributes) on B3–B381
-- [ ] Check if C (week number), D (month number), F (week-in-month) columns use formulas or hardcoded values
-- [ ] Compare C/D/F values between Apr21 and Apr26 to see if they vary with day-of-week alignment
-- [ ] Determine: does only B2 need updating (formulas cascade), or do all 380 rows need regeneration?
+**B column = formula-driven.** Only B2 needs setting; B3–B381 cascade via shared formulas.
 
-**Decision point:** If B3–B381 are shared formulas from B2, Payslips Admin generation is trivial (set B2). If hardcoded, we need a `generatePayslipsDates()` function that computes 380 sequential dates with week/month metadata.
+**C, D, F columns = hardcoded.** Must be regenerated per year via XML surgery. The generator needs a `generatePayslipsCalendar(startYear)` function that produces:
+- C: payroll week numbers (1–53), using 4-4-5 month-aligned week boundaries
+- D: tax month numbers (1–12), transitioning at week boundaries
+- F: week-in-month numbers, resetting at each month transition
 
-#### 1.2 Identify Payslips PAYE rate cells
+#### 1.2 Determine the exact payroll week algorithm
+
+- [x] Week boundaries vary by year — confirmed across 5 tax years
+- [x] Apr21–23 use Mon–Sun weeks; Apr25–26 use a different day cycle
+- [ ] Check Apr24 (if recoverable — .xls format?) to see when the scheme changed
+- [ ] Reverse-engineer the exact rule for current format (Apr25–26): what determines the regular week start day?
+- [ ] Verify the 4-4-5 month pattern holds for Apr25 (not just Apr26)
+- [ ] Document the algorithm so `generatePayslipsCalendar()` can reproduce it for any year
+
+#### 1.3 Identify Payslips PAYE rate cells
 
 - [ ] Check I8–I12 values across all 6 tax years — do they change systematically?
 - [ ] Determine if I8–I12 are day-of-week config (changes per year) or payroll config (static)
@@ -460,22 +530,39 @@ export function buildSeCellEdits(taxData, startYear) {
 }
 ```
 
-#### 4.3 Payslips Admin generation
+#### 4.3 Payslips Admin generation — RESOLVED: hybrid approach
 
-Depends on Phase 1.1 outcome:
+**B2 = only cell to SET** (tax year start date). B3–B381 cascade via shared formulas. A column also auto-derives.
 
-**If formula-driven (only B2 hardcoded):**
-- Set B2 = `toExcelSerial(utcDate(startYear, 4, 6))` — everything else cascades
-- May need to update I8–I12 if they're year-dependent (Phase 1.2)
+**C, D, F columns = must REGENERATE** via XML cell value replacement (not full `<sheetData>` replacement — the formulas and structure stay, only the hardcoded C/D/F values change).
 
-**If hardcoded (all 380 rows):**
-- Create `generatePayslipsDates(startYear)` that produces:
-  - B2–B381: sequential date serials from Apr 6 through Jun 30 of next year
-  - A2–A381: month abbreviations ("Apr", "May", ... "Mar")
-  - C2–C381: week numbers
-  - D2–D381: month numbers (1=Apr through 12=Mar)
-  - F2–F381: week-in-month numbers
-- Replace `<sheetData>` of Payslips Admin sheet (like Taxi Sales sheet generation)
+Create `generatePayslipsCalendar(startYear)`:
+
+```javascript
+// Returns { C: {row: weekNum}, D: {row: monthNum}, F: {row: weekInMonth} }
+// for rows 2–381 (380 days: Apr 6 through ~Apr 20 of next year)
+export function generatePayslipsCalendar(startYear) {
+  const taxYearStart = utcDate(startYear, 4, 6);
+  // Generate 380 sequential dates
+  // For each date, compute:
+  //   C = payroll week number (1–53) using year-specific week boundaries
+  //   D = tax month number (1–12) using 4-4-5 calendar
+  //   F = week within the current tax month
+  // Week boundaries: first partial week (Apr 6 to first boundary day),
+  //   then 7-day regular weeks. Algorithm TBD in Phase 1.2.
+  // Month boundaries: 4-4-5, 4-4-5, 4-4-5, 4-4-6 pattern.
+}
+```
+
+The generator will:
+1. Set B2 = `toExcelSerial(utcDate(startYear, 4, 6))`
+2. Call `generatePayslipsCalendar(startYear)` for C/D/F values
+3. Use `setCellValue()` to update each C/D/F cell in the Payslips Admin XML
+4. May also need to update I8–I12 if they're year-dependent (Phase 1.3)
+
+This is a **cell value replacement** approach (like Financialaccounts Admin), not a full `<sheetData>` replacement (like Taxi Sales sheets). The XML structure, formulas, and formatting are preserved — only numeric values in C/D/F columns change.
+
+**Complexity comparison:** Similar to Taxi's `generateTaxYearWeeks()` — it's a date calculation problem with year-specific boundaries. The 4-4-5 pattern is a well-known payroll calendar scheme.
 
 #### 4.4 Multi-file output in generate.js
 
@@ -646,12 +733,15 @@ done
 
 **Recommended: Start with Option C** (simplest, matches existing xls roundtrip pattern). Fall back to Option B if cross-file formulas don't resolve during conversion.
 
-**Option D: Accept single-file testing only**
-If cross-file recalculation proves too complex, test each file independently:
-- Verify generation is correct (Layer 1)
-- Verify intra-file formulas work (Layer 2)
-- Skip cross-file formula verification — trust that the external link structure matches the original packages
-- Manual verification with Excel for cross-file correctness
+**Option D: Update and save one file at a time**
+If simultaneous multi-file recalculation proves too complex, process files sequentially:
+- Write scenario data into Sales.xlsx → xls roundtrip → save
+- Write scenario data into Purchases.xlsx → xls roundtrip → save (resolves links to Sales.xlsx in same dir)
+- Run Financialaccounts.xlsx xls roundtrip last (resolves links to all other files in same dir)
+- Read back results from the recalculated Financialaccounts.xlsx
+- This works because each roundtrip saves cached values that subsequent files can pick up
+
+**Approach: try it and see.** Start with Option C (all files at once), fall back to Option D (one at a time) if needed.
 
 #### 7.3 Test scenario fixture
 
@@ -729,7 +819,7 @@ total_liability = 4010
 |-----------|-----------|-------|
 | **Multi-file package generation** | Medium | 9 xlsx per package. Only 2 need modification (Financialaccounts, Payslips). Others are template copies. |
 | **SE-specific Admin cell positions** | Low | 8 cells differ from BST. Need own `buildSeCellEdits()` — straightforward once mapped. |
-| **Payslips Admin daily dates** | Medium-High | 380 rows. If formulas: trivial (set B2). If hardcoded: need `generatePayslipsDates()` with week/month metadata. |
+| **Payslips Admin calendar generation** | Medium | B column formula-driven (set B2 only). C/D/F columns hardcoded — need `generatePayslipsCalendar()` with 4-4-5 week/month algorithm. Similar complexity to Taxi's week generation. |
 | **Cross-file recalculation for testing** | **High** | Financialaccounts P&L reads from Sales.xlsx + Purchases.xlsx. LibreOffice must resolve external links across files. |
 | **External link absolute paths** | Low | Strip absolute path from `.rels` files; keep relative filename. Excel/LibreOffice falls back to relative. |
 | **Multi-file scenario writes** | Medium | `cellWrites()` must target specific files. `spreadsheet-runner.js` needs extension for multi-file mode. |
@@ -782,14 +872,15 @@ Phase 1 (open questions) is the critical gate. The Payslips Admin formula-vs-har
 
 ## Open Questions
 
-1. **Payslips Admin dates: formula or hardcoded?** — Determines if only B2 needs setting or all 380 rows need regeneration. Must check XML for shared formula attributes.
-2. **Payslips Admin C/D/F columns: formula or hardcoded?** — Week numbers and month numbers may need regeneration per year.
+1. ~~**Payslips Admin dates: formula or hardcoded?**~~ — **RESOLVED.** B column = formula-driven (only B2 needs setting). C/D/F = hardcoded (need regeneration).
+2. ~~**Payslips Admin C/D/F columns: formula or hardcoded?**~~ — **RESOLVED.** All hardcoded. Must be regenerated per year.
 3. **K11=0.2 in Financialaccounts Admin** — What consumes this cell? Is it a duplicate basic rate or something else?
-4. **I8–I12 in Payslips Admin** — Are these day-of-week config that varies per year, or static payroll config?
-5. **Cross-file recalculation** — Does LibreOffice xls roundtrip resolve external links when all files are in the same directory? Or do we need UNO/macro approach?
+4. **I8–I12 in Payslips Admin** — Are these day-of-week config that varies per year, or payroll config? Values differ between years.
+5. **Cross-file recalculation** — Try xls roundtrip with all files in same directory first. Fall back to one-file-at-a-time if needed.
 6. **SE P&L cell positions** — Which cells in the Profit & Loss Account sheet contain the key aggregates (total sales, net profit)? Column B or C?
 7. **Financialaccounts Home sheet** — Does SE's Financialaccounts have a Home/navigation sheet with HYPERLINKs that need fixing?
 8. **SE Full vs SE Short** — Are both always populated, or is one used based on turnover threshold?
+9. **Payroll week boundary algorithm** — What determines the regular week start day for Apr25–26 format? Need to reverse-engineer from existing packages. The 4-4-5 month allocation pattern is confirmed but the week alignment rule needs documenting.
 
 ## Decision Log
 
@@ -806,3 +897,7 @@ Phase 1 (open questions) is the critical gate. The Payslips Admin formula-vs-har
 | 2026-04-01 | Verified: External links have relative filename fallback | Each `.rels` file has both absolute path (breaks) and relative filename (works in same dir) |
 | 2026-04-01 | Layered test strategy | Unit tests (no LibreOffice) → single-file tests → cross-file integration tests |
 | 2026-04-01 | Multi-file generation via multiple `generateSpreadsheet()` calls | No changes to core generator function needed — SE product module orchestrates |
+| 2026-04-01 | Payslips Admin: B=formula, C/D/F=hardcoded | Verified via raw XML: B uses shared formulas (set B2 only), C/D/F are plain values needing regeneration |
+| 2026-04-01 | Payslips uses payroll weeks, not HMRC tax weeks | Week boundaries differ from HMRC's Sun-Sat; follow 4-4-5 month pattern; scheme changed between Apr23 and Apr25 |
+| 2026-04-01 | HMRC payroll calendar as reference source | LITRG/HMRC tax week/month calendar useful for PAYE lookups but Payslips has own week scheme |
+| 2026-04-01 | Cross-file testing: try it, fall back to sequential | Try xls roundtrip with all files in same dir; if external links don't resolve, process files one at a time |
