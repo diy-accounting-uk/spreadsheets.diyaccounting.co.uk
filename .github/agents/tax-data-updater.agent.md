@@ -14,28 +14,38 @@ Also add any new but missing tax years to .github/workflows/generate-bst.yml
 
 ## Scope and Inputs
 
-- Target: `SOURCES.md`, `app/data/se-*.toml`, `REPORT_TRACEABILITY.md`
+- Target: `SOURCES.md`, `app/data/se-*.toml`, `app/data/ltd-*.toml`, `REPORT_TRACEABILITY.md`
 - Primary References: HMRC GOV.UK pages listed in `SOURCES.md`
-- Domain: UK self-employment tax rates and thresholds
+- Domain: UK self-employment tax rates AND UK limited company (Corporation Tax) rates and thresholds
 
 ## Goals
 
 1. **Update SOURCES.md**: Add or update links to HMRC pages for the latest available tax year. HMRC typically publishes rates for the upcoming year in the Spring Budget (March) or Autumn Statement (November).
-2. **Create new TOML files**: For any tax year where HMRC has published rates but no `app/data/se-{start_year}-{end_year}.toml` exists, create one following the established naming convention and schema.
-3. **Update REPORT_TRACEABILITY.md**: Add rows to the traceability tables for any new tax years, documenting the values and their sources.
-4. **Commit on a new branch**: Commit all changes on a branch named `copilot/tax-data-{tax-year-label}` (e.g. `copilot/tax-data-2026-27`).
+2. **Create new SE TOML files**: For any tax year where HMRC has published rates but no `app/data/se-{start_year}-{end_year}.toml` exists, create one following the established naming convention and schema.
+3. **Create new Ltd TOML files**: For any Financial Year where HMRC has published Corporation Tax rates but no `app/data/ltd-{end_year}.toml` exists, create one. Ltd files use Financial Years (1 Apr – 31 Mar), named by the year the FY ends in (e.g. `ltd-2026.toml` for FY2026 = 1 Apr 2026 – 31 Mar 2027).
+4. **Update REPORT_TRACEABILITY.md**: Add rows to the traceability tables for any new tax years, documenting the values and their sources.
+5. **Commit on a new branch**: Commit all changes on a branch named `copilot/tax-data-{tax-year-label}` (e.g. `copilot/tax-data-2026-27`).
 
 ## Process
 
 1. **Read existing data**: Read `SOURCES.md` to understand the reference URLs. Read the most recent `app/data/se-*.toml` file to understand the schema and current coverage.
 
 2. **Research HMRC rates**: Visit the GOV.UK pages listed in `SOURCES.md` to find the latest published rates. Key pages:
+
+   **Self-employment (se-*.toml):**
    - https://www.gov.uk/income-tax-rates — Personal allowance, basic/higher rate bands
    - https://www.gov.uk/self-employed-national-insurance-rates — Class 2 and Class 4 NI
    - https://www.gov.uk/capital-allowances/annual-investment-allowance — AIA
    - https://www.gov.uk/expenses-and-benefits-business-travel-mileage/rules-for-tax — Mileage rates
    - https://www.gov.uk/vat-registration/when-to-register — VAT threshold
    - https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2025-to-2026 — NI thresholds (update URL year as needed)
+
+   **Limited company (ltd-*.toml):**
+   - https://www.gov.uk/government/publications/rates-and-allowances-corporation-tax/rates-and-allowances-corporation-tax — CT main rate, small profits rate, marginal relief
+   - https://www.gov.uk/guidance/corporation-tax-marginal-relief — Marginal relief calculation
+   - https://www.gov.uk/government/publications/rates-and-allowances-capital-allowances/rates-and-allowances-capital-allowances — Capital allowances (AIA, WDA, full expensing)
+   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions — Employer NI rate, secondary threshold, employment allowance
+   - https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past#dividend-allowance — Dividend tax rates
 
 3. **Identify gaps**: Compare published rates against existing TOML files. If HMRC has published rates for a tax year not yet in `app/data/`, that year needs a new file.
 
@@ -91,6 +101,63 @@ Also add any new but missing tax years to .github/workflows/generate-bst.yml
    ```
 
    File naming convention: `se-{start_year}-{end_year}.toml` (e.g. `se-2026-2027.toml`)
+
+   For **Limited Company** files, use this schema (copy from the most recent `ltd-*.toml`):
+   ```toml
+   # UK Limited Company tax rates and thresholds for Financial Year {FY}
+   # ({start} – {end})
+   # Source: HMRC
+
+   [financial_year]
+   label = "FY{year}"
+   start = {year}-04-01
+   end = {year+1}-03-31
+
+   [corporation_tax]
+   main_rate = 0.25
+   small_profits_rate = 0.19
+   small_profits_limit = 50000
+   main_rate_limit = 250000
+   marginal_relief_fraction = 0.015
+
+   [capital_allowances]
+   annual_investment_allowance = 1.00
+   writing_down_allowance_main = 0.18
+   writing_down_allowance_special = 0.06
+   full_expensing_rate = 1.00
+   motor_vehicle_cost_threshold = 12000
+   motor_vehicle_restriction = 3000
+
+   [depreciation]
+   land_and_property = 0.00
+   plant_and_machinery = 0.10
+   fixtures_and_fittings = 0.20
+   computer_equipment = 0.33
+   motor_vehicles = 0.25
+
+   [mileage]
+   higher_rate_limit = 10000
+   higher_rate_pence = 0.45
+   lower_rate_start = 10001
+   lower_rate_pence = 0.25
+
+   [vat]
+   registration_threshold = ...
+   standard_rate = 0.20
+
+   [employer_ni]
+   rate = ...
+   secondary_threshold = ...
+   employment_allowance = ...
+
+   [dividend_tax]
+   allowance = ...
+   basic_rate = ...
+   higher_rate = ...
+   additional_rate = ...
+   ```
+
+   File naming convention: `ltd-{end_year}.toml` where end_year is the calendar year the FY ends in (e.g. `ltd-2026.toml` for FY2026 ending 31 Mar 2027)
 
 5. **Update SOURCES.md**: Add any new HMRC reference URLs discovered. Update the "rates and thresholds for employers" URL to include the latest year.
 

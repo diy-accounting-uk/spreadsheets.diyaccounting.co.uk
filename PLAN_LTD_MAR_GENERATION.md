@@ -284,6 +284,181 @@ Comparing Mar26 vs Jun21:
 7. **expensesform.xlsx:** Are the month sheets (Month 01-12) year-specific or generic?
 8. **"Any" packages:** `packages/GB Accounts Company 2025-2026 (Any) Excel 2007` — how do these relate to the month-specific packages? Is this the template source?
 
+## Verified Facts (from deep xlsx analysis)
+
+### Admin Sheet — Only 20 Hardcoded Cells, Only F21 Is Year-Specific
+
+Extracted every cell from `xl/worksheets/sheet12.xml` in both Mar26 and Mar25. Compared all hardcoded numeric values:
+
+| Cell | Mar25 | Mar26 | Same? | Purpose |
+|------|-------|-------|-------|---------|
+| **F21** | **45747** | **46112** | **NO** | **Year-end date — the ONE cell to set** |
+| G5 | 100 | 100 | Yes | AIA (%) |
+| G6 | 18 | 18 | Yes | WDA (%) |
+| P6 | 19 | 19 | Yes | CT rate year 1 (%) |
+| G7 | 100 | 100 | Yes | AIA (%) — duplicate for year 2 |
+| P7 | 19 | 19 | Yes | CT rate year 2 (%) |
+| G8 | 18 | 18 | Yes | WDA (%) — duplicate |
+| E11 | 12000 | 12000 | Yes | Motor vehicle threshold |
+| G11 | 3000 | 3000 | Yes | Motor vehicle restriction |
+| G15 | 0 | 0 | Yes | Depreciation: land |
+| G16 | 0.1 | 0.1 | Yes | Depreciation: P&M |
+| N16 | 10000 | 10000 | Yes | Mileage higher limit |
+| O16 | 0.45 | 0.45 | Yes | Mileage higher rate |
+| G17 | 0.2 | 0.2 | Yes | Depreciation: F&F |
+| N17 | 10001 | 10001 | Yes | Mileage lower start |
+| O17 | 0.25 | 0.25 | Yes | Mileage lower rate |
+| G18 | 0.33 | 0.33 | Yes | Depreciation: computer |
+| G19 | 0.25 | 0.25 | Yes | Depreciation: motor |
+| M19 | 20 | 20 | Yes | VAT rate / CT rate period 1 |
+| M21 | 20 | 20 | Yes | VAT rate / CT rate period 2 |
+
+**Only F21 changed between Mar25 and Mar26.** All 19 other cells are identical. The generator's job is trivial: set F21 and optionally update tax rate cells if they change in a future year.
+
+### MnthP&L Sheet Layout
+
+Column B = Annual Totals (SUM of monthly columns C:N). Same pattern as SE.
+
+| Row | Label | Formula |
+|-----|-------|---------|
+| 4–8 | Sales (Product A/B/C, Other Income, Grants) | SUM(C:N) each |
+| 9 | **Sales Turnover** | =SUM(B4:B8) |
+| 11–13 | Cost of Sales (Purchases, Sub contractors, Other) | SUM(C:N) |
+| 14 | **Cost of Sales Total** | =SUM(B11:B13) |
+| 16 | **Gross Profit** | =B9-B14 |
+| 18–40 | Administrative Expenses (23 lines) | SUM(C:N) each |
+| 41 | **Admin Expenses Total** | =SUM(B18:B40) |
+| 43 | **Operating Profit** | =B16-B41 |
+| 44 | Interest received | SUM(C:N) |
+| 45 | **Profit before Tax** | =B43+B44 |
+
+### CorporationTax Sheet — Entirely Formula-Driven
+
+Zero hardcoded cells. Key flow:
+
+- K5 = operating profit (from PubP&L)
+- K12 = profit chargeable to CT (after adding back depreciation)
+- K22 = trading profit (after capital allowances from Fixedassets.xlsx)
+- K28 = amount chargeable to CT (after losses b/f)
+- K35 = CT chargeable (time-apportioned between two FYs at rates from Admin P6/P7)
+- K39 = tax outstanding (after income tax deducted)
+
+### CT600 Sheet — Formula-Driven with Layout Numbers
+
+134 hardcoded cells but ALL are HMRC box numbers (layout labels, e.g., B66=1, AI66=1). Only Y116=0 is a writable default (associated companies = 0). The 36 formula cells pull from CorporationTax, TrialBalance, PubP&L.
+
+### Sales.xlsx — Column Layout DIFFERS from SE
+
+| Column | Ltd Company | SE |
+|--------|------------|-----|
+| Code letter | **E** | F |
+| Gross amount | **F** | G |
+| VAT (formula) | **G** | H |
+| Net (formula) | **H** | I |
+| Analysis columns | **O–U** | P–V |
+
+The code letters are the same (A/B/C/D/G/O/FS) but shifted one column left.
+
+### Purchases.xlsx — Column Layout DIFFERS from SE
+
+| Column | Ltd Company | SE |
+|--------|------------|-----|
+| Code letter | **E** | F |
+| Gross amount | **F** | G |
+| VAT (formula) | **G** | H |
+| Net (formula) | **H** | I |
+| Analysis columns | **O–AI** (21 cols) | P–AB (13 cols) |
+
+More expense categories than SE: adds Directors Wages (D), Distribution (T), Equipment Hire (Q), Consumables (U), Insurance (N), Leasing (F), Charitable Donations (Y), Goodwill (Z).
+
+### Payslips.xlsx — Same Structure as SE
+
+Confirmed identical: B2 hardcoded, B3+ shared formulas, C/D/F hardcoded calendar. `generatePayslipsCalendar()` reusable unchanged.
+
+## Lessons from BST/Taxi/SE to Apply
+
+These pitfalls were encountered during SE implementation and must be avoided for Ltd:
+
+### 1. SE Admin cell positions differ from BST — verify, don't assume
+
+BST income tax bands are at N6/N7/N8/M12/L13. SE shifted them to N6/N7/M11/L12. **Ltd has different cells again** (P6/P7 for CT rates, no income tax bands at all). Always extract the actual Admin XML before writing any cell edit function.
+
+### 2. P&L uses column B for annual totals, not column C
+
+BST P&L has totals in column C. SE and Ltd P&L both have column B = SUM(C:N). The initial SE implementation read column C (April only) and got wrong values. **For Ltd, read column B for annual totals.**
+
+### 3. Sales/Purchases column layout varies by product
+
+BST: code in E, amount in F/G. SE: code in F, amount in G. Ltd: code in E, amount in F. **Always verify column positions from the actual xlsx before writing cellWrites.**
+
+### 4. External link cache injection is required for cross-file testing
+
+LibreOffice `--convert-to` does NOT resolve external links. The SE implementation solved this by:
+1. Recalculating leaf files (Sales, Purchases) individually via xls roundtrip
+2. Reading fresh values from recalculated leaves
+3. Injecting them into the hub file's (Financialaccounts) externalLink XML caches
+4. Then recalculating the hub file
+
+**Ltd has 9 outbound links (vs SE's 6) — the same approach applies but more links to update.**
+
+### 5. The sheetId in external link XML is a sequential index, not the workbook sheetId
+
+First attempt at external link cache injection used the workbook's sheetId attribute. This is wrong — external link XML uses sequential indices into the `<sheetNames>` list. This bug caused all months to show April's value.
+
+### 6. Payslips calendar algorithm: Week 1 = always 5 days
+
+The payroll week algorithm is deterministic and independent of day-of-week: Week 1 = days 6th–10th (5 days), regular weeks = 7 days from 11th, month pattern = [4,4,5,4,4,5,4,4,5,4,4,6]. Verified against all existing packages with zero mismatches.
+
+### 7. `generateSpreadsheet()` is single-file — multi-file orchestration is in generate.js
+
+Don't try to make `generateSpreadsheet()` handle multiple files. Instead, `generate.js` iterates `template.files`, calling `generateSpreadsheet()` for files that need modification and copying the rest.
+
+### 8. RECONCILES/ANOMALYDETECTED for compliance status
+
+Use `RECONCILES` and `ANOMALYDETECTED` (not COMPLIANT/NON-COMPLIANT). Check with `grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"` to avoid substring matching issues.
+
+### 9. apt-get can hang in CI — use timeouts
+
+Add `timeout-minutes: 5` on apt-get install steps and `--no-install-recommends` to minimize packages. Add `timeout-minutes: 30` on the overall job.
+
+### 10. Don't save `reports/populated/` to git
+
+Populated xlsx files are intermediate artifacts for screenshot generation. Save them temporarily during the reconcile job, convert to PDF screenshots, then delete before committing. Add to `.gitignore`.
+
+## HMRC Reference Library
+
+Downloaded to `_developers/hmrc-references/`:
+
+| File | Content |
+|------|---------|
+| HMRC-CT600-Form-2021.pdf | CT600 Company Tax Return form |
+| HMRC-CT-Online-Additional-Guidance.pdf | CT Online service guidance |
+| HMRC-CT-Online-XBRL-Technical-Pack-2.0.pdf | XBRL technical specs for CT software |
+| HMRC-CT-Computations-Format-v1.1.pdf | CT computations iXBRL format |
+| HMRC-XBRL-Tagging-Guide.pdf | XBRL tagging guidance |
+| HMRC-XBRL-Style-Guide.pdf | iXBRL style guide |
+| HMRC-Detailed-PL-XBRL-Taxonomy-Guide.pdf | Detailed P&L XBRL taxonomy |
+| HMRC-Annex-A-Rates-Allowances-Budget-2025.pdf | Budget rates and allowances summary |
+| ct600-xml-samples/*.xml | 3 valid CT600 XML samples |
+| ct600-xml-samples/*.odt | Appendix B (MRR), Appendix C (AIA), validation checks |
+
+Key gov.uk pages for Corporation Tax:
+- https://www.gov.uk/government/publications/rates-and-allowances-corporation-tax/rates-and-allowances-corporation-tax
+- https://www.gov.uk/guidance/corporation-tax-marginal-relief
+- https://www.gov.uk/government/publications/corporation-tax-company-tax-return-ct600
+- https://www.gov.uk/government/publications/corporation-tax-technical-specifications-xbrl-and-ixbrl
+- https://www.gov.uk/government/publications/corporation-tax-technical-specifications-ct600-valid-xml-samples
+- https://www.gov.uk/government/publications/corporation-tax-technical-specifications-ct600-appendices
+
+## Tax Data Files Created
+
+- `app/data/ltd-2025.toml` — FY2025 (1 Apr 2025 – 31 Mar 2026)
+- `app/data/ltd-2026.toml` — FY2026 (1 Apr 2026 – 31 Mar 2027)
+
+Naming convention: `ltd-{year}.toml` where year is the FY number (the calendar year the FY starts in). FY2025 covers the accounting period ending 31 Mar 2026.
+
+Schema includes: corporation_tax (main/small rates, marginal relief), capital_allowances, depreciation, mileage, vat, employer_ni, dividend_tax.
+
 ## Decision Log
 
 | Date | Decision | Rationale |
@@ -291,3 +466,10 @@ Comparing Mar26 vs Jun21:
 | 2026-04-01 | Start with March year-end | Simplest — accounting year aligns with tax year (Apr-Mar). No cross-tax-year complications. |
 | 2026-04-01 | F21 is the only date cell to set | All other dates are formula-driven. Verified across Mar26, Mar25, Jun21. |
 | 2026-04-01 | Plan created | Fourth product after BST, Taxi, SE |
+| 2026-04-01 | Tax data uses Financial Year naming (ltd-2025.toml) | CT uses FY (1 Apr – 31 Mar), not tax year (6 Apr – 5 Apr). FY number = calendar year the FY starts in. |
+| 2026-04-01 | P6/P7 hold CT rates (not income tax rates) | Confirmed from Admin extraction — these feed into CorporationTax sheet formulas |
+| 2026-04-01 | CorporationTax and CT600 sheets are entirely formula-driven | No hardcoded values to update. All driven from Admin and other sheets. |
+| 2026-04-01 | Sales/Purchases use column E for code, F for gross | Different from SE (F/G). Must use product-specific cellWrites. |
+| 2026-04-01 | Reuse generatePayslipsCalendar() unchanged | Payslips Admin confirmed identical structure to SE |
+| 2026-04-01 | 9 outbound external links from Financialaccounts | More than SE (6). Same cache injection approach for testing. |
+| 2026-04-01 | CT rate in Admin is stored as 19 (%) not 0.19 (fraction) | Unlike se-*.toml which stores rates as fractions. The ltd-*.toml stores as fractions; the generator must multiply by 100. |
