@@ -16,7 +16,7 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "fs";
 import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
-import { runSpreadsheet } from "../lib/spreadsheet-runner.js";
+import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
@@ -90,12 +90,13 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
   lines.push("## Raw Output Values");
   lines.push("");
 
-  if (results["Profit & Loss Acc"]) {
-    lines.push("### Profit & Loss");
+  const plSheetName = Object.keys(results).find((k) => k.startsWith("Profit & Loss"));
+  if (plSheetName && results[plSheetName]) {
+    lines.push(`### ${plSheetName}`);
     lines.push("");
     lines.push("| Cell | Value |");
     lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results["Profit & Loss Acc"])) {
+    for (const [cell, val] of Object.entries(results[plSheetName])) {
       lines.push(`| ${cell} | ${val} |`);
     }
     lines.push("");
@@ -189,14 +190,7 @@ async function main() {
     const matchingDirs = packageDirs.filter((d) => d.startsWith(productMod.PRODUCT.prefix));
 
     for (const pkgDir of matchingDirs) {
-      const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
-      if (!xlsxFile) {
-        console.log(`  Skip ${pkgDir}: no xlsx found`);
-        continue;
-      }
-
       console.log(`  Testing: ${pkgDir}...`);
-      const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
 
       // Extract the tax year start from the package directory name
       const yearEndMatch = pkgDir.match(/(\d{4})-\d{2}-\d{2}/);
@@ -207,14 +201,44 @@ async function main() {
       const writes = productMod.cellWrites(scenario, startYear);
       const reads = productMod.standardReads();
 
-      // Save the populated spreadsheet for screenshots
+      let results;
       const populatedDir = resolve(REPORTS_DIR, "populated");
-      const populatedPath = resolve(populatedDir, `${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}_${scenarioName}.xlsx`);
 
-      const results = await runSpreadsheet(xlsxBuffer, writes, reads, {
-        saveRecalculatedTo: populatedPath,
-      });
-      console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
+      if (productMod.MULTI_FILE) {
+        // Multi-file product (SE): load all xlsx files, use cross-file runner
+        const pkgPath = resolve(PACKAGES_DIR, pkgDir);
+        const xlsxFiles = readdirSync(pkgPath).filter((f) => f.endsWith(".xlsx"));
+        if (xlsxFiles.length === 0) {
+          console.log(`  Skip ${pkgDir}: no xlsx files found`);
+          continue;
+        }
+
+        const fileBuffers = {};
+        for (const f of xlsxFiles) {
+          fileBuffers[f] = readFileSync(resolve(pkgPath, f));
+        }
+
+        const populatedPath = resolve(populatedDir, pkgDir.replace(/[^a-zA-Z0-9]/g, "_"));
+        results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+          saveRecalculatedTo: populatedPath,
+        });
+        console.log(`    Populated: reports/populated/${basename(populatedPath)}/`);
+      } else {
+        // Single-file product (BST, Taxi)
+        const xlsxFile = findXlsx(resolve(PACKAGES_DIR, pkgDir));
+        if (!xlsxFile) {
+          console.log(`  Skip ${pkgDir}: no xlsx found`);
+          continue;
+        }
+
+        const xlsxBuffer = readFileSync(resolve(PACKAGES_DIR, pkgDir, xlsxFile));
+        const populatedPath = resolve(populatedDir, `${pkgDir.replace(/[^a-zA-Z0-9]/g, "_")}_${scenarioName}.xlsx`);
+
+        results = await runSpreadsheet(xlsxBuffer, writes, reads, {
+          saveRecalculatedTo: populatedPath,
+        });
+        console.log(`    Populated: reports/populated/${basename(populatedPath)}`);
+      }
 
       // Find the tax-data TOML for this package's year
       let taxData = null;
