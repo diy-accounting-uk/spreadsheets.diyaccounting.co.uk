@@ -13,12 +13,8 @@ on:
       - 'app/data/se-*'
       - 'app/templates/bst/**'
       - 'app/templates/meta.toml'
-      - 'app/lib/generator.js'
-      - 'app/test/fixtures/**'
-      - 'app/lib/scenario-loader.js'
-      - 'app/lib/spreadsheet-runner.js'
-      - 'app/bin/reconcile.js'
       - 'app/products/bst.js'
+      - '.github/workflows/generate-bst.yml'
   workflow_dispatch:
     inputs:
       skip-tests:
