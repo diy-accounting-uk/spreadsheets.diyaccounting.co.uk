@@ -16,9 +16,13 @@ files = [
   "Fixedassets.xlsx",
   "Salesinvoice.xlsx",
 ]
+guide = "se-guide.md"
+payslip_guide = "payslip-guide.md"
 
 [output]
 dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+guide_filename = "Self Employed User Guide.pdf"
+payslip_guide_filename = "Payslip User Guide.pdf"
 
 [sheets.financialaccounts]
 admin = "xl/worksheets/sheet10.xml"

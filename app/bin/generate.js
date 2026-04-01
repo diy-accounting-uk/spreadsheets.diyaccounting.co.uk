@@ -91,15 +91,24 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
     console.log(`           ${xlsxFilename}`);
   }
 
-  // Generate PDF guide
-  if (!skipGuide && productMeta.template.guide) {
-    const guideMd = resolve(productDir, productMeta.template.guide);
-    const guidePdf = resolve(outDir, productMeta.output.guide_filename);
-    try {
-      await generatePdf(guideMd, guidePdf, sourceDateEpoch);
-      console.log(`  Guide:   ${productMeta.output.guide_filename}`);
-    } catch (e) {
-      console.warn(`  Warning: PDF guide generation failed — ${e.message}`);
+  // Generate PDF guides
+  if (!skipGuide) {
+    const guides = [];
+    if (productMeta.template.guide) {
+      guides.push({ md: productMeta.template.guide, pdf: productMeta.output.guide_filename });
+    }
+    if (productMeta.template.payslip_guide) {
+      guides.push({ md: productMeta.template.payslip_guide, pdf: productMeta.output.payslip_guide_filename });
+    }
+    for (const { md, pdf } of guides) {
+      const guideMd = resolve(productDir, md);
+      const guidePdf = resolve(outDir, pdf);
+      try {
+        await generatePdf(guideMd, guidePdf, sourceDateEpoch);
+        console.log(`  Guide:   ${pdf}`);
+      } catch (e) {
+        console.warn(`  Warning: PDF guide generation failed (${pdf}) — ${e.message}`);
+      }
     }
   }
 

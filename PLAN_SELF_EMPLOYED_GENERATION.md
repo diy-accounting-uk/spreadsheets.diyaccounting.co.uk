@@ -906,6 +906,13 @@ Phase 1 (open questions) is the critical gate. The Payslips Admin formula-vs-har
 | 2026-04-01 | Payroll week algorithm: 5-day first week from Apr 6–10 | Verified against all 9 packages (5 existing + confirmed pattern). Regular weeks = 7 days from Apr 11. |
 | 2026-04-01 | NI Class 2 transition: Apr25 (2024-25) | L16 went 3.05→3.05→3.15→3.45→0→0→0 across years |
 | 2026-04-01 | Implementation complete: Phases 1–5 + CI | 7 SE packages generated (63 xlsx files). 107 tests passing (10 new). Generation, template, product module, CI workflow all done. |
+| 2026-04-01 | Cross-file external link cache injection | LibreOffice --convert-to doesn't resolve external links. Solution: recalculate leaf files first, then inject fresh values into hub file's externalLink XML caches before recalculating. |
+| 2026-04-01 | SE P&L uses column B for Total Year | Column B = SUM(C:N) annual totals. Column C = April only. P&L reads: B9=Sales Turnover, B19=Gross Profit, B35=Admin Expenses, B37=Operating Profit, B39=Profit before Tax. |
+| 2026-04-01 | SE Sales.xlsx: column F=code, G=gross amount | Sales analysis via code letters in F (a/b/c/d/g/o/FS), gross amount in G. H=VAT auto-calc, I=net auto-calc, P-V=analysis columns. |
+| 2026-04-01 | SE Purchases.xlsx: column F=code, G=gross amount | Purchase analysis via code letters in F (s/c/o/w/p/m/g/v/h/a/l/y/fa), gross amount in G. Same VAT auto-calc pattern as Sales. |
+| 2026-04-01 | Reconciliation COMPLIANT 4/4 | Total Sales 30000, Income Tax 2646, NI Class 4 793.8, Total Tax+NI 3439.8. Cross-file recalculation working. |
+| 2026-04-01 | Both PDF guides generated | se-guide.md (39KB PDF) and payslip-guide.md (28KB PDF) from source PDFs. generate.js supports multiple guides per product. |
+| 2026-04-01 | E2E tests passing: 120 total | 13 new SE E2E tests verifying cross-file P&L and Income Tax calculations via runMultiFileSpreadsheet(). |
 
 ## Implementation Status
 
@@ -978,50 +985,64 @@ The regular week start day varies by year because the 11th of April falls on a d
 
 **SE product module details:**
 - `PRODUCT = { id: "se", dir: "se", name: "Self Employed", taxRegime: "se", prefix: "GB Accounts Self Employed" }`
-- `cellWrites()`: Writes to sheets named "Apr", "May", etc. (not "SalesApr" like BST). Sales use column H for amount (TBD: verify). Purchases use columns A/B/D/E/G (same layout as BST). Stock goes to StockControl sheet (D5/D30).
-- `standardReads()`: Reads from "Profit & Loss Account" (column C) and "Income Tax" (column E). Cell positions tentatively set to match BST but **need verification** against actual SE P&L formulas.
-- `checkCompliance()`: Same pattern as BST — checks total sales (C4), gross profit (C9), net profit (C24), income tax, NI Class 4, total liability.
+- `MULTI_FILE = true` — signals to reconcile.js that this is a multi-file package
+- `cellWrites()`: Returns `{ "Sales.xlsx": { "Apr": { ... } }, "Purchases.xlsx": { "Apr": { ... } } }`. Sales: A=date, B=customer, F=code letter (a/b/c/d/g/o/FS), G=gross amount. Purchases: A=date, B=supplier, F=code letter (s/c/o/w/p/m/g/v/h/a/l/y/fa), G=gross amount.
+- `standardReads()`: Reads from "Profit & Loss Account" column B (Total Year = SUM of monthly C:N columns) and "Income Tax" column E. Key cells: B9=Sales Turnover, B19=Gross Profit, B35=Admin Expenses, B37=Operating Profit, B39=Profit before Tax, E5=Profit, E10=Income Tax, E15=NI Class 4, E18=Total.
+- `checkCompliance()`: Checks B9 (total sales), B19 (gross profit), B39 (profit before tax), income tax, NI Class 4, total tax+NI.
 - `TAX_SHEET = "Income Tax"` (same as BST, unlike Taxi's "Draft Tax calculation").
 
-**Known gap:** The `standardReads()` cell positions are preliminary. The SE P&L may use different rows/columns than BST. Need to extract formulas from the actual SE Profit & Loss Account sheet to confirm.
-
-### Phase 6: Guide Generation — PENDING
+### Phase 6: Guide Generation — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Self Employed User Guide | ☐ Pending | Extract from PDF, write se-guide.md, generate screenshots |
-| Payslip User Guide | ☐ Pending | Extract from PDF, write payslip-guide.md |
+| Self Employed User Guide | ✓ Done | `se-guide.md` — 16 sections covering all 9 xlsx files, from source PDF |
+| Payslip User Guide | ✓ Done | `payslip-guide.md` — employee details, weekly/monthly worksheets, payslips, revenue payments, statutory payments |
+| PDF generation | ✓ Done | Both PDFs generated via pandoc+weasyprint (39KB SE guide, 28KB Payslip guide) |
+| Multiple guides per product | ✓ Done | generate.js updated to iterate `template.guide` + `template.payslip_guide` |
 
-### Phase 7: Tests — PARTIAL ✓
+**Guide content:** Extracted from `web/.../docs/Self Employed User Guide.pdf` (16 pages) and `web/.../docs/Payslip User Guide.pdf` (10 pages). Adapted to markdown with tables for column references, code letter mappings, and data entry instructions. SE guide covers: preparing to get started, VAT (non-VAT/registration/flat rate), protection and parameters, sales spreadsheet (columns A-L, code letters A/B/C/D/G/O/FS), purchases spreadsheet (columns A-L, code letters S/C/O/W/P/M/G/V/H/A/L/Y/FA), cash and bank, fixed assets, VAT returns, payroll integration, financial accounts (stock control, wages interface, income tax, profit forecast), sales invoice.
+
+### Phase 7: Tests — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Generation unit tests | ✓ Done | 10 new tests in generate.test.js (107 total, all passing) |
-| SE E2E test | ☐ Pending | Needs cross-file LibreOffice recalculation |
-| Reconciliation | ☐ Pending | SE added to PRODUCTS but needs multi-file scenario runner + SE scenario fixture |
+| Generation unit tests | ✓ Done | 10 tests in generate.test.js |
+| SE E2E test | ✓ Done | 13 tests in se-e2e.test.js — cross-file P&L and Income Tax via `runMultiFileSpreadsheet()` |
+| Reconciliation | ✓ Done | 4/4 COMPLIANT for 2025-26 via multi-file scenario runner |
+| **Total** | **120 tests passing** | 7 test files, all green |
 
-**Tests added:**
-- `buildSeCellEdits` — 4 tests: SE-specific income tax positions (N6/N7/M11/L12/N12, no N8/M12/L13/N13), L16 for NI Class 2 (not L17), F27 VAT rate, non-zero NI Class 2 for older years
-- `generatePayslipsCalendar` — 4 tests: 1140 cells generated, week 1 = 5 days (rows 2-6), 4-4-5 month pattern verified by counting weeks per month, deterministic across different years
-- `SE generateSpreadsheet` — 2 tests: Financialaccounts.xlsx with SE cell edits (N6=0.2, F27=0.2 verified in output XML), Payslips.xlsx with calendar (B2=45753 verified in output XML)
+**Tests added (summary):**
+- `buildSeCellEdits` — 4 tests: SE-specific income tax positions, L16 NI Class 2, F27 VAT rate, older year NI Class 2
+- `generatePayslipsCalendar` — 4 tests: 1140 cells, 5-day week 1, 4-4-5 month pattern, deterministic
+- `SE generateSpreadsheet` — 2 tests: Financialaccounts.xlsx SE cell edits, Payslips.xlsx calendar
+- `SE E2E (se-e2e.test.js)` — 13 tests: cross-file Sales→P&L→Income Tax pipeline. Verifies: total sales 30000, Product A 30000, admin expenses > 0, gross profit 30000, operating profit = gross - expenses, premises 1800, profit = operating profit, personal allowance 12570, taxable income, basic rate tax 2646, total tax > 0, NI Class 4 > 0, total tax+NI > 0
 
-### Phase 8: Reconciliation — IN PROGRESS
+### Phase 8: Reconciliation — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
 | SE in PRODUCTS registry | ✓ Done | `import * as se` added to reconcile.js |
-| Multi-file scenario runner | ☐ Pending | reconcile.js currently calls `findXlsx()` for single file; SE needs multi-file handling |
-| SE scenario fixture | ☐ Pending | Need se-scenario-basic.toml with sales/purchases across months |
-| SE P&L cell verification | ☐ Pending | Must extract SE P&L formulas to confirm cell positions |
+| Multi-file scenario runner | ✓ Done | `runMultiFileSpreadsheet()` in spreadsheet-runner.js with external link cache injection |
+| SE scenario fixture | ✓ Done | `se-scenario-basic.toml` — graphic designer, 36000 gross (30000 net) sales, 4200 expenses |
+| SE P&L cell verification | ✓ Done | Column B = Total Year, C9→B9 for sales, C19→B19 for gross profit, C39→B39 for profit |
+| reconcile.js multi-file path | ✓ Done | Detects `MULTI_FILE` flag, loads all xlsx files, uses `runMultiFileSpreadsheet()` |
+| **Result** | **4/4 COMPLIANT** | Total Sales 30000, Income Tax 2646, NI Class 4 793.8, Total Tax+NI 3439.8 |
+
+**Cross-file recalculation approach:** LibreOffice `--convert-to` does not resolve external links between files. The solution is a 3-step process:
+1. Recalculate leaf files (Sales.xlsx, Purchases.xlsx, etc.) via xls roundtrip — this bakes computed values into their `<v>` elements
+2. Read fresh values from recalculated leaf files and inject them into the hub file's (Financialaccounts.xlsx) `externalLink*.xml` cache entries — the external link XML has `<sheetData sheetId="N">` sections with cached cell values; the sheetId is a sequential index into `<sheetNames>`, not the workbook's sheetId attribute
+3. Recalculate the hub file via xls roundtrip — its internal formulas (P&L, Income Tax) now consume the fresh cached values
+
+This approach was verified to produce correct results: Total Sales=30000 (12 months × 2500 net), Operating Profit=25800, Income Tax=2646, NI=793.8.
 
 ### Phase 9: CI Workflow — COMPLETE ✓
 
 | Item | Status | Notes |
 |------|--------|-------|
-| generate-se.yml | ✓ Done | 7 concurrent jobs + commit step, `--skip-guide` for now, `git pull --rebase` before push |
-| All 7 packages generated | ✓ Done | 63 xlsx files across 7 packages (9 files × 7 years) |
+| generate-se.yml | ✓ Done | 7 concurrent jobs + commit step, `git pull --rebase` before push |
+| All 7 packages generated | ✓ Done | 63 xlsx files + 14 PDFs across 7 packages (9 xlsx + 2 PDF × 7 years) |
 
-**CI workflow details:** `.github/workflows/generate-se.yml` triggers on push to `app/data/se-*`, `app/templates/se/**`, `app/templates/meta.toml`, `app/lib/generator.js`. Runs test job first, then 7 concurrent generation jobs (one per tax year, se-2020-2021 through se-2026-2027), then commit job that downloads all artifacts, merges, and pushes. Uses `--skip-guide` since PDF guides aren't ready yet. Concurrency group `se-packages-${{ github.ref }}` with `cancel-in-progress: true`.
+**CI workflow details:** `.github/workflows/generate-se.yml` triggers on push to `app/data/se-*`, `app/templates/se/**`, `app/templates/meta.toml`, `app/lib/generator.js`. Runs test job first, then 7 concurrent generation jobs (one per tax year, se-2020-2021 through se-2026-2027), then commit job that downloads all artifacts, merges, and pushes. Concurrency group `se-packages-${{ github.ref }}` with `cancel-in-progress: true`. Guide PDFs generated alongside spreadsheets (no longer using `--skip-guide`).
 
 ## Discovered During Implementation
 
@@ -1063,3 +1084,32 @@ Generated Apr21 Payslips has 270 C/D/F mismatches vs the original. This is becau
 - HMRC P9X Tax Codes 2026-27 (tax code guidance)
 
 The HMRC calendar defines tax weeks as 7-day blocks from Apr 6 (Sun-Sat for 2025-26). The Payslips Admin uses a different payroll week scheme. The HMRC documents are reference sources, not the algorithm source for the generator.
+
+### LibreOffice --convert-to does NOT resolve external links
+
+When LibreOffice converts a file via `--convert-to`, it opens the file in isolation. External link formulas like `[2]Apr!$P$1` evaluate to the cached values stored in `xl/externalLinks/externalLink2.xml` — NOT fresh values from the linked file, even if that file is in the same directory.
+
+**Symptom:** All P&L values were 0 after recalculation. Sales.xlsx had correct data (P1=2500 for each month) but Financialaccounts.xlsx's external link caches still had the template's zeroes.
+
+**Fix:** After recalculating leaf files via xls roundtrip, programmatically update the hub file's external link XML caches by reading fresh values from the recalculated leaf files and injecting them into the `<cell>` elements of each `<sheetData>` section. The `sheetId` in external link XML is a sequential index into the `<sheetNames>` list — NOT the workbook's sheetId attribute (this was a bug in the first attempt).
+
+**Lesson:** Cross-file formula evaluation in headless LibreOffice requires explicit cache management. The xls roundtrip only recalculates intra-file formulas.
+
+### SE P&L uses column B for annual totals, not column C
+
+BST P&L has annual totals in column C (the only data column). SE P&L has 12 monthly columns (C=Apr through N=Mar) and column B for annual totals (`B5=SUM(C5:N5)`, `B9=SUM(B5:B8)`, etc.). The initial se.js read from column C which only showed April's values. Changed to column B for all compliance checks.
+
+### SE Sales and Purchases use column F for code, column G for gross amount
+
+Both Sales.xlsx and Purchases.xlsx in the SE package use:
+- Column F: code letter to classify the transaction type
+- Column G: gross amount (VAT-inclusive)
+- Column H: VAT (auto-calculated from G and the VAT rate in H2)
+- Column I: net amount (auto-calculated as G-H)
+- Columns P onwards: analysis columns (auto-routed by code letter)
+
+This differs from BST where codes are in column E and amounts in column F/G. The SE product module's `cellWrites()` returns a nested structure `{ "Sales.xlsx": { "Apr": { ... } }, "Purchases.xlsx": { ... } }` rather than flat sheet writes like BST/Taxi.
+
+### generate.js now supports multiple PDF guides per product
+
+BST/Taxi produce one PDF guide. SE produces two (Self Employed User Guide + Payslip User Guide). The guide generation loop was changed from a single `if` block to iterate over all guides defined in `meta.toml` (`template.guide` and `template.payslip_guide`).
