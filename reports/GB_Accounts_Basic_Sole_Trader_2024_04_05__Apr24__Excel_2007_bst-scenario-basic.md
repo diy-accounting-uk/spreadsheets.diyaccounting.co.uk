@@ -2,7 +2,7 @@
 
 Scenario: bst-scenario-basic
 Status: RECONCILES
-Generated: 2026-04-02
+Generated: 2026-04-01
 
 ## Compliance Checks
 
