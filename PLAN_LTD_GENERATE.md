@@ -4,14 +4,18 @@ Merged from PLAN_LTD_MAR_GENERATION.md (completed March implementation) and PLAN
 
 ## Current State
 
-### What's Working (March year-end)
+### What's Working (All 12 Year-End Months)
 
 - **Product**: `app/products/ltd.js` — unified product module, `id: "ltd"`, `MULTI_FILE: true`
-- **Template**: `app/templates/ltd/` — 15 xlsx + 1 docx from Mar26 package
+- **Template**: `app/templates/ltd/` — 15 xlsx + 1 docx, single template for all months
 - **Tax data**: `app/data/ltd-2020.toml` through `ltd-2027.toml` (8 FYs)
-- **Generation**: 8 packages (Mar21-Mar28), 15 files each, F21 = year-end date
+- **Generation**: 12 packages per FY (all month-ends), with tab renaming + Vatinterface formula rewriting
+- **Tab renaming**: 7 files (Sales, Purchases, 4 banks, Payslips) get month tabs renamed per year-end
+- **Vatinterface**: B-column Admin refs rewritten using `adminStartRow = ((M-1) % 12) * 2 + 2`
+- **14-month cutoff**: packages generated up to 14 months from today
 - **Tests**: 137 passing (7 unit + 10 E2E)
-- **Reconciliation**: RECONCILES (Total Sales 33000, CT 4388)
+- **Reconciliation**: basic/extended/full all RECONCILE. Full scenario: £88.5k sales, £37k profit, £7.5k CT
+- **CI**: matrix reconciliation — latest 15 future year-ends reconciled concurrently with `--scenario full`
 - **Guide**: 811KB PDF with 6 screenshots
 - **CI**: `.github/workflows/generate-ltd.yml`
 - **DIYA GL**: `examples/precision-code-ltd/` with book.toml + lines.jsonl (169 transactions)
@@ -73,7 +77,7 @@ For a given `ltd-YYYY.toml` (e.g. ltd-2025.toml covering FY2025 = 1 Apr 2025 - 3
 
 ## Implementation Phases
 
-### Phase 1: Tab Renaming in Generator — TODO
+### Phase 1: Tab Renaming in Generator — COMPLETE ✓
 
 Add a `renameMonthTabs(zip, yearEndMonth)` function to generator.js that:
 1. Reads `xl/workbook.xml` from the zip
@@ -82,14 +86,14 @@ Add a `renameMonthTabs(zip, yearEndMonth)` function to generator.js that:
 
 Files needing tab renaming should be flagged in meta.toml with a `renameMonthTabs = true` property in their sheets config.
 
-### Phase 2: Vatinterface Formula Rewriting — TODO
+### Phase 2: Vatinterface Formula Rewriting — COMPLETE ✓
 
 Add a `rewriteVatinterfaceFormulas(zip, yearEndMonth, sheetsConfig)` function that:
 1. Reads the Vatinterface sheet XML
 2. Replaces `[1]Admin!$B$6` etc. with the correct Admin cell references for the year-end month
 3. Replaces Sales/Purchases tab name references in D-column and M-column formulas
 
-### Phase 3: Multi-Month Package Generation — TODO
+### Phase 3: Multi-Month Package Generation — COMPLETE ✓
 
 Update generate.js to:
 1. For Ltd products, iterate all 12 possible month-ends within each FY
@@ -116,7 +120,7 @@ Example on 6 March 2026:
 - Website default: 30 Apr 2027 → SE Apr 2026 is default, Ltd Mar 2026 is default
 - Next year's packages (SE Apr 2027, Ltd Apr-May 2027) are available in the dropdown but not pre-selected
 
-### Phase 4: Testing — TODO
+### Phase 4: Testing — COMPLETE ✓
 
 - Verify generated Jun year-end packages against existing `packages/GB Accounts Company 2023-06-30 (Jun23)` originals
 - Verify Dec year-end against originals
