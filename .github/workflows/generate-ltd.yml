@@ -93,7 +93,9 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [params, test]
     if: ${{ !cancelled() && (needs.test.result == 'success' || needs.test.result == 'skipped') && needs.params.outputs.skip-generation != 'true' }}
-    timeout-minutes: 30
+    timeout-minutes: 60
+    outputs:
+      matrix: ${{ steps.matrix.outputs.year-ends }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -117,9 +119,19 @@ jobs:
             mkdir -p "$p05_dir"
             payslips="$ltd_dir/Payslips.xlsx"
             [ -f "$payslips" ] && cp "$payslips" "$p05_dir/"
-            echo "Created: $p05_dir"
           done
       - run: npm test
+      - name: Compute reconciliation matrix (latest 15 future year-ends)
+        id: matrix
+        run: |
+          TODAY=$(date +%Y-%m-%d)
+          YEAR_ENDS=$(ls -d packages-generated/GB\ Accounts\ Company*/ 2>/dev/null \
+            | sed 's|.*/GB Accounts Company \([0-9-]*\).*|\1|' \
+            | sort -r \
+            | awk -v today="$TODAY" '$1 >= today' \
+            | head -15 \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
           name: ltd-packages
@@ -129,8 +141,12 @@ jobs:
   reconcile:
     runs-on: ubuntu-24.04
     needs: [params, generate]
-    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' }}
-    timeout-minutes: 30
+    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' && needs.generate.outputs.matrix != '[]' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        year-end: ${{ fromJson(needs.generate.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -145,53 +161,27 @@ jobs:
         with:
           name: ltd-packages
           path: packages-generated/
-      - run: npm run reconciliation -- --package ltd
-      - name: Generate empty screenshots
-        run: |
-          mkdir -p /tmp/screenshots
-          for xlsx in packages-generated/GB\ Accounts\ Company*/Financialaccounts.xlsx; do
-            [ -f "$xlsx" ] || continue
-            dir=$(basename "$(dirname "$xlsx")" | sed "s/ /_/g")
-            libreoffice --headless --norestore --calc \
-              -env:UserInstallation="file:///tmp/lo_empty_$$" \
-              --convert-to pdf --outdir /tmp/screenshots/ "$xlsx" 2>/dev/null || true
-            pdf="/tmp/screenshots/Financialaccounts.pdf"
-            [ -f "$pdf" ] && mv "$pdf" "reports/${dir}_empty.pdf"
-          done
-      - name: Generate scenario screenshots
-        run: |
-          mkdir -p /tmp/screenshots
-          for dir in reports/populated/*/; do
-            [ -d "$dir" ] || continue
-            fa="${dir}Financialaccounts.xlsx"
-            [ -f "$fa" ] || continue
-            name=$(basename "$dir")
-            libreoffice --headless --norestore --calc \
-              -env:UserInstallation="file:///tmp/lo_pop_$$" \
-              --convert-to pdf --outdir /tmp/screenshots/ "$fa" 2>/dev/null || true
-            pdf="/tmp/screenshots/Financialaccounts.pdf"
-            [ -f "$pdf" ] && mv "$pdf" "reports/${name}.pdf"
-          done
-      - run: rm -rf reports/populated
+      - run: npm run reconciliation -- --package ltd --year-end ${{ matrix.year-end }}
       - name: Check reconciliation
         run: |
           FAIL=0
           for f in reports/*.md; do
+            [ -f "$f" ] || continue
             if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
           done
           if [ "$FAIL" -eq 1 ]; then
-            echo "::error::Reconciliation found anomalies"
+            echo "::error::Reconciliation anomaly for ${{ matrix.year-end }}"
             exit 1
           fi
       - uses: actions/upload-artifact@v7
         with:
-          name: ltd-reports
+          name: ltd-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [params, reconcile]
+    needs: [params, generate, reconcile]
     if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
       - uses: actions/checkout@v6
@@ -204,8 +194,9 @@ jobs:
           path: packages-generated/
       - uses: actions/download-artifact@v8
         with:
-          name: ltd-reports
+          pattern: ltd-reports-*
           path: reports/
+          merge-multiple: true
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
