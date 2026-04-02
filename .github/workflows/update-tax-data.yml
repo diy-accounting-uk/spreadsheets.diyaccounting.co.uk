@@ -47,7 +47,6 @@ jobs:
             YEAR=$(date +%Y)
           fi
           echo "year=$YEAR" >> "$GITHUB_OUTPUT"
-          echo "=== URLs for year $YEAR ==="
           node scripts/hmrc-rate-urls.cjs "$YEAR" | tee /tmp/hmrc-urls.txt
           echo "url_count=$(wc -l < /tmp/hmrc-urls.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
 
@@ -65,14 +64,7 @@ jobs:
           print(text[:50000])
           " > "/tmp/hmrc-scraped/${slug}.txt" 2>/dev/null || echo "  Failed: $url"
           done < /tmp/hmrc-urls.txt
-          echo "=== Scraped $(ls /tmp/hmrc-scraped/ | wc -l) pages ==="
-
-      - name: List existing tax data files
-        run: |
-          echo "=== SE tax data ==="
-          ls app/data/se-*.toml 2>/dev/null || echo "None"
-          echo "=== Ltd tax data ==="
-          ls app/data/ltd-*.toml 2>/dev/null || echo "None"
+          echo "Scraped $(ls /tmp/hmrc-scraped/ | wc -l) pages"
 
       - name: Identify missing tax data files
         id: missing
@@ -81,35 +73,151 @@ jobs:
           MISSING=""
           for y in $(seq $((YEAR - 5)) $((YEAR + 1))); do
             next=$((y + 1))
-            se_file="app/data/se-${y}-${next}.toml"
-            if [ ! -f "$se_file" ]; then
+            if [ ! -f "app/data/se-${y}-${next}.toml" ]; then
               MISSING="$MISSING se-${y}-${next}"
             fi
-            ltd_file="app/data/ltd-${y}.toml"
-            if [ ! -f "$ltd_file" ]; then
+            if [ ! -f "app/data/ltd-${y}.toml" ]; then
               MISSING="$MISSING ltd-${y}"
             fi
           done
           echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
           if [ -z "$MISSING" ]; then
-            echo "All tax data files exist"
+            echo "All tax data files exist — nothing to create"
           else
             echo "Missing:$MISSING"
           fi
 
-      - name: Upload scraped data
+      - name: Concatenate scraped data for LLM
+        if: ${{ steps.missing.outputs.missing != '' }}
+        run: |
+          echo "=== HMRC TAX RATES AND ALLOWANCES ===" > /tmp/hmrc-combined.txt
+          echo "" >> /tmp/hmrc-combined.txt
+          for f in /tmp/hmrc-scraped/*.txt; do
+            echo "--- SOURCE: $(basename "$f" .txt) ---" >> /tmp/hmrc-combined.txt
+            head -c 8000 "$f" >> /tmp/hmrc-combined.txt
+            echo "" >> /tmp/hmrc-combined.txt
+          done
+          echo "Combined scraped data: $(wc -c < /tmp/hmrc-combined.txt) bytes"
+
+      - name: Build LLM prompt
+        if: ${{ steps.missing.outputs.missing != '' }}
+        run: |
+          YEAR="${{ steps.urls.outputs.year }}"
+          MISSING="${{ steps.missing.outputs.missing }}"
+          EXAMPLE=$(cat app/data/ltd-2025.toml)
+          SE_EXAMPLE=$(cat app/data/se-2025-2026.toml)
+
+          cat > /tmp/llm-prompt.txt << PROMPTEOF
+          You are a UK tax data extraction assistant. From the HMRC rate pages below,
+          create the missing TOML tax data files. Output ONLY valid TOML content for
+          each file, separated by a line containing just "---FILE: filename.toml---".
+
+          Missing files: $MISSING
+
+          For ltd-YYYY.toml files, use this exact schema (example from ltd-2025.toml):
+          $EXAMPLE
+
+          For se-YYYY-YYYY.toml files, use this exact schema (example from se-2025-2026.toml):
+          $SE_EXAMPLE
+
+          Rules:
+          - Only create files for years where the scraped data contains authoritative rates
+          - If rates are not yet published for a year, carry forward from the previous year and add a comment "PROVISIONAL"
+          - Corporation Tax: 19% small profits (up to 50000), 25% main rate (from FY2023). Before FY2023 it was 19% flat.
+          - WDA main rate changed from 18% to 14% from 1 April 2026 (FY2026+)
+          - Employer NI changed to 15% with 5000 secondary threshold from April 2025
+          - VAT threshold changed from 85000 to 90000 from April 2024
+          - Dividend allowance: 2000 (pre-2023), 1000 (2023-24), 500 (2024+)
+          - Output dates as bare TOML dates (YYYY-MM-DD without quotes)
+
+          HMRC scraped data follows:
+          PROMPTEOF
+
+          cat /tmp/hmrc-combined.txt >> /tmp/llm-prompt.txt
+          echo "Prompt: $(wc -c < /tmp/llm-prompt.txt) bytes"
+
+      - name: Call Copilot to generate TOML files
+        if: ${{ steps.missing.outputs.missing != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Calling gh copilot to generate missing tax data files..."
+          RESPONSE=$(gh copilot -- --model 'gpt-5-mini' --prompt "$(cat /tmp/llm-prompt.txt)" 2>&1) || true
+          echo "$RESPONSE" > /tmp/llm-response.txt
+          echo "Response: $(wc -c < /tmp/llm-response.txt) bytes"
+
+          MISSING="${{ steps.missing.outputs.missing }}"
+          for name in $MISSING; do
+            filename="${name}.toml"
+            content=$(echo "$RESPONSE" | sed -n "/---FILE: ${filename}---/,/---FILE:/p" | head -n -1 | tail -n +2)
+            if [ -n "$content" ]; then
+              echo "$content" > "app/data/${filename}"
+              echo "Created: app/data/${filename}"
+            else
+              echo "WARNING: Could not extract ${filename} from LLM response"
+            fi
+          done
+
+      - name: Validate TOML files
+        if: ${{ steps.missing.outputs.missing != '' }}
+        run: |
+          node -e "
+            const { parse } = require('smol-toml');
+            const fs = require('fs');
+            const files = fs.readdirSync('app/data').filter(f => f.endsWith('.toml'));
+            let ok = 0, fail = 0;
+            for (const f of files) {
+              try {
+                parse(fs.readFileSync('app/data/' + f, 'utf8'));
+                ok++;
+              } catch (e) {
+                console.error('INVALID: ' + f + ' — ' + e.message);
+                fail++;
+              }
+            }
+            console.log(ok + ' valid, ' + fail + ' invalid');
+            if (fail > 0) process.exit(1);
+          "
+
+      - name: Run tests
+        if: ${{ steps.missing.outputs.missing != '' }}
+        run: npm test
+
+      - name: Commit new tax data files
+        if: ${{ steps.missing.outputs.missing != '' && (github.event_name != 'workflow_dispatch' || !inputs.dry-run) }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app/data/*.toml
+          if git diff --staged --quiet; then
+            echo "No new tax data files to commit"
+          else
+            git diff --staged --name-only
+            git commit -m "Add tax data files from HMRC rates
+
+          Created by update-tax-data workflow using gh copilot.
+          Source: HMRC published rates scraped from gov.uk.
+          Triggered by: ${{ github.sha }}"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Upload artifacts
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
-          name: hmrc-scraped
+          name: tax-data-update
           retention-days: 7
-          path: /tmp/hmrc-scraped/
+          path: |
+            /tmp/hmrc-scraped/
+            /tmp/llm-prompt.txt
+            /tmp/llm-response.txt
 
       - name: Summary
+        if: ${{ !cancelled() }}
         run: |
           echo "## Tax Data Update Summary" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "- Base year: ${{ steps.urls.outputs.year }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- URLs scraped: ${{ steps.urls.outputs.url_count }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Missing files: ${{ steps.missing.outputs.missing || 'none' }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Scraped content uploaded as artifact. Use the tax-data-updater agent or Copilot to create missing TOML files from the scraped data." >> "$GITHUB_STEP_SUMMARY"
