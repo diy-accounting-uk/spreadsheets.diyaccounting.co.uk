@@ -169,13 +169,23 @@ function parseArgs(argv) {
 
   const skipGuide = args.includes("--skip-guide");
 
-  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide };
+  let yearEndFilter = null;
+  const yeIdx = args.indexOf("--year-end");
+  if (yeIdx !== -1) {
+    yearEndFilter = [];
+    for (let i = yeIdx + 1; i < args.length; i++) {
+      if (args[i].startsWith("--")) break;
+      yearEndFilter.push(args[i]);
+    }
+  }
+
+  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter };
 }
 
 async function main() {
   console.log("=== generate.js ===");
 
-  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide } = parseArgs(process.argv);
+  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter } = parseArgs(process.argv);
 
   // Determine which products to generate
   const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
@@ -217,6 +227,9 @@ async function main() {
 
           if (yearEndDate > fyEnd) break;
 
+          const yeStr = yearEndDate.toISOString().slice(0, 10);
+          if (yearEndFilter && !yearEndFilter.includes(yeStr)) continue;
+
           const overrideTaxData = JSON.parse(JSON.stringify(taxData));
           overrideTaxData.financial_year.end = yearEndDate.toISOString().slice(0, 10);
 
@@ -228,6 +241,12 @@ async function main() {
           if (result) results.push(result);
         }
       } else {
+        if (yearEndFilter) {
+          const td = parseTOML(readFileSync(tomlFile, "utf8"));
+          const tyEnd = (td.tax_year || td.financial_year).end;
+          const tyEndStr = typeof tyEnd === "string" ? tyEnd : new Date(tyEnd).toISOString().slice(0, 10);
+          if (!yearEndFilter.includes(tyEndStr)) continue;
+        }
         const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
         if (result) results.push(result);
       }

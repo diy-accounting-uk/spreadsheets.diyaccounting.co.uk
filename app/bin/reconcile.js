@@ -158,7 +158,7 @@ async function main() {
     packageDirs = allPackageDirs.filter((d) => d.startsWith(mod.PRODUCT.prefix));
   }
 
-  // Filter by --years if specified
+  // Filter by --years (tax data file names) if specified
   const yearsIdx = args.indexOf("--years");
   if (yearsIdx !== -1) {
     const years = [];
@@ -176,6 +176,17 @@ async function main() {
         return d.includes(endYear);
       }),
     );
+  }
+
+  // Filter by --year-end (specific year-end dates like 2026-03-31)
+  const yeIdx = args.indexOf("--year-end");
+  if (yeIdx !== -1) {
+    const yearEnds = [];
+    for (let i = yeIdx + 1; i < args.length; i++) {
+      if (args[i].startsWith("--")) break;
+      yearEnds.push(args[i]);
+    }
+    packageDirs = packageDirs.filter((d) => yearEnds.some((ye) => d.includes(ye)));
   }
 
   console.log("Packages:", packageDirs.length);
