@@ -147,6 +147,7 @@ jobs:
         with:
           name: se-packages
           path: packages-generated/
+      - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package se --scenario basic
       - name: Generate empty screenshots
         run: |

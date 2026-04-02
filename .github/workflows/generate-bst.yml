@@ -134,6 +134,7 @@ jobs:
         with:
           name: bst-packages
           path: packages-generated/
+      - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package bst --scenario basic
       - name: Generate empty screenshots
         run: |

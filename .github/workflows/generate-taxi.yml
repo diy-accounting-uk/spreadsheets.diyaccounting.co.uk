@@ -134,6 +134,7 @@ jobs:
         with:
           name: taxi-packages
           path: packages-generated/
+      - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package taxi --scenario basic
       - name: Generate empty screenshots
         run: |

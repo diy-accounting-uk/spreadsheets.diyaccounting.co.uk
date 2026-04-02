@@ -161,6 +161,7 @@ jobs:
         with:
           name: ltd-packages
           path: packages-generated/
+      - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package ltd --scenario full --year-end ${{ matrix.year-end }}
       - name: Check reconciliation
         run: |
