@@ -50,7 +50,7 @@ describeCalc(
         }
       }
 
-      const scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-mar-scenario-basic.toml"));
+      const scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-basic.toml"));
       const writes = ltdCellWrites(scenario);
       const reads = ltdReads();
 

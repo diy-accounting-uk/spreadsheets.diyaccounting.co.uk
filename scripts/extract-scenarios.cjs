@@ -9,9 +9,9 @@
 //
 // Reads:  examples/precision-code-ltd/book.toml   (entity info and chart of accounts)
 //         examples/precision-code-ltd/lines.jsonl  (journal entries, one JSON object per line)
-// Writes: app/test/fixtures/ltd-mar-scenario-basic.toml
-//         app/test/fixtures/ltd-mar-scenario-extended.toml
-//         app/test/fixtures/ltd-mar-scenario-full.toml
+// Writes: app/test/fixtures/ltd-scenario-basic.toml
+//         app/test/fixtures/ltd-scenario-extended.toml
+//         app/test/fixtures/ltd-scenario-full.toml
 
 const { parse: parseTOML } = require("smol-toml");
 const { readFileSync, writeFileSync } = require("fs");
@@ -287,9 +287,9 @@ const fullToml = formatScenarioToml(
 );
 
 // --- Write output files ---
-const basicPath = path.join(FIXTURES_DIR, "ltd-mar-scenario-basic.toml");
-const extendedPath = path.join(FIXTURES_DIR, "ltd-mar-scenario-extended.toml");
-const fullPath = path.join(FIXTURES_DIR, "ltd-mar-scenario-full.toml");
+const basicPath = path.join(FIXTURES_DIR, "ltd-scenario-basic.toml");
+const extendedPath = path.join(FIXTURES_DIR, "ltd-scenario-extended.toml");
+const fullPath = path.join(FIXTURES_DIR, "ltd-scenario-full.toml");
 
 writeFileSync(basicPath, basicToml);
 writeFileSync(extendedPath, extendedToml);
