@@ -147,7 +147,7 @@ jobs:
         with:
           name: se-packages
           path: packages-generated/
-      - run: npm run reconciliation -- --package se
+      - run: npm run reconciliation -- --package se --scenario basic
       - name: Generate empty screenshots
         run: |
           mkdir -p /tmp/screenshots
@@ -178,14 +178,22 @@ jobs:
       - run: rm -rf reports/populated
       - name: Check reconciliation
         run: |
+          COUNT=0
           FAIL=0
           for f in reports/*.md; do
+            [ -f "$f" ] || continue
+            COUNT=$((COUNT + 1))
             if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
           done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No reconciliation reports produced"
+            exit 1
+          fi
           if [ "$FAIL" -eq 1 ]; then
             echo "::error::Reconciliation found anomalies"
             exit 1
           fi
+          echo "$COUNT reports, all RECONCILES"
       - uses: actions/upload-artifact@v7
         with:
           name: se-reports

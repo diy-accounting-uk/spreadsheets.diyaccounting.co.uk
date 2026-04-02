@@ -17,7 +17,15 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel, renameMonthTabs, rewriteVatinterfaceFormulas, monthEnd } from "../lib/generator.js";
+import {
+  generateSpreadsheet,
+  formatDateDDMMYY,
+  formatDateYYYYMMDD,
+  shortLabel,
+  renameMonthTabs,
+  rewriteVatinterfaceFormulas,
+  monthEnd,
+} from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
@@ -54,7 +62,9 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
   cutoff.setUTCMonth(cutoff.getUTCMonth() + 14);
   cutoff.setUTCDate(0); // last day of the month 13 months from now
   if (endDate > cutoff) {
-    console.log(`\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`);
+    console.log(
+      `\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`,
+    );
     return null;
   }
 
@@ -75,7 +85,15 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
   const outDir = resolve(OUTPUT_DIR, dirName);
   mkdirSync(outDir, { recursive: true });
 
-  const TAB_RENAME_FILES = new Set(["Sales.xlsx", "Purchases.xlsx", "Currentaccount.xlsx", "Savingaccount.xlsx", "Cashaccount.xlsx", "Creditcardaccount.xlsx", "Payslips.xlsx"]);
+  const TAB_RENAME_FILES = new Set([
+    "Sales.xlsx",
+    "Purchases.xlsx",
+    "Currentaccount.xlsx",
+    "Savingaccount.xlsx",
+    "Cashaccount.xlsx",
+    "Creditcardaccount.xlsx",
+    "Payslips.xlsx",
+  ]);
 
   if (productMeta.template.files) {
     for (const templateFile of productMeta.template.files) {

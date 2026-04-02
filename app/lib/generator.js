@@ -726,14 +726,8 @@ export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vati
   const targetTabs = getMonthTabSequence(yearEndMonth);
   for (let i = 0; i < 12; i++) {
     if (templateTabs[i] !== targetTabs[i]) {
-      viXml = viXml.replace(
-        new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"),
-        `[2]${targetTabs[i]}!`,
-      );
-      viXml = viXml.replace(
-        new RegExp(`\\[3\\]${templateTabs[i]}!`, "g"),
-        `[3]${targetTabs[i]}!`,
-      );
+      viXml = viXml.replace(new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"), `[2]${targetTabs[i]}!`);
+      viXml = viXml.replace(new RegExp(`\\[3\\]${templateTabs[i]}!`, "g"), `[3]${targetTabs[i]}!`);
     }
   }
 

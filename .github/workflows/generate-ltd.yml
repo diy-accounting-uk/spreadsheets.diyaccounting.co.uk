@@ -161,18 +161,25 @@ jobs:
         with:
           name: ltd-packages
           path: packages-generated/
-      - run: npm run reconciliation -- --package ltd --year-end ${{ matrix.year-end }}
+      - run: npm run reconciliation -- --package ltd --scenario full --year-end ${{ matrix.year-end }}
       - name: Check reconciliation
         run: |
+          COUNT=0
           FAIL=0
           for f in reports/*.md; do
             [ -f "$f" ] || continue
+            COUNT=$((COUNT + 1))
             if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
           done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No reconciliation reports for ${{ matrix.year-end }}"
+            exit 1
+          fi
           if [ "$FAIL" -eq 1 ]; then
             echo "::error::Reconciliation anomaly for ${{ matrix.year-end }}"
             exit 1
           fi
+          echo "$COUNT reports, all RECONCILES"
       - uses: actions/upload-artifact@v7
         with:
           name: ltd-reports-${{ matrix.year-end }}
