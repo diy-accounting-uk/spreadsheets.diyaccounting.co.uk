@@ -374,7 +374,7 @@ Verify `/tmp/roundtrip-test.xlsx` opens correctly in LibreOffice and preserves a
    - Uses 2025-26 generated package + scenario fixture
 
    **2.6 GitHub Actions workflow** — DONE. `.github/workflows/reconciliation.yml`
-   - Triggers on push to `packages-generated/`, `app/test/fixtures/`, `app/data/`
+   - Triggers on push to `packages/`, `app/test/fixtures/`, `app/data/`
    - Runs reconciliation, generates reports + screenshots, commits them
    - Fails workflow if non-compliant but still generates and commits reports
 

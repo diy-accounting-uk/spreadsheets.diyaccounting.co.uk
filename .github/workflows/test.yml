@@ -14,7 +14,7 @@ on:
       - 'infra/**'
       - 'behaviour-tests/**'
       - 'web/**'
-      - 'packages-generated/**'
+      - 'packages/**'
       - 'packages/**'
       - 'scripts/**'
       - '**/cdk.json'

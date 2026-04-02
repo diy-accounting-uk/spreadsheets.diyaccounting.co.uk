@@ -122,14 +122,14 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends pandoc
           pip install --quiet weasyprint
-      - run: rm -rf packages-generated
+      - run: rm -rf packages
       - run: npm run generate -- --package ltd
       - name: Create Payslip 05 packages
         run: |
-          for ltd_dir in packages-generated/GB\ Accounts\ Company*/; do
+          for ltd_dir in packages/GB\ Accounts\ Company*/; do
             [ -d "$ltd_dir" ] || continue
             label=$(basename "$ltd_dir" | sed 's/Company/Payslip 05/')
-            p05_dir="packages-generated/${label}"
+            p05_dir="packages/${label}"
             mkdir -p "$p05_dir"
             payslips="$ltd_dir/Payslips.xlsx"
             [ -f "$payslips" ] && cp "$payslips" "$p05_dir/"
@@ -139,7 +139,7 @@ jobs:
         id: matrix
         run: |
           TODAY=$(date +%Y-%m-%d)
-          YEAR_ENDS=$(ls -d packages-generated/GB\ Accounts\ Company*/ 2>/dev/null \
+          YEAR_ENDS=$(ls -d packages/GB\ Accounts\ Company*/ 2>/dev/null \
             | sed 's|.*/GB Accounts Company \([0-9-]*\).*|\1|' \
             | sort -r \
             | awk -v today="$TODAY" '$1 >= today' \
@@ -150,7 +150,7 @@ jobs:
         with:
           name: ltd-packages
           retention-days: 1
-          path: packages-generated/
+          path: packages/
 
   reconcile:
     runs-on: ubuntu-24.04
@@ -174,7 +174,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: ltd-packages
-          path: packages-generated/
+          path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package ltd --scenario full --year-end ${{ matrix.year-end }}
       - name: Check reconciliation
@@ -213,7 +213,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: ltd-packages
-          path: packages-generated/
+          path: packages/
       - uses: actions/download-artifact@v8
         with:
           pattern: ltd-reports-*
@@ -224,7 +224,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          git add packages-generated/ reports/
+          git add packages/ reports/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

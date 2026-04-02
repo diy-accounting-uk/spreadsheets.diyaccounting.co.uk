@@ -120,14 +120,14 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends pandoc
           pip install --quiet weasyprint
-      - run: rm -rf packages-generated
+      - run: rm -rf packages
       - run: npm run generate -- --package se
       - name: Create Payslip 05 packages
         run: |
-          for se_dir in packages-generated/GB\ Accounts\ Self\ Employed*/; do
+          for se_dir in packages/GB\ Accounts\ Self\ Employed*/; do
             [ -d "$se_dir" ] || continue
             label=$(basename "$se_dir" | sed 's/Self Employed/Payslip 05/')
-            p05_dir="packages-generated/${label}"
+            p05_dir="packages/${label}"
             mkdir -p "$p05_dir"
             payslips="$se_dir/Payslips.xlsx"
             guide="$se_dir/Payslip User Guide.pdf"
@@ -140,7 +140,7 @@ jobs:
         with:
           name: se-packages
           retention-days: 1
-          path: packages-generated/
+          path: packages/
 
   reconcile:
     runs-on: ubuntu-24.04
@@ -160,13 +160,13 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: se-packages
-          path: packages-generated/
+          path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package se --scenario basic
       - name: Generate empty screenshots
         run: |
           mkdir -p /tmp/screenshots
-          for xlsx in packages-generated/*/Financialaccounts.xlsx; do
+          for xlsx in packages/*/Financialaccounts.xlsx; do
             [ -f "$xlsx" ] || continue
             base=$(basename "$xlsx" .xlsx)
             dir=$(basename "$(dirname "$xlsx")" | sed "s/ /_/g")
@@ -227,7 +227,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: se-packages
-          path: packages-generated/
+          path: packages/
       - uses: actions/download-artifact@v8
         with:
           name: se-reports
@@ -237,7 +237,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          git add packages-generated/ reports/
+          git add packages/ reports/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

@@ -26,7 +26,7 @@ import * as ltd from "../products/ltd.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const ROOT = resolve(APP_DIR, "..");
-const PACKAGES_DIR = resolve(ROOT, "packages-generated");
+const PACKAGES_DIR = resolve(ROOT, "packages");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 const REPORTS_DIR = resolve(ROOT, "reports");
 
@@ -136,7 +136,7 @@ async function main() {
 
   // Find generated packages
   if (!existsSync(PACKAGES_DIR)) {
-    console.error("No packages-generated/ directory. Run 'npm run build' first.");
+    console.error("No packages/ directory. Run 'npm run build' first.");
     process.exit(1);
   }
 

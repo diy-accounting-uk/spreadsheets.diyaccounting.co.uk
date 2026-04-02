@@ -36,7 +36,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const ROOT = resolve(APP_DIR, "..");
 const DATA_DIR = resolve(APP_DIR, "data");
-const OUTPUT_DIR = resolve(ROOT, "packages-generated");
+const OUTPUT_DIR = resolve(ROOT, "packages");
 
 const PRODUCTS = {
   bst: BST,

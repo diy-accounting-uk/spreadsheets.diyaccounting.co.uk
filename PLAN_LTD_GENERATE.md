@@ -105,7 +105,7 @@ Update generate.js to:
 Two thresholds control package availability:
 
 **Generate cutoff: today + 14 months (snap to last day of month)**
-- Determines which packages are built and committed to `packages-generated/`
+- Determines which packages are built and committed to `packages/`
 - 14 months ensures next tax year's SE/BST packages (Apr year-end) are available from early March
 - Covers the budget-in-March scenario (e.g., on 6 Mar 2026, SE Apr 2027 is within cutoff of 30 May 2027)
 - Still bounded by available `se-*.toml` and `ltd-*.toml` data files

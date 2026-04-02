@@ -73,7 +73,7 @@ app/
 
 | Script | What it does |
 |--------|-------------|
-| `npm run build` | Generate all packages to `packages-generated/` |
+| `npm run build` | Generate all packages to `packages/` |
 | `npm run generate -- --package bst --years se-2025-2026` | Generate specific package/year |
 | `npm test` | Fast tests: generation, e2e, reconciliation compliance (~12s) |
 | `npm run test:slow` | Slow tests: per-sheet formula verification via LibreOffice (~120s) |
@@ -84,8 +84,8 @@ app/
 | Workflow | Trigger | What it does |
 |----------|---------|-------------|
 | `test.yml` | Push to `app/**`, `web/**`, etc. | Unit tests, e2e tests, slow sheet tests, build, deployment, browser/behaviour tests |
-| `generate-bst.yml` | Push to `app/data/se-*`, `app/templates/bst/**` | Generate all BST packages concurrently, commit to `packages-generated/` |
-| `reconciliation.yml` | Push to `packages-generated/`, `app/test/fixtures/`, `app/data/` | Run reconciliation, commit reports + screenshots, fail if non-compliant |
+| `generate-bst.yml` | Push to `app/data/se-*`, `app/templates/bst/**` | Generate all BST packages concurrently, commit to `packages/` |
+| `reconciliation.yml` | Push to `packages/`, `app/test/fixtures/`, `app/data/` | Run reconciliation, commit reports + screenshots, fail if non-compliant |
 
 ### Copilot Agent
 
