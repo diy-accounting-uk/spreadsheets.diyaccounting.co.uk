@@ -1,0 +1,115 @@
+name: update-tax-data
+run-name: "update-tax-data from ${{ github.ref_name }}"
+
+on:
+  schedule:
+    - cron: '0 8 1 4,11 *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'Base year (default: current year)'
+        type: string
+        default: ''
+      dry-run:
+        description: 'Dry run (do not commit)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  scrape-and-update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Generate HMRC rate URLs
+        id: urls
+        run: |
+          YEAR="${{ inputs.year }}"
+          if [ -z "$YEAR" ]; then
+            YEAR=$(date +%Y)
+          fi
+          echo "year=$YEAR" >> "$GITHUB_OUTPUT"
+          echo "=== URLs for year $YEAR ==="
+          node scripts/hmrc-rate-urls.cjs "$YEAR" | tee /tmp/hmrc-urls.txt
+          echo "url_count=$(wc -l < /tmp/hmrc-urls.txt | tr -d ' ')" >> "$GITHUB_OUTPUT"
+
+      - name: Scrape HMRC pages
+        run: |
+          mkdir -p /tmp/hmrc-scraped
+          while IFS= read -r url; do
+            slug=$(echo "$url" | sed 's|https://www.gov.uk/||; s|/|__|g')
+            echo "Fetching: $url"
+            curl -sL --max-time 30 "$url" | python3 -c "
+          import sys, re
+          html = sys.stdin.read()
+          text = re.sub(r'<[^>]+>', ' ', html)
+          text = re.sub(r'\s+', ' ', text).strip()
+          print(text[:50000])
+          " > "/tmp/hmrc-scraped/${slug}.txt" 2>/dev/null || echo "  Failed: $url"
+          done < /tmp/hmrc-urls.txt
+          echo "=== Scraped $(ls /tmp/hmrc-scraped/ | wc -l) pages ==="
+
+      - name: List existing tax data files
+        run: |
+          echo "=== SE tax data ==="
+          ls app/data/se-*.toml 2>/dev/null || echo "None"
+          echo "=== Ltd tax data ==="
+          ls app/data/ltd-*.toml 2>/dev/null || echo "None"
+
+      - name: Identify missing tax data files
+        id: missing
+        run: |
+          YEAR="${{ steps.urls.outputs.year }}"
+          MISSING=""
+          for y in $(seq $((YEAR - 5)) $((YEAR + 1))); do
+            next=$((y + 1))
+            se_file="app/data/se-${y}-${next}.toml"
+            if [ ! -f "$se_file" ]; then
+              MISSING="$MISSING se-${y}-${next}"
+            fi
+            ltd_file="app/data/ltd-${y}.toml"
+            if [ ! -f "$ltd_file" ]; then
+              MISSING="$MISSING ltd-${y}"
+            fi
+          done
+          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
+          if [ -z "$MISSING" ]; then
+            echo "All tax data files exist"
+          else
+            echo "Missing:$MISSING"
+          fi
+
+      - name: Upload scraped data
+        uses: actions/upload-artifact@v7
+        with:
+          name: hmrc-scraped
+          retention-days: 7
+          path: /tmp/hmrc-scraped/
+
+      - name: Summary
+        run: |
+          echo "## Tax Data Update Summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Base year: ${{ steps.urls.outputs.year }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URLs scraped: ${{ steps.urls.outputs.url_count }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Missing files: ${{ steps.missing.outputs.missing || 'none' }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Scraped content uploaded as artifact. Use the tax-data-updater agent or Copilot to create missing TOML files from the scraped data." >> "$GITHUB_STEP_SUMMARY"
