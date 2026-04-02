@@ -1,0 +1,145 @@
+name: init
+run-name: "init from ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      delete-packages:
+        description: 'Delete packages/ and reports/ before regenerating'
+        type: boolean
+        default: false
+      delete-tax-data:
+        description: 'Delete app/data/ and regenerate from HMRC sources'
+        type: boolean
+        default: false
+      skip-deploy:
+        description: 'Skip deploy after rebuild'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  params:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: "inputs.delete-packages=[${{ inputs.delete-packages }}]"
+        run: ":"
+      - name: "inputs.delete-tax-data=[${{ inputs.delete-tax-data }}]"
+        run: ":"
+      - name: "inputs.skip-deploy=[${{ inputs.skip-deploy }}]"
+        run: ":"
+
+  clean:
+    runs-on: ubuntu-24.04
+    needs: [params]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
+      - name: Delete tax data
+        if: ${{ inputs.delete-tax-data }}
+        run: |
+          git rm -rf --ignore-unmatch app/data/se-*.toml app/data/ltd-*.toml
+          echo "Deleted tax data files"
+
+      - name: Delete packages and reports
+        if: ${{ inputs.delete-packages }}
+        run: |
+          git rm -rf --ignore-unmatch packages/ reports/
+          echo "Deleted packages and reports"
+
+      - name: Commit deletions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --staged --quiet; then
+            echo "Nothing to delete"
+          else
+            git diff --staged --stat
+            git commit -m "init: clean packages, reports, and/or tax data
+
+          Triggered by: ${{ github.actor }} via workflow_dispatch"
+            git push
+          fi
+
+  update-tax-data:
+    needs: [clean]
+    if: ${{ inputs.delete-tax-data }}
+    uses: ./.github/workflows/update-tax-data.yml
+    with:
+      dry-run: false
+    permissions:
+      contents: write
+
+  generate-bst:
+    needs: [clean, update-tax-data]
+    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    uses: ./.github/workflows/generate-bst.yml
+    with:
+      skip-tests: false
+      skip-generation: false
+      skip-reconciliation: false
+      skip-commit: false
+    permissions:
+      contents: write
+
+  generate-taxi:
+    needs: [clean, update-tax-data]
+    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    uses: ./.github/workflows/generate-taxi.yml
+    with:
+      skip-tests: false
+      skip-generation: false
+      skip-reconciliation: false
+      skip-commit: false
+    permissions:
+      contents: write
+
+  generate-se:
+    needs: [clean, update-tax-data]
+    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    uses: ./.github/workflows/generate-se.yml
+    with:
+      skip-tests: false
+      skip-generation: false
+      skip-reconciliation: false
+      skip-commit: false
+    permissions:
+      contents: write
+
+  generate-ltd:
+    needs: [clean, update-tax-data]
+    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    uses: ./.github/workflows/generate-ltd.yml
+    with:
+      skip-tests: false
+      skip-generation: false
+      skip-reconciliation: false
+      skip-commit: false
+    permissions:
+      contents: write
+
+  trigger-test-and-deploy:
+    runs-on: ubuntu-24.04
+    needs: [generate-bst, generate-taxi, generate-se, generate-ltd]
+    if: ${{ !cancelled() }}
+    steps:
+      - name: Trigger test workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run test.yml --ref ${{ github.ref }}
+
+      - name: Trigger deploy workflow
+        if: ${{ !inputs.skip-deploy }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref ${{ github.ref }}

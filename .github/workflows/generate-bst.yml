@@ -15,6 +15,20 @@ on:
       - 'app/templates/meta.toml'
       - 'app/products/bst.js'
       - '.github/workflows/generate-bst.yml'
+  workflow_call:
+    inputs:
+      skip-tests:
+        type: boolean
+        default: false
+      skip-generation:
+        type: boolean
+        default: false
+      skip-reconciliation:
+        type: boolean
+        default: false
+      skip-commit:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       skip-tests:

@@ -4,6 +4,14 @@ run-name: "update-tax-data from ${{ github.ref_name }}"
 on:
   schedule:
     - cron: '0 8 1 4,11 *'
+  workflow_call:
+    inputs:
+      year:
+        type: string
+        default: ''
+      dry-run:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       year:
@@ -133,6 +141,11 @@ jobs:
           HMRC scraped data follows:
           PROMPTEOF
 
+          echo "" >> /tmp/llm-prompt.txt
+          echo "=== AGENT INSTRUCTIONS ===" >> /tmp/llm-prompt.txt
+          cat .github/agents/tax-data-updater.agent.md >> /tmp/llm-prompt.txt
+          echo "" >> /tmp/llm-prompt.txt
+          echo "=== SCRAPED HMRC DATA ===" >> /tmp/llm-prompt.txt
           cat /tmp/hmrc-combined.txt >> /tmp/llm-prompt.txt
           echo "Prompt: $(wc -c < /tmp/llm-prompt.txt) bytes"
 
