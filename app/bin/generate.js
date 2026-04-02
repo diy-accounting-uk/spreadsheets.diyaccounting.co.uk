@@ -45,6 +45,15 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
   const ty = taxData.tax_year || taxData.financial_year;
   const endDate = new Date(ty.end);
 
+  // Skip packages whose year-end is more than 13 months from now
+  const cutoff = new Date();
+  cutoff.setUTCMonth(cutoff.getUTCMonth() + 13);
+  cutoff.setUTCDate(0); // last day of the month 13 months from now
+  if (endDate > cutoff) {
+    console.log(`\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`);
+    return null;
+  }
+
   console.log(`\nGenerating ${productMeta.product.name} for ${ty.label}...`);
 
   // Build output directory
@@ -187,7 +196,7 @@ async function main() {
       if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
 
       const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
-      results.push(result);
+      if (result) results.push(result);
     }
   }
 
