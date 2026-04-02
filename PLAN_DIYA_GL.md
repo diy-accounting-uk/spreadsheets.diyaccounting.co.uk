@@ -262,7 +262,7 @@ The sourceJournalID values map to the xlsx workbooks:
 
 ### 3.1 Basic Reconciliation Scenario
 
-**Purpose**: Minimal test matching the existing `ltd-mar-scenario-basic.toml` pattern -- sales + purchases only, no bank, no payroll.
+**Purpose**: Minimal test matching the existing `ltd-scenario-basic.toml` pattern -- sales + purchases only, no bank, no payroll.
 
 **Transactions included**:
 - Sales: Monthly consultancy invoices (code A only), total gross 36,000
@@ -271,7 +271,7 @@ The sourceJournalID values map to the xlsx workbooks:
 
 **Expected values**: Total sales ~30,000 net; Total purchases ~3,500 net; Gross profit ~26,500; Net profit ~26,500; CT ~5,035
 
-**File**: `app/test/fixtures/ltd-mar-scenario-basic.toml` (existing)
+**File**: `app/test/fixtures/ltd-scenario-basic.toml` (existing)
 
 ### 3.2 Extended Scenario
 
@@ -288,7 +288,7 @@ The sourceJournalID values map to the xlsx workbooks:
 **Purchases**: 10 expense codes exercised (S, D, W, R, P, M, G, V, L, FA)
 **Expected values**: More complex P&L with wages cost, higher expenses, lower net profit
 
-**File**: `app/test/fixtures/ltd-mar-scenario-extended.toml` (to create)
+**File**: `app/test/fixtures/ltd-scenario-extended.toml` (to create)
 
 ### 3.3 Full Scenario
 
@@ -296,7 +296,7 @@ The sourceJournalID values map to the xlsx workbooks:
 
 **This is the main design in Section 4 below.**
 
-**File**: `app/test/fixtures/ltd-mar-scenario-full.toml` (to create from the lines.jsonl design)
+**File**: `app/test/fixtures/ltd-scenario-full.toml` (to create from the lines.jsonl design)
 
 ## 4. Transaction Design: Full Scenario
 
@@ -1168,9 +1168,9 @@ Note: Full balance sheet figures depend on the timing of all cash movements. The
 1. **Create book.toml**: Entity details, chart of accounts, tax rates for Precision Code Ltd
 2. **Create lines.jsonl**: All transactions from Sections 4.2-4.8
 3. **Validate**: Run against diya-gl schemas
-4. **Extract basic subset**: Generate ltd-mar-scenario-basic.toml equivalent from lines.jsonl (sales + purchases only)
-5. **Extract extended subset**: Generate ltd-mar-scenario-extended.toml (+ bank + payroll)
-6. **Extract full subset**: Generate ltd-mar-scenario-full.toml (everything)
+4. **Extract basic subset**: Generate ltd-scenario-basic.toml equivalent from lines.jsonl (sales + purchases only)
+5. **Extract extended subset**: Generate ltd-scenario-extended.toml (+ bank + payroll)
+6. **Extract full subset**: Generate ltd-scenario-full.toml (everything)
 7. **Reconcile**: Load into actual Ltd spreadsheets and verify P&L/CT/BS match expected values
 
 ## 7. Resolved Questions (with documented assumptions)
@@ -1193,9 +1193,9 @@ Note: Full balance sheet figures depend on the timing of all cash movements. The
 | `_developers/schema/diya-gl-docs.md` | Schema documentation | Existing |
 | `examples/precision-code-ltd/book.toml` | Business configuration | To create |
 | `examples/precision-code-ltd/lines.jsonl` | All transactions | To create |
-| `app/test/fixtures/ltd-mar-scenario-basic.toml` | Basic test scenario | Existing (update if needed) |
-| `app/test/fixtures/ltd-mar-scenario-extended.toml` | Extended test scenario | To create |
-| `app/test/fixtures/ltd-mar-scenario-full.toml` | Full test scenario | To create |
+| `app/test/fixtures/ltd-scenario-basic.toml` | Basic test scenario | Existing (update if needed) |
+| `app/test/fixtures/ltd-scenario-extended.toml` | Extended test scenario | To create |
+| `app/test/fixtures/ltd-scenario-full.toml` | Full test scenario | To create |
 
 ## 9. Decision Log
 
