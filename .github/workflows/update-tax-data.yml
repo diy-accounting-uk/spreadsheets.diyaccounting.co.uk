@@ -79,7 +79,7 @@ jobs:
         run: |
           YEAR="${{ steps.urls.outputs.year }}"
           MISSING=""
-          for y in $(seq $((YEAR - 5)) $((YEAR + 1))); do
+          for y in $(seq $((YEAR + 1)) -1 $((YEAR - 5))); do
             next=$((y + 1))
             if [ ! -f "app/data/se-${y}-${next}.toml" ]; then
               MISSING="$MISSING se-${y}-${next}"
@@ -88,11 +88,14 @@ jobs:
               MISSING="$MISSING ltd-${y}"
             fi
           done
-          echo "missing=$MISSING" >> "$GITHUB_OUTPUT"
-          if [ -z "$MISSING" ]; then
+          FIRST=$(echo $MISSING | awk '{print $1}')
+          echo "missing=$FIRST" >> "$GITHUB_OUTPUT"
+          echo "all_missing=$MISSING" >> "$GITHUB_OUTPUT"
+          if [ -z "$FIRST" ]; then
             echo "All tax data files exist — nothing to create"
           else
-            echo "Missing:$MISSING"
+            echo "Next to create: $FIRST"
+            echo "All missing: $MISSING"
           fi
 
       - name: Concatenate scraped data for LLM

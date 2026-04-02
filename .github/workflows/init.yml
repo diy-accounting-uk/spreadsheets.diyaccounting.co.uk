@@ -9,7 +9,27 @@ on:
         type: boolean
         default: false
       delete-tax-data:
-        description: 'Delete app/data/ and regenerate from HMRC sources'
+        description: 'Delete app/data/*.toml and regenerate from HMRC sources'
+        type: boolean
+        default: false
+      update-tax-data:
+        description: 'Run tax data update (scrape HMRC + copilot)'
+        type: boolean
+        default: true
+      skip-bst:
+        description: 'Skip BST generation'
+        type: boolean
+        default: false
+      skip-taxi:
+        description: 'Skip Taxi generation'
+        type: boolean
+        default: false
+      skip-se:
+        description: 'Skip SE generation'
+        type: boolean
+        default: false
+      skip-ltd:
+        description: 'Skip Ltd generation'
         type: boolean
         default: false
       skip-deploy:
@@ -29,16 +49,21 @@ jobs:
     runs-on: ubuntu-24.04
     permissions: {}
     steps:
-      - name: "inputs.delete-packages=[${{ inputs.delete-packages }}]"
-        run: ":"
-      - name: "inputs.delete-tax-data=[${{ inputs.delete-tax-data }}]"
-        run: ":"
-      - name: "inputs.skip-deploy=[${{ inputs.skip-deploy }}]"
-        run: ":"
+      - name: Log inputs
+        run: |
+          echo "delete-packages=${{ inputs.delete-packages }}"
+          echo "delete-tax-data=${{ inputs.delete-tax-data }}"
+          echo "update-tax-data=${{ inputs.update-tax-data }}"
+          echo "skip-bst=${{ inputs.skip-bst }}"
+          echo "skip-taxi=${{ inputs.skip-taxi }}"
+          echo "skip-se=${{ inputs.skip-se }}"
+          echo "skip-ltd=${{ inputs.skip-ltd }}"
+          echo "skip-deploy=${{ inputs.skip-deploy }}"
 
   clean:
     runs-on: ubuntu-24.04
     needs: [params]
+    if: ${{ inputs.delete-packages || inputs.delete-tax-data }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -73,7 +98,7 @@ jobs:
 
   update-tax-data:
     needs: [clean]
-    if: ${{ inputs.delete-tax-data }}
+    if: ${{ !cancelled() && inputs.update-tax-data }}
     uses: ./.github/workflows/update-tax-data.yml
     with:
       dry-run: false
@@ -81,8 +106,8 @@ jobs:
       contents: write
 
   generate-bst:
-    needs: [clean, update-tax-data]
-    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    needs: [update-tax-data]
+    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') && !inputs.skip-bst }}
     uses: ./.github/workflows/generate-bst.yml
     with:
       skip-tests: false
@@ -93,8 +118,8 @@ jobs:
       contents: write
 
   generate-taxi:
-    needs: [clean, update-tax-data]
-    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    needs: [generate-bst]
+    if: ${{ !cancelled() && (needs.generate-bst.result == 'success' || needs.generate-bst.result == 'skipped') && !inputs.skip-taxi }}
     uses: ./.github/workflows/generate-taxi.yml
     with:
       skip-tests: false
@@ -105,8 +130,8 @@ jobs:
       contents: write
 
   generate-se:
-    needs: [clean, update-tax-data]
-    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    needs: [generate-taxi]
+    if: ${{ !cancelled() && (needs.generate-taxi.result == 'success' || needs.generate-taxi.result == 'skipped') && !inputs.skip-se }}
     uses: ./.github/workflows/generate-se.yml
     with:
       skip-tests: false
@@ -117,8 +142,8 @@ jobs:
       contents: write
 
   generate-ltd:
-    needs: [clean, update-tax-data]
-    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') }}
+    needs: [generate-se]
+    if: ${{ !cancelled() && (needs.generate-se.result == 'success' || needs.generate-se.result == 'skipped') && !inputs.skip-ltd }}
     uses: ./.github/workflows/generate-ltd.yml
     with:
       skip-tests: false
@@ -130,7 +155,7 @@ jobs:
 
   trigger-test-and-deploy:
     runs-on: ubuntu-24.04
-    needs: [generate-bst, generate-taxi, generate-se, generate-ltd]
+    needs: [generate-ltd]
     if: ${{ !cancelled() }}
     steps:
       - name: Trigger test workflow
