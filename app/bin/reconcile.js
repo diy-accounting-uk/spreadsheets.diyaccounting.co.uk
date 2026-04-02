@@ -129,7 +129,10 @@ async function main() {
     .filter((f) => f.endsWith(".toml"))
     .map((f) => resolve(FIXTURES_DIR, f));
 
-  console.log("Scenarios:", fixtures.map((f) => basename(f)));
+  console.log(
+    "Scenarios:",
+    fixtures.map((f) => basename(f)),
+  );
 
   // Find generated packages
   if (!existsSync(PACKAGES_DIR)) {
@@ -145,9 +148,7 @@ async function main() {
   const allPackageDirs = readdirSync(PACKAGES_DIR).sort();
   let packageDirs;
   if (packageFilter === "all") {
-    packageDirs = allPackageDirs.filter((d) =>
-      Object.values(PRODUCTS).some((mod) => d.startsWith(mod.PRODUCT.prefix)),
-    );
+    packageDirs = allPackageDirs.filter((d) => Object.values(PRODUCTS).some((mod) => d.startsWith(mod.PRODUCT.prefix)));
   } else {
     const mod = PRODUCTS[packageFilter];
     if (!mod) {
@@ -264,7 +265,9 @@ async function main() {
       const reportFile = `${pkgSlug}_${scenarioName}.md`;
       writeFileSync(resolve(REPORTS_DIR, reportFile), content);
       console.log(`    Report: reports/${reportFile}`);
-      console.log(`    Status: ${compliant ? "RECONCILES" : "ANOMALYDETECTED"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`);
+      console.log(
+        `    Status: ${compliant ? "RECONCILES" : "ANOMALYDETECTED"} (${checks.filter((c) => c.pass).length}/${checks.length} checks passed)`,
+      );
 
       if (compliant) totalCompliant++;
       else totalNonCompliant++;

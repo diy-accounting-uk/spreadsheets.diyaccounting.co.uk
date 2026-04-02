@@ -180,18 +180,18 @@ export function buildSeCellEdits(taxData, startYear) {
 
   // Income tax — DIFFERENT cell positions from BST
   numericEdits.N4 = it.personal_allowance;
-  numericEdits.N6 = it.basic_rate;           // BST: starting_rate at N6
-  numericEdits.N7 = it.higher_rate;          // BST: basic_rate at N7
+  numericEdits.N6 = it.basic_rate; // BST: starting_rate at N6
+  numericEdits.N7 = it.higher_rate; // BST: basic_rate at N7
   // No N8 in SE (BST has higher_rate at N8)
-  numericEdits.K11 = it.basic_rate;          // Display-only copy of basic rate
+  numericEdits.K11 = it.basic_rate; // Display-only copy of basic rate
   numericEdits.N11 = it.starter_band_end;
-  numericEdits.M11 = it.basic_band_end;      // BST: M12
+  numericEdits.M11 = it.basic_band_end; // BST: M12
   numericEdits.K12 = 0;
-  numericEdits.L12 = it.higher_band_start;   // BST: L13
-  numericEdits.N12 = it.higher_band_start;   // BST: N13
+  numericEdits.L12 = it.higher_band_start; // BST: L13
+  numericEdits.N12 = it.higher_band_start; // BST: N13
 
   // NI — L16 not L17 for Class 2
-  numericEdits.L16 = ni.class2_weekly_rate;  // BST: class2_rate at L17
+  numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
   numericEdits.L20 = ni.class4_lower_rate;
   numericEdits.N20 = ni.class4_lower_limit;
   numericEdits.L23 = ni.class4_upper_rate;
@@ -368,8 +368,7 @@ export function generateTaxYearWeeks(startYear) {
 // Rule: a week belongs to the month containing its Sunday (last day if full).
 // SalesMar collects all remaining weeks after February.
 export function groupWeeksIntoMonths(weeks) {
-  const monthKeys = ["jan", "feb", "mar", "apr", "may", "jun",
-    "jul", "aug", "sep", "oct", "nov", "dec"];
+  const monthKeys = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
   const result = {};
   for (const k of monthKeys) result[k] = [];
 
@@ -414,33 +413,33 @@ export function buildSalesSheetXml(monthWeeks) {
   // Row 1: Column totals
   rows.push(
     `<row r="1" spans="1:6" s="302" customFormat="1" ht="12.75" customHeight="1" x14ac:dyDescent="0.15">` +
-    `<c r="A1" s="486" t="s"><v>241</v></c>` +
-    `<c r="B1" s="484" t="s"><v>240</v></c>` +
-    `<c r="C1" s="303" t="s"><v>239</v></c>` +
-    `<c r="D1" s="304"><f>SUM(D4:D${lastRow})</f><v>0</v></c>` +
-    `<c r="E1" s="303"><f>SUM(E4:E${lastRow})/2</f><v>0</v></c>` +
-    `<c r="F1" s="303"><f>SUM(F4:F${lastRow})/2</f><v>0</v></c>` +
-    `</row>`,
+      `<c r="A1" s="486" t="s"><v>241</v></c>` +
+      `<c r="B1" s="484" t="s"><v>240</v></c>` +
+      `<c r="C1" s="303" t="s"><v>239</v></c>` +
+      `<c r="D1" s="304"><f>SUM(D4:D${lastRow})</f><v>0</v></c>` +
+      `<c r="E1" s="303"><f>SUM(E4:E${lastRow})/2</f><v>0</v></c>` +
+      `<c r="F1" s="303"><f>SUM(F4:F${lastRow})/2</f><v>0</v></c>` +
+      `</row>`,
   );
 
   // Row 2: Column headers
   rows.push(
     `<row r="2" spans="1:6" s="302" customFormat="1" ht="12.75" customHeight="1" x14ac:dyDescent="0.15">` +
-    `<c r="A2" s="487"/><c r="B2" s="485"/>` +
-    `<c r="C2" s="482" t="s"><v>238</v></c>` +
-    `<c r="D2" s="488" t="s"><v>237</v></c>` +
-    `<c r="E2" s="482" t="s"><v>236</v></c>` +
-    `<c r="F2" s="482" t="s"><v>235</v></c>` +
-    `</row>`,
+      `<c r="A2" s="487"/><c r="B2" s="485"/>` +
+      `<c r="C2" s="482" t="s"><v>238</v></c>` +
+      `<c r="D2" s="488" t="s"><v>237</v></c>` +
+      `<c r="E2" s="482" t="s"><v>236</v></c>` +
+      `<c r="F2" s="482" t="s"><v>235</v></c>` +
+      `</row>`,
   );
 
   // Row 3: Column headers continued (merged)
   rows.push(
     `<row r="3" spans="1:6" s="301" customFormat="1" ht="24" customHeight="1" x14ac:dyDescent="0.15">` +
-    `<c r="A3" s="487"/><c r="B3" s="485"/>` +
-    `<c r="C3" s="490"/><c r="D3" s="489"/>` +
-    `<c r="E3" s="483"/><c r="F3" s="483"/>` +
-    `</row>`,
+      `<c r="A3" s="487"/><c r="B3" s="485"/>` +
+      `<c r="C3" s="490"/><c r="D3" s="489"/>` +
+      `<c r="E3" s="483"/><c r="F3" s="483"/>` +
+      `</row>`,
   );
 
   // Row 4: Blank separator
@@ -460,19 +459,19 @@ export function buildSalesSheetXml(monthWeeks) {
         // First day of week — special styles with empty editable cells
         rows.push(
           `<row r="${r}" spans="1:6" x14ac:dyDescent="0.15">` +
-          `<c r="A${r}" s="298"><v>${serial}</v></c>` +
-          `<c r="B${r}" s="297"><v>${serial}</v></c>` +
-          `<c r="C${r}" s="296"/><c r="D${r}" s="295"/>` +
-          `<c r="E${r}" s="294"/><c r="F${r}" s="293"/>` +
-          `</row>`,
+            `<c r="A${r}" s="298"><v>${serial}</v></c>` +
+            `<c r="B${r}" s="297"><v>${serial}</v></c>` +
+            `<c r="C${r}" s="296"/><c r="D${r}" s="295"/>` +
+            `<c r="E${r}" s="294"/><c r="F${r}" s="293"/>` +
+            `</row>`,
         );
       } else {
         rows.push(
           `<row r="${r}" spans="1:6" x14ac:dyDescent="0.15">` +
-          `<c r="A${r}" s="292"><v>${serial}</v></c>` +
-          `<c r="B${r}" s="285"><v>${serial}</v></c>` +
-          `<c r="F${r}" s="291"/>` +
-          `</row>`,
+            `<c r="A${r}" s="292"><v>${serial}</v></c>` +
+            `<c r="B${r}" s="285"><v>${serial}</v></c>` +
+            `<c r="F${r}" s="291"/>` +
+            `</row>`,
         );
       }
       currentRow++;
@@ -482,20 +481,20 @@ export function buildSalesSheetXml(monthWeeks) {
     const lastDaySerial = toExcelSerial(days[days.length - 1]);
     rows.push(
       `<row r="${currentRow}" spans="1:6" x14ac:dyDescent="0.15">` +
-      `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
-      `<c r="B${currentRow}" s="285" t="s"><v>234</v></c>` +
-      `<c r="F${currentRow}" s="291"/>` +
-      `</row>`,
+        `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
+        `<c r="B${currentRow}" s="285" t="s"><v>234</v></c>` +
+        `<c r="F${currentRow}" s="291"/>` +
+        `</row>`,
     );
     currentRow++;
 
     // Any other income row
     rows.push(
       `<row r="${currentRow}" spans="1:6" x14ac:dyDescent="0.15">` +
-      `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
-      `<c r="B${currentRow}" s="285" t="s"><v>233</v></c>` +
-      `<c r="F${currentRow}" s="291"/>` +
-      `</row>`,
+        `<c r="A${currentRow}" s="292"><v>${lastDaySerial}</v></c>` +
+        `<c r="B${currentRow}" s="285" t="s"><v>233</v></c>` +
+        `<c r="F${currentRow}" s="291"/>` +
+        `</row>`,
     );
     const lastDataRow = currentRow;
     currentRow++;
@@ -503,11 +502,11 @@ export function buildSalesSheetXml(monthWeeks) {
     // Subtotal row
     rows.push(
       `<row r="${currentRow}" spans="1:6" ht="14" thickBot="1" x14ac:dyDescent="0.2">` +
-      `<c r="A${currentRow}" s="290"/><c r="B${currentRow}" s="289"/>` +
-      `<c r="C${currentRow}" s="287"/><c r="D${currentRow}" s="288"/>` +
-      `<c r="E${currentRow}" s="300"><f>SUM(E${firstDayRow}:E${lastDataRow})</f><v>0</v></c>` +
-      `<c r="F${currentRow}" s="299"><f>SUM(F${firstDayRow}:F${lastDataRow})</f><v>0</v></c>` +
-      `</row>`,
+        `<c r="A${currentRow}" s="290"/><c r="B${currentRow}" s="289"/>` +
+        `<c r="C${currentRow}" s="287"/><c r="D${currentRow}" s="288"/>` +
+        `<c r="E${currentRow}" s="300"><f>SUM(E${firstDayRow}:E${lastDataRow})</f><v>0</v></c>` +
+        `<c r="F${currentRow}" s="299"><f>SUM(F${firstDayRow}:F${lastDataRow})</f><v>0</v></c>` +
+        `</row>`,
     );
     currentRow++;
 
@@ -526,16 +525,10 @@ function replaceSalesSheetData(sheetXml, monthWeeks) {
   const { xml: newData, lastRow } = buildSalesSheetXml(monthWeeks);
 
   // Update dimension
-  sheetXml = sheetXml.replace(
-    /<dimension ref="[^"]*"\/>/,
-    `<dimension ref="A1:F${lastRow}"/>`,
-  );
+  sheetXml = sheetXml.replace(/<dimension ref="[^"]*"\/>/, `<dimension ref="A1:F${lastRow}"/>`);
 
   // Replace sheetData content
-  sheetXml = sheetXml.replace(
-    /<sheetData>[\s\S]*<\/sheetData>/,
-    `<sheetData>${newData}</sheetData>`,
-  );
+  sheetXml = sheetXml.replace(/<sheetData>[\s\S]*<\/sheetData>/, `<sheetData>${newData}</sheetData>`);
 
   return sheetXml;
 }
@@ -579,8 +572,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   if (sheetsConfig.sales) {
     const weeks = generateTaxYearWeeks(startYear);
     const monthlyData = groupWeeksIntoMonths(weeks);
-    const monthKeys = ["apr", "may", "jun", "jul", "aug", "sep",
-      "oct", "nov", "dec", "jan", "feb", "mar"];
+    const monthKeys = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
     for (const monthKey of monthKeys) {
       const sheetPath = sheetsConfig.sales[monthKey];
@@ -660,10 +652,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
   let wbXml = await zip.file("xl/workbook.xml").async("string");
-  wbXml = wbXml.replace(
-    /(<calcPr[^/]*)\/?>/,
-    '$1 fullCalcOnLoad="1"/>',
-  );
+  wbXml = wbXml.replace(/(<calcPr[^/]*)\/?>/, '$1 fullCalcOnLoad="1"/>');
   const wbDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", wbXml, { date: wbDate });
 

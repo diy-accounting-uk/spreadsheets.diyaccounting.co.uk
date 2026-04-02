@@ -113,19 +113,45 @@ describeCalc("Taxi Purchase sheets", () => {
       generatedXlsx,
       {
         PurchasesApr: {
-          A5: toExcelSerial(2025, 4, 10), D5: "d", F5: 300,   // Fuel
-          A6: toExcelSerial(2025, 4, 11), D6: "h", F6: 400,   // Car hire
-          A7: toExcelSerial(2025, 4, 12), D7: "r", F7: 150,   // Repairs
-          A8: toExcelSerial(2025, 4, 13), D8: "t", F8: 180,   // Road tax
-          A9: toExcelSerial(2025, 4, 14), D9: "e", F9: 500,   // Employee
-          A10: toExcelSerial(2025, 4, 15), D10: "p", F10: 600, // Premises
-          A11: toExcelSerial(2025, 4, 16), D11: "g", F11: 120, // Gen admin
-          A12: toExcelSerial(2025, 4, 17), D12: "a", F12: 50,  // Advertising
-          A13: toExcelSerial(2025, 4, 18), D13: "l", F13: 400, // Legal
-          A14: toExcelSerial(2025, 4, 19), D14: "i", F14: 25,  // Interest
-          A15: toExcelSerial(2025, 4, 20), D15: "b", F15: 30,  // Bank charges
-          A16: toExcelSerial(2025, 4, 21), D16: "o", F16: 75,  // Other
-          A17: toExcelSerial(2025, 4, 22), D17: "f", F17: 8000, // Fixed asset
+          A5: toExcelSerial(2025, 4, 10),
+          D5: "d",
+          F5: 300, // Fuel
+          A6: toExcelSerial(2025, 4, 11),
+          D6: "h",
+          F6: 400, // Car hire
+          A7: toExcelSerial(2025, 4, 12),
+          D7: "r",
+          F7: 150, // Repairs
+          A8: toExcelSerial(2025, 4, 13),
+          D8: "t",
+          F8: 180, // Road tax
+          A9: toExcelSerial(2025, 4, 14),
+          D9: "e",
+          F9: 500, // Employee
+          A10: toExcelSerial(2025, 4, 15),
+          D10: "p",
+          F10: 600, // Premises
+          A11: toExcelSerial(2025, 4, 16),
+          D11: "g",
+          F11: 120, // Gen admin
+          A12: toExcelSerial(2025, 4, 17),
+          D12: "a",
+          F12: 50, // Advertising
+          A13: toExcelSerial(2025, 4, 18),
+          D13: "l",
+          F13: 400, // Legal
+          A14: toExcelSerial(2025, 4, 19),
+          D14: "i",
+          F14: 25, // Interest
+          A15: toExcelSerial(2025, 4, 20),
+          D15: "b",
+          F15: 30, // Bank charges
+          A16: toExcelSerial(2025, 4, 21),
+          D16: "o",
+          F16: 75, // Other
+          A17: toExcelSerial(2025, 4, 22),
+          D17: "f",
+          F17: 8000, // Fixed asset
         },
       },
       {
@@ -133,18 +159,18 @@ describeCalc("Taxi Purchase sheets", () => {
       },
     );
     const r = results.PurchasesApr;
-    expect(r.G1).toBe(300);  // Fuel (d)
-    expect(r.H1).toBe(400);  // Car hire (h)
-    expect(r.I1).toBe(150);  // Repairs (r)
-    expect(r.J1).toBe(180);  // Road tax (t)
-    expect(r.K1).toBe(500);  // Employee (e)
-    expect(r.L1).toBe(600);  // Premises (p)
-    expect(r.M1).toBe(120);  // Gen admin (g)
-    expect(r.N1).toBe(50);   // Advertising (a)
-    expect(r.O1).toBe(400);  // Legal (l)
-    expect(r.P1).toBe(25);   // Interest (i)
-    expect(r.Q1).toBe(30);   // Bank charges (b)
-    expect(r.R1).toBe(75);   // Other (o)
+    expect(r.G1).toBe(300); // Fuel (d)
+    expect(r.H1).toBe(400); // Car hire (h)
+    expect(r.I1).toBe(150); // Repairs (r)
+    expect(r.J1).toBe(180); // Road tax (t)
+    expect(r.K1).toBe(500); // Employee (e)
+    expect(r.L1).toBe(600); // Premises (p)
+    expect(r.M1).toBe(120); // Gen admin (g)
+    expect(r.N1).toBe(50); // Advertising (a)
+    expect(r.O1).toBe(400); // Legal (l)
+    expect(r.P1).toBe(25); // Interest (i)
+    expect(r.Q1).toBe(30); // Bank charges (b)
+    expect(r.R1).toBe(75); // Other (o)
     expect(r.S1).toBe(8000); // Fixed assets (f)
     expect(r.F1).toBeCloseTo(10830, 0); // Total
   }, 30000);
@@ -162,17 +188,11 @@ describeCalc("Taxi P&L propagation", () => {
           { date: new Date(Date.UTC(2025, 3, 7)), amount: 200 },
           { date: new Date(Date.UTC(2025, 3, 8)), amount: 300 },
         ],
-        may: [
-          { date: new Date(Date.UTC(2025, 4, 5)), amount: 500 },
-        ],
+        may: [{ date: new Date(Date.UTC(2025, 4, 5)), amount: 500 }],
       },
     };
     const writes = taxiCellWrites(scenario);
-    const results = await runSpreadsheet(
-      generatedXlsx,
-      writes,
-      { "Profit & Loss Acc": ["B5", "C5", "D5"] },
-    );
+    const results = await runSpreadsheet(generatedXlsx, writes, { "Profit & Loss Acc": ["B5", "C5", "D5"] });
     const pl = results["Profit & Loss Acc"];
     expect(pl.C5).toBe(500); // April turnover
     expect(pl.D5).toBe(500); // May turnover
@@ -184,9 +204,15 @@ describeCalc("Taxi P&L propagation", () => {
       generatedXlsx,
       {
         PurchasesApr: {
-          A5: toExcelSerial(2025, 4, 10), D5: "d", F5: 300,  // Fuel → B6
-          A6: toExcelSerial(2025, 4, 11), D6: "g", F6: 120,  // Gen admin → B16
-          A7: toExcelSerial(2025, 4, 12), D7: "l", F7: 400,  // Legal → B18
+          A5: toExcelSerial(2025, 4, 10),
+          D5: "d",
+          F5: 300, // Fuel → B6
+          A6: toExcelSerial(2025, 4, 11),
+          D6: "g",
+          F6: 120, // Gen admin → B16
+          A7: toExcelSerial(2025, 4, 12),
+          D7: "l",
+          F7: 400, // Legal → B18
         },
       },
       {
@@ -194,7 +220,7 @@ describeCalc("Taxi P&L propagation", () => {
       },
     );
     const pl = results["Profit & Loss Acc"];
-    expect(pl.B6).toBe(300);  // Fuel & Oil
+    expect(pl.B6).toBe(300); // Fuel & Oil
     expect(pl.B16).toBe(120); // Gen admin
     expect(pl.B18).toBe(400); // Legal & professional
   }, 30000);
@@ -213,21 +239,21 @@ describeCalc("Taxi P&L propagation", () => {
     const writes = {
       ...taxiCellWrites(scenario),
       PurchasesApr: {
-        A5: toExcelSerial(2025, 4, 10), D5: "d", F5: 300,  // Fuel
-        A6: toExcelSerial(2025, 4, 11), D6: "g", F6: 100,  // Gen admin
+        A5: toExcelSerial(2025, 4, 10),
+        D5: "d",
+        F5: 300, // Fuel
+        A6: toExcelSerial(2025, 4, 11),
+        D6: "g",
+        F6: 100, // Gen admin
       },
     };
-    const results = await runSpreadsheet(
-      generatedXlsx,
-      writes,
-      { "Profit & Loss Acc": ["B5", "B12", "B13", "B22", "B23"] },
-    );
+    const results = await runSpreadsheet(generatedXlsx, writes, { "Profit & Loss Acc": ["B5", "B12", "B13", "B22", "B23"] });
     const pl = results["Profit & Loss Acc"];
-    expect(pl.B5).toBe(3000);  // Total turnover
+    expect(pl.B5).toBe(3000); // Total turnover
     expect(pl.B12).toBeGreaterThanOrEqual(300); // Total vehicle costs (includes fuel)
-    expect(pl.B13).toBeLessThanOrEqual(2700);   // Gross profit
+    expect(pl.B13).toBeLessThanOrEqual(2700); // Gross profit
     expect(pl.B22).toBeGreaterThanOrEqual(100); // Total general expenses
-    expect(pl.B23).toBeLessThanOrEqual(2600);   // Net profit
+    expect(pl.B23).toBeLessThanOrEqual(2600); // Net profit
   }, 30000);
 });
 
@@ -267,22 +293,18 @@ describeCalc("Draft Tax calculation", () => {
     }
 
     const writes = taxiCellWrites(scenario);
-    const results = await runSpreadsheet(
-      generatedXlsx,
-      writes,
-      {
-        "Profit & Loss Acc": ["B5"],
-        "Draft Tax calculation": ["E5", "E6", "E7", "E10", "E14", "E17"],
-      },
-    );
+    const results = await runSpreadsheet(generatedXlsx, writes, {
+      "Profit & Loss Acc": ["B5"],
+      "Draft Tax calculation": ["E5", "E6", "E7", "E10", "E14", "E17"],
+    });
 
     expect(results["Profit & Loss Acc"].B5).toBe(36000);
 
     const dt = results["Draft Tax calculation"];
-    expect(dt.E5).toBeGreaterThan(0);   // Profit from self employment
-    expect(dt.E6).toBe(12570);          // Personal allowance
-    expect(dt.E7).toBeGreaterThan(0);   // Taxable income
-    expect(dt.E10).toBeGreaterThan(0);  // Income tax payable
-    expect(dt.E17).toBeGreaterThan(0);  // Total tax + NI
+    expect(dt.E5).toBeGreaterThan(0); // Profit from self employment
+    expect(dt.E6).toBe(12570); // Personal allowance
+    expect(dt.E7).toBeGreaterThan(0); // Taxable income
+    expect(dt.E10).toBeGreaterThan(0); // Income tax payable
+    expect(dt.E17).toBeGreaterThan(0); // Total tax + NI
   }, 60000);
 });

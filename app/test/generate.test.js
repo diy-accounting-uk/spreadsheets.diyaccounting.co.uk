@@ -426,8 +426,12 @@ describe("buildSalesSheetXml", () => {
   it("generates correct XML for a single full week", () => {
     // One full week: Mon-Sun
     const week = [
-      utcDate(2025, 4, 7), utcDate(2025, 4, 8), utcDate(2025, 4, 9),
-      utcDate(2025, 4, 10), utcDate(2025, 4, 11), utcDate(2025, 4, 12),
+      utcDate(2025, 4, 7),
+      utcDate(2025, 4, 8),
+      utcDate(2025, 4, 9),
+      utcDate(2025, 4, 10),
+      utcDate(2025, 4, 11),
+      utcDate(2025, 4, 12),
       utcDate(2025, 4, 13),
     ];
     const { xml, lastRow } = buildSalesSheetXml([week]);

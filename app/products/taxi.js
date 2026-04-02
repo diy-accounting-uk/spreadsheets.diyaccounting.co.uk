@@ -74,7 +74,10 @@ export function cellWrites(scenario, targetStartYear = null) {
         const serial = toExcelSerial(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1, targetDate.getUTCDate());
 
         const match = findRowInDateMap(dateRowMap, serial);
-        if (!match) throw new Error(`Date ${targetDate.toISOString().split("T")[0]} (from ${d.toISOString().split("T")[0]}) not found in any Sales sheet row map`);
+        if (!match)
+          throw new Error(
+            `Date ${targetDate.toISOString().split("T")[0]} (from ${d.toISOString().split("T")[0]}) not found in any Sales sheet row map`,
+          );
 
         const sheetName = `Sales${MONTH_SHEETS[match.monthKey]}`;
         if (!writes[sheetName]) writes[sheetName] = {};
@@ -112,9 +115,26 @@ export const TAX_SHEET = "Draft Tax calculation";
 export function standardReads() {
   return {
     "Profit & Loss Acc": [
-      "B5", "B6", "B7", "B8", "B9", "B10", "B11", "B12", "B13",
-      "B14", "B15", "B16", "B17", "B18", "B19", "B20", "B21",
-      "B22", "B23", "B24",
+      "B5",
+      "B6",
+      "B7",
+      "B8",
+      "B9",
+      "B10",
+      "B11",
+      "B12",
+      "B13",
+      "B14",
+      "B15",
+      "B16",
+      "B17",
+      "B18",
+      "B19",
+      "B20",
+      "B21",
+      "B22",
+      "B23",
+      "B24",
     ],
     [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E14", "E15", "E17"],
   };

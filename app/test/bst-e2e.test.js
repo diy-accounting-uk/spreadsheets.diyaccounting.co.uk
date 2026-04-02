@@ -47,73 +47,151 @@ describeCalc("BST end-to-end: full year with all categories", () => {
     const writes = {
       // === Sales: 3 months, total 30000 ===
       SalesApr: {
-        A4: toExcelSerial(2025, 4, 10), D4: "Bank", F4: 4000,
-        A5: toExcelSerial(2025, 4, 20), D5: "Bank", F5: 3000,
-        A6: toExcelSerial(2025, 4, 25), F6: 3000, // D6 empty — unpaid
+        A4: toExcelSerial(2025, 4, 10),
+        D4: "Bank",
+        F4: 4000,
+        A5: toExcelSerial(2025, 4, 20),
+        D5: "Bank",
+        F5: 3000,
+        A6: toExcelSerial(2025, 4, 25),
+        F6: 3000, // D6 empty — unpaid
       },
       SalesMay: {
-        A4: toExcelSerial(2025, 5, 10), D4: "Bank", F4: 5000,
-        A5: toExcelSerial(2025, 5, 20), D5: "Bank", F5: 5000,
+        A4: toExcelSerial(2025, 5, 10),
+        D4: "Bank",
+        F4: 5000,
+        A5: toExcelSerial(2025, 5, 20),
+        D5: "Bank",
+        F5: 5000,
       },
       SalesJun: {
-        A4: toExcelSerial(2025, 6, 15), D4: "Bank", F4: 10000,
+        A4: toExcelSerial(2025, 6, 15),
+        D4: "Bank",
+        F4: 10000,
       },
       // === Purchases Apr: every expense category ===
       PurchasesApr: {
-        A5: toExcelSerial(2025, 4, 8), D5: "Bank", E5: "s", G5: 2000,   // Stock
-        A6: toExcelSerial(2025, 4, 9), D6: "Bank", E6: "d", G6: 500,    // Direct costs
-        A7: toExcelSerial(2025, 4, 10), D7: "Bank", E7: "e", G7: 800,   // Employee
-        A8: toExcelSerial(2025, 4, 11), D8: "DD", E8: "p", G8: 600,     // Premises
-        A9: toExcelSerial(2025, 4, 12), D9: "Bank", E9: "r", G9: 200,   // Repairs
-        A10: toExcelSerial(2025, 4, 15), D10: "Bank", E10: "g", G10: 150, // Gen admin
-        A11: toExcelSerial(2025, 4, 16), D11: "Bank", E11: "t", G11: 100, // Travel
-        A12: toExcelSerial(2025, 4, 17), D12: "Bank", E12: "a", G12: 50,  // Advertising
-        A13: toExcelSerial(2025, 4, 18), D13: "Bank", E13: "l", G13: 300, // Legal
-        A14: toExcelSerial(2025, 4, 19), D14: "DD", E14: "i", G14: 25,    // Bank interest
-        A15: toExcelSerial(2025, 4, 20), D15: "Bank", E15: "o", G15: 75,  // Other
-        A16: toExcelSerial(2025, 4, 22), D16: "Bank", E16: "f", G16: 1500, // Fixed asset
-        A17: toExcelSerial(2025, 4, 23), D17: "Bank", E17: "b", G17: 120,  // Bad debt
+        A5: toExcelSerial(2025, 4, 8),
+        D5: "Bank",
+        E5: "s",
+        G5: 2000, // Stock
+        A6: toExcelSerial(2025, 4, 9),
+        D6: "Bank",
+        E6: "d",
+        G6: 500, // Direct costs
+        A7: toExcelSerial(2025, 4, 10),
+        D7: "Bank",
+        E7: "e",
+        G7: 800, // Employee
+        A8: toExcelSerial(2025, 4, 11),
+        D8: "DD",
+        E8: "p",
+        G8: 600, // Premises
+        A9: toExcelSerial(2025, 4, 12),
+        D9: "Bank",
+        E9: "r",
+        G9: 200, // Repairs
+        A10: toExcelSerial(2025, 4, 15),
+        D10: "Bank",
+        E10: "g",
+        G10: 150, // Gen admin
+        A11: toExcelSerial(2025, 4, 16),
+        D11: "Bank",
+        E11: "t",
+        G11: 100, // Travel
+        A12: toExcelSerial(2025, 4, 17),
+        D12: "Bank",
+        E12: "a",
+        G12: 50, // Advertising
+        A13: toExcelSerial(2025, 4, 18),
+        D13: "Bank",
+        E13: "l",
+        G13: 300, // Legal
+        A14: toExcelSerial(2025, 4, 19),
+        D14: "DD",
+        E14: "i",
+        G14: 25, // Bank interest
+        A15: toExcelSerial(2025, 4, 20),
+        D15: "Bank",
+        E15: "o",
+        G15: 75, // Other
+        A16: toExcelSerial(2025, 4, 22),
+        D16: "Bank",
+        E16: "f",
+        G16: 1500, // Fixed asset
+        A17: toExcelSerial(2025, 4, 23),
+        D17: "Bank",
+        E17: "b",
+        G17: 120, // Bad debt
       },
       // === Purchases May/Jun ===
       PurchasesMay: {
-        A5: toExcelSerial(2025, 5, 10), D5: "Bank", E5: "s", G5: 1000,
-        A6: toExcelSerial(2025, 5, 15), D6: "Bank", E6: "g", G6: 100,
+        A5: toExcelSerial(2025, 5, 10),
+        D5: "Bank",
+        E5: "s",
+        G5: 1000,
+        A6: toExcelSerial(2025, 5, 15),
+        D6: "Bank",
+        E6: "g",
+        G6: 100,
       },
       PurchasesJun: {
-        A5: toExcelSerial(2025, 6, 10), D5: "Bank", E5: "p", G5: 600,
-        A6: toExcelSerial(2025, 6, 15), E6: "g", G6: 200, // D6 empty — unpaid purchase
+        A5: toExcelSerial(2025, 6, 10),
+        D5: "Bank",
+        E5: "p",
+        G5: 600,
+        A6: toExcelSerial(2025, 6, 15),
+        E6: "g",
+        G6: 200, // D6 empty — unpaid purchase
       },
       // === Stock ===
       PurchasesStock: {
-        D5: 500,  // Opening stock
+        D5: 500, // Opening stock
         D30: 300, // Closing stock
       },
     };
 
     const reads = {
       // Sales sheets — totals and unpaid
-      SalesApr: ["F1", "G1", "H1", "H4", "H5", "H6"],
-      SalesMay: ["F1"],
-      SalesJun: ["F1"],
+      "SalesApr": ["F1", "G1", "H1", "H4", "H5", "H6"],
+      "SalesMay": ["F1"],
+      "SalesJun": ["F1"],
       // Purchase sheets — totals and categories
-      PurchasesApr: ["G1", "E1", "J1", "K1", "L1", "M1", "N1", "O1", "P1", "Q1", "R1", "S1", "T1", "U1", "V1", "W1", "H5", "H6"],
-      PurchasesMay: ["G1", "J1", "O1"],
-      PurchasesJun: ["G1", "M1", "O1", "H5", "H6"],
+      "PurchasesApr": ["G1", "E1", "J1", "K1", "L1", "M1", "N1", "O1", "P1", "Q1", "R1", "S1", "T1", "U1", "V1", "W1", "H5", "H6"],
+      "PurchasesMay": ["G1", "J1", "O1"],
+      "PurchasesJun": ["G1", "M1", "O1", "H5", "H6"],
       // P&L
       "Profit & Loss Acc": [
-        "C4", "D4", "E4", "F4",  // Turnover (total + monthly)
-        "C5",                      // Other income
-        "C6", "C7", "C9",         // Cost of sales, direct costs, gross profit
-        "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18", "C19", "C20", "C21", // Expense lines
-        "C22", "C24", "C28",      // Total expenses, net profit, taxable profit
-        "C30",                     // Other income
+        "C4",
+        "D4",
+        "E4",
+        "F4", // Turnover (total + monthly)
+        "C5", // Other income
+        "C6",
+        "C7",
+        "C9", // Cost of sales, direct costs, gross profit
+        "C11",
+        "C12",
+        "C13",
+        "C14",
+        "C15",
+        "C16",
+        "C17",
+        "C18",
+        "C19",
+        "C20",
+        "C21", // Expense lines
+        "C22",
+        "C24",
+        "C28", // Total expenses, net profit, taxable profit
+        "C30", // Other income
       ],
       // Income Tax
       "Income Tax": ["E5", "E6", "E7", "E8", "E9", "E10", "E15", "E16", "E18"],
       // Debtors & Creditors
       "Debtors & Creditors": ["C5", "F5", "C7", "F7", "C9", "F9"],
       // Stock
-      PurchasesStock: ["D5", "D7", "D30"],
+      "PurchasesStock": ["D5", "D7", "D30"],
     };
 
     results = await runSpreadsheet(generatedXlsx, writes, reads);
@@ -148,19 +226,19 @@ describeCalc("BST end-to-end: full year with all categories", () => {
 
   it("Purchases: all 14 expense codes categorise to correct columns", () => {
     const r = results.PurchasesApr;
-    expect(r.J1).toBe(2000);  // Stock (s)
-    expect(r.K1).toBe(500);   // Direct costs (d)
-    expect(r.L1).toBe(800);   // Employee (e)
-    expect(r.M1).toBe(600);   // Premises (p)
-    expect(r.N1).toBe(200);   // Repairs (r)
-    expect(r.O1).toBe(150);   // Gen Admin (g)
-    expect(r.Q1).toBe(100);   // Travel (t)
-    expect(r.R1).toBe(50);    // Advertising (a)
-    expect(r.S1).toBe(300);   // Legal (l)
-    expect(r.T1).toBe(120);   // Bad debts (b)
-    expect(r.U1).toBe(25);    // Interest (i)
-    expect(r.V1).toBe(75);    // Other (o)
-    expect(r.W1).toBe(1500);  // Fixed assets (f)
+    expect(r.J1).toBe(2000); // Stock (s)
+    expect(r.K1).toBe(500); // Direct costs (d)
+    expect(r.L1).toBe(800); // Employee (e)
+    expect(r.M1).toBe(600); // Premises (p)
+    expect(r.N1).toBe(200); // Repairs (r)
+    expect(r.O1).toBe(150); // Gen Admin (g)
+    expect(r.Q1).toBe(100); // Travel (t)
+    expect(r.R1).toBe(50); // Advertising (a)
+    expect(r.S1).toBe(300); // Legal (l)
+    expect(r.T1).toBe(120); // Bad debts (b)
+    expect(r.U1).toBe(25); // Interest (i)
+    expect(r.V1).toBe(75); // Other (o)
+    expect(r.W1).toBe(1500); // Fixed assets (f)
   });
 
   it("Purchases: no expense analysis error (E1) when all coded", () => {
@@ -200,16 +278,16 @@ describeCalc("BST end-to-end: full year with all categories", () => {
 
   it("P&L: individual expense lines match purchase categorisation", () => {
     const pl = results["Profit & Loss Acc"];
-    expect(pl.C11).toBe(800);   // Employee
-    expect(pl.C12).toBe(1200);  // Premises (600 Apr + 600 Jun)
-    expect(pl.C13).toBe(200);   // Repairs
-    expect(pl.C14).toBe(450);   // Gen admin (150 Apr + 100 May + 200 Jun)
-    expect(pl.C16).toBe(100);   // Travel
-    expect(pl.C17).toBe(50);    // Advertising
-    expect(pl.C18).toBe(300);   // Legal
-    expect(pl.C19).toBe(120);   // Bad debts
-    expect(pl.C20).toBe(25);    // Interest
-    expect(pl.C21).toBe(75);    // Other
+    expect(pl.C11).toBe(800); // Employee
+    expect(pl.C12).toBe(1200); // Premises (600 Apr + 600 Jun)
+    expect(pl.C13).toBe(200); // Repairs
+    expect(pl.C14).toBe(450); // Gen admin (150 Apr + 100 May + 200 Jun)
+    expect(pl.C16).toBe(100); // Travel
+    expect(pl.C17).toBe(50); // Advertising
+    expect(pl.C18).toBe(300); // Legal
+    expect(pl.C19).toBe(120); // Bad debts
+    expect(pl.C20).toBe(25); // Interest
+    expect(pl.C21).toBe(75); // Other
   });
 
   it("P&L: total expenses = sum of expense lines", () => {

@@ -18,12 +18,7 @@ import { randomBytes } from "crypto";
 // ── Find LibreOffice binary ─────────────────────────────────────────────────
 
 function findLibreOffice() {
-  const candidates = [
-    "libreoffice",
-    "soffice",
-    "/Applications/LibreOffice.app/Contents/MacOS/soffice",
-    "/usr/bin/libreoffice",
-  ];
+  const candidates = ["libreoffice", "soffice", "/Applications/LibreOffice.app/Contents/MacOS/soffice", "/usr/bin/libreoffice"];
   for (const cmd of candidates) {
     try {
       execSync(`"${cmd}" --version`, { stdio: "pipe" });
@@ -32,9 +27,7 @@ function findLibreOffice() {
       // try next
     }
   }
-  throw new Error(
-    "LibreOffice not found. Install: brew install --cask libreoffice (macOS) or apt install libreoffice-calc (Linux)",
-  );
+  throw new Error("LibreOffice not found. Install: brew install --cask libreoffice (macOS) or apt install libreoffice-calc (Linux)");
 }
 
 let cachedBinary = null;
@@ -267,10 +260,7 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
 
 // Read a cell's value from sheet XML (after recalculation, values are in <v> tags)
 function readCellValue(xml, cellRef) {
-  const cellPattern = new RegExp(
-    `<c\\s+r="${cellRef}"[^>]*(?:/>|>(.*?)</c>)`,
-    "s",
-  );
+  const cellPattern = new RegExp(`<c\\s+r="${cellRef}"[^>]*(?:/>|>(.*?)</c>)`, "s");
   const match = xml.match(cellPattern);
   if (!match) return null;
 

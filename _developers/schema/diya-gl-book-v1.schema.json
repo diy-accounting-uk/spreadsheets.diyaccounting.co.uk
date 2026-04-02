@@ -7,7 +7,6 @@
   "required": ["documentInfo", "entityInformation", "accounts"],
   "additionalProperties": false,
   "properties": {
-
     "documentInfo": {
       "type": "object",
       "description": "gl-cor:documentInfo — Metadata about this set of books",
@@ -91,15 +90,7 @@
         },
         "diy:product": {
           "type": "string",
-          "enum": [
-            "BasicSoleTrader",
-            "SelfEmployed",
-            "TaxiDriver",
-            "Company",
-            "Payslip05",
-            "Payslip10",
-            "Payslip20"
-          ],
+          "enum": ["BasicSoleTrader", "SelfEmployed", "TaxiDriver", "Company", "Payslip05", "Payslip10", "Payslip20"],
           "description": "diy: extension — DIY Accounting product identifier. Determines which schema subset is active."
         },
         "diy:vatRegistered": {
@@ -137,7 +128,6 @@
       "required": ["sales", "purchases"],
       "additionalProperties": false,
       "properties": {
-
         "sales": {
           "type": "object",
           "description": "Sales/income account codes. Keys are gl-cor:accountMainID values.",
@@ -213,20 +203,19 @@
       "description": "Tax rates and thresholds. Values from HMRC published rates for the period. Used by validate and generate commands. Derived from gl-taf tax concepts.",
       "additionalProperties": false,
       "properties": {
-
         "incomeTax": {
           "type": "object",
           "description": "HMRC income tax rates and thresholds (England/Wales/NI)",
           "additionalProperties": false,
           "properties": {
-            "personalAllowance":                { "type": "number", "minimum": 0 },
-            "personalAllowanceTaperThreshold":  { "type": "number", "minimum": 0 },
-            "basicRate":                        { "type": "number", "minimum": 0, "maximum": 1 },
-            "basicRateLimit":                   { "type": "number", "minimum": 0 },
-            "higherRate":                       { "type": "number", "minimum": 0, "maximum": 1 },
-            "higherRateThreshold":              { "type": "number", "minimum": 0 },
-            "additionalRate":                   { "type": "number", "minimum": 0, "maximum": 1 },
-            "additionalRateThreshold":          { "type": "number", "minimum": 0 }
+            "personalAllowance": { "type": "number", "minimum": 0 },
+            "personalAllowanceTaperThreshold": { "type": "number", "minimum": 0 },
+            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "basicRateLimit": { "type": "number", "minimum": 0 },
+            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "higherRateThreshold": { "type": "number", "minimum": 0 },
+            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "additionalRateThreshold": { "type": "number", "minimum": 0 }
           }
         },
 
@@ -235,19 +224,19 @@
           "description": "HMRC National Insurance rates (self-employed Class 2 + 4, employed Class 1)",
           "additionalProperties": false,
           "properties": {
-            "class2WeeklyRate":             { "type": "number", "minimum": 0 },
-            "class2SmallProfitsThreshold":  { "type": "number", "minimum": 0 },
-            "class4MainRate":               { "type": "number", "minimum": 0, "maximum": 1 },
-            "class4UpperRate":              { "type": "number", "minimum": 0, "maximum": 1 },
-            "class4LowerProfits":           { "type": "number", "minimum": 0 },
-            "class4UpperProfits":           { "type": "number", "minimum": 0 },
-            "class1EmployeeMainRate":       { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployeeUpperRate":      { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployeePrimaryThreshold":   { "type": "number", "minimum": 0 },
-            "class1EmployeeUpperEarningsLimit":  { "type": "number", "minimum": 0 },
-            "class1EmployerRate":           { "type": "number", "minimum": 0, "maximum": 1 },
-            "class1EmployerSecondaryThreshold":  { "type": "number", "minimum": 0 },
-            "employmentAllowance":          { "type": "number", "minimum": 0 }
+            "class2WeeklyRate": { "type": "number", "minimum": 0 },
+            "class2SmallProfitsThreshold": { "type": "number", "minimum": 0 },
+            "class4MainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class4UpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class4LowerProfits": { "type": "number", "minimum": 0 },
+            "class4UpperProfits": { "type": "number", "minimum": 0 },
+            "class1EmployeeMainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployeeUpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployeePrimaryThreshold": { "type": "number", "minimum": 0 },
+            "class1EmployeeUpperEarningsLimit": { "type": "number", "minimum": 0 },
+            "class1EmployerRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployerSecondaryThreshold": { "type": "number", "minimum": 0 },
+            "employmentAllowance": { "type": "number", "minimum": 0 }
           }
         },
 
@@ -256,11 +245,11 @@
           "description": "HMRC VAT rates and thresholds",
           "additionalProperties": false,
           "properties": {
-            "standardRate":           { "type": "number", "minimum": 0, "maximum": 1 },
-            "reducedRate":            { "type": "number", "minimum": 0, "maximum": 1 },
-            "registrationThreshold":  { "type": "number", "minimum": 0 },
-            "flatRateScheme":         { "type": "boolean", "default": false },
-            "flatRatePercentage":     { "type": "number", "minimum": 0, "maximum": 1 }
+            "standardRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reducedRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "registrationThreshold": { "type": "number", "minimum": 0 },
+            "flatRateScheme": { "type": "boolean", "default": false },
+            "flatRatePercentage": { "type": "number", "minimum": 0, "maximum": 1 }
           }
         },
 
@@ -269,11 +258,11 @@
           "description": "HMRC Corporation Tax rates (Company Accounts only)",
           "additionalProperties": false,
           "properties": {
-            "smallProfitsRate":     { "type": "number", "minimum": 0, "maximum": 1 },
-            "smallProfitsLimit":    { "type": "number", "minimum": 0 },
-            "mainRate":             { "type": "number", "minimum": 0, "maximum": 1 },
-            "mainRateThreshold":    { "type": "number", "minimum": 0 },
-            "associatedCompanies":  { "type": "integer", "minimum": 0, "default": 0 }
+            "smallProfitsRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "smallProfitsLimit": { "type": "number", "minimum": 0 },
+            "mainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "mainRateThreshold": { "type": "number", "minimum": 0 },
+            "associatedCompanies": { "type": "integer", "minimum": 0, "default": 0 }
           }
         },
 
@@ -282,10 +271,10 @@
           "description": "HMRC capital allowance rates",
           "additionalProperties": false,
           "properties": {
-            "annualInvestmentAllowance":   { "type": "number", "minimum": 0 },
-            "mainRateWDA":                 { "type": "number", "minimum": 0, "maximum": 1 },
-            "specialRateWDA":              { "type": "number", "minimum": 0, "maximum": 1 },
-            "firstYearAllowanceRate":      { "type": "number", "minimum": 0, "maximum": 1 }
+            "annualInvestmentAllowance": { "type": "number", "minimum": 0 },
+            "mainRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
+            "specialRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
+            "firstYearAllowanceRate": { "type": "number", "minimum": 0, "maximum": 1 }
           }
         },
 
@@ -294,10 +283,10 @@
           "description": "HMRC approved mileage rates (Taxi Driver / Self Employed)",
           "additionalProperties": false,
           "properties": {
-            "carFirst10000":    { "type": "number", "minimum": 0, "description": "Rate per mile, first 10,000 miles" },
-            "carOver10000":     { "type": "number", "minimum": 0, "description": "Rate per mile, above 10,000 miles" },
-            "motorcycle":       { "type": "number", "minimum": 0 },
-            "bicycle":          { "type": "number", "minimum": 0 }
+            "carFirst10000": { "type": "number", "minimum": 0, "description": "Rate per mile, first 10,000 miles" },
+            "carOver10000": { "type": "number", "minimum": 0, "description": "Rate per mile, above 10,000 miles" },
+            "motorcycle": { "type": "number", "minimum": 0 },
+            "bicycle": { "type": "number", "minimum": 0 }
           }
         },
 
@@ -306,10 +295,10 @@
           "description": "Dividend tax rates (Company Accounts — director extraction)",
           "additionalProperties": false,
           "properties": {
-            "allowance":        { "type": "number", "minimum": 0 },
-            "basicRate":        { "type": "number", "minimum": 0, "maximum": 1 },
-            "higherRate":       { "type": "number", "minimum": 0, "maximum": 1 },
-            "additionalRate":   { "type": "number", "minimum": 0, "maximum": 1 }
+            "allowance": { "type": "number", "minimum": 0 },
+            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 }
           }
         }
       }

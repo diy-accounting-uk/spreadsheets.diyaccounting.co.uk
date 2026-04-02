@@ -10,12 +10,16 @@ const urls = [];
 
 for (let y = year - 5; y <= year; y++) {
   const budgetSlug = y <= 2024 ? `autumn-statement-${y}` : `budget-${y}`;
-  urls.push(`https://www.gov.uk/government/publications/${budgetSlug}-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances`);
+  urls.push(
+    `https://www.gov.uk/government/publications/${budgetSlug}-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances`,
+  );
 }
 
 urls.push(`https://www.gov.uk/government/publications/rates-and-allowances-corporation-tax/rates-and-allowances-corporation-tax`);
 urls.push(`https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past`);
-urls.push(`https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions`);
+urls.push(
+  `https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions`,
+);
 urls.push(`https://www.gov.uk/government/publications/rates-and-allowances-capital-allowances/rates-and-allowances-capital-allowances`);
 urls.push(`https://www.gov.uk/guidance/rates-and-thresholds-for-employers-${year}-to-${year + 1}`);
 urls.push(`https://www.gov.uk/guidance/rates-and-thresholds-for-employers-${year - 1}-to-${year}`);
