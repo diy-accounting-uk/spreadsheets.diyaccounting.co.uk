@@ -1,0 +1,632 @@
+[metadata]
+name = "Precision Code Ltd - extended"
+description = "Full sales and purchases from DIYA GL example data, all account codes included"
+product = "ltd"
+tax_regime = "ltd"
+
+[[sales.apr]]
+date = 2025-04-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.apr]]
+date = 2025-04-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.may]]
+date = 2025-05-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.jun]]
+date = 2025-06-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.jun]]
+date = 2025-06-20
+customer = "Gamma Ltd"
+code = "c"
+amount = 2400
+
+[[sales.jul]]
+date = 2025-07-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.jul]]
+date = 2025-07-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.aug]]
+date = 2025-08-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.aug]]
+date = 2025-08-01
+customer = "Innovate UK"
+code = "g"
+amount = 2500
+
+[[sales.sep]]
+date = 2025-09-15
+customer = "Acme Corp"
+code = "a"
+amount = 3000
+
+[[sales.sep]]
+date = 2025-09-30
+customer = "Epsilon Partners"
+code = "d"
+amount = 600
+
+[[sales.oct]]
+date = 2025-10-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.oct]]
+date = 2025-10-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.oct]]
+date = 2025-10-10
+customer = "Private buyer"
+code = "fs"
+amount = 4800
+
+[[sales.nov]]
+date = 2025-11-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.nov]]
+date = 2025-11-20
+customer = "Delta PLC"
+code = "c"
+amount = 3600
+
+[[sales.dec]]
+date = 2025-12-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.jan]]
+date = 2026-01-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.jan]]
+date = 2026-01-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.feb]]
+date = 2026-02-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.mar]]
+date = 2026-03-15
+customer = "Acme Corp"
+code = "a"
+amount = 3600
+
+[[sales.mar]]
+date = 2026-03-31
+customer = "Zeta Corp"
+code = "o"
+amount = 360
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "TechParts Ltd"
+code = "s"
+amount = 600
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "Amazon Business"
+code = "u"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.apr]]
+date = 2025-04-05
+supplier = "Admiral Insurance"
+code = "v"
+amount = 1080
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Hiscox"
+code = "n"
+amount = 600
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Zurich"
+code = "n"
+amount = 360
+
+[[purchases.apr]]
+date = 2025-04-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Goodwill amortisation"
+code = "z"
+amount = 2400
+
+[[purchases.may]]
+date = 2025-05-20
+supplier = "Cloud Hosting Inc"
+code = "o"
+amount = 360
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "DHL Express"
+code = "t"
+amount = 480
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Google Ads"
+code = "a"
+amount = 1200
+
+[[purchases.may]]
+date = 2025-05-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.may]]
+date = 2025-05-10
+supplier = "Shell"
+code = "v"
+amount = 120
+
+[[purchases.may]]
+date = 2025-05-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.may]]
+date = 2025-05-05
+supplier = "Dell"
+code = "fa"
+amount = 1800
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Freelance Dev Co"
+code = "c"
+amount = 3600
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.jun]]
+date = 2025-06-30
+supplier = "British Gas"
+code = "p"
+amount = 360
+
+[[purchases.jun]]
+date = 2025-06-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Staples"
+code = "g"
+amount = 120
+
+[[purchases.jun]]
+date = 2025-06-18
+supplier = "Premier Inn"
+code = "h"
+amount = 480
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "HP Capital"
+code = "f"
+amount = 720
+
+[[purchases.jun]]
+date = 2025-06-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "TechParts Ltd"
+code = "s"
+amount = 720
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.jul]]
+date = 2025-07-05
+supplier = "HireStation"
+code = "q"
+amount = 960
+
+[[purchases.jul]]
+date = 2025-07-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jul]]
+date = 2025-07-20
+supplier = "Halfords"
+code = "v"
+amount = 840
+
+[[purchases.jul]]
+date = 2025-07-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Toyota"
+code = "fa"
+amount = 18000
+
+[[purchases.aug]]
+date = 2025-08-25
+supplier = "Casual worker"
+code = "w"
+amount = 800
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.aug]]
+date = 2025-08-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.aug]]
+date = 2025-08-10
+supplier = "Shell"
+code = "v"
+amount = 120
+
+[[purchases.aug]]
+date = 2025-08-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Freelance Dev Co"
+code = "c"
+amount = 2400
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.sep]]
+date = 2025-09-30
+supplier = "British Gas"
+code = "p"
+amount = 360
+
+[[purchases.sep]]
+date = 2025-09-10
+supplier = "IT Fix Ltd"
+code = "m"
+amount = 480
+
+[[purchases.sep]]
+date = 2025-09-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "HP Capital"
+code = "f"
+amount = 720
+
+[[purchases.sep]]
+date = 2025-09-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "IKEA Business"
+code = "fa"
+amount = 2400
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "TechParts Ltd"
+code = "s"
+amount = 480
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Amazon Business"
+code = "u"
+amount = 144
+
+[[purchases.oct]]
+date = 2025-10-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.oct]]
+date = 2025-10-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "Cloud Hosting Inc"
+code = "o"
+amount = 360
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "Royal Mail"
+code = "t"
+amount = 240
+
+[[purchases.nov]]
+date = 2025-11-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.nov]]
+date = 2025-11-18
+supplier = "Travelodge"
+code = "h"
+amount = 360
+
+[[purchases.nov]]
+date = 2025-11-10
+supplier = "Shell"
+code = "v"
+amount = 120
+
+[[purchases.nov]]
+date = 2025-11-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.dec]]
+date = 2025-12-20
+supplier = "Director fees"
+code = "d"
+amount = 5000
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "British Gas"
+code = "p"
+amount = 360
+
+[[purchases.dec]]
+date = 2025-12-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Staples"
+code = "g"
+amount = 120
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "HP Capital"
+code = "f"
+amount = 720
+
+[[purchases.dec]]
+date = 2025-12-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "British Heart Foundation"
+code = "y"
+amount = 500
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "TechParts Ltd"
+code = "s"
+amount = 600
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "LinkedIn"
+code = "a"
+amount = 600
+
+[[purchases.jan]]
+date = 2026-01-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jan]]
+date = 2026-01-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.feb]]
+date = 2026-02-10
+supplier = "Building Services"
+code = "m"
+amount = 360
+
+[[purchases.feb]]
+date = 2026-02-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.feb]]
+date = 2026-02-20
+supplier = "Trainline"
+code = "h"
+amount = 96
+
+[[purchases.feb]]
+date = 2026-02-10
+supplier = "Shell"
+code = "v"
+amount = 120
+
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "WorkSpace Ltd"
+code = "r"
+amount = 1200
+
+[[purchases.mar]]
+date = 2026-03-31
+supplier = "British Gas"
+code = "p"
+amount = 360
+
+[[purchases.mar]]
+date = 2026-03-25
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "HP Capital"
+code = "f"
+amount = 720
+
+[[purchases.mar]]
+date = 2026-03-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.mar]]
+date = 2026-03-25
+supplier = "Smith & Co"
+code = "l"
+amount = 1800
+
+[expected]
+total_sales = 49300

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.json",
-  "title": "DIY Accounting GL-aligned Transaction",
+  "title": "DIY Accounting GL-aligned Transaction Lines",
   "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
   "type": "object",
   "required": ["postingDate", "amount", "accountMainID", "sourceJournalID"],

@@ -1,0 +1,43 @@
+[product]
+id = "ltd"
+name = "Company"
+description = "Limited company accounts package (all year-end months). Supports small profits rate only (profits up to 50000)."
+tax_regime = "ltd"
+
+[template]
+files = [
+  "Financialaccounts.xlsx",
+  "Sales.xlsx",
+  "Purchases.xlsx",
+  "Currentaccount.xlsx",
+  "Savingaccount.xlsx",
+  "Cashaccount.xlsx",
+  "Creditcardaccount.xlsx",
+  "Vatreturns.xlsx",
+  "Payslips.xlsx",
+  "Fixedassets.xlsx",
+  "CT600OnlineLookALike.xlsx",
+  "Companysecretary.xlsx",
+  "Salesinvoice.xlsx",
+  "expensesform.xlsx",
+  "Dividend Voucher.docx",
+]
+guide = "ltd-guide.md"
+
+[output]
+dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
+guide_filename = "Company Accounts User Guide.pdf"
+
+[sheets.financialaccounts]
+admin = "xl/worksheets/sheet12.xml"
+cellEditFn = "ltd"
+
+[sheets.payslips]
+payslipsAdmin = "xl/worksheets/sheet16.xml"
+
+[sheets.vatreturns]
+vatQtr1 = "xl/worksheets/sheet1.xml"
+vatQtr2 = "xl/worksheets/sheet2.xml"
+vatQtr3 = "xl/worksheets/sheet3.xml"
+vatQtr4 = "xl/worksheets/sheet4.xml"
+vatQtr5 = "xl/worksheets/sheet5.xml"

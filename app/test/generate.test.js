@@ -11,6 +11,7 @@ import {
   generateAdminDates,
   toExcelSerial,
   buildCellEdits,
+  buildLtdCellEdits,
   formatDateDDMMYY,
   formatDateYYYYMMDD,
   shortLabel,
@@ -286,6 +287,72 @@ describe("SE generateSpreadsheet", () => {
     const zip = await JSZip.loadAsync(buffer);
     const payslipsXml = await zip.file(seMeta.sheets.payslips.payslipsAdmin).async("string");
     expect(payslipsXml).toMatch(/<c\s+r="B2"[^>]*><v>45753<\/v><\/c>/);
+  });
+});
+
+// ── Ltd cell edits ────────────────────────────────────────────────────────
+
+const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
+
+describe("buildLtdCellEdits", () => {
+  const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+
+  it("sets F21 to the year-end date serial", () => {
+    const yearEndSerial = toExcelSerial(utcDate(2026, 3, 31));
+    const { numericEdits } = buildLtdCellEdits(taxData, yearEndSerial);
+    expect(numericEdits.F21).toBe(yearEndSerial);
+  });
+
+  it("sets CT rate as whole-number percentage", () => {
+    const { numericEdits } = buildLtdCellEdits(taxData, 46112);
+    expect(numericEdits.P6).toBe(19);
+    expect(numericEdits.P7).toBe(19);
+  });
+
+  it("sets VAT rate as whole-number percentage", () => {
+    const { numericEdits } = buildLtdCellEdits(taxData, 46112);
+    expect(numericEdits.M19).toBe(20);
+    expect(numericEdits.M21).toBe(20);
+  });
+
+  it("sets capital allowances as whole-number percentages", () => {
+    const { numericEdits } = buildLtdCellEdits(taxData, 46112);
+    expect(numericEdits.G5).toBe(100);
+    expect(numericEdits.G6).toBe(18);
+  });
+
+  it("sets depreciation rates as fractions", () => {
+    const { numericEdits } = buildLtdCellEdits(taxData, 46112);
+    expect(numericEdits.G16).toBe(0.1);
+    expect(numericEdits.G17).toBe(0.2);
+    expect(numericEdits.G18).toBe(0.33);
+    expect(numericEdits.G19).toBe(0.25);
+  });
+
+  it("has no string edits (all dates are formula-driven)", () => {
+    const { stringEdits } = buildLtdCellEdits(taxData, 46112);
+    expect(Object.keys(stringEdits).length).toBe(0);
+  });
+});
+
+describe("Ltd generateSpreadsheet", () => {
+  it("generates valid Ltd Financialaccounts.xlsx", async () => {
+    if (!existsSync(resolve(LTD_DIR, "Financialaccounts.xlsx"))) return;
+
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+    const ltdMeta = parseTOML(readFileSync(resolve(LTD_DIR, "meta.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(LTD_DIR, "Financialaccounts.xlsx"));
+
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, ltdMeta.sheets.financialaccounts);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer[0]).toBe(0x50);
+
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+    const adminXml = await zip.file(ltdMeta.sheets.financialaccounts.admin).async("string");
+
+    expect(adminXml).toMatch(/<c\s+r="F21"[^>]*><v>46112<\/v><\/c>/);
+    expect(adminXml).toMatch(/<c\s+r="P6"[^>]*><v>19<\/v><\/c>/);
   });
 });
 

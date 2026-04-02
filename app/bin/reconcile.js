@@ -21,6 +21,7 @@ import { loadScenario } from "../lib/scenario-loader.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
+import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -34,6 +35,7 @@ const PRODUCTS = {
   bst,
   taxi,
   se,
+  ltd: ltd,
 };
 
 function findXlsx(packageDir) {
@@ -165,6 +167,10 @@ async function main() {
     }
     packageDirs = packageDirs.filter((d) =>
       years.some((y) => {
+        if (y.startsWith("ltd-")) {
+          const fyStart = parseInt(y.replace("ltd-", ""), 10);
+          return d.includes(String(fyStart + 1));
+        }
         const [, endYear] = y.replace("se-", "").split("-");
         return d.includes(endYear);
       }),
@@ -241,10 +247,12 @@ async function main() {
       // Find the tax-data TOML for this package's year
       let taxData = null;
       if (startYear) {
-        const taxDataFile = resolve(APP_DIR, "data", `se-${startYear}-${endYear}.toml`);
+        const regime = productMod.PRODUCT.taxRegime;
+        const taxDataName = regime === "ltd" ? `ltd-${endYear}.toml` : `se-${startYear}-${endYear}.toml`;
+        const taxDataFile = resolve(APP_DIR, "data", taxDataName);
         if (existsSync(taxDataFile)) {
           taxData = parseTOML(readFileSync(taxDataFile, "utf8"));
-          console.log(`    Tax data: se-${startYear}-${endYear}.toml`);
+          console.log(`    Tax data: ${taxDataName}`);
         }
       }
 

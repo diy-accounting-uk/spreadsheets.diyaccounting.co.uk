@@ -1,4 +1,4 @@
-# DIY Accounting Data Schema
+# DIY Accounting Global Ledger Lines Schema
 
 ## Adapted from XBRL Global Ledger Taxonomy Framework 2015 (Recommendation)
 

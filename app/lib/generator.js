@@ -228,6 +228,57 @@ export function buildSeCellEdits(taxData, startYear) {
   return { numericEdits, stringEdits };
 }
 
+// ── Tax data → cell edits (Ltd Company Financialaccounts Admin) ─────────────
+//
+// The Ltd Admin is much simpler than BST/SE: F21 (year-end date) is the ONLY
+// date cell to set — all other dates cascade via formulas. Tax rate cells use
+// whole-number percentages (19 = 19%, 20 = 20%), not fractions.
+
+export function buildLtdCellEdits(taxData, yearEndSerial) {
+  const ca = taxData.capital_allowances;
+  const dep = taxData.depreciation;
+  const mil = taxData.mileage;
+  const ct = taxData.corporation_tax;
+
+  const numericEdits = {};
+
+  // Year-end date — the ONE date cell. All others are formula-driven from F21.
+  numericEdits.F21 = yearEndSerial;
+
+  // Corporation Tax rates (stored as whole-number percentages in the spreadsheet)
+  numericEdits.P6 = Math.round(ct.small_profits_rate * 100);
+  numericEdits.P7 = Math.round(ct.small_profits_rate * 100);
+
+  // Capital allowances (stored as whole-number percentages)
+  numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);
+  numericEdits.G7 = Math.round(ca.annual_investment_allowance * 100);
+  numericEdits.G6 = Math.round(ca.writing_down_allowance_main * 100);
+  numericEdits.G8 = Math.round(ca.writing_down_allowance_main * 100);
+
+  // Motor vehicle
+  numericEdits.E11 = ca.motor_vehicle_cost_threshold;
+  numericEdits.G11 = ca.motor_vehicle_restriction;
+
+  // Depreciation (stored as fractions — same as BST/SE)
+  numericEdits.G15 = dep.land_and_property;
+  numericEdits.G16 = dep.plant_and_machinery;
+  numericEdits.G17 = dep.fixtures_and_fittings;
+  numericEdits.G18 = dep.computer_equipment;
+  numericEdits.G19 = dep.motor_vehicles;
+
+  // Mileage
+  numericEdits.N16 = mil.higher_rate_limit;
+  numericEdits.O16 = mil.higher_rate_pence;
+  numericEdits.N17 = mil.lower_rate_start;
+  numericEdits.O17 = mil.lower_rate_pence;
+
+  // VAT rate (stored as whole-number percentage)
+  numericEdits.M19 = Math.round(taxData.vat.standard_rate * 100);
+  numericEdits.M21 = Math.round(taxData.vat.standard_rate * 100);
+
+  return { numericEdits, stringEdits: {} };
+}
+
 // ── Payslips Admin calendar generation ──────────────────────────────────────
 //
 // Generates the C (week), D (month), F (week-in-month) columns for the
@@ -492,17 +543,26 @@ function replaceSalesSheetData(sheetXml, monthWeeks) {
 // ── Generate one spreadsheet ────────────────────────────────────────────────
 
 export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig) {
-  const startDate = new Date(taxData.tax_year.start);
+  // SE/BST use tax_year, Ltd uses financial_year
+  const yearInfo = taxData.tax_year || taxData.financial_year;
+  const startDate = new Date(yearInfo.start);
   const startYear = startDate.getUTCFullYear();
+  const endDate = new Date(yearInfo.end);
 
   const zip = await JSZip.loadAsync(templateBuffer);
 
-  // Admin sheet edits (BST/Taxi/SE Financialaccounts — when sheetsConfig.admin is present)
+  // Admin sheet edits — dispatch to product-specific cell edit function
   if (sheetsConfig.admin) {
     let adminXml = await zip.file(sheetsConfig.admin).async("string");
 
-    const buildFn = sheetsConfig.cellEditFn === "se" ? buildSeCellEdits : buildCellEdits;
-    const { numericEdits, stringEdits } = buildFn(taxData, startYear);
+    let numericEdits, stringEdits;
+    if (sheetsConfig.cellEditFn === "ltd") {
+      const yearEndSerial = toExcelSerial(endDate);
+      ({ numericEdits, stringEdits } = buildLtdCellEdits(taxData, yearEndSerial));
+    } else {
+      const buildFn = sheetsConfig.cellEditFn === "se" ? buildSeCellEdits : buildCellEdits;
+      ({ numericEdits, stringEdits } = buildFn(taxData, startYear));
+    }
 
     for (const [cellRef, value] of Object.entries(numericEdits)) {
       adminXml = setCellValue(adminXml, cellRef, value);
@@ -568,6 +628,34 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
     const payslipsDate = zip.file(sheetsConfig.payslipsAdmin).date;
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
+  }
+
+  // VAT quarter default dates (when sheetsConfig has vatQtr1..vatQtr5)
+  if (sheetsConfig.vatQtr1) {
+    // Accounting year start = month after year-end, one year earlier
+    // e.g. year-end Mar 2026 → start Apr 2025
+    const yearEndMonth = endDate.getUTCMonth() + 1; // 1-indexed
+    const yearEndYear = endDate.getUTCFullYear();
+    const startMonth = (yearEndMonth % 12) + 1; // month after year-end (1-indexed)
+    const startYear = startMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear;
+
+    for (let q = 1; q <= 5; q++) {
+      const sheetPath = sheetsConfig[`vatQtr${q}`];
+      if (!sheetPath) continue;
+
+      // Q1 = 3 months from start, Q2 = 6, Q3 = 9, Q4 = 12, Q5 = 13
+      const monthsFromStart = q <= 4 ? q * 3 : 13;
+      const totalMonth = startMonth + monthsFromStart - 1;
+      const qMonth = ((totalMonth - 1) % 12) + 1;
+      const qYear = startYear + Math.floor((totalMonth - 1) / 12);
+      const quarterEnd = monthEnd(qYear, qMonth);
+      const serial = toExcelSerial(quarterEnd);
+
+      let sheetXml = await zip.file(sheetPath).async("string");
+      sheetXml = setCellValue(sheetXml, "G5", serial);
+      const origDate = zip.file(sheetPath).date;
+      zip.file(sheetPath, sheetXml, { date: origDate });
+    }
   }
 
   // Force full recalculation on open so cached formula values (e.g. G2=B23) update
