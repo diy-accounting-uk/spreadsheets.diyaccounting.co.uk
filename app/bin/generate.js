@@ -17,7 +17,7 @@ import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel } from "../lib/generator.js";
+import { generateSpreadsheet, formatDateDDMMYY, formatDateYYYYMMDD, shortLabel, renameMonthTabs, rewriteVatinterfaceFormulas, monthEnd } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
@@ -37,12 +37,13 @@ const PRODUCTS = {
   ltd: LTD,
 };
 
-async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {
+async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide, opts = {}) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
-  const taxData = parseTOML(readFileSync(tomlPath, "utf8"));
+  const taxData = opts.overrideTaxData || parseTOML(readFileSync(tomlPath, "utf8"));
   const ty = taxData.tax_year || taxData.financial_year;
+  const yearEndMonth = opts.yearEndMonth || 0;
   const endDate = new Date(ty.end);
 
   // Skip packages whose year-end is more than 14 months from now.
@@ -74,21 +75,27 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
   const outDir = resolve(OUTPUT_DIR, dirName);
   mkdirSync(outDir, { recursive: true });
 
+  const TAB_RENAME_FILES = new Set(["Sales.xlsx", "Purchases.xlsx", "Currentaccount.xlsx", "Savingaccount.xlsx", "Cashaccount.xlsx", "Creditcardaccount.xlsx", "Payslips.xlsx"]);
+
   if (productMeta.template.files) {
-    // Multi-file product (SE): process each template file
     for (const templateFile of productMeta.template.files) {
-      const templateBuffer = readFileSync(resolve(productDir, templateFile));
-      const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
+      let buffer = readFileSync(resolve(productDir, templateFile));
+      const fileKey = templateFile.replace(".xlsx", "").replace(".docx", "").toLowerCase();
       const sheetsConfig = productMeta.sheets?.[fileKey];
 
       if (sheetsConfig && Object.keys(sheetsConfig).length > 0) {
-        // This file needs generation (has sheet config)
-        const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, sheetsConfig);
-        writeFileSync(resolve(outDir, templateFile), xlsxBuffer);
-      } else {
-        // Copy unchanged from template
-        writeFileSync(resolve(outDir, templateFile), templateBuffer);
+        buffer = await generateSpreadsheet(buffer, taxData, sheetsConfig);
       }
+
+      if (yearEndMonth && templateFile.endsWith(".xlsx") && TAB_RENAME_FILES.has(templateFile)) {
+        buffer = await renameMonthTabs(buffer, yearEndMonth);
+      }
+
+      if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
+        buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
+      }
+
+      writeFileSync(resolve(outDir, templateFile), buffer);
     }
     console.log(`  Written: ${dirName}/`);
     console.log(`           ${productMeta.template.files.length} files`);
@@ -198,8 +205,32 @@ async function main() {
       const tomlName = tomlFile.split("/").pop();
       if (!tomlName.startsWith(productMeta.product.tax_regime + "-")) continue;
 
-      const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
-      if (result) results.push(result);
+      if (productMeta.product.tax_regime === "ltd") {
+        const taxData = parseTOML(readFileSync(tomlFile, "utf8"));
+        const fyStart = new Date(taxData.financial_year.start);
+        const fyEnd = new Date(taxData.financial_year.end);
+
+        for (let m = 0; m < 12; m++) {
+          const meYear = fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12);
+          const meMonth = (fyStart.getUTCMonth() + m) % 12;
+          const yearEndDate = monthEnd(meYear, meMonth + 1);
+
+          if (yearEndDate > fyEnd) break;
+
+          const overrideTaxData = JSON.parse(JSON.stringify(taxData));
+          overrideTaxData.financial_year.end = yearEndDate.toISOString().slice(0, 10);
+
+          const yearEndMonth = yearEndDate.getUTCMonth() + 1;
+          const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, {
+            overrideTaxData,
+            yearEndMonth,
+          });
+          if (result) results.push(result);
+        }
+      } else {
+        const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
+        if (result) results.push(result);
+      }
     }
   }
 

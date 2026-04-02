@@ -663,6 +663,86 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   });
 }
 
+// ── Month tab renaming (Ltd Company all year-end months) ────────────────────
+
+const MONTH_NAMES_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export function getMonthTabSequence(yearEndMonth) {
+  const tabs = [];
+  for (let i = 0; i < 12; i++) {
+    tabs.push(MONTH_NAMES_SHORT[(yearEndMonth + i) % 12]);
+  }
+  return tabs;
+}
+
+export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let wbXml = await zip.file("xl/workbook.xml").async("string");
+
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) {
+    return xlsxBuffer;
+  }
+
+  const placeholders = templateTabs.map((_, i) => `__MONTH_${i}__`);
+  for (let i = 0; i < 12; i++) {
+    wbXml = wbXml.replace(new RegExp(`name="${templateTabs[i]}"`, "g"), `name="${placeholders[i]}"`);
+  }
+  for (let i = 0; i < 12; i++) {
+    wbXml = wbXml.replace(new RegExp(placeholders[i], "g"), targetTabs[i]);
+  }
+
+  const origDate = zip.file("xl/workbook.xml").date;
+  zip.file("xl/workbook.xml", wbXml, { date: origDate });
+
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// ── Vatinterface formula rewriting (Ltd Company all year-end months) ────────
+
+export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vatinterfacePath) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let viXml = await zip.file(vatinterfacePath).async("string");
+
+  const templateStartRow = 6;
+  const targetStartRow = ((yearEndMonth - 1) % 12) * 2 + 2;
+
+  if (templateStartRow === targetStartRow) {
+    return xlsxBuffer;
+  }
+
+  const rowMap = {};
+  for (let i = 0; i < 16; i++) {
+    rowMap[templateStartRow + i * 2] = targetStartRow + i * 2;
+  }
+  viXml = viXml.replace(/\[1\]Admin!\$B\$(\d+)/g, (match, rowStr) => {
+    const row = parseInt(rowStr, 10);
+    return rowMap[row] !== undefined ? `[1]Admin!$B$${rowMap[row]}` : match;
+  });
+
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+  for (let i = 0; i < 12; i++) {
+    if (templateTabs[i] !== targetTabs[i]) {
+      viXml = viXml.replace(
+        new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"),
+        `[2]${targetTabs[i]}!`,
+      );
+      viXml = viXml.replace(
+        new RegExp(`\\[3\\]${templateTabs[i]}!`, "g"),
+        `[3]${targetTabs[i]}!`,
+      );
+    }
+  }
+
+  const origDate = zip.file(vatinterfacePath).date;
+  zip.file(vatinterfacePath, viXml, { date: origDate });
+
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
 // ── Output naming ───────────────────────────────────────────────────────────
 
 export function formatDateDDMMYY(date) {

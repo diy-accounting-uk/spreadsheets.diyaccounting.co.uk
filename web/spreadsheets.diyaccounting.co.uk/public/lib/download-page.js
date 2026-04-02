@@ -153,6 +153,20 @@ function updatePeriods() {
     periodSelect.appendChild(opt);
   }
 
+  // Default selection: most recent year-end within 13 months of today.
+  // This picks the period people are currently filing for, not the next year.
+  var now = new Date();
+  var cutoff = new Date(now.getFullYear(), now.getMonth() + 13, 0);
+  var defaultIdx = 0;
+  for (var i = 0; i < product.periods.length; i++) {
+    var periodDate = new Date(product.periods[i].date + "T00:00:00");
+    if (periodDate <= cutoff && periodDate <= now) {
+      defaultIdx = i;
+      break;
+    }
+  }
+  periodSelect.value = defaultIdx;
+
   updateLinks();
 }
 
