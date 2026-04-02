@@ -45,9 +45,12 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide)
   const ty = taxData.tax_year || taxData.financial_year;
   const endDate = new Date(ty.end);
 
-  // Skip packages whose year-end is more than 13 months from now
+  // Skip packages whose year-end is more than 14 months from now.
+  // 14 months ensures the next tax year's packages are available from early March
+  // (covers the budget-in-March scenario where SE Apr 2027 is needed by 6 Mar 2026).
+  // The website download default uses a tighter 13-month window for the pre-selected year.
   const cutoff = new Date();
-  cutoff.setUTCMonth(cutoff.getUTCMonth() + 13);
+  cutoff.setUTCMonth(cutoff.getUTCMonth() + 14);
   cutoff.setUTCDate(0); // last day of the month 13 months from now
   if (endDate > cutoff) {
     console.log(`\nSkipping ${productMeta.product.name} for ${ty.label} (year-end ${endDate.toISOString().slice(0, 10)} is beyond cutoff ${cutoff.toISOString().slice(0, 10)})`);

@@ -94,7 +94,27 @@ Add a `rewriteVatinterfaceFormulas(zip, yearEndMonth, sheetsConfig)` function th
 Update generate.js to:
 1. For Ltd products, iterate all 12 possible month-ends within each FY
 2. For each month-end, compute the year-end date and generate the package with tab renaming and Vatinterface rewriting
-3. Apply the date range limit (not beyond current month + 12)
+3. Apply the generate cutoff (14 months from today)
+
+### Date Range Algorithm
+
+Two thresholds control package availability:
+
+**Generate cutoff: today + 14 months (snap to last day of month)**
+- Determines which packages are built and committed to `packages-generated/`
+- 14 months ensures next tax year's SE/BST packages (Apr year-end) are available from early March
+- Covers the budget-in-March scenario (e.g., on 6 Mar 2026, SE Apr 2027 is within cutoff of 30 May 2027)
+- Still bounded by available `se-*.toml` and `ltd-*.toml` data files
+
+**Website default: today + 13 months (snap to last day of month)**
+- Determines which year-end is pre-selected in the download dropdown
+- Tighter than generate cutoff so the default is the year people are currently filing for
+- The next year's packages are available but not the default selection
+
+Example on 6 March 2026:
+- Generate cutoff: 30 May 2027 → SE Apr 2027 produced, Ltd through May 2027 produced
+- Website default: 30 Apr 2027 → SE Apr 2026 is default, Ltd Mar 2026 is default
+- Next year's packages (SE Apr 2027, Ltd Apr-May 2027) are available in the dropdown but not pre-selected
 
 ### Phase 4: Testing — TODO
 
