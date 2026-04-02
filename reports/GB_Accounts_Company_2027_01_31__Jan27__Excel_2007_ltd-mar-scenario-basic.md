@@ -1,4 +1,4 @@
-# Reconciliation Report: GB Accounts Company 2027-03-31 (Mar27) Excel 2007
+# Reconciliation Report: GB Accounts Company 2027-01-31 (Jan27) Excel 2007
 
 Scenario: ltd-mar-scenario-basic
 Status: RECONCILES
@@ -8,8 +8,8 @@ Generated: 2026-04-02
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 33000 | 33000 | 0 | PASS |
-| Corporation Tax | 1710 | 1710 | 0 | PASS |
+| Total Sales | 77000 | 77000 | 0 | PASS |
+| Corporation Tax | 10070 | 10070 | 0 | PASS |
 
 ## Raw Output Values
 
@@ -17,9 +17,9 @@ Generated: 2026-04-02
 
 | Cell | Value |
 |------|-------|
-| K5 | 9000 |
-| K12 | 9000 |
-| K22 | 9000 |
-| K28 | 9000 |
-| K35 | 1710 |
-| K39 | 1710 |
+| K5 | 53000 |
+| K12 | 53000 |
+| K22 | 53000 |
+| K28 | 53000 |
+| K35 | 10070 |
+| K39 | 10070 |

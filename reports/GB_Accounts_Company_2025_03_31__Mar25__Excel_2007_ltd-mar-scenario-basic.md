@@ -2,14 +2,14 @@
 
 Scenario: ltd-mar-scenario-basic
 Status: RECONCILES
-Generated: 2026-04-01
+Generated: 2026-04-02
 
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 30000 | 30000 | 0 | PASS |
-| Corporation Tax | 4902 | 4902 | 0 | PASS |
+| Total Sales | 33000 | 33000 | 0 | PASS |
+| Corporation Tax | 1710 | 1710 | 0 | PASS |
 
 ## Raw Output Values
 
@@ -17,9 +17,9 @@ Generated: 2026-04-01
 
 | Cell | Value |
 |------|-------|
-| K5 | 25800 |
-| K12 | 25800 |
-| K22 | 25800 |
-| K28 | 25800 |
-| K35 | 4902 |
-| K39 | 4902 |
+| K5 | 9000 |
+| K12 | 9000 |
+| K22 | 9000 |
+| K28 | 9000 |
+| K35 | 1710 |
+| K39 | 1710 |

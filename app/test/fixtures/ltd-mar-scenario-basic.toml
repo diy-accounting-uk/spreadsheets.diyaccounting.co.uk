@@ -8,73 +8,73 @@ tax_regime = "ltd"
 date = 2025-04-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.may]]
 date = 2025-05-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.jun]]
 date = 2025-06-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.jul]]
 date = 2025-07-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.aug]]
 date = 2025-08-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.sep]]
 date = 2025-09-15
 customer = "Acme Corp"
 code = "a"
-amount = 3000
+amount = 7000
 
 [[sales.oct]]
 date = 2025-10-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[sales.nov]]
 date = 2025-11-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[sales.dec]]
 date = 2025-12-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[sales.jan]]
 date = 2026-01-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[sales.feb]]
 date = 2026-02-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[sales.mar]]
 date = 2026-03-15
 customer = "Acme Corp"
 code = "a"
-amount = 3600
+amount = 8400
 
 [[purchases.apr]]
 date = 2025-04-01
@@ -359,4 +359,4 @@ code = "l"
 amount = 1800
 
 [expected]
-total_sales = 33000
+total_sales = 77000

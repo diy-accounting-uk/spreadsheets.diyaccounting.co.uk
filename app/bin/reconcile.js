@@ -189,6 +189,10 @@ async function main() {
     packageDirs = packageDirs.filter((d) => yearEnds.some((ye) => d.includes(ye)));
   }
 
+  // Filter by --scenario (e.g. --scenario basic, --scenario extended, --scenario full)
+  const scIdx = args.indexOf("--scenario");
+  const scenarioFilter = scIdx !== -1 && args[scIdx + 1] ? args[scIdx + 1] : null;
+
   console.log("Packages:", packageDirs.length);
   mkdirSync(REPORTS_DIR, { recursive: true });
 
@@ -201,6 +205,7 @@ async function main() {
     const scenarioProduct = scenario.metadata?.product || "bst";
     const productMod = PRODUCTS[scenarioProduct];
     if (!productMod) continue;
+    if (scenarioFilter && !scenarioName.includes(scenarioFilter)) continue;
 
     console.log(`\nScenario: ${scenarioName} (${scenario.metadata.description}) [${scenarioProduct}]`);
 

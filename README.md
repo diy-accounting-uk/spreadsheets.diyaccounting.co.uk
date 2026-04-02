@@ -108,6 +108,30 @@ OIDC authentication with `SPREADSHEETS_ACTIONS_ROLE_ARN` and `SPREADSHEETS_DEPLO
 | `generate-knowledge-base-toml.cjs` | Generate `knowledge-base.toml` from mdcms articles |
 | `stripe-spreadsheets-setup.js` | Create Stripe donation products and Payment Links |
 
+## Package Generation and Reconciliation
+
+Generate and reconcile spreadsheet packages from templates and tax data:
+
+```bash
+npm run generate -- --package ltd --year-end 2027-01-31 --skip-guide
+npm run reconciliation -- --package ltd --year-end 2027-01-31 --scenario basic
+```
+
+Available products: `bst`, `taxi`, `se`, `ltd`. The `--year-end` flag accepts specific dates (e.g. `2026-03-31`, `2027-01-31`). The `--scenario` flag runs a single scenario (`basic`, `extended`, or `full`).
+
+Generate all packages for a product:
+
+```bash
+npm run generate -- --package ltd --skip-guide
+npm run generate -- --package se
+```
+
+Extract test scenarios from DIYA GL example data:
+
+```bash
+npm run extract-scenarios
+```
+
 ## Development Tools
 
 | Command | Purpose |
