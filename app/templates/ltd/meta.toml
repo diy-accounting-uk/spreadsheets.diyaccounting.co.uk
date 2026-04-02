@@ -1,9 +1,8 @@
 [product]
-id = "ltd-mar"
+id = "ltd"
 name = "Company"
-description = "Limited company accounts package (March year-end). Supports small profits rate only (profits up to 50000)."
+description = "Limited company accounts package (all year-end months). Supports small profits rate only (profits up to 50000)."
 tax_regime = "ltd"
-year_end_month = 3
 
 [template]
 files = [
@@ -21,10 +20,9 @@ files = [
   "Companysecretary.xlsx",
   "Salesinvoice.xlsx",
   "expensesform.xlsx",
-  "Savingaccount.xlsx",
   "Dividend Voucher.docx",
 ]
-guide = "ltd-mar-guide.md"
+guide = "ltd-guide.md"
 
 [output]
 dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"

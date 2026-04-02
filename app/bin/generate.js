@@ -22,7 +22,7 @@ import { generatePdf } from "../lib/guide.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
-import { PRODUCT as LTD_MAR } from "../products/ltd-mar.js";
+import { PRODUCT as LTD } from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -34,7 +34,7 @@ const PRODUCTS = {
   bst: BST,
   taxi: TAXI,
   se: SE,
-  "ltd-mar": LTD_MAR,
+  ltd: LTD,
 };
 
 async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide) {

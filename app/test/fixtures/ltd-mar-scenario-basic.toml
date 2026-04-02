@@ -1,7 +1,7 @@
 [metadata]
 name = "Precision Code Ltd - basic"
 description = "Small limited company IT consultancy with steady consultancy income and standard expenses, extracted from DIYA GL example data"
-product = "ltd-mar"
+product = "ltd"
 tax_regime = "ltd"
 
 [[sales.apr]]

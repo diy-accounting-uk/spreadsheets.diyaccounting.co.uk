@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// ltd-mar-e2e.test.js — End-to-end tests for the Ltd Company (March year-end) multi-file package.
+// ltd-e2e.test.js — End-to-end tests for the Ltd Company (March year-end) multi-file package.
 // Generates all xlsx files, writes scenario data into Sales.xlsx and Purchases.xlsx,
 // recalculates across files via LibreOffice with external link cache injection,
 // and reads results from Financialaccounts.xlsx.
@@ -15,7 +15,7 @@ import { fileURLToPath } from "url";
 import { runMultiFileSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as ltdCellWrites, standardReads as ltdReads } from "../products/ltd-mar.js";
+import { cellWrites as ltdCellWrites, standardReads as ltdReads } from "../products/ltd.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -23,7 +23,7 @@ const describeCalc = SKIP ? describe.skip : describe;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
-const LTD_DIR = resolve(APP_DIR, "templates", "ltd-mar");
+const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 

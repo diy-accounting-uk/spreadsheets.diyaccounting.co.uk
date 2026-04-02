@@ -21,7 +21,7 @@ import { loadScenario } from "../lib/scenario-loader.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
-import * as ltdMar from "../products/ltd-mar.js";
+import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -35,7 +35,7 @@ const PRODUCTS = {
   bst,
   taxi,
   se,
-  "ltd-mar": ltdMar,
+  ltd: ltd,
 };
 
 function findXlsx(packageDir) {

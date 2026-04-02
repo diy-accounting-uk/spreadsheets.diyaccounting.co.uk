@@ -1,7 +1,7 @@
 [metadata]
 name = "Precision Code Ltd - extended"
 description = "Full sales and purchases from DIYA GL example data, all account codes included"
-product = "ltd-mar"
+product = "ltd"
 tax_regime = "ltd"
 
 [[sales.apr]]

@@ -1,15 +1,13 @@
-# UK Limited Company tax rates and thresholds for Financial Year 2026
-# (1 April 2026 – 31 March 2027)
-# Source: HMRC — https://www.gov.uk/government/publications/rates-and-allowances-corporation-tax/rates-and-allowances-corporation-tax
-#
-# Note: Corporation Tax uses Financial Years (1 Apr – 31 Mar), not tax years (6 Apr – 5 Apr).
-# For accounting periods ending 31 March, FY2026 applies to the full period.
-# For other year-ends, profits are time-apportioned between two FYs if rates differ.
+# UK Limited Company tax rates and thresholds for Financial Year 2027
+# (1 April 2027 – 31 March 2028)
+# Source: Rates carried forward from FY2026. HMRC has not yet published FY2027 rates.
+# Government committed to 25% main CT rate for this Parliament (Autumn Budget 2024).
+# PROVISIONAL — update when HMRC publishes official FY2027 rates.
 
 [financial_year]
-label = "FY2026"
-start = 2026-04-01
-end = 2027-03-31
+label = "FY2027"
+start = 2027-04-01
+end = 2028-03-31
 
 [corporation_tax]
 main_rate = 0.25

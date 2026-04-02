@@ -292,7 +292,7 @@ describe("SE generateSpreadsheet", () => {
 
 // ── Ltd cell edits ────────────────────────────────────────────────────────
 
-const LTD_DIR = resolve(APP_DIR, "templates", "ltd-mar");
+const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
 
 describe("buildLtdCellEdits", () => {
   const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));

@@ -259,7 +259,7 @@ const basicToml = formatScenarioToml(
     name: "Precision Code Ltd - basic",
     description:
       "Small limited company IT consultancy with steady consultancy income and standard expenses, extracted from DIYA GL example data",
-    product: "ltd-mar",
+    product: "ltd",
     tax_regime: "ltd",
   },
   basicGrouped,
@@ -286,7 +286,7 @@ const extendedToml = formatScenarioToml(
     name: "Precision Code Ltd - extended",
     description:
       "Full sales and purchases from DIYA GL example data, all account codes included",
-    product: "ltd-mar",
+    product: "ltd",
     tax_regime: "ltd",
   },
   extendedGrouped,
@@ -302,7 +302,7 @@ const fullToml = formatScenarioToml(
     name: "Precision Code Ltd - full",
     description:
       "All transactions from DIYA GL example data including sales, purchases, and bank",
-    product: "ltd-mar",
+    product: "ltd",
     tax_regime: "ltd",
   },
   fullGrouped,
