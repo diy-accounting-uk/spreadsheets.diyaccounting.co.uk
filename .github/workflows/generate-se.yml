@@ -180,32 +180,22 @@ jobs:
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package se --scenario basic --year-end ${{ matrix.year-end }}
       - run: npm run reconciliation -- --package se --scenario extended --year-end ${{ matrix.year-end }}
-      - name: Generate empty screenshots
-        run: |
-          mkdir -p /tmp/screenshots
-          for xlsx in packages/*${{ matrix.year-end }}*/Financialaccounts.xlsx; do
-            [ -f "$xlsx" ] || continue
-            base=$(basename "$xlsx" .xlsx)
-            dir=$(basename "$(dirname "$xlsx")" | sed "s/ /_/g")
-            libreoffice --headless --norestore --calc \
-              -env:UserInstallation="file:///tmp/lo_empty_$$" \
-              --convert-to pdf --outdir /tmp/screenshots/ "$xlsx" 2>/dev/null || true
-            pdf="/tmp/screenshots/${base}.pdf"
-            [ -f "$pdf" ] && mv "$pdf" "reports/${dir}_empty.pdf"
-          done
-      - name: Generate scenario screenshots
+      - name: Generate screenshots
         run: |
           mkdir -p /tmp/screenshots
           for dir in reports/populated/*/; do
             [ -d "$dir" ] || continue
-            fa="${dir}Financialaccounts.xlsx"
-            [ -f "$fa" ] || continue
             name=$(basename "$dir")
-            libreoffice --headless --norestore --calc \
-              -env:UserInstallation="file:///tmp/lo_pop_$$" \
-              --convert-to pdf --outdir /tmp/screenshots/ "$fa" 2>/dev/null || true
-            pdf="/tmp/screenshots/Financialaccounts.pdf"
-            [ -f "$pdf" ] && mv "$pdf" "reports/${name}.pdf"
+            for xlsx in "$dir"*.xlsx; do
+              [ -f "$xlsx" ] || continue
+              node scripts/enable-print-headers.cjs "$xlsx"
+              base=$(basename "$xlsx" .xlsx)
+              libreoffice --headless --norestore --calc \
+                -env:UserInstallation="file:///tmp/lo_ss_$$" \
+                --convert-to pdf --outdir /tmp/screenshots/ "$xlsx" 2>/dev/null || true
+              pdf="/tmp/screenshots/${base}.pdf"
+              [ -f "$pdf" ] && mv "$pdf" "reports/${name}_${base}.pdf"
+            done
           done
       - run: rm -rf reports/populated
       - name: Check reconciliation
