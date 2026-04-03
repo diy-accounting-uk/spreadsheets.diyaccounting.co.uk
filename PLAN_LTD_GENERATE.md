@@ -129,19 +129,75 @@ Example on 6 March 2026:
 
 ### Phase 5: Non-March Reconciliation Fix — TODO
 
-Non-March year-end reconciliation produces `#VALUE!` errors in Sales.xlsx after xls roundtrip. The generation is correct (formulas renamed, data in right tabs, external link caches populated) but LibreOffice's xls roundtrip corrupts VAT calculation formulas in months beyond the first.
+Non-March year-end reconciliation produces `#VALUE!` errors in Sales.xlsx after xls roundtrip. The generation is correct (formulas renamed, data in right tabs, external link caches populated) but LibreOffice's xls roundtrip corrupts formula calculations in months beyond the first tab.
 
-Root cause investigation:
-- Jul (first month) works: F1=8560, G1=1427, O1=5833 (correct)
-- Aug onwards: G1=#VALUE!, H1=#VALUE!, O1=#VALUE!
-- The VAT formula `=IF(G$4>0,...,IF(F5<>0,F5*G$2/(100+G$2)," "))` fails after roundtrip
-- Likely cause: xls format doesn't preserve shared formulas correctly across renamed tabs
-- The xlsx→xls→xlsx roundtrip that forces recalculation is the same approach used for BST/SE/Taxi (single file products) and for March Ltd. The issue is specific to RENAMED tabs in the roundtrip.
+#### Root cause analysis
 
-Possible fixes:
-1. Write data directly into Sales row 1 totals (bypass the formula calculation) — like we do for external link caches
-2. Use a different recalculation approach for non-March (macro-based?)
-3. Accept March-only reconciliation and validate non-March by verifying the generated xlsx structure matches originals
+**Symptoms:**
+- Jul (first renamed tab): F1=8560, G1=1427, O1=5833 — ALL correct
+- Aug, Sep, ..., Jun (tabs 2-12): F1=correct (SUM works), G1=#VALUE!, H1=#VALUE!, O1=#VALUE!
+- The formulas that fail are IF-based: `=IF(G$4>0,...,IF(F5<>0,F5*G$2/(100+G$2)," "))`
+- Simple SUM formulas (F1) work fine across all tabs
+
+**Root cause:** Sales/Purchases template sheets use **shared formulas** (`<f t="shared" si="N"/>`) for columns G (VAT), H (net), and O-U (analysis). Row 5 in each sheet defines the master formula; rows 6-300 reference it via shared formula group indices. When our XML cell surgery (`spreadsheet-runner.js`) writes data into cells in these rows, it inserts `<c>` elements that disrupt the shared formula chain. The xls roundtrip then fails to evaluate shared formula members in tabs beyond the first.
+
+**Evidence:**
+- March year-end works because tabs are NOT renamed (template's original shared formula structure intact)
+- The first renamed tab (Jul for Jun year-end) works — its shared formula master evaluates
+- Subsequent tabs' shared formula members point to the same `si` index but the chain is broken
+- Double xls roundtrip loses ALL data (even F column zeros out) — the corruption compounds
+- ODS roundtrip doesn't recalculate at all (not a viable alternative)
+- Skipping leaf roundtrip and relying on LibreOffice to resolve external links during hub conversion doesn't work (LibreOffice `--convert-to` never resolves external links)
+
+#### Approaches tested
+
+| Approach | Result |
+|----------|--------|
+| xls roundtrip (xlsx→xls→xlsx) | First tab OK, others #VALUE! |
+| ODS roundtrip (xlsx→ods→xlsx) | No recalculation — all zeros |
+| No leaf roundtrip, hub-only | LibreOffice doesn't resolve external links — all zeros |
+| Double xls roundtrip | All data lost — worse than single |
+
+#### Proposed fix: flatten shared formulas in templates
+
+**One-time template transformation** to eliminate shared formulas in Sales.xlsx and Purchases.xlsx:
+
+1. In each sheet of the template, find all `<f t="shared" ref="..." si="N">formula</f>` (master) and `<f t="shared" si="N"/>` (member) elements
+2. For the master: extract the formula text and the reference range
+3. For each member in the range: compute the formula for that row (adjusting relative row references) and replace with an explicit `<f>adjusted_formula</f>`
+4. Remove all `t="shared"`, `ref="..."`, and `si="..."` attributes
+
+This converts e.g.:
+```xml
+<c r="G5"><f t="shared" ref="G5:G300" si="2">IF(G$4>0,...)</f></c>
+<c r="G6"><f t="shared" si="2"/></c>
+<c r="G7"><f t="shared" si="2"/></c>
+```
+to:
+```xml
+<c r="G5"><f>IF(G$4>0,...)</f></c>
+<c r="G6"><f>IF(G$4>0,...)</f></c>
+<c r="G7"><f>IF(G$4>0,...)</f></c>
+```
+
+(Each formula is identical since the original uses `$` absolute references for the rate cells and relative references for the data row.)
+
+**Why this should work:**
+- Each cell has its own formula — no shared formula chain to break
+- The xls roundtrip evaluates each formula independently
+- No dependency on formula group indices across tabs
+- The template file size increases slightly but is a one-time cost
+
+**Verification plan:**
+1. Flatten shared formulas in Sales.xlsx and Purchases.xlsx templates
+2. Regenerate March year-end package
+3. Reconcile March — must still RECONCILE (regression check)
+4. Regenerate Jun26 package
+5. Reconcile Jun26 — should now RECONCILE
+6. If both pass, apply to all 4 bank account templates too (same shared formula pattern)
+
+**Alternative: LibreOffice UNO scripting**
+If flattening doesn't work, use LibreOffice's Python UNO API to open files, write data via the API (respecting shared formulas), recalculate, and save. More complex but doesn't require template changes.
 
 ## Detailed Package Internal Structure
 
