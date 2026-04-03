@@ -34,6 +34,7 @@ on:
 
 permissions:
   contents: write
+  workflows: write
 
 env:
   NODE_VERSION: '24'
