@@ -737,6 +737,33 @@ export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vati
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
+// ── External link sheet name renaming (Ltd Company) ─────────────────────────
+
+export async function renameExternalLinkSheetNames(xlsxBuffer, yearEndMonth) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) return xlsxBuffer;
+
+  const linkFiles = Object.keys(zip.files).filter((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f));
+
+  for (const linkPath of linkFiles) {
+    let xml = await zip.file(linkPath).async("string");
+    const placeholders = templateTabs.map((_, i) => `__EL_${i}__`);
+    for (let i = 0; i < 12; i++) {
+      xml = xml.replace(new RegExp(`sheetName val="${templateTabs[i]}"`, "g"), `sheetName val="${placeholders[i]}"`);
+    }
+    for (let i = 0; i < 12; i++) {
+      xml = xml.replace(new RegExp(placeholders[i], "g"), targetTabs[i]);
+    }
+    const origDate = zip.file(linkPath).date;
+    zip.file(linkPath, xml, { date: origDate });
+  }
+
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
 // ── Output naming ───────────────────────────────────────────────────────────
 
 export function formatDateDDMMYY(date) {

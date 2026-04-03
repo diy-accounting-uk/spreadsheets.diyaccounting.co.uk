@@ -215,13 +215,14 @@ async function main() {
     for (const pkgDir of matchingDirs) {
       console.log(`  Testing: ${pkgDir}...`);
 
-      // Extract the tax year start from the package directory name
-      const yearEndMatch = pkgDir.match(/(\d{4})-\d{2}-\d{2}/);
+      // Extract the year-end date from the package directory name
+      const yearEndMatch = pkgDir.match(/(\d{4})-(\d{2})-(\d{2})/);
       const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
+      const endMonth = yearEndMatch ? parseInt(yearEndMatch[2], 10) : null;
       const startYear = endYear ? endYear - 1 : null;
 
       // Product module owns cell writes and reads
-      const writes = productMod.cellWrites(scenario, startYear);
+      const writes = productMod.cellWrites(scenario, startYear, endMonth);
       const reads = productMod.standardReads();
 
       let results;

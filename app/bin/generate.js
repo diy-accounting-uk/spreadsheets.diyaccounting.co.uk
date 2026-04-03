@@ -24,6 +24,7 @@ import {
   shortLabel,
   renameMonthTabs,
   rewriteVatinterfaceFormulas,
+  renameExternalLinkSheetNames,
   monthEnd,
 } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
@@ -111,6 +112,10 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
         buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
+      }
+
+      if (yearEndMonth && fileKey === "financialaccounts") {
+        buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
       }
 
       writeFileSync(resolve(outDir, templateFile), buffer);
