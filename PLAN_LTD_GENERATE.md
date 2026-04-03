@@ -563,7 +563,63 @@ After merge, run the `init.yml` workflow with `delete-packages=true` to regenera
 - Verify Ltd packages for all 12 months appear in the catalogue
 - Check that `scripts/build-packages.cjs` correctly zips the generated Ltd packages
 
-### 6. Future enhancements (separate PLANs)
+### 6. Merge Companysecretary, CT600OnlineLookALike, Fixedassets, Vatreturns into Financialaccounts
+
+**Goal:** Eliminate 4 external links by merging read-only/formula-driven workbooks into the Financialaccounts hub. This simplifies the cross-file recalculation problem and reduces the package from 15 xlsx to 11 xlsx.
+
+**Why it helps:**
+- Removes external links [1] (Fixedassets), [8] (Companysecretary) from Financialaccounts
+- CT600OnlineLookALike currently has 3 outbound links to FA/CompSec/Fixedassets — all become intra-workbook
+- Vatreturns links to FA/Sales/Purchases — merging it means only Sales/Purchases links remain external
+- The xls roundtrip recalculates ALL sheets in a single workbook — no cross-file dependency for these 4
+- Remaining external links would be the 7 data-entry workbooks only: Sales, Purchases, 4 bank accounts, Payslips
+
+**Architecture after merge:**
+```
+Financialaccounts.xlsx (was 12 sheets, becomes ~34 sheets):
+  Existing: OpenAccounts, TrialBalance, MnthP&L, PubP&L, PubBalSht,
+            PubNotes, Report, CorporationTax, CT600, WagesInterface, Stock, Admin
+  From Fixedassets: Schedule, FAreconciliation, HPfinance
+  From Companysecretary: Boardmeeting, Directors&Secretary, RegisterofMembers,
+                         DirectorsInterests, Charges&Debentures
+  From CT600OnlineLookALike: Sheet1 (CT600 online preview)
+  From Vatreturns: VATQtr1-5, Vatinterface, S02Y1, S03Y1, S04Y2, S05Y2,
+                   P02Y1, P03Y1, P04Y2, P05Y2
+
+Remaining separate files (7 data-entry + 3 standalone):
+  Sales.xlsx, Purchases.xlsx, Currentaccount.xlsx, Savingaccount.xlsx,
+  Cashaccount.xlsx, Creditcardaccount.xlsx, Payslips.xlsx
+  Salesinvoice.xlsx, expensesform.xlsx, Dividend Voucher.docx
+```
+
+**Implementation steps:**
+1. Copy sheet XML files from source xlsx zips into Financialaccounts zip
+2. Add `<sheet>` entries to `xl/workbook.xml` with new rIds
+3. Add relationship entries to `xl/_rels/workbook.xml.rels`
+4. Merge shared strings tables (`xl/sharedStrings.xml`) — each xlsx has its own; indices must be remapped in the copied sheet XMLs
+5. Copy any additional style definitions if the merged sheets reference styles not in FA
+6. Rewrite formulas: `[1]Schedule!` → `Schedule!`, `[8]Boardmeeting!` → `Boardmeeting!`, etc.
+7. Remove the now-unused external link XML files and `.rels` entries
+8. Update CT600OnlineLookALike formulas (was `[FA]CorporationTax!` etc., now just `CorporationTax!`)
+9. Rewrite Vatinterface formulas: `[1]Admin!` → `Admin!` (now same workbook)
+10. Renumber remaining external links (Sales becomes [1], Purchases [2], etc.)
+
+**Risks:**
+- Shared strings table merge is the most complex part — every cell with `t="s"` references an index into the table; copied sheets' indices must be offset by the FA table size
+- Defined names scoped to the source workbook need re-scoping to the merged workbook
+- Users who are accustomed to opening Fixedassets.xlsx or Companysecretary.xlsx separately will need to navigate to tabs within Financialaccounts instead
+- The Financialaccounts file size increases (currently 121KB, would grow to ~350KB with all 4 merged)
+
+**Verification:**
+- Generate March package with merged template
+- Reconcile March — must still RECONCILE
+- Verify CT600OnlineLookALike formulas resolve (was 3 external links, now 0)
+- Verify Vatinterface dates populate from Admin (was external link [1], now internal)
+- Verify capital allowances flow from Schedule to CorporationTax (was external link, now internal)
+
+**User experience change:** Fewer files to manage (11 instead of 15), but Financialaccounts becomes a larger workbook with more tabs. The data-entry workflow is unchanged — users still enter sales in Sales.xlsx, purchases in Purchases.xlsx, etc. The merged sheets are all read-only/formula-driven.
+
+### 7. Future enhancements (separate PLANs)
 
 - **PLAN_LTD_MARGINAL_RELIEF.md**: two-tier CT (19%/25%) for profits £50k-£250k
 - **PLAN_DIYA_GL.md**: extended/full test scenarios from structured business data
