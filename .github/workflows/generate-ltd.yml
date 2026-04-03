@@ -153,7 +153,6 @@ jobs:
             YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
             YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" \
-              | awk -v today="$TODAY" '$1 >= today' \
               | head -24 \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
