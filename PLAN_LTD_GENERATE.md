@@ -518,6 +518,58 @@ P02Y1/P03Y1/P04Y2/P05Y2 = quarterly purchase summaries
 | FY2026 | **WDA main rate 18% → 14%**, new 40% FYA introduced | Budget 2025 |
 | FY2027 | Provisional — rates carried from FY2026 | Government commitment |
 
+## What Next
+
+### 1. Flatten shared formulas in templates (unblocks non-March reconciliation)
+
+The xls roundtrip corrupts shared formula members in tabs beyond the first. Fix by replacing all shared formulas with explicit per-cell formulas in the template xlsx files:
+- **Sales.xlsx**: columns G, H, O-U (rows 5-300, 12 monthly sheets)
+- **Purchases.xlsx**: columns G, H, O-AI (rows 5-300, 12 monthly sheets)
+- **Currentaccount.xlsx, Savingaccount.xlsx, Cashaccount.xlsx, Creditcardaccount.xlsx**: analysis columns (12 monthly sheets each)
+
+Write a one-time script (`scripts/flatten-shared-formulas.cjs`) that:
+1. Opens each template xlsx as a zip
+2. For each sheet XML, finds `<f t="shared" ref="..." si="N">formula</f>` masters
+3. For each `<f t="shared" si="N"/>` member, computes the formula for that row
+4. Replaces both with plain `<f>formula</f>`
+5. Saves the modified template
+
+Then verify: March must still RECONCILE, then Jun26 should RECONCILE.
+
+### 2. Verify non-March reconciliation across multiple months
+
+Once flattening works, test at least 3 non-March year-ends:
+- Jun26 (quarter boundary)
+- Sep26 (quarter boundary)
+- Dec25 (calendar year-end)
+- Jan27 (already passes basic — test full scenario)
+
+### 3. Merge branches to main
+
+Three feature branches need merging:
+- `claude/se-generation-plan` — SE product (already reviewed)
+- `claude/ltd-generation` — Ltd March implementation
+- `all-years` — all-months Ltd + extended scenarios + init workflow
+
+Merge in order: SE first (smallest), then Ltd, then all-years.
+
+### 4. Run init workflow on main
+
+After merge, run the `init.yml` workflow with `delete-packages=true` to regenerate all packages from scratch on main. This validates the full pipeline end-to-end.
+
+### 5. Website integration
+
+- Verify the 13-month default selection works in the download dropdown
+- Verify Ltd packages for all 12 months appear in the catalogue
+- Check that `scripts/build-packages.cjs` correctly zips the generated Ltd packages
+
+### 6. Future enhancements (separate PLANs)
+
+- **PLAN_LTD_MARGINAL_RELIEF.md**: two-tier CT (19%/25%) for profits £50k-£250k
+- **PLAN_DIYA_GL.md**: extended/full test scenarios from structured business data
+- **SE extended scenario**: create `se-scenario-extended.toml` ✓ (done on all-years)
+- **Non-March Payslips**: for year-ends that span two PAYE years, investigate if a single Payslips file suffices or if two are needed
+
 ## Decision Log
 
 | Date | Decision | Rationale |
