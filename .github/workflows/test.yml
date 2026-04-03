@@ -191,9 +191,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
-
       - name: Install dependencies
         run: |
           apt-get update && apt-get install -y zip
