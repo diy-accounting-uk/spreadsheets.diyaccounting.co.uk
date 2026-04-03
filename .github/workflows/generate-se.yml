@@ -192,23 +192,6 @@ jobs:
             cp -r "$POPULATED" examples/se-latest
             echo "Copied $POPULATED to examples/se-latest"
           fi
-      - name: Generate screenshots
-        run: |
-          mkdir -p /tmp/screenshots
-          for dir in reports/populated/*/; do
-            [ -d "$dir" ] || continue
-            name=$(basename "$dir")
-            for xlsx in "$dir"*.xlsx; do
-              [ -f "$xlsx" ] || continue
-              node scripts/enable-print-headers.cjs "$xlsx"
-              base=$(basename "$xlsx" .xlsx)
-              libreoffice --headless --norestore --calc \
-                -env:UserInstallation="file:///tmp/lo_ss_$$" \
-                --convert-to pdf --outdir /tmp/screenshots/ "$xlsx" 2>/dev/null || true
-              pdf="/tmp/screenshots/${base}.pdf"
-              [ -f "$pdf" ] && mv "$pdf" "reports/${name}_${base}.pdf"
-            done
-          done
       - run: rm -rf reports/populated
       - name: Check reconciliation
         run: |

@@ -179,19 +179,6 @@ jobs:
             cp "$POPULATED" examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx
             echo "Copied $POPULATED to examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx"
           fi
-      - name: Generate screenshots
-        run: |
-          mkdir -p /tmp/screenshots
-          for xlsx in reports/populated/*.xlsx; do
-            [ -f "$xlsx" ] || continue
-            node scripts/enable-print-headers.cjs "$xlsx"
-            name=$(basename "$xlsx" .xlsx)
-            libreoffice --headless --norestore --calc \
-              -env:UserInstallation="file:///tmp/lo_ss_$$" \
-              --convert-to pdf --outdir /tmp/screenshots/ "$xlsx" 2>/dev/null || true
-            pdf="/tmp/screenshots/${name}.pdf"
-            [ -f "$pdf" ] && mv "$pdf" "reports/${name}.pdf"
-          done
       - run: rm -rf reports/populated
       - name: Check reconciliation
         run: |
