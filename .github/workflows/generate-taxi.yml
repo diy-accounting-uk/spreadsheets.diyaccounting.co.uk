@@ -102,7 +102,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci || sleep 30 && npm ci
       - run: npm test
 
   generate:
@@ -116,7 +116,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci || sleep 30 && npm ci
       - name: Install pandoc and weasyprint
         timeout-minutes: 5
         run: |
@@ -159,7 +159,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm ci
+      - run: npm ci || sleep 30 && npm ci
       - name: Install LibreOffice
         timeout-minutes: 5
         run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc

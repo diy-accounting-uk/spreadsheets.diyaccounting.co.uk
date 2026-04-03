@@ -11,5 +11,4 @@ npm run update-to-greatest
 npm update
 npm upgrade
 npm install
-npm run build
 npm link

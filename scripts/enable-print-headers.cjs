@@ -15,9 +15,7 @@ async function enableHeaders(filePath) {
   const buf = fs.readFileSync(filePath);
   const zip = await JSZip.loadAsync(buf);
 
-  const sheetFiles = Object.keys(zip.files).filter(
-    (f) => f.startsWith("xl/worksheets/sheet") && f.endsWith(".xml")
-  );
+  const sheetFiles = Object.keys(zip.files).filter((f) => f.startsWith("xl/worksheets/sheet") && f.endsWith(".xml"));
 
   let modified = 0;
   for (const path of sheetFiles) {

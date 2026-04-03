@@ -164,7 +164,7 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci
+        run: npm ci || sleep 30 && npm ci
 
       - name: Build spreadsheets redirects
         run: npm run build:redirects

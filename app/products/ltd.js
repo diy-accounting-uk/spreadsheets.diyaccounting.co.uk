@@ -65,7 +65,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Target period start: month after year-end (yearEndMonth % 12)
   const sourceStartMonth = 3; // April (0-indexed)
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
-  const monthOffset = ((targetStartMonth - sourceStartMonth) + 12) % 12;
+  const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
 
   // Build tab name sequence for the target year-end
   const tabNames = getMonthTabNames(yem);

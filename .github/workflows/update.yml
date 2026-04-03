@@ -1,0 +1,233 @@
+name: update
+run-name: "update from ${{ github.ref_name }}"
+concurrency:
+  group: update-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+    inputs:
+      skip-formatting:
+        description: 'Skip formatting'
+        type: boolean
+        default: false
+      skip-node-update:
+        description: 'Skip node dependency update'
+        type: boolean
+        default: false
+      skip-java-update:
+        description: 'Skip java dependency update'
+        type: boolean
+        default: false
+      skip-commit:
+        description: 'Skip commit'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+
+  params:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: "github.event_name=[${{ github.event_name }}]"
+        run: ":"
+      - name: "github.ref=[${{ github.ref }}]"
+        run: ":"
+      - name: "inputs.skip-formatting=[${{ inputs.skip-formatting }}]"
+        run: ":"
+      - name: "inputs.skip-node-update=[${{ inputs.skip-node-update }}]"
+        run: ":"
+      - name: "inputs.skip-java-update=[${{ inputs.skip-java-update }}]"
+        run: ":"
+      - name: "inputs.skip-commit=[${{ inputs.skip-commit }}]"
+        run: ":"
+      - name: Normalise Params
+        id: normalise
+        shell: bash
+        run: |
+          SKIP_FORMATTING='${{ inputs.skip-formatting }}'; [[ -z "$SKIP_FORMATTING" ]] && SKIP_FORMATTING="false"
+          echo "skip-formatting=${SKIP_FORMATTING}" | tee -a "$GITHUB_OUTPUT"
+          SKIP_NODE_UPDATE='${{ inputs.skip-node-update }}'; [[ -z "$SKIP_NODE_UPDATE" ]] && SKIP_NODE_UPDATE="false"
+          echo "skip-node-update=${SKIP_NODE_UPDATE}" | tee -a "$GITHUB_OUTPUT"
+          SKIP_JAVA_UPDATE='${{ inputs.skip-java-update }}'; [[ -z "$SKIP_JAVA_UPDATE" ]] && SKIP_JAVA_UPDATE="false"
+          echo "skip-java-update=${SKIP_JAVA_UPDATE}" | tee -a "$GITHUB_OUTPUT"
+          SKIP_COMMIT='${{ inputs.skip-commit }}'; [[ -z "$SKIP_COMMIT" ]] && SKIP_COMMIT="false"
+          echo "skip-commit=${SKIP_COMMIT}" | tee -a "$GITHUB_OUTPUT"
+    outputs:
+      skip-formatting: ${{ steps.normalise.outputs.skip-formatting }}
+      skip-node-update: ${{ steps.normalise.outputs.skip-node-update }}
+      skip-java-update: ${{ steps.normalise.outputs.skip-java-update }}
+      skip-commit: ${{ steps.normalise.outputs.skip-commit }}
+
+  formatting:
+    runs-on: ubuntu-24.04
+    needs: [params]
+    if: ${{ needs.params.outputs.skip-formatting != 'true' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - run: npm ci || sleep 30 && npm ci
+      - run: npm run formatting-fix
+      - uses: actions/upload-artifact@v7
+        with:
+          name: formatting-changes
+          retention-days: 1
+          path: |
+            **/*.js
+            **/*.cjs
+            **/*.mjs
+            **/*.ts
+            **/*.json
+            **/*.yml
+            **/*.yaml
+            **/*.toml
+            **/*.html
+            **/*.css
+            **/*.md
+            **/*.java
+            !node_modules/**
+            !.mvn/**
+
+  node-update:
+    runs-on: ubuntu-24.04
+    needs: [params]
+    if: ${{ needs.params.outputs.skip-node-update != 'true' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci || sleep 30 && npm ci
+      - run: npm run update:node
+      - uses: actions/upload-artifact@v7
+        with:
+          name: node-update-changes
+          retention-days: 1
+          path: |
+            package.json
+            package-lock.json
+
+  java-update:
+    runs-on: ubuntu-24.04
+    needs: [params]
+    if: ${{ needs.params.outputs.skip-java-update != 'true' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - run: npm run update:java
+      - uses: actions/upload-artifact@v7
+        with:
+          name: java-update-changes
+          retention-days: 1
+          path: pom.xml
+
+  validate:
+    runs-on: ubuntu-24.04
+    needs: [params, formatting, node-update, java-update]
+    if: ${{ !cancelled() && (needs.formatting.result == 'success' || needs.formatting.result == 'skipped') && (needs.node-update.result == 'success' || needs.node-update.result == 'skipped') && (needs.java-update.result == 'success' || needs.java-update.result == 'skipped') }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: formatting-changes
+          path: .
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: node-update-changes
+          path: .
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: java-update-changes
+          path: .
+      - run: npm ci || sleep 30 && npm ci
+      - run: npm test
+      - run: ./mvnw clean verify
+
+  commit:
+    runs-on: ubuntu-24.04
+    needs: [params, formatting, node-update, java-update, validate]
+    if: ${{ !cancelled() && needs.validate.result == 'success' && needs.params.outputs.skip-commit != 'true' }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: formatting-changes
+          path: .
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: node-update-changes
+          path: .
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: java-update-changes
+          path: .
+      - name: Commit and push
+        id: push
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git diff --staged --name-only | head -50
+            git commit -m "Update formatting and dependencies
+
+          Triggered by: ${{ github.sha }}"
+            git pull --rebase
+            git push
+          fi
+      - name: Retry push after delay
+        if: ${{ steps.push.outcome == 'failure' }}
+        run: |
+          for i in 5 10 15 20 25 30; do
+            echo "Waiting... ${i}s"
+            sleep 5
+          done
+          git pull --rebase
+          git push

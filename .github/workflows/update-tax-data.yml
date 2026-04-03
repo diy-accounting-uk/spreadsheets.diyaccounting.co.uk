@@ -45,7 +45,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - run: npm ci
+      - run: npm ci || sleep 30 && npm ci
 
       - name: Generate HMRC rate URLs
         id: urls
