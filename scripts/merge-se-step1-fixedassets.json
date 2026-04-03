@@ -11,9 +11,7 @@
         { "pattern": "\\[__PURCHASES__\\]", "replacement": "[3]", "flags": "g" },
         { "pattern": "\\[__SALES__\\]", "replacement": "[2]", "flags": "g" }
       ],
-      "hubLinkRewrites": [
-        { "pattern": "\\[1\\]Schedule!", "replacement": "Schedule!", "flags": "g" }
-      ],
+      "hubLinkRewrites": [{ "pattern": "\\[1\\]Schedule!", "replacement": "Schedule!", "flags": "g" }],
       "removeExternalLinks": [1],
       "definedNames": []
     }

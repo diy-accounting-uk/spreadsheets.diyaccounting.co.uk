@@ -4,9 +4,7 @@
       "hub": "app/templates/se/Financialaccounts.xlsx",
       "source": "app/templates/se/Vat.xlsx",
       "removeSource": false,
-      "linkRewrites": [
-        { "pattern": "\\[1\\]Admin!", "replacement": "Admin!", "flags": "g" }
-      ],
+      "linkRewrites": [{ "pattern": "\\[1\\]Admin!", "replacement": "Admin!", "flags": "g" }],
       "hubLinkRewrites": [],
       "removeExternalLinks": [],
       "definedNames": [

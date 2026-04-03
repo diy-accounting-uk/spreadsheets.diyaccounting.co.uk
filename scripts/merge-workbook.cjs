@@ -73,7 +73,7 @@ function extractSharedStringEntries(ssXml) {
 function offsetSharedStringRefs(xml, offset) {
   return xml.replace(
     /(<c\s+r="[A-Z]+\d+"[^>]*\st="s"[^>]*><v>)(\d+)(<\/v>)/g,
-    (match, pre, idx, post) => `${pre}${parseInt(idx) + offset}${post}`
+    (match, pre, idx, post) => `${pre}${parseInt(idx) + offset}${post}`,
   );
 }
 
@@ -134,7 +134,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
       0,
       ...Object.keys(hubZip.files)
         .filter((f) => f.match(/xl\/worksheets\/sheet\d+\.xml$/))
-        .map((f) => parseInt(f.match(/sheet(\d+)/)[1]))
+        .map((f) => parseInt(f.match(/sheet(\d+)/)[1])),
     ) + 1;
 
   const newSheetEntries = [];
@@ -166,9 +166,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
       hubZip.file(newPrinterPath, printerRels);
     }
 
-    const printerSettingsFiles = Object.keys(srcZip.files).filter(
-      (f) => f.startsWith("xl/printerSettings/") && !hubZip.files[f]
-    );
+    const printerSettingsFiles = Object.keys(srcZip.files).filter((f) => f.startsWith("xl/printerSettings/") && !hubZip.files[f]);
     for (const psf of printerSettingsFiles) {
       const content = await srcZip.file(psf).async("nodebuffer");
       hubZip.file(psf, content);
@@ -188,9 +186,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
   }
 
   let updatedWbXml = hubWbXml;
-  const sheetInsertions = newSheetEntries
-    .map((s) => `<sheet name="${s.name}" sheetId="${s.sheetId}" r:id="${s.rId}"/>`)
-    .join("");
+  const sheetInsertions = newSheetEntries.map((s) => `<sheet name="${s.name}" sheetId="${s.sheetId}" r:id="${s.rId}"/>`).join("");
   updatedWbXml = updatedWbXml.replace("</sheets>", sheetInsertions + "</sheets>");
 
   if (config.definedNames) {
@@ -207,9 +203,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
   });
 
   let updatedRelsXml = hubRelsXml;
-  const relInsertions = newRelEntries
-    .map((r) => `<Relationship Id="${r.id}" Type="${r.type}" Target="${r.target}"/>`)
-    .join("");
+  const relInsertions = newRelEntries.map((r) => `<Relationship Id="${r.id}" Type="${r.type}" Target="${r.target}"/>`).join("");
   updatedRelsXml = updatedRelsXml.replace("</Relationships>", relInsertions + "</Relationships>");
 
   if (config.removeExternalLinks) {
@@ -219,10 +213,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
       hubZip.remove(linkPath);
       if (hubZip.files[linkRelsPath]) hubZip.remove(linkRelsPath);
 
-      const linkRelPattern = new RegExp(
-        `<Relationship[^>]*Target="externalLinks/externalLink${linkNum}\\.xml"[^/]*/>`,
-        "g"
-      );
+      const linkRelPattern = new RegExp(`<Relationship[^>]*Target="externalLinks/externalLink${linkNum}\\.xml"[^/]*/>`, "g");
       updatedRelsXml = updatedRelsXml.replace(linkRelPattern, "");
       console.log(`  Removed external link ${linkNum}`);
     }
@@ -233,9 +224,7 @@ async function mergeWorkbook(hubPath, sourcePath, config) {
   });
 
   if (config.hubLinkRewrites) {
-    const sheetFiles = Object.keys(hubZip.files).filter(
-      (f) => f.startsWith("xl/worksheets/sheet") && f.endsWith(".xml")
-    );
+    const sheetFiles = Object.keys(hubZip.files).filter((f) => f.startsWith("xl/worksheets/sheet") && f.endsWith(".xml"));
     for (const sf of sheetFiles) {
       let xml = await hubZip.file(sf).async("string");
       const orig = xml;
