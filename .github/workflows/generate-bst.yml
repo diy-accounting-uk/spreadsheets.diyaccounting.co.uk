@@ -123,17 +123,31 @@ jobs:
       - run: rm -rf packages
       - run: npm run generate -- --package bst
       - run: npm test
+      - name: Compute reconciliation matrix
+        id: matrix
+        run: |
+          YEAR_ENDS=$(ls -d packages/GB\ Accounts\ Basic\ Sole\ Trader*/ 2>/dev/null \
+            | sed 's|.*/GB Accounts Basic Sole Trader \([0-9-]*\).*|\1|' \
+            | sort -r \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
           name: bst-packages
           retention-days: 1
           path: packages/
+    outputs:
+      matrix: ${{ steps.matrix.outputs.year-ends }}
 
   reconcile:
     runs-on: ubuntu-24.04
     needs: [params, generate]
-    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' }}
-    timeout-minutes: 30
+    if: ${{ !cancelled() && (needs.generate.result == 'success' || needs.generate.result == 'skipped') && needs.params.outputs.skip-reconciliation != 'true' && needs.generate.outputs.matrix != '[]' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        year-end: ${{ fromJson(needs.generate.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -149,12 +163,12 @@ jobs:
           name: bst-packages
           path: packages/
       - run: rm -f reports/*.md
-      - run: npm run reconciliation -- --package bst --scenario basic
-      - run: npm run reconciliation -- --package bst --scenario extended
+      - run: npm run reconciliation -- --package bst --scenario basic --year-end ${{ matrix.year-end }}
+      - run: npm run reconciliation -- --package bst --scenario extended --year-end ${{ matrix.year-end }}
       - name: Generate empty screenshots
         run: |
           mkdir -p /tmp/screenshots
-          for xlsx in packages/*/Financialaccountsto*.xlsx; do
+          for xlsx in packages/*${{ matrix.year-end }}*/Financialaccountsto*.xlsx; do
             [ -f "$xlsx" ] || continue
             base=$(basename "$xlsx" .xlsx)
             dir=$(basename "$(dirname "$xlsx")" | sed "s/ /_/g")
@@ -187,23 +201,23 @@ jobs:
             if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
           done
           if [ "$COUNT" -eq 0 ]; then
-            echo "::error::No reconciliation reports produced"
+            echo "::error::No reconciliation reports for ${{ matrix.year-end }}"
             exit 1
           fi
           if [ "$FAIL" -eq 1 ]; then
-            echo "::error::Reconciliation found anomalies"
+            echo "::error::Reconciliation anomaly for ${{ matrix.year-end }}"
             exit 1
           fi
           echo "$COUNT reports, all RECONCILES"
       - uses: actions/upload-artifact@v7
         with:
-          name: bst-reports
+          name: bst-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [params, reconcile]
+    needs: [params, generate, reconcile]
     if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
       - uses: actions/checkout@v6
@@ -216,8 +230,9 @@ jobs:
           path: packages/
       - uses: actions/download-artifact@v8
         with:
-          name: bst-reports
+          pattern: bst-reports-*
           path: reports/
+          merge-multiple: true
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
