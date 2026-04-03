@@ -53,7 +53,7 @@ on:
         type: boolean
         default: false
       reconcile-all:
-        description: 'Reconcile all packages (not just latest 15 future)'
+        description: 'Reconcile all packages (not just latest 24 months)'
         type: boolean
         default: false
 
@@ -154,7 +154,7 @@ jobs:
           else
             YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" \
               | awk -v today="$TODAY" '$1 >= today' \
-              | head -15 \
+              | head -24 \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
