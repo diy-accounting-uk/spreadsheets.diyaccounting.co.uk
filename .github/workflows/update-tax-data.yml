@@ -2,8 +2,8 @@ name: update-tax-data
 run-name: "update-tax-data from ${{ github.ref_name }}"
 
 on:
-  schedule:
-    - cron: '0 8 1 4,11 *'
+  #schedule:
+  #  - cron: '47 2 23 * *'
   workflow_call:
     inputs:
       year:

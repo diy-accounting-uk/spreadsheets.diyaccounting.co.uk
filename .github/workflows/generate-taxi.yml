@@ -5,6 +5,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  schedule:
+    - cron: '47 3 * * *'
   push:
     branches:
       - '**'
