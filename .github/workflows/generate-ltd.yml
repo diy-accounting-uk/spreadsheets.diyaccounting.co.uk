@@ -124,16 +124,6 @@ jobs:
           pip install --quiet weasyprint
       - run: rm -rf packages
       - run: npm run generate -- --package ltd
-      - name: Create Payslip 05 packages
-        run: |
-          for ltd_dir in packages/GB\ Accounts\ Company*/; do
-            [ -d "$ltd_dir" ] || continue
-            label=$(basename "$ltd_dir" | sed 's/Company/Payslip 05/')
-            p05_dir="packages/${label}"
-            mkdir -p "$p05_dir"
-            payslips="$ltd_dir/Payslips.xlsx"
-            [ -f "$payslips" ] && cp "$payslips" "$p05_dir/"
-          done
       - run: npm test
       - name: Compute reconciliation matrix (latest 15 future year-ends)
         id: matrix
