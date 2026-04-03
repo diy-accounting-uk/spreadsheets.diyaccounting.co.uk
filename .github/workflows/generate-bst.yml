@@ -177,8 +177,8 @@ jobs:
           mkdir -p examples/bst-latest
           POPULATED=$(ls reports/populated/*bst-scenario-extended*.xlsx 2>/dev/null | head -1)
           if [ -f "$POPULATED" ]; then
-            cp "$POPULATED" examples/bst-latest/
-            echo "Copied $POPULATED to examples/bst-latest/"
+            cp "$POPULATED" examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx
+            echo "Copied $POPULATED to examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx"
           fi
       - name: Generate screenshots
         run: |

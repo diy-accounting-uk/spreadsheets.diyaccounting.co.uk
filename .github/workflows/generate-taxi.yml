@@ -176,8 +176,8 @@ jobs:
           mkdir -p examples/taxi-latest
           POPULATED=$(ls reports/populated/*taxi-scenario-basic*.xlsx 2>/dev/null | head -1)
           if [ -f "$POPULATED" ]; then
-            cp "$POPULATED" examples/taxi-latest/
-            echo "Copied $POPULATED to examples/taxi-latest/"
+            cp "$POPULATED" examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx
+            echo "Copied $POPULATED to examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx"
           fi
       - name: Generate screenshots
         run: |
