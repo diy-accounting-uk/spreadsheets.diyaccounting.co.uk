@@ -133,6 +133,8 @@ jobs:
             | sort -r \
             | jq -R -s -c 'split("\n") | map(select(length > 0))')
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
+          LATEST=$(echo "$YEAR_ENDS" | jq -r '.[0]')
+          echo "latest=$LATEST" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
           name: taxi-packages
@@ -140,6 +142,7 @@ jobs:
           path: packages/
     outputs:
       matrix: ${{ steps.matrix.outputs.year-ends }}
+      latest: ${{ steps.matrix.outputs.latest }}
 
   reconcile:
     runs-on: ubuntu-24.04
@@ -166,6 +169,16 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package taxi --scenario basic --year-end ${{ matrix.year-end }}
+      - name: Copy latest populated to examples
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        run: |
+          rm -rf examples/taxi-latest
+          mkdir -p examples/taxi-latest
+          POPULATED=$(ls reports/populated/*taxi-scenario-basic*.xlsx 2>/dev/null | head -1)
+          if [ -f "$POPULATED" ]; then
+            cp "$POPULATED" examples/taxi-latest/
+            echo "Copied $POPULATED to examples/taxi-latest/"
+          fi
       - name: Generate screenshots
         run: |
           mkdir -p /tmp/screenshots
@@ -203,6 +216,12 @@ jobs:
           name: taxi-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
+      - uses: actions/upload-artifact@v7
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        with:
+          name: taxi-examples
+          retention-days: 1
+          path: examples/
 
   commit:
     runs-on: ubuntu-24.04
@@ -222,6 +241,11 @@ jobs:
           pattern: taxi-reports-*
           path: reports/
           merge-multiple: true
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: taxi-examples
+          path: examples/
       - name: Commit and push
         id: push
         continue-on-error: true
@@ -229,7 +253,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          git add packages/ reports/
+          git add packages/ reports/ examples/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

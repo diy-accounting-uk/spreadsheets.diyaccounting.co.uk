@@ -23,10 +23,12 @@ files = [
   "Dividend Voucher.docx",
 ]
 guide = "ltd-guide.md"
+payslip_guide = "payslip-guide.md"
 
 [output]
 dir_pattern = "{prefix} {name} {year_end_date} ({short_label}) {format}"
 guide_filename = "Company Accounts User Guide.pdf"
+payslip_guide_filename = "Payslip User Guide.pdf"
 
 [sheets.financialaccounts]
 admin = "xl/worksheets/sheet12.xml"

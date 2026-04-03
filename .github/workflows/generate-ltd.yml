@@ -124,6 +124,7 @@ jobs:
     timeout-minutes: 60
     outputs:
       matrix: ${{ steps.matrix.outputs.year-ends }}
+      latest: ${{ steps.matrix.outputs.latest }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -157,6 +158,8 @@ jobs:
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
+          LATEST=$(echo "$ALL_YEAR_ENDS" | head -1)
+          echo "latest=$LATEST" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
           name: ltd-packages
@@ -188,6 +191,15 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package ltd --scenario full --year-end ${{ matrix.year-end }}
+      - name: Copy latest populated to examples
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        run: |
+          rm -rf examples/ltd-latest
+          POPULATED=$(ls -d reports/populated/*ltd-scenario-full 2>/dev/null | head -1)
+          if [ -d "$POPULATED" ]; then
+            cp -r "$POPULATED" examples/ltd-latest
+            echo "Copied $POPULATED to examples/ltd-latest"
+          fi
       - name: Generate screenshots
         run: |
           mkdir -p /tmp/screenshots
@@ -229,6 +241,12 @@ jobs:
           name: ltd-reports-${{ matrix.year-end }}
           retention-days: 1
           path: reports/
+      - uses: actions/upload-artifact@v7
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        with:
+          name: ltd-examples
+          retention-days: 1
+          path: examples/
 
   commit:
     runs-on: ubuntu-24.04
@@ -248,6 +266,11 @@ jobs:
           pattern: ltd-reports-*
           path: reports/
           merge-multiple: true
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: ltd-examples
+          path: examples/
       - name: Commit and push
         id: push
         continue-on-error: true
@@ -255,7 +278,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          git add packages/ reports/
+          git add packages/ reports/ examples/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
