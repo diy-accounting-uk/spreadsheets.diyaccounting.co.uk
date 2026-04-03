@@ -201,82 +201,284 @@ If flattening doesn't work, use LibreOffice's Python UNO API to open files, writ
 
 ## Detailed Package Internal Structure
 
-### Financialaccounts.xlsx (12 sheets, Admin = sheet12.xml)
+### Workbook and Sheet Map
 
-Hub file with 9 outbound external links. All dates cascade from F21 (year-end).
-
-**Sheet flow:**
 ```
-Admin (F21 → B-column dates, tax rates)
-  ↓
-TrialBalance (accumulates monthly from Sales/Purchases/Bank via external links)
-  ↓
-MnthP&L (monthly management accounts, column B = annual SUM(C:N))
-  ↓
-PubP&L (published statutory format)
-PubBalSht (published balance sheet)
-PubNotes (notes to accounts)
-  ↓
-CorporationTax (K5→K28→K35→K39, formula-driven from PubP&L)
-CT600 (mirror of CorporationTax for HMRC filing)
+┌─────────────────────────────────────────────────────────────────────┐
+│ Financialaccounts.xlsx (12 sheets)                      [HUB]      │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐                 │
+│ │ OpenAccounts  │ │ TrialBalance │ │ MnthP&L      │                 │
+│ │ (opening BS)  │ │ (accumulator)│ │ (mgmt accts) │                 │
+│ └──────────────┘ └──────┬───────┘ └──────┬───────┘                 │
+│                         │                │                          │
+│ ┌──────────────┐ ┌──────┴───────┐ ┌──────┴───────┐                 │
+│ │ PubP&L       │ │ PubBalSht    │ │ PubNotes     │                 │
+│ │ (statutory)  │ │ (statutory)  │ │ (statutory)  │                 │
+│ └──────┬───────┘ └──────────────┘ └──────────────┘                 │
+│        │                                                            │
+│ ┌──────┴───────┐ ┌──────────────┐ ┌──────────────┐ ┌────────────┐ │
+│ │CorporationTax│ │ CT600        │ │WagesInterface│ │ Stock      │ │
+│ │ (CT calc)    │ │ (HMRC return)│ │ (payroll)    │ │ (control)  │ │
+│ └──────────────┘ └──────────────┘ └──────────────┘ └────────────┘ │
+│ ┌──────────────┐                                                    │
+│ │ Admin        │ F21=year-end date, B-column dates, tax rates       │
+│ │ (sheet12)    │ ALL other dates cascade from F21 via formulas      │
+│ └──────────────┘                                                    │
+└─────────────────────────────────────────────────────────────────────┘
+         │ 9 outbound external links
+         │
+    ┌────┴──────────────────────────────────────────────────────┐
+    │                                                           │
+    ▼ [1]                    ▼ [2]                   ▼ [3]
+┌────────────────┐  ┌────────────────────┐  ┌──────────────────┐
+│Fixedassets.xlsx│  │ Purchases.xlsx     │  │ Sales.xlsx       │
+│ 3 sheets       │  │ 14 sheets          │  │ 14 sheets        │
+│ Schedule       │  │ OpeningCreditors   │  │ OpeningDebtors   │
+│ FAreconcil.    │  │ Apr..Mar (12 mo)   │  │ Apr..Mar (12 mo) │
+│ HPfinance      │  │ ClosingCreditors   │  │ ClosingDebtors   │
+│                │  │                    │  │                  │
+│ No tab rename  │  │ TABS RENAME for    │  │ TABS RENAME for  │
+│                │  │ non-March year-end │  │ non-March y/e    │
+│                │  │ SHARED FORMULAS ⚠  │  │ SHARED FORMULAS⚠ │
+└────────────────┘  └────────────────────┘  └──────────────────┘
+    ▼ [4]               ▼ [5]               ▼ [6]              ▼ [7]
+┌──────────────┐ ┌──────────────┐ ┌────────────────┐ ┌──────────────┐
+│Currentaccount│ │Savingaccount │ │Creditcardaccount│ │Cashaccount   │
+│ 12 sheets    │ │ 12 sheets    │ │ 12 sheets      │ │ 12 sheets    │
+│ Apr..Mar     │ │ Apr..Mar     │ │ Apr..Mar       │ │ Apr..Mar     │
+│ TABS RENAME  │ │ TABS RENAME  │ │ TABS RENAME    │ │ TABS RENAME  │
+│ SHARED FMLA⚠│ │ SHARED FMLA⚠│ │ SHARED FMLA ⚠ │ │ SHARED FMLA⚠│
+└──────────────┘ └──────────────┘ └────────────────┘ └──────────────┘
+    ▼ [8]                                   ▼ [9]
+┌──────────────────┐               ┌──────────────────┐
+│Companysecretary  │               │ Payslips.xlsx    │
+│ 5 sheets         │               │ 16 sheets        │
+│ Boardmeeting     │               │ Employee         │
+│ Directors&Sec.   │               │ Apr..Mar (12 mo) │
+│ RegisterofMembers│               │ Payslips         │
+│ DirectorsInterest│               │ Payment          │
+│ Charges&Debent.  │               │ Admin (calendar) │
+│ No tab rename    │               │ TABS RENAME      │
+└──────────────────┘               └──────────────────┘
+
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│CT600OnlineLook   │  │ Salesinvoice.xlsx│  │ expensesform.xlsx│
+│ 1 sheet          │  │ 5 sheets         │  │ 12 sheets        │
+│ Links to FA [1]  │  │ Invoice Template │  │ Month 01..12     │
+│ + CompSec [8]    │  │ Invoice Database │  │ (never renamed)  │
+│ + FixedAssets[1] │  │ Customer Details │  │ No links         │
+│ No tab rename    │  │ Product Details  │  │                  │
+│                  │  │ Business Details │  │                  │
+└──────────────────┘  │ No links         │  └──────────────────┘
+                      └──────────────────┘
+┌──────────────────┐
+│Dividend Voucher  │
+│ .docx (template) │
+│ No links         │
+└──────────────────┘
 ```
 
-**TrialBalance column structure:**
-- Each month gets a block of ~11 columns (A-N for month 1, O-Y for month 2, etc.)
-- Column A53 = `-[3]Apr!$O$1` (Sales Product A from Sales.xlsx April tab)
-- Column P53 = `-[3]May!$O$1` (Sales Product A from May tab)
-- These formula references use SHEET NAMES not sequential indices
-- For non-March year-ends, ALL these formulas must be renamed (Apr→Jul for June year-end)
-- The `renameExternalLinkSheetNames` function handles this (verified: A53 correctly shows `[3]Jul!$O$1` for Jun26)
+⚠ = contains shared formulas that break during xls roundtrip for non-March year-ends
 
-**External links (9):**
+### Inter-Workbook Link Diagram
 
-| Link | Target | Tab-rename needed |
-|------|--------|-------------------|
-| 1 | Fixedassets.xlsx | No (3 tabs, not month-based) |
-| 2 | Purchases.xlsx | Yes (Apr-Mar → shifted) |
-| 3 | Sales.xlsx | Yes (Apr-Mar → shifted) |
-| 4 | Currentaccount.xlsx | Yes (Apr-Mar → shifted) |
-| 5 | Savingaccount.xlsx | Yes (Apr-Mar → shifted) |
-| 6 | Creditcardaccount.xlsx | Yes (Apr-Mar → shifted) |
-| 7 | Cashaccount.xlsx | Yes (Apr-Mar → shifted) |
-| 8 | Companysecretary.xlsx | No (5 tabs, not month-based) |
-| 9 | Payslips.xlsx | Yes (Apr-Mar → shifted) |
+```
+                    ┌─────────────────────┐
+                    │  Financialaccounts   │
+                    │    (HUB — 9 links)   │
+                    └──┬──┬──┬──┬──┬──┬──┬─┘
+                       │  │  │  │  │  │  │
+            ┌──────────┘  │  │  │  │  │  └──────────┐
+            │     ┌───────┘  │  │  │  └───────┐     │
+            │     │    ┌─────┘  │  └─────┐    │     │
+            ▼     ▼    ▼        ▼        ▼    ▼     ▼
+         [1]FA [2]Purch [3]Sales [4]Curr [5]Sav [6]CC [7]Cash
+                  │
+                  │ [2] links to:
+                  ├──→ Financialaccounts (Admin rates)
+                  └──→ Sales (mileage transfer)
 
-### Sales.xlsx (14 sheets: OpeningDebtors, Apr-Mar, ClosingDebtors)
+         [8]CompSec ←── Financialaccounts
+         [9]Payslips ←── Financialaccounts
 
-**Column layout:** A=date, B=customer, C=invoice, D=description, E=code letter, F=gross, G=VAT (formula), H=net (formula), J=payment, K=amount received, O-U=analysis by code.
+         CT600OnlineLookALike ──→ Financialaccounts
+                              ──→ Companysecretary
+                              ──→ Fixedassets
 
-**Row 1:** Column totals via `SUM(col5:col300)`. The TrialBalance reads these.
+         Vatreturns ──→ Financialaccounts (Admin dates)
+                    ──→ Sales (monthly totals)
+                    ──→ Purchases (monthly totals)
+```
 
-**VAT formula (G5):** `=IF(G$4>0,(IF(F5<>0,F5*G$4/100," ")),IF(F5<>0,F5*G$2/(100+G$2)," "))`. The G$2 cell holds the VAT rate (20). G$4 is empty (standard rate). When F5 has data, G5 calculates VAT.
+### Intra-Workbook Data Flow (Financialaccounts.xlsx)
 
-**Tab renaming:** For non-March year-ends, tabs are renamed Apr→Jul, May→Aug, etc. The formulas within each tab reference `G$2`, `G$4` etc. (same-sheet references) which are unaffected by the rename.
+```
+Admin ──────────────────────────────────────────────────────────┐
+  │ F21 (year-end) → B2-B56 (monthly dates via formulas)       │
+  │ P6/P7 (CT rates), G5-G8 (allowances), G15-G19 (deprec.)   │
+  │ M19/M21 (VAT rate), N16/O16-N17/O17 (mileage)             │
+  │                                                             │
+  ▼                                                             │
+TrialBalance ◄── [2]Purchases!Apr..Mar row 1 totals (O-AI)     │
+             ◄── [3]Sales!Apr..Mar row 1 totals (O-U)          │
+             ◄── [4]Current!Apr..Mar row 1 totals              │
+             ◄── [5]Savings!Apr..Mar row 1 totals              │
+             ◄── [6]CreditCard!Apr..Mar row 1 totals           │
+             ◄── [7]Cash!Apr..Mar row 1 totals                 │
+             ◄── [1]Fixedassets!Schedule (capital allowances)   │
+  │                                                             │
+  │ Row 53-90: each row = one nominal account                   │
+  │ Each month block = ~11 columns (A-N, O-Y, Z-AJ, ...)       │
+  │ Formula: -[3]MonthTab!$Column$1                             │
+  │                                                             │
+  ▼                                                             │
+MnthP&L ◄── TrialBalance (cumulative monthly deltas)           │
+  │ Column B = annual totals = SUM(C:N)                         │
+  │ C=Month1, D=Month2, ..., N=Month12                          │
+  │ Rows: 4-8 sales, 9 turnover, 11-13 CoS, 14 CoS total,     │
+  │       16 gross profit, 18-40 admin expenses, 41 total,      │
+  │       43 operating profit, 44 interest, 45 profit before tax│
+  │                                                             │
+  ▼                                                             │
+PubP&L ◄── MnthP&L (annual column reformatted for Companies House)
+  │                                                             │
+  ├──→ PubBalSht (balance sheet) ◄── OpenAccounts (opening BS)  │
+  │                              ◄── TrialBalance (closing BS)  │
+  │                                                             │
+  ├──→ PubNotes (notes to accounts)                             │
+  │                                                             │
+  ▼                                                             │
+CorporationTax ◄── PubP&L!F46 (operating profit)               │
+               ◄── TrialBalance (depreciation, bank interest)   │
+               ◄── OpenAccounts!Q5 (losses b/f)                 │
+               ◄── [1]Fixedassets!Schedule (capital allowances)  │
+               ◄── Admin!P6/P7 (CT rates) ─────────────────────┘
+  │ K5 = profit, K12 = chargeable, K22 = after allowances,
+  │ K28 = after losses, K35 = CT due, K39 = tax outstanding
+  │
+  ▼
+CT600 ◄── CorporationTax (mirrors for HMRC return)
+      ◄── PubP&L, TrialBalance, OpenAccounts
+```
 
-### Purchases.xlsx (14 sheets: OpeningCreditors, Apr-Mar, ClosingCreditors)
+### Intra-Workbook Data Flow (Sales.xlsx — each monthly sheet)
 
-**Column layout:** A=date, B=supplier, C=invoice, D=description, E=code letter, F=gross, G=VAT (formula), H=net (formula), J=payment, K=amount paid, O-AI=analysis by code (21 codes).
+```
+User enters:  A=date  B=customer  C=invoice  D=description  E=code  F=gross
+                                                               │       │
+Formulas:  G = VAT = IF(G$4>0, F*G$4/100, F*G$2/(100+G$2))  ◄┘       │
+           H = Net = F - G                                     ◄───────┘
+           O = IF(E="a", H, " ")    ── Product A net
+           P = IF(E="b", H, " ")    ── Product B net
+           Q = IF(E="c", H, " ")    ── Product C net
+           R = IF(E="d", H, " ")    ── Other Income net
+           S = IF(E="g", H, " ")    ── Grants net
+           T = IF(E="o", H, " ")    ── Bad Debts net
+           U = IF(E="fs", H, " ")   ── Fixed Asset Sales net
 
-Same structure as Sales but with 21 expense analysis columns vs 7 for Sales.
+Row 1:     F1 = SUM(F5:F300)   ── gross total
+           G1 = SUM(G5:G300)   ── VAT total
+           H1 = SUM(H5:H300)   ── net total
+           O1 = SUM(O5:O300)   ── Product A total  ──→ TrialBalance row 53
+           P1 = SUM(P5:P300)   ── Product B total  ──→ TrialBalance row 54
+           ...etc
 
-### Vatreturns.xlsx (14 sheets: VATQtr1-5, Vatinterface, S/P sheets)
+G$2 = VAT rate (20)    G$4 = flat rate override (empty = standard)
+Columns G, H, O-U use SHARED FORMULAS (si= groups) rows 5-300
+```
 
-**Vatinterface B-column:** References Admin dates. Start row formula: `adminStartRow = ((M-1) % 12) * 2 + 2`.
-**Vatinterface D/M columns:** Reference Sales/Purchases sheet names.
-**VATQtr1-5 G5:** Hardcoded default quarter-end dates (computed from year-end).
+### Intra-Workbook Data Flow (Purchases.xlsx — each monthly sheet)
 
-### Payslips.xlsx (16 sheets: Employee, Apr-Mar, Payslips, Payment, Admin)
+```
+User enters:  A=date  B=supplier  C=invoice  D=description  E=code  F=gross
+                                                               │       │
+Formulas:  G = VAT = F*G$2/(100+G$2)                         ◄┘       │
+           H = Net = F - G                                     ◄───────┘
+           O = IF(E="s", H, " ")    ── Direct Materials
+           P = IF(E="c", H, " ")    ── Sub-contractors
+           Q = IF(E="o", H, " ")    ── Other Direct
+           R = IF(E="d", H, " ")    ── Directors Wages
+           S = IF(E="w", H, " ")    ── Employee Wages
+           T = IF(E="r", H, " ")    ── Premises Rent
+           U = IF(E="p", H, " ")    ── Light/Heating
+           V = IF(E="t", H, " ")    ── Distribution
+           W = IF(E="q", H, " ")    ── Equipment Hire
+           X = IF(E="m", H, " ")    ── Repairs
+           Y = IF(E="u", H, " ")    ── Consumables
+           Z = IF(E="a", H, " ")    ── Advertising
+           AA = IF(E="g", H, " ")   ── General Admin
+           AB = IF(E="h", H, " ")   ── Travel/Hotel
+           AC = IF(E="v", H, " ")   ── Motor Vehicle
+           AD = IF(E="n", H, " ")   ── Insurance
+           AE = IF(E="f", H, " ")   ── Leasing
+           AF = IF(E="l", H, " ")   ── Legal/Professional
+           AG = IF(E="y", H, " ")   ── Charitable Donations
+           AH = IF(E="z", H, " ")   ── Goodwill
+           AI = IF(E="fa", H, " ")  ── Fixed Assets
 
-Always follows PAYE year (Apr-Mar), not accounting year. B2=tax year start. C/D/F=hardcoded week/month calendar (4-4-5 pattern, 380 rows).
+Row 1:     O1-AI1 = SUM(col5:col300)  ──→ TrialBalance rows 53-90+
+Columns G, H, O-AI use SHARED FORMULAS (si= groups) rows 5-300
+```
 
-### Other files (no month-specific content)
+### Bank Account Workbooks (Current/Savings/CreditCard/Cash — each monthly sheet)
 
-- CT600OnlineLookALike.xlsx: 1 sheet, formula-driven from Financialaccounts
-- Companysecretary.xlsx: 5 sheets (Boardmeeting, Directors&Secretary, etc.)
-- Fixedassets.xlsx: 3 sheets (Schedule, FAreconciliation, HPfinance)
-- Salesinvoice.xlsx: 5 sheets (Invoice Template, Database, Customer/Product/Business Details)
-- expensesform.xlsx: 12 sheets (always "Month 01" through "Month 12")
-- Dividend Voucher.docx: template copy
+```
+Receipts section (columns A-Q):
+  A=date  B=source  C=invoice  D=deposit ref  E=code  F=amount
+  Code letters: BS/BD/BC (transfers), DR (debtors), K (interest),
+                LDR/LCR (long-term), RV (VAT refund), RC (CIS),
+                DL (directors loan), X (contra)
+  G-Q = analysis by code (formula-driven from E)
+
+Payments section (columns S-AN):
+  S=date  T=supplier  U=invoice  V=cheque  W=code  X=amount
+  Code letters: BS/BD/BC (transfers), CR (creditors), W (wages),
+                J (interest), B (charges), LDR/LCR (long-term),
+                RP (PAYE), RV (VAT), RC (CIS), RT (Corp Tax),
+                DV (dividends), DL (directors loan), X (contra)
+  Y-AN = analysis by code (formula-driven from W)
+
+Reconciliation (cells A1-A4):
+  A1 = opening balance (user enters first month, auto-carried after)
+  A2 = closing balance = A1 + receipts - payments (formula)
+  A3 = statement balance (user enters)
+  A4 = reconciliation difference = A2 - A3 (formula)
+
+Row 1 totals → TrialBalance via external links [4]-[7]
+SHARED FORMULAS in analysis columns ⚠
+```
+
+### Vatreturns.xlsx
+
+```
+Vatinterface sheet:
+  B4-B19 = month-end dates from [1]Admin!$B${adminStartRow}
+           adminStartRow = ((yearEndMonth - 1) % 12) * 2 + 2
+  D4-D19 = Sales VAT from [3]MonthTab!$H$1 (per month)
+  F4-F19 = Sales net from [3]MonthTab!$F$1
+  H4-H19 = Purchases VAT from [2]MonthTab!$H$1
+  J4-J19 = Purchases net from [2]MonthTab!$F$1
+  M4-M19 = Bank receipt analysis (debtor receipts)
+
+VATQtr1-5 sheets:
+  G5 = quarter-end date (hardcoded, computed by generator)
+  LOOKUP formulas reference Vatinterface by date
+  Quarterly VAT calculation: output - input = net VAT
+
+S02Y1/S03Y1/S04Y2/S05Y2 = quarterly sales summaries
+P02Y1/P03Y1/P04Y2/P05Y2 = quarterly purchase summaries
+```
+
+### Files With No External Links or Month-Specific Content
+
+| File | Sheets | Notes |
+|------|--------|-------|
+| CT600OnlineLookALike.xlsx | Sheet1 | 3 inbound links (FA, CompSec, FixedAssets). 134 layout numbers + 36 formulas. |
+| Companysecretary.xlsx | Boardmeeting, Directors&Secretary, RegisterofMembers, DirectorsInterests, Charges&Debentures | User-filled statutory records. No formulas. |
+| Fixedassets.xlsx | Schedule, FAreconciliation, HPfinance | 1 inbound link from FA. Capital allowances auto-calculated. |
+| Salesinvoice.xlsx | Invoice Template, Invoice Database, Customer Details, Product Details, Business Details | Standalone. No links to accounting files. |
+| expensesform.xlsx | Month 01 through Month 12 | Always numbered, never renamed. No links. |
+| Dividend Voucher.docx | — | Word template. No links. |
 
 ## Verified Facts from Research
 
