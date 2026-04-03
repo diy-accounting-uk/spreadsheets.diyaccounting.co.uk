@@ -236,6 +236,8 @@ jobs:
           path: reports/
           merge-multiple: true
       - name: Commit and push
+        id: push
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -251,3 +253,12 @@ jobs:
             git pull --rebase
             git push
           fi
+      - name: Retry push after delay
+        if: ${{ steps.push.outcome == 'failure' }}
+        run: |
+          for i in 5 10 15 20 25 30; do
+            echo "Waiting... ${i}s"
+            sleep 5
+          done
+          git pull --rebase
+          git push
