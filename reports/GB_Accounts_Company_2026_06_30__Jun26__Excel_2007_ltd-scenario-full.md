@@ -1,14 +1,15 @@
 # Reconciliation Report: GB Accounts Company 2026-06-30 (Jun26) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: ANOMALYDETECTED
+Status: RECONCILES
 Generated: 2026-04-03
 
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 88583 | 21750 | -66833 | **FAIL** |
+| Total Sales | 88583 | 88583.3333333333 | +0.33333333329937886 | PASS |
+| Corporation Tax | 7494 | 7494.23333333333 | +0.2333333333299379 | PASS |
 
 ## Raw Output Values
 
@@ -16,9 +17,9 @@ Generated: 2026-04-03
 
 | Cell | Value |
 |------|-------|
-| K5 | -29790 |
-| K12 | -27390 |
-| K22 | -27390 |
-| K28 | -27390 |
-| K35 | 0 |
-| K39 | 0 |
+| K5 | 37043.3333333333 |
+| K12 | 39443.3333333333 |
+| K22 | 39443.3333333333 |
+| K28 | 39443.3333333333 |
+| K35 | 7494.23333333333 |
+| K39 | 7494.23333333333 |
