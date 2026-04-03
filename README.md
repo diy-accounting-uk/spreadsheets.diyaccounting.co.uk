@@ -31,124 +31,52 @@ an issue here https://github.com/antonycc/diy-accounting/issues .
 - **DNS** is managed separately by the [root.diyaccounting.co.uk](https://github.com/antonycc/root.diyaccounting.co.uk) repository
 - **Account**: spreadsheets (`064390746177`) in the DIY Accounting AWS Organization
 
-## Quick Start
-
-```bash
-npm install
-node scripts/build-spreadsheets-redirects.cjs
-node scripts/build-sitemaps.cjs
-./mvnw clean verify
-node scripts/build-packages.cjs
-npm run cdk:synth
-```
-
-Start the local dev server:
-
-```bash
-npm start
-```
-
-Serves on http://localhost:3000.
-
-## Project Structure
-
-```
-.github/workflows/     GitHub Actions (test + deploy)
-cdk-spreadsheets/      CDK app configuration
-infra/main/java/       CDK Java stacks (SpreadsheetsStack)
-packages/              Excel workbook source files (per product per tax year)
-scripts/               Build and maintenance scripts
-web/spreadsheets.diyaccounting.co.uk/
-  public/              Static site content (S3 document root)
-  redirects.toml       URL redirect configuration
-behaviour-tests/       Playwright E2E behaviour tests
-web/browser-tests/     Playwright browser content tests
-web/unit-tests/        Vitest unit tests (SEO, smoke)
-```
-
-## Products
-
-| Product | Description |
-|---------|-------------|
-| BasicSoleTrader | Basic bookkeeping for sole traders |
-| SelfEmployed | Self-employed with VAT and CIS |
-| Company | Limited company accounts (Any/March/June/Sept/Dec year-ends) |
-| TaxiDriver | Specialist taxi driver accounts |
-| Payslip05 / Payslip10 | Payroll for 5 or 10 employees |
-
-Excel workbooks in `packages/` are zipped by `scripts/build-packages.cjs` and uploaded to S3 during deployment.
-
-## Testing
-
-| Command | Purpose |
-|---------|---------|
-| `npm test` | Unit tests — SEO validation + smoke tests |
-| `npm run test:browser` | Browser tests — HTML content validation (Playwright) |
-| `npm run test:spreadsheetsBehaviour-local` | Behaviour tests against local server |
-| `npm run test:spreadsheetsBehaviour-ci` | Behaviour tests against CI |
-| `npm run test:spreadsheetsBehaviour-prod` | Behaviour tests against production |
-| `npm run compliance:ci-report-md` | Full compliance report (accessibility + security) |
-
-## Deployment
-
-Deployments run via GitHub Actions:
-
-- **test.yml** — Lint, format check, Maven build, CDK synth, unit/browser/behaviour tests
-- **deploy.yml** — CDK deploy to ci or prod, zip upload to S3, behaviour smoke test
-
-OIDC authentication with `SPREADSHEETS_ACTIONS_ROLE_ARN` and `SPREADSHEETS_DEPLOY_ROLE_ARN`.
-
-## Build Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `build-packages.cjs` | Zip Excel workbooks, generate `catalogue.toml` |
-| `build-sitemaps.cjs` | Generate `sitemap.xml` from catalogue + knowledge base |
-| `build-spreadsheets-redirects.cjs` | Generate CloudFront Function from `redirects.toml` |
-| `generate-knowledge-base-toml.cjs` | Generate `knowledge-base.toml` from mdcms articles |
-| `stripe-spreadsheets-setup.js` | Create Stripe donation products and Payment Links |
-
-## Package Generation and Reconciliation
-
-Generate and reconcile spreadsheet packages from templates and tax data:
-
-```bash
-npm run generate -- --package ltd --year-end 2027-01-31 --skip-guide
-npm run reconciliation -- --package ltd --year-end 2027-01-31 --scenario basic
-```
-
-Available products: `bst`, `taxi`, `se`, `ltd`. The `--year-end` flag accepts specific dates (e.g. `2026-03-31`, `2027-01-31`). The `--scenario` flag runs a single scenario (`basic`, `extended`, or `full`).
-
-Generate all packages for a product:
-
-```bash
-npm run generate -- --package ltd --skip-guide
-npm run generate -- --package se
-```
-
-Extract test scenarios from DIYA GL example data:
-
-```bash
-npm run extract-scenarios
-```
-
-## Development Tools
-
-| Command | Purpose |
-|---------|---------|
-| `npm run formatting` | Check Prettier + Spotless formatting |
-| `npm run lint:workflows` | Validate GitHub Actions workflows |
-| `npm run diagram:spreadsheets` | Generate architecture diagram |
-| `npm run resources:spreadsheets` | Generate AWS resource catalogue |
-| `npm run update:java` | Update Maven dependencies |
-| `npm run update:node` | Update npm dependencies |
-
 ## Related Repositories
 
 | Repository | Purpose |
 |-----------|---------|
 | [root.diyaccounting.co.uk](https://github.com/antonycc/root.diyaccounting.co.uk) | Route53 DNS records |
 | [submit.diyaccounting.co.uk](https://github.com/antonycc/submit.diyaccounting.co.uk) | Submit VAT MTD application |
+
+## Updating and Publishing Packages
+
+### Annual Tax Data Update
+
+1. Create or update tax data TOML files in `app/data/` for the new financial year (sole trader files use `se-YYYY-YYYY.toml`, limited company files use `ltd-YYYY.toml`)
+2. Use the `update-tax-data.yml` workflow (scrapes HMRC rates and generates TOML via Copilot), a Copilot agent, or manual update (see `SKILL_PACKAGE_UPDATES.md`)
+3. Push changes — generation workflows trigger automatically on changes to `app/data/`
+
+### Package Generation
+
+- **Automatic**: pushing changes to `app/data/`, `app/templates/`, or product files (`app/products/`) triggers the relevant generation workflows
+- **Manual**: dispatch `generate-bst.yml`, `generate-se.yml`, `generate-taxi.yml`, or `generate-ltd.yml` from the Actions tab
+- **Each workflow**: runs tests, generates packages, reconciles per year-end in parallel, then commits generated packages and reports back to the repo
+- BST and Taxi use `app/data/se-*` files; Ltd uses `app/data/ltd-*` files
+
+### Deployment
+
+- Push to `main` triggers `deploy.yml` which deploys the CDK stack (S3 + CloudFront) and syncs zip packages to S3
+- Packages are zipped by `build-packages.cjs` (from `packages/` into `target/zips/`) and uploaded alongside the static site
+- The workflow checks that all reconciliation reports in `reports/` show RECONCILES before deploying
+
+### Dependency Updates
+
+- Daily `update.yml` workflow runs formatting fixes, node dependency updates, and java dependency updates in parallel, validates with tests and Maven verify, then commits
+- Manual: `npm run update:node`, `npm run update:java`, `npm run formatting-fix`
+
+### Reconciliation
+
+- Each generation workflow runs parallel per-year-end reconciliation (basic/extended scenarios for BST and SE, basic for Taxi, full for Ltd)
+- Ltd supports a `reconcile-all` input for full historical reconciliation (otherwise limited to the latest 24 months)
+- Reports are committed to `reports/` and checked by the deploy workflow before deployment
+- See `SKILL_EXCEL.md` for testing approaches
+
+### Reference Documentation
+
+- `CONTEXT_SOLE_TRADER.md`, `CONTEXT_TAXI.md`, `CONTEXT_SELF_EMPLOYED.md`, `CONTEXT_LIMITED_COMPANY.md` — product-specific details
+- `SKILL_EXCEL.md` — Excel manipulation techniques and testing
+- `SKILL_PACKAGE_UPDATES.md` — annual update process
+- `PLAN_FEWER_FILES.md` — planned optimisation to reduce file count
 
 ## License
 

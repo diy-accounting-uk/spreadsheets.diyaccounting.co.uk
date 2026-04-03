@@ -120,84 +120,22 @@ Example on 6 March 2026:
 - Website default: 30 Apr 2027 → SE Apr 2026 is default, Ltd Mar 2026 is default
 - Next year's packages (SE Apr 2027, Ltd Apr-May 2027) are available in the dropdown but not pre-selected
 
-### Phase 4: Testing — IN PROGRESS
+### Phase 4: Testing — COMPLETE ✓
 
 - [x] March year-end: RECONCILES for basic, extended, full scenarios
 - [x] Jan27 (non-March): RECONCILES for basic scenario
-- [ ] Jun26 (non-March): generation correct, reconciliation has #VALUE! errors in recalculated Sales sheets
-- [ ] Verify against existing Jun23, Sep21, Dec21 originals
+- [x] Jun26 (non-March): RECONCILES for full scenario
+- [x] All 12 year-end months: RECONCILES in CI matrix (24 most recent year-ends)
 
-### Phase 5: Non-March Reconciliation Fix — TODO
+### Phase 5: Non-March Reconciliation Fix — COMPLETE ✓
 
-Non-March year-end reconciliation produces `#VALUE!` errors in Sales.xlsx after xls roundtrip. The generation is correct (formulas renamed, data in right tabs, external link caches populated) but LibreOffice's xls roundtrip corrupts formula calculations in months beyond the first tab.
+Non-March year-end reconciliation produced `#VALUE!` errors in Sales.xlsx after xls roundtrip.
 
-#### Root cause analysis
+**Root cause:** `renameMonthTabs()` renamed sheet tab names in `xl/workbook.xml` but did NOT rename intra-workbook cross-tab formula references in the leaf sheet XMLs. For example, Sales.xlsx Aug tab had `G2: Apr!G2` (VAT rate chain referencing previous month) — but the "Apr" tab had been renamed to "Jul". The formula pointed at a non-existent tab.
 
-**Symptoms:**
-- Jul (first renamed tab): F1=8560, G1=1427, O1=5833 — ALL correct
-- Aug, Sep, ..., Jun (tabs 2-12): F1=correct (SUM works), G1=#VALUE!, H1=#VALUE!, O1=#VALUE!
-- The formulas that fail are IF-based: `=IF(G$4>0,...,IF(F5<>0,F5*G$2/(100+G$2)," "))`
-- Simple SUM formulas (F1) work fine across all tabs
+**Fix:** One-line change in `app/bin/generate.js` — apply `renameExternalLinkSheetNames()` to all tab-renamed leaf files (Sales, Purchases, 4 bank accounts, Payslips), not just Financialaccounts.
 
-**Root cause:** Sales/Purchases template sheets use **shared formulas** (`<f t="shared" si="N"/>`) for columns G (VAT), H (net), and O-U (analysis). Row 5 in each sheet defines the master formula; rows 6-300 reference it via shared formula group indices. When our XML cell surgery (`spreadsheet-runner.js`) writes data into cells in these rows, it inserts `<c>` elements that disrupt the shared formula chain. The xls roundtrip then fails to evaluate shared formula members in tabs beyond the first.
-
-**Evidence:**
-- March year-end works because tabs are NOT renamed (template's original shared formula structure intact)
-- The first renamed tab (Jul for Jun year-end) works — its shared formula master evaluates
-- Subsequent tabs' shared formula members point to the same `si` index but the chain is broken
-- Double xls roundtrip loses ALL data (even F column zeros out) — the corruption compounds
-- ODS roundtrip doesn't recalculate at all (not a viable alternative)
-- Skipping leaf roundtrip and relying on LibreOffice to resolve external links during hub conversion doesn't work (LibreOffice `--convert-to` never resolves external links)
-
-#### Approaches tested
-
-| Approach | Result |
-|----------|--------|
-| xls roundtrip (xlsx→xls→xlsx) | First tab OK, others #VALUE! |
-| ODS roundtrip (xlsx→ods→xlsx) | No recalculation — all zeros |
-| No leaf roundtrip, hub-only | LibreOffice doesn't resolve external links — all zeros |
-| Double xls roundtrip | All data lost — worse than single |
-
-#### Proposed fix: flatten shared formulas in templates
-
-**One-time template transformation** to eliminate shared formulas in Sales.xlsx and Purchases.xlsx:
-
-1. In each sheet of the template, find all `<f t="shared" ref="..." si="N">formula</f>` (master) and `<f t="shared" si="N"/>` (member) elements
-2. For the master: extract the formula text and the reference range
-3. For each member in the range: compute the formula for that row (adjusting relative row references) and replace with an explicit `<f>adjusted_formula</f>`
-4. Remove all `t="shared"`, `ref="..."`, and `si="..."` attributes
-
-This converts e.g.:
-```xml
-<c r="G5"><f t="shared" ref="G5:G300" si="2">IF(G$4>0,...)</f></c>
-<c r="G6"><f t="shared" si="2"/></c>
-<c r="G7"><f t="shared" si="2"/></c>
-```
-to:
-```xml
-<c r="G5"><f>IF(G$4>0,...)</f></c>
-<c r="G6"><f>IF(G$4>0,...)</f></c>
-<c r="G7"><f>IF(G$4>0,...)</f></c>
-```
-
-(Each formula is identical since the original uses `$` absolute references for the rate cells and relative references for the data row.)
-
-**Why this should work:**
-- Each cell has its own formula — no shared formula chain to break
-- The xls roundtrip evaluates each formula independently
-- No dependency on formula group indices across tabs
-- The template file size increases slightly but is a one-time cost
-
-**Verification plan:**
-1. Flatten shared formulas in Sales.xlsx and Purchases.xlsx templates
-2. Regenerate March year-end package
-3. Reconcile March — must still RECONCILE (regression check)
-4. Regenerate Jun26 package
-5. Reconcile Jun26 — should now RECONCILE
-6. If both pass, apply to all 4 bank account templates too (same shared formula pattern)
-
-**Alternative: LibreOffice UNO scripting**
-If flattening doesn't work, use LibreOffice's Python UNO API to open files, write data via the API (respecting shared formulas), recalculate, and save. More complex but doesn't require template changes.
+**Shared formula flattening was tested and rejected:** Flattening shared formulas (replacing `<f t="shared" si="N"/>` with explicit per-cell formulas) caused LibreOffice's xls roundtrip to corrupt entire sheets — producing styleSheet XML instead of worksheet data. The shared formulas were not the root cause.
 
 ## Detailed Package Internal Structure
 
@@ -520,110 +458,17 @@ P02Y1/P03Y1/P04Y2/P05Y2 = quarterly purchase summaries
 
 ## What Next
 
-### 1. Flatten shared formulas in templates (unblocks non-March reconciliation)
+### 1. Website verification
 
-The xls roundtrip corrupts shared formula members in tabs beyond the first. Fix by replacing all shared formulas with explicit per-cell formulas in the template xlsx files:
-- **Sales.xlsx**: columns G, H, O-U (rows 5-300, 12 monthly sheets)
-- **Purchases.xlsx**: columns G, H, O-AI (rows 5-300, 12 monthly sheets)
-- **Currentaccount.xlsx, Savingaccount.xlsx, Cashaccount.xlsx, Creditcardaccount.xlsx**: analysis columns (12 monthly sheets each)
+- [ ] Verify the 13-month default selection works in the download dropdown
+- [ ] Verify Ltd packages for all 12 months appear in the catalogue
+- [ ] Verify `scripts/build-packages.cjs` correctly zips the generated Ltd packages
 
-Write a one-time script (`scripts/flatten-shared-formulas.cjs`) that:
-1. Opens each template xlsx as a zip
-2. For each sheet XML, finds `<f t="shared" ref="..." si="N">formula</f>` masters
-3. For each `<f t="shared" si="N"/>` member, computes the formula for that row
-4. Replaces both with plain `<f>formula</f>`
-5. Saves the modified template
+### 2. Future enhancements (separate PLANs)
 
-Then verify: March must still RECONCILE, then Jun26 should RECONCILE.
-
-### 2. Verify non-March reconciliation across multiple months
-
-Once flattening works, test at least 3 non-March year-ends:
-- Jun26 (quarter boundary)
-- Sep26 (quarter boundary)
-- Dec25 (calendar year-end)
-- Jan27 (already passes basic — test full scenario)
-
-### 3. Merge branches to main
-
-Three feature branches need merging:
-- `claude/se-generation-plan` — SE product (already reviewed)
-- `claude/ltd-generation` — Ltd March implementation
-- `all-years` — all-months Ltd + extended scenarios + init workflow
-
-Merge in order: SE first (smallest), then Ltd, then all-years.
-
-### 4. Run init workflow on main
-
-After merge, run the `init.yml` workflow with `delete-packages=true` to regenerate all packages from scratch on main. This validates the full pipeline end-to-end.
-
-### 5. Website integration
-
-- Verify the 13-month default selection works in the download dropdown
-- Verify Ltd packages for all 12 months appear in the catalogue
-- Check that `scripts/build-packages.cjs` correctly zips the generated Ltd packages
-
-### 6. Merge Companysecretary, CT600OnlineLookALike, Fixedassets, Vatreturns into Financialaccounts
-
-**Goal:** Eliminate 4 external links by merging read-only/formula-driven workbooks into the Financialaccounts hub. This simplifies the cross-file recalculation problem and reduces the package from 15 xlsx to 11 xlsx.
-
-**Why it helps:**
-- Removes external links [1] (Fixedassets), [8] (Companysecretary) from Financialaccounts
-- CT600OnlineLookALike currently has 3 outbound links to FA/CompSec/Fixedassets — all become intra-workbook
-- Vatreturns links to FA/Sales/Purchases — merging it means only Sales/Purchases links remain external
-- The xls roundtrip recalculates ALL sheets in a single workbook — no cross-file dependency for these 4
-- Remaining external links would be the 7 data-entry workbooks only: Sales, Purchases, 4 bank accounts, Payslips
-
-**Architecture after merge:**
-```
-Financialaccounts.xlsx (was 12 sheets, becomes ~34 sheets):
-  Existing: OpenAccounts, TrialBalance, MnthP&L, PubP&L, PubBalSht,
-            PubNotes, Report, CorporationTax, CT600, WagesInterface, Stock, Admin
-  From Fixedassets: Schedule, FAreconciliation, HPfinance
-  From Companysecretary: Boardmeeting, Directors&Secretary, RegisterofMembers,
-                         DirectorsInterests, Charges&Debentures
-  From CT600OnlineLookALike: Sheet1 (CT600 online preview)
-  From Vatreturns: VATQtr1-5, Vatinterface, S02Y1, S03Y1, S04Y2, S05Y2,
-                   P02Y1, P03Y1, P04Y2, P05Y2
-
-Remaining separate files (7 data-entry + 3 standalone):
-  Sales.xlsx, Purchases.xlsx, Currentaccount.xlsx, Savingaccount.xlsx,
-  Cashaccount.xlsx, Creditcardaccount.xlsx, Payslips.xlsx
-  Salesinvoice.xlsx, expensesform.xlsx, Dividend Voucher.docx
-```
-
-**Implementation steps:**
-1. Copy sheet XML files from source xlsx zips into Financialaccounts zip
-2. Add `<sheet>` entries to `xl/workbook.xml` with new rIds
-3. Add relationship entries to `xl/_rels/workbook.xml.rels`
-4. Merge shared strings tables (`xl/sharedStrings.xml`) — each xlsx has its own; indices must be remapped in the copied sheet XMLs
-5. Copy any additional style definitions if the merged sheets reference styles not in FA
-6. Rewrite formulas: `[1]Schedule!` → `Schedule!`, `[8]Boardmeeting!` → `Boardmeeting!`, etc.
-7. Remove the now-unused external link XML files and `.rels` entries
-8. Update CT600OnlineLookALike formulas (was `[FA]CorporationTax!` etc., now just `CorporationTax!`)
-9. Rewrite Vatinterface formulas: `[1]Admin!` → `Admin!` (now same workbook)
-10. Renumber remaining external links (Sales becomes [1], Purchases [2], etc.)
-
-**Risks:**
-- Shared strings table merge is the most complex part — every cell with `t="s"` references an index into the table; copied sheets' indices must be offset by the FA table size
-- Defined names scoped to the source workbook need re-scoping to the merged workbook
-- Users who are accustomed to opening Fixedassets.xlsx or Companysecretary.xlsx separately will need to navigate to tabs within Financialaccounts instead
-- The Financialaccounts file size increases (currently 121KB, would grow to ~350KB with all 4 merged)
-
-**Verification:**
-- Generate March package with merged template
-- Reconcile March — must still RECONCILE
-- Verify CT600OnlineLookALike formulas resolve (was 3 external links, now 0)
-- Verify Vatinterface dates populate from Admin (was external link [1], now internal)
-- Verify capital allowances flow from Schedule to CorporationTax (was external link, now internal)
-
-**User experience change:** Fewer files to manage (11 instead of 15), but Financialaccounts becomes a larger workbook with more tabs. The data-entry workflow is unchanged — users still enter sales in Sales.xlsx, purchases in Purchases.xlsx, etc. The merged sheets are all read-only/formula-driven.
-
-### 7. Future enhancements (separate PLANs)
-
+- **PLAN_FEWER_FILES.md**: merge Companysecretary, CT600OnlineLookALike, Fixedassets, Vatreturns into Financialaccounts to eliminate external links and reduce file count
 - **PLAN_LTD_MARGINAL_RELIEF.md**: two-tier CT (19%/25%) for profits £50k-£250k
 - **PLAN_DIYA_GL.md**: extended/full test scenarios from structured business data
-- **SE extended scenario**: create `se-scenario-extended.toml` ✓ (done on all-years)
 - **Non-March Payslips**: for year-ends that span two PAYE years, investigate if a single Payslips file suffices or if two are needed
 
 ## Decision Log
@@ -638,3 +483,11 @@ Remaining separate files (7 data-entry + 3 standalone):
 | 2026-04-02 | WDA main rate corrected to 14% for FY2026+ | Budget 2025 change effective 1 Apr 2026 |
 | 2026-04-02 | FY2027 created as provisional | Government committed to 25% CT main rate for Parliament |
 | 2026-04-02 | DIYA GL example with extract script | Repeatable scenario generation from structured business data |
+| 2026-04-03 | Non-March fix: rename intra-workbook formulas in leaf files | `renameExternalLinkSheetNames()` applied to Sales/Purchases/bank files, not just FA hub |
+| 2026-04-03 | Shared formula flattening rejected | LibreOffice xls roundtrip corrupts sheets when shared formulas replaced with explicit per-cell formulas |
+| 2026-04-03 | All branches merged to main | SE, Ltd, all-years branches merged; all workflows green |
+| 2026-04-03 | CI: matrix reconciliation for all products | BST/SE/Taxi/Ltd all use parallel per-year-end reconcile jobs |
+| 2026-04-03 | CI: Playwright containers replaced with `npx playwright install` | Avoids container tag sync problem; browsers always match library version |
+| 2026-04-03 | CI: Corretto JDK 25 replaces Temurin | Temurin doesn't provide JDK 25; Corretto has been GA since Sep 2025 |
+| 2026-04-03 | License corrected to AGPL-3.0 on download page | Was incorrectly showing MPL 2.0 |
+| 2026-04-03 | Ltd payslip guide added | Same guide as SE, added to Ltd meta.toml |
