@@ -120,11 +120,107 @@ Example on 6 March 2026:
 - Website default: 30 Apr 2027 → SE Apr 2026 is default, Ltd Mar 2026 is default
 - Next year's packages (SE Apr 2027, Ltd Apr-May 2027) are available in the dropdown but not pre-selected
 
-### Phase 4: Testing — COMPLETE ✓
+### Phase 4: Testing — IN PROGRESS
 
-- Verify generated Jun year-end packages against existing `packages/GB Accounts Company 2023-06-30 (Jun23)` originals
-- Verify Dec year-end against originals
-- Add E2E tests for at least one non-March month
+- [x] March year-end: RECONCILES for basic, extended, full scenarios
+- [x] Jan27 (non-March): RECONCILES for basic scenario
+- [ ] Jun26 (non-March): generation correct, reconciliation has #VALUE! errors in recalculated Sales sheets
+- [ ] Verify against existing Jun23, Sep21, Dec21 originals
+
+### Phase 5: Non-March Reconciliation Fix — TODO
+
+Non-March year-end reconciliation produces `#VALUE!` errors in Sales.xlsx after xls roundtrip. The generation is correct (formulas renamed, data in right tabs, external link caches populated) but LibreOffice's xls roundtrip corrupts VAT calculation formulas in months beyond the first.
+
+Root cause investigation:
+- Jul (first month) works: F1=8560, G1=1427, O1=5833 (correct)
+- Aug onwards: G1=#VALUE!, H1=#VALUE!, O1=#VALUE!
+- The VAT formula `=IF(G$4>0,...,IF(F5<>0,F5*G$2/(100+G$2)," "))` fails after roundtrip
+- Likely cause: xls format doesn't preserve shared formulas correctly across renamed tabs
+- The xlsx→xls→xlsx roundtrip that forces recalculation is the same approach used for BST/SE/Taxi (single file products) and for March Ltd. The issue is specific to RENAMED tabs in the roundtrip.
+
+Possible fixes:
+1. Write data directly into Sales row 1 totals (bypass the formula calculation) — like we do for external link caches
+2. Use a different recalculation approach for non-March (macro-based?)
+3. Accept March-only reconciliation and validate non-March by verifying the generated xlsx structure matches originals
+
+## Detailed Package Internal Structure
+
+### Financialaccounts.xlsx (12 sheets, Admin = sheet12.xml)
+
+Hub file with 9 outbound external links. All dates cascade from F21 (year-end).
+
+**Sheet flow:**
+```
+Admin (F21 → B-column dates, tax rates)
+  ↓
+TrialBalance (accumulates monthly from Sales/Purchases/Bank via external links)
+  ↓
+MnthP&L (monthly management accounts, column B = annual SUM(C:N))
+  ↓
+PubP&L (published statutory format)
+PubBalSht (published balance sheet)
+PubNotes (notes to accounts)
+  ↓
+CorporationTax (K5→K28→K35→K39, formula-driven from PubP&L)
+CT600 (mirror of CorporationTax for HMRC filing)
+```
+
+**TrialBalance column structure:**
+- Each month gets a block of ~11 columns (A-N for month 1, O-Y for month 2, etc.)
+- Column A53 = `-[3]Apr!$O$1` (Sales Product A from Sales.xlsx April tab)
+- Column P53 = `-[3]May!$O$1` (Sales Product A from May tab)
+- These formula references use SHEET NAMES not sequential indices
+- For non-March year-ends, ALL these formulas must be renamed (Apr→Jul for June year-end)
+- The `renameExternalLinkSheetNames` function handles this (verified: A53 correctly shows `[3]Jul!$O$1` for Jun26)
+
+**External links (9):**
+
+| Link | Target | Tab-rename needed |
+|------|--------|-------------------|
+| 1 | Fixedassets.xlsx | No (3 tabs, not month-based) |
+| 2 | Purchases.xlsx | Yes (Apr-Mar → shifted) |
+| 3 | Sales.xlsx | Yes (Apr-Mar → shifted) |
+| 4 | Currentaccount.xlsx | Yes (Apr-Mar → shifted) |
+| 5 | Savingaccount.xlsx | Yes (Apr-Mar → shifted) |
+| 6 | Creditcardaccount.xlsx | Yes (Apr-Mar → shifted) |
+| 7 | Cashaccount.xlsx | Yes (Apr-Mar → shifted) |
+| 8 | Companysecretary.xlsx | No (5 tabs, not month-based) |
+| 9 | Payslips.xlsx | Yes (Apr-Mar → shifted) |
+
+### Sales.xlsx (14 sheets: OpeningDebtors, Apr-Mar, ClosingDebtors)
+
+**Column layout:** A=date, B=customer, C=invoice, D=description, E=code letter, F=gross, G=VAT (formula), H=net (formula), J=payment, K=amount received, O-U=analysis by code.
+
+**Row 1:** Column totals via `SUM(col5:col300)`. The TrialBalance reads these.
+
+**VAT formula (G5):** `=IF(G$4>0,(IF(F5<>0,F5*G$4/100," ")),IF(F5<>0,F5*G$2/(100+G$2)," "))`. The G$2 cell holds the VAT rate (20). G$4 is empty (standard rate). When F5 has data, G5 calculates VAT.
+
+**Tab renaming:** For non-March year-ends, tabs are renamed Apr→Jul, May→Aug, etc. The formulas within each tab reference `G$2`, `G$4` etc. (same-sheet references) which are unaffected by the rename.
+
+### Purchases.xlsx (14 sheets: OpeningCreditors, Apr-Mar, ClosingCreditors)
+
+**Column layout:** A=date, B=supplier, C=invoice, D=description, E=code letter, F=gross, G=VAT (formula), H=net (formula), J=payment, K=amount paid, O-AI=analysis by code (21 codes).
+
+Same structure as Sales but with 21 expense analysis columns vs 7 for Sales.
+
+### Vatreturns.xlsx (14 sheets: VATQtr1-5, Vatinterface, S/P sheets)
+
+**Vatinterface B-column:** References Admin dates. Start row formula: `adminStartRow = ((M-1) % 12) * 2 + 2`.
+**Vatinterface D/M columns:** Reference Sales/Purchases sheet names.
+**VATQtr1-5 G5:** Hardcoded default quarter-end dates (computed from year-end).
+
+### Payslips.xlsx (16 sheets: Employee, Apr-Mar, Payslips, Payment, Admin)
+
+Always follows PAYE year (Apr-Mar), not accounting year. B2=tax year start. C/D/F=hardcoded week/month calendar (4-4-5 pattern, 380 rows).
+
+### Other files (no month-specific content)
+
+- CT600OnlineLookALike.xlsx: 1 sheet, formula-driven from Financialaccounts
+- Companysecretary.xlsx: 5 sheets (Boardmeeting, Directors&Secretary, etc.)
+- Fixedassets.xlsx: 3 sheets (Schedule, FAreconciliation, HPfinance)
+- Salesinvoice.xlsx: 5 sheets (Invoice Template, Database, Customer/Product/Business Details)
+- expensesform.xlsx: 12 sheets (always "Month 01" through "Month 12")
+- Dividend Voucher.docx: template copy
 
 ## Verified Facts from Research
 
@@ -135,6 +231,10 @@ Example on 6 March 2026:
 - Payslips tabs follow PAYE year (Apr-Mar), not accounting year
 - expensesform tabs are always "Month 01"-"Month 12" (never renamed)
 - CT600, Companysecretary, Fixedassets, Salesinvoice have no month-specific content
+- TrialBalance formulas reference sheet names (not indices) — must be renamed for non-March
+- External link `<sheetName>` entries must match actual tab names for cache injection to work
+- Scenario date translation: `monthOffset = ((targetStartMonth - sourceStartMonth) + 12) % 12`
+- LibreOffice xls roundtrip produces #VALUE! in VAT formulas for renamed tabs beyond the first month
 
 ## Tax Data Update Automation
 

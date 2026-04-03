@@ -746,19 +746,37 @@ export async function renameExternalLinkSheetNames(xlsxBuffer, yearEndMonth) {
 
   if (templateTabs.join(",") === targetTabs.join(",")) return xlsxBuffer;
 
-  const linkFiles = Object.keys(zip.files).filter((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f));
+  const placeholders = templateTabs.map((_, i) => `__EL_${i}__`);
 
-  for (const linkPath of linkFiles) {
-    let xml = await zip.file(linkPath).async("string");
-    const placeholders = templateTabs.map((_, i) => `__EL_${i}__`);
+  function renameTabs(xml) {
     for (let i = 0; i < 12; i++) {
+      xml = xml.replace(new RegExp(`${templateTabs[i]}!`, "g"), `${placeholders[i]}!`);
       xml = xml.replace(new RegExp(`sheetName val="${templateTabs[i]}"`, "g"), `sheetName val="${placeholders[i]}"`);
     }
     for (let i = 0; i < 12; i++) {
-      xml = xml.replace(new RegExp(placeholders[i], "g"), targetTabs[i]);
+      xml = xml.replace(new RegExp(`${placeholders[i]}!`, "g"), `${targetTabs[i]}!`);
+      xml = xml.replace(new RegExp(`sheetName val="${placeholders[i]}"`, "g"), `sheetName val="${targetTabs[i]}"`);
     }
-    const origDate = zip.file(linkPath).date;
-    zip.file(linkPath, xml, { date: origDate });
+    return xml;
+  }
+
+  // Rename in external link XML files (cached sheet names)
+  const linkFiles = Object.keys(zip.files).filter((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f));
+  for (const path of linkFiles) {
+    let xml = await zip.file(path).async("string");
+    xml = renameTabs(xml);
+    zip.file(path, xml, { date: zip.file(path).date });
+  }
+
+  // Rename in ALL worksheet XMLs (TrialBalance, MnthP&L, etc. reference [2]Apr! [3]Apr!)
+  const sheetFiles = Object.keys(zip.files).filter((f) => /xl\/worksheets\/sheet\d+\.xml$/.test(f));
+  for (const path of sheetFiles) {
+    let xml = await zip.file(path).async("string");
+    const orig = xml;
+    xml = renameTabs(xml);
+    if (xml !== orig) {
+      zip.file(path, xml, { date: zip.file(path).date });
+    }
   }
 
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
