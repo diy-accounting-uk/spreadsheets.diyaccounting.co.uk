@@ -150,6 +150,7 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package bst --scenario basic
+      - run: npm run reconciliation -- --package bst --scenario extended
       - name: Generate empty screenshots
         run: |
           mkdir -p /tmp/screenshots
