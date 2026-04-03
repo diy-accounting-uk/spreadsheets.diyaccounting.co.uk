@@ -11,9 +11,7 @@ files = [
   "Purchases.xlsx",
   "Bank.xlsx",
   "Cash.xlsx",
-  "Vat.xlsx",
   "Payslips.xlsx",
-  "Fixedassets.xlsx",
   "Salesinvoice.xlsx",
 ]
 guide = "se-guide.md"
@@ -27,13 +25,11 @@ payslip_guide_filename = "Payslip User Guide.pdf"
 [sheets.financialaccounts]
 admin = "xl/worksheets/sheet10.xml"
 cellEditFn = "se"
-
-[sheets.vat]
-vatQtr1 = "xl/worksheets/sheet1.xml"
-vatQtr2 = "xl/worksheets/sheet2.xml"
-vatQtr3 = "xl/worksheets/sheet3.xml"
-vatQtr4 = "xl/worksheets/sheet4.xml"
-vatQtr5 = "xl/worksheets/sheet5.xml"
+vatQtr1 = "xl/worksheets/sheet14.xml"
+vatQtr2 = "xl/worksheets/sheet15.xml"
+vatQtr3 = "xl/worksheets/sheet16.xml"
+vatQtr4 = "xl/worksheets/sheet17.xml"
+vatQtr5 = "xl/worksheets/sheet18.xml"
 
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"

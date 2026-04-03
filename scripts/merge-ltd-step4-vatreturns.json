@@ -1,0 +1,25 @@
+{
+  "steps": [
+    {
+      "hub": "app/templates/ltd/Financialaccounts.xlsx",
+      "source": "app/templates/ltd/Vatreturns.xlsx",
+      "removeSource": false,
+      "linkRewrites": [
+        { "pattern": "\\[1\\]Admin!", "replacement": "Admin!", "flags": "g" },
+        { "pattern": "\\[2\\]", "replacement": "[__SALES__]", "flags": "g" },
+        { "pattern": "\\[3\\]", "replacement": "[__PURCHASES__]", "flags": "g" },
+        { "pattern": "\\[__SALES__\\]", "replacement": "[3]", "flags": "g" },
+        { "pattern": "\\[__PURCHASES__\\]", "replacement": "[2]", "flags": "g" }
+      ],
+      "hubLinkRewrites": [],
+      "removeExternalLinks": [],
+      "definedNames": [
+        { "name": "_xlnm.Print_Area", "sourceSheetIndex": 0, "value": "VATQtr1!$A$1:$I$32" },
+        { "name": "_xlnm.Print_Area", "sourceSheetIndex": 1, "value": "VATQtr2!$A$1:$I$31" },
+        { "name": "_xlnm.Print_Area", "sourceSheetIndex": 2, "value": "VATQtr3!$A$1:$I$31" },
+        { "name": "_xlnm.Print_Area", "sourceSheetIndex": 3, "value": "VATQtr4!$A$1:$I$31" },
+        { "name": "_xlnm.Print_Area", "sourceSheetIndex": 4, "value": "VATQtr5!$A$1:$I$31" }
+      ]
+    }
+  ]
+}

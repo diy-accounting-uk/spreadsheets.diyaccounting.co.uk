@@ -13,11 +13,7 @@ files = [
   "Savingaccount.xlsx",
   "Cashaccount.xlsx",
   "Creditcardaccount.xlsx",
-  "Vatreturns.xlsx",
   "Payslips.xlsx",
-  "Fixedassets.xlsx",
-  "CT600OnlineLookALike.xlsx",
-  "Companysecretary.xlsx",
   "Salesinvoice.xlsx",
   "expensesform.xlsx",
   "Dividend Voucher.docx",
@@ -33,13 +29,11 @@ payslip_guide_filename = "Payslip User Guide.pdf"
 [sheets.financialaccounts]
 admin = "xl/worksheets/sheet12.xml"
 cellEditFn = "ltd"
+vatQtr1 = "xl/worksheets/sheet22.xml"
+vatQtr2 = "xl/worksheets/sheet23.xml"
+vatQtr3 = "xl/worksheets/sheet24.xml"
+vatQtr4 = "xl/worksheets/sheet25.xml"
+vatQtr5 = "xl/worksheets/sheet26.xml"
 
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"
-
-[sheets.vatreturns]
-vatQtr1 = "xl/worksheets/sheet1.xml"
-vatQtr2 = "xl/worksheets/sheet2.xml"
-vatQtr3 = "xl/worksheets/sheet3.xml"
-vatQtr4 = "xl/worksheets/sheet4.xml"
-vatQtr5 = "xl/worksheets/sheet5.xml"

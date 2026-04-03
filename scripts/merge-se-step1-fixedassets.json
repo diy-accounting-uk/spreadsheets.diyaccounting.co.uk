@@ -1,0 +1,21 @@
+{
+  "steps": [
+    {
+      "hub": "app/templates/se/Financialaccounts.xlsx",
+      "source": "app/templates/se/Fixedassets.xlsx",
+      "removeSource": false,
+      "linkRewrites": [
+        { "pattern": "\\[1\\]Admin!", "replacement": "Admin!", "flags": "g" },
+        { "pattern": "\\[2\\]", "replacement": "[__PURCHASES__]", "flags": "g" },
+        { "pattern": "\\[3\\]", "replacement": "[__SALES__]", "flags": "g" },
+        { "pattern": "\\[__PURCHASES__\\]", "replacement": "[3]", "flags": "g" },
+        { "pattern": "\\[__SALES__\\]", "replacement": "[2]", "flags": "g" }
+      ],
+      "hubLinkRewrites": [
+        { "pattern": "\\[1\\]Schedule!", "replacement": "Schedule!", "flags": "g" }
+      ],
+      "removeExternalLinks": [1],
+      "definedNames": []
+    }
+  ]
+}

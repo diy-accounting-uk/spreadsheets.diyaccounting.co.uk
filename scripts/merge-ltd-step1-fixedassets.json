@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "hub": "app/templates/ltd/Financialaccounts.xlsx",
+      "source": "app/templates/ltd/Fixedassets.xlsx",
+      "removeSource": false,
+      "linkRewrites": [
+        { "pattern": "\\[1\\]Admin!", "replacement": "Admin!", "flags": "g" },
+        { "pattern": "\\[1\\]OpenAccounts!", "replacement": "OpenAccounts!", "flags": "g" }
+      ],
+      "hubLinkRewrites": [
+        { "pattern": "\\[1\\]Schedule!", "replacement": "Schedule!", "flags": "g" },
+        { "pattern": "\\[1\\]HPfinance!", "replacement": "HPfinance!", "flags": "g" },
+        { "pattern": "\\[1\\]FAreconciliation!", "replacement": "FAreconciliation!", "flags": "g" }
+      ],
+      "removeExternalLinks": [1],
+      "definedNames": [
+        {
+          "name": "_xlnm.Print_Titles",
+          "sourceSheetIndex": 0,
+          "value": "Schedule!$A:$G,Schedule!$1:$4"
+        }
+      ]
+    }
+  ]
+}

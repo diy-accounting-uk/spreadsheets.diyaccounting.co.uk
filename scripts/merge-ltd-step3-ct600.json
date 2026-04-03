@@ -1,0 +1,27 @@
+{
+  "steps": [
+    {
+      "hub": "app/templates/ltd/Financialaccounts.xlsx",
+      "source": "app/templates/ltd/CT600OnlineLookALike.xlsx",
+      "removeSource": false,
+      "linkRewrites": [
+        { "pattern": "\\[1\\]CorporationTax!", "replacement": "CorporationTax!", "flags": "g" },
+        { "pattern": "\\[1\\]OpenAccounts!", "replacement": "OpenAccounts!", "flags": "g" },
+        { "pattern": "\\[1\\]PubBalSht!", "replacement": "PubBalSht!", "flags": "g" },
+        { "pattern": "\\[1\\]PubNotes!", "replacement": "PubNotes!", "flags": "g" },
+        { "pattern": "\\[1\\]TrialBalance!", "replacement": "TrialBalance!", "flags": "g" },
+        { "pattern": "\\[2\\]RegisterofMembers!", "replacement": "RegisterofMembers!", "flags": "g" },
+        { "pattern": "\\[3\\]Schedule!", "replacement": "Schedule!", "flags": "g" }
+      ],
+      "hubLinkRewrites": [],
+      "removeExternalLinks": [],
+      "definedNames": [
+        {
+          "name": "_xlnm.Print_Area",
+          "sourceSheetIndex": 0,
+          "value": "Sheet1!$A$1:$Q$2360"
+        }
+      ]
+    }
+  ]
+}

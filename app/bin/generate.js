@@ -111,12 +111,11 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
         buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
       }
 
-      if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
-        buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
-      }
-
       if (yearEndMonth && fileKey === "financialaccounts") {
         buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
+        if (sheetsConfig?.vatQtr1) {
+          buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet27.xml");
+        }
       }
 
       writeFileSync(resolve(outDir, templateFile), buffer);
