@@ -81,7 +81,7 @@
   "devDependencies": {
     "@axe-core/cli": "^4.11.2-fe1cdbd.0",
     "@mhlabs/cfn-diagram": "^1.1.40",
-    "@playwright/test": "1.58.2",
+    "@playwright/test": "1.59.1",
     "aws-cdk": "^2.1116.0",
     "eslint": "^10.1.0",
     "eslint-plugin-security": "^4.0.0",
