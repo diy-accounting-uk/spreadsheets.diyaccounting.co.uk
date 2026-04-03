@@ -178,6 +178,8 @@ jobs:
 
   browser-test:
     runs-on: ubuntu-24.04
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-jammy
     steps:
 
       - name: Checkout
@@ -192,8 +194,12 @@ jobs:
       - name: Node dependencies
         run: npm ci || sleep 30 && npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+      - name: Install dependencies
+        run: |
+          apt-get update && apt-get install -y zip
+          npm ci --ignore-scripts || sleep 30 && npm ci --ignore-scripts
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
       - name: Run browser tests
         run: npm run test:browser
@@ -225,7 +231,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update && apt-get install -y zip
-          npm ci --ignore-scripts
+          npm ci --ignore-scripts || sleep 30 && npm ci --ignore-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 

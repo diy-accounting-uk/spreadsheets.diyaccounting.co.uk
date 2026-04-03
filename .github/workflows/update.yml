@@ -126,6 +126,7 @@ jobs:
           path: |
             package.json
             package-lock.json
+            .github/workflows/*.yml
 
   java-update:
     runs-on: ubuntu-24.04
