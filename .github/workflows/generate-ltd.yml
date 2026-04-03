@@ -29,6 +29,9 @@ on:
       skip-commit:
         type: boolean
         default: false
+      reconcile-all:
+        type: boolean
+        default: false
   workflow_dispatch:
     inputs:
       skip-tests:
@@ -45,6 +48,10 @@ on:
         default: false
       skip-commit:
         description: 'Skip commit'
+        type: boolean
+        default: false
+      reconcile-all:
+        description: 'Reconcile all packages (not just latest 15 future)'
         type: boolean
         default: false
 
@@ -72,6 +79,8 @@ jobs:
         run: ":"
       - name: "inputs.skip-commit=[${{ inputs.skip-commit }}]"
         run: ":"
+      - name: "inputs.reconcile-all=[${{ inputs.reconcile-all }}]"
+        run: ":"
       - name: Normalise Params
         id: normalise
         shell: bash
@@ -84,11 +93,14 @@ jobs:
           echo "skip-reconciliation=${SKIP_RECONCILIATION}" | tee -a "$GITHUB_OUTPUT"
           SKIP_COMMIT='${{ inputs.skip-commit }}'; [[ -z "$SKIP_COMMIT" ]] && SKIP_COMMIT="false"
           echo "skip-commit=${SKIP_COMMIT}" | tee -a "$GITHUB_OUTPUT"
+          RECONCILE_ALL='${{ inputs.reconcile-all }}'; [[ -z "$RECONCILE_ALL" ]] && RECONCILE_ALL="false"
+          echo "reconcile-all=${RECONCILE_ALL}" | tee -a "$GITHUB_OUTPUT"
     outputs:
       skip-tests: ${{ steps.normalise.outputs.skip-tests }}
       skip-generation: ${{ steps.normalise.outputs.skip-generation }}
       skip-reconciliation: ${{ steps.normalise.outputs.skip-reconciliation }}
       skip-commit: ${{ steps.normalise.outputs.skip-commit }}
+      reconcile-all: ${{ steps.normalise.outputs.reconcile-all }}
 
   test:
     runs-on: ubuntu-24.04
@@ -125,16 +137,23 @@ jobs:
       - run: rm -rf packages
       - run: npm run generate -- --package ltd
       - run: npm test
-      - name: Compute reconciliation matrix (latest 15 future year-ends)
+      - name: Compute reconciliation matrix
         id: matrix
+        env:
+          RECONCILE_ALL: ${{ needs.params.outputs.reconcile-all }}
         run: |
           TODAY=$(date +%Y-%m-%d)
-          YEAR_ENDS=$(ls -d packages/GB\ Accounts\ Company*/ 2>/dev/null \
+          ALL_YEAR_ENDS=$(ls -d packages/GB\ Accounts\ Company*/ 2>/dev/null \
             | sed 's|.*/GB Accounts Company \([0-9-]*\).*|\1|' \
-            | sort -r \
-            | awk -v today="$TODAY" '$1 >= today' \
-            | head -15 \
-            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            | sort -r)
+          if [[ "$RECONCILE_ALL" == "true" ]]; then
+            YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" \
+              | awk -v today="$TODAY" '$1 >= today' \
+              | head -15 \
+              | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          fi
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
