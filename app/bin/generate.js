@@ -108,6 +108,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
 
       if (yearEndMonth && templateFile.endsWith(".xlsx") && TAB_RENAME_FILES.has(templateFile)) {
         buffer = await renameMonthTabs(buffer, yearEndMonth);
+        buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
       }
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
