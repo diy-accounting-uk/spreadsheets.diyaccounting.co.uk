@@ -472,18 +472,19 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     const userProfile = `file://${resolve(workDir, "lo_profile")}`;
     const filenames = Object.keys(fileBuffers);
 
-    // Recalculate leaf files (everything except the readFile)
+    // Recalculate leaf files via xls roundtrip (xlsx → xls → xlsx).
     const leafFiles = filenames.filter((f) => f !== readFile);
     for (const filename of leafFiles) {
+      if (!filename.endsWith(".xlsx")) continue;
       const xlsxPath = resolve(workDir, filename);
       if (!existsSync(xlsxPath)) continue;
       xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
     }
 
-    // Update external link caches in the readFile with recalculated values from leaves
+    // Inject recalculated leaf values into hub's external link caches
     await updateExternalLinkCaches(workDir, readFile);
 
-    // Now recalculate the readFile (its external link caches have fresh values)
+    // Recalculate the hub file
     xslRoundtrip(soffice, userProfile, workDir, resolve(workDir, readFile));
 
     // 3. Read results from the specified readFile
