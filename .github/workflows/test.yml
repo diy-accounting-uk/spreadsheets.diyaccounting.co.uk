@@ -178,8 +178,6 @@ jobs:
 
   browser-test:
     runs-on: ubuntu-24.04
-    container:
-      image: mcr.microsoft.com/playwright:v1.58.2-jammy
     steps:
 
       - name: Checkout
@@ -192,11 +190,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          apt-get update && apt-get install -y zip
-          npm ci --ignore-scripts || sleep 30 && npm ci --ignore-scripts
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: npm ci || sleep 30 && npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Run browser tests
         run: npm run test:browser
@@ -212,8 +209,6 @@ jobs:
   behaviour-test:
     name: 'behaviour test (local)'
     runs-on: ubuntu-24.04
-    container:
-      image: mcr.microsoft.com/playwright:v1.58.2-jammy
     steps:
 
       - name: Checkout
@@ -226,11 +221,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          apt-get update && apt-get install -y zip
-          npm ci --ignore-scripts || sleep 30 && npm ci --ignore-scripts
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: npm ci || sleep 30 && npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Build packages (zips + catalogue)
         run: npm run build:packages -- --years 2

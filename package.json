@@ -73,7 +73,7 @@
     "update-to-latest": "npx npm-check-updates --upgrade --enginesNode --verbose --install always",
     "update-to-greatest": "npx npm-check-updates --upgrade --enginesNode --target greatest --verbose --install always --reject 'alpha'",
     "update:java": "./scripts/update-java.sh",
-    "update:node": "npm run update-to-latest && bash scripts/sync-playwright-version.sh",
+    "update:node": "npm run update-to-latest",
     "diagram:spreadsheets": "npm run cdk:synth && bash -c 'for f in cdk-spreadsheets.out/*.template.json; do npx @mhlabs/cfn-diagram draw.io -c -s -t \"$f\" -o \"cdk-spreadsheets-$(basename $f .template.json).drawio\"; done' && for f in cdk-spreadsheets-*.drawio; do node scripts/clean-drawio.cjs \"$f\"; done",
     "diagram:spreadsheets:svg": "npm run diagram:spreadsheets && bash -c 'for f in cdk-spreadsheets-*.drawio; do drawio --export --format svg --output \"${f%.drawio}.svg\" \"$f\"; done'",
     "resources:spreadsheets": "node scripts/generate-aws-resources.js --profile spreadsheets"

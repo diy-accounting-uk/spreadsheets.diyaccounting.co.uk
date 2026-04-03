@@ -34,7 +34,6 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 env:
   NODE_VERSION: '24'
@@ -133,7 +132,6 @@ jobs:
           path: |
             package.json
             package-lock.json
-            .github/workflows/*.yml
 
   java-update:
     runs-on: ubuntu-24.04

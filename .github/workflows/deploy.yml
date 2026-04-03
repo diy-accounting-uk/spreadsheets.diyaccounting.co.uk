@@ -224,8 +224,6 @@ jobs:
       - params
       - deploy-spreadsheets
     runs-on: ubuntu-24.04
-    container:
-      image: mcr.microsoft.com/playwright:v1.58.2-jammy
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -237,10 +235,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci --ignore-scripts || sleep 30 && npm ci --ignore-scripts
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+        run: npm ci || sleep 30 && npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Run spreadsheets behaviour tests
         run: npm run test:spreadsheetsBehaviour-${{ needs.params.outputs.environment-name }}
