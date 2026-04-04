@@ -107,12 +107,12 @@ describeCalc(
 
     // ── Published P&L assertions ──────────────────────────────────────────
 
-    it("PubP&L: turnover > 0", () => {
-      expect(results["PubP&L"]?.C5).toBeGreaterThan(0);
+    it("PubP&L: gross profit > 0", () => {
+      expect(results["PubP&L"]?.D9).toBeGreaterThan(0);
     });
 
-    it("PubP&L: sheet was read", () => {
-      expect(results["PubP&L"]).toBeDefined();
+    it("PubP&L: profit before tax > 0", () => {
+      expect(results["PubP&L"]?.D18).toBeGreaterThan(0);
     });
 
     // ── Published Balance Sheet assertions ─────────────────────────────────
