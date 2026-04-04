@@ -357,6 +357,23 @@ export const CELL_MAP = [
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
 ];
 
+// Additional reads from leaf files (Bank.xlsx closing balance, Vat.xlsx quarterly returns)
+export function multiFileOptions() {
+  return {
+    postHubRecalc: ["Vat.xlsx"],
+    additionalReads: {
+      "Bank.xlsx": { Mar: ["A1", "A2"] },
+      "Cash.xlsx": { Mar: ["A1", "A2"] },
+      "Vat.xlsx": {
+        VATQtr1: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
+        VATQtr2: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
+        VATQtr3: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
+        VATQtr4: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
+      },
+    },
+  };
+}
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {

@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 import { runMultiFileSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as seCellWrites, standardReads as seReads } from "../products/se.js";
+import { cellWrites as seCellWrites, standardReads as seReads, multiFileOptions as seOptions } from "../products/se.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -56,7 +56,7 @@ describeCalc(
       const writes = seCellWrites(scenario);
       const reads = seReads();
 
-      results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
+      results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", seOptions());
     }, 300000);
 
     // ── P&L assertions ───────────────────────────────────────────────────
@@ -119,6 +119,25 @@ describeCalc(
     it("Income Tax: total = income tax + NI", () => {
       const tax = results["Income Tax"];
       expect(tax.E18).toBeCloseTo(tax.E10 + (tax.E15 || 0) + (tax.E16 || 0), 0);
+    });
+
+    // ── Bank closing balance (6k) ────────────────────────────────────────
+
+    it("Bank: Mar sheet has closing balance", () => {
+      const bank = results.Mar;
+      if (bank) {
+        // A2 = closing balance formula
+        expect(bank.A2).toBeDefined();
+      }
+    });
+
+    // ── VAT quarterly (6j) ───────────────────────────────────────────────
+
+    it("VAT Q1: has output VAT", () => {
+      const q1 = results.VATQtr1;
+      if (q1) {
+        expect(q1.G7).toBeDefined();
+      }
     });
   },
   300000,

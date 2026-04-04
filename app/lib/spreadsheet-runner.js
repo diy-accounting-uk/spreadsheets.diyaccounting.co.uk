@@ -515,6 +515,16 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     // Recalculate the hub file
     xslRoundtrip(soffice, userProfile, workDir, resolve(workDir, readFile));
 
+    // Recalculate files that read FROM the hub (e.g. Vat.xlsx) — they need fresh hub data
+    if (options.postHubRecalc) {
+      for (const filename of options.postHubRecalc) {
+        const xlsxPath = resolve(workDir, filename);
+        if (existsSync(xlsxPath)) {
+          xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
+        }
+      }
+    }
+
     // 3. Read results from the specified readFile
     const recalcPath = resolve(workDir, readFile);
     const recalcBuffer = readFileSync(recalcPath);
@@ -533,6 +543,28 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
 
       for (const cellRef of cellRefs) {
         results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
+      }
+    }
+
+    // Read from additional recalculated files (e.g. Vat.xlsx, Bank.xlsx)
+    // options.additionalReads = { "Vat.xlsx": { "VATQtr1": ["G7","G15","G17"] }, "Bank.xlsx": { "Mar": ["A2"] } }
+    if (options.additionalReads) {
+      for (const [filename, sheetReads] of Object.entries(options.additionalReads)) {
+        const filePath = resolve(workDir, filename);
+        if (!existsSync(filePath)) continue;
+        const fileZip = await JSZip.loadAsync(readFileSync(filePath));
+        const fileSheetMap = await buildSheetMap(fileZip);
+        const fileSharedStrings = await loadSharedStrings(fileZip);
+
+        for (const [sheetName, cellRefs] of Object.entries(sheetReads)) {
+          const sheetPath = fileSheetMap.get(sheetName);
+          if (!sheetPath) continue;
+          const xml = await fileZip.file(sheetPath).async("string");
+          if (!results[sheetName]) results[sheetName] = {};
+          for (const cellRef of cellRefs) {
+            results[sheetName][cellRef] = readCellValue(xml, cellRef, fileSharedStrings);
+          }
+        }
       }
     }
 
