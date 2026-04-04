@@ -88,8 +88,33 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
     lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
   }
 
+  // Formatted accounting statements (if product module provides them)
+  if (typeof productMod.reportSections === "function") {
+    const sections = productMod.reportSections(results);
+    for (const section of sections) {
+      lines.push("");
+      lines.push(`## ${section.title}`);
+      lines.push("");
+      lines.push("| | Amount |");
+      lines.push("|---|------:|");
+      for (const row of section.rows) {
+        if (!row.label && !row.value) {
+          lines.push("| | |");
+        } else {
+          const indent = row.indent ? "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(row.indent) : "";
+          lines.push(`| ${indent}${row.label} | ${row.value} |`);
+        }
+      }
+    }
+  }
+
+  // Cell-by-cell appendix with DIY labels and diya-gl mappings
+  const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
+
   lines.push("");
-  lines.push("## Output Values");
+  lines.push("---");
+  lines.push("");
+  lines.push("## Appendix: Cell Values");
   lines.push("");
 
   for (const [sheetName, cells] of Object.entries(results)) {
@@ -98,10 +123,14 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
     if (entries.length === 0) continue;
     lines.push(`### ${sheetName}`);
     lines.push("");
-    lines.push("| Cell | Value |");
-    lines.push("|------|-------|");
+    lines.push("| Cell | DIY Label | Value | diya-gl mapping |");
+    lines.push("|------|-----------|-------|-----------------|");
     for (const [cell, val] of entries) {
-      lines.push(`| ${cell} | ${val} |`);
+      const key = `${sheetName}!${cell}`;
+      const lbl = labels[key];
+      const diyLabel = lbl?.diyLabel || "";
+      const glMapping = lbl?.glMapping || "";
+      lines.push(`| ${cell} | ${diyLabel} | ${val} | ${glMapping} |`);
     }
     lines.push("");
   }

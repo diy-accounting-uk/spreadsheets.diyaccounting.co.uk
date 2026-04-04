@@ -95,81 +95,92 @@ export function cellWrites(scenario) {
 
 export const TAX_SHEET = "Income Tax";
 
+// prettier-ignore
+export const CELL_MAP = [
+  // ── Profit & Loss Account ──
+  ["Profit & Loss Account", "B5",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B6",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B7",  "Product C — Training",      "accounts.sales.4002",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B8",  "Other Income",              "accounts.sales.4003",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B9",  "**Sales Turnover**",        "gl-cor:amount (salesTurnover)",  "Profit & Loss Account", 0],
+  ["Profit & Loss Account", "B11", "Grants Received",           "accounts.sales.4004",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B14", "Materials / Stock",         "accounts.purchases.5000",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B15", "Sub-Contractors",           "accounts.purchases.5001",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B16", "Other Direct Costs",        "accounts.purchases.5002",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B17", "Cost of Sales",             "gl-cor:amount (costOfSales)",    "Profit & Loss Account", 0],
+  ["Profit & Loss Account", "B19", "**Gross Profit**",          "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
+  ["Profit & Loss Account", "B21", "Wages & Salaries",          "accounts.purchases.5101",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B22", "Light, Heat, Power",        "accounts.purchases.5201",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B23", "Repairs & Maintenance",     "accounts.purchases.5400",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B24", "General Admin",             "accounts.purchases.5501",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B25", "Motor Expenses",            "accounts.purchases.5601",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B26", "Travel & Subsistence",      "accounts.purchases.5600",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B27", "Advertising",               "accounts.purchases.5500",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B28", "Legal & Professional",      "accounts.purchases.5800",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B29", "Bad Debts",                 "accounts.sales.4005",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B30", "Depreciation",              "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B31", "Other Expenses",            "accounts.purchases (other)",     "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B32", "Charitable Donations",      "accounts.purchases.5801",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B33", "Goodwill Amortisation",     "accounts.purchases.5802",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B34", "Loss on Disposal",          "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B35", "Total Admin Expenses",      "gl-cor:amount (totalAdmin)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Account", "B37", "**Operating Profit**",      "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
+  ["Profit & Loss Account", "B39", "**Profit Before Tax**",     "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
+  // ── Income Tax ──
+  [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Income Tax Calculation", 0],
+  [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
+  [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
+  [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
+  [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
+  [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
+  [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
+  // ── SE Short (SA103S) ──
+  ["SE Short", "D9",   "Box 9 — Business name",       "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
+  ["SE Short", "D10",  "Box 10 — Description",         "entityInformation.organizationDescription", "Self Assessment (SA103S)", 0],
+  ["SE Short", "D25",  "Box 25 — Turnover",            "gl-cor:amount (sa103s.turnover)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "D27",  "Box 27 — Allowable expenses",  "gl-cor:amount (sa103s.expenses)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "D29",  "Box 29 — Net profit/loss",     "gl-cor:amount (sa103s.netProfit)",         "Self Assessment (SA103S)", 0],
+  ["SE Short", "D30",  "Box 30 — Tax adjustments",     "gl-cor:amount (sa103s.taxAdjust)",         "Self Assessment (SA103S)", 0],
+  ["SE Short", "D31",  "Box 31 — Taxable profit",      "gl-cor:amount (sa103s.taxableProfit)",     "Self Assessment (SA103S)", 0],
+  ["SE Short", "D32",  "Box 32 — Notes",               "gl-cor:detailComment",                    "Self Assessment (SA103S)", 0],
+  ["SE Short", "D106", "Net profit for tax calc",      "gl-cor:amount (sa103s.profitForTax)",      "Self Assessment (SA103S)", 0],
+];
+
 export function standardReads() {
-  return {
-    "Profit & Loss Account": [
-      // Column B = Total Year
-      "B5",
-      "B6",
-      "B7",
-      "B8",
-      "B9",
-      "B11",
-      "B14",
-      "B15",
-      "B16",
-      "B17",
-      "B19",
-      "B21",
-      "B22",
-      "B23",
-      "B24",
-      "B25",
-      "B26",
-      "B27",
-      "B28",
-      "B29",
-      "B30",
-      "B31",
-      "B32",
-      "B33",
-      "B34",
-      "B35",
-      "B37",
-      "B39",
-    ],
-    [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
-    // SE Short (SA103S self-assessment return)
-    "SE Short": [
-      "D7",
-      "D8",
-      "D9",
-      "D10",
-      "D14",
-      "D15",
-      "D16",
-      "D17",
-      "D18",
-      "D19",
-      "D20",
-      "D21",
-      "D22",
-      "D23",
-      "D24",
-      "D25",
-      "D26",
-      "D27",
-      "D28",
-      "D29",
-      "D30",
-      "D31",
-      "D32",
-      "D33",
-      "D100",
-      "D101",
-      "D102",
-      "D103",
-      "D104",
-      "D105",
-      "D106",
-    ],
-    // VitalTax (quarterly summary)
-    "VitalTax": ["B5", "B6", "B7", "B8", "C5", "C6", "C7", "C8", "D5", "D6", "D7", "D8"],
-    // StockControl
-    "StockControl": ["B5", "B6", "B7", "B8"],
-    // Wagesinterface (payroll summary)
-    "Wagesinterface": ["B5", "B6", "B7", "B8", "B9", "B10", "C5", "C6", "C7", "C8", "C9", "C10"],
-  };
+  const reads = {};
+  for (const [sheet, cell] of CELL_MAP) {
+    if (!reads[sheet]) reads[sheet] = [];
+    if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  }
+  return reads;
+}
+
+export function reportSections(results) {
+  const sectionMap = new Map();
+  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+    if (!sectionMap.has(section)) sectionMap.set(section, []);
+    const val = results[sheet]?.[cell];
+    sectionMap.get(section).push({ label, value: fmt(val), indent });
+  }
+  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+}
+
+export function cellLabels() {
+  const labels = {};
+  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
+    const key = `${sheet}!${cell}`;
+    labels[key] = { diyLabel, glMapping };
+  }
+  return labels;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || v === "" || v === " ") return "—";
+  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return String(v);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────

@@ -108,115 +108,125 @@ export function cellWrites(scenario) {
   return writes;
 }
 
-// ── Standard reads for reconciliation ──────────────────────────────────────
+// ── Cell map: single source of truth for reads, reports, and labels ────────
+// Each entry: [sheet, cell, DIY label, diya-gl property, report section, indent]
 
 export const TAX_SHEET = "Income Tax";
 
+// prettier-ignore
+export const CELL_MAP = [
+  // ── Profit & Loss Account ──
+  ["Profit & Loss Acc", "C4",  "Sales Turnover",                   "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "C5",  "Other Income",                     "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C6",  "Cost of Sales (stock + direct)",   "gl-cor:amount (costOfSales)",       "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C7",  "Direct Costs",                     "gl-cor:amount (directCosts)",       "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C9",  "**Gross Profit**",                 "gl-cor:amount (grossProfit)",       "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "C11", "Employee Costs",                   "accounts.purchases.5101",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C12", "Premises Costs",                   "accounts.purchases.5200",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C13", "Repairs & Maintenance",            "accounts.purchases.5400",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C14", "General Admin",                    "accounts.purchases.5501",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C15", "Motor Expenses",                   "accounts.purchases.5601",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C16", "Travel & Subsistence",             "accounts.purchases.5600",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C17", "Advertising",                      "accounts.purchases.5500",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C18", "Legal & Professional",             "accounts.purchases.5800",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C19", "Bad Debts",                        "accounts.purchases.5801 (badDebts)","Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C20", "Interest & Finance",               "accounts.purchases.5803",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C21", "Other Expenses",                   "accounts.purchases (other)",        "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C22", "Total Expenses",                   "gl-cor:amount (totalExpenses)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "C24", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "C26", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C28", "Taxable Profit",                   "gl-cor:amount (taxableProfit)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "C30", "Income Tax",                       "tax.incomeTax",                     "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C32", "Tax at basic rate",                "tax.incomeTax.basicRate",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C33", "NI Class 4",                       "tax.nationalInsurance.class4",      "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C35", "Net Income After Tax",             "gl-cor:amount (netIncome)",         "Profit & Loss Account", 0],
+  // Monthly sales
+  ["Profit & Loss Acc", "D4",  "Apr", "gl-cor:amount (monthlySales.apr)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "E4",  "May", "gl-cor:amount (monthlySales.may)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "F4",  "Jun", "gl-cor:amount (monthlySales.jun)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "G4",  "Jul", "gl-cor:amount (monthlySales.jul)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "H4",  "Aug", "gl-cor:amount (monthlySales.aug)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "I4",  "Sep", "gl-cor:amount (monthlySales.sep)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "J4",  "Oct", "gl-cor:amount (monthlySales.oct)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "K4",  "Nov", "gl-cor:amount (monthlySales.nov)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "L4",  "Dec", "gl-cor:amount (monthlySales.dec)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "M4",  "Jan", "gl-cor:amount (monthlySales.jan)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "N4",  "Feb", "gl-cor:amount (monthlySales.feb)", "Monthly Sales", 0],
+  ["Profit & Loss Acc", "O4",  "Mar", "gl-cor:amount (monthlySales.mar)", "Monthly Sales", 0],
+  // ── Income Tax ──
+  [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Income Tax Calculation", 0],
+  [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
+  [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
+  [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
+  [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
+  [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
+  [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
+  // ── SE Short (SA103S) ──
+  ["SE Short", "D9",   "Box 9 — Business name",        "entityInformation.organizationIdentifier", "Self Assessment (SA103S)", 0],
+  ["SE Short", "D10",  "Box 10 — Description",          "entityInformation.organizationDescription","Self Assessment (SA103S)", 0],
+  ["SE Short", "D25",  "Box 25 — Turnover",             "gl-cor:amount (sa103s.turnover)",         "Self Assessment (SA103S)", 0],
+  ["SE Short", "D27",  "Box 27 — Allowable expenses",   "gl-cor:amount (sa103s.expenses)",         "Self Assessment (SA103S)", 0],
+  ["SE Short", "D29",  "Box 29 — Net profit/loss",      "gl-cor:amount (sa103s.netProfit)",        "Self Assessment (SA103S)", 0],
+  ["SE Short", "D30",  "Box 30 — Tax adjustments",      "gl-cor:amount (sa103s.taxAdjust)",        "Self Assessment (SA103S)", 0],
+  ["SE Short", "D31",  "Box 31 — Taxable profit",       "gl-cor:amount (sa103s.taxableProfit)",    "Self Assessment (SA103S)", 0],
+  ["SE Short", "D32",  "Box 32 — Notes",                "gl-cor:detailComment (sa103s.notes)",     "Self Assessment (SA103S)", 0],
+  ["SE Short", "D106", "Net profit for tax calc",       "gl-cor:amount (sa103s.profitForTax)",     "Self Assessment (SA103S)", 0],
+  // ── Stock ──
+  ["PurchasesStock", "D5",  "Opening Stock",  "accounts.assets.1100 (opening)", "Stock", 0],
+  ["PurchasesStock", "D7",  "Stock at Cost",  "accounts.assets.1100 (atCost)",  "Stock", 0],
+  ["PurchasesStock", "D30", "Closing Stock",  "accounts.assets.1100 (closing)", "Stock", 0],
+  // ── Debtors & Creditors ──
+  ["Debtors & Creditors", "C5",  "Opening Debtor 1",  "accounts.assets.1300 (opening[0])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C6",  "Opening Debtor 2",  "accounts.assets.1300 (opening[1])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C7",  "Opening Debtor 3",  "accounts.assets.1300 (opening[2])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F5",  "Closing Debtor 1",  "accounts.assets.1300 (closing[0])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F6",  "Closing Debtor 2",  "accounts.assets.1300 (closing[1])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F7",  "Closing Debtor 3",  "accounts.assets.1300 (closing[2])",      "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C12", "Opening Creditor 1","accounts.liabilities.2100 (opening[0])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C13", "Opening Creditor 2","accounts.liabilities.2100 (opening[1])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C14", "Opening Creditor 3","accounts.liabilities.2100 (opening[2])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "C15", "Opening Creditor 4","accounts.liabilities.2100 (opening[3])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F12", "Closing Creditor 1","accounts.liabilities.2100 (closing[0])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F13", "Closing Creditor 2","accounts.liabilities.2100 (closing[1])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F14", "Closing Creditor 3","accounts.liabilities.2100 (closing[2])", "Debtors & Creditors", 1],
+  ["Debtors & Creditors", "F15", "Closing Creditor 4","accounts.liabilities.2100 (closing[3])", "Debtors & Creditors", 1],
+];
+
 export function standardReads() {
-  return {
-    "Profit & Loss Acc": [
-      "C4",
-      "C5",
-      "C6",
-      "C7",
-      "C9",
-      "C11",
-      "C12",
-      "C13",
-      "C14",
-      "C15",
-      "C16",
-      "C17",
-      "C18",
-      "C19",
-      "C20",
-      "C21",
-      "C22",
-      "C24",
-      "C26",
-      "C28",
-      "C30",
-      "C32",
-      "C33",
-      "C35",
-      // Monthly columns
-      "D4",
-      "E4",
-      "F4",
-      "G4",
-      "H4",
-      "I4",
-      "J4",
-      "K4",
-      "L4",
-      "M4",
-      "N4",
-      "O4",
-    ],
-    [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
-    // SE Short (SA103S self-assessment return boxes)
-    "SE Short": [
-      "D7",
-      "D8",
-      "D9",
-      "D10",
-      "D14",
-      "D15",
-      "D16",
-      "D17",
-      "D18",
-      "D19",
-      "D20",
-      "D21",
-      "D22",
-      "D23",
-      "D24",
-      "D25",
-      "D26",
-      "D27",
-      "D28",
-      "D29",
-      "D30",
-      "D31",
-      "D32",
-      "D33",
-      "D100",
-      "D101",
-      "D102",
-      "D103",
-      "D104",
-      "D105",
-      "D106",
-    ],
-    // Fixed Assets preparation sheet
-    "Fixed Assets": [
-      "C5",
-      "C6",
-      "C7",
-      "C8",
-      "C9",
-      "C10",
-      "D5",
-      "D6",
-      "D7",
-      "D8",
-      "D9",
-      "D10",
-      "E5",
-      "E6",
-      "E7",
-      "E8",
-      "E9",
-      "E10",
-      "F5",
-      "F6",
-      "F7",
-    ],
-    // Stock
-    "PurchasesStock": ["D5", "D7", "D30"],
-    // Debtors & Creditors
-    "Debtors & Creditors": ["C5", "C6", "C7", "F5", "F6", "F7", "C12", "C13", "C14", "C15", "F12", "F13", "F14", "F15"],
-  };
+  const reads = {};
+  for (const [sheet, cell] of CELL_MAP) {
+    if (!reads[sheet]) reads[sheet] = [];
+    if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  }
+  return reads;
+}
+
+export function reportSections(results) {
+  const sectionMap = new Map();
+  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+    if (!sectionMap.has(section)) sectionMap.set(section, []);
+    const val = results[sheet]?.[cell];
+    sectionMap.get(section).push({ label, value: fmt(val), indent });
+  }
+  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+}
+
+export function cellLabels() {
+  const labels = {};
+  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
+    const key = `${sheet}!${cell}`;
+    labels[key] = { diyLabel, glMapping };
+  }
+  return labels;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || v === "" || v === " ") return "—";
+  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return String(v);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
