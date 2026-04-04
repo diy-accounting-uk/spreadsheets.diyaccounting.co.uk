@@ -684,7 +684,10 @@ const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
 const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
 const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
 const advByCode = {};
-advPurchLines.forEach((l) => { const c = SE_PURCHASE_CODE_MAP[l.accountMainID]; if (c) advByCode[c] = (advByCode[c] || 0) + l.amount; });
+advPurchLines.forEach((l) => {
+  const c = SE_PURCHASE_CODE_MAP[l.accountMainID];
+  if (c) advByCode[c] = (advByCode[c] || 0) + l.amount;
+});
 const advToml = formatScenarioToml(
   {
     name: "Precision Code - advanced self employed",
@@ -745,7 +748,10 @@ const fullTotalSales = computeSpreadsheetNetSales(fullTurnoverLines);
 const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
 const fullPurchLines = fullLines.filter((l) => l.sourceJournalID === "purchases");
 const fullByCode = {};
-fullPurchLines.forEach((l) => { const c = LTD_PURCHASE_CODE_MAP[l.accountMainID]; if (c) fullByCode[c] = (fullByCode[c] || 0) + l.amount; });
+fullPurchLines.forEach((l) => {
+  const c = LTD_PURCHASE_CODE_MAP[l.accountMainID];
+  if (c) fullByCode[c] = (fullByCode[c] || 0) + l.amount;
+});
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",

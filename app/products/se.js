@@ -211,7 +211,7 @@ export function cellWrites(scenario) {
       if (e.startDate) emp[`D${base + 11}`] = e.startDate;
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
       if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
-      emp[`D${base + 17}`] = e.isDirector ? "D" : (e.niCategory || "A");
+      emp[`D${base + 17}`] = e.isDirector ? "D" : e.niCategory || "A";
     }
   }
 
@@ -429,7 +429,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: PBT = Operating", pl.B39, pl.B37);
 
   // Total expenses cross-check (6b)
-  const seAdminSum = [pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34].reduce((s, v) => s + (v || 0), 0);
+  const seAdminSum = [
+    pl.B21,
+    pl.B22,
+    pl.B23,
+    pl.B24,
+    pl.B25,
+    pl.B26,
+    pl.B27,
+    pl.B28,
+    pl.B29,
+    pl.B30,
+    pl.B31,
+    pl.B32,
+    pl.B33,
+    pl.B34,
+  ].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B35, seAdminSum);
 
   // Expense line totals (6f)

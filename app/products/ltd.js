@@ -223,7 +223,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (e.niNumber) emp[`M${base + 2}`] = e.niNumber;
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
       if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
-      emp[`D${base + 17}`] = e.isDirector ? "D" : (e.niCategory || "A");
+      emp[`D${base + 17}`] = e.isDirector ? "D" : e.niCategory || "A";
     }
   }
 
@@ -396,7 +396,31 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: PBT = Operating + Interest", pl.B45, (pl.B43 || 0) + (pl.B44 || 0));
 
   // Total expenses cross-check (6b)
-  const ltdAdminSum = [pl.B18, pl.B19, pl.B20, pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34, pl.B35, pl.B36, pl.B37, pl.B38, pl.B39, pl.B40].reduce((s, v) => s + (v || 0), 0);
+  const ltdAdminSum = [
+    pl.B18,
+    pl.B19,
+    pl.B20,
+    pl.B21,
+    pl.B22,
+    pl.B23,
+    pl.B24,
+    pl.B25,
+    pl.B26,
+    pl.B27,
+    pl.B28,
+    pl.B29,
+    pl.B30,
+    pl.B31,
+    pl.B32,
+    pl.B33,
+    pl.B34,
+    pl.B35,
+    pl.B36,
+    pl.B37,
+    pl.B38,
+    pl.B39,
+    pl.B40,
+  ].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
 
   // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
@@ -407,7 +431,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.opening_stock !== undefined) {
     const stock = results.Stock;
     if (stock && stock.B5 !== undefined) check("Opening Stock", stock.B5 || 0, expected.opening_stock);
-    if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined) check("Closing Stock", stock.B8 || 0, expected.closing_stock);
+    if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined)
+      check("Closing Stock", stock.B8 || 0, expected.closing_stock);
   }
 
   // Debtors/creditors checks
