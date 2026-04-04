@@ -1415,54 +1415,27 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 - [x] extract-scenarios.cjs: adds [business] section to generated fixtures
 - [x] Reports show real text values for Business Details
 
-**Phase 6 — Incremental compliance check expansion** (IN PROGRESS):
+**Phase 6 — Incremental compliance check expansion**:
 
-Each sub-phase: add checks to `checkCompliance()` and expected values to fixture, run `npm test`, generate+reconcile 1 March (Ltd `--years ltd-2025`) and 1 non-March (BST/SE/Taxi `--years se-2025-2026`), if green commit and move to next.
+| Sub-phase | Status | Products | Checks Added |
+|-----------|--------|----------|-------------|
+| 6a P&L consistency | DONE | All 4 | gross=turnover-CoS, net=gross-expenses, PBT=operating+interest |
+| 6b Expense sum | DONE | All 4 | sum of lines = total |
+| 6c Tax chain | DONE | BST/SE/Taxi | taxable=profit-allowance, IT=basic+higher, total=IT+NI |
+| 6d CT chain | DONE | Ltd | chargeable>=operating, outstanding=CT |
+| 6e Stock adjustment | DONE | BST | CoS includes stock adjustment |
+| 6f Expense line totals | DONE | SE/Ltd | motor, legal, premises gross totals |
+| 6g SA103S cross-check | DONE | BST/SE | D38=P&L turnover, D106=Income Tax E5 |
+| 6h Payslips writes | DONE | SE | Employee details written to Payslips.xlsx |
+| 6i SA103S D71 | TODO | BST/SE | D71 (net profit) close to P&L net profit |
+| 6j VAT 9-box | TODO | SE/Ltd | Read Vat/Vatreturns VATQtr1-5 boxes (requires pipeline change) |
+| 6k Bank closing | TODO | SE/Ltd | Read final month A2 from Bank/Cash/Current etc. |
+| 6l PubBalSht/PubP&L | TODO | Ltd | Find correct cell positions (current ones read date serials) |
+| 6m Payroll/wages | TODO | SE/Ltd | WagesInterface reads, P&L wages cross-check |
 
-**6a. P&L internal consistency** (all products):
-- Check: gross profit = turnover - cost of sales (BST, SE, Ltd, Taxi)
-- Check: net profit = gross profit - total expenses (BST, SE, Ltd)
-- Check: operating profit + interest = PBT (SE, Ltd)
-- Applies to: BST (C9 = C4 - C6 - C7), SE (B19 = B9 - B17), Ltd (B16 = B9 - B14), Taxi (B13)
+Current check counts: BST 17/17, SE 13/13, Ltd 5/5 (plus 2 CT chain = 7), Taxi 7/7.
 
-**6b. Total expenses cross-check** (all products):
-- Check: sum of individual expense lines = total expenses (BST C22, SE B35, Ltd B41, Taxi B22)
-- These are formula-driven in the spreadsheet; verifies the SUM formula is intact
-
-**6c. Tax self-consistency** (BST, SE, Taxi):
-- Check: taxable income = profit - personal allowance
-- Check: basic rate tax = min(taxable, basic band) * 20%
-- Check: total tax = income tax + NI lower + NI upper
-- Already partially done; extend to verify the chain more tightly
-
-**6d. CT self-consistency** (Ltd):
-- Check: profit chargeable >= operating profit (add-backs make it higher)
-- Check: CT = profit chargeable * small profits rate (19%)
-- Check: tax outstanding = CT (no payments on account in small company)
-
-**6e. Stock** (BST, SE — fixture has stock values):
-- BST already checks opening/closing stock — add to SE and Taxi if applicable
-- Check: stock adjustment in P&L CoS = opening - closing
-
-**6f. Debtors & Creditors** (BST — already done, extend to SE/Ltd):
-- SE: check ClosingDebtors and ClosingCreditors sheets in Sales.xlsx/Purchases.xlsx (requires multi-file reads)
-- Ltd: same pattern for Ltd Sales.xlsx/Purchases.xlsx
-
-**6g. Expense line totals** (BST, SE, Ltd):
-- Add expected values for each expense line to the fixture (total_premises, total_gen_admin, total_legal already in BST)
-- Compute from the scenario transaction data in extract-scenarios.cjs
-- Add matching checks to SE and Ltd checkCompliance()
-
-**6h. SA103S cross-check** (BST, SE):
-- Check: SE Short D38 (turnover) = P&L total sales
-- Check: SE Short D71 (net profit) close to P&L net profit
-- Check: SE Short D106 (profit for tax) = Income Tax E5
-
-**Future (not Phase 6)**:
-- VAT 9-box reads from Vat.xlsx / Vatreturns.xlsx (requires separate recalculation or adding to pipeline)
-- Bank closing balances (requires multi-file reads of final month A2 cells)
-- PubBalSht / PubP&L cell mapping (requires template analysis for correct row positions)
-- Payroll/wages checks (requires WagesInterface cell mapping)
+XBRL Filing Taxonomy Mappings added to all 4 CONTEXT docs (diya-gl + XBRL + SA103S/CT600).
 
 **Phase 7 — Docs and CI**:
 - [ ] TEST_SCENARIOS.md fully documents all scenarios with expected values
