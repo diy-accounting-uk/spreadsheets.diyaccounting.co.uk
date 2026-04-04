@@ -15,6 +15,36 @@ phone = "0161 555 0100"
 utr = "1234567890"
 vat_number = "123456789"
 
+[[employees]]
+employeeID = "EMP001"
+name = "Alice Johnson"
+role = "Senior Developer"
+grossPay = 3500
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = false
+
+[[employees]]
+employeeID = "EMP002"
+name = "Bob Williams"
+role = "Support Technician"
+grossPay = 2200
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = false
+
+[[employees]]
+employeeID = "EMP003"
+name = "Carol Smith"
+role = "Director"
+grossPay = 1048
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = true
+
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"
