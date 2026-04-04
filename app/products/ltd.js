@@ -227,12 +227,35 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Fixedassets.xlsx opening asset values
+  const fixedAssetsWrites = {};
+  if (scenario.opening_fixed_assets) {
+    fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    let motorRow = 6;
+    let computerRow = 6;
+    for (const asset of scenario.opening_fixed_assets) {
+      if (asset.category === "motor") {
+        fa[`E${motorRow}`] = asset.cost;
+        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
+        if (asset.description) fa[`D${motorRow}`] = asset.description;
+        motorRow++;
+      } else if (asset.category === "computer") {
+        fa[`E${computerRow}`] = asset.cost;
+        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
+        if (asset.description) fa[`D${computerRow}`] = asset.description;
+        computerRow++;
+      }
+    }
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
+  if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   return result;
 }
 

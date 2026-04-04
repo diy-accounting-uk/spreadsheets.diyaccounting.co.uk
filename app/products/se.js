@@ -215,6 +215,31 @@ export function cellWrites(scenario) {
     }
   }
 
+  // Fixedassets.xlsx opening asset values
+  const fixedAssetsWrites = {};
+  if (scenario.opening_fixed_assets) {
+    fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    // Row 6: Existing Motor Vehicles (E=cost, Y=acc dep)
+    // Row 7: Existing Motor Vehicle 2
+    // Rows in "Existing" sections: Motor(6-10), Land(G col area), Plant(K col area), Computer(S col area)
+    let motorRow = 6;
+    let computerRow = 6; // computers use S column area
+    for (const asset of scenario.opening_fixed_assets) {
+      if (asset.category === "motor") {
+        fa[`E${motorRow}`] = asset.cost;
+        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
+        if (asset.description) fa[`D${motorRow}`] = asset.description;
+        motorRow++;
+      } else if (asset.category === "computer") {
+        fa[`E${computerRow}`] = asset.cost;
+        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
+        if (asset.description) fa[`D${computerRow}`] = asset.description;
+        computerRow++;
+      }
+    }
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
@@ -223,6 +248,7 @@ export function cellWrites(scenario) {
   if (Object.keys(cashWrites).length > 0) result["Cash.xlsx"] = cashWrites;
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
+  if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   return result;
 }
 

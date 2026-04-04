@@ -4416,6 +4416,18 @@ directors_loan = 20000
 share_capital = 100
 retained_earnings = 45702
 
+[[opening_fixed_assets]]
+category = "motor"
+description = "Van (2.5 years old)"
+cost = 30000
+acc_dep = 9828
+
+[[opening_fixed_assets]]
+category = "computer"
+description = "Laptop (0.5 years old)"
+cost = 3000
+acc_dep = 270
+
 [expected]
 total_sales = 171283
 total_legal_gross = 5310

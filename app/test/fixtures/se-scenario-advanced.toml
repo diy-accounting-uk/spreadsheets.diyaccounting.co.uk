@@ -4304,6 +4304,18 @@ supplier = "Shell"
 invoice = "SH-2603"
 amount = 150
 
+[[opening_fixed_assets]]
+category = "motor"
+description = "Van (2.5 years old)"
+cost = 30000
+acc_dep = 9828
+
+[[opening_fixed_assets]]
+category = "computer"
+description = "Laptop (0.5 years old)"
+cost = 3000
+acc_dep = 270
+
 [expected]
 total_sales = 169200
 total_motor_gross = 7598

@@ -416,6 +416,18 @@ function formatScenarioToml(metadata, grouped, expected) {
     parts.push("");
   }
 
+  // Opening fixed assets
+  if (expected.opening_fixed_assets) {
+    for (const asset of expected.opening_fixed_assets) {
+      parts.push("[[opening_fixed_assets]]");
+      parts.push(`category = "${asset.category}"`);
+      parts.push(`description = "${escapeTomlString(asset.description)}"`);
+      parts.push(`cost = ${asset.cost}`);
+      parts.push(`acc_dep = ${asset.acc_dep}`);
+      parts.push("");
+    }
+  }
+
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
@@ -699,6 +711,10 @@ const advToml = formatScenarioToml(
     total_legal_gross: Math.round(advByCode.l || 0),
     opening_stock: 10000,
     closing_stock: 6000,
+    opening_fixed_assets: [
+      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828 },
+      { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
+    ],
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
@@ -772,6 +788,10 @@ const fullToml = formatScenarioToml(
     },
     opening_stock: 10000,
     closing_stock: 6000,
+    opening_fixed_assets: [
+      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828 },
+      { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
+    ],
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
