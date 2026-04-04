@@ -11,6 +11,15 @@ Generated: 2026-04-04
 | Total Sales | 171283 | 171283.333333334 | +0.3333333340124227 | PASS |
 | Corporation Tax | 19492 | 19492.3058333334 | +0.30583333340109675 | PASS |
 
+## Business Details
+
+| | Amount |
+|---|------:|
+| Company Name | Precision Code Ltd |
+| Company Number | 12345678 |
+| Address | 123 High Street, Manchester M1 1AA |
+| UTR | 1234567890 |
+
 ## Profit & Loss Account
 
 | | Amount |
@@ -70,34 +79,43 @@ Generated: 2026-04-04
 | | Amount |
 |---|------:|
 | Turnover | 45,838 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 52 |
-| **Gross Profit** | 52 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Admin Expenses | 58 |
-| **Operating Profit** | 55 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Interest Receivable | 57 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | Sales Turnover |
+| **Gross Profit** | Sales Turnover |
+| &nbsp;&nbsp;&nbsp;&nbsp;Admin Expenses | Cost of Sales |
+| **Operating Profit** | Purchases |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest Receivable | Sub contractors |
 | **Profit Before Tax** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax on Profit | 60 |
-| **Profit After Tax** | 61 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax on Profit | Administrative Expenses |
+| **Profit After Tax** | Wages and Salaries |
 
 ## Published Balance Sheet
 
 | | Amount |
 |---|------:|
 | Fixed Assets (NBV) | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Stock | 23 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Debtors | 24 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Bank & Cash | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Creditors < 1 year | 23 |
-| **Net Current Assets** | 219 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Creditors > 1 year | 37 |
-| **Net Assets** | 220 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Share Capital | 221 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Stock | Current Assets |
+| &nbsp;&nbsp;&nbsp;&nbsp;Debtors | Stock at cost |
+| &nbsp;&nbsp;&nbsp;&nbsp;Bank & Cash | Trade Debtors |
+| &nbsp;&nbsp;&nbsp;&nbsp;Creditors < 1 year | Current Assets |
+| **Net Current Assets** | Current Liabilities (due within one year) |
+| &nbsp;&nbsp;&nbsp;&nbsp;Creditors > 1 year | Corporation Tax |
+| **Net Assets** | Bank Overdraft |
+| &nbsp;&nbsp;&nbsp;&nbsp;Share Capital | Net Current Assets |
 | &nbsp;&nbsp;&nbsp;&nbsp;Retained Earnings | 0 |
 | **Shareholders Funds** | 0 |
 
 ---
 
 ## Appendix: Cell Values
+
+### OpenAccounts
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| E2 | Company Name | Precision Code Ltd | entityInformation.organizationIdentifier |
+| E3 | Company Number | 12345678 | diya-gl:companyNumber |
+| E4 | Address | 123 High Street, Manchester M1 1AA | gl-bus:organizationAddress |
+| E6 | UTR | 1234567890 | gl-taf:taxRegistrationNumber |
 
 ### MnthP&L
 
@@ -158,26 +176,26 @@ Generated: 2026-04-04
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C5 | Turnover | 45838 | gl-cor:amount (pubPL.turnover) |
-| C7 | Cost of Sales | 52 | gl-cor:amount (pubPL.cos) |
-| C9 | **Gross Profit** | 52 | gl-cor:amount (pubPL.gross) |
-| C11 | Admin Expenses | 58 | gl-cor:amount (pubPL.admin) |
-| C13 | **Operating Profit** | 55 | gl-cor:amount (pubPL.operating) |
-| C15 | Interest Receivable | 57 | gl-cor:amount (pubPL.intRec) |
+| C7 | Cost of Sales | Sales Turnover | gl-cor:amount (pubPL.cos) |
+| C9 | **Gross Profit** | Sales Turnover | gl-cor:amount (pubPL.gross) |
+| C11 | Admin Expenses | Cost of Sales | gl-cor:amount (pubPL.admin) |
+| C13 | **Operating Profit** | Purchases | gl-cor:amount (pubPL.operating) |
+| C15 | Interest Receivable | Sub contractors | gl-cor:amount (pubPL.intRec) |
 | C17 | **Profit Before Tax** | 0 | gl-cor:amount (pubPL.pbt) |
-| C19 | Tax on Profit | 60 | gl-cor:taxAmount (pubPL.tax) |
-| C21 | **Profit After Tax** | 61 | gl-cor:amount (pubPL.pat) |
+| C19 | Tax on Profit | Administrative Expenses | gl-cor:taxAmount (pubPL.tax) |
+| C21 | **Profit After Tax** | Wages and Salaries | gl-cor:amount (pubPL.pat) |
 
 ### PubBalSht
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C9 | Stock | 23 | accounts.assets.1100 (pubBS) |
-| C10 | Debtors | 24 | accounts.assets.1300 (pubBS) |
-| C11 | Bank & Cash | 25 | gl-cor:amount (pubBS.bankCash) |
-| C13 | Creditors < 1 year | 23 | gl-cor:amount (pubBS.creditors) |
-| C15 | **Net Current Assets** | 219 | gl-cor:amount (pubBS.netCurrent) |
-| C17 | Creditors > 1 year | 37 | gl-cor:amount (pubBS.longTermCred) |
-| C19 | **Net Assets** | 220 | gl-cor:amount (pubBS.netAssets) |
-| C22 | Share Capital | 221 | accounts.capital.3000 (pubBS) |
+| C9 | Stock | Current Assets | accounts.assets.1100 (pubBS) |
+| C10 | Debtors | Stock at cost | accounts.assets.1300 (pubBS) |
+| C11 | Bank & Cash | Trade Debtors | gl-cor:amount (pubBS.bankCash) |
+| C13 | Creditors < 1 year | Current Assets | gl-cor:amount (pubBS.creditors) |
+| C15 | **Net Current Assets** | Current Liabilities (due within one year) | gl-cor:amount (pubBS.netCurrent) |
+| C17 | Creditors > 1 year | Corporation Tax | gl-cor:amount (pubBS.longTermCred) |
+| C19 | **Net Assets** | Bank Overdraft | gl-cor:amount (pubBS.netAssets) |
+| C22 | Share Capital | Net Current Assets | accounts.capital.3000 (pubBS) |
 | C23 | Retained Earnings | 0 | accounts.capital.3100 (pubBS) |
 | C25 | **Shareholders Funds** | 0 | gl-cor:amount (pubBS.equity) |
