@@ -1,0 +1,1275 @@
+# Taxi Driver test scenario: SP Sixty Driving
+# A private hire driver working 5 days/week with varying daily fares and realistic expenses.
+# Based on the SP Sixty Driving example in examples/sp-sixty-driving/.
+# Used by both unit/e2e tests and the reconciliation task.
+
+[metadata]
+name = "SP Sixty Driving"
+description = "Private hire driver with varying daily fares, fuel, insurance, repairs, admin, licence, accountant, dashcam, and signage"
+product = "taxi"
+tax_regime = "se"
+
+# === SALES ===
+# Daily fares entered on specific dates in the pre-filled Sales sheets.
+# Taxi Sales sheets have pre-filled dates -- amounts go into column E (gross takings).
+# 180 working days x varying amounts = 38,000 total sales
+# 20,000 total business miles
+
+[[sales.apr]]
+date = 2025-04-07
+amount = 174
+
+[[sales.apr]]
+date = 2025-04-08
+amount = 198
+
+[[sales.apr]]
+date = 2025-04-09
+amount = 221
+
+[[sales.apr]]
+date = 2025-04-10
+amount = 213
+
+[[sales.apr]]
+date = 2025-04-11
+amount = 246
+
+[[sales.apr]]
+date = 2025-04-14
+amount = 173
+
+[[sales.apr]]
+date = 2025-04-15
+amount = 201
+
+[[sales.apr]]
+date = 2025-04-16
+amount = 224
+
+[[sales.apr]]
+date = 2025-04-17
+amount = 216
+
+[[sales.apr]]
+date = 2025-04-18
+amount = 249
+
+[[sales.apr]]
+date = 2025-04-21
+amount = 176
+
+[[sales.apr]]
+date = 2025-04-22
+amount = 204
+
+[[sales.apr]]
+date = 2025-04-23
+amount = 196
+
+[[sales.apr]]
+date = 2025-04-24
+amount = 219
+
+[[sales.apr]]
+date = 2025-04-25
+amount = 252
+
+[[sales.may]]
+date = 2025-05-01
+amount = 216
+
+[[sales.may]]
+date = 2025-05-02
+amount = 245
+
+[[sales.may]]
+date = 2025-05-05
+amount = 172
+
+[[sales.may]]
+date = 2025-05-06
+amount = 200
+
+[[sales.may]]
+date = 2025-05-07
+amount = 223
+
+[[sales.may]]
+date = 2025-05-08
+amount = 215
+
+[[sales.may]]
+date = 2025-05-09
+amount = 248
+
+[[sales.may]]
+date = 2025-05-12
+amount = 175
+
+[[sales.may]]
+date = 2025-05-13
+amount = 203
+
+[[sales.may]]
+date = 2025-05-14
+amount = 195
+
+[[sales.may]]
+date = 2025-05-15
+amount = 218
+
+[[sales.may]]
+date = 2025-05-16
+amount = 251
+
+[[sales.may]]
+date = 2025-05-19
+amount = 178
+
+[[sales.may]]
+date = 2025-05-20
+amount = 206
+
+[[sales.may]]
+date = 2025-05-21
+amount = 198
+
+[[sales.jun]]
+date = 2025-06-02
+amount = 188
+
+[[sales.jun]]
+date = 2025-06-03
+amount = 212
+
+[[sales.jun]]
+date = 2025-06-04
+amount = 204
+
+[[sales.jun]]
+date = 2025-06-05
+amount = 227
+
+[[sales.jun]]
+date = 2025-06-06
+amount = 229
+
+[[sales.jun]]
+date = 2025-06-09
+amount = 187
+
+[[sales.jun]]
+date = 2025-06-10
+amount = 215
+
+[[sales.jun]]
+date = 2025-06-11
+amount = 207
+
+[[sales.jun]]
+date = 2025-06-12
+amount = 230
+
+[[sales.jun]]
+date = 2025-06-13
+amount = 232
+
+[[sales.jun]]
+date = 2025-06-16
+amount = 190
+
+[[sales.jun]]
+date = 2025-06-17
+amount = 187
+
+[[sales.jun]]
+date = 2025-06-18
+amount = 210
+
+[[sales.jun]]
+date = 2025-06-19
+amount = 233
+
+[[sales.jun]]
+date = 2025-06-20
+amount = 235
+
+[[sales.jul]]
+date = 2025-07-01
+amount = 210
+
+[[sales.jul]]
+date = 2025-07-02
+amount = 198
+
+[[sales.jul]]
+date = 2025-07-03
+amount = 221
+
+[[sales.jul]]
+date = 2025-07-04
+amount = 254
+
+[[sales.jul]]
+date = 2025-07-07
+amount = 181
+
+[[sales.jul]]
+date = 2025-07-08
+amount = 209
+
+[[sales.jul]]
+date = 2025-07-09
+amount = 201
+
+[[sales.jul]]
+date = 2025-07-10
+amount = 224
+
+[[sales.jul]]
+date = 2025-07-11
+amount = 226
+
+[[sales.jul]]
+date = 2025-07-14
+amount = 184
+
+[[sales.jul]]
+date = 2025-07-15
+amount = 212
+
+[[sales.jul]]
+date = 2025-07-16
+amount = 204
+
+[[sales.jul]]
+date = 2025-07-17
+amount = 227
+
+[[sales.jul]]
+date = 2025-07-18
+amount = 229
+
+[[sales.jul]]
+date = 2025-07-21
+amount = 187
+
+[[sales.aug]]
+date = 2025-08-01
+amount = 257
+
+[[sales.aug]]
+date = 2025-08-04
+amount = 180
+
+[[sales.aug]]
+date = 2025-08-05
+amount = 208
+
+[[sales.aug]]
+date = 2025-08-06
+amount = 200
+
+[[sales.aug]]
+date = 2025-08-07
+amount = 223
+
+[[sales.aug]]
+date = 2025-08-08
+amount = 225
+
+[[sales.aug]]
+date = 2025-08-11
+amount = 183
+
+[[sales.aug]]
+date = 2025-08-12
+amount = 211
+
+[[sales.aug]]
+date = 2025-08-13
+amount = 203
+
+[[sales.aug]]
+date = 2025-08-14
+amount = 226
+
+[[sales.aug]]
+date = 2025-08-15
+amount = 228
+
+[[sales.aug]]
+date = 2025-08-18
+amount = 186
+
+[[sales.aug]]
+date = 2025-08-19
+amount = 214
+
+[[sales.aug]]
+date = 2025-08-20
+amount = 206
+
+[[sales.aug]]
+date = 2025-08-21
+amount = 229
+
+[[sales.sep]]
+date = 2025-09-01
+amount = 178
+
+[[sales.sep]]
+date = 2025-09-02
+amount = 202
+
+[[sales.sep]]
+date = 2025-09-03
+amount = 225
+
+[[sales.sep]]
+date = 2025-09-04
+amount = 217
+
+[[sales.sep]]
+date = 2025-09-05
+amount = 250
+
+[[sales.sep]]
+date = 2025-09-08
+amount = 177
+
+[[sales.sep]]
+date = 2025-09-09
+amount = 205
+
+[[sales.sep]]
+date = 2025-09-10
+amount = 197
+
+[[sales.sep]]
+date = 2025-09-11
+amount = 220
+
+[[sales.sep]]
+date = 2025-09-12
+amount = 253
+
+[[sales.sep]]
+date = 2025-09-15
+amount = 180
+
+[[sales.sep]]
+date = 2025-09-16
+amount = 208
+
+[[sales.sep]]
+date = 2025-09-17
+amount = 200
+
+[[sales.sep]]
+date = 2025-09-18
+amount = 223
+
+[[sales.sep]]
+date = 2025-09-19
+amount = 225
+
+[[sales.oct]]
+date = 2025-10-01
+amount = 210
+
+[[sales.oct]]
+date = 2025-10-02
+amount = 229
+
+[[sales.oct]]
+date = 2025-10-03
+amount = 231
+
+[[sales.oct]]
+date = 2025-10-06
+amount = 189
+
+[[sales.oct]]
+date = 2025-10-07
+amount = 186
+
+[[sales.oct]]
+date = 2025-10-08
+amount = 209
+
+[[sales.oct]]
+date = 2025-10-09
+amount = 232
+
+[[sales.oct]]
+date = 2025-10-10
+amount = 234
+
+[[sales.oct]]
+date = 2025-10-13
+amount = 192
+
+[[sales.oct]]
+date = 2025-10-14
+amount = 189
+
+[[sales.oct]]
+date = 2025-10-15
+amount = 212
+
+[[sales.oct]]
+date = 2025-10-16
+amount = 235
+
+[[sales.oct]]
+date = 2025-10-17
+amount = 237
+
+[[sales.oct]]
+date = 2025-10-20
+amount = 195
+
+[[sales.oct]]
+date = 2025-10-21
+amount = 192
+
+[[sales.nov]]
+date = 2025-11-03
+amount = 192
+
+[[sales.nov]]
+date = 2025-11-04
+amount = 185
+
+[[sales.nov]]
+date = 2025-11-05
+amount = 208
+
+[[sales.nov]]
+date = 2025-11-06
+amount = 231
+
+[[sales.nov]]
+date = 2025-11-07
+amount = 233
+
+[[sales.nov]]
+date = 2025-11-10
+amount = 191
+
+[[sales.nov]]
+date = 2025-11-11
+amount = 188
+
+[[sales.nov]]
+date = 2025-11-12
+amount = 211
+
+[[sales.nov]]
+date = 2025-11-13
+amount = 234
+
+[[sales.nov]]
+date = 2025-11-14
+amount = 236
+
+[[sales.nov]]
+date = 2025-11-17
+amount = 194
+
+[[sales.nov]]
+date = 2025-11-18
+amount = 191
+
+[[sales.nov]]
+date = 2025-11-19
+amount = 214
+
+[[sales.nov]]
+date = 2025-11-20
+amount = 206
+
+[[sales.nov]]
+date = 2025-11-21
+amount = 239
+
+[[sales.dec]]
+date = 2025-12-01
+amount = 199
+
+[[sales.dec]]
+date = 2025-12-02
+amount = 192
+
+[[sales.dec]]
+date = 2025-12-03
+amount = 215
+
+[[sales.dec]]
+date = 2025-12-04
+amount = 207
+
+[[sales.dec]]
+date = 2025-12-05
+amount = 240
+
+[[sales.dec]]
+date = 2025-12-08
+amount = 198
+
+[[sales.dec]]
+date = 2025-12-09
+amount = 195
+
+[[sales.dec]]
+date = 2025-12-10
+amount = 218
+
+[[sales.dec]]
+date = 2025-12-11
+amount = 210
+
+[[sales.dec]]
+date = 2025-12-12
+amount = 243
+
+[[sales.dec]]
+date = 2025-12-15
+amount = 170
+
+[[sales.dec]]
+date = 2025-12-16
+amount = 198
+
+[[sales.dec]]
+date = 2025-12-17
+amount = 221
+
+[[sales.dec]]
+date = 2025-12-18
+amount = 213
+
+[[sales.dec]]
+date = 2025-12-19
+amount = 246
+
+[[sales.jan]]
+date = 2026-01-01
+amount = 210
+
+[[sales.jan]]
+date = 2026-01-02
+amount = 239
+
+[[sales.jan]]
+date = 2026-01-05
+amount = 197
+
+[[sales.jan]]
+date = 2026-01-06
+amount = 194
+
+[[sales.jan]]
+date = 2026-01-07
+amount = 217
+
+[[sales.jan]]
+date = 2026-01-08
+amount = 209
+
+[[sales.jan]]
+date = 2026-01-09
+amount = 242
+
+[[sales.jan]]
+date = 2026-01-12
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-13
+amount = 197
+
+[[sales.jan]]
+date = 2026-01-14
+amount = 220
+
+[[sales.jan]]
+date = 2026-01-15
+amount = 212
+
+[[sales.jan]]
+date = 2026-01-16
+amount = 245
+
+[[sales.jan]]
+date = 2026-01-19
+amount = 172
+
+[[sales.jan]]
+date = 2026-01-20
+amount = 200
+
+[[sales.jan]]
+date = 2026-01-21
+amount = 223
+
+[[sales.feb]]
+date = 2026-02-02
+amount = 182
+
+[[sales.feb]]
+date = 2026-02-03
+amount = 206
+
+[[sales.feb]]
+date = 2026-02-04
+amount = 198
+
+[[sales.feb]]
+date = 2026-02-05
+amount = 221
+
+[[sales.feb]]
+date = 2026-02-06
+amount = 254
+
+[[sales.feb]]
+date = 2026-02-09
+amount = 181
+
+[[sales.feb]]
+date = 2026-02-10
+amount = 209
+
+[[sales.feb]]
+date = 2026-02-11
+amount = 201
+
+[[sales.feb]]
+date = 2026-02-12
+amount = 224
+
+[[sales.feb]]
+date = 2026-02-13
+amount = 226
+
+[[sales.feb]]
+date = 2026-02-16
+amount = 184
+
+[[sales.feb]]
+date = 2026-02-17
+amount = 212
+
+[[sales.feb]]
+date = 2026-02-18
+amount = 204
+
+[[sales.feb]]
+date = 2026-02-19
+amount = 227
+
+[[sales.feb]]
+date = 2026-02-20
+amount = 229
+
+[[sales.mar]]
+date = 2026-03-02
+amount = 197
+
+[[sales.mar]]
+date = 2026-03-03
+amount = 213
+
+[[sales.mar]]
+date = 2026-03-04
+amount = 205
+
+[[sales.mar]]
+date = 2026-03-05
+amount = 228
+
+[[sales.mar]]
+date = 2026-03-06
+amount = 230
+
+[[sales.mar]]
+date = 2026-03-09
+amount = 188
+
+[[sales.mar]]
+date = 2026-03-10
+amount = 185
+
+[[sales.mar]]
+date = 2026-03-11
+amount = 208
+
+[[sales.mar]]
+date = 2026-03-12
+amount = 231
+
+[[sales.mar]]
+date = 2026-03-13
+amount = 233
+
+[[sales.mar]]
+date = 2026-03-16
+amount = 191
+
+[[sales.mar]]
+date = 2026-03-17
+amount = 188
+
+[[sales.mar]]
+date = 2026-03-18
+amount = 211
+
+[[sales.mar]]
+date = 2026-03-19
+amount = 234
+
+[[sales.mar]]
+date = 2026-03-20
+amount = 236
+
+# === PURCHASES ===
+# Taxi purchases use column D for expense code and column F for amount.
+# Expense codes: d=fuel, h=car hire, r=repairs, t=road tax, e=employee,
+# p=premises, g=general admin, a=advertising, l=legal, i=interest, b=bank, o=other, f=fixed asset
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.apr]]
+date = 2025-04-06
+supplier = "DVLA"
+code = "t"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-08
+supplier = "Shell"
+code = "d"
+amount = 52
+
+[[purchases.apr]]
+date = 2025-04-08
+supplier = "Council Licensing"
+code = "l"
+amount = 400
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "Admiral Insurance"
+code = "t"
+amount = 1400
+
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "BP"
+code = "d"
+amount = 55
+
+[[purchases.apr]]
+date = 2025-04-22
+supplier = "Texaco"
+code = "d"
+amount = 58
+
+[[purchases.apr]]
+date = 2025-04-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.apr]]
+date = 2025-04-29
+supplier = "Shell"
+code = "d"
+amount = 60
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.may]]
+date = 2025-05-06
+supplier = "BP"
+code = "d"
+amount = 53
+
+[[purchases.may]]
+date = 2025-05-10
+supplier = "Amazon"
+code = "f"
+amount = 200
+
+[[purchases.may]]
+date = 2025-05-13
+supplier = "Texaco"
+code = "d"
+amount = 56
+
+[[purchases.may]]
+date = 2025-05-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.may]]
+date = 2025-05-20
+supplier = "Shell"
+code = "d"
+amount = 59
+
+[[purchases.may]]
+date = 2025-05-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.may]]
+date = 2025-05-27
+supplier = "BP"
+code = "d"
+amount = 62
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.jun]]
+date = 2025-06-03
+supplier = "Texaco"
+code = "d"
+amount = 51
+
+[[purchases.jun]]
+date = 2025-06-10
+supplier = "Shell"
+code = "d"
+amount = 54
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "SignWorks"
+code = "a"
+amount = 150
+
+[[purchases.jun]]
+date = 2025-06-17
+supplier = "BP"
+code = "d"
+amount = 57
+
+[[purchases.jun]]
+date = 2025-06-24
+supplier = "Texaco"
+code = "d"
+amount = 61
+
+[[purchases.jun]]
+date = 2025-06-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Shell"
+code = "d"
+amount = 55
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.jul]]
+date = 2025-07-08
+supplier = "BP"
+code = "d"
+amount = 58
+
+[[purchases.jul]]
+date = 2025-07-12
+supplier = "Toyota Service"
+code = "r"
+amount = 170
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "Texaco"
+code = "d"
+amount = 52
+
+[[purchases.jul]]
+date = 2025-07-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.jul]]
+date = 2025-07-22
+supplier = "Shell"
+code = "d"
+amount = 60
+
+[[purchases.jul]]
+date = 2025-07-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.aug]]
+date = 2025-08-05
+supplier = "BP"
+code = "d"
+amount = 54
+
+[[purchases.aug]]
+date = 2025-08-12
+supplier = "Texaco"
+code = "d"
+amount = 57
+
+[[purchases.aug]]
+date = 2025-08-19
+supplier = "Shell"
+code = "d"
+amount = 61
+
+[[purchases.aug]]
+date = 2025-08-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.aug]]
+date = 2025-08-26
+supplier = "BP"
+code = "d"
+amount = 53
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.sep]]
+date = 2025-09-02
+supplier = "Texaco"
+code = "d"
+amount = 56
+
+[[purchases.sep]]
+date = 2025-09-09
+supplier = "Shell"
+code = "d"
+amount = 59
+
+[[purchases.sep]]
+date = 2025-09-16
+supplier = "BP"
+code = "d"
+amount = 62
+
+[[purchases.sep]]
+date = 2025-09-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.sep]]
+date = 2025-09-23
+supplier = "Texaco"
+code = "d"
+amount = 51
+
+[[purchases.sep]]
+date = 2025-09-25
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.oct]]
+date = 2025-10-07
+supplier = "Shell"
+code = "d"
+amount = 53
+
+[[purchases.oct]]
+date = 2025-10-14
+supplier = "BP"
+code = "d"
+amount = 56
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Kwik Fit"
+code = "r"
+amount = 55
+
+[[purchases.oct]]
+date = 2025-10-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.oct]]
+date = 2025-10-21
+supplier = "Texaco"
+code = "d"
+amount = 59
+
+[[purchases.oct]]
+date = 2025-10-28
+supplier = "Shell"
+code = "d"
+amount = 55
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.nov]]
+date = 2025-11-04
+supplier = "BP"
+code = "d"
+amount = 52
+
+[[purchases.nov]]
+date = 2025-11-11
+supplier = "Texaco"
+code = "d"
+amount = 58
+
+[[purchases.nov]]
+date = 2025-11-18
+supplier = "Shell"
+code = "d"
+amount = 61
+
+[[purchases.nov]]
+date = 2025-11-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.nov]]
+date = 2025-11-25
+supplier = "BP"
+code = "d"
+amount = 54
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.dec]]
+date = 2025-12-02
+supplier = "Texaco"
+code = "d"
+amount = 57
+
+[[purchases.dec]]
+date = 2025-12-09
+supplier = "Shell"
+code = "d"
+amount = 60
+
+[[purchases.dec]]
+date = 2025-12-16
+supplier = "BP"
+code = "d"
+amount = 53
+
+[[purchases.dec]]
+date = 2025-12-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.dec]]
+date = 2025-12-23
+supplier = "Texaco"
+code = "d"
+amount = 56
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.jan]]
+date = 2026-01-06
+supplier = "Shell"
+code = "d"
+amount = 55
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "Toyota Service"
+code = "r"
+amount = 175
+
+[[purchases.jan]]
+date = 2026-01-13
+supplier = "BP"
+code = "d"
+amount = 58
+
+[[purchases.jan]]
+date = 2026-01-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "Texaco"
+code = "d"
+amount = 52
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.jan]]
+date = 2026-01-25
+supplier = "TaxAssist Accountants"
+code = "l"
+amount = 350
+
+[[purchases.jan]]
+date = 2026-01-27
+supplier = "Shell"
+code = "d"
+amount = 60
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.feb]]
+date = 2026-02-03
+supplier = "BP"
+code = "d"
+amount = 54
+
+[[purchases.feb]]
+date = 2026-02-10
+supplier = "Texaco"
+code = "d"
+amount = 57
+
+[[purchases.feb]]
+date = 2026-02-17
+supplier = "Shell"
+code = "d"
+amount = 61
+
+[[purchases.feb]]
+date = 2026-02-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.feb]]
+date = 2026-02-24
+supplier = "BP"
+code = "d"
+amount = 53
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Vodafone"
+code = "g"
+amount = 30
+
+[[purchases.mar]]
+date = 2026-03-03
+supplier = "Texaco"
+code = "d"
+amount = 56
+
+[[purchases.mar]]
+date = 2026-03-10
+supplier = "Shell"
+code = "d"
+amount = 59
+
+[[purchases.mar]]
+date = 2026-03-17
+supplier = "BP"
+code = "d"
+amount = 55
+
+[[purchases.mar]]
+date = 2026-03-18
+supplier = "NCP Parking"
+code = "g"
+amount = 10
+
+[[purchases.mar]]
+date = 2026-03-20
+supplier = "Hand Car Wash"
+code = "r"
+amount = 15
+
+[[purchases.mar]]
+date = 2026-03-24
+supplier = "Texaco"
+code = "d"
+amount = 58
+
+# === EXPECTED RESULTS ===
+# 180 working days x varying daily fares = 38,000 total sales
+# 20,000 total business miles
+# Mileage allowance: 10,000 x 0.45 + 10,000 x 0.25 = 7,000
+# Vehicle costs: fuel 2,708 + insurance 1,400 + road tax 180 + repairs 580 = 4,868
+# Mileage (7,000) > vehicle costs (4,868), so mileage is used
+# Non-vehicle expenses: admin 420 + legal 750 + advertising 150 + dashcam 200 = 1,520
+# Net profit: 38,000 - 7,000 - 1,520 = ~29,480
+
+[expected]
+total_sales = 38000

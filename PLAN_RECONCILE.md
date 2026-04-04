@@ -544,7 +544,7 @@ The `book.toml` in each subdirectory sets `"diya-gl:product"` to the target prod
 - Companysecretary.xlsx: Board meeting, directors & secretary, register of members, directors interest, charges & debentures
 - Payslips.xlsx: 3 employees (2 staff + 1 director), monthly payroll
 - Vatreturns.xlsx: 4-5 quarterly VAT returns
-- CT600OnlineLookALike.xlsx: Corporation Tax return summary
+- ~~CT600OnlineLookALike.xlsx~~: REMOVED (CT600 data extracted in reconciliation report from CorporationTax + CT600 sheets in Financialaccounts.xlsx)
 - Financialaccounts.xlsx: Full hub with OpenAccounts (balance sheet), TrialBalance, MnthP&L, PubP&L, PubBalSht, PubNotes, CorporationTax, CT600, WagesInterface, Stock, Admin
 - Dividend Voucher.docx: Template with dividend details
 
@@ -1151,7 +1151,7 @@ The reconciliation reports validate and extract data for four UK filing streams.
 | Box 435 | Marginal relief | CorporationTax (if applicable) | Ltd: Phase 5 |
 | Box 515 | Tax payable | CorporationTax K39 | Ltd: Phase 5 |
 
-The CT600OnlineLookALike.xlsx in the Ltd package mirrors the HMRC online form for reference.
+CT600OnlineLookALike.xlsx has been REMOVED from the Ltd template. CT600 data is now extracted directly in the reconciliation report from the CorporationTax and CT600 sheets in Financialaccounts.xlsx.
 
 ### 9d. Annual Accounts for Companies House (Ltd only)
 
@@ -1203,13 +1203,30 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 - [x] `bst.js` extended: `cellWrites()` handles debtors/creditors, `standardReads()` reads stock + debtors/creditors, `checkCompliance()` checks stock + debtors/creditors
 - [x] `bst-scenario-extended.toml` removed (1 scenario per product)
 
-**Phases 4-5 — SE + Ltd switchover**:
-- [ ] `npm test` passes after each phase
-- [ ] `node app/bin/reconcile.js --package se --scenario advanced` reconciles (Phase 4)
-- [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles (Phase 5)
-- [ ] `standardReads()` in SE/Ltd product modules reads all applicable balance sheet items
-- [ ] `checkCompliance()` in SE/Ltd product modules verifies balance sheet reads
-- [ ] Old SE/Ltd scenario fixtures removed
+**Phase 4 — SE advanced** (DONE):
+- [x] `npm test` passes
+- [x] `node app/bin/reconcile.js --package se --scenario advanced` reconciles
+- [x] `se.js` converted to CELL_MAP pattern: standardReads(), reportSections(), cellLabels() all derive from CELL_MAP
+- [x] SE scenario uses se-scenario-advanced.toml (Precision Code, 169,200 sales, 112 sales entries, 393 purchase entries)
+- [x] Bank writes to Bank.xlsx and Cash.xlsx with opening/closing debtors/creditors
+- [x] Reconciliation report: formatted financial statements + cell appendix with DIY labels and diya-gl mappings
+- [x] Old se-scenario-basic.toml and se-scenario-extended.toml removed
+- [x] CI workflow updated: SE runs 1 scenario (advanced)
+
+**Phase 4b — SE fixes** (DONE):
+- [x] Bank writes working correctly for Bank.xlsx/Cash.xlsx
+- [x] Business Details populated from scenario metadata
+- [x] Fixed SA103S cell references: reads formula cells D38/D71/D99/D106 not static label cells
+- [x] SE Short (SA103S) boxes extracted in reconciliation report
+
+**Phase 5 — Ltd full** (IN PROGRESS):
+- [ ] `npm test` passes
+- [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles
+- [ ] `ltd.js` converted to CELL_MAP pattern with CT600, PubP&L, PubBalSht
+- [ ] CT600OnlineLookALike.xlsx REMOVED from Ltd template (CT600 data extracted in reconciliation report instead)
+- [ ] ltd-scenario-full.toml replaces ltd-scenario-basic and ltd-scenario-extended
+- [ ] Old Ltd scenario fixtures removed
+- Note: SP Sixty Driving (taxi) example scenario being created in background (examples/sp-sixty-driving/)
 
 **Phase 6 — Wire balance sheet reads into reconciliation reports**:
 - [ ] Reconciliation reports include sections for: stock (6a), fixed assets (6b), debtors/creditors (6c), bank balances (6d), VAT (6e), wages (6f), tax (6g), dividends/drawings (6h)

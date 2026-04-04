@@ -305,7 +305,11 @@ The Sales sheet XML paths are mapped in `meta.toml` under `[sheets.sales]` (e.g.
 
 ## Scenario Testing
 
-There is one scenario for Taxi: `app/test/fixtures/taxi-scenario-basic.toml`.
+There is one existing scenario for Taxi (`app/test/fixtures/taxi-scenario-basic.toml`), and a new SP Sixty Driving example scenario is being created in `examples/sp-sixty-driving/`.
+
+### SP Sixty Driving (new, in progress)
+
+A new example scenario based on a taxi driver business profile. Being created in `examples/sp-sixty-driving/` with diya-gl format (book.toml + lines.jsonl). Will produce `taxi-scenario-sp-sixty.toml` as a scenario fixture for reconciliation.
 
 ### Basic Scenario Design
 
