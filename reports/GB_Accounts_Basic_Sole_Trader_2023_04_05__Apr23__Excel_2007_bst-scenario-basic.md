@@ -23,14 +23,14 @@ Generated: 2026-04-04
 | | Amount |
 |---|------:|
 | Business Name | 9 |
-| Business Description | 10 |
+| Accounting Date | 10 |
 
 ## Profit & Loss Account
 
 | | Amount |
 |---|------:|
 | Sales Turnover | 205,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 116 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 115 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
 | **Gross Profit** | 187,360 |
@@ -90,7 +90,7 @@ Generated: 2026-04-04
 
 | | Amount |
 |---|------:|
-| Business name | — |
+| Business name | Precision Code - basic sole trader |
 | Accounting date | — |
 | Turnover | 205,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
@@ -141,15 +141,15 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B7 | Business Name | 9 | entityInformation.organizationIdentifier |
-| D7 | Business Description | 10 | entityInformation.organizationDescription |
+| C5 | Business Name | 9 | entityInformation.organizationIdentifier |
+| O5 | Accounting Date | 10 | documentInfo.periodCoveredEnd |
 
 ### Profit & Loss Acc
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C4 | Sales Turnover | 205900 | gl-cor:amount (salesTurnover) |
-| C5 | Other Income | 116 | gl-cor:amount (otherIncome) |
+| C5 | Other Income | 115 | gl-cor:amount (otherIncome) |
 | C6 | Cost of Sales (stock + direct) | 10540 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 8000 | gl-cor:amount (directCosts) |
 | C9 | **Gross Profit** | 187360 | gl-cor:amount (grossProfit) |
@@ -204,6 +204,7 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A7 | Business name | Precision Code - basic sole trader | entityInformation.organizationIdentifier |
 | D38 | Turnover | 205900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
 | D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
