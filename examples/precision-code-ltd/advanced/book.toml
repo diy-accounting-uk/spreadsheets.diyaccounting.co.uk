@@ -5,19 +5,17 @@ creationDate = 2026-04-01
 periodCoveredStart = 2025-04-01
 periodCoveredEnd = 2026-03-31
 defaultCurrency = "GBP"
-entriesComment = "Complete business activity for Precision Code Ltd FY2025/26"
+entriesComment = "Subset: advanced — extracted from Precision Code Ltd master data"
 
 [entityInformation]
-organizationIdentifier = "Precision Code Ltd"
-organizationDescription = "IT consultancy and software development"
+organizationIdentifier = "Precision Code Trading"
+organizationDescription = "IT consultancy (sole trader adaptation)"
 taxRegistrationNumber = "1234567890"
 taxAuthorityIdentifier = "HMRC"
-"diya-gl:product" = "Company"
+"diya-gl:product" = "SelfEmployed"
 "diya-gl:vatRegistered" = true
-"diya-gl:basisOfAccounting" = "accrual"
-"diya-gl:companyNumber" = "12345678"
+"diya-gl:basisOfAccounting" = "cash"
 "diya-gl:vatNumber" = "123456789"
-"diya-gl:cisRegistered" = true
 
 [accounts.sales."4000"]
 accountMainDescription = "Product A - Consultancy"
@@ -139,79 +137,19 @@ accountMainDescription = "Fixed asset purchases"
 accountMainDescription = "Current account"
 accountType = "bank"
 
-[accounts.bank."1210"]
-accountMainDescription = "Savings account"
-accountType = "bank"
-
 [accounts.bank."1220"]
 accountMainDescription = "Cash account"
 accountType = "bank"
 
-[accounts.bank."1230"]
-accountMainDescription = "Credit card account"
-accountType = "bank"
-
-[accounts.capital."3000"]
-accountMainDescription = "Share capital"
-
-[accounts.capital."3100"]
-accountMainDescription = "Retained earnings"
-
-[accounts.capital."3200"]
-accountMainDescription = "Dividends"
-
-[accounts.assets."1100"]
-accountMainDescription = "Stock"
-
-[accounts.assets."1300"]
-accountMainDescription = "Trade debtors"
-
-[accounts.assets."0010"]
-accountMainDescription = "Plant and machinery"
-
-[accounts.assets."0020"]
-accountMainDescription = "Fixtures and fittings"
-
-[accounts.assets."0030"]
-accountMainDescription = "Computer equipment"
-
-[accounts.assets."0040"]
-accountMainDescription = "Motor vehicles"
-
-[accounts.liabilities."2100"]
-accountMainDescription = "Trade creditors"
-
-[accounts.liabilities."2200"]
-accountMainDescription = "VAT liability"
-
-[accounts.liabilities."2300"]
-accountMainDescription = "Corporation Tax liability"
-
-[accounts.liabilities."2400"]
-accountMainDescription = "PAYE/NI liability"
-
-[accounts.liabilities."2410"]
-accountMainDescription = "CIS liability"
-
-[accounts.liabilities."2500"]
-accountMainDescription = "Directors loan account"
-
-[tax.corporationTax]
-smallProfitsRate = 0.19
-smallProfitsLimit = 50000
-mainRate = 0.25
-mainRateThreshold = 250000
-associatedCompanies = 0
-
-[tax.capitalAllowances]
-annualInvestmentAllowance = 1000000
-mainRateWDA = 0.18
-specialRateWDA = 0.06
-
-[tax.vat]
-standardRate = 0.20
-reducedRate = 0.05
-registrationThreshold = 90000
+[tax.incomeTax]
+personalAllowance = 12570
+basicRate = 0.2
+basicRateLimit = 37700
+higherRate = 0.4
+higherRateThreshold = 50270
+additionalRate = 0.45
+additionalRateThreshold = 125140
+personalAllowanceTaperThreshold = 100000
 
 [tax.nationalInsurance]
 class1EmployeeMainRate = 0.08
@@ -222,47 +160,19 @@ class1EmployerRate = 0.15
 class1EmployerSecondaryThreshold = 5000
 employmentAllowance = 10500
 
-[tax.dividends]
-allowance = 500
-basicRate = 0.0875
-higherRate = 0.3375
-additionalRate = 0.3935
+[tax.vat]
+standardRate = 0.2
+reducedRate = 0.05
+registrationThreshold = 90000
 
-[tax.incomeTax]
-personalAllowance = 12570
-basicRate = 0.20
-basicRateLimit = 37700
-higherRate = 0.40
-higherRateThreshold = 50270
-additionalRate = 0.45
-additionalRateThreshold = 125140
-personalAllowanceTaperThreshold = 100000
+[tax.capitalAllowances]
+annualInvestmentAllowance = 1000000
+mainRateWDA = 0.18
+specialRateWDA = 0.06
 
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
-
-# --- Directors and shareholdings ---
-
-[[directors]]
-name = "Carol Smith"
-role = "Managing Director"
-shares = 60
-appointed = 2020-01-01
-
-[[directors]]
-name = "David Brown"
-role = "Non-Executive Director"
-shares = 25
-appointed = 2021-06-15
-
-[[directors]]
-name = "Emma Wilson"
-role = "Company Secretary"
-shares = 15
-appointed = 2022-03-01
-
-# --- Employees on payroll ---
 
 [[employees]]
 employeeID = "EMP001"

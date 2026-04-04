@@ -659,6 +659,12 @@ The reconciliation runner (`app/bin/reconcile.js`) currently:
 - Checks: Total Sales, Gross Profit, Net Profit, and tax figures only
 - Reports show P&L values and tax calculations
 
+### Architecture: Shared Product Modules
+
+Each product module (e.g. `app/src/bst.js`, `app/src/se.js`, `app/src/ltd.js`) exports `standardReads()` and `checkCompliance()` functions that are **shared between E2E tests and the reconciliation runner**. The E2E tests call these functions to read cells and verify results; the reconciliation runner calls the same functions to produce its report.
+
+This means that extending `standardReads()` and `checkCompliance()` in Phases 3-5 (to read balance sheet items like stock, fixed assets, debtors, creditors, bank balances, VAT, wages, dividends) **automatically benefits the reconciliation runner**. Phase 6 then only needs to wire the already-extended reads/checks into the reconciliation report format — it does not re-implement the reading or checking logic.
+
 ### Target State
 
 One scenario per product, with extended report coverage including balance sheet items.
@@ -888,90 +894,96 @@ Each phase leaves the codebase in a passing state. Existing tests remain green u
 
 **Verify**: `node scripts/extract-scenarios.cjs` runs cleanly, all 6 output files created, TOML fixtures parse without error, diya-gl subset book.toml files validate against schema.
 
-### Phase 3 — BST basic: E2E + reconciliation (P&L checks only)
+### Phase 3 — BST basic: E2E + reconciliation (P&L + balance sheet reads)
 
-**Goal**: `bst-e2e.test.js` and BST reconciliation use the new `bst-scenario-basic.toml`. Only P&L checks — no balance sheet extensions yet.
+**Goal**: `bst-e2e.test.js` and BST reconciliation use the new `bst-scenario-basic.toml`. P&L checks plus balance sheet item reads in `standardReads()` and `checkCompliance()`.
 
 **Steps**:
 1. Update `app/test/bst-e2e.test.js`: replace hardcoded inline data with scenario loaded from `bst-scenario-basic.toml` via `scenario-loader.js` + `bst.cellWrites()`
 2. Verify existing P&L assertions still pass against the new data (total sales, expense lines, net profit)
 3. Verify existing tax assertions pass (Income Tax, NI Class 4, total)
-4. Update reconciliation: ensure `reconcile.js --package bst --scenario basic` uses the new fixture
-5. Remove or rename old `bst-scenario-extended.toml` (no longer needed — one scenario per product)
+4. **Extend `standardReads()` in `app/src/bst.js`** to read balance sheet items applicable to BST: stock (PurchasesStock D5/D30), fixed assets (preparation sheet cost/depreciation/NBV), debtors and creditors (preparation sheet opening/closing values). These reads will be used by both E2E tests and the reconciliation runner.
+5. **Extend `checkCompliance()` in `app/src/bst.js`** to verify the balance sheet reads against expected values from the scenario fixture: opening/closing stock match, fixed assets NBV matches, debtors/creditors match.
+6. Update reconciliation: ensure `reconcile.js --package bst --scenario basic` uses the new fixture
+7. Remove or rename old `bst-scenario-extended.toml` (no longer needed — one scenario per product)
 
-**Verify**: `npm test` passes. `node app/bin/reconcile.js --package bst --scenario basic` reconciles with PASS on all existing checks.
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package bst --scenario basic` reconciles with PASS on all existing checks. E2E test verifies balance sheet reads return expected values.
 
-### Phase 4 — SE advanced: E2E + reconciliation (P&L checks only)
+### Phase 4 — SE advanced: E2E + reconciliation (P&L + balance sheet reads)
 
-**Goal**: `se-e2e.test.js` and SE reconciliation use `se-scenario-advanced.toml`. P&L and tax checks only.
+**Goal**: `se-e2e.test.js` and SE reconciliation use `se-scenario-advanced.toml`. P&L, tax, and balance sheet checks.
 
 **Steps**:
 1. Update `app/test/se-e2e.test.js`: load `se-scenario-advanced.toml`, use `se.cellWrites()` to inject into Sales.xlsx and Purchases.xlsx
 2. Verify P&L assertions: total sales, sales by code, cost of sales, gross profit, admin expenses, operating profit
 3. Verify tax assertions: Income Tax, NI Class 4, total tax + NI
-4. Update reconciliation for SE: ensure `reconcile.js --package se --scenario advanced` works
-5. Remove or rename old `se-scenario-basic.toml` and `se-scenario-extended.toml`
+4. **Extend `standardReads()` in `app/src/se.js`** to read balance sheet items applicable to SE: stock (StockControl in Financialaccounts.xlsx), fixed assets (Fixedassets.xlsx Schedule — cost, acc dep, NBV, capital allowances), debtors (Sales.xlsx ClosingDebtors), creditors (Purchases.xlsx ClosingCreditors), bank balances (Bank.xlsx + Cash.xlsx closing balances), VAT (Vat.xlsx VATQtr1-5 boxes), wages (Wagesinterface in Financialaccounts.xlsx), drawings (via bank if tracked).
+5. **Extend `checkCompliance()` in `app/src/se.js`** to verify all balance sheet reads against expected values: stock opening/closing, fixed assets NBV, debtors/creditors totals, bank closing balances, quarterly VAT amounts, total gross wages/PAYE/NI.
+6. Update reconciliation for SE: ensure `reconcile.js --package se --scenario advanced` works
+7. Remove or rename old `se-scenario-basic.toml` and `se-scenario-extended.toml`
 
-**Verify**: `npm test` passes. `node app/bin/reconcile.js --package se --scenario advanced` reconciles.
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package se --scenario advanced` reconciles. E2E test verifies all balance sheet reads return expected values.
 
-### Phase 5 — Ltd full: E2E + reconciliation (P&L + CT checks only)
+### Phase 5 — Ltd full: E2E + reconciliation (P&L + CT + balance sheet reads)
 
-**Goal**: `ltd-e2e.test.js` and Ltd reconciliation use `ltd-scenario-full.toml`. P&L + Corporation Tax checks.
+**Goal**: `ltd-e2e.test.js` and Ltd reconciliation use `ltd-scenario-full.toml`. P&L, Corporation Tax, and all balance sheet checks.
 
 **Steps**:
 1. Update `app/test/ltd-e2e.test.js`: load `ltd-scenario-full.toml`, inject into all leaf files (Sales, Purchases, bank accounts, Payslips, Fixedassets, Companysecretary)
 2. Verify MnthP&L assertions: all sales lines, cost of sales, gross profit, admin expenses, operating profit, PBT
 3. Verify CorporationTax assertions: operating profit, add-backs, profit chargeable, CT at 19%
-4. Update reconciliation for Ltd: ensure `reconcile.js --package ltd --scenario full` works
-5. Remove or rename old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml`
+4. **Extend `standardReads()` in `app/src/ltd.js`** to read all balance sheet items: stock (Financialaccounts.xlsx Stock sheet), fixed assets (Fixedassets.xlsx Schedule — cost, acc dep, additions, disposals, closing NBV + PubBalSht fixed assets line), debtors (Sales.xlsx ClosingDebtors + PubBalSht debtors line), creditors (Purchases.xlsx ClosingCreditors + PubBalSht creditors line), bank balances (all 4 bank workbooks A1-A4 on final month), VAT (Vatreturns.xlsx VATQtr1-5 boxes), wages (WagesInterface + Payslips.xlsx Payment), dividends (TrialBalance dividends line + PubBalSht retained earnings).
+5. **Extend `checkCompliance()` in `app/src/ltd.js`** to verify all balance sheet reads against expected values: stock opening/closing/adjustment, fixed assets NBV and capital allowances, debtors/creditors totals, bank closing balances and reconciliation differences, quarterly VAT amounts, total gross wages/PAYE/NI, dividends paid, retained earnings = opening + profit - CT - dividends.
+6. Update reconciliation for Ltd: ensure `reconcile.js --package ltd --scenario full` works
+7. Remove or rename old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml`
 
-**Verify**: `npm test` passes. `node app/bin/reconcile.js --package ltd --scenario full` reconciles.
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package ltd --scenario full` reconciles. E2E test verifies all balance sheet reads return expected values.
 
-### Phase 6 — Extend reconciliation reports incrementally
+### Phase 6 — Wire balance sheet reads into reconciliation reports
 
-Add one check category at a time to `standardReads()` and `checkCompliance()` in each product module. Each sub-phase is a separate commit.
+The `standardReads()` and `checkCompliance()` extensions for all balance sheet items were already implemented in Phases 3-5 as part of the E2E test work. Because these functions are shared between E2E tests and the reconciliation runner (see Section 4 "Architecture: Shared Product Modules"), Phase 6 only needs to wire the existing reads/checks into the reconciliation report output format. Each sub-phase is a separate commit.
 
 **6a. Stock values** (Section 4d)
-- BST: read PurchasesStock D5/D30, check opening/closing match expected
-- SE: read StockControl in Financialaccounts.xlsx
-- Ltd: read Stock sheet in Financialaccounts.xlsx
-- Report: add "Stock" row
+- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
+- Wire into reconciliation report: add "Stock" row showing opening, purchases, closing, and cost of goods sold adjustment
+- Verify reconciliation passes with the new report section
 
 **6b. Fixed asset values** (Section 4b)
-- BST: read Fixed Assets preparation sheet
-- SE/Ltd: read Fixedassets.xlsx Schedule (cost, acc dep, NBV, capital allowances)
-- Report: add "Fixed Assets" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
+- Wire into reconciliation report: add "Fixed Assets" table showing each asset category with cost, depreciation, NBV, and capital allowances claimed
+- Verify reconciliation passes with the new report section
 
 **6c. Closing debtors and creditors** (Section 4f)
-- BST: read Debtors & Creditors preparation sheet
-- SE: read Sales.xlsx ClosingDebtors, Purchases.xlsx ClosingCreditors
-- Ltd: read same + PubBalSht debtors/creditors lines
-- Report: add "Debtors & Creditors" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
+- Wire into reconciliation report: add "Debtors & Creditors" table showing opening, movements, and closing balances
+- Verify reconciliation passes with the new report section
 
 **6d. Cash and bank balances** (Section 4a)
-- SE: read Bank.xlsx + Cash.xlsx closing balances
-- Ltd: read all 4 bank workbooks A1-A4 on final month
-- Report: add "Bank & Cash Balances" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
+- Wire into reconciliation report: add "Bank & Cash Balances" table showing opening, closing, and reconciliation status per account
+- Verify reconciliation passes with the new report section
 
 **6e. Expected VAT payments** (Section 4c)
-- SE: read Vat.xlsx VATQtr1-5 boxes
-- Ltd: read Vatreturns.xlsx VATQtr1-5 boxes
-- Report: add "VAT Returns" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
+- Wire into reconciliation report: add "VAT Returns" table showing per-quarter: output VAT, input VAT, net due, and annual totals
+- Verify reconciliation passes with the new report section
 
 **6f. Wages payments** (Section 4e)
-- SE: read Wagesinterface in Financialaccounts.xlsx
-- Ltd: read WagesInterface + Payslips.xlsx Payment
-- Report: add "Payroll" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
+- Wire into reconciliation report: add "Payroll" table showing per-employee: gross pay, PAYE, employee NI, employer NI, net pay, plus annual totals
+- Verify reconciliation passes with the new report section
 
 **6g. Tax payments** (Section 4g)
-- All products: already partially covered; extend with PAYE reconciliation for SE/Ltd
-- Report: add "Tax" calculation chain table
+- `standardReads()` and `checkCompliance()` already partially covered and extended with PAYE reconciliation in Phase 4 (SE), Phase 5 (Ltd)
+- Wire into reconciliation report: add "Tax" calculation chain table showing the full chain from profit through to tax liability
+- Verify reconciliation passes with the new report section
 
 **6h. Dividends / drawings** (Section 4h)
-- Ltd: read TrialBalance dividends line, PubBalSht retained earnings
-- Report: add "Distributions" table
+- `standardReads()` and `checkCompliance()` already extended in Phase 5 (Ltd). Not applicable to BST. SE drawings tracked via bank (if applicable, extended in Phase 4).
+- Wire into reconciliation report: add "Distributions" table showing dividends declared/paid per quarter (Ltd) or total drawings (SE)
+- Verify reconciliation passes with the new report section
 
-**Verify** after each sub-phase: `npm test` passes, reconciliation still reconciles (new checks added incrementally).
+**Verify** after each sub-phase: `npm test` passes, reconciliation still reconciles (new report sections added incrementally, using reads/checks already proven by E2E tests in Phases 3-5).
 
 ### Phase 7 — Documentation and CI cleanup
 
@@ -1049,14 +1061,18 @@ These assumptions were documented during the original data design and should gui
 - [ ] `examples/precision-code-ltd/full/` contains valid diya-gl files scoped to Ltd
 - [ ] Generated TOML fixtures parse without error and contain correct `[expected]` values
 
-**Phases 3-5 — E2E + reconciliation switchover**:
+**Phases 3-5 — E2E + reconciliation switchover + balance sheet reads**:
 - [ ] `npm test` passes after each phase
 - [ ] `node app/bin/reconcile.js --package bst --scenario basic` reconciles (Phase 3)
 - [ ] `node app/bin/reconcile.js --package se --scenario advanced` reconciles (Phase 4)
 - [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles (Phase 5)
+- [ ] `standardReads()` in each product module reads all applicable balance sheet items (stock, fixed assets, debtors, creditors, bank, VAT, wages, dividends)
+- [ ] `checkCompliance()` in each product module verifies balance sheet reads against expected values from scenario fixtures
+- [ ] E2E tests exercise the extended reads/checks and pass
 
-**Phase 6 — Extended report checks**:
+**Phase 6 — Wire balance sheet reads into reconciliation reports**:
 - [ ] Reconciliation reports include sections for: stock (6a), fixed assets (6b), debtors/creditors (6c), bank balances (6d), VAT (6e), wages (6f), tax (6g), dividends/drawings (6h)
+- [ ] Report sections reuse the `standardReads()`/`checkCompliance()` code extended in Phases 3-5 (no duplicated read/check logic)
 
 **Phase 7 — Docs and CI**:
 - [ ] TEST_SCENARIOS.md fully documents all three scenarios with expected values

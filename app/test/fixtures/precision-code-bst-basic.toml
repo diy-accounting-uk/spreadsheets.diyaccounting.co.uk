@@ -1,0 +1,3101 @@
+[metadata]
+name = "Precision Code - basic sole trader"
+description = "BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll."
+product = "bst"
+tax_regime = "se"
+
+[[sales.apr]]
+date = 2025-04-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.apr]]
+date = 2025-04-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.apr]]
+date = 2025-04-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.apr]]
+date = 2025-04-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.apr]]
+date = 2025-04-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.apr]]
+date = 2025-04-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.apr]]
+date = 2025-04-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.apr]]
+date = 2025-04-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.apr]]
+date = 2025-04-28
+customer = "Horizon Analytics"
+code = "d"
+amount = 840
+
+[[sales.may]]
+date = 2025-05-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.may]]
+date = 2025-05-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.may]]
+date = 2025-05-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.may]]
+date = 2025-05-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.may]]
+date = 2025-05-12
+customer = "QuickFix IT"
+code = "a"
+amount = 960
+
+[[sales.may]]
+date = 2025-05-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.may]]
+date = 2025-05-16
+customer = "Summit Training"
+code = "c"
+amount = 1200
+
+[[sales.may]]
+date = 2025-05-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.may]]
+date = 2025-05-25
+customer = "Oakridge Partners"
+code = "a"
+amount = 1200
+
+[[sales.jun]]
+date = 2025-06-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.jun]]
+date = 2025-06-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.jun]]
+date = 2025-06-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.jun]]
+date = 2025-06-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.jun]]
+date = 2025-06-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.jun]]
+date = 2025-06-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.jun]]
+date = 2025-06-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.jun]]
+date = 2025-06-20
+customer = "Gamma Ltd"
+code = "c"
+amount = 2400
+
+[[sales.jun]]
+date = 2025-06-22
+customer = "WidgetWorks"
+code = "a"
+amount = 1440
+
+[[sales.jul]]
+date = 2025-07-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.jul]]
+date = 2025-07-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.jul]]
+date = 2025-07-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.jul]]
+date = 2025-07-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.jul]]
+date = 2025-07-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.jul]]
+date = 2025-07-14
+customer = "NorthStar Digital"
+code = "a"
+amount = 2160
+
+[[sales.jul]]
+date = 2025-07-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.jul]]
+date = 2025-07-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.jul]]
+date = 2025-07-28
+customer = "Horizon Analytics"
+code = "d"
+amount = 840
+
+[[sales.aug]]
+date = 2025-08-01
+customer = "Innovate UK"
+code = "g"
+amount = 2500
+
+[[sales.aug]]
+date = 2025-08-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.aug]]
+date = 2025-08-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.aug]]
+date = 2025-08-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.aug]]
+date = 2025-08-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.aug]]
+date = 2025-08-12
+customer = "QuickFix IT"
+code = "a"
+amount = 960
+
+[[sales.aug]]
+date = 2025-08-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.aug]]
+date = 2025-08-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.aug]]
+date = 2025-08-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.aug]]
+date = 2025-08-25
+customer = "Oakridge Partners"
+code = "a"
+amount = 1200
+
+[[sales.sep]]
+date = 2025-09-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.sep]]
+date = 2025-09-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.sep]]
+date = 2025-09-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.sep]]
+date = 2025-09-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.sep]]
+date = 2025-09-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.sep]]
+date = 2025-09-16
+customer = "Summit Training"
+code = "c"
+amount = 1200
+
+[[sales.sep]]
+date = 2025-09-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.sep]]
+date = 2025-09-20
+customer = "StartupHub"
+code = "c"
+amount = 960
+
+[[sales.sep]]
+date = 2025-09-22
+customer = "WidgetWorks"
+code = "a"
+amount = 1440
+
+[[sales.sep]]
+date = 2025-09-25
+customer = "Epsilon Partners"
+code = "d"
+amount = 600
+
+[[sales.oct]]
+date = 2025-10-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.oct]]
+date = 2025-10-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.oct]]
+date = 2025-10-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.oct]]
+date = 2025-10-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.oct]]
+date = 2025-10-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.oct]]
+date = 2025-10-14
+customer = "NorthStar Digital"
+code = "a"
+amount = 2160
+
+[[sales.oct]]
+date = 2025-10-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.oct]]
+date = 2025-10-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.oct]]
+date = 2025-10-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.oct]]
+date = 2025-10-28
+customer = "Horizon Analytics"
+code = "d"
+amount = 840
+
+[[sales.nov]]
+date = 2025-11-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.nov]]
+date = 2025-11-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.nov]]
+date = 2025-11-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.nov]]
+date = 2025-11-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.nov]]
+date = 2025-11-12
+customer = "QuickFix IT"
+code = "a"
+amount = 960
+
+[[sales.nov]]
+date = 2025-11-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.nov]]
+date = 2025-11-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.nov]]
+date = 2025-11-20
+customer = "Delta PLC"
+code = "c"
+amount = 3600
+
+[[sales.nov]]
+date = 2025-11-25
+customer = "Oakridge Partners"
+code = "a"
+amount = 1200
+
+[[sales.dec]]
+date = 2025-12-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.dec]]
+date = 2025-12-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.dec]]
+date = 2025-12-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.dec]]
+date = 2025-12-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.dec]]
+date = 2025-12-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.dec]]
+date = 2025-12-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.dec]]
+date = 2025-12-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.dec]]
+date = 2025-12-22
+customer = "WidgetWorks"
+code = "a"
+amount = 1440
+
+[[sales.jan]]
+date = 2026-01-01
+customer = "Beta Systems"
+code = "b"
+amount = 1200
+
+[[sales.jan]]
+date = 2026-01-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.jan]]
+date = 2026-01-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.jan]]
+date = 2026-01-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.jan]]
+date = 2026-01-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.jan]]
+date = 2026-01-14
+customer = "NorthStar Digital"
+code = "a"
+amount = 2160
+
+[[sales.jan]]
+date = 2026-01-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.jan]]
+date = 2026-01-16
+customer = "Summit Training"
+code = "c"
+amount = 1200
+
+[[sales.jan]]
+date = 2026-01-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.jan]]
+date = 2026-01-25
+customer = "Lambda Corp"
+code = "d"
+amount = 480
+
+[[sales.jan]]
+date = 2026-01-28
+customer = "Horizon Analytics"
+code = "d"
+amount = 840
+
+[[sales.feb]]
+date = 2026-02-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.feb]]
+date = 2026-02-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.feb]]
+date = 2026-02-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.feb]]
+date = 2026-02-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.feb]]
+date = 2026-02-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.feb]]
+date = 2026-02-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.feb]]
+date = 2026-02-20
+customer = "DataFlow Inc"
+code = "a"
+amount = 1800
+
+[[sales.feb]]
+date = 2026-02-20
+customer = "MegaCorp"
+code = "c"
+amount = 1800
+
+[[sales.feb]]
+date = 2026-02-25
+customer = "Oakridge Partners"
+code = "a"
+amount = 1200
+
+[[sales.mar]]
+date = 2026-03-03
+customer = "FreshField Ltd"
+code = "b"
+amount = 360
+
+[[sales.mar]]
+date = 2026-03-05
+customer = "CloudNine Ltd"
+code = "b"
+amount = 600
+
+[[sales.mar]]
+date = 2026-03-08
+customer = "Cedar Systems"
+code = "a"
+amount = 480
+
+[[sales.mar]]
+date = 2026-03-10
+customer = "Pinnacle Group"
+code = "a"
+amount = 720
+
+[[sales.mar]]
+date = 2026-03-15
+customer = "Acme Corp"
+code = "a"
+amount = 8000
+
+[[sales.mar]]
+date = 2026-03-18
+customer = "TechStart Ltd"
+code = "a"
+amount = 2400
+
+[[sales.mar]]
+date = 2026-03-22
+customer = "WidgetWorks"
+code = "a"
+amount = 1440
+
+[[sales.mar]]
+date = 2026-03-31
+customer = "Zeta Corp"
+code = "o"
+amount = 360
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Hiscox"
+code = "o"
+amount = 1440
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.apr]]
+date = 2025-04-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.apr]]
+date = 2025-04-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.apr]]
+date = 2025-04-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.apr]]
+date = 2025-04-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.apr]]
+date = 2025-04-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "Xerox"
+code = "o"
+amount = 180
+
+[[purchases.apr]]
+date = 2025-04-10
+supplier = "TechParts"
+code = "s"
+amount = 600
+
+[[purchases.apr]]
+date = 2025-04-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.apr]]
+date = 2025-04-14
+supplier = "Toolstation"
+code = "o"
+amount = 42
+
+[[purchases.apr]]
+date = 2025-04-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.apr]]
+date = 2025-04-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.apr]]
+date = 2025-04-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.apr]]
+date = 2025-04-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.apr]]
+date = 2025-04-20
+supplier = "Office Maintenance Ltd"
+code = "r"
+amount = 120
+
+[[purchases.apr]]
+date = 2025-04-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.apr]]
+date = 2025-04-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.apr]]
+date = 2025-04-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.apr]]
+date = 2025-04-25
+supplier = "Mileage claim"
+code = "m"
+amount = 38.25
+
+[[purchases.apr]]
+date = 2025-04-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.apr]]
+date = 2025-04-30
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.may]]
+date = 2025-05-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.may]]
+date = 2025-05-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.may]]
+date = 2025-05-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.may]]
+date = 2025-05-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.may]]
+date = 2025-05-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.may]]
+date = 2025-05-06
+supplier = "Trainline"
+code = "t"
+amount = 60
+
+[[purchases.may]]
+date = 2025-05-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.may]]
+date = 2025-05-08
+supplier = "Hilti"
+code = "o"
+amount = 240
+
+[[purchases.may]]
+date = 2025-05-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.may]]
+date = 2025-05-10
+supplier = "Google Ads"
+code = "a"
+amount = 600
+
+[[purchases.may]]
+date = 2025-05-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.may]]
+date = 2025-05-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.may]]
+date = 2025-05-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "ComponentsDirect"
+code = "s"
+amount = 480
+
+[[purchases.may]]
+date = 2025-05-15
+supplier = "Dell"
+code = "f"
+amount = 1800
+
+[[purchases.may]]
+date = 2025-05-16
+supplier = "WHSmith"
+code = "g"
+amount = 18
+
+[[purchases.may]]
+date = 2025-05-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.may]]
+date = 2025-05-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.may]]
+date = 2025-05-20
+supplier = "ParcelForce"
+code = "o"
+amount = 180
+
+[[purchases.may]]
+date = 2025-05-20
+supplier = "CableCo"
+code = "s"
+amount = 240
+
+[[purchases.may]]
+date = 2025-05-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.may]]
+date = 2025-05-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.may]]
+date = 2025-05-22
+supplier = "Halfords"
+code = "m"
+amount = 48
+
+[[purchases.may]]
+date = 2025-05-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.may]]
+date = 2025-05-25
+supplier = "Mileage claim"
+code = "m"
+amount = 54
+
+[[purchases.may]]
+date = 2025-05-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.may]]
+date = 2025-05-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.jun]]
+date = 2025-06-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.jun]]
+date = 2025-06-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.jun]]
+date = 2025-06-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.jun]]
+date = 2025-06-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.jun]]
+date = 2025-06-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.jun]]
+date = 2025-06-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.jun]]
+date = 2025-06-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.jun]]
+date = 2025-06-10
+supplier = "Vistaprint"
+code = "g"
+amount = 96
+
+[[purchases.jun]]
+date = 2025-06-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.jun]]
+date = 2025-06-14
+supplier = "Toolstation"
+code = "o"
+amount = 30
+
+[[purchases.jun]]
+date = 2025-06-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.jun]]
+date = 2025-06-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "BuildTech Solutions"
+code = "d"
+amount = 5000
+
+[[purchases.jun]]
+date = 2025-06-18
+supplier = "Premier Inn"
+code = "t"
+amount = 180
+
+[[purchases.jun]]
+date = 2025-06-18
+supplier = "ElectroParts"
+code = "s"
+amount = 360
+
+[[purchases.jun]]
+date = 2025-06-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.jun]]
+date = 2025-06-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jun]]
+date = 2025-06-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.jun]]
+date = 2025-06-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.jun]]
+date = 2025-06-25
+supplier = "EnergySupply"
+code = "p"
+amount = 360
+
+[[purchases.jun]]
+date = 2025-06-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.jun]]
+date = 2025-06-25
+supplier = "Mileage claim"
+code = "m"
+amount = 90
+
+[[purchases.jun]]
+date = 2025-06-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.jun]]
+date = 2025-06-30
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.jun]]
+date = 2025-06-30
+supplier = "Directors loan"
+code = "i"
+amount = 250
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "J. Smith Consulting"
+code = "o"
+amount = 3000
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.jul]]
+date = 2025-07-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.jul]]
+date = 2025-07-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.jul]]
+date = 2025-07-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.jul]]
+date = 2025-07-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.jul]]
+date = 2025-07-05
+supplier = "LinkedIn"
+code = "a"
+amount = 480
+
+[[purchases.jul]]
+date = 2025-07-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.jul]]
+date = 2025-07-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "Xerox"
+code = "o"
+amount = 180
+
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "TechParts"
+code = "s"
+amount = 720
+
+[[purchases.jul]]
+date = 2025-07-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.jul]]
+date = 2025-07-12
+supplier = "ToolHire"
+code = "o"
+amount = 480
+
+[[purchases.jul]]
+date = 2025-07-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.jul]]
+date = 2025-07-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "IKEA"
+code = "f"
+amount = 1200
+
+[[purchases.jul]]
+date = 2025-07-16
+supplier = "WHSmith"
+code = "g"
+amount = 24
+
+[[purchases.jul]]
+date = 2025-07-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.jul]]
+date = 2025-07-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jul]]
+date = 2025-07-20
+supplier = "DHL"
+code = "o"
+amount = 120
+
+[[purchases.jul]]
+date = 2025-07-20
+supplier = "Office Maintenance Ltd"
+code = "r"
+amount = 180
+
+[[purchases.jul]]
+date = 2025-07-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.jul]]
+date = 2025-07-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.jul]]
+date = 2025-07-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.jul]]
+date = 2025-07-25
+supplier = "Mileage claim"
+code = "m"
+amount = 20.25
+
+[[purchases.jul]]
+date = 2025-07-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.jul]]
+date = 2025-07-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.aug]]
+date = 2025-08-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.aug]]
+date = 2025-08-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.aug]]
+date = 2025-08-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.aug]]
+date = 2025-08-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.aug]]
+date = 2025-08-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.aug]]
+date = 2025-08-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.aug]]
+date = 2025-08-06
+supplier = "Trainline"
+code = "t"
+amount = 48
+
+[[purchases.aug]]
+date = 2025-08-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.aug]]
+date = 2025-08-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.aug]]
+date = 2025-08-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.aug]]
+date = 2025-08-14
+supplier = "Toolstation"
+code = "o"
+amount = 48
+
+[[purchases.aug]]
+date = 2025-08-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.aug]]
+date = 2025-08-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "ComponentsDirect"
+code = "s"
+amount = 360
+
+[[purchases.aug]]
+date = 2025-08-18
+supplier = "PC Repair Shop"
+code = "r"
+amount = 240
+
+[[purchases.aug]]
+date = 2025-08-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.aug]]
+date = 2025-08-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.aug]]
+date = 2025-08-20
+supplier = "Casual worker"
+code = "e"
+amount = 800
+
+[[purchases.aug]]
+date = 2025-08-20
+supplier = "CableCo"
+code = "s"
+amount = 180
+
+[[purchases.aug]]
+date = 2025-08-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.aug]]
+date = 2025-08-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.aug]]
+date = 2025-08-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.aug]]
+date = 2025-08-25
+supplier = "Mileage claim"
+code = "m"
+amount = 38.25
+
+[[purchases.aug]]
+date = 2025-08-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.aug]]
+date = 2025-08-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.sep]]
+date = 2025-09-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.sep]]
+date = 2025-09-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.sep]]
+date = 2025-09-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.sep]]
+date = 2025-09-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.sep]]
+date = 2025-09-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.sep]]
+date = 2025-09-08
+supplier = "Hilti"
+code = "o"
+amount = 360
+
+[[purchases.sep]]
+date = 2025-09-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.sep]]
+date = 2025-09-10
+supplier = "Royal Mail"
+code = "o"
+amount = 96
+
+[[purchases.sep]]
+date = 2025-09-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.sep]]
+date = 2025-09-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.sep]]
+date = 2025-09-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Jones Solicitors"
+code = "l"
+amount = 960
+
+[[purchases.sep]]
+date = 2025-09-16
+supplier = "WHSmith"
+code = "g"
+amount = 12
+
+[[purchases.sep]]
+date = 2025-09-18
+supplier = "ElectroParts"
+code = "s"
+amount = 240
+
+[[purchases.sep]]
+date = 2025-09-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.sep]]
+date = 2025-09-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.sep]]
+date = 2025-09-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.sep]]
+date = 2025-09-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.sep]]
+date = 2025-09-22
+supplier = "Halfords"
+code = "m"
+amount = 72
+
+[[purchases.sep]]
+date = 2025-09-25
+supplier = "EnergySupply"
+code = "p"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.sep]]
+date = 2025-09-25
+supplier = "Mileage claim"
+code = "m"
+amount = 72
+
+[[purchases.sep]]
+date = 2025-09-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.sep]]
+date = 2025-09-30
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.sep]]
+date = 2025-09-30
+supplier = "Directors loan"
+code = "i"
+amount = 208
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Simply Business"
+code = "o"
+amount = 360
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.oct]]
+date = 2025-10-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.oct]]
+date = 2025-10-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.oct]]
+date = 2025-10-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.oct]]
+date = 2025-10-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.oct]]
+date = 2025-10-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.oct]]
+date = 2025-10-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.oct]]
+date = 2025-10-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "Xerox"
+code = "o"
+amount = 180
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "TechParts"
+code = "s"
+amount = 480
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "Google Ads"
+code = "a"
+amount = 1800
+
+[[purchases.oct]]
+date = 2025-10-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.oct]]
+date = 2025-10-14
+supplier = "Toolstation"
+code = "o"
+amount = 36
+
+[[purchases.oct]]
+date = 2025-10-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.oct]]
+date = 2025-10-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "TechExpo"
+code = "a"
+amount = 1200
+
+[[purchases.oct]]
+date = 2025-10-18
+supplier = "Premier Inn"
+code = "t"
+amount = 120
+
+[[purchases.oct]]
+date = 2025-10-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.oct]]
+date = 2025-10-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.oct]]
+date = 2025-10-20
+supplier = "Office Maintenance Ltd"
+code = "r"
+amount = 96
+
+[[purchases.oct]]
+date = 2025-10-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.oct]]
+date = 2025-10-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.oct]]
+date = 2025-10-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.oct]]
+date = 2025-10-25
+supplier = "Mileage claim"
+code = "m"
+amount = 42.75
+
+[[purchases.oct]]
+date = 2025-10-25
+supplier = "Ford"
+code = "f"
+amount = 36000
+
+[[purchases.oct]]
+date = 2025-10-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.oct]]
+date = 2025-10-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.nov]]
+date = 2025-11-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.nov]]
+date = 2025-11-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.nov]]
+date = 2025-11-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.nov]]
+date = 2025-11-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.nov]]
+date = 2025-11-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.nov]]
+date = 2025-11-06
+supplier = "Trainline"
+code = "t"
+amount = 72
+
+[[purchases.nov]]
+date = 2025-11-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.nov]]
+date = 2025-11-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.nov]]
+date = 2025-11-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.nov]]
+date = 2025-11-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.nov]]
+date = 2025-11-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "ComponentsDirect"
+code = "s"
+amount = 540
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "BuildTech Solutions"
+code = "d"
+amount = 3000
+
+[[purchases.nov]]
+date = 2025-11-16
+supplier = "WHSmith"
+code = "g"
+amount = 30
+
+[[purchases.nov]]
+date = 2025-11-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "ParcelForce"
+code = "o"
+amount = 240
+
+[[purchases.nov]]
+date = 2025-11-20
+supplier = "CableCo"
+code = "s"
+amount = 300
+
+[[purchases.nov]]
+date = 2025-11-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.nov]]
+date = 2025-11-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.nov]]
+date = 2025-11-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.nov]]
+date = 2025-11-25
+supplier = "Mileage claim"
+code = "m"
+amount = 81
+
+[[purchases.nov]]
+date = 2025-11-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.nov]]
+date = 2025-11-30
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.dec]]
+date = 2025-12-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.dec]]
+date = 2025-12-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.dec]]
+date = 2025-12-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.dec]]
+date = 2025-12-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.dec]]
+date = 2025-12-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.dec]]
+date = 2025-12-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.dec]]
+date = 2025-12-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.dec]]
+date = 2025-12-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.dec]]
+date = 2025-12-10
+supplier = "Vistaprint"
+code = "g"
+amount = 120
+
+[[purchases.dec]]
+date = 2025-12-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.dec]]
+date = 2025-12-14
+supplier = "Toolstation"
+code = "o"
+amount = 24
+
+[[purchases.dec]]
+date = 2025-12-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.dec]]
+date = 2025-12-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Code Club UK"
+code = "b"
+amount = 500
+
+[[purchases.dec]]
+date = 2025-12-18
+supplier = "ElectroParts"
+code = "s"
+amount = 480
+
+[[purchases.dec]]
+date = 2025-12-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.dec]]
+date = 2025-12-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.dec]]
+date = 2025-12-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.dec]]
+date = 2025-12-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.dec]]
+date = 2025-12-25
+supplier = "EnergySupply"
+code = "p"
+amount = 420
+
+[[purchases.dec]]
+date = 2025-12-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.dec]]
+date = 2025-12-25
+supplier = "Mileage claim"
+code = "m"
+amount = 49.5
+
+[[purchases.dec]]
+date = 2025-12-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "Director"
+code = "o"
+amount = 5000
+
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "Directors loan"
+code = "i"
+amount = 167
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.jan]]
+date = 2026-01-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.jan]]
+date = 2026-01-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.jan]]
+date = 2026-01-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.jan]]
+date = 2026-01-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.jan]]
+date = 2026-01-05
+supplier = "LinkedIn"
+code = "a"
+amount = 480
+
+[[purchases.jan]]
+date = 2026-01-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.jan]]
+date = 2026-01-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.jan]]
+date = 2026-01-08
+supplier = "Hilti"
+code = "o"
+amount = 180
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "Xerox"
+code = "o"
+amount = 180
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "TechParts"
+code = "s"
+amount = 600
+
+[[purchases.jan]]
+date = 2026-01-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.jan]]
+date = 2026-01-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.jan]]
+date = 2026-01-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.jan]]
+date = 2026-01-16
+supplier = "WHSmith"
+code = "g"
+amount = 18
+
+[[purchases.jan]]
+date = 2026-01-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "DHL"
+code = "o"
+amount = 180
+
+[[purchases.jan]]
+date = 2026-01-20
+supplier = "Office Maintenance Ltd"
+code = "r"
+amount = 144
+
+[[purchases.jan]]
+date = 2026-01-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.jan]]
+date = 2026-01-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.jan]]
+date = 2026-01-22
+supplier = "Halfords"
+code = "m"
+amount = 36
+
+[[purchases.jan]]
+date = 2026-01-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.jan]]
+date = 2026-01-25
+supplier = "Mileage claim"
+code = "m"
+amount = 38.25
+
+[[purchases.jan]]
+date = 2026-01-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.jan]]
+date = 2026-01-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.feb]]
+date = 2026-02-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.feb]]
+date = 2026-02-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.feb]]
+date = 2026-02-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.feb]]
+date = 2026-02-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.feb]]
+date = 2026-02-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.feb]]
+date = 2026-02-05
+supplier = "DigitalOcean"
+code = "o"
+amount = 36
+
+[[purchases.feb]]
+date = 2026-02-06
+supplier = "Trainline"
+code = "t"
+amount = 36
+
+[[purchases.feb]]
+date = 2026-02-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.feb]]
+date = 2026-02-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.feb]]
+date = 2026-02-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.feb]]
+date = 2026-02-12
+supplier = "ToolHire"
+code = "o"
+amount = 360
+
+[[purchases.feb]]
+date = 2026-02-14
+supplier = "Toolstation"
+code = "o"
+amount = 18
+
+[[purchases.feb]]
+date = 2026-02-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.feb]]
+date = 2026-02-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.feb]]
+date = 2026-02-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.feb]]
+date = 2026-02-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.feb]]
+date = 2026-02-15
+supplier = "ComponentsDirect"
+code = "s"
+amount = 420
+
+[[purchases.feb]]
+date = 2026-02-18
+supplier = "PC Repair Shop"
+code = "r"
+amount = 360
+
+[[purchases.feb]]
+date = 2026-02-18
+supplier = "Premier Inn"
+code = "t"
+amount = 240
+
+[[purchases.feb]]
+date = 2026-02-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.feb]]
+date = 2026-02-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.feb]]
+date = 2026-02-20
+supplier = "CableCo"
+code = "s"
+amount = 240
+
+[[purchases.feb]]
+date = 2026-02-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.feb]]
+date = 2026-02-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.feb]]
+date = 2026-02-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.feb]]
+date = 2026-02-25
+supplier = "Mileage claim"
+code = "m"
+amount = 31.5
+
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "WorkSpace Ltd"
+code = "p"
+amount = 1200
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Microsoft"
+code = "g"
+amount = 30
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Slack"
+code = "g"
+amount = 15
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "GitHub"
+code = "o"
+amount = 45
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Cloudflare"
+code = "o"
+amount = 24
+
+[[purchases.mar]]
+date = 2026-03-01
+supplier = "Zoom"
+code = "g"
+amount = 18
+
+[[purchases.mar]]
+date = 2026-03-03
+supplier = "AWS"
+code = "o"
+amount = 180
+
+[[purchases.mar]]
+date = 2026-03-03
+supplier = "Argos"
+code = "o"
+amount = 22
+
+[[purchases.mar]]
+date = 2026-03-05
+supplier = "Ryman"
+code = "o"
+amount = 24
+
+[[purchases.mar]]
+date = 2026-03-05
+supplier = "BP"
+code = "m"
+amount = 180
+
+[[purchases.mar]]
+date = 2026-03-08
+supplier = "National Rail"
+code = "t"
+amount = 48
+
+[[purchases.mar]]
+date = 2026-03-10
+supplier = "Amazon"
+code = "o"
+amount = 36
+
+[[purchases.mar]]
+date = 2026-03-10
+supplier = "Royal Mail"
+code = "o"
+amount = 144
+
+[[purchases.mar]]
+date = 2026-03-12
+supplier = "NCP"
+code = "m"
+amount = 18
+
+[[purchases.mar]]
+date = 2026-03-14
+supplier = "Uber"
+code = "t"
+amount = 24
+
+[[purchases.mar]]
+date = 2026-03-14
+supplier = "Costa Coffee"
+code = "t"
+amount = 12
+
+[[purchases.mar]]
+date = 2026-03-15
+supplier = "Shell"
+code = "m"
+amount = 150
+
+[[purchases.mar]]
+date = 2026-03-15
+supplier = "Royal Mail"
+code = "g"
+amount = 12
+
+[[purchases.mar]]
+date = 2026-03-16
+supplier = "WHSmith"
+code = "g"
+amount = 24
+
+[[purchases.mar]]
+date = 2026-03-18
+supplier = "ElectroParts"
+code = "s"
+amount = 300
+
+[[purchases.mar]]
+date = 2026-03-18
+supplier = "Jet"
+code = "m"
+amount = 96
+
+[[purchases.mar]]
+date = 2026-03-20
+supplier = "BT Business"
+code = "g"
+amount = 60
+
+[[purchases.mar]]
+date = 2026-03-21
+supplier = "Greggs"
+code = "t"
+amount = 8
+
+[[purchases.mar]]
+date = 2026-03-22
+supplier = "Screwfix"
+code = "o"
+amount = 18
+
+[[purchases.mar]]
+date = 2026-03-22
+supplier = "Halfords"
+code = "m"
+amount = 60
+
+[[purchases.mar]]
+date = 2026-03-25
+supplier = "EnergySupply"
+code = "p"
+amount = 360
+
+[[purchases.mar]]
+date = 2026-03-25
+supplier = "Wilko"
+code = "o"
+amount = 15
+
+[[purchases.mar]]
+date = 2026-03-25
+supplier = "Mileage claim"
+code = "m"
+amount = 58.5
+
+[[purchases.mar]]
+date = 2026-03-28
+supplier = "Shell"
+code = "m"
+amount = 120
+
+[[purchases.mar]]
+date = 2026-03-31
+supplier = "Smith & Co"
+code = "l"
+amount = 300
+
+[[purchases.mar]]
+date = 2026-03-31
+supplier = "Directors loan"
+code = "i"
+amount = 125
+
+[stock]
+opening = 10000
+closing = 6000
+
+[[opening_debtors]]
+customer = "Acme Corp"
+invoice = "INV-0901"
+amount = 7200
+
+[[opening_debtors]]
+customer = "Beta Systems"
+invoice = "INV-0902"
+amount = 1200
+
+[[opening_debtors]]
+customer = "Gamma Ltd"
+invoice = "INV-0903"
+amount = 2400
+
+[[closing_debtors]]
+customer = "Acme Corp"
+invoice = "INV-1012"
+amount = 8000
+
+[[closing_debtors]]
+customer = "TechStart Ltd"
+invoice = "INV-1112"
+amount = 2400
+
+[[opening_creditors]]
+supplier = "WorkSpace Ltd"
+invoice = "WS-2403"
+amount = 1200
+
+[[opening_creditors]]
+supplier = "Smith & Co"
+invoice = "SC-2403"
+amount = 300
+
+[[opening_creditors]]
+supplier = "TechParts Ltd"
+invoice = "TP-2403"
+amount = 600
+
+[[opening_creditors]]
+supplier = "Shell"
+invoice = "SH-2403"
+amount = 120
+
+[[closing_creditors]]
+supplier = "WorkSpace Ltd"
+invoice = "WS-2603"
+amount = 1200
+
+[[closing_creditors]]
+supplier = "Smith & Co"
+invoice = "SC-2603"
+amount = 300
+
+[[closing_creditors]]
+supplier = "BT Business"
+invoice = "BT-2603"
+amount = 60
+
+[[closing_creditors]]
+supplier = "Shell"
+invoice = "SH-2603"
+amount = 150
+
+[expected]
+total_sales = 172000

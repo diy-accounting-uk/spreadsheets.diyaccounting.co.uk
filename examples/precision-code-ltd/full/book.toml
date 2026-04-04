@@ -5,7 +5,7 @@ creationDate = 2026-04-01
 periodCoveredStart = 2025-04-01
 periodCoveredEnd = 2026-03-31
 defaultCurrency = "GBP"
-entriesComment = "Complete business activity for Precision Code Ltd FY2025/26"
+entriesComment = "Subset: full — extracted from Precision Code Ltd master data"
 
 [entityInformation]
 organizationIdentifier = "Precision Code Ltd"
@@ -209,7 +209,7 @@ mainRateWDA = 0.18
 specialRateWDA = 0.06
 
 [tax.vat]
-standardRate = 0.20
+standardRate = 0.2
 reducedRate = 0.05
 registrationThreshold = 90000
 
@@ -228,21 +228,19 @@ basicRate = 0.0875
 higherRate = 0.3375
 additionalRate = 0.3935
 
-[tax.incomeTax]
-personalAllowance = 12570
-basicRate = 0.20
-basicRateLimit = 37700
-higherRate = 0.40
-higherRateThreshold = 50270
-additionalRate = 0.45
-additionalRateThreshold = 125140
-personalAllowanceTaperThreshold = 100000
-
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
 
-# --- Directors and shareholdings ---
+[tax.incomeTax]
+personalAllowance = 12570
+basicRate = 0.2
+basicRateLimit = 37700
+higherRate = 0.4
+higherRateThreshold = 50270
+additionalRate = 0.45
+additionalRateThreshold = 125140
+personalAllowanceTaperThreshold = 100000
 
 [[directors]]
 name = "Carol Smith"
@@ -261,8 +259,6 @@ name = "Emma Wilson"
 role = "Company Secretary"
 shares = 15
 appointed = 2022-03-01
-
-# --- Employees on payroll ---
 
 [[employees]]
 employeeID = "EMP001"

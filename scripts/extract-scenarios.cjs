@@ -2,28 +2,39 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// extract-scenarios.cjs — Extract test scenario TOML files from DIYA GL example data.
+// extract-scenarios.cjs — Extract test scenario TOML files and diya-gl subsets
+// from the Precision Code Ltd master data.
 //
 // Usage:
 //   node scripts/extract-scenarios.cjs
 //
-// Reads:  examples/precision-code-ltd/book.toml   (entity info and chart of accounts)
-//         examples/precision-code-ltd/lines.jsonl  (journal entries, one JSON object per line)
-// Writes: app/test/fixtures/ltd-scenario-basic.toml
-//         app/test/fixtures/ltd-scenario-extended.toml
+// Reads:  examples/precision-code-ltd/book.toml
+//         examples/precision-code-ltd/lines.jsonl
+//
+// Writes: examples/precision-code-ltd/bst/book.toml
+//         examples/precision-code-ltd/bst/lines.jsonl
+//         examples/precision-code-ltd/advanced/book.toml
+//         examples/precision-code-ltd/advanced/lines.jsonl
+//         examples/precision-code-ltd/full/book.toml
+//         examples/precision-code-ltd/full/lines.jsonl
+//         app/test/fixtures/bst-scenario-basic.toml
+//         app/test/fixtures/se-scenario-advanced.toml
 //         app/test/fixtures/ltd-scenario-full.toml
 
 const { parse: parseTOML } = require("smol-toml");
-const { readFileSync, writeFileSync } = require("fs");
+const { readFileSync, writeFileSync, mkdirSync } = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const EXAMPLES_DIR = path.join(ROOT, "examples", "precision-code-ltd");
 const FIXTURES_DIR = path.join(ROOT, "app", "test", "fixtures");
 
-// --- Account-to-code mappings ---
-// Sales accounts -> code letters (accountMainID -> scenario code)
-const SALES_CODE_MAP = {
+// ============================================================================
+// Account-to-code mappings
+// ============================================================================
+
+// Ltd sales: accountMainID -> code letter
+const LTD_SALES_CODE_MAP = {
   4000: "a",
   4001: "b",
   4002: "c",
@@ -33,8 +44,8 @@ const SALES_CODE_MAP = {
   4006: "fs",
 };
 
-// Purchase accounts -> code letters (accountMainID -> scenario code)
-const PURCHASE_CODE_MAP = {
+// Ltd purchases: accountMainID -> code letter
+const LTD_PURCHASE_CODE_MAP = {
   5000: "s",
   5001: "c",
   5002: "o",
@@ -55,159 +66,93 @@ const PURCHASE_CODE_MAP = {
   5800: "l",
   5801: "y",
   5802: "z",
+  5803: "l", // loan interest mapped to Legal/professional for Ltd
   5900: "fa",
 };
 
-// Month mapping: month number (0-indexed from Date) -> scenario month key
-// For Ltd Company March year-end: April (month 3) = "apr", ..., March (month 2) = "mar"
-const MONTH_NAMES = {
-  3: "apr",
-  4: "may",
-  5: "jun",
-  6: "jul",
-  7: "aug",
-  8: "sep",
-  9: "oct",
-  10: "nov",
-  11: "dec",
-  0: "jan",
-  1: "feb",
-  2: "mar",
+// BST purchases: accountMainID -> BST code letter (14 codes)
+const BST_PURCHASE_CODE_MAP = {
+  5000: "s", // Stock
+  5001: "d", // Direct costs
+  5101: "e", // Employee
+  5200: "p", // Premises
+  5201: "p", // Premises (light/heat lumped in)
+  5400: "r", // Repairs
+  5501: "g", // Gen Admin
+  5601: "m", // Motor
+  5600: "t", // Travel
+  5500: "a", // Advertising
+  5800: "l", // Legal
+  5803: "i", // Interest
+  5801: "b", // Bad debts (charitable -> other in BST, but use b)
+  5002: "o", // Other
+  5300: "o", // Other (distribution)
+  5301: "o", // Other (equipment)
+  5401: "o", // Other (consumables)
+  5700: "o", // Other (insurance)
+  5701: "o", // Other (leasing)
+  5802: "o", // Other (goodwill)
+  5100: "o", // Other (directors wages — not in BST)
+  5900: "f", // Fixed assets
 };
 
-// Ordered months for output (Apr-Mar)
+// SE purchases: accountMainID -> SE code letter (21 codes)
+const SE_PURCHASE_CODE_MAP = {
+  5000: "s",
+  5001: "c",
+  5002: "o",
+  5101: "w",
+  5200: "r",
+  5201: "p",
+  5300: "t",
+  5301: "q",
+  5400: "m",
+  5401: "u",
+  5500: "a",
+  5501: "g",
+  5600: "h",
+  5601: "v",
+  5700: "n",
+  5701: "f",
+  5800: "l",
+  5801: "y",
+  5802: "z",
+  5803: "l", // loan interest -> legal
+  5900: "fa",
+  5100: "w", // directors wages -> employee wages in SE
+};
+
+// Month mapping: JS month (0-indexed) -> scenario key
+const MONTH_NAMES = { 3: "apr", 4: "may", 5: "jun", 6: "jul", 7: "aug", 8: "sep", 9: "oct", 10: "nov", 11: "dec", 0: "jan", 1: "feb", 2: "mar" };
 const MONTH_ORDER = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
-// Basic subset: only these sales codes
-const BASIC_SALES_CODES = new Set(["a"]);
-// Basic subset: only these purchase codes
-const BASIC_PURCHASE_CODES = new Set(["r", "l", "g", "v", "m"]);
+// ============================================================================
+// Read master data
+// ============================================================================
 
-// --- Read input files ---
 const bookToml = readFileSync(path.join(EXAMPLES_DIR, "book.toml"), "utf-8");
 const book = parseTOML(bookToml);
 
 const linesRaw = readFileSync(path.join(EXAMPLES_DIR, "lines.jsonl"), "utf-8");
-const lines = linesRaw
+const allLines = linesRaw
   .split("\n")
   .filter((line) => line.trim().length > 0)
   .map((line) => JSON.parse(line));
 
-// --- Classify lines ---
+// ============================================================================
+// Utility functions
+// ============================================================================
+
 function getMonthKey(postingDate) {
   const d = new Date(postingDate + "T00:00:00");
   return MONTH_NAMES[d.getMonth()];
-}
-
-function classifyLine(line) {
-  const journal = line.sourceJournalID;
-  const account = line.accountMainID;
-
-  if (journal === "sales" && SALES_CODE_MAP[account]) {
-    return { type: "sales", code: SALES_CODE_MAP[account] };
-  }
-  if (journal === "purchases" && PURCHASE_CODE_MAP[account]) {
-    return { type: "purchases", code: PURCHASE_CODE_MAP[account] };
-  }
-  if (journal === "bank") {
-    return { type: "bank", code: null };
-  }
-  return { type: "unknown", code: null };
-}
-
-// --- Build grouped transaction data ---
-function buildGrouped(filteredLines) {
-  const sales = {};
-  const purchases = {};
-
-  for (const line of filteredLines) {
-    const cls = classifyLine(line);
-    const month = getMonthKey(line.postingDate);
-
-    if (cls.type === "sales") {
-      if (!sales[month]) sales[month] = [];
-      sales[month].push({
-        date: line.postingDate,
-        customer: line.detailComment,
-        code: cls.code,
-        amount: line.amount,
-      });
-    } else if (cls.type === "purchases") {
-      if (!purchases[month]) purchases[month] = [];
-      purchases[month].push({
-        date: line.postingDate,
-        supplier: line.detailComment,
-        code: cls.code,
-        amount: line.amount,
-      });
-    }
-  }
-
-  return { sales, purchases };
-}
-
-// --- Format TOML output ---
-function formatDate(dateStr) {
-  // Output as TOML bare date: YYYY-MM-DD (no quotes)
-  return dateStr;
 }
 
 function escapeTomlString(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-function formatScenarioToml(metadata, grouped, totalSales) {
-  const parts = [];
-
-  // Metadata section
-  parts.push("[metadata]");
-  parts.push(`name = "${escapeTomlString(metadata.name)}"`);
-  parts.push(`description = "${escapeTomlString(metadata.description)}"`);
-  parts.push(`product = "${metadata.product}"`);
-  parts.push(`tax_regime = "${metadata.tax_regime}"`);
-  parts.push("");
-
-  // Sales sections by month
-  for (const month of MONTH_ORDER) {
-    const txns = grouped.sales[month];
-    if (!txns || txns.length === 0) continue;
-    for (const txn of txns) {
-      parts.push(`[[sales.${month}]]`);
-      parts.push(`date = ${formatDate(txn.date)}`);
-      parts.push(`customer = "${escapeTomlString(txn.customer)}"`);
-      parts.push(`code = "${txn.code}"`);
-      parts.push(`amount = ${txn.amount}`);
-      parts.push("");
-    }
-  }
-
-  // Purchases sections by month
-  for (const month of MONTH_ORDER) {
-    const txns = grouped.purchases[month];
-    if (!txns || txns.length === 0) continue;
-    for (const txn of txns) {
-      parts.push(`[[purchases.${month}]]`);
-      parts.push(`date = ${formatDate(txn.date)}`);
-      parts.push(`supplier = "${escapeTomlString(txn.supplier)}"`);
-      parts.push(`code = "${txn.code}"`);
-      parts.push(`amount = ${txn.amount}`);
-      parts.push("");
-    }
-  }
-
-  // Expected section
-  parts.push("[expected]");
-  parts.push(`total_sales = ${totalSales}`);
-  parts.push("");
-
-  return parts.join("\n");
-}
-
-// --- Compute total_sales (net of VAT) ---
-// Scenario amounts are VAT-inclusive gross; the spreadsheet calculates net.
-// The expected.total_sales in the scenario is compared against the P&L net figure.
-// We need the original lines (with taxRate) to compute net correctly per transaction.
-function computeTotalSales(salesLines) {
+function computeNetSales(salesLines) {
   let netTotal = 0;
   for (const line of salesLines) {
     const rate = line.taxRate || 0;
@@ -216,111 +161,497 @@ function computeTotalSales(salesLines) {
   return Math.round(netTotal);
 }
 
-// --- Extract subsets ---
+// ============================================================================
+// Filter functions for each subset
+// ============================================================================
 
-// Basic: sales journal with code "a" only, purchases journal with codes r,l,g,v,m only
-const basicLines = lines.filter((line) => {
-  const cls = classifyLine(line);
-  if (line.sourceJournalID === "sales" && cls.type === "sales") {
-    return BASIC_SALES_CODES.has(cls.code);
-  }
-  if (line.sourceJournalID === "purchases" && cls.type === "purchases") {
-    return BASIC_PURCHASE_CODES.has(cls.code);
-  }
-  return false;
-});
-const basicSalesLines = basicLines.filter((l) => l.sourceJournalID === "sales");
+// BST: sales + purchases only, no bank/payroll/journal, no FA sales, no CIS
+const BST_SALES_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004", "4005"]);
+// Exclude 4006 (FA sales) from BST
 
-const basicGrouped = buildGrouped(basicLines);
-const basicTotalSales = computeTotalSales(basicSalesLines);
-const basicToml = formatScenarioToml(
+function filterBst(lines) {
+  return lines.filter((l) => {
+    if (l.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(l.accountMainID);
+    if (l.sourceJournalID === "purchases") return BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    return false;
+  });
+}
+
+// SE (advanced): sales + purchases + bank (current + cash) + payroll, no credit card/savings, no CIS, no journal
+const SE_BANK_ACCOUNTS = new Set(["1200", "1220"]);
+
+function filterAdvanced(lines) {
+  return lines.filter((l) => {
+    if (l.sourceJournalID === "sales") return LTD_SALES_CODE_MAP[l.accountMainID] !== undefined;
+    if (l.sourceJournalID === "purchases") return SE_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    if (l.sourceJournalID === "bank") return SE_BANK_ACCOUNTS.has(l["diya-gl:bankAccountID"]);
+    if (l.sourceJournalID === "payroll") return true;
+    return false;
+  });
+}
+
+// Full (Ltd): everything
+function filterFull(lines) {
+  return [...lines];
+}
+
+// ============================================================================
+// Build grouped transaction data for TOML fixture
+// ============================================================================
+
+function buildGrouped(filteredLines, purchaseCodeMap) {
+  const sales = {};
+  const purchases = {};
+  const bank = {};
+
+  for (const line of filteredLines) {
+    const month = getMonthKey(line.postingDate);
+
+    if (line.sourceJournalID === "sales") {
+      const code = LTD_SALES_CODE_MAP[line.accountMainID];
+      if (!code) continue;
+      if (!sales[month]) sales[month] = [];
+      sales[month].push({
+        date: line.postingDate,
+        customer: line.detailComment,
+        code,
+        amount: line.amount,
+      });
+    } else if (line.sourceJournalID === "purchases") {
+      const code = purchaseCodeMap[line.accountMainID];
+      if (!code) continue;
+      if (!purchases[month]) purchases[month] = [];
+      purchases[month].push({
+        date: line.postingDate,
+        supplier: line.detailComment,
+        code,
+        amount: line.amount,
+      });
+    } else if (line.sourceJournalID === "bank") {
+      const acctId = line["diya-gl:bankAccountID"];
+      if (!bank[acctId]) bank[acctId] = {};
+      if (!bank[acctId][month]) bank[acctId][month] = [];
+      bank[acctId][month].push({
+        date: line.postingDate,
+        source: line.detailComment,
+        code: line["diya-gl:bankCode"],
+        amount: line.amount,
+        description: line.lineItemComment || "",
+      });
+    }
+  }
+
+  return { sales, purchases, bank };
+}
+
+// ============================================================================
+// Format TOML output
+// ============================================================================
+
+function formatScenarioToml(metadata, grouped, expected) {
+  const parts = [];
+
+  parts.push("[metadata]");
+  parts.push(`name = "${escapeTomlString(metadata.name)}"`);
+  parts.push(`description = "${escapeTomlString(metadata.description)}"`);
+  parts.push(`product = "${metadata.product}"`);
+  parts.push(`tax_regime = "${metadata.tax_regime}"`);
+  parts.push("");
+
+  // Sales
+  for (const month of MONTH_ORDER) {
+    const txns = grouped.sales[month];
+    if (!txns || txns.length === 0) continue;
+    for (const txn of txns) {
+      parts.push(`[[sales.${month}]]`);
+      parts.push(`date = ${txn.date}`);
+      parts.push(`customer = "${escapeTomlString(txn.customer)}"`);
+      parts.push(`code = "${txn.code}"`);
+      parts.push(`amount = ${txn.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Purchases
+  for (const month of MONTH_ORDER) {
+    const txns = grouped.purchases[month];
+    if (!txns || txns.length === 0) continue;
+    for (const txn of txns) {
+      parts.push(`[[purchases.${month}]]`);
+      parts.push(`date = ${txn.date}`);
+      parts.push(`supplier = "${escapeTomlString(txn.supplier)}"`);
+      parts.push(`code = "${txn.code}"`);
+      parts.push(`amount = ${txn.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Bank (for SE and Ltd)
+  const bankAccounts = Object.keys(grouped.bank).sort();
+  for (const acctId of bankAccounts) {
+    for (const month of MONTH_ORDER) {
+      const txns = grouped.bank[acctId]?.[month];
+      if (!txns || txns.length === 0) continue;
+      for (const txn of txns) {
+        parts.push(`[[bank.${month}]]`);
+        parts.push(`date = ${txn.date}`);
+        parts.push(`account = "${acctId}"`);
+        parts.push(`source = "${escapeTomlString(txn.source)}"`);
+        parts.push(`code = "${txn.code}"`);
+        parts.push(`amount = ${txn.amount}`);
+        if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+        parts.push("");
+      }
+    }
+  }
+
+  // Stock (if applicable)
+  if (expected.opening_stock !== undefined) {
+    parts.push("[stock]");
+    parts.push(`opening = ${expected.opening_stock}`);
+    parts.push(`closing = ${expected.closing_stock}`);
+    parts.push("");
+  }
+
+  // Opening debtors
+  if (expected.opening_debtors) {
+    for (const d of expected.opening_debtors) {
+      parts.push("[[opening_debtors]]");
+      parts.push(`customer = "${escapeTomlString(d.customer)}"`);
+      parts.push(`invoice = "${d.invoice}"`);
+      parts.push(`amount = ${d.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Closing debtors
+  if (expected.closing_debtors) {
+    for (const d of expected.closing_debtors) {
+      parts.push("[[closing_debtors]]");
+      parts.push(`customer = "${escapeTomlString(d.customer)}"`);
+      parts.push(`invoice = "${d.invoice}"`);
+      parts.push(`amount = ${d.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Opening creditors
+  if (expected.opening_creditors) {
+    for (const c of expected.opening_creditors) {
+      parts.push("[[opening_creditors]]");
+      parts.push(`supplier = "${escapeTomlString(c.supplier)}"`);
+      parts.push(`invoice = "${c.invoice}"`);
+      parts.push(`amount = ${c.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Closing creditors
+  if (expected.closing_creditors) {
+    for (const c of expected.closing_creditors) {
+      parts.push("[[closing_creditors]]");
+      parts.push(`supplier = "${escapeTomlString(c.supplier)}"`);
+      parts.push(`invoice = "${c.invoice}"`);
+      parts.push(`amount = ${c.amount}`);
+      parts.push("");
+    }
+  }
+
+  // Expected values
+  parts.push("[expected]");
+  parts.push(`total_sales = ${expected.total_sales}`);
+  if (expected.gross_profit !== undefined) parts.push(`gross_profit = ${expected.gross_profit}`);
+  if (expected.net_profit !== undefined) parts.push(`net_profit = ${expected.net_profit}`);
+  parts.push("");
+
+  return parts.join("\n");
+}
+
+// ============================================================================
+// Write diya-gl subset (book.toml + lines.jsonl in subdirectory)
+// ============================================================================
+
+function writeDiyaGlSubset(dirName, productEnum, filteredLines, taxSections, accountFilter) {
+  const dir = path.join(EXAMPLES_DIR, dirName);
+  mkdirSync(dir, { recursive: true });
+
+  // Build subset book.toml
+  const subBook = [];
+  subBook.push("[documentInfo]");
+  subBook.push(`entriesType = "journal"`);
+  subBook.push(`language = "en"`);
+  subBook.push(`creationDate = ${book.documentInfo.creationDate.toISOString().slice(0, 10)}`);
+  subBook.push(`periodCoveredStart = ${book.documentInfo.periodCoveredStart.toISOString().slice(0, 10)}`);
+  subBook.push(`periodCoveredEnd = ${book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10)}`);
+  subBook.push(`defaultCurrency = "GBP"`);
+  subBook.push(`entriesComment = "Subset: ${dirName} — extracted from Precision Code Ltd master data"`);
+  subBook.push("");
+
+  subBook.push("[entityInformation]");
+  if (productEnum === "Company") {
+    subBook.push(`organizationIdentifier = "${book.entityInformation.organizationIdentifier}"`);
+    subBook.push(`organizationDescription = "${book.entityInformation.organizationDescription}"`);
+  } else {
+    subBook.push(`organizationIdentifier = "Precision Code Trading"`);
+    subBook.push(`organizationDescription = "IT consultancy (sole trader adaptation)"`);
+  }
+  subBook.push(`taxRegistrationNumber = "${book.entityInformation.taxRegistrationNumber}"`);
+  subBook.push(`taxAuthorityIdentifier = "HMRC"`);
+  subBook.push(`"diya-gl:product" = "${productEnum}"`);
+  const vatReg = productEnum !== "BasicSoleTrader";
+  subBook.push(`"diya-gl:vatRegistered" = ${vatReg}`);
+  subBook.push(`"diya-gl:basisOfAccounting" = "${productEnum === "Company" ? "accrual" : "cash"}"`);
+  if (productEnum === "Company") {
+    subBook.push(`"diya-gl:companyNumber" = "12345678"`);
+    subBook.push(`"diya-gl:vatNumber" = "123456789"`);
+    subBook.push(`"diya-gl:cisRegistered" = true`);
+  } else if (vatReg) {
+    subBook.push(`"diya-gl:vatNumber" = "123456789"`);
+  }
+  subBook.push("");
+
+  // Write accounts from master book, filtered
+  const sections = accountFilter(book.accounts);
+  for (const [sectionName, accounts] of Object.entries(sections)) {
+    for (const [code, def] of Object.entries(accounts)) {
+      subBook.push(`[accounts.${sectionName}."${code}"]`);
+      subBook.push(`accountMainDescription = "${def.accountMainDescription}"`);
+      if (def.accountType) subBook.push(`accountType = "${def.accountType}"`);
+      if (def["diya-gl:column"]) subBook.push(`"diya-gl:column" = "${def["diya-gl:column"]}"`);
+      subBook.push("");
+    }
+  }
+
+  // Tax sections
+  for (const section of taxSections) {
+    if (book.tax[section]) {
+      subBook.push(`[tax.${section}]`);
+      for (const [k, v] of Object.entries(book.tax[section])) {
+        subBook.push(`${k} = ${v}`);
+      }
+      subBook.push("");
+    }
+  }
+
+  // Directors (Company only)
+  if (productEnum === "Company" && book.directors) {
+    for (const dir of book.directors) {
+      subBook.push("[[directors]]");
+      subBook.push(`name = "${dir.name}"`);
+      subBook.push(`role = "${dir.role}"`);
+      if (dir.shares !== undefined) subBook.push(`shares = ${dir.shares}`);
+      subBook.push(`appointed = ${dir.appointed.toISOString().slice(0, 10)}`);
+      subBook.push("");
+    }
+  }
+
+  // Employees (SE + Company)
+  if (productEnum !== "BasicSoleTrader" && book.employees) {
+    for (const emp of book.employees) {
+      subBook.push("[[employees]]");
+      subBook.push(`employeeID = "${emp.employeeID}"`);
+      subBook.push(`name = "${emp.name}"`);
+      subBook.push(`role = "${emp.role}"`);
+      subBook.push(`grossPay = ${emp.grossPay}`);
+      subBook.push(`payFrequency = "${emp.payFrequency}"`);
+      subBook.push(`taxCode = "${emp.taxCode}"`);
+      subBook.push(`niCategory = "${emp.niCategory}"`);
+      subBook.push(`startDate = ${emp.startDate.toISOString().slice(0, 10)}`);
+      subBook.push(`isDirector = ${emp.isDirector}`);
+      subBook.push("");
+    }
+  }
+
+  writeFileSync(path.join(dir, "book.toml"), subBook.join("\n"));
+
+  // Write subset lines.jsonl
+  const jsonlLines = filteredLines.map((l) => JSON.stringify(l));
+  writeFileSync(path.join(dir, "lines.jsonl"), jsonlLines.join("\n") + "\n");
+
+  return { bookLines: subBook.length, dataLines: filteredLines.length };
+}
+
+// ============================================================================
+// Account filters for each product
+// ============================================================================
+
+function bstAccountFilter(accounts) {
+  return {
+    sales: Object.fromEntries(Object.entries(accounts.sales).filter(([k]) => BST_SALES_ACCOUNTS.has(k))),
+    purchases: Object.fromEntries(Object.entries(accounts.purchases).filter(([k]) => BST_PURCHASE_CODE_MAP[k] !== undefined)),
+  };
+}
+
+function seAccountFilter(accounts) {
+  return {
+    sales: { ...accounts.sales },
+    purchases: Object.fromEntries(Object.entries(accounts.purchases).filter(([k]) => SE_PURCHASE_CODE_MAP[k] !== undefined)),
+    bank: Object.fromEntries(Object.entries(accounts.bank).filter(([k]) => SE_BANK_ACCOUNTS.has(k))),
+  };
+}
+
+function fullAccountFilter(accounts) {
+  return { ...accounts };
+}
+
+// ============================================================================
+// Shared data
+// ============================================================================
+
+const openingDebtors = [
+  { customer: "Acme Corp", invoice: "INV-0901", amount: 7200 },
+  { customer: "Beta Systems", invoice: "INV-0902", amount: 1200 },
+  { customer: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
+];
+
+const closingDebtors = [
+  { customer: "Acme Corp", invoice: "INV-1012", amount: 8000 },
+  { customer: "TechStart Ltd", invoice: "INV-1112", amount: 2400 },
+];
+
+const openingCreditors = [
+  { supplier: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200 },
+  { supplier: "Smith & Co", invoice: "SC-2403", amount: 300 },
+  { supplier: "TechParts Ltd", invoice: "TP-2403", amount: 600 },
+  { supplier: "Shell", invoice: "SH-2403", amount: 120 },
+];
+
+const closingCreditors = [
+  { supplier: "WorkSpace Ltd", invoice: "WS-2603", amount: 1200 },
+  { supplier: "Smith & Co", invoice: "SC-2603", amount: 300 },
+  { supplier: "BT Business", invoice: "BT-2603", amount: 60 },
+  { supplier: "Shell", invoice: "SH-2603", amount: 150 },
+];
+
+// ============================================================================
+// Extract BST (basic)
+// ============================================================================
+
+const bstLines = filterBst(allLines);
+const bstSalesLines = bstLines.filter((l) => l.sourceJournalID === "sales");
+const bstTotalSales = computeNetSales(bstSalesLines);
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP);
+const bstToml = formatScenarioToml(
   {
-    name: "Precision Code Ltd - basic",
-    description:
-      "Small limited company IT consultancy with steady consultancy income and standard expenses, extracted from DIYA GL example data",
-    product: "ltd",
-    tax_regime: "ltd",
+    name: "Precision Code - basic sole trader",
+    description: "BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll.",
+    product: "bst",
+    tax_regime: "se",
   },
-  basicGrouped,
-  basicTotalSales,
+  bstGrouped,
+  {
+    total_sales: bstTotalSales,
+    opening_stock: 10000,
+    closing_stock: 6000,
+    opening_debtors: openingDebtors,
+    closing_debtors: closingDebtors,
+    opening_creditors: openingCreditors,
+    closing_creditors: closingCreditors,
+  },
 );
 
-// Extended: all sales codes, all purchase codes
-const extendedLines = lines.filter((line) => {
-  const cls = classifyLine(line);
-  if (line.sourceJournalID === "sales" && cls.type === "sales") {
-    return true;
-  }
-  if (line.sourceJournalID === "purchases" && cls.type === "purchases") {
-    return true;
-  }
-  return false;
-});
-const extendedSalesLines = extendedLines.filter((l) => l.sourceJournalID === "sales");
+const bstDiya = writeDiyaGlSubset("bst", "BasicSoleTrader", bstLines, ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"], bstAccountFilter);
 
-const extendedGrouped = buildGrouped(extendedLines);
-const extendedTotalSales = computeTotalSales(extendedSalesLines);
-const extendedToml = formatScenarioToml(
+// ============================================================================
+// Extract SE (advanced)
+// ============================================================================
+
+const advLines = filterAdvanced(allLines);
+const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
+const advTotalSales = computeNetSales(advSalesLines);
+const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
+const advToml = formatScenarioToml(
   {
-    name: "Precision Code Ltd - extended",
-    description: "Full sales and purchases from DIYA GL example data, all account codes included",
-    product: "ltd",
-    tax_regime: "ltd",
+    name: "Precision Code - advanced self employed",
+    description: "SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.",
+    product: "se",
+    tax_regime: "se",
   },
-  extendedGrouped,
-  extendedTotalSales,
+  advGrouped,
+  {
+    total_sales: advTotalSales,
+    opening_stock: 10000,
+    closing_stock: 6000,
+    opening_debtors: openingDebtors,
+    closing_debtors: closingDebtors,
+    opening_creditors: openingCreditors,
+    closing_creditors: closingCreditors,
+  },
 );
 
-// Full: ALL transactions (sales + purchases + bank)
-const fullSalesLines = lines.filter((l) => l.sourceJournalID === "sales" && classifyLine(l).type === "sales");
-const fullGrouped = buildGrouped(lines);
-const fullTotalSales = computeTotalSales(fullSalesLines);
+const advDiya = writeDiyaGlSubset("advanced", "SelfEmployed", advLines, ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"], seAccountFilter);
+
+// ============================================================================
+// Extract Ltd (full)
+// ============================================================================
+
+const fullLines = filterFull(allLines);
+const fullSalesLines = fullLines.filter((l) => l.sourceJournalID === "sales");
+const fullTotalSales = computeNetSales(fullSalesLines);
+const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",
-    description: "All transactions from DIYA GL example data including sales, purchases, and bank",
+    description: "Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.",
     product: "ltd",
     tax_regime: "ltd",
   },
   fullGrouped,
-  fullTotalSales,
+  {
+    total_sales: fullTotalSales,
+    opening_stock: 10000,
+    closing_stock: 6000,
+    opening_debtors: openingDebtors,
+    closing_debtors: closingDebtors,
+    opening_creditors: openingCreditors,
+    closing_creditors: closingCreditors,
+  },
 );
 
-// --- Write output files ---
-const basicPath = path.join(FIXTURES_DIR, "ltd-scenario-basic.toml");
-const extendedPath = path.join(FIXTURES_DIR, "ltd-scenario-extended.toml");
-const fullPath = path.join(FIXTURES_DIR, "ltd-scenario-full.toml");
+const fullDiya = writeDiyaGlSubset("full", "Company", fullLines, ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"], fullAccountFilter);
 
-writeFileSync(basicPath, basicToml);
-writeFileSync(extendedPath, extendedToml);
-writeFileSync(fullPath, fullToml);
+// ============================================================================
+// Write TOML fixtures
+// ============================================================================
 
-// --- Log summary ---
-function countTxns(grouped) {
-  let salesCount = 0;
-  let purchasesCount = 0;
-  for (const month of MONTH_ORDER) {
-    if (grouped.sales[month]) salesCount += grouped.sales[month].length;
-    if (grouped.purchases[month]) purchasesCount += grouped.purchases[month].length;
+// Write to precision-code-* filenames to avoid overwriting existing fixtures
+// until Phase 3-5 switchover. At that point, rename these to replace the originals.
+writeFileSync(path.join(FIXTURES_DIR, "precision-code-bst-basic.toml"), bstToml);
+writeFileSync(path.join(FIXTURES_DIR, "precision-code-se-advanced.toml"), advToml);
+writeFileSync(path.join(FIXTURES_DIR, "precision-code-ltd-full.toml"), fullToml);
+
+// ============================================================================
+// Summary
+// ============================================================================
+
+function countGrouped(grouped) {
+  let s = 0, p = 0, b = 0;
+  for (const m of MONTH_ORDER) {
+    if (grouped.sales[m]) s += grouped.sales[m].length;
+    if (grouped.purchases[m]) p += grouped.purchases[m].length;
   }
-  return { salesCount, purchasesCount };
+  for (const acct of Object.values(grouped.bank)) {
+    for (const m of MONTH_ORDER) {
+      if (acct[m]) b += acct[m].length;
+    }
+  }
+  return { s, p, b };
 }
 
-const basicCounts = countTxns(basicGrouped);
-const extendedCounts = countTxns(extendedGrouped);
-const fullCounts = countTxns(fullGrouped);
+const bstCounts = countGrouped(bstGrouped);
+const advCounts = countGrouped(advGrouped);
+const fullCounts = countGrouped(fullGrouped);
 
 console.log("Extracted scenarios from examples/precision-code-ltd/");
 console.log("");
-console.log(`Basic (${basicPath}):`);
-console.log(`  Sales: ${basicCounts.salesCount} transactions, total_sales = ${basicTotalSales}`);
-console.log(`  Purchases: ${basicCounts.purchasesCount} transactions`);
+console.log(`BST basic (bst/):`);
+console.log(`  diya-gl: ${bstDiya.dataLines} lines`);
+console.log(`  TOML: ${bstCounts.s} sales, ${bstCounts.p} purchases, total_sales = ${bstTotalSales}`);
 console.log("");
-console.log(`Extended (${extendedPath}):`);
-console.log(`  Sales: ${extendedCounts.salesCount} transactions, total_sales = ${extendedTotalSales}`);
-console.log(`  Purchases: ${extendedCounts.purchasesCount} transactions`);
+console.log(`SE advanced (advanced/):`);
+console.log(`  diya-gl: ${advDiya.dataLines} lines`);
+console.log(`  TOML: ${advCounts.s} sales, ${advCounts.p} purchases, ${advCounts.b} bank, total_sales = ${advTotalSales}`);
 console.log("");
-console.log(`Full (${fullPath}):`);
-console.log(`  Sales: ${fullCounts.salesCount} transactions, total_sales = ${fullTotalSales}`);
-console.log(`  Purchases: ${fullCounts.purchasesCount} transactions`);
-console.log(`  (Bank transactions from lines.jsonl are included in the full subset as purchases where they map to purchase accounts)`);
+console.log(`Ltd full (full/):`);
+console.log(`  diya-gl: ${fullDiya.dataLines} lines`);
+console.log(`  TOML: ${fullCounts.s} sales, ${fullCounts.p} purchases, ${fullCounts.b} bank, total_sales = ${fullTotalSales}`);
