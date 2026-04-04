@@ -1,4 +1,4 @@
-# Reconciliation Report: GB Accounts Self Employed 2026-04-05 (Apr26) Excel 2007
+# Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-scenario-advanced
 Status: RECONCILES
@@ -13,7 +13,7 @@ Generated: 2026-04-04
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
 | Total Tax + NI | 40630 | 40629.4150000002 | -0.584999999802676 | PASS |
 
-## Output Values
+## Raw Output Values
 
 ### Profit & Loss Account
 
@@ -62,73 +62,3 @@ Generated: 2026-04-04
 | E15 | 2262 |
 | E16 | 1467.98166666667 |
 | E18 | 40629.4150000002 |
-
-### SE Short
-
-| Cell | Value |
-|------|-------|
-| D9 | 3 |
-| D10 | 1 |
-| D17 | 5 |
-| D18 | 45 |
-| D19 | 2 |
-| D23 | 6 |
-| D24 | 12 |
-| D25 | 49 |
-| D27 | 7 |
-| D28 | 7 |
-| D29 | 52 |
-| D30 | 46117 |
-| D31 | 46117 |
-| D32 | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold |
-| D33 | 8 |
-| D100 | 98 |
-| D101 | 30 |
-| D102 | 30 |
-| D103 | 31 |
-| D104 | 102 |
-| D105 | 32 |
-| D106 | 123669.083333334 |
-
-### VitalTax
-
-| Cell | Value |
-|------|-------|
-| B5 | 304 |
-| B6 | 305 |
-| B7 | 306 |
-| B8 | 307 |
-| C5 | 41400.0000000001 |
-| C6 | 700 |
-| C7 | 2499 |
-| C8 | 307 |
-| D5 | 40500.0000000001 |
-| D6 | 3283.33333333333 |
-| D7 | 2283 |
-| D8 | 307 |
-
-### StockControl
-
-| Cell | Value |
-|------|-------|
-| B5 | 45753 |
-| B6 | 45753 |
-| B7 | 45777 |
-| B8 | 45777 |
-
-### Wagesinterface
-
-| Cell | Value |
-|------|-------|
-| B5 | 45808 |
-| B6 | 45838 |
-| B7 | 45869 |
-| B8 | 45900 |
-| B9 | 45930 |
-| B10 | 45961 |
-| C5 | 0 |
-| C6 | 0 |
-| C7 | 0 |
-| C8 | 0 |
-| C9 | 0 |
-| C10 | 0 |
