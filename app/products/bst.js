@@ -122,9 +122,6 @@ export const TAX_SHEET = "Income Tax";
 
 // prettier-ignore
 export const CELL_MAP = [
-  // ── Business Details ──
-  ["Business Details", "C5",  "Business Name",                    "entityInformation.organizationIdentifier",  "Business Details", 0],
-  ["Business Details", "O5",  "Accounting Date",                  "documentInfo.periodCoveredEnd",             "Business Details", 0],
   // ── Profit & Loss Account ──
   ["Profit & Loss Acc", "C4",  "Sales Turnover",                   "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "C5",  "Other Income",                     "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],

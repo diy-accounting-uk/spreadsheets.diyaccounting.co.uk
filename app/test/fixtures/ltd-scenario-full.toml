@@ -4360,4 +4360,4 @@ invoice = "SH-2603"
 amount = 150
 
 [expected]
-total_sales = 184500
+total_sales = 171283

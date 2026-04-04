@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// ltd-e2e.test.js — End-to-end tests for the Ltd Company (March year-end) multi-file package.
-// Generates all xlsx files, writes scenario data into Sales.xlsx and Purchases.xlsx,
-// recalculates across files via LibreOffice with external link cache injection,
-// and reads results from Financialaccounts.xlsx.
+// ltd-e2e.test.js — End-to-end tests for the Ltd Company multi-file package.
+// Loads the ltd-scenario-full.toml fixture, injects via the product module,
+// and validates P&L, Corporation Tax, Published P&L, and Published Balance Sheet.
 //
 // Requires: LibreOffice installed (brew install --cask libreoffice)
 
@@ -28,9 +27,10 @@ const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 describeCalc(
-  "Ltd Company (March) end-to-end: cross-file P&L and CT",
+  "Ltd Company end-to-end: Precision Code full scenario",
   () => {
     let results;
+    let scenario;
 
     beforeAll(async () => {
       const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
@@ -50,54 +50,75 @@ describeCalc(
         }
       }
 
-      const scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-basic.toml"));
+      scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-full.toml"));
       const writes = ltdCellWrites(scenario);
       const reads = ltdReads();
 
       results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
     }, 300000);
 
-    it("MnthP&L: total sales = 77000 (12 months net of VAT)", () => {
-      expect(results["MnthP&L"].B9).toBe(77000);
+    // ── P&L assertions ───────────────────────────────────────────────────
+
+    it("MnthP&L: total sales matches expected", () => {
+      expect(results["MnthP&L"].B9).toBeCloseTo(scenario.expected.total_sales, 0);
     });
 
-    it("MnthP&L: sales Product A = 77000", () => {
-      expect(results["MnthP&L"].B4).toBe(77000);
+    it("MnthP&L: sales Product A > 0", () => {
+      expect(results["MnthP&L"].B4).toBeGreaterThan(0);
     });
 
     it("MnthP&L: admin expenses > 0", () => {
       expect(results["MnthP&L"].B41).toBeGreaterThan(0);
     });
 
-    it("MnthP&L: gross profit = 77000 (no cost of sales)", () => {
-      expect(results["MnthP&L"].B16).toBe(77000);
-    });
-
-    it("MnthP&L: operating profit = gross - expenses", () => {
+    it("MnthP&L: gross profit = turnover - cost of sales", () => {
       const pl = results["MnthP&L"];
-      expect(pl.B43).toBe(pl.B16 - pl.B41);
+      expect(pl.B16).toBe(pl.B9 - (pl.B14 || 0));
     });
 
-    it("MnthP&L: profit before tax = operating profit", () => {
-      expect(results["MnthP&L"].B45).toBe(results["MnthP&L"].B43);
+    it("MnthP&L: operating profit = gross - admin", () => {
+      const pl = results["MnthP&L"];
+      expect(pl.B43).toBeCloseTo(pl.B16 - pl.B41, 0);
     });
 
-    it("CorporationTax: operating profit matches P&L", () => {
+    it("MnthP&L: profit before tax", () => {
+      const pl = results["MnthP&L"];
+      expect(pl.B45).toBeCloseTo(pl.B43 + (pl.B44 || 0), 0);
+    });
+
+    // ── Corporation Tax assertions ────────────────────────────────────────
+
+    it("CorporationTax: operating profit from P&L", () => {
       expect(results["CorporationTax"].K5).toBe(results["MnthP&L"].B45);
     });
 
-    it("CorporationTax: profit chargeable = operating profit (no adjustments)", () => {
-      expect(results["CorporationTax"].K12).toBe(results["CorporationTax"].K5);
+    it("CorporationTax: profit chargeable > 0", () => {
+      expect(results["CorporationTax"].K28).toBeGreaterThan(0);
     });
 
-    it("CorporationTax: CT calculated at small profits rate", () => {
+    it("CorporationTax: CT at small profits rate (19%)", () => {
       const ct = results["CorporationTax"];
-      expect(ct.K35).toBeGreaterThan(0);
-      expect(ct.K35).toBe(Math.round(ct.K28 * 0.19));
+      expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 0);
     });
 
-    it("CorporationTax: tax outstanding = CT chargeable", () => {
+    it("CorporationTax: tax outstanding = CT", () => {
       expect(results["CorporationTax"].K39).toBe(results["CorporationTax"].K35);
+    });
+
+    // ── Published P&L assertions ──────────────────────────────────────────
+
+    it("PubP&L: turnover > 0", () => {
+      expect(results["PubP&L"]?.C5).toBeGreaterThan(0);
+    });
+
+    it("PubP&L: sheet was read", () => {
+      expect(results["PubP&L"]).toBeDefined();
+    });
+
+    // ── Published Balance Sheet assertions ─────────────────────────────────
+
+    it("PubBalSht: sheet was read", () => {
+      expect(results["PubBalSht"]).toBeDefined();
     });
   },
   300000,

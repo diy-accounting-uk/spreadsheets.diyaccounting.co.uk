@@ -123,50 +123,110 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
 export const TAX_SHEET = "CorporationTax";
 
+// prettier-ignore
+export const CELL_MAP = [
+  // ── Management P&L (MnthP&L) ──
+  ["MnthP&L", "B4",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B5",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B6",  "Product C — Training",      "accounts.sales.4002",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B7",  "Other Direct Income",       "accounts.sales.4003",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B8",  "Grants Received",           "accounts.sales.4004",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B9",  "**Sales Turnover**",        "gl-cor:amount (salesTurnover)",  "Profit & Loss Account", 0],
+  ["MnthP&L", "B11", "Materials / Stock",          "accounts.purchases.5000",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B12", "Sub-Contractors",            "accounts.purchases.5001",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B13", "Other Direct Costs",         "accounts.purchases.5002",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B14", "Cost of Sales",              "gl-cor:amount (costOfSales)",    "Profit & Loss Account", 0],
+  ["MnthP&L", "B16", "**Gross Profit**",           "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
+  ["MnthP&L", "B18", "Directors Wages",            "accounts.purchases.5100",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B19", "Employee Wages",             "accounts.purchases.5101",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B20", "Premises",                   "accounts.purchases.5200",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B21", "Light, Heat, Power",         "accounts.purchases.5201",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B22", "Distribution",               "accounts.purchases.5300",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B23", "Equipment Hire",             "accounts.purchases.5301",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B24", "Repairs & Maintenance",      "accounts.purchases.5400",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B25", "Consumables",                "accounts.purchases.5401",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B26", "Advertising",                "accounts.purchases.5500",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B27", "General Admin",              "accounts.purchases.5501",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B28", "Travel & Hotel",             "accounts.purchases.5600",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B29", "Motor Vehicle",              "accounts.purchases.5601",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B30", "Insurance",                  "accounts.purchases.5700",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B31", "Leasing",                    "accounts.purchases.5701",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B32", "Legal & Professional",       "accounts.purchases.5800",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B33", "Charitable Donations",       "accounts.purchases.5801",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B34", "Goodwill",                   "accounts.purchases.5802",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B35", "Depreciation",               "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
+  ["MnthP&L", "B36", "Depreciation (2)",            "gl-cor:amount (depreciation2)",  "Profit & Loss Account", 1],
+  ["MnthP&L", "B37", "Loss on Disposal",           "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
+  ["MnthP&L", "B38", "Bank Interest",              "gl-cor:amount (bankInterest)",   "Profit & Loss Account", 1],
+  ["MnthP&L", "B39", "HP Interest",                "gl-cor:amount (hpInterest)",     "Profit & Loss Account", 1],
+  ["MnthP&L", "B40", "Other Expenses",             "accounts.purchases (other)",     "Profit & Loss Account", 1],
+  ["MnthP&L", "B41", "Total Admin Expenses",       "gl-cor:amount (totalAdmin)",     "Profit & Loss Account", 0],
+  ["MnthP&L", "B43", "**Operating Profit**",       "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
+  ["MnthP&L", "B44", "Interest Received",          "gl-cor:amount (interestReceived)","Profit & Loss Account", 1],
+  ["MnthP&L", "B45", "**Profit Before Tax**",      "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
+  // ── Corporation Tax (CT600) ──
+  [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax (CT600)", 0],
+  [TAX_SHEET, "K12", "Add back: Depreciation",      "gl-cor:amount (ct600.addBack)", "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K22", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax (CT600)", 0],
+  [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
+  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
+  // ── Published P&L ──
+  ["PubP&L", "C5",  "Turnover",                    "gl-cor:amount (pubPL.turnover)", "Published P&L", 0],
+  ["PubP&L", "C7",  "Cost of Sales",               "gl-cor:amount (pubPL.cos)",      "Published P&L", 1],
+  ["PubP&L", "C9",  "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",    "Published P&L", 0],
+  ["PubP&L", "C11", "Admin Expenses",              "gl-cor:amount (pubPL.admin)",    "Published P&L", 1],
+  ["PubP&L", "C13", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)","Published P&L", 0],
+  ["PubP&L", "C15", "Interest Receivable",         "gl-cor:amount (pubPL.intRec)",   "Published P&L", 1],
+  ["PubP&L", "C17", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",      "Published P&L", 0],
+  ["PubP&L", "C19", "Tax on Profit",               "gl-cor:taxAmount (pubPL.tax)",   "Published P&L", 1],
+  ["PubP&L", "C21", "**Profit After Tax**",        "gl-cor:amount (pubPL.pat)",      "Published P&L", 0],
+  // ── Published Balance Sheet ──
+  ["PubBalSht", "C5",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
+  ["PubBalSht", "C9",  "Stock",                    "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "C10", "Debtors",                  "accounts.assets.1300 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "C11", "Bank & Cash",              "gl-cor:amount (pubBS.bankCash)",     "Published Balance Sheet", 1],
+  ["PubBalSht", "C13", "Creditors < 1 year",       "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
+  ["PubBalSht", "C15", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
+  ["PubBalSht", "C17", "Creditors > 1 year",       "gl-cor:amount (pubBS.longTermCred)", "Published Balance Sheet", 1],
+  ["PubBalSht", "C19", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",     "Published Balance Sheet", 0],
+  ["PubBalSht", "C22", "Share Capital",            "accounts.capital.3000 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "C23", "Retained Earnings",        "accounts.capital.3100 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "C25", "**Shareholders Funds**",   "gl-cor:amount (pubBS.equity)",        "Published Balance Sheet", 0],
+];
+
 export function standardReads() {
-  return {
-    "MnthP&L": [
-      "B4",
-      "B5",
-      "B6",
-      "B7",
-      "B8",
-      "B9",
-      "B11",
-      "B12",
-      "B13",
-      "B14",
-      "B16",
-      "B18",
-      "B19",
-      "B20",
-      "B21",
-      "B22",
-      "B23",
-      "B24",
-      "B25",
-      "B26",
-      "B27",
-      "B28",
-      "B29",
-      "B30",
-      "B31",
-      "B32",
-      "B33",
-      "B34",
-      "B35",
-      "B36",
-      "B37",
-      "B38",
-      "B39",
-      "B40",
-      "B41",
-      "B43",
-      "B44",
-      "B45",
-    ],
-    [TAX_SHEET]: ["K5", "K12", "K22", "K28", "K35", "K39"],
-  };
+  const reads = {};
+  for (const [sheet, cell] of CELL_MAP) {
+    if (!reads[sheet]) reads[sheet] = [];
+    if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  }
+  return reads;
+}
+
+export function reportSections(results) {
+  const sectionMap = new Map();
+  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+    if (!sectionMap.has(section)) sectionMap.set(section, []);
+    const val = results[sheet]?.[cell];
+    sectionMap.get(section).push({ label, value: fmt(val), indent });
+  }
+  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+}
+
+export function cellLabels() {
+  const labels = {};
+  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
+    const key = `${sheet}!${cell}`;
+    labels[key] = { diyLabel, glMapping };
+  }
+  return labels;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || v === "" || v === " ") return "—";
+  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return String(v);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────

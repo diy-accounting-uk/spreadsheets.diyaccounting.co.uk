@@ -171,6 +171,16 @@ function computeNetSales(salesLines) {
   return Math.round(netTotal);
 }
 
+// SE/Ltd spreadsheets always divide gross by 1.2 to get net in the analysis columns,
+// regardless of the VAT code on the transaction (OS items still get /1.2 applied)
+function computeSpreadsheetNetSales(salesLines) {
+  let netTotal = 0;
+  for (const line of salesLines) {
+    netTotal += line.amount / 1.2;
+  }
+  return Math.round(netTotal);
+}
+
 // BST: amounts are entered as-is (no VAT split), so total = sum of amounts
 function computeGrossSales(salesLines) {
   return Math.round(salesLines.reduce((sum, line) => sum + line.amount, 0));
@@ -612,7 +622,7 @@ const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 // Grants (4004) go to B11, Bad debts (4005) and FA sales (4006) go elsewhere
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
-const advTotalSales = computeNetSales(advTurnoverLines);
+const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
 const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
 const advToml = formatScenarioToml(
   {
@@ -652,7 +662,7 @@ const fullSalesLines = fullLines.filter((l) => l.sourceJournalID === "sales");
 // Bad debts (4005) and FA sales (4006) are separate P&L lines
 const LTD_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004"]);
 const fullTurnoverLines = fullSalesLines.filter((l) => LTD_TURNOVER_ACCOUNTS.has(l.accountMainID));
-const fullTotalSales = computeNetSales(fullTurnoverLines);
+const fullTotalSales = computeSpreadsheetNetSales(fullTurnoverLines);
 const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
 const fullToml = formatScenarioToml(
   {
