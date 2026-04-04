@@ -1240,9 +1240,15 @@ Report format:
 | SP Sixty Driving (non-VAT taxi) | Extra | — | — | Primary |
 | BrickWork Pro non-VAT (CIS construction) | Extra | Extra | Extra | — |
 
-**Remaining (deferred):**
-- 8g Precision Code scaling to exercise marginal relief / higher CT rate (requires master data regeneration)
-- CIS deductions verification in Income Tax E11
+**8g. Precision Code scaling** (DONE):
+- Acme Corp scaled from £8K to £25K gross/month (£300K/year)
+- Profit chargeable: £272,591 (above £250K main rate threshold)
+- WARNING check added: flags that CT uses 19% but should use marginal relief at this profit level
+- Report shows "RECONCILES (with warnings)" — non-blocking
+
+**CIS deductions in Income Tax E11**: The BrickWork Pro scenario has CIS sub-contractor purchases with `diya-gl:cisDeduction` fields. The sub-contractor costs flow to the P&L (code c). However, the CIS tax credit (Income Tax E11) reads zero — CIS deductions don't automatically flow from purchase entries to the tax credit line. This requires entering CIS data in a specific template location that feeds the Income Tax E11 formula. Deferred to template analysis.
+
+**PLAN_ROUNDTRIP_FIDELITY.md** created as a separate plan for the diya-gl ↔ Excel equivalence commands (generate, report, export, verify-roundtrip).
 
 ---
 
