@@ -9,9 +9,18 @@ Generated: 2026-04-04
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 169200 | 169200 | 0 | PASS |
+| P&L: Gross = Turnover + Grants - CoS | 153539.33333333334 | 153539.333333334 | +6.693881005048752e-10 | PASS |
+| P&L: Operating = Gross - Admin | 122869.08333333401 | 122869.083333334 | -1.4551915228366852e-11 | PASS |
+| P&L: PBT = Operating | 122869.083333334 | 122869.083333334 | 0 | PASS |
+| P&L: Admin lines sum = Total | 30670.25 | 30670.25 | 0 | PASS |
 | Income Tax | 36648 | 36647.4333333335 | -0.5666666664983495 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
 | Total Tax + NI | 41750 | 41749.8150000002 | -0.18499999980122084 | PASS |
+| Tax: Taxable = Profit - Allowance | 110369.083333334 | 110369.083333334 | 0 | PASS |
+| Tax: IT = Basic + Higher | 36647.4333333335 | 36647.4333333335 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 41749.81500000017 | 41749.8150000002 | +2.9103830456733704e-11 | PASS |
+| SA103S: Turnover = P&L Sales | 169200 | 169200 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 122869.083333334 | 122869.083333334 | 0 | PASS |
 
 ## Business Details
 
