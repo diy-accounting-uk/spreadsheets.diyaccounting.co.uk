@@ -2,7 +2,6 @@
 
 Scenario: bst-scenario-basic
 Status: RECONCILES
-Generated: 2026-04-04
 
 ## Compliance Checks
 
@@ -24,6 +23,7 @@ Generated: 2026-04-04
 | Tax: IT = Basic + Higher | 39395 | 39395 | 0 | PASS |
 | Tax: Total = IT - CIS + NI | 43249.76 | 43249.76 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 205900 | 205900 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 129908 | 129908 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 129908 | 129908 | 0 | PASS |
 
 ## Business Details
