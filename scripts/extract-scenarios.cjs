@@ -11,12 +11,9 @@
 // Reads:  examples/precision-code-ltd/book.toml
 //         examples/precision-code-ltd/lines.jsonl
 //
-// Writes: examples/precision-code-ltd/bst/book.toml
-//         examples/precision-code-ltd/bst/lines.jsonl
-//         examples/precision-code-ltd/advanced/book.toml
-//         examples/precision-code-ltd/advanced/lines.jsonl
-//         examples/precision-code-ltd/full/book.toml
-//         examples/precision-code-ltd/full/lines.jsonl
+// Writes: examples/precision-code-ltd/bst/book.toml + lines.jsonl
+//         examples/precision-code-ltd/advanced/book.toml + lines.jsonl
+//         examples/precision-code-ltd/full/book.toml + lines.jsonl
 //         app/test/fixtures/bst-scenario-basic.toml
 //         app/test/fixtures/se-scenario-advanced.toml
 //         app/test/fixtures/ltd-scenario-full.toml
@@ -123,7 +120,20 @@ const SE_PURCHASE_CODE_MAP = {
 };
 
 // Month mapping: JS month (0-indexed) -> scenario key
-const MONTH_NAMES = { 3: "apr", 4: "may", 5: "jun", 6: "jul", 7: "aug", 8: "sep", 9: "oct", 10: "nov", 11: "dec", 0: "jan", 1: "feb", 2: "mar" };
+const MONTH_NAMES = {
+  3: "apr",
+  4: "may",
+  5: "jun",
+  6: "jul",
+  7: "aug",
+  8: "sep",
+  9: "oct",
+  10: "nov",
+  11: "dec",
+  0: "jan",
+  1: "feb",
+  2: "mar",
+};
 const MONTH_ORDER = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
 
 // ============================================================================
@@ -584,7 +594,13 @@ const bstToml = formatScenarioToml(
   },
 );
 
-const bstDiya = writeDiyaGlSubset("bst", "BasicSoleTrader", bstLines, ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"], bstAccountFilter);
+const bstDiya = writeDiyaGlSubset(
+  "bst",
+  "BasicSoleTrader",
+  bstLines,
+  ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"],
+  bstAccountFilter,
+);
 
 // ============================================================================
 // Extract SE (advanced)
@@ -617,7 +633,13 @@ const advToml = formatScenarioToml(
   },
 );
 
-const advDiya = writeDiyaGlSubset("advanced", "SelfEmployed", advLines, ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"], seAccountFilter);
+const advDiya = writeDiyaGlSubset(
+  "advanced",
+  "SelfEmployed",
+  advLines,
+  ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
+  seAccountFilter,
+);
 
 // ============================================================================
 // Extract Ltd (full)
@@ -646,24 +668,30 @@ const fullToml = formatScenarioToml(
   },
 );
 
-const fullDiya = writeDiyaGlSubset("full", "Company", fullLines, ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"], fullAccountFilter);
+const fullDiya = writeDiyaGlSubset(
+  "full",
+  "Company",
+  fullLines,
+  ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"],
+  fullAccountFilter,
+);
 
 // ============================================================================
 // Write TOML fixtures
 // ============================================================================
 
-// Write to precision-code-* filenames to avoid overwriting existing fixtures
-// until Phase 3-5 switchover. At that point, rename these to replace the originals.
-writeFileSync(path.join(FIXTURES_DIR, "precision-code-bst-basic.toml"), bstToml);
-writeFileSync(path.join(FIXTURES_DIR, "precision-code-se-advanced.toml"), advToml);
-writeFileSync(path.join(FIXTURES_DIR, "precision-code-ltd-full.toml"), fullToml);
+writeFileSync(path.join(FIXTURES_DIR, "bst-scenario-basic.toml"), bstToml);
+writeFileSync(path.join(FIXTURES_DIR, "se-scenario-advanced.toml"), advToml);
+writeFileSync(path.join(FIXTURES_DIR, "ltd-scenario-full.toml"), fullToml);
 
 // ============================================================================
 // Summary
 // ============================================================================
 
 function countGrouped(grouped) {
-  let s = 0, p = 0, b = 0;
+  let s = 0,
+    p = 0,
+    b = 0;
   for (const m of MONTH_ORDER) {
     if (grouped.sales[m]) s += grouped.sales[m].length;
     if (grouped.purchases[m]) p += grouped.purchases[m].length;
