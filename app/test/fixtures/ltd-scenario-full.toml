@@ -4372,3 +4372,5 @@ amount = 150
 
 [expected]
 total_sales = 171283
+total_legal_gross = 5310
+total_premises_gross = 14400

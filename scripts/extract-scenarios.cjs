@@ -399,6 +399,9 @@ function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
+  if (expected.total_motor_gross !== undefined) parts.push(`total_motor_gross = ${expected.total_motor_gross}`);
+  if (expected.total_legal_gross !== undefined) parts.push(`total_legal_gross = ${expected.total_legal_gross}`);
+  if (expected.total_premises_gross !== undefined) parts.push(`total_premises_gross = ${expected.total_premises_gross}`);
   parts.push("");
 
   return parts.join("\n");
@@ -642,6 +645,9 @@ const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
 const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
+const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
+const advByCode = {};
+advPurchLines.forEach((l) => { const c = SE_PURCHASE_CODE_MAP[l.accountMainID]; if (c) advByCode[c] = (advByCode[c] || 0) + l.amount; });
 const advToml = formatScenarioToml(
   {
     name: "Precision Code - advanced self employed",
@@ -663,6 +669,8 @@ const advToml = formatScenarioToml(
   advGrouped,
   {
     total_sales: advTotalSales,
+    total_motor_gross: Math.round(advByCode.v || 0),
+    total_legal_gross: Math.round(advByCode.l || 0),
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,
@@ -693,6 +701,9 @@ const LTD_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004"]);
 const fullTurnoverLines = fullSalesLines.filter((l) => LTD_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const fullTotalSales = computeSpreadsheetNetSales(fullTurnoverLines);
 const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
+const fullPurchLines = fullLines.filter((l) => l.sourceJournalID === "purchases");
+const fullByCode = {};
+fullPurchLines.forEach((l) => { const c = LTD_PURCHASE_CODE_MAP[l.accountMainID]; if (c) fullByCode[c] = (fullByCode[c] || 0) + l.amount; });
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",
@@ -714,6 +725,8 @@ const fullToml = formatScenarioToml(
   fullGrouped,
   {
     total_sales: fullTotalSales,
+    total_premises_gross: Math.round(fullByCode.r || 0),
+    total_legal_gross: Math.round(fullByCode.l || 0),
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,

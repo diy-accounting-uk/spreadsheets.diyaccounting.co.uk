@@ -4276,3 +4276,5 @@ amount = 150
 
 [expected]
 total_sales = 169200
+total_motor_gross = 7598
+total_legal_gross = 5310
