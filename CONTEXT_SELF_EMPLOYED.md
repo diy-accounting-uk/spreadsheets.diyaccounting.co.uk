@@ -200,6 +200,58 @@ SE Short / SE Full                                                    |
   | Annual_ and Q1_-Q4_ sheets for HMRC box mapping                  +
 ```
 
+### Wagesinterface (Financialaccounts.xlsx)
+
+Reads from Payslips.xlsx `[6]` external link, one row per month (C4=Apr through C15=Mar):
+
+| Column | Source | Content |
+|--------|--------|---------|
+| C | `[6]MonthSheet!$M$1` | Gross pay |
+| D | `[6]MonthSheet!$N$1` | PAYE income tax |
+| E | `[6]MonthSheet!$O$1` | Employee NI |
+| F | `[6]MonthSheet!$P$1+$Q$1` | Other deductions |
+| G | `C - SUM(D:F)` | Net pay |
+| H | `[6]MonthSheet!$T$1` | Employer NI |
+| I | `[6]MonthSheet!$G$1` | Statutory pay |
+
+The P&L pulls wages totals from the TrialBalance which aggregates Wagesinterface monthly values.
+
+### VitalTax (Financialaccounts.xlsx)
+
+Quarterly P&L summary (columns C-F = Q1-Q4, G = annual total):
+
+| Row | Content | Formula pattern |
+|-----|---------|----------------|
+| 5 | Quarterly sales | `SUM('Profit & Loss Account'!C5:E7)` for Q1 |
+| 6 | Quarterly other income | Grants + other income by quarter |
+| 7 | Quarterly expenses | Cost of sales + admin expenses by quarter |
+
+### Vat.xlsx (separate file, reads FROM hub)
+
+Not in the main external link chain — Vat.xlsx reads from `[1]Financialaccounts` Admin sheet for dates and from `Vatinterface` for sales/purchase VAT totals. Each VATQtr sheet has:
+
+| Cell | Content | Source |
+|------|---------|--------|
+| G5 | Quarter-end date | Data entry (injected by generator) |
+| G7 | Box 1: VAT on sales | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!C:C)` |
+| G9 | Box 3: Total output VAT | Lookup from Vatinterface G column |
+| G13 | Box 3: Total (G9 + G11) | Formula |
+| G15 | Box 4: VAT reclaimed | Lookup from Vatinterface K column |
+| G17 | Box 5: Net VAT due | `G13 - G15` |
+| G23 | Box 6: Net sales value | Lookup from Vatinterface I column |
+
+Requires post-hub recalculation (Vat.xlsx external links reference the hub which must be recalculated first).
+
+### Bank.xlsx / Cash.xlsx
+
+Each monthly sheet (Apr-Mar) has receipt and payment sections:
+
+**Receipts (columns A-N):** A=date, B=source, E=code letter, F=amount. Codes: BC=opening balance, DR=debtor receipt, CR=creditor refund, K=interest, RV=VAT refund, DL=directors loan, X=transfer.
+
+**Payments (columns P-AC):** P=date, Q=supplier, S=code letter, T=amount. Codes: CR=creditor payment, DR=debtor refund, W=wages, B=bank charges, J=interest, RP=HMRC payment, DL=directors loan, X=transfer.
+
+**Reconciliation cells:** A1=opening balance (formula from prior month A2), A2=closing balance (formula: opening + receipts - payments).
+
 ## Multi-File Recalculation Pipeline
 
 Implemented in `app/lib/spreadsheet-runner.js` function `runMultiFileSpreadsheet()`.

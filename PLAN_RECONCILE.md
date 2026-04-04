@@ -1424,16 +1424,17 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 | 6c Tax chain | DONE | BST/SE/Taxi | taxable=profit-allowance, IT=basic+higher, total=IT+NI |
 | 6d CT chain | DONE | Ltd | chargeable>=operating, outstanding=CT |
 | 6e Stock adjustment | DONE | BST | CoS includes stock adjustment |
-| 6f Expense line totals | DONE | SE/Ltd | motor, legal, premises gross totals |
+| 6f Expense line totals | DONE | SE/Ltd | motor, legal, premises gross totals (B21=Premises, B33=Legal for Ltd) |
 | 6g SA103S cross-check | DONE | BST/SE | D38=P&L turnover, D106=Income Tax E5 |
-| 6h Payslips writes | DONE | SE | Employee details written to Payslips.xlsx |
-| 6i SA103S D71 | TODO | BST/SE | D71 (net profit) close to P&L net profit |
-| 6j VAT 9-box | TODO | SE/Ltd | Read Vat/Vatreturns VATQtr1-5 boxes (requires pipeline change) |
-| 6k Bank closing | TODO | SE/Ltd | Read final month A2 from Bank/Cash/Current etc. |
-| 6l PubBalSht/PubP&L | TODO | Ltd | Find correct cell positions (current ones read date serials) |
-| 6m Payroll/wages | TODO | SE/Ltd | WagesInterface reads, P&L wages cross-check |
+| 6h Payslips writes | DONE | SE/Ltd | Employee details written to Payslips.xlsx |
+| 6i SA103S D71 | DONE | BST/SE | D71 close to P&L net - grants |
+| 6j VAT 9-box | DONE | SE | Pipeline extended: postHubRecalc + additionalReads. VATQtr1-4 G7/G15/G17/G23 read from Vat.xlsx |
+| 6k Bank closing | DONE | SE | Bank.xlsx/Cash.xlsx Mar A2 (closing balance) read via additionalReads |
+| 6l PubBalSht/PubP&L | DONE | Ltd | Cell positions corrected: column D (not C). D6=FA, D9=Stock, D13=CA, D22=NetCurrent, D26=TotalAssets |
+| 6m Wagesinterface | DONE | SE | Monthly gross/PAYE/employer NI (C4-C15, D4, H4) from hub |
+| pre-6j Opening balances | DONE | SE/Ltd | Stock, debtors, creditors writes+checks. Ltd full OpenAccounts balance sheet. Fixed assets writes to Fixedassets.xlsx Schedule |
 
-Current check counts: BST 17/17, SE 13/13, Ltd 5/5 (plus 2 CT chain = 7), Taxi 7/7.
+Current check counts: BST 18/18 (25 checks), SE 15/15 (23 checks + additionalReads), Ltd 13/13 (18 checks), Taxi 7/7 (13 checks).
 
 XBRL Filing Taxonomy Mappings added to all 4 CONTEXT docs (diya-gl + XBRL + SA103S/CT600).
 

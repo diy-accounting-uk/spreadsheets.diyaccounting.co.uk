@@ -163,9 +163,29 @@ TrialBalance <-- [2]Purchases!Apr..Mar row 1 totals (cols O-AI)                 
 MnthP&L <-- TrialBalance (cumulative monthly deltas)                             |
   | Column B = annual totals = SUM(C:N)                                          |
   | C=Month1, D=Month2, ..., N=Month12                                           |
-  | Rows: 4-8 sales, 9 turnover, 11-13 CoS, 14 CoS total,                       |
-  |       16 gross profit, 18-40 admin expenses, 41 total,                       |
-  |       43 operating profit, 44 interest, 45 profit before tax                 |
+  | MnthP&L C column pulls from TrialBalance O column:                           |
+  |   C18 = TB!O64+O65 (PAYE wages + non-PAYE employee)                         |
+  |   C19 = TB!O66 (Directors non-PAYE, code d)                                  |
+  |   C20 = WagesInterface (PAYE employee wages)                                 |
+  |   C21 = TB!O68 = [2]$T$1 (Premises, code r)                                 |
+  |   C22 = TB!O69 = [2]$U$1 (Light/heat, code p)                               |
+  |   C23 = TB!O70 = [2]$V$1 (Distribution, code t)                             |
+  |   C24 = TB!O71 = [2]$W$1 (Equipment, code q)                                |
+  |   C25 = TB!O72 = [2]$X$1 (Repairs, code m)                                  |
+  |   C26 = TB!O73 = [2]$Y$1 (Consumables, code u)                              |
+  |   C27 = TB!O74 = [2]$Z$1 (Advertising, code a)                              |
+  |   C28 = TB!O75 = [2]$AA$1 (Gen Admin, code g)                               |
+  |   C29 = TB!O76 = [2]$AB$1 (Travel, code h)                                  |
+  |   C30 = TB!O77 = [2]$AC$1 (Motor, code v)                                   |
+  |   C31 = TB!O78 = [2]$AD$1 (Insurance, code n)                               |
+  |   C32 = TB!O79 = [2]$AE$1 (Leasing, code f)                                 |
+  |   C33 = TB!O80 = [2]$AF$1 (Legal, code l)                                   |
+  |   C34 = TB!O81 = -[3]$T$1 (Bad debts from Sales)                            |
+  |   C35-C36 = TB!O82-O83 (Depreciation from bank)                             |
+  |   C37 = TB!O84 = [2]$AG$1 (Donations, code y)                               |
+  |   C38 = TB!O85 = [2]$AH$1 (Goodwill, code z)                               |
+  |   C39-C40 = Depreciation formulas from Fixedassets Schedule                  |
+  | B41 = Total Admin, B43 = Operating Profit, B45 = PBT                        |
   v                                                                              |
 PubP&L <-- MnthP&L (annual column reformatted for Companies House)              |
   |                                                                              |
