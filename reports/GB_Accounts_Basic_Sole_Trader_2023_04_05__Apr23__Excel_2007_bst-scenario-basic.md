@@ -18,12 +18,22 @@ Generated: 2026-04-04
 | NI Class 4 (lower) | 3732.6 | 3732.6226 | +0.02260000000023865 | PASS |
 | Total Tax + NI | 45302 | 45301.74 | -0.26000000000203727 | PASS |
 
+## Business Details
+
+| | Amount |
+|---|------:|
+| Business Name | Precision Code Trading |
+| Description | IT consultancy and software development |
+| Address | 123 High Street |
+| Town | Manchester |
+| Postcode | M1 1AA |
+
 ## Profit & Loss Account
 
 | | Amount |
 |---|------:|
 | Sales Turnover | 205,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 115 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | Other income |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
 | **Gross Profit** | 187,360 |
@@ -83,7 +93,7 @@ Generated: 2026-04-04
 
 | | Amount |
 |---|------:|
-| Business name | Precision Code - basic sole trader |
+| Business name | Precision Code Trading |
 | Accounting date | — |
 | Turnover | 205,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
@@ -130,12 +140,22 @@ Generated: 2026-04-04
 
 ## Appendix: Cell Values
 
+### Business Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C5 | Business Name | Precision Code Trading | entityInformation.organizationIdentifier |
+| C7 | Description | IT consultancy and software development | entityInformation.organizationDescription |
+| C8 | Address | 123 High Street | gl-bus:organizationAddress |
+| C10 | Town | Manchester | gl-bus:organizationAddress (town) |
+| C12 | Postcode | M1 1AA | gl-bus:organizationAddress (postcode) |
+
 ### Profit & Loss Acc
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C4 | Sales Turnover | 205900 | gl-cor:amount (salesTurnover) |
-| C5 | Other Income | 115 | gl-cor:amount (otherIncome) |
+| C5 | Other Income | Other income | gl-cor:amount (otherIncome) |
 | C6 | Cost of Sales (stock + direct) | 10540 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 8000 | gl-cor:amount (directCosts) |
 | C9 | **Gross Profit** | 187360 | gl-cor:amount (grossProfit) |
@@ -190,7 +210,7 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A7 | Business name | Precision Code - basic sole trader | entityInformation.organizationIdentifier |
+| A7 | Business name | Precision Code Trading | entityInformation.organizationIdentifier |
 | D38 | Turnover | 205900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
 | D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
