@@ -65,6 +65,46 @@ export function cellWrites(scenario) {
     if (scenario.stock.closing !== undefined) writes.PurchasesStock.D30 = scenario.stock.closing;
   }
 
+  if (scenario.opening_debtors) {
+    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
+    let row = 5;
+    for (const d of scenario.opening_debtors) {
+      writes["Debtors & Creditors"][`B${row}`] = d.customer;
+      writes["Debtors & Creditors"][`C${row}`] = d.amount;
+      row++;
+    }
+  }
+
+  if (scenario.closing_debtors) {
+    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
+    let row = 5;
+    for (const d of scenario.closing_debtors) {
+      writes["Debtors & Creditors"][`E${row}`] = d.customer;
+      writes["Debtors & Creditors"][`F${row}`] = d.amount;
+      row++;
+    }
+  }
+
+  if (scenario.opening_creditors) {
+    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
+    let row = 12;
+    for (const c of scenario.opening_creditors) {
+      writes["Debtors & Creditors"][`B${row}`] = c.supplier;
+      writes["Debtors & Creditors"][`C${row}`] = c.amount;
+      row++;
+    }
+  }
+
+  if (scenario.closing_creditors) {
+    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
+    let row = 12;
+    for (const c of scenario.closing_creditors) {
+      writes["Debtors & Creditors"][`E${row}`] = c.supplier;
+      writes["Debtors & Creditors"][`F${row}`] = c.amount;
+      row++;
+    }
+  }
+
   return writes;
 }
 
@@ -101,6 +141,8 @@ export function standardReads() {
       "C35",
     ],
     [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
+    PurchasesStock: ["D5", "D7", "D30"],
+    "Debtors & Creditors": ["C5", "C6", "C7", "F5", "F6", "F7", "C12", "C13", "C14", "C15", "F12", "F13", "F14", "F15"],
   };
 }
 
@@ -121,6 +163,40 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_premises !== undefined) check("Premises Costs", pl.C12, expected.total_premises);
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.C14, expected.total_gen_admin);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.C18, expected.total_legal);
+
+  // Stock checks
+  if (expected.opening_stock !== undefined && results.PurchasesStock) {
+    check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
+  }
+  if (expected.closing_stock !== undefined && results.PurchasesStock) {
+    check("Closing Stock", results.PurchasesStock.D30 || 0, expected.closing_stock);
+  }
+
+  // Debtors/Creditors checks
+  if (expected.opening_debtors && results["Debtors & Creditors"]) {
+    const dc = results["Debtors & Creditors"];
+    const totalOpeningDebtors = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
+    const actualOpeningDebtors = [dc.C5, dc.C6, dc.C7].reduce((s, v) => s + (v || 0), 0);
+    check("Opening Debtors", actualOpeningDebtors, totalOpeningDebtors);
+  }
+  if (expected.closing_debtors && results["Debtors & Creditors"]) {
+    const dc = results["Debtors & Creditors"];
+    const totalClosingDebtors = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
+    const actualClosingDebtors = [dc.F5, dc.F6, dc.F7].reduce((s, v) => s + (v || 0), 0);
+    check("Closing Debtors", actualClosingDebtors, totalClosingDebtors);
+  }
+  if (expected.opening_creditors && results["Debtors & Creditors"]) {
+    const dc = results["Debtors & Creditors"];
+    const totalOpeningCreditors = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
+    const actualOpeningCreditors = [dc.C12, dc.C13, dc.C14, dc.C15].reduce((s, v) => s + (v || 0), 0);
+    check("Opening Creditors", actualOpeningCreditors, totalOpeningCreditors);
+  }
+  if (expected.closing_creditors && results["Debtors & Creditors"]) {
+    const dc = results["Debtors & Creditors"];
+    const totalClosingCreditors = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
+    const actualClosingCreditors = [dc.F12, dc.F13, dc.F14, dc.F15].reduce((s, v) => s + (v || 0), 0);
+    check("Closing Creditors", actualClosingCreditors, totalClosingCreditors);
+  }
 
   if (taxData) {
     const profit = results[TAX_SHEET].E5 || 0;

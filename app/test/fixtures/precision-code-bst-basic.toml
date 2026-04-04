@@ -3098,4 +3098,9 @@ invoice = "SH-2603"
 amount = 150
 
 [expected]
-total_sales = 172000
+total_sales = 205900
+gross_profit = 187360
+net_profit = 129908
+total_premises = 15840
+total_gen_admin = 1962
+total_legal = 4560

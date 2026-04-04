@@ -161,6 +161,11 @@ function computeNetSales(salesLines) {
   return Math.round(netTotal);
 }
 
+// BST: amounts are entered as-is (no VAT split), so total = sum of amounts
+function computeGrossSales(salesLines) {
+  return Math.round(salesLines.reduce((sum, line) => sum + line.amount, 0));
+}
+
 // ============================================================================
 // Filter functions for each subset
 // ============================================================================
@@ -362,6 +367,9 @@ function formatScenarioToml(metadata, grouped, expected) {
   parts.push(`total_sales = ${expected.total_sales}`);
   if (expected.gross_profit !== undefined) parts.push(`gross_profit = ${expected.gross_profit}`);
   if (expected.net_profit !== undefined) parts.push(`net_profit = ${expected.net_profit}`);
+  if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);
+  if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
+  if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
   parts.push("");
 
   return parts.join("\n");
@@ -529,8 +537,29 @@ const closingCreditors = [
 
 const bstLines = filterBst(allLines);
 const bstSalesLines = bstLines.filter((l) => l.sourceJournalID === "sales");
-const bstTotalSales = computeNetSales(bstSalesLines);
+// BST is not VAT-registered: amounts entered are face value, no VAT split
+const bstTotalSales = computeGrossSales(bstSalesLines);
 const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP);
+// Compute BST expected values
+const bstPurchLines = bstLines.filter((l) => l.sourceJournalID === "purchases");
+const bstByCode = {};
+bstPurchLines.forEach((l) => {
+  const code = BST_PURCHASE_CODE_MAP[l.accountMainID];
+  if (code) bstByCode[code] = (bstByCode[code] || 0) + l.amount;
+});
+const bstStockPurchases = bstByCode.s || 0;
+const bstStockAdj = 10000 - 6000; // opening - closing
+const bstCoS = bstStockPurchases + bstStockAdj;
+const bstDirectCosts = bstByCode.d || 0;
+const bstGrossProfit = bstTotalSales - bstCoS - bstDirectCosts;
+const bstExpenseCodes = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
+const bstTotalExpenses = bstExpenseCodes.reduce((s, c) => s + (bstByCode[c] || 0), 0);
+const bstNetProfit = bstGrossProfit - bstTotalExpenses;
+// Round mileage amounts to avoid floating point issues
+const bstTotalPremises = Math.round(bstByCode.p || 0);
+const bstTotalGenAdmin = Math.round(bstByCode.g || 0);
+const bstTotalLegal = Math.round(bstByCode.l || 0);
+
 const bstToml = formatScenarioToml(
   {
     name: "Precision Code - basic sole trader",
@@ -541,6 +570,11 @@ const bstToml = formatScenarioToml(
   bstGrouped,
   {
     total_sales: bstTotalSales,
+    gross_profit: Math.round(bstGrossProfit),
+    net_profit: Math.round(bstNetProfit),
+    total_premises: bstTotalPremises,
+    total_gen_admin: bstTotalGenAdmin,
+    total_legal: bstTotalLegal,
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,

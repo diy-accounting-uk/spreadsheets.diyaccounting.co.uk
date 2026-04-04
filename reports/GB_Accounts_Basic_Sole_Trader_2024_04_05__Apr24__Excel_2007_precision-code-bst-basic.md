@@ -1,6 +1,6 @@
-# Reconciliation Report: GB Accounts Basic Sole Trader 2025-04-05 (Apr25) Excel 2007
+# Reconciliation Report: GB Accounts Basic Sole Trader 2024-04-05 (Apr24) Excel 2007
 
-Scenario: bst-scenario-basic
+Scenario: precision-code-bst-basic
 Status: RECONCILES
 Generated: 2026-04-04
 
@@ -15,8 +15,8 @@ Generated: 2026-04-04
 | Gen Admin | 1962 | 1962 | 0 | PASS |
 | Legal & Professional | 4560 | 4560 | 0 | PASS |
 | Income Tax | 39395 | 39395 | 0 | PASS |
-| NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI | 43250 | 43249.76 | -0.23999999999796273 | PASS |
+| NI Class 4 (lower) | 3393 | 3393 | 0 | PASS |
+| Total Tax + NI | 44381 | 44380.76 | -0.23999999999796273 | PASS |
 
 ## Raw Output Values
 
@@ -46,8 +46,8 @@ Generated: 2026-04-04
 | C28 | 129908 |
 | C30 | 0 |
 | C32 | 39395 |
-| C33 | 3854.76 |
-| C35 | 86658.24 |
+| C33 | 4985.76 |
+| C35 | 85527.24 |
 
 ### Income Tax
 
@@ -60,6 +60,6 @@ Generated: 2026-04-04
 | E9 | 31854.8 |
 | E10 | 39395 |
 | E11 | 0 |
-| E15 | 2262 |
+| E15 | 3393 |
 | E16 | 1592.76 |
-| E18 | 43249.76 |
+| E18 | 44380.76 |
