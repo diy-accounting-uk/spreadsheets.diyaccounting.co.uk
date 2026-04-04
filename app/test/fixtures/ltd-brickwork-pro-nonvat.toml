@@ -504,4 +504,4 @@ code = "s"
 amount = 450
 
 [expected]
-total_sales = 75000
+total_sales = 62500

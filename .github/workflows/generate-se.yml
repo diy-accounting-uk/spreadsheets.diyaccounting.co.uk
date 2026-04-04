@@ -222,9 +222,53 @@ jobs:
           fi
           echo "$COUNT reports, all RECONCILES"
 
-  commit:
+  reconcile-extra:
     runs-on: ubuntu-24.04
     needs: [params, generate, reconcile]
+    if: ${{ !cancelled() && needs.reconcile.result == 'success' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci || sleep 30 && npm ci
+      - name: Install LibreOffice
+        timeout-minutes: 5
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc
+      - uses: actions/download-artifact@v8
+        with:
+          name: se-packages
+          path: packages/
+      - run: rm -f reports/*.md
+      - name: Reconcile extra scenarios against latest package
+        run: npm run reconciliation -- --package se --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-extra-reports
+          retention-days: 1
+          path: reports/
+      - name: Check extra reconciliation
+        run: |
+          COUNT=0
+          FAIL=0
+          for f in reports/*.md; do
+            [ -f "$f" ] || continue
+            COUNT=$((COUNT + 1))
+            if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
+          done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No extra reconciliation reports"
+          elif [ "$FAIL" -eq 1 ]; then
+            echo "::warning::Extra reconciliation anomaly (non-blocking)"
+          else
+            echo "$COUNT extra reports, all RECONCILES"
+          fi
+
+  commit:
+    runs-on: ubuntu-24.04
+    needs: [params, generate, reconcile, reconcile-extra]
     if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
       - uses: actions/checkout@v6
