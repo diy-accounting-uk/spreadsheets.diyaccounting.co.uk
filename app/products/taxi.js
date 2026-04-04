@@ -218,6 +218,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // P&L internal consistency (6a)
   check("P&L: Net = Gross - General Expenses", pl.B23, pl.B13 - (pl.B22 || 0));
+
+  // Total expenses cross-check (6b)
+  const taxiExpenseSum = [pl.B14, pl.B15, pl.B16, pl.B17, pl.B18, pl.B19, pl.B20, pl.B21].reduce((s, v) => s + (v || 0), 0);
+  check("P&L: General expense lines sum = Total", pl.B22, taxiExpenseSum);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
 
   if (taxData) {

@@ -275,6 +275,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: Gross = Sales - CoS - Direct", pl.C9, pl.C4 - (pl.C6 || 0) - (pl.C7 || 0));
   check("P&L: Net = Gross - Expenses", pl.C24, pl.C9 - (pl.C22 || 0));
 
+  // Total expenses cross-check (6b)
+  const bstExpenseSum = [pl.C11, pl.C12, pl.C13, pl.C14, pl.C15, pl.C16, pl.C17, pl.C18, pl.C19, pl.C20, pl.C21].reduce((s, v) => s + (v || 0), 0);
+  check("P&L: Expense lines sum = Total", pl.C22, bstExpenseSum);
+
   // Stock checks
   if (expected.opening_stock !== undefined && results.PurchasesStock) {
     check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);

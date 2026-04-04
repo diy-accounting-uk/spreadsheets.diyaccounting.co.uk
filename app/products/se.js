@@ -327,6 +327,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: Operating = Gross - Admin", pl.B37, pl.B19 - (pl.B35 || 0));
   check("P&L: PBT = Operating", pl.B39, pl.B37);
 
+  // Total expenses cross-check (6b)
+  const seAdminSum = [pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34].reduce((s, v) => s + (v || 0), 0);
+  check("P&L: Admin lines sum = Total", pl.B35, seAdminSum);
+
   if (taxData) {
     const taxSheet = results[TAX_SHEET];
     const profit = taxSheet.E5 || 0;
