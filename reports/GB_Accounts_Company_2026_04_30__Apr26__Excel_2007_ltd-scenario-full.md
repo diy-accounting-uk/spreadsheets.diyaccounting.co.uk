@@ -2,14 +2,28 @@
 
 Scenario: ltd-scenario-full
 Status: RECONCILES
-Generated: 2026-04-04
 
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 171283 | 171283.333333334 | +0.3333333340124227 | PASS |
+| P&L: Gross = Turnover - CoS | 153539.333333334 | 153539.333333334 | 0 | PASS |
+| P&L: Operating = Gross - Admin | 99591.08333333401 | 99591.0833333338 | -2.1827872842550278e-10 | PASS |
+| P&L: PBT = Operating + Interest | 99591.0833333338 | 99591.0833333338 | 0 | PASS |
+| P&L: Admin lines sum = Total | 53948.25 | 53948.25 | 0 | PASS |
 | Corporation Tax | 19492 | 19492.3058333334 | +0.30583333340109675 | PASS |
+| CT: Chargeable >= Operating | 99591.0833333338 | 102591.083333334 | +3000.0000000002037 | PASS |
+| CT: Tax outstanding = CT | 19492.3058333334 | 19492.3058333334 | 0 | PASS |
+
+## Business Details
+
+| | Amount |
+|---|------:|
+| Company Name | Precision Code Ltd |
+| Company Number | 12345678 |
+| Address | 123 High Street, Manchester M1 1AA |
+| UTR | 1234567890 |
 
 ## Profit & Loss Account
 
