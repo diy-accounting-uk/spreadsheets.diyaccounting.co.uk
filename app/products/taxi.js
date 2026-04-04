@@ -112,32 +112,73 @@ export function cellWrites(scenario, targetStartYear = null) {
 
 export const TAX_SHEET = "Draft Tax calculation";
 
+// prettier-ignore
+export const CELL_MAP = [
+  // ── Profit & Loss Account (column B) ──
+  ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B7",  "Car Hire / Rental",                "accounts.purchases.5200 (carHire)", "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B8",  "Repairs & Servicing",              "accounts.purchases.5300 (repairs)", "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B9",  "Road Tax & Insurance",             "accounts.purchases.5400 (taxIns)",  "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B10", "Total Vehicle Running Costs",      "gl-cor:amount (vehicleCosts)",      "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B11", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B12", "Mileage Allowance",                "tax.mileage (allowance)",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B13", "**Gross Profit**",                 "gl-cor:amount (grossProfit)",       "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B14", "Employee Costs",                   "accounts.purchases.5500",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B15", "Premises Costs",                   "accounts.purchases.5600",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B16", "General Admin",                    "accounts.purchases.5700",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B17", "Advertising",                      "accounts.purchases.5800",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B18", "Legal & Professional",             "accounts.purchases.5900",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B19", "Interest & Bank Charges",          "accounts.purchases.6000",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B20", "Bank Charges",                     "accounts.purchases.6100",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B21", "Other Expenses",                   "accounts.purchases.6200",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B24", "Taxable Profit",                   "gl-cor:amount (taxableProfit)",     "Profit & Loss Account", 0],
+  // ── Draft Tax Calculation ──
+  [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0],
+  [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Draft Tax Calculation", 0],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Draft Tax Calculation", 0],
+  [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1],
+  [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0],
+];
+
 export function standardReads() {
-  return {
-    "Profit & Loss Acc": [
-      "B5",
-      "B6",
-      "B7",
-      "B8",
-      "B9",
-      "B10",
-      "B11",
-      "B12",
-      "B13",
-      "B14",
-      "B15",
-      "B16",
-      "B17",
-      "B18",
-      "B19",
-      "B20",
-      "B21",
-      "B22",
-      "B23",
-      "B24",
-    ],
-    [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E14", "E15", "E17"],
-  };
+  const reads = {};
+  for (const [sheet, cell] of CELL_MAP) {
+    if (!reads[sheet]) reads[sheet] = [];
+    if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  }
+  return reads;
+}
+
+export function reportSections(results) {
+  const sectionMap = new Map();
+  for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
+    if (!sectionMap.has(section)) sectionMap.set(section, []);
+    const val = results[sheet]?.[cell];
+    sectionMap.get(section).push({ label, value: fmt(val), indent });
+  }
+  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+}
+
+export function cellLabels() {
+  const labels = {};
+  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
+    const key = `${sheet}!${cell}`;
+    labels[key] = { diyLabel, glMapping };
+  }
+  return labels;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined || v === "" || v === " ") return "—";
+  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  return String(v);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
