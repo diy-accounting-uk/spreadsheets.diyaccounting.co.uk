@@ -363,6 +363,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const seAdminSum = [pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B35, seAdminSum);
 
+  // Expense line totals (6f)
+  if (expected.total_motor_gross) check("Motor Expenses", pl.B25 || 0, expected.total_motor_gross);
+  if (expected.total_legal_gross) check("Legal & Professional", pl.B28 || 0, expected.total_legal_gross);
+
+  // Stock check
+  if (expected.opening_stock !== undefined) {
+    const sc = results.StockControl;
+    if (sc) check("Opening Stock", sc.B5 || 0, expected.opening_stock, expected.opening_stock * 0.01);
+  }
+
   if (taxData) {
     const tax = results[TAX_SHEET];
     const profit = tax.E5 || 0;

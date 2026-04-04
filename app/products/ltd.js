@@ -113,13 +113,91 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet)
   const hubWrites = {};
   if (scenario.business || scenario.metadata) {
-    hubWrites.OpenAccounts = {};
+    if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
     const bd = hubWrites.OpenAccounts;
     const biz = scenario.business || {};
     bd.E2 = biz.name || scenario.metadata?.name || "";
     if (biz.company_number) bd.E3 = biz.company_number;
     if (biz.address) bd.E4 = `${biz.address}, ${biz.town || ""} ${biz.postcode || ""}`.trim();
     if (biz.utr) bd.E6 = biz.utr;
+  }
+
+  // Opening balance sheet (OpenAccounts)
+  if (scenario.opening_balance) {
+    if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
+    const oa = hubWrites.OpenAccounts;
+    const ob = scenario.opening_balance;
+    if (ob.fixed_assets) oa.D12 = ob.fixed_assets;
+    if (ob.plant_machinery) oa.H12 = ob.plant_machinery;
+    if (ob.fixtures) oa.I12 = ob.fixtures;
+    if (ob.computer_equipment) oa.J12 = ob.computer_equipment;
+    if (ob.motor_vehicles) oa.K12 = ob.motor_vehicles;
+    if (ob.stock) oa.D14 = ob.stock;
+    if (ob.trade_debtors) oa.D15 = ob.trade_debtors;
+    if (ob.current_account) oa.D16 = ob.current_account;
+    if (ob.savings_account) oa.H16 = ob.savings_account;
+    if (ob.credit_card) oa.I16 = ob.credit_card;
+    if (ob.cash) oa.J16 = ob.cash;
+    if (ob.trade_creditors) oa.D19 = ob.trade_creditors;
+    if (ob.corporation_tax) oa.D20 = ob.corporation_tax;
+    if (ob.wages_due) oa.D21 = ob.wages_due;
+    if (ob.paye_ni_due) oa.D22 = ob.paye_ni_due;
+    if (ob.dividends_due) oa.D23 = ob.dividends_due;
+    if (ob.vat_liability) oa.D24 = ob.vat_liability;
+    if (ob.share_capital) oa.D29 = ob.share_capital;
+    if (ob.retained_earnings) oa.D30 = ob.retained_earnings;
+    if (ob.directors_loan) oa.D31 = ob.directors_loan;
+  }
+
+  // Opening/closing debtors (Sales.xlsx)
+  if (scenario.opening_debtors) {
+    if (!salesWrites.OpeningDebtors) salesWrites.OpeningDebtors = {};
+    let row = 5;
+    for (const d of scenario.opening_debtors) {
+      salesWrites.OpeningDebtors[`B${row}`] = d.customer;
+      if (d.invoice) salesWrites.OpeningDebtors[`C${row}`] = d.invoice;
+      salesWrites.OpeningDebtors[`H${row}`] = d.amount;
+      row++;
+    }
+  }
+  if (scenario.closing_debtors) {
+    if (!salesWrites.ClosingDebtors) salesWrites.ClosingDebtors = {};
+    let row = 5;
+    for (const d of scenario.closing_debtors) {
+      salesWrites.ClosingDebtors[`B${row}`] = d.customer;
+      if (d.invoice) salesWrites.ClosingDebtors[`C${row}`] = d.invoice;
+      salesWrites.ClosingDebtors[`H${row}`] = d.amount;
+      row++;
+    }
+  }
+
+  // Opening/closing creditors (Purchases.xlsx)
+  if (scenario.opening_creditors) {
+    if (!purchasesWrites.OpeningCreditors) purchasesWrites.OpeningCreditors = {};
+    let row = 5;
+    for (const c of scenario.opening_creditors) {
+      purchasesWrites.OpeningCreditors[`B${row}`] = c.supplier;
+      if (c.invoice) purchasesWrites.OpeningCreditors[`C${row}`] = c.invoice;
+      purchasesWrites.OpeningCreditors[`H${row}`] = c.amount;
+      row++;
+    }
+  }
+  if (scenario.closing_creditors) {
+    if (!purchasesWrites.ClosingCreditors) purchasesWrites.ClosingCreditors = {};
+    let row = 5;
+    for (const c of scenario.closing_creditors) {
+      purchasesWrites.ClosingCreditors[`B${row}`] = c.supplier;
+      if (c.invoice) purchasesWrites.ClosingCreditors[`C${row}`] = c.invoice;
+      purchasesWrites.ClosingCreditors[`H${row}`] = c.amount;
+      row++;
+    }
+  }
+
+  // Stock (Financialaccounts.xlsx Stock sheet)
+  if (scenario.stock) {
+    if (!hubWrites.Stock) hubWrites.Stock = {};
+    if (scenario.stock.opening !== undefined) hubWrites.Stock.B5 = scenario.stock.opening;
+    if (scenario.stock.closing !== undefined) hubWrites.Stock.B8 = scenario.stock.closing;
   }
 
   const result = {
@@ -212,6 +290,11 @@ export const CELL_MAP = [
   ["PubBalSht", "C22", "Share Capital",            "accounts.capital.3000 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "C23", "Retained Earnings",        "accounts.capital.3100 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "C25", "**Shareholders Funds**",   "gl-cor:amount (pubBS.equity)",        "Published Balance Sheet", 0],
+  // ── Stock ──
+  ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
+  ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
+  // ── Trial Balance ──
+  ["TrialBalance", "EJ91", "Audit Accuracy Check", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
 export function standardReads() {
@@ -271,6 +354,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // Total expenses cross-check (6b)
   const ltdAdminSum = [pl.B18, pl.B19, pl.B20, pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34, pl.B35, pl.B36, pl.B37, pl.B38, pl.B39, pl.B40].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
+
+  // Expense line gross totals (6f)
+  if (expected.total_premises_gross) check("Premises (net from gross)", pl.B20 || 0, expected.total_premises_gross / 1.2, expected.total_premises_gross * 0.01);
+  if (expected.total_legal_gross) check("Legal (net from gross)", pl.B32 || 0, expected.total_legal_gross / 1.2, expected.total_legal_gross * 0.01);
+
+  // Stock checks
+  if (expected.opening_stock !== undefined) {
+    const stock = results.Stock;
+    if (stock && stock.B5 !== undefined) check("Opening Stock", stock.B5 || 0, expected.opening_stock);
+    if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined) check("Closing Stock", stock.B8 || 0, expected.closing_stock);
+  }
 
   if (taxData) {
     const ct = results[TAX_SHEET];
