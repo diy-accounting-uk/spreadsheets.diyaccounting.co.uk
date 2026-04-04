@@ -1062,10 +1062,29 @@ Requires: SE Payslips.xlsx Employee sheet layout analysis (background task runni
 - Add WagesInterface reads to CELL_MAP
 - Add payroll compliance checks to checkCompliance()
 
+**6i. SA103S cross-check** (BST, SE) — DONE in 6g:
+- SE Short D38 (turnover) = P&L total sales
+- SE Short D106 (profit for tax) = Income Tax E5
+
+**6j. VAT 9-box reads** (SE, Ltd):
+- Add Vat.xlsx / Vatreturns.xlsx to the multi-file recalculation pipeline (or run separately after hub recalc)
+- Read VATQtr1-5 boxes 1, 3, 4, 5, 6, 7 per quarter
+- Add quarterly VAT checks to checkCompliance()
+
+**6k. Bank closing balances** (SE, Ltd):
+- Multi-file reads of final month A2 cells from Bank.xlsx / Cash.xlsx (SE) or Currentaccount.xlsx etc. (Ltd)
+- Check closing balances are non-zero where scenario has bank entries
+
+**6l. PubBalSht / PubP&L correct cell mapping** (Ltd):
+- Requires template analysis to find the actual data cells (current CELL_MAP has placeholder positions)
+- Fixed assets NBV, stock, debtors, bank/cash, creditors, share capital, retained earnings
+
+**6m. Payroll/wages interface checks** (SE, Ltd):
+- WagesInterface sheet cells mapping (which cells show gross, PAYE, NI per month)
+- Verify WagesInterface monthly totals match Payslips.xlsx row 1 totals
+- Verify P&L wages line includes WagesInterface-fed amounts
+
 **Future (deferred past Phase 6)**:
-- VAT 9-box reads from Vat.xlsx / Vatreturns.xlsx (separate file, not in multi-file recalc pipeline)
-- Bank closing balances (multi-file reads of final month A2)
-- PubBalSht / PubP&L correct cell positions (requires template analysis)
 - Dividends tracking
 - Business Details full cell mapping for SE and Ltd (currently only business name C5)
 
@@ -1077,9 +1096,9 @@ Requires: SE Payslips.xlsx Employee sheet layout analysis (background task runni
 3. Add `node scripts/extract-scenarios.cjs` to CI test job so scenario fixtures stay in sync with master data
 4. Final cleanup: verify no references to removed scenario files remain in code or docs
 
-### Phase 8 — Expansion: test file renaming, new CIS construction scenario
+### Phase 8 — Expansion: test file renaming, new CIS construction scenario, Precision Code scaling
 
-**Goal**: Rename test files to `<package>-<scenario>.test.js` convention (1 scenario per file), remove stale `app/sheets-tests`, add a CIS construction company example with VAT-registered and non-VAT-registered variants for both SE and Ltd.
+**Goal**: Rename test files to `<package>-<scenario>.test.js` convention (1 scenario per file), remove stale `app/sheets-tests`, add a CIS construction company example with VAT/non-VAT variants, switch BST main scenario to the non-VAT construction company, and scale Precision Code to exercise higher-rate CT and capital allowance limits.
 
 **8a. Rename test files**:
 
@@ -1156,6 +1175,35 @@ These exercise the non-VAT code path in the SE and Ltd templates — a path not 
 - CIS deductions reduce the bank payment but the full gross goes to the purchase daybook
 - Income Tax E11 "CIS deducted" should show the total CIS withheld
 
+**8f. Switch BST main scenario to BrickWork Pro non-VAT**:
+- BST is not VAT-registered — the non-VAT construction scenario is a better fit than the IT consultancy
+- `bst-precision-code.test.js` → exercises VAT-registered IT consultancy (keep as secondary)
+- `bst-brickwork-pro-nonvat.test.js` → becomes the primary BST test and CI reconciliation scenario
+- Update `generate-bst.yml` to reconcile with `--scenario brickwork`
+
+**8g. Scale Precision Code to exercise higher-rate CT and capital allowances**:
+
+Current Precision Code generates ~£100K profit (well within small profits rate of £50K). Scale up to:
+- Turnover: ~£300K (above VAT threshold, exercises higher volumes)
+- Profit: ~£80K (above small profits limit of £50K, triggers marginal relief zone £50K-£250K)
+- Fixed asset purchases: ~£50K+ (exercises AIA limit and WDA reducing balance)
+
+This means:
+- CT marginal relief calculation is exercised (not just flat 19%)
+- AIA may be partially utilised (if assets exceed the period threshold)
+- Higher rate income tax bands are exercised for the SE variant
+
+**Add WARNING-level checks**:
+- Add a `WARNING` result type to `checkCompliance()` alongside PASS/FAIL
+- `check()` function accepts an optional `severity` parameter: `"check"` (default, FAIL if wrong) or `"warning"` (WARNING if wrong)
+- Reconciliation decision: RECONCILES if all checks are PASS or WARNING (no FAILs)
+- Use WARNING for: marginal relief not yet implemented, higher-rate CT computation pending
+
+Report format:
+```
+| CT Marginal Relief | 0 | expected>0 | | **WARNING** |
+```
+
 **Verify**:
 - [ ] All test files renamed, `npm test` passes
 - [ ] `app/sheets-tests/` removed
@@ -1165,6 +1213,9 @@ These exercise the non-VAT code path in the SE and Ltd templates — a path not 
 - [ ] `ltd-brickwork-pro-nonvat.test.js` passes
 - [ ] Both non-VAT scenarios reconcile
 - [ ] CIS deductions appear in Income Tax E11 and reconciliation report
+- [ ] BST main scenario switched to BrickWork Pro non-VAT
+- [ ] Precision Code scaled up, Ltd reconciliation shows WARNING for marginal relief
+- [ ] WARNING checks do not cause ANOMALYDETECTED
 
 ---
 
