@@ -383,6 +383,50 @@ The `calculateExpectedTax()` function (in `reconcile.js`) independently computes
 
 Requires LibreOffice; skipped if not installed.
 
+## Filing Taxonomy Mapping
+
+Maps Taxi cells to diya-gl properties, XBRL / FRS 102 accounting concepts, and SA103S filing references. The Taxi P&L has a unique vehicle costs vs mileage allowance comparison section.
+
+### Profit & Loss Acc
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
+|------|-----------|-----------------|-------------|-----------|
+| B5 | Turnover (Total Fares) | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| B6 | Fuel | `accounts.purchases.5100` | `dpl:Vehicles` (fuel) | Box 19 |
+| B7 | Car Hire / Rental | `accounts.purchases.5200` | `dpl:OperatingLeaseExpenditure` | Box 19 |
+| B8 | Repairs & Servicing | `accounts.purchases.5300` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
+| B9 | Road Tax & Insurance | `accounts.purchases.5400` | `dpl:InsuranceCosts` | Box 19 |
+| B10 | Total Vehicle Running Costs | `gl-cor:amount (vehicleCosts)` | `dpl:Vehicles` (total) | — |
+| B11 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| B12 | Mileage Allowance | `tax.mileage (allowance)` | `uk-tax:ApprovedMileageAllowance` | Box 19 (alt) |
+| B13 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
+| B14 | Employee Costs | `accounts.purchases.5500` | `dpl:WagesAndSalaries` | Box 16 |
+| B15 | Premises Costs | `accounts.purchases.5600` | `dpl:RentRatesAndServicesCosts` | Box 17 |
+| B16 | General Admin | `accounts.purchases.5700` | `dpl:OtherOperationalAndAdministrationCosts` | Box 20 |
+| B17 | Advertising | `accounts.purchases.5800` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 20 |
+| B18 | Legal & Professional | `accounts.purchases.5900` | `dpl:AuditAndAccountancyTaxServices` | Box 21 |
+| B19 | Interest & Bank Charges | `accounts.purchases.6000` | `dpl:BankCharges` | Box 23 |
+| B20 | Bank Charges | `accounts.purchases.6100` | `dpl:BankCharges` | Box 23 |
+| B21 | Other Expenses | `accounts.purchases.6200` | `dpl:OtherCosts` | Box 24 |
+| B22 | Total General Expenses | `gl-cor:amount (totalGeneral)` | `frs102:AdministrativeExpenses` | Box 25 |
+| B23 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+
+Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicle running costs (B10) vs mileage allowance (B12). The selected option feeds into Gross Profit (B13).
+
+### Draft Tax Calculation
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept |
+|------|-----------|-----------------|-------------|
+| E5 | Profit from SE | `gl-cor:amount (profitSE)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| E6 | Personal Allowance | `tax.incomeTax.personalAllowance` | `uk-tax:PersonalAllowance` |
+| E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` |
+| E8 | Tax at Basic Rate | `tax.incomeTax.basicRate` | `uk-tax:IncomeTaxBasicRate` |
+| E9 | Tax at Higher Rate | `tax.incomeTax.higherRate` | `uk-tax:IncomeTaxHigherRate` |
+| E10 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` |
+| E14 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` |
+| E15 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` |
+| E17 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` |
+
 ## CI Pipeline (.github/workflows/generate-taxi.yml)
 
 ### Triggers

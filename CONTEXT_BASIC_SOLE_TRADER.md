@@ -412,6 +412,73 @@ The reconciler (`app/bin/reconcile.js`) for single-file products:
 5. Runs compliance checks against expected values
 6. Generates a Markdown report with RECONCILES or ANOMALYDETECTED status
 
+## Filing Taxonomy Mapping
+
+Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing references.
+
+### Profit & Loss Acc
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
+|------|-----------|-----------------|-------------|-----------|
+| C4 | Sales Turnover | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| C5 | Other Income | `gl-cor:amount (otherIncome)` | `frs102:OtherOperatingIncome` | — |
+| C6 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | Box 11 |
+| C7 | Direct Costs | `gl-cor:amount (directCosts)` | `dpl:OtherCosts` (CoS dimension) | Box 13 |
+| C9 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
+| C11 | Employee Costs | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 16 |
+| C12 | Premises Costs | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` | Box 17 |
+| C13 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
+| C14 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 20 |
+| C15 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 19 |
+| C16 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 19 |
+| C17 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 20 |
+| C18 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 21 |
+| C19 | Bad Debts | `accounts.purchases.5801` | `dpl:BadDebts` | Box 22 |
+| C20 | Interest & Finance | `accounts.purchases.5803` | `dpl:BankCharges` | Box 23 |
+| C21 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 24 |
+| C22 | Total Expenses | `gl-cor:amount (totalExpenses)` | `frs102:AdministrativeExpenses` | Box 25 |
+| C24 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+| C26 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+
+### SE Short (SA103S)
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
+|------|-----------|-----------------|-------------|-----------|
+| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
+| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
+
+### Income Tax
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept |
+|------|-----------|-----------------|-------------|
+| E5 | Profit from SE | `gl-cor:amount (profitSE)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| E6 | Personal Allowance | `tax.incomeTax.personalAllowance` | `uk-tax:PersonalAllowance` |
+| E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` |
+| E10 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` |
+| E11 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` |
+| E15 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` |
+| E16 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` |
+| E18 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` |
+
+### Stock
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept |
+|------|-----------|-----------------|-------------|
+| D5 | Opening Stock | `accounts.assets.1100 (opening)` | `frs102:Stocks` (period start) |
+| D30 | Closing Stock | `accounts.assets.1100 (closing)` | `frs102:Stocks` (period end) |
+
+### Debtors & Creditors
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept |
+|------|-----------|-----------------|-------------|
+| C5-C7 | Opening Debtors | `accounts.assets.1300 (opening)` | `frs102:Debtors` (period start) |
+| F5-F7 | Closing Debtors | `accounts.assets.1300 (closing)` | `frs102:Debtors` (period end) |
+| C12-C15 | Opening Creditors | `accounts.liabilities.2100 (opening)` | `frs102:CreditorsDueWithinOneYear` (period start) |
+| F12-F15 | Closing Creditors | `accounts.liabilities.2100 (closing)` | `frs102:CreditorsDueWithinOneYear` (period end) |
+
 ## CI Pipeline (.github/workflows/generate-bst.yml)
 
 ### Triggers

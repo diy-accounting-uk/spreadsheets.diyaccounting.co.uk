@@ -373,6 +373,74 @@ The `checkCompliance()` function in `se.js` validates (tolerance of 1 for all ch
 
 Tax checks use a shared `calculateExpectedTax()` callback (defined in `reconcile.js`) that independently computes expected income tax and NI Class 4 from the profit figure and tax data rates, providing a cross-check against the spreadsheet formulas.
 
+## Filing Taxonomy Mapping
+
+Maps SE cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S/SA103F filing references.
+
+### Profit & Loss Account
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
+|------|-----------|-----------------|-------------|-----------|
+| B5 | Product A — Consultancy | `accounts.sales.4000` | `dpl:TurnoverGrossOperatingRevenue` | — |
+| B6 | Product B — Software | `accounts.sales.4001` | `dpl:TurnoverGrossOperatingRevenue` | — |
+| B7 | Product C — Training | `accounts.sales.4002` | `dpl:TurnoverGrossOperatingRevenue` | — |
+| B8 | Other Income | `accounts.sales.4003` | `dpl:OtherOperatingIncome` | — |
+| B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| B11 | Grants Received | `accounts.sales.4004` | `dpl:GovernmentGrantIncome` | — |
+| B14 | Materials / Stock | `accounts.purchases.5000` | `dpl:RawMaterialsConsumables` | Box 11 |
+| B15 | Sub-Contractors | `accounts.purchases.5001` | `dpl:OtherEmploymentCosts` | Box 12 |
+| B16 | Other Direct Costs | `accounts.purchases.5002` | `dpl:OtherCosts` (CoS dimension) | Box 13 |
+| B17 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | — |
+| B19 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
+| B21 | Wages & Salaries | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 16 |
+| B22 | Light, Heat, Power | `accounts.purchases.5201` | `dpl:UtilitiesCosts` | Box 17 |
+| B23 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
+| B24 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 20 |
+| B25 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 19 |
+| B26 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 19 |
+| B27 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 20 |
+| B28 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 21 |
+| B29 | Bad Debts | `accounts.sales.4005` | `dpl:BadDebts` | Box 22 |
+| B30 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` | Box 23 |
+| B31 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 24 |
+| B32 | Charitable Donations | `accounts.purchases.5801` | `dpl:CharitableDonations` | — |
+| B33 | Goodwill Amortisation | `accounts.purchases.5802` | `frs102:AmortisationOfIntangibleAssets` | — |
+| B34 | Loss on Disposal | `gl-cor:amount (lossOnDisposal)` | `frs102:LossOnDisposalOfTangibleFixedAssets` | — |
+| B35 | Total Admin Expenses | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` | Box 25 |
+| B37 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` | Box 27 |
+| B39 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+
+### SE Short (SA103S)
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
+|------|-----------|-----------------|-------------|-----------|
+| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| D46 | Cost of sales | `gl-cor:amount (sa103s.costOfSales)` | `frs102:CostOfSales` | Box 11 |
+| D51 | Other direct costs | `gl-cor:amount (sa103s.otherDirect)` | `dpl:OtherCosts` | Box 13 |
+| D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | `dpl:WagesAndSalaries` | Box 16 |
+| D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | `dpl:RentRatesAndServicesCosts` | Box 17 |
+| D64 | Other expenses | `gl-cor:amount (sa103s.otherExpenses)` | `dpl:OtherCosts` | Box 24 |
+| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| D85 | AIA / WDA | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:AnnualInvestmentAllowance` | Box 28 |
+| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
+| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
+
+### Income Tax
+
+| Cell | DIY Label | diya-gl Property | XBRL Concept | SA100 |
+|------|-----------|-----------------|-------------|-------|
+| E5 | Profit from SE | `gl-cor:amount (profitSE)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 3 |
+| E6 | Personal Allowance | `tax.incomeTax.personalAllowance` | `uk-tax:PersonalAllowance` | — |
+| E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` | — |
+| E8 | Tax at Basic Rate | `tax.incomeTax.basicRate` | `uk-tax:IncomeTaxBasicRate` | — |
+| E9 | Tax at Higher Rate | `tax.incomeTax.higherRate` | `uk-tax:IncomeTaxHigherRate` | — |
+| E10 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` | — |
+| E11 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` | Box 17 |
+| E15 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` | — |
+| E16 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` | — |
+| E18 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` | — |
+
 ## CI Pipeline (.github/workflows/generate-se.yml)
 
 ### Triggers

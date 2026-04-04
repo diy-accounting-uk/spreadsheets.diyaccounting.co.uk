@@ -405,6 +405,66 @@ From Financialaccounts.xlsx after recalculation:
 | Net Profit | MnthP&L B45 | Matches `expected.net_profit` (tolerance 1) |
 | Corporation Tax | CorporationTax K35 | Matches `round(K28 * small_profits_rate)` (tolerance 1) |
 
+## Filing Taxonomy Mapping
+
+The Ltd product is the primary XBRL consumer — Companies House filing requires iXBRL accounts, HMRC requires iXBRL computations with the CT600. See `_developers/hmrc-references/cell-to-xbrl-mapping.md` for full iXBRL element names.
+
+### Published P&L (PubP&L) — FRS 102 Statutory Accounts
+
+| Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
+|------|-----------|-----------------|---------------------|
+| C5 | Turnover | `gl-cor:amount (pubPL.turnover)` | `frs102:TurnoverRevenue` |
+| C7 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
+| C9 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
+| C11 | Admin Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
+| C13 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
+| C17 | **Profit Before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| C19 | Tax on Profit | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
+| C21 | **Profit After Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+
+### Published Balance Sheet (PubBalSht) — FRS 102
+
+| Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
+|------|-----------|-----------------|---------------------|
+| C5 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
+| C9 | Stock | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
+| C10 | Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
+| C11 | Bank & Cash | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
+| C13 | Creditors < 1 year | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
+| C15 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
+| C19 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
+| C22 | Share Capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
+| C23 | Retained Earnings | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
+| C25 | **Shareholders Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
+
+### Corporation Tax (CT600)
+
+| Cell | DIY Label | diya-gl Property | CT Computation Concept | CT600 Box |
+|------|-----------|-----------------|----------------------|-----------|
+| K5 | Operating Profit | `gl-cor:amount (ct600.box145)` | `ct-comp:ProfitLossPerAccounts` | 145 |
+| K12 | Add back: Depreciation | `gl-cor:amount (ct600.addBack)` | `ct-comp:AdjustmentsDepreciation` | — |
+| K22 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
+| K28 | **Profit Chargeable** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
+| K35 | **Corporation Tax** | `gl-cor:taxAmount (ct600.box430)` | CT600 `CorporationTax` | 430 |
+| K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box515)` | CT600 `TaxPayable` | 515 |
+
+### Management P&L (MnthP&L) — DPL Taxonomy
+
+| Cell | DIY Label | diya-gl Property | DPL / FRS 102 Concept |
+|------|-----------|-----------------|----------------------|
+| B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` |
+| B14 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` |
+| B16 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` |
+| B18 | Directors Wages | `accounts.purchases.5100` | `dpl:WagesAndSalaries` |
+| B19 | Employee Wages | `accounts.purchases.5101` | `dpl:WagesAndSalaries` |
+| B20 | Premises | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
+| B26 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
+| B32 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
+| B35 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
+| B41 | Total Admin | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
+| B43 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` |
+| B45 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+
 ## CI Pipeline (.github/workflows/generate-ltd.yml)
 
 ### Triggers
