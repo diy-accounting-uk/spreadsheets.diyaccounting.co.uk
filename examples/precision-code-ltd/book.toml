@@ -12,123 +12,123 @@ organizationIdentifier = "Precision Code Ltd"
 organizationDescription = "IT consultancy and software development"
 taxRegistrationNumber = "1234567890"
 taxAuthorityIdentifier = "HMRC"
-"diy:product" = "Company"
-"diy:vatRegistered" = true
-"diy:basisOfAccounting" = "accrual"
-"diy:companyNumber" = "12345678"
-"diy:vatNumber" = "123456789"
+"diya-gl:product" = "Company"
+"diya-gl:vatRegistered" = true
+"diya-gl:basisOfAccounting" = "accrual"
+"diya-gl:companyNumber" = "12345678"
+"diya-gl:vatNumber" = "123456789"
 
 [accounts.sales."4000"]
 accountMainDescription = "Product A - Consultancy"
-"diy:column" = "O"
+"diya-gl:column" = "O"
 
 [accounts.sales."4001"]
 accountMainDescription = "Product B - Software licences"
-"diy:column" = "P"
+"diya-gl:column" = "P"
 
 [accounts.sales."4002"]
 accountMainDescription = "Product C - Training"
-"diy:column" = "Q"
+"diya-gl:column" = "Q"
 
 [accounts.sales."4003"]
 accountMainDescription = "Other Direct Income"
-"diy:column" = "R"
+"diya-gl:column" = "R"
 
 [accounts.sales."4004"]
 accountMainDescription = "Grants received"
-"diy:column" = "S"
+"diya-gl:column" = "S"
 
 [accounts.sales."4005"]
 accountMainDescription = "Bad debts written off"
-"diy:column" = "T"
+"diya-gl:column" = "T"
 
 [accounts.sales."4006"]
 accountMainDescription = "Fixed asset sale proceeds"
-"diy:column" = "U"
+"diya-gl:column" = "U"
 
 [accounts.purchases."5000"]
 accountMainDescription = "Direct materials for resale"
-"diy:column" = "O"
+"diya-gl:column" = "O"
 
 [accounts.purchases."5001"]
 accountMainDescription = "Sub-contractor services"
-"diy:column" = "P"
+"diya-gl:column" = "P"
 
 [accounts.purchases."5002"]
 accountMainDescription = "Other direct costs"
-"diy:column" = "Q"
+"diya-gl:column" = "Q"
 
 [accounts.purchases."5100"]
 accountMainDescription = "Directors wages (non-PAYE)"
-"diy:column" = "R"
+"diya-gl:column" = "R"
 
 [accounts.purchases."5101"]
 accountMainDescription = "Employee wages (non-PAYE)"
-"diy:column" = "S"
+"diya-gl:column" = "S"
 
 [accounts.purchases."5200"]
 accountMainDescription = "Premises - rent and rates"
-"diy:column" = "T"
+"diya-gl:column" = "T"
 
 [accounts.purchases."5201"]
 accountMainDescription = "Light, heating, power"
-"diy:column" = "U"
+"diya-gl:column" = "U"
 
 [accounts.purchases."5300"]
 accountMainDescription = "Distribution and transport"
-"diy:column" = "V"
+"diya-gl:column" = "V"
 
 [accounts.purchases."5301"]
 accountMainDescription = "Equipment, tools, plant hire"
-"diy:column" = "W"
+"diya-gl:column" = "W"
 
 [accounts.purchases."5400"]
 accountMainDescription = "Repairs and maintenance"
-"diy:column" = "X"
+"diya-gl:column" = "X"
 
 [accounts.purchases."5401"]
 accountMainDescription = "Consumable materials"
-"diy:column" = "Y"
+"diya-gl:column" = "Y"
 
 [accounts.purchases."5500"]
 accountMainDescription = "Advertising and promotion"
-"diy:column" = "Z"
+"diya-gl:column" = "Z"
 
 [accounts.purchases."5501"]
 accountMainDescription = "General admin (telephone, postage, stationery)"
-"diy:column" = "AA"
+"diya-gl:column" = "AA"
 
 [accounts.purchases."5600"]
 accountMainDescription = "Travel and hotel expenses"
-"diy:column" = "AB"
+"diya-gl:column" = "AB"
 
 [accounts.purchases."5601"]
 accountMainDescription = "Motor vehicle expenses"
-"diy:column" = "AC"
+"diya-gl:column" = "AC"
 
 [accounts.purchases."5700"]
 accountMainDescription = "Insurance"
-"diy:column" = "AD"
+"diya-gl:column" = "AD"
 
 [accounts.purchases."5701"]
 accountMainDescription = "Leasing charges"
-"diy:column" = "AE"
+"diya-gl:column" = "AE"
 
 [accounts.purchases."5800"]
 accountMainDescription = "Legal and professional fees"
-"diy:column" = "AF"
+"diya-gl:column" = "AF"
 
 [accounts.purchases."5801"]
 accountMainDescription = "Charitable donations"
-"diy:column" = "AG"
+"diya-gl:column" = "AG"
 
 [accounts.purchases."5802"]
 accountMainDescription = "Goodwill amortisation"
-"diy:column" = "AH"
+"diya-gl:column" = "AH"
 
 [accounts.purchases."5900"]
 accountMainDescription = "Fixed asset purchases"
-"diy:column" = "AI"
+"diya-gl:column" = "AI"
 
 [accounts.bank."1200"]
 accountMainDescription = "Current account"

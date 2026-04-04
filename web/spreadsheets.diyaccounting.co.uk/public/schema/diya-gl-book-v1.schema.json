@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v1.json",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v1.schema.json",
   "title": "DIY Accounting GL-aligned Book Configuration",
   "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
   "type": "object",
@@ -88,36 +88,130 @@
           "default": "HMRC",
           "description": "gl-taf:taxAuthorityIdentifier — Tax authority identifier"
         },
-        "diy:product": {
+        "diya-gl:product": {
           "type": "string",
           "enum": ["BasicSoleTrader", "SelfEmployed", "TaxiDriver", "Company", "Payslip05", "Payslip10", "Payslip20"],
-          "description": "diy: extension — DIY Accounting product identifier. Determines which schema subset is active."
+          "description": "diya-gl: extension — DIY Accounting product identifier. Determines which schema subset is active."
         },
-        "diy:vatRegistered": {
+        "diya-gl:vatRegistered": {
           "type": "boolean",
           "default": false,
-          "description": "diy: extension — Whether the business is VAT registered"
+          "description": "diya-gl: extension — Whether the business is VAT registered"
         },
-        "diy:basisOfAccounting": {
+        "diya-gl:basisOfAccounting": {
           "type": "string",
           "enum": ["cash", "accrual"],
           "default": "cash",
-          "description": "diy: extension — Accounting basis. Cash for sole traders, accrual for companies."
+          "description": "diya-gl: extension — Accounting basis. Cash for sole traders, accrual for companies."
         },
-        "diy:nino": {
+        "diya-gl:nino": {
           "type": "string",
           "pattern": "^([A-Z]{2}[0-9]{6}[A-D])?$",
-          "description": "diy: extension — National Insurance Number (format: AB123456C)"
+          "description": "diya-gl: extension — National Insurance Number (format: AB123456C)"
         },
-        "diy:vatNumber": {
+        "diya-gl:vatNumber": {
           "type": "string",
           "pattern": "^([0-9]{9})?$",
-          "description": "diy: extension — VAT registration number (9 digits)"
+          "description": "diya-gl: extension — VAT registration number (9 digits)"
         },
-        "diy:companyNumber": {
+        "diya-gl:companyNumber": {
           "type": "string",
           "pattern": "^([0-9]{8})?$",
-          "description": "diy: extension — Companies House number (8 digits, Company Accounts only)"
+          "description": "diya-gl: extension — Companies House number (8 digits, Company Accounts only)"
+        },
+        "diya-gl:cisRegistered": {
+          "type": "boolean",
+          "default": false,
+          "description": "diya-gl: extension — Whether the business is registered under the Construction Industry Scheme (CIS)"
+        }
+      }
+    },
+
+    "directors": {
+      "type": "array",
+      "description": "diya-gl: extension — Company directors and their shareholdings (Company Accounts only). Used to populate Companysecretary.xlsx sheets.",
+      "items": {
+        "type": "object",
+        "required": ["name", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Director's full name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role title (e.g. Managing Director, Company Secretary, Non-Executive Director)"
+          },
+          "shares": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of shares held"
+          },
+          "appointed": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of appointment (ISO 8601)"
+          },
+          "resigned": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of resignation if applicable (ISO 8601)"
+          }
+        }
+      }
+    },
+
+    "employees": {
+      "type": "array",
+      "description": "diya-gl: extension — Employees on payroll. Used to populate Payslips.xlsx. Includes directors paid via PAYE.",
+      "items": {
+        "type": "object",
+        "required": ["employeeID", "name", "grossPay", "payFrequency", "taxCode"],
+        "additionalProperties": false,
+        "properties": {
+          "employeeID": {
+            "type": "string",
+            "description": "Unique employee identifier (matches diya-gl:employeeID in lines)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Employee's full name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Job title"
+          },
+          "grossPay": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Gross pay per period (monthly or weekly amount)"
+          },
+          "payFrequency": {
+            "type": "string",
+            "enum": ["weekly", "fortnightly", "four-weekly", "monthly"],
+            "description": "Pay frequency"
+          },
+          "taxCode": {
+            "type": "string",
+            "description": "HMRC tax code (e.g. 1257L)"
+          },
+          "niCategory": {
+            "type": "string",
+            "pattern": "^[A-Z]$",
+            "default": "A",
+            "description": "NI category letter (A=standard, C=over state pension age, H=apprentice under 25, M=under 21)"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Employment start date (ISO 8601)"
+          },
+          "isDirector": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this employee is also a company director"
+          }
         }
       }
     },
@@ -322,25 +416,25 @@
           "default": "account",
           "description": "gl-bus:accountType — GL account type enumeration"
         },
-        "diy:column": {
+        "diya-gl:column": {
           "type": "string",
           "pattern": "^[A-Z]{1,2}$",
-          "description": "diy: extension — Excel column letter(s) for this account in the workbook"
+          "description": "diya-gl: extension — Excel column letter(s) for this account in the workbook"
         },
-        "diy:sa103sBox": {
+        "diya-gl:sa103sBox": {
           "type": "string",
           "pattern": "^box[0-9]{1,2}$",
-          "description": "diy: extension — SA103S box reference this account maps to (e.g. 'box10')"
+          "description": "diya-gl: extension — SA103S box reference this account maps to (e.g. 'box10')"
         },
-        "diy:ct600Box": {
+        "diya-gl:ct600Box": {
           "type": "string",
-          "description": "diy: extension — CT600 box reference (Company Accounts only)"
+          "description": "diya-gl: extension — CT600 box reference (Company Accounts only)"
         },
-        "diy:vatBox": {
+        "diya-gl:vatBox": {
           "type": "integer",
           "minimum": 1,
           "maximum": 9,
-          "description": "diy: extension — VAT return box number (1-9) this account contributes to"
+          "description": "diya-gl: extension — VAT return box number (1-9) this account contributes to"
         }
       }
     }

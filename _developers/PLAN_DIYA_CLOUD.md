@@ -125,7 +125,7 @@ One zip per package. The Cognito subject ID scopes storage per user. No DynamoDB
 
 ### 2.5 Product-Specific Account Mappings
 
-The book.toml chart of accounts maps nominal codes to spreadsheet columns via the `diy:column` extension. This mapping enables the library to convert between GL and spreadsheet formats:
+The book.toml chart of accounts maps nominal codes to spreadsheet columns via the `diya-gl:column` extension. This mapping enables the library to convert between GL and spreadsheet formats:
 
 **BST (single-file, 14 purchase codes):**
 - Sales: amount + other_income columns (no code letter analysis)

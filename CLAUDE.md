@@ -40,7 +40,7 @@ This repository manages the **spreadsheets AWS account** (064390746177) for spre
 
 ### Product Context Documents
 
-- `CONTEXT_SOLE_TRADER.md` — Basic Sole Trader (BST) product: single-file, sheet map, data flow, scenarios, CI pipeline
+- `CONTEXT_BASIC_SOLE_TRADER.md` — Basic Sole Trader (BST) product: single-file, sheet map, data flow, scenarios, CI pipeline
 - `CONTEXT_TAXI.md` — Taxi Driver product: single-file, mileage comparison, date pre-filling, scenarios, CI pipeline
 - `CONTEXT_SELF_EMPLOYED.md` — Self Employed (SE) product: multi-file, external links, recalculation pipeline, scenarios, CI pipeline
 - `CONTEXT_LIMITED_COMPANY.md` — Limited Company (Ltd) product: multi-file, 15 xlsx, non-March transforms, all year-end months, scenarios, CI pipeline

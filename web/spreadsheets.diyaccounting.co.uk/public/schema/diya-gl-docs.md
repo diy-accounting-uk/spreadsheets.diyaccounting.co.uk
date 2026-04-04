@@ -21,7 +21,7 @@ or modify the taxonomy XSD files.
    Self Employed, Taxi Driver). For double-entry products (Company Accounts), the
    `entryDetail` array is preserved to hold multiple posting lines per journal entry.
 4. **GL enumerations are reused** where they exist (e.g. `debitCreditCode`, `documentType`,
-   `entriesType`). DIY Accounting-specific values are namespaced with `diy:` prefix.
+   `entriesType`). DIY Accounting-specific values are namespaced with `diya-gl:` prefix.
 5. **Types follow JSON conventions**: dates are ISO 8601 strings, amounts are numbers
    (not strings), currencies are ISO 4217 codes.
 
@@ -35,7 +35,7 @@ this schema. The schema is expressed as JSON Schema (draft 2020-12) for machine 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.json",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.schema.json",
   "title": "DIY Accounting GL-aligned Transaction",
   "description": "A single financial transaction record. Field names are adapted from the XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf, gl-usk modules).",
   "type": "object",
@@ -337,17 +337,17 @@ taxRegistrationNumber = ""
 # gl-taf:taxAuthorityIdentifier
 taxAuthorityIdentifier = "HMRC"
 
-# DIY Accounting extensions (prefixed diy:)
-"diy:product" = "BasicSoleTrader"
-"diy:vatRegistered" = false
-"diy:basisOfAccounting" = "cash"   # cash | accrual
-"diy:nino" = ""
+# DIY Accounting extensions (prefixed diya-gl:)
+"diya-gl:product" = "BasicSoleTrader"
+"diya-gl:vatRegistered" = false
+"diya-gl:basisOfAccounting" = "cash"   # cash | accrual
+"diya-gl:nino" = ""
 
 
 # --- gl-cor:account (chart of accounts) -----------------------------------
 # Each entry maps gl-cor:accountMainID → metadata
 # accountMainDescription is the GL label
-# diy:column is the spreadsheet column mapping (extract/build)
+# diya-gl:column is the spreadsheet column mapping (extract/build)
 # gl-cor:accountType from GL enumeration:
 #   account | bank | customer | vendor | employee | job |
 #   statistical | measurable | other
@@ -361,57 +361,57 @@ accountType = "account"
 [accounts.purchases."5000"]
 accountMainDescription = "Cost of sales / materials"
 accountType = "account"
-"diy:column" = "E"
+"diya-gl:column" = "E"
 
 [accounts.purchases."5100"]
 accountMainDescription = "Motor expenses"
 accountType = "account"
-"diy:column" = "F"
+"diya-gl:column" = "F"
 
 [accounts.purchases."5200"]
 accountMainDescription = "Travel & subsistence"
 accountType = "account"
-"diy:column" = "G"
+"diya-gl:column" = "G"
 
 [accounts.purchases."5300"]
 accountMainDescription = "Telephone"
 accountType = "account"
-"diy:column" = "H"
+"diya-gl:column" = "H"
 
 [accounts.purchases."5400"]
 accountMainDescription = "Stationery & postage"
 accountType = "account"
-"diy:column" = "I"
+"diya-gl:column" = "I"
 
 [accounts.purchases."5500"]
 accountMainDescription = "Advertising"
 accountType = "account"
-"diy:column" = "J"
+"diya-gl:column" = "J"
 
 [accounts.purchases."5600"]
 accountMainDescription = "Insurance"
 accountType = "account"
-"diy:column" = "K"
+"diya-gl:column" = "K"
 
 [accounts.purchases."5700"]
 accountMainDescription = "Repairs & maintenance"
 accountType = "account"
-"diy:column" = "L"
+"diya-gl:column" = "L"
 
 [accounts.purchases."5800"]
 accountMainDescription = "Accountancy fees"
 accountType = "account"
-"diy:column" = "M"
+"diya-gl:column" = "M"
 
 [accounts.purchases."5900"]
 accountMainDescription = "Other expenses"
 accountType = "account"
-"diy:column" = "N"
+"diya-gl:column" = "N"
 
 [accounts.purchases."7000"]
 accountMainDescription = "Fixed asset purchases"
 accountType = "account"
-"diy:column" = "O"
+"diya-gl:column" = "O"
 
 
 # --- Tax configuration (from gl-taf + HMRC published rates) ----------------
@@ -528,18 +528,148 @@ The USK module provides additional concepts for UK-specific needs. We reference
 its concepts but map them to simpler property names where the GL element name
 is overly generic.
 
-### 5.6 DIY Accounting Extensions (diy:)
+### 5.6 DIY Accounting Extensions (diya-gl:)
 
-Properties prefixed `diy:` are not in the GL taxonomy. They are product-specific
+Properties prefixed `diya-gl:` are not in the GL taxonomy. They are product-specific
 metadata needed for the spreadsheet mapping:
 
 | Property                 | Description                                  | Location  |
 |--------------------------|----------------------------------------------|-----------|
-| `diy:product`            | DIY Accounting product identifier            | book.toml |
-| `diy:vatRegistered`      | Whether the business is VAT registered       | book.toml |
-| `diy:basisOfAccounting`  | cash or accrual                              | book.toml |
-| `diy:nino`               | National Insurance Number                    | book.toml |
-| `diy:column`             | Excel column letter for this account code    | book.toml |
+| `diya-gl:product`            | DIY Accounting product identifier            | book.toml |
+| `diya-gl:vatRegistered`      | Whether the business is VAT registered       | book.toml |
+| `diya-gl:basisOfAccounting`  | cash or accrual                              | book.toml |
+| `diya-gl:nino`               | National Insurance Number                    | book.toml |
+| `diya-gl:companyNumber`      | Companies House number (8 digits)            | book.toml |
+| `diya-gl:vatNumber`          | VAT registration number (9 digits)           | book.toml |
+| `diya-gl:cisRegistered`      | Whether registered under CIS                 | book.toml |
+| `diya-gl:column`             | Excel column letter for this account code    | book.toml |
+| `diya-gl:sa103sBox`          | SA103S box reference (e.g. 'box10')          | book.toml |
+| `diya-gl:ct600Box`           | CT600 box reference                          | book.toml |
+| `diya-gl:vatBox`             | VAT return box number (1-9)                  | book.toml |
+| `diya-gl:bankCode`           | Bank receipt/payment code (BC/DR/CR/W/RP...) | .jsonl    |
+| `diya-gl:bankAccountID`      | Bank account code from chart of accounts     | .jsonl    |
+| `diya-gl:employeeID`         | Employee identifier (matches employees[])    | .jsonl    |
+| `diya-gl:grossPay`           | Gross pay for payroll period                 | .jsonl    |
+| `diya-gl:incomeTax`          | PAYE income tax deducted                     | .jsonl    |
+| `diya-gl:employeeNI`         | Employee NI deducted                         | .jsonl    |
+| `diya-gl:employerNI`         | Employer NI contribution                     | .jsonl    |
+| `diya-gl:netPay`             | Net pay (gross - tax - employee NI)          | .jsonl    |
+| `diya-gl:cisDeduction`       | CIS deduction amount withheld                | .jsonl    |
+| `diya-gl:cisRate`            | CIS deduction rate (0.20/0.30/0)             | .jsonl    |
+
+### 5.7 Directors and Employees (book.toml top-level sections)
+
+**`directors[]`** — Array of company directors with shareholdings (Company Accounts only):
+
+```toml
+[[directors]]
+name = "Carol Smith"
+role = "Managing Director"
+shares = 60
+appointed = 2020-01-01
+
+[[directors]]
+name = "David Brown"
+role = "Non-Executive Director"
+shares = 25
+appointed = 2021-06-15
+```
+
+Used to populate Companysecretary.xlsx sheets (RegisterofMembers, DirectorsInterest, Directors&Sec.).
+
+**`employees[]`** — Array of employees on payroll (SE + Company Accounts):
+
+```toml
+[[employees]]
+employeeID = "EMP001"
+name = "Alice Johnson"
+role = "Senior Developer"
+grossPay = 3500
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2024-01-15
+isDirector = false
+
+[[employees]]
+employeeID = "EMP003"
+name = "Carol Smith"
+role = "Director"
+grossPay = 1048
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2020-01-01
+isDirector = true
+```
+
+Used to populate Payslips.xlsx (Employee sheet, monthly/weekly pay calculations).
+
+### 5.8 Bank Code Letters
+
+The `diya-gl:bankCode` field identifies the type of bank transaction. Codes map to the
+analysis columns in bank account workbooks (Currentaccount.xlsx, etc.):
+
+**Receipt codes:**
+
+| Code | Meaning | Column mapping |
+|------|---------|----------------|
+| BC | Opening balance / brought forward | A1 cell |
+| DR | Debtor receipt (customer payment) | Receipt analysis |
+| CR | Creditor refund (supplier refund) | Receipt analysis |
+| K  | Capital introduced (shareholder) | Receipt analysis |
+| RV | Revenue (non-sales: interest, grants) | Receipt analysis |
+| DL | Directors loan (director -> company) | Receipt analysis |
+| X  | Transfer between accounts | Receipt analysis |
+
+**Payment codes:**
+
+| Code | Meaning | Column mapping |
+|------|---------|----------------|
+| CR | Creditor payment (to supplier) | Payment analysis |
+| DR | Debtor refund (to customer) | Payment analysis |
+| W  | Wages (net pay to employees) | Payment analysis |
+| B  | Bank charges and interest | Payment analysis |
+| J  | Journal adjustment | Payment analysis |
+| RP | HMRC payment (PAYE, VAT, CT) | Payment analysis |
+| DL | Directors loan (company -> director) | Payment analysis |
+| DV | Dividend payment | Payment analysis |
+| X  | Transfer between accounts | Payment analysis |
+
+### 5.9 CIS (Construction Industry Scheme) Fields
+
+For businesses registered under CIS, sub-contractor purchase lines include:
+
+- `diya-gl:cisDeduction` — Amount withheld and paid to HMRC
+- `diya-gl:cisRate` — Deduction rate (0.20 standard, 0.30 higher, 0 for gross payment)
+
+The net amount paid to the sub-contractor = `amount - diya-gl:cisDeduction`.
+CIS deductions are paid to HMRC monthly alongside PAYE/NI.
+
+### 5.10 Payroll Fields
+
+Lines with `sourceJournalID = "payroll"` use additional fields to record the full
+payroll breakdown for each pay period:
+
+```json
+{
+  "sourceJournalID": "payroll",
+  "postingDate": "2025-04-30",
+  "accountMainID": "5101",
+  "amount": 3500,
+  "diya-gl:employeeID": "EMP001",
+  "diya-gl:grossPay": 3500,
+  "diya-gl:incomeTax": 540,
+  "diya-gl:employeeNI": 254.40,
+  "diya-gl:employerNI": 382.50,
+  "diya-gl:netPay": 2705.60,
+  "detailComment": "Alice Johnson",
+  "lineItemComment": "April salary"
+}
+```
+
+The `amount` field holds the gross pay. Individual deductions are in the `diya-gl:` fields.
+Payroll lines feed into Payslips.xlsx and the WagesInterface sheet in Financialaccounts.xlsx.
 
 ---
 
@@ -549,6 +679,7 @@ Not all fields are used by all products. Each product uses a subset:
 
 | Field                    | BasicSoleTrader | SelfEmployed | TaxiDriver | CompanyAccounts |
 |--------------------------|:-:|:-:|:-:|:-:|
+| **Core fields** | | | | |
 | `entryNumber`            | ✓ | ✓ | ✓ | ✓ |
 | `sourceJournalID`        | ✓ | ✓ | ✓ | ✓ |
 | `postingDate`            | ✓ | ✓ | ✓ | ✓ |
@@ -558,20 +689,37 @@ Not all fields are used by all products. Each product uses a subset:
 | `documentReference`      | ✓ | ✓ | ✓ | ✓ |
 | `documentType`           | ✓ | ✓ | ✓ | ✓ |
 | `documentDate`           |   | ✓ |   | ✓ |
+| `postingStatus`          |   |   |   | ✓ |
+| **Double-entry** | | | | |
 | `debitCreditCode`        |   |   |   | ✓ |
 | `lineNumber`             |   |   |   | ✓ |
 | `entryDetail[]`          |   |   |   | ✓ |
+| `accountSubID`           |   |   |   | ✓ |
+| `amountCurrency`         |   |   |   | ✓ |
+| **VAT** | | | | |
 | `taxCode`                |   | ✓ |   | ✓ |
 | `taxAmount`              |   | ✓ |   | ✓ |
 | `taxRate`                |   | ✓ |   | ✓ |
 | `taxPointDate`           |   | ✓ |   | ✓ |
+| **Payment** | | | | |
 | `paymentMethod`          |   | ✓ |   | ✓ |
-| `amountCurrency`         |   |   |   | ✓ |
-| `measurableQuantity`     |   |   | ✓ |   |
-| `measurableUnitOfMeasure`|   |   | ✓ |   |
-| `measurableDescription`  |   |   | ✓ |   |
-| `postingStatus`          |   |   |   | ✓ |
-| `accountSubID`           |   |   |   | ✓ |
+| **Measurable** | | | | |
+| `measurableQuantity`     |   | ✓ | ✓ | ✓ |
+| `measurableUnitOfMeasure`|   | ✓ | ✓ | ✓ |
+| `measurableDescription`  |   | ✓ | ✓ | ✓ |
+| **Bank (diya-gl:)** | | | | |
+| `diya-gl:bankCode`           |   | ✓ |   | ✓ |
+| `diya-gl:bankAccountID`      |   | ✓ |   | ✓ |
+| **Payroll (diya-gl:)** | | | | |
+| `diya-gl:employeeID`         |   | ✓ |   | ✓ |
+| `diya-gl:grossPay`           |   | ✓ |   | ✓ |
+| `diya-gl:incomeTax`          |   | ✓ |   | ✓ |
+| `diya-gl:employeeNI`         |   | ✓ |   | ✓ |
+| `diya-gl:employerNI`         |   | ✓ |   | ✓ |
+| `diya-gl:netPay`             |   | ✓ |   | ✓ |
+| **CIS (diya-gl:)** | | | | |
+| `diya-gl:cisDeduction`       |   |   |   | ✓ |
+| `diya-gl:cisRate`            |   |   |   | ✓ |
 
 ---
 
@@ -602,16 +750,51 @@ These rules go beyond JSON Schema and are enforced by the CLI `validate` command
    `SUM(amount WHERE debitCreditCode="D")` = `SUM(amount WHERE debitCreditCode="C")`.
 9. **Minimum lines**: each journal entry must have at least 2 `entryDetail` elements.
 
-### 7.4 Mileage Rules (TaxiDriver)
+### 7.4 Mileage Rules (TaxiDriver, SelfEmployed)
 
 10. **Mileage comparison**: where `measurableUnitOfMeasure` is `"miles"`, the CLI
     should compute both mileage allowance (HMRC rates) and actual vehicle costs
     and select the higher for the tax return.
 
+### 7.5 Payroll Rules (SelfEmployed, CompanyAccounts)
+
+11. **Payroll consistency**: for payroll lines, `amount` must equal `diya-gl:grossPay`.
+12. **Net pay**: `diya-gl:netPay` must equal `diya-gl:grossPay - diya-gl:incomeTax - diya-gl:employeeNI`.
+13. **Employee existence**: `diya-gl:employeeID` must match an entry in `book.toml` `employees[]`.
+14. **Pay frequency**: payroll lines per employee must match the `payFrequency` in `employees[]`.
+
+### 7.6 CIS Rules (CompanyAccounts)
+
+15. **CIS deduction**: if `diya-gl:cisRate` > 0, then `diya-gl:cisDeduction` must equal
+    `round(amount * diya-gl:cisRate, 2)`.
+16. **CIS registration**: CIS fields should only appear when `diya-gl:cisRegistered` is true
+    in `book.toml`.
+
+### 7.7 Bank Rules (SelfEmployed, CompanyAccounts)
+
+17. **Bank account existence**: `diya-gl:bankAccountID` must exist in `book.toml` `accounts.bank`.
+18. **Bank code validity**: `diya-gl:bankCode` must be a valid receipt or payment code
+    appropriate for the transaction direction.
+
 ---
 
-## 8. Versioning
+## 8. Source Journal to Workbook Mapping
+
+The `sourceJournalID` values map to xlsx workbooks in each product:
+
+| sourceJournalID | BST | SE | Taxi | Ltd |
+|-----------------|-----|------|------|-----|
+| `sales` | SalesApr-SalesMar sheets | Sales.xlsx (monthly tabs) | SalesApr-SalesMar sheets | Sales.xlsx (monthly tabs) |
+| `purchases` | PurchasesApr-PurchasesMar sheets | Purchases.xlsx (monthly tabs) | PurchasesApr-PurchasesMar sheets | Purchases.xlsx (monthly tabs) |
+| `bank` | — | Bank.xlsx + Cash.xlsx | — | Currentaccount.xlsx + Savingaccount.xlsx + Cashaccount.xlsx + Creditcardaccount.xlsx |
+| `payroll` | — | Payslips.xlsx | — | Payslips.xlsx |
+| `petty-cash` | — | Cash.xlsx | — | Cashaccount.xlsx |
+| `journal` | — | Financialaccounts.xlsx | — | Financialaccounts.xlsx (OpenAccounts) |
+
+---
+
+## 9. Versioning
 
 This schema is versioned as `v1`. The version is embedded in the JSON Schema `$id` URL.
 Future versions will maintain backward compatibility by only adding optional fields.
-The `diy:product` value in `book.toml` determines which subset of the schema is active.
+The `diya-gl:product` value in `book.toml` determines which subset of the schema is active.

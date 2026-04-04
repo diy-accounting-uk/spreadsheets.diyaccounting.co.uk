@@ -73,7 +73,7 @@ an issue here https://github.com/antonycc/diy-accounting/issues .
 
 ### Reference Documentation
 
-- `CONTEXT_SOLE_TRADER.md`, `CONTEXT_TAXI.md`, `CONTEXT_SELF_EMPLOYED.md`, `CONTEXT_LIMITED_COMPANY.md` — product-specific details
+- `CONTEXT_BASIC_SOLE_TRADER.md`, `CONTEXT_TAXI.md`, `CONTEXT_SELF_EMPLOYED.md`, `CONTEXT_LIMITED_COMPANY.md` — product-specific details
 - `SKILL_EXCEL.md` — Excel manipulation techniques and testing
 - `SKILL_PACKAGE_UPDATES.md` — annual update process
 

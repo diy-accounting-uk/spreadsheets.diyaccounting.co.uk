@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.json",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.schema.json",
   "title": "DIY Accounting GL-aligned Transaction Lines",
   "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
   "type": "object",
@@ -140,6 +140,55 @@
     "measurableDescription": {
       "type": "string",
       "description": "gl-bus:measurableQualifier — What is being measured"
+    },
+    "diya-gl:bankCode": {
+      "type": "string",
+      "enum": ["BC", "DR", "CR", "K", "RV", "DL", "X", "W", "B", "J", "RP", "DV"],
+      "description": "diya-gl: extension — Bank receipt/payment code. Receipt: BC=opening balance, DR=debtor receipt, CR=creditor refund, K=capital introduced, RV=revenue (interest), DL=directors loan in, X=transfer in. Payment: BC=closing adjustment, CR=creditor payment, DR=debtor refund, W=wages, B=bank charges, J=journal, RP=HMRC payment (PAYE/VAT/CT), DL=directors loan out, X=transfer out, DV=dividend."
+    },
+    "diya-gl:bankAccountID": {
+      "type": "string",
+      "description": "diya-gl: extension — Bank account code from book.toml accounts.bank (e.g. 1200=current, 1210=savings). Identifies which bank workbook this transaction belongs to."
+    },
+    "diya-gl:employeeID": {
+      "type": "string",
+      "description": "diya-gl: extension — Employee identifier matching employees[] in book.toml. Used for payroll lines (sourceJournalID=payroll)."
+    },
+    "diya-gl:grossPay": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Gross pay for this payroll period. Payroll lines only."
+    },
+    "diya-gl:incomeTax": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — PAYE income tax deducted. Payroll lines only."
+    },
+    "diya-gl:employeeNI": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Employee National Insurance deducted. Payroll lines only."
+    },
+    "diya-gl:employerNI": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Employer National Insurance contribution. Payroll lines only."
+    },
+    "diya-gl:netPay": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Net pay (gross - tax - employee NI). Payroll lines only."
+    },
+    "diya-gl:cisDeduction": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — CIS deduction amount withheld from sub-contractor payment. Purchases lines with CIS sub-contractors only."
+    },
+    "diya-gl:cisRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "diya-gl: extension — CIS deduction rate (0.20=20% standard, 0.30=30% higher, 0=gross payment). CIS lines only."
     }
   }
 }
