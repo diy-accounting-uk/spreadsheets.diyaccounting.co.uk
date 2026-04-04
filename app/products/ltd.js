@@ -285,29 +285,30 @@ export const CELL_MAP = [
   ["MnthP&L", "B13", "Other Direct Costs",         "accounts.purchases.5002",        "Profit & Loss Account", 1],
   ["MnthP&L", "B14", "Cost of Sales",              "gl-cor:amount (costOfSales)",    "Profit & Loss Account", 0],
   ["MnthP&L", "B16", "**Gross Profit**",           "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
-  ["MnthP&L", "B18", "Directors Wages",            "accounts.purchases.5100",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B19", "Employee Wages",             "accounts.purchases.5101",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B20", "Premises",                   "accounts.purchases.5200",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B21", "Light, Heat, Power",         "accounts.purchases.5201",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B22", "Distribution",               "accounts.purchases.5300",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B23", "Equipment Hire",             "accounts.purchases.5301",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B24", "Repairs & Maintenance",      "accounts.purchases.5400",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B25", "Consumables",                "accounts.purchases.5401",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B26", "Advertising",                "accounts.purchases.5500",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B27", "General Admin",              "accounts.purchases.5501",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B28", "Travel & Hotel",             "accounts.purchases.5600",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B29", "Motor Vehicle",              "accounts.purchases.5601",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B30", "Insurance",                  "accounts.purchases.5700",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B31", "Leasing",                    "accounts.purchases.5701",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B32", "Legal & Professional",       "accounts.purchases.5800",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B33", "Charitable Donations",       "accounts.purchases.5801",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B34", "Goodwill",                   "accounts.purchases.5802",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B35", "Depreciation",               "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
-  ["MnthP&L", "B36", "Depreciation (2)",            "gl-cor:amount (depreciation2)",  "Profit & Loss Account", 1],
-  ["MnthP&L", "B37", "Loss on Disposal",           "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
-  ["MnthP&L", "B38", "Bank Interest",              "gl-cor:amount (bankInterest)",   "Profit & Loss Account", 1],
-  ["MnthP&L", "B39", "HP Interest",                "gl-cor:amount (hpInterest)",     "Profit & Loss Account", 1],
-  ["MnthP&L", "B40", "Other Expenses",             "accounts.purchases (other)",     "Profit & Loss Account", 1],
+  // B18-B40: Actual mapping from TrialBalance D64-D89 → MnthP&L C18-C40
+  ["MnthP&L", "B18", "PAYE Wages + Non-PAYE Employee", "dpl:WagesAndSalaries (combined)", "Profit & Loss Account", 1],
+  ["MnthP&L", "B19", "Directors Non-PAYE (code d)",  "accounts.purchases.5100",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B20", "PAYE Employee Wages",          "dpl:WagesAndSalaries (PAYE)",    "Profit & Loss Account", 1],
+  ["MnthP&L", "B21", "Premises (code r)",            "accounts.purchases.5200",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B22", "Light, Heat, Power (code p)",  "accounts.purchases.5201",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B23", "Distribution (code t)",        "accounts.purchases.5300",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B24", "Equipment Hire (code q)",      "accounts.purchases.5301",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B25", "Repairs & Maintenance (code m)","accounts.purchases.5400",       "Profit & Loss Account", 1],
+  ["MnthP&L", "B26", "Consumables (code u)",         "accounts.purchases.5401",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B27", "Advertising (code a)",         "accounts.purchases.5500",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B28", "General Admin (code g)",       "accounts.purchases.5501",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B29", "Travel & Hotel (code h)",      "accounts.purchases.5600",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B30", "Motor Vehicle (code v)",       "accounts.purchases.5601",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B31", "Insurance (code n)",           "accounts.purchases.5700",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B32", "Leasing (code f)",             "accounts.purchases.5701",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B33", "Legal & Professional (code l)","accounts.purchases.5800",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B34", "Bad Debts (from Sales)",       "accounts.sales.4005",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B35", "Depreciation (bank)",          "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
+  ["MnthP&L", "B36", "Depreciation (combined)",      "gl-cor:amount (depreciation2)",  "Profit & Loss Account", 1],
+  ["MnthP&L", "B37", "Charitable Donations (code y)","accounts.purchases.5801",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B38", "Goodwill (code z)",            "accounts.purchases.5802",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B39", "Depreciation 2",               "gl-cor:amount (depreciation3)",  "Profit & Loss Account", 1],
+  ["MnthP&L", "B40", "Depreciation 3",               "gl-cor:amount (depreciation4)",  "Profit & Loss Account", 1],
   ["MnthP&L", "B41", "Total Admin Expenses",       "gl-cor:amount (totalAdmin)",     "Profit & Loss Account", 0],
   ["MnthP&L", "B43", "**Operating Profit**",       "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
   ["MnthP&L", "B44", "Interest Received",          "gl-cor:amount (interestReceived)","Profit & Loss Account", 1],
@@ -406,9 +407,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const ltdAdminSum = [pl.B18, pl.B19, pl.B20, pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34, pl.B35, pl.B36, pl.B37, pl.B38, pl.B39, pl.B40].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
 
-  // Expense line gross totals (6f)
-  if (expected.total_premises_gross) check("Premises (net from gross)", pl.B20 || 0, expected.total_premises_gross / 1.2, expected.total_premises_gross * 0.01);
-  if (expected.total_legal_gross) check("Legal (net from gross)", pl.B32 || 0, expected.total_legal_gross / 1.2, expected.total_legal_gross * 0.01);
+  // Expense line gross totals (6f) — B21=Premises(code r), B33=Legal(code l) per TrialBalance mapping
+  if (expected.total_premises_gross) check("Premises (net from gross)", pl.B21 || 0, expected.total_premises_gross / 1.2, expected.total_premises_gross * 0.01);
+  if (expected.total_legal_gross) check("Legal (net from gross)", pl.B33 || 0, expected.total_legal_gross / 1.2, expected.total_legal_gross * 0.01);
 
   // Stock checks
   if (expected.opening_stock !== undefined) {
