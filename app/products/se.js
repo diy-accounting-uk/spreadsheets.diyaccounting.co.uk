@@ -98,37 +98,27 @@ export const TAX_SHEET = "Income Tax";
 export function standardReads() {
   return {
     "Profit & Loss Account": [
-      // Column B = Total Year (SUM of monthly columns C:N)
-      "B5",
-      "B6",
-      "B7",
-      "B8",
-      "B9",
-      "B11",
-      "B14",
-      "B15",
-      "B16",
-      "B17",
-      "B19",
-      "B21",
-      "B22",
-      "B23",
-      "B24",
-      "B25",
-      "B26",
-      "B27",
-      "B28",
-      "B29",
-      "B30",
-      "B31",
-      "B32",
-      "B33",
-      "B34",
-      "B35",
-      "B37",
-      "B39",
+      // Column B = Total Year
+      "B5", "B6", "B7", "B8", "B9", "B11",
+      "B14", "B15", "B16", "B17", "B19",
+      "B21", "B22", "B23", "B24", "B25", "B26", "B27", "B28", "B29",
+      "B30", "B31", "B32", "B33", "B34", "B35",
+      "B37", "B39",
     ],
     [TAX_SHEET]: ["E5", "E6", "E7", "E8", "E9", "E10", "E11", "E15", "E16", "E18"],
+    // SE Short (SA103S self-assessment return)
+    "SE Short": [
+      "D7", "D8", "D9", "D10", "D14", "D15", "D16", "D17", "D18", "D19",
+      "D20", "D21", "D22", "D23", "D24", "D25", "D26", "D27", "D28",
+      "D29", "D30", "D31", "D32", "D33",
+      "D100", "D101", "D102", "D103", "D104", "D105", "D106",
+    ],
+    // VitalTax (quarterly summary)
+    VitalTax: ["B5", "B6", "B7", "B8", "C5", "C6", "C7", "C8", "D5", "D6", "D7", "D8"],
+    // StockControl
+    StockControl: ["B5", "B6", "B7", "B8"],
+    // Wagesinterface (payroll summary)
+    Wagesinterface: ["B5", "B6", "B7", "B8", "B9", "B10", "C5", "C6", "C7", "C8", "C9", "C10"],
   };
 }
 

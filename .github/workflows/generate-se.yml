@@ -181,13 +181,12 @@ jobs:
           name: se-packages
           path: packages/
       - run: rm -f reports/*.md
-      - run: npm run reconciliation -- --package se --scenario basic --year-end ${{ matrix.year-end }}
-      - run: npm run reconciliation -- --package se --scenario extended --year-end ${{ matrix.year-end }}
+      - run: npm run reconciliation -- --package se --scenario advanced --year-end ${{ matrix.year-end }}
       - name: Copy latest populated to examples
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           rm -rf examples/se-latest
-          POPULATED=$(ls -d reports/populated/*se-scenario-extended 2>/dev/null | head -1)
+          POPULATED=$(ls -d reports/populated/*se-scenario-advanced 2>/dev/null | head -1)
           if [ -d "$POPULATED" ]; then
             cp -r "$POPULATED" examples/se-latest
             echo "Copied $POPULATED to examples/se-latest"

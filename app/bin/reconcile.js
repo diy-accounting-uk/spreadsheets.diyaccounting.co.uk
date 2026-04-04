@@ -89,28 +89,18 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
   }
 
   lines.push("");
-  lines.push("## Raw Output Values");
+  lines.push("## Output Values");
   lines.push("");
 
-  const plSheetName = Object.keys(results).find((k) => k.startsWith("Profit & Loss"));
-  if (plSheetName && results[plSheetName]) {
-    lines.push(`### ${plSheetName}`);
+  for (const [sheetName, cells] of Object.entries(results)) {
+    if (!cells || typeof cells !== "object") continue;
+    const entries = Object.entries(cells).filter(([, v]) => v !== null && v !== undefined && v !== "" && v !== " ");
+    if (entries.length === 0) continue;
+    lines.push(`### ${sheetName}`);
     lines.push("");
     lines.push("| Cell | Value |");
     lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results[plSheetName])) {
-      lines.push(`| ${cell} | ${val} |`);
-    }
-    lines.push("");
-  }
-
-  const taxSheetName = productMod.TAX_SHEET;
-  if (results[taxSheetName]) {
-    lines.push(`### ${taxSheetName}`);
-    lines.push("");
-    lines.push("| Cell | Value |");
-    lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results[taxSheetName])) {
+    for (const [cell, val] of entries) {
       lines.push(`| ${cell} | ${val} |`);
     }
     lines.push("");

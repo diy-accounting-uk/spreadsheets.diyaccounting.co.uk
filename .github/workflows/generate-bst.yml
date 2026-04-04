@@ -169,13 +169,12 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package bst --scenario basic --year-end ${{ matrix.year-end }}
-      - run: npm run reconciliation -- --package bst --scenario extended --year-end ${{ matrix.year-end }}
       - name: Copy latest populated to examples
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           rm -rf examples/bst-latest
           mkdir -p examples/bst-latest
-          POPULATED=$(ls reports/populated/*bst-scenario-extended*.xlsx 2>/dev/null | head -1)
+          POPULATED=$(ls reports/populated/*bst-scenario-basic*.xlsx 2>/dev/null | head -1)
           if [ -f "$POPULATED" ]; then
             cp "$POPULATED" examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx
             echo "Copied $POPULATED to examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx"
