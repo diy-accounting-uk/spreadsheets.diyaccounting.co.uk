@@ -2,7 +2,6 @@
 
 Scenario: se-scenario-advanced
 Status: RECONCILES
-Generated: 2026-04-04
 
 ## Compliance Checks
 
