@@ -22,10 +22,15 @@ export function cellWrites(scenario) {
   const writes = {};
 
   // Business Details
-  if (scenario.metadata) {
+  if (scenario.business || scenario.metadata) {
     writes["Business Details"] = {};
     const bd = writes["Business Details"];
-    if (scenario.metadata.name) bd.C5 = scenario.metadata.name;
+    const biz = scenario.business || {};
+    bd.C5 = biz.name || scenario.metadata?.name || "";
+    if (biz.description) bd.C7 = biz.description;
+    if (biz.address) bd.C8 = biz.address;
+    if (biz.town) bd.C10 = biz.town;
+    if (biz.postcode) bd.C12 = biz.postcode;
   }
 
   if (scenario.sales) {
@@ -122,6 +127,12 @@ export const TAX_SHEET = "Income Tax";
 
 // prettier-ignore
 export const CELL_MAP = [
+  // ── Business Details ──
+  ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["Business Details", "C7",  "Description",         "entityInformation.organizationDescription", "Business Details", 0],
+  ["Business Details", "C8",  "Address",             "gl-bus:organizationAddress",                "Business Details", 0],
+  ["Business Details", "C10", "Town",                "gl-bus:organizationAddress (town)",         "Business Details", 0],
+  ["Business Details", "C12", "Postcode",            "gl-bus:organizationAddress (postcode)",     "Business Details", 0],
   // ── Profit & Loss Account ──
   ["Profit & Loss Acc", "C4",  "Sales Turnover",                   "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "C5",  "Other Income",                     "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],

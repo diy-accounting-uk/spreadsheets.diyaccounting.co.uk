@@ -4,6 +4,17 @@ description = "Full Ltd-scoped extract from Precision Code Ltd master data. All 
 product = "ltd"
 tax_regime = "ltd"
 
+[business]
+name = "Precision Code Ltd"
+description = "IT consultancy and software development"
+company_number = "12345678"
+address = "123 High Street"
+town = "Manchester"
+postcode = "M1 1AA"
+phone = "0161 555 0100"
+utr = "1234567890"
+vat_number = "123456789"
+
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"

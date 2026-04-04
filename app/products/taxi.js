@@ -58,6 +58,18 @@ function findRowInDateMap(dateRowMap, serial) {
 export function cellWrites(scenario, targetStartYear = null) {
   const writes = {};
 
+  // Business Details
+  if (scenario.business || scenario.metadata) {
+    writes["Business Details"] = {};
+    const bd = writes["Business Details"];
+    const biz = scenario.business || {};
+    bd.C5 = biz.name || scenario.metadata?.name || "";
+    if (biz.description) bd.C7 = biz.description;
+    if (biz.address) bd.C8 = biz.address;
+    if (biz.town) bd.C10 = biz.town;
+    if (biz.postcode) bd.C12 = biz.postcode;
+  }
+
   if (scenario.sales) {
     const scenarioStartYear = extractTaxYearStart(scenario);
     const startYear = targetStartYear || scenarioStartYear;
@@ -114,6 +126,13 @@ export const TAX_SHEET = "Draft Tax calculation";
 
 // prettier-ignore
 export const CELL_MAP = [
+  // ── Business Details ──
+  ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["Business Details", "C7",  "Description",         "entityInformation.organizationDescription", "Business Details", 0],
+  ["Business Details", "C8",  "Address",             "gl-bus:organizationAddress",                "Business Details", 0],
+  ["Business Details", "C10", "Town",                "gl-bus:organizationAddress (town)",         "Business Details", 0],
+  ["Business Details", "C12", "Postcode",            "gl-bus:organizationAddress (postcode)",     "Business Details", 0],
+  ["Business Details", "O29", "UTR",                 "gl-taf:taxRegistrationNumber",              "Business Details", 0],
   // ── Profit & Loss Account (column B) ──
   ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1],

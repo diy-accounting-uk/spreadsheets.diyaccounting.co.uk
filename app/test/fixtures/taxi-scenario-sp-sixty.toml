@@ -9,6 +9,15 @@ description = "Private hire driver with varying daily fares, fuel, insurance, re
 product = "taxi"
 tax_regime = "se"
 
+[business]
+name = "SP Sixty Driving"
+description = "Private hire and taxi services"
+address = "42 Oak Lane"
+town = "Leeds"
+postcode = "LS1 5PQ"
+phone = "0113 555 0200"
+utr = "9876543210"
+
 # === SALES ===
 # Daily fares entered on specific dates in the pre-filled Sales sheets.
 # Taxi Sales sheets have pre-filled dates -- amounts go into column E (gross takings).

@@ -175,12 +175,22 @@ export function cellWrites(scenario) {
     }
   }
 
+  // Business Details (in Financialaccounts.xlsx hub)
+  const hubWrites = {};
+  if (scenario.business || scenario.metadata) {
+    hubWrites["Business Details"] = {};
+    const bd = hubWrites["Business Details"];
+    const biz = scenario.business || {};
+    bd.C5 = biz.name || scenario.metadata?.name || "";
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
   if (Object.keys(bankWrites).length > 0) result["Bank.xlsx"] = bankWrites;
   if (Object.keys(cashWrites).length > 0) result["Cash.xlsx"] = cashWrites;
+  if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   return result;
 }
 
@@ -202,6 +212,8 @@ export const TAX_SHEET = "Income Tax";
 
 // prettier-ignore
 export const CELL_MAP = [
+  // ── Business Details ──
+  ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
   // ── Profit & Loss Account ──
   ["Profit & Loss Account", "B5",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B6",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],

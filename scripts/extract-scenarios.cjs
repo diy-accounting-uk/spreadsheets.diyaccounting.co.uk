@@ -283,6 +283,15 @@ function formatScenarioToml(metadata, grouped, expected) {
   parts.push(`tax_regime = "${metadata.tax_regime}"`);
   parts.push("");
 
+  // Business details
+  if (metadata.business) {
+    parts.push("[business]");
+    for (const [k, v] of Object.entries(metadata.business)) {
+      parts.push(`${k} = "${escapeTomlString(String(v))}"`);
+    }
+    parts.push("");
+  }
+
   // Sales
   for (const month of MONTH_ORDER) {
     const txns = grouped.sales[month];
@@ -586,6 +595,15 @@ const bstToml = formatScenarioToml(
     description: "BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll.",
     product: "bst",
     tax_regime: "se",
+    business: {
+      name: "Precision Code Trading",
+      description: "IT consultancy and software development",
+      address: "123 High Street",
+      town: "Manchester",
+      postcode: "M1 1AA",
+      phone: "0161 555 0100",
+      utr: "1234567890",
+    },
   },
   bstGrouped,
   {
@@ -630,6 +648,17 @@ const advToml = formatScenarioToml(
     description: "SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.",
     product: "se",
     tax_regime: "se",
+    business: {
+      name: "Precision Code Trading",
+      description: "IT consultancy and software development",
+      address: "123 High Street",
+      town: "Manchester",
+      postcode: "M1 1AA",
+      phone: "0161 555 0100",
+      utr: "1234567890",
+      vat_number: "123456789",
+      nino: "AB123456C",
+    },
   },
   advGrouped,
   {
@@ -670,6 +699,17 @@ const fullToml = formatScenarioToml(
     description: "Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.",
     product: "ltd",
     tax_regime: "ltd",
+    business: {
+      name: "Precision Code Ltd",
+      description: "IT consultancy and software development",
+      company_number: "12345678",
+      address: "123 High Street",
+      town: "Manchester",
+      postcode: "M1 1AA",
+      phone: "0161 555 0100",
+      utr: "1234567890",
+      vat_number: "123456789",
+    },
   },
   fullGrouped,
   {

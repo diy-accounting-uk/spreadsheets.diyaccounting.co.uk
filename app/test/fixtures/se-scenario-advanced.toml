@@ -4,6 +4,17 @@ description = "SE-scoped extract from Precision Code Ltd master data. Sales + pu
 product = "se"
 tax_regime = "se"
 
+[business]
+name = "Precision Code Trading"
+description = "IT consultancy and software development"
+address = "123 High Street"
+town = "Manchester"
+postcode = "M1 1AA"
+phone = "0161 555 0100"
+utr = "1234567890"
+vat_number = "123456789"
+nino = "AB123456C"
+
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"

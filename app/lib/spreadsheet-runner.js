@@ -231,6 +231,8 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
     const recalcZip = await JSZip.loadAsync(recalcBuffer);
     const recalcSheetMap = await buildSheetMap(recalcZip);
 
+    const sharedStrings = await loadSharedStrings(recalcZip);
+
     const results = {};
     for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
       const sheetPath = recalcSheetMap.get(sheetName);
@@ -240,7 +242,7 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
       results[sheetName] = {};
 
       for (const cellRef of cellRefs) {
-        results[sheetName][cellRef] = readCellValue(xml, cellRef);
+        results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
       }
     }
 
@@ -258,8 +260,25 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
   }
 }
 
+// Load shared strings table from xlsx zip
+async function loadSharedStrings(zip) {
+  const ssFile = zip.file("xl/sharedStrings.xml");
+  if (!ssFile) return [];
+  const xml = await ssFile.async("string");
+  // Match <si> elements — handle both <t>text</t> and <r><t>text</t></r> (rich text) forms
+  const strings = [];
+  const siMatches = [...xml.matchAll(/<si>(.*?)<\/si>/gs)];
+  for (const m of siMatches) {
+    const inner = m[1];
+    // Concatenate all <t> elements within this <si> (handles rich text with multiple <r><t> runs)
+    const parts = [...inner.matchAll(/<t[^>]*>([^<]*)<\/t>/g)].map((t) => t[1]);
+    strings.push(parts.join(""));
+  }
+  return strings;
+}
+
 // Read a cell's value from sheet XML (after recalculation, values are in <v> tags)
-function readCellValue(xml, cellRef) {
+function readCellValue(xml, cellRef, sharedStrings = []) {
   const cellPattern = new RegExp(`<c\\s+r="${cellRef}"[^>]*(?:/>|>(.*?)</c>)`, "s");
   const match = xml.match(cellPattern);
   if (!match) return null;
@@ -276,14 +295,23 @@ function readCellValue(xml, cellRef) {
 
   const raw = vMatch[1].trim();
 
-  if (cellType === "s" || cellType === "inlineStr") {
-    // For inline strings, extract from <is><t>
-    const isMatch = cellContent.match(/<is><t>(.*?)<\/t><\/is>/s);
+  if (cellType === "inlineStr") {
+    const isMatch = cellContent.match(/<is><t[^>]*>(.*?)<\/t><\/is>/s);
     if (isMatch) return isMatch[1];
-    return raw; // shared string index — would need lookup
+    return raw;
+  }
+
+  if (cellType === "s") {
+    // Shared string — resolve index to actual text
+    const idx = parseInt(raw, 10);
+    if (sharedStrings.length > 0 && idx >= 0 && idx < sharedStrings.length) {
+      return sharedStrings[idx];
+    }
+    return raw; // fallback if no shared strings table provided
   }
 
   if (cellType === "b") return raw === "1";
+  if (cellType === "str") return raw; // formula result is a string
 
   // Numeric or date
   const num = parseFloat(raw);
@@ -493,6 +521,8 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     const recalcZip = await JSZip.loadAsync(recalcBuffer);
     const recalcSheetMap = await buildSheetMap(recalcZip);
 
+    const sharedStrings = await loadSharedStrings(recalcZip);
+
     const results = {};
     for (const [sheetName, cellRefs] of Object.entries(cellReads)) {
       const sheetPath = recalcSheetMap.get(sheetName);
@@ -502,7 +532,7 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
       results[sheetName] = {};
 
       for (const cellRef of cellRefs) {
-        results[sheetName][cellRef] = readCellValue(xml, cellRef);
+        results[sheetName][cellRef] = readCellValue(xml, cellRef, sharedStrings);
       }
     }
 

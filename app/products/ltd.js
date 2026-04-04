@@ -110,10 +110,24 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     processJournal(scenario.purchases, purchasesWrites, "supplier", "g");
   }
 
-  return {
+  // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet)
+  const hubWrites = {};
+  if (scenario.business || scenario.metadata) {
+    hubWrites.OpenAccounts = {};
+    const bd = hubWrites.OpenAccounts;
+    const biz = scenario.business || {};
+    bd.E2 = biz.name || scenario.metadata?.name || "";
+    if (biz.company_number) bd.E3 = biz.company_number;
+    if (biz.address) bd.E4 = `${biz.address}, ${biz.town || ""} ${biz.postcode || ""}`.trim();
+    if (biz.utr) bd.E6 = biz.utr;
+  }
+
+  const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
+  if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
+  return result;
 }
 
 // ── Standard reads for reconciliation ──────────────────────────────────────
@@ -125,6 +139,11 @@ export const TAX_SHEET = "CorporationTax";
 
 // prettier-ignore
 export const CELL_MAP = [
+  // ── Business Details (OpenAccounts sheet) ──
+  ["OpenAccounts", "E2",  "Company Name",          "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["OpenAccounts", "E3",  "Company Number",        "diya-gl:companyNumber",                     "Business Details", 0],
+  ["OpenAccounts", "E4",  "Address",               "gl-bus:organizationAddress",                "Business Details", 0],
+  ["OpenAccounts", "E6",  "UTR",                   "gl-taf:taxRegistrationNumber",              "Business Details", 0],
   // ── Management P&L (MnthP&L) ──
   ["MnthP&L", "B4",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["MnthP&L", "B5",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
