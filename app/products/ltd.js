@@ -464,6 +464,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // CT calculation chain (6d)
       check("CT: Chargeable >= Operating", ct.K28 || 0, ct.K5 || 0, ct.K28); // chargeable includes add-backs
       check("CT: Tax outstanding = CT", ct.K39 || 0, ct.K35 || 0);
+
+      // Marginal relief warning (8g) — if profit > small profits limit, CT should be higher than small rate
+      const smallLimit = taxData.corporation_tax.small_profits_limit || 50000;
+      const mainRate = taxData.corporation_tax.main_rate || 0.25;
+      if (profit > smallLimit) {
+        const mainRateCT = Math.round(profit * mainRate);
+        const marginalCheck = { name: "CT: Marginal relief expected (profit > £50K)", actual: ct.K35 || 0, expected: mainRateCT, pass: false, diff: (ct.K35 || 0) - mainRateCT, severity: "warning" };
+        checks.push(marginalCheck);
+      }
     }
   }
 

@@ -79,7 +79,7 @@ amount = 720
 date = 2025-04-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.apr]]
 date = 2025-04-18
@@ -133,7 +133,7 @@ amount = 960
 date = 2025-05-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.may]]
 date = 2025-05-16
@@ -181,7 +181,7 @@ amount = 720
 date = 2025-06-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.jun]]
 date = 2025-06-18
@@ -247,7 +247,7 @@ amount = 2160
 date = 2025-07-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.jul]]
 date = 2025-07-18
@@ -301,7 +301,7 @@ amount = 960
 date = 2025-08-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.aug]]
 date = 2025-08-18
@@ -349,7 +349,7 @@ amount = 720
 date = 2025-09-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.sep]]
 date = 2025-09-16
@@ -427,7 +427,7 @@ amount = 2160
 date = 2025-10-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.oct]]
 date = 2025-10-18
@@ -481,7 +481,7 @@ amount = 960
 date = 2025-11-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.nov]]
 date = 2025-11-18
@@ -529,7 +529,7 @@ amount = 720
 date = 2025-12-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.dec]]
 date = 2025-12-18
@@ -589,7 +589,7 @@ amount = 2160
 date = 2026-01-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.jan]]
 date = 2026-01-16
@@ -643,7 +643,7 @@ amount = 720
 date = 2026-02-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.feb]]
 date = 2026-02-18
@@ -697,7 +697,7 @@ amount = 720
 date = 2026-03-15
 customer = "Acme Corp"
 code = "a"
-amount = 8000
+amount = 25000
 
 [[sales.mar]]
 date = 2026-03-18
@@ -3187,6 +3187,14 @@ code = "X"
 amount = 500
 description = "Pay credit card balance"
 
+[[bank.apr]]
+date = 2026-04-01
+account = "1200"
+source = "HMRC"
+code = "RP"
+amount = 2800
+description = "VAT payment Q4 Jan-Mar"
+
 [[bank.may]]
 date = 2025-05-01
 account = "1200"
@@ -4171,14 +4179,6 @@ code = "DV"
 amount = 6000
 description = "Final dividend payment"
 
-[[bank.mar]]
-date = 2026-03-31
-account = "1200"
-source = "HMRC"
-code = "RP"
-amount = 2800
-description = "VAT payment Q4 Jan-Mar"
-
 [[bank.apr]]
 date = 2025-04-01
 account = "1220"
@@ -4317,6 +4317,6 @@ cost = 3000
 acc_dep = 270
 
 [expected]
-total_sales = 169200
+total_sales = 339200
 total_motor_gross = 7598
 total_legal_gross = 5310

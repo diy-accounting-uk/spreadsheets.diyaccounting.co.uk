@@ -79,12 +79,13 @@ function addSale(opts) {
   });
 }
 
-// Acme Corp: 8,000 gross/month x 12 (INV-1001 to INV-1012)
+// Acme Corp: 25,000 gross/month x 12 = 300,000/year (INV-1001 to INV-1012)
+// Scaled up to push turnover above VAT threshold and profit above small profits limit
 for (let i = 0; i < 12; i++) {
   addSale({
     date: fyDate(i, 15),
     account: "4000",
-    amount: 8000,
+    amount: 25000,
     customer: "Acme Corp",
     comment: "IT consultancy services",
     docRef: `INV-${1001 + i}`,
