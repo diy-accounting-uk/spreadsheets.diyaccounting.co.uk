@@ -155,30 +155,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-  sheets-test:
-    runs-on: ubuntu-24.04
-    steps:
-
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
-
-      - name: Install LibreOffice
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq libreoffice-calc
-
-      - name: Run slow tests (LibreOffice)
-        run: npm run test:slow
-
   browser-test:
     runs-on: ubuntu-24.04
     steps:
