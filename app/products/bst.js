@@ -279,12 +279,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const bstExpenseSum = [pl.C11, pl.C12, pl.C13, pl.C14, pl.C15, pl.C16, pl.C17, pl.C18, pl.C19, pl.C20, pl.C21].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Expense lines sum = Total", pl.C22, bstExpenseSum);
 
-  // Stock checks
+  // Stock checks (6e)
   if (expected.opening_stock !== undefined && results.PurchasesStock) {
     check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
   }
   if (expected.closing_stock !== undefined && results.PurchasesStock) {
     check("Closing Stock", results.PurchasesStock.D30 || 0, expected.closing_stock);
+  }
+  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined) {
+    // CoS should include stock adjustment: opening - closing adds to cost
+    const stockAdj = expected.opening_stock - expected.closing_stock;
+    check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
   }
 
   // Debtors/Creditors checks
@@ -327,6 +332,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
     check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+
+    // SA103S cross-check (6g)
+    const seShort = results["SE Short"];
+    if (seShort) {
+      if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.C4);
+      if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
+    }
   }
 
   return checks;

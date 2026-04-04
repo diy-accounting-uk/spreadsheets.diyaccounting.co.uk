@@ -344,6 +344,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
     check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+
+    // SA103S cross-check (6g)
+    const seShort = results["SE Short"];
+    if (seShort) {
+      if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
+      if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
+    }
   }
 
   return checks;
