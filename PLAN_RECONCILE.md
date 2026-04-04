@@ -1217,6 +1217,19 @@ Report format:
 - [ ] Precision Code scaled up, Ltd reconciliation shows WARNING for marginal relief
 - [ ] WARNING checks do not cause ANOMALYDETECTED
 
+**8h. SP Sixty Driving through BST**:
+- Create `bst-sp-sixty.test.js` — the SP Sixty Driving scenario adapted for the BST package
+- BST doesn't have the mileage comparison feature (that's Taxi-only), so BST version uses actual motor expenses
+- Gives BST a second scenario alongside BrickWork Pro
+
+**8i. Cross-package reconciliation**:
+- Add `npm run cross-package-reconciliation` command
+- Reads all reconciliation reports in `reports/` and checks that values which should be consistent across packages are consistent
+- For a non-VAT-registered scenario with the same transactions: pre-tax profit should be identical in BST, SE, and Ltd packages (sales = face value, expenses = face value, no VAT split)
+- For a VAT-registered scenario: net sales and net purchases should be consistent
+- Add this check to `test.yml` workflow after the reconciliation report check step
+- Can be run locally: `node app/bin/cross-package-reconciliation.js`
+
 ---
 
 ## 7. Revenue Scaling Decision (from PLAN_DIYA_GL.md analysis)

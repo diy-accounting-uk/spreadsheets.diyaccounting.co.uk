@@ -292,6 +292,22 @@ function formatScenarioToml(metadata, grouped, expected) {
     parts.push("");
   }
 
+  // Employees (for Payslips.xlsx)
+  if (metadata.employees) {
+    for (const emp of metadata.employees) {
+      parts.push("[[employees]]");
+      parts.push(`employeeID = "${emp.employeeID}"`);
+      parts.push(`name = "${escapeTomlString(emp.name)}"`);
+      if (emp.role) parts.push(`role = "${escapeTomlString(emp.role)}"`);
+      parts.push(`grossPay = ${emp.grossPay}`);
+      parts.push(`payFrequency = "${emp.payFrequency}"`);
+      if (emp.taxCode) parts.push(`taxCode = "${emp.taxCode}"`);
+      if (emp.niCategory) parts.push(`niCategory = "${emp.niCategory}"`);
+      parts.push(`isDirector = ${emp.isDirector}`);
+      parts.push("");
+    }
+  }
+
   // Sales
   for (const month of MONTH_ORDER) {
     const txns = grouped.sales[month];
@@ -665,6 +681,7 @@ const advToml = formatScenarioToml(
       vat_number: "123456789",
       nino: "AB123456C",
     },
+    employees: book.employees || [],
   },
   advGrouped,
   {
@@ -721,6 +738,7 @@ const fullToml = formatScenarioToml(
       utr: "1234567890",
       vat_number: "123456789",
     },
+    employees: book.employees || [],
   },
   fullGrouped,
   {
