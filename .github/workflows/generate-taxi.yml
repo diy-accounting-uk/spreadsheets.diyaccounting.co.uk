@@ -180,6 +180,17 @@ jobs:
             echo "Copied $POPULATED to examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx"
           fi
       - run: rm -rf reports/populated
+      - uses: actions/upload-artifact@v7
+        with:
+          name: taxi-reports-${{ matrix.year-end }}
+          retention-days: 1
+          path: reports/
+      - uses: actions/upload-artifact@v7
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        with:
+          name: taxi-examples
+          retention-days: 1
+          path: examples/
       - name: Check reconciliation
         run: |
           COUNT=0
@@ -198,17 +209,6 @@ jobs:
             exit 1
           fi
           echo "$COUNT reports, all RECONCILES"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: taxi-reports-${{ matrix.year-end }}
-          retention-days: 1
-          path: reports/
-      - uses: actions/upload-artifact@v7
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        with:
-          name: taxi-examples
-          retention-days: 1
-          path: examples/
 
   commit:
     runs-on: ubuntu-24.04
