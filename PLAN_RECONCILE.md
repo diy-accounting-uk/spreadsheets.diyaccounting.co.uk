@@ -1004,51 +1004,59 @@ Each phase leaves the codebase in a passing state. Existing tests remain green u
 
 **Verify**: `npm test` passes. `node app/bin/reconcile.js --package ltd --scenario full` reconciles. Report includes everything the package generates.
 
-### Phase 6 — Wire balance sheet reads into reconciliation reports
+### Phase 6 — Incremental compliance check expansion
 
-The `standardReads()` and `checkCompliance()` extensions for all balance sheet items were already implemented in Phases 3-5 as part of the E2E test work. Because these functions are shared between E2E tests and the reconciliation runner (see Section 4 "Architecture: Shared Product Modules"), Phase 6 only needs to wire the existing reads/checks into the reconciliation report output format. Each sub-phase is a separate commit.
+Add one category of checks at a time. For each sub-phase:
+1. Add checks to `checkCompliance()` and compute expected values in `extract-scenarios.cjs`
+2. `npm test` — must pass
+3. Generate + reconcile 1 March package (Ltd `--years ltd-2025`) and 1 non-March (BST/SE/Taxi `--years se-2025-2026`)
+4. If green, commit and move to next sub-phase
 
-**6a. Stock values** (Section 4d)
-- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
-- Wire into reconciliation report: add "Stock" row showing opening, purchases, closing, and cost of goods sold adjustment
-- Verify reconciliation passes with the new report section
+**6a. P&L internal consistency** (all products):
+Add checks that verify the P&L formulas are intact — these don't need expected fixture values, they verify the spreadsheet's own internal calculations:
+- BST: `C9 = C4 - C6 - C7` (gross = sales - CoS - direct), `C24 = C9 - C22` (net = gross - expenses)
+- SE: `B19 = B9 + B11 - B17` (gross = turnover + grants - CoS), `B37 = B19 - B35` (operating = gross - admin), `B39 = B37` (PBT = operating)
+- Ltd: `B16 = B9 - B14` (gross = turnover - CoS), `B43 = B16 - B41` (operating = gross - admin), `B45 = B43 + B44` (PBT)
+- Taxi: `B23 = B13 - B22` (net = gross - general expenses)
 
-**6b. Fixed asset values** (Section 4b)
-- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
-- Wire into reconciliation report: add "Fixed Assets" table showing each asset category with cost, depreciation, NBV, and capital allowances claimed
-- Verify reconciliation passes with the new report section
+**6b. Total expenses cross-check** (all products):
+- BST: verify C22 = SUM(C11:C21) — sum of 11 expense lines equals total
+- SE: verify B35 = SUM(B21:B34) — sum of 14 admin lines equals total
+- Ltd: verify B41 = SUM(B18:B40) — sum of 23 admin lines equals total
+- Taxi: verify B22 = SUM(B14:B21) — sum of 8 general expense lines equals total
 
-**6c. Closing debtors and creditors** (Section 4f)
-- `standardReads()` and `checkCompliance()` already extended in Phase 3 (BST), Phase 4 (SE), Phase 5 (Ltd)
-- Wire into reconciliation report: add "Debtors & Creditors" table showing opening, movements, and closing balances
-- Verify reconciliation passes with the new report section
+**6c. Tax calculation chain** (BST, SE, Taxi):
+Tighten existing tax checks to verify the full chain:
+- E7 = E5 - E6 (taxable = profit - allowance)
+- E10 = E8 + E9 (total IT = basic + higher)
+- E18 = E10 - E11 + E15 + E16 (total = IT - CIS + NI lower + NI upper) [BST/SE]
+- E17 = E10 + E14 + E15 (total = IT + NI lower + NI upper) [Taxi]
 
-**6d. Cash and bank balances** (Section 4a)
-- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
-- Wire into reconciliation report: add "Bank & Cash Balances" table showing opening, closing, and reconciliation status per account
-- Verify reconciliation passes with the new report section
+**6d. CT calculation chain** (Ltd):
+- K28 = K5 + K12 - K22 (chargeable = operating + add-backs - allowances)
+- K35 = round(K28 * 0.19) (CT = chargeable * small profits rate)
+- K39 = K35 (outstanding = CT, no instalments for small company)
 
-**6e. Expected VAT payments** (Section 4c)
-- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
-- Wire into reconciliation report: add "VAT Returns" table showing per-quarter: output VAT, input VAT, net due, and annual totals
-- Verify reconciliation passes with the new report section
+**6e. Stock adjustment** (BST):
+- Verify P&L CoS includes stock adjustment: C6 should reflect opening stock - closing stock + stock purchases
+- Already have opening_stock and closing_stock checks; add check that CoS >= stock_adjustment
 
-**6f. Wages payments** (Section 4e)
-- `standardReads()` and `checkCompliance()` already extended in Phase 4 (SE), Phase 5 (Ltd). Not applicable to BST.
-- Wire into reconciliation report: add "Payroll" table showing per-employee: gross pay, PAYE, employee NI, employer NI, net pay, plus annual totals
-- Verify reconciliation passes with the new report section
+**6f. Expense line totals** (SE, Ltd, Taxi):
+Compute expected individual expense totals from scenario transaction data in extract-scenarios.cjs. Add to fixture `[expected]` and `checkCompliance()`:
+- SE: total_premises (B22 from purchases code p), total_motor (B25 from code v), total_legal (B28 from code l)
+- Ltd: total_premises (B20 from code r), total_legal (B32 from code l)
+- Taxi: total_fuel (B6 from code d), total_legal (B18 from code l)
 
-**6g. Tax payments** (Section 4g)
-- `standardReads()` and `checkCompliance()` already partially covered and extended with PAYE reconciliation in Phase 4 (SE), Phase 5 (Ltd)
-- Wire into reconciliation report: add "Tax" calculation chain table showing the full chain from profit through to tax liability
-- Verify reconciliation passes with the new report section
+**6g. SA103S cross-check** (BST, SE):
+- Verify D38 = P&L turnover (SE Short pulls from P&L)
+- Verify D106 = Income Tax E5 (profit for tax calc matches tax sheet)
 
-**6h. Dividends / drawings** (Section 4h)
-- `standardReads()` and `checkCompliance()` already extended in Phase 5 (Ltd). Not applicable to BST. SE drawings tracked via bank (if applicable, extended in Phase 4).
-- Wire into reconciliation report: add "Distributions" table showing dividends declared/paid per quarter (Ltd) or total drawings (SE)
-- Verify reconciliation passes with the new report section
-
-**Verify** after each sub-phase: `npm test` passes, reconciliation still reconciles (new report sections added incrementally, using reads/checks already proven by E2E tests in Phases 3-5).
+**Future (deferred past Phase 6)**:
+- VAT 9-box reads from Vat.xlsx / Vatreturns.xlsx (separate file, not in multi-file recalc pipeline)
+- Bank closing balances (multi-file reads of final month A2)
+- PubBalSht / PubP&L correct cell positions (requires template analysis)
+- Payroll/wages WagesInterface cells
+- Dividends tracking
 
 ### Phase 7 — Documentation and CI cleanup
 
@@ -1219,21 +1227,73 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 - [x] Fixed SA103S cell references: reads formula cells D38/D71/D99/D106 not static label cells
 - [x] SE Short (SA103S) boxes extracted in reconciliation report
 
-**Phase 5 — Ltd full** (IN PROGRESS):
-- [ ] `npm test` passes
-- [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles
-- [ ] `ltd.js` converted to CELL_MAP pattern with CT600, PubP&L, PubBalSht
-- [ ] CT600OnlineLookALike.xlsx REMOVED from Ltd template (CT600 data extracted in reconciliation report instead)
-- [ ] ltd-scenario-full.toml replaces ltd-scenario-basic and ltd-scenario-extended
-- [ ] Old Ltd scenario fixtures removed
-- Note: SP Sixty Driving (taxi) example scenario being created in background (examples/sp-sixty-driving/)
+**Phase 5 — Ltd full** (DONE):
+- [x] `npm test` passes (133/133 tests, 8/8 files)
+- [x] `node app/bin/reconcile.js --package ltd --scenario full` reconciles (2/2 checks)
+- [x] `ltd.js` converted to CELL_MAP pattern with MnthP&L, CorporationTax (CT600), PubP&L, PubBalSht
+- [x] CT600OnlineLookALike.xlsx REMOVED from Ltd template
+- [x] ltd-scenario-full.toml replaces ltd-scenario-basic and ltd-scenario-extended
+- [x] Old Ltd scenario fixtures removed
+- [x] CI workflow already used `--scenario full`
+- [x] extract-scenarios.cjs fixed: uses `computeSpreadsheetNetSales()` (always /1.2) matching spreadsheet formula
 
-**Phase 6 — Wire balance sheet reads into reconciliation reports**:
-- [ ] Reconciliation reports include sections for: stock (6a), fixed assets (6b), debtors/creditors (6c), bank balances (6d), VAT (6e), wages (6f), tax (6g), dividends/drawings (6h)
-- [ ] Report sections reuse the `standardReads()`/`checkCompliance()` code extended in Phases 3-5 (no duplicated read/check logic)
+**Phase 5b — Taxi SP Sixty** (DONE):
+- [x] `examples/sp-sixty-driving/` created (267 entries, 38,000 fares, 20,000 miles)
+- [x] `taxi-scenario-sp-sixty.toml` wired through taxi E2E test
+- [x] `taxi.js` converted to CELL_MAP pattern with P&L (mileage comparison) + Draft Tax Calculation
+- [x] Reconciles 4/4 (total sales, income tax, NI, total tax)
+
+**Phase 6 — Incremental compliance check expansion**:
+
+Each sub-phase: add checks to `checkCompliance()` and expected values to fixture, run `npm test`, generate+reconcile 1 March (Ltd) and 1 May (non-March Ltd) package, if green commit and move to next.
+
+**6a. P&L internal consistency** (all products):
+- Check: gross profit = turnover - cost of sales (BST, SE, Ltd, Taxi)
+- Check: net profit = gross profit - total expenses (BST, SE, Ltd)
+- Check: operating profit + interest = PBT (SE, Ltd)
+- Applies to: BST (C9 = C4 - C6 - C7), SE (B19 = B9 - B17), Ltd (B16 = B9 - B14), Taxi (B13)
+
+**6b. Total expenses cross-check** (all products):
+- Check: sum of individual expense lines = total expenses (BST C22, SE B35, Ltd B41, Taxi B22)
+- These are formula-driven in the spreadsheet; verifies the SUM formula is intact
+
+**6c. Tax self-consistency** (BST, SE, Taxi):
+- Check: taxable income = profit - personal allowance
+- Check: basic rate tax = min(taxable, basic band) * 20%
+- Check: total tax = income tax + NI lower + NI upper
+- Already partially done; extend to verify the chain more tightly
+
+**6d. CT self-consistency** (Ltd):
+- Check: profit chargeable >= operating profit (add-backs make it higher)
+- Check: CT = profit chargeable * small profits rate (19%)
+- Check: tax outstanding = CT (no payments on account in small company)
+
+**6e. Stock** (BST, SE — fixture has stock values):
+- BST already checks opening/closing stock — add to SE and Taxi if applicable
+- Check: stock adjustment in P&L CoS = opening - closing
+
+**6f. Debtors & Creditors** (BST — already done, extend to SE/Ltd):
+- SE: check ClosingDebtors and ClosingCreditors sheets in Sales.xlsx/Purchases.xlsx (requires multi-file reads)
+- Ltd: same pattern for Ltd Sales.xlsx/Purchases.xlsx
+
+**6g. Expense line totals** (BST, SE, Ltd):
+- Add expected values for each expense line to the fixture (total_premises, total_gen_admin, total_legal already in BST)
+- Compute from the scenario transaction data in extract-scenarios.cjs
+- Add matching checks to SE and Ltd checkCompliance()
+
+**6h. SA103S cross-check** (BST, SE):
+- Check: SE Short D38 (turnover) = P&L total sales
+- Check: SE Short D71 (net profit) close to P&L net profit
+- Check: SE Short D106 (profit for tax) = Income Tax E5
+
+**Future (not Phase 6)**:
+- VAT 9-box reads from Vat.xlsx / Vatreturns.xlsx (requires separate recalculation or adding to pipeline)
+- Bank closing balances (requires multi-file reads of final month A2 cells)
+- PubBalSht / PubP&L cell mapping (requires template analysis for correct row positions)
+- Payroll/wages checks (requires WagesInterface cell mapping)
 
 **Phase 7 — Docs and CI**:
-- [ ] TEST_SCENARIOS.md fully documents all three scenarios with expected values
-- [ ] CI workflows run single scenario per product
+- [ ] TEST_SCENARIOS.md fully documents all scenarios with expected values
+- [ ] CI workflows run single scenario per product (BST/SE/Taxi done, Ltd already correct)
 - [ ] `scripts/extract-scenarios.cjs` runs in CI test job
 - [ ] No references to removed scenario files remain
