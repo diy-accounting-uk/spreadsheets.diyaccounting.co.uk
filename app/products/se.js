@@ -435,7 +435,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const seShort = results["SE Short"];
     if (seShort) {
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
-      if (seShort.D71) check("SA103S: Net profit close to P&L Net", seShort.D71, pl.B37, pl.B37 * 0.01);
+      if (seShort.D71) check("SA103S: Net profit close to P&L Net - Grants", seShort.D71, pl.B37 - (pl.B11 || 0), Math.abs(pl.B37) * 0.01);
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
     }
   }
