@@ -25,8 +25,7 @@ export function cellWrites(scenario) {
   if (scenario.metadata) {
     writes["Business Details"] = {};
     const bd = writes["Business Details"];
-    if (scenario.metadata.name) bd.B7 = scenario.metadata.name;
-    if (scenario.metadata.description) bd.D7 = scenario.metadata.description;
+    if (scenario.metadata.name) bd.C5 = scenario.metadata.name;
   }
 
   if (scenario.sales) {
@@ -124,8 +123,8 @@ export const TAX_SHEET = "Income Tax";
 // prettier-ignore
 export const CELL_MAP = [
   // ── Business Details ──
-  ["Business Details", "B7",  "Business Name",                    "entityInformation.organizationIdentifier",  "Business Details", 0],
-  ["Business Details", "D7",  "Business Description",             "entityInformation.organizationDescription", "Business Details", 0],
+  ["Business Details", "C5",  "Business Name",                    "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["Business Details", "O5",  "Accounting Date",                  "documentInfo.periodCoveredEnd",             "Business Details", 0],
   // ── Profit & Loss Account ──
   ["Profit & Loss Acc", "C4",  "Sales Turnover",                   "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "C5",  "Other Income",                     "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],

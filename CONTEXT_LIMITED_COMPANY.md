@@ -78,15 +78,15 @@ For each `ltd-YYYY.toml` financial year data file, the generator produces up to 
 | No tab rename    |               | TABS RENAME      |
 +------------------+               +------------------+
 
-+------------------+  +------------------+  +------------------+
-|CT600OnlineLook   |  | Salesinvoice.xlsx|  | expensesform.xlsx|
-| 1 sheet          |  | 5 sheets         |  | 12 sheets        |
-| Links to FA [1]  |  | Invoice Template |  | Month 01..12     |
-| + CompSec [8]    |  | Invoice Database |  | (never renamed)  |
-| + FixedAssets[1] |  | Customer Details |  | No links         |
-| No tab rename    |  | Product Details  |  |                  |
-|                  |  | Business Details |  |                  |
-+------------------+  | No links         |  +------------------+
++------------------+  +------------------+
+| Salesinvoice.xlsx|  | expensesform.xlsx|
+| 5 sheets         |  | 12 sheets        |
+| Invoice Template |  | Month 01..12     |
+| Invoice Database |  | (never renamed)  |
+| Customer Details |  | No links         |
+| Product Details  |  |                  |
+| Business Details |  +------------------+
+| No links         |
                       +------------------+
 +------------------+
 |Dividend Voucher  |
@@ -103,7 +103,7 @@ Sales.xlsx, Purchases.xlsx, Currentaccount.xlsx, Savingaccount.xlsx, Cashaccount
 
 ### Files with no month-specific content (8)
 
-Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600OnlineLookALike.xlsx, Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Vatreturns.xlsx (VATQtr1-5 + Vatinterface + S/P sheets), Dividend Voucher.docx.
+Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Vatreturns.xlsx (VATQtr1-5 + Vatinterface + S/P sheets), Dividend Voucher.docx.
 
 ## Inter-Workbook Link Diagram
 
@@ -126,8 +126,7 @@ Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600Onlin
          [8]CompSec  <-- Financialaccounts
          [9]Payslips <-- Financialaccounts
 
-         CT600OnlineLookALike --> Financialaccounts
-                              --> Companysecretary
+         (CT600 data extracted in reconciliation report)
                               --> Fixedassets
 
          Vatreturns --> Financialaccounts (Admin dates)
@@ -135,7 +134,7 @@ Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600Onlin
                     --> Purchases (monthly totals)
 ```
 
-Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). CT600OnlineLookALike has 3 inbound links. Vatreturns has 3 inbound links. All other workbooks either have no links or are linked only from Financialaccounts.
+Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). Vatreturns has 3 inbound links. All other workbooks either have no links or are linked only from Financialaccounts.
 
 ## Intra-Workbook Data Flow
 

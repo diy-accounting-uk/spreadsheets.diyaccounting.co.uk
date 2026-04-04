@@ -51,7 +51,6 @@ The package produces automated monthly profit and loss accounts, live debtor and
 | **Vatreturns.xlsx** | Five quarterly VAT returns |
 | **Payslips.xlsx** | Payroll payslip generator |
 | **Fixedassets.xlsx** | Fixed asset schedule, depreciation, capital allowances |
-| **CT600OnlineLookALike.xlsx** | Preview of the online CT600 return |
 | **Companysecretary.xlsx** | Board minutes, directors register, members register |
 | **Salesinvoice.xlsx** | Sales invoice template |
 | **expensesform.xlsx** | Monthly expense claim forms |
@@ -331,7 +330,7 @@ No entries required. Excel copy of the official CT600 tax return, auto-populated
 
 ### Companies House (online)
 
-Use CT600OnlineLookALike.xlsx as a filing aid. Check health indicators D4 and D5 before filing. Open Financialaccounts.xlsx first, then CT600OnlineLookALike.xlsx.
+Use the CorporationTax and CT600 sheets in Financialaccounts.xlsx to review your CT600 data before filing online.
 
 ### Companies House (paper)
 
