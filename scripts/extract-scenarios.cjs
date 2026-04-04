@@ -647,7 +647,12 @@ const advDiya = writeDiyaGlSubset(
 
 const fullLines = filterFull(allLines);
 const fullSalesLines = fullLines.filter((l) => l.sourceJournalID === "sales");
-const fullTotalSales = computeNetSales(fullSalesLines);
+// Ltd MnthP&L B9 "Sales Turnover" = codes a,b,c,d,g (accounts 4000-4004)
+// Ltd includes grants in turnover (unlike SE which shows grants in B11)
+// Bad debts (4005) and FA sales (4006) are separate P&L lines
+const LTD_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004"]);
+const fullTurnoverLines = fullSalesLines.filter((l) => LTD_TURNOVER_ACCOUNTS.has(l.accountMainID));
+const fullTotalSales = computeNetSales(fullTurnoverLines);
 const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
 const fullToml = formatScenarioToml(
   {
