@@ -407,6 +407,15 @@ function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Opening balance sheet (Ltd)
+  if (expected.opening_balance) {
+    parts.push("[opening_balance]");
+    for (const [k, v] of Object.entries(expected.opening_balance)) {
+      parts.push(`${k} = ${v}`);
+    }
+    parts.push("");
+  }
+
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
@@ -745,6 +754,22 @@ const fullToml = formatScenarioToml(
     total_sales: fullTotalSales,
     total_premises_gross: Math.round(fullByCode.r || 0),
     total_legal_gross: Math.round(fullByCode.l || 0),
+    opening_balance: {
+      fixed_assets: 21087,
+      motor_vehicles: 20172,
+      computer_equipment: 2730,
+      stock: 10000,
+      trade_debtors: 10800,
+      current_account: 25000,
+      savings_account: 5000,
+      cash: 500,
+      trade_creditors: 2400,
+      vat_liability: 1500,
+      corporation_tax: 4500,
+      directors_loan: 20000,
+      share_capital: 100,
+      retained_earnings: 45702,
+    },
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,
