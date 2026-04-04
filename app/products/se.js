@@ -246,15 +246,22 @@ export const CELL_MAP = [
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
   // ── SE Short (SA103S) ──
-  ["SE Short", "D9",   "Box 9 — Business name",       "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
-  ["SE Short", "D10",  "Box 10 — Description",         "entityInformation.organizationDescription", "Self Assessment (SA103S)", 0],
-  ["SE Short", "D25",  "Box 25 — Turnover",            "gl-cor:amount (sa103s.turnover)",          "Self Assessment (SA103S)", 0],
-  ["SE Short", "D27",  "Box 27 — Allowable expenses",  "gl-cor:amount (sa103s.expenses)",          "Self Assessment (SA103S)", 0],
-  ["SE Short", "D29",  "Box 29 — Net profit/loss",     "gl-cor:amount (sa103s.netProfit)",         "Self Assessment (SA103S)", 0],
-  ["SE Short", "D30",  "Box 30 — Tax adjustments",     "gl-cor:amount (sa103s.taxAdjust)",         "Self Assessment (SA103S)", 0],
-  ["SE Short", "D31",  "Box 31 — Taxable profit",      "gl-cor:amount (sa103s.taxableProfit)",     "Self Assessment (SA103S)", 0],
-  ["SE Short", "D32",  "Box 32 — Notes",               "gl-cor:detailComment",                    "Self Assessment (SA103S)", 0],
-  ["SE Short", "D106", "Net profit for tax calc",      "gl-cor:amount (sa103s.profitForTax)",      "Self Assessment (SA103S)", 0],
+  // ── SE Short (SA103S) — formula cells only ──
+  ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
+  ["SE Short", "D8",   "Accounting date",                "documentInfo.periodCoveredEnd",             "Self Assessment (SA103S)", 0],
+  ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
+  ["SE Short", "D46",  "Cost of sales",                  "gl-cor:amount (sa103s.costOfSales)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D51",  "Other direct costs",             "gl-cor:amount (sa103s.otherDirect)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D55",  "Employee costs",                 "gl-cor:amount (sa103s.employeeCosts)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "D60",  "Premises costs",                 "gl-cor:amount (sa103s.premises)",           "Self Assessment (SA103S)", 1],
+  ["SE Short", "D64",  "Other expenses",                 "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
+  ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
+  ["SE Short", "A32",  "VAT threshold note",             "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
 ];
 
 export function standardReads() {
