@@ -18,7 +18,7 @@ Generated: 2026-04-04
 | | Amount |
 |---|------:|
 | Business Name | 3 |
-| Business Description | 3 |
+| Accounting Date | 3 |
 
 ## Profit & Loss Account
 
@@ -96,8 +96,8 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B7 | Business Name | 3 | entityInformation.organizationIdentifier |
-| D7 | Business Description | 3 | entityInformation.organizationDescription |
+| C5 | Business Name | 3 | entityInformation.organizationIdentifier |
+| O5 | Accounting Date | 3 | documentInfo.periodCoveredEnd |
 
 ### Profit & Loss Account
 
