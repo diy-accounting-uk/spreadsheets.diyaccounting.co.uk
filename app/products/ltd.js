@@ -399,9 +399,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const ltdAdminSum = [pl.B18, pl.B19, pl.B20, pl.B21, pl.B22, pl.B23, pl.B24, pl.B25, pl.B26, pl.B27, pl.B28, pl.B29, pl.B30, pl.B31, pl.B32, pl.B33, pl.B34, pl.B35, pl.B36, pl.B37, pl.B38, pl.B39, pl.B40].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
 
-  // Expense line gross totals (6f) — B21=Premises(code r), B33=Legal(code l) per TrialBalance mapping
-  if (expected.total_premises_gross) check("Premises (net from gross)", pl.B21 || 0, expected.total_premises_gross / 1.2, expected.total_premises_gross * 0.01);
-  if (expected.total_legal_gross) check("Legal (net from gross)", pl.B33 || 0, expected.total_legal_gross / 1.2, expected.total_legal_gross * 0.01);
+  // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
+  if (expected.total_premises_gross) check("Premises", pl.B21 || 0, expected.total_premises_gross);
+  if (expected.total_legal_gross) check("Legal & Professional", pl.B33 || 0, expected.total_legal_gross);
 
   // Stock checks
   if (expected.opening_stock !== undefined) {
