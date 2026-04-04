@@ -849,15 +849,137 @@ Thoroughly rewrite TEST_SCENARIOS.md to document:
 
 ---
 
-## 6. Implementation Order
+## 6. Phased Implementation
 
-1. **Extend `examples/precision-code-ltd/`** (Section 1): Update book.toml with new accounts, expand lines.jsonl to 600+ entries covering all items 1a-1n
-2. **Create scenario extracts** (Section 2): Build extraction script or manually create the three subdirectories with scoped book.toml + lines.jsonl + generated TOML fixtures
-3. **Update E2E tests** (Section 3): Modify bst-e2e, se-e2e, ltd-e2e to load new scenarios
-4. **Update reconciliation** (Section 4): Extend product modules (standardReads, checkCompliance), update reconcile.js for 1-scenario-per-product, extend report format
-5. **Update TEST_SCENARIOS.md** (Section 5): Rewrite with full documentation of all scenarios
-6. **Retire old scenarios**: Remove or archive bst-scenario-extended, se-scenario-basic, se-scenario-extended, ltd-scenario-basic, ltd-scenario-extended
-7. **Update CI workflows**: Adjust generate-bst.yml, generate-se.yml, generate-ltd.yml matrix to use single scenario per product
+Each phase leaves the codebase in a passing state. Existing tests remain green until explicitly switched over.
+
+### Phase 1 — Extend the master data
+
+**Goal**: `examples/precision-code-ltd/book.toml` and `lines.jsonl` contain all items 1a-1n. README.md documents the new state.
+
+**Steps**:
+1. Update `book.toml`: add new accounts (`1100` Stock, `1300` Trade debtors, `2410` CIS liability, `5803` Loan interest), `directors[]` array, `employees[]` array, `"diya-gl:cisRegistered" = true`, scaled-up Product A revenue (Section 7)
+2. Expand `lines.jsonl` to 600+ entries covering all items: opening balances (1a), 10+ sales/month (1i), 30+ purchases/month (1h), bank entries for all 4 accounts (1b VAT, 1g loan, 1m directors loan, 1n tax payments), payroll lines (1e), CIS (1f), fixed asset buy/sell (1c), stock (1d), mileage (1j), dividends (1l), opening/closing debtors and creditors (1h, 1i)
+3. Rewrite `examples/precision-code-ltd/README.md` to document the expanded dataset: business profile, all accounts, transaction volume summary, monthly P&L, balance sheet (opening and expected closing), directors/employees, key financial metrics. Match the style of the current README but cover all new items.
+4. Validate: `lines.jsonl` entries all reference valid accounts in `book.toml`, dates within period, amounts positive, debits/credits balance on journal entries
+
+**Verify**: `wc -l examples/precision-code-ltd/lines.jsonl` >= 600. Manual review of README accuracy.
+
+### Phase 2 — Extract script generates all three subsets
+
+**Goal**: `scripts/extract-scenarios.cjs` reads the master data and outputs three diya-gl subdirectories plus three TOML scenario fixtures.
+
+**Steps**:
+1. Extend `scripts/extract-scenarios.cjs` to produce 6 outputs (currently produces 3 Ltd TOML files):
+   - `examples/precision-code-ltd/bst/book.toml` + `lines.jsonl` — BST-scoped diya-gl subset
+   - `examples/precision-code-ltd/advanced/book.toml` + `lines.jsonl` — SE-scoped diya-gl subset
+   - `examples/precision-code-ltd/full/book.toml` + `lines.jsonl` — full copy (Ltd scope)
+   - `app/test/fixtures/bst-scenario-basic.toml` — BST TOML fixture (replaces existing)
+   - `app/test/fixtures/se-scenario-advanced.toml` — SE TOML fixture (new)
+   - `app/test/fixtures/ltd-scenario-full.toml` — Ltd TOML fixture (replaces existing)
+2. Add BST account mapping (Section 2a code table) and SE account mapping (Section 2b code table) to the script
+3. Add filtering logic per subset:
+   - **bst**: sales + purchases only, BST code mapping, no VAT/bank/payroll/CIS. `"diya-gl:product" = "BasicSoleTrader"`, tax config = incomeTax + nationalInsurance + capitalAllowances only
+   - **advanced**: sales + purchases + bank (current + cash) + payroll, SE code mapping, with VAT. `"diya-gl:product" = "SelfEmployed"`, tax config = incomeTax + nationalInsurance + vat + capitalAllowances + mileage
+   - **full**: all lines, full chart of accounts. `"diya-gl:product" = "Company"`, all tax config
+4. Add `[expected]` section computation for each fixture (total_sales, gross_profit, net_profit, tax figures derived from lines + tax rates in book.toml)
+5. Add `[stock]`, `[opening_debtors]`, `[closing_debtors]`, `[opening_creditors]`, `[closing_creditors]` sections to TOML output where the product supports them
+6. Add `[bank]` section to TOML output for SE and Ltd fixtures (grouped by account and month)
+
+**Verify**: `node scripts/extract-scenarios.cjs` runs cleanly, all 6 output files created, TOML fixtures parse without error, diya-gl subset book.toml files validate against schema.
+
+### Phase 3 — BST basic: E2E + reconciliation (P&L checks only)
+
+**Goal**: `bst-e2e.test.js` and BST reconciliation use the new `bst-scenario-basic.toml`. Only P&L checks — no balance sheet extensions yet.
+
+**Steps**:
+1. Update `app/test/bst-e2e.test.js`: replace hardcoded inline data with scenario loaded from `bst-scenario-basic.toml` via `scenario-loader.js` + `bst.cellWrites()`
+2. Verify existing P&L assertions still pass against the new data (total sales, expense lines, net profit)
+3. Verify existing tax assertions pass (Income Tax, NI Class 4, total)
+4. Update reconciliation: ensure `reconcile.js --package bst --scenario basic` uses the new fixture
+5. Remove or rename old `bst-scenario-extended.toml` (no longer needed — one scenario per product)
+
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package bst --scenario basic` reconciles with PASS on all existing checks.
+
+### Phase 4 — SE advanced: E2E + reconciliation (P&L checks only)
+
+**Goal**: `se-e2e.test.js` and SE reconciliation use `se-scenario-advanced.toml`. P&L and tax checks only.
+
+**Steps**:
+1. Update `app/test/se-e2e.test.js`: load `se-scenario-advanced.toml`, use `se.cellWrites()` to inject into Sales.xlsx and Purchases.xlsx
+2. Verify P&L assertions: total sales, sales by code, cost of sales, gross profit, admin expenses, operating profit
+3. Verify tax assertions: Income Tax, NI Class 4, total tax + NI
+4. Update reconciliation for SE: ensure `reconcile.js --package se --scenario advanced` works
+5. Remove or rename old `se-scenario-basic.toml` and `se-scenario-extended.toml`
+
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package se --scenario advanced` reconciles.
+
+### Phase 5 — Ltd full: E2E + reconciliation (P&L + CT checks only)
+
+**Goal**: `ltd-e2e.test.js` and Ltd reconciliation use `ltd-scenario-full.toml`. P&L + Corporation Tax checks.
+
+**Steps**:
+1. Update `app/test/ltd-e2e.test.js`: load `ltd-scenario-full.toml`, inject into all leaf files (Sales, Purchases, bank accounts, Payslips, Fixedassets, Companysecretary)
+2. Verify MnthP&L assertions: all sales lines, cost of sales, gross profit, admin expenses, operating profit, PBT
+3. Verify CorporationTax assertions: operating profit, add-backs, profit chargeable, CT at 19%
+4. Update reconciliation for Ltd: ensure `reconcile.js --package ltd --scenario full` works
+5. Remove or rename old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml`
+
+**Verify**: `npm test` passes. `node app/bin/reconcile.js --package ltd --scenario full` reconciles.
+
+### Phase 6 — Extend reconciliation reports incrementally
+
+Add one check category at a time to `standardReads()` and `checkCompliance()` in each product module. Each sub-phase is a separate commit.
+
+**6a. Stock values** (Section 4d)
+- BST: read PurchasesStock D5/D30, check opening/closing match expected
+- SE: read StockControl in Financialaccounts.xlsx
+- Ltd: read Stock sheet in Financialaccounts.xlsx
+- Report: add "Stock" row
+
+**6b. Fixed asset values** (Section 4b)
+- BST: read Fixed Assets preparation sheet
+- SE/Ltd: read Fixedassets.xlsx Schedule (cost, acc dep, NBV, capital allowances)
+- Report: add "Fixed Assets" table
+
+**6c. Closing debtors and creditors** (Section 4f)
+- BST: read Debtors & Creditors preparation sheet
+- SE: read Sales.xlsx ClosingDebtors, Purchases.xlsx ClosingCreditors
+- Ltd: read same + PubBalSht debtors/creditors lines
+- Report: add "Debtors & Creditors" table
+
+**6d. Cash and bank balances** (Section 4a)
+- SE: read Bank.xlsx + Cash.xlsx closing balances
+- Ltd: read all 4 bank workbooks A1-A4 on final month
+- Report: add "Bank & Cash Balances" table
+
+**6e. Expected VAT payments** (Section 4c)
+- SE: read Vat.xlsx VATQtr1-5 boxes
+- Ltd: read Vatreturns.xlsx VATQtr1-5 boxes
+- Report: add "VAT Returns" table
+
+**6f. Wages payments** (Section 4e)
+- SE: read Wagesinterface in Financialaccounts.xlsx
+- Ltd: read WagesInterface + Payslips.xlsx Payment
+- Report: add "Payroll" table
+
+**6g. Tax payments** (Section 4g)
+- All products: already partially covered; extend with PAYE reconciliation for SE/Ltd
+- Report: add "Tax" calculation chain table
+
+**6h. Dividends / drawings** (Section 4h)
+- Ltd: read TrialBalance dividends line, PubBalSht retained earnings
+- Report: add "Distributions" table
+
+**Verify** after each sub-phase: `npm test` passes, reconciliation still reconciles (new checks added incrementally).
+
+### Phase 7 — Documentation and CI cleanup
+
+**Steps**:
+1. Rewrite `TEST_SCENARIOS.md` (Section 5): all three scenarios, expected values, scope matrix, code mappings, tax benchmarks
+2. Update CI workflows: `generate-bst.yml`, `generate-se.yml`, `generate-ltd.yml` — single scenario per product in reconciliation matrix
+3. Add `node scripts/extract-scenarios.cjs` to CI test job so scenario fixtures stay in sync with master data
+4. Final cleanup: verify no references to removed scenario files remain in code or docs
 
 ---
 
@@ -914,16 +1036,30 @@ These assumptions were documented during the original data design and should gui
 
 ## Verification Criteria
 
+**Phase 1 — Master data**:
 - [ ] `examples/precision-code-ltd/lines.jsonl` has 600+ entries covering all items 1a-1n
-- [ ] `examples/precision-code-ltd/book.toml` has all required accounts (stock, debtors, CIS liability, etc.), directors[], employees[]
+- [ ] `examples/precision-code-ltd/book.toml` has all required accounts, `directors[]`, `employees[]`
+- [ ] `examples/precision-code-ltd/README.md` documents the expanded dataset accurately
 - [ ] All diya-gl files validate against schemas at `web/spreadsheets.diyaccounting.co.uk/public/schema/`
-- [ ] `examples/precision-code-ltd/bst/` contains valid diya-gl files scoped to BST capabilities
-- [ ] `examples/precision-code-ltd/advanced/` contains valid diya-gl files scoped to SE capabilities
-- [ ] `examples/precision-code-ltd/full/` contains valid diya-gl files scoped to Ltd capabilities
-- [ ] `npm test` passes with updated bst-e2e, se-e2e, ltd-e2e tests
-- [ ] `node app/bin/reconcile.js --package bst --scenario basic` reconciles
-- [ ] `node app/bin/reconcile.js --package se --scenario advanced` reconciles
-- [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles
-- [ ] Reconciliation reports include sections for: bank balances, fixed assets, VAT, stock, wages, debtors/creditors, tax, dividends/drawings
+
+**Phase 2 — Extract script**:
+- [ ] `node scripts/extract-scenarios.cjs` produces 6 files (3 diya-gl subdirectories + 3 TOML fixtures)
+- [ ] `examples/precision-code-ltd/bst/` contains valid diya-gl files scoped to BST
+- [ ] `examples/precision-code-ltd/advanced/` contains valid diya-gl files scoped to SE
+- [ ] `examples/precision-code-ltd/full/` contains valid diya-gl files scoped to Ltd
+- [ ] Generated TOML fixtures parse without error and contain correct `[expected]` values
+
+**Phases 3-5 — E2E + reconciliation switchover**:
+- [ ] `npm test` passes after each phase
+- [ ] `node app/bin/reconcile.js --package bst --scenario basic` reconciles (Phase 3)
+- [ ] `node app/bin/reconcile.js --package se --scenario advanced` reconciles (Phase 4)
+- [ ] `node app/bin/reconcile.js --package ltd --scenario full` reconciles (Phase 5)
+
+**Phase 6 — Extended report checks**:
+- [ ] Reconciliation reports include sections for: stock (6a), fixed assets (6b), debtors/creditors (6c), bank balances (6d), VAT (6e), wages (6f), tax (6g), dividends/drawings (6h)
+
+**Phase 7 — Docs and CI**:
 - [ ] TEST_SCENARIOS.md fully documents all three scenarios with expected values
-- [ ] CI workflows updated to run single scenario per product
+- [ ] CI workflows run single scenario per product
+- [ ] `scripts/extract-scenarios.cjs` runs in CI test job
+- [ ] No references to removed scenario files remain
