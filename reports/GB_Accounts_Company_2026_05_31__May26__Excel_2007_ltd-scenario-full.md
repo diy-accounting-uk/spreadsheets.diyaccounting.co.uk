@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Company 2026-05-31 (May26) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: RECONCILES
+Status: ANOMALYDETECTED
 
 ## Compliance Checks
 
@@ -12,6 +12,8 @@ Status: RECONCILES
 | P&L: Operating = Gross - Admin | 99591.08333333401 | 99591.0833333338 | -2.1827872842550278e-10 | PASS |
 | P&L: PBT = Operating + Interest | 99591.0833333338 | 99591.0833333338 | 0 | PASS |
 | P&L: Admin lines sum = Total | 53948.25 | 53948.25 | 0 | PASS |
+| Premises (net from gross) | 12000 | 0 | -12000 | **FAIL** |
+| Legal (net from gross) | 4425 | 720 | -3705 | **FAIL** |
 | Corporation Tax | 19492 | 19492.3058333334 | +0.30583333340109675 | PASS |
 | CT: Chargeable >= Operating | 99591.0833333338 | 102591.083333334 | +3000.0000000002037 | PASS |
 | CT: Tax outstanding = CT | 19492.3058333334 | 19492.3058333334 | 0 | PASS |
@@ -106,8 +108,21 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Creditors > 1 year | Corporation Tax |
 | **Net Assets** | Bank Overdraft |
 | &nbsp;&nbsp;&nbsp;&nbsp;Share Capital | Net Current Assets |
-| &nbsp;&nbsp;&nbsp;&nbsp;Retained Earnings | 0 |
-| **Shareholders Funds** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Retained Earnings | — |
+| **Shareholders Funds** | — |
+
+## Stock
+
+| | Amount |
+|---|------:|
+| Opening Stock | 10,000 |
+| Closing Stock | 6,000 |
+
+## Trial Balance
+
+| | Amount |
+|---|------:|
+| Audit Accuracy Check | -0 |
 
 ---
 
@@ -202,5 +217,16 @@ Status: RECONCILES
 | C17 | Creditors > 1 year | Corporation Tax | gl-cor:amount (pubBS.longTermCred) |
 | C19 | **Net Assets** | Bank Overdraft | gl-cor:amount (pubBS.netAssets) |
 | C22 | Share Capital | Net Current Assets | accounts.capital.3000 (pubBS) |
-| C23 | Retained Earnings | 0 | accounts.capital.3100 (pubBS) |
-| C25 | **Shareholders Funds** | 0 | gl-cor:amount (pubBS.equity) |
+
+### Stock
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| B5 | Opening Stock | 10000 | accounts.assets.1100 (opening) |
+| B8 | Closing Stock | 6000 | accounts.assets.1100 (closing) |
+
+### TrialBalance
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| EJ91 | Audit Accuracy Check | -3.57886165147647e-10 | gl-cor:amount (trialBalanceCheck) |
