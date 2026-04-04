@@ -314,13 +314,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   if (taxData) {
-    const profit = results[TAX_SHEET].E5 || 0;
+    const tax = results[TAX_SHEET];
+    const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
-    const computedIncomeTax = (results[TAX_SHEET].E10 || 0) - (results[TAX_SHEET].E11 || 0);
+    const computedIncomeTax = (tax.E10 || 0) - (tax.E11 || 0);
 
     check("Income Tax", computedIncomeTax, expectedTax.income_tax);
-    check("NI Class 4 (lower)", results[TAX_SHEET].E15 || 0, expectedTax.ni_class4_lower);
-    check("Total Tax + NI", results[TAX_SHEET].E18 || 0, expectedTax.total_tax_and_ni);
+    check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
+    check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+
+    // Tax calculation chain (6c)
+    check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
+    check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
+    check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
   }
 
   return checks;

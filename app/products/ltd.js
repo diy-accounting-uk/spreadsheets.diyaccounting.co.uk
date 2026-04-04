@@ -279,6 +279,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const rate = taxData.corporation_tax.small_profits_rate;
       const expectedCT = Math.round(profit * rate);
       check("Corporation Tax", ct.K35 || 0, expectedCT);
+
+      // CT calculation chain (6d)
+      check("CT: Chargeable >= Operating", ct.K28 || 0, ct.K5 || 0, ct.K28); // chargeable includes add-backs
+      check("CT: Tax outstanding = CT", ct.K39 || 0, ct.K35 || 0);
     }
   }
 

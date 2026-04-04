@@ -225,14 +225,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
 
   if (taxData) {
-    const taxSheet = results[TAX_SHEET];
-    if (taxSheet) {
-      const profit = taxSheet.E5 || 0;
+    const tax = results[TAX_SHEET];
+    if (tax) {
+      const profit = tax.E5 || 0;
       const expectedTax = calculateExpectedTax(profit, taxData);
 
-      check("Income Tax", taxSheet.E10 || 0, expectedTax.income_tax);
-      check("NI Class 4 (lower)", taxSheet.E14 || 0, expectedTax.ni_class4_lower);
-      check("Total Tax + NI", taxSheet.E17 || 0, expectedTax.total_tax_and_ni);
+      check("Income Tax", tax.E10 || 0, expectedTax.income_tax);
+      check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower);
+      check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni);
+
+      // Tax calculation chain (6c)
+      check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
+      check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
+      check("Tax: Total = IT + NI", tax.E17, (tax.E10 || 0) + (tax.E14 || 0) + (tax.E15 || 0));
     }
   }
 
