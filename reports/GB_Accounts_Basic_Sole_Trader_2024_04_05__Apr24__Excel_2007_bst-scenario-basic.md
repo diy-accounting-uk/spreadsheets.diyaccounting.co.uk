@@ -14,9 +14,17 @@ Generated: 2026-04-04
 | Premises Costs | 15840 | 15840 | 0 | PASS |
 | Gen Admin | 1962 | 1962 | 0 | PASS |
 | Legal & Professional | 4560 | 4560 | 0 | PASS |
+| P&L: Gross = Sales - CoS - Direct | 187360 | 187360 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 129908 | 129908 | 0 | PASS |
+| P&L: Expense lines sum = Total | 57452 | 57452 | 0 | PASS |
 | Income Tax | 39395 | 39395 | 0 | PASS |
 | NI Class 4 (lower) | 3393 | 3393 | 0 | PASS |
 | Total Tax + NI | 44381 | 44380.76 | -0.23999999999796273 | PASS |
+| Tax: Taxable = Profit - Allowance | 117338 | 117338 | 0 | PASS |
+| Tax: IT = Basic + Higher | 39395 | 39395 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 44380.76 | 44380.76 | 0 | PASS |
+| SA103S: Turnover = P&L Sales | 205900 | 205900 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 129908 | 129908 | 0 | PASS |
 
 ## Business Details
 
