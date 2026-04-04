@@ -1101,7 +1101,74 @@ These assumptions were documented during the original data design and should gui
 8. **Credit card**: Tracked as positive payments (amounts charged). Balance is a liability on balance sheet. Payments to credit card company go via bank with code X (transfer).
 9. **diya-gl schema**: Files conform to `diya-gl-book-v1.schema.json` and `diya-gl-lines-v1.schema.json` at `web/spreadsheets.diyaccounting.co.uk/public/schema/`. Schema has been extended with `directors[]`, `employees[]`, `diya-gl:bankCode`, `diya-gl:employeeID`, payroll fields, and CIS fields.
 
-## 9. Data Volume Targets
+## 9. UK Filing Requirements — Reconciliation Report Coverage
+
+The reconciliation reports validate and extract data for four UK filing streams. Each product covers a subset:
+
+### 9a. Self-Assessment Tax Return (BST, SE, Taxi)
+
+**Form**: SA100 main return + SA103S (short, turnover < VAT threshold) or SA103F (full, turnover >= threshold)
+
+| SA103S Box | Description | Package Sheet | Status |
+|------------|-------------|---------------|--------|
+| Box 9 | Business name | SE Short D9 | BST/SE: extracted |
+| Box 10 | Business description | SE Short D10 | BST/SE: extracted |
+| Box 25 | Turnover | SE Short D25 | BST/SE: extracted |
+| Box 27 | Allowable expenses | SE Short D27 | BST/SE: extracted |
+| Box 29 | Net profit/loss | SE Short D29 | BST/SE: extracted |
+| Box 30 | Tax adjustments | SE Short D30 | BST/SE: extracted |
+| Box 31 | Taxable profit | SE Short D31 | BST/SE: extracted |
+| Box 32 | Class 4 exempt notes | SE Short D32 | BST/SE: extracted |
+| D106 | Net profit for Income Tax | SE Short D106 | BST/SE: extracted |
+
+### 9b. VAT Return — 9 Boxes (SE, Ltd if VAT-registered)
+
+**Filing**: Quarterly via MTD-compatible software. Due 1 month + 7 days after quarter end.
+
+| VAT Box | Description | Package Sheet | Status |
+|---------|-------------|---------------|--------|
+| Box 1 | VAT due on sales (output tax) | Vat/Vatreturns VATQtr1-5 | SE: TODO (Phase 4b), Ltd: Phase 5 |
+| Box 2 | VAT on EU acquisitions (NI only) | — | N/A for GB |
+| Box 3 | Total VAT due (Box 1 + Box 2) | VATQtr formula | SE: TODO, Ltd: Phase 5 |
+| Box 4 | VAT reclaimed on purchases (input tax) | VATQtr formula | SE: TODO, Ltd: Phase 5 |
+| Box 5 | Net VAT (Box 3 - Box 4) | VATQtr formula | SE: TODO, Ltd: Phase 5 |
+| Box 6 | Total net sales (excl. VAT) | VATQtr formula | SE: TODO, Ltd: Phase 5 |
+| Box 7 | Total net purchases (excl. VAT) | VATQtr formula | SE: TODO, Ltd: Phase 5 |
+| Box 8 | EU goods dispatched (NI only) | — | N/A for GB |
+| Box 9 | EU goods acquired (NI only) | — | N/A for GB |
+
+### 9c. Corporation Tax Return CT600 (Ltd only)
+
+**Form**: CT600 filed online within 12 months of accounting period end. Tax due 9 months + 1 day.
+
+| CT600 Box | Description | Package Sheet | Status |
+|-----------|-------------|---------------|--------|
+| Box 145 | Net trading profits | CorporationTax K5 | Ltd: Phase 5 |
+| Box 155 | Net chargeable gains | CorporationTax K12 | Ltd: Phase 5 |
+| Box 230 | Capital allowances | CorporationTax (from Fixedassets) | Ltd: Phase 5 |
+| Box 315 | Profits chargeable to CT | CorporationTax K28 | Ltd: Phase 5 |
+| Box 430 | CT before reliefs | CorporationTax K35 | Ltd: Phase 5 |
+| Box 435 | Marginal relief | CorporationTax (if applicable) | Ltd: Phase 5 |
+| Box 515 | Tax payable | CorporationTax K39 | Ltd: Phase 5 |
+
+The CT600OnlineLookALike.xlsx in the Ltd package mirrors the HMRC online form for reference.
+
+### 9d. Annual Accounts for Companies House (Ltd only)
+
+Under FRS 102 Section 1A (small company regime):
+
+| Document | Filed at CH? | Package Sheet | Status |
+|----------|:------------:|---------------|--------|
+| **Balance Sheet** | Yes (mandatory) | PubBalSht | Ltd: Phase 5 |
+| **Profit & Loss Account** | No (prepared only) | PubP&L | Ltd: Phase 5 |
+| **Notes to Accounts** | Yes (with balance sheet) | PubNotes | Ltd: Phase 5 |
+| **Directors' Report** | No (prepared only) | Companysecretary | Ltd: Phase 5 |
+| FRS 102 Section 1A statement | Yes (on balance sheet) | PubBalSht | Ltd: Phase 5 |
+| Related party disclosures | Yes (from Jan 2026) | PubNotes | Ltd: Phase 5 |
+
+Small companies can omit P&L and directors' report from CH filing. Balance sheet must be signed by a director (printed name on the sheet).
+
+## 10. Data Volume Targets
 
 | Journal | Basic (BST) | Advanced (SE) | Full (Ltd) |
 |---------|------------:|-------------:|----------:|
