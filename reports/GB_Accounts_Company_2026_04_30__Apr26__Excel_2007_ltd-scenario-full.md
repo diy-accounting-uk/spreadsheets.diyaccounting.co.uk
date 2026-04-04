@@ -11,15 +11,6 @@ Generated: 2026-04-04
 | Total Sales | 171283 | 171283.333333334 | +0.3333333340124227 | PASS |
 | Corporation Tax | 19492 | 19492.3058333334 | +0.30583333340109675 | PASS |
 
-## Business Details
-
-| | Amount |
-|---|------:|
-| Company Name | Precision Code Ltd |
-| Company Number | 12345678 |
-| Address | 123 High Street, Manchester M1 1AA |
-| UTR | 1234567890 |
-
 ## Profit & Loss Account
 
 | | Amount |
