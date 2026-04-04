@@ -181,18 +181,28 @@ jobs:
           name: se-packages
           path: packages/
       - run: rm -f reports/*.md
-      - run: npm run reconciliation -- --package se --scenario basic --year-end ${{ matrix.year-end }}
-      - run: npm run reconciliation -- --package se --scenario extended --year-end ${{ matrix.year-end }}
+      - run: npm run reconciliation -- --package se --scenario advanced --year-end ${{ matrix.year-end }}
       - name: Copy latest populated to examples
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           rm -rf examples/se-latest
-          POPULATED=$(ls -d reports/populated/*se-scenario-extended 2>/dev/null | head -1)
+          POPULATED=$(ls -d reports/populated/*se-scenario-advanced 2>/dev/null | head -1)
           if [ -d "$POPULATED" ]; then
             cp -r "$POPULATED" examples/se-latest
             echo "Copied $POPULATED to examples/se-latest"
           fi
       - run: rm -rf reports/populated
+      - uses: actions/upload-artifact@v7
+        with:
+          name: se-reports-${{ matrix.year-end }}
+          retention-days: 1
+          path: reports/
+      - uses: actions/upload-artifact@v7
+        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
+        with:
+          name: se-examples
+          retention-days: 1
+          path: examples/
       - name: Check reconciliation
         run: |
           COUNT=0
@@ -211,21 +221,54 @@ jobs:
             exit 1
           fi
           echo "$COUNT reports, all RECONCILES"
+
+  reconcile-extra:
+    runs-on: ubuntu-24.04
+    needs: [params, generate, reconcile]
+    if: ${{ !cancelled() && needs.reconcile.result == 'success' }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci || sleep 30 && npm ci
+      - name: Install LibreOffice
+        timeout-minutes: 5
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends libreoffice-calc
+      - uses: actions/download-artifact@v8
+        with:
+          name: se-packages
+          path: packages/
+      - run: rm -f reports/*.md
+      - name: Reconcile extra scenarios against latest package
+        run: npm run reconciliation -- --package se --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
       - uses: actions/upload-artifact@v7
         with:
-          name: se-reports-${{ matrix.year-end }}
+          name: se-extra-reports
           retention-days: 1
           path: reports/
-      - uses: actions/upload-artifact@v7
-        if: ${{ matrix.year-end == needs.generate.outputs.latest }}
-        with:
-          name: se-examples
-          retention-days: 1
-          path: examples/
+      - name: Check extra reconciliation
+        run: |
+          COUNT=0
+          FAIL=0
+          for f in reports/*.md; do
+            [ -f "$f" ] || continue
+            COUNT=$((COUNT + 1))
+            if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
+          done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::warning::No extra reconciliation reports"
+          elif [ "$FAIL" -eq 1 ]; then
+            echo "::warning::Extra reconciliation anomaly (non-blocking)"
+          else
+            echo "$COUNT extra reports, all RECONCILES"
+          fi
 
   commit:
     runs-on: ubuntu-24.04
-    needs: [params, generate, reconcile]
+    needs: [params, generate, reconcile, reconcile-extra]
     if: ${{ !cancelled() && (needs.reconcile.result == 'success' || needs.reconcile.result == 'skipped') && needs.params.outputs.skip-commit != 'true' }}
     steps:
       - uses: actions/checkout@v6

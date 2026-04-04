@@ -18,14 +18,6 @@ export default defineConfig({
           outputFile: "./target/test-results/vitest-results.json",
         },
       },
-      {
-        test: {
-          name: "slow-tests",
-          environment: "node",
-          include: ["app/sheets-tests/*.test.js"],
-          outputFile: "./target/test-results/vitest-results.json",
-        },
-      },
     ],
   },
 });

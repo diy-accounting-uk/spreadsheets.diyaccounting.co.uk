@@ -1,0 +1,162 @@
+[documentInfo]
+entriesType = "journal"
+language = "en"
+creationDate = 2026-04-01
+periodCoveredStart = 2025-04-01
+periodCoveredEnd = 2026-03-31
+defaultCurrency = "GBP"
+entriesComment = "Complete business activity for BrickWork Pro FY2025/26"
+
+[entityInformation]
+organizationIdentifier = "BrickWork Pro Ltd"
+organizationDescription = "Bricklaying, plastering and general building"
+taxRegistrationNumber = "9876543210"
+taxAuthorityIdentifier = "HMRC"
+"diya-gl:product" = "Company"
+"diya-gl:vatRegistered" = false
+"diya-gl:basisOfAccounting" = "accrual"
+"diya-gl:companyNumber" = "87654321"
+"diya-gl:cisRegistered" = true
+
+# Sales accounts
+[accounts.sales."4000"]
+accountMainDescription = "Building work"
+"diya-gl:column" = "O"
+
+[accounts.sales."4003"]
+accountMainDescription = "Other income"
+"diya-gl:column" = "R"
+
+# Purchase accounts
+[accounts.purchases."5000"]
+accountMainDescription = "Building materials"
+"diya-gl:column" = "O"
+
+[accounts.purchases."5001"]
+accountMainDescription = "Sub-contractor services"
+"diya-gl:column" = "P"
+
+[accounts.purchases."5101"]
+accountMainDescription = "Employee wages (non-PAYE)"
+"diya-gl:column" = "S"
+
+[accounts.purchases."5200"]
+accountMainDescription = "Premises - site costs"
+"diya-gl:column" = "T"
+
+[accounts.purchases."5400"]
+accountMainDescription = "Repairs and maintenance"
+"diya-gl:column" = "X"
+
+[accounts.purchases."5500"]
+accountMainDescription = "Advertising"
+"diya-gl:column" = "Z"
+
+[accounts.purchases."5501"]
+accountMainDescription = "General admin"
+"diya-gl:column" = "AA"
+
+[accounts.purchases."5601"]
+accountMainDescription = "Motor vehicle expenses"
+"diya-gl:column" = "AC"
+
+[accounts.purchases."5700"]
+accountMainDescription = "Insurance"
+"diya-gl:column" = "AD"
+
+[accounts.purchases."5800"]
+accountMainDescription = "Legal and professional fees"
+"diya-gl:column" = "AF"
+
+[accounts.purchases."5900"]
+accountMainDescription = "Fixed asset purchases"
+"diya-gl:column" = "AI"
+
+# Bank accounts
+[accounts.bank."1200"]
+accountMainDescription = "Current account"
+accountType = "bank"
+
+# Capital
+[accounts.capital."3000"]
+accountMainDescription = "Share capital"
+
+[accounts.capital."3100"]
+accountMainDescription = "Retained earnings"
+
+# Liabilities
+[accounts.liabilities."2100"]
+accountMainDescription = "Trade creditors"
+
+[accounts.liabilities."2300"]
+accountMainDescription = "Corporation Tax liability"
+
+[accounts.liabilities."2410"]
+accountMainDescription = "CIS liability"
+
+[tax.corporationTax]
+smallProfitsRate = 0.19
+smallProfitsLimit = 50000
+mainRate = 0.25
+mainRateThreshold = 250000
+associatedCompanies = 0
+
+[tax.capitalAllowances]
+annualInvestmentAllowance = 1000000
+mainRateWDA = 0.18
+specialRateWDA = 0.06
+
+[tax.incomeTax]
+personalAllowance = 12570
+basicRate = 0.20
+basicRateLimit = 37700
+higherRate = 0.40
+higherRateThreshold = 50270
+additionalRate = 0.45
+additionalRateThreshold = 125140
+personalAllowanceTaperThreshold = 100000
+
+[tax.nationalInsurance]
+class1EmployeeMainRate = 0.08
+class1EmployeeUpperRate = 0.02
+class1EmployeePrimaryThreshold = 12570
+class1EmployeeUpperEarningsLimit = 50270
+class1EmployerRate = 0.15
+class1EmployerSecondaryThreshold = 5000
+employmentAllowance = 10500
+class4MainRate = 0.06
+class4UpperRate = 0.02
+class4LowerProfits = 12570
+class4UpperProfits = 50270
+
+[tax.mileage]
+carFirst10000 = 0.45
+carOver10000 = 0.25
+
+[[directors]]
+name = "Mike Brown"
+role = "Managing Director"
+shares = 100
+appointed = 2019-06-01
+
+[[employees]]
+employeeID = "EMP001"
+name = "Mike Brown"
+role = "Director"
+grossPay = 1048
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2019-06-01
+isDirector = true
+
+[[employees]]
+employeeID = "EMP002"
+name = "Tom Davies"
+role = "Labourer"
+grossPay = 1500
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2023-03-15
+isDirector = false

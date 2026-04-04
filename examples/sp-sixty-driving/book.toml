@@ -1,0 +1,100 @@
+[documentInfo]
+entriesType = "journal"
+language = "en"
+creationDate = 2026-04-04
+periodCoveredStart = 2025-04-06
+periodCoveredEnd = 2026-04-05
+defaultCurrency = "GBP"
+entriesComment = "Complete business activity for SP Sixty Driving FY2025/26"
+
+[entityInformation]
+organizationIdentifier = "SP Sixty Driving"
+organizationDescription = "Private hire and taxi driving services"
+taxRegistrationNumber = "9876543210"
+taxAuthorityIdentifier = "HMRC"
+"diya-gl:product" = "TaxiDriver"
+"diya-gl:vatRegistered" = false
+"diya-gl:basisOfAccounting" = "cash"
+"diya-gl:nino" = "QQ123456C"
+
+[accounts.sales."4000"]
+accountMainDescription = "Fares income"
+
+[accounts.purchases."5100"]
+accountMainDescription = "Fuel"
+"diya-gl:column" = "G"
+
+[accounts.purchases."5200"]
+accountMainDescription = "Car hire"
+"diya-gl:column" = "H"
+
+[accounts.purchases."5300"]
+accountMainDescription = "Repairs and maintenance"
+"diya-gl:column" = "I"
+
+[accounts.purchases."5400"]
+accountMainDescription = "Road tax and insurance"
+"diya-gl:column" = "J"
+
+[accounts.purchases."5500"]
+accountMainDescription = "Employee costs"
+"diya-gl:column" = "K"
+
+[accounts.purchases."5600"]
+accountMainDescription = "Premises costs"
+"diya-gl:column" = "L"
+
+[accounts.purchases."5700"]
+accountMainDescription = "General admin"
+"diya-gl:column" = "M"
+
+[accounts.purchases."5800"]
+accountMainDescription = "Advertising"
+"diya-gl:column" = "N"
+
+[accounts.purchases."5900"]
+accountMainDescription = "Legal and professional"
+"diya-gl:column" = "O"
+
+[accounts.purchases."6000"]
+accountMainDescription = "Interest"
+"diya-gl:column" = "P"
+
+[accounts.purchases."6100"]
+accountMainDescription = "Bank charges"
+"diya-gl:column" = "Q"
+
+[accounts.purchases."6200"]
+accountMainDescription = "Other expenses"
+"diya-gl:column" = "R"
+
+[accounts.purchases."7000"]
+accountMainDescription = "Fixed assets"
+"diya-gl:column" = "S"
+
+[tax.incomeTax]
+personalAllowance = 12570
+basicRate = 0.20
+basicRateLimit = 37700
+higherRate = 0.40
+higherRateThreshold = 50270
+additionalRate = 0.45
+additionalRateThreshold = 125140
+personalAllowanceTaperThreshold = 100000
+
+[tax.nationalInsurance]
+class2WeeklyRate = 3.45
+class2SmallProfitsThreshold = 6725
+class4MainRate = 0.06
+class4UpperRate = 0.02
+class4LowerProfits = 12570
+class4UpperProfits = 50270
+
+[tax.capitalAllowances]
+annualInvestmentAllowance = 1000000
+mainRateWDA = 0.18
+specialRateWDA = 0.06
+
+[tax.mileage]
+carFirst10000 = 0.45
+carOver10000 = 0.25

@@ -443,6 +443,17 @@ This is applied by modifying the sheet XML inside the xlsx ZIP. If a `<printOpti
 
 The `<printOptions>` element supports other attributes like `horizontalCentered="1"` and `verticalCentered="1"`, but `headings="1"` is the primary one used for debugging and verification output.
 
+## CELL_MAP Pattern for Cell-to-Label Mapping
+
+Product modules (`app/products/bst.js`, `se.js`, `ltd.js`) define a CELL_MAP array that maps xlsx cells to English labels and diya-gl GL properties. Each entry specifies: sheet name, cell reference, DIY label (human-readable description), diya-gl property name, report section, and indent level.
+
+This pattern provides a single source of truth for:
+- **Which cells to read** after recalculation (`standardReads()` -- derives cell reads from CELL_MAP)
+- **How to label cells** in reports (`cellLabels()` -- produces a cell appendix with DIY labels and diya-gl mappings)
+- **How to format financial statements** (`reportSections()` -- groups cells by section with proper indentation)
+
+When adding new cells to read from a spreadsheet, add an entry to the product's CELL_MAP array rather than modifying `standardReads()` directly.
+
 ## Testing Approaches
 
 ### Generating and Reconciling a Single Package

@@ -10,11 +10,11 @@
 | Product module | `app/products/ltd.js` |
 | Tax data files | `app/data/ltd-YYYY.toml` (one per financial year, FY2020-FY2027) |
 | Tax regime | `ltd` (Corporation Tax financial years, 1 Apr - 31 Mar) |
-| MULTI_FILE | `true` -- 15 xlsx + 1 docx per package |
+| MULTI_FILE | `true` -- 14 xlsx + 1 docx per package (was 15 xlsx before CT600OnlineLookALike removal) |
 | Year-end months | All 12 (Apr through Mar), generated from a single "Any" template |
 | CT scope | Small profits rate only (19% for profits up to 50,000) |
 
-The Ltd product generates a complete limited company accounts package. Each package directory contains 15 Excel workbooks and 1 Word document covering financial accounts, sales/purchases ledgers, bank accounts, VAT returns, payslips, fixed assets, company secretary records, CT600, sales invoicing, expenses, and dividend vouchers.
+The Ltd product generates a complete limited company accounts package. Each package directory contains 14 Excel workbooks and 1 Word document covering financial accounts, sales/purchases ledgers, bank accounts, VAT returns, payslips, fixed assets, company secretary records, sales invoicing, expenses, and dividend vouchers. CT600 data is extracted from the CorporationTax and CT600 sheets within Financialaccounts.xlsx (CT600OnlineLookALike.xlsx has been removed from the template).
 
 For each `ltd-YYYY.toml` financial year data file, the generator produces up to 12 packages (one per possible month-end within the FY), subject to a 14-month-ahead cutoff from today.
 
@@ -78,15 +78,15 @@ For each `ltd-YYYY.toml` financial year data file, the generator produces up to 
 | No tab rename    |               | TABS RENAME      |
 +------------------+               +------------------+
 
-+------------------+  +------------------+  +------------------+
-|CT600OnlineLook   |  | Salesinvoice.xlsx|  | expensesform.xlsx|
-| 1 sheet          |  | 5 sheets         |  | 12 sheets        |
-| Links to FA [1]  |  | Invoice Template |  | Month 01..12     |
-| + CompSec [8]    |  | Invoice Database |  | (never renamed)  |
-| + FixedAssets[1] |  | Customer Details |  | No links         |
-| No tab rename    |  | Product Details  |  |                  |
-|                  |  | Business Details |  |                  |
-+------------------+  | No links         |  +------------------+
++------------------+  +------------------+
+| Salesinvoice.xlsx|  | expensesform.xlsx|
+| 5 sheets         |  | 12 sheets        |
+| Invoice Template |  | Month 01..12     |
+| Invoice Database |  | (never renamed)  |
+| Customer Details |  | No links         |
+| Product Details  |  |                  |
+| Business Details |  +------------------+
+| No links         |
                       +------------------+
 +------------------+
 |Dividend Voucher  |
@@ -101,9 +101,9 @@ For each `ltd-YYYY.toml` financial year data file, the generator produces up to 
 
 Sales.xlsx, Purchases.xlsx, Currentaccount.xlsx, Savingaccount.xlsx, Cashaccount.xlsx, Creditcardaccount.xlsx, Payslips.xlsx.
 
-### Files with no month-specific content (8)
+### Files with no month-specific content (7)
 
-Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600OnlineLookALike.xlsx, Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Vatreturns.xlsx (VATQtr1-5 + Vatinterface + S/P sheets), Dividend Voucher.docx.
+Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Vatreturns.xlsx (VATQtr1-5 + Vatinterface + S/P sheets), Dividend Voucher.docx. (CT600OnlineLookALike.xlsx has been removed.)
 
 ## Inter-Workbook Link Diagram
 
@@ -126,8 +126,8 @@ Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600Onlin
          [8]CompSec  <-- Financialaccounts
          [9]Payslips <-- Financialaccounts
 
-         CT600OnlineLookALike --> Financialaccounts
-                              --> Companysecretary
+         (CT600 data extracted in reconciliation report from
+          CorporationTax + CT600 sheets in Financialaccounts.xlsx)
                               --> Fixedassets
 
          Vatreturns --> Financialaccounts (Admin dates)
@@ -135,7 +135,7 @@ Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, CT600Onlin
                     --> Purchases (monthly totals)
 ```
 
-Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). CT600OnlineLookALike has 3 inbound links. Vatreturns has 3 inbound links. All other workbooks either have no links or are linked only from Financialaccounts.
+Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). Vatreturns has 3 inbound links. All other workbooks either have no links or are linked only from Financialaccounts.
 
 ## Intra-Workbook Data Flow
 
@@ -163,9 +163,29 @@ TrialBalance <-- [2]Purchases!Apr..Mar row 1 totals (cols O-AI)                 
 MnthP&L <-- TrialBalance (cumulative monthly deltas)                             |
   | Column B = annual totals = SUM(C:N)                                          |
   | C=Month1, D=Month2, ..., N=Month12                                           |
-  | Rows: 4-8 sales, 9 turnover, 11-13 CoS, 14 CoS total,                       |
-  |       16 gross profit, 18-40 admin expenses, 41 total,                       |
-  |       43 operating profit, 44 interest, 45 profit before tax                 |
+  | MnthP&L C column pulls from TrialBalance O column:                           |
+  |   C18 = TB!O64+O65 (PAYE wages + non-PAYE employee)                         |
+  |   C19 = TB!O66 (Directors non-PAYE, code d)                                  |
+  |   C20 = WagesInterface (PAYE employee wages)                                 |
+  |   C21 = TB!O68 = [2]$T$1 (Premises, code r)                                 |
+  |   C22 = TB!O69 = [2]$U$1 (Light/heat, code p)                               |
+  |   C23 = TB!O70 = [2]$V$1 (Distribution, code t)                             |
+  |   C24 = TB!O71 = [2]$W$1 (Equipment, code q)                                |
+  |   C25 = TB!O72 = [2]$X$1 (Repairs, code m)                                  |
+  |   C26 = TB!O73 = [2]$Y$1 (Consumables, code u)                              |
+  |   C27 = TB!O74 = [2]$Z$1 (Advertising, code a)                              |
+  |   C28 = TB!O75 = [2]$AA$1 (Gen Admin, code g)                               |
+  |   C29 = TB!O76 = [2]$AB$1 (Travel, code h)                                  |
+  |   C30 = TB!O77 = [2]$AC$1 (Motor, code v)                                   |
+  |   C31 = TB!O78 = [2]$AD$1 (Insurance, code n)                               |
+  |   C32 = TB!O79 = [2]$AE$1 (Leasing, code f)                                 |
+  |   C33 = TB!O80 = [2]$AF$1 (Legal, code l)                                   |
+  |   C34 = TB!O81 = -[3]$T$1 (Bad debts from Sales)                            |
+  |   C35-C36 = TB!O82-O83 (Depreciation from bank)                             |
+  |   C37 = TB!O84 = [2]$AG$1 (Donations, code y)                               |
+  |   C38 = TB!O85 = [2]$AH$1 (Goodwill, code z)                               |
+  |   C39-C40 = Depreciation formulas from Fixedassets Schedule                  |
+  | B41 = Total Admin, B43 = Operating Profit, B45 = PBT                        |
   v                                                                              |
 PubP&L <-- MnthP&L (annual column reformatted for Companies House)              |
   |                                                                              |
@@ -357,30 +377,24 @@ All other dates in the Admin sheet (B2-B56 monthly dates, VAT quarter dates, etc
 
 ## Scenario Testing
 
-Three scenario levels test increasing transaction complexity. All scenarios are authored for a March year-end and automatically date-shifted for other months.
-
-### Basic scenario (`ltd-scenario-basic.toml`)
-
-- **Sales:** 12 months of single-customer consultancy income (7,000/month Apr-Sep, 8,400/month Oct-Mar)
-- **Purchases:** 12 months of standard expenses (rent, phone, motor, insurance, legal, some maintenance/stationery)
-- **Expected:** total_sales = 77,000
-- **Checks:** Total Sales only
-
-### Extended scenario (`ltd-scenario-extended.toml`)
-
-- **Sales:** Multiple customers, multiple sales codes (a, b, c, d, g, o, fs). 21 transactions.
-- **Purchases:** All expense codes including sub-contractors (c), directors wages (d), advertising (a), fixed assets (fa), HP finance (f), goodwill (z). 52 transactions.
-- **Expected:** total_sales = 88,583
-- **Checks:** Total Sales, Gross Profit
+One scenario exercises the Ltd product, generated from Precision Code Ltd example data. Authored for a March year-end and automatically date-shifted for other months.
 
 ### Full scenario (`ltd-scenario-full.toml`)
 
-- **Sales:** Same as extended (21 transactions across all sales codes)
-- **Purchases:** Same as extended (52 transactions across all expense codes)
-- **Expected:** total_sales = 88,583
-- **Checks:** Total Sales, Gross Profit, Net Profit, Corporation Tax
+**Precision Code Ltd (full extract)** -- generated by `scripts/extract-scenarios.cjs` from the master data in `examples/precision-code-ltd/` (715 journal entries).
+
+- **Sales:** 169,200 gross annual across all 7 Ltd codes (a/b/c/d/g/o/fs). Multiple customers, 10+ sales per month.
+- **Purchases:** All 21 expense codes exercised. 30+ purchases per month across materials, sub-contractors, wages, premises, repairs, admin, motor, travel, advertising, legal, and more.
+- **Expected:** total_sales = 169,200 (net of VAT)
+- **Checks:** Total Sales, Gross Profit, Net Profit, Corporation Tax, CT600 boxes, PubP&L, PubBalSht
 
 The full scenario is used in CI matrix reconciliation. Corporation Tax is verified by computing `profit * small_profits_rate` from the package's own tax data and comparing against the CorporationTax K35 cell.
+
+The old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml` are being replaced by `ltd-scenario-full.toml`. The old `ltd-scenario-basic` remains temporarily used by the E2E test until Phase 5 completes the switchover.
+
+**CELL_MAP pattern:** `app/products/ltd.js` is being converted to use the CELL_MAP pattern (in progress, Phase 5). CELL_MAP entries will cover CT600, PubP&L, PubBalSht, and MnthP&L. The functions `standardReads()`, `reportSections()`, and `cellLabels()` will all derive from CELL_MAP.
+
+**CT600OnlineLookALike.xlsx removed:** This separate workbook has been removed from the Ltd template. CT600 data is now extracted directly from the CorporationTax and CT600 sheets within Financialaccounts.xlsx and included in the reconciliation report.
 
 ### Cell writes structure
 
@@ -411,6 +425,66 @@ From Financialaccounts.xlsx after recalculation:
 | Net Profit | MnthP&L B45 | Matches `expected.net_profit` (tolerance 1) |
 | Corporation Tax | CorporationTax K35 | Matches `round(K28 * small_profits_rate)` (tolerance 1) |
 
+## Filing Taxonomy Mapping
+
+The Ltd product is the primary XBRL consumer — Companies House filing requires iXBRL accounts, HMRC requires iXBRL computations with the CT600. See `_developers/hmrc-references/cell-to-xbrl-mapping.md` for full iXBRL element names.
+
+### Published P&L (PubP&L) — FRS 102 Statutory Accounts
+
+| Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
+|------|-----------|-----------------|---------------------|
+| C5 | Turnover | `gl-cor:amount (pubPL.turnover)` | `frs102:TurnoverRevenue` |
+| C7 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
+| C9 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
+| C11 | Admin Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
+| C13 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
+| C17 | **Profit Before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| C19 | Tax on Profit | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
+| C21 | **Profit After Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+
+### Published Balance Sheet (PubBalSht) — FRS 102
+
+| Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
+|------|-----------|-----------------|---------------------|
+| C5 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
+| C9 | Stock | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
+| C10 | Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
+| C11 | Bank & Cash | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
+| C13 | Creditors < 1 year | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
+| C15 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
+| C19 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
+| C22 | Share Capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
+| C23 | Retained Earnings | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
+| C25 | **Shareholders Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
+
+### Corporation Tax (CT600)
+
+| Cell | DIY Label | diya-gl Property | CT Computation Concept | CT600 Box |
+|------|-----------|-----------------|----------------------|-----------|
+| K5 | Operating Profit | `gl-cor:amount (ct600.box145)` | `ct-comp:ProfitLossPerAccounts` | 145 |
+| K12 | Add back: Depreciation | `gl-cor:amount (ct600.addBack)` | `ct-comp:AdjustmentsDepreciation` | — |
+| K22 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
+| K28 | **Profit Chargeable** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
+| K35 | **Corporation Tax** | `gl-cor:taxAmount (ct600.box430)` | CT600 `CorporationTax` | 430 |
+| K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box515)` | CT600 `TaxPayable` | 515 |
+
+### Management P&L (MnthP&L) — DPL Taxonomy
+
+| Cell | DIY Label | diya-gl Property | DPL / FRS 102 Concept |
+|------|-----------|-----------------|----------------------|
+| B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` |
+| B14 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` |
+| B16 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` |
+| B18 | Directors Wages | `accounts.purchases.5100` | `dpl:WagesAndSalaries` |
+| B19 | Employee Wages | `accounts.purchases.5101` | `dpl:WagesAndSalaries` |
+| B20 | Premises | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
+| B26 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
+| B32 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
+| B35 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
+| B41 | Total Admin | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
+| B43 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` |
+| B45 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+
 ## CI Pipeline (.github/workflows/generate-ltd.yml)
 
 ### Triggers
@@ -428,7 +502,7 @@ params --> test --> generate --> reconcile (matrix) --> commit
 1. **params** -- normalises input parameters (defaults to `false` when empty)
 2. **test** -- `npm ci && npm test` (unit tests)
 3. **generate** -- `npm run generate -- --package ltd`, then computes reconciliation matrix
-4. **reconcile** -- matrix job, one per year-end. Installs LibreOffice, runs `npm run reconciliation -- --package ltd --scenario full --year-end <date>`. Copies latest populated files to `examples/ltd-latest`.
+4. **reconcile** -- matrix job, one per year-end. Installs LibreOffice, runs `npm run reconciliation -- --package ltd --scenario full --year-end <date>` (1 scenario per year-end). Copies latest populated files to `examples/ltd-latest`.
 5. **commit** -- downloads all artifacts, commits packages/reports/examples, pushes with retry
 
 ### Matrix computation

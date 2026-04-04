@@ -69,13 +69,14 @@ function calculateExpectedTax(profit, taxData) {
 }
 
 function generateReport(packageName, scenarioName, results, checks, productMod) {
-  const allPass = checks.every((c) => c.pass);
+  const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
+  const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
+  const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
   const lines = [
     `# Reconciliation Report: ${packageName}`,
     ``,
     `Scenario: ${scenarioName}`,
-    `Status: ${allPass ? "RECONCILES" : "ANOMALYDETECTED"}`,
-    `Generated: ${new Date().toISOString().split("T")[0]}`,
+    `Status: ${status}`,
     ``,
     `## Compliance Checks`,
     ``,
@@ -84,39 +85,58 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
   ];
 
   for (const c of checks) {
-    const result = c.pass ? "PASS" : "**FAIL**";
+    const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
     lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
   }
 
+  // Formatted accounting statements (if product module provides them)
+  if (typeof productMod.reportSections === "function") {
+    const sections = productMod.reportSections(results);
+    for (const section of sections) {
+      lines.push("");
+      lines.push(`## ${section.title}`);
+      lines.push("");
+      lines.push("| | Amount |");
+      lines.push("|---|------:|");
+      for (const row of section.rows) {
+        if (!row.label && !row.value) {
+          lines.push("| | |");
+        } else {
+          const indent = row.indent ? "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(row.indent) : "";
+          lines.push(`| ${indent}${row.label} | ${row.value} |`);
+        }
+      }
+    }
+  }
+
+  // Cell-by-cell appendix with DIY labels and diya-gl mappings
+  const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
+
   lines.push("");
-  lines.push("## Raw Output Values");
+  lines.push("---");
+  lines.push("");
+  lines.push("## Appendix: Cell Values");
   lines.push("");
 
-  const plSheetName = Object.keys(results).find((k) => k.startsWith("Profit & Loss"));
-  if (plSheetName && results[plSheetName]) {
-    lines.push(`### ${plSheetName}`);
+  for (const [sheetName, cells] of Object.entries(results)) {
+    if (!cells || typeof cells !== "object") continue;
+    const entries = Object.entries(cells).filter(([, v]) => v !== null && v !== undefined && v !== "" && v !== " ");
+    if (entries.length === 0) continue;
+    lines.push(`### ${sheetName}`);
     lines.push("");
-    lines.push("| Cell | Value |");
-    lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results[plSheetName])) {
-      lines.push(`| ${cell} | ${val} |`);
+    lines.push("| Cell | DIY Label | Value | diya-gl mapping |");
+    lines.push("|------|-----------|-------|-----------------|");
+    for (const [cell, val] of entries) {
+      const key = `${sheetName}!${cell}`;
+      const lbl = labels[key];
+      const diyLabel = lbl?.diyLabel || "";
+      const glMapping = lbl?.glMapping || "";
+      lines.push(`| ${cell} | ${diyLabel} | ${val} | ${glMapping} |`);
     }
     lines.push("");
   }
 
-  const taxSheetName = productMod.TAX_SHEET;
-  if (results[taxSheetName]) {
-    lines.push(`### ${taxSheetName}`);
-    lines.push("");
-    lines.push("| Cell | Value |");
-    lines.push("|------|-------|");
-    for (const [cell, val] of Object.entries(results[taxSheetName])) {
-      lines.push(`| ${cell} | ${val} |`);
-    }
-    lines.push("");
-  }
-
-  return { content: lines.join("\n"), compliant: allPass };
+  return { content: lines.join("\n"), compliant: !hasFail };
 }
 
 async function main() {

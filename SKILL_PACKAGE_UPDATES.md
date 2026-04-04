@@ -314,6 +314,16 @@ On `main`, this deploys to production. On other branches, it deploys to CI.
 8. Behaviour tests              -->  verify live site download page works
 ```
 
+### CELL_MAP Pattern in Product Modules
+
+Each product module (`app/products/bst.js`, `se.js`, `ltd.js`) defines a CELL_MAP array that maps xlsx cells to English labels and diya-gl GL properties. This single array drives both E2E tests and reconciliation reports:
+
+- **`standardReads()`** derives from CELL_MAP to define which cells to read after recalculation
+- **`reportSections()`** derives from CELL_MAP to produce formatted financial statements in reconciliation reports
+- **`cellLabels()`** derives from CELL_MAP to produce the cell appendix with DIY labels and diya-gl mappings
+
+When updating tax data or adding new cells, extend the CELL_MAP in the relevant product module. The reconciliation report, E2E tests, and cell label documentation all update automatically.
+
 ### How to Verify
 
 - **Reconciliation reports**: check `reports/*.md` for `Status: RECONCILES` on all packages

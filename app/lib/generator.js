@@ -7,6 +7,23 @@
 
 import JSZip from "jszip";
 
+// ── Deterministic zip output ───────────────────────────────────────────────
+//
+// When JSZip creates parent directory entries (e.g. "xl/") via zip.file(), it
+// sets their date to new Date(). This makes output non-deterministic between
+// process runs. stabilizeDirDates() normalises all auto-created directory
+// entry timestamps to the DOS epoch (1980-01-01) before generateAsync().
+
+const DOS_EPOCH = new Date("1980-01-01T00:00:00Z");
+
+function stabilizeDirDates(zip) {
+  for (const entry of Object.values(zip.files)) {
+    if (entry.dir) {
+      entry.date = DOS_EPOCH;
+    }
+  }
+}
+
 // ── Date helpers ────────────────────────────────────────────────────────────
 
 export function lastDayOfMonth(year, month) {
@@ -656,6 +673,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   const wbDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", wbXml, { date: wbDate });
 
+  stabilizeDirDates(zip);
   return zip.generateAsync({
     type: "nodebuffer",
     compression: "DEFLATE",
@@ -697,6 +715,7 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
   const origDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", wbXml, { date: origDate });
 
+  stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
@@ -734,6 +753,7 @@ export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vati
   const origDate = zip.file(vatinterfacePath).date;
   zip.file(vatinterfacePath, viXml, { date: origDate });
 
+  stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
@@ -779,6 +799,7 @@ export async function renameExternalLinkSheetNames(xlsxBuffer, yearEndMonth) {
     }
   }
 
+  stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 

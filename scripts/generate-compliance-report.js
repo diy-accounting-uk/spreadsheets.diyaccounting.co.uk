@@ -173,7 +173,6 @@ function parseRetireResults(retireJson) {
 }
 
 function generateReport(sourceFiles) {
-  const timestamp = new Date().toISOString();
   const version = getPackageVersion();
 
   const npmAudit = parseNpmAudit(readJsonFile(join(penetrationDir, "npm-audit.json")));
@@ -196,7 +195,6 @@ function generateReport(sourceFiles) {
 **Application**: DIY Accounting Spreadsheets
 **Version**: ${version}
 **Target URL**: ${targetUrl}
-**Generated**: ${timestamp}
 **Overall Status**: ${statusIcon(overallPass)}
 
 **Source Files**:

@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.schema.json",
+  "title": "DIY Accounting GL-aligned Transaction Lines",
+  "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
+  "type": "object",
+  "required": ["postingDate", "amount", "accountMainID", "sourceJournalID"],
+  "additionalProperties": false,
+  "properties": {
+    "entryNumber": {
+      "type": "string",
+      "description": "gl-cor:entryNumber — Unique transaction identifier within this book"
+    },
+    "lineNumber": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "gl-cor:lineNumber — Line within a multi-line journal entry (Company Accounts only)"
+    },
+    "sourceJournalID": {
+      "type": "string",
+      "enum": ["sales", "purchases", "bank", "journal", "payroll", "petty-cash"],
+      "description": "gl-cor:sourceJournalID — Which journal/daybook this belongs to"
+    },
+    "enteredDate": {
+      "type": "string",
+      "format": "date",
+      "description": "gl-cor:enteredDate — Date keyed (ISO 8601)"
+    },
+    "enteredBy": {
+      "type": "string",
+      "description": "gl-cor:enteredBy — User or system that entered the transaction"
+    },
+    "postingDate": {
+      "type": "string",
+      "format": "date",
+      "description": "gl-cor:postingDate — Tax-relevant date (ISO 8601)"
+    },
+    "accountMainID": {
+      "type": "string",
+      "description": "gl-cor:accountMainID — Nominal code from chart of accounts in book.toml"
+    },
+    "accountMainDescription": {
+      "type": "string",
+      "description": "gl-cor:accountMainDescription — Human-readable account name"
+    },
+    "accountSubID": {
+      "type": "string",
+      "description": "gl-cor:accountSubID — Sub-account or department code"
+    },
+    "accountSubDescription": {
+      "type": "string",
+      "description": "gl-cor:accountSubDescription — Sub-account description"
+    },
+    "debitCreditCode": {
+      "type": "string",
+      "enum": ["D", "C"],
+      "description": "gl-cor:debitCreditCode — D=Debit, C=Credit (Company Accounts only)"
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 0,
+      "description": "gl-cor:amount — Always positive, penny precision"
+    },
+    "amountCurrency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "default": "GBP",
+      "description": "gl-muc:amountCurrency — ISO 4217 currency code"
+    },
+    "documentType": {
+      "type": "string",
+      "enum": ["invoice", "credit-note", "receipt", "bank-statement", "journal", "payslip", "mileage-log", "other"],
+      "description": "gl-cor:documentType — Type of source document"
+    },
+    "documentReference": {
+      "type": "string",
+      "description": "gl-cor:documentReference — Invoice/receipt number"
+    },
+    "documentNumber": {
+      "type": "string",
+      "description": "gl-cor:documentNumber — Internal document number"
+    },
+    "documentDate": {
+      "type": "string",
+      "format": "date",
+      "description": "gl-cor:documentDate — Date on source document (ISO 8601)"
+    },
+    "detailComment": {
+      "type": "string",
+      "description": "gl-cor:detailComment — Customer/supplier name or narrative"
+    },
+    "lineItemComment": {
+      "type": "string",
+      "description": "Adapted from gl-cor:detailComment — Description of goods/services"
+    },
+    "postingStatus": {
+      "type": "string",
+      "enum": ["posted", "draft", "voided"],
+      "description": "gl-cor:postingStatus — Entry status"
+    },
+    "taxCode": {
+      "type": "string",
+      "enum": ["S", "R", "Z", "E", "OS", "RC", "NA"],
+      "description": "gl-taf — UK VAT code: S=Standard, R=Reduced, Z=Zero, E=Exempt, OS=Outside Scope, RC=Reverse Charge, NA=Not Applicable"
+    },
+    "taxAmount": {
+      "type": "number",
+      "minimum": 0,
+      "description": "gl-cor:taxAmount — VAT amount, always positive"
+    },
+    "taxRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "gl-taf:taxRate — VAT rate as decimal (0.20 = 20%)"
+    },
+    "taxPointDate": {
+      "type": "string",
+      "format": "date",
+      "description": "gl-taf:taxPointDate — VAT tax point if different from postingDate"
+    },
+    "taxDescription": {
+      "type": "string",
+      "description": "gl-cor:taxDescription — Human-readable tax description"
+    },
+    "paymentMethod": {
+      "type": "string",
+      "enum": ["bank-transfer", "cash", "cheque", "debit-card", "credit-card", "direct-debit", "standing-order", "online-payment", "other"],
+      "description": "gl-bus:paymentMethod — How payment was made/received"
+    },
+    "measurableQuantity": {
+      "type": "number",
+      "description": "gl-bus:measurableQuantity — Non-monetary quantity (miles, hours, units)"
+    },
+    "measurableUnitOfMeasure": {
+      "type": "string",
+      "enum": ["miles", "km", "hours", "units", "litres", "other"],
+      "description": "gl-bus:measurableUnitOfMeasure — Unit for measurableQuantity"
+    },
+    "measurableDescription": {
+      "type": "string",
+      "description": "gl-bus:measurableQualifier — What is being measured"
+    },
+    "diya-gl:bankCode": {
+      "type": "string",
+      "enum": ["BC", "DR", "CR", "K", "RV", "DL", "X", "W", "B", "J", "RP", "DV"],
+      "description": "diya-gl: extension — Bank receipt/payment code. Receipt: BC=opening balance, DR=debtor receipt, CR=creditor refund, K=capital introduced, RV=revenue (interest), DL=directors loan in, X=transfer in. Payment: BC=closing adjustment, CR=creditor payment, DR=debtor refund, W=wages, B=bank charges, J=journal, RP=HMRC payment (PAYE/VAT/CT), DL=directors loan out, X=transfer out, DV=dividend."
+    },
+    "diya-gl:bankAccountID": {
+      "type": "string",
+      "description": "diya-gl: extension — Bank account code from book.toml accounts.bank (e.g. 1200=current, 1210=savings). Identifies which bank workbook this transaction belongs to."
+    },
+    "diya-gl:employeeID": {
+      "type": "string",
+      "description": "diya-gl: extension — Employee identifier matching employees[] in book.toml. Used for payroll lines (sourceJournalID=payroll)."
+    },
+    "diya-gl:grossPay": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Gross pay for this payroll period. Payroll lines only."
+    },
+    "diya-gl:incomeTax": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — PAYE income tax deducted. Payroll lines only."
+    },
+    "diya-gl:employeeNI": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Employee National Insurance deducted. Payroll lines only."
+    },
+    "diya-gl:employerNI": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Employer National Insurance contribution. Payroll lines only."
+    },
+    "diya-gl:netPay": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — Net pay (gross - tax - employee NI). Payroll lines only."
+    },
+    "diya-gl:cisDeduction": {
+      "type": "number",
+      "minimum": 0,
+      "description": "diya-gl: extension — CIS deduction amount withheld from sub-contractor payment. Purchases lines with CIS sub-contractors only."
+    },
+    "diya-gl:cisRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "diya-gl: extension — CIS deduction rate (0.20=20% standard, 0.30=30% higher, 0=gross payment). CIS lines only."
+    }
+  }
+}

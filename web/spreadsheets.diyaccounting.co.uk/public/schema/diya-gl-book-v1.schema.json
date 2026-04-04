@@ -1,0 +1,442 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v1.schema.json",
+  "title": "DIY Accounting GL-aligned Book Configuration",
+  "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
+  "type": "object",
+  "required": ["documentInfo", "entityInformation", "accounts"],
+  "additionalProperties": false,
+  "properties": {
+    "documentInfo": {
+      "type": "object",
+      "description": "gl-cor:documentInfo — Metadata about this set of books",
+      "required": ["entriesType", "periodCoveredStart", "periodCoveredEnd", "defaultCurrency"],
+      "additionalProperties": false,
+      "properties": {
+        "entriesType": {
+          "type": "string",
+          "enum": [
+            "journal",
+            "entries",
+            "account",
+            "balance",
+            "trial_balance",
+            "assets",
+            "tax_tables",
+            "versioning",
+            "master_file",
+            "trade_documents",
+            "profile_compliant",
+            "other"
+          ],
+          "description": "gl-cor:entriesType — What kind of data this book contains. Enumeration from GL 2015 specification."
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}$",
+          "default": "en",
+          "description": "gl-cor:language — ISO 639-1 language code"
+        },
+        "creationDate": {
+          "type": "string",
+          "format": "date",
+          "description": "gl-cor:creationDate — When this book file was created (ISO 8601)"
+        },
+        "periodCoveredStart": {
+          "type": "string",
+          "format": "date",
+          "description": "gl-cor:periodCoveredStart — First day of the accounting period (ISO 8601)"
+        },
+        "periodCoveredEnd": {
+          "type": "string",
+          "format": "date",
+          "description": "gl-cor:periodCoveredEnd — Last day of the accounting period (ISO 8601)"
+        },
+        "defaultCurrency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "default": "GBP",
+          "description": "gl-cor:defaultCurrency — ISO 4217 currency code"
+        },
+        "entriesComment": {
+          "type": "string",
+          "description": "gl-cor:entriesComment — Free text note about this book"
+        }
+      }
+    },
+
+    "entityInformation": {
+      "type": "object",
+      "description": "gl-cor:entityInformation + gl-bus:organizationInformation — Who this book belongs to",
+      "required": ["organizationIdentifier"],
+      "additionalProperties": false,
+      "properties": {
+        "organizationIdentifier": {
+          "type": "string",
+          "description": "gl-bus:organizationIdentifier — Trading name or legal entity name"
+        },
+        "organizationDescription": {
+          "type": "string",
+          "description": "gl-bus:organizationDescription — Nature of the business"
+        },
+        "taxRegistrationNumber": {
+          "type": "string",
+          "description": "gl-taf:taxRegistrationNumber — HMRC Unique Taxpayer Reference (UTR)"
+        },
+        "taxAuthorityIdentifier": {
+          "type": "string",
+          "default": "HMRC",
+          "description": "gl-taf:taxAuthorityIdentifier — Tax authority identifier"
+        },
+        "diya-gl:product": {
+          "type": "string",
+          "enum": ["BasicSoleTrader", "SelfEmployed", "TaxiDriver", "Company", "Payslip05", "Payslip10", "Payslip20"],
+          "description": "diya-gl: extension — DIY Accounting product identifier. Determines which schema subset is active."
+        },
+        "diya-gl:vatRegistered": {
+          "type": "boolean",
+          "default": false,
+          "description": "diya-gl: extension — Whether the business is VAT registered"
+        },
+        "diya-gl:basisOfAccounting": {
+          "type": "string",
+          "enum": ["cash", "accrual"],
+          "default": "cash",
+          "description": "diya-gl: extension — Accounting basis. Cash for sole traders, accrual for companies."
+        },
+        "diya-gl:nino": {
+          "type": "string",
+          "pattern": "^([A-Z]{2}[0-9]{6}[A-D])?$",
+          "description": "diya-gl: extension — National Insurance Number (format: AB123456C)"
+        },
+        "diya-gl:vatNumber": {
+          "type": "string",
+          "pattern": "^([0-9]{9})?$",
+          "description": "diya-gl: extension — VAT registration number (9 digits)"
+        },
+        "diya-gl:companyNumber": {
+          "type": "string",
+          "pattern": "^([0-9]{8})?$",
+          "description": "diya-gl: extension — Companies House number (8 digits, Company Accounts only)"
+        },
+        "diya-gl:cisRegistered": {
+          "type": "boolean",
+          "default": false,
+          "description": "diya-gl: extension — Whether the business is registered under the Construction Industry Scheme (CIS)"
+        }
+      }
+    },
+
+    "directors": {
+      "type": "array",
+      "description": "diya-gl: extension — Company directors and their shareholdings (Company Accounts only). Used to populate Companysecretary.xlsx sheets.",
+      "items": {
+        "type": "object",
+        "required": ["name", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Director's full name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Role title (e.g. Managing Director, Company Secretary, Non-Executive Director)"
+          },
+          "shares": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Number of shares held"
+          },
+          "appointed": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of appointment (ISO 8601)"
+          },
+          "resigned": {
+            "type": "string",
+            "format": "date",
+            "description": "Date of resignation if applicable (ISO 8601)"
+          }
+        }
+      }
+    },
+
+    "employees": {
+      "type": "array",
+      "description": "diya-gl: extension — Employees on payroll. Used to populate Payslips.xlsx. Includes directors paid via PAYE.",
+      "items": {
+        "type": "object",
+        "required": ["employeeID", "name", "grossPay", "payFrequency", "taxCode"],
+        "additionalProperties": false,
+        "properties": {
+          "employeeID": {
+            "type": "string",
+            "description": "Unique employee identifier (matches diya-gl:employeeID in lines)"
+          },
+          "name": {
+            "type": "string",
+            "description": "Employee's full name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Job title"
+          },
+          "grossPay": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Gross pay per period (monthly or weekly amount)"
+          },
+          "payFrequency": {
+            "type": "string",
+            "enum": ["weekly", "fortnightly", "four-weekly", "monthly"],
+            "description": "Pay frequency"
+          },
+          "taxCode": {
+            "type": "string",
+            "description": "HMRC tax code (e.g. 1257L)"
+          },
+          "niCategory": {
+            "type": "string",
+            "pattern": "^[A-Z]$",
+            "default": "A",
+            "description": "NI category letter (A=standard, C=over state pension age, H=apprentice under 25, M=under 21)"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Employment start date (ISO 8601)"
+          },
+          "isDirector": {
+            "type": "boolean",
+            "default": false,
+            "description": "Whether this employee is also a company director"
+          }
+        }
+      }
+    },
+
+    "accounts": {
+      "type": "object",
+      "description": "Chart of accounts. Maps to gl-cor:account tuples. Organised by journal for spreadsheet column mapping.",
+      "required": ["sales", "purchases"],
+      "additionalProperties": false,
+      "properties": {
+        "sales": {
+          "type": "object",
+          "description": "Sales/income account codes. Keys are gl-cor:accountMainID values.",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "purchases": {
+          "type": "object",
+          "description": "Purchase/expense account codes. Keys are gl-cor:accountMainID values.",
+          "minProperties": 1,
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "bank": {
+          "type": "object",
+          "description": "Bank/cash account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "capital": {
+          "type": "object",
+          "description": "Capital/equity account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "assets": {
+          "type": "object",
+          "description": "Fixed/current asset account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        },
+
+        "liabilities": {
+          "type": "object",
+          "description": "Liability account codes (Company Accounts). Keys are gl-cor:accountMainID values.",
+          "patternProperties": {
+            "^[0-9]{4}$": {
+              "$ref": "#/$defs/accountDefinition"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+
+    "tax": {
+      "type": "object",
+      "description": "Tax rates and thresholds. Values from HMRC published rates for the period. Used by validate and generate commands. Derived from gl-taf tax concepts.",
+      "additionalProperties": false,
+      "properties": {
+        "incomeTax": {
+          "type": "object",
+          "description": "HMRC income tax rates and thresholds (England/Wales/NI)",
+          "additionalProperties": false,
+          "properties": {
+            "personalAllowance": { "type": "number", "minimum": 0 },
+            "personalAllowanceTaperThreshold": { "type": "number", "minimum": 0 },
+            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "basicRateLimit": { "type": "number", "minimum": 0 },
+            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "higherRateThreshold": { "type": "number", "minimum": 0 },
+            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "additionalRateThreshold": { "type": "number", "minimum": 0 }
+          }
+        },
+
+        "nationalInsurance": {
+          "type": "object",
+          "description": "HMRC National Insurance rates (self-employed Class 2 + 4, employed Class 1)",
+          "additionalProperties": false,
+          "properties": {
+            "class2WeeklyRate": { "type": "number", "minimum": 0 },
+            "class2SmallProfitsThreshold": { "type": "number", "minimum": 0 },
+            "class4MainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class4UpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class4LowerProfits": { "type": "number", "minimum": 0 },
+            "class4UpperProfits": { "type": "number", "minimum": 0 },
+            "class1EmployeeMainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployeeUpperRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployeePrimaryThreshold": { "type": "number", "minimum": 0 },
+            "class1EmployeeUpperEarningsLimit": { "type": "number", "minimum": 0 },
+            "class1EmployerRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "class1EmployerSecondaryThreshold": { "type": "number", "minimum": 0 },
+            "employmentAllowance": { "type": "number", "minimum": 0 }
+          }
+        },
+
+        "vat": {
+          "type": "object",
+          "description": "HMRC VAT rates and thresholds",
+          "additionalProperties": false,
+          "properties": {
+            "standardRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reducedRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "registrationThreshold": { "type": "number", "minimum": 0 },
+            "flatRateScheme": { "type": "boolean", "default": false },
+            "flatRatePercentage": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+
+        "corporationTax": {
+          "type": "object",
+          "description": "HMRC Corporation Tax rates (Company Accounts only)",
+          "additionalProperties": false,
+          "properties": {
+            "smallProfitsRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "smallProfitsLimit": { "type": "number", "minimum": 0 },
+            "mainRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "mainRateThreshold": { "type": "number", "minimum": 0 },
+            "associatedCompanies": { "type": "integer", "minimum": 0, "default": 0 }
+          }
+        },
+
+        "capitalAllowances": {
+          "type": "object",
+          "description": "HMRC capital allowance rates",
+          "additionalProperties": false,
+          "properties": {
+            "annualInvestmentAllowance": { "type": "number", "minimum": 0 },
+            "mainRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
+            "specialRateWDA": { "type": "number", "minimum": 0, "maximum": 1 },
+            "firstYearAllowanceRate": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+
+        "mileage": {
+          "type": "object",
+          "description": "HMRC approved mileage rates (Taxi Driver / Self Employed)",
+          "additionalProperties": false,
+          "properties": {
+            "carFirst10000": { "type": "number", "minimum": 0, "description": "Rate per mile, first 10,000 miles" },
+            "carOver10000": { "type": "number", "minimum": 0, "description": "Rate per mile, above 10,000 miles" },
+            "motorcycle": { "type": "number", "minimum": 0 },
+            "bicycle": { "type": "number", "minimum": 0 }
+          }
+        },
+
+        "dividends": {
+          "type": "object",
+          "description": "Dividend tax rates (Company Accounts — director extraction)",
+          "additionalProperties": false,
+          "properties": {
+            "allowance": { "type": "number", "minimum": 0 },
+            "basicRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "higherRate": { "type": "number", "minimum": 0, "maximum": 1 },
+            "additionalRate": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "accountDefinition": {
+      "type": "object",
+      "description": "Definition of a single account in the chart of accounts. Maps to gl-cor:account tuple.",
+      "required": ["accountMainDescription"],
+      "additionalProperties": false,
+      "properties": {
+        "accountMainDescription": {
+          "type": "string",
+          "description": "gl-cor:accountMainDescription — Human-readable account name"
+        },
+        "accountType": {
+          "type": "string",
+          "enum": ["account", "bank", "customer", "vendor", "employee", "job", "statistical", "measurable", "other"],
+          "default": "account",
+          "description": "gl-bus:accountType — GL account type enumeration"
+        },
+        "diya-gl:column": {
+          "type": "string",
+          "pattern": "^[A-Z]{1,2}$",
+          "description": "diya-gl: extension — Excel column letter(s) for this account in the workbook"
+        },
+        "diya-gl:sa103sBox": {
+          "type": "string",
+          "pattern": "^box[0-9]{1,2}$",
+          "description": "diya-gl: extension — SA103S box reference this account maps to (e.g. 'box10')"
+        },
+        "diya-gl:ct600Box": {
+          "type": "string",
+          "description": "diya-gl: extension — CT600 box reference (Company Accounts only)"
+        },
+        "diya-gl:vatBox": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9,
+          "description": "diya-gl: extension — VAT return box number (1-9) this account contributes to"
+        }
+      }
+    }
+  }
+}
