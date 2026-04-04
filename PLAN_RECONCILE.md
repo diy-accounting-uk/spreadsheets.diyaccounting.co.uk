@@ -1072,10 +1072,99 @@ Requires: SE Payslips.xlsx Employee sheet layout analysis (background task runni
 ### Phase 7 — Documentation and CI cleanup
 
 **Steps**:
-1. Rewrite `TEST_SCENARIOS.md` (Section 5): all three scenarios, expected values, scope matrix, code mappings, tax benchmarks
-2. Update CI workflows: `generate-bst.yml`, `generate-se.yml`, `generate-ltd.yml` — single scenario per product in reconciliation matrix
+1. Rewrite `TEST_SCENARIOS.md` (Section 5): all scenarios, expected values, scope matrix, code mappings, tax benchmarks
+2. Update CI workflows: single scenario per product in reconciliation matrix
 3. Add `node scripts/extract-scenarios.cjs` to CI test job so scenario fixtures stay in sync with master data
 4. Final cleanup: verify no references to removed scenario files remain in code or docs
+
+### Phase 8 — Expansion: test file renaming, new CIS construction scenario
+
+**Goal**: Rename test files to `<package>-<scenario>.test.js` convention (1 scenario per file), remove stale `app/sheets-tests`, add a CIS construction company example with VAT-registered and non-VAT-registered variants for both SE and Ltd.
+
+**8a. Rename test files**:
+
+Current → New naming convention:
+
+| Current | New | Scenario |
+|---------|-----|----------|
+| `bst-e2e.test.js` | `bst-precision-code.test.js` | Precision Code BST basic |
+| `se-e2e.test.js` | `se-precision-code.test.js` | Precision Code SE advanced |
+| `ltd-e2e.test.js` | `ltd-precision-code.test.js` | Precision Code Ltd full |
+| `taxi-e2e.test.js` | `taxi-sp-sixty.test.js` | SP Sixty Driving |
+| `reconciliation.test.js` | `bst-precision-code-reconciliation.test.js` | BST reconciliation (uses same scenario) |
+
+**8b. Remove `app/sheets-tests/`**:
+- Delete `app/sheets-tests/bst-sheets.test.js` and `app/sheets-tests/taxi-sheets.test.js`
+- These are superseded by the scenario-driven E2E tests
+- No workflow or package.json references to clean up (already checked)
+
+**8c. Create CIS construction company example**:
+
+**Business profile: BrickWork Pro Ltd / BrickWork Pro Trading**
+- Small construction company (bricklaying, plastering, general building)
+- Engages CIS sub-contractors (tax deducted at source at 20%)
+- Employs 1-2 labourers via PAYE
+- FY 2025-04-01 to 2026-03-31 (Ltd) / 2025-04-06 to 2026-04-05 (SE)
+- Turnover: ~£75,000 (below VAT threshold of £90,000 for non-VAT variant)
+- Materials: ~£15,000
+- Sub-contractors: ~£20,000 (with CIS deductions)
+- PAYE wages: ~£18,000
+- Other overheads: ~£8,000
+- Profit: ~£14,000 (within small profits rate)
+
+**Two variants**:
+
+| Variant | VAT | Turnover | How amounts work |
+|---------|:---:|--------:|------------------|
+| `vat-reg` | Yes | £75,000 gross (£62,500 net) | Amounts are VAT-inclusive, spreadsheet calculates net |
+| `non-vat` | No | £75,000 face value | Amounts entered as-is, no VAT split |
+
+Both variants produce similar profits (~£14,000) within the small profits CT rate (£50,000).
+
+**Files to create**:
+
+```
+examples/brickwork-pro/
+  book.toml                        # diya-gl book, CIS-registered
+  lines.jsonl                      # ~150 entries: sales, purchases (with CIS), payroll
+  README.md                        # Business profile documentation
+
+app/test/fixtures/
+  se-brickwork-pro-vat.toml        # SE variant, VAT registered
+  se-brickwork-pro-nonvat.toml     # SE variant, non-VAT
+  ltd-brickwork-pro-vat.toml       # Ltd variant, VAT registered
+  ltd-brickwork-pro-nonvat.toml    # Ltd variant, non-VAT
+```
+
+**8d. New test files using the non-VAT variants**:
+
+| Test file | Product | Scenario | VAT |
+|-----------|---------|----------|:---:|
+| `se-brickwork-pro-nonvat.test.js` | SE | BrickWork Pro non-VAT | No |
+| `ltd-brickwork-pro-nonvat.test.js` | Ltd | BrickWork Pro non-VAT | No |
+
+These exercise the non-VAT code path in the SE and Ltd templates — a path not currently tested by Precision Code scenarios (which are VAT-registered).
+
+**8e. Wire non-VAT scenarios through reconciliation**:
+- `se.js` cellWrites must handle non-VAT scenario (amounts entered as face value, no VAT split)
+- `ltd.js` cellWrites same
+- CI workflows optionally run the additional scenarios (or run in the test job only, not the generate matrix)
+
+**CIS-specific data in the scenario**:
+- Sub-contractor invoices with `diya-gl:cisDeduction` and `diya-gl:cisRate` (0.20)
+- Monthly CIS return payments to HMRC (bank code RP)
+- CIS deductions reduce the bank payment but the full gross goes to the purchase daybook
+- Income Tax E11 "CIS deducted" should show the total CIS withheld
+
+**Verify**:
+- [ ] All test files renamed, `npm test` passes
+- [ ] `app/sheets-tests/` removed
+- [ ] `examples/brickwork-pro/` created with book.toml + lines.jsonl + README.md
+- [ ] 4 scenario fixtures created (SE vat/nonvat, Ltd vat/nonvat)
+- [ ] `se-brickwork-pro-nonvat.test.js` passes
+- [ ] `ltd-brickwork-pro-nonvat.test.js` passes
+- [ ] Both non-VAT scenarios reconcile
+- [ ] CIS deductions appear in Income Tax E11 and reconciliation report
 
 ---
 
