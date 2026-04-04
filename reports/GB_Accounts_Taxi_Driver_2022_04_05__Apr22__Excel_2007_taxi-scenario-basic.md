@@ -9,9 +9,14 @@ Generated: 2026-04-04
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 36000 | 36000 | 0 | PASS |
+| P&L: Net = Gross - General Expenses | 29640 | 29640 | 0 | PASS |
+| P&L: General expense lines sum = Total | 1380 | 1380 | 0 | PASS |
 | Income Tax | 3414 | 3414 | 0 | PASS |
 | NI Class 4 (lower) | 1806.5 | 1806.48 | -0.01999999999998181 | PASS |
 | Total Tax + NI | 5220 | 5220.48 | +0.47999999999956344 | PASS |
+| Tax: Taxable = Profit - Allowance | 17070 | 17070 | 0 | PASS |
+| Tax: IT = Basic + Higher | 3414 | 3414 | 0 | PASS |
+| Tax: Total = IT + NI | 5220.48 | 5220.48 | 0 | PASS |
 
 ## Business Details
 
