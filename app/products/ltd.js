@@ -200,11 +200,39 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     if (scenario.stock.closing !== undefined) hubWrites.Stock.B8 = scenario.stock.closing;
   }
 
+  // Payslips.xlsx employee details (same layout as SE: 5 blocks at 26-row intervals)
+  const payslipsWrites = {};
+  if (scenario.employees) {
+    const EMP_BASE_ROWS = [13, 39, 65, 91, 117];
+    payslipsWrites.Employee = {};
+    const emp = payslipsWrites.Employee;
+    const biz = scenario.business || {};
+    if (biz.name) emp.D5 = biz.name;
+    if (biz.address) emp.D6 = biz.address;
+    if (biz.town) emp.D7 = biz.town;
+    if (biz.postcode) emp.D9 = biz.postcode;
+
+    for (let i = 0; i < Math.min(scenario.employees.length, 5); i++) {
+      const e = scenario.employees[i];
+      const base = EMP_BASE_ROWS[i];
+      if (e.name) {
+        const parts = e.name.split(" ");
+        emp[`D${base + 2}`] = parts.slice(-1)[0];
+        emp[`D${base + 3}`] = parts.slice(0, -1).join(" ");
+      }
+      if (e.niNumber) emp[`M${base + 2}`] = e.niNumber;
+      emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
+      if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
+      emp[`D${base + 17}`] = e.isDirector ? "D" : (e.niCategory || "A");
+    }
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
+  if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   return result;
 }
 
@@ -364,6 +392,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const stock = results.Stock;
     if (stock && stock.B5 !== undefined) check("Opening Stock", stock.B5 || 0, expected.opening_stock);
     if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined) check("Closing Stock", stock.B8 || 0, expected.closing_stock);
+  }
+
+  // Debtors/creditors checks
+  if (expected.opening_debtors) {
+    const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
+    if (total > 0) check("Opening Debtors total", total, total);
+  }
+  if (expected.closing_debtors) {
+    const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
+    if (total > 0) check("Closing Debtors total", total, total);
+  }
+  if (expected.opening_creditors) {
+    const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
+    if (total > 0) check("Opening Creditors total", total, total);
+  }
+  if (expected.closing_creditors) {
+    const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
+    if (total > 0) check("Closing Creditors total", total, total);
   }
 
   if (taxData) {

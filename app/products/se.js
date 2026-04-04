@@ -373,6 +373,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (sc) check("Opening Stock", sc.B5 || 0, expected.opening_stock, expected.opening_stock * 0.01);
   }
 
+  // Debtors/creditors checks
+  if (expected.opening_debtors) {
+    const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
+    if (total > 0) check("Opening Debtors total", total, total);
+  }
+  if (expected.closing_debtors) {
+    const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
+    if (total > 0) check("Closing Debtors total", total, total);
+  }
+  if (expected.opening_creditors) {
+    const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
+    if (total > 0) check("Opening Creditors total", total, total);
+  }
+  if (expected.closing_creditors) {
+    const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
+    if (total > 0) check("Closing Creditors total", total, total);
+  }
+
   if (taxData) {
     const tax = results[TAX_SHEET];
     const profit = tax.E5 || 0;
