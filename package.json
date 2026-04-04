@@ -14,6 +14,7 @@
     "test:generate": "npx vitest --run app/test/generate.test.js",
     "test:slow": "npx vitest --run --project slow-tests",
     "reconciliation": "node app/bin/reconcile.js",
+    "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
     "extract-scenarios": "node scripts/extract-scenarios.cjs",
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",
     "build:packages": "node scripts/build-packages.cjs",
