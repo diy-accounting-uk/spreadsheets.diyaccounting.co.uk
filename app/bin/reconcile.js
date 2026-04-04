@@ -69,12 +69,14 @@ function calculateExpectedTax(profit, taxData) {
 }
 
 function generateReport(packageName, scenarioName, results, checks, productMod) {
-  const allPass = checks.every((c) => c.pass);
+  const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
+  const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
+  const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
   const lines = [
     `# Reconciliation Report: ${packageName}`,
     ``,
     `Scenario: ${scenarioName}`,
-    `Status: ${allPass ? "RECONCILES" : "ANOMALYDETECTED"}`,
+    `Status: ${status}`,
     ``,
     `## Compliance Checks`,
     ``,
@@ -83,7 +85,7 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
   ];
 
   for (const c of checks) {
-    const result = c.pass ? "PASS" : "**FAIL**";
+    const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
     lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
   }
 
@@ -134,7 +136,7 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
     lines.push("");
   }
 
-  return { content: lines.join("\n"), compliant: allPass };
+  return { content: lines.join("\n"), compliant: !hasFail };
 }
 
 async function main() {
