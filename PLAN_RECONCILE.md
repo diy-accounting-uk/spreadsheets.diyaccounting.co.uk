@@ -1434,12 +1434,21 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 | 6m Wagesinterface | DONE | SE | Monthly gross/PAYE/employer NI (C4-C15, D4, H4) from hub |
 | pre-6j Opening balances | DONE | SE/Ltd | Stock, debtors, creditors writes+checks. Ltd full OpenAccounts balance sheet. Fixed assets writes to Fixedassets.xlsx Schedule |
 
-Current check counts: BST 18/18 (25 checks), SE 15/15 (23 checks + additionalReads), Ltd 13/13 (18 checks), Taxi 7/7 (13 checks).
+Current check counts: BST 25 checks, SE 23 checks + additionalReads, Ltd 18 checks (10/10 reconciliation), Taxi 13 checks.
+
+Key fixes applied:
+- Ltd MnthP&L CELL_MAP: row labels corrected from TrialBalance D64-D89 formula trace (B21=Premises not B20, B33=Legal not B32)
+- Ltd expense checks: P&L shows gross amounts not net (removed /1.2 divisor)
+- SE SA103S D71: compare to B37-B11 (operating profit minus grants)
+- PubP&L/PubBalSht: column D (not C) from template analysis
+- Multi-file pipeline: postHubRecalc + additionalReads for Vat.xlsx and Bank.xlsx
 
 XBRL Filing Taxonomy Mappings added to all 4 CONTEXT docs (diya-gl + XBRL + SA103S/CT600).
+TrialBalance-to-MnthP&L row mapping added to CONTEXT_LIMITED_COMPANY.md.
+Wagesinterface/VitalTax/Vat.xlsx/Bank.xlsx sheet interaction detail added to CONTEXT_SELF_EMPLOYED.md.
 
-**Phase 7 — Docs and CI**:
-- [ ] TEST_SCENARIOS.md fully documents all scenarios with expected values
-- [ ] CI workflows run single scenario per product (BST/SE/Taxi done, Ltd already correct)
-- [ ] `scripts/extract-scenarios.cjs` runs in CI test job
-- [ ] No references to removed scenario files remain
+**Phase 7 — Docs and CI** (DONE):
+- [x] TEST_SCENARIOS.md fully rewritten with all scenarios, check coverage matrix, data scope, CI config, CELL_MAP pattern, multi-file extension docs
+- [x] CI workflows run single scenario per product (all 4 correct)
+- [x] `scripts/extract-scenarios.cjs` sync check added to test.yml (runs extract then git diff --exit-code)
+- [x] No references to removed scenario files found
