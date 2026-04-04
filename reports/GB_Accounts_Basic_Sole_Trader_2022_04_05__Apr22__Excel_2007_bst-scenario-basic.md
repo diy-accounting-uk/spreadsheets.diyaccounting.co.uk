@@ -90,15 +90,21 @@ Generated: 2026-04-04
 
 | | Amount |
 |---|------:|
-| Box 9 — Business name | 36 |
-| Box 10 — Description | 1 |
-| Box 25 — Turnover | 20 |
-| Box 27 — Allowable expenses | 7 |
-| Box 29 — Net profit/loss | 23 |
-| Box 30 — Tax adjustments | 44,656 |
-| Box 31 — Taxable profit | 44,656 |
-| Box 32 — Notes | Business income - if your annual turnover was below £85000 vat threshold |
-| Net profit for tax calc | 129,908 |
+| Business name | — |
+| Accounting date | — |
+| Turnover | 205,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 9,458 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 1,140 |
+| **Net profit/loss** | 129,908 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
+| **Taxable profit** | 129,908 |
+| VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold |
+| **Net profit for tax calc** | 129,908 |
 
 ## Stock
 
@@ -198,15 +204,19 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D9 | Box 9 — Business name | 36 | entityInformation.organizationIdentifier |
-| D10 | Box 10 — Description | 1 | entityInformation.organizationDescription |
-| D25 | Box 25 — Turnover | 20 | gl-cor:amount (sa103s.turnover) |
-| D27 | Box 27 — Allowable expenses | 7 | gl-cor:amount (sa103s.expenses) |
-| D29 | Box 29 — Net profit/loss | 23 | gl-cor:amount (sa103s.netProfit) |
-| D30 | Box 30 — Tax adjustments | 44656 | gl-cor:amount (sa103s.taxAdjust) |
-| D31 | Box 31 — Taxable profit | 44656 | gl-cor:amount (sa103s.taxableProfit) |
-| D32 | Box 32 — Notes | Business income - if your annual turnover was below £85000 vat threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | Net profit for tax calc | 129908 | gl-cor:amount (sa103s.profitForTax) |
+| D38 | Turnover | 205900 | gl-cor:amount (sa103s.turnover) |
+| D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
+| D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
+| D55 | Employee costs | 800 | gl-cor:amount (sa103s.employeeCosts) |
+| D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
+| D64 | Other expenses | 1140 | gl-cor:amount (sa103s.otherExpenses) |
+| D71 | **Net profit/loss** | 129908 | gl-cor:amount (sa103s.netProfit) |
+| D80 | Capital allowances | 0 | tax.capitalAllowances (sa103s) |
+| D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
+| D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
+| D99 | **Taxable profit** | 129908 | gl-cor:amount (sa103s.taxableProfit) |
+| A32 | VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold | gl-cor:detailComment (sa103s.notes) |
+| D106 | **Net profit for tax calc** | 129908 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
