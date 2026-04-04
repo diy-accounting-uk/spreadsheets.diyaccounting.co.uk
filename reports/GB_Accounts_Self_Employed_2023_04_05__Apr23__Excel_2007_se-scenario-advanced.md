@@ -13,6 +13,12 @@ Generated: 2026-04-04
 | NI Class 4 (lower) | 3732.6 | 3732.6226 | +0.02260000000023865 | PASS |
 | Total Tax + NI | 42294 | 42294.0109083335 | +0.01090833349735476 | PASS |
 
+## Business Details
+
+| | Amount |
+|---|------:|
+| Business Name | Precision Code Trading |
+
 ## Profit & Loss Account
 
 | | Amount |
@@ -65,7 +71,7 @@ Generated: 2026-04-04
 
 | | Amount |
 |---|------:|
-| Business name | — |
+| Business name | Precision Code Trading |
 | Accounting date | — |
 | Turnover | 169,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 17,744 |
@@ -84,6 +90,12 @@ Generated: 2026-04-04
 ---
 
 ## Appendix: Cell Values
+
+### Business Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C5 | Business Name | Precision Code Trading | entityInformation.organizationIdentifier |
 
 ### Profit & Loss Account
 
@@ -137,6 +149,7 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A7 | Business name | Precision Code Trading | entityInformation.organizationIdentifier |
 | D38 | Turnover | 169200 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of sales | 17744 | gl-cor:amount (sa103s.costOfSales) |
 | D51 | Other direct costs | 9458.25 | gl-cor:amount (sa103s.otherDirect) |
