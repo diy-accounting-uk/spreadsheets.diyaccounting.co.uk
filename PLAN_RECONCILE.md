@@ -957,6 +957,7 @@ Each phase leaves the codebase in a passing state. Existing tests remain green u
 
 **Steps**:
 1. **Extend `ltd.js` `cellWrites()`**: Add writes for ALL multi-file targets:
+   - Financialaccounts.xlsx: Business Details (company name, description, address) populated from scenario metadata
    - Sales.xlsx: monthly sales + OpeningDebtors + ClosingDebtors
    - Purchases.xlsx: monthly purchases + OpeningCreditors + ClosingCreditors
    - Currentaccount.xlsx: monthly bank entries (all receipt/payment codes)

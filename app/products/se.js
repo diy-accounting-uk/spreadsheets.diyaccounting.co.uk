@@ -33,9 +33,16 @@ export const MULTI_FILE = true;
 //   p=premises, m=repairs, g=general admin, v=motor, h=HP/lease,
 //   a=advertising, l=legal, y=other expenses, fa=fixed assets
 
+// Bank receipt codes (amount goes to col F, code to col E)
+const RECEIPT_CODES = new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]);
+// Bank payment codes (amount goes to col T, code to col S)
+const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "X"]);
+
 export function cellWrites(scenario) {
   const salesWrites = {};
   const purchasesWrites = {};
+  const bankWrites = {};
+  const cashWrites = {};
 
   if (scenario.sales) {
     for (const [monthKey, transactions] of Object.entries(scenario.sales)) {
@@ -73,10 +80,108 @@ export function cellWrites(scenario) {
     }
   }
 
-  return {
+  // Bank and Cash entries — split by account and receipt/payment direction
+  if (scenario.bank) {
+    // Track receipt row and payment row per month per account
+    const receiptRows = {};
+    const paymentRows = {};
+
+    for (const [monthKey, transactions] of Object.entries(scenario.bank)) {
+      const sheetName = MONTH_SHEETS[monthKey];
+
+      for (const tx of transactions) {
+        const acct = tx.account || "1200";
+        const targetWrites = acct === "1220" ? cashWrites : bankWrites;
+        if (!targetWrites[sheetName]) targetWrites[sheetName] = {};
+        const sheet = targetWrites[sheetName];
+        const d = parseDate(tx.date);
+        const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+
+        const rowKey = `${acct}:${sheetName}`;
+
+        if (tx.code === "BC") {
+          // Opening balance goes in A1
+          sheet.A1 = tx.amount;
+        } else if (RECEIPT_CODES.has(tx.code)) {
+          // Receipt: A=date, B=source, E=code, F=amount (rows start at 6)
+          if (!receiptRows[rowKey]) receiptRows[rowKey] = 6;
+          const row = receiptRows[rowKey]++;
+          sheet[`A${row}`] = serial;
+          if (tx.source) sheet[`B${row}`] = tx.source;
+          sheet[`E${row}`] = tx.code;
+          sheet[`F${row}`] = tx.amount;
+        } else if (PAYMENT_CODES.has(tx.code)) {
+          // Payment: P=date, Q=supplier, S=code, T=amount (rows start at 6)
+          if (!paymentRows[rowKey]) paymentRows[rowKey] = 6;
+          const row = paymentRows[rowKey]++;
+          sheet[`P${row}`] = serial;
+          if (tx.source) sheet[`Q${row}`] = tx.source;
+          sheet[`S${row}`] = tx.code;
+          sheet[`T${row}`] = tx.amount;
+        }
+      }
+    }
+  }
+
+  // Stock
+  if (scenario.stock) {
+    // StockControl in Financialaccounts.xlsx — need to find correct cells
+    // For now, stock is written via the scenario expected values in compliance checks
+  }
+
+  // Opening/closing debtors
+  if (scenario.opening_debtors) {
+    if (!salesWrites.OpeningDebtors) salesWrites.OpeningDebtors = {};
+    let row = 5;
+    for (const d of scenario.opening_debtors) {
+      salesWrites.OpeningDebtors[`B${row}`] = d.customer;
+      salesWrites.OpeningDebtors[`C${row}`] = d.invoice;
+      salesWrites.OpeningDebtors[`D${row}`] = d.amount;
+      row++;
+    }
+  }
+
+  if (scenario.closing_debtors) {
+    if (!salesWrites.ClosingDebtors) salesWrites.ClosingDebtors = {};
+    let row = 5;
+    for (const d of scenario.closing_debtors) {
+      salesWrites.ClosingDebtors[`B${row}`] = d.customer;
+      salesWrites.ClosingDebtors[`C${row}`] = d.invoice;
+      salesWrites.ClosingDebtors[`D${row}`] = d.amount;
+      row++;
+    }
+  }
+
+  // Opening/closing creditors
+  if (scenario.opening_creditors) {
+    if (!purchasesWrites.OpeningCreditors) purchasesWrites.OpeningCreditors = {};
+    let row = 5;
+    for (const c of scenario.opening_creditors) {
+      purchasesWrites.OpeningCreditors[`B${row}`] = c.supplier;
+      purchasesWrites.OpeningCreditors[`C${row}`] = c.invoice;
+      purchasesWrites.OpeningCreditors[`D${row}`] = c.amount;
+      row++;
+    }
+  }
+
+  if (scenario.closing_creditors) {
+    if (!purchasesWrites.ClosingCreditors) purchasesWrites.ClosingCreditors = {};
+    let row = 5;
+    for (const c of scenario.closing_creditors) {
+      purchasesWrites.ClosingCreditors[`B${row}`] = c.supplier;
+      purchasesWrites.ClosingCreditors[`C${row}`] = c.invoice;
+      purchasesWrites.ClosingCreditors[`D${row}`] = c.amount;
+      row++;
+    }
+  }
+
+  const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
+  if (Object.keys(bankWrites).length > 0) result["Bank.xlsx"] = bankWrites;
+  if (Object.keys(cashWrites).length > 0) result["Cash.xlsx"] = cashWrites;
+  return result;
 }
 
 // ── Standard reads for reconciliation ──────────────────────────────────────
@@ -97,6 +202,9 @@ export const TAX_SHEET = "Income Tax";
 
 // prettier-ignore
 export const CELL_MAP = [
+  // ── Business Details ──
+  ["Business Details", "B7",  "Business Name",                    "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["Business Details", "D7",  "Business Description",             "entityInformation.organizationDescription", "Business Details", 0],
   // ── Profit & Loss Account ──
   ["Profit & Loss Account", "B5",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B6",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
