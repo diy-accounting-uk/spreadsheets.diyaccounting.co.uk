@@ -143,8 +143,6 @@ function categoriseRole(name) {
 }
 
 function generateReport(accountId, data) {
-  const timestamp = new Date().toISOString().split("T")[0];
-
   const cdkStacks = data.stacks.filter((s) => s.name !== "CDKToolkit" && s.status !== "DELETE_COMPLETE");
   const cdkToolkit = data.stacks.find((s) => s.name === "CDKToolkit");
 
@@ -167,8 +165,6 @@ function generateReport(accountId, data) {
   const stackLogGroups = data.logGroups.filter((g) => g.includes("spreadsheets") || g.includes("distribution"));
 
   let md = `# AWS Resources — Spreadsheets Account (${accountId})
-
-Catalogued from AWS CLI on ${timestamp}.
 
 ## Managed by This Repo (per environment)
 

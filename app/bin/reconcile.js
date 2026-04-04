@@ -75,7 +75,6 @@ function generateReport(packageName, scenarioName, results, checks, productMod) 
     ``,
     `Scenario: ${scenarioName}`,
     `Status: ${allPass ? "RECONCILES" : "ANOMALYDETECTED"}`,
-    `Generated: ${new Date().toISOString().split("T")[0]}`,
     ``,
     `## Compliance Checks`,
     ``,
