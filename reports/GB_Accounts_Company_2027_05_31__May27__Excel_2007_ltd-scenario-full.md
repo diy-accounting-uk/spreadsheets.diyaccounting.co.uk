@@ -1,22 +1,23 @@
 # Reconciliation Report: GB Accounts Company 2027-05-31 (May27) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: RECONCILES
+Status: RECONCILES (with warnings)
 
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 171283 | 171283.333333334 | +0.3333333340124227 | PASS |
-| P&L: Gross = Turnover - CoS | 153539.333333334 | 153539.333333334 | 0 | PASS |
-| P&L: Operating = Gross - Admin | 99591.08333333401 | 99591.0833333338 | -2.1827872842550278e-10 | PASS |
-| P&L: PBT = Operating + Interest | 99591.0833333338 | 99591.0833333338 | 0 | PASS |
+| Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
+| P&L: Gross = Turnover - CoS | 323539.333333333 | 323539.333333333 | 0 | PASS |
+| P&L: Operating = Gross - Admin | 269591.083333333 | 269591.083333333 | 0 | PASS |
+| P&L: PBT = Operating + Interest | 269591.083333333 | 269591.083333333 | 0 | PASS |
 | P&L: Admin lines sum = Total | 53948.25 | 53948.25 | 0 | PASS |
 | Premises | 14400 | 14400 | 0 | PASS |
 | Legal & Professional | 5310 | 5310 | 0 | PASS |
-| Corporation Tax | 19492 | 19492.3058333334 | +0.30583333340109675 | PASS |
-| CT: Chargeable >= Operating | 99591.0833333338 | 102591.083333334 | +3000.0000000002037 | PASS |
-| CT: Tax outstanding = CT | 19492.3058333334 | 19492.3058333334 | 0 | PASS |
+| Corporation Tax | 51792 | 51792.3058333333 | +0.3058333333028713 | PASS |
+| CT: Chargeable >= Operating | 269591.083333333 | 272591.083333333 | +3000 | PASS |
+| CT: Tax outstanding = CT | 51792.3058333333 | 51792.3058333333 | 0 | PASS |
+| CT: Marginal relief expected (profit > £50K) | 68148 | 51792.3058333333 | -16355.694166666697 | **WARNING** |
 
 ## Business Details
 
@@ -31,17 +32,17 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 141,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 311,600 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Product B — Software | 13,600 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Product C — Training | 10,300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income | 3,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
-| **Sales Turnover** | 171,283.33 |
+| **Sales Turnover** | 341,283.33 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 6,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 8,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 3,204 |
 | Cost of Sales | 17,744 |
-| **Gross Profit** | 153,539.33 |
+| **Gross Profit** | 323,539.33 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Non-PAYE (code d) | 5,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Employee Wages | 0 |
@@ -66,29 +67,29 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation 2 | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation 3 | 0 |
 | Total Admin Expenses | 53,948.25 |
-| **Operating Profit** | 99,591.08 |
+| **Operating Profit** | 269,591.08 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
-| **Profit Before Tax** | 99,591.08 |
+| **Profit Before Tax** | 269,591.08 |
 
 ## Corporation Tax (CT600)
 
 | | Amount |
 |---|------:|
-| Operating Profit | 99,591.08 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 102,591.08 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 102,591.08 |
-| **Profit Chargeable to CT** | 102,591.08 |
-| **Corporation Tax** | 19,492.31 |
-| Tax Outstanding | 19,492.31 |
+| Operating Profit | 269,591.08 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 272,591.08 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 272,591.08 |
+| **Profit Chargeable to CT** | 272,591.08 |
+| **Corporation Tax** | 51,792.31 |
+| Tax Outstanding | 51,792.31 |
 
 ## Published P&L
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 169,200 |
-| **Gross Profit** | 171,283.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 339,200 |
+| **Gross Profit** | 341,283.33 |
 | **Operating Profit** | 17,744 |
-| **Profit Before Tax** | 153,539.33 |
+| **Profit Before Tax** | 323,539.33 |
 
 ## Published Balance Sheet
 
@@ -96,10 +97,10 @@ Status: RECONCILES
 |---|------:|
 | Fixed Assets (NBV) | 26,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock | 0 |
-| Current Assets | 220,900 |
+| Current Assets | 424,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Creditors < 1 year | -0 |
-| **Net Current Assets** | 53,598.78 |
-| **Total Assets less CL** | 80,098.78 |
+| **Net Current Assets** | 191,298.78 |
+| **Total Assets less CL** | 217,798.78 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | -0 |
 
@@ -114,7 +115,7 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| Audit Accuracy Check | -0 |
+| Audit Accuracy Check | 0 |
 
 ---
 
@@ -133,17 +134,17 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B4 | Product A — Consultancy | 141600 | accounts.sales.4000 |
+| B4 | Product A — Consultancy | 311600 | accounts.sales.4000 |
 | B5 | Product B — Software | 13600 | accounts.sales.4001 |
 | B6 | Product C — Training | 10300 | accounts.sales.4002 |
 | B7 | Other Direct Income | 3700 | accounts.sales.4003 |
 | B8 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
-| B9 | **Sales Turnover** | 171283.333333334 | gl-cor:amount (salesTurnover) |
+| B9 | **Sales Turnover** | 341283.333333333 | gl-cor:amount (salesTurnover) |
 | B11 | Materials / Stock | 6540 | accounts.purchases.5000 |
 | B12 | Sub-Contractors | 8000 | accounts.purchases.5001 |
 | B13 | Other Direct Costs | 3204 | accounts.purchases.5002 |
 | B14 | Cost of Sales | 17744 | gl-cor:amount (costOfSales) |
-| B16 | **Gross Profit** | 153539.333333334 | gl-cor:amount (grossProfit) |
+| B16 | **Gross Profit** | 323539.333333333 | gl-cor:amount (grossProfit) |
 | B18 | PAYE Wages + Non-PAYE Employee | 800 | dpl:WagesAndSalaries (combined) |
 | B19 | Directors Non-PAYE (code d) | 5000 | accounts.purchases.5100 |
 | B20 | PAYE Employee Wages | 0 | dpl:WagesAndSalaries (PAYE) |
@@ -168,29 +169,29 @@ Status: RECONCILES
 | B39 | Depreciation 2 | 0 | gl-cor:amount (depreciation3) |
 | B40 | Depreciation 3 | 0 | gl-cor:amount (depreciation4) |
 | B41 | Total Admin Expenses | 53948.25 | gl-cor:amount (totalAdmin) |
-| B43 | **Operating Profit** | 99591.0833333338 | gl-cor:amount (operatingProfit) |
+| B43 | **Operating Profit** | 269591.083333333 | gl-cor:amount (operatingProfit) |
 | B44 | Interest Received | 0 | gl-cor:amount (interestReceived) |
-| B45 | **Profit Before Tax** | 99591.0833333338 | gl-cor:amount (profitBeforeTax) |
+| B45 | **Profit Before Tax** | 269591.083333333 | gl-cor:amount (profitBeforeTax) |
 
 ### CorporationTax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| K5 | Operating Profit | 99591.0833333338 | gl-cor:amount (ct600.box145) |
-| K12 | Add back: Depreciation | 102591.083333334 | gl-cor:amount (ct600.addBack) |
-| K22 | Less: Capital Allowances | 102591.083333334 | tax.capitalAllowances (ct600) |
-| K28 | **Profit Chargeable to CT** | 102591.083333334 | gl-cor:amount (ct600.box315) |
-| K35 | **Corporation Tax** | 19492.3058333334 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 19492.3058333334 | gl-cor:taxAmount (ct600.box515) |
+| K5 | Operating Profit | 269591.083333333 | gl-cor:amount (ct600.box145) |
+| K12 | Add back: Depreciation | 272591.083333333 | gl-cor:amount (ct600.addBack) |
+| K22 | Less: Capital Allowances | 272591.083333333 | tax.capitalAllowances (ct600) |
+| K28 | **Profit Chargeable to CT** | 272591.083333333 | gl-cor:amount (ct600.box315) |
+| K35 | **Corporation Tax** | 51792.3058333333 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 51792.3058333333 | gl-cor:taxAmount (ct600.box515) |
 
 ### PubP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D7 | Cost of Sales | 169200 | gl-cor:amount (pubPL.cos) |
-| D9 | **Gross Profit** | 171283.333333334 | gl-cor:amount (pubPL.gross) |
+| D7 | Cost of Sales | 339200 | gl-cor:amount (pubPL.cos) |
+| D9 | **Gross Profit** | 341283.333333333 | gl-cor:amount (pubPL.gross) |
 | D16 | **Operating Profit** | 17744 | gl-cor:amount (pubPL.operating) |
-| D18 | **Profit Before Tax** | 153539.333333334 | gl-cor:amount (pubPL.pbt) |
+| D18 | **Profit Before Tax** | 323539.333333333 | gl-cor:amount (pubPL.pbt) |
 
 ### PubBalSht
 
@@ -198,10 +199,10 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | D6 | Fixed Assets (NBV) | 26500 | gl-cor:amount (pubBS.fixedAssets) |
 | D9 | Stock | 0 | accounts.assets.1100 (pubBS) |
-| D13 | Current Assets | 220900 | gl-cor:amount (pubBS.currentAssets) |
+| D13 | Current Assets | 424900 | gl-cor:amount (pubBS.currentAssets) |
 | D15 | Creditors < 1 year | 0 | gl-cor:amount (pubBS.creditors) |
-| D22 | **Net Current Assets** | 53598.7775 | gl-cor:amount (pubBS.netCurrent) |
-| D26 | **Total Assets less CL** | 80098.7775 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| D22 | **Net Current Assets** | 191298.7775 | gl-cor:amount (pubBS.netCurrent) |
+| D26 | **Total Assets less CL** | 217798.7775 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | D28 | Other Creditors | 0 | gl-cor:amount (pubBS.otherCred) |
 | D29 | Directors Loan | 0 | accounts.liabilities.2500 (pubBS) |
 
@@ -216,4 +217,4 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| EJ91 | Audit Accuracy Check | -3.57886165147647e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ91 | Audit Accuracy Check | 3.18777892971411e-10 | gl-cor:amount (trialBalanceCheck) |
