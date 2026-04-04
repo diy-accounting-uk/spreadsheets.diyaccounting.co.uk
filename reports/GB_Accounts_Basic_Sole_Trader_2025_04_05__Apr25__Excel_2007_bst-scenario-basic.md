@@ -18,12 +18,19 @@ Generated: 2026-04-04
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
 | Total Tax + NI | 43250 | 43249.76 | -0.23999999999796273 | PASS |
 
+## Business Details
+
+| | Amount |
+|---|------:|
+| Business Name | 9 |
+| Business Description | 10 |
+
 ## Profit & Loss Account
 
 | | Amount |
 |---|------:|
 | Sales Turnover | 205,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 114 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 116 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
 | **Gross Profit** | 187,360 |
@@ -83,11 +90,11 @@ Generated: 2026-04-04
 
 | | Amount |
 |---|------:|
-| Box 9 — Business name | 35 |
+| Box 9 — Business name | 36 |
 | Box 10 — Description | 1 |
-| Box 25 — Turnover | 19 |
+| Box 25 — Turnover | 20 |
 | Box 27 — Allowable expenses | 7 |
-| Box 29 — Net profit/loss | 22 |
+| Box 29 — Net profit/loss | 23 |
 | Box 30 — Tax adjustments | 45,752 |
 | Box 31 — Taxable profit | 45,752 |
 | Box 32 — Notes | Business income - if your annual turnover was below £90000 vat threshold |
@@ -124,12 +131,19 @@ Generated: 2026-04-04
 
 ## Appendix: Cell Values
 
+### Business Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| B7 | Business Name | 9 | entityInformation.organizationIdentifier |
+| D7 | Business Description | 10 | entityInformation.organizationDescription |
+
 ### Profit & Loss Acc
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C4 | Sales Turnover | 205900 | gl-cor:amount (salesTurnover) |
-| C5 | Other Income | 114 | gl-cor:amount (otherIncome) |
+| C5 | Other Income | 116 | gl-cor:amount (otherIncome) |
 | C6 | Cost of Sales (stock + direct) | 10540 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 8000 | gl-cor:amount (directCosts) |
 | C9 | **Gross Profit** | 187360 | gl-cor:amount (grossProfit) |
@@ -184,11 +198,11 @@ Generated: 2026-04-04
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D9 | Box 9 — Business name | 35 | entityInformation.organizationIdentifier |
+| D9 | Box 9 — Business name | 36 | entityInformation.organizationIdentifier |
 | D10 | Box 10 — Description | 1 | entityInformation.organizationDescription |
-| D25 | Box 25 — Turnover | 19 | gl-cor:amount (sa103s.turnover) |
+| D25 | Box 25 — Turnover | 20 | gl-cor:amount (sa103s.turnover) |
 | D27 | Box 27 — Allowable expenses | 7 | gl-cor:amount (sa103s.expenses) |
-| D29 | Box 29 — Net profit/loss | 22 | gl-cor:amount (sa103s.netProfit) |
+| D29 | Box 29 — Net profit/loss | 23 | gl-cor:amount (sa103s.netProfit) |
 | D30 | Box 30 — Tax adjustments | 45752 | gl-cor:amount (sa103s.taxAdjust) |
 | D31 | Box 31 — Taxable profit | 45752 | gl-cor:amount (sa103s.taxableProfit) |
 | D32 | Box 32 — Notes | Business income - if your annual turnover was below £90000 vat threshold | gl-cor:detailComment (sa103s.notes) |
