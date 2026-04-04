@@ -11,6 +11,23 @@ The property described is **roundtrip fidelity**: the guarantee that data surviv
 5. Reports from path 2 and path 3 must be **identical** (Excel-computed = diya-gl-computed)
 6. Data from path 4 must equal the original diya-gl input (Excel roundtrip preserves data)
 
+```
+please create a PLAN_*.md document using the current context (which is now massive) to consider how this
+  sequence of commands could be a reality: Create an ltd excel package in the target folder `npm run generate --package ltd
+  --years ltd-2024-2025 --data 'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025'` Extract financial and management
+  reports from an excel package from the calculated values `npm run report --package ltd --source-dir 'ltd-2024-2025' --output-dir
+  'ltd-2024-2025-excel-reports'` Extract financial and
+    management reports from diya-gl by calculating the values `npm run report --package ltd --data
+  'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025-diya-gl-reports'` and then to extract a set of diy-gl data `npm
+  run export --package ltd --source-dir 'ltd-2024-2025' --output-dir 'ltd-2024-2025-data'`  The package parameter sets the set of
+  reports to match the package and in the case of --source-dir the package parameter tells it what type of package to look for.
+  And then after those commands are run for any set of years or package when used consistently these two directories would be
+  equal ltd-2024-2025-excel-reports and ltd-2024-2025-diya-gl-reports, and also these two directories would be equial
+  examples/precision-code-ltd/full ltd-2024-2025-data if you could name what this property of a program or the data it that would
+  be great and you can use it in the plan name.
+```
+
+
 ## The Four Commands
 
 ```
