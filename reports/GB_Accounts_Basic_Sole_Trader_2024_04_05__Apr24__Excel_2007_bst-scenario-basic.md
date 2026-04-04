@@ -7,24 +7,24 @@ Status: RECONCILES
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 205900 | 205900 | 0 | PASS |
-| Gross Profit | 187360 | 187360 | 0 | PASS |
-| Net Profit | 129908 | 129908 | 0 | PASS |
+| Total Sales | 409900 | 409900 | 0 | PASS |
+| Gross Profit | 391360 | 391360 | 0 | PASS |
+| Net Profit | 333908 | 333908 | 0 | PASS |
 | Premises Costs | 15840 | 15840 | 0 | PASS |
 | Gen Admin | 1962 | 1962 | 0 | PASS |
 | Legal & Professional | 4560 | 4560 | 0 | PASS |
-| P&L: Gross = Sales - CoS - Direct | 187360 | 187360 | 0 | PASS |
-| P&L: Net = Gross - Expenses | 129908 | 129908 | 0 | PASS |
+| P&L: Gross = Sales - CoS - Direct | 391360 | 391360 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 333908 | 333908 | 0 | PASS |
 | P&L: Expense lines sum = Total | 57452 | 57452 | 0 | PASS |
-| Income Tax | 39395 | 39395 | 0 | PASS |
+| Income Tax | 120995 | 120995 | 0 | PASS |
 | NI Class 4 (lower) | 3393 | 3393 | 0 | PASS |
-| Total Tax + NI | 44381 | 44380.76 | -0.23999999999796273 | PASS |
-| Tax: Taxable = Profit - Allowance | 117338 | 117338 | 0 | PASS |
-| Tax: IT = Basic + Higher | 39395 | 39395 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 44380.76 | 44380.76 | 0 | PASS |
-| SA103S: Turnover = P&L Sales | 205900 | 205900 | 0 | PASS |
-| SA103S: Net profit close to P&L Net | 129908 | 129908 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 129908 | 129908 | 0 | PASS |
+| Total Tax + NI | 130061 | 130060.76 | -0.2400000000052387 | PASS |
+| Tax: Taxable = Profit - Allowance | 321338 | 321338 | 0 | PASS |
+| Tax: IT = Basic + Higher | 120995 | 120995 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 130060.76 | 130060.76 | 0 | PASS |
+| SA103S: Turnover = P&L Sales | 409900 | 409900 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 333908 | 333908 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 333908 | 333908 | 0 | PASS |
 
 ## Business Details
 
@@ -40,11 +40,11 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| Sales Turnover | 205,900 |
+| Sales Turnover | 409,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income | Other income |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
-| **Gross Profit** | 187,360 |
+| **Gross Profit** | 391,360 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee Costs | 800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 1,140 |
@@ -57,45 +57,45 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Finance | 750 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 17,882 |
 | Total Expenses | 57,452 |
-| **Net Profit** | 129,908 |
+| **Net Profit** | 333,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 0 |
-| Taxable Profit | 129,908 |
+| Taxable Profit | 333,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Income Tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 39,395 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 4,985.76 |
-| Net Income After Tax | 85,527.24 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 120,995 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 9,065.76 |
+| Net Income After Tax | 203,847.24 |
 
 ## Monthly Sales
 
 | | Amount |
 |---|------:|
-| Apr | 16,400 |
-| May | 15,920 |
-| Jun | 18,200 |
-| Jul | 16,760 |
-| Aug | 19,020 |
-| Sep | 16,760 |
-| Oct | 18,560 |
-| Nov | 18,320 |
-| Dec | 15,800 |
-| Jan | 18,440 |
-| Feb | 17,360 |
-| Mar | 14,360 |
+| Apr | 33,400 |
+| May | 32,920 |
+| Jun | 35,200 |
+| Jul | 33,760 |
+| Aug | 36,020 |
+| Sep | 33,760 |
+| Oct | 35,560 |
+| Nov | 35,320 |
+| Dec | 32,800 |
+| Jan | 35,440 |
+| Feb | 34,360 |
+| Mar | 31,360 |
 
 ## Income Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 129,908 |
+| Profit from Self Employment | 333,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 117,338 |
+| Taxable Income | 321,338 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 31,854.8 |
-| **Total Income Tax** | 39,395 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 113,454.8 |
+| **Total Income Tax** | 120,995 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,393 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,592.76 |
-| **Total Tax + NI** | 44,380.76 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 5,672.76 |
+| **Total Tax + NI** | 130,060.76 |
 
 ## Self Assessment (SA103S)
 
@@ -103,19 +103,19 @@ Status: RECONCILES
 |---|------:|
 | Business name | Precision Code Trading |
 | Accounting date | — |
-| Turnover | 205,900 |
+| Turnover | 409,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 9,458 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 1,140 |
-| **Net profit/loss** | 129,908 |
+| **Net profit/loss** | 333,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 129,908 |
+| **Taxable profit** | 333,908 |
 | VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold |
-| **Net profit for tax calc** | 129,908 |
+| **Net profit for tax calc** | 333,908 |
 
 ## Stock
 
@@ -162,11 +162,11 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C4 | Sales Turnover | 205900 | gl-cor:amount (salesTurnover) |
+| C4 | Sales Turnover | 409900 | gl-cor:amount (salesTurnover) |
 | C5 | Other Income | Other income | gl-cor:amount (otherIncome) |
 | C6 | Cost of Sales (stock + direct) | 10540 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 8000 | gl-cor:amount (directCosts) |
-| C9 | **Gross Profit** | 187360 | gl-cor:amount (grossProfit) |
+| C9 | **Gross Profit** | 391360 | gl-cor:amount (grossProfit) |
 | C11 | Employee Costs | 800 | accounts.purchases.5101 |
 | C12 | Premises Costs | 15840 | accounts.purchases.5200 |
 | C13 | Repairs & Maintenance | 1140 | accounts.purchases.5400 |
@@ -179,59 +179,59 @@ Status: RECONCILES
 | C20 | Interest & Finance | 750 | accounts.purchases.5803 |
 | C21 | Other Expenses | 17882 | accounts.purchases (other) |
 | C22 | Total Expenses | 57452 | gl-cor:amount (totalExpenses) |
-| C24 | **Net Profit** | 129908 | gl-cor:amount (netProfit) |
+| C24 | **Net Profit** | 333908 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 0 | tax.capitalAllowances |
-| C28 | Taxable Profit | 129908 | gl-cor:amount (taxableProfit) |
+| C28 | Taxable Profit | 333908 | gl-cor:amount (taxableProfit) |
 | C30 | Income Tax | 0 | tax.incomeTax |
-| C32 | Tax at basic rate | 39395 | tax.incomeTax.basicRate |
-| C33 | NI Class 4 | 4985.76 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 85527.24 | gl-cor:amount (netIncome) |
-| D4 | Apr | 16400 | gl-cor:amount (monthlySales.apr) |
-| E4 | May | 15920 | gl-cor:amount (monthlySales.may) |
-| F4 | Jun | 18200 | gl-cor:amount (monthlySales.jun) |
-| G4 | Jul | 16760 | gl-cor:amount (monthlySales.jul) |
-| H4 | Aug | 19020 | gl-cor:amount (monthlySales.aug) |
-| I4 | Sep | 16760 | gl-cor:amount (monthlySales.sep) |
-| J4 | Oct | 18560 | gl-cor:amount (monthlySales.oct) |
-| K4 | Nov | 18320 | gl-cor:amount (monthlySales.nov) |
-| L4 | Dec | 15800 | gl-cor:amount (monthlySales.dec) |
-| M4 | Jan | 18440 | gl-cor:amount (monthlySales.jan) |
-| N4 | Feb | 17360 | gl-cor:amount (monthlySales.feb) |
-| O4 | Mar | 14360 | gl-cor:amount (monthlySales.mar) |
+| C32 | Tax at basic rate | 120995 | tax.incomeTax.basicRate |
+| C33 | NI Class 4 | 9065.76 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 203847.24 | gl-cor:amount (netIncome) |
+| D4 | Apr | 33400 | gl-cor:amount (monthlySales.apr) |
+| E4 | May | 32920 | gl-cor:amount (monthlySales.may) |
+| F4 | Jun | 35200 | gl-cor:amount (monthlySales.jun) |
+| G4 | Jul | 33760 | gl-cor:amount (monthlySales.jul) |
+| H4 | Aug | 36020 | gl-cor:amount (monthlySales.aug) |
+| I4 | Sep | 33760 | gl-cor:amount (monthlySales.sep) |
+| J4 | Oct | 35560 | gl-cor:amount (monthlySales.oct) |
+| K4 | Nov | 35320 | gl-cor:amount (monthlySales.nov) |
+| L4 | Dec | 32800 | gl-cor:amount (monthlySales.dec) |
+| M4 | Jan | 35440 | gl-cor:amount (monthlySales.jan) |
+| N4 | Feb | 34360 | gl-cor:amount (monthlySales.feb) |
+| O4 | Mar | 31360 | gl-cor:amount (monthlySales.mar) |
 
 ### Income Tax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 129908 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 333908 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 117338 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 321338 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7540.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate (40%) | 31854.8 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 39395 | tax.incomeTax (total) |
+| E9 | Tax at Higher Rate (40%) | 113454.8 | tax.incomeTax.higherRate |
+| E10 | **Total Income Tax** | 120995 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3393 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1592.76 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 44380.76 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 5672.76 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 130060.76 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A7 | Business name | Precision Code Trading | entityInformation.organizationIdentifier |
-| D38 | Turnover | 205900 | gl-cor:amount (sa103s.turnover) |
+| D38 | Turnover | 409900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
 | D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
 | D55 | Employee costs | 800 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
 | D64 | Other expenses | 1140 | gl-cor:amount (sa103s.otherExpenses) |
-| D71 | **Net profit/loss** | 129908 | gl-cor:amount (sa103s.netProfit) |
+| D71 | **Net profit/loss** | 333908 | gl-cor:amount (sa103s.netProfit) |
 | D80 | Capital allowances | 0 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 129908 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Taxable profit** | 333908 | gl-cor:amount (sa103s.taxableProfit) |
 | A32 | VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc** | 129908 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc** | 333908 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
