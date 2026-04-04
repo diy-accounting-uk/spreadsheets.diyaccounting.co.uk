@@ -215,6 +215,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B13, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B23, expected.net_profit);
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.B16, expected.total_gen_admin);
+
+  // P&L internal consistency (6a)
+  check("P&L: Net = Gross - General Expenses", pl.B23, pl.B13 - (pl.B22 || 0));
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
 
   if (taxData) {

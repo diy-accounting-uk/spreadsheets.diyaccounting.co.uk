@@ -322,6 +322,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B19, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B39, expected.net_profit);
 
+  // P&L internal consistency (6a)
+  check("P&L: Gross = Turnover + Grants - CoS", pl.B19, pl.B9 + (pl.B11 || 0) - (pl.B17 || 0));
+  check("P&L: Operating = Gross - Admin", pl.B37, pl.B19 - (pl.B35 || 0));
+  check("P&L: PBT = Operating", pl.B39, pl.B37);
+
   if (taxData) {
     const taxSheet = results[TAX_SHEET];
     const profit = taxSheet.E5 || 0;

@@ -1051,12 +1051,23 @@ Compute expected individual expense totals from scenario transaction data in ext
 - Verify D38 = P&L turnover (SE Short pulls from P&L)
 - Verify D106 = Income Tax E5 (profit for tax calc matches tax sheet)
 
+**6h. Payslips.xlsx employee data and wages reconciliation** (SE, Ltd):
+Write employee details to Payslips.xlsx Employee sheet from scenario data, then verify three reconciliation points:
+1. Employee payments and tax in Payslips.xlsx match the WagesInterface in Financialaccounts.xlsx
+2. Total employee payments in WagesInterface match the wages lines in the P&L
+3. Director vs employee separation in Payslips propagates correctly to Financialaccounts (directors wages vs employee wages are separate P&L lines)
+
+Requires: SE Payslips.xlsx Employee sheet layout analysis (background task running), then:
+- Add employee writes to se.js/ltd.js cellWrites() targeting Payslips.xlsx Employee sheet
+- Add WagesInterface reads to CELL_MAP
+- Add payroll compliance checks to checkCompliance()
+
 **Future (deferred past Phase 6)**:
 - VAT 9-box reads from Vat.xlsx / Vatreturns.xlsx (separate file, not in multi-file recalc pipeline)
 - Bank closing balances (multi-file reads of final month A2)
 - PubBalSht / PubP&L correct cell positions (requires template analysis)
-- Payroll/wages WagesInterface cells
 - Dividends tracking
+- Business Details full cell mapping for SE and Ltd (currently only business name C5)
 
 ### Phase 7 — Documentation and CI cleanup
 
@@ -1243,9 +1254,17 @@ Small companies can omit P&L and directors' report from CH filing. Balance sheet
 - [x] `taxi.js` converted to CELL_MAP pattern with P&L (mileage comparison) + Draft Tax Calculation
 - [x] Reconciles 4/4 (total sales, income tax, NI, total tax)
 
-**Phase 6 — Incremental compliance check expansion**:
+**Phase 5c — Business Details + shared strings** (DONE):
+- [x] `spreadsheet-runner.js` fixed: `loadSharedStrings()` resolves shared string indices to text
+- [x] All 4 products: Business Details written from scenario.business section and read back via CELL_MAP
+- [x] BST/Taxi: name, description, address, town, postcode populated
+- [x] SE/Ltd: business name populated (other cells need template-specific mapping)
+- [x] extract-scenarios.cjs: adds [business] section to generated fixtures
+- [x] Reports show real text values for Business Details
 
-Each sub-phase: add checks to `checkCompliance()` and expected values to fixture, run `npm test`, generate+reconcile 1 March (Ltd) and 1 May (non-March Ltd) package, if green commit and move to next.
+**Phase 6 — Incremental compliance check expansion** (IN PROGRESS):
+
+Each sub-phase: add checks to `checkCompliance()` and expected values to fixture, run `npm test`, generate+reconcile 1 March (Ltd `--years ltd-2025`) and 1 non-March (BST/SE/Taxi `--years se-2025-2026`), if green commit and move to next.
 
 **6a. P&L internal consistency** (all products):
 - Check: gross profit = turnover - cost of sales (BST, SE, Ltd, Taxi)

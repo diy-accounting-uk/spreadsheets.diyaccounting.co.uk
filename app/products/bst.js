@@ -271,6 +271,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.C14, expected.total_gen_admin);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.C18, expected.total_legal);
 
+  // P&L internal consistency (6a)
+  check("P&L: Gross = Sales - CoS - Direct", pl.C9, pl.C4 - (pl.C6 || 0) - (pl.C7 || 0));
+  check("P&L: Net = Gross - Expenses", pl.C24, pl.C9 - (pl.C22 || 0));
+
   // Stock checks
   if (expected.opening_stock !== undefined && results.PurchasesStock) {
     check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
