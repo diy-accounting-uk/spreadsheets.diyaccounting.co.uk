@@ -1,5 +1,5 @@
-name: deploy spreadsheets
-run-name: "deploy spreadsheets from ${{ github.ref_name }}"
+name: deploy
+run-name: "deploy from ${{ github.ref_name }}"
 concurrency:
   group: deploy-spreadsheets-${{ github.ref }}
   cancel-in-progress: true
