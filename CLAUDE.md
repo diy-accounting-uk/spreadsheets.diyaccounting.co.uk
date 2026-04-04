@@ -61,9 +61,9 @@ See `../CLAUDE.md` for full rules. Branch naming: `claude/<short-description>`.
 ```bash
 npm install
 node scripts/build-spreadsheets-redirects.cjs
-node scripts/build-sitemaps.cjs
+node app/bin/build-sitemaps.js
 ./mvnw clean verify
-node scripts/build-packages.cjs
+node app/bin/build-packages.js
 npm run cdk:synth
 ```
 
@@ -102,7 +102,7 @@ Redirects are configured in `web/spreadsheets.diyaccounting.co.uk/redirects.toml
 
 ## Package Pipeline
 
-Excel workbook source files live in `packages/` organised by product and tax year. The `scripts/build-packages.cjs` script:
+Excel workbook source files live in `packages/` organised by product and tax year. The `app/bin/build-packages.js` script:
 
 1. Scans `packages/` directories for Excel workbooks
 2. Creates zip archives in `target/zips/`

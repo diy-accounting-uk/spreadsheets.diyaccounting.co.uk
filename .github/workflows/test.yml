@@ -150,7 +150,7 @@ jobs:
         run: npm ci || sleep 30 && npm ci
 
       - name: Verify scenario fixtures in sync with master data
-        run: node scripts/extract-scenarios.cjs && git diff --exit-code app/test/fixtures/
+        run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/
 
       - name: Run tests
         run: npm test
