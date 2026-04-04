@@ -470,7 +470,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const mainRate = taxData.corporation_tax.main_rate || 0.25;
       if (profit > smallLimit) {
         const mainRateCT = Math.round(profit * mainRate);
-        const marginalCheck = { name: "CT: Marginal relief expected (profit > £50K)", actual: ct.K35 || 0, expected: mainRateCT, pass: false, diff: (ct.K35 || 0) - mainRateCT, severity: "warning" };
+        const marginalCheck = {
+          name: "CT: Marginal relief expected (profit > £50K)",
+          actual: ct.K35 || 0,
+          expected: mainRateCT,
+          pass: false,
+          diff: (ct.K35 || 0) - mainRateCT,
+          severity: "warning",
+        };
         checks.push(marginalCheck);
       }
     }
