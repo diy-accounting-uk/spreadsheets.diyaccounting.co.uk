@@ -9,9 +9,16 @@ Generated: 2026-04-04
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 169200 | 169200 | 0 | PASS |
-| Income Tax | 36968 | 36967.4333333335 | -0.5666666664983495 | PASS |
+| Income Tax | 36648 | 36647.4333333335 | -0.5666666664983495 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
-| Total Tax + NI | 42086 | 42085.8150000002 | -0.18499999980122084 | PASS |
+| Total Tax + NI | 41750 | 41749.8150000002 | -0.18499999980122084 | PASS |
+
+## Business Details
+
+| | Amount |
+|---|------:|
+| Business Name | 3 |
+| Business Description | 3 |
 
 ## Profit & Loss Account
 
@@ -38,28 +45,28 @@ Generated: 2026-04-04
 | &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 5,310 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts | -300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Charitable Donations | 500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Goodwill Amortisation | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on Disposal | 0 |
-| Total Admin Expenses | 29,870.25 |
-| **Operating Profit** | 123,669.08 |
-| **Profit Before Tax** | 123,669.08 |
+| Total Admin Expenses | 30,670.25 |
+| **Operating Profit** | 122,869.08 |
+| **Profit Before Tax** | 122,869.08 |
 
 ## Income Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 123,669.08 |
+| Profit from Self Employment | 122,869.08 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,500 |
-| Taxable Income | 111,169.08 |
+| Taxable Income | 110,369.08 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,500.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 29,467.23 |
-| **Total Income Tax** | 36,967.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 29,147.23 |
+| **Total Income Tax** | 36,647.43 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,645 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,473.38 |
-| **Total Tax + NI** | 42,085.82 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,457.38 |
+| **Total Tax + NI** | 41,749.82 |
 
 ## Self Assessment (SA103S)
 
@@ -73,11 +80,18 @@ Generated: 2026-04-04
 | Box 30 — Tax adjustments | 44,291 |
 | Box 31 — Taxable profit | 44,291 |
 | Box 32 — Notes | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold |
-| Net profit for tax calc | 123,669.08 |
+| Net profit for tax calc | 122,869.08 |
 
 ---
 
 ## Appendix: Cell Values
+
+### Business Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| B7 | Business Name | 3 | entityInformation.organizationIdentifier |
+| D7 | Business Description | 3 | entityInformation.organizationDescription |
 
 ### Profit & Loss Account
 
@@ -104,28 +118,28 @@ Generated: 2026-04-04
 | B28 | Legal & Professional | 5310 | accounts.purchases.5800 |
 | B29 | Bad Debts | -300 | accounts.sales.4005 |
 | B30 | Depreciation | 0 | gl-cor:amount (depreciation) |
-| B31 | Other Expenses | 0 | accounts.purchases (other) |
+| B31 | Other Expenses | 800 | accounts.purchases (other) |
 | B32 | Charitable Donations | 500 | accounts.purchases.5801 |
 | B33 | Goodwill Amortisation | 0 | accounts.purchases.5802 |
 | B34 | Loss on Disposal | 0 | gl-cor:amount (lossOnDisposal) |
-| B35 | Total Admin Expenses | 29870.25 | gl-cor:amount (totalAdmin) |
-| B37 | **Operating Profit** | 123669.083333334 | gl-cor:amount (operatingProfit) |
-| B39 | **Profit Before Tax** | 123669.083333334 | gl-cor:amount (profitBeforeTax) |
+| B35 | Total Admin Expenses | 30670.25 | gl-cor:amount (totalAdmin) |
+| B37 | **Operating Profit** | 122869.083333334 | gl-cor:amount (operatingProfit) |
+| B39 | **Profit Before Tax** | 122869.083333334 | gl-cor:amount (profitBeforeTax) |
 
 ### Income Tax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 123669.083333334 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 122869.083333334 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 111169.083333334 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 110369.083333334 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7500.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate (40%) | 29467.2333333335 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 36967.4333333335 | tax.incomeTax (total) |
+| E9 | Tax at Higher Rate (40%) | 29147.2333333335 | tax.incomeTax.higherRate |
+| E10 | **Total Income Tax** | 36647.4333333335 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3645 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1473.38166666667 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 42085.8150000002 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1457.38166666667 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 41749.8150000002 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
@@ -139,4 +153,4 @@ Generated: 2026-04-04
 | D30 | Box 30 — Tax adjustments | 44291 | gl-cor:amount (sa103s.taxAdjust) |
 | D31 | Box 31 — Taxable profit | 44291 | gl-cor:amount (sa103s.taxableProfit) |
 | D32 | Box 32 — Notes | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold | gl-cor:detailComment |
-| D106 | Net profit for tax calc | 123669.083333334 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | Net profit for tax calc | 122869.083333334 | gl-cor:amount (sa103s.profitForTax) |
