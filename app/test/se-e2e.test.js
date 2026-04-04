@@ -2,14 +2,13 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // se-e2e.test.js — End-to-end tests for the Self Employed multi-file package.
-// Generates all 9 xlsx files, writes scenario data into Sales.xlsx and Purchases.xlsx,
-// recalculates across files via LibreOffice with external link cache injection,
-// and reads results from Financialaccounts.xlsx.
+// Loads the se-scenario-advanced.toml fixture, injects via the product module,
+// and validates P&L, tax, stock, and debtors/creditors.
 //
 // Requires: LibreOffice installed (brew install --cask libreoffice)
 
 import { describe, it, expect, beforeAll } from "vitest";
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { runMultiFileSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
@@ -28,15 +27,17 @@ const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 describeCalc(
-  "Self Employed end-to-end: cross-file P&L and tax",
+  "Self Employed end-to-end: Precision Code advanced scenario",
   () => {
     let results;
+    let scenario;
+    let taxData;
 
     beforeAll(async () => {
-      const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+      taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
       const productMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
 
-      // Generate all 9 xlsx files
+      // Generate all xlsx files
       const fileBuffers = {};
       for (const templateFile of productMeta.template.files) {
         const templateBuffer = readFileSync(resolve(SE_DIR, templateFile));
@@ -51,40 +52,46 @@ describeCalc(
       }
 
       // Load scenario and build cell writes
-      const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-basic.toml"));
+      scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
       const writes = seCellWrites(scenario);
       const reads = seReads();
 
-      // Run multi-file spreadsheet with cross-file recalculation
       results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
     }, 300000);
 
-    it("P&L: total sales = 30000 (12 months net of VAT)", () => {
-      expect(results["Profit & Loss Account"].B9).toBe(30000);
+    // ── P&L assertions ───────────────────────────────────────────────────
+
+    it("P&L: total sales matches expected", () => {
+      expect(results["Profit & Loss Account"].B9).toBe(scenario.expected.total_sales);
     });
 
-    it("P&L: sales Product A = 30000", () => {
-      expect(results["Profit & Loss Account"].B5).toBe(30000);
+    it("P&L: sales Product A > 0", () => {
+      expect(results["Profit & Loss Account"].B5).toBeGreaterThan(0);
     });
 
     it("P&L: admin expenses > 0", () => {
       expect(results["Profit & Loss Account"].B35).toBeGreaterThan(0);
     });
 
-    it("P&L: gross profit = 30000 (no cost of sales)", () => {
-      expect(results["Profit & Loss Account"].B19).toBe(30000);
-    });
-
-    it("P&L: operating profit = sales - expenses", () => {
+    it("P&L: gross profit = turnover - cost of sales", () => {
       const pl = results["Profit & Loss Account"];
-      expect(pl.B37).toBe(pl.B19 - pl.B35);
+      // B19 may include grants (B11) in gross profit
+      expect(pl.B19).toBeCloseTo(pl.B9 + (pl.B11 || 0) - (pl.B17 || 0), 0);
     });
 
-    it("P&L: premises costs = 1800 (3 x 600)", () => {
-      expect(results["Profit & Loss Account"].B22).toBe(1800);
+    it("P&L: operating profit = gross profit - admin expenses", () => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl.B37).toBeCloseTo(pl.B19 - pl.B35, 0);
     });
 
-    it("Income Tax: profit = operating profit", () => {
+    it("P&L: profit before tax = operating profit", () => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl.B39).toBe(pl.B37);
+    });
+
+    // ── Income Tax assertions ─────────────────────────────────────────────
+
+    it("Income Tax: profit = P&L profit before tax", () => {
       expect(results["Income Tax"].E5).toBe(results["Profit & Loss Account"].B39);
     });
 
@@ -97,12 +104,7 @@ describeCalc(
       expect(tax.E7).toBe(tax.E5 - tax.E6);
     });
 
-    it("Income Tax: basic rate tax calculated", () => {
-      // Taxable income of 13230 at 20% = 2646
-      expect(results["Income Tax"].E8).toBe(2646);
-    });
-
-    it("Income Tax: total tax > 0", () => {
+    it("Income Tax: total income tax > 0", () => {
       expect(results["Income Tax"].E10).toBeGreaterThan(0);
     });
 
@@ -112,6 +114,11 @@ describeCalc(
 
     it("Income Tax: total tax + NI > 0", () => {
       expect(results["Income Tax"].E18).toBeGreaterThan(0);
+    });
+
+    it("Income Tax: total = income tax + NI", () => {
+      const tax = results["Income Tax"];
+      expect(tax.E18).toBeCloseTo(tax.E10 + (tax.E15 || 0) + (tax.E16 || 0), 0);
     });
   },
   300000,

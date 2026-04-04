@@ -592,7 +592,11 @@ const bstDiya = writeDiyaGlSubset("bst", "BasicSoleTrader", bstLines, ["incomeTa
 
 const advLines = filterAdvanced(allLines);
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
-const advTotalSales = computeNetSales(advSalesLines);
+// SE P&L B9 "Sales Turnover" = codes a,b,c,d only (accounts 4000-4003)
+// Grants (4004) go to B11, Bad debts (4005) and FA sales (4006) go elsewhere
+const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
+const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
+const advTotalSales = computeNetSales(advTurnoverLines);
 const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
 const advToml = formatScenarioToml(
   {
