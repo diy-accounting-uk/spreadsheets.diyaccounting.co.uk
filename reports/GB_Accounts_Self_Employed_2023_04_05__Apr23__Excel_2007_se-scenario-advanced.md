@@ -13,13 +13,6 @@ Generated: 2026-04-04
 | NI Class 4 (lower) | 3732.6 | 3732.6226 | +0.02260000000023865 | PASS |
 | Total Tax + NI | 42294 | 42294.0109083335 | +0.01090833349735476 | PASS |
 
-## Business Details
-
-| | Amount |
-|---|------:|
-| Business Name | 3 |
-| Accounting Date | 3 |
-
 ## Profit & Loss Account
 
 | | Amount |
@@ -91,13 +84,6 @@ Generated: 2026-04-04
 ---
 
 ## Appendix: Cell Values
-
-### Business Details
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| C5 | Business Name | 3 | entityInformation.organizationIdentifier |
-| O5 | Accounting Date | 3 | documentInfo.periodCoveredEnd |
 
 ### Profit & Loss Account
 
