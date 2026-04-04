@@ -158,6 +158,11 @@ jobs:
     needs: [generate-ltd]
     if: ${{ !cancelled() }}
     steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+
       - name: Trigger test workflow
         env:
           GH_TOKEN: ${{ github.token }}
