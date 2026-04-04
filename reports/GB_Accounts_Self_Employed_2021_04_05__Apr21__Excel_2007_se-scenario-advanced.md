@@ -12,6 +12,8 @@ Status: RECONCILES
 | P&L: Operating = Gross - Admin | 122869.08333333401 | 122869.083333334 | -1.4551915228366852e-11 | PASS |
 | P&L: PBT = Operating | 122869.083333334 | 122869.083333334 | 0 | PASS |
 | P&L: Admin lines sum = Total | 30670.25 | 30670.25 | 0 | PASS |
+| Motor Expenses | 7598 | 7598.25 | +0.25 | PASS |
+| Legal & Professional | 5310 | 5310 | 0 | PASS |
 | Income Tax | 36648 | 36647.4333333335 | -0.5666666664983495 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
 | Total Tax + NI | 41750 | 41749.8150000002 | -0.18499999980122084 | PASS |
@@ -19,6 +21,7 @@ Status: RECONCILES
 | Tax: IT = Basic + Higher | 36647.4333333335 | 36647.4333333335 | 0 | PASS |
 | Tax: Total = IT - CIS + NI | 41749.81500000017 | 41749.8150000002 | +2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 169200 | 169200 | 0 | PASS |
+| SA103S: Net profit close to P&L Net - Grants | 120785.75000000067 | 120785.75 | -6.693881005048752e-10 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 122869.083333334 | 122869.083333334 | 0 | PASS |
 
 ## Business Details
@@ -94,6 +97,40 @@ Status: RECONCILES
 | **Taxable profit** | 120,785.75 |
 | VAT threshold note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold |
 | **Net profit for tax calc** | 122,869.08 |
+
+## Payroll Summary
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;May Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jun Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jul Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Aug Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sep Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Oct Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Nov Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Dec Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jan Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Feb Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Mar Gross Pay | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr PAYE | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr Employer NI | 0 |
+
+## Quarterly Summary
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 Sales | 41,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 Sales | 40,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 Sales | 43,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Sales | 40,400 |
+| **Annual Sales** | 165,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 Expenses | 2,499 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 Expenses | 2,283 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses | 2,619 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 2,343 |
+| **Annual Expenses** | 9,744 |
 
 ---
 
@@ -171,3 +208,37 @@ Status: RECONCILES
 | D99 | **Taxable profit** | 120785.75 | gl-cor:amount (sa103s.taxableProfit) |
 | A32 | VAT threshold note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
 | D106 | **Net profit for tax calc** | 122869.083333334 | gl-cor:amount (sa103s.profitForTax) |
+
+### Wagesinterface
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C4 | Apr Gross Pay | 0 | diya-gl:grossPay (apr) |
+| C5 | May Gross Pay | 0 | diya-gl:grossPay (may) |
+| C6 | Jun Gross Pay | 0 | diya-gl:grossPay (jun) |
+| C7 | Jul Gross Pay | 0 | diya-gl:grossPay (jul) |
+| C8 | Aug Gross Pay | 0 | diya-gl:grossPay (aug) |
+| C9 | Sep Gross Pay | 0 | diya-gl:grossPay (sep) |
+| C10 | Oct Gross Pay | 0 | diya-gl:grossPay (oct) |
+| C11 | Nov Gross Pay | 0 | diya-gl:grossPay (nov) |
+| C12 | Dec Gross Pay | 0 | diya-gl:grossPay (dec) |
+| C13 | Jan Gross Pay | 0 | diya-gl:grossPay (jan) |
+| C14 | Feb Gross Pay | 0 | diya-gl:grossPay (feb) |
+| C15 | Mar Gross Pay | 0 | diya-gl:grossPay (mar) |
+| D4 | Apr PAYE | 0 | diya-gl:incomeTax (apr) |
+| H4 | Apr Employer NI | 0 | diya-gl:employerNI (apr) |
+
+### VitalTax
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C5 | Q1 Sales | 41400.0000000001 | gl-cor:amount (vitalTax.q1Sales) |
+| D5 | Q2 Sales | 40500.0000000001 | gl-cor:amount (vitalTax.q2Sales) |
+| E5 | Q3 Sales | 43200.0000000001 | gl-cor:amount (vitalTax.q3Sales) |
+| F5 | Q4 Sales | 40400.0000000001 | gl-cor:amount (vitalTax.q4Sales) |
+| G5 | **Annual Sales** | 165500 | gl-cor:amount (vitalTax.annualSales) |
+| C7 | Q1 Expenses | 2499 | gl-cor:amount (vitalTax.q1Exp) |
+| D7 | Q2 Expenses | 2283 | gl-cor:amount (vitalTax.q2Exp) |
+| E7 | Q3 Expenses | 2619 | gl-cor:amount (vitalTax.q3Exp) |
+| F7 | Q4 Expenses | 2343 | gl-cor:amount (vitalTax.q4Exp) |
+| G7 | **Annual Expenses** | 9744 | gl-cor:amount (vitalTax.annualExp) |
