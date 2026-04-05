@@ -215,6 +215,31 @@ export function cellWrites(scenario) {
     }
   }
 
+  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  if (scenario.payroll) {
+    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
+      const sheetName = MONTH_SHEETS[monthKey];
+      if (!sheetName) continue;
+      if (!payslipsWrites[sheetName]) payslipsWrites[sheetName] = {};
+      const sheet = payslipsWrites[sheetName];
+      // Write wages paid date from first entry
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        sheet.M49 = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      }
+      for (let i = 0; i < Math.min(entries.length, 5); i++) {
+        const row = 51 + i;
+        const e = entries[i];
+        if (e.name) sheet[`F${row}`] = e.name;
+        sheet[`M${row}`] = e.grossPay;
+        sheet[`N${row}`] = e.incomeTax;
+        sheet[`O${row}`] = e.employeeNI;
+        sheet[`R${row}`] = e.netPay;
+        sheet[`S${row}`] = e.employerNI;
+      }
+    }
+  }
+
   // Fixedassets.xlsx opening asset values
   const fixedAssetsWrites = {};
   if (scenario.opening_fixed_assets) {

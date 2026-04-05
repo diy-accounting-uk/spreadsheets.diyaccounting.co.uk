@@ -202,6 +202,28 @@ export function diyaGlToScenario(book, lines, product) {
     scenario.bank = flatBank;
   }
 
+  // Payroll (SE/Ltd only) — group by month
+  const payrollLines = filteredLines.filter((l) => l.sourceJournalID === "payroll");
+  if (payrollLines.length > 0) {
+    const payrollByMonth = {};
+    for (const line of payrollLines) {
+      const month = MONTH_ORDER[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
+      if (!payrollByMonth[month]) payrollByMonth[month] = [];
+      payrollByMonth[month].push({
+        date: line.postingDate,
+        name: line.detailComment,
+        grossPay: line["diya-gl:grossPay"] || line.amount,
+        incomeTax: line["diya-gl:incomeTax"] || 0,
+        employeeNI: line["diya-gl:employeeNI"] || 0,
+        employerNI: line["diya-gl:employerNI"] || 0,
+        netPay: line["diya-gl:netPay"] || 0,
+        employeeID: line["diya-gl:employeeID"] || "",
+        accountMainID: line.accountMainID,
+      });
+    }
+    scenario.payroll = payrollByMonth;
+  }
+
   // Employees from book.toml
   if (book.employees) {
     scenario.employees = book.employees;

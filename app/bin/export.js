@@ -15,6 +15,7 @@ import {
   extractBstTransactions,
   extractMultiFileTransactions,
   extractBankTransactions,
+  extractPayrollTransactions,
   extractMetadata,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
@@ -66,7 +67,8 @@ async function main() {
   } else {
     lines = await extractMultiFileTransactions(resolvedSource, packageName);
     const bankLines = await extractBankTransactions(resolvedSource, packageName);
-    lines = lines.concat(bankLines);
+    const payrollLines = await extractPayrollTransactions(resolvedSource);
+    lines = lines.concat(bankLines, payrollLines);
     const hubPath = resolve(resolvedSource, "Financialaccounts.xlsx");
     metadata = await extractMetadata(readFileSync(hubPath), packageName);
   }

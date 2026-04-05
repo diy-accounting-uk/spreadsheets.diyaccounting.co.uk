@@ -227,6 +227,35 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  if (scenario.payroll) {
+    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
+      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
+      if (!sm) continue;
+      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
+      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+
+      if (!payslipsWrites[tabName]) payslipsWrites[tabName] = {};
+      const sheet = payslipsWrites[tabName];
+      // Write wages paid date from first entry
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        const shifted2 = shiftDate(d);
+        sheet.M49 = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
+      }
+      for (let i = 0; i < Math.min(entries.length, 5); i++) {
+        const row = 51 + i;
+        const e = entries[i];
+        if (e.name) sheet[`F${row}`] = e.name;
+        sheet[`M${row}`] = e.grossPay;
+        sheet[`N${row}`] = e.incomeTax;
+        sheet[`O${row}`] = e.employeeNI;
+        sheet[`R${row}`] = e.netPay;
+        sheet[`S${row}`] = e.employerNI;
+      }
+    }
+  }
+
   // Fixedassets.xlsx opening asset values
   const fixedAssetsWrites = {};
   if (scenario.opening_fixed_assets) {

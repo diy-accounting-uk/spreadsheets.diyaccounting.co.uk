@@ -328,6 +328,63 @@ export async function extractBankTransactions(sourceDir, product) {
 }
 
 /**
+ * Extract payroll transactions from Payslips.xlsx monthly tabs.
+ * Monthly payroll rows 51-55: F=name, M=gross, N=tax, O=empNI, R=net, S=erNI
+ */
+export async function extractPayrollTransactions(sourceDir) {
+  const { readFileSync, existsSync } = await import("fs");
+  const { resolve } = await import("path");
+
+  const filePath = resolve(sourceDir, "Payslips.xlsx");
+  if (!existsSync(filePath)) return [];
+
+  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+  const lines = [];
+  let entryNum = 1;
+
+  for (let mi = 0; mi < 12; mi++) {
+    const sheetName = MONTH_SHEETS[mi];
+    const sheetPath = sheetMap.get(sheetName);
+    if (!sheetPath) continue;
+    const xml = await zip.file(sheetPath).async("string");
+
+    for (let row = 51; row <= 55; row++) {
+      const grossPay = readCellValue(xml, `M${row}`, sharedStrings);
+      if (grossPay === null || typeof grossPay !== "number" || grossPay === 0) continue;
+
+      const name = readCellValue(xml, `F${row}`, sharedStrings) || "";
+      const incomeTax = readCellValue(xml, `N${row}`, sharedStrings) || 0;
+      const employeeNI = readCellValue(xml, `O${row}`, sharedStrings) || 0;
+      const netPay = readCellValue(xml, `R${row}`, sharedStrings) || 0;
+      const employerNI = readCellValue(xml, `S${row}`, sharedStrings) || 0;
+
+      // Derive posting date from month tab (last day of that month, approximate from other data)
+      // Use the date from row 49 col M (date wages paid) if available
+      const wageDate = readCellValue(xml, "M49", sharedStrings);
+      const postingDate = wageDate && typeof wageDate === "number" && wageDate > 1 ? excelSerialToDate(wageDate) : `${MONTH_SHEETS[mi]}-unknown`;
+
+      lines.push({
+        sourceJournalID: "payroll",
+        postingDate,
+        accountMainID: "5101",
+        amount: grossPay,
+        detailComment: typeof name === "string" ? name : "",
+        "diya-gl:grossPay": grossPay,
+        "diya-gl:incomeTax": typeof incomeTax === "number" ? incomeTax : 0,
+        "diya-gl:employeeNI": typeof employeeNI === "number" ? employeeNI : 0,
+        "diya-gl:employerNI": typeof employerNI === "number" ? employerNI : 0,
+        "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
+        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+      });
+    }
+  }
+
+  return lines;
+}
+
+/**
  * Extract business metadata from a populated xlsx.
  */
 export async function extractMetadata(xlsxBuffer, product) {
