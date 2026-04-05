@@ -187,9 +187,19 @@ export function diyaGlToScenario(book, lines, product) {
     expected,
   };
 
-  // Bank (SE/Ltd only)
+  // Bank (SE/Ltd only) — flatten from { account: { month: [txs] } } to { month: [txs] }
+  // with tx.account field so cellWrites can route to Bank vs Cash sheets
   if (Object.keys(grouped.bank).length > 0) {
-    scenario.bank = grouped.bank;
+    const flatBank = {};
+    for (const [acctId, months] of Object.entries(grouped.bank)) {
+      for (const [month, txs] of Object.entries(months)) {
+        if (!flatBank[month]) flatBank[month] = [];
+        for (const tx of txs) {
+          flatBank[month].push({ ...tx, account: acctId });
+        }
+      }
+    }
+    scenario.bank = flatBank;
   }
 
   // Employees from book.toml
