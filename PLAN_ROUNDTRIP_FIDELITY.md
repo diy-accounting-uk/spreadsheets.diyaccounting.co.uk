@@ -1,5 +1,34 @@
 # PLAN: Roundtrip Fidelity — diya-gl ↔ Excel Package Equivalence
 
+## Original prompt:
+
+Please create a PLAN_*.md document  to consider how this sequence of commands could be a reality.
+
+Create an ltd excel package in the target folder:
+```bash
+npm run generate --package ltd --years ltd-2024-2025 --data 'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025'
+```
+
+Extract financial and management reports from an Excel package from the calculated values:
+```bash
+npm run report --package ltd --source-dir 'ltd-2024-2025' --output-dir 'ltd-2024-2025-excel-reports'
+```
+
+Extract financial and management reports from diya-gl by calculating the values:
+```
+npm run report --package ltd --data 'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025-diya-gl-reports'
+```
+
+Then to extract a set of diy-gl data:
+```
+npm run export --package ltd --source-dir 'ltd-2024-2025' --output-dir 'ltd-2024-2025-data'
+```
+
+The package parameter sets the set of reports to match the package and in the case of `--source-dir` the package parameter
+tells it what type of package to look for. And then after those commands are run for any set of years or package when used
+consistently these two directories would be equal `ltd-2024-2025-excel-reports` and `ltd-2024-2025-diya-gl-reports`,
+and also these two directories would be equal `examples/precision-code-ltd/full` and `ltd-2024-2025-data`
+
 ## What This Is
 
 **Roundtrip fidelity**: the guarantee that data survives a complete cycle through two different representations (diya-gl structured data ↔ Excel spreadsheet formulas) and produces identical financial reports regardless of which path computed them.
