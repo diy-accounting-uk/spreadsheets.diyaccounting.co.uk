@@ -24,19 +24,64 @@ import {
 } from "./scenario-extractor.js";
 
 /**
+ * Parse an ISO 8601 duration offset like "+P3M", "-P1Y", "+P1Y3M".
+ * Returns { years, months } (signed).
+ */
+export function parseOffset(offset) {
+  if (!offset) return { years: 0, months: 0 };
+  const sign = offset.startsWith("-") ? -1 : 1;
+  const body = offset.replace(/^[+-]/, "");
+  const match = body.match(/^P(?:(\d+)Y)?(?:(\d+)M)?$/);
+  if (!match) throw new Error(`Invalid offset: "${offset}". Use ISO 8601 duration like +P1Y, -P3M, +P1Y3M`);
+  return { years: sign * (parseInt(match[1] || "0", 10)), months: sign * (parseInt(match[2] || "0", 10)) };
+}
+
+/**
+ * Shift a YYYY-MM-DD date string by the given year/month offset.
+ */
+export function shiftDate(dateStr, offset) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  let newMonth = m + offset.months;
+  let newYear = y + offset.years;
+  while (newMonth > 12) { newMonth -= 12; newYear++; }
+  while (newMonth < 1) { newMonth += 12; newYear--; }
+  const maxDay = new Date(newYear, newMonth, 0).getDate();
+  const newDay = Math.min(d, maxDay);
+  return `${newYear}-${String(newMonth).padStart(2, "0")}-${String(newDay).padStart(2, "0")}`;
+}
+
+/**
+ * Apply a date offset to all lines (shifts postingDate).
+ */
+export function applyOffset(lines, offsetStr) {
+  if (!offsetStr) return lines;
+  const offset = parseOffset(offsetStr);
+  if (offset.years === 0 && offset.months === 0) return lines;
+  return lines.map((line) => ({
+    ...line,
+    postingDate: shiftDate(line.postingDate, offset),
+  }));
+}
+
+/**
  * Load diya-gl data from a directory.
  * @param {string} dataDir - path to directory containing book.toml and lines.jsonl
+ * @param {string} [offset] - ISO 8601 duration offset like "+P3M", "-P1Y"
  * @returns {{ book: Object, lines: Array }}
  */
-export function loadDiyaGlData(dataDir) {
+export function loadDiyaGlData(dataDir, offset) {
   const bookToml = readFileSync(join(dataDir, "book.toml"), "utf-8");
   const book = parseTOML(bookToml);
 
   const linesRaw = readFileSync(join(dataDir, "lines.jsonl"), "utf-8");
-  const lines = linesRaw
+  let lines = linesRaw
     .split("\n")
     .filter((line) => line.trim().length > 0)
     .map((line) => JSON.parse(line));
+
+  if (offset) {
+    lines = applyOffset(lines, offset);
+  }
 
   return { book, lines };
 }

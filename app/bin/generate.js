@@ -221,13 +221,19 @@ function parseArgs(argv) {
     outputDir = args[outIdx + 1];
   }
 
-  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir };
+  let offset = null;
+  const offIdx = args.indexOf("--offset");
+  if (offIdx !== -1 && args[offIdx + 1]) {
+    offset = args[offIdx + 1];
+  }
+
+  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir, offset };
 }
 
 async function main() {
   console.log("=== generate.js ===");
 
-  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir: outputDirOverride } = parseArgs(process.argv);
+  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir: outputDirOverride, offset } = parseArgs(process.argv);
 
   // Determine which products to generate
   const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
@@ -309,7 +315,7 @@ async function main() {
       process.exit(1);
     }
 
-    const { book, lines } = loadDiyaGlData(resolve(dataDir));
+    const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
     const scenario = diyaGlToScenario(book, lines, packageFilter);
 
     // Use the last generated package (most recent year-end)

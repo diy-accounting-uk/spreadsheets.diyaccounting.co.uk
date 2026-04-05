@@ -14,7 +14,8 @@
 //   --mode recalculate Run xls roundtrip first, then read. Requires LibreOffice.
 //   --data <dir>       Compute reports from diya-gl data via JS engine. No Excel needed.
 
-import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { parse as parseTOML } from "smol-toml";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { readXlsxCellValues, readMultiFileXlsxCellValues, findXlsx } from "../lib/xlsx-reader.js";
@@ -43,6 +44,8 @@ function parseArgs(argv) {
   const outputDir = getArg("--output-dir");
   const mode = getArg("--mode") || "saved";
   const dataDir = getArg("--data");
+  const offset = getArg("--offset");
+  const years = getArg("--years");
 
   if (!packageName) {
     console.error("Error: --package is required (bst, taxi, se, ltd)");
@@ -57,11 +60,11 @@ function parseArgs(argv) {
     process.exit(1);
   }
 
-  return { packageName, sourceDir, outputDir, mode, dataDir };
+  return { packageName, sourceDir, outputDir, mode, dataDir, offset, years };
 }
 
 async function main() {
-  const { packageName, sourceDir, outputDir, mode, dataDir } = parseArgs(process.argv);
+  const { packageName, sourceDir, outputDir, mode, dataDir, offset, years } = parseArgs(process.argv);
 
   const productMod = PRODUCTS[packageName];
   if (!productMod) {
@@ -75,8 +78,23 @@ async function main() {
     console.log(`Data:       ${resolve(dataDir)}`);
     console.log(`Output:     ${outputDir}`);
 
-    const { book, lines } = loadDiyaGlData(resolve(dataDir));
-    const taxData = extractTaxDataFromBook(book);
+    const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
+
+    // Load tax data: prefer --years (from app/data/*.toml) over book.toml extraction
+    let taxData;
+    if (years) {
+      const taxDataPath = resolve(__dirname, "..", "data", `${years}.toml`);
+      if (!existsSync(taxDataPath)) {
+        console.error(`Tax data file not found: ${taxDataPath}`);
+        process.exit(1);
+      }
+      taxData = parseTOML(readFileSync(taxDataPath, "utf8"));
+      console.log(`Tax data:   ${years}.toml`);
+    } else {
+      taxData = extractTaxDataFromBook(book);
+      console.log(`Tax data:   extracted from book.toml (use --years for precise rates)`);
+    }
+
     const results = calculateFromDiyaGl(book, lines, packageName, taxData);
 
     const resolvedOutputDir = resolve(outputDir);
