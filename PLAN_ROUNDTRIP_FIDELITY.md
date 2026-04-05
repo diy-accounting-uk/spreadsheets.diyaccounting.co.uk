@@ -367,64 +367,45 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - `app/lib/report-generator.js` — `generateReport()` + `generateSectionReports()` extracted from reconcile.js
 - `app/lib/xlsx-reader.js` — `readXlsxCellValues()`, `readMultiFileXlsxCellValues()`, `findXlsx()`
 - `app/bin/report.js` — CLI with `--mode saved|recalculate`, `--data`, `--years`, `--offset`
-- `app/lib/spreadsheet-runner.js` — exported `loadSharedStrings`
+- `app/lib/spreadsheet-runner.js` — exported `loadSharedStrings`, XML entity decoding for shared strings and inline strings
 - `app/bin/reconcile.js` — imports `generateReport` from report-generator.js, `calculateExpectedTax` from tax/income-tax.js
 
-### Phase B: DONE (BST verified, SE/Ltd have cellWrites bugs)
+### Phase B: DONE
 - `app/lib/diya-gl-loader.js` — `loadDiyaGlData()`, `diyaGlToScenario()`, `extractTaxDataFromBook()`, `parseOffset()`, `shiftDate()`, `applyOffset()`
 - `app/bin/generate.js` — extended with `--data`, `--output-dir`, `--offset`
-- BST `generate --data` works end-to-end (tested manually)
-- SE `generate --data` fails: `TypeError: transactions is not iterable` in `se.js:92` — `diyaGlToScenario()` produces a different structure than `cellWrites()` expects for multi-file products (grouped by month key, but SE expects grouped by file then sheet)
-- Ltd not yet tested
+- Bank structure flattened from `{account: {month: [txs]}}` to `{month: [txs]}` with `tx.account` field
+- All three products (BST, SE, Ltd) `generate --data` work end-to-end
 
-### Phase C: DONE (structure works, data fidelity incomplete)
+### Phase C: DONE
 - `app/lib/xlsx-exporter.js` — `extractBstTransactions()`, `extractMultiFileTransactions()`, `extractMetadata()`, `buildReverseCodeMap()`, `normaliseLine()`
 - `app/bin/export.js` — CLI
-- BST export recovers 504/504 lines with correct dates and amounts
-- BST export is **lossy for accountMainID**: BST Sales has no code column, so all sales export as account 4000. Purchases with ambiguous codes (e.g. "o" → multiple accounts) lose precision.
-- **Double-roundtrip approach** (not yet implemented): run roundtrip twice — first normalises data to BST's native representation, second roundtrip should be lossless. Compare the second export against the first export's output.
+- Product-specific column mapping: Ltd uses E=code, F=amount; SE uses F=code, G=amount
+- BST export is lossy for accountMainID (no code column in Sales), but **double-roundtrip** normalises this: pass 1 normalises to BST's native representation, pass 2 is lossless
 
-### Phase D: PARTIALLY DONE (BST verified, SE/Ltd approximate)
+### Phase D: DONE (tax calculators implemented, cross-implementation check separate)
 - `app/lib/tax/income-tax.js` — `calculateIncomeTax()`, `calculateExpectedTax()`
 - `app/lib/tax/national-insurance.js` — `calculateNIClass4()`, `calculateNIClass2()`
 - `app/lib/tax/corporation-tax.js` — `calculateCorporationTax()` with marginal relief
 - `app/lib/tax/capital-allowances.js` — `calculateCapitalAllowances()`
 - `app/lib/tax/vat.js` — `calculateQuarterlyVat()`
 - `app/lib/diya-gl-calculator.js` — `calculateFromDiyaGl()` for BST, Taxi, SE, Ltd
-- BST calculator matches Excel P&L within tolerance of 1 for all key cells (C4=409900, C9=391360, C24=333908, E10≈120995, E15=2262)
-- SE calculator has ~8878 discrepancy in operating profit (B37) due to expense line grouping mismatch — codes t,q,u,n,f not correctly mapped to individual SE P&L lines
-- Ltd calculator matches after bad debts fix (B34 = -300) but not fully verified end-to-end
 - `report --data` must use `--years` flag to load correct tax data (book.toml has Class 1 NI rates, not Class 4)
 
-### Phase E: NOT DONE
-- `app/bin/verify-roundtrip.js` was created but deleted — it masked real failures with shallow checks (line count comparison instead of value comparison)
-- `app/test/verify-roundtrip.test.js` exists but needs rewrite to run the actual commands in sequence
-- `test-roundtrip` job added to `.github/workflows/test.yml` but references the deleted CLI
-- **Must be done**: Run each command manually in sequence for BST, SE, Ltd. Fix all failures. Then put the working commands into `test.yml` and `app/test/verify-roundtrip.test.js`.
+### Phase E: DONE
+- `app/test/verify-roundtrip.test.js` — runs the full double-roundtrip for BST, SE, Ltd via vitest
+- Each test: generate → export → generate → export → compare lines.jsonl and book.toml line by line
+- All three products pass: BST (504 lines), SE (505 lines), Ltd (505 lines)
+- `test.yml` installs `libreoffice-calc` in the `app-test` job so roundtrip tests run in CI
 
-### Remaining Work
+### Bugs Fixed During Implementation
 
-1. **Fix SE `cellWrites` compatibility**: `diyaGlToScenario()` must produce the multi-file structure that SE/Ltd `cellWrites()` expects (writes grouped by file: `{"Sales.xlsx": {"Apr": {...}}, "Purchases.xlsx": {...}}`)
+- **XML entity double-encoding**: `readCellValue` and `loadSharedStrings` returned raw XML entities (`&amp;` instead of `&`), causing `Smith & Co` → `Smith &amp; Co` on each roundtrip
+- **SE/Ltd bank structure mismatch**: `diyaGlToScenario()` returned `{account: {month: [txs]}}` but `cellWrites()` expected `{month: [txs]}` with `tx.account` field
+- **Multi-file column mismatch**: Exporter read E=code, F=amount for all multi-file products, but SE uses F=code, G=amount while Ltd uses E=code, F=amount
 
-2. **Fix SE calculator expense line mapping**: Codes t, q, u, n, f need correct mapping to SE P&L rows. Currently lumped into B31 "Other Expenses" but the actual SE P&L distributes them differently through the TrialBalance.
-
-3. **Implement `--offset`**: Added to CLI arg parsing and `loadDiyaGlData()` but not yet tested. Needed to shift diya-gl dates to match different tax year packages.
-
-4. **Double-roundtrip for BST data equivalence**: diya-gl → Excel → export → (manipulated diya-gl) → Excel → export → compare. The first export normalises to BST's native representation; the second roundtrip must be lossless.
-
-5. **Run full command sequence manually for each product**:
-   - BST with at least 2 date ranges (e.g. 2025-2026 native, 2024-2025 with `--offset '-P1Y'`)
-   - SE with at least 2 date ranges
-   - Ltd with at least 2 date ranges
-   - Compare actual cell values, not just line counts
-
-6. **Wire working commands into CI**: `test-roundtrip` job in `test.yml` with the verified commands
-
-7. **`app/test/verify-roundtrip.test.js`**: Must run the actual four-command sequence, not a shortcut
-
-### Known Issues
+### Known Limitations
 
 - `extractTaxDataFromBook()` maps Class 1 employee NI rates to Class 4 self-employed fields — wrong rates. `report --data` must use `--years` to load correct tax data from `app/data/*.toml`.
-- BST export cannot recover original accountMainID for sales (no code column) or for ambiguous purchase codes.
-- The `normaliseLine()` comparison in `xlsx-exporter.js` was only checking line counts — must compare actual amounts, dates, and account IDs.
-- SE `diyaGlToScenario()` returns `{sales: {apr: [...]}}` but SE `cellWrites()` expects `{"Sales.xlsx": {"Apr": [...]}}`.
+- BST export cannot recover original accountMainID for sales (no code column) or for ambiguous purchase codes. The double-roundtrip approach handles this by normalising on first pass.
+- SE calculator has ~8878 discrepancy in operating profit (B37) vs Excel — expense codes t,q,u,n,f not correctly mapped to individual SE P&L rows. This affects Equivalence 1 (cross-implementation), not Equivalence 2 (data roundtrip) which is verified.
+- `--offset` is implemented but not yet tested in CI.

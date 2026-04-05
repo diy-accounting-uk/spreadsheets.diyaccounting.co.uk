@@ -140,6 +140,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Install LibreOffice Calc
+        if: ${{ !cancelled() }}
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libreoffice-calc
+
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
