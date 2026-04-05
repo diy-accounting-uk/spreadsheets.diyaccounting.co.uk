@@ -376,13 +376,17 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - Bank structure flattened from `{account: {month: [txs]}}` to `{month: [txs]}` with `tx.account` field
 - All three products (BST, SE, Ltd) `generate --data` work end-to-end
 
-### Phase C: DONE
+### Phase C: INCOMPLETE — export only extracts Sales and Purchases
 - `app/lib/xlsx-exporter.js` — `extractBstTransactions()`, `extractMultiFileTransactions()`, `extractMetadata()`, `buildReverseCodeMap()`, `normaliseLine()`
 - `app/bin/export.js` — CLI
 - Product-specific column mapping: Ltd uses E=code, F=amount; SE uses F=code, G=amount
 - BST export is lossy for accountMainID (no code column in Sales), but **double-roundtrip** normalises this: pass 1 normalises to BST's native representation, pass 2 is lossless
+- **MISSING**: Bank transactions not exported (157 lines in Ltd example)
+- **MISSING**: Payroll transactions not exported (36 lines in Ltd example)
+- **MISSING**: Journal entries not exported (17 lines in Ltd example — opening balances, adjustments)
+- Original has 715 lines, export only recovers 505 (sales + purchases)
 
-### Phase D: DONE (tax calculators implemented, cross-implementation check separate)
+### Phase D: INCOMPLETE — JS calculator has significant errors vs Excel
 - `app/lib/tax/income-tax.js` — `calculateIncomeTax()`, `calculateExpectedTax()`
 - `app/lib/tax/national-insurance.js` — `calculateNIClass4()`, `calculateNIClass2()`
 - `app/lib/tax/corporation-tax.js` — `calculateCorporationTax()` with marginal relief
@@ -390,12 +394,22 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - `app/lib/tax/vat.js` — `calculateQuarterlyVat()`
 - `app/lib/diya-gl-calculator.js` — `calculateFromDiyaGl()` for BST, Taxi, SE, Ltd
 - `report --data` must use `--years` flag to load correct tax data (book.toml has Class 1 NI rates, not Class 4)
+- **Ltd calculator errors** (134 diff lines between Excel and JS reports):
+  - Corporation Tax: JS gets 67397.77 vs Excel 51792.31 — JS doesn't add depreciation to profit before computing CT (K12 should be operating profit + depreciation)
+  - Published P&L: Cost of Sales wrong (JS 17744 vs Excel 339200), Operating Profit wrong
+  - Published Balance Sheet: Fixed Assets NBV wrong (JS missing)
+  - Floating point: JS 2083.3333333333335 vs Excel 2083.33333333333 (minor but produces diffs)
+- **SE calculator errors**: ~8878 discrepancy in operating profit (B37) — expense codes t,q,u,n,f lumped into B31 "Other Expenses" instead of distributed to correct P&L rows
+- **BST**: closest to matching, but not verified to zero diff with --offset
 
-### Phase E: DONE
-- `app/test/verify-roundtrip.test.js` — runs the full double-roundtrip for BST, SE, Ltd via vitest
-- Each test: generate → export → generate → export → compare lines.jsonl and book.toml line by line
-- All three products pass: BST (504 lines), SE (505 lines), Ltd (505 lines)
-- `test.yml` installs `libreoffice-calc` in the `app-test` job so roundtrip tests run in CI
+### Phase E: INCOMPLETE — tests only check double-roundtrip, not original prompt equivalences
+- `app/test/verify-roundtrip.test.js` — runs double-roundtrip (data survives two passes) for BST, SE, Ltd
+- Double-roundtrip passes: BST (504 lines), SE (505 lines), Ltd (505 lines)
+- `test.yml` installs `libreoffice-calc` in the `app-test` job
+- **MISSING**: No test for Equivalence 1 (excel-reports == diya-gl-reports)
+- **MISSING**: No test for Equivalence 2 (original data == exported data)
+- **MISSING**: No explicit roundtrip command steps in test.yml — the commands from the original prompt are not visible in the workflow
+- **MISSING**: `--offset` not tested in CI
 
 ### Bugs Fixed During Implementation
 
@@ -403,9 +417,40 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - **SE/Ltd bank structure mismatch**: `diyaGlToScenario()` returned `{account: {month: [txs]}}` but `cellWrites()` expected `{month: [txs]}` with `tx.account` field
 - **Multi-file column mismatch**: Exporter read E=code, F=amount for all multi-file products, but SE uses F=code, G=amount while Ltd uses E=code, F=amount
 
-### Known Limitations
+## Remaining Work
 
-- `extractTaxDataFromBook()` maps Class 1 employee NI rates to Class 4 self-employed fields — wrong rates. `report --data` must use `--years` to load correct tax data from `app/data/*.toml`.
-- BST export cannot recover original accountMainID for sales (no code column) or for ambiguous purchase codes. The double-roundtrip approach handles this by normalising on first pass.
-- SE calculator has ~8878 discrepancy in operating profit (B37) vs Excel — expense codes t,q,u,n,f not correctly mapped to individual SE P&L rows. This affects Equivalence 1 (cross-implementation), not Equivalence 2 (data roundtrip) which is verified.
-- `--offset` is implemented but not yet tested in CI.
+### R1. Export bank transactions (Phase C)
+`extractMultiFileTransactions()` in `xlsx-exporter.js` must read Bank.xlsx (and Cash.xlsx, Currentaccount.xlsx, Savingaccount.xlsx, Creditcardaccount.xlsx for Ltd) monthly sheets. Receipts: rows 6+, cols A=date, B=source, E=code, F=amount. Payments: rows 6+, cols P=date, Q=supplier, S=code, T=amount. Each line needs `sourceJournalID: "bank"` and `diya-gl:bankAccountID`.
+
+### R2. Export payroll transactions (Phase C)
+Read Payslips.xlsx Employee/Director sheets. Extract monthly pay, tax, NI entries as `sourceJournalID: "payroll"` lines.
+
+### R3. Export journal entries (Phase C)
+Read opening balances from OpenAccounts sheet and any manual journal adjustments. Export as `sourceJournalID: "journal"` lines.
+
+### R4. Fix Ltd JS calculator — depreciation add-back for CT (Phase D)
+`calculateFromDiyaGl()` for Ltd must add depreciation back to operating profit before computing Corporation Tax. Currently K12 = operating profit, should be K12 = operating profit + depreciation.
+
+### R5. Fix Ltd JS calculator — Published P&L (Phase D)
+Published P&L Cost of Sales (D7) is wrong: JS puts 17744, Excel puts 339200. The mapping from trial balance accounts to published P&L lines is incorrect.
+
+### R6. Fix Ltd JS calculator — Published Balance Sheet (Phase D)
+Fixed Assets NBV (D6) is wrong in JS. The balance sheet computation doesn't correctly aggregate fixed asset accounts.
+
+### R7. Fix SE JS calculator — expense line mapping (Phase D)
+Expense codes t (travel), q (sub-contractors), u (other direct), n (insurance), f (fixed assets) are lumped into B31 "Other Expenses". They should be distributed to their specific SE P&L rows matching the TrialBalance sheet mapping.
+
+### R8. Fix floating point precision (Phase D)
+JS computes 2083.3333333333335, Excel stores 2083.33333333333. Either round to match Excel's 15 significant digits, or accept a tolerance in comparisons.
+
+### R9. Add Equivalence 1 test (Phase E)
+Test that `report --source-dir` and `report --data` produce identical output for each product. Currently no test for this — 134 diff lines for Ltd.
+
+### R10. Add Equivalence 2 test (Phase E)
+Test that `export --source-dir` recovers all original data (sales + purchases + bank + payroll + journal). Currently only 505/715 lines recovered for Ltd.
+
+### R11. Add explicit roundtrip commands to test.yml (Phase E)
+Add workflow steps that run the four commands from the original prompt with `--offset`, then `diff -r` the report directories and data directories. The sequence of commands must be visible in the workflow, not hidden inside vitest.
+
+### R12. Test --offset in CI (Phase E)
+Run the roundtrip sequence with `--offset '-P1Y'` to verify date shifting works in CI.
