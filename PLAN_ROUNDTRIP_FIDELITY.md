@@ -419,38 +419,39 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 
 ## Remaining Work
 
-### R1. Export bank transactions (Phase C)
-`extractMultiFileTransactions()` in `xlsx-exporter.js` must read Bank.xlsx (and Cash.xlsx, Currentaccount.xlsx, Savingaccount.xlsx, Creditcardaccount.xlsx for Ltd) monthly sheets. Receipts: rows 6+, cols A=date, B=source, E=code, F=amount. Payments: rows 6+, cols P=date, Q=supplier, S=code, T=amount. Each line needs `sourceJournalID: "bank"` and `diya-gl:bankAccountID`.
+### R0. Explicit roundtrip CI jobs — DONE
+Three concurrent jobs (roundtrip-bst, roundtrip-se, roundtrip-ltd) in test.yml. Each runs: generate → report (Excel) → report (diya-gl) → export, then diffs for Equivalence 1, Equivalence 2, and double-roundtrip. Ltd uses `--offset '-P1Y'`. Committed `4b925a8f`.
 
-### R2. Export payroll transactions (Phase C)
-Read Payslips.xlsx Employee/Director sheets. Extract monthly pay, tax, NI entries as `sourceJournalID: "payroll"` lines.
+### R1. Export bank transactions — DONE
+Added `extractBankTransactions()` to xlsx-exporter.js. Reads receipts (A-F) and payments (P-T) from bank xlsx files. Added bank cellWrites to ltd.js for Currentaccount, Savingaccount, Cashaccount, Creditcardaccount. SE 646 lines (505+141), Ltd 663 lines (505+158). Double-roundtrip passes. Committed `1773fb8a`.
 
-### R3. Export journal entries (Phase C)
-Read opening balances from OpenAccounts sheet and any manual journal adjustments. Export as `sourceJournalID: "journal"` lines.
+### R2. Export payroll transactions — DONE
+Added payroll grouping to `diyaGlToScenario()`, monthly payroll writes to Payslips.xlsx rows 51-55 (F=name, M=gross, N=tax, O=empNI, R=net, S=erNI) for SE and Ltd, and `extractPayrollTransactions()`. Ltd 699 lines (505+158+36). Double-roundtrip passes. Committed `f5131739`.
 
-### R4. Fix Ltd JS calculator — depreciation add-back for CT (Phase D)
-`calculateFromDiyaGl()` for Ltd must add depreciation back to operating profit before computing Corporation Tax. Currently K12 = operating profit, should be K12 = operating profit + depreciation.
+### R3. Export journal entries — DONE
+Converted journal lines to `scenario.opening_balance` in diyaGlToScenario, added `extractJournalEntries()` reading OpenAccounts cells. Ltd 712/715 lines. 4 lost on first pass (fixed asset debit/credit collapse to NBV, stock adjustment not stored). Double-roundtrip stable (712/712). Committed `d07ae4eb`.
 
-### R5. Fix Ltd JS calculator — Published P&L (Phase D)
-Published P&L Cost of Sales (D7) is wrong: JS puts 17744, Excel puts 339200. The mapping from trial balance accounts to published P&L lines is incorrect.
+### R4. Fix Ltd CT depreciation add-back — CODE DONE, TESTING
+Changed `depreciation = 0` to `depreciation = goodwill` (code z, account 5802). The goodwill/amortisation is the non-cash charge added back for CT (K10 = 3000 in example).
 
-### R6. Fix Ltd JS calculator — Published Balance Sheet (Phase D)
-Fixed Assets NBV (D6) is wrong in JS. The balance sheet computation doesn't correctly aggregate fixed asset accounts.
+### R5. Fix Ltd Published P&L — CODE DONE, TESTING
+D7 is "Sales Turnover" not "Cost of Sales". Fixed to: D7=turnover-grants, D8=grants, D9=totalTurnover, D16=costOfSales, D18=grossProfit. Updated CELL_MAP labels to match actual spreadsheet layout.
 
-### R7. Fix SE JS calculator — expense line mapping (Phase D)
-Expense codes t (travel), q (sub-contractors), u (other direct), n (insurance), f (fixed assets) are lumped into B31 "Other Expenses". They should be distributed to their specific SE P&L rows matching the TrialBalance sheet mapping.
+### R6. Fix Ltd Published Balance Sheet — CODE DONE, TESTING
+Fixed D6 to sum motor_vehicles + computer_equipment + other fixed asset NBVs from opening_balance. Added D29=directors_loan.
 
-### R8. Fix floating point precision (Phase D)
-JS computes 2083.3333333333335, Excel stores 2083.33333333333. Either round to match Excel's 15 significant digits, or accept a tolerance in comparisons.
+### R7. Fix SE calculator expense line mapping — NOT YET STARTED
+Expense codes t, q, u, n, f lumped into "Other Expenses" instead of distributed to specific P&L rows.
 
-### R9. Add Equivalence 1 test (Phase E)
-Test that `report --source-dir` and `report --data` produce identical output for each product. Currently no test for this — 134 diff lines for Ltd.
+### R8. Fix floating point precision — NOT YET STARTED
+JS 16 digits vs Excel 15 digits. Need either rounding or tolerance.
 
-### R10. Add Equivalence 2 test (Phase E)
-Test that `export --source-dir` recovers all original data (sales + purchases + bank + payroll + journal). Currently only 505/715 lines recovered for Ltd.
+### R9. Add Equivalence 1 test — NOT YET STARTED
+Depends on R4-R8 code fixes. CI jobs from R0 will run the diff.
 
-### R11. Add explicit roundtrip commands to test.yml (Phase E)
-Add workflow steps that run the four commands from the original prompt with `--offset`, then `diff -r` the report directories and data directories. The sequence of commands must be visible in the workflow, not hidden inside vitest.
+### R10. Add Equivalence 2 test — NOT YET STARTED
+CI jobs from R0 will run the diff. Double-roundtrip already verified.
 
-### R12. Test --offset in CI (Phase E)
-Run the roundtrip sequence with `--offset '-P1Y'` to verify date shifting works in CI.
+### R11. Add explicit roundtrip commands to test.yml — DONE (part of R0)
+
+### R12. Test --offset in CI — DONE (part of R0, Ltd job uses --offset)
