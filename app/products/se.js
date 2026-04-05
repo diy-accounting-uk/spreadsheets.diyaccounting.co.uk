@@ -36,7 +36,7 @@ export const MULTI_FILE = true;
 // Bank receipt codes (amount goes to col F, code to col E)
 const RECEIPT_CODES = new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]);
 // Bank payment codes (amount goes to col T, code to col S)
-const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "X"]);
+const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "DV", "X"]);
 
 export function cellWrites(scenario) {
   const salesWrites = {};

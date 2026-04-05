@@ -175,9 +175,9 @@ function calculateBstResults(book, lines, taxData, scenario) {
       C26: capitalAllowances,
       C28: taxableProfit,
       C30: 0, // Income Tax label row
-      C32: totalIncomeTax,
-      C33: niClass4Combined,
-      C35: netIncomeAfterTax,
+      C32: Math.round(totalIncomeTax),
+      C33: Math.round(niClass4Combined * 100) / 100,
+      C35: Math.round(netIncomeAfterTax * 100) / 100,
     },
     "Income Tax": {
       E5: taxableProfit,
@@ -226,12 +226,10 @@ function calculateBstResults(book, lines, taxData, scenario) {
   results["SE Short"].D99 = taxableProfit;
   results["SE Short"].D106 = taxableProfit;
 
-  // Stock
-  if (scenario.stock) {
-    results.PurchasesStock.D5 = openingStock;
-    results.PurchasesStock.D7 = openingStock; // Stock at cost = opening
-    results.PurchasesStock.D30 = closingStock;
-  }
+  // Stock — always output (even zeros) to match Excel sections
+  results.PurchasesStock.D5 = openingStock;
+  results.PurchasesStock.D7 = openingStock;
+  results.PurchasesStock.D30 = closingStock;
 
   // Debtors & Creditors (pass-through from scenario)
   if (scenario.opening_debtors) {
@@ -497,7 +495,7 @@ function calculateSeResults(book, lines, taxData, scenario) {
       A7: biz.name || entity.organizationIdentifier || "",
       D38: totalSalesTurnover,
       D46: costOfSales,
-      D51: motor + travel + advertising + distribution + equipmentHire + consumables + insurance + leasing,
+      D51: motor + travel,
       D55: wages,
       D60: lightHeat,
       D64: repairs,
@@ -601,7 +599,7 @@ function calculateLtdResults(book, lines, taxData, scenario) {
   return {
     OpenAccounts: {
       E2: biz.name || entity.organizationIdentifier || "",
-      E3: biz.company_number || entity.organizationIdentifier || "",
+      E3: biz.company_number || "",
       E4: biz.address ? `${biz.address}, ${biz.town || ""} ${biz.postcode || ""}`.trim() : "",
       E6: biz.utr || "",
     },

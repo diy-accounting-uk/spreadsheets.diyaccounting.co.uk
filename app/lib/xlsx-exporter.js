@@ -258,8 +258,9 @@ export async function extractBankTransactions(sourceDir, product) {
       const xml = await zip.file(sheetPath).async("string");
 
       // Opening balance in A1 (can appear in any sheet — cellWrites places it in the month of the BC date)
+      // Skip if A1 is a formula (carry-forward from template, not injected data)
       const obVal = readCellValue(xml, "A1", sharedStrings);
-      if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted) {
+      if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted && !hasCellFormula(xml, "A1")) {
         const firstDate = readCellValue(xml, "A6", sharedStrings);
         if (firstDate !== null && typeof firstDate === "number" && firstDate > 1) {
           lines.push({
