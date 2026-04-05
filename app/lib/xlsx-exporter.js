@@ -135,10 +135,13 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   const { resolve } = await import("path");
 
   const reversePurchase = buildReverseCodeMap(product === "ltd" ? LTD_PURCHASE_CODE_MAP : SE_PURCHASE_CODE_MAP);
+  // Ltd: E=code, F=amount; SE: F=code, G=amount
+  const codeCol = product === "ltd" ? "E" : "F";
+  const amountCol = product === "ltd" ? "F" : "G";
   const lines = [];
   let entryNum = 1;
 
-  // Sales.xlsx: sheets Apr-Mar, A=date, B=customer, F=code, G=gross
+  // Sales.xlsx: sheets Apr-Mar
   const salesPath = resolve(sourceDir, "Sales.xlsx");
   const salesZip = await JSZip.loadAsync(readFileSync(salesPath));
   const salesSheetMap = await buildSheetMap(salesZip);
@@ -152,12 +155,12 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 
     for (let row = 5; row <= 300; row++) {
       const dateVal = readCellValue(xml, `A${row}`, salesStrings);
-      const amount = readCellValue(xml, `G${row}`, salesStrings);
+      const amount = readCellValue(xml, `${amountCol}${row}`, salesStrings);
       if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `G${row}`)) continue;
+      if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
 
       const customer = readCellValue(xml, `B${row}`, salesStrings) || "";
-      const code = readCellValue(xml, `F${row}`, salesStrings) || "a";
+      const code = readCellValue(xml, `${codeCol}${row}`, salesStrings) || "a";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
       const accountMainID = REVERSE_SALES[codeStr] || "4000";
 
@@ -173,7 +176,7 @@ export async function extractMultiFileTransactions(sourceDir, product) {
     }
   }
 
-  // Purchases.xlsx: sheets Apr-Mar, A=date, B=supplier, F=code, G=gross
+  // Purchases.xlsx: sheets Apr-Mar
   const purchasesPath = resolve(sourceDir, "Purchases.xlsx");
   const purchasesZip = await JSZip.loadAsync(readFileSync(purchasesPath));
   const purchasesSheetMap = await buildSheetMap(purchasesZip);
@@ -187,12 +190,12 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 
     for (let row = 5; row <= 300; row++) {
       const dateVal = readCellValue(xml, `A${row}`, purchasesStrings);
-      const amount = readCellValue(xml, `G${row}`, purchasesStrings);
+      const amount = readCellValue(xml, `${amountCol}${row}`, purchasesStrings);
       if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `G${row}`)) continue;
+      if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
 
       const supplier = readCellValue(xml, `B${row}`, purchasesStrings) || "";
-      const code = readCellValue(xml, `F${row}`, purchasesStrings) || "";
+      const code = readCellValue(xml, `${codeCol}${row}`, purchasesStrings) || "";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
       const accountMainID = reversePurchase[codeStr] || "5002";
 
