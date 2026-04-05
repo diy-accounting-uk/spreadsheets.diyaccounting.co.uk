@@ -14,6 +14,8 @@
     "test:generate": "npx vitest --run app/test/generate.test.js",
     "reconciliation": "node app/bin/reconcile.js",
     "report": "node app/bin/report.js",
+    "export": "node app/bin/export.js",
+    "verify-roundtrip": "node app/bin/verify-roundtrip.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
     "extract-scenarios": "node app/bin/extract-scenarios.js",
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",

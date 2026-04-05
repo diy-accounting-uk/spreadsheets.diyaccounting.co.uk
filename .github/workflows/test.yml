@@ -155,6 +155,29 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Roundtrip fidelity check (BST)
+        if: ${{ !cancelled() }}
+        run: node app/bin/verify-roundtrip.js --package bst --data examples/precision-code-ltd/bst --source-dir examples/bst-latest --check cross-implementation
+
+  test-roundtrip:
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: npm ci || sleep 30 && npm ci
+
+      - name: Roundtrip fidelity check (BST)
+        run: node app/bin/verify-roundtrip.js --package bst --data examples/precision-code-ltd/bst --source-dir examples/bst-latest --check cross-implementation
+
   browser-test:
     runs-on: ubuntu-24.04
     steps:
