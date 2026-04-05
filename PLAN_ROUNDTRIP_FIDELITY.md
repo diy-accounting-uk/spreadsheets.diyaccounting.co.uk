@@ -376,17 +376,17 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - Bank structure flattened from `{account: {month: [txs]}}` to `{month: [txs]}` with `tx.account` field
 - All three products (BST, SE, Ltd) `generate --data` work end-to-end
 
-### Phase C: INCOMPLETE — export only extracts Sales and Purchases
+### Phase C: MOSTLY DONE — exports sales, purchases, bank, payroll, journal (some gaps)
 - `app/lib/xlsx-exporter.js` — `extractBstTransactions()`, `extractMultiFileTransactions()`, `extractMetadata()`, `buildReverseCodeMap()`, `normaliseLine()`
 - `app/bin/export.js` — CLI
 - Product-specific column mapping: Ltd uses E=code, F=amount; SE uses F=code, G=amount
 - BST export is lossy for accountMainID (no code column in Sales), but **double-roundtrip** normalises this: pass 1 normalises to BST's native representation, pass 2 is lossless
-- **MISSING**: Bank transactions not exported (157 lines in Ltd example)
-- **MISSING**: Payroll transactions not exported (36 lines in Ltd example)
-- **MISSING**: Journal entries not exported (17 lines in Ltd example — opening balances, adjustments)
-- Original has 715 lines, export only recovers 505 (sales + purchases)
+- Bank, payroll, journal all now exported (R1-R3)
+- Ltd: 712/715 lines recovered (4 journal entries lost: fixed asset debit/credit collapse, stock adjustment)
+- SE: 682/686 lines recovered (4 bank lines missing — see remaining work)
+- BST: 504/504 lines recovered but all sales accountMainID normalised to 4000 (BST has no code column)
 
-### Phase D: INCOMPLETE — JS calculator has significant errors vs Excel
+### Phase D: MOSTLY DONE — JS calculator close but not matching Excel
 - `app/lib/tax/income-tax.js` — `calculateIncomeTax()`, `calculateExpectedTax()`
 - `app/lib/tax/national-insurance.js` — `calculateNIClass4()`, `calculateNIClass2()`
 - `app/lib/tax/corporation-tax.js` — `calculateCorporationTax()` with marginal relief
@@ -394,22 +394,19 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - `app/lib/tax/vat.js` — `calculateQuarterlyVat()`
 - `app/lib/diya-gl-calculator.js` — `calculateFromDiyaGl()` for BST, Taxi, SE, Ltd
 - `report --data` must use `--years` flag to load correct tax data (book.toml has Class 1 NI rates, not Class 4)
-- **Ltd calculator errors** (134 diff lines between Excel and JS reports):
-  - Corporation Tax: JS gets 67397.77 vs Excel 51792.31 — JS doesn't add depreciation to profit before computing CT (K12 should be operating profit + depreciation)
-  - Published P&L: Cost of Sales wrong (JS 17744 vs Excel 339200), Operating Profit wrong
-  - Published Balance Sheet: Fixed Assets NBV wrong (JS missing)
-  - Floating point: JS 2083.3333333333335 vs Excel 2083.33333333333 (minor but produces diffs)
-- **SE calculator errors**: ~8878 discrepancy in operating profit (B37) — expense codes t,q,u,n,f lumped into B31 "Other Expenses" instead of distributed to correct P&L rows
-- **BST**: closest to matching, but not verified to zero diff with --offset
+- CT depreciation add-back fixed (R4), Published P&L mapping fixed (R5), Published BS fixed (R6)
+- SE expense distribution fixed (R7), float precision fixed (R8), payroll wages added
+- **Remaining Ltd diffs** (139 lines): depreciation -6600 from fixed assets schedule, business details template text, cross-file external link values (B20)
+- **Remaining SE diffs** (219 lines): similar depreciation/external link issues, plus SE Short mapping
+- **Remaining BST diffs** (132 lines): stock/debtors/creditors sections, tax rounding, business details template text
 
-### Phase E: INCOMPLETE — tests only check double-roundtrip, not original prompt equivalences
-- `app/test/verify-roundtrip.test.js` — runs double-roundtrip (data survives two passes) for BST, SE, Ltd
-- Double-roundtrip passes: BST (504 lines), SE (505 lines), Ltd (505 lines)
-- `test.yml` installs `libreoffice-calc` in the `app-test` job
-- **MISSING**: No test for Equivalence 1 (excel-reports == diya-gl-reports)
-- **MISSING**: No test for Equivalence 2 (original data == exported data)
-- **MISSING**: No explicit roundtrip command steps in test.yml — the commands from the original prompt are not visible in the workflow
-- **MISSING**: `--offset` not tested in CI
+### Phase E: STRUCTURE DONE — CI jobs exist but will fail on remaining diffs
+- `app/test/verify-roundtrip.test.js` — vitest double-roundtrip for BST, SE, Ltd (passes)
+- Three CI roundtrip jobs (R0) with explicit commands visible in test.yml
+- LibreOffice installed in app-test and roundtrip jobs
+- Ltd job uses `--offset '-P1Y'`
+- **Equivalence 1 diffs will fail CI** — see remaining work below
+- **Equivalence 2 diffs will fail CI** — BST accountMainID normalisation, SE 4 missing bank lines, Ltd 3 missing journal lines
 
 ### Bugs Fixed During Implementation
 
@@ -417,49 +414,69 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 - **SE/Ltd bank structure mismatch**: `diyaGlToScenario()` returned `{account: {month: [txs]}}` but `cellWrites()` expected `{month: [txs]}` with `tx.account` field
 - **Multi-file column mismatch**: Exporter read E=code, F=amount for all multi-file products, but SE uses F=code, G=amount while Ltd uses E=code, F=amount
 
-## Remaining Work
+## Completed Work (R0-R12)
 
-### R0. Explicit roundtrip CI jobs — DONE
-Three concurrent jobs (roundtrip-bst, roundtrip-se, roundtrip-ltd) in test.yml. Each runs: generate → report (Excel) → report (diya-gl) → export, then diffs for Equivalence 1, Equivalence 2, and double-roundtrip. Ltd uses `--offset '-P1Y'`. Committed `4b925a8f`.
+R0 CI roundtrip jobs (`4b925a8f`), R1 bank export (`1773fb8a`), R2 payroll export (`f5131739`), R3 journal export (`d07ae4eb`), R4-R6 Ltd calculator fixes (`a84c72a8`), R7 SE expense mapping (`39505099`), R8 float precision (`75f85618`), R11/R12 done as part of R0.
 
-### R1. Export bank transactions — DONE
-Added `extractBankTransactions()` to xlsx-exporter.js. Reads receipts (A-F) and payments (P-T) from bank xlsx files. Added bank cellWrites to ltd.js for Currentaccount, Savingaccount, Cashaccount, Creditcardaccount. SE 646 lines (505+141), Ltd 663 lines (505+158). Double-roundtrip passes. Committed `1773fb8a`.
+## Remaining Work — Equivalence 1 (reports match)
 
-### R2. Export payroll transactions — DONE
-Added payroll grouping to `diyaGlToScenario()`, monthly payroll writes to Payslips.xlsx rows 51-55 (F=name, M=gross, N=tax, O=empNI, R=net, S=erNI) for SE and Ltd, and `extractPayrollTransactions()`. Ltd 699 lines (505+158+36). Double-roundtrip passes. Committed `f5131739`.
+Measured 2026-04-05: BST 132 diff lines, SE 219 diff lines, Ltd 139 diff lines. All three CI roundtrip jobs will fail on the `diff -r` step.
 
-### R3. Export journal entries — DONE
-Converted journal lines to `scenario.opening_balance` in diyaGlToScenario, added `extractJournalEntries()` reading OpenAccounts cells. Ltd 712/715 lines. 4 lost on first pass (fixed asset debit/credit collapse to NBV, stock adjustment not stored). Double-roundtrip stable (712/712). Committed `d07ae4eb`.
+### W1. Implement Fixed Assets schedule in JS calculator
+The Excel fixed assets schedule (Fixedassets.xlsx) computes annual depreciation charges and feeds them to the hub P&L via external links. This produces B36 "Depreciation (combined)" = -6600 for Ltd and similar for SE. Without this, the JS operating profit is ~6600 too high and the CT is wrong.
+**Files**: `app/lib/diya-gl-calculator.js` (calculateLtdResults, calculateSeResults)
+**Impact**: Fixes B36, B41, B43, B45, K5, K12, K22, K28, K35, K39 for Ltd. Similar for SE.
 
-### R4. Fix Ltd CT depreciation add-back — DONE
-Changed `depreciation = 0` to `depreciation = goodwill` (code z, account 5802). CT now adds goodwill back to profit (K10 = 3000, K12 = operating profit + 3000). Committed `a84c72a8`.
+### W2. Fix BST tax rounding
+BST income tax: Excel C32 = 122,595 (rounded), JS = 122,595.2. The JS income tax module computes unrounded. The BST P&L and tax calculation need rounding to match Excel's integer display.
+**Files**: `app/lib/diya-gl-calculator.js` (calculateBstResults), `app/lib/tax/income-tax.js`
+**Impact**: Fixes BST C32, C35, E10, E18 and the section reports.
 
-### R5. Fix Ltd Published P&L — DONE
-D7 is "Sales Turnover" not "Cost of Sales". Fixed to: D7=turnover-grants, D8=grants, D9=totalTurnover, D16=costOfSales, D18=grossProfit. CELL_MAP labels updated. Committed `a84c72a8`.
+### W3. Fix BST stock, debtors, creditors sections
+BST Excel reports include PurchasesStock and Debtors & Creditors sections. The JS calculator doesn't populate these. The data comes from the scenario (stock, opening_debtors, closing_debtors, opening_creditors, closing_creditors) which `diyaGlToScenario()` doesn't produce for BST.
+**Files**: `app/lib/diya-gl-loader.js` (diyaGlToScenario), `app/lib/diya-gl-calculator.js` (calculateBstResults)
+**Impact**: Adds entire sections to BST reports. Fixes ~40 diff lines.
 
-### R6. Fix Ltd Published Balance Sheet — DONE
-Fixed D6 to sum motor_vehicles + computer_equipment + other fixed asset NBVs. Added D29=directors_loan. Committed `a84c72a8`.
+### W4. Fix business details template text
+Excel OpenAccounts and Business Details sheets contain template placeholder text ("Telephone number including STD Code", "First Director's Name", etc.) that the JS replaces with actual data. The diff is because Excel shows the template, JS shows the data. Fix: either strip template text from Excel reports, or don't output these cells in JS reports when no data was injected.
+**Files**: `app/lib/diya-gl-calculator.js` or `app/lib/report-generator.js`
+**Impact**: Fixes 6-10 diff lines per product.
 
-### R7. Fix SE calculator expense line mapping — DONE
-Payroll wages added to SE B21 (byCode.w + payrollGross). Expense codes t,q,u,n,f distributed to individual variables. SE Short D51 uses distributed totals. Committed `39505099`.
+### W5. Fix cross-file external link values
+Excel B20 "PAYE Employee Wages" = 0 because LibreOffice xls roundtrip doesn't resolve cross-file external links (Payslips.xlsx → Financialaccounts.xlsx Wagesinterface). The JS computes the correct value (80976). This is an Excel/LibreOffice limitation. Fix: either accept the diff (the JS is correct), or find a way to force LibreOffice to resolve external links during recalculation.
+**Files**: `app/lib/spreadsheet-runner.js` (runMultiFileSpreadsheet)
+**Impact**: Fixes B20 and Wagesinterface cells for SE and Ltd.
 
-### R8. Fix floating point precision — DONE
-Round numeric values to 15 significant digits (matching Excel) in cell-values.md. Eliminates all float diffs. Committed `75f85618`.
+### W6. Fix SE Short (SA103S) report mapping
+The SE JS calculator populates some SE Short cells but several mapped cells are missing or wrong compared to Excel. Needs line-by-line comparison of all SA103S cells.
+**Files**: `app/lib/diya-gl-calculator.js` (calculateSeResults)
+**Impact**: Reduces SE diff from 219 to closer to Ltd's 139.
 
-### R9. Equivalence 1 test — CI JOBS READY, REMAINING DIFFS DOCUMENTED
-CI roundtrip jobs (R0) run `diff -r` on reports. Ltd has 139 diff lines remaining:
-- Business details: Excel has template placeholder text (not a JS bug)
-- B20 PAYE wages: Excel 0 because cross-file external links not resolved by LibreOffice
-- B36 depreciation: -6600 from fixed assets schedule (not implemented in JS)
-- Operating profit/CT/tax cascade from missing depreciation
-These are structural limitations, not bugs. The CI jobs will show exactly what's left.
+## Remaining Work — Equivalence 2 (data roundtrip)
 
-### R10. Equivalence 2 test — CI JOBS READY, 712/715 LINES
-Export recovers 712/715 lines for Ltd. 3 lines lost on first pass:
-- Fixed asset journal entries collapse debit/credit to net book value (2 lines)
-- Stock adjustment entry not stored in OpenAccounts (1 line)
-Double-roundtrip is stable (712/712 match on second pass).
+### W7. BST export normalises all sales to accountMainID 4000
+BST Sales sheets have no code column, so the export can't recover the original account (4001, 4002, etc.). All 504 lines are exported but every sales line gets accountMainID "4000". This is a fundamental BST template limitation.
+**Mitigation**: Double-roundtrip verifies lossless after normalisation. For CI: compare using the double-roundtrip, not against the original data.
 
-### R11. Add explicit roundtrip commands to test.yml — DONE (part of R0)
+### W8. SE bank: 4 lines missing (682/686)
+SE export recovers 682 of 686 lines. 4 bank lines are missing. Likely the same opening balance issue as Ltd savings account — OB not emitted when first sheet has no receipts.
+**Files**: `app/lib/xlsx-exporter.js` (extractBankTransactions)
 
-### R12. Test --offset in CI — DONE (part of R0, Ltd job uses --offset)
+### W9. Ltd journal: 3 lines missing (712/715)
+Ltd journal export collapses fixed asset debit+credit to net book value (loses 2 lines) and doesn't export the stock adjustment journal entry (1 line). To fix: export separate debit/credit entries for fixed assets from the Fixedassets.xlsx schedule, and derive stock adjustment from OpenAccounts stock cell.
+**Files**: `app/lib/xlsx-exporter.js` (extractJournalEntries)
+
+### W10. Ltd bank: 1 extra line (158 vs 157)
+Ltd export produces 158 bank lines vs 157 original. An extra line is being created somewhere — likely a duplicate opening balance.
+**Files**: `app/lib/xlsx-exporter.js` (extractBankTransactions)
+
+## Remaining Work — CI
+
+### W11. CI roundtrip jobs use strict diff — need tolerance
+The three CI roundtrip jobs use `diff -r` and `diff` which fail on any difference. Until W1-W10 are resolved, these jobs will fail. Options:
+1. Allow the jobs to fail (informational only, don't block PRs)
+2. Use a tolerance-based comparison script instead of raw diff
+3. Fix all remaining diffs
+
+### W12. Verify roundtrip vitest still passes after R1-R8 changes
+The verify-roundtrip.test.js double-roundtrip test was written before R1-R3 added bank/payroll/journal export. The test should still pass (double-roundtrip is stable) but needs verification that the new larger export (712 lines) still matches on second pass.
