@@ -398,10 +398,11 @@ export const CELL_MAP = [
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
   // ── Published P&L (column D has formulas) ──
-  ["PubP&L", "D7",  "Cost of Sales",               "gl-cor:amount (pubPL.cos)",      "Published P&L", 1],
-  ["PubP&L", "D9",  "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",    "Published P&L", 0],
-  ["PubP&L", "D16", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)","Published P&L", 0],
-  ["PubP&L", "D18", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",      "Published P&L", 0],
+  ["PubP&L", "D7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
+  ["PubP&L", "D8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
+  ["PubP&L", "D9",  "**Total Sales Turnover**",    "gl-cor:amount (pubPL.totalTurnover)","Published P&L", 0],
+  ["PubP&L", "D16", "Cost of Sales",               "gl-cor:amount (pubPL.cos)",       "Published P&L", 1],
+  ["PubP&L", "D18", "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",     "Published P&L", 0],
   // ── Published Balance Sheet (column D has formulas) ──
   ["PubBalSht", "D6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
   ["PubBalSht", "D9",  "Stock",                    "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],

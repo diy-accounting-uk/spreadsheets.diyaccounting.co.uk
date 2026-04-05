@@ -576,9 +576,9 @@ function calculateLtdResults(book, lines, taxData, scenario) {
 
   // Corporation Tax
   const ctRates = taxData.corporation_tax || { small_profits_rate: 0.19, main_rate: 0.25, small_profits_limit: 50000, small_profits_limit_upper: 250000, marginal_relief_fraction: 0.015 };
-  const depreciation = 0; // Simplified
+  const depreciation = goodwill; // B38 goodwill + B35/B36 depreciation charges (add back non-cash items)
   const addBack = profitBeforeTax + depreciation; // K12
-  const capitalAllowances = 0; // Simplified
+  const capitalAllowances = 0; // Simplified — requires Fixed Assets schedule
   const lessCA = addBack - capitalAllowances; // K22
   const profitChargeable = lessCA; // K28
   const { corporationTax } = calculateCorporationTax(profitChargeable, ctRates);
@@ -645,20 +645,21 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       K39: corporationTax,
     },
     "PubP&L": {
-      D7: costOfSales,
-      D9: grossProfit,
-      D16: operatingProfit,
-      D18: profitBeforeTax,
+      D7: totalTurnover - grants, // Sales Turnover (excl. grants)
+      D8: grants,                 // Investment Grants received
+      D9: totalTurnover,          // Total Sales Turnover
+      D16: costOfSales,           // Cost of Sales total
+      D18: grossProfit,           // Gross Profit
     },
     PubBalSht: {
-      D6: ob.fixed_assets || 0,
+      D6: (ob.motor_vehicles || 0) + (ob.computer_equipment || 0) + (ob.fixed_assets || 0) + (ob.plant_machinery || 0) + (ob.fixtures || 0),
       D9: scenario.stock?.closing ?? 0,
       D13: 0, // Current assets — needs full balance sheet
       D15: 0, // Creditors < 1 year
       D22: 0, // Net current assets
       D26: 0, // Total assets less CL
       D28: 0, // Other creditors
-      D29: 0, // Directors loan
+      D29: ob.directors_loan || 0,
     },
     Stock: {
       B5: scenario.stock?.opening ?? 0,
