@@ -260,6 +260,10 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
   }
 }
 
+function decodeXmlEntities(s) {
+  return s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+}
+
 // Load shared strings table from xlsx zip
 async function loadSharedStrings(zip) {
   const ssFile = zip.file("xl/sharedStrings.xml");
@@ -271,7 +275,7 @@ async function loadSharedStrings(zip) {
   for (const m of siMatches) {
     const inner = m[1];
     // Concatenate all <t> elements within this <si> (handles rich text with multiple <r><t> runs)
-    const parts = [...inner.matchAll(/<t[^>]*>([^<]*)<\/t>/g)].map((t) => t[1]);
+    const parts = [...inner.matchAll(/<t[^>]*>([^<]*)<\/t>/g)].map((t) => decodeXmlEntities(t[1]));
     strings.push(parts.join(""));
   }
   return strings;
@@ -297,8 +301,8 @@ function readCellValue(xml, cellRef, sharedStrings = []) {
 
   if (cellType === "inlineStr") {
     const isMatch = cellContent.match(/<is><t[^>]*>(.*?)<\/t><\/is>/s);
-    if (isMatch) return isMatch[1];
-    return raw;
+    if (isMatch) return decodeXmlEntities(isMatch[1]);
+    return decodeXmlEntities(raw);
   }
 
   if (cellType === "s") {
@@ -311,7 +315,7 @@ function readCellValue(xml, cellRef, sharedStrings = []) {
   }
 
   if (cellType === "b") return raw === "1";
-  if (cellType === "str") return raw; // formula result is a string
+  if (cellType === "str") return decodeXmlEntities(raw); // formula result is a string
 
   // Numeric or date
   const num = parseFloat(raw);
