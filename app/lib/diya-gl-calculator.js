@@ -546,7 +546,8 @@ function calculateLtdResults(book, lines, taxData, scenario) {
   const grossProfit = totalTurnover - costOfSales;
 
   // Admin expenses
-  const payeWages = 0; // From payroll — not in purchase lines
+  const payrollLines = lines.filter((l) => l.sourceJournalID === "payroll");
+  const payeWages = payrollLines.reduce((s, l) => s + (l["diya-gl:grossPay"] || l.amount || 0), 0);
   const directorsNonPaye = byCode.d || 0;
   const employeeWages = byCode.w || 0;
   const premises = byCode.r || 0;
@@ -608,9 +609,9 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       B13: otherDirectCost,
       B14: costOfSales,
       B16: grossProfit,
-      B18: employeeWages,
+      B18: payeWages + employeeWages, // Combined: payroll gross + code w purchases
       B19: directorsNonPaye,
-      B20: payeWages,
+      B20: payeWages, // Just payroll gross
       B21: premises,
       B22: lightHeat,
       B23: distribution,
