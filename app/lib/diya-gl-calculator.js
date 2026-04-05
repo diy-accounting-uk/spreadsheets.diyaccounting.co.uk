@@ -408,16 +408,13 @@ function calculateSeResults(book, lines, taxData, scenario) {
   // Bad debts from Sales account 4005: shown as negative (loss), netted to net amount
   const badDebtsGross = salesLines.filter((l) => l.accountMainID == 4005).reduce((s, l) => s + l.amount, 0);
   const badDebts = -(badDebtsGross / 1.2); // Negative in P&L (cost), net of VAT
-  const distribution = byCode.t || 0;
-  const equipmentHire = byCode.q || 0;
-  const consumables = byCode.u || 0;
-  const insurance = byCode.n || 0;
-  const leasing = byCode.f || 0;
-  const otherExpenses = 0;
   const charitable = byCode.y || 0;
-  const goodwill = byCode.z || 0;
+  // B31 "HP Interest Lease Bank Charges" comes from bank/cash sheet V1+Y1 summary cells via external links
+  // Cannot compute from diya-gl data without the bank sheet formulas
+  const bankCharges = 0;
+  // Note: codes t,q,u,n,f,z flow through external links to non-admin P&L sections, NOT to totalAdminExpenses
   const totalAdminExpenses = wages + lightHeat + repairs + genAdmin + motor + travel + advertising + legal + badDebts +
-    distribution + equipmentHire + consumables + insurance + leasing + otherExpenses + charitable + goodwill;
+    bankCharges + charitable;
   const operatingProfit = grossProfit - totalAdminExpenses;
   const profitBeforeTax = operatingProfit; // No interest income for SE
 
@@ -470,10 +467,10 @@ function calculateSeResults(book, lines, taxData, scenario) {
       B27: advertising,
       B28: legal,
       B29: badDebts,
-      B30: 0, // Depreciation
-      B31: otherExpenses,
+      B30: 0, // Bank interest paid
+      B31: bankCharges, // HP/lease/bank charges (X-code transfers)
       B32: charitable,
-      B33: goodwill,
+      B33: 0, // Loss on disposal
       B34: 0, // Loss on disposal
       B35: totalAdminExpenses,
       B37: operatingProfit,
@@ -499,11 +496,11 @@ function calculateSeResults(book, lines, taxData, scenario) {
       D55: wages,
       D60: lightHeat,
       D64: repairs,
-      D71: operatingProfit - charitable - goodwill, // Approximate net profit
+      D71: operatingProfit - charitable, // Approximate net profit
       D80: 0,
       D85: 0,
       D94: 0,
-      D99: operatingProfit - charitable - goodwill,
+      D99: operatingProfit - charitable,
       A32: totalSalesTurnover > (taxData.vat?.registration_threshold || 90000)
         ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${taxData.vat?.registration_threshold || 90000} VAT threshold`
         : "",
@@ -573,10 +570,13 @@ function calculateLtdResults(book, lines, taxData, scenario) {
   const badDebts = -(badDebtsGross / 1.2); // Negative in P&L, net of VAT
   const charitable = byCode.y || 0;
   const goodwill = byCode.z || 0;
+  // Bank charges: X-code transfers from current account (1200) appear as negative P&L charges
+  const bankLines = lines.filter((l) => l.sourceJournalID === "bank");
+  const bankCharges = -(bankLines.filter((l) => l["diya-gl:bankCode"] === "X" && l["diya-gl:bankAccountID"] === "1200").reduce((s, l) => s + l.amount, 0));
 
   const totalAdmin = payeWages + employeeWages + directorsNonPaye + premises + lightHeat + distribution +
     equipmentHire + repairs + consumables + advertising + genAdmin + travel + motor + insurance + leasing +
-    legal + badDebts + charitable + goodwill;
+    legal + badDebts + bankCharges + charitable + goodwill;
   const operatingProfit = grossProfit - totalAdmin;
   const interestReceived = 0;
   const profitBeforeTax = operatingProfit + interestReceived;
@@ -632,8 +632,8 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       B32: leasing,
       B33: legal,
       B34: badDebts,
-      B35: 0, // Depreciation (bank)
-      B36: 0, // Depreciation (combined)
+      B35: 0, // Bank interest paid
+      B36: bankCharges, // Bank charges (X-code transfers from current account)
       B37: charitable,
       B38: goodwill,
       B39: 0, // Depreciation 2
