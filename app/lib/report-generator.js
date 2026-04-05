@@ -121,7 +121,8 @@ export function generateSectionReports(results, productMod) {
       const lbl = labels[key];
       const diyLabel = lbl?.diyLabel || "";
       const glMapping = lbl?.glMapping || "";
-      appendixLines.push(`| ${cell} | ${diyLabel} | ${val} | ${glMapping} |`);
+      const displayVal = typeof val === "number" ? parseFloat(val.toPrecision(15)) : val;
+      appendixLines.push(`| ${cell} | ${diyLabel} | ${displayVal} | ${glMapping} |`);
     }
     appendixLines.push("");
   }
