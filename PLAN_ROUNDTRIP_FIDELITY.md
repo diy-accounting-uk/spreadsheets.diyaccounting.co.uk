@@ -418,34 +418,54 @@ The Excel packages are the reference oracle. The JS engine is the production imp
 
 R0 CI roundtrip jobs (`4b925a8f`), R1 bank export (`1773fb8a`), R2 payroll export (`f5131739`), R3 journal export (`d07ae4eb`), R4-R6 Ltd calculator fixes (`a84c72a8`), R7 SE expense mapping (`39505099`), R8 float precision (`75f85618`), R11/R12 done as part of R0.
 
-## W1-W12 Status
+## Current Status (measured 2026-04-05)
 
-### Fixed
-- **W2** BST tax rounding — C32 rounded to integer, C33/C35 to 2dp. Committed `5fecc43a`.
-- **W3** BST stock section — always outputs PurchasesStock with zeros. Committed `5fecc43a`.
-- **W4** Business details — don't output entity ID as company number. Committed `5fecc43a`.
-- **W7** BST EQ2 — removed strict EQ2 from CI (BST normalises accountMainID to 4000). Committed `5fecc43a`.
-- **W8** SE bank 4 missing lines — added DV (dividends) to PAYMENT_CODES. Committed `5fecc43a`.
-- **W10** Ltd bank 1 extra line — skip formula-based A1 in bank OB export. Committed `5fecc43a`.
-- **W11** CI tolerance — EQ1 steps use `continue-on-error` (informational), double-roundtrip is strict (MUST PASS). Committed `5fecc43a`.
-- **W12** Vitest verified — 344 tests pass including double-roundtrip with bank/payroll/journal. Committed `5fecc43a`.
+### EQ1 diff lines (informational, shown in CI)
+- **BST: 107** diff lines
+- **SE: 203** diff lines
+- **Ltd: 93** diff lines
 
-### Remaining structural limitations (not bugs, require significant new features)
-- **W1** Bank charges in P&L (B36 = -6600) — comes from bank sheet formulas aggregating all bank payments into the TrialBalance/P&L. Requires reimplementing the bank→TB→P&L formula chain in JS. Causes ~6600 operating profit/CT cascade for Ltd and SE.
-- **W5** Cross-file external links — LibreOffice doesn't resolve links between xlsx files (Payslips→Wagesinterface, Fixedassets→hub). Makes B20=0 and depreciation values incorrect in Excel reports. The JS computes the correct values. A LibreOffice limitation.
-- **W6** SE admin expenses gap (8878) — accounts 5200/5300/5301/5401/5700/5701 are routed through TrialBalance to P&L rows not captured by the CELL_MAP. Requires mapping the full SE TrialBalance formula chain.
-- **W9** Ltd journal entries: 3 lines lost on first pass (fixed asset debit/credit collapse to NBV, stock adjustment not stored in OpenAccounts). Requires reading Fixedassets.xlsx Schedule for separate cost/depreciation. Double-roundtrip is stable (normalisation loss).
+### EQ2 data roundtrip
+- **BST**: 504/504 lines (accountMainID normalised to 4000, double-roundtrip stable)
+- **SE**: 686/686 lines (double-roundtrip stable)
+- **Ltd**: 712/715 lines (3 journal entries collapsed, double-roundtrip stable)
 
-### Current EQ1 diff counts (informational, shown in CI)
-- BST: ~132 diff lines (template text, debtors/creditors from template, tax rounding edge cases)
-- SE: ~219 diff lines (admin 8878 gap, external links, SA103S mapping)
-- Ltd: ~139 diff lines (bank charges -6600, external links, template text)
-
-### Current EQ2 status
-- BST: 504/504 lines (accountMainID normalised, double-roundtrip stable)
-- SE: 686/686 lines after DV fix (double-roundtrip stable)
-- Ltd: 712/715 lines (3 journal normalisation, double-roundtrip stable)
-
-### CI job results expected
+### CI job results
 - **Double-roundtrip: MUST PASS** for all three products ✓
-- **EQ1: informational** — shows remaining diff count, doesn't block
+- **EQ1: informational** (`continue-on-error`) — shows remaining diff count, doesn't block
+
+## Remaining Work
+
+### S1. Cross-file external links not resolved by LibreOffice
+The xls roundtrip in `runMultiFileSpreadsheet` converts each file independently. LibreOffice doesn't resolve links between files (Payslips→Wagesinterface, Fixedassets→hub). This makes:
+- B20 "Employer NI" = 0 in Excel (should be populated from Payslips via Wagesinterface)
+- Depreciation values = 0 in Excel (should come from Fixedassets Schedule)
+- Wagesinterface cells all 0 in Excel
+The JS computes the CORRECT values for these. The diff shows the Excel is wrong, not the JS.
+**Fix**: change `runMultiFileSpreadsheet` to open all files together in one LibreOffice session, or post-process the recalculated files to resolve external links.
+**Impact**: largest single source of diffs across all three products (~30-40 lines each).
+
+### S2. BST debtors/creditors from template
+The BST Excel template has pre-populated debtor/creditor example data (45808, 45900, 45930, etc.) that wasn't injected by `generate --data`. These template values show up in the Excel report but not in the JS report. The JS is correct — it only shows data that was actually provided.
+**Fix**: either strip template example data from the generated packages, or populate debtor/creditor data in `diyaGlToScenario` for BST (the diya-gl data doesn't have this).
+**Impact**: ~30 BST diff lines.
+
+### S3. SE B31 "HP Interest Lease Bank Charges" = 800
+The SE P&L B31 comes from bank/cash sheet summary cells (V1+Y1) via external links. The JS sets B31 = 0 because the formula references can't be traced from diya-gl data alone. Related to S1 (external links).
+**Impact**: 800 difference in SE totalAdmin, cascades to operating profit and tax.
+
+### S4. SE SA103S mapping incomplete
+Several SE Short cells differ from Excel because the SA103S box formulas reference TrialBalance/P&L cells that the JS doesn't fully replicate.
+**Impact**: ~20 SE diff lines.
+
+### S5. Ltd/SE business details template text
+Excel OpenAccounts has template placeholder text ("Telephone number including STD Code", "First Director's Name") in cells E3/E4/E6 that weren't overwritten by cellWrites (the scenario didn't have company number/address/UTR). The JS shows empty or actual data.
+**Impact**: 6-8 diff lines per product.
+
+### S6. Ltd journal entries: 3 lines lost on first pass
+Fixed asset journal entries collapse debit+credit to net book value (2 lines lost). Stock adjustment entry not stored in OpenAccounts (1 line lost). The cellWrites for Fixedassets.xlsx doesn't write to the expected cells (template layout mismatch). Double-roundtrip is stable.
+**Impact**: 712/715 Ltd data equivalence.
+
+### S7. Fixed assets cellWrites doesn't match template layout
+The cellWrites for opening fixed assets writes to E6/Y6 (motor) and E13/Y13 (computer) in Fixedassets.xlsx Schedule, but those cells contain template labels, not data. The template layout for the Schedule sheet needs investigation to find the correct cells for cost and accumulated depreciation.
+**Impact**: blocks S6, and means fixed asset data doesn't appear in the Excel package at all.
