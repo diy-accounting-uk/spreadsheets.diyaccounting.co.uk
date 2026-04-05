@@ -1,63 +1,103 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// Roundtrip fidelity test: JS engine vs Excel populated examples.
-// No LibreOffice needed — reads saved xlsx values.
+// Double-roundtrip fidelity test: diya-gl → Excel → export → Excel → export → compare.
+// The first roundtrip normalises data to what each spreadsheet can store.
+// The second roundtrip must produce identical output (lossless).
+//
+// Requires: LibreOffice installed (brew install --cask libreoffice)
 
 import { describe, it, expect } from "vitest";
+import { execFileSync } from "child_process";
 import { readFileSync, existsSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { parse as parseTOML } from "smol-toml";
-import { loadDiyaGlData, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
-import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
-import { readXlsxCellValues, findXlsx } from "../lib/xlsx-reader.js";
-import * as bst from "../products/bst.js";
+import { hasLibreOffice } from "../lib/spreadsheet-runner.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const BST_DATA = resolve(ROOT, "examples", "precision-code-ltd", "bst");
-const BST_LATEST = resolve(ROOT, "examples", "bst-latest");
+const NODE = process.execPath;
 
-const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;
+function run(args) {
+  return execFileSync(NODE, args, { cwd: ROOT, encoding: "utf8", timeout: 120_000 });
+}
 
-describe.skipIf(!hasBstLatest)("Roundtrip fidelity: BST cross-implementation", () => {
-  it("JS engine P&L matches Excel for key financial values", async () => {
-    const { book, lines } = loadDiyaGlData(BST_DATA);
-    const taxData = extractTaxDataFromBook(book);
-    const jsResults = calculateFromDiyaGl(book, lines, "bst", taxData, {
-      stock: { opening: 10000, closing: 6000 },
+function readLines(dir) {
+  const content = readFileSync(resolve(dir, "lines.jsonl"), "utf8");
+  return content
+    .split("\n")
+    .filter((l) => l.trim().length > 0)
+    .map((l) => JSON.parse(l));
+}
+
+const PRODUCTS = [
+  {
+    name: "bst",
+    data: "examples/precision-code-ltd/bst",
+    years: "se-2025-2026",
+    yearEnd: "2026-04-05",
+  },
+  {
+    name: "se",
+    data: "examples/precision-code-ltd/advanced",
+    years: "se-2025-2026",
+    yearEnd: "2026-04-05",
+  },
+  {
+    name: "ltd",
+    data: "examples/precision-code-ltd/full",
+    years: "ltd-2025",
+    yearEnd: "2026-03-31",
+  },
+];
+
+describe.skipIf(!hasLibreOffice())("Double-roundtrip fidelity", () => {
+  for (const product of PRODUCTS) {
+    it(`${product.name}: pass 2 export equals pass 1 export`, { timeout: 300_000 }, () => {
+        const pkg1 = resolve(ROOT, "target", `${product.name}-rt-pkg1`);
+        const data1 = resolve(ROOT, "target", `${product.name}-rt-data1`);
+        const pkg2 = resolve(ROOT, "target", `${product.name}-rt-pkg2`);
+        const data2 = resolve(ROOT, "target", `${product.name}-rt-data2`);
+
+        // Pass 1: original diya-gl → Excel → export
+        run([
+          "app/bin/generate.js",
+          "--package", product.name,
+          "--years", product.years,
+          "--year-end", product.yearEnd,
+          "--data", product.data,
+          "--output-dir", pkg1,
+          "--skip-guide",
+        ]);
+        run(["app/bin/export.js", "--package", product.name, "--source-dir", pkg1, "--output-dir", data1]);
+
+        const lines1 = readLines(data1);
+        expect(lines1.length).toBeGreaterThan(0);
+
+        // Pass 2: exported diya-gl → Excel → export
+        run([
+          "app/bin/generate.js",
+          "--package", product.name,
+          "--years", product.years,
+          "--year-end", product.yearEnd,
+          "--data", data1,
+          "--output-dir", pkg2,
+          "--skip-guide",
+        ]);
+        run(["app/bin/export.js", "--package", product.name, "--source-dir", pkg2, "--output-dir", data2]);
+
+        const lines2 = readLines(data2);
+
+        // Compare line by line
+        expect(lines2.length).toBe(lines1.length);
+        for (let i = 0; i < lines1.length; i++) {
+          expect(lines2[i], `Line ${i} mismatch`).toEqual(lines1[i]);
+        }
+
+        // Also compare book.toml
+        const book1 = readFileSync(resolve(data1, "book.toml"), "utf8");
+        const book2 = readFileSync(resolve(data2, "book.toml"), "utf8");
+        expect(book2).toBe(book1);
     });
-
-    const xlsxFile = findXlsx(BST_LATEST);
-    const excelResults = await readXlsxCellValues(readFileSync(resolve(BST_LATEST, xlsxFile)), bst.standardReads());
-
-    // Key financial cells must match within tolerance
-    const keyChecks = [
-      ["Profit & Loss Acc", "C4", "Sales Turnover"],
-      ["Profit & Loss Acc", "C9", "Gross Profit"],
-      ["Profit & Loss Acc", "C24", "Net Profit"],
-    ];
-
-    for (const [sheet, cell, label] of keyChecks) {
-      const jsVal = jsResults[sheet]?.[cell];
-      const excelVal = excelResults[sheet]?.[cell];
-      if (typeof jsVal === "number" && typeof excelVal === "number") {
-        // Note: different year-end → different values, so just check both are reasonable
-        expect(jsVal).toBeGreaterThan(0);
-        expect(excelVal).toBeGreaterThan(0);
-      }
-    }
-  });
-
-  it("JS engine produces all expected sheet results", () => {
-    const { book, lines } = loadDiyaGlData(BST_DATA);
-    const taxData = extractTaxDataFromBook(book);
-    const jsResults = calculateFromDiyaGl(book, lines, "bst", taxData);
-
-    expect(jsResults["Profit & Loss Acc"]).toBeDefined();
-    expect(jsResults["Income Tax"]).toBeDefined();
-    expect(jsResults["SE Short"]).toBeDefined();
-    expect(jsResults["Business Details"]).toBeDefined();
-  });
+  }
 });
