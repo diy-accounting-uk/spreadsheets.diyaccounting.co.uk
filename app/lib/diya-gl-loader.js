@@ -224,6 +224,32 @@ export function diyaGlToScenario(book, lines, product) {
     scenario.payroll = payrollByMonth;
   }
 
+  // Journal entries (opening balances) → scenario.opening_balance for Ltd
+  const journalLines = filteredLines.filter((l) => l.sourceJournalID === "journal");
+  if (journalLines.length > 0 && (product === "ltd" || product === "se")) {
+    const ob = {};
+    for (const line of journalLines) {
+      const amt = line.debitCreditCode === "C" ? -line.amount : line.amount;
+      const acct = line.accountMainID;
+      // Map account IDs to opening_balance fields
+      if (acct === "1200") ob.current_account = (ob.current_account || 0) + amt;
+      else if (acct === "1210") ob.savings_account = (ob.savings_account || 0) + amt;
+      else if (acct === "1220") ob.cash = (ob.cash || 0) + amt;
+      else if (acct === "1230") ob.credit_card = (ob.credit_card || 0) + amt;
+      else if (acct === "0040") ob.motor_vehicles = (ob.motor_vehicles || 0) + amt;
+      else if (acct === "0030") ob.computer_equipment = (ob.computer_equipment || 0) + amt;
+      else if (acct === "1100" && line.debitCreditCode === "D") ob.stock = (ob.stock || 0) + amt;
+      else if (acct === "1300") ob.trade_debtors = (ob.trade_debtors || 0) + amt;
+      else if (acct === "2500") ob.directors_loan = (ob.directors_loan || 0) + Math.abs(line.amount);
+      else if (acct === "2100") ob.trade_creditors = (ob.trade_creditors || 0) + Math.abs(line.amount);
+      else if (acct === "2200") ob.vat_liability = (ob.vat_liability || 0) + Math.abs(line.amount);
+      else if (acct === "2300") ob.corporation_tax = (ob.corporation_tax || 0) + Math.abs(line.amount);
+      else if (acct === "3000") ob.share_capital = (ob.share_capital || 0) + Math.abs(line.amount);
+      else if (acct === "3100") ob.retained_earnings = (ob.retained_earnings || 0) + Math.abs(line.amount);
+    }
+    scenario.opening_balance = ob;
+  }
+
   // Employees from book.toml
   if (book.employees) {
     scenario.employees = book.employees;

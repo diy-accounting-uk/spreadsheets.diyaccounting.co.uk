@@ -384,6 +384,66 @@ export async function extractPayrollTransactions(sourceDir) {
   return lines;
 }
 
+// OpenAccounts cell → journal entry mapping for Ltd
+const OA_JOURNAL_MAP = [
+  { cell: "D16", accountMainID: "1200", dc: "D", comment: "Current account opening balance" },
+  { cell: "H16", accountMainID: "1210", dc: "D", comment: "Savings account opening balance" },
+  { cell: "J16", accountMainID: "1220", dc: "D", comment: "Cash account opening balance" },
+  { cell: "I16", accountMainID: "1230", dc: "D", comment: "Credit card account opening balance" },
+  { cell: "K12", accountMainID: "0040", dc: "D", comment: "Motor vehicle net book value" },
+  { cell: "J12", accountMainID: "0030", dc: "D", comment: "Computer equipment net book value" },
+  { cell: "D14", accountMainID: "1100", dc: "D", comment: "Opening stock" },
+  { cell: "D15", accountMainID: "1300", dc: "D", comment: "Trade debtors" },
+  { cell: "D19", accountMainID: "2100", dc: "C", comment: "Trade creditors" },
+  { cell: "D20", accountMainID: "2300", dc: "C", comment: "Corporation Tax liability" },
+  { cell: "D24", accountMainID: "2200", dc: "C", comment: "VAT liability" },
+  { cell: "D29", accountMainID: "3000", dc: "C", comment: "Share capital" },
+  { cell: "D30", accountMainID: "3100", dc: "C", comment: "Retained earnings" },
+  { cell: "D31", accountMainID: "2500", dc: "C", comment: "Directors loan" },
+];
+
+/**
+ * Extract journal entries (opening balances) from OpenAccounts sheet.
+ */
+export async function extractJournalEntries(sourceDir, product) {
+  if (product !== "ltd") return []; // Only Ltd has OpenAccounts
+
+  const { readFileSync, existsSync } = await import("fs");
+  const { resolve } = await import("path");
+
+  const hubPath = resolve(sourceDir, "Financialaccounts.xlsx");
+  if (!existsSync(hubPath)) return [];
+
+  const zip = await JSZip.loadAsync(readFileSync(hubPath));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+
+  const oaPath = sheetMap.get("OpenAccounts");
+  if (!oaPath) return [];
+  const xml = await zip.file(oaPath).async("string");
+
+  const lines = [];
+  let entryNum = 1;
+
+  for (const mapping of OA_JOURNAL_MAP) {
+    const val = readCellValue(xml, mapping.cell, sharedStrings);
+    if (val === null || typeof val !== "number" || val === 0) continue;
+
+    lines.push({
+      sourceJournalID: "journal",
+      postingDate: "2025-04-01", // Opening balance date — will be normalised on double-roundtrip
+      accountMainID: mapping.accountMainID,
+      amount: Math.abs(val),
+      detailComment: "Opening balances",
+      lineItemComment: mapping.comment,
+      debitCreditCode: mapping.dc,
+      entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+    });
+  }
+
+  return lines;
+}
+
 /**
  * Extract business metadata from a populated xlsx.
  */
