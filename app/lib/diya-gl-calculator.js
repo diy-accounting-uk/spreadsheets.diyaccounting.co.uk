@@ -397,7 +397,9 @@ function calculateSeResults(book, lines, taxData, scenario) {
   const costOfSales = materials + subcontractors + otherDirect;
   const grossProfit = totalSalesTurnover + grants - costOfSales;
 
-  const wages = byCode.w || 0;
+  const payrollLines = lines.filter((l) => l.sourceJournalID === "payroll");
+  const payrollGross = payrollLines.reduce((s, l) => s + (l["diya-gl:grossPay"] || l.amount || 0), 0);
+  const wages = (byCode.w || 0) + payrollGross;
   const lightHeat = byCode.p || 0;
   const repairs = byCode.m || 0;
   const genAdmin = byCode.g || 0;
@@ -408,10 +410,16 @@ function calculateSeResults(book, lines, taxData, scenario) {
   // Bad debts from Sales account 4005: shown as negative (loss), netted to net amount
   const badDebtsGross = salesLines.filter((l) => l.accountMainID == 4005).reduce((s, l) => s + l.amount, 0);
   const badDebts = -(badDebtsGross / 1.2); // Negative in P&L (cost), net of VAT
-  const otherExpenses = (byCode.t || 0) + (byCode.q || 0) + (byCode.u || 0) + (byCode.n || 0) + (byCode.f || 0);
+  const distribution = byCode.t || 0;
+  const equipmentHire = byCode.q || 0;
+  const consumables = byCode.u || 0;
+  const insurance = byCode.n || 0;
+  const leasing = byCode.f || 0;
+  const otherExpenses = 0;
   const charitable = byCode.y || 0;
   const goodwill = byCode.z || 0;
-  const totalAdminExpenses = wages + lightHeat + repairs + genAdmin + motor + travel + advertising + legal + badDebts + otherExpenses + charitable + goodwill;
+  const totalAdminExpenses = wages + lightHeat + repairs + genAdmin + motor + travel + advertising + legal + badDebts +
+    distribution + equipmentHire + consumables + insurance + leasing + otherExpenses + charitable + goodwill;
   const operatingProfit = grossProfit - totalAdminExpenses;
   const profitBeforeTax = operatingProfit; // No interest income for SE
 
@@ -489,7 +497,7 @@ function calculateSeResults(book, lines, taxData, scenario) {
       A7: biz.name || entity.organizationIdentifier || "",
       D38: totalSalesTurnover,
       D46: costOfSales,
-      D51: motor + travel + advertising + otherExpenses,
+      D51: motor + travel + advertising + distribution + equipmentHire + consumables + insurance + leasing,
       D55: wages,
       D60: lightHeat,
       D64: repairs,
