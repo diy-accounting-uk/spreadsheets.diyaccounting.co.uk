@@ -249,10 +249,58 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Bank entries — Ltd has 4 bank files mapped by account ID
+  const BANK_ACCOUNT_FILES = { "1200": "Currentaccount.xlsx", "1210": "Savingaccount.xlsx", "1220": "Cashaccount.xlsx", "1230": "Creditcardaccount.xlsx" };
+  const bankFileWrites = {};
+  if (scenario.bank) {
+    const receiptRows = {};
+    const paymentRows = {};
+
+    for (const [monthKey, transactions] of Object.entries(scenario.bank)) {
+      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
+      if (!sm) continue;
+      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
+      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+
+      for (const tx of transactions) {
+        const acct = tx.account || "1200";
+        const fileName = BANK_ACCOUNT_FILES[acct] || "Currentaccount.xlsx";
+        if (!bankFileWrites[fileName]) bankFileWrites[fileName] = {};
+        if (!bankFileWrites[fileName][tabName]) bankFileWrites[fileName][tabName] = {};
+        const sheet = bankFileWrites[fileName][tabName];
+        const d = parseDate(tx.date);
+        const shifted2 = shiftDate(d);
+        const serial = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
+        const rowKey = `${fileName}:${tabName}`;
+
+        if (tx.code === "BC") {
+          sheet.A1 = tx.amount;
+        } else if (["BC", "DR", "CR", "K", "RV", "DL", "X"].includes(tx.code)) {
+          if (!receiptRows[rowKey]) receiptRows[rowKey] = 6;
+          const row = receiptRows[rowKey]++;
+          sheet[`A${row}`] = serial;
+          if (tx.source) sheet[`B${row}`] = tx.source;
+          sheet[`E${row}`] = tx.code;
+          sheet[`F${row}`] = tx.amount;
+        } else {
+          if (!paymentRows[rowKey]) paymentRows[rowKey] = 6;
+          const row = paymentRows[rowKey]++;
+          sheet[`P${row}`] = serial;
+          if (tx.source) sheet[`Q${row}`] = tx.source;
+          sheet[`S${row}`] = tx.code;
+          sheet[`T${row}`] = tx.amount;
+        }
+      }
+    }
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
+  for (const [fileName, writes] of Object.entries(bankFileWrites)) {
+    if (Object.keys(writes).length > 0) result[fileName] = writes;
+  }
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;

@@ -214,6 +214,119 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   return lines;
 }
 
+// Bank file → account ID mapping per product
+const BANK_FILES = {
+  se: [
+    { file: "Bank.xlsx", accountID: "1200" },
+    { file: "Cash.xlsx", accountID: "1220" },
+  ],
+  ltd: [
+    { file: "Currentaccount.xlsx", accountID: "1200" },
+    { file: "Savingaccount.xlsx", accountID: "1210" },
+    { file: "Cashaccount.xlsx", accountID: "1220" },
+    { file: "Creditcardaccount.xlsx", accountID: "1230" },
+  ],
+};
+
+/**
+ * Extract bank transactions from multi-file SE/Ltd product.
+ * Receipts: rows 6+, A=date, B=source, E=code, F=amount
+ * Payments: rows 6+, P=date, Q=supplier, S=code, T=amount
+ * Opening balance: A1 (code "BC")
+ */
+export async function extractBankTransactions(sourceDir, product) {
+  const { readFileSync, existsSync } = await import("fs");
+  const { resolve } = await import("path");
+
+  const bankFiles = BANK_FILES[product] || BANK_FILES.se;
+  const lines = [];
+  let entryNum = 1;
+
+  for (const { file, accountID } of bankFiles) {
+    const filePath = resolve(sourceDir, file);
+    if (!existsSync(filePath)) continue;
+
+    const zip = await JSZip.loadAsync(readFileSync(filePath));
+    const sheetMap = await buildSheetMap(zip);
+    const sharedStrings = await loadSharedStrings(zip);
+    let obEmitted = false;
+
+    for (let mi = 0; mi < 12; mi++) {
+      const sheetName = MONTH_SHEETS[mi];
+      const sheetPath = sheetMap.get(sheetName);
+      if (!sheetPath) continue;
+      const xml = await zip.file(sheetPath).async("string");
+
+      // Opening balance in A1 (can appear in any sheet — cellWrites places it in the month of the BC date)
+      const obVal = readCellValue(xml, "A1", sharedStrings);
+      if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted) {
+        const firstDate = readCellValue(xml, "A6", sharedStrings);
+        if (firstDate !== null && typeof firstDate === "number" && firstDate > 1) {
+          lines.push({
+            sourceJournalID: "bank",
+            postingDate: excelSerialToDate(firstDate),
+            accountMainID: accountID,
+            amount: obVal,
+            detailComment: "Opening balance",
+            "diya-gl:bankCode": "BC",
+            "diya-gl:bankAccountID": accountID,
+            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+          });
+          obEmitted = true;
+        }
+      }
+
+      // Receipts: rows 6+, A=date, B=source, E=code, F=amount
+      for (let row = 6; row <= 200; row++) {
+        const dateVal = readCellValue(xml, `A${row}`, sharedStrings);
+        const amount = readCellValue(xml, `F${row}`, sharedStrings);
+        if (dateVal === null || amount === null || typeof amount !== "number") break;
+        if (hasCellFormula(xml, `F${row}`)) break;
+
+        const source = readCellValue(xml, `B${row}`, sharedStrings) || "";
+        const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
+        const codeStr = typeof code === "string" ? code : String(code);
+
+        lines.push({
+          sourceJournalID: "bank",
+          postingDate: excelSerialToDate(dateVal),
+          accountMainID: accountID,
+          amount,
+          detailComment: typeof source === "string" ? source : "",
+          "diya-gl:bankCode": codeStr,
+          "diya-gl:bankAccountID": accountID,
+          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        });
+      }
+
+      // Payments: rows 6+, P=date, Q=supplier, S=code, T=amount
+      for (let row = 6; row <= 200; row++) {
+        const dateVal = readCellValue(xml, `P${row}`, sharedStrings);
+        const amount = readCellValue(xml, `T${row}`, sharedStrings);
+        if (dateVal === null || amount === null || typeof amount !== "number") break;
+        if (hasCellFormula(xml, `T${row}`)) break;
+
+        const supplier = readCellValue(xml, `Q${row}`, sharedStrings) || "";
+        const code = readCellValue(xml, `S${row}`, sharedStrings) || "";
+        const codeStr = typeof code === "string" ? code : String(code);
+
+        lines.push({
+          sourceJournalID: "bank",
+          postingDate: excelSerialToDate(dateVal),
+          accountMainID: accountID,
+          amount,
+          detailComment: typeof supplier === "string" ? supplier : "",
+          "diya-gl:bankCode": codeStr,
+          "diya-gl:bankAccountID": accountID,
+          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        });
+      }
+    }
+  }
+
+  return lines;
+}
+
 /**
  * Extract business metadata from a populated xlsx.
  */
