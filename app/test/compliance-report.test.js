@@ -106,10 +106,10 @@ describe("parseLighthouseResults", () => {
   it("converts scores to percentages", () => {
     const input = {
       categories: {
-        performance: { score: 0.95 },
-        accessibility: { score: 0.88 },
+        "performance": { score: 0.95 },
+        "accessibility": { score: 0.88 },
         "best-practices": { score: 1.0 },
-        seo: { score: 0.92 },
+        "seo": { score: 0.92 },
       },
     };
     const result = parseLighthouseResults(input);

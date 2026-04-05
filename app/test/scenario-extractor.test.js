@@ -138,8 +138,8 @@ describe("filterAdvanced", () => {
 
   it("includes bank for current and cash accounts only", () => {
     const lines = [
-      { sourceJournalID: "bank", "diya-gl:bankAccountID": "1200" }, // current
-      { sourceJournalID: "bank", "diya-gl:bankAccountID": "1210" }, // savings, excluded
+      { "sourceJournalID": "bank", "diya-gl:bankAccountID": "1200" }, // current
+      { "sourceJournalID": "bank", "diya-gl:bankAccountID": "1210" }, // savings, excluded
     ];
     expect(filterAdvanced(lines)).toHaveLength(1);
   });
@@ -184,13 +184,13 @@ describe("buildGrouped", () => {
   it("groups bank transactions by account and month", () => {
     const lines = [
       {
-        sourceJournalID: "bank",
+        "sourceJournalID": "bank",
         "diya-gl:bankAccountID": "1200",
         "diya-gl:bankCode": "si",
-        postingDate: "2025-06-01",
-        detailComment: "Payment",
-        amount: 200,
-        lineItemComment: "Invoice 123",
+        "postingDate": "2025-06-01",
+        "detailComment": "Payment",
+        "amount": 200,
+        "lineItemComment": "Invoice 123",
       },
     ];
     const { bank } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
@@ -272,7 +272,7 @@ describe("countGrouped", () => {
     const grouped = {
       sales: { apr: [1, 2], may: [3] },
       purchases: { apr: [1] },
-      bank: { "1200": { apr: [1, 2, 3] } },
+      bank: { 1200: { apr: [1, 2, 3] } },
     };
     const counts = countGrouped(grouped);
     expect(counts.s).toBe(3);
@@ -313,8 +313,8 @@ describe("code maps", () => {
 describe("bstAccountFilter", () => {
   it("filters to BST sales and purchase accounts", () => {
     const accounts = {
-      sales: { "4000": { accountMainDescription: "Sales A" }, "4006": { accountMainDescription: "FA Sales" } },
-      purchases: { "5000": { accountMainDescription: "Stock" }, "9999": { accountMainDescription: "Unknown" } },
+      sales: { 4000: { accountMainDescription: "Sales A" }, 4006: { accountMainDescription: "FA Sales" } },
+      purchases: { 5000: { accountMainDescription: "Stock" }, 9999: { accountMainDescription: "Unknown" } },
     };
     const filtered = bstAccountFilter(accounts);
     expect(Object.keys(filtered.sales)).toEqual(["4000"]);
@@ -325,9 +325,9 @@ describe("bstAccountFilter", () => {
 describe("seAccountFilter", () => {
   it("includes all sales but filters purchases and bank", () => {
     const accounts = {
-      sales: { "4000": {}, "4006": {} },
-      purchases: { "5000": {}, "9999": {} },
-      bank: { "1200": {}, "1210": {} },
+      sales: { 4000: {}, 4006: {} },
+      purchases: { 5000: {}, 9999: {} },
+      bank: { 1200: {}, 1210: {} },
     };
     const filtered = seAccountFilter(accounts);
     expect(Object.keys(filtered.sales)).toHaveLength(2); // all sales

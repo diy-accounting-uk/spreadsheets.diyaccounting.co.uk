@@ -102,7 +102,19 @@ export function parseRetireResults(retireJson) {
   return { total: high + medium + low, high, medium, low, found: true };
 }
 
-export function generateReport({ targetUrl, version, sourceFiles, npmAudit, eslint, pa11y, axe, axeWcag22, lighthouse, textSpacing, retire }) {
+export function generateReport({
+  targetUrl,
+  version,
+  sourceFiles,
+  npmAudit,
+  eslint,
+  pa11y,
+  axe,
+  axeWcag22,
+  lighthouse,
+  textSpacing,
+  retire,
+}) {
   const sourceFilesSection = sourceFiles.map((sf) => `  ${sf.exists ? "+" : "-"} ${sf.path}`).join("\n");
   const securityPass = npmAudit.critical === 0 && npmAudit.high === 0 && eslint.errors === 0;
   const accessibilityPass = pa11y.failed === 0 && axe.violations === 0 && textSpacing.failed === 0;
