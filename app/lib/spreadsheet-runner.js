@@ -582,4 +582,4 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
   }
 }
 
-export { toExcelSerial, buildSheetMap, readCellValue, getLibreOffice, hasLibreOffice };
+export { toExcelSerial, buildSheetMap, readCellValue, loadSharedStrings, getLibreOffice, hasLibreOffice };

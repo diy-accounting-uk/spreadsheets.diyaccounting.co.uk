@@ -28,10 +28,16 @@ import {
   monthEnd,
 } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
+import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
+import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
 import { PRODUCT as LTD } from "../products/ltd.js";
+import * as bstMod from "../products/bst.js";
+import * as taxiMod from "../products/taxi.js";
+import * as seMod from "../products/se.js";
+import * as ltdMod from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
@@ -203,13 +209,25 @@ function parseArgs(argv) {
     }
   }
 
-  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter };
+  let dataDir = null;
+  const dataIdx = args.indexOf("--data");
+  if (dataIdx !== -1 && args[dataIdx + 1]) {
+    dataDir = args[dataIdx + 1];
+  }
+
+  let outputDir = null;
+  const outIdx = args.indexOf("--output-dir");
+  if (outIdx !== -1 && args[outIdx + 1]) {
+    outputDir = args[outIdx + 1];
+  }
+
+  return { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir };
 }
 
 async function main() {
   console.log("=== generate.js ===");
 
-  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter } = parseArgs(process.argv);
+  const { packageFilter, tomlFiles, sourceDateEpoch, skipGuide, yearEndFilter, dataDir, outputDir: outputDirOverride } = parseArgs(process.argv);
 
   // Determine which products to generate
   const productsToGenerate = packageFilter === "all" ? Object.entries(PRODUCTS) : [[packageFilter, PRODUCTS[packageFilter]]];
@@ -280,6 +298,59 @@ async function main() {
   console.log(`\n=== Generated ${results.length} packages ===`);
   for (const r of results) {
     console.log(`  ${r.taxYear}: ${r.dirName}/`);
+  }
+
+  // If --data provided, inject diya-gl data into the generated package and recalculate
+  if (dataDir && results.length > 0) {
+    const PRODUCT_MODULES = { bst: bstMod, taxi: taxiMod, se: seMod, ltd: ltdMod };
+    const productMod = PRODUCT_MODULES[packageFilter];
+    if (!productMod) {
+      console.error(`--data requires --package (not 'all'). Got: ${packageFilter}`);
+      process.exit(1);
+    }
+
+    const { book, lines } = loadDiyaGlData(resolve(dataDir));
+    const scenario = diyaGlToScenario(book, lines, packageFilter);
+
+    // Use the last generated package (most recent year-end)
+    const lastResult = results[results.length - 1];
+    const pkgDir = resolve(OUTPUT_DIR, lastResult.dirName);
+    const finalOutputDir = outputDirOverride ? resolve(outputDirOverride) : pkgDir;
+
+    // Extract year-end info from the directory name
+    const yearEndMatch = lastResult.dirName.match(/(\d{4})-(\d{2})-(\d{2})/);
+    const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
+    const endMonth = yearEndMatch ? parseInt(yearEndMatch[2], 10) : null;
+    const startYear = endYear ? endYear - 1 : null;
+
+    const writes = productMod.cellWrites(scenario, startYear, endMonth);
+    const reads = productMod.standardReads();
+
+    console.log(`\n=== Injecting diya-gl data into ${lastResult.dirName} ===`);
+
+    if (productMod.MULTI_FILE) {
+      const { readdirSync: readdirSyncFs } = await import("fs");
+      const xlsxFiles = readdirSyncFs(pkgDir).filter((f) => f.endsWith(".xlsx"));
+      const fileBuffers = {};
+      for (const f of xlsxFiles) {
+        fileBuffers[f] = readFileSync(resolve(pkgDir, f));
+      }
+      await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+        saveRecalculatedTo: finalOutputDir,
+      });
+    } else {
+      const xlsxFiles = readdirSync(pkgDir).filter((f) => f.endsWith(".xlsx"));
+      if (xlsxFiles.length === 0) {
+        console.error(`No xlsx found in ${pkgDir}`);
+        process.exit(1);
+      }
+      const xlsxBuffer = readFileSync(resolve(pkgDir, xlsxFiles[0]));
+      await runSpreadsheet(xlsxBuffer, writes, reads, {
+        saveRecalculatedTo: resolve(finalOutputDir, xlsxFiles[0]),
+      });
+    }
+
+    console.log(`Populated package written to ${finalOutputDir}`);
   }
 }
 
