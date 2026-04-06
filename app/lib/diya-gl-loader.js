@@ -148,6 +148,11 @@ export function diyaGlToScenario(book, lines, product) {
   const business = {
     name: entity.organizationIdentifier || "",
     description: entity.organizationDescription || "",
+    company_number: entity["diya-gl:companyNumber"] || "",
+    utr: entity.taxRegistrationNumber || "",
+    address: entity["diya-gl:address"] || "",
+    town: entity["diya-gl:town"] || "",
+    postcode: entity["diya-gl:postcode"] || "",
   };
 
   // Build expected values
@@ -228,6 +233,8 @@ export function diyaGlToScenario(book, lines, product) {
   const journalLines = filteredLines.filter((l) => l.sourceJournalID === "journal");
   if (journalLines.length > 0 && (product === "ltd" || product === "se")) {
     const ob = {};
+    // Track fixed asset cost and accumulated depreciation separately
+    const faMap = {};
     for (const line of journalLines) {
       const amt = line.debitCreditCode === "C" ? -line.amount : line.amount;
       const acct = line.accountMainID;
@@ -236,9 +243,17 @@ export function diyaGlToScenario(book, lines, product) {
       else if (acct === "1210") ob.savings_account = (ob.savings_account || 0) + amt;
       else if (acct === "1220") ob.cash = (ob.cash || 0) + amt;
       else if (acct === "1230") ob.credit_card = (ob.credit_card || 0) + amt;
-      else if (acct === "0040") ob.motor_vehicles = (ob.motor_vehicles || 0) + amt;
-      else if (acct === "0030") ob.computer_equipment = (ob.computer_equipment || 0) + amt;
+      else if (acct === "0040" || acct === "0030") {
+        const cat = acct === "0040" ? "motor" : "computer";
+        if (!faMap[cat]) faMap[cat] = { category: cat, cost: 0, acc_dep: 0 };
+        if (line.debitCreditCode === "D") faMap[cat].cost += line.amount;
+        else faMap[cat].acc_dep += line.amount;
+        // Keep net value for backward compatibility
+        const field = acct === "0040" ? "motor_vehicles" : "computer_equipment";
+        ob[field] = (ob[field] || 0) + amt;
+      }
       else if (acct === "1100" && line.debitCreditCode === "D") ob.stock = (ob.stock || 0) + amt;
+      else if (acct === "5000") ob.cogs_adjustment = (ob.cogs_adjustment || 0) + amt;
       else if (acct === "1300") ob.trade_debtors = (ob.trade_debtors || 0) + amt;
       else if (acct === "2500") ob.directors_loan = (ob.directors_loan || 0) + Math.abs(line.amount);
       else if (acct === "2100") ob.trade_creditors = (ob.trade_creditors || 0) + Math.abs(line.amount);
@@ -248,7 +263,15 @@ export function diyaGlToScenario(book, lines, product) {
       else if (acct === "3100") ob.retained_earnings = (ob.retained_earnings || 0) + Math.abs(line.amount);
     }
     scenario.opening_balance = ob;
+    const faEntries = Object.values(faMap);
+    if (faEntries.length > 0) scenario.opening_fixed_assets = faEntries;
   }
+
+  // Debtors/creditors from book.toml
+  if (book.openingDebtors) scenario.opening_debtors = book.openingDebtors;
+  if (book.closingDebtors) scenario.closing_debtors = book.closingDebtors;
+  if (book.openingCreditors) scenario.opening_creditors = book.openingCreditors;
+  if (book.closingCreditors) scenario.closing_creditors = book.closingCreditors;
 
   // Employees from book.toml
   if (book.employees) {

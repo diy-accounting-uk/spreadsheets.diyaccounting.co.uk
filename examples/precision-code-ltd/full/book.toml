@@ -18,6 +18,9 @@ taxAuthorityIdentifier = "HMRC"
 "diya-gl:companyNumber" = "12345678"
 "diya-gl:vatNumber" = "123456789"
 "diya-gl:cisRegistered" = true
+"diya-gl:address" = "42 Silicon Way"
+"diya-gl:town" = "Cambridge"
+"diya-gl:postcode" = "CB1 2AB"
 
 [accounts.sales."4000"]
 accountMainDescription = "Product A - Consultancy"
@@ -241,6 +244,54 @@ higherRateThreshold = 50270
 additionalRate = 0.45
 additionalRateThreshold = 125140
 personalAllowanceTaperThreshold = 100000
+
+[[openingDebtors]]
+customer = "Acme Corp"
+amount = 7200
+
+[[openingDebtors]]
+customer = "Beta Systems"
+amount = 1200
+
+[[openingDebtors]]
+customer = "Gamma Ltd"
+amount = 2400
+
+[[closingDebtors]]
+customer = "Acme Corp"
+amount = 8000
+
+[[closingDebtors]]
+customer = "TechStart Ltd"
+amount = 2400
+
+[[openingCreditors]]
+supplier = "WorkSpace Ltd"
+amount = 1200
+
+[[openingCreditors]]
+supplier = "TechSupply Co"
+amount = 800
+
+[[openingCreditors]]
+supplier = "Office Supplies Ltd"
+amount = 400
+
+[[closingCreditors]]
+supplier = "WorkSpace Ltd"
+amount = 1200
+
+[[closingCreditors]]
+supplier = "CloudHost Pro"
+amount = 600
+
+[[closingCreditors]]
+supplier = "TechSupply Co"
+amount = 900
+
+[[closingCreditors]]
+supplier = "Legal Associates"
+amount = 500
 
 [[directors]]
 name = "Carol Smith"

@@ -409,9 +409,11 @@ function calculateSeResults(book, lines, taxData, scenario) {
   const badDebtsGross = salesLines.filter((l) => l.accountMainID == 4005).reduce((s, l) => s + l.amount, 0);
   const badDebts = -(badDebtsGross / 1.2); // Negative in P&L (cost), net of VAT
   const charitable = byCode.y || 0;
-  // B31 "HP Interest Lease Bank Charges" comes from bank/cash sheet V1+Y1 summary cells via external links
-  // Cannot compute from diya-gl data without the bank sheet formulas
-  const bankCharges = 0;
+  // B31 "HP Interest Lease Bank Charges" — bank charges (code B) + lease payments (code f)
+  const bankLines = lines.filter((l) => l.sourceJournalID === "bank");
+  const bankChargesFromBank = bankLines.filter((l) => l["diya-gl:bankCode"] === "B").reduce((s, l) => s + l.amount, 0);
+  const leasePayments = byCode.f || 0;
+  const bankCharges = bankChargesFromBank + leasePayments;
   // Note: codes t,q,u,n,f,z flow through external links to non-admin P&L sections, NOT to totalAdminExpenses
   const totalAdminExpenses = wages + lightHeat + repairs + genAdmin + motor + travel + advertising + legal + badDebts +
     bankCharges + charitable;
@@ -488,28 +490,55 @@ function calculateSeResults(book, lines, taxData, scenario) {
       E16: niUpper,
       E18: totalTaxAndNI,
     },
-    "SE Short": {
-      A7: biz.name || entity.organizationIdentifier || "",
-      D38: totalSalesTurnover,
-      D46: costOfSales,
-      D51: motor + travel,
-      D55: wages,
-      D60: lightHeat,
-      D64: repairs,
-      D71: operatingProfit - charitable, // Approximate net profit
-      D80: 0,
-      D85: 0,
-      D94: 0,
-      D99: operatingProfit - charitable,
-      A32: totalSalesTurnover > (taxData.vat?.registration_threshold || 90000)
-        ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${taxData.vat?.registration_threshold || 90000} VAT threshold`
-        : "",
-      D106: profitBeforeTax,
-    },
-    Wagesinterface: {
-      C4: 0, C5: 0, C6: 0, C7: 0, C8: 0, C9: 0, C10: 0, C11: 0, C12: 0, C13: 0, C14: 0, C15: 0,
-      D4: 0, H4: 0,
-    },
+    "SE Short": (() => {
+      // Excel formulas: D38=B9, D46=B17, D51=B25+B26, D55=B21, D60=B22, D64=B23
+      // D71=IF(D38+O38-O64>=0, D38+O38-O64, 0)
+      // O38=B38(goodwill), O64=B17+B35-B34(costOfSales+totalAdmin-lossOnDisposal)
+      const o38 = 0; // P&L B38 = goodwill amortisation (SE doesn't have separate B38)
+      const o64 = costOfSales + totalAdminExpenses; // B17+B35 (B34 loss on disposal = 0)
+      const d71 = Math.max(0, totalSalesTurnover + o38 - o64); // net profit (positive)
+      const o71 = Math.max(0, o64 - totalSalesTurnover - o38); // net loss (positive)
+      const d80 = 0; // AIA from Schedule Q1
+      const d85 = 0; // WDA from Schedule S1
+      const o80 = 0; // WDA+CA from Schedule R1+Y1
+      const o85 = 0; // Balancing charges from Schedule Z1
+      const d94 = 0; // Other adjustments (Business Details O50)
+      const o94 = 0; // Other adjustments
+      const d99 = Math.max(0, d71 + o85 + d94 - o71 - d80 - d85 - o80);
+      const o99 = grants; // P&L B11
+      const d106 = Math.max(0, d99 + o99 - o94);
+      return {
+        A7: biz.name || entity.organizationIdentifier || "",
+        D38: totalSalesTurnover,
+        D46: costOfSales,
+        D51: motor + travel,
+        D55: wages,
+        D60: lightHeat,
+        D64: repairs,
+        D71: d71,
+        D80: d80,
+        D85: d85,
+        D94: d94,
+        D99: d99,
+        A32: totalSalesTurnover > (taxData.vat?.registration_threshold || 90000)
+          ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${taxData.vat?.registration_threshold || 90000} VAT threshold`
+          : "",
+        D106: d106,
+      };
+    })(),
+    Wagesinterface: (() => {
+      const wi = {};
+      const wiMonths = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+      for (let i = 0; i < 12; i++) {
+        const row = i + 4; // C4=Apr, C5=May, ..., C15=Mar
+        const mLines = payrollLines.filter((l) => getMonthKey(l.postingDate) === wiMonths[i]);
+        wi[`C${row}`] = mLines.reduce((s, l) => s + (l["diya-gl:grossPay"] || l.amount || 0), 0);
+        wi[`D${row}`] = mLines.reduce((s, l) => s + (l["diya-gl:incomeTax"] || 0), 0);
+        wi[`E${row}`] = mLines.reduce((s, l) => s + (l["diya-gl:employeeNI"] || 0), 0);
+        wi[`H${row}`] = mLines.reduce((s, l) => s + (l["diya-gl:employerNI"] || 0), 0);
+      }
+      return wi;
+    })(),
     VitalTax: {
       C5: qSales[0], D5: qSales[1], E5: qSales[2], F5: qSales[3], G5: totalSalesTurnover,
       C7: qExpenses[0], D7: qExpenses[1], E7: qExpenses[2], F7: qExpenses[3], G7: qExpenses[0] + qExpenses[1] + qExpenses[2] + qExpenses[3],
@@ -581,11 +610,33 @@ function calculateLtdResults(book, lines, taxData, scenario) {
   const interestReceived = 0;
   const profitBeforeTax = operatingProfit + interestReceived;
 
+  // Fixed asset depreciation (from opening_fixed_assets)
+  const fa = scenario.opening_fixed_assets || [];
+  const depRates = taxData.depreciation || {};
+  const motorDepRate = depRates.motor_vehicles || 0.25;
+  const computerDepRate = depRates.computer_equipment || 0.33;
+  let motorDep = 0, computerDep = 0;
+  for (const asset of fa) {
+    const wdv = asset.cost - (asset.acc_dep || 0);
+    if (asset.category === "motor") motorDep += wdv * motorDepRate;
+    else if (asset.category === "computer") computerDep += wdv * computerDepRate;
+  }
+  const totalDepreciation = motorDep + computerDep;
+
+  // Capital allowances (AIA on new assets, WDA on existing)
+  const caRates = taxData.capital_allowances || {};
+  const wdaRate = caRates.writing_down_allowance_main || caRates.writing_down_allowance || 0.18;
+  let totalCA = 0;
+  for (const asset of fa) {
+    const wdv = asset.cost - (asset.acc_dep || 0);
+    totalCA += wdv * wdaRate;
+  }
+
   // Corporation Tax
   const ctRates = taxData.corporation_tax || { small_profits_rate: 0.19, main_rate: 0.25, small_profits_limit: 50000, small_profits_limit_upper: 250000, marginal_relief_fraction: 0.015 };
-  const depreciation = goodwill; // B38 goodwill + B35/B36 depreciation charges (add back non-cash items)
+  const depreciation = goodwill + totalDepreciation; // B38 goodwill + B39/B40 depreciation charges (add back non-cash items)
   const addBack = profitBeforeTax + depreciation; // K12
-  const capitalAllowances = 0; // Simplified — requires Fixed Assets schedule
+  const capitalAllowances = totalCA; // WDA on existing fixed assets
   const lessCA = addBack - capitalAllowances; // K22
   const profitChargeable = lessCA; // K28
   const { corporationTax } = calculateCorporationTax(profitChargeable, ctRates);
@@ -636,8 +687,8 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       B36: bankCharges, // Bank charges (X-code transfers from current account)
       B37: charitable,
       B38: goodwill,
-      B39: 0, // Depreciation 2
-      B40: 0, // Depreciation 3
+      B39: motorDep, // Motor vehicle depreciation
+      B40: computerDep, // Computer equipment depreciation
       B41: totalAdmin,
       B43: operatingProfit,
       B44: interestReceived,

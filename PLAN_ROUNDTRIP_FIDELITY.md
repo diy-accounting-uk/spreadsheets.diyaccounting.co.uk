@@ -445,38 +445,46 @@ R0 CI roundtrip jobs (`4b925a8f`), R1 bank export (`1773fb8a`), R2 payroll expor
 - **Double-roundtrip: MUST PASS** for all three products ✓
 - **EQ1: informational** (`continue-on-error`) — shows remaining diff count, doesn't block
 
-## Remaining Work
+## Remaining Work (updated 2026-04-06, branch: deepfidelity)
 
-### S1. Cross-file external links not resolved by LibreOffice
-The xls roundtrip in `runMultiFileSpreadsheet` converts each file independently. LibreOffice doesn't resolve links between files (Payslips→Wagesinterface, Fixedassets→hub). This makes:
-- B20 "Employer NI" = 0 in Excel (should be populated from Payslips via Wagesinterface)
-- Depreciation values = 0 in Excel (should come from Fixedassets Schedule)
-- Wagesinterface cells all 0 in Excel
-The JS computes the CORRECT values for these. The diff shows the Excel is wrong, not the JS.
-**Fix**: change `runMultiFileSpreadsheet` to open all files together in one LibreOffice session, or post-process the recalculated files to resolve external links.
-**Impact**: largest single source of diffs across all three products (~30-40 lines each).
+### S7. Fixed assets cellWrites template layout — FIXED
+**Problem**: cellWrites wrote motor and computer assets both starting at row 6, causing collision. Also used column Y for accumulated depreciation instead of column F.
+**Audit**: Template inspection revealed Schedule layout: Land(8-10), Plant(14-21), Fixtures(25-29), Computers(33-40), Motor(44-54). E=cost, F=accumulated depreciation.
+**Fix**: Ltd motor→row 44, computer→row 33. SE motor→row 38, computer→row 30. Column Y→F.
+**Files**: `app/products/ltd.js:260-279`, `app/products/se.js:243-266`
 
-### S2. BST debtors/creditors from template
-The BST Excel template has pre-populated debtor/creditor example data (45808, 45900, 45930, etc.) that wasn't injected by `generate --data`. These template values show up in the Excel report but not in the JS report. The JS is correct — it only shows data that was actually provided.
-**Fix**: either strip template example data from the generated packages, or populate debtor/creditor data in `diyaGlToScenario` for BST (the diya-gl data doesn't have this).
-**Impact**: ~30 BST diff lines.
+### S6. Ltd journal entries: 3 lines lost on first pass — FIXED (loader)
+**Problem**: `diya-gl-loader.js:239-240` collapsed FA cost+depreciation to net book value. Account 5000 (COGS) not mapped.
+**Fix**: Separate debit (cost) and credit (accumulated depreciation) for accounts 0040/0030 into `scenario.opening_fixed_assets` array. Added account 5000 mapping to `opening_balance.cogs_adjustment`.
+**Files**: `app/lib/diya-gl-loader.js:228-268`
+**Remaining**: `xlsx-exporter.js` OA_JOURNAL_MAP needs update to reverse-map separate cost/depreciation lines for full 715/715 recovery.
 
-### S3. SE B31 "HP Interest Lease Bank Charges" = 800
-The SE P&L B31 comes from bank/cash sheet summary cells (V1+Y1) via external links. The JS sets B31 = 0 because the formula references can't be traced from diya-gl data alone. Related to S1 (external links).
-**Impact**: 800 difference in SE totalAdmin, cascades to operating profit and tax.
+### S5. Business details template text — FIXED
+**Problem**: `diyaGlToScenario()` only extracted name/description, ignored companyNumber and UTR.
+**Fix**: Extract `diya-gl:companyNumber`, `taxRegistrationNumber`, address fields from book.toml entityInformation. Added address/town/postcode to example data.
+**Files**: `app/lib/diya-gl-loader.js:148-155`, `examples/precision-code-ltd/full/book.toml`
 
-### S4. SE SA103S mapping incomplete
-Several SE Short cells differ from Excel because the SA103S box formulas reference TrialBalance/P&L cells that the JS doesn't fully replicate.
-**Impact**: ~20 SE diff lines.
+### S2. BST debtors/creditors from template — FIXED
+**Problem**: diya-gl data had only aggregate journal entries for accounts 1300/2100 but cellWrites expected per-customer `opening_debtors[]` arrays.
+**Fix**: Added structured `[[openingDebtors]]`/`[[closingDebtors]]`/`[[openingCreditors]]`/`[[closingCreditors]]` sections to book.toml. Loader extracts these directly.
+**Files**: `app/lib/diya-gl-loader.js:270-274`, `examples/precision-code-ltd/full/book.toml`
 
-### S5. Ltd/SE business details template text
-Excel OpenAccounts has template placeholder text ("Telephone number including STD Code", "First Director's Name") in cells E3/E4/E6 that weren't overwritten by cellWrites (the scenario didn't have company number/address/UTR). The JS shows empty or actual data.
-**Impact**: 6-8 diff lines per product.
+### S1. Cross-file external links — PARTIALLY FIXED (JS side)
+**Problem**: `updateExternalLinkCaches()` works correctly but Fixedassets data was never written (fixed by S7+S6). JS calculator hardcoded Wagesinterface and depreciation to 0.
+**Audit**: The Excel pipeline should now work after S7+S6 fixes (Fixedassets gets correct data, updateExternalLinkCaches injects it into hub). Payslips→Wagesinterface already works via external link cache injection.
+**Fix (JS calculator)**:
+- SE Wagesinterface: Aggregated payrollLines by month, populated C4-C15 (gross), D4-D15 (PAYE), E4-E15 (employee NI), H4-H15 (employer NI)
+- Ltd depreciation: Computed from `opening_fixed_assets` using depreciation rates from taxData. B39=motor, B40=computer. Added back depreciation for CT (K12). Capital allowances computed using WDA rate.
+**Files**: `app/lib/diya-gl-calculator.js:412-416` (SE bankCharges), `app/lib/diya-gl-calculator.js:509-523` (Wagesinterface), `app/lib/diya-gl-calculator.js:595-616` (Ltd depreciation/CA)
+**Remaining**: Verify Excel pipeline produces correct Fixedassets values after generate --data.
 
-### S6. Ltd journal entries: 3 lines lost on first pass
-Fixed asset journal entries collapse debit+credit to net book value (2 lines lost). Stock adjustment entry not stored in OpenAccounts (1 line lost). The cellWrites for Fixedassets.xlsx doesn't write to the expected cells (template layout mismatch). Double-roundtrip is stable.
-**Impact**: 712/715 Ltd data equivalence.
+### S3. SE B31 bank charges — FIXED
+**Problem**: SE bankCharges hardcoded to 0. Excel B31 comes from bank charges (code B) + lease payments.
+**Fix**: Computed bankCharges from bank lines with `diya-gl:bankCode === "B"` plus lease payments (byCode.f).
+**Files**: `app/lib/diya-gl-calculator.js:412-416`
 
-### S7. Fixed assets cellWrites doesn't match template layout
-The cellWrites for opening fixed assets writes to E6/Y6 (motor) and E13/Y13 (computer) in Fixedassets.xlsx Schedule, but those cells contain template labels, not data. The template layout for the Schedule sheet needs investigation to find the correct cells for cost and accumulated depreciation.
-**Impact**: blocks S6, and means fixed asset data doesn't appear in the Excel package at all.
+### S4. SE SA103S mapping — FIXED
+**Problem**: D51/D64/D71/D99/D106 used incorrect formulas.
+**Audit**: Extracted actual Excel formulas from template. D38-D64 already matched P&L references correctly (D51=B25+B26=motor+travel, D55=B21=wages, D60=B22=lightHeat, D64=B23=repairs). D71/D99/D106 were wrong.
+**Fix**: Implemented the full SA103S formula chain: D71=max(0, D38+O38-O64), D99=max(0, D71+O85+D94-O71-D80-D85-O80), D106=max(0, D99+O99-O94). O38=goodwill, O64=costOfSales+totalAdmin, O99=grants.
+**Files**: `app/lib/diya-gl-calculator.js:497-533`

@@ -257,21 +257,23 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
 
   // Fixedassets.xlsx opening asset values
+  // Schedule layout: Land(8-10), Plant(14-21), Fixtures(25-29), Computers(33-40), Motor(44-54)
+  // E=Original Cost, F=Accumulated Depreciation, D=Purchase Reference/Description
   const fixedAssetsWrites = {};
   if (scenario.opening_fixed_assets) {
     fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    let motorRow = 6;
-    let computerRow = 6;
+    let motorRow = 44;
+    let computerRow = 33;
     for (const asset of scenario.opening_fixed_assets) {
       if (asset.category === "motor") {
         fa[`E${motorRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
+        if (asset.acc_dep) fa[`F${motorRow}`] = asset.acc_dep;
         if (asset.description) fa[`D${motorRow}`] = asset.description;
         motorRow++;
       } else if (asset.category === "computer") {
         fa[`E${computerRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
+        if (asset.acc_dep) fa[`F${computerRow}`] = asset.acc_dep;
         if (asset.description) fa[`D${computerRow}`] = asset.description;
         computerRow++;
       }

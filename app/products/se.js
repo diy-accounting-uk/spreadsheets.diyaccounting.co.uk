@@ -241,24 +241,23 @@ export function cellWrites(scenario) {
   }
 
   // Fixedassets.xlsx opening asset values
+  // Schedule layout: Land(8-10), Plant(14-18), Fixtures(22-26), Computers(30-34), Motor(38-54)
+  // E=Original Cost, F=Accumulated Depreciation, D=Purchase Reference/Description
   const fixedAssetsWrites = {};
   if (scenario.opening_fixed_assets) {
     fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    // Row 6: Existing Motor Vehicles (E=cost, Y=acc dep)
-    // Row 7: Existing Motor Vehicle 2
-    // Rows in "Existing" sections: Motor(6-10), Land(G col area), Plant(K col area), Computer(S col area)
-    let motorRow = 6;
-    let computerRow = 6; // computers use S column area
+    let motorRow = 38;
+    let computerRow = 30;
     for (const asset of scenario.opening_fixed_assets) {
       if (asset.category === "motor") {
         fa[`E${motorRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
+        if (asset.acc_dep) fa[`F${motorRow}`] = asset.acc_dep;
         if (asset.description) fa[`D${motorRow}`] = asset.description;
         motorRow++;
       } else if (asset.category === "computer") {
         fa[`E${computerRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
+        if (asset.acc_dep) fa[`F${computerRow}`] = asset.acc_dep;
         if (asset.description) fa[`D${computerRow}`] = asset.description;
         computerRow++;
       }
