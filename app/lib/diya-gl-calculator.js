@@ -709,16 +709,37 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       D16: costOfSales,           // Cost of Sales total
       D18: grossProfit,           // Gross Profit
     },
-    PubBalSht: {
-      D6: (ob.motor_vehicles || 0) + (ob.computer_equipment || 0) + (ob.fixed_assets || 0) + (ob.plant_machinery || 0) + (ob.fixtures || 0),
-      D9: scenario.stock?.closing ?? 0,
-      D13: 0, // Current assets — needs full balance sheet
-      D15: 0, // Creditors < 1 year
-      D22: 0, // Net current assets
-      D26: 0, // Total assets less CL
-      D28: 0, // Other creditors
-      D29: ob.directors_loan || 0,
-    },
+    PubBalSht: (() => {
+      const fixedAssetsNBV = (ob.motor_vehicles || 0) + (ob.computer_equipment || 0) + (ob.fixed_assets || 0) + (ob.plant_machinery || 0) + (ob.fixtures || 0);
+      const stock = scenario.stock?.closing ?? 0;
+      const debtors = ob.trade_debtors || 0;
+      const bankCash = (ob.current_account || 0) + (ob.savings_account || 0) + (ob.cash || 0) - Math.abs(ob.credit_card || 0);
+      const currentAssets = stock + debtors + bankCash;
+      const creditors = (ob.trade_creditors || 0) + (ob.corporation_tax || 0) + (ob.vat_liability || 0) + (ob.paye_ni_due || 0);
+      const netCurrentAssets = currentAssets - creditors;
+      const totalAssetsLessCL = fixedAssetsNBV + netCurrentAssets;
+      const directorsLoan = ob.directors_loan || 0;
+      const longTermCreditors = directorsLoan;
+      const netAssets = totalAssetsLessCL - longTermCreditors;
+      const shareCapital = ob.share_capital || 0;
+      const retainedEarnings = (ob.retained_earnings || 0) + profitBeforeTax - corporationTax;
+      const shareholdersFunds = shareCapital + retainedEarnings;
+      return {
+        D6: fixedAssetsNBV,
+        D9: stock,
+        D13: currentAssets,
+        D15: creditors,
+        D22: netCurrentAssets,
+        D26: totalAssetsLessCL,
+        D28: 0,
+        D29: directorsLoan,
+        F33: netAssets,
+        F36: shareCapital,
+        F37: retainedEarnings,
+        F38: 0,
+        F39: shareholdersFunds,
+      };
+    })(),
     Stock: {
       B5: scenario.stock?.opening ?? 0,
       B8: scenario.stock?.closing ?? 0,

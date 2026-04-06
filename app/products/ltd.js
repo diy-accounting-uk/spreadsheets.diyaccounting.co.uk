@@ -123,30 +123,53 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
 
   // Opening balance sheet (OpenAccounts)
+  // TrialBalance reads from column E (and G/H/I/J for bank split, G/H/I for HMRC)
+  // Fixed asset cost at G-K row 13, accumulated depreciation at M-Q row 13
   if (scenario.opening_balance) {
     if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
     const oa = hubWrites.OpenAccounts;
     const ob = scenario.opening_balance;
-    if (ob.fixed_assets) oa.D12 = ob.fixed_assets;
-    if (ob.plant_machinery) oa.H12 = ob.plant_machinery;
-    if (ob.fixtures) oa.I12 = ob.fixtures;
-    if (ob.computer_equipment) oa.J12 = ob.computer_equipment;
-    if (ob.motor_vehicles) oa.K12 = ob.motor_vehicles;
-    if (ob.stock) oa.D14 = ob.stock;
-    if (ob.trade_debtors) oa.D15 = ob.trade_debtors;
-    if (ob.current_account) oa.D16 = ob.current_account;
-    if (ob.savings_account) oa.H16 = ob.savings_account;
-    if (ob.credit_card) oa.I16 = ob.credit_card;
-    if (ob.cash) oa.J16 = ob.cash;
-    if (ob.trade_creditors) oa.D19 = ob.trade_creditors;
-    if (ob.corporation_tax) oa.D20 = ob.corporation_tax;
-    if (ob.wages_due) oa.D21 = ob.wages_due;
-    if (ob.paye_ni_due) oa.D22 = ob.paye_ni_due;
-    if (ob.dividends_due) oa.D23 = ob.dividends_due;
-    if (ob.vat_liability) oa.D24 = ob.vat_liability;
-    if (ob.share_capital) oa.D29 = ob.share_capital;
-    if (ob.retained_earnings) oa.D30 = ob.retained_earnings;
-    if (ob.directors_loan) oa.D31 = ob.directors_loan;
+    // Fixed assets — cost to G-K row 13, acc dep to M-Q row 13
+    if (ob.fixed_assets) { oa.G13 = ob.fixed_assets; }
+    if (ob.plant_machinery) { oa.H13 = ob.plant_machinery; }
+    if (ob.fixtures) { oa.I13 = ob.fixtures; }
+    if (ob.computer_equipment) { oa.J13 = ob.computer_equipment; }
+    if (ob.motor_vehicles) { oa.K13 = ob.motor_vehicles; }
+    // Current assets — column E
+    if (ob.stock) oa.E15 = ob.stock;
+    if (ob.trade_debtors) oa.E16 = ob.trade_debtors;
+    // Bank accounts — individual columns at row 18
+    if (ob.current_account) oa.G18 = ob.current_account;
+    if (ob.savings_account) oa.H18 = ob.savings_account;
+    if (ob.credit_card) oa.I18 = ob.credit_card;
+    if (ob.cash) oa.J18 = ob.cash;
+    // Current liabilities — column E
+    if (ob.trade_creditors) oa.E20 = ob.trade_creditors;
+    if (ob.wages_due) oa.E21 = ob.wages_due;
+    if (ob.dividends_due) oa.E22 = ob.dividends_due;
+    if (ob.corporation_tax) oa.E23 = ob.corporation_tax;
+    // HMRC liabilities — separate columns at row 26
+    if (ob.paye_ni_due) oa.G26 = ob.paye_ni_due;
+    if (ob.vat_liability) oa.H26 = ob.vat_liability;
+    // Long-term — column E
+    if (ob.directors_loan) oa.E30 = ob.directors_loan;
+    // Capital and reserves — column E
+    if (ob.share_capital) oa.E33 = ob.share_capital;
+    if (ob.retained_earnings) oa.E34 = ob.retained_earnings;
+  }
+  // Write separate fixed asset cost/depreciation to OpenAccounts if available
+  if (scenario.opening_fixed_assets) {
+    if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
+    const oa = hubWrites.OpenAccounts;
+    for (const asset of scenario.opening_fixed_assets) {
+      if (asset.category === "motor") {
+        oa.K13 = asset.cost;
+        oa.Q13 = asset.acc_dep || 0;
+      } else if (asset.category === "computer") {
+        oa.J13 = asset.cost;
+        oa.P13 = asset.acc_dep || 0;
+      }
+    }
   }
 
   // Opening/closing debtors (Sales.xlsx)
@@ -414,6 +437,11 @@ export const CELL_MAP = [
   ["PubBalSht", "D26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
   ["PubBalSht", "D28", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
   ["PubBalSht", "D29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
+  ["PubBalSht", "F36", "Share Capital",            "accounts.capital.3000 (pubBS)",      "Published Balance Sheet", 1],
+  ["PubBalSht", "F37", "Retained Earnings",        "accounts.capital.3100 (pubBS)",      "Published Balance Sheet", 1],
+  ["PubBalSht", "F38", "Capital Reserves",         "gl-cor:amount (pubBS.capitalReserves)","Published Balance Sheet", 1],
+  ["PubBalSht", "F39", "**Shareholders' Funds**",  "gl-cor:amount (pubBS.equity)",       "Published Balance Sheet", 0],
   // ── Stock ──
   ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
   ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
