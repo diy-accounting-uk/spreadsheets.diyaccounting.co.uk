@@ -187,9 +187,7 @@ describe("generateCatalogue", () => {
   });
 
   it("includes product metadata from PRODUCTS", () => {
-    const packages = [
-      { product: "Self Employed", date: "2025-04-05", shortLabel: "Apr25", format: "Excel 2007", filename: "se.zip" },
-    ];
+    const packages = [{ product: "Self Employed", date: "2025-04-05", shortLabel: "Apr25", format: "Excel 2007", filename: "se.zip" }];
     const toml = generateCatalogue(packages, "2026-04-05");
     expect(toml).toContain('id = "SelfEmployed"');
     expect(toml).toContain(PRODUCTS["Self Employed"].description);

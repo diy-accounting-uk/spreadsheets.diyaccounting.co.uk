@@ -16,13 +16,7 @@ import { existsSync, readdirSync, mkdirSync, rmSync, unlinkSync, writeFileSync }
 import { join, dirname, resolve } from "path";
 import { execSync } from "child_process";
 import { fileURLToPath } from "url";
-import {
-  PRODUCTS,
-  parsePackageDir,
-  parseCompanyAnyDir,
-  generateCompanyVariantNames,
-  generateCatalogue,
-} from "../lib/package-builder.js";
+import { PRODUCTS, parsePackageDir, parseCompanyAnyDir, generateCompanyVariantNames, generateCatalogue } from "../lib/package-builder.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");

@@ -24,7 +24,7 @@ export const PRODUCTS = {
     description:
       "Full bookkeeping spreadsheet for self-employed businesses. Includes sales, purchases, VAT returns, bank reconciliation, payslips, and self assessment.",
   },
-  Company: {
+  "Company": {
     id: "Company",
     description:
       "Complete accounting spreadsheet for limited companies. Includes sales, purchases, VAT, corporation tax, payroll, dividends, and year-end accounts.",
