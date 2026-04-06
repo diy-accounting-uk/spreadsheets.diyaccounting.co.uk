@@ -227,6 +227,35 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  if (scenario.payroll) {
+    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
+      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
+      if (!sm) continue;
+      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
+      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+
+      if (!payslipsWrites[tabName]) payslipsWrites[tabName] = {};
+      const sheet = payslipsWrites[tabName];
+      // Write wages paid date from first entry
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        const shifted2 = shiftDate(d);
+        sheet.M49 = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
+      }
+      for (let i = 0; i < Math.min(entries.length, 5); i++) {
+        const row = 51 + i;
+        const e = entries[i];
+        if (e.name) sheet[`F${row}`] = e.name;
+        sheet[`M${row}`] = e.grossPay;
+        sheet[`N${row}`] = e.incomeTax;
+        sheet[`O${row}`] = e.employeeNI;
+        sheet[`R${row}`] = e.netPay;
+        sheet[`S${row}`] = e.employerNI;
+      }
+    }
+  }
+
   // Fixedassets.xlsx opening asset values
   const fixedAssetsWrites = {};
   if (scenario.opening_fixed_assets) {
@@ -249,10 +278,58 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Bank entries — Ltd has 4 bank files mapped by account ID
+  const BANK_ACCOUNT_FILES = { "1200": "Currentaccount.xlsx", "1210": "Savingaccount.xlsx", "1220": "Cashaccount.xlsx", "1230": "Creditcardaccount.xlsx" };
+  const bankFileWrites = {};
+  if (scenario.bank) {
+    const receiptRows = {};
+    const paymentRows = {};
+
+    for (const [monthKey, transactions] of Object.entries(scenario.bank)) {
+      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
+      if (!sm) continue;
+      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
+      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+
+      for (const tx of transactions) {
+        const acct = tx.account || "1200";
+        const fileName = BANK_ACCOUNT_FILES[acct] || "Currentaccount.xlsx";
+        if (!bankFileWrites[fileName]) bankFileWrites[fileName] = {};
+        if (!bankFileWrites[fileName][tabName]) bankFileWrites[fileName][tabName] = {};
+        const sheet = bankFileWrites[fileName][tabName];
+        const d = parseDate(tx.date);
+        const shifted2 = shiftDate(d);
+        const serial = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
+        const rowKey = `${fileName}:${tabName}`;
+
+        if (tx.code === "BC") {
+          sheet.A1 = tx.amount;
+        } else if (["BC", "DR", "CR", "K", "RV", "DL", "X"].includes(tx.code)) {
+          if (!receiptRows[rowKey]) receiptRows[rowKey] = 6;
+          const row = receiptRows[rowKey]++;
+          sheet[`A${row}`] = serial;
+          if (tx.source) sheet[`B${row}`] = tx.source;
+          sheet[`E${row}`] = tx.code;
+          sheet[`F${row}`] = tx.amount;
+        } else {
+          if (!paymentRows[rowKey]) paymentRows[rowKey] = 6;
+          const row = paymentRows[rowKey]++;
+          sheet[`P${row}`] = serial;
+          if (tx.source) sheet[`Q${row}`] = tx.source;
+          sheet[`S${row}`] = tx.code;
+          sheet[`T${row}`] = tx.amount;
+        }
+      }
+    }
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
+  for (const [fileName, writes] of Object.entries(bankFileWrites)) {
+    if (Object.keys(writes).length > 0) result[fileName] = writes;
+  }
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
@@ -321,10 +398,11 @@ export const CELL_MAP = [
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
   // ── Published P&L (column D has formulas) ──
-  ["PubP&L", "D7",  "Cost of Sales",               "gl-cor:amount (pubPL.cos)",      "Published P&L", 1],
-  ["PubP&L", "D9",  "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",    "Published P&L", 0],
-  ["PubP&L", "D16", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)","Published P&L", 0],
-  ["PubP&L", "D18", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",      "Published P&L", 0],
+  ["PubP&L", "D7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
+  ["PubP&L", "D8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
+  ["PubP&L", "D9",  "**Total Sales Turnover**",    "gl-cor:amount (pubPL.totalTurnover)","Published P&L", 0],
+  ["PubP&L", "D16", "Cost of Sales",               "gl-cor:amount (pubPL.cos)",       "Published P&L", 1],
+  ["PubP&L", "D18", "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",     "Published P&L", 0],
   // ── Published Balance Sheet (column D has formulas) ──
   ["PubBalSht", "D6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
   ["PubBalSht", "D9",  "Stock",                    "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],

@@ -14,7 +14,7 @@ export default defineConfig({
         test: {
           name: "unit-tests",
           environment: "node",
-          include: ["web/unit-tests/*.test.js", "app/test/*.test.js"],
+          include: ["web/unit-tests/*.test.js", "app/test/*.test.js", "app/test/**/*.test.js"],
           outputFile: "./target/test-results/vitest-results.json",
         },
       },

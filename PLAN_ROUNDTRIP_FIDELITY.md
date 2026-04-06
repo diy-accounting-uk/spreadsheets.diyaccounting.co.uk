@@ -1,5 +1,45 @@
 # PLAN: Roundtrip Fidelity — diya-gl ↔ Excel Package Equivalence
 
+## Context Documents
+
+- [CONTEXT_BASIC_SOLE_TRADER.md](CONTEXT_BASIC_SOLE_TRADER.md) — BST product: single-file, sheet map, data flow, scenarios, CI pipeline
+- [CONTEXT_TAXI.md](CONTEXT_TAXI.md) — Taxi Driver product: single-file, mileage comparison, date pre-filling, scenarios, CI pipeline
+- [CONTEXT_SELF_EMPLOYED.md](CONTEXT_SELF_EMPLOYED.md) — Self Employed (SE) product: multi-file, external links, recalculation pipeline, scenarios, CI pipeline
+- [CONTEXT_LIMITED_COMPANY.md](CONTEXT_LIMITED_COMPANY.md) — Limited Company (Ltd) product: multi-file, 15 xlsx, non-March transforms, all year-end months, scenarios, CI pipeline
+- [SKILL_EXCEL.md](SKILL_EXCEL.md) — Excel XML manipulation techniques, xls roundtrip, external link caches, multi-file recalculation, testing approaches, known pitfalls
+- [SKILL_PACKAGE_UPDATES.md](SKILL_PACKAGE_UPDATES.md) — Annual tax data update process, HMRC rate sources, TOML file structure, publishing workflow
+- [README.md](README.md) — Project overview, architecture, package generation and deployment pipeline
+- [CLAUDE.md](CLAUDE.md) — Project-specific instructions, build commands, testing, CDK architecture, deployment
+
+## Original prompt:
+
+Please create a PLAN_*.md document  to consider how this sequence of commands could be a reality.
+
+Create an ltd excel package in the target folder:
+```bash
+npm run generate --package ltd --years ltd-2024-2025 --data 'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025'
+```
+
+Extract financial and management reports from an Excel package from the calculated values:
+```bash
+npm run report --package ltd --source-dir 'ltd-2024-2025' --output-dir 'ltd-2024-2025-excel-reports'
+```
+
+Extract financial and management reports from diya-gl by calculating the values:
+```
+npm run report --package ltd --data 'examples/precision-code-ltd/full' --output-dir 'ltd-2024-2025-diya-gl-reports'
+```
+
+Then to extract a set of diy-gl data:
+```
+npm run export --package ltd --source-dir 'ltd-2024-2025' --output-dir 'ltd-2024-2025-data'
+```
+
+The package parameter sets the set of reports to match the package and in the case of `--source-dir` the package parameter
+tells it what type of package to look for. And then after those commands are run for any set of years or package when used
+consistently these two directories would be equal `ltd-2024-2025-excel-reports` and `ltd-2024-2025-diya-gl-reports`,
+and also these two directories would be equal `examples/precision-code-ltd/full` and `ltd-2024-2025-data`
+
 ## What This Is
 
 **Roundtrip fidelity**: the guarantee that data survives a complete cycle through two different representations (diya-gl structured data ↔ Excel spreadsheet formulas) and produces identical financial reports regardless of which path computed them.
@@ -329,3 +369,114 @@ In formal terms:
 - **Stability**: `R(saved) = R(recalculated)` for the same populated package
 
 The Excel packages are the reference oracle. The JS engine is the production implementation. CI proves they agree on every push.
+
+---
+
+## Implementation Status
+
+### Phase A: DONE
+- `app/lib/report-generator.js` — `generateReport()` + `generateSectionReports()` extracted from reconcile.js
+- `app/lib/xlsx-reader.js` — `readXlsxCellValues()`, `readMultiFileXlsxCellValues()`, `findXlsx()`
+- `app/bin/report.js` — CLI with `--mode saved|recalculate`, `--data`, `--years`, `--offset`
+- `app/lib/spreadsheet-runner.js` — exported `loadSharedStrings`, XML entity decoding for shared strings and inline strings
+- `app/bin/reconcile.js` — imports `generateReport` from report-generator.js, `calculateExpectedTax` from tax/income-tax.js
+
+### Phase B: DONE
+- `app/lib/diya-gl-loader.js` — `loadDiyaGlData()`, `diyaGlToScenario()`, `extractTaxDataFromBook()`, `parseOffset()`, `shiftDate()`, `applyOffset()`
+- `app/bin/generate.js` — extended with `--data`, `--output-dir`, `--offset`
+- Bank structure flattened from `{account: {month: [txs]}}` to `{month: [txs]}` with `tx.account` field
+- All three products (BST, SE, Ltd) `generate --data` work end-to-end
+
+### Phase C: MOSTLY DONE — exports sales, purchases, bank, payroll, journal (some gaps)
+- `app/lib/xlsx-exporter.js` — `extractBstTransactions()`, `extractMultiFileTransactions()`, `extractMetadata()`, `buildReverseCodeMap()`, `normaliseLine()`
+- `app/bin/export.js` — CLI
+- Product-specific column mapping: Ltd uses E=code, F=amount; SE uses F=code, G=amount
+- BST export is lossy for accountMainID (no code column in Sales), but **double-roundtrip** normalises this: pass 1 normalises to BST's native representation, pass 2 is lossless
+- Bank, payroll, journal all now exported (R1-R3)
+- Ltd: 712/715 lines recovered (4 journal entries lost: fixed asset debit/credit collapse, stock adjustment)
+- SE: 682/686 lines recovered (4 bank lines missing — see remaining work)
+- BST: 504/504 lines recovered but all sales accountMainID normalised to 4000 (BST has no code column)
+
+### Phase D: MOSTLY DONE — JS calculator close but not matching Excel
+- `app/lib/tax/income-tax.js` — `calculateIncomeTax()`, `calculateExpectedTax()`
+- `app/lib/tax/national-insurance.js` — `calculateNIClass4()`, `calculateNIClass2()`
+- `app/lib/tax/corporation-tax.js` — `calculateCorporationTax()` with marginal relief
+- `app/lib/tax/capital-allowances.js` — `calculateCapitalAllowances()`
+- `app/lib/tax/vat.js` — `calculateQuarterlyVat()`
+- `app/lib/diya-gl-calculator.js` — `calculateFromDiyaGl()` for BST, Taxi, SE, Ltd
+- `report --data` must use `--years` flag to load correct tax data (book.toml has Class 1 NI rates, not Class 4)
+- CT depreciation add-back fixed (R4), Published P&L mapping fixed (R5), Published BS fixed (R6)
+- SE expense distribution fixed (R7), float precision fixed (R8), payroll wages added
+- **Remaining Ltd diffs** (139 lines): depreciation -6600 from fixed assets schedule, business details template text, cross-file external link values (B20)
+- **Remaining SE diffs** (219 lines): similar depreciation/external link issues, plus SE Short mapping
+- **Remaining BST diffs** (132 lines): stock/debtors/creditors sections, tax rounding, business details template text
+
+### Phase E: STRUCTURE DONE — CI jobs exist but will fail on remaining diffs
+- `app/test/verify-roundtrip.test.js` — vitest double-roundtrip for BST, SE, Ltd (passes)
+- Three CI roundtrip jobs (R0) with explicit commands visible in test.yml
+- LibreOffice installed in app-test and roundtrip jobs
+- Ltd job uses `--offset '-P1Y'`
+- **Equivalence 1 diffs will fail CI** — see remaining work below
+- **Equivalence 2 diffs will fail CI** — BST accountMainID normalisation, SE 4 missing bank lines, Ltd 3 missing journal lines
+
+### Bugs Fixed During Implementation
+
+- **XML entity double-encoding**: `readCellValue` and `loadSharedStrings` returned raw XML entities (`&amp;` instead of `&`), causing `Smith & Co` → `Smith &amp; Co` on each roundtrip
+- **SE/Ltd bank structure mismatch**: `diyaGlToScenario()` returned `{account: {month: [txs]}}` but `cellWrites()` expected `{month: [txs]}` with `tx.account` field
+- **Multi-file column mismatch**: Exporter read E=code, F=amount for all multi-file products, but SE uses F=code, G=amount while Ltd uses E=code, F=amount
+
+## Completed Work (R0-R12)
+
+R0 CI roundtrip jobs (`4b925a8f`), R1 bank export (`1773fb8a`), R2 payroll export (`f5131739`), R3 journal export (`d07ae4eb`), R4-R6 Ltd calculator fixes (`a84c72a8`), R7 SE expense mapping (`39505099`), R8 float precision (`75f85618`), R11/R12 done as part of R0.
+
+## Current Status (measured 2026-04-05)
+
+### EQ1 diff lines (informational, shown in CI)
+- **BST: 107** diff lines
+- **SE: 203** diff lines
+- **Ltd: 93** diff lines
+
+### EQ2 data roundtrip
+- **BST**: 504/504 lines (accountMainID normalised to 4000, double-roundtrip stable)
+- **SE**: 686/686 lines (double-roundtrip stable)
+- **Ltd**: 712/715 lines (3 journal entries collapsed, double-roundtrip stable)
+
+### CI job results
+- **Double-roundtrip: MUST PASS** for all three products ✓
+- **EQ1: informational** (`continue-on-error`) — shows remaining diff count, doesn't block
+
+## Remaining Work
+
+### S1. Cross-file external links not resolved by LibreOffice
+The xls roundtrip in `runMultiFileSpreadsheet` converts each file independently. LibreOffice doesn't resolve links between files (Payslips→Wagesinterface, Fixedassets→hub). This makes:
+- B20 "Employer NI" = 0 in Excel (should be populated from Payslips via Wagesinterface)
+- Depreciation values = 0 in Excel (should come from Fixedassets Schedule)
+- Wagesinterface cells all 0 in Excel
+The JS computes the CORRECT values for these. The diff shows the Excel is wrong, not the JS.
+**Fix**: change `runMultiFileSpreadsheet` to open all files together in one LibreOffice session, or post-process the recalculated files to resolve external links.
+**Impact**: largest single source of diffs across all three products (~30-40 lines each).
+
+### S2. BST debtors/creditors from template
+The BST Excel template has pre-populated debtor/creditor example data (45808, 45900, 45930, etc.) that wasn't injected by `generate --data`. These template values show up in the Excel report but not in the JS report. The JS is correct — it only shows data that was actually provided.
+**Fix**: either strip template example data from the generated packages, or populate debtor/creditor data in `diyaGlToScenario` for BST (the diya-gl data doesn't have this).
+**Impact**: ~30 BST diff lines.
+
+### S3. SE B31 "HP Interest Lease Bank Charges" = 800
+The SE P&L B31 comes from bank/cash sheet summary cells (V1+Y1) via external links. The JS sets B31 = 0 because the formula references can't be traced from diya-gl data alone. Related to S1 (external links).
+**Impact**: 800 difference in SE totalAdmin, cascades to operating profit and tax.
+
+### S4. SE SA103S mapping incomplete
+Several SE Short cells differ from Excel because the SA103S box formulas reference TrialBalance/P&L cells that the JS doesn't fully replicate.
+**Impact**: ~20 SE diff lines.
+
+### S5. Ltd/SE business details template text
+Excel OpenAccounts has template placeholder text ("Telephone number including STD Code", "First Director's Name") in cells E3/E4/E6 that weren't overwritten by cellWrites (the scenario didn't have company number/address/UTR). The JS shows empty or actual data.
+**Impact**: 6-8 diff lines per product.
+
+### S6. Ltd journal entries: 3 lines lost on first pass
+Fixed asset journal entries collapse debit+credit to net book value (2 lines lost). Stock adjustment entry not stored in OpenAccounts (1 line lost). The cellWrites for Fixedassets.xlsx doesn't write to the expected cells (template layout mismatch). Double-roundtrip is stable.
+**Impact**: 712/715 Ltd data equivalence.
+
+### S7. Fixed assets cellWrites doesn't match template layout
+The cellWrites for opening fixed assets writes to E6/Y6 (motor) and E13/Y13 (computer) in Fixedassets.xlsx Schedule, but those cells contain template labels, not data. The template layout for the Schedule sheet needs investigation to find the correct cells for cost and accumulated depreciation.
+**Impact**: blocks S6, and means fixed asset data doesn't appear in the Excel package at all.

@@ -16,6 +16,7 @@ import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { cellWrites as bstCellWrites, standardReads as bstReads, checkCompliance as bstCheckCompliance } from "../products/bst.js";
 import { parse as parseTOML } from "smol-toml";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
 const SKIP = !hasLibreOffice();
 const describeCalc = SKIP ? describe.skip : describe;
@@ -25,29 +26,6 @@ const APP_DIR = resolve(__dirname, "..");
 const BST_DIR = resolve(APP_DIR, "templates", "bst");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
-
-function calculateExpectedTax(profit, taxData) {
-  const pa = taxData.income_tax.personal_allowance;
-  const taxableIncome = Math.max(0, profit - pa);
-  const basicBand = taxData.income_tax.basic_band_end;
-  const basicTax = Math.min(taxableIncome, basicBand) * taxData.income_tax.basic_rate;
-  const higherTax = Math.max(0, taxableIncome - basicBand) * taxData.income_tax.higher_rate;
-  const incomeTax = basicTax + higherTax;
-
-  const lowerLimit = taxData.national_insurance.class4_lower_limit;
-  const upperLimit = taxData.national_insurance.class4_upper_limit;
-  const lowerRate = taxData.national_insurance.class4_lower_rate;
-  const upperRate = taxData.national_insurance.class4_upper_rate;
-  const niLower = profit > lowerLimit ? (Math.min(profit, upperLimit) - lowerLimit) * lowerRate : 0;
-  const niUpper = profit > upperLimit ? (profit - upperLimit) * upperRate : 0;
-
-  return {
-    income_tax: Math.round(incomeTax),
-    ni_class4_lower: Math.round(niLower * 10) / 10,
-    ni_class4_upper: Math.round(niUpper * 10) / 10,
-    total_tax_and_ni: Math.round(incomeTax + niLower + niUpper),
-  };
-}
 
 describeCalc("Reconciliation: bst-scenario-basic against 2025-26", () => {
   let results;

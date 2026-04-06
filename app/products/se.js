@@ -36,7 +36,7 @@ export const MULTI_FILE = true;
 // Bank receipt codes (amount goes to col F, code to col E)
 const RECEIPT_CODES = new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]);
 // Bank payment codes (amount goes to col T, code to col S)
-const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "X"]);
+const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "DV", "X"]);
 
 export function cellWrites(scenario) {
   const salesWrites = {};
@@ -212,6 +212,31 @@ export function cellWrites(scenario) {
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
       if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
       emp[`D${base + 17}`] = e.isDirector ? "D" : e.niCategory || "A";
+    }
+  }
+
+  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  if (scenario.payroll) {
+    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
+      const sheetName = MONTH_SHEETS[monthKey];
+      if (!sheetName) continue;
+      if (!payslipsWrites[sheetName]) payslipsWrites[sheetName] = {};
+      const sheet = payslipsWrites[sheetName];
+      // Write wages paid date from first entry
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        sheet.M49 = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      }
+      for (let i = 0; i < Math.min(entries.length, 5); i++) {
+        const row = 51 + i;
+        const e = entries[i];
+        if (e.name) sheet[`F${row}`] = e.name;
+        sheet[`M${row}`] = e.grossPay;
+        sheet[`N${row}`] = e.incomeTax;
+        sheet[`O${row}`] = e.employeeNI;
+        sheet[`R${row}`] = e.netPay;
+        sheet[`S${row}`] = e.employerNI;
+      }
     }
   }
 

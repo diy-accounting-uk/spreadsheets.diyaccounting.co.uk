@@ -18,6 +18,8 @@ import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadScenario } from "../lib/scenario-loader.js";
+import { generateReport } from "../lib/report-generator.js";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
@@ -41,102 +43,6 @@ const PRODUCTS = {
 function findXlsx(packageDir) {
   const files = readdirSync(packageDir);
   return files.find((f) => f.endsWith(".xlsx"));
-}
-
-// Calculate expected tax/NI values from the package's own tax rates.
-// Shared across all SE products — passed to product checkCompliance as a callback.
-function calculateExpectedTax(profit, taxData) {
-  const pa = taxData.income_tax.personal_allowance;
-  const taxableIncome = Math.max(0, profit - pa);
-  const basicBand = taxData.income_tax.basic_band_end;
-  const basicTax = Math.min(taxableIncome, basicBand) * taxData.income_tax.basic_rate;
-  const higherTax = Math.max(0, taxableIncome - basicBand) * taxData.income_tax.higher_rate;
-  const incomeTax = basicTax + higherTax;
-
-  const lowerLimit = taxData.national_insurance.class4_lower_limit;
-  const upperLimit = taxData.national_insurance.class4_upper_limit;
-  const lowerRate = taxData.national_insurance.class4_lower_rate;
-  const upperRate = taxData.national_insurance.class4_upper_rate;
-  const niLower = profit > lowerLimit ? (Math.min(profit, upperLimit) - lowerLimit) * lowerRate : 0;
-  const niUpper = profit > upperLimit ? (profit - upperLimit) * upperRate : 0;
-
-  return {
-    income_tax: Math.round(incomeTax),
-    ni_class4_lower: Math.round(niLower * 10) / 10,
-    ni_class4_upper: Math.round(niUpper * 10) / 10,
-    total_tax_and_ni: Math.round(incomeTax + niLower + niUpper),
-  };
-}
-
-function generateReport(packageName, scenarioName, results, checks, productMod) {
-  const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
-  const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
-  const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
-  const lines = [
-    `# Reconciliation Report: ${packageName}`,
-    ``,
-    `Scenario: ${scenarioName}`,
-    `Status: ${status}`,
-    ``,
-    `## Compliance Checks`,
-    ``,
-    `| Check | Expected | Actual | Diff | Result |`,
-    `|-------|----------|--------|------|--------|`,
-  ];
-
-  for (const c of checks) {
-    const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
-    lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
-  }
-
-  // Formatted accounting statements (if product module provides them)
-  if (typeof productMod.reportSections === "function") {
-    const sections = productMod.reportSections(results);
-    for (const section of sections) {
-      lines.push("");
-      lines.push(`## ${section.title}`);
-      lines.push("");
-      lines.push("| | Amount |");
-      lines.push("|---|------:|");
-      for (const row of section.rows) {
-        if (!row.label && !row.value) {
-          lines.push("| | |");
-        } else {
-          const indent = row.indent ? "&nbsp;&nbsp;&nbsp;&nbsp;".repeat(row.indent) : "";
-          lines.push(`| ${indent}${row.label} | ${row.value} |`);
-        }
-      }
-    }
-  }
-
-  // Cell-by-cell appendix with DIY labels and diya-gl mappings
-  const labels = typeof productMod.cellLabels === "function" ? productMod.cellLabels() : {};
-
-  lines.push("");
-  lines.push("---");
-  lines.push("");
-  lines.push("## Appendix: Cell Values");
-  lines.push("");
-
-  for (const [sheetName, cells] of Object.entries(results)) {
-    if (!cells || typeof cells !== "object") continue;
-    const entries = Object.entries(cells).filter(([, v]) => v !== null && v !== undefined && v !== "" && v !== " ");
-    if (entries.length === 0) continue;
-    lines.push(`### ${sheetName}`);
-    lines.push("");
-    lines.push("| Cell | DIY Label | Value | diya-gl mapping |");
-    lines.push("|------|-----------|-------|-----------------|");
-    for (const [cell, val] of entries) {
-      const key = `${sheetName}!${cell}`;
-      const lbl = labels[key];
-      const diyLabel = lbl?.diyLabel || "";
-      const glMapping = lbl?.glMapping || "";
-      lines.push(`| ${cell} | ${diyLabel} | ${val} | ${glMapping} |`);
-    }
-    lines.push("");
-  }
-
-  return { content: lines.join("\n"), compliant: !hasFail };
 }
 
 async function main() {
