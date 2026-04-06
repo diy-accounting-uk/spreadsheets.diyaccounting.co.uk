@@ -1,5 +1,16 @@
 # PLAN: Roundtrip Fidelity — diya-gl ↔ Excel Package Equivalence
 
+## Context Documents
+
+- [CONTEXT_BASIC_SOLE_TRADER.md](CONTEXT_BASIC_SOLE_TRADER.md) — BST product: single-file, sheet map, data flow, scenarios, CI pipeline
+- [CONTEXT_TAXI.md](CONTEXT_TAXI.md) — Taxi Driver product: single-file, mileage comparison, date pre-filling, scenarios, CI pipeline
+- [CONTEXT_SELF_EMPLOYED.md](CONTEXT_SELF_EMPLOYED.md) — Self Employed (SE) product: multi-file, external links, recalculation pipeline, scenarios, CI pipeline
+- [CONTEXT_LIMITED_COMPANY.md](CONTEXT_LIMITED_COMPANY.md) — Limited Company (Ltd) product: multi-file, 15 xlsx, non-March transforms, all year-end months, scenarios, CI pipeline
+- [SKILL_EXCEL.md](SKILL_EXCEL.md) — Excel XML manipulation techniques, xls roundtrip, external link caches, multi-file recalculation, testing approaches, known pitfalls
+- [SKILL_PACKAGE_UPDATES.md](SKILL_PACKAGE_UPDATES.md) — Annual tax data update process, HMRC rate sources, TOML file structure, publishing workflow
+- [README.md](README.md) — Project overview, architecture, package generation and deployment pipeline
+- [CLAUDE.md](CLAUDE.md) — Project-specific instructions, build commands, testing, CDK architecture, deployment
+
 ## Original prompt:
 
 Please create a PLAN_*.md document  to consider how this sequence of commands could be a reality.
