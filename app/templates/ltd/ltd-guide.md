@@ -348,6 +348,6 @@ The Salesinvoice workbook is independent. Set up Business Details, Customer Deta
 
 Our website: http://www.diyaccounting.co.uk/
 
-Discussion forum: https://github.com/antonycc/diy-accounting/discussions
+Discussion forum: https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions
 
 Donate: https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW

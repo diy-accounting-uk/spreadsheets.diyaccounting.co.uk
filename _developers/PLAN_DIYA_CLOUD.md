@@ -202,7 +202,7 @@ The submit repo consumes the library as a **file dependency** or **GitHub Packag
 // submit.diyaccounting.co.uk/package.json
 {
   "dependencies": {
-    "@diyaccounting/spreadsheets": "github:antonycc/diy-accounting#dist"
+    "@diyaccounting/spreadsheets": "github:support-at-diyaccounting/spreadsheets.diyaccounting.co.uk#dist"
   }
 }
 ```

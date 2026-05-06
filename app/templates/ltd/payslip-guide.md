@@ -140,6 +140,6 @@ Our website is the first place to look for any information: http://www.diyaccoun
 
 DIY Accounting's spreadsheet packages are maintained and supported under an Open Source model. In return for allowing anyone access to our source files, we find an indefinite low-cost home at GitHub.
 
-Please raise a question in our discussion forum here: https://github.com/antonycc/diy-accounting/discussions
+Please raise a question in our discussion forum here: https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions
 
 Or donate to help keep the packages updated here: https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW
