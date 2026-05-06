@@ -1,0 +1,23 @@
+ Here's a summary of what was fixed and what remains:                                                     
+   
+  Fixed:                                                                                                   
+  - Published Balance Sheet missing rows — Added F33 (Net Assets), F36 (Share Capital), F37 (Retained
+  Earnings), F38 (Capital Reserves), F39 (Shareholders' Funds) to CELL_MAP. All rows now appear in reports.
+  - OpenAccounts cellWrites — All writes moved from column D to column E (where TrialBalance reads). Bank  
+  accounts moved to G/H/I/J at row 18. Fixed asset cost/depreciation written separately to G-K/M-Q at row  
+  13.                                                                                                      
+  - test.yml — All node app/bin/... replaced with npm run ... --.
+                                                                                                           
+  Remaining (Trial Balance = -1,760,020):                                                                  
+  The trial balance audit check was already -1,774,985 before any of my changes. The root cause is S1 — the
+   external link cache in Financialaccounts.xlsx doesn't have complete cached entries for every cell the   
+  TrialBalance references from leaf files. updateExternalLinkCaches() can only update cells that already   
+  exist in the cache XML; it can't add new ones. Fixing this requires either:                              
+  1. Expanding the external link cache XML entries during generation, or                 
+  2. Opening all files together in a single LibreOffice session (not supported by --convert-to)            
+                                                                                               
+  The Net Assets vs Shareholders' Funds mismatch is a downstream effect — the TrialBalance feeds the       
+  PubBalSht formulas, so until the trial balance balances, the published balance sheet values won't be     
+  consistent.                                                                                              
+              ]
+
