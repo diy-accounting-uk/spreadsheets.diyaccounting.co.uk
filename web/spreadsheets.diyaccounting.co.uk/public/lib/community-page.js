@@ -8,7 +8,8 @@
 
   const CACHE_KEY = "diy-community-discussions";
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  const API_URL = "https://api.github.com/repos/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions?per_page=30&sort=updated&direction=desc";
+  const API_URL =
+    "https://api.github.com/repos/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions?per_page=30&sort=updated&direction=desc";
   let allDiscussions = [];
 
   function relativeDate(dateStr) {
