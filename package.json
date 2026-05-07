@@ -18,6 +18,7 @@
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
     "extract-scenarios": "node app/bin/extract-scenarios.js",
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",
+    "update-tax-data": "scripts/update-tax-data.sh",
     "build:packages": "node app/bin/build-packages.js",
     "build:sitemaps": "node app/bin/build-sitemaps.js",
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",

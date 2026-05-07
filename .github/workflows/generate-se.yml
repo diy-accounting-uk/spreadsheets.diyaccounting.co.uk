@@ -7,16 +7,22 @@ concurrency:
 on:
   schedule:
     - cron: '17 4 * * *'
-  push:
-    branches:
-      - '**'
-      - '!gh_pages'
-    paths:
-      - 'app/data/se-*'
-      - 'app/templates/se/**'
-      - 'app/templates/meta.toml'
-      - 'app/products/se.js'
-      - '.github/workflows/generate-se.yml'
+  workflow_dispatch:
+  # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
+  # Excel files per run. Combined with the daily schedule, that produced a high
+  # volume of bot-authored mass-file-change commits — a pattern that contributes
+  # to GitHub's account-takeover/abuse heuristics. Run via workflow_dispatch or
+  # the schedule only until generated artefacts move out of git.
+  # push:
+  #   branches:
+  #     - '**'
+  #     - '!gh_pages'
+  #   paths:
+  #     - 'app/data/se-*'
+  #     - 'app/templates/se/**'
+  #     - 'app/templates/meta.toml'
+  #     - 'app/products/se.js'
+  #     - '.github/workflows/generate-se.yml'
   workflow_call:
     inputs:
       skip-tests:

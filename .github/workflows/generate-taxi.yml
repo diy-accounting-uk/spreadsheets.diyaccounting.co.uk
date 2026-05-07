@@ -7,16 +7,22 @@ concurrency:
 on:
   schedule:
     - cron: '47 3 * * *'
-  push:
-    branches:
-      - '**'
-      - '!gh_pages'
-    paths:
-      - 'app/data/se-*'
-      - 'app/templates/taxi/**'
-      - 'app/templates/meta.toml'
-      - 'app/products/taxi.js'
-      - '.github/workflows/generate-taxi.yml'
+  workflow_dispatch:
+  # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
+  # Excel files per run. Combined with the daily schedule, that produced a high
+  # volume of bot-authored mass-file-change commits — a pattern that contributes
+  # to GitHub's account-takeover/abuse heuristics. Run via workflow_dispatch or
+  # the schedule only until generated artefacts move out of git.
+  # push:
+  #   branches:
+  #     - '**'
+  #     - '!gh_pages'
+  #   paths:
+  #     - 'app/data/se-*'
+  #     - 'app/templates/taxi/**'
+  #     - 'app/templates/meta.toml'
+  #     - 'app/products/taxi.js'
+  #     - '.github/workflows/generate-taxi.yml'
   workflow_call:
     inputs:
       skip-tests:
