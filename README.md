@@ -21,22 +21,22 @@ https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW
 # Getting help with DIY Accounting
 
 As proprietary software support was supplied by email and staffed part-time. There is no longer a support service and
-users are encouraged to start a discussion here: https://github.com/antonycc/diy-accounting/discussions or raise
-an issue here https://github.com/antonycc/diy-accounting/issues .
+users are encouraged to start a discussion here: https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions or raise
+an issue here https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/issues .
 
 ## Architecture
 
 - **AWS CDK** (Java) deploys an S3 + CloudFront static site with OAC
 - **CloudFront Function** handles URL redirects from the old www site (generated from `redirects.toml`)
-- **DNS** is managed separately by the [root.diyaccounting.co.uk](https://github.com/antonycc/root.diyaccounting.co.uk) repository
+- **DNS** is managed separately by the [root.diyaccounting.co.uk](https://github.com/support-at-diyaccounting/root.diyaccounting.co.uk) repository
 - **Account**: spreadsheets (`064390746177`) in the DIY Accounting AWS Organization
 
 ## Related Repositories
 
 | Repository | Purpose |
 |-----------|---------|
-| [root.diyaccounting.co.uk](https://github.com/antonycc/root.diyaccounting.co.uk) | Route53 DNS records |
-| [submit.diyaccounting.co.uk](https://github.com/antonycc/submit.diyaccounting.co.uk) | Submit VAT MTD application |
+| [root.diyaccounting.co.uk](https://github.com/support-at-diyaccounting/root.diyaccounting.co.uk) | Route53 DNS records |
+| [submit.diyaccounting.co.uk](https://github.com/support-at-diyaccounting/submit.diyaccounting.co.uk) | Submit VAT MTD application |
 
 ## Updating and Publishing Packages
 

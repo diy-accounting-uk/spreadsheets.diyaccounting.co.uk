@@ -8,7 +8,7 @@
 
   const CACHE_KEY = "diy-community-discussions";
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
-  const API_URL = "https://api.github.com/repos/antonycc/diy-accounting/discussions?per_page=30&sort=updated&direction=desc";
+  const API_URL = "https://api.github.com/repos/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions?per_page=30&sort=updated&direction=desc";
   let allDiscussions = [];
 
   function relativeDate(dateStr) {
@@ -179,7 +179,7 @@
   function showError() {
     container.innerHTML =
       '<p class="no-results">Unable to load discussions. ' +
-      '<a href="https://github.com/antonycc/diy-accounting/discussions" target="_blank" rel="noopener noreferrer">' +
+      '<a href="https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions" target="_blank" rel="noopener noreferrer">' +
       "View discussions on GitHub</a></p>";
   }
 
