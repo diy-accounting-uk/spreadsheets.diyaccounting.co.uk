@@ -5,9 +5,9 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  schedule:
-    - cron: '47 3 * * *'
-  workflow_dispatch:
+  #schedule:
+  #  - cron: '47 3 * * *'
+  #workflow_dispatch:
   # push trigger disabled 2026-05-07: this workflow self-commits 50-300 generated
   # Excel files per run. Combined with the daily schedule, that produced a high
   # volume of bot-authored mass-file-change commits — a pattern that contributes
