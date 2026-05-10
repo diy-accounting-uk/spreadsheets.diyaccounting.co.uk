@@ -4,7 +4,7 @@
 [publisher]
 name = "DIY Accounting Limited"
 website = "https://spreadsheets.diyaccounting.co.uk"
-discussion = "https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions"
+discussion = "https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/discussions"
 donate = "https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW"
 
 [package]

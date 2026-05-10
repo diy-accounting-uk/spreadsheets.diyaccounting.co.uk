@@ -119,10 +119,10 @@ public class SpreadsheetsStack extends Stack {
 
         // Apply cost allocation tags
         Tags.of(this).add("Environment", props.envName());
-        Tags.of(this).add("Application", "@support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/spreadsheets");
-        Tags.of(this).add("CostCenter", "@support-at-diyaccounting/spreadsheets.diyaccounting.co.uk");
-        Tags.of(this).add("Owner", "@support-at-diyaccounting/spreadsheets.diyaccounting.co.uk");
-        Tags.of(this).add("Project", "@support-at-diyaccounting/spreadsheets.diyaccounting.co.uk");
+        Tags.of(this).add("Application", "@diy-accounting-uk/spreadsheets.diyaccounting.co.uk/spreadsheets");
+        Tags.of(this).add("CostCenter", "@diy-accounting-uk/spreadsheets.diyaccounting.co.uk");
+        Tags.of(this).add("Owner", "@diy-accounting-uk/spreadsheets.diyaccounting.co.uk");
+        Tags.of(this).add("Project", "@diy-accounting-uk/spreadsheets.diyaccounting.co.uk");
         Tags.of(this).add("Stack", "SpreadsheetsStack");
         Tags.of(this).add("ManagedBy", "aws-cdk");
         Tags.of(this).add("BillingPurpose", "spreadsheets-static-site");

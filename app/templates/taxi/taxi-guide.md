@@ -337,7 +337,7 @@ Our website is the first place to look for any information: https://spreadsheets
 
 DIY Accounting's spreadsheet packages are maintained and supported under an Open Source model. In return for allowing anyone access to our source files, we find an indefinite low-cost home at GitHub. We continue to keep the website up with downloads for up-to-date packages. This model relies upon community support (an online forum) and accepting donations instead of retaining paid staff and charging a fee.
 
-Please raise a question in our discussion forum here: https://github.com/support-at-diyaccounting/spreadsheets.diyaccounting.co.uk/discussions
+Please raise a question in our discussion forum here: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/discussions
 
 Or donate to help keep the packages updated here: https://www.paypal.com/donate/?hosted_button_id=XTEQ73HM52QQW
 
