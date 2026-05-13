@@ -100,7 +100,7 @@
     "lighthouse": "^13.3.0",
     "npm-check-updates": "^22.2.0",
     "pa11y": "^9.1.1",
-    "pa11y-ci": "^4.1.0",
+    "pa11y-ci": "^4.1.1",
     "prettier": "^3.8.3",
     "retire": "^5.4.2",
     "smol-toml": "^1.6.1",
