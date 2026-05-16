@@ -91,7 +91,7 @@
     "@mhlabs/cfn-diagram": "^1.1.40",
     "@playwright/test": "1.60.0",
     "aws-cdk": "^2.1122.0",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.0",
     "eslint-plugin-security": "^4.0.0",
     "exceljs": "^4.4.1-prerelease.0",
     "globals": "^17.6.0",
