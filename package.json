@@ -90,7 +90,7 @@
     "@axe-core/cli": "^4.11.3",
     "@mhlabs/cfn-diagram": "^1.1.40",
     "@playwright/test": "1.60.0",
-    "aws-cdk": "^2.1123.0",
+    "aws-cdk": "^2.1124.1",
     "eslint": "^10.4.0",
     "eslint-plugin-security": "^4.0.0",
     "exceljs": "^4.4.1-prerelease.0",
@@ -105,7 +105,7 @@
     "retire": "^5.4.2",
     "smol-toml": "^1.6.1",
     "structured-data-testing-tool": "^4.5.0",
-    "vitest": "^4.1.6",
+    "vitest": "^4.1.7",
     "wait-on": "^9.0.10"
   },
   "dependencies": {
