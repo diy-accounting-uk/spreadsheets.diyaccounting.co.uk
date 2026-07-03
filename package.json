@@ -87,29 +87,29 @@
     "resources:spreadsheets": "node scripts/generate-aws-resources.js --profile spreadsheets"
   },
   "devDependencies": {
-    "@axe-core/cli": "^4.11.3",
+    "@axe-core/cli": "^4.12.1",
     "@mhlabs/cfn-diagram": "^1.1.40",
-    "@playwright/test": "1.60.0",
-    "aws-cdk": "^2.1124.1",
-    "eslint": "^10.4.0",
-    "eslint-plugin-security": "^4.0.0",
+    "@playwright/test": "1.61.1",
+    "aws-cdk": "^2.1129.0",
+    "eslint": "^10.6.0",
+    "eslint-plugin-security": "^4.0.1",
     "exceljs": "^4.4.1-prerelease.0",
-    "globals": "^17.6.0",
+    "globals": "^17.7.0",
     "http-server": "^14.1.1",
     "jszip": "^3.10.1",
-    "lighthouse": "^13.3.0",
-    "npm-check-updates": "^22.2.1",
+    "lighthouse": "^13.4.0",
+    "npm-check-updates": "^22.2.9",
     "pa11y": "^9.1.1",
     "pa11y-ci": "^4.1.1",
-    "prettier": "^3.8.3",
-    "retire": "^5.4.2",
-    "smol-toml": "^1.6.1",
+    "prettier": "^3.9.4",
+    "retire": "^5.4.3",
+    "smol-toml": "^1.7.0",
     "structured-data-testing-tool": "^4.5.0",
-    "vitest": "^4.1.7",
+    "vitest": "^4.1.9",
     "wait-on": "^9.0.10"
   },
   "dependencies": {
-    "stripe": "^22.1.1"
+    "stripe": "^22.3.0"
   },
   "engines": {
     "node": ">=24.0.0"
