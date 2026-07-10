@@ -101,7 +101,7 @@
     "npm-check-updates": "^22.2.9",
     "pa11y": "^9.1.1",
     "pa11y-ci": "^4.1.1",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.5",
     "retire": "^5.4.3",
     "smol-toml": "^1.7.0",
     "structured-data-testing-tool": "^4.5.0",
@@ -109,7 +109,7 @@
     "wait-on": "^9.0.10"
   },
   "dependencies": {
-    "stripe": "^22.3.0"
+    "stripe": "^22.3.1"
   },
   "engines": {
     "node": ">=24.0.0"
