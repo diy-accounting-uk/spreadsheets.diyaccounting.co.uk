@@ -109,7 +109,7 @@
     "wait-on": "^9.0.10"
   },
   "dependencies": {
-    "stripe": "^22.3.1"
+    "stripe": "^22.3.2"
   },
   "engines": {
     "node": ">=24.0.0"
