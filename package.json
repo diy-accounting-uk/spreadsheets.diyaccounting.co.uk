@@ -94,7 +94,7 @@
     "eslint": "^10.8.0",
     "eslint-plugin-security": "^4.0.1",
     "exceljs": "^4.4.1-prerelease.0",
-    "globals": "^17.8.0",
+    "globals": "^17.9.0",
     "http-server": "^14.1.1",
     "jszip": "^3.10.1",
     "lighthouse": "^13.4.1",
