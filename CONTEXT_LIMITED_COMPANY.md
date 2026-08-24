@@ -313,20 +313,9 @@ Also uses placeholder-based two-pass renaming. Covers both `MonthName!` referenc
 
 ### Vatinterface rewriting: `rewriteVatinterfaceFormulas()`
 
-The Vatinterface sheet B-column formulas reference `[1]Admin!$B$N` cells. The starting row N depends on the year-end month:
+The D-column and M-column formulas reference Sales/Purchases tabs by name (`[2]Apr!`, `[3]Apr!`), which are remapped to the correct target month names for non-March year-ends.
 
-```
-adminStartRow = ((M - 1) % 12) * 2 + 2
-```
-
-| Year-end month | M | adminStartRow | B-column range |
-|----------------|---|---------------|----------------|
-| January | 1 | 2 | B$2 through B$32 |
-| March | 3 | 6 | B$6 through B$36 |
-| June | 6 | 12 | B$12 through B$42 |
-| December | 12 | 24 | B$24 through B$54 |
-
-The D-column and M-column formulas reference Sales/Purchases tabs by name (`[2]Apr!`, `[3]Apr!`), which are also remapped to the correct target month names.
+The B-column formulas reference `[1]Admin!$B$6` through `[1]Admin!$B$38` and are NOT remapped: the generated Financialaccounts keeps the template Admin layout and sets only F21, so the Admin B-column recalculates relative to the `B32=F21` anchor and the template rows are correct for every year-end. The generator instead rolls the cached values of the whole chain (externalLink1 Admin cache, Vatinterface cells, VATQtr `K2:K15` dropdown lists) to the package's own year — see "VAT cached date chain" in `SKILL_EXCEL.md`.
 
 ### Date shifting in scenarios
 

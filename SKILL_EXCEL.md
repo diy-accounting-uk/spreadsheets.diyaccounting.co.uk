@@ -271,40 +271,13 @@ Only numeric values are updated (the accounting workbooks use numbers for all co
 
 ## Vatinterface Formula Rewriting
 
-The Vatinterface sheet in Vatreturns.xlsx references the Financialaccounts Admin sheet's B-column for monthly dates. The B-column stores month-end dates in consecutive even rows starting from a row that depends on the year-end month.
-
-### Admin Start Row Formula
-
-```
-adminStartRow = ((yearEndMonth - 1) % 12) * 2 + 2
-```
-
-| Year-End Month | M | adminStartRow | B-column range |
-|----------------|---|---------------|----------------|
-| January | 1 | 2 | B$2 through B$32 |
-| March | 3 | 6 | B$6 through B$36 |
-| June | 6 | 12 | B$12 through B$42 |
-| September | 9 | 18 | B$18 through B$48 |
-| December | 12 | 24 | B$24 through B$54 |
+The Vatinterface sheet in Vatreturns.xlsx references the Financialaccounts Admin sheet's B-column for monthly dates (`[1]Admin!$B$6` through `[1]Admin!$B$38`, consecutive even rows).
 
 ### rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vatinterfacePath)
 
-Rewrites formula references in the Vatinterface sheet XML. Two kinds of references are rewritten:
+Rewrites one kind of reference in the Vatinterface sheet XML for non-March year-ends:
 
-**1. B-column Admin references**: `[1]Admin!$B$6` through `[1]Admin!$B$36` are remapped to the correct row range:
-
-```js
-const rowMap = {};
-for (let i = 0; i < 16; i++) {
-  rowMap[templateStartRow + i * 2] = targetStartRow + i * 2;
-}
-viXml = viXml.replace(/\[1\]Admin!\$B\$(\d+)/g, (match, rowStr) => {
-  const row = parseInt(rowStr, 10);
-  return rowMap[row] !== undefined ? `[1]Admin!$B$${rowMap[row]}` : match;
-});
-```
-
-**2. Sales/Purchases tab name references**: D-column and M-column formulas reference `[2]Apr!`, `[3]May!` etc. When tabs are renamed for non-March year-ends, these must be updated:
+**Sales/Purchases tab name references**: D-column and M-column formulas reference `[2]Apr!`, `[3]May!` etc. When tabs are renamed for non-March year-ends, these must be updated:
 
 ```js
 for (let i = 0; i < 12; i++) {
@@ -316,6 +289,18 @@ for (let i = 0; i < 12; i++) {
 ```
 
 `[2]` = Purchases, `[3]` = Sales (the external link numbering from the Vatreturns workbook).
+
+The `[1]Admin!$B$` references are NOT remapped. The generated Financialaccounts keeps the template's Admin layout and sets only the year-end date at F21; the B-column recalculates relative to the `B32=F21` anchor, so `B{r}` holds `yearEnd + (r-32)/2` months for every year-end and the template rows `B6..B38` are always the right ones.
+
+### VAT cached date chain
+
+The dates behind the VATQtr `G5` dropdown are formula cells with cached values, and they must agree before any link update or recalculation happens on the customer's machine. `generateSpreadsheet` rolls the whole chain to the package's own year via `setCellCachedValue` (which preserves `<f>` and replaces only `<v>`):
+
+1. `xl/externalLinks/externalLink1.xml` — the cached Admin B-column serials (after checking via its `.rels` that the link targets `Financialaccounts.xlsx`)
+2. The Vatinterface sheet — every cell whose formula is `[1]Admin!$B$r`, resolved from the same Admin map
+3. Each VATQtr sheet's `K2:K15` (the `G5` validation list source) — each cell resolved from its own formula (`Vatinterface!B{n}` for Ltd, `[1]Admin!$B$r` for SE)
+
+Every unresolved reference throws, and each quarter's computed `G5` default must be a member of the 14 K values just written.
 
 ## XLS Roundtrip (Recalculation)
 
