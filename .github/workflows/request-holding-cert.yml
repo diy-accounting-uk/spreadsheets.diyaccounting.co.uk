@@ -1,0 +1,99 @@
+name: request holding cert
+run-name: "request holding cert from ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: 'us-east-1'
+
+jobs:
+
+  request:
+    name: 'request and validate holding certificate'
+    runs-on: ubuntu-24.04
+    environment: prod
+    steps:
+
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Assume AWS deployment role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: true
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Request certificate
+        id: request
+        run: |
+          set -euo pipefail
+          CERT_ARN=$(aws acm request-certificate \
+            --domain-name holding.spreadsheets.diyaccounting.co.uk \
+            --subject-alternative-names \
+              ci-holding.spreadsheets.diyaccounting.co.uk \
+              spreadsheets.diyaccounting.co.uk \
+              prod-spreadsheets.diyaccounting.co.uk \
+              ci-spreadsheets.diyaccounting.co.uk \
+            --validation-method DNS \
+            --region us-east-1 \
+            --query CertificateArn --output text)
+          echo "cert-arn=${CERT_ARN}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Write validation records into the management zone
+        run: |
+          set -euo pipefail
+          # ACM populates ResourceRecord asynchronously; poll until every name has one.
+          for _ in $(seq 1 30); do
+            aws acm describe-certificate --certificate-arn "$CERT_ARN" --region us-east-1 \
+              --query 'Certificate.DomainValidationOptions[].ResourceRecord' --output json \
+              | tee /tmp/validation.json
+            [ "$(jq 'map(select(. != null)) | length' /tmp/validation.json)" = "5" ] && break
+            sleep 10
+          done
+          # The assumed-role credentials below are exported into this step's own shell only,
+          # not into $GITHUB_ENV, so the spreadsheets deploy role credentials already active
+          # for the job are untouched and still apply to the next step.
+          CREDS=$(aws sts assume-role \
+            --role-arn arn:aws:iam::887764105431:role/root-route53-record-delegate \
+            --role-session-name spreadsheets-holding-cert)
+          AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r .Credentials.AccessKeyId)
+          AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .Credentials.SecretAccessKey)
+          AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .Credentials.SessionToken)
+          export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+          CHANGES=$(jq '[.[] | {Action:"UPSERT", ResourceRecordSet:{
+              Name:.Name, Type:.Type, TTL:300, ResourceRecords:[{Value:.Value}]}}] | unique' /tmp/validation.json)
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id Z0315522208PWZSSBI9AL \
+            --change-batch "$(jq -n --argjson c "$CHANGES" '{Comment:"ACM validation", Changes:$c}')"
+        env:
+          CERT_ARN: ${{ steps.request.outputs.cert-arn }}
+
+      - name: Wait for validation
+        run: aws acm wait certificate-validated --certificate-arn "$CERT_ARN" --region us-east-1
+        env:
+          CERT_ARN: ${{ steps.request.outputs.cert-arn }}
+
+      - name: Print certificate ARN
+        run: |
+          echo "Certificate validated: $CERT_ARN"
+          echo "Store this as the repository variable SPREADSHEETS_HOLDING_CERTIFICATE_ARN"
+        env:
+          CERT_ARN: ${{ steps.request.outputs.cert-arn }}
