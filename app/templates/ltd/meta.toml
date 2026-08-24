@@ -37,6 +37,7 @@ cellEditFn = "ltd"
 payslipsAdmin = "xl/worksheets/sheet16.xml"
 
 [sheets.vatreturns]
+vatinterface = "xl/worksheets/sheet6.xml"
 vatQtr1 = "xl/worksheets/sheet1.xml"
 vatQtr2 = "xl/worksheets/sheet2.xml"
 vatQtr3 = "xl/worksheets/sheet3.xml"
