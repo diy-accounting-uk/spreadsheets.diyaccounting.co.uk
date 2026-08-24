@@ -206,6 +206,25 @@ jobs:
           CERTIFICATE_ARN: ${{ vars.SPREADSHEETS_CERTIFICATE_ARN }}
           DOC_ROOT_PATH: '../web/spreadsheets.diyaccounting.co.uk/public'
 
+      - name: Deploy HoldingStack (CDK)
+        run: |
+          STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-HoldingStack"
+          echo "Deploying stack: $STACK_NAME"
+          cd cdk-spreadsheets \
+            && npx cdk deploy \
+              "$STACK_NAME" \
+              --require-approval never \
+              --ci true \
+              --no-notices \
+              --concurrency 4 \
+              --asset-parallelism \
+              --outputs-file ../cdk-spreadsheets.out/cdk-outputs-holding.json \
+          ;
+        env:
+          ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+          HOLDING_CERTIFICATE_ARN: ${{ vars.SPREADSHEETS_HOLDING_CERTIFICATE_ARN }}
+          HOLDING_DOC_ROOT_PATH: '../web/spreadsheets.diyaccounting.co.uk/holding'
+
       - name: Upload zip packages to S3
         run: |
           STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-SpreadsheetsStack"
