@@ -55,7 +55,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate latest BST package
         run: |
@@ -77,7 +80,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Build spreadsheets redirects
         run: npm run build:redirects
@@ -131,7 +137,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Verify scenario fixtures in sync with master data
         run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/
@@ -157,7 +166,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate BST package from diya-gl data
         run: node app/bin/generate.js --package bst --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/bst --output-dir target/bst-pkg --skip-guide
@@ -202,7 +214,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate SE package from diya-gl data
         run: node app/bin/generate.js --package se --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/advanced --output-dir target/se-pkg --skip-guide
@@ -247,7 +262,10 @@ jobs:
           cache: 'npm'
 
       - name: Node dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Generate Ltd package from diya-gl data with offset
         run: node app/bin/generate.js --package ltd --years ltd-2024 --year-end 2025-03-31 --data examples/precision-code-ltd/full --offset '-P1Y' --output-dir target/ltd-pkg --skip-guide
@@ -288,7 +306,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -319,7 +340,10 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci || sleep 30 && npm ci
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
