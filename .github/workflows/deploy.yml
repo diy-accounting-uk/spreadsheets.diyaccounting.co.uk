@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-24.04
     permissions: {}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Check all reports are RECONCILES
         run: |
           if [ ! -d reports ] || [ -z "$(ls reports/*.md 2>/dev/null)" ]; then
@@ -155,10 +155,10 @@ jobs:
           retry-max-attempts: 3
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -229,10 +229,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
