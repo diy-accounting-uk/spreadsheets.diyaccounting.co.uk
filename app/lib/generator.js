@@ -691,19 +691,24 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     if (!extRelsXml.includes('Target="Financialaccounts.xlsx"')) {
       throw new Error("externalLink1.xml.rels does not target Financialaccounts.xlsx");
     }
-    let extXml = await zip.file(extLinkPath).async("string");
-    extXml = extXml.replace(/<cell r="B(\d+)"([^>]*)><v>[^<]*<\/v><\/cell>/g, (m, rowStr, attrs) => {
+    const extXmlOriginal = await zip.file(extLinkPath).async("string");
+    const extXml = extXmlOriginal.replace(/<cell r="B(\d+)"([^>]*)><v>[^<]*<\/v><\/cell>/g, (m, rowStr, attrs) => {
       const row = parseInt(rowStr, 10);
       if (adminB[row] === undefined) {
         throw new Error(`externalLink1.xml caches Admin!B${row}, which has no generated value`);
       }
       return `<cell r="B${rowStr}"${attrs}><v>${adminB[row]}</v></cell>`;
     });
-    zip.file(extLinkPath, extXml, { date: zip.file(extLinkPath).date });
+    // Rewrite only on change: an untouched entry keeps its original compressed
+    // bytes, which keeps template-year output byte-identical.
+    if (extXml !== extXmlOriginal) {
+      zip.file(extLinkPath, extXml, { date: zip.file(extLinkPath).date, createFolders: false });
+    }
 
     // Roll the Vatinterface cached values by resolving each cell's own formula.
     const viPath = sheetsConfig.vatinterface;
-    let viXml = await zip.file(viPath).async("string");
+    const viXmlOriginal = await zip.file(viPath).async("string");
+    let viXml = viXmlOriginal;
     const viValues = {}; // Vatinterface cell ref → serial just written
     for (const [, cellRef, rowStr] of viXml.matchAll(/<c r="([A-Z]+\d+)"[^>]*><f>\[1\]Admin!\$B\$(\d+)<\/f>/g)) {
       const row = parseInt(rowStr, 10);
@@ -718,7 +723,9 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
         throw new Error(`Vatinterface has an unresolved [1]Admin!$B$${rowStr} reference`);
       }
     }
-    zip.file(viPath, viXml, { date: zip.file(viPath).date });
+    if (viXml !== viXmlOriginal) {
+      zip.file(viPath, viXml, { date: zip.file(viPath).date, createFolders: false });
+    }
 
     for (let q = 1; q <= 5; q++) {
       const sheetPath = sheetsConfig[`vatQtr${q}`];
