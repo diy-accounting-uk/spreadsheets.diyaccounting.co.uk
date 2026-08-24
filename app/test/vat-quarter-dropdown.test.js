@@ -13,7 +13,13 @@
 //      value of the cell its formula names (Vatinterface!B{n}, Ltd, or
 //      [n]Admin!$B$r, SE), each Vatinterface [n]Admin!$B$r cached value
 //      equals the resolved external link's cached B{r}, and every
-//      referenced external row exists in that cache.
+//      referenced external row exists in that cache;
+//   3. fourth link: every externalLink1.xml cached B{r} equals the sibling
+//      Financialaccounts.xlsx's own STORED Admin!B{r} value (the cached <v>
+//      of a formula cell for Ltd, a literal <v> for SE) -- a spreadsheet
+//      app "updating links" against a closed Financialaccounts.xlsx reads
+//      those stored bytes, never a recalculation, so they must already
+//      agree with what the external-link cache claims.
 //
 // Sheet names resolve to files via xl/workbook.xml + xl/_rels/workbook.xml.rels
 // (buildSheetMap) rather than hardcoded sheetN.xml paths; external [n]
@@ -159,6 +165,24 @@ async function loadAdminCache(zip, externalRefMap, extIdx) {
   return { cellMap };
 }
 
+// Loads the sibling Financialaccounts.xlsx's Admin sheet XML (resolved via
+// its own workbook.xml + rels, same as any other sheet). Returns either
+// { xml } or { error } describing why it couldn't be loaded -- a missing
+// package file is a named test failure, not a crash. Ltd Financialaccounts
+// hold Admin!B as formula cells with cached values; SE holds them as
+// literals -- getCellFormulaAndValue handles both, so callers just compare
+// against `.value`.
+async function loadFinancialaccountsAdmin(dirPath) {
+  const filePath = join(dirPath, "Financialaccounts.xlsx");
+  if (!existsSync(filePath)) return { error: `no Financialaccounts.xlsx found in ${dirPath}` };
+  const faZip = await JSZip.loadAsync(readFileSync(filePath));
+  const faSheetMap = await buildSheetMap(faZip);
+  const adminFile = faSheetMap.get("Admin");
+  if (!adminFile) return { error: `${filePath}: no "Admin" sheet resolved via workbook.xml/rels` };
+  const xml = await faZip.file(adminFile).async("string");
+  return { xml };
+}
+
 // ── Test catalogue ──────────────────────────────────────────────────────
 
 const workbooks = findVatWorkbooks();
@@ -180,6 +204,7 @@ for (const wb of workbooks) {
     let vatQtrSheetNames;
     let sheetXmlCache;
     let adminCacheCache;
+    let financialaccountsAdmin;
 
     beforeAll(async () => {
       const buffer = readFileSync(wb.filePath);
@@ -193,6 +218,8 @@ for (const wb of workbooks) {
       viXml = viFile ? await zip.file(viFile).async("string") : null;
 
       vatQtrSheetNames = VATQTR_SHEET_NAMES.filter((n) => sheetMap.has(n));
+
+      financialaccountsAdmin = await loadFinancialaccountsAdmin(join(PACKAGES_DIR, wb.dirName));
     });
 
     async function getSheetXml(name) {
@@ -323,6 +350,42 @@ for (const wb of workbooks) {
             }
           } else {
             failures.push(`${sheetName}!${cellRef} has an unrecognized formula shape: ${cell.formula}`);
+          }
+        }
+      }
+
+      expect(failures, `${label}:\n${failures.join("\n")}`).toEqual([]);
+    });
+
+    it("Financialaccounts' stored Admin!B matches the externalLink1.xml cache (fourth link)", async () => {
+      const failures = [];
+
+      if (financialaccountsAdmin.error) {
+        failures.push(`${label}: ${financialaccountsAdmin.error}`);
+      } else {
+        // Every B{r} cached in every external reference that resolves to
+        // Financialaccounts.xlsx (loadAdminCache's non-error results;
+        // references to unrelated externals, e.g. Sales/Purchases, are
+        // skipped) must equal what Financialaccounts itself has stored for
+        // Admin!B{r} -- the bytes a spreadsheet app reads when it updates
+        // links against the closed workbook without recalculating it.
+        for (const extIdx of externalRefMap.keys()) {
+          const cache = await getAdminCache(extIdx);
+          if (cache.error) continue;
+
+          for (const [cellRef, cachedValue] of cache.cellMap) {
+            if (!/^B\d+$/.test(cellRef) || cachedValue == null) continue;
+
+            const stored = getCellFormulaAndValue(financialaccountsAdmin.xml, cellRef);
+            if (!stored || stored.value == null) {
+              failures.push(
+                `${label} Financialaccounts.xlsx!Admin!${cellRef}: no stored cached value (externalLink1.xml [${extIdx}] caches ${cachedValue})`,
+              );
+            } else if (stored.value !== cachedValue) {
+              failures.push(
+                `${label} row ${cellRef}: Financialaccounts.xlsx!Admin!${cellRef} stored ${stored.value} but externalLink1.xml [${extIdx}] caches ${cachedValue}`,
+              );
+            }
           }
         }
       }
