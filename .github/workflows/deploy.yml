@@ -275,3 +275,44 @@ jobs:
           name: spreadsheets-behaviour-test
           retention-days: 7
           path: target/behaviour-test-results/
+
+  set-last-known-good-deployment:
+    name: 'record last known good deployment'
+    if: ${{ !cancelled() && needs.test-spreadsheets.result == 'success' }}
+    needs:
+      - params
+      - deploy-spreadsheets
+      - test-spreadsheets
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.params.outputs.github-environment }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Assume AWS deployment role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: true
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Put parameter
+        run: |
+          aws ssm put-parameter \
+            --name "/spreadsheets/${{ needs.params.outputs.environment-name }}/last-known-good-deployment" \
+            --type String --value "${{ github.sha }}" --overwrite
