@@ -207,6 +207,7 @@ jobs:
           DOC_ROOT_PATH: '../web/spreadsheets.diyaccounting.co.uk/public'
 
       - name: Deploy HoldingStack (CDK)
+        if: ${{ vars.SPREADSHEETS_HOLDING_CERTIFICATE_ARN != '' }}
         run: |
           STACK_NAME="${{ needs.params.outputs.environment-name }}-spreadsheets-HoldingStack"
           echo "Deploying stack: $STACK_NAME"
