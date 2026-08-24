@@ -83,6 +83,19 @@ export function setCellValue(xml, cellRef, value) {
   return xml.replace(match.fullMatch, `${openTag}><v>${value}</v></c>`);
 }
 
+// Replace only a formula cell's cached <v> value, preserving the <f> element.
+// Writing a value equal to the existing one leaves the XML byte-identical.
+export function setCellCachedValue(xml, cellRef, value) {
+  const match = matchCell(xml, cellRef);
+  if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
+
+  const vMatch = match.fullMatch.match(/<v>[^<]*<\/v>/);
+  if (!vMatch) throw new Error(`Cell ${cellRef} has no cached <v> value`);
+
+  const newCell = match.fullMatch.replace(vMatch[0], `<v>${value}</v>`);
+  return xml.replace(match.fullMatch, newCell);
+}
+
 export function setCellString(xml, cellRef, str) {
   const match = matchCell(xml, cellRef);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
