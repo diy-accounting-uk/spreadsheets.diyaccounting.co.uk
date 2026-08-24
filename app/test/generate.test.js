@@ -109,6 +109,48 @@ describe("setCellCachedValue", () => {
   });
 });
 
+// ── Ltd Admin cached B-column roll ──────────────────────────────────────────
+
+import { rollLtdAdminCachedDates } from "../lib/generator.js";
+
+describe("rollLtdAdminCachedDates", () => {
+  const mar26 = toExcelSerial(monthEnd(2026, 3)); // 46112
+  const aug27 = toExcelSerial(monthEnd(2027, 8)); // 46630
+  // Modeled on the real Admin sheet: B1 label, even rows month ends, odd rows
+  // first-of-next-month, B32 the F21 anchor, B57 empty.
+  const xml =
+    `<row r="1"><c r="B1" s="254" t="s"><v>495</v></c></row>` +
+    `<row r="10"><c r="B10" s="330"><f>DATE(YEAR(B12),MONTH(B12),1)-1</f><v>45777</v></c></row>` +
+    `<row r="31"><c r="B31" s="330"><f>DATE(YEAR(B32),MONTH(B32),1)</f><v>46082</v></c></row>` +
+    `<row r="32"><c r="B32" s="331"><f>F21</f><v>46112</v></c></row>` +
+    `<row r="34"><c r="B34" s="330"><f>DATE(...)-1</f><v>46142</v></c></row>` +
+    `<row r="57"><c r="B57" s="254"/></row>`;
+
+  it("rolls even and odd rows relative to the new year-end", () => {
+    const out = rollLtdAdminCachedDates(xml, mar26, aug27);
+    // B32 = year-end itself
+    expect(out).toContain(`<c r="B32" s="331"><f>F21</f><v>${aug27}</v></c>`);
+    // B10 = year-end - 11 months = 2026-09-30
+    expect(out).toContain(`<c r="B10" s="330"><f>DATE(YEAR(B12),MONTH(B12),1)-1</f><v>${toExcelSerial(monthEnd(2026, 9))}</v></c>`);
+    // B34 = year-end + 1 month = 2027-09-30
+    expect(out).toContain(`<f>DATE(...)-1</f><v>${toExcelSerial(monthEnd(2027, 9))}</v>`);
+    // B31 (odd) = first day of the year-end month = 2027-08-01
+    expect(out).toContain(`<c r="B31" s="330"><f>DATE(YEAR(B32),MONTH(B32),1)</f><v>${toExcelSerial(utcDate(2027, 8, 1))}</v></c>`);
+    // B1 label untouched
+    expect(out).toContain(`<c r="B1" s="254" t="s"><v>495</v></c>`);
+  });
+
+  it("is byte-identical when the package year-end equals the template's", () => {
+    expect(rollLtdAdminCachedDates(xml, mar26, mar26)).toBe(xml);
+  });
+
+  it("throws when B32's cached value does not end up equal to the year-end", () => {
+    // A tampered B32 no longer matches the template rule, so the pass leaves it
+    const tampered = xml.replace(`<f>F21</f><v>46112</v>`, `<f>F21</f><v>99999</v>`);
+    expect(() => rollLtdAdminCachedDates(tampered, mar26, aug27)).toThrow(/B32 cached value 99999/);
+  });
+});
+
 // ── Cell edits ──────────────────────────────────────────────────────────────
 
 describe("buildCellEdits", () => {
@@ -379,6 +421,30 @@ describe("Ltd generateSpreadsheet", () => {
 
     expect(adminXml).toMatch(/<c\s+r="F21"[^>]*><v>46112<\/v><\/c>/);
     expect(adminXml).toMatch(/<c\s+r="P6"[^>]*><v>19<\/v><\/c>/);
+  });
+
+  it("rolls the Admin cached B-column to a non-March year-end", async () => {
+    if (!existsSync(resolve(LTD_DIR, "Financialaccounts.xlsx"))) return;
+
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+    taxData.financial_year = { ...taxData.financial_year, start: "2026-09-01", end: "2027-08-31" };
+    const ltdMeta = parseTOML(readFileSync(resolve(LTD_DIR, "meta.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(LTD_DIR, "Financialaccounts.xlsx"));
+
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, ltdMeta.sheets.financialaccounts);
+
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+    const adminXml = await zip.file(ltdMeta.sheets.financialaccounts.admin).async("string");
+
+    const aug27 = toExcelSerial(monthEnd(2027, 8));
+    expect(adminXml).toMatch(new RegExp(`<c\\s+r="F21"[^>]*><v>${aug27}</v></c>`));
+    // B32 cached value follows the F21 literal
+    expect(adminXml).toMatch(new RegExp(`<c\\s+r="B32"[^>]*><f>F21</f><v>${aug27}</v></c>`));
+    // B10 = year-end - 11 months = 2026-09-30
+    expect(adminXml).toContain(`<c r="B10" s="330"><f>DATE(YEAR(B12),MONTH(B12),1)-1</f><v>${toExcelSerial(monthEnd(2026, 9))}</v></c>`);
+    // B33 (odd) = first day after the year-end = 2027-09-01
+    expect(adminXml).toContain(`<c r="B33" s="330"><f>DATE(YEAR(B34),MONTH(B34),1)</f><v>${toExcelSerial(utcDate(2027, 9, 1))}</v></c>`);
   });
 });
 
