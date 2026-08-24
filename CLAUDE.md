@@ -45,12 +45,17 @@ This repository manages the **spreadsheets AWS account** (064390746177) for spre
 - `CONTEXT_SELF_EMPLOYED.md` — Self Employed (SE) product: multi-file, external links, recalculation pipeline, scenarios, CI pipeline
 - `CONTEXT_LIMITED_COMPANY.md` — Limited Company (Ltd) product: multi-file, 15 xlsx, non-March transforms, all year-end months, scenarios, CI pipeline
 
-### Skills Documentation
+### Skills
 
-- `SKILL_EXCEL.md` — Excel XML manipulation techniques, xls roundtrip, external link caches, multi-file recalculation, testing approaches, known pitfalls
-- `SKILL_PACKAGE_UPDATES.md` — Annual tax data update process, HMRC rate sources, TOML file structure, publishing workflow
+Skills live at `.claude/skills/<name>/SKILL.md`, each with a root symlink (`SKILL_<NAME>.md`) for
+convenience — gitignored, recreate with `ln -s` if missing.
 
-Note: Read these documents when working on the relevant product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
+- `.claude/skills/excel/SKILL.md` — Excel XML manipulation techniques, xls roundtrip, external link caches, multi-file recalculation, testing approaches, known pitfalls
+- `.claude/skills/package-updates/SKILL.md` — Annual tax data update process, HMRC rate sources, TOML file structure, publishing workflow
+- `.claude/skills/plain-prose/SKILL.md` — writing rules for plain, human prose; follow this for all human-facing text (docs, comments, chat)
+- `.claude/skills/do-next/SKILL.md` — dispatch `NEXT.md`'s open items as worktree-isolated sub-agents
+
+Note: Read the relevant skill when working on that product or technique. They contain detailed sheet maps, formula references, and CI pipeline descriptions that are essential context.
 
 ## Git Workflow
 
