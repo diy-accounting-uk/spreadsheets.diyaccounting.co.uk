@@ -211,9 +211,10 @@ for (const wb of workbooks) {
     }
 
     it("has all five VATQtr sheets and a Vatinterface sheet", () => {
-      expect(vatQtrSheetNames, `${label}: found VATQtr sheets [${vatQtrSheetNames.join(", ")}], expected all of [${VATQTR_SHEET_NAMES.join(", ")}]`).toEqual(
-        VATQTR_SHEET_NAMES,
-      );
+      expect(
+        vatQtrSheetNames,
+        `${label}: found VATQtr sheets [${vatQtrSheetNames.join(", ")}], expected all of [${VATQTR_SHEET_NAMES.join(", ")}]`,
+      ).toEqual(VATQTR_SHEET_NAMES);
       expect(viXml, `${label}: no "Vatinterface" sheet resolved via workbook.xml/rels`).not.toBeNull();
     });
 
@@ -237,9 +238,10 @@ for (const wb of workbooks) {
         }
         expect(kValues, `${label} ${sheetName}: K2:K15 has ${kValues.length} cached values, expected 14`).toHaveLength(14);
 
-        expect(kValues, `${label} ${sheetName}: G5 default (serial ${g5.value}) is not a member of the shipped K2:K15 list [${kValues.join(", ")}]`).toContain(
-          g5.value,
-        );
+        expect(
+          kValues,
+          `${label} ${sheetName}: G5 default (serial ${g5.value}) is not a member of the shipped K2:K15 list [${kValues.join(", ")}]`,
+        ).toContain(g5.value);
       });
     }
 
@@ -266,7 +268,9 @@ for (const wb of workbooks) {
           }
           const externalValue = cache.cellMap.get(`B${ref.row}`);
           if (externalValue === undefined) {
-            failures.push(`Vatinterface!${ref.cellRef} references [${ref.extIdx}]Admin!$B$${ref.row}, but the external link cache has no row ${ref.row}`);
+            failures.push(
+              `Vatinterface!${ref.cellRef} references [${ref.extIdx}]Admin!$B$${ref.row}, but the external link cache has no row ${ref.row}`,
+            );
           } else if (externalValue !== ref.value) {
             failures.push(
               `Vatinterface!${ref.cellRef} cached ${ref.value} but [${ref.extIdx}]Admin!$B$${ref.row} external cache is ${externalValue}`,
@@ -308,9 +312,13 @@ for (const wb of workbooks) {
             } else {
               const externalValue = cache.cellMap.get(`B${adminRow}`);
               if (externalValue === undefined) {
-                failures.push(`${sheetName}!${cellRef} references [${extIdx}]Admin!$B$${adminRow}, but the external link cache has no row ${adminRow}`);
+                failures.push(
+                  `${sheetName}!${cellRef} references [${extIdx}]Admin!$B$${adminRow}, but the external link cache has no row ${adminRow}`,
+                );
               } else if (externalValue !== cell.value) {
-                failures.push(`${sheetName}!${cellRef} cached ${cell.value} but [${extIdx}]Admin!$B$${adminRow} external cache is ${externalValue}`);
+                failures.push(
+                  `${sheetName}!${cellRef} cached ${cell.value} but [${extIdx}]Admin!$B$${adminRow} external cache is ${externalValue}`,
+                );
               }
             }
           } else {
