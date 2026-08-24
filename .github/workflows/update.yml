@@ -90,7 +90,10 @@ jobs:
           distribution: 'corretto'
           java-version: '25'
           cache: 'maven'
-      - run: npm ci || sleep 30 && npm ci
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
       - run: npm run formatting-fix
       - uses: actions/upload-artifact@v7
         with:
@@ -123,7 +126,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm ci || sleep 30 && npm ci
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
       - run: npm run update:node
       - uses: actions/upload-artifact@v7
         with:
@@ -183,7 +189,10 @@ jobs:
         with:
           name: java-update-changes
           path: .
-      - run: npm ci || sleep 30 && npm ci
+      - run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
       - run: npm test
       - run: ./mvnw clean verify
 
