@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import {
   generateSpreadsheet,
   generateAdminDates,
+  setCellCachedValue,
   toExcelSerial,
   buildCellEdits,
   buildLtdCellEdits,
@@ -80,6 +81,31 @@ describe("generateAdminDates", () => {
     expect(dates.B15.getUTCDate()).toBe(28); // Feb 2026 not leap
     expect(dates.B21.toISOString()).toBe("2027-01-31T00:00:00.000Z");
     expect(dates.B22.toISOString()).toBe("2027-07-31T00:00:00.000Z");
+  });
+});
+
+// ── Cached formula values ───────────────────────────────────────────────────
+
+describe("setCellCachedValue", () => {
+  const xml = `<row r="2"><c r="K2" s="69"><f>Vatinterface!B6</f><v>45777</v></c><c r="K3" s="69"><f>Vatinterface!B7</f><v>45808</v></c><c r="G5" s="42"/></row>`;
+
+  it("replaces only the cached value and preserves the formula", () => {
+    const out = setCellCachedValue(xml, "K2", 46142);
+    expect(out).toContain(`<c r="K2" s="69"><f>Vatinterface!B6</f><v>46142</v></c>`);
+    // Neighbouring cell untouched
+    expect(out).toContain(`<c r="K3" s="69"><f>Vatinterface!B7</f><v>45808</v></c>`);
+  });
+
+  it("is byte-identical when writing the unchanged value", () => {
+    expect(setCellCachedValue(xml, "K2", 45777)).toBe(xml);
+  });
+
+  it("throws when the cell is not found", () => {
+    expect(() => setCellCachedValue(xml, "K15", 46142)).toThrow(/K15 not found/);
+  });
+
+  it("throws when the cell has no cached <v> value", () => {
+    expect(() => setCellCachedValue(xml, "G5", 46142)).toThrow(/no cached <v>/);
   });
 });
 
