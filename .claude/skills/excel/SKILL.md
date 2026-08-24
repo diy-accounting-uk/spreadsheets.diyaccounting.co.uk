@@ -1,3 +1,8 @@
+---
+name: excel
+description: Catalogues xlsx XML manipulation, external-link cache updates, LibreOffice xls-roundtrip recalculation, and testing approaches used across this project's spreadsheet pipeline. Load before writing or debugging code that edits xlsx files, chases external-link caches, renames tabs for non-March year-ends, or runs the LibreOffice recalculation pipeline.
+---
+
 # Excel Sheet Manipulation Techniques
 
 This document catalogues every technique used in this project for programmatic xlsx manipulation, recalculation, and testing.
