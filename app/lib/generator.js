@@ -83,6 +83,19 @@ export function setCellValue(xml, cellRef, value) {
   return xml.replace(match.fullMatch, `${openTag}><v>${value}</v></c>`);
 }
 
+// Replace only a formula cell's cached <v> value, preserving the <f> element.
+// Writing a value equal to the existing one leaves the XML byte-identical.
+export function setCellCachedValue(xml, cellRef, value) {
+  const match = matchCell(xml, cellRef);
+  if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
+
+  const vMatch = match.fullMatch.match(/<v>[^<]*<\/v>/);
+  if (!vMatch) throw new Error(`Cell ${cellRef} has no cached <v> value`);
+
+  const newCell = match.fullMatch.replace(vMatch[0], `<v>${value}</v>`);
+  return xml.replace(match.fullMatch, newCell);
+}
+
 export function setCellString(xml, cellRef, str) {
   const match = matchCell(xml, cellRef);
   if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
@@ -639,14 +652,80 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
   }
 
-  // VAT quarter default dates (when sheetsConfig has vatQtr1..vatQtr5)
+  // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
+  // quarter's default G5, then roll the whole cached date chain — the
+  // externalLink1 Admin cache, the Vatinterface cached values, and each
+  // quarter sheet's K2:K15 dropdown list — to this package's year.
   if (sheetsConfig.vatQtr1) {
+    if (!sheetsConfig.vatinterface) {
+      throw new Error("sheetsConfig has vatQtr sheets but no vatinterface path");
+    }
+
     // Accounting year start = month after year-end, one year earlier
     // e.g. year-end Mar 2026 → start Apr 2025
     const yearEndMonth = endDate.getUTCMonth() + 1; // 1-indexed
     const yearEndYear = endDate.getUTCFullYear();
-    const startMonth = (yearEndMonth % 12) + 1; // month after year-end (1-indexed)
-    const startYear = startMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear;
+    const vatStartMonth = (yearEndMonth % 12) + 1; // month after year-end (1-indexed)
+    const vatStartYear = vatStartMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear;
+
+    // Admin B-column serials this package's Financialaccounts will hold.
+    const adminB = {};
+    if (taxData.financial_year) {
+      // Ltd: the generated Admin B-column is year-end-relative around the
+      // B32 = F21 anchor — B{r} = month end of (yearEnd + (r-32)/2 months).
+      for (let r = 6; r <= 38; r += 2) {
+        const monthIndex = yearEndYear * 12 + (yearEndMonth - 1) + (r - 32) / 2;
+        adminB[r] = toExcelSerial(monthEnd(Math.floor(monthIndex / 12), (monthIndex % 12) + 1));
+      }
+    } else {
+      // SE: the same B-column dates buildSeCellEdits writes into the
+      // Financialaccounts Admin sheet.
+      for (const [cell, date] of Object.entries(generateAdminDates(startYear))) {
+        adminB[parseInt(cell.slice(1), 10)] = toExcelSerial(date);
+      }
+    }
+
+    // Roll the externalLink1.xml Admin cache (the [1]Financialaccounts link).
+    const extLinkPath = "xl/externalLinks/externalLink1.xml";
+    const extRelsXml = await zip.file("xl/externalLinks/_rels/externalLink1.xml.rels").async("string");
+    if (!extRelsXml.includes('Target="Financialaccounts.xlsx"')) {
+      throw new Error("externalLink1.xml.rels does not target Financialaccounts.xlsx");
+    }
+    const extXmlOriginal = await zip.file(extLinkPath).async("string");
+    const extXml = extXmlOriginal.replace(/<cell r="B(\d+)"([^>]*)><v>[^<]*<\/v><\/cell>/g, (m, rowStr, attrs) => {
+      const row = parseInt(rowStr, 10);
+      if (adminB[row] === undefined) {
+        throw new Error(`externalLink1.xml caches Admin!B${row}, which has no generated value`);
+      }
+      return `<cell r="B${rowStr}"${attrs}><v>${adminB[row]}</v></cell>`;
+    });
+    // Rewrite only on change: an untouched entry keeps its original compressed
+    // bytes, which keeps template-year output byte-identical.
+    if (extXml !== extXmlOriginal) {
+      zip.file(extLinkPath, extXml, { date: zip.file(extLinkPath).date, createFolders: false });
+    }
+
+    // Roll the Vatinterface cached values by resolving each cell's own formula.
+    const viPath = sheetsConfig.vatinterface;
+    const viXmlOriginal = await zip.file(viPath).async("string");
+    let viXml = viXmlOriginal;
+    const viValues = {}; // Vatinterface cell ref → serial just written
+    for (const [, cellRef, rowStr] of viXml.matchAll(/<c r="([A-Z]+\d+)"[^>]*><f>\[1\]Admin!\$B\$(\d+)<\/f>/g)) {
+      const row = parseInt(rowStr, 10);
+      if (adminB[row] === undefined) {
+        throw new Error(`Vatinterface ${cellRef} references [1]Admin!$B$${row}, which has no generated value`);
+      }
+      viXml = setCellCachedValue(viXml, cellRef, adminB[row]);
+      viValues[cellRef] = adminB[row];
+    }
+    for (const [, rowStr] of viXml.matchAll(/\[1\]Admin!\$B\$(\d+)/g)) {
+      if (adminB[parseInt(rowStr, 10)] === undefined) {
+        throw new Error(`Vatinterface has an unresolved [1]Admin!$B$${rowStr} reference`);
+      }
+    }
+    if (viXml !== viXmlOriginal) {
+      zip.file(viPath, viXml, { date: zip.file(viPath).date, createFolders: false });
+    }
 
     for (let q = 1; q <= 5; q++) {
       const sheetPath = sheetsConfig[`vatQtr${q}`];
@@ -654,14 +733,41 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
       // Q1 = 3 months from start, Q2 = 6, Q3 = 9, Q4 = 12, Q5 = 13
       const monthsFromStart = q <= 4 ? q * 3 : 13;
-      const totalMonth = startMonth + monthsFromStart - 1;
+      const totalMonth = vatStartMonth + monthsFromStart - 1;
       const qMonth = ((totalMonth - 1) % 12) + 1;
-      const qYear = startYear + Math.floor((totalMonth - 1) / 12);
+      const qYear = vatStartYear + Math.floor((totalMonth - 1) / 12);
       const quarterEnd = monthEnd(qYear, qMonth);
       const serial = toExcelSerial(quarterEnd);
 
       let sheetXml = await zip.file(sheetPath).async("string");
       sheetXml = setCellValue(sheetXml, "G5", serial);
+
+      // Roll the K2:K15 dropdown source list (cached formula values).
+      const kValues = [];
+      for (let k = 2; k <= 15; k++) {
+        const cellRef = `K${k}`;
+        const match = matchCell(sheetXml, cellRef);
+        if (!match) throw new Error(`Cell ${cellRef} not found in ${sheetPath}`);
+        const fMatch = match.fullMatch.match(/<f[^>]*>([\s\S]*?)<\/f>/);
+        if (!fMatch) throw new Error(`Cell ${cellRef} in ${sheetPath} has no formula`);
+        const formula = fMatch[1];
+
+        let value;
+        const viRef = formula.match(/^Vatinterface!B(\d+)$/);
+        const adminRef = formula.match(/^\[1\]Admin!\$B\$(\d+)$/);
+        if (viRef) value = viValues[`B${viRef[1]}`];
+        else if (adminRef) value = adminB[parseInt(adminRef[1], 10)];
+        if (value === undefined) {
+          throw new Error(`Cell ${cellRef} in ${sheetPath} has unresolvable formula ${formula}`);
+        }
+        sheetXml = setCellCachedValue(sheetXml, cellRef, value);
+        kValues.push(value);
+      }
+
+      if (!kValues.includes(serial)) {
+        throw new Error(`VATQtr${q} default G5 serial ${serial} is not in the K2:K15 list [${kValues.join(", ")}]`);
+      }
+
       const origDate = zip.file(sheetPath).date;
       zip.file(sheetPath, sheetXml, { date: origDate });
     }
@@ -721,28 +827,22 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
 
 // ── Vatinterface formula rewriting (Ltd Company all year-end months) ────────
 
+// Renames the [2]Purchases/[3]Sales month-tab references in the Vatinterface
+// D and M column formulas for non-March year-ends. The [1]Admin!$B$ references
+// are left at the template rows: the generated Financialaccounts Admin keeps
+// the template's year-end-relative B-column (anchored at B32 = F21), so the
+// template rows are correct for every year-end.
 export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vatinterfacePath) {
-  const zip = await JSZip.loadAsync(xlsxBuffer);
-  let viXml = await zip.file(vatinterfacePath).async("string");
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
 
-  const templateStartRow = 6;
-  const targetStartRow = ((yearEndMonth - 1) % 12) * 2 + 2;
-
-  if (templateStartRow === targetStartRow) {
+  if (templateTabs.join(",") === targetTabs.join(",")) {
     return xlsxBuffer;
   }
 
-  const rowMap = {};
-  for (let i = 0; i < 16; i++) {
-    rowMap[templateStartRow + i * 2] = targetStartRow + i * 2;
-  }
-  viXml = viXml.replace(/\[1\]Admin!\$B\$(\d+)/g, (match, rowStr) => {
-    const row = parseInt(rowStr, 10);
-    return rowMap[row] !== undefined ? `[1]Admin!$B$${rowMap[row]}` : match;
-  });
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let viXml = await zip.file(vatinterfacePath).async("string");
 
-  const templateTabs = getMonthTabSequence(3);
-  const targetTabs = getMonthTabSequence(yearEndMonth);
   for (let i = 0; i < 12; i++) {
     if (templateTabs[i] !== targetTabs[i]) {
       viXml = viXml.replace(new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"), `[2]${targetTabs[i]}!`);
