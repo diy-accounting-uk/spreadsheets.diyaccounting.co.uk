@@ -1,0 +1,242 @@
+name: deploy holding
+run-name: "deploy holding from ${{ github.ref_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        description: "Where to point the spreadsheets domains"
+        required: true
+        options: ["holding", "restore"]
+        default: "holding"
+      environment-name:
+        type: choice
+        description: "Environment name (auto = derive from branch)"
+        required: false
+        options: ["(auto)", "ci", "prod"]
+        default: "(auto)"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: "us-east-1"
+
+jobs:
+
+  params:
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: "github.event_name=[${{ github.event_name }}]"
+        run: ":"
+      - name: "github.ref=[${{ github.ref }}]"
+        run: ":"
+      - name: "inputs.target=[${{ inputs.target }}]"
+        run: ":"
+      - name: "inputs.environment-name=[${{ inputs.environment-name }}]"
+        run: ":"
+      - name: Normalise Params
+        id: normalise
+        shell: bash
+        run: |
+          X='${{ inputs.target }}' ; echo "target=${X:-holding}" | tee -a "$GITHUB_OUTPUT"
+          # Convert '(auto)' to empty string for downstream processing
+          ENV_NAME='${{ inputs.environment-name }}'; [[ "$ENV_NAME" == "(auto)" ]] && ENV_NAME=""
+          # Resolve GitHub Actions environment from explicit input or branch
+          GH_ENV="${ENV_NAME}"
+          if [ -z "$GH_ENV" ]; then
+            if [ "${{ github.ref }}" == "refs/heads/main" ]; then GH_ENV="prod"; else GH_ENV="ci"; fi
+          fi
+          echo "environment-name=${GH_ENV}" | tee -a "$GITHUB_OUTPUT"
+          echo "github-environment=${GH_ENV}" | tee -a "$GITHUB_OUTPUT"
+          if [ "$GH_ENV" = "prod" ]; then
+            HOLDING_DOMAIN="holding.spreadsheets.diyaccounting.co.uk"
+            LIVE_DOMAINS="spreadsheets.diyaccounting.co.uk prod-spreadsheets.diyaccounting.co.uk"
+          else
+            HOLDING_DOMAIN="ci-holding.spreadsheets.diyaccounting.co.uk"
+            LIVE_DOMAINS="ci-spreadsheets.diyaccounting.co.uk"
+          fi
+          echo "holding-domain=${HOLDING_DOMAIN}" | tee -a "$GITHUB_OUTPUT"
+          echo "live-domains=${LIVE_DOMAINS}" | tee -a "$GITHUB_OUTPUT"
+    outputs:
+      target: ${{ steps.normalise.outputs.target }}
+      environment-name: ${{ steps.normalise.outputs.environment-name }}
+      github-environment: ${{ steps.normalise.outputs.github-environment }}
+      holding-domain: ${{ steps.normalise.outputs.holding-domain }}
+      live-domains: ${{ steps.normalise.outputs.live-domains }}
+
+  set-origins:
+    name: "set origins to ${{ needs.params.outputs.target }}"
+    needs: [params]
+    runs-on: ubuntu-24.04
+    environment: ${{ needs.params.outputs.github-environment }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Assume AWS deployment role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: true
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Resolve holding and live distribution IDs
+        id: resolve
+        env:
+          ENVIRONMENT_NAME: ${{ needs.params.outputs.environment-name }}
+          HOLDING_DOMAIN: ${{ needs.params.outputs.holding-domain }}
+        run: |
+          set -euo pipefail
+
+          HOLDING_DISTRIBUTION_ARN=$(aws resourcegroupstaggingapi get-resources \
+            --resource-type-filters cloudfront:distribution \
+            --region us-east-1 \
+            --tag-filters Key=OriginFor,Values="${HOLDING_DOMAIN}" \
+            --query 'ResourceTagMappingList[0].ResourceARN' --output text)
+          if [ -z "$HOLDING_DISTRIBUTION_ARN" ] || [ "$HOLDING_DISTRIBUTION_ARN" = "None" ]; then
+            echo "ERROR: No CloudFront distribution found with tag OriginFor=${HOLDING_DOMAIN}" >&2
+            exit 1
+          fi
+          HOLDING_DIST_ID="${HOLDING_DISTRIBUTION_ARN##*/}"
+
+          LIVE_DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name "${ENVIRONMENT_NAME}-spreadsheets-SpreadsheetsStack" \
+            --query 'Stacks[0].Outputs[?OutputKey==`DistributionId`].OutputValue' --output text)
+          if [ -z "$LIVE_DIST_ID" ] || [ "$LIVE_DIST_ID" = "None" ]; then
+            echo "ERROR: No DistributionId output on ${ENVIRONMENT_NAME}-spreadsheets-SpreadsheetsStack" >&2
+            exit 1
+          fi
+
+          echo "holding-dist-id=${HOLDING_DIST_ID}" | tee -a "$GITHUB_OUTPUT"
+          echo "live-dist-id=${LIVE_DIST_ID}" | tee -a "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Strip live aliases from the source distribution
+        env:
+          TARGET: ${{ needs.params.outputs.target }}
+          HOLDING_DIST_ID: ${{ steps.resolve.outputs.holding-dist-id }}
+          LIVE_DIST_ID: ${{ steps.resolve.outputs.live-dist-id }}
+          LIVE_DOMAINS: ${{ needs.params.outputs.live-domains }}
+        run: |
+          set -euo pipefail
+
+          # Failing over strips the live domains off the live distribution; restoring strips
+          # them off the holding distribution. The step order is fixed either way — only which
+          # distribution ID it acts on changes.
+          if [ "$TARGET" = "holding" ]; then
+            SOURCE_DIST_ID="$LIVE_DIST_ID"
+          else
+            SOURCE_DIST_ID="$HOLDING_DIST_ID"
+          fi
+
+          REMOVE_JSON=$(printf '%s\n' $LIVE_DOMAINS | jq -R . | jq -s .)
+
+          ETAG=$(aws cloudfront get-distribution-config --id "$SOURCE_DIST_ID" --query 'ETag' --output text)
+          aws cloudfront get-distribution-config --id "$SOURCE_DIST_ID" --query 'DistributionConfig' \
+            --output json > /tmp/source-cf-config.json
+          jq --argjson remove "$REMOVE_JSON" '
+            .Aliases.Items = ((.Aliases.Items // []) - $remove) |
+            .Aliases.Quantity = (.Aliases.Items | length)
+          ' /tmp/source-cf-config.json > /tmp/source-cf-config.updated.json
+
+          echo "Stripping live aliases ${LIVE_DOMAINS} from distribution ${SOURCE_DIST_ID}"
+          aws cloudfront update-distribution --id "$SOURCE_DIST_ID" --if-match "$ETAG" \
+            --distribution-config file:///tmp/source-cf-config.updated.json
+          aws cloudfront wait distribution-deployed --id "$SOURCE_DIST_ID"
+
+      - name: Claim live aliases on the target distribution
+        id: claim
+        env:
+          TARGET: ${{ needs.params.outputs.target }}
+          HOLDING_DIST_ID: ${{ steps.resolve.outputs.holding-dist-id }}
+          LIVE_DIST_ID: ${{ steps.resolve.outputs.live-dist-id }}
+          LIVE_DOMAINS: ${{ needs.params.outputs.live-domains }}
+        run: |
+          set -euo pipefail
+
+          if [ "$TARGET" = "holding" ]; then
+            TARGET_DIST_ID="$HOLDING_DIST_ID"
+          else
+            TARGET_DIST_ID="$LIVE_DIST_ID"
+          fi
+
+          ADD_JSON=$(printf '%s\n' $LIVE_DOMAINS | jq -R . | jq -s .)
+
+          ETAG=$(aws cloudfront get-distribution-config --id "$TARGET_DIST_ID" --query 'ETag' --output text)
+          aws cloudfront get-distribution-config --id "$TARGET_DIST_ID" --query 'DistributionConfig' \
+            --output json > /tmp/target-cf-config.json
+          jq --argjson add "$ADD_JSON" '
+            .Aliases.Items = (((.Aliases.Items // []) + $add) | unique) |
+            .Aliases.Quantity = (.Aliases.Items | length)
+          ' /tmp/target-cf-config.json > /tmp/target-cf-config.updated.json
+
+          echo "Adding live aliases ${LIVE_DOMAINS} to distribution ${TARGET_DIST_ID}"
+          aws cloudfront update-distribution --id "$TARGET_DIST_ID" --if-match "$ETAG" \
+            --distribution-config file:///tmp/target-cf-config.updated.json
+          aws cloudfront wait distribution-deployed --id "$TARGET_DIST_ID"
+
+          TARGET_DOMAIN_NAME=$(aws cloudfront get-distribution --id "$TARGET_DIST_ID" \
+            --query 'Distribution.DomainName' --output text)
+          echo "target-domain-name=${TARGET_DOMAIN_NAME}" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Assume the management Route53 delegate role
+        env:
+          TARGET_DOMAIN_NAME: ${{ steps.claim.outputs.target-domain-name }}
+          LIVE_DOMAINS: ${{ needs.params.outputs.live-domains }}
+        run: |
+          set -euo pipefail
+
+          CREDS=$(aws sts assume-role \
+            --role-arn arn:aws:iam::887764105431:role/root-route53-record-delegate \
+            --role-session-name spreadsheets-holding-failover)
+          AWS_ACCESS_KEY_ID=$(echo "$CREDS" | jq -r .Credentials.AccessKeyId)
+          AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | jq -r .Credentials.SecretAccessKey)
+          AWS_SESSION_TOKEN=$(echo "$CREDS" | jq -r .Credentials.SessionToken)
+          export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+
+          # CloudFront's fixed alias hosted zone id (Z2FDTNDATAQYW2), not this project's own
+          # hosted zone id — required whenever a record aliases a CloudFront distribution's own
+          # *.cloudfront.net domain name, in either failover direction.
+          CHANGES=$(printf '%s\n' $LIVE_DOMAINS | jq -R --arg domain "$TARGET_DOMAIN_NAME" '
+            {Action:"UPSERT", ResourceRecordSet:{Name:(.+"."), Type:"A", AliasTarget:{
+              HostedZoneId:"Z2FDTNDATAQYW2", DNSName:($domain+"."), EvaluateTargetHealth:false}}},
+            {Action:"UPSERT", ResourceRecordSet:{Name:(.+"."), Type:"AAAA", AliasTarget:{
+              HostedZoneId:"Z2FDTNDATAQYW2", DNSName:($domain+"."), EvaluateTargetHealth:false}}}
+          ' | jq -s .)
+
+          echo "Aliasing ${LIVE_DOMAINS} to ${TARGET_DOMAIN_NAME}"
+          aws route53 change-resource-record-sets \
+            --hosted-zone-id Z0315522208PWZSSBI9AL \
+            --change-batch "$(jq -n --argjson c "$CHANGES" '{Comment:"spreadsheets holding failover", Changes:$c}')"
+
+      - name: Summary
+        run: |
+          echo "## Deploy Holding Result" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Setting | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Target | \`${{ needs.params.outputs.target }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Environment | \`${{ needs.params.outputs.environment-name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Holding domain | \`${{ needs.params.outputs.holding-domain }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Live domains | \`${{ needs.params.outputs.live-domains }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Target distribution domain | \`${{ steps.claim.outputs.target-domain-name }}\` |" >> "$GITHUB_STEP_SUMMARY"
