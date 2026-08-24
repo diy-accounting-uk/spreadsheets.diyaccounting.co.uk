@@ -80,8 +80,8 @@ jobs:
     if: ${{ needs.params.outputs.skip-formatting != 'true' }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -121,8 +121,8 @@ jobs:
     if: ${{ needs.params.outputs.skip-node-update != 'true' }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -145,7 +145,7 @@ jobs:
     if: ${{ needs.params.outputs.skip-java-update != 'true' }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
@@ -164,8 +164,8 @@ jobs:
     if: ${{ !cancelled() && (needs.formatting.result == 'success' || needs.formatting.result == 'skipped') && (needs.node-update.result == 'success' || needs.node-update.result == 'skipped') && (needs.java-update.result == 'success' || needs.java-update.result == 'skipped') }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -201,7 +201,7 @@ jobs:
     needs: [params, formatting, node-update, java-update, validate]
     if: ${{ !cancelled() && needs.validate.result == 'success' && needs.params.outputs.skip-commit != 'true' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
           fetch-depth: 0
