@@ -820,28 +820,22 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
 
 // ── Vatinterface formula rewriting (Ltd Company all year-end months) ────────
 
+// Renames the [2]Purchases/[3]Sales month-tab references in the Vatinterface
+// D and M column formulas for non-March year-ends. The [1]Admin!$B$ references
+// are left at the template rows: the generated Financialaccounts Admin keeps
+// the template's year-end-relative B-column (anchored at B32 = F21), so the
+// template rows are correct for every year-end.
 export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vatinterfacePath) {
-  const zip = await JSZip.loadAsync(xlsxBuffer);
-  let viXml = await zip.file(vatinterfacePath).async("string");
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
 
-  const templateStartRow = 6;
-  const targetStartRow = ((yearEndMonth - 1) % 12) * 2 + 2;
-
-  if (templateStartRow === targetStartRow) {
+  if (templateTabs.join(",") === targetTabs.join(",")) {
     return xlsxBuffer;
   }
 
-  const rowMap = {};
-  for (let i = 0; i < 16; i++) {
-    rowMap[templateStartRow + i * 2] = targetStartRow + i * 2;
-  }
-  viXml = viXml.replace(/\[1\]Admin!\$B\$(\d+)/g, (match, rowStr) => {
-    const row = parseInt(rowStr, 10);
-    return rowMap[row] !== undefined ? `[1]Admin!$B$${rowMap[row]}` : match;
-  });
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let viXml = await zip.file(vatinterfacePath).async("string");
 
-  const templateTabs = getMonthTabSequence(3);
-  const targetTabs = getMonthTabSequence(yearEndMonth);
   for (let i = 0; i < 12; i++) {
     if (templateTabs[i] !== targetTabs[i]) {
       viXml = viXml.replace(new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"), `[2]${targetTabs[i]}!`);
