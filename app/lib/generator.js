@@ -45,6 +45,11 @@ export function toExcelSerial(date) {
   return Math.round((date.getTime() - epoch) / (24 * 60 * 60 * 1000));
 }
 
+export function fromExcelSerial(serial) {
+  const epoch = Date.UTC(1899, 11, 30);
+  return new Date(epoch + serial * 24 * 60 * 60 * 1000);
+}
+
 // ── Admin date generation ───────────────────────────────────────────────────
 
 export function generateAdminDates(startYear) {
@@ -307,6 +312,51 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   numericEdits.M21 = Math.round(taxData.vat.standard_rate * 100);
 
   return { numericEdits, stringEdits: {} };
+}
+
+// ── Ltd Admin cached B-column date roll ─────────────────────────────────────
+//
+// The Ltd Admin B-column is a chain of formula cells anchored at B32 = F21:
+// even rows cache monthEnd(yearEnd + (r-32)/2 months), odd rows cache the
+// following day (the first of the next month). Spreadsheet apps updating
+// links against a closed Financialaccounts.xlsx read these STORED cached
+// values — they never recalculate — so the cached serials must agree with
+// the F21 year-end literal, not the template's snapshot. Rolls every B-cell
+// whose cached value matches the template's year-end-relative rule value;
+// non-matching cached cells (labels, non-date content) are left untouched.
+
+export function rollLtdAdminCachedDates(adminXml, templateYearEndSerial, yearEndSerial) {
+  const ruleValue = (anchorSerial, row) => {
+    const monthsOffset = (row - (row % 2 === 0 ? 32 : 33)) / 2;
+    const anchor = fromExcelSerial(anchorSerial);
+    const monthIndex = anchor.getUTCFullYear() * 12 + anchor.getUTCMonth() + monthsOffset;
+    const serial = toExcelSerial(monthEnd(Math.floor(monthIndex / 12), (monthIndex % 12) + 1));
+    // Odd rows hold the first day of the month after the preceding even row.
+    return row % 2 === 0 ? serial : serial + 1;
+  };
+
+  const rows = new Set();
+  for (const [, rowStr] of adminXml.matchAll(/<c r="B(\d+)"/g)) {
+    rows.add(parseInt(rowStr, 10));
+  }
+
+  for (const row of rows) {
+    const match = matchCell(adminXml, `B${row}`);
+    const vMatch = match.fullMatch.match(/<v>([^<]*)<\/v>/);
+    if (!vMatch) continue;
+    if (parseFloat(vMatch[1]) !== ruleValue(templateYearEndSerial, row)) continue;
+    adminXml = setCellCachedValue(adminXml, `B${row}`, ruleValue(yearEndSerial, row));
+  }
+
+  const b32 = matchCell(adminXml, "B32");
+  const b32Value = b32 && b32.fullMatch.match(/<v>([^<]*)<\/v>/);
+  if (!b32Value || parseFloat(b32Value[1]) !== yearEndSerial) {
+    throw new Error(
+      `Admin B32 cached value ${b32Value ? b32Value[1] : "(missing)"} does not equal the F21 year-end serial ${yearEndSerial}`,
+    );
+  }
+
+  return adminXml;
 }
 
 // ── Payslips Admin calendar generation ──────────────────────────────────────
@@ -579,9 +629,16 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     let adminXml = await zip.file(sheetsConfig.admin).async("string");
 
     let numericEdits, stringEdits;
+    let templateYearEndSerial;
     if (sheetsConfig.cellEditFn === "ltd") {
       const yearEndSerial = toExcelSerial(endDate);
       ({ numericEdits, stringEdits } = buildLtdCellEdits(taxData, yearEndSerial));
+      // Capture the template's own year-end before the F21 edit overwrites it —
+      // it anchors the cached B-column roll below.
+      const templateF21 = matchCell(adminXml, "F21");
+      const templateF21Value = templateF21 && templateF21.fullMatch.match(/<v>([^<]*)<\/v>/);
+      if (!templateF21Value) throw new Error("Admin F21 has no year-end value in the template");
+      templateYearEndSerial = parseFloat(templateF21Value[1]);
     } else {
       const buildFn = sheetsConfig.cellEditFn === "se" ? buildSeCellEdits : buildCellEdits;
       ({ numericEdits, stringEdits } = buildFn(taxData, startYear));
@@ -592,6 +649,10 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     }
     for (const [cellRef, str] of Object.entries(stringEdits)) {
       adminXml = setCellString(adminXml, cellRef, str);
+    }
+
+    if (sheetsConfig.cellEditFn === "ltd") {
+      adminXml = rollLtdAdminCachedDates(adminXml, templateYearEndSerial, toExcelSerial(endDate));
     }
 
     const originalDate = zip.file(sheetsConfig.admin).date;
