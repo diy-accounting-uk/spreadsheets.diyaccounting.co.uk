@@ -281,7 +281,7 @@ public class HoldingStack extends Stack {
                         .deliverySourceName(deliverySourceName)
                         .deliveryDestinationArn(logsDestination.getAttrArn())
                         .build());
-        logsDelivery.addDependency(logsSource);
+        logsDelivery.addResourceDependency(logsSource);
 
         // Deploy the holding page to S3 and invalidate the distribution.
         // prune(true) here (unlike SpreadsheetsStack's prune(false)) because nothing else writes
