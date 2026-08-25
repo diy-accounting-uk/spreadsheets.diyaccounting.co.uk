@@ -90,7 +90,6 @@
     "aws-cdk": "^2.1138.0",
     "eslint": "^10.9.1",
     "eslint-plugin-security": "^4.0.1",
-    "exceljs": "^4.4.1-prerelease.0",
     "globals": "^17.11.0",
     "http-server": "^14.1.1",
     "jszip": "^3.10.1",
@@ -118,7 +117,9 @@
     "qs": ">=6.15.3",
     "uuid": ">=14.0.2",
     "cheerio": ">=1.2.0",
-    "validator": ">=13.15.35"
+    "validator": ">=13.15.35",
+    "encoding-sniffer": ">=1.0.2",
+    "html-encoding-sniffer": ">=6.0.0"
   },
   "engines": {
     "node": ">=24.0.0"
