@@ -160,28 +160,24 @@ Note: SE files use `[tax_year]` with `label = "2025-26"`, while Ltd files use `[
 
 ## Updating Tax Data
 
-### Option 1: GitHub Actions Workflow (update-tax-data.yml)
+### Option 1: Local Script (scripts/update-tax-data.sh)
 
-The `update-tax-data.yml` workflow automates tax data creation by scraping HMRC pages and using an LLM to generate TOML files.
+Run `npm run update-tax-data` to scrape HMRC pages and generate missing TOML files with `gh copilot`. Pass a year to use as the base, for example `npm run update-tax-data -- 2027`. It defaults to the current calendar year.
 
 **How it works:**
-1. Runs `scripts/hmrc-rate-urls.cjs` to generate a list of HMRC URLs for the target year
+1. Runs `scripts/hmrc-rate-urls.cjs` to build a list of HMRC URLs for the target year
 2. Scrapes each HMRC page and extracts text content (up to 50,000 chars per page)
-3. Identifies which TOML files are missing (checks back 5 years from the target year)
-4. Concatenates scraped data with the agent prompt from `.github/agents/tax-data-updater.agent.md`
+3. Checks the last 5 years for missing `se-*.toml` and `ltd-*.toml` files
+4. Builds a prompt from the scraped data, the schema examples, and `.github/agents/tax-data-updater.agent.md`
 5. Calls `gh copilot` with GPT-5-mini to generate the missing TOML files
-6. Validates all TOML files parse correctly
-7. Runs `npm test`
-8. Commits and pushes new files
+6. Validates the generated TOML files parse correctly
+7. Leaves the files for you to review, test, and commit
 
-**How to trigger:**
-- Go to Actions > update-tax-data > Run workflow
-- Optional: set `year` (defaults to current calendar year)
-- Optional: enable `dry-run` to skip the commit step
+**Prerequisites:** `gh` CLI authenticated with the Copilot scope, plus `node`, `python3`, and `curl`.
 
-**Limitation:** Uses GPT-5-mini via `gh copilot` which may produce inaccurate rates. Always verify the generated values against the HMRC source pages before merging.
+**Limitation:** Uses GPT-5-mini via `gh copilot`, which may produce inaccurate rates. Always verify the generated values against the HMRC source pages before you commit.
 
-**What it produces:** New or updated TOML files committed directly to the branch. Artifacts include the scraped HMRC data and LLM response for audit.
+A GitHub Actions workflow used to do this scrape-and-generate work in CI. It called `gh copilot` and committed the result straight to the branch, and that trips GitHub's abuse detection. The same work now runs as a local script, so you review the output before you commit it.
 
 ### Option 2: GitHub Copilot Agent (tax-data-updater.agent.md)
 
