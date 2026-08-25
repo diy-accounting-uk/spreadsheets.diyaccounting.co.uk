@@ -70,8 +70,9 @@ TTL wait is involved — the alias record change is what a resolver sees on its 
 
 ## Expected time to take effect
 
-Around 20 minutes, dominated by two `aws cloudfront wait distribution-deployed` calls. Measured on
-a real ci exercise, not estimated.
+Measured on a real ci exercise: **23 minutes to fail over, 31 minutes to restore**, dominated by
+two `aws cloudfront wait distribution-deployed` calls each way. Restore is the slower leg — budget
+half an hour for it, and do not assume coming back is quicker than going out.
 
 **The live domain serves nothing for most of that window.** CloudFront enforces alias uniqueness
 globally, so the name has to be fully released from the live distribution and propagated before
