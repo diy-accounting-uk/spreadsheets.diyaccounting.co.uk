@@ -289,7 +289,7 @@ All four also run on a daily schedule and can be triggered manually via workflow
 
 ### Deploy Workflow (deploy.yml)
 
-The deploy workflow triggers on pushes to paths under `web/spreadsheets.diyaccounting.co.uk/` and infrastructure files. It does NOT trigger on `packages/` changes directly; instead, the `build:packages` step in the deploy workflow runs `scripts/build-packages.cjs` which:
+The deploy workflow triggers on pushes to paths under `web/spreadsheets.diyaccounting.co.uk/` and infrastructure files. It does NOT trigger on `packages/` changes directly; instead, the `build:packages` step in the deploy workflow runs `app/bin/build-packages.js` which:
 1. Scans `packages/` directories for Excel workbooks
 2. Creates zip archives in `target/zips/`
 3. Generates `web/spreadsheets.diyaccounting.co.uk/public/catalogue.toml`
