@@ -8,6 +8,11 @@ document is the spec.
   and its two live doc references corrected.
 - **Not started:** everything else. No tooling, no workflow changes, nothing published,
   `packages/` still tracked.
+- **Deferred by the operator**, not blocked. Execution began once and was stopped straight
+  away; the two worktrees were removed and nothing was written. Pick it up when it suits —
+  Phase 0 is already met, so Wave 1 can start on the day it is wanted.
+
+This plan is the only record of this work. It is not tracked in any `NEXT.md`.
 
 ## User assertions (verbatim)
 
