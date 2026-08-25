@@ -1,6 +1,6 @@
 # PLAN: VAT quarter-end dropdown does not roll with the package year
 
-Status: **all four surfaces fixed, deployed, and live-verified** (2026-08-24: surfaces 1–3 via PR #2 + regeneration + deploy; surface 4 via PR #4 + regeneration + the 08:36 push-triggered deploy; live Aug27 artefact verified on both the dropdown-list and closed-workbook link-update paths). Remaining: extend the guard test with the 4th chain link (PR after this doc), determinism re-dispatch, Philippe reply + six-donor decision.
+Status: **all four surfaces fixed, deployed, and live-verified** (2026-08-24: surfaces 1–3 via PR #2 + regeneration + deploy; surface 4 via PR #4 + regeneration + the 08:36 push-triggered deploy; live Aug27 artefact verified on both the dropdown-list and closed-workbook link-update paths). The guard test now covers the 4th chain link (`9e9cb12a`), and the monthly `generate-ltd` schedule has run, which settles determinism. Remaining: the operator's six-donor decision.
 
 ## User assertions (verbatim)
 
@@ -260,13 +260,15 @@ recalculate from the correct year-end — then open `Vatreturns.xlsx`; the
 dropdown covers the right period. Saving Financialaccounts once makes the
 correction stick for future opens.
 
-Owned outside this plan: a draft reply to Philippe exists at
-`../tmp/reply-to-philippe-clavier.md` (workspace root `tmp/`), held pending
-confirmation of his year-end — his 2026-07-13 mail states the FY starts April
-(year 26-27, Q1 just completed), which is the Mar27 package. Send with a
-corrected `Vatreturns.xlsx` once the fixed package exists. Six Company Accounts
-donors since April 2026 fall in the affected window; notifying them is the
-operator's call.
+Philippe was never blocked from filing. He replied on 2026-08-24: "All was
+fine when I submitted end of July." He filed before the deadline, the draft
+reply is obsolete and will not be sent.
+
+The bug was real and worth fixing on its own merits. But this plan should not
+be read as a customer having been unable to file, because that did not happen.
+
+Six Company Accounts donors since April 2026 fall in the affected window;
+notifying them is the operator's call and is the only item left here.
 
 Corpus sweep (mail-support since 2026-05-01; hybrid queries: "VAT period ends
 drop down", "drop down menu dates", "June 2026 VAT", "can't submit VAT return

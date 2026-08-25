@@ -20,11 +20,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   (whole-dir Mar26 byte-identity; also heals the four bank-account workbooks).
 
   All four surfaces are deployed and live-verified (Aug27 artefact checked on
-  both failure paths, 2026-08-24). Remaining: extend guard test with the 4th
-  chain link (Vatreturns external cache ≡ Financialaccounts stored Admin) →
-  determinism dispatch → behaviour-prod re-run (earlier failure was local
-  Playwright setup) → send Philippe's reply (`../tmp/reply-to-philippe-clavier.md`,
-  unblocked — fixed package is live) → operator: six-donor decision → close.
+  both failure paths, 2026-08-24). The guard test covers the 4th chain link and
+  the monthly `generate-ltd` schedule has run. Philippe is closed — he filed
+  before the deadline and confirmed it on 2026-08-24. Remaining: the operator's
+  six-donor decision.
 
 ## Discipline
 
