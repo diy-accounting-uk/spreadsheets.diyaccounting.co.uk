@@ -12,10 +12,6 @@ on:
         description: 'Delete app/data/*.toml and regenerate from HMRC sources'
         type: boolean
         default: false
-      update-tax-data:
-        description: 'Run tax data update (scrape HMRC + copilot)'
-        type: boolean
-        default: true
       skip-bst:
         description: 'Skip BST generation'
         type: boolean
@@ -53,7 +49,6 @@ jobs:
         run: |
           echo "delete-packages=${{ inputs.delete-packages }}"
           echo "delete-tax-data=${{ inputs.delete-tax-data }}"
-          echo "update-tax-data=${{ inputs.update-tax-data }}"
           echo "skip-bst=${{ inputs.skip-bst }}"
           echo "skip-taxi=${{ inputs.skip-taxi }}"
           echo "skip-se=${{ inputs.skip-se }}"
@@ -96,18 +91,9 @@ jobs:
             git push
           fi
 
-  update-tax-data:
-    needs: [clean]
-    if: ${{ !cancelled() && inputs.update-tax-data }}
-    uses: ./.github/workflows/update-tax-data.yml
-    with:
-      dry-run: false
-    permissions:
-      contents: write
-
   generate-bst:
-    needs: [update-tax-data]
-    if: ${{ !cancelled() && (needs.update-tax-data.result == 'success' || needs.update-tax-data.result == 'skipped') && !inputs.skip-bst }}
+    needs: [clean]
+    if: ${{ !cancelled() && !inputs.skip-bst }}
     uses: ./.github/workflows/generate-bst.yml
     with:
       skip-tests: false

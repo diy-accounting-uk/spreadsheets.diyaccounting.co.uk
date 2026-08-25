@@ -43,8 +43,8 @@ an issue here https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co
 ### Annual Tax Data Update
 
 1. Create or update tax data TOML files in `app/data/` for the new financial year (sole trader files use `se-YYYY-YYYY.toml`, limited company files use `ltd-YYYY.toml`)
-2. Use the `update-tax-data.yml` workflow (scrapes HMRC rates and generates TOML via Copilot), a Copilot agent, or manual update (see `SKILL_PACKAGE_UPDATES.md`)
-3. Push changes — generation workflows trigger automatically on changes to `app/data/`
+2. Run `npm run update-tax-data` to scrape HMRC rates and generate TOML via Copilot, use a Copilot agent, or update manually (see `.claude/skills/package-updates/SKILL.md`)
+3. Push changes. Generation workflows trigger automatically on changes to `app/data/`
 
 ### Package Generation
 
