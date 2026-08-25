@@ -18,8 +18,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const NODE = process.execPath;
 
+// A multi-file generate drives roughly thirty LibreOffice conversions, and macOS
+// LibreOffice runs several times slower than the Linux build CI uses. Give each
+// child the whole test budget so a slow host reports a fidelity diff rather than
+// killing the generate before anything is compared.
+const STEP_TIMEOUT_MS = 900_000;
+
 function run(args) {
-  return execFileSync(NODE, args, { cwd: ROOT, encoding: "utf8", timeout: 120_000 });
+  return execFileSync(NODE, args, { cwd: ROOT, encoding: "utf8", timeout: STEP_TIMEOUT_MS });
 }
 
 function readLines(dir) {
@@ -53,7 +59,7 @@ const PRODUCTS = [
 
 describe.skipIf(!hasLibreOffice())("Double-roundtrip fidelity", () => {
   for (const product of PRODUCTS) {
-    it(`${product.name}: pass 2 export equals pass 1 export`, { timeout: 300_000 }, () => {
+    it(`${product.name}: pass 2 export equals pass 1 export`, { timeout: STEP_TIMEOUT_MS }, () => {
       const pkg1 = resolve(ROOT, "target", `${product.name}-rt-pkg1`);
       const data1 = resolve(ROOT, "target", `${product.name}-rt-data1`);
       const pkg2 = resolve(ROOT, "target", `${product.name}-rt-pkg2`);
