@@ -330,7 +330,7 @@ public class SpreadsheetsStack extends Stack {
                         .deliverySourceName(deliverySourceName)
                         .deliveryDestinationArn(logsDestination.getAttrArn())
                         .build());
-        logsDelivery.addDependency(logsSource);
+        logsDelivery.addResourceDependency(logsSource);
 
         // Deploy static site files to S3 and invalidate distribution
         infof("Using spreadsheets doc root: %s".formatted(publicDir));
