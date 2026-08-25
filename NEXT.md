@@ -30,5 +30,5 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 - Generated `packages/` output is committed; regenerating is a mass binary commit — one
   deliberate, reviewed commit on a branch, never a scheduled/bot pattern. The structural fix is
-  `PLAN_ARTEFACTS_OUT_OF_GIT.md` at this root: packages move to the `diy-accounting-archive`
+  `PLAN_PACKAGES_TO_ARCHIVE.md` at this root: packages move to the `diy-accounting-archive`
   repository and stop being tracked here.

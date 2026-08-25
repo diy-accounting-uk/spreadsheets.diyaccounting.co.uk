@@ -1,6 +1,13 @@
 # PLAN: fully formed packages move to the archive repository
 
-Status: **specified, not started.** No implementation exists. This document is the spec.
+Status: **specified; Phase 0 met, one unit delivered.** The rest is unstarted and this
+document is the spec.
+
+- **Done:** `ARCHIVE_PACKAGES_TOKEN` exists as an Actions secret on this repo, and the
+  archive repo is not flagged archived. The dead `scripts/build-packages.cjs` is deleted
+  and its two live doc references corrected.
+- **Not started:** everything else. No tooling, no workflow changes, nothing published,
+  `packages/` still tracked.
 
 ## User assertions (verbatim)
 
@@ -372,13 +379,12 @@ becomes `"No packages/ directory. Run 'npm run packages:fetch -- --tree' first (
 Everything else is unchanged: in the generate workflows the tree exists in the same job
 that just wrote it.
 
-### `scripts/build-packages.cjs`
+### `scripts/build-packages.cjs` — done
 
-Delete. Then fix the three live references: `README.md` line 59 and
-`.claude/skills/package-updates/SKILL.md` line 292 both describe it as the deploy-time
-zipper, which stops being true twice over. Point them at `app/bin/fetch-packages.js`
-and `app/bin/build-catalogue.js`. Leave the `_developers/` archived plans alone; they
-are history.
+Deleted, with `README.md` and `.claude/skills/package-updates/SKILL.md` repointed at
+`app/bin/build-packages.js`. When the new tools land, those two references move again to
+`app/bin/fetch-packages.js` and `app/bin/build-catalogue.js`. The `_developers/` archived
+plans still mention it and are left alone; they are history.
 
 ### `app/test/vat-quarter-dropdown.test.js`
 
@@ -591,11 +597,11 @@ rewrite only reclaims disk.
 Nothing in Phase 1 or 2 changes what is tracked in git. `packages/` stays tracked until
 Phase 3, so there is never a moment where the catalogue has no source.
 
-### Phase 0 — operator prerequisite
+### Phase 0 — operator prerequisite: met
 
-Create `ARCHIVE_PACKAGES_TOKEN` per Decision 5 and add it as a repository secret on
-`diy-accounting-uk/spreadsheets.diyaccounting.co.uk`. Confirm the archive repo's
-`archived` flag stays off.
+`ARCHIVE_PACKAGES_TOKEN` is an Actions secret on this repo, and the archive repo's
+`archived` flag is off. Note the secret must live under **Actions**, not Agents — they are
+separate namespaces and a workflow cannot read the latter.
 
 ### Phase 1 — tooling (no behaviour change)
 
@@ -699,7 +705,7 @@ failure modes.
 | Unit | Files owned | Tier | Why |
 |---|---|---|---|
 | **U1 tooling** — `build-packages.js` rework, `fetch-packages.js`, `build-catalogue.js`, `package.json` | `app/bin/build-packages.js`, `app/bin/fetch-packages.js` (new), `app/bin/build-catalogue.js` (new), `package.json` | **Subtle** | Zip determinism, sha256 verification, cache invalidation and hard-failure behaviour. Every later unit depends on the CLI contract this fixes |
-| **U2 dead code** — delete `scripts/build-packages.cjs`, fix `README.md` line 59 and `.claude/skills/package-updates/SKILL.md` line 292 | `scripts/build-packages.cjs`, `README.md`, `.claude/skills/package-updates/SKILL.md` | **Mechanical** | One deletion and two paragraph rewrites, both located |
+| ~~**U2 dead code**~~ — **done**, merged | — | — | Deleted, docs repointed at `app/bin/build-packages.js` |
 | **U3 output-dir** — the `generate.js` fix | `app/bin/generate.js` | **Subtle** | Touches the generation path. Must be proved byte-neutral, not just working |
 | **U4 archive rules** — the archive repo's changed role | `../diy-accounting-archive/CLAUDE.md`, `../diy-accounting-archive/NEXT.md` | **Mechanical** | Decision 5 supplies the wording. Different repository, zero overlap |
 
@@ -738,9 +744,8 @@ not know; if they run concurrently, merge U6 first.
 
 ### Needs an operator decision
 
-1. **The `ARCHIVE_PACKAGES_TOKEN` credential** (Phase 0). Fine-grained PAT is
-   recommended; a GitHub App is the stronger alternative. Only the operator can create
-   either, and nothing verifies end to end until one exists.
-2. **Whether to run Wave 4 at all**, and when. Recommended, a week after Wave 3, on a
+1. **Whether to run Wave 4 at all**, and when. Recommended, a week after Wave 3, on a
    day with no open PRs. The plan is complete and correct without it; skipping it only
    means the repo stays 1.2 GB to clone.
+
+`ARCHIVE_PACKAGES_TOKEN` was the other decision and is now settled.
