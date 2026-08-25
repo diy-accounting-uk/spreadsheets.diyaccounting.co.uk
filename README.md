@@ -56,7 +56,7 @@ an issue here https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co
 ### Deployment
 
 - Push to `main` triggers `deploy.yml` which deploys the CDK stack (S3 + CloudFront) and syncs zip packages to S3
-- Packages are zipped by `build-packages.cjs` (from `packages/` into `target/zips/`) and uploaded alongside the static site
+- Packages are zipped by `app/bin/build-packages.js` (from `packages/` into `target/zips/`) and uploaded alongside the static site
 - The workflow checks that all reconciliation reports in `reports/` show RECONCILES before deploying
 
 ### Dependency Updates
