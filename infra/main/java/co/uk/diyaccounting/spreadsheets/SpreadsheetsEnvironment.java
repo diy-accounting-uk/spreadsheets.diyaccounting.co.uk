@@ -8,6 +8,7 @@ package co.uk.diyaccounting.spreadsheets;
 import static co.uk.diyaccounting.spreadsheets.utils.Kind.envOr;
 import static co.uk.diyaccounting.spreadsheets.utils.Kind.infof;
 
+import co.uk.diyaccounting.spreadsheets.stacks.HoldingStack;
 import co.uk.diyaccounting.spreadsheets.stacks.SpreadsheetsStack;
 import co.uk.diyaccounting.spreadsheets.utils.KindCdk;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import software.amazon.awscdk.Environment;
 public class SpreadsheetsEnvironment {
 
     public final SpreadsheetsStack spreadsheetsStack;
+    public final HoldingStack holdingStack;
 
     public static void main(final String[] args) {
         App app = new App();
@@ -49,13 +51,42 @@ public class SpreadsheetsEnvironment {
             domainNames = List.copyOf(names);
         }
 
-        var spreadsheets = new SpreadsheetsEnvironment(app, envName, certificateArn, docRootPath, domainNames);
+        var holdingCertificateArn =
+                envOr("HOLDING_CERTIFICATE_ARN", KindCdk.getContextValueString(app, "holdingCertificateArn", ""));
+        var holdingDocRootPath = envOr(
+                "HOLDING_DOC_ROOT_PATH",
+                KindCdk.getContextValueString(
+                        app, "holdingDocRootPath", "../web/spreadsheets.diyaccounting.co.uk/holding"));
+        var holdingDomainName =
+                envOr("HOLDING_DOMAIN_NAME", KindCdk.getContextValueString(app, "holdingDomainName", ""));
+        if (holdingDomainName.isBlank()) {
+            holdingDomainName = "prod".equals(envName)
+                    ? "holding.spreadsheets.diyaccounting.co.uk"
+                    : envName + "-holding.spreadsheets.diyaccounting.co.uk";
+        }
+
+        var spreadsheets = new SpreadsheetsEnvironment(
+                app,
+                envName,
+                certificateArn,
+                docRootPath,
+                domainNames,
+                holdingCertificateArn,
+                holdingDocRootPath,
+                holdingDomainName);
         app.synth();
         infof("CDK synth complete for spreadsheets environment");
     }
 
     public SpreadsheetsEnvironment(
-            App app, String envName, String certificateArn, String docRootPath, List<String> domainNames) {
+            App app,
+            String envName,
+            String certificateArn,
+            String docRootPath,
+            List<String> domainNames,
+            String holdingCertificateArn,
+            String holdingDocRootPath,
+            String holdingDomainName) {
         // CloudFront requires us-east-1 for certificates
         Environment usEast1Env = Environment.builder()
                 .region("us-east-1")
@@ -75,5 +106,27 @@ public class SpreadsheetsEnvironment {
                         .docRootPath(docRootPath)
                         .domainNames(domainNames)
                         .build());
+
+        // Skipped rather than synthesized with an invalid certificate until the holding
+        // certificate exists: request-holding-cert.yml issues it once, ahead of this stack's
+        // first deploy, and until then Distribution.Builder rejects a blank certificate ARN.
+        if (!holdingCertificateArn.isBlank()) {
+            String holdingStackId = envName + "-spreadsheets-HoldingStack";
+            infof("Synthesizing stack %s for environment %s", holdingStackId, envName);
+
+            this.holdingStack = new HoldingStack(
+                    app,
+                    holdingStackId,
+                    HoldingStack.HoldingStackProps.builder()
+                            .env(usEast1Env)
+                            .envName(envName)
+                            .certificateArn(holdingCertificateArn)
+                            .holdingDocRootPath(holdingDocRootPath)
+                            .holdingDomainName(holdingDomainName)
+                            .build());
+        } else {
+            infof("holdingCertificateArn is blank, skipping HoldingStack for environment %s", envName);
+            this.holdingStack = null;
+        }
     }
 }
