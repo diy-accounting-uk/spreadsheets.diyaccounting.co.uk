@@ -401,6 +401,17 @@ When `saveRecalculatedTo` is provided, all recalculated files (both leaves and h
 
 ## Known Limitations and Pitfalls
 
+### Writing an Empty Cell Drops the Cells After It
+
+The runner's `setCellValue`/`setCellString` third capture group, `((?:(?!</c>).)*(?:</c>)?)`, is greedy up to the next `</c>`. When the target is an empty self-closing cell (`<c r="E13" s="11"/>`) the match runs past it and swallows everything up to the next cell that carries a value -- neighbouring empty cells, `</row>`, and the following row's opening tag included.
+
+This bites on any sheet whose input grid is a run of empty styled cells. On the Ltd `OpenAccounts` sheet, writing `E13` after `J13` dropped the value just written to `J13`. Two ways out:
+
+- Write cells left to right, top to bottom, so anything a write drops is re-created by a later write (`inSheetOrder()` in `app/products/ltd.js`).
+- Make the capture lazy, or match only the target cell's own element.
+
+Cells written out of order are re-inserted by `insertCellIntoRow()`, which compares column letters and ignores row numbers -- so once two rows have been merged by a swallowed `</row>`, new cells land in odd positions within the row element. LibreOffice reads cells by their `r` attribute and copes, but the XML is no longer valid OOXML.
+
 ### Shared Formula Flattening Breaks LibreOffice xls Roundtrip
 
 Shared formulas (`<f t="shared" si="N"/>`) are an xlsx optimization where one cell defines a formula and others reference it by index. An approach was tested where these were flattened to explicit per-cell formulas. **This caused LibreOffice's xls roundtrip to corrupt entire sheets** -- producing `styleSheet` XML instead of `worksheet` data. Shared formulas are NOT the root cause of non-March year-end issues. The actual root cause was unrenamed intra-workbook cross-tab formula references.

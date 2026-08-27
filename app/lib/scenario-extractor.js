@@ -145,32 +145,30 @@ export const OPENING_FIXED_ASSET_CLASSES = {
 // figure as a positive number and applies the sign itself, so a balance on
 // its natural side is positive here.
 export const OPENING_BALANCE_LINES = {
-  "1100": { key: "stock", normalSide: "D" },
-  "1300": { key: "trade_debtors", normalSide: "D" },
-  "1200": { key: "current_account", normalSide: "D" },
-  "1210": { key: "savings_account", normalSide: "D" },
-  "1220": { key: "cash", normalSide: "D" },
-  "1230": { key: "credit_card", normalSide: "D" },
-  "1400": { key: "long_term_debtors", normalSide: "D" },
-  "2100": { key: "trade_creditors", normalSide: "C" },
-  "2150": { key: "net_wages_due", normalSide: "C" },
-  "2160": { key: "wage_deductions_due", normalSide: "C" },
-  "2200": { key: "vat_due", normalSide: "C" },
-  "2300": { key: "corporation_tax", normalSide: "C" },
-  "2400": { key: "paye_due", normalSide: "C" },
-  "2410": { key: "cis_due", normalSide: "C" },
-  "2500": { key: "directors_loan", normalSide: "C" },
-  "2600": { key: "long_term_creditors", normalSide: "C" },
-  "3000": { key: "share_capital", normalSide: "C" },
-  "3100": { key: "retained_earnings", normalSide: "C" },
-  "3200": { key: "dividends_due", normalSide: "C" },
-  "3300": { key: "capital_reserves", normalSide: "C" },
+  1100: { key: "stock", normalSide: "D" },
+  1300: { key: "trade_debtors", normalSide: "D" },
+  1200: { key: "current_account", normalSide: "D" },
+  1210: { key: "savings_account", normalSide: "D" },
+  1220: { key: "cash", normalSide: "D" },
+  1230: { key: "credit_card", normalSide: "D" },
+  1400: { key: "long_term_debtors", normalSide: "D" },
+  2100: { key: "trade_creditors", normalSide: "C" },
+  2150: { key: "net_wages_due", normalSide: "C" },
+  2160: { key: "wage_deductions_due", normalSide: "C" },
+  2200: { key: "vat_due", normalSide: "C" },
+  2300: { key: "corporation_tax", normalSide: "C" },
+  2400: { key: "paye_due", normalSide: "C" },
+  2410: { key: "cis_due", normalSide: "C" },
+  2500: { key: "directors_loan", normalSide: "C" },
+  2600: { key: "long_term_creditors", normalSide: "C" },
+  3000: { key: "share_capital", normalSide: "C" },
+  3100: { key: "retained_earnings", normalSide: "C" },
+  3200: { key: "dividends_due", normalSide: "C" },
+  3300: { key: "capital_reserves", normalSide: "C" },
 };
 
 export function isOpeningBalanceLine(line) {
-  return (
-    line.sourceJournalID === "journal" && String(line.documentReference || "").startsWith(OPENING_BALANCE_DOCUMENT_PREFIX)
-  );
+  return line.sourceJournalID === "journal" && String(line.documentReference || "").startsWith(OPENING_BALANCE_DOCUMENT_PREFIX);
 }
 
 /**

@@ -324,11 +324,7 @@ describe("buildOpeningBalance", () => {
   });
 
   it("reports liabilities and capital as positive figures", () => {
-    const ob = buildOpeningBalance([
-      openingLine("2500", 20000, "C"),
-      openingLine("3000", 100, "C"),
-      openingLine("3100", 45702, "C"),
-    ]);
+    const ob = buildOpeningBalance([openingLine("2500", 20000, "C"), openingLine("3000", 100, "C"), openingLine("3100", 45702, "C")]);
     expect(ob.directors_loan).toBe(20000);
     expect(ob.share_capital).toBe(100);
     expect(ob.retained_earnings).toBe(45702);
