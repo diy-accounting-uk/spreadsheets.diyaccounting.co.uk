@@ -171,6 +171,7 @@ async function main() {
 
         const saveDir = resolve(populatedDir, `${pkgSlug}_${scenarioName}`);
         results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+          ...(productMod.multiFileOptions ? productMod.multiFileOptions(endMonth) : {}),
           saveRecalculatedTo: saveDir,
         });
       } else {

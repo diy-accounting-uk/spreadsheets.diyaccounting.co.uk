@@ -433,6 +433,29 @@ export function standardReads() {
   return reads;
 }
 
+// Leaf-file reads for the VAT chain: each month tab's VAT (G1) and gross
+// total (H1) from Sales.xlsx and Purchases.xlsx, plus every VATQtr box from
+// Vatreturns.xlsx. Vatreturns links Sales, Purchases and Financialaccounts,
+// so it recalculates after the hub.
+export function multiFileOptions(yearEndMonth) {
+  const monthReads = {};
+  for (const tab of getMonthTabNames(yearEndMonth || 3)) {
+    monthReads[tab] = ["G1", "H1"];
+  }
+  const vatQtrReads = {};
+  for (let q = 1; q <= 5; q++) {
+    vatQtrReads[`VATQtr${q}`] = ["G5", "G9", "G13", "G15", "G17", "G21", "G23"];
+  }
+  return {
+    postHubRecalc: ["Vatreturns.xlsx"],
+    additionalReads: {
+      "Sales.xlsx": monthReads,
+      "Purchases.xlsx": monthReads,
+      "Vatreturns.xlsx": vatQtrReads,
+    },
+  };
+}
+
 export function reportSections(results) {
   const sectionMap = new Map();
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
@@ -534,6 +557,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.closing_creditors) {
     const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
     if (total > 0) check("Closing Creditors total", total, total);
+  }
+
+  // VAT chain: Sales/Purchases month VAT totals must flow through the
+  // Vatinterface external links into the VATQtr boxes. The month totals are
+  // read straight from the leaf workbooks, so a broken link chain shows up
+  // as a quarter-sum mismatch here rather than as consistent zeros.
+  const salesMonthKeys = Object.keys(results).filter((k) => k.startsWith("Sales.xlsx!"));
+  const purchasesMonthKeys = Object.keys(results).filter((k) => k.startsWith("Purchases.xlsx!"));
+  const vatQtr = (n) => results[`Vatreturns.xlsx!VATQtr${n}`];
+  if (salesMonthKeys.length === 12 && purchasesMonthKeys.length === 12 && vatQtr(1)) {
+    const annualOutputVat = salesMonthKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+    const annualInputVat = purchasesMonthKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+    const sumBox = (cell) => [1, 2, 3, 4].reduce((s, n) => s + (vatQtr(n)?.[cell] || 0), 0);
+
+    check("VAT: Q1-Q4 box 1 = Sales VAT", sumBox("G9"), annualOutputVat);
+    check("VAT: Q1-Q4 box 4 = Purchases VAT", sumBox("G15"), annualInputVat);
+    for (const n of [1, 2, 3, 4]) {
+      const q = vatQtr(n);
+      if (q) check(`VAT Q${n}: box 5 = box 3 - box 4`, q.G17 || 0, (q.G13 || 0) - (q.G15 || 0));
+    }
+    if (expected.vat_output_total !== undefined) check("VAT: annual output VAT", annualOutputVat, expected.vat_output_total);
+    if (expected.vat_input_total !== undefined) check("VAT: annual input VAT", annualInputVat, expected.vat_input_total);
   }
 
   if (taxData) {
