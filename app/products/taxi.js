@@ -139,9 +139,9 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "B7",  "Car Hire / Rental",                "accounts.purchases.5200 (carHire)", "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "B8",  "Repairs & Servicing",              "accounts.purchases.5300 (repairs)", "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "B9",  "Road Tax & Insurance",             "accounts.purchases.5400 (taxIns)",  "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B10", "Total Vehicle Running Costs",      "gl-cor:amount (vehicleCosts)",      "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B11", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B12", "Mileage Allowance",                "tax.mileage (allowance)",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B10", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B11", "Mileage Allowance",                "tax.mileage (allowance)",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B12", "Cost of Sales (vehicle costs)",    "gl-cor:amount (costOfSales)",       "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B13", "**Gross Profit**",                 "gl-cor:amount (grossProfit)",       "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B14", "Employee Costs",                   "accounts.purchases.5500",           "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "B15", "Premises Costs",                   "accounts.purchases.5600",           "Profit & Loss Account", 1],
@@ -153,7 +153,11 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "B21", "Other Expenses",                   "accounts.purchases.6200",           "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B24", "Taxable Profit",                   "gl-cor:amount (taxableProfit)",     "Profit & Loss Account", 0],
+  ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],
+  // ── SE Short (SA103S) — formula cells only ──
+  ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
+  ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
   // ── Draft Tax Calculation ──
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1],
@@ -219,10 +223,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // P&L internal consistency (6a)
   check("P&L: Net = Gross - General Expenses", pl.B23, pl.B13 - (pl.B22 || 0));
 
+  // Whole-book closure: no dedicated audit-accuracy cell exists in this
+  // single-file workbook (unlike Ltd's TrialBalance!EJ91), so the P&L's own
+  // totals rows are the closest whole-book check available.
+  const vehicleCostLines = [pl.B6, pl.B7, pl.B8, pl.B9, pl.B10, pl.B11].reduce((s, v) => s + (v || 0), 0);
+  check("P&L: Cost of Sales = vehicle cost lines", pl.B12, vehicleCostLines);
+  check("P&L: Gross = Turnover - Cost of Sales", pl.B13, (pl.B5 || 0) - (pl.B12 || 0));
+
+  // The workbook selects actual vehicle running costs (B10, capital
+  // allowances) or the mileage allowance (B11), never both -- one formula
+  // zeroes when the other applies. A nonzero product means the selection
+  // logic has been broken and both are being claimed at once.
+  check("P&L: Capital Allowances / Mileage Allowance mutually exclusive", (pl.B10 || 0) * (pl.B11 || 0), 0, 0);
+
   // Total expenses cross-check (6b)
   const taxiExpenseSum = [pl.B14, pl.B15, pl.B16, pl.B17, pl.B18, pl.B19, pl.B20, pl.B21].reduce((s, v) => s + (v || 0), 0);
   check("P&L: General expense lines sum = Total", pl.B22, taxiExpenseSum);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
+
+  // SA103S cross-check: SE Short is fed entirely from the P&L and, in turn,
+  // feeds the Draft Tax calculation -- an independent formula chain that
+  // should land on the same figures.
+  const seShort = results["SE Short"];
+  if (seShort) {
+    if (seShort.D38 !== undefined) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B5);
+    if (seShort.D71 !== undefined) check("SA103S: Net profit close to P&L Net", seShort.D71, pl.B23, Math.abs(pl.B23 || 0) * 0.01 || 1);
+  }
 
   if (taxData) {
     const tax = results[TAX_SHEET];
@@ -238,6 +264,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
       check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
       check("Tax: Total = IT + NI", tax.E17, (tax.E10 || 0) + (tax.E14 || 0) + (tax.E15 || 0));
+
+      if (seShort && seShort.D106 !== undefined) check("SA103S: Profit for tax = Draft Tax E5", seShort.D106, tax.E5);
     }
   }
 
