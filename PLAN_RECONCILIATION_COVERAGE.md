@@ -135,14 +135,24 @@ Design:
    (assert `TrialBalance!EJ91`) and the Part 2 report page for Ltd, generated from the
    reconciliation run and published on deployment. Merging #27 then proves the whole
    pipeline once: data-flow checks, reconciliation report, published page.
-2. **Subsequent PRs expand coverage one slice at a time.** Each adds a Part 1 item and
-   its checks appear on the published page with no extra page work. Value order: 2, 5,
-   10, 9, then the rest. Each PR also extends its item to the other products where the
-   table marks them (for item 1 that means finding the SE/BST/Taxi self-check cells).
-   Item 11 (formula guard) is independent and can land any time.
-3. **Pages for SE, BST, and Taxi** once the Ltd page is proven. Mostly configuration,
-   since per-product reports already exist.
+2. **Batch PRs, each taking several items across every product where they apply.** New
+   checks appear on the published pages with no extra page work.
+   - Batch 1: items 1 (SE/BST/Taxi self-check cells), 2, 7. The cheap identity and
+     real-read checks, all products at once.
+   - Batch 2: items 5, 6, 10. Fixed asset tie-outs, bank closing balances, monthly P&L
+     vs monthly sales and purchases.
+   - Batch 3: items 4, 9, 12. Payroll flow, SE VAT box values, brickwork-pro-vat in CI.
+   - Batch 4: items 11, 13, 14. Formula-presence guard, non-March roundtrip, matrix
+     shrink.
+3. **Pages for SE, BST, and Taxi** ride with Batch 1. Their reports already exist; the
+   page build is configuration once the Ltd page is proven.
 4. **Part 3 judge** last, reading the stable final report.
+
+Related plan: PLAN_ROUNDTRIP_FIDELITY.md proves a different property (the JS engine and
+Excel agree; data survives export and import) and stays live for that work. Its S1
+(cross-file external links) is largely fixed by PR #27's runner changes, so re-measure
+the EQ1 diffs after #27 merges. Its S7 (fixed asset cellWrites vs Schedule layout) is
+absorbed by item 5 here.
 
 ## Verification criteria
 
