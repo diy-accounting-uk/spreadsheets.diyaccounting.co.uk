@@ -6,6 +6,18 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## Open items
 
+- [ ] **Reconciliation coverage** — PLAN_RECONCILIATION_COVERAGE.md IN EXECUTION as concurrent
+  worktree sub-agents (2026-08-27). In flight:
+  - Wave 0 (EJ91 trial-balance assert → lands on `claude/vat-dataflow-reconciliation`, PR #27):
+    worktree `../spreadsheets-worktrees/wave0-ej91`, branch `claude/recon-wave0-ej91`.
+  - Pages PR (all four products, builder + workflows + seed): worktree
+    `../spreadsheets-worktrees/pages`, branch `claude/reconciliation-pages`.
+  - Wave 1 SE checks (items 1, 2, 7): worktree `../spreadsheets-worktrees/batch1-se`,
+    branch `claude/recon-batch1-se`.
+  - Wave 1 BST+Taxi checks (items 1, 2, 7): worktree `../spreadsheets-worktrees/batch1-bst-taxi`,
+    branch `claude/recon-batch1-bst-taxi`.
+  Coordinator merges verified commits, pushes in batches; waves 2-5 follow per the plan.
+
 - [ ] **VAT quarter-end dropdown does not roll with the package year** — plan approved, IN
   EXECUTION on branch `claude/vat-quarter-dropdown`. Plan: `PLAN_VAT_QUARTER_DROPDOWN.md`
   (three surfaces: dropdown list, stale caches, wrong-figures remap). Customer waiting
