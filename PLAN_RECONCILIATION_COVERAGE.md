@@ -1,7 +1,7 @@
 # PLAN: Reconciliation coverage, published reports, and an LLM judge
 
-Status: scoping approved, nothing in this plan is built yet. The VAT data-flow work it
-builds on is parked as draft PR #27.
+Status: scoping approved. Draft PR #27 (VAT data flow) is the vehicle for the first
+end-to-end slice; it grows to include item 1 and the Ltd report page before it merges.
 
 ## User assertions (verbatim)
 
@@ -131,12 +131,18 @@ Design:
 
 ## Sequencing
 
-1. Merge draft PR #27 (VAT data flow). Items 5, 9, and 10 stack on its plumbing
-   (namespaced reads, `multiFileOptions`).
-2. Part 1 items in value order: 1, 2, 5, 10, then the rest. Item 11 (formula guard) is
-   independent and can land any time.
-3. Part 2 page build, Ltd first, then the other three packages.
-4. Part 3 judge, once the page build gives it a stable input.
+1. **PR #27 becomes the first end-to-end slice.** Onto its branch: item 1 for Ltd
+   (assert `TrialBalance!EJ91`) and the Part 2 report page for Ltd, generated from the
+   reconciliation run and published on deployment. Merging #27 then proves the whole
+   pipeline once: data-flow checks, reconciliation report, published page.
+2. **Subsequent PRs expand coverage one slice at a time.** Each adds a Part 1 item and
+   its checks appear on the published page with no extra page work. Value order: 2, 5,
+   10, 9, then the rest. Each PR also extends its item to the other products where the
+   table marks them (for item 1 that means finding the SE/BST/Taxi self-check cells).
+   Item 11 (formula guard) is independent and can land any time.
+3. **Pages for SE, BST, and Taxi** once the Ltd page is proven. Mostly configuration,
+   since per-product reports already exist.
+4. **Part 3 judge** last, reading the stable final report.
 
 ## Verification criteria
 
