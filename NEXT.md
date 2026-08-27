@@ -13,8 +13,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     Account posts one-sided) — fix in flight, worktree `../spreadsheets-worktrees/dla-fix`,
     branch `claude/recon-dla-imbalance`; reconcile reports ANOMALYDETECTED for that scenario
     until it lands.
-  - Pages PR (all four products, builder + workflows + seed): worktree
-    `../spreadsheets-worktrees/pages`, branch `claude/reconciliation-pages`.
+  - Pages (all four products, builder + workflows + seed) verified and up as
+    **PR #29: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/29**
+    — awaiting operator merge, independent of #27/#28.
+  - Wave 2 SE (items 5, 6, 10): worktree `../spreadsheets-worktrees/wave2-se`, branch
+    `claude/recon-wave2-se` (based on `claude/recon-batch1`). Wave 2 Ltd waits for the
+    directors-loan fix (same fixture file).
   - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) verified and up as
     **PR #28: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/28**
     — awaiting operator merge, after #27 (its SE fixture-anchored checks need #27's
