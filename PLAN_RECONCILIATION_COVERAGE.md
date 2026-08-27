@@ -1,7 +1,7 @@
 # PLAN: Reconciliation coverage, published reports, and an LLM judge
 
-Status: scoping approved. Draft PR #27 (VAT data flow) is the vehicle for the first
-end-to-end slice; it grows to include item 1 and the Ltd report page before it merges.
+Status: scoping approved. Draft PR #27 (VAT data flow) grows to include item 1 before
+it merges; the pages for all four products are their own independent PR.
 
 ## User assertions (verbatim)
 
