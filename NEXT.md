@@ -8,8 +8,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 - [ ] **Reconciliation coverage** — PLAN_RECONCILIATION_COVERAGE.md IN EXECUTION as concurrent
   worktree sub-agents (2026-08-27). In flight:
-  - Wave 0 (EJ91 trial-balance assert → lands on `claude/vat-dataflow-reconciliation`, PR #27):
-    worktree `../spreadsheets-worktrees/wave0-ej91`, branch `claude/recon-wave0-ej91`.
+  - Wave 0 (EJ91 assert) merged to `claude/vat-dataflow-reconciliation` (PR #27, `37a76b21`).
+    Its remainder: `ltd-scenario-full` does not balance (EJ91 ≈ -£1.77M, Directors Loan
+    Account posts one-sided) — fix in flight, worktree `../spreadsheets-worktrees/dla-fix`,
+    branch `claude/recon-dla-imbalance`; reconcile reports ANOMALYDETECTED for that scenario
+    until it lands.
   - Pages PR (all four products, builder + workflows + seed): worktree
     `../spreadsheets-worktrees/pages`, branch `claude/reconciliation-pages`.
   - Wave 1 SE checks (items 1, 2, 7): worktree `../spreadsheets-worktrees/batch1-se`,
