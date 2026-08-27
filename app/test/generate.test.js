@@ -643,7 +643,7 @@ describe("rewriteVatinterfaceFormulas", () => {
     const viXml = await zip.file(VI_PATH).async("string");
     const months = [];
     for (let row = 6; row <= 17; row++) {
-      const m = viXml.match(new RegExp(`<c r="${col}${row}"[^>]*><f>\\[${extIdx}\\]([A-Za-z]+)!`));
+      const m = viXml.match(new RegExp(`<c r="${col}${row}"[^>]*><f>(?:IF\\()?\\[${extIdx}\\]([A-Za-z]+)!`));
       months.push(m ? m[1] : null);
     }
     return months;
@@ -652,6 +652,7 @@ describe("rewriteVatinterfaceFormulas", () => {
   it("is a no-op for the template's March year-end", async () => {
     const buffer = await rewriteVatinterfaceFormulas(templateBuffer, 3, VI_PATH);
     expect(await monthFormulas(buffer, 2, "D")).toEqual(getMonthTabSequence(3));
+    expect(await monthFormulas(buffer, 2, "M")).toEqual(getMonthTabSequence(3));
   });
 
   it("maps each month row to its own Sales/Purchases tab for an April year-end", async () => {
@@ -661,6 +662,7 @@ describe("rewriteVatinterfaceFormulas", () => {
     expect(await monthFormulas(buffer, 2, "F")).toEqual(expected);
     expect(await monthFormulas(buffer, 3, "H")).toEqual(expected);
     expect(await monthFormulas(buffer, 3, "J")).toEqual(expected);
+    expect(await monthFormulas(buffer, 2, "M")).toEqual(expected);
   });
 
   it("maps each month row to its own tab for every year-end month", async () => {
