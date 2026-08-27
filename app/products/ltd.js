@@ -496,6 +496,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B16, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B45, expected.net_profit);
 
+  // Trial balance audit accuracy check -- the workbook's own whole-book
+  // self-check. EJ91 sums every account's year-end closing balance across
+  // the full chart (balance sheet items, income, cost of sales, expenses),
+  // so any posting that does not balance shows up here even when nothing
+  // else in this file reads that account.
+  check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
+
   // P&L internal consistency (6a)
   check("P&L: Gross = Turnover - CoS", pl.B16, pl.B9 - (pl.B14 || 0));
   check("P&L: Operating = Gross - Admin", pl.B43, pl.B16 - (pl.B41 || 0));
