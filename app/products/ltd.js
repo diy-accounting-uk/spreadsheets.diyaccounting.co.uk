@@ -140,6 +140,28 @@ const OPENING_BALANCE_CELLS = {
 
 const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"];
 
+// spreadsheet-runner writes a cell by rewriting its XML in place, and when
+// the target is an empty self-closing cell that rewrite also swallows every
+// cell after it up to the next one that carries a value. On OpenAccounts the
+// whole input grid is empty self-closing cells, so a write can drop the ones
+// to its right. Ordering the writes left to right, top to bottom means every
+// dropped cell is re-created by a later write.
+function inSheetOrder(cells) {
+  const position = (ref) => {
+    const [, column, row] = /^([A-Z]+)(\d+)$/.exec(ref);
+    let columnNumber = 0;
+    for (const letter of column) columnNumber = columnNumber * 26 + letter.charCodeAt(0) - 64;
+    return [Number(row), columnNumber];
+  };
+  return Object.fromEntries(
+    Object.entries(cells).sort(([a], [b]) => {
+      const [rowA, columnA] = position(a);
+      const [rowB, columnB] = position(b);
+      return rowA - rowB || columnA - columnB;
+    }),
+  );
+}
+
 function writeOpeningBalance(sheet, openingBalance) {
   for (const key of Object.keys(openingBalance)) {
     if (FIXED_ASSET_BANDS.includes(key)) continue;
@@ -279,6 +301,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
     writeOpeningBalance(hubWrites.OpenAccounts, scenario.opening_balance);
   }
+  if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
   // Opening/closing debtors (Sales.xlsx)
   if (scenario.opening_debtors) {
