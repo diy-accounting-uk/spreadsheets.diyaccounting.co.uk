@@ -29,11 +29,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     ties deliberately unshipped until the runner cell-write fix lands (net reads as gross
     today). Operator decision open: six invalid purchase codes in the SE fixture
     (~£9.7k/yr never reaches the P&L) need per-category recoding.
-  - Runner cell-write fix (greedy capture swallowing sibling cells; also deletes the
-    Purchases VAT formula on every amount write) applied on
-    `claude/recon-ltd-opening-balance`; blast-radius run in progress. Leaf-to-leaf
-    external-link caches (Fixedassets reading Sales/Purchases) still unresolved in the
-    runner. Wave 2 Ltd dispatches after the opening-balance PR opens.
+  - Runner cell-write fix landed on `claude/recon-ltd-opening-balance` (`6eecef8b`,
+    blast radius green; Ltd premises/legal expecteds retuned to net — the gross values
+    only ever matched because the bug deleted the Purchases VAT formulas). Generator was
+    never affected; shipped packages are clean. Still open in the runner: leaf-to-leaf
+    external-link caches (Fixedassets reading Sales/Purchases). Wave 2 Ltd dispatches
+    after the opening-balance PR opens.
   - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) verified and up as
     **PR #28: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/28**
     — awaiting operator merge, after #27 (its SE fixture-anchored checks need #27's
