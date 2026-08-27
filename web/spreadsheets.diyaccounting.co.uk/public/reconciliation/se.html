@@ -1,0 +1,1367 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Self Employed reconciliation - DIY Accounting Spreadsheets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Reconciliation of the DIY Accounting Self Employed spreadsheets: input transactions, sheet screenshots, accounting statements and the tax computation." />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <meta property="og:title" content="Self Employed reconciliation - DIY Accounting Spreadsheets" />
+    <meta property="og:description" content="Reconciliation of the DIY Accounting Self Employed spreadsheets: input transactions, sheet screenshots, accounting statements and the tax computation." />
+    <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/reconciliation/se.html" />
+    <meta property="og:site_name" content="DIY Accounting" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://spreadsheets.diyaccounting.co.uk/reconciliation/se.html" />
+    <link rel="stylesheet" href="../spreadsheets.css" />
+    <style>
+      .recon-scroll { overflow-x: auto; }
+      .recon-table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
+      .recon-table th, .recon-table td { border: 1px solid #ddd; padding: 0.35em 0.6em; text-align: left; vertical-align: top; }
+      .recon-table th { background: #f5f5f5; font-weight: 600; }
+      .recon-table th.num, .recon-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+      .recon-details { margin: 0.8em 0; border: 1px solid #ddd; border-radius: 4px; padding: 0.4em 0.8em; }
+      .recon-details > summary { cursor: pointer; font-weight: 600; padding: 0.3em 0; }
+      .recon-shot { margin: 1.2em 0; }
+      .recon-shot img { max-width: 100%; border: 1px solid #ddd; }
+      .recon-shot figcaption { font-size: 0.9em; color: #555; margin-top: 0.4em; }
+      .recon-toc { margin: 1em 0 2em; padding: 0.8em 1em; background: #f7f7f7; border-radius: 4px; }
+      .recon-toc ol { margin: 0; padding-left: 1.4em; }
+      .recon-section { margin-top: 2.5em; }
+      .recon-facts { list-style: none; padding: 0; }
+      .recon-facts li { margin-bottom: 0.3em; }
+    </style>
+    <script src="../lib/analytics.js"></script>
+  </head>
+  <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="../index.html">Products</a>
+      <a href="../download.html">Download</a>
+      <a href="../knowledge-base.html">Knowledge Base</a>
+      <a href="../community.html">Community</a>
+      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="../donate.html">Donate</a>
+    </nav>
+
+    <header>
+      <h1>DIY Accounting Spreadsheets</h1>
+      <p class="subtitle">Excel bookkeeping and accounting software for UK small businesses</p>
+    </header>
+
+    <main id="mainContent">
+      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>
+      <h2 class="kb-page-title">Self Employed reconciliation</h2>
+      <p class="kb-page-description">Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007. Every figure below comes from a scenario driven through the shipped workbooks and read back out of the recalculated sheets.</p>
+      <nav class="recon-toc" aria-label="On this page">
+        <ol>
+          <li><a href="#summary">Summary</a></li>
+          <li><a href="#reconciliation-checks">Reconciliation checks</a></li>
+          <li><a href="#input-transactions">Input transactions</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#accounting-statements">Accounting statements</a></li>
+          <li><a href="#tax-review">Tax review</a></li>
+        </ol>
+      </nav>
+      <section class="recon-section" id="summary">
+        <h3>Summary</h3>
+        <ul class="recon-facts">
+          <li><strong>Status:</strong> RECONCILES</li>
+          <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
+          <li><strong>Year end:</strong> 2027-04-05</li>
+          <li><strong>Checks:</strong> 16 passed, 0 warnings, 0 failed</li>
+          <li><strong>Reconciliation runs published:</strong> 7</li>
+        </ul>
+        <h4>Every run</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Year end</th><th>Period</th><th>Scenario</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>2027-04-05</td><td>Apr27</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2026-04-05</td><td>Apr26</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2025-04-05</td><td>Apr25</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2024-04-05</td><td>Apr24</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2023-04-05</td><td>Apr23</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2022-04-05</td><td>Apr22</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2021-04-05</td><td>Apr21</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+</tbody>
+</table></div>
+      </section>
+      <section class="recon-section" id="reconciliation-checks">
+        <h3>Reconciliation checks</h3>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Diff</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Total Sales</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Gross = Turnover + Grants - CoS</td><td>323539.3333333333</td><td>323539.333333333</td><td>-2.9103830456733704e-10</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Operating = Gross - Admin</td><td>292869.083333333</td><td>292869.083333333</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: PBT = Operating</td><td>292869.083333333</td><td>292869.083333333</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Admin lines sum = Total</td><td>30670.25</td><td>30670.25</td><td>0</td><td>PASS</td></tr>
+<tr><td>Motor Expenses</td><td>7598</td><td>7598.25</td><td>+0.25</td><td>PASS</td></tr>
+<tr><td>Legal &amp; Professional</td><td>5310</td><td>5310</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>104580</td><td>104579.433333333</td><td>-0.5666666670003906</td><td>PASS</td></tr>
+<tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI</td><td>111694</td><td>111693.415</td><td>-0.5850000000064028</td><td>PASS</td></tr>
+<tr><td>Tax: Taxable = Profit - Allowance</td><td>280299.083333333</td><td>280299.083333333</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: IT = Basic + Higher</td><td>104579.4333333332</td><td>104579.433333333</td><td>-2.0372681319713593e-10</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT - CIS + NI</td><td>111693.41499999966</td><td>111693.415</td><td>+3.346940502524376e-10</td><td>PASS</td></tr>
+<tr><td>SA103S: Turnover = P&amp;L Sales</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Net profit close to P&amp;L Net - Grants</td><td>290785.7499999997</td><td>290785.75</td><td>+2.9103830456733704e-10</td><td>PASS</td></tr>
+<tr><td>SA103S: Profit for tax = Income Tax E5</td><td>292869.083333333</td><td>292869.083333333</td><td>0</td><td>PASS</td></tr>
+</tbody>
+</table></div>
+      </section>
+      <section class="recon-section" id="input-transactions">
+        <h3>Input transactions</h3>
+<h4>Business details</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Item</th><th class="num">Value</th></tr></thead>
+<tbody>
+<tr><td>Name</td><td class="num">Precision Code Trading</td></tr>
+<tr><td>Description</td><td class="num">IT consultancy and software development</td></tr>
+<tr><td>Address</td><td class="num">123 High Street</td></tr>
+<tr><td>Town</td><td class="num">Manchester</td></tr>
+<tr><td>Postcode</td><td class="num">M1 1AA</td></tr>
+<tr><td>Phone</td><td class="num">0161 555 0100</td></tr>
+<tr><td>Utr</td><td class="num">1234567890</td></tr>
+<tr><td>Vat number</td><td class="num">123456789</td></tr>
+<tr><td>Nino</td><td class="num">AB123456C</td></tr>
+</tbody>
+</table></div>
+<h4>Month by month</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Month</th><th class="num">Sales entries</th><th class="num">Sales total</th><th class="num">Purchases entries</th><th class="num">Purchases total</th><th class="num">Bank entries</th><th class="num">Bank total</th></tr></thead>
+<tbody>
+<tr><td>Apr</td><td class="num">9</td><td class="num">33,400.00</td><td class="num">31</td><td class="num">5,111.25</td><td class="num">17</td><td class="num">65,068.00</td></tr>
+<tr><td>May</td><td class="num">9</td><td class="num">32,920.00</td><td class="num">34</td><td class="num">6,375.00</td><td class="num">10</td><td class="num">26,678.00</td></tr>
+<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">33</td><td class="num">9,057.00</td><td class="num">12</td><td class="num">27,428.00</td></tr>
+<tr><td>Jul</td><td class="num">9</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">9,059.25</td><td class="num">13</td><td class="num">34,053.00</td></tr>
+<tr><td>Aug</td><td class="num">10</td><td class="num">36,020.00</td><td class="num">32</td><td class="num">4,405.25</td><td class="num">10</td><td class="num">29,353.00</td></tr>
+<tr><td>Sep</td><td class="num">10</td><td class="num">33,760.00</td><td class="num">33</td><td class="num">4,975.00</td><td class="num">11</td><td class="num">25,379.00</td></tr>
+<tr><td>Oct</td><td class="num">11</td><td class="num">50,560.00</td><td class="num">35</td><td class="num">43,005.75</td><td class="num">15</td><td class="num">90,253.00</td></tr>
+<tr><td>Nov</td><td class="num">9</td><td class="num">35,320.00</td><td class="num">31</td><td class="num">6,918.00</td><td class="num">10</td><td class="num">26,578.00</td></tr>
+<tr><td>Dec</td><td class="num">8</td><td class="num">32,800.00</td><td class="num">33</td><td class="num">9,451.50</td><td class="num">12</td><td class="num">27,070.00</td></tr>
+<tr><td>Jan</td><td class="num">11</td><td class="num">35,440.00</td><td class="num">33</td><td class="num">4,511.25</td><td class="num">13</td><td class="num">37,153.00</td></tr>
+<tr><td>Feb</td><td class="num">9</td><td class="num">34,360.00</td><td class="num">33</td><td class="num">4,396.50</td><td class="num">9</td><td class="num">26,853.00</td></tr>
+<tr><td>Mar</td><td class="num">8</td><td class="num">31,360.00</td><td class="num">31</td><td class="num">3,726.50</td><td class="num">13</td><td class="num">37,890.00</td></tr>
+<tr><td>Year</td><td class="num">112</td><td class="num"><strong>424,900.00</strong></td><td class="num">393</td><td class="num"><strong>110,992.25</strong></td><td class="num">145</td><td class="num"><strong>453,756.00</strong></td></tr>
+</tbody>
+</table></div>
+<h4>Every entry</h4>
+<details class="recon-details" id="sales-journal">
+<summary>Sales journal: 112 entries, 424,900.00</summary>
+<h5>Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-04-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-04-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-04-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-04-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-04-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-04-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-04-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-04-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+</tbody>
+</table></div>
+<h5>May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-05-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-05-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-05-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-05-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-05-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
+<tr><td>2025-05-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-05-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-05-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-05-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-06-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-06-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-06-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-06-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-06-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-06-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-06-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-06-20</td><td>Gamma Ltd</td><td>c</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-06-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-07-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-07-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-07-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-07-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-07-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-07-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
+<tr><td>2025-07-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-07-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-07-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+</tbody>
+</table></div>
+<h5>Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-08-01</td><td>Innovate UK</td><td>g</td><td class="num">2,500.00</td></tr>
+<tr><td>2025-08-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-08-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-08-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-08-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-08-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
+<tr><td>2025-08-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-08-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-08-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-08-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-09-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-09-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-09-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-09-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-09-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-09-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-09-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-09-20</td><td>StartupHub</td><td>c</td><td class="num">960.00</td></tr>
+<tr><td>2025-09-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+<tr><td>2025-09-25</td><td>Epsilon Partners</td><td>d</td><td class="num">600.00</td></tr>
+</tbody>
+</table></div>
+<h5>Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-10-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-10-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-10-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-10-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-10-10</td><td>Private buyer</td><td>fs</td><td class="num">15,000.00</td></tr>
+<tr><td>2025-10-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-10-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
+<tr><td>2025-10-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-10-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-10-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-10-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+</tbody>
+</table></div>
+<h5>Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-11-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-11-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-11-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-11-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-11-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
+<tr><td>2025-11-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-11-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-11-20</td><td>Delta PLC</td><td>c</td><td class="num">3,600.00</td></tr>
+<tr><td>2025-11-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-12-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2025-12-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2025-12-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-12-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2025-12-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-12-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-12-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-12-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-01-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-01-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2026-01-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2026-01-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2026-01-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2026-01-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
+<tr><td>2026-01-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2026-01-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-01-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-01-25</td><td>Lambda Corp</td><td>d</td><td class="num">480.00</td></tr>
+<tr><td>2026-01-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+</tbody>
+</table></div>
+<h5>Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-02-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2026-02-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2026-02-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2026-02-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2026-02-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2026-02-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-02-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2026-02-20</td><td>MegaCorp</td><td>c</td><td class="num">1,800.00</td></tr>
+<tr><td>2026-02-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-03-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
+<tr><td>2026-03-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
+<tr><td>2026-03-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2026-03-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
+<tr><td>2026-03-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
+<tr><td>2026-03-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-03-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+<tr><td>2026-03-31</td><td>Zeta Corp</td><td>o</td><td class="num">360.00</td></tr>
+</tbody>
+</table></div>
+</details>
+<details class="recon-details" id="purchase-journal">
+<summary>Purchase journal: 393 entries, 110,992.25</summary>
+<h5>Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-04-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-04-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-04-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-04-01</td><td>Hiscox</td><td>n</td><td class="num">1,440.00</td></tr>
+<tr><td>2025-04-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-04-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-04-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-04-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-04-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-10</td><td>TechParts</td><td>s</td><td class="num">600.00</td></tr>
+<tr><td>2025-04-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-14</td><td>Toolstation</td><td>u</td><td class="num">42.00</td></tr>
+<tr><td>2025-04-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-04-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-04-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-04-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-04-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-04-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">120.00</td></tr>
+<tr><td>2025-04-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-04-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-04-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2025-04-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-04-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-05-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-05-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-05-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-05-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-05-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-05-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-05-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-05-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-05-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-05-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-05-06</td><td>Trainline</td><td>h</td><td class="num">60.00</td></tr>
+<tr><td>2025-05-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-05-08</td><td>Hilti</td><td>q</td><td class="num">240.00</td></tr>
+<tr><td>2025-05-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-05-10</td><td>Google Ads</td><td>a</td><td class="num">600.00</td></tr>
+<tr><td>2025-05-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-05-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-05-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-05-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-05-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-05-15</td><td>ComponentsDirect</td><td>s</td><td class="num">480.00</td></tr>
+<tr><td>2025-05-15</td><td>Dell</td><td>fa</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-05-16</td><td>WHSmith</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-05-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-05-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-05-20</td><td>ParcelForce</td><td>t</td><td class="num">180.00</td></tr>
+<tr><td>2025-05-20</td><td>CableCo</td><td>s</td><td class="num">240.00</td></tr>
+<tr><td>2025-05-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-05-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-05-22</td><td>Halfords</td><td>v</td><td class="num">48.00</td></tr>
+<tr><td>2025-05-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-05-25</td><td>Mileage claim</td><td>v</td><td class="num">54.00</td></tr>
+<tr><td>2025-05-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-05-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-06-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-06-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-06-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td></tr>
+<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-06-14</td><td>Toolstation</td><td>u</td><td class="num">30.00</td></tr>
+<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td></tr>
+<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td></tr>
+<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td></tr>
+<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-06-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td></tr>
+<tr><td>2025-06-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td></tr>
+<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-07-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-07-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-07-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-07-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-07-01</td><td>J. Smith Consulting</td><td>z</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-07-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-07-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-07-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-07-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-07-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-07-05</td><td>LinkedIn</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2025-07-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-07-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-07-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-07-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2025-07-10</td><td>TechParts</td><td>s</td><td class="num">720.00</td></tr>
+<tr><td>2025-07-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-07-12</td><td>ToolHire</td><td>q</td><td class="num">480.00</td></tr>
+<tr><td>2025-07-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-07-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-07-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-07-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-07-15</td><td>IKEA</td><td>fa</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-07-16</td><td>WHSmith</td><td>g</td><td class="num">24.00</td></tr>
+<tr><td>2025-07-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-07-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-07-20</td><td>DHL</td><td>t</td><td class="num">120.00</td></tr>
+<tr><td>2025-07-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">180.00</td></tr>
+<tr><td>2025-07-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-07-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-07-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-07-25</td><td>Mileage claim</td><td>v</td><td class="num">20.25</td></tr>
+<tr><td>2025-07-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-07-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-08-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-08-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-08-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-08-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-08-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-08-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-08-06</td><td>Trainline</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-08-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-14</td><td>Toolstation</td><td>u</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-08-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-08-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-08-15</td><td>ComponentsDirect</td><td>s</td><td class="num">360.00</td></tr>
+<tr><td>2025-08-18</td><td>PC Repair Shop</td><td>m</td><td class="num">240.00</td></tr>
+<tr><td>2025-08-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-08-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-08-20</td><td>Casual worker</td><td>w</td><td class="num">800.00</td></tr>
+<tr><td>2025-08-20</td><td>CableCo</td><td>s</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-08-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-08-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2025-08-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-08-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-09-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-09-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-09-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-09-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-09-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-09-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-09-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-09-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-09-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-09-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-09-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-09-08</td><td>Hilti</td><td>q</td><td class="num">360.00</td></tr>
+<tr><td>2025-09-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-09-10</td><td>Royal Mail</td><td>t</td><td class="num">96.00</td></tr>
+<tr><td>2025-09-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-09-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-09-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-09-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-09-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-09-15</td><td>Jones Solicitors</td><td>l</td><td class="num">960.00</td></tr>
+<tr><td>2025-09-16</td><td>WHSmith</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-09-18</td><td>ElectroParts</td><td>s</td><td class="num">240.00</td></tr>
+<tr><td>2025-09-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-09-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-09-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-09-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-09-22</td><td>Halfords</td><td>v</td><td class="num">72.00</td></tr>
+<tr><td>2025-09-25</td><td>EnergySupply</td><td>p</td><td class="num">300.00</td></tr>
+<tr><td>2025-09-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-09-25</td><td>Mileage claim</td><td>v</td><td class="num">72.00</td></tr>
+<tr><td>2025-09-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-09-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-09-30</td><td>Directors loan</td><td>l</td><td class="num">208.00</td></tr>
+</tbody>
+</table></div>
+<h5>Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-10-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-10-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-10-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-10-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-10-01</td><td>Simply Business</td><td>n</td><td class="num">360.00</td></tr>
+<tr><td>2025-10-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-10-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-10-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-10-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-10-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-10-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-10-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-10-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-10-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-10-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2025-10-10</td><td>TechParts</td><td>s</td><td class="num">480.00</td></tr>
+<tr><td>2025-10-10</td><td>Google Ads</td><td>a</td><td class="num">1,800.00</td></tr>
+<tr><td>2025-10-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-10-14</td><td>Toolstation</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-10-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-10-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-10-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-10-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-10-15</td><td>TechExpo</td><td>a</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-10-18</td><td>Premier Inn</td><td>h</td><td class="num">120.00</td></tr>
+<tr><td>2025-10-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-10-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-10-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">96.00</td></tr>
+<tr><td>2025-10-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-10-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-10-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-10-25</td><td>Mileage claim</td><td>v</td><td class="num">42.75</td></tr>
+<tr><td>2025-10-25</td><td>Ford</td><td>fa</td><td class="num">36,000.00</td></tr>
+<tr><td>2025-10-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-10-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-11-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-11-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td></tr>
+<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-11-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td></tr>
+<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-11-20</td><td>ParcelForce</td><td>t</td><td class="num">240.00</td></tr>
+<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td></tr>
+<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-11-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-11-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td></tr>
+<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-12-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-12-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-12-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-12-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-12-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-12-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-12-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-12-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-12-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-12-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-12-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-12-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-12-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-12-10</td><td>Vistaprint</td><td>g</td><td class="num">120.00</td></tr>
+<tr><td>2025-12-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-12-14</td><td>Toolstation</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-12-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-12-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-12-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-12-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-12-15</td><td>Code Club UK</td><td>y</td><td class="num">500.00</td></tr>
+<tr><td>2025-12-18</td><td>ElectroParts</td><td>s</td><td class="num">480.00</td></tr>
+<tr><td>2025-12-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-12-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-12-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-12-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-12-25</td><td>EnergySupply</td><td>p</td><td class="num">420.00</td></tr>
+<tr><td>2025-12-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-12-25</td><td>Mileage claim</td><td>v</td><td class="num">49.50</td></tr>
+<tr><td>2025-12-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-12-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-12-31</td><td>Director</td><td>w</td><td class="num">5,000.00</td></tr>
+<tr><td>2025-12-31</td><td>Directors loan</td><td>l</td><td class="num">167.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-01-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-01-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2026-01-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2026-01-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2026-01-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2026-01-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-05</td><td>LinkedIn</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2026-01-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2026-01-08</td><td>Hilti</td><td>q</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2026-01-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-10</td><td>TechParts</td><td>s</td><td class="num">600.00</td></tr>
+<tr><td>2026-01-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2026-01-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2026-01-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2026-01-16</td><td>WHSmith</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2026-01-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2026-01-20</td><td>DHL</td><td>t</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">144.00</td></tr>
+<tr><td>2026-01-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2026-01-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-22</td><td>Halfords</td><td>v</td><td class="num">36.00</td></tr>
+<tr><td>2026-01-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2026-01-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2026-01-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2026-01-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-02-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-02-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2026-02-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2026-02-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2026-02-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2026-02-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2026-02-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2026-02-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-06</td><td>Trainline</td><td>h</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2026-02-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-12</td><td>ToolHire</td><td>q</td><td class="num">360.00</td></tr>
+<tr><td>2026-02-14</td><td>Toolstation</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2026-02-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2026-02-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2026-02-15</td><td>ComponentsDirect</td><td>s</td><td class="num">420.00</td></tr>
+<tr><td>2026-02-18</td><td>PC Repair Shop</td><td>m</td><td class="num">360.00</td></tr>
+<tr><td>2026-02-18</td><td>Premier Inn</td><td>h</td><td class="num">240.00</td></tr>
+<tr><td>2026-02-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2026-02-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2026-02-20</td><td>CableCo</td><td>s</td><td class="num">240.00</td></tr>
+<tr><td>2026-02-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2026-02-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2026-02-25</td><td>Mileage claim</td><td>v</td><td class="num">31.50</td></tr>
+<tr><td>2026-02-28</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2026-02-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+</tbody>
+</table></div>
+<h5>Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-03-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-03-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2026-03-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2026-03-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2026-03-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2026-03-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-03-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2026-03-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2026-03-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2026-03-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2026-03-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2026-03-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2026-03-10</td><td>Royal Mail</td><td>t</td><td class="num">144.00</td></tr>
+<tr><td>2026-03-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2026-03-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2026-03-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2026-03-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2026-03-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2026-03-16</td><td>WHSmith</td><td>g</td><td class="num">24.00</td></tr>
+<tr><td>2026-03-18</td><td>ElectroParts</td><td>s</td><td class="num">300.00</td></tr>
+<tr><td>2026-03-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2026-03-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2026-03-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2026-03-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-03-22</td><td>Halfords</td><td>v</td><td class="num">60.00</td></tr>
+<tr><td>2026-03-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td></tr>
+<tr><td>2026-03-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2026-03-25</td><td>Mileage claim</td><td>v</td><td class="num">58.50</td></tr>
+<tr><td>2026-03-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2026-03-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2026-03-31</td><td>Directors loan</td><td>l</td><td class="num">125.00</td></tr>
+</tbody>
+</table></div>
+</details>
+<details class="recon-details" id="bank-journal">
+<summary>Bank and cash entries: 145 entries, 453,756.00</summary>
+<h5>Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-04-01</td><td>1200</td><td>Opening balance</td><td>Current account opening balance</td><td>BC</td><td class="num">25,000.00</td></tr>
+<tr><td>2025-04-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-04-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,200.00</td></tr>
+<tr><td>2025-04-10</td><td>1200</td><td>Acme Corp</td><td>Opening debtor receipt</td><td>DR</td><td class="num">7,200.00</td></tr>
+<tr><td>2025-04-15</td><td>1200</td><td>Beta Systems</td><td>Opening debtor receipt</td><td>DR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-04-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-04-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-04-25</td><td>1200</td><td>Gamma Ltd</td><td>Opening debtor receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-04-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,200.00</td></tr>
+<tr><td>2025-04-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-04-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-04-30</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td></tr>
+<tr><td>2026-04-01</td><td>1200</td><td>HMRC</td><td>VAT payment Q4 Jan-Mar</td><td>RP</td><td class="num">2,800.00</td></tr>
+<tr><td>2025-04-01</td><td>1220</td><td>Opening balance</td><td>Cash float opening balance</td><td>BC</td><td class="num">500.00</td></tr>
+<tr><td>2025-04-10</td><td>1220</td><td>Corner shop</td><td>Milk and tea</td><td>CR</td><td class="num">15.00</td></tr>
+</tbody>
+</table></div>
+<h5>May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-05-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-05-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-05-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,800.00</td></tr>
+<tr><td>2025-05-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-05-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-05-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td></tr>
+<tr><td>2025-05-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-05-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,800.00</td></tr>
+<tr><td>2025-05-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-05-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-06-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-06-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-06-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td></tr>
+<tr><td>2025-06-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-06-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-06-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-06-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">4,500.00</td></tr>
+<tr><td>2025-06-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-06-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">250.00</td></tr>
+<tr><td>2025-06-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-06-10</td><td>1220</td><td>Cash top-up</td><td>Cash float replenishment</td><td>X</td><td class="num">100.00</td></tr>
+<tr><td>2025-06-10</td><td>1220</td><td>WH Smith</td><td>Envelopes and stamps</td><td>CR</td><td class="num">25.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-07-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-07-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-07-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td></tr>
+<tr><td>2025-07-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RP</td><td class="num">3,800.00</td></tr>
+<tr><td>2025-07-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RP</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-07-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-07-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-07-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,600.00</td></tr>
+<tr><td>2025-07-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-07-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-07-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-08-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-08-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-08-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,600.00</td></tr>
+<tr><td>2025-08-05</td><td>1200</td><td>Innovate UK</td><td>Grant received</td><td>RV</td><td class="num">2,500.00</td></tr>
+<tr><td>2025-08-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-08-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-08-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-08-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">4,200.00</td></tr>
+<tr><td>2025-08-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-08-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-09-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-09-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-09-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,100.00</td></tr>
+<tr><td>2025-09-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-09-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-09-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-09-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-09-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-09-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">208.00</td></tr>
+<tr><td>2025-09-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-09-05</td><td>1220</td><td>Corner shop</td><td>Kitchen supplies</td><td>CR</td><td class="num">18.00</td></tr>
+</tbody>
+</table></div>
+<h5>Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-10-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-10-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-10-01</td><td>1200</td><td>HMRC</td><td>Corporation Tax prior year</td><td>RP</td><td class="num">4,500.00</td></tr>
+<tr><td>2025-10-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-10-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RP</td><td class="num">3,200.00</td></tr>
+<tr><td>2025-10-15</td><td>1200</td><td>Private buyer</td><td>Van sale proceeds</td><td>DR</td><td class="num">15,000.00</td></tr>
+<tr><td>2025-10-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td></tr>
+<tr><td>2025-10-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-10-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-10-25</td><td>1200</td><td>Ford</td><td>Ford Transit Custom purchase</td><td>CR</td><td class="num">36,000.00</td></tr>
+<tr><td>2025-10-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-10-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">5,000.00</td></tr>
+<tr><td>2025-10-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-10-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-10-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td></tr>
+</tbody>
+</table></div>
+<h5>Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-11-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-11-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-11-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-11-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-11-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-11-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td></tr>
+<tr><td>2025-11-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-11-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">4,100.00</td></tr>
+<tr><td>2025-11-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-11-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-12-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-12-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2025-12-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,700.00</td></tr>
+<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RP</td><td class="num">600.00</td></tr>
+<tr><td>2025-12-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2025-12-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2025-12-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-12-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2025-12-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">167.00</td></tr>
+<tr><td>2025-12-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2025-12-10</td><td>1220</td><td>Various</td><td>Christmas team refreshments</td><td>CR</td><td class="num">50.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-01-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-01-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2026-01-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td></tr>
+<tr><td>2026-01-07</td><td>1200</td><td>HMRC</td><td>VAT refund Q3 Oct-Dec</td><td>RV</td><td class="num">1,500.00</td></tr>
+<tr><td>2026-01-15</td><td>1200</td><td>Director loan</td><td>Directors loan advance</td><td>DL</td><td class="num">5,000.00</td></tr>
+<tr><td>2026-01-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td></tr>
+<tr><td>2026-01-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2026-01-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2026-01-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-01-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">4,800.00</td></tr>
+<tr><td>2026-01-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2026-01-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2026-01-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-02-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-02-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2026-02-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,900.00</td></tr>
+<tr><td>2026-02-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2026-02-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2026-02-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">3,900.00</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+</tbody>
+</table></div>
+<h5>Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-03-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-03-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td></tr>
+<tr><td>2026-03-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td></tr>
+<tr><td>2026-03-15</td><td>1200</td><td>Internal transfer</td><td>Transfer to savings account</td><td>X</td><td class="num">5,000.00</td></tr>
+<tr><td>2026-03-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,501.00</td></tr>
+<tr><td>2026-03-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td></tr>
+<tr><td>2026-03-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td></tr>
+<tr><td>2026-03-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">4,400.00</td></tr>
+<tr><td>2026-03-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">125.00</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Dividend</td><td>Final dividend payment</td><td>DV</td><td class="num">6,000.00</td></tr>
+<tr><td>2026-03-20</td><td>1220</td><td>Newsagent</td><td>Newspapers for reception</td><td>CR</td><td class="num">12.00</td></tr>
+</tbody>
+</table></div>
+</details>
+<h4>Payroll</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>EmployeeID</th><th>Name</th><th>Role</th><th class="num">GrossPay</th><th>PayFrequency</th><th>TaxCode</th><th>NiCategory</th><th>IsDirector</th></tr></thead>
+<tbody>
+<tr><td>EMP001</td><td>Alice Johnson</td><td>Senior Developer</td><td class="num">3,500.00</td><td>monthly</td><td>1257L</td><td>A</td><td>no</td></tr>
+<tr><td>EMP002</td><td>Bob Williams</td><td>Support Technician</td><td class="num">2,200.00</td><td>monthly</td><td>1257L</td><td>A</td><td>no</td></tr>
+<tr><td>EMP003</td><td>Carol Smith</td><td>Director</td><td class="num">1,048.00</td><td>monthly</td><td>1257L</td><td>A</td><td>yes</td></tr>
+</tbody>
+</table></div>
+<h4>Opening and closing balances</h4>
+<h5>Stock</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Item</th><th class="num">Value</th></tr></thead>
+<tbody>
+<tr><td>Opening</td><td class="num">10,000.00</td></tr>
+<tr><td>Closing</td><td class="num">6,000.00</td></tr>
+</tbody>
+</table></div>
+<h5>Opening debtors</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Customer</th><th>Invoice</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Acme Corp</td><td>INV-0901</td><td class="num">7,200.00</td></tr>
+<tr><td>Beta Systems</td><td>INV-0902</td><td class="num">1,200.00</td></tr>
+<tr><td>Gamma Ltd</td><td>INV-0903</td><td class="num">2,400.00</td></tr>
+</tbody>
+</table></div>
+<h5>Closing debtors</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Customer</th><th>Invoice</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Acme Corp</td><td>INV-1012</td><td class="num">8,000.00</td></tr>
+<tr><td>TechStart Ltd</td><td>INV-1112</td><td class="num">2,400.00</td></tr>
+</tbody>
+</table></div>
+<h5>Opening creditors</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Supplier</th><th>Invoice</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>WorkSpace Ltd</td><td>WS-2403</td><td class="num">1,200.00</td></tr>
+<tr><td>Smith &amp; Co</td><td>SC-2403</td><td class="num">300.00</td></tr>
+<tr><td>TechParts Ltd</td><td>TP-2403</td><td class="num">600.00</td></tr>
+<tr><td>Shell</td><td>SH-2403</td><td class="num">120.00</td></tr>
+</tbody>
+</table></div>
+<h5>Closing creditors</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Supplier</th><th>Invoice</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>WorkSpace Ltd</td><td>WS-2603</td><td class="num">1,200.00</td></tr>
+<tr><td>Smith &amp; Co</td><td>SC-2603</td><td class="num">300.00</td></tr>
+<tr><td>BT Business</td><td>BT-2603</td><td class="num">60.00</td></tr>
+<tr><td>Shell</td><td>SH-2603</td><td class="num">150.00</td></tr>
+</tbody>
+</table></div>
+<h5>Opening fixed assets</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Description</th><th>Category</th><th class="num">Cost</th><th class="num">Acc dep</th></tr></thead>
+<tbody>
+<tr><td>Van (2.5 years old)</td><td>motor</td><td class="num">30,000.00</td><td class="num">9,828.00</td></tr>
+<tr><td>Laptop (0.5 years old)</td><td>computer</td><td class="num">3,000.00</td><td class="num">270.00</td></tr>
+</tbody>
+</table></div>
+      </section>
+      <section class="recon-section" id="screenshots">
+        <h3>Screenshots</h3>
+        <figure class="recon-shot">
+          <img src="screenshots/se-financialaccounts-profit-loss-account.png" alt="Profit and loss account sheet of the populated workbook" loading="lazy" />
+          <figcaption>Profit and loss account — Financialaccounts.xlsx, sheet Profit &amp; Loss Account</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/se-financialaccounts-income-tax.png" alt="Income tax calculation sheet of the populated workbook" loading="lazy" />
+          <figcaption>Income tax calculation — Financialaccounts.xlsx, sheet Income Tax</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/se-financialaccounts-se-short.png" alt="Self assessment short pages sheet of the populated workbook" loading="lazy" />
+          <figcaption>Self assessment short pages — Financialaccounts.xlsx, sheet SE Short</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/se-vat-vatqtr1.png" alt="VAT return, quarter 1 sheet of the populated workbook" loading="lazy" />
+          <figcaption>VAT return, quarter 1 — Vat.xlsx, sheet VATQtr1</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/se-fixedassets-schedule.png" alt="Fixed asset schedule sheet of the populated workbook" loading="lazy" />
+          <figcaption>Fixed asset schedule — Fixedassets.xlsx, sheet Schedule</figcaption>
+        </figure>
+      </section>
+      <section class="recon-section" id="accounting-statements">
+        <h3>Accounting statements</h3>
+<h4>Business Details</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Business Name</td><td class="num">Precision Code Trading</td></tr>
+</tbody>
+</table></div>
+<h4>Profit &amp; Loss Account</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy</td><td class="num">311,600</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Product B — Software</td><td class="num">13,600</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Product C — Training</td><td class="num">10,300</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Income</td><td class="num">3,700</td></tr>
+<tr><td><strong>Sales Turnover</strong></td><td class="num">339,200</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Grants Received</td><td class="num">2,083.33</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock</td><td class="num">6,540</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors</td><td class="num">8,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs</td><td class="num">3,204</td></tr>
+<tr><td>Cost of Sales</td><td class="num">17,744</td></tr>
+<tr><td><strong>Gross Profit</strong></td><td class="num">323,539.33</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Wages &amp; Salaries</td><td class="num">5,800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power</td><td class="num">1,440</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Maintenance</td><td class="num">1,140</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;General Admin</td><td class="num">1,962</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Motor Expenses</td><td class="num">7,598.25</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Travel &amp; Subsistence</td><td class="num">1,860</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Advertising</td><td class="num">4,560</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Legal &amp; Professional</td><td class="num">5,310</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Bad Debts</td><td class="num">-300</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Depreciation</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Expenses</td><td class="num">800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Charitable Donations</td><td class="num">500</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Goodwill Amortisation</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Loss on Disposal</td><td class="num">0</td></tr>
+<tr><td>Total Admin Expenses</td><td class="num">30,670.25</td></tr>
+<tr><td><strong>Operating Profit</strong></td><td class="num">292,869.08</td></tr>
+<tr><td><strong>Profit Before Tax</strong></td><td class="num">292,869.08</td></tr>
+</tbody>
+</table></div>
+<h4>Payroll Summary</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Apr Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;May Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Jun Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Jul Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Aug Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Sep Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Oct Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Nov Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Dec Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Jan Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Feb Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Mar Gross Pay</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Apr PAYE</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Apr Employer NI</td><td class="num">0</td></tr>
+</tbody>
+</table></div>
+<h4>Quarterly Summary</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Sales</td><td class="num">83,900</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q2 Sales</td><td class="num">83,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q3 Sales</td><td class="num">85,700</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q4 Sales</td><td class="num">82,900</td></tr>
+<tr><td><strong>Annual Sales</strong></td><td class="num">335,500</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q1 Expenses</td><td class="num">2,499</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q2 Expenses</td><td class="num">2,283</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses</td><td class="num">2,619</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses</td><td class="num">2,343</td></tr>
+<tr><td><strong>Annual Expenses</strong></td><td class="num">9,744</td></tr>
+</tbody>
+</table></div>
+<details class="recon-details">
+<summary>Cell values behind these statements</summary>
+<h5>Business Details</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>C5</td><td>Business Name</td><td>Precision Code Trading</td><td>entityInformation.organizationIdentifier</td></tr>
+</tbody>
+</table></div>
+<h5>Profit &amp; Loss Account</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>B5</td><td>Product A — Consultancy</td><td>311600</td><td>accounts.sales.4000</td></tr>
+<tr><td>B6</td><td>Product B — Software</td><td>13600</td><td>accounts.sales.4001</td></tr>
+<tr><td>B7</td><td>Product C — Training</td><td>10300</td><td>accounts.sales.4002</td></tr>
+<tr><td>B8</td><td>Other Income</td><td>3700</td><td>accounts.sales.4003</td></tr>
+<tr><td>B9</td><td><strong>Sales Turnover</strong></td><td>339200</td><td>gl-cor:amount (salesTurnover)</td></tr>
+<tr><td>B11</td><td>Grants Received</td><td>2083.33333333333</td><td>accounts.sales.4004</td></tr>
+<tr><td>B14</td><td>Materials / Stock</td><td>6540</td><td>accounts.purchases.5000</td></tr>
+<tr><td>B15</td><td>Sub-Contractors</td><td>8000</td><td>accounts.purchases.5001</td></tr>
+<tr><td>B16</td><td>Other Direct Costs</td><td>3204</td><td>accounts.purchases.5002</td></tr>
+<tr><td>B17</td><td>Cost of Sales</td><td>17744</td><td>gl-cor:amount (costOfSales)</td></tr>
+<tr><td>B19</td><td><strong>Gross Profit</strong></td><td>323539.333333333</td><td>gl-cor:amount (grossProfit)</td></tr>
+<tr><td>B21</td><td>Wages &amp; Salaries</td><td>5800</td><td>accounts.purchases.5101</td></tr>
+<tr><td>B22</td><td>Light, Heat, Power</td><td>1440</td><td>accounts.purchases.5201</td></tr>
+<tr><td>B23</td><td>Repairs &amp; Maintenance</td><td>1140</td><td>accounts.purchases.5400</td></tr>
+<tr><td>B24</td><td>General Admin</td><td>1962</td><td>accounts.purchases.5501</td></tr>
+<tr><td>B25</td><td>Motor Expenses</td><td>7598.25</td><td>accounts.purchases.5601</td></tr>
+<tr><td>B26</td><td>Travel &amp; Subsistence</td><td>1860</td><td>accounts.purchases.5600</td></tr>
+<tr><td>B27</td><td>Advertising</td><td>4560</td><td>accounts.purchases.5500</td></tr>
+<tr><td>B28</td><td>Legal &amp; Professional</td><td>5310</td><td>accounts.purchases.5800</td></tr>
+<tr><td>B29</td><td>Bad Debts</td><td>-300</td><td>accounts.sales.4005</td></tr>
+<tr><td>B30</td><td>Depreciation</td><td>0</td><td>gl-cor:amount (depreciation)</td></tr>
+<tr><td>B31</td><td>Other Expenses</td><td>800</td><td>accounts.purchases (other)</td></tr>
+<tr><td>B32</td><td>Charitable Donations</td><td>500</td><td>accounts.purchases.5801</td></tr>
+<tr><td>B33</td><td>Goodwill Amortisation</td><td>0</td><td>accounts.purchases.5802</td></tr>
+<tr><td>B34</td><td>Loss on Disposal</td><td>0</td><td>gl-cor:amount (lossOnDisposal)</td></tr>
+<tr><td>B35</td><td>Total Admin Expenses</td><td>30670.25</td><td>gl-cor:amount (totalAdmin)</td></tr>
+<tr><td>B37</td><td><strong>Operating Profit</strong></td><td>292869.083333333</td><td>gl-cor:amount (operatingProfit)</td></tr>
+<tr><td>B39</td><td><strong>Profit Before Tax</strong></td><td>292869.083333333</td><td>gl-cor:amount (profitBeforeTax)</td></tr>
+</tbody>
+</table></div>
+<h5>Income Tax</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>E5</td><td>Profit from Self Employment</td><td>292869.083333333</td><td>gl-cor:amount (profitSE)</td></tr>
+<tr><td>E6</td><td>Less: Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
+<tr><td>E7</td><td>Taxable Income</td><td>280299.083333333</td><td>gl-cor:amount (taxableIncome)</td></tr>
+<tr><td>E8</td><td>Tax at Basic Rate (20%)</td><td>7540.2</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>E9</td><td>Tax at Higher Rate (40%)</td><td>97039.2333333332</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>E10</td><td><strong>Total Income Tax</strong></td><td>104579.433333333</td><td>tax.incomeTax (total)</td></tr>
+<tr><td>E11</td><td>Less: CIS Deducted</td><td>0</td><td>diya-gl:cisDeduction (total)</td></tr>
+<tr><td>E15</td><td>NI Class 4 (lower band)</td><td>2262</td><td>tax.nationalInsurance.class4MainRate</td></tr>
+<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>4851.98166666666</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>111693.415</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+</tbody>
+</table></div>
+<h5>SE Short</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>A7</td><td>Business name</td><td>Precision Code Trading</td><td>entityInformation.organizationIdentifier</td></tr>
+<tr><td>D38</td><td>Turnover</td><td>339200</td><td>gl-cor:amount (sa103s.turnover)</td></tr>
+<tr><td>D46</td><td>Cost of sales</td><td>17744</td><td>gl-cor:amount (sa103s.costOfSales)</td></tr>
+<tr><td>D51</td><td>Other direct costs</td><td>9458.25</td><td>gl-cor:amount (sa103s.otherDirect)</td></tr>
+<tr><td>D55</td><td>Employee costs</td><td>5800</td><td>gl-cor:amount (sa103s.employeeCosts)</td></tr>
+<tr><td>D60</td><td>Premises costs</td><td>1440</td><td>gl-cor:amount (sa103s.premises)</td></tr>
+<tr><td>D64</td><td>Other expenses</td><td>1140</td><td>gl-cor:amount (sa103s.otherExpenses)</td></tr>
+<tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>290785.75</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
+<tr><td>D80</td><td>Capital allowances</td><td>0</td><td>tax.capitalAllowances (sa103s)</td></tr>
+<tr><td>D85</td><td>AIA / WDA claimed</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
+<tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
+<tr><td>D99</td><td><strong>Taxable profit</strong></td><td>290785.75</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
+<tr><td>A32</td><td>VAT threshold note</td><td>SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td><td>gl-cor:detailComment (sa103s.notes)</td></tr>
+<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>292869.083333333</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+</tbody>
+</table></div>
+<h5>Wagesinterface</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>C4</td><td>Apr Gross Pay</td><td>0</td><td>diya-gl:grossPay (apr)</td></tr>
+<tr><td>C5</td><td>May Gross Pay</td><td>0</td><td>diya-gl:grossPay (may)</td></tr>
+<tr><td>C6</td><td>Jun Gross Pay</td><td>0</td><td>diya-gl:grossPay (jun)</td></tr>
+<tr><td>C7</td><td>Jul Gross Pay</td><td>0</td><td>diya-gl:grossPay (jul)</td></tr>
+<tr><td>C8</td><td>Aug Gross Pay</td><td>0</td><td>diya-gl:grossPay (aug)</td></tr>
+<tr><td>C9</td><td>Sep Gross Pay</td><td>0</td><td>diya-gl:grossPay (sep)</td></tr>
+<tr><td>C10</td><td>Oct Gross Pay</td><td>0</td><td>diya-gl:grossPay (oct)</td></tr>
+<tr><td>C11</td><td>Nov Gross Pay</td><td>0</td><td>diya-gl:grossPay (nov)</td></tr>
+<tr><td>C12</td><td>Dec Gross Pay</td><td>0</td><td>diya-gl:grossPay (dec)</td></tr>
+<tr><td>C13</td><td>Jan Gross Pay</td><td>0</td><td>diya-gl:grossPay (jan)</td></tr>
+<tr><td>C14</td><td>Feb Gross Pay</td><td>0</td><td>diya-gl:grossPay (feb)</td></tr>
+<tr><td>C15</td><td>Mar Gross Pay</td><td>0</td><td>diya-gl:grossPay (mar)</td></tr>
+<tr><td>D4</td><td>Apr PAYE</td><td>0</td><td>diya-gl:incomeTax (apr)</td></tr>
+<tr><td>H4</td><td>Apr Employer NI</td><td>0</td><td>diya-gl:employerNI (apr)</td></tr>
+</tbody>
+</table></div>
+<h5>VitalTax</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>C5</td><td>Q1 Sales</td><td>83899.9999999999</td><td>gl-cor:amount (vitalTax.q1Sales)</td></tr>
+<tr><td>D5</td><td>Q2 Sales</td><td>82999.9999999999</td><td>gl-cor:amount (vitalTax.q2Sales)</td></tr>
+<tr><td>E5</td><td>Q3 Sales</td><td>85699.9999999999</td><td>gl-cor:amount (vitalTax.q3Sales)</td></tr>
+<tr><td>F5</td><td>Q4 Sales</td><td>82899.9999999999</td><td>gl-cor:amount (vitalTax.q4Sales)</td></tr>
+<tr><td>G5</td><td><strong>Annual Sales</strong></td><td>335500</td><td>gl-cor:amount (vitalTax.annualSales)</td></tr>
+<tr><td>C7</td><td>Q1 Expenses</td><td>2499</td><td>gl-cor:amount (vitalTax.q1Exp)</td></tr>
+<tr><td>D7</td><td>Q2 Expenses</td><td>2283</td><td>gl-cor:amount (vitalTax.q2Exp)</td></tr>
+<tr><td>E7</td><td>Q3 Expenses</td><td>2619</td><td>gl-cor:amount (vitalTax.q3Exp)</td></tr>
+<tr><td>F7</td><td>Q4 Expenses</td><td>2343</td><td>gl-cor:amount (vitalTax.q4Exp)</td></tr>
+<tr><td>G7</td><td><strong>Annual Expenses</strong></td><td>9744</td><td>gl-cor:amount (vitalTax.annualExp)</td></tr>
+</tbody>
+</table></div>
+</details>
+      </section>
+      <section class="recon-section" id="tax-review">
+        <h3>Tax review</h3>
+<h4>Income Tax Calculation</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Profit from Self Employment</td><td class="num">292,869.08</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">12,570</td></tr>
+<tr><td>Taxable Income</td><td class="num">280,299.08</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%)</td><td class="num">7,540.2</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">97,039.23</td></tr>
+<tr><td><strong>Total Income Tax</strong></td><td class="num">104,579.43</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">-0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">2,262</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">4,851.98</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">111,693.42</td></tr>
+</tbody>
+</table></div>
+<h4>Self Assessment (SA103S)</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Business name</td><td class="num">Precision Code Trading</td></tr>
+<tr><td>Accounting date</td><td class="num">—</td></tr>
+<tr><td>Turnover</td><td class="num">339,200</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Cost of sales</td><td class="num">17,744</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other direct costs</td><td class="num">9,458.25</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee costs</td><td class="num">5,800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises costs</td><td class="num">1,440</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other expenses</td><td class="num">1,140</td></tr>
+<tr><td><strong>Net profit/loss</strong></td><td class="num">290,785.75</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital allowances</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
+<tr><td><strong>Taxable profit</strong></td><td class="num">290,785.75</td></tr>
+<tr><td>VAT threshold note</td><td class="num">SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £90000 VAT threshold</td></tr>
+<tr><td><strong>Net profit for tax calc</strong></td><td class="num">292,869.08</td></tr>
+</tbody>
+</table></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
+          <a href="../knowledge-base.html">knowledge base</a>
+          <a href="index.html">reconciliation</a>
+          <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
+          <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
+          <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

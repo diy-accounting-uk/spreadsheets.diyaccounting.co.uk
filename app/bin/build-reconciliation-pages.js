@@ -399,6 +399,30 @@ function decodeXmlAttribute(text) {
     .replace(/&amp;/g, "&");
 }
 
+async function sheetPartPath(zip, relationshipId) {
+  const relsFile = zip.file("xl/_rels/workbook.xml.rels");
+  if (!relsFile) throw new Error("No xl/_rels/workbook.xml.rels");
+  const rels = await relsFile.async("string");
+  const pattern = new RegExp(`<Relationship[^>]*Id="${relationshipId}"[^>]*Target="([^"]*)"`);
+  const match = pattern.exec(rels) ?? new RegExp(`<Relationship[^>]*Target="([^"]*)"[^>]*Id="${relationshipId}"`).exec(rels);
+  if (!match) throw new Error(`No workbook relationship ${relationshipId}`);
+  return `xl/${match[1].replace(/^\/?xl\//, "").replace(/^\//, "")}`;
+}
+
+// LibreOffice prints the file name, page number and today's date unless the sheet
+// defines its own header and footer. Empty ones keep the image the same run to run.
+function blankHeaderAndFooter(sheetXml) {
+  const blank = "<headerFooter><oddHeader></oddHeader><oddFooter></oddFooter></headerFooter>";
+  if (/<headerFooter[\s>]/.test(sheetXml)) {
+    return sheetXml.replace(/<headerFooter\b[^>]*(?:\/>|>[\s\S]*?<\/headerFooter>)/, blank);
+  }
+  for (const anchor of [/<pageSetup\b[^>]*\/>/, /<\/pageSetup>/, /<pageMargins\b[^>]*\/>/]) {
+    const match = anchor.exec(sheetXml);
+    if (match) return sheetXml.replace(match[0], `${match[0]}${blank}`);
+  }
+  return sheetXml.replace("</worksheet>", `${blank}</worksheet>`);
+}
+
 // Hide every sheet but one, so LibreOffice's PDF export contains that sheet alone.
 async function isolateSheet(xlsxPath, sheetName) {
   const zip = await JSZip.loadAsync(readFileSync(xlsxPath));
@@ -407,6 +431,7 @@ async function isolateSheet(xlsxPath, sheetName) {
   let xml = await workbookFile.async("string");
   const tags = xml.match(/<sheet\b[^>]*?\/>/g) ?? [];
   let targetIndex = -1;
+  let targetRelationship = null;
 
   tags.forEach((tag, index) => {
     const nameMatch = /name="([^"]*)"/.exec(tag);
@@ -415,6 +440,7 @@ async function isolateSheet(xlsxPath, sheetName) {
     let updated;
     if (name === sheetName) {
       targetIndex = index;
+      targetRelationship = /r:id="([^"]*)"/.exec(tag)?.[1] ?? null;
       updated = tag.replace(/\s+state="[^"]*"/, "");
     } else if (/\sstate="/.test(tag)) {
       updated = tag.replace(/state="[^"]*"/, 'state="hidden"');
@@ -427,6 +453,12 @@ async function isolateSheet(xlsxPath, sheetName) {
   if (targetIndex < 0) throw new Error(`Sheet "${sheetName}" not found in ${basename(xlsxPath)}`);
   xml = xml.replace(/activeTab="\d+"/, `activeTab="${targetIndex}"`);
   zip.file("xl/workbook.xml", xml);
+
+  if (targetRelationship) {
+    const path = await sheetPartPath(zip, targetRelationship);
+    const sheetFile = zip.file(path);
+    if (sheetFile) zip.file(path, blankHeaderAndFooter(await sheetFile.async("string")));
+  }
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
 }
 
