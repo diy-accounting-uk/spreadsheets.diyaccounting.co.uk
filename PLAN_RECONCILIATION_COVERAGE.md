@@ -29,6 +29,10 @@ end-to-end slice; it grows to include item 1 and the Ltd report page before it m
 > plus one more the monthly P& L should match the monthly sales and purchases. Also expand
 > this to include all the other packages and they should have a report too.
 
+> Do we have a reconciliation page for each product? - If not do that, the structures
+> should be the same so we can see Taxi, BST to SE to LTD have the same features
+> reconciled and the larger packages have more.
+
 ## Part 1: test improvements
 
 Applies to all four packages where the feature exists: Ltd (Company), SE (Self Employed),
@@ -78,28 +82,52 @@ Scenario side: `ltd-scenario-full` has two opening fixed assets, enough for non-
 signal on tie-outs 1 and 2. In-year additions and disposals need new scenario entries or
 those note rows check 0 = 0.
 
-## Part 2: published reconciliation pages, one per package
+## Part 2: published reconciliation pages, one per product, identical structure
 
-Every package (Ltd, SE, BST, Taxi) gets a long HTML report page, linked from the website
-and rebuilt on deployment. The raw material is already committed at deploy time, so this
-is assembly, no new testing.
+No pages exist today; only the 50 markdown reports are committed. Every product (Taxi,
+BST, SE, Ltd) gets a long HTML page with the same section structure in the same order,
+so the ladder is visible: the same features reconciled from product to product, larger
+packages filling more of them. An index page carries a product-by-feature matrix.
 
-Page structure, top to bottom:
+Page structure, identical for all four, top to bottom:
 
-1. **Summary.** Status and the checks table from `reports/*.md`.
-2. **Input transactions.** Rendered from the scenario TOML fixtures: sales and purchase
-   journals, bank entries, opening balances. The "what a customer typed in" half.
-3. **Screenshots.** The populated workbooks in `reports/populated/` converted per sheet
-   with LibreOffice (`--convert-to pdf` then `pdftoppm -png`). Balance Sheet, Trial
-   Balance, P&L, tax computation, VAT quarters.
-4. **Comparison tables.** Expected vs actual vs diff from the compliance checks.
-5. **Tax review.** Corporation tax for Ltd; income tax for SE, BST, Taxi.
+1. **Summary.** Status, the featured scenario, and a runs table listing every
+   reconciliation report for the product with its status.
+2. **Reconciliation checks.** The expected vs actual vs diff table.
+3. **Input transactions.** Rendered from the scenario TOML fixtures: sales and purchase
+   journals, bank entries, payroll, opening balances. The "what a customer typed in"
+   half.
+4. **Screenshots.** Key sheets of the populated workbooks: P&L, balance sheet, tax
+   computation, VAT quarters where the product has them.
+5. **Accounting statements.** The report's own sections (business details, P&L, notes).
+6. **Tax review.** Corporation tax for Ltd; income tax for SE, BST, Taxi.
 
-Build step in `deploy.yml` after `reconciliation-check`. Publish either into
-`web/spreadsheets.diyaccounting.co.uk/public/reconciliation/` before the CDK deploy
-(ships with the site, versioned with the deploy) or `aws s3 sync` to a `reconciliation/`
-prefix as `zips/` does (no generated HTML in git). Decide at build time; the first option
-is the default.
+A product without a feature keeps the section heading order and simply has fewer
+sections. Featured report per product: the fullest scenario at the latest year-end
+(ltd-scenario-full, se-scenario-advanced, bst-scenario-basic, taxi-scenario-basic).
+
+Mechanics, settled by a local spike (2026-08-27):
+
+- The report markdown parses cleanly by structure: `Status:` line, `## Section`
+  headings, pipe tables. No markdown library needed.
+- Screenshots work per sheet: copy the workbook, mark every other sheet hidden in
+  `xl/workbook.xml` via JSZip, LibreOffice `--convert-to pdf`, `pdftoppm -png` page 1.
+  Verified locally against `examples/ltd-latest`. One LibreOffice run per shot, a few
+  seconds each.
+- Build in the `generate-*.yml` reconcile job for the latest year-end, where LibreOffice
+  and `reports/populated/` already exist. Upload the page as an artifact; the existing
+  commit job downloads it and commits into
+  `web/spreadsheets.diyaccounting.co.uk/public/reconciliation/` alongside packages and
+  reports. `deploy.yml` needs no change; the docroot ships committed content.
+- Each product build writes a `<product>.json` metadata file (features, status,
+  updated); the index page regenerates from all metadata files present, so the four
+  product workflows update it incrementally.
+- Report filename prefixes map products: `GB_Accounts_Company` (Ltd),
+  `GB_Accounts_Self_Employed`, `GB_Accounts_Basic_Sole_Trader`,
+  `GB_Accounts_Taxi_Driver`.
+- The first build can run locally to seed all four pages (Ltd with screenshots from the
+  committed `examples/ltd-latest`; the others gain screenshots on their next workflow
+  run).
 
 ## Part 3: LLM as judge on the final reconciliation report
 
@@ -143,15 +171,23 @@ extension of a proven check to more products on Haiku.
 | Workstream | Owns | Work |
 |---|---|---|
 | Checks | `app/products/ltd.js` | Item 1 for Ltd: assert `TrialBalance!EJ91` |
-| Page | new `app/bin/build-reconciliation-page.js`, deploy.yml step, site docroot | Ltd report page from reports + fixtures + screenshots of `examples/ltd-latest`, published on deployment |
 
-**Wave 1 — Batch 1 PR: items 1 (remaining products), 2, 7, plus SE/BST/Taxi pages.**
+**Pages PR — all four products at once, independent of Wave 0.** The uniform page
+structure in Part 2 makes this one builder plus per-product configuration, so it does
+not stagger product by product.
+
+| Workstream | Owns | Work |
+|---|---|---|
+| Builder | new `app/bin/build-reconciliation-pages.js`, npm script | Parse reports, render fixtures, per-sheet screenshots, per-product metadata, index matrix |
+| Workflows | `generate-*.yml` (all four) | Build step in the latest-year-end reconcile job, artifact, commit-job path |
+| Seed | site docroot | First local build of all four pages so the site gains them on next deploy |
+
+**Wave 1 — Batch 1 PR: items 1 (remaining products), 2, 7.**
 
 | Workstream | Owns | Work |
 |---|---|---|
 | SE checks | `app/products/se.js` | Self-check cell discovery, balance sheet identities, real debtor/creditor reads |
 | BST + Taxi checks | `app/products/bst.js`, `app/products/taxi.js` | Same, single-file variants |
-| Pages | page builder config, generate-*.yml | Extend the copy-latest-populated step to all products; three more pages |
 
 **Wave 2 — Batch 2 PR: items 5, 6, 10.**
 
@@ -179,10 +215,10 @@ month-links guard was proven against the pre-fix packages.
    fixed asset additions and disposals (item 5), bank cash anchors (item 6), monthly
    payroll (item 4), purchase VAT (item 12). Each wave carries its own scenario
    additions; a check that would pass on 0 = 0 is not done.
-2. **Populated workbooks at deploy time.** Only the `.md` reports are committed. The
-   page screenshots need populated workbooks; `generate-ltd` already commits one set to
-   `examples/ltd-latest`. Wave 1 extends that step to SE, BST, and Taxi rather than
-   running LibreOffice in the deploy job.
+2. **Populated workbooks at deploy time — resolved.** Pages build inside the
+   `generate-*.yml` reconcile jobs, where `reports/populated/` and LibreOffice already
+   exist, and the built pages are committed to the docroot. The deploy job stays
+   unchanged and needs neither LibreOffice nor populated workbooks.
 3. **Net vs gross in item 10.** P&L turnover is net of VAT for registered scenarios;
    Sales month totals are gross with a VAT split. The tie must compare like with like.
    Anatomy task inside Wave 2.
