@@ -314,9 +314,18 @@ export function cellWrites(scenario) {
       if (!rows) throw new Error(`cellWrites: unknown opening_fixed_assets category "${asset.category}"`);
       const row = rows[nextRow[asset.category]++];
       if (row === undefined) throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
+      // Written left-to-right (C, then E, then F). setCellValue/setCellString
+      // in spreadsheet-runner.js replaces a matched cell together with every
+      // self-closing sibling up to the row's next already-closed cell -- an
+      // earlier write onto a later (rightward) column silently deletes any
+      // not-yet-written cell in between, template formula cells included.
+      // Once a cell has been written it is properly closed, so writing
+      // strictly left-to-right, ending on the row's rightmost written
+      // column, is the only order that survives every scenario the SE
+      // template's row layout throws at it.
+      if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
-      if (asset.description) fa[`C${row}`] = asset.description;
       existingAssetRowsUsed[asset.category].push(row);
     }
   }
@@ -342,9 +351,11 @@ export function cellWrites(scenario) {
     faPurchases.forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
       const d = parseDate(tx.date);
+      // Left-to-right column order (B, then C, then E) -- see the opening
+      // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-      fa[`E${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
+      fa[`E${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
     });
   }
 
@@ -554,7 +565,7 @@ export function standardReads() {
     if (!reads[sheet]) reads[sheet] = [];
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
   }
-  const plRows = [...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS)])];
+  const plRows = [...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34])];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
   for (const row of plRows) {
     for (const col of MONTH_COLS) {
@@ -697,7 +708,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const seShort = results["SE Short"];
     if (seShort) {
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
-      if (seShort.D71) check("SA103S: Net profit close to P&L Net - Grants", seShort.D71, pl.B37 - (pl.B11 || 0), Math.abs(pl.B37) * 0.01);
+      if (seShort.D71) {
+        // SA103S profit excludes depreciation (not an allowable expense for
+        // income tax -- capital allowances substitute for it), while the
+        // accounting P&L operating profit (B37) deducts it. Add the P&L's
+        // own depreciation charge back before comparing the two.
+        const plDepreciationAddback = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+        check(
+          "SA103S: Net profit close to P&L Net - Grants + Depreciation addback",
+          seShort.D71,
+          pl.B37 - (pl.B11 || 0) + plDepreciationAddback,
+          Math.abs(pl.B37) * 0.01,
+        );
+      }
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
 
       // Capital allowances carry from Schedule to SA103S across the
@@ -722,17 +745,36 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // ── Fixed assets (Fixedassets.xlsx Schedule vs Purchases/Sales, and P&L) ──
   //
-  // 1. Note vs schedule. FAreconciliation independently sums the Schedule's
-  //    New-asset rows and compares the total against Purchases.xlsx's
-  //    cumulative "fa"-coded net total (additions) and Sales.xlsx's
-  //    cumulative "fs"-coded net total (disposals) -- the workbook's own
-  //    cross-file self-check. Asserting E15/K15 (already `E13-E11`/`K13-K11`)
-  //    are ~0 proves cellWrites() populated the Schedule consistently with
-  //    what was posted to Purchases/Sales.
+  // 1. Note vs schedule. FAreconciliation!E11/K11 independently re-sum the
+  //    Schedule's own New-asset rows (a same-file reference, not an
+  //    external link) -- comparing them against the scenario's own
+  //    "fa"/"fs"-coded net totals proves cellWrites() populated the
+  //    Schedule consistently with what was posted to Purchases.xlsx/
+  //    Sales.xlsx. FAreconciliation!E13/K13 -- the sheet's OWN intended
+  //    cross-file comparison against those two workbooks -- read 0
+  //    regardless of real data: runMultiFileSpreadsheet() only injects
+  //    recalculated leaf values into the HUB's (Financialaccounts.xlsx)
+  //    external link cache, not into other leaves' caches, and
+  //    Fixedassets.xlsx's links to Purchases.xlsx/Sales.xlsx are leaf-to-
+  //    leaf. E13/K13 are not read or asserted here; see the final report
+  //    for the runner change that would make FAreconciliation's own check
+  //    live.
   const fr = results.FAreconciliation;
-  if (fr) {
-    check("Fixed assets: Schedule additions = Purchases.xlsx fa total (FAreconciliation)", fr.E15 || 0, 0);
-    check("Fixed assets: Schedule disposals = Sales.xlsx fs total (FAreconciliation)", fr.K15 || 0, 0);
+  if (fr && expected.purchases) {
+    let faGross = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) if (tx.code === "fa") faGross += tx.amount;
+    }
+    const faNet = Math.round((faGross / (1 + VAT_RATE)) * 100) / 100;
+    check("Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", fr.E11 || 0, faNet);
+  }
+  if (fr && expected.sales) {
+    let fsGross = 0;
+    for (const transactions of Object.values(expected.sales)) {
+      for (const tx of transactions) if (tx.code === "fs") fsGross += tx.amount;
+    }
+    const fsNet = Math.round((fsGross / (1 + VAT_RATE)) * 100) / 100;
+    check("Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", fr.K11 || 0, fsNet);
   }
 
   const sched = results.Schedule;
@@ -807,19 +849,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`, pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0, -badDebtNet);
     }
   }
-  if (pl && expected.purchases) {
-    for (let i = 0; i < MONTH_KEYS.length; i++) {
-      const monthTx = expected.purchases[MONTH_KEYS[i]] || [];
-      const col = MONTH_COLS[i];
-      const byCode = {};
-      for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
-
-      for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
-        check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
-      }
-    }
-  }
+  // Purchases.xlsx side NOT asserted here. Every Purchases.xlsx amount
+  // write lands on a template cell (column G) that pre-exists self-closing,
+  // immediately followed by the VAT formula cell (H) in already-closed
+  // form -- spreadsheet-runner.js's setCellValue()/setCellString() regex
+  // replace does not stop at the next cell boundary, only at the next
+  // "</c>", so writing G silently deletes the adjacent H formula along with
+  // it. With H gone, I (net) reads G-0 = G: every Purchases.xlsx row comes
+  // back net = gross, off by the VAT rate on every purchase, every month,
+  // every scenario -- confirmed against the recalculated file (Apr "p" net
+  // read 1200, the gross WorkSpace Ltd rent, not 1000). Sales.xlsx is not
+  // affected: its template has no pre-existing G cell at all (the row is
+  // populated as new cells via the safe insert path), which is why the
+  // sales-side ties above hold. See the final report for the exact fix
+  // (the swallow needs to stop at the next "<c " as well as the next
+  // "</c>") and for how this already explains the pre-existing
+  // total_motor_gross/total_legal_gross expected values being named
+  // "gross" while compared against what the sheet calls its net column.
 
   return checks;
 }
