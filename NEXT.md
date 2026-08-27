@@ -8,11 +8,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 - [ ] **Reconciliation coverage** — PLAN_RECONCILIATION_COVERAGE.md IN EXECUTION as concurrent
   worktree sub-agents (2026-08-27). In flight:
-  - Wave 0 (EJ91 assert) merged to `claude/vat-dataflow-reconciliation` (PR #27, `37a76b21`).
-    Its remainder: `ltd-scenario-full` does not balance (EJ91 ≈ -£1.77M, Directors Loan
-    Account posts one-sided) — fix in flight, worktree `../spreadsheets-worktrees/dla-fix`,
-    branch `claude/recon-dla-imbalance`; reconcile reports ANOMALYDETECTED for that scenario
-    until it lands.
+  - Wave 0 (EJ91 assert) and its remainder (Ltd bank payments posted into the wrong
+    columns; EJ91 now 0) are merged to `claude/vat-dataflow-reconciliation` (PR #27,
+    `9305c096`). One further remainder in flight: the Ltd opening balance sheet never
+    posts (writes miss OpenAccounts' input cells; extractor hardcodes fixed_assets
+    21087 vs the journal's 22902) — worktree `../spreadsheets-worktrees/ltd-opening`,
+    branch `claude/recon-ltd-opening-balance`. SE carries the same bank-column fault;
+    folded into the Wave 2 SE agent's bank workstream.
   - Pages (all four products, builder + workflows + seed) verified and up as
     **PR #29: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/29**
     — awaiting operator merge, independent of #27/#28.
