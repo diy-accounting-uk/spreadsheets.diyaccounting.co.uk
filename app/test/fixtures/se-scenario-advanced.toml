@@ -720,7 +720,7 @@ amount = 360
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.apr]]
@@ -906,7 +906,7 @@ amount = 300
 [[purchases.may]]
 date = 2025-05-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.may]]
@@ -1110,7 +1110,7 @@ amount = 300
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jun]]
@@ -1308,7 +1308,7 @@ amount = 250
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jul]]
@@ -1512,7 +1512,7 @@ amount = 300
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.aug]]
@@ -1704,7 +1704,7 @@ amount = 300
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.sep]]
@@ -1902,7 +1902,7 @@ amount = 208
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.oct]]
@@ -2112,7 +2112,7 @@ amount = 300
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.nov]]
@@ -2298,7 +2298,7 @@ amount = 300
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.dec]]
@@ -2496,7 +2496,7 @@ amount = 167
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jan]]
@@ -2694,7 +2694,7 @@ amount = 300
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.feb]]
@@ -2892,7 +2892,7 @@ amount = 120
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.mar]]
@@ -3080,6 +3080,7 @@ date = 2025-04-01
 account = "1200"
 source = "Opening balance"
 code = "BC"
+direction = "in"
 amount = 25000
 description = "Current account opening balance"
 
@@ -3088,6 +3089,7 @@ date = 2025-04-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3096,6 +3098,7 @@ date = 2025-04-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3104,6 +3107,7 @@ date = 2025-04-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2200
 description = "Aggregate supplier payments"
 
@@ -3112,6 +3116,7 @@ date = 2025-04-10
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 7200
 description = "Opening debtor receipt"
 
@@ -3120,6 +3125,7 @@ date = 2025-04-15
 account = "1200"
 source = "Beta Systems"
 code = "DR"
+direction = "in"
 amount = 1200
 description = "Opening debtor receipt"
 
@@ -3128,6 +3134,7 @@ date = 2025-04-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3136,6 +3143,7 @@ date = 2025-04-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3144,6 +3152,7 @@ date = 2025-04-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3152,6 +3161,7 @@ date = 2025-04-25
 account = "1200"
 source = "Gamma Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Opening debtor receipt"
 
@@ -3160,6 +3170,7 @@ date = 2025-04-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3200
 description = "Aggregate customer receipts"
 
@@ -3168,6 +3179,7 @@ date = 2025-04-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3176,6 +3188,7 @@ date = 2025-04-30
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3184,6 +3197,7 @@ date = 2025-04-30
 account = "1200"
 source = "Credit card payment"
 code = "X"
+direction = "out"
 amount = 500
 description = "Pay credit card balance"
 
@@ -3192,6 +3206,7 @@ date = 2026-04-01
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 2800
 description = "VAT payment Q4 Jan-Mar"
 
@@ -3200,6 +3215,7 @@ date = 2025-05-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3208,6 +3224,7 @@ date = 2025-05-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3216,6 +3233,7 @@ date = 2025-05-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2800
 description = "Aggregate supplier payments"
 
@@ -3224,6 +3242,7 @@ date = 2025-05-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3232,6 +3251,7 @@ date = 2025-05-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3240,6 +3260,7 @@ date = 2025-05-25
 account = "1200"
 source = "HSBC"
 code = "B"
+direction = "out"
 amount = 25
 description = "Bank charges"
 
@@ -3248,6 +3269,7 @@ date = 2025-05-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3256,6 +3278,7 @@ date = 2025-05-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3800
 description = "Aggregate customer receipts"
 
@@ -3264,6 +3287,7 @@ date = 2025-05-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3272,6 +3296,7 @@ date = 2025-05-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3280,6 +3305,7 @@ date = 2025-06-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3288,6 +3314,7 @@ date = 2025-06-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3296,6 +3323,7 @@ date = 2025-06-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2500
 description = "Aggregate supplier payments"
 
@@ -3304,6 +3332,7 @@ date = 2025-06-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3312,6 +3341,7 @@ date = 2025-06-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3320,6 +3350,7 @@ date = 2025-06-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3328,6 +3359,7 @@ date = 2025-06-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 4500
 description = "Aggregate customer receipts"
 
@@ -3336,6 +3368,7 @@ date = 2025-06-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3344,6 +3377,7 @@ date = 2025-06-30
 account = "1200"
 source = "Directors loan interest"
 code = "B"
+direction = "out"
 amount = 250
 description = "Quarterly loan interest payment"
 
@@ -3352,6 +3386,7 @@ date = 2025-06-30
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3360,6 +3395,7 @@ date = 2025-07-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3368,6 +3404,7 @@ date = 2025-07-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3376,6 +3413,7 @@ date = 2025-07-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2300
 description = "Aggregate supplier payments"
 
@@ -3384,22 +3422,25 @@ date = 2025-07-07
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 3800
 description = "VAT payment Q1 Apr-Jun"
 
 [[bank.jul]]
 date = 2025-07-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
+direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.jul]]
 date = 2025-07-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3408,6 +3449,7 @@ date = 2025-07-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1000
 description = "CIS deduction remittance"
 
@@ -3416,6 +3458,7 @@ date = 2025-07-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3424,6 +3467,7 @@ date = 2025-07-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3432,6 +3476,7 @@ date = 2025-07-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3600
 description = "Aggregate customer receipts"
 
@@ -3440,6 +3485,7 @@ date = 2025-07-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3448,6 +3494,7 @@ date = 2025-07-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3456,6 +3503,7 @@ date = 2025-07-31
 account = "1200"
 source = "Credit card payment"
 code = "X"
+direction = "out"
 amount = 300
 description = "Pay credit card balance"
 
@@ -3464,6 +3512,7 @@ date = 2025-08-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3472,6 +3521,7 @@ date = 2025-08-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3480,6 +3530,7 @@ date = 2025-08-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2600
 description = "Aggregate supplier payments"
 
@@ -3488,6 +3539,7 @@ date = 2025-08-05
 account = "1200"
 source = "Innovate UK"
 code = "RV"
+direction = "in"
 amount = 2500
 description = "Grant received"
 
@@ -3496,6 +3548,7 @@ date = 2025-08-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3504,6 +3557,7 @@ date = 2025-08-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3512,6 +3566,7 @@ date = 2025-08-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3520,6 +3575,7 @@ date = 2025-08-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 4200
 description = "Aggregate customer receipts"
 
@@ -3528,6 +3584,7 @@ date = 2025-08-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3536,6 +3593,7 @@ date = 2025-08-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3544,6 +3602,7 @@ date = 2025-09-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3552,6 +3611,7 @@ date = 2025-09-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3560,6 +3620,7 @@ date = 2025-09-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2100
 description = "Aggregate supplier payments"
 
@@ -3568,6 +3629,7 @@ date = 2025-09-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3576,6 +3638,7 @@ date = 2025-09-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3584,6 +3647,7 @@ date = 2025-09-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3592,6 +3656,7 @@ date = 2025-09-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3000
 description = "Aggregate customer receipts"
 
@@ -3600,6 +3665,7 @@ date = 2025-09-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3608,6 +3674,7 @@ date = 2025-09-30
 account = "1200"
 source = "Directors loan interest"
 code = "B"
+direction = "out"
 amount = 208
 description = "Quarterly loan interest payment"
 
@@ -3616,6 +3683,7 @@ date = 2025-09-30
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3624,6 +3692,7 @@ date = 2025-10-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3632,6 +3701,7 @@ date = 2025-10-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3640,6 +3710,7 @@ date = 2025-10-01
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 4500
 description = "Corporation Tax prior year"
 
@@ -3648,6 +3719,7 @@ date = 2025-10-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 3000
 description = "Aggregate supplier payments"
 
@@ -3656,6 +3728,7 @@ date = 2025-10-07
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 3200
 description = "VAT payment Q2 Jul-Sep"
 
@@ -3664,22 +3737,25 @@ date = 2025-10-15
 account = "1200"
 source = "Private buyer"
 code = "DR"
+direction = "in"
 amount = 15000
 description = "Van sale proceeds"
 
 [[bank.oct]]
 date = 2025-10-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
+direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.oct]]
 date = 2025-10-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3688,6 +3764,7 @@ date = 2025-10-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3696,6 +3773,7 @@ date = 2025-10-25
 account = "1200"
 source = "Ford"
 code = "CR"
+direction = "out"
 amount = 36000
 description = "Ford Transit Custom purchase"
 
@@ -3704,6 +3782,7 @@ date = 2025-10-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3712,6 +3791,7 @@ date = 2025-10-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 5000
 description = "Aggregate customer receipts"
 
@@ -3720,6 +3800,7 @@ date = 2025-10-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3728,6 +3809,7 @@ date = 2025-10-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3736,6 +3818,7 @@ date = 2025-10-31
 account = "1200"
 source = "Credit card payment"
 code = "X"
+direction = "out"
 amount = 500
 description = "Pay credit card balance"
 
@@ -3744,6 +3827,7 @@ date = 2025-11-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3752,6 +3836,7 @@ date = 2025-11-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3760,6 +3845,7 @@ date = 2025-11-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2400
 description = "Aggregate supplier payments"
 
@@ -3768,6 +3854,7 @@ date = 2025-11-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3776,6 +3863,7 @@ date = 2025-11-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3784,6 +3872,7 @@ date = 2025-11-25
 account = "1200"
 source = "HSBC"
 code = "B"
+direction = "out"
 amount = 25
 description = "Bank charges"
 
@@ -3792,6 +3881,7 @@ date = 2025-11-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3800,6 +3890,7 @@ date = 2025-11-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 4100
 description = "Aggregate customer receipts"
 
@@ -3808,6 +3899,7 @@ date = 2025-11-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3816,6 +3908,7 @@ date = 2025-11-30
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3824,6 +3917,7 @@ date = 2025-12-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3832,6 +3926,7 @@ date = 2025-12-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3840,6 +3935,7 @@ date = 2025-12-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2700
 description = "Aggregate supplier payments"
 
@@ -3848,6 +3944,7 @@ date = 2025-12-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3856,6 +3953,7 @@ date = 2025-12-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 600
 description = "CIS deduction remittance"
 
@@ -3864,6 +3962,7 @@ date = 2025-12-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3872,6 +3971,7 @@ date = 2025-12-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3880,6 +3980,7 @@ date = 2025-12-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3500
 description = "Aggregate customer receipts"
 
@@ -3888,6 +3989,7 @@ date = 2025-12-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -3896,6 +3998,7 @@ date = 2025-12-31
 account = "1200"
 source = "Directors loan interest"
 code = "B"
+direction = "out"
 amount = 167
 description = "Quarterly loan interest payment"
 
@@ -3904,6 +4007,7 @@ date = 2025-12-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -3912,6 +4016,7 @@ date = 2026-01-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -3920,6 +4025,7 @@ date = 2026-01-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -3928,6 +4034,7 @@ date = 2026-01-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2500
 description = "Aggregate supplier payments"
 
@@ -3936,6 +4043,7 @@ date = 2026-01-07
 account = "1200"
 source = "HMRC"
 code = "RV"
+direction = "in"
 amount = 1500
 description = "VAT refund Q3 Oct-Dec"
 
@@ -3944,22 +4052,25 @@ date = 2026-01-15
 account = "1200"
 source = "Director loan"
 code = "DL"
+direction = "out"
 amount = 5000
 description = "Directors loan advance"
 
 [[bank.jan]]
 date = 2026-01-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
+direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.jan]]
 date = 2026-01-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -3968,6 +4079,7 @@ date = 2026-01-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -3976,6 +4088,7 @@ date = 2026-01-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -3984,6 +4097,7 @@ date = 2026-01-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 4800
 description = "Aggregate customer receipts"
 
@@ -3992,6 +4106,7 @@ date = 2026-01-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -4000,6 +4115,7 @@ date = 2026-01-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -4008,6 +4124,7 @@ date = 2026-01-31
 account = "1200"
 source = "Credit card payment"
 code = "X"
+direction = "out"
 amount = 300
 description = "Pay credit card balance"
 
@@ -4016,6 +4133,7 @@ date = 2026-02-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -4024,6 +4142,7 @@ date = 2026-02-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -4032,6 +4151,7 @@ date = 2026-02-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2900
 description = "Aggregate supplier payments"
 
@@ -4040,6 +4160,7 @@ date = 2026-02-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -4048,6 +4169,7 @@ date = 2026-02-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -4056,6 +4178,7 @@ date = 2026-02-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -4064,6 +4187,7 @@ date = 2026-02-28
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
@@ -4072,6 +4196,7 @@ date = 2026-02-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 3900
 description = "Aggregate customer receipts"
 
@@ -4080,6 +4205,7 @@ date = 2026-02-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -4088,6 +4214,7 @@ date = 2026-03-01
 account = "1200"
 source = "WorkSpace Ltd"
 code = "CR"
+direction = "out"
 amount = 1200
 description = "Office rent payment"
 
@@ -4096,6 +4223,7 @@ date = 2026-03-01
 account = "1200"
 source = "Director"
 code = "DL"
+direction = "out"
 amount = 1000
 description = "Directors loan repayment"
 
@@ -4104,6 +4232,7 @@ date = 2026-03-05
 account = "1200"
 source = "Various suppliers"
 code = "CR"
+direction = "out"
 amount = 2300
 description = "Aggregate supplier payments"
 
@@ -4112,6 +4241,7 @@ date = 2026-03-15
 account = "1200"
 source = "Internal transfer"
 code = "X"
+direction = "out"
 amount = 5000
 description = "Transfer to savings account"
 
@@ -4120,6 +4250,7 @@ date = 2026-03-19
 account = "1200"
 source = "HMRC"
 code = "RP"
+direction = "out"
 amount = 1501
 description = "Monthly PAYE/NI payment"
 
@@ -4128,6 +4259,7 @@ date = 2026-03-20
 account = "1200"
 source = "Acme Corp"
 code = "DR"
+direction = "in"
 amount = 8000
 description = "Customer receipt"
 
@@ -4136,6 +4268,7 @@ date = 2026-03-25
 account = "1200"
 source = "TechStart Ltd"
 code = "DR"
+direction = "in"
 amount = 2400
 description = "Customer receipt"
 
@@ -4144,6 +4277,7 @@ date = 2026-03-28
 account = "1200"
 source = "Various customers"
 code = "DR"
+direction = "in"
 amount = 4400
 description = "Aggregate customer receipts"
 
@@ -4152,6 +4286,7 @@ date = 2026-03-28
 account = "1200"
 source = "Payroll"
 code = "W"
+direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
 
@@ -4160,6 +4295,7 @@ date = 2026-03-31
 account = "1200"
 source = "Directors loan interest"
 code = "B"
+direction = "out"
 amount = 125
 description = "Quarterly loan interest payment"
 
@@ -4168,22 +4304,25 @@ date = 2026-03-31
 account = "1200"
 source = "Smith & Co"
 code = "CR"
+direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
 [[bank.mar]]
 date = 2026-03-31
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
+direction = "out"
 amount = 6000
-description = "Final dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.apr]]
 date = 2025-04-01
 account = "1220"
 source = "Opening balance"
 code = "BC"
+direction = "in"
 amount = 500
 description = "Cash float opening balance"
 
@@ -4192,6 +4331,7 @@ date = 2025-04-10
 account = "1220"
 source = "Corner shop"
 code = "CR"
+direction = "out"
 amount = 15
 description = "Milk and tea"
 
@@ -4199,7 +4339,8 @@ description = "Milk and tea"
 date = 2025-06-10
 account = "1220"
 source = "Cash top-up"
-code = "X"
+code = "BB"
+direction = "in"
 amount = 100
 description = "Cash float replenishment"
 
@@ -4208,6 +4349,7 @@ date = 2025-06-10
 account = "1220"
 source = "WH Smith"
 code = "CR"
+direction = "out"
 amount = 25
 description = "Envelopes and stamps"
 
@@ -4216,6 +4358,7 @@ date = 2025-09-05
 account = "1220"
 source = "Corner shop"
 code = "CR"
+direction = "out"
 amount = 18
 description = "Kitchen supplies"
 
@@ -4224,6 +4367,7 @@ date = 2025-12-10
 account = "1220"
 source = "Various"
 code = "CR"
+direction = "out"
 amount = 50
 description = "Christmas team refreshments"
 
@@ -4232,6 +4376,7 @@ date = 2026-03-20
 account = "1220"
 source = "Newsagent"
 code = "CR"
+direction = "out"
 amount = 12
 description = "Newspapers for reception"
 
