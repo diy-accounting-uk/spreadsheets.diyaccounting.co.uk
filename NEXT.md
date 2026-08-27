@@ -24,9 +24,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   - Pages (all four products, builder + workflows + seed) verified and up as
     **PR #29: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/29**
     — awaiting operator merge, independent of #27/#28.
-  - Wave 2 SE (items 5, 6, 10): worktree `../spreadsheets-worktrees/wave2-se`, branch
-    `claude/recon-wave2-se` (based on `claude/recon-batch1`). Wave 2 Ltd waits for the
-    directors-loan fix (same fixture file).
+  - Wave 2 SE (items 5, 6, 10 + SE bank fix) code complete on `claude/recon-wave2-se`
+    (worktree `../spreadsheets-worktrees/wave2-se`, 52/52 green). Purchases-side monthly
+    ties deliberately unshipped until the runner cell-write fix lands (net reads as gross
+    today). Operator decision open: six invalid purchase codes in the SE fixture
+    (~£9.7k/yr never reaches the P&L) need per-category recoding.
+  - Runner cell-write fix (greedy capture swallowing sibling cells; also deletes the
+    Purchases VAT formula on every amount write) applied on
+    `claude/recon-ltd-opening-balance`; blast-radius run in progress. Leaf-to-leaf
+    external-link caches (Fixedassets reading Sales/Purchases) still unresolved in the
+    runner. Wave 2 Ltd dispatches after the opening-balance PR opens.
   - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) verified and up as
     **PR #28: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/28**
     — awaiting operator merge, after #27 (its SE fixture-anchored checks need #27's
