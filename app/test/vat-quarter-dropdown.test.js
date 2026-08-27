@@ -187,9 +187,22 @@ async function loadFinancialaccountsAdmin(dirPath) {
 
 const workbooks = findVatWorkbooks();
 
+// Only Company and Self Employed packages ship a VAT workbook; a packages/
+// tree holding just BST or Taxi output (the per-product generate workflows)
+// legitimately has none.
+function countVatCarryingDirs() {
+  if (!existsSync(PACKAGES_DIR)) return 0;
+  return readdirSync(PACKAGES_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .filter((e) => e.name.startsWith("GB Accounts Company") || e.name.startsWith("GB Accounts Self Employed"))
+    .filter((e) => !existsSync(join(PACKAGES_DIR, e.name, "DO NOT USE - WORK IN PROGRESS.txt"))).length;
+}
+
 describe("VAT quarter dropdown catalogue guard", () => {
-  it("finds VAT workbooks under packages/", () => {
-    expect(workbooks.length, "no packages/*/Vatreturns.xlsx or Vat.xlsx found -- is PACKAGES_DIR correct?").toBeGreaterThan(0);
+  it("finds a VAT workbook in every Company and Self Employed package", () => {
+    expect(workbooks.length, "packages/*/Vatreturns.xlsx or Vat.xlsx count does not match the Company + Self Employed package dirs").toBe(
+      countVatCarryingDirs(),
+    );
   });
 });
 
