@@ -15,10 +15,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     until it lands.
   - Pages PR (all four products, builder + workflows + seed): worktree
     `../spreadsheets-worktrees/pages`, branch `claude/reconciliation-pages`.
-  - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) code complete, merged onto
-    `claude/recon-batch1` (worktree `../spreadsheets-worktrees/batch1`); full `npm test`
-    running before push + PR. SE fixture-anchored checks activate only once PR #27's
-    reconcile fixes merge (multiFileOptions spread + expected merge, both on #27 now).
+  - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) verified and up as
+    **PR #28: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/28**
+    — awaiting operator merge, after #27 (its SE fixture-anchored checks need #27's
+    reconcile fixes to fire).
   Coordinator merges verified commits, pushes in batches; waves 2-5 follow per the plan.
 
 - [ ] **VAT quarter-end dropdown does not roll with the package year** — plan approved, IN
