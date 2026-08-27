@@ -129,24 +129,74 @@ Design:
   role, and a one-time model access grant in the account and region. Cost is one call
   per deploy on a report of tens of kilobytes.
 
-## Sequencing
+## Sequencing: waves of sub-agent workstreams, one PR per wave
 
-1. **PR #27 becomes the first end-to-end slice.** Onto its branch: item 1 for Ltd
-   (assert `TrialBalance!EJ91`) and the Part 2 report page for Ltd, generated from the
-   reconciliation run and published on deployment. Merging #27 then proves the whole
-   pipeline once: data-flow checks, reconciliation report, published page.
-2. **Batch PRs, each taking several items across every product where they apply.** New
-   checks appear on the published pages with no extra page work.
-   - Batch 1: items 1 (SE/BST/Taxi self-check cells), 2, 7. The cheap identity and
-     real-read checks, all products at once.
-   - Batch 2: items 5, 6, 10. Fixed asset tie-outs, bank closing balances, monthly P&L
-     vs monthly sales and purchases.
-   - Batch 3: items 4, 9, 12. Payroll flow, SE VAT box values, brickwork-pro-vat in CI.
-   - Batch 4: items 11, 13, 14. Formula-presence guard, non-March roundtrip, matrix
-     shrink.
-3. **Pages for SE, BST, and Taxi** ride with Batch 1. Their reports already exist; the
-   page build is configuration once the Ltd page is proven.
-4. **Part 3 judge** last, reading the stable final report.
+Each wave is dispatched as concurrent worktree-isolated sub-agents with strict file
+ownership, integrated by the coordinator into a single PR. Shared files (reconcile.js,
+report-generator.js, spreadsheet-runner.js) stay with the coordinator; each sub-agent
+edits only the files its row names. Model tiers follow the workspace ladder: page and
+judge design at the top tier, product check implementation on Sonnet, mechanical
+extension of a proven check to more products on Haiku.
+
+**Wave 0 — PR #27 completes the first end-to-end slice.**
+
+| Workstream | Owns | Work |
+|---|---|---|
+| Checks | `app/products/ltd.js` | Item 1 for Ltd: assert `TrialBalance!EJ91` |
+| Page | new `app/bin/build-reconciliation-page.js`, deploy.yml step, site docroot | Ltd report page from reports + fixtures + screenshots of `examples/ltd-latest`, published on deployment |
+
+**Wave 1 — Batch 1 PR: items 1 (remaining products), 2, 7, plus SE/BST/Taxi pages.**
+
+| Workstream | Owns | Work |
+|---|---|---|
+| SE checks | `app/products/se.js` | Self-check cell discovery, balance sheet identities, real debtor/creditor reads |
+| BST + Taxi checks | `app/products/bst.js`, `app/products/taxi.js` | Same, single-file variants |
+| Pages | page builder config, generate-*.yml | Extend the copy-latest-populated step to all products; three more pages |
+
+**Wave 2 — Batch 2 PR: items 5, 6, 10.**
+
+| Workstream | Owns | Work |
+|---|---|---|
+| Fixed assets | ltd.js/se.js FA sections, scenario fixtures | Three tie-outs; in-year additions and disposals scenario data |
+| Bank | ltd.js/se.js bank sections, scenario fixtures | Closing balance reads and cash-movement anchors |
+| Monthly P&L | ltd.js/se.js monthly sections | `MnthP&L` C..N columns vs month tabs (columns confirmed present); resolve net vs gross per row |
+
+**Wave 3 — Batch 3 PR: items 4, 9, 12.** Payroll workstream (scenario payroll months +
+WagesInterface reads), SE VAT values workstream, CI scenario workstream
+(brickwork-pro-vat in reconciliation).
+
+**Wave 4 — Batch 4 PR: items 11, 13, 14.** Formula-presence guard (new catalogue test),
+non-March roundtrip, LibreOffice matrix shrink.
+
+**Wave 5 — the judge**, once the pages are stable input.
+
+Every wave proves its checks by breaking a copy before the PR opens, the way the
+month-links guard was proven against the pre-fix packages.
+
+## Gaps and open questions
+
+1. **Scenario data.** Several checks have no signal without new fixture data: in-year
+   fixed asset additions and disposals (item 5), bank cash anchors (item 6), monthly
+   payroll (item 4), purchase VAT (item 12). Each wave carries its own scenario
+   additions; a check that would pass on 0 = 0 is not done.
+2. **Populated workbooks at deploy time.** Only the `.md` reports are committed. The
+   page screenshots need populated workbooks; `generate-ltd` already commits one set to
+   `examples/ltd-latest`. Wave 1 extends that step to SE, BST, and Taxi rather than
+   running LibreOffice in the deploy job.
+3. **Net vs gross in item 10.** P&L turnover is net of VAT for registered scenarios;
+   Sales month totals are gross with a VAT split. The tie must compare like with like.
+   Anatomy task inside Wave 2.
+4. **Self-check cells outside Ltd.** Unknown whether SE/BST/Taxi workbooks carry an
+   `EJ91` equivalent. Wave 1 discovers; if absent, the balance identities are the
+   whole-book check for those products.
+5. **Directors' report figures.** The `Report` sheet carries no fixed asset numbers;
+   the published figures live in PubNotes and PubBalSht. Operator decision pending on
+   whether Report itself should show figures (a template change).
+6. **Judge prerequisites.** Bedrock model access grant in the spreadsheets account,
+   Claude availability in the chosen region, a written rubric, and a flaky-verdict
+   policy (retry once, then fail with the reasoning published).
+7. **CI runtime.** Each wave adds reads and recalculations to reconcile. If the
+   year-end matrix cost bites before Wave 4, pull item 14 forward.
 
 Related plan: PLAN_ROUNDTRIP_FIDELITY.md proves a different property (the JS engine and
 Excel agree; data survives export and import) and stays live for that work. Its S1
