@@ -15,6 +15,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     21087 vs the journal's 22902) — worktree `../spreadsheets-worktrees/ltd-opening`,
     branch `claude/recon-ltd-opening-balance`. SE carries the same bank-column fault;
     folded into the Wave 2 SE agent's bank workstream.
+  - Opening-balance fix is code complete on `claude/recon-ltd-opening-balance`
+    (E37 = 0, EJ91 holds, 131 tests green) — held off #27 while the operator verifies it;
+    opens as its own PR once #27 merges. Coordinator work to fold in first: fix
+    `spreadsheet-runner.js` setCellValue/setCellString greedy capture (a write into an
+    empty self-closing cell swallows following empty cells and the row boundary;
+    workaround `inSheetOrder()` in ltd.js masks it, real fix is a lazy/exact match).
   - Pages (all four products, builder + workflows + seed) verified and up as
     **PR #29: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/29**
     — awaiting operator merge, independent of #27/#28.
