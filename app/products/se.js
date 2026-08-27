@@ -129,14 +129,16 @@ export function cellWrites(scenario) {
     // For now, stock is written via the scenario expected values in compliance checks
   }
 
-  // Opening/closing debtors
+  // Opening/closing debtors — column G is "Sales Value including Vat", the
+  // only column the sheet's own G1 total (SUM(G5:G300)) reads. Column D
+  // carries no header and no formula anywhere in the workbook.
   if (scenario.opening_debtors) {
     if (!salesWrites.OpeningDebtors) salesWrites.OpeningDebtors = {};
     let row = 5;
     for (const d of scenario.opening_debtors) {
       salesWrites.OpeningDebtors[`B${row}`] = d.customer;
       salesWrites.OpeningDebtors[`C${row}`] = d.invoice;
-      salesWrites.OpeningDebtors[`D${row}`] = d.amount;
+      salesWrites.OpeningDebtors[`G${row}`] = d.amount;
       row++;
     }
   }
@@ -147,19 +149,20 @@ export function cellWrites(scenario) {
     for (const d of scenario.closing_debtors) {
       salesWrites.ClosingDebtors[`B${row}`] = d.customer;
       salesWrites.ClosingDebtors[`C${row}`] = d.invoice;
-      salesWrites.ClosingDebtors[`D${row}`] = d.amount;
+      salesWrites.ClosingDebtors[`G${row}`] = d.amount;
       row++;
     }
   }
 
-  // Opening/closing creditors
+  // Opening/closing creditors — column G is "Total Purchase Value incl Vat",
+  // the column the sheet's own G1 total (SUM(G5:G300)) reads.
   if (scenario.opening_creditors) {
     if (!purchasesWrites.OpeningCreditors) purchasesWrites.OpeningCreditors = {};
     let row = 5;
     for (const c of scenario.opening_creditors) {
       purchasesWrites.OpeningCreditors[`B${row}`] = c.supplier;
       purchasesWrites.OpeningCreditors[`C${row}`] = c.invoice;
-      purchasesWrites.OpeningCreditors[`D${row}`] = c.amount;
+      purchasesWrites.OpeningCreditors[`G${row}`] = c.amount;
       row++;
     }
   }
@@ -170,7 +173,7 @@ export function cellWrites(scenario) {
     for (const c of scenario.closing_creditors) {
       purchasesWrites.ClosingCreditors[`B${row}`] = c.supplier;
       purchasesWrites.ClosingCreditors[`C${row}`] = c.invoice;
-      purchasesWrites.ClosingCreditors[`D${row}`] = c.amount;
+      purchasesWrites.ClosingCreditors[`G${row}`] = c.amount;
       row++;
     }
   }
@@ -389,6 +392,15 @@ export function multiFileOptions() {
     additionalReads: {
       "Bank.xlsx": { Mar: ["A1", "A2"] },
       "Cash.xlsx": { Mar: ["A1", "A2"] },
+      // G1 = SUM(G5:G300), the total gross debtor/creditor value on each sheet.
+      "Sales.xlsx": {
+        OpeningDebtors: ["G1"],
+        ClosingDebtors: ["G1"],
+      },
+      "Purchases.xlsx": {
+        OpeningCreditors: ["G1"],
+        ClosingCreditors: ["G1"],
+      },
       "Vat.xlsx": {
         VATQtr1: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
         VATQtr2: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
@@ -472,6 +484,21 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   ].reduce((s, v) => s + (v || 0), 0);
   check("P&L: Admin lines sum = Total", pl.B35, seAdminSum);
 
+  // Whole-book cross-check. SE's Financialaccounts.xlsx carries no
+  // double-entry trial balance or audit cell (unlike Ltd's TrialBalance!EJ91)
+  // and its SE Full "Balance Sheet Optional" boxes are unlinked manual-entry
+  // cells the generator never populates -- there is no live balance sheet
+  // identity available to assert for this product. VitalTax independently
+  // re-sums the same P&L monthly cells through a second formula path
+  // (quarterly SUMs of 'Profit & Loss Account' columns C:N), so comparing
+  // its annual total against the P&L's own row-sum annual total is the
+  // closest live whole-book closure signal this workbook set supports.
+  const vt = results.VitalTax;
+  if (vt) {
+    check("VitalTax: annual product sales = P&L Products A+B+C", vt.G5 || 0, (pl.B5 || 0) + (pl.B6 || 0) + (pl.B7 || 0));
+    check("VitalTax: annual direct costs = P&L Materials + Other Direct Costs", vt.G7 || 0, (pl.B14 || 0) + (pl.B16 || 0));
+  }
+
   // Expense line totals (6f)
   if (expected.total_motor_gross) check("Motor Expenses", pl.B25 || 0, expected.total_motor_gross);
   if (expected.total_legal_gross) check("Legal & Professional", pl.B28 || 0, expected.total_legal_gross);
@@ -482,22 +509,29 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (sc) check("Opening Stock", sc.B5 || 0, expected.opening_stock, expected.opening_stock * 0.01);
   }
 
-  // Debtors/creditors checks
+  // Debtors/creditors checks — read the real G1 total (SUM(G5:G300) of the
+  // gross invoice value column) from the OpeningDebtors/ClosingDebtors sheet
+  // in Sales.xlsx and the OpeningCreditors/ClosingCreditors sheet in
+  // Purchases.xlsx, not a fixture total compared to itself.
   if (expected.opening_debtors) {
     const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Opening Debtors total", total, total);
+    const od = results.OpeningDebtors;
+    if (total > 0 && od) check("Opening Debtors total", od.G1 || 0, total);
   }
   if (expected.closing_debtors) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Closing Debtors total", total, total);
+    const cd = results.ClosingDebtors;
+    if (total > 0 && cd) check("Closing Debtors total", cd.G1 || 0, total);
   }
   if (expected.opening_creditors) {
     const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Opening Creditors total", total, total);
+    const oc = results.OpeningCreditors;
+    if (total > 0 && oc) check("Opening Creditors total", oc.G1 || 0, total);
   }
   if (expected.closing_creditors) {
     const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Closing Creditors total", total, total);
+    const cc = results.ClosingCreditors;
+    if (total > 0 && cc) check("Closing Creditors total", cc.G1 || 0, total);
   }
 
   if (taxData) {
