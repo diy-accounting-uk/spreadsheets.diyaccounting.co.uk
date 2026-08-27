@@ -4558,20 +4558,25 @@ invoice = "SH-2603"
 amount = 150
 
 [opening_balance]
-fixed_assets = 21087
-motor_vehicles = 20172
-computer_equipment = 2730
-stock = 10000
-trade_debtors = 10800
 current_account = 25000
 savings_account = 5000
 cash = 500
-trade_creditors = 2400
-vat_liability = 1500
-corporation_tax = 4500
+stock = 10000
+trade_debtors = 10800
 directors_loan = 20000
+trade_creditors = 2400
+vat_due = 1500
+corporation_tax = 4500
 share_capital = 100
 retained_earnings = 45702
+
+[opening_balance.fixed_asset_cost]
+motor_vehicles = 30000
+computer_technology = 3000
+
+[opening_balance.fixed_asset_depreciation]
+motor_vehicles = 9828
+computer_technology = 270
 
 [[opening_fixed_assets]]
 category = "motor"

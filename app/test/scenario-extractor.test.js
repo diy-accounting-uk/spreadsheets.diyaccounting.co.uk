@@ -2,8 +2,10 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect } from "vitest";
+import { parse as parseTOML } from "smol-toml";
 import {
   getMonthKey,
+  buildOpeningBalance,
   escapeTomlString,
   computeNetSales,
   computeSpreadsheetNetSales,
@@ -268,16 +270,90 @@ describe("formatScenarioToml", () => {
   });
 
   it("includes opening balance for Ltd", () => {
-    const expected = { ...minimalExpected, opening_balance: { fixed_assets: 21087, share_capital: 100 } };
+    const expected = { ...minimalExpected, opening_balance: { share_capital: 100 } };
     const toml = formatScenarioToml(minimalMetadata, emptyGrouped, expected);
     expect(toml).toContain("[opening_balance]");
-    expect(toml).toContain("fixed_assets = 21087");
+    expect(toml).toContain("share_capital = 100");
+  });
+
+  it("writes fixed asset cost and depreciation as separate opening balance sub-tables", () => {
+    const expected = {
+      ...minimalExpected,
+      opening_balance: {
+        share_capital: 100,
+        fixed_asset_cost: { motor_vehicles: 30000 },
+        fixed_asset_depreciation: { motor_vehicles: 9828 },
+      },
+    };
+    const toml = formatScenarioToml(minimalMetadata, emptyGrouped, expected);
+    const parsed = parseTOML(toml).opening_balance;
+    expect(parsed.share_capital).toBe(100);
+    expect(parsed.fixed_asset_cost.motor_vehicles).toBe(30000);
+    expect(parsed.fixed_asset_depreciation.motor_vehicles).toBe(9828);
   });
 
   it("escapes special characters in strings", () => {
     const meta = { ...minimalMetadata, business: { name: 'Smith & "Co"' } };
     const toml = formatScenarioToml(meta, emptyGrouped, minimalExpected);
     expect(toml).toContain('name = "Smith & \\"Co\\""');
+  });
+});
+
+// ── buildOpeningBalance ────────────────────────────────────────────────────
+
+describe("buildOpeningBalance", () => {
+  const openingLine = (accountMainID, amount, debitCreditCode) => ({
+    sourceJournalID: "journal",
+    documentReference: "OB-001",
+    entryNumber: "TXN-0001",
+    postingDate: "2025-04-01",
+    accountMainID,
+    amount,
+    debitCreditCode,
+  });
+
+  it("splits fixed assets into cost and accumulated depreciation per asset class", () => {
+    const ob = buildOpeningBalance([
+      openingLine("0040", 30000, "D"),
+      openingLine("0040", 9828, "C"),
+      openingLine("0030", 3000, "D"),
+      openingLine("0030", 270, "C"),
+    ]);
+    expect(ob.fixed_asset_cost).toEqual({ motor_vehicles: 30000, computer_technology: 3000 });
+    expect(ob.fixed_asset_depreciation).toEqual({ motor_vehicles: 9828, computer_technology: 270 });
+  });
+
+  it("reports liabilities and capital as positive figures", () => {
+    const ob = buildOpeningBalance([
+      openingLine("2500", 20000, "C"),
+      openingLine("3000", 100, "C"),
+      openingLine("3100", 45702, "C"),
+    ]);
+    expect(ob.directors_loan).toBe(20000);
+    expect(ob.share_capital).toBe(100);
+    expect(ob.retained_earnings).toBe(45702);
+  });
+
+  it("ignores in-year journals that are not opening balances", () => {
+    const stockAdjustment = {
+      sourceJournalID: "journal",
+      documentReference: "JNL-001",
+      entryNumber: "TXN-0703",
+      postingDate: "2026-03-31",
+      accountMainID: "1100",
+      amount: 4000,
+      debitCreditCode: "C",
+    };
+    const ob = buildOpeningBalance([openingLine("1100", 10000, "D"), stockAdjustment]);
+    expect(ob.stock).toBe(10000);
+  });
+
+  it("throws when an opening line posts to an account with no balance sheet row", () => {
+    expect(() => buildOpeningBalance([openingLine("5000", 1000, "D")])).toThrow(/5000/);
+  });
+
+  it("returns an empty object for a book with no opening journal", () => {
+    expect(buildOpeningBalance([{ sourceJournalID: "sales", accountMainID: "4000", amount: 100 }])).toEqual({});
   });
 });
 
