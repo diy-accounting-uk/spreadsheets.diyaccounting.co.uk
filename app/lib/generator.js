@@ -904,11 +904,16 @@ export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vati
   const zip = await JSZip.loadAsync(xlsxBuffer);
   let viXml = await zip.file(vatinterfacePath).async("string");
 
+  // Two passes via placeholders: a direct in-place rename cascades (Apr→May,
+  // then May→Jun re-hits the cells just renamed, collapsing every month onto
+  // the final target).
+  const placeholders = templateTabs.map((_, i) => `__VI_MONTH_${i}__`);
   for (let i = 0; i < 12; i++) {
-    if (templateTabs[i] !== targetTabs[i]) {
-      viXml = viXml.replace(new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"), `[2]${targetTabs[i]}!`);
-      viXml = viXml.replace(new RegExp(`\\[3\\]${templateTabs[i]}!`, "g"), `[3]${targetTabs[i]}!`);
-    }
+    viXml = viXml.replace(new RegExp(`\\[2\\]${templateTabs[i]}!`, "g"), `[2]${placeholders[i]}!`);
+    viXml = viXml.replace(new RegExp(`\\[3\\]${templateTabs[i]}!`, "g"), `[3]${placeholders[i]}!`);
+  }
+  for (let i = 0; i < 12; i++) {
+    viXml = viXml.replace(new RegExp(placeholders[i], "g"), targetTabs[i]);
   }
 
   const origDate = zip.file(vatinterfacePath).date;

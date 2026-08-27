@@ -21,6 +21,8 @@ import {
   generateTaxYearWeeks,
   groupWeeksIntoMonths,
   buildSalesSheetXml,
+  rewriteVatinterfaceFormulas,
+  getMonthTabSequence,
 } from "../lib/generator.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -621,6 +623,53 @@ describe("generateSpreadsheet (taxi)", () => {
     // Apr 2024-25 (Apr 6 = Saturday, 2-day first week) vs Apr 2025-26 (Apr 6 = Sunday, 1-day first week)
     // Both have 4 weeks in April but different row counts due to different partial week sizes
     expect(dim25).not.toBe(dim26);
+  });
+});
+
+// ── Vatinterface month-tab rewriting ────────────────────────────────────────
+
+describe("rewriteVatinterfaceFormulas", () => {
+  const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
+  const VI_PATH = "xl/worksheets/sheet6.xml";
+  let templateBuffer;
+
+  beforeAll(() => {
+    templateBuffer = readFileSync(resolve(LTD_DIR, "Vatreturns.xlsx"));
+  });
+
+  async function monthFormulas(buffer, extIdx, col) {
+    const JSZip = (await import("jszip")).default;
+    const zip = await JSZip.loadAsync(buffer);
+    const viXml = await zip.file(VI_PATH).async("string");
+    const months = [];
+    for (let row = 6; row <= 17; row++) {
+      const m = viXml.match(new RegExp(`<c r="${col}${row}"[^>]*><f>\\[${extIdx}\\]([A-Za-z]+)!`));
+      months.push(m ? m[1] : null);
+    }
+    return months;
+  }
+
+  it("is a no-op for the template's March year-end", async () => {
+    const buffer = await rewriteVatinterfaceFormulas(templateBuffer, 3, VI_PATH);
+    expect(await monthFormulas(buffer, 2, "D")).toEqual(getMonthTabSequence(3));
+  });
+
+  it("maps each month row to its own Sales/Purchases tab for an April year-end", async () => {
+    const buffer = await rewriteVatinterfaceFormulas(templateBuffer, 4, VI_PATH);
+    const expected = getMonthTabSequence(4); // May..Apr
+    expect(await monthFormulas(buffer, 2, "D")).toEqual(expected);
+    expect(await monthFormulas(buffer, 2, "F")).toEqual(expected);
+    expect(await monthFormulas(buffer, 3, "H")).toEqual(expected);
+    expect(await monthFormulas(buffer, 3, "J")).toEqual(expected);
+  });
+
+  it("maps each month row to its own tab for every year-end month", async () => {
+    for (let yearEnd = 1; yearEnd <= 12; yearEnd++) {
+      const buffer = await rewriteVatinterfaceFormulas(templateBuffer, yearEnd, VI_PATH);
+      const expected = getMonthTabSequence(yearEnd);
+      expect(await monthFormulas(buffer, 2, "D"), `year-end month ${yearEnd}`).toEqual(expected);
+      expect(await monthFormulas(buffer, 3, "H"), `year-end month ${yearEnd}`).toEqual(expected);
+    }
   });
 });
 
