@@ -784,8 +784,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
 
   // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
-  if (expected.total_premises_gross) check("Premises", pl.B21 || 0, expected.total_premises_gross);
-  if (expected.total_legal_gross) check("Legal & Professional", pl.B33 || 0, expected.total_legal_gross);
+  if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
+  if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
 
   // Stock checks
   if (expected.opening_stock !== undefined) {

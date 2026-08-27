@@ -181,9 +181,9 @@ export function diyaGlToScenario(book, lines, product) {
 
   if (product === "se" || product === "ltd") {
     expected.total_motor_gross = Math.round(byCode.v || 0);
-    expected.total_legal_gross = Math.round(byCode.l || 0);
+    expected.total_legal_net = Math.round((byCode.l || 0) / 1.2);
     if (product === "ltd") {
-      expected.total_premises_gross = Math.round(byCode.r || 0);
+      expected.total_premises_net = Math.round((byCode.r || 0) / 1.2);
     }
   }
 

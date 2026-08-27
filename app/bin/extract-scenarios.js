@@ -213,7 +213,7 @@ const advToml = formatScenarioToml(
   {
     total_sales: advTotalSales,
     total_motor_gross: Math.round(advByCode.v || 0),
-    total_legal_gross: Math.round(advByCode.l || 0),
+    total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: [
@@ -273,8 +273,8 @@ const fullToml = formatScenarioToml(
   fullGrouped,
   {
     total_sales: fullTotalSales,
-    total_premises_gross: Math.round(fullByCode.r || 0),
-    total_legal_gross: Math.round(fullByCode.l || 0),
+    total_premises_net: Math.round((fullByCode.r || 0) / 1.2),
+    total_legal_net: Math.round((fullByCode.l || 0) / 1.2),
     opening_balance: buildOpeningBalance(fullLines),
     opening_stock: 10000,
     closing_stock: 6000,

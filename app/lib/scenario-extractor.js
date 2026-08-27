@@ -505,8 +505,8 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
   if (expected.total_motor_gross !== undefined) parts.push(`total_motor_gross = ${expected.total_motor_gross}`);
-  if (expected.total_legal_gross !== undefined) parts.push(`total_legal_gross = ${expected.total_legal_gross}`);
-  if (expected.total_premises_gross !== undefined) parts.push(`total_premises_gross = ${expected.total_premises_gross}`);
+  if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
+  if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
   parts.push("");
 
   return parts.join("\n");

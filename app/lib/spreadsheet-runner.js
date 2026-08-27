@@ -46,9 +46,16 @@ function toExcelSerial(year, month, day) {
 
 // ── XML cell editing (same approach as generator.js) ────────────────────────
 
+// Matches exactly the target cell's element: either self-closing, or an open
+// tag whose content may not run into a sibling's <c start or another cell's
+// </c> close. A greedier scan here swallows the self-closing siblings after
+// the target (they carry no </c> to stop at) and with them the row boundary.
+function cellElementPattern(cellRef) {
+  return new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/>|>(?:(?!</c>|<c[\\s>]).)*</c>)`, "s");
+}
+
 function setCellValue(xml, cellRef, value) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCell(xml, cellRef, value);
 
   const [fullMatch, openTag] = match;
@@ -57,8 +64,7 @@ function setCellValue(xml, cellRef, value) {
 }
 
 function setCellString(xml, cellRef, str) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCellString(xml, cellRef, str);
 
   const [fullMatch, openTag] = match;

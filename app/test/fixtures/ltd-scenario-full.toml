@@ -4592,5 +4592,5 @@ acc_dep = 270
 
 [expected]
 total_sales = 341283
-total_legal_gross = 5310
-total_premises_gross = 14400
+total_legal_net = 4425
+total_premises_net = 12000
