@@ -25,13 +25,18 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     workbooks, matrix shrink to 3 year-ends, and the period-frame date convention
     (non-March roundtrip byte-identical). Full suite 2510/2510. Awaiting the operator's
     four reconciliation dispatches on `claude/recon-wave3`, then merge.
-    Waves 5+6 prepping IN FLIGHT off `claude/recon-wave3` → integration branch
-    `claude/recon-wave5`: VAT localisation + straddling fixtures (worktree
-    `../spreadsheets-worktrees/wave5-vat`), RegisterofMembers + Cash.xlsx leg
-    (`../spreadsheets-worktrees/wave5-misc`), and the LLM judge gated behind an
-    ENABLE_LLM_JUDGE variable (`../spreadsheets-worktrees/wave6-judge`). Judge
-    prerequisites for the operator before enabling: Bedrock model-access grant in the
-    spreadsheets account and bedrock:InvokeModel on the deploy role.
+    **PR #36 fully proven** (`4209f3a2`): all four reconciliations green, including the
+    SE VAT boxes live for the first time (the cache rework exposed a 0 == 0 check; the
+    window now year-aligns to the scenario). AWAITING OPERATOR MERGE.
+    Waves 5+6 are code complete on branches off the wave3 lineage, integrating into
+    `claude/recon-wave5` after #36 merges: `claude/recon-wave5-vat` (VAT localisation +
+    straddling fixtures, 7 commits), `claude/recon-wave5-misc` (RegisterofMembers +
+    Cash.xlsx leg), `claude/recon-wave6-judge` (LLM judge, live-verified on Bedrock,
+    gated behind ENABLE_LLM_JUDGE). Bedrock prerequisites are DONE (model agreement
+    accepted us-east-1; scoped InvokeModel policy on the actions role). Operator
+    sequence after both PRs merge: one normal generate-commit run per product to
+    refresh the stale committed reports (the judge correctly fails them today — they
+    still show the pre-fix £1.78M imbalance), then set ENABLE_LLM_JUDGE=true.
   - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
     agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
     turnover is ~double its README's description — settle before the judge wave.
