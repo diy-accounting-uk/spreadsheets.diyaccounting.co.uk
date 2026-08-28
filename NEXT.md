@@ -25,8 +25,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     workbooks, matrix shrink to 3 year-ends, and the period-frame date convention
     (non-March roundtrip byte-identical). Full suite 2510/2510. Awaiting the operator's
     four reconciliation dispatches on `claude/recon-wave3`, then merge.
-    Remaining after #36: Wave 5 leftovers (Vatinterface localisation + straddling
-    fixtures, RegisterofMembers, Cash.xlsx bank-leg completion), then Wave 6 the judge.
+    Waves 5+6 prepping IN FLIGHT off `claude/recon-wave3` → integration branch
+    `claude/recon-wave5`: VAT localisation + straddling fixtures (worktree
+    `../spreadsheets-worktrees/wave5-vat`), RegisterofMembers + Cash.xlsx leg
+    (`../spreadsheets-worktrees/wave5-misc`), and the LLM judge gated behind an
+    ENABLE_LLM_JUDGE variable (`../spreadsheets-worktrees/wave6-judge`). Judge
+    prerequisites for the operator before enabling: Bedrock model-access grant in the
+    spreadsheets account and bedrock:InvokeModel on the deploy role.
   - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
     agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
     turnover is ~double its README's description — settle before the judge wave.
