@@ -23,8 +23,15 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     — caught up on main, blast radius 110/110; awaiting the operator's four
     reconciliation dispatches on its branch, then merge. Purchases-side monthly ties
     follow in a later wave.
+  - Waves packed onto PR #35's branch (operator, 2026-08-28): the Ltd agent
+    (Wave 2 Ltd items 5/6/10 + Admin echo + CT600/PubNotes; worktree
+    `../spreadsheets-worktrees/wave2-ltd`, branch `claude/recon-wave2-ltd`) and the
+    BST/Taxi agent (Admin echo + fixed-asset scenario signal; worktree
+    `../spreadsheets-worktrees/wave2-bst-taxi`, branch `claude/recon-wave2-bst-taxi`)
+    run concurrently off `claude/recon-wave2-se`; coordinator merges both into that
+    branch, then one final four-way reconciliation dispatch verifies the packed PR.
   - Still open in the runner: leaf-to-leaf external-link caches (Fixedassets reading
-    Sales/Purchases). Wave 2 Ltd dispatches after #35 merges.
+    Sales/Purchases).
   Coordinator merges verified commits, pushes in batches; waves 3-5 follow per the plan.
 
 - [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
