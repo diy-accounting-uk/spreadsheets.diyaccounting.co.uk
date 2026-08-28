@@ -14,6 +14,7 @@ import {
   buildUserPrompt,
   parseArgs,
   parseVerdict,
+  PRODUCTS,
   reportStatus,
   requestVerdict,
   selectRuns,
@@ -117,6 +118,48 @@ describe("summariseScenario", () => {
     const summary = summariseScenario({ metadata: { name: "Bare" } }, "bare");
     expect(summary).not.toContain("Sales journal");
     expect(summary).not.toContain("Opening balances");
+  });
+
+  it("totals the purchase journal by code", () => {
+    const coded = {
+      ...scenario,
+      purchases: {
+        apr: [
+          { amount: 400, code: "g" },
+          { amount: 1000, code: "f" },
+        ],
+        may: [{ amount: 600, code: "g" }],
+      },
+    };
+    const summary = summariseScenario(coded, "bst-scenario-basic", PRODUCTS.bst);
+    expect(summary).toContain("Purchase journal by code: f 1,000.00, g 1,000.00");
+  });
+
+  it("states capitalised purchases apart from revenue spending", () => {
+    const coded = {
+      ...scenario,
+      purchases: {
+        apr: [
+          { amount: 400, code: "g" },
+          { amount: 1000, code: "f" },
+        ],
+      },
+    };
+    const summary = summariseScenario(coded, "bst-scenario-basic", PRODUCTS.bst);
+    expect(summary).toContain("Capital spending inside that journal: 1,000.00 coded f (fixed assets).");
+    expect(summary).toContain("The remaining 400.00 is revenue spending.");
+  });
+
+  it("carries the product's notes on how its workbooks treat the entries", () => {
+    const summary = summariseScenario(scenario, "bst-scenario-basic", PRODUCTS.bst);
+    expect(summary).toContain("How this product's workbooks treat the entries above:");
+    expect(summary).toContain("Debtors & Creditors sheet");
+  });
+
+  it("says nothing about capital spending or product behaviour without a product", () => {
+    const summary = summariseScenario(scenario, "ltd-brickwork-pro-vat");
+    expect(summary).not.toContain("Capital spending inside that journal");
+    expect(summary).not.toContain("How this product's workbooks treat");
   });
 });
 

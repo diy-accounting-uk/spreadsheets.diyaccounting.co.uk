@@ -104,11 +104,62 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
       "SA103S: Turnover = P&L Sales",
       "SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances",
       "SA103S: Profit for tax = Draft Tax E5",
+      "Tax: sheet applies the basic rate to the lower band",
+      "Tax: sheet applies the higher rate above the band",
+      "Tax: sheet splits the bands at the higher band start",
+      "Tax at basic rate",
+      "Tax at higher rate",
     ]) {
       const check = checks.find((c) => c.name === name);
       expect(check, `missing check: ${name}`).toBeDefined();
       expect(check.pass, `${name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
     }
+  });
+
+  it("charges the whole taxable income at the basic rate when it sits inside the basic band", async () => {
+    const reads = taxiReads();
+    const results = await readWithCorruption(populatedPath, reads, null, null, null);
+    const tax = results["Draft Tax calculation"];
+
+    expect(tax.E7).toBeLessThan(taxData.income_tax.higher_band_start);
+    expect(tax.E8).toBeCloseTo(tax.E7 * taxData.income_tax.basic_rate, 2);
+    expect(tax.E9).toBe(0);
+  });
+
+  it("breaks the band checks when the sheet applies the wrong rate above the band", async () => {
+    const reads = taxiReads();
+    const results = await readWithCorruption(populatedPath, reads, "Draft Tax calculation", "D9", 0.2);
+    const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+
+    expect(checks.find((c) => c.name === "Tax: sheet applies the higher rate above the band").pass).toBe(false);
+  });
+
+  it("breaks the band split check when the sheet moves the band edge", async () => {
+    const reads = taxiReads();
+    const results = await readWithCorruption(populatedPath, reads, "Draft Tax calculation", "C9", 0);
+    const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+
+    expect(checks.find((c) => c.name === "Tax: sheet splits the bands at the higher band start").pass).toBe(false);
+  });
+
+  it("breaks the band split check when tax charged in one band lands in the other", async () => {
+    const reads = taxiReads();
+    const results = await readWithCorruption(populatedPath, reads, "Draft Tax calculation", "E8", 0);
+    const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+
+    expect(checks.find((c) => c.name === "Tax at basic rate").pass).toBe(false);
+  });
+
+  it("breaks the purchase journal closure when the capitalised vehicle total is corrupted", async () => {
+    const reads = taxiReads();
+    const withJournal = { ...scenario, ...scenario.expected };
+    const intact = await readWithCorruption(populatedPath, reads, null, null, null);
+    const name = "Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles";
+    expect(taxiCheckCompliance(intact, withJournal, taxData, calculateExpectedTax).find((c) => c.name === name).pass).toBe(true);
+
+    const results = await readWithCorruption(populatedPath, reads, "PurchasesMar", "T1", 0);
+    const checks = taxiCheckCompliance(results, withJournal, taxData, calculateExpectedTax);
+    expect(checks.find((c) => c.name === name).pass).toBe(false);
   });
 
   it("corrupting a vehicle cost line breaks the Cost-of-Sales and Gross-Profit closure checks", async () => {

@@ -3171,7 +3171,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3200
+amount = 23000
 description = "Aggregate customer receipts"
 
 [[bank.apr]]
@@ -3279,7 +3279,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3800
+amount = 22520
 description = "Aggregate customer receipts"
 
 [[bank.may]]
@@ -3360,7 +3360,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4500
+amount = 24800
 description = "Aggregate customer receipts"
 
 [[bank.jun]]
@@ -3477,7 +3477,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3600
+amount = 23360
 description = "Aggregate customer receipts"
 
 [[bank.jul]]
@@ -3576,7 +3576,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4200
+amount = 25620
 description = "Aggregate customer receipts"
 
 [[bank.aug]]
@@ -3657,7 +3657,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3000
+amount = 23360
 description = "Aggregate customer receipts"
 
 [[bank.sep]]
@@ -3792,7 +3792,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 5000
+amount = 25160
 description = "Aggregate customer receipts"
 
 [[bank.oct]]
@@ -3891,7 +3891,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4100
+amount = 24920
 description = "Aggregate customer receipts"
 
 [[bank.nov]]
@@ -3981,7 +3981,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3500
+amount = 22400
 description = "Aggregate customer receipts"
 
 [[bank.dec]]
@@ -4098,7 +4098,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4800
+amount = 25040
 description = "Aggregate customer receipts"
 
 [[bank.jan]]
@@ -4197,7 +4197,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3900
+amount = 23960
 description = "Aggregate customer receipts"
 
 [[bank.feb]]
@@ -4278,7 +4278,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4400
+amount = 10560
 description = "Aggregate customer receipts"
 
 [[bank.mar]]

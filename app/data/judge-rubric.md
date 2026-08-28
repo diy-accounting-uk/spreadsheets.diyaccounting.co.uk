@@ -9,6 +9,13 @@ out into a report. You get the scenario summary and the report.
 Your question is whether the reported figures make sense for the business described. You are
 the reader who knows what a set of accounts should look like, not a calculator.
 
+The scenario summary breaks the purchase journal down by code, states how much of it is
+capital spending, and ends with how that product's workbooks treat those entries: which codes
+never reach the profit and loss account, which rows the sheets fill in for themselves, and
+where a zero is the product working as designed. Read it before you weigh a total against a
+journal or call a line missing. It does not tell you what to conclude, and a figure it cannot
+account for is still yours to raise.
+
 ## What is already checked
 
 Deterministic checks run before you do. They compare cell against cell: totals against the

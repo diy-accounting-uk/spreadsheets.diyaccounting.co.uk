@@ -76,6 +76,17 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
+// ── Stock sheet layout ─────────────────────────────────────────────────────
+// The Stock sheet runs a row per month end from row 8 to row 30 in steps of
+// two, under an opening row 6 fed from the opening balance sheet. Column D
+// carries the calculated value, column AB the physical count, and column Z
+// the difference between them, which the trial balance reads as the month's
+// stock movement. Row 30 is the last month of the year.
+
+const STOCK_FINAL_CALCULATED_CELL = "D30";
+const STOCK_FINAL_COUNT_CELL = "AB30";
+const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
+
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
 // depreciation (M:Q), one column per asset class, with net book value in E13.
@@ -408,11 +419,17 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
-  // Stock (Financialaccounts.xlsx Stock sheet)
-  if (scenario.stock) {
+  // Stock (Financialaccounts.xlsx Stock sheet). The opening figure reaches the
+  // sheet from the opening balance sheet (D6 and AB6 both read
+  // OpenAccounts!E15), so the only entry a year needs is the physical stock
+  // count. The sheet takes that in the ACTUAL STOCK VALUE column against the
+  // month end it was counted at; the difference from the calculated value
+  // becomes the stock loss adjustment in column Z, which is what the trial
+  // balance reads as the year's stock movement. Column B holds the month-end
+  // dates, so writing the count there moves no stock at all.
+  if (scenario.stock && scenario.stock.closing !== undefined) {
     if (!hubWrites.Stock) hubWrites.Stock = {};
-    if (scenario.stock.opening !== undefined) hubWrites.Stock.B5 = scenario.stock.opening;
-    if (scenario.stock.closing !== undefined) hubWrites.Stock.B8 = scenario.stock.closing;
+    hubWrites.Stock[STOCK_FINAL_COUNT_CELL] = scenario.stock.closing;
   }
 
   // Payslips.xlsx employee details (same layout as SE: 5 blocks at 26-row intervals)
@@ -775,8 +792,10 @@ export const CELL_MAP = [
   ["PubNotes", "D35", "Directors emoluments",          "gl-cor:amount (note2.emoluments)", "Fixed Asset Note", 1],
   ["PubNotes", "D41", "Corporation tax for the year",  "gl-cor:taxAmount (note4.ct)",      "Fixed Asset Note", 1],
   // ── Stock ──
-  ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
-  ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
+  ["Stock", "D6",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
+  ["Stock", STOCK_FINAL_COUNT_CELL,      "Closing Stock (physical count)", "accounts.assets.1100 (closing)",           "Stock", 0],
+  ["Stock", STOCK_FINAL_CALCULATED_CELL, "Closing Stock (calculated)",     "accounts.assets.1100 (calculated)",        "Stock", 1],
+  ["Stock", STOCK_FINAL_ADJUSTMENT_CELL, "Stock loss adjustment",          "accounts.assets.1100 (lossAdjustment)",    "Stock", 1],
   // ── Trial Balance ──
   // Column D is the opening column, fed cell by cell from OpenAccounts.
   // Column EJ is the final balance: opening plus every in-year movement.
@@ -1221,30 +1240,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
   if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
 
-  // Stock checks
-  if (expected.opening_stock !== undefined) {
-    const stock = results.Stock;
-    if (stock && stock.B5 !== undefined) check("Opening Stock", stock.B5 || 0, expected.opening_stock);
-    if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined)
-      check("Closing Stock", stock.B8 || 0, expected.closing_stock);
+  // Stock and debtors on the published balance sheet. Both are derived: stock
+  // comes from the physical count against the calculated value, debtors from
+  // opening debtors plus everything invoiced less everything banked as a
+  // customer receipt. A balance sheet stays balanced whichever figure those
+  // chains land on, so anchoring the published lines to the scenario's own
+  // closing figures is the only way a stale opening balance or a year of
+  // uncollected sales shows up.
+  const stock = results.Stock;
+  const pubBS = results.PubBalSht;
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (openingStock !== undefined && stock) {
+    check("Stock: opening carried in from the opening balance sheet", stock.D6 || 0, openingStock);
   }
-
-  // Debtors/creditors checks
-  if (expected.opening_debtors) {
-    const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Opening Debtors total", total, total);
+  if (closingStock !== undefined && stock) {
+    check("Stock: physical count at the year end", stock[STOCK_FINAL_COUNT_CELL] || 0, closingStock);
+    check(
+      "Stock: loss adjustment = count - calculated",
+      stock[STOCK_FINAL_ADJUSTMENT_CELL] || 0,
+      (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
+    );
+    if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
   }
-  if (expected.closing_debtors) {
+  if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Closing Debtors total", total, total);
-  }
-  if (expected.opening_creditors) {
-    const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Opening Creditors total", total, total);
-  }
-  if (expected.closing_creditors) {
-    const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Closing Creditors total", total, total);
+    check("Published balance sheet: trade debtors = closing debtors", pubBS.E11 || 0, total);
   }
 
   // VAT chain: Sales/Purchases month VAT totals must flow through the

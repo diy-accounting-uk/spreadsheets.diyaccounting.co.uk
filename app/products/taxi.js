@@ -183,12 +183,18 @@ export const CELL_MAP = [
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1],
   [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Draft Tax Calculation", 0],
-  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Draft Tax Calculation", 1],
+  [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Draft Tax Calculation", 1],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.higherBandStart (applied)", "Draft Tax Calculation", 1],
+  [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Draft Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Draft Tax Calculation", 1],
   [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Draft Tax Calculation", 0],
   [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1],
   [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0],
+  // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
+  ["PurchasesMar", "I2", "Vehicle running costs for the year",  "accounts.purchases (vehicleRunningCosts)",  "Purchase Analysis", 0],
+  ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "accounts.assets.fixedAssets (purchased)",   "Purchase Analysis", 0],
   // ── Fixed Assets schedule ──
   ["Fixed Assets", "D47", "New Asset Cost (Vehicle under £12,000)", "accounts.assets.fixedAssets (cost)",              "Fixed Assets", 1],
   ["Fixed Assets", "I1",  "Total Annual Investment Allowance",      "tax.capitalAllowances.aia (schedule)",            "Fixed Assets", 0],
@@ -197,11 +203,11 @@ export const CELL_MAP = [
   ["Fixed Assets", "Q1",  "Total Balancing Charge",                 "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1],
   // ── Admin (generator-injected tax data) ──
   ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
-  ["Admin", "N7",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
-  ["Admin", "N8",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
-  ["Admin", "M12", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
-  ["Admin", "N13", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
-  ["Admin", "L17", "NI Class 2 Rate",                     "tax.nationalInsurance.class2Rate",        "Admin (Generator Injected)", 0],
+  ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
+  ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "L16", "NI Class 2 Weekly Rate",              "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
@@ -288,6 +294,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: General expense lines sum = Total", pl.B22, taxiExpenseSum);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
 
+  // Every coded purchase must reach an account. The general expense codes land
+  // in the P&L total, the four vehicle running-cost codes accumulate in the
+  // Purchases sheets' year-to-date column I2, and code "f" capitalises into T1
+  // instead of the P&L. Anything the workbook drops shows up as a shortfall
+  // here even though every total on its own still adds up.
+  const purchases = results.PurchasesMar;
+  if (expected.purchases && purchases) {
+    const journalTotal = Object.values(expected.purchases)
+      .flat()
+      .reduce((s, tx) => s + tx.amount, 0);
+    const accountedFor = (pl.B22 || 0) + (purchases.I2 || 0) + (purchases.T1 || 0);
+    check("Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles", accountedFor, journalTotal);
+  }
+
   // SA103S cross-check: SE Short is fed entirely from the P&L and, in turn,
   // feeds the Draft Tax calculation -- an independent formula chain that
   // should land on the same figures.
@@ -341,11 +361,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ca = taxData.capital_allowances;
     const mil = taxData.mileage;
     check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
-    check("Admin: Basic Rate = tax data", admin.N7, it.basic_rate, 0.0001);
-    check("Admin: Higher Rate = tax data", admin.N8, it.higher_rate, 0.0001);
-    check("Admin: Basic Band End = tax data", admin.M12, it.basic_band_end);
-    check("Admin: Higher Band Start = tax data", admin.N13, it.higher_band_start);
-    check("Admin: NI Class 2 Rate = tax data", admin.L17, ni.class2_rate, 0.0001);
+    check("Admin: Basic Rate = tax data", admin.N6, it.basic_rate, 0.0001);
+    check("Admin: Higher Rate = tax data", admin.N7, it.higher_rate, 0.0001);
+    check("Admin: Basic Band End = tax data", admin.M11, it.basic_band_end);
+    check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
+    check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
     check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
@@ -370,6 +390,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Income Tax", tax.E10 || 0, expectedTax.income_tax);
       check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower);
       check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni);
+
+      // The rate and band the sheet actually applies, not the ones it is
+      // captioned with. A total that happens to be right because the whole
+      // taxable income sits in one band hides a wrong rate in the other.
+      check("Tax: sheet applies the basic rate to the lower band", tax.D8 || 0, taxData.income_tax.basic_rate, 0.0001);
+      check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
+      check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
+      check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
+      check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
 
       // Tax calculation chain (6c)
       check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
