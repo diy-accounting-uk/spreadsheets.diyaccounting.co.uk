@@ -31,10 +31,10 @@ export function calculateIncomeTax(profit, taxRates) {
  * Computes income tax + NI Class 4 from profit and full tax data.
  * @param {number} profit - taxable profit
  * @param {Object} taxData - full tax data object (from app/data/*.toml)
- * @returns {{ income_tax, ni_class4_lower, ni_class4_upper, total_tax_and_ni }}
+ * @returns {{ income_tax, income_tax_basic, income_tax_higher, ni_class4_lower, ni_class4_upper, total_tax_and_ni }}
  */
 export function calculateExpectedTax(profit, taxData) {
-  const { totalIncomeTax } = calculateIncomeTax(profit, taxData.income_tax);
+  const { totalIncomeTax, basicRateTax, higherRateTax } = calculateIncomeTax(profit, taxData.income_tax);
 
   const lowerLimit = taxData.national_insurance.class4_lower_limit;
   const upperLimit = taxData.national_insurance.class4_upper_limit;
@@ -45,6 +45,8 @@ export function calculateExpectedTax(profit, taxData) {
 
   return {
     income_tax: Math.round(totalIncomeTax),
+    income_tax_basic: basicRateTax,
+    income_tax_higher: higherRateTax,
     ni_class4_lower: Math.round(niLower * 10) / 10,
     ni_class4_upper: Math.round(niUpper * 10) / 10,
     total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),

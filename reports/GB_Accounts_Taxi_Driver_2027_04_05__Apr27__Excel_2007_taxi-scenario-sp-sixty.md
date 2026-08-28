@@ -1,24 +1,21 @@
 # Reconciliation Report: GB Accounts Taxi Driver 2027-04-05 (Apr27) Excel 2007
 
-Scenario: taxi-scenario-basic
+Scenario: taxi-scenario-sp-sixty
 Status: RECONCILES
 
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 36000 | 36000 | 0 | PASS |
-| P&L: Net = Gross - General Expenses | 28520 | 28520 | 0 | PASS |
-| P&L: Cost of Sales = vehicle cost lines | 6100 | 6100 | 0 | PASS |
-| P&L: Gross = Turnover - Cost of Sales | 29900 | 29900 | 0 | PASS |
+| Total Sales | 38000 | 38000 | 0 | PASS |
+| P&L: Net = Gross - General Expenses | 31812 | 31812 | 0 | PASS |
+| P&L: Cost of Sales = vehicle cost lines | 4868 | 4868 | 0 | PASS |
+| P&L: Gross = Turnover - Cost of Sales | 33132 | 33132 | 0 | PASS |
 | P&L: Capital Allowances / Mileage Allowance mutually exclusive | 0 | 0 | 0 | PASS |
-| P&L: General expense lines sum = Total | 1380 | 1380 | 0 | PASS |
-| Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles | 14360 | 14360 | 0 | PASS |
-| SA103S: Turnover = P&L Sales | 36000 | 36000 | 0 | PASS |
-| SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances | 29640 | 29640 | 0 | PASS |
-| Fixed Assets: New asset cost recorded | 8000 | 8000 | 0 | PASS |
-| Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction) | 1120 | 1120 | 0 | PASS |
-| Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 1120 | 1120 | 0 | PASS |
+| P&L: General expense lines sum = Total | 1320 | 1320 | 0 | PASS |
+| Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles | 6388 | 6388 | 0 | PASS |
+| SA103S: Turnover = P&L Sales | 38000 | 38000 | 0 | PASS |
+| SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances | 31812 | 31812 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
@@ -38,94 +35,94 @@ Status: RECONCILES
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 3190 | 3190 | 0 | PASS |
-| NI Class 4 (lower) | 957 | 957 | 0 | PASS |
-| Total Tax + NI | 4147 | 4147 | 0 | PASS |
+| Income Tax | 3848 | 3848.4 | +0.40000000000009095 | PASS |
+| NI Class 4 (lower) | 1154.5 | 1154.52 | +0.01999999999998181 | PASS |
+| Total Tax + NI | 5003 | 5002.92 | -0.07999999999992724 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
 | Tax: sheet splits the bands at the higher band start | 37701 | 37701 | 0 | PASS |
-| Tax at basic rate | 3190 | 3190 | 0 | PASS |
+| Tax at basic rate | 3848.4 | 3848.4 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 15950 | 15950 | 0 | PASS |
-| Tax: IT = Basic + Higher | 3190 | 3190 | 0 | PASS |
-| Tax: Total = IT + NI | 4147 | 4147 | 0 | PASS |
-| SA103S: Profit for tax = Draft Tax E5 | 28520 | 28520 | 0 | PASS |
+| Tax: Taxable = Profit - Allowance | 19242 | 19242 | 0 | PASS |
+| Tax: IT = Basic + Higher | 3848.4 | 3848.4 | 0 | PASS |
+| Tax: Total = IT + NI | 5002.92 | 5002.92 | 0 | PASS |
+| SA103S: Profit for tax = Draft Tax E5 | 31812 | 31812 | 0 | PASS |
 
 ## Business Details
 
 | | Amount |
 |---|------:|
-| Business Name | Basic taxi driver |
-| Description | Description of business |
-| Address | Taxi Driver |
-| Town | — |
-| Postcode | — |
+| Business Name | SP Sixty Driving |
+| Description | Private hire and taxi services |
+| Address | 42 Oak Lane |
+| Town | Leeds |
+| Postcode | LS1 5PQ |
 | UTR | — |
 
 ## Profit & Loss Account
 
 | | Amount |
 |---|------:|
-| Turnover (Total Fares) | 36,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Fuel | 3,600 |
+| Turnover (Total Fares) | 38,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Fuel | 2,708 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Car Hire / Rental | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Servicing | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Road Tax & Insurance | 1,380 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 1,120 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Servicing | 580 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Road Tax & Insurance | 1,580 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Mileage Allowance | 0 |
-| Cost of Sales (vehicle costs) | 6,100 |
-| **Gross Profit** | 29,900 |
+| Cost of Sales (vehicle costs) | 4,868 |
+| **Gross Profit** | 33,132 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee Costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 480 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 420 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising | 150 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 750 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Bank Charges | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bank Charges | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 0 |
-| Total General Expenses | 1,380 |
-| **Net Profit** | 28,520 |
+| Total General Expenses | 1,320 |
+| **Net Profit** | 31,812 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Any Other Business Income | 0 |
 
 ## Self Assessment (SA103S)
 
 | | Amount |
 |---|------:|
-| Turnover | 36,000 |
-| **Net profit/loss** | 29,640 |
-| **Net profit for tax calc** | 28,520 |
+| Turnover | 38,000 |
+| **Net profit/loss** | 31,812 |
+| **Net profit for tax calc** | 31,812 |
 
 ## Draft Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 28,520 |
+| Profit from Self Employment | 31,812 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 15,950 |
+| Taxable Income | 19,242 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,701 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 3,190 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 3,848.4 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 0 |
-| **Total Income Tax** | 3,190 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 957 |
+| **Total Income Tax** | 3,848.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 1,154.52 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
-| **Total Tax + NI** | 4,147 |
+| **Total Tax + NI** | 5,002.92 |
 
 ## Purchase Analysis
 
 | | Amount |
 |---|------:|
-| Vehicle running costs for the year | 4,980 |
-| Vehicle purchases capitalised | 8,000 |
+| Vehicle running costs for the year | 4,868 |
+| Vehicle purchases capitalised | 200 |
 
 ## Fixed Assets
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Vehicle under £12,000) | 8,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Vehicle under £12,000) | — |
 | Total Annual Investment Allowance | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance | 1,120 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total Balancing Charge | 0 |
 
@@ -161,74 +158,75 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C5 | Business Name | Basic taxi driver | entityInformation.organizationIdentifier |
-| C7 | Description | Description of business | entityInformation.organizationDescription |
-| C8 | Address | Taxi Driver | gl-bus:organizationAddress |
+| C5 | Business Name | SP Sixty Driving | entityInformation.organizationIdentifier |
+| C7 | Description | Private hire and taxi services | entityInformation.organizationDescription |
+| C8 | Address | 42 Oak Lane | gl-bus:organizationAddress |
+| C10 | Town | Leeds | gl-bus:organizationAddress (town) |
+| C12 | Postcode | LS1 5PQ | gl-bus:organizationAddress (postcode) |
 
 ### Profit & Loss Acc
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B5 | Turnover (Total Fares) | 36000 | gl-cor:amount (salesTurnover) |
-| B6 | Fuel | 3600 | accounts.purchases.5100 (fuel) |
+| B5 | Turnover (Total Fares) | 38000 | gl-cor:amount (salesTurnover) |
+| B6 | Fuel | 2708 | accounts.purchases.5100 (fuel) |
 | B7 | Car Hire / Rental | 0 | accounts.purchases.5200 (carHire) |
-| B8 | Repairs & Servicing | 0 | accounts.purchases.5300 (repairs) |
-| B9 | Road Tax & Insurance | 1380 | accounts.purchases.5400 (taxIns) |
-| B10 | Capital Allowances | 1120 | tax.capitalAllowances |
+| B8 | Repairs & Servicing | 580 | accounts.purchases.5300 (repairs) |
+| B9 | Road Tax & Insurance | 1580 | accounts.purchases.5400 (taxIns) |
+| B10 | Capital Allowances | 0 | tax.capitalAllowances |
 | B11 | Mileage Allowance | 0 | tax.mileage (allowance) |
-| B12 | Cost of Sales (vehicle costs) | 6100 | gl-cor:amount (costOfSales) |
-| B13 | **Gross Profit** | 29900 | gl-cor:amount (grossProfit) |
+| B12 | Cost of Sales (vehicle costs) | 4868 | gl-cor:amount (costOfSales) |
+| B13 | **Gross Profit** | 33132 | gl-cor:amount (grossProfit) |
 | B14 | Employee Costs | 0 | accounts.purchases.5500 |
 | B15 | Premises Costs | 0 | accounts.purchases.5600 |
-| B16 | General Admin | 480 | accounts.purchases.5700 |
-| B17 | Advertising | 0 | accounts.purchases.5800 |
-| B18 | Legal & Professional | 900 | accounts.purchases.5900 |
+| B16 | General Admin | 420 | accounts.purchases.5700 |
+| B17 | Advertising | 150 | accounts.purchases.5800 |
+| B18 | Legal & Professional | 750 | accounts.purchases.5900 |
 | B19 | Interest & Bank Charges | 0 | accounts.purchases.6000 |
 | B20 | Bank Charges | 0 | accounts.purchases.6100 |
 | B21 | Other Expenses | 0 | accounts.purchases.6200 |
-| B22 | Total General Expenses | 1380 | gl-cor:amount (totalGeneral) |
-| B23 | **Net Profit** | 28520 | gl-cor:amount (netProfit) |
+| B22 | Total General Expenses | 1320 | gl-cor:amount (totalGeneral) |
+| B23 | **Net Profit** | 31812 | gl-cor:amount (netProfit) |
 | B24 | Any Other Business Income | 0 | gl-cor:amount (otherIncome) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D38 | Turnover | 36000 | gl-cor:amount (sa103s.turnover) |
-| D71 | **Net profit/loss** | 29640 | gl-cor:amount (sa103s.netProfit) |
-| D106 | **Net profit for tax calc** | 28520 | gl-cor:amount (sa103s.profitForTax) |
+| D38 | Turnover | 38000 | gl-cor:amount (sa103s.turnover) |
+| D71 | **Net profit/loss** | 31812 | gl-cor:amount (sa103s.netProfit) |
+| D106 | **Net profit for tax calc** | 31812 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Draft Tax calculation
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 28520 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 31812 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 15950 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 19242 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
 | C9 | Basic band ceiling the sheet applies | 37701 | tax.incomeTax.higherBandStart (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| E8 | Tax at Basic Rate | 3190 | tax.incomeTax.basicRate |
+| E8 | Tax at Basic Rate | 3848.4 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 3190 | tax.incomeTax (total) |
-| E14 | NI Class 4 (lower band) | 957 | tax.nationalInsurance.class4MainRate |
+| E10 | **Total Income Tax** | 3848.4 | tax.incomeTax (total) |
+| E14 | NI Class 4 (lower band) | 1154.52 | tax.nationalInsurance.class4MainRate |
 | E15 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
-| E17 | **Total Tax + NI** | 4147 | gl-cor:taxAmount (totalTaxNI) |
+| E17 | **Total Tax + NI** | 5002.92 | gl-cor:taxAmount (totalTaxNI) |
 
 ### PurchasesMar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| I2 | Vehicle running costs for the year | 4980 | accounts.purchases (vehicleRunningCosts) |
-| T1 | Vehicle purchases capitalised | 8000 | accounts.assets.fixedAssets (purchased) |
+| I2 | Vehicle running costs for the year | 4868 | accounts.purchases (vehicleRunningCosts) |
+| T1 | Vehicle purchases capitalised | 200 | accounts.assets.fixedAssets (purchased) |
 
 ### Fixed Assets
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D47 | New Asset Cost (Vehicle under £12,000) | 8000 | accounts.assets.fixedAssets (cost) |
 | I1 | Total Annual Investment Allowance | 0 | tax.capitalAllowances.aia (schedule) |
-| J1 | Total Writing Down Allowance | 1120 | tax.capitalAllowances.wda (schedule) |
+| J1 | Total Writing Down Allowance | 0 | tax.capitalAllowances.wda (schedule) |
 | P1 | Total Capital Allowance on Disposal | 0 | tax.capitalAllowances.disposals (schedule) |
 | Q1 | Total Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (schedule) |
 

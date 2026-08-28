@@ -1,10 +1,11 @@
 # Taxi Driver test scenario: basic taxi driver
-# A taxi driver working 5 days/week with daily fares, weekly rental, and standard expenses.
+# A taxi driver working 5 days/week with daily fares and standard expenses.
+# The driver owns the vehicle outright, so nothing is coded to car hire or rental.
 # Used by both unit/e2e tests and the reconciliation task.
 
 [metadata]
 name = "Basic taxi driver"
-description = "Taxi driver with steady daily fares, weekly rental payments, fuel, insurance, and a vehicle purchase"
+description = "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental."
 product = "taxi"
 tax_regime = "se"
 

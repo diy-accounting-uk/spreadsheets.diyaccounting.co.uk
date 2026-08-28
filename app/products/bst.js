@@ -195,8 +195,11 @@ export const CELL_MAP = [
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Income Tax Calculation", 0],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
   [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
-  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
-  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
+  [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Income Tax Calculation", 1],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.higherBandStart (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Income Tax Calculation", 1],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
   [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
   [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
@@ -239,6 +242,8 @@ export const CELL_MAP = [
   ["Debtors & Creditors", "F13", "Closing Creditor 2","accounts.liabilities.2100 (closing[1])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F14", "Closing Creditor 3","accounts.liabilities.2100 (closing[2])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F15", "Closing Creditor 4","accounts.liabilities.2100 (closing[3])", "Debtors & Creditors", 1],
+  // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
+  ["PurchasesMar", "X1", "Purchases capitalised as fixed assets", "accounts.assets.fixedAssets (purchased)", "Purchase Analysis", 0],
   // ── Fixed Assets schedule ──
   ["Fixed Assets", "E67",  "New Asset Cost (Plant & Machinery)",     "accounts.assets.fixedAssets (cost)",             "Fixed Assets", 1],
   ["Fixed Assets", "E1",   "Total Original Cost",                   "accounts.assets.fixedAssets (totalCost)",        "Fixed Assets", 0],
@@ -342,6 +347,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     0,
   );
   check("P&L: Expense lines sum = Total", pl.C22, bstExpenseSum);
+
+  // Every coded purchase must reach an account. Eleven codes land in the P&L
+  // expense lines, "d" in direct costs, "s" in cost of sales alongside the
+  // stock movement, and "f" capitalises into the Purchases sheets' year-to-date
+  // fixed-asset column instead of the P&L. Anything the workbook drops shows up
+  // as a shortfall here even though every total on its own still adds up.
+  const purchases = results.PurchasesMar;
+  if (expected.purchases && purchases && results.PurchasesStock) {
+    const journalTotal = Object.values(expected.purchases)
+      .flat()
+      .reduce((s, tx) => s + tx.amount, 0);
+    const stockMovement = (results.PurchasesStock.D5 || 0) - (results.PurchasesStock.D30 || 0);
+    const stockPurchases = (pl.C6 || 0) - stockMovement;
+    const accountedFor = (pl.C22 || 0) + (pl.C7 || 0) + stockPurchases + (purchases.X1 || 0);
+    check("Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
+  }
 
   // Stock checks (6e)
   if (expected.opening_stock !== undefined && results.PurchasesStock) {
@@ -447,6 +468,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Income Tax", computedIncomeTax, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+
+    // The rate and band the sheet actually applies, not the ones it is
+    // captioned with. A total that happens to be right because the whole
+    // taxable income sits in one band hides a wrong rate in the other.
+    check("Tax: sheet applies the basic rate to the lower band", tax.D8 || 0, taxData.income_tax.basic_rate, 0.0001);
+    check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
+    check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
+    check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
+    check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
 
     // Tax calculation chain (6c)
     check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
