@@ -517,17 +517,11 @@ export const CELL_MAP = [
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
 ];
 
-// Additional reads from leaf files (Bank.xlsx closing balance, Vat.xlsx
-// quarterly returns, Fixedassets.xlsx Schedule and FAreconciliation totals).
-//
-// Cash.xlsx's closing balance is NOT read here. additionalReads keys its
-// results by raw sheet name, not by file -- Bank.xlsx and Cash.xlsx both
-// have a "Mar" sheet, so requesting both would silently overwrite one
-// file's A1/A2 with the other's (last file processed wins) under the same
-// "Mar" key. Reading Cash.xlsx's closing balance safely needs
-// runMultiFileSpreadsheet to nest additionalReads results by filename;
-// until then it is proven directly against the recalculated file in
-// app/test/se-reconciliation-checks.test.js instead of shipped here.
+// Additional reads from leaf files (Bank.xlsx and Cash.xlsx closing
+// balances, Vat.xlsx quarterly returns, Fixedassets.xlsx Schedule and
+// FAreconciliation totals). Results are keyed "<filename>!<sheetName>", so
+// Bank.xlsx!Mar and Cash.xlsx!Mar stay distinct even though both files carry
+// a "Mar" sheet.
 export function multiFileOptions() {
   // Every VATQtr sheet shares the same box layout (verified against the
   // template): G5 quarter-end date, G7 payment-due date, G9 box 1/3 output
@@ -552,6 +546,7 @@ export function multiFileOptions() {
     postHubRecalc: ["Vat.xlsx"],
     additionalReads: {
       "Bank.xlsx": { Mar: ["A1", "A2"] },
+      "Cash.xlsx": { Mar: ["A1", "A2"] },
       // G1 = SUM(G5:G300), the total gross debtor/creditor value on each sheet.
       "Sales.xlsx": {
         OpeningDebtors: ["G1"],
@@ -849,27 +844,30 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
   }
 
-  // ── Bank (item 6): Bank.xlsx closing balance vs the scenario's own cash
-  // movements for the current account. Computed independently from the raw
+  // ── Bank (item 6): each leaf's closing balance vs the scenario's own cash
+  // movements for that account. Computed independently from the raw
   // scenario.bank transactions (direction in/out), not read back from a
   // second spreadsheet formula, so a wrong closing balance -- wrong
   // opening balance carried forward, a receipt posted as a payment, a
-  // month dropped -- shows up as a mismatch. Cash.xlsx (account 1220) has
-  // no live read here; see the multiFileOptions() comment.
+  // month dropped -- shows up as a mismatch.
   if (expected.bank) {
-    let openingBC = 0;
-    let receipts = 0;
-    let payments = 0;
-    for (const transactions of Object.values(expected.bank)) {
-      for (const tx of transactions) {
-        if ((tx.account || "1200") !== "1200") continue;
-        if (tx.code === "BC") openingBC += tx.amount;
-        else if (tx.direction === "in") receipts += tx.amount;
-        else if (tx.direction === "out") payments += tx.amount;
+    const closingBalanceCheck = (fileName, account) => {
+      let openingBC = 0;
+      let receipts = 0;
+      let payments = 0;
+      for (const transactions of Object.values(expected.bank)) {
+        for (const tx of transactions) {
+          if ((tx.account || "1200") !== account) continue;
+          if (tx.code === "BC") openingBC += tx.amount;
+          else if (tx.direction === "in") receipts += tx.amount;
+          else if (tx.direction === "out") payments += tx.amount;
+        }
       }
-    }
-    const bankMar = results["Bank.xlsx!Mar"];
-    if (bankMar) check("Bank.xlsx closing balance (Mar!A2)", bankMar.A2 || 0, openingBC + receipts - payments);
+      const mar = results[`${fileName}!Mar`];
+      if (mar) check(`${fileName} closing balance (Mar!A2)`, mar.A2 || 0, openingBC + receipts - payments);
+    };
+    closingBalanceCheck("Bank.xlsx", "1200");
+    closingBalanceCheck("Cash.xlsx", "1220");
   }
 
   // ── Monthly P&L vs monthly Sales/Purchases (item 10) ──

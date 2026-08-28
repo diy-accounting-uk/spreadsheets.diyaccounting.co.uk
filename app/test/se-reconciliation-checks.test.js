@@ -270,53 +270,32 @@ describeCalc(
       expect(corruptedCheck.pass).toBe(false);
     });
 
-    // ── Bank (item 6): Bank.xlsx closing balance vs the scenario's own
-    // cash movements. Cash.xlsx is proven directly here (JSZip reads, not
-    // through checkCompliance) -- see se.js's multiFileOptions() comment
-    // for why Cash.xlsx's closing balance cannot be shipped as a
-    // checkCompliance() check with the current runner.
+    // ── Bank (item 6): Bank.xlsx and Cash.xlsx closing balances vs the
+    // scenario's own cash movements for each account. Both read through
+    // checkCompliance() via the file-qualified "<filename>!Mar" result key.
 
-    it("Bank.xlsx closing balance carries a real non-zero signal", () => {
-      expect(results["Bank.xlsx!Mar"].A2).not.toBe(0);
+    it.each([
+      ["Bank.xlsx closing balance (Mar!A2)", "Bank.xlsx"],
+      ["Cash.xlsx closing balance (Mar!A2)", "Cash.xlsx"],
+    ])("%s carries a real non-zero signal", (_checkName, fileName) => {
+      expect(results[`${fileName}!Mar`].A2).not.toBe(0);
     });
 
-    it("Bank.xlsx closing balance (Mar!A2) passes on the intact book and fails when corrupted", async () => {
+    it.each([
+      ["Bank.xlsx closing balance (Mar!A2)", "Bank.xlsx"],
+      ["Cash.xlsx closing balance (Mar!A2)", "Cash.xlsx"],
+    ])("%s passes on the intact book and fails when corrupted", async (checkName, fileName) => {
       const checks = seCheckCompliance(results, mergedExpected, null, undefined);
-      const check = checks.find((c) => c.name === "Bank.xlsx closing balance (Mar!A2)");
+      const check = checks.find((c) => c.name === checkName);
       expect(check).toBeDefined();
       expect(check.pass).toBe(true);
 
-      const corrupted = await readCorruptedCell(join(saveDir, "Bank.xlsx"), "Mar", "A2", results["Bank.xlsx!Mar"].A2 + 5000);
-      const corruptedResults = { ...results, "Bank.xlsx!Mar": { ...results["Bank.xlsx!Mar"], A2: corrupted } };
+      const resultKey = `${fileName}!Mar`;
+      const corrupted = await readCorruptedCell(join(saveDir, fileName), "Mar", "A2", results[resultKey].A2 + 5000);
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], A2: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
-      const corruptedCheck = corruptedChecks.find((c) => c.name === "Bank.xlsx closing balance (Mar!A2)");
+      const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
       expect(corruptedCheck.pass).toBe(false);
-    });
-
-    it("Cash.xlsx closing balance matches the scenario's own petty cash movements", async () => {
-      let openingBC = 0;
-      let receipts = 0;
-      let payments = 0;
-      for (const transactions of Object.values(mergedExpected.bank)) {
-        for (const tx of transactions) {
-          if (tx.account !== "1220") continue;
-          if (tx.code === "BC") openingBC += tx.amount;
-          else if (tx.direction === "in") receipts += tx.amount;
-          else if (tx.direction === "out") payments += tx.amount;
-        }
-      }
-      const expectedClosing = openingBC + receipts - payments;
-      expect(expectedClosing).not.toBe(0);
-
-      const zip = await JSZip.loadAsync(readFileSync(join(saveDir, "Cash.xlsx")));
-      const sheetMap = await buildSheetMap(zip);
-      const sharedStrings = await loadSharedStrings(zip);
-      const xml = await zip.file(sheetMap.get("Mar")).async("string");
-      const actualClosing = readCellValue(xml, "A2", sharedStrings);
-      expect(actualClosing).toBe(expectedClosing);
-
-      const corrupted = await readCorruptedCell(join(saveDir, "Cash.xlsx"), "Mar", "A2", actualClosing + 500);
-      expect(corrupted).not.toBe(expectedClosing);
     });
 
     // ── Monthly P&L vs monthly Sales.xlsx (item 10) ─────────────────────
