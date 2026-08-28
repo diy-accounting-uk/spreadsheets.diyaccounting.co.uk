@@ -80,6 +80,7 @@ export const PRODUCTS = {
       "The Debtors & Creditors sheet holds three debtor slots and four creditor slots on each side. A slot the scenario has no entry for is left empty and reads as a dash.",
       "Gross profit on this product is sales less stock and direct costs only. Employee costs, premises and every other expense line sit below it, so a service business shows a high gross margin by the way the sheet is laid out rather than by anything about the trade.",
       "The package has no payroll workbook. Staff wages reach the accounts through the purchase journal under the employee-costs code, and a sole trader's own drawings are not an expense and do not appear at all.",
+      "The shipped income tax sheet works two bands, basic and higher, and applies no additional rate and no personal-allowance taper. Above the higher-rate threshold it charges 40% on everything, which is the tax table this product carries rather than a mis-posting of the profit it is charged on.",
     ],
   },
   se: {

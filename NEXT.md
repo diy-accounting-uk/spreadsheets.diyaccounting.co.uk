@@ -14,6 +14,12 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   generate-commit run per product — the committed reports and pages still show pre-fix
   numbers, and the judge will rightly fail the next deploy until they refresh.
 
+- [ ] **Shipped Basic Sole Trader template: two income tax bands** (judge finding): the
+  Income Tax sheet works basic and higher only, with no additional rate and no
+  personal-allowance taper, so a profit over the higher-rate threshold is charged 40%
+  all the way up. Precision Code's £265,508 is the scenario that shows it. Binary
+  template surgery on the band table plus the Admin cells to feed it.
+
 - [ ] **Shipped Taxi template: stale vehicle-changes nag** (judge finding):
   `PurchasesMar!T2` compares against the empty `'Fixed Assets'!$D$74` (the additions
   total lives at D62), so the nag fires on every package that codes anything to f.

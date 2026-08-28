@@ -136,6 +136,13 @@ describeCalc("BST closure identities catch a broken workbook", () => {
     expect(stockCheck.pass).toBe(false);
   });
 
+  it("corrupting the P&L tax line breaks the tie to the Income Tax sheet", async () => {
+    const results = await readWithCorruption(populatedPath, bstReads(), "Profit & Loss Acc", "C32", 1);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
+    const name = "P&L: tax charged = Income Tax sheet total less CIS deducted";
+    expect(checks.find((c) => c.name === name).pass).toBe(false);
+  });
+
   it("corrupting the SE Short balancing charge cell also breaks the capital-allowances chain check", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, "SE Short", "O85", -50000);

@@ -161,8 +161,8 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "C24", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "C26", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C28", "Taxable Profit",                   "gl-cor:amount (taxableProfit)",     "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "C30", "Income Tax",                       "tax.incomeTax",                     "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "C32", "Tax at basic rate",                "tax.incomeTax.basicRate",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C30", "Other Income received",            "gl-cor:amount (otherIncomeReceived)", "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C32", "Income Tax less CIS deducted",     "tax.incomeTax (net of CIS)",        "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C33", "NI Class 4",                       "tax.nationalInsurance.class4",      "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C35", "Net Income After Tax",             "gl-cor:amount (netIncome)",         "Profit & Loss Account", 0],
   // Monthly sales
@@ -478,6 +478,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
     check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
     check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
+    // The profit and loss account's own tax line. It carries the whole income
+    // tax charge less the CIS already suffered on the trader's own sales, not
+    // the basic-rate band alone, and the row above it is other income rather
+    // than a second tax line -- both were labelled the other way round.
+    check("P&L: tax charged = Income Tax sheet total less CIS deducted", pl.C32 || 0, (tax.E10 || 0) - (tax.E11 || 0));
     check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
 
     // Tax calculation chain (6c)
