@@ -6,7 +6,7 @@
   "featuredScenario": "ltd-scenario-full",
   "yearEnd": "2027-09-30",
   "status": "RECONCILES (with warnings)",
-  "runs": 92,
+  "runs": 94,
   "updated": "2026-08-28",
   "features": {
     "checks": true,

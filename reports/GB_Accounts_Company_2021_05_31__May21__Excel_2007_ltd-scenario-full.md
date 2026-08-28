@@ -43,6 +43,32 @@ Status: RECONCILES (with warnings)
 | VAT Q2: box 5 = box 3 - box 4 | 14183.4166666667 | 14183.4166666667 | 0 | PASS |
 | VAT Q3: box 5 = box 3 - box 4 | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q4: box 5 = box 3 - box 4 | 14754.29166666667 | 14754.2916666667 | +3.092281986027956e-11 | PASS |
+| VAT: annual output VAT = the sales journal at the book's rate | 70816.70999999998 | 70816.6666666667 | -0.04333333327667788 | PASS |
+| VAT: annual input VAT = the purchase journal at the book's rate | 18498.670000000002 | 18498.708333333332 | +0.038333333330228925 | PASS |
+| Sales.xlsx Jun: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jun: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jul: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jul: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Aug: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Aug: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx May: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx May: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Vatinterface D6: Jun sales net = Sales.xlsx Jun | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
 | Vatinterface F6: Jun output VAT = Sales.xlsx Jun | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
 | Vatinterface H6: Jun purchases net = Purchases.xlsx Jun | 4259.375 | 4259.375 | 0 | PASS |
@@ -223,6 +249,11 @@ Status: RECONCILES (with warnings)
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 238864 | 238864 | 0 | PASS |
+| Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 10275 | 10275 | 0 | PASS |
+| Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 480 | 480 | 0 | PASS |
+| Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 1025 | 1025 | 0 | PASS |
+| Published balance sheet: cash at bank = Trial Balance bank account aggregate | 250544 | 250544 | 0 | PASS |
 | P&L Jun C4 = Sales.xlsx "a" net | 25333.33 | 25333.3333333333 | +0.0033333332976326346 | PASS |
 | P&L Jun C5 = Sales.xlsx "b" net | 1800 | 1800 | 0 | PASS |
 | P&L Jun C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
@@ -651,6 +682,7 @@ Status: RECONCILES (with warnings)
 | CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
 | CT: profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
@@ -658,17 +690,24 @@ Status: RECONCILES (with warnings)
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 147519.897839506 | 147519.897839506 | 0 | PASS |
-| CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
+| CT600: corporation tax = first tax row tax | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: second financial year tax box is blank | 0 | 0 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: tax payable against the working sheet's charge for the year | 28028.7805895061 | 14014.3902947531 | -14014.390294752999 | **WARNING** |
 | CT600: self assessment of tax payable | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
 | CT600: tax outstanding | 13949.8841219135 | 13949.8841219135 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
-| Corporation Tax | 28029 | 28028.7805895061 | -0.2194104939007957 | PASS |
-| CT: Chargeable >= Operating | 176940.391666666 | 147519.897839506 | -29420.493827159982 | PASS |
+| CT: the two tax rows together span the days the charge is spread over | 730 | 730 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 73759.948919753 | 73759.9489197529 | -1.0186340659856796e-10 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 73759.948919753 | 73759.9489197529 | -1.0186340659856796e-10 | PASS |
+| CT: first tax row tax = its profit at its rate | 14014.390294753051 | 14014.3902947531 | +4.9112713895738125e-11 | PASS |
+| CT: second tax row tax = its profit at its rate | 14014.390294753051 | 14014.3902947531 | +4.9112713895738125e-11 | PASS |
+| CT: charge for the year = the two tax rows | 28028.7805895062 | 28028.7805895061 | -1.0186340659856796e-10 | PASS |
+| CT: charge for the year = chargeable profit at the Admin corporation tax rate | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
-| CT: Marginal relief expected (profit > £50K) | 28029 | 28028.7805895061 | -0.2194104939007957 | **WARNING** |
+| CT: charge for the year against the statutory computation with marginal relief | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 
 ## Business Details
 
@@ -704,15 +743,15 @@ Status: RECONCILES (with warnings)
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 311,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product B — Software | 13,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product C — Training | 10,300 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income | 3,700 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 311,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product B sales (code b) | 13,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product C sales (code c) | 10,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income (code d) | 3,700 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants Received (code g) | 2,083.33 |
 | **Sales Turnover** | 341,283.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 9,450 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 6,666.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 2,670 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock (code s) | 9,450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors (code c) | 6,666.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs (code o) | 2,670 |
 | Cost of Sales | 18,786.67 |
 | **Gross Profit** | 322,496.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 81,642.67 |
@@ -743,7 +782,7 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
 | **Profit Before Tax** | 177,215.39 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -759,6 +798,18 @@ Status: RECONCILES (with warnings)
 | **Profit Chargeable to CT** | 147,519.9 |
 | **Corporation Tax** | 28,028.78 |
 | Tax Outstanding | 27,964.27 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 73,759.95 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 14,014.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 14,014.39 |
 
 ## Published P&L
 
@@ -843,8 +894,37 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -45,702 |
 | **Opening Balances Audit Check** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 238,864 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 1,025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 480 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
+| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 3,423.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 17,256.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 3,073.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 19,780 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 9,895.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 9,884.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 16,860 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 2,105.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 14,754.29 |
 
 ---
 
@@ -879,15 +959,15 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B4 | Product A — Consultancy | 311600 | accounts.sales.4000 |
-| B5 | Product B — Software | 13600 | accounts.sales.4001 |
-| B6 | Product C — Training | 10300 | accounts.sales.4002 |
-| B7 | Other Direct Income | 3700 | accounts.sales.4003 |
-| B8 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
+| B4 | Product A sales (code a) | 311600 | accounts.sales.4000 |
+| B5 | Product B sales (code b) | 13600 | accounts.sales.4001 |
+| B6 | Product C sales (code c) | 10300 | accounts.sales.4002 |
+| B7 | Other Direct Income (code d) | 3700 | accounts.sales.4003 |
+| B8 | Grants Received (code g) | 2083.33333333333 | accounts.sales.4004 |
 | B9 | **Sales Turnover** | 341283.333333333 | gl-cor:amount (salesTurnover) |
-| B11 | Materials / Stock | 9450 | accounts.purchases.5000 |
-| B12 | Sub-Contractors | 6666.66666666667 | accounts.purchases.5001 |
-| B13 | Other Direct Costs | 2670 | accounts.purchases.5002 |
+| B11 | Materials / Stock (code s) | 9450 | accounts.purchases.5000 |
+| B12 | Sub-Contractors (code c) | 6666.66666666667 | accounts.purchases.5001 |
+| B13 | Other Direct Costs (code o) | 2670 | accounts.purchases.5002 |
 | B14 | Cost of Sales | 18786.6666666667 | gl-cor:amount (costOfSales) |
 | B16 | **Gross Profit** | 322496.666666666 | gl-cor:amount (grossProfit) |
 | B18 | PAYE Wages + Non-PAYE Employee | 81642.6666666667 | dpl:WagesAndSalaries (combined) |
@@ -1250,10 +1330,35 @@ Status: RECONCILES (with warnings)
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
+| A33 |  | 365 |  |
+| A34 |  | 365 |  |
+| A35 |  | 730 |  |
+| F33 |  | 73759.9489197529 |  |
+| F34 |  | 73759.9489197529 |  |
 | G33 |  | 19 |  |
+| G34 |  | 19 |  |
 | I33 |  | 14014.3902947531 |  |
 | I34 |  | 14014.3902947531 |  |
 | K37 |  | 64.5061728395062 |  |
+
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 73759.9489197529 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 14014.3902947531 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 14014.3902947531 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 341283.333333333 |  |
+| Z70 |  | 147180.391666666 |  |
+| AJ74 |  | 147180.391666666 |  |
+| AJ76 |  | 339.506172839506 |  |
+| AJ92 |  | 147519.897839506 |  |
+| AJ110 |  | 147519.897839506 |  |
+| AJ145 |  | 14014.3902947531 |  |
+| AJ154 |  | 64.5061728395062 |  |
+| AJ159 |  | 13949.8841219135 |  |
+| AJ166 |  | 13949.8841219135 |  |
 
 ### PubP&L
 
@@ -1391,28 +1496,15 @@ Status: RECONCILES (with warnings)
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -45702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
+| EJ22 | Final: Bank Current Account | 238864 | accounts.assets.1200 (final) |
+| EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
+| EJ24 | Final: Credit Card Account | 1025 | accounts.assets.1230 (final) |
+| EJ25 | Final: Cash Account | 480 | accounts.assets.1220 (final) |
+| EJ26 | Final: Intra Cash & Bank Transfers | -100 | gl-cor:amount (intraTransfers) |
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ91 | **Audit Accuracy Check** | 3.19232640322298e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
 | L34 |  | -1673.2 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 341283.333333333 |  |
-| Z70 |  | 147180.391666666 |  |
-| AJ74 |  | 147180.391666666 |  |
-| AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 147519.897839506 |  |
-| AJ110 |  | 147519.897839506 |  |
-| AJ126 |  | 14014.3902947531 |  |
-| AJ131 |  | 14014.3902947531 |  |
-| AJ145 |  | 14014.3902947531 |  |
-| AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 13949.8841219135 |  |
-| AJ166 |  | 13949.8841219135 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 
@@ -1499,6 +1591,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5566.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27833.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1508,6 +1601,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5486.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27433.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1517,6 +1611,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5866.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29333.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1526,6 +1621,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5626.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1535,6 +1631,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 6003.33333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 30016.6666666667 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1544,6 +1641,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5626.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1553,6 +1651,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 8426.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 42133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 12500 |  |
@@ -1562,6 +1661,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5886.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29433.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1571,6 +1671,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5466.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27333.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1580,6 +1681,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5906.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29533.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1589,6 +1691,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5726.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28633.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1598,6 +1701,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5226.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 26133.3333333333 |  |
 | T1 |  | 300 |  |
 | U1 |  | 0 |  |
@@ -1607,6 +1711,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 851.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 4259.375 |  |
 | O1 |  | 500 |  |
 | R1 |  | 0 |  |
@@ -1618,6 +1723,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1062.5 |  |
+| G2 |  | 20 |  |
 | H1 |  | 5312.5 |  |
 | O1 |  | 600 |  |
 | R1 |  | 0 |  |
@@ -1629,6 +1735,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1509.5 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7547.5 |  |
 | O1 |  | 300 |  |
 | R1 |  | 0 |  |
@@ -1640,6 +1747,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1509.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7549.375 |  |
 | O1 |  | 600 |  |
 | R1 |  | 0 |  |
@@ -1651,6 +1759,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 734.208333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3671.04166666667 |  |
 | O1 |  | 450 |  |
 | R1 |  | 0 |  |
@@ -1662,6 +1771,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 829.166666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 4145.83333333333 |  |
 | O1 |  | 200 |  |
 | R1 |  | 0 |  |
@@ -1673,6 +1783,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 7167.625 |  |
+| G2 |  | 20 |  |
 | H1 |  | 35838.125 |  |
 | O1 |  | 400 |  |
 | R1 |  | 0 |  |
@@ -1684,6 +1795,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1153 |  |
+| G2 |  | 20 |  |
 | H1 |  | 5765 |  |
 | O1 |  | 700 |  |
 | R1 |  | 0 |  |
@@ -1695,6 +1807,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1575.25 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7876.25 |  |
 | O1 |  | 400 |  |
 | R1 |  | 4166.66666666667 |  |
@@ -1706,6 +1819,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 751.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3759.375 |  |
 | O1 |  | 500 |  |
 | R1 |  | 0 |  |
@@ -1717,6 +1831,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 732.75 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3663.75 |  |
 | O1 |  | 550 |  |
 | R1 |  | 0 |  |
@@ -1728,6 +1843,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 621.083333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3105.41666666667 |  |
 | O1 |  | 250 |  |
 | R1 |  | 0 |  |
