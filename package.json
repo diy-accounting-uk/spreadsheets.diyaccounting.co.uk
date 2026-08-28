@@ -13,6 +13,7 @@
     "generate:skip-guide": "node app/bin/generate.js --skip-guide",
     "test:generate": "npx vitest --run app/test/generate.test.js",
     "reconciliation": "node app/bin/reconcile.js",
+    "judge:reconciliation": "node app/bin/judge-reconciliation.js",
     "report": "node app/bin/report.js",
     "export": "node app/bin/export.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
@@ -106,6 +107,7 @@
     "wait-on": "^9.1.0"
   },
   "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.33.3",
     "stripe": "^22.6.0"
   },
   "overrides": {
