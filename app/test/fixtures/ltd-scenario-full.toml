@@ -4583,10 +4583,8 @@ category = "motor"
 description = "Van (2.5 years old)"
 cost = 30000
 acc_dep = 9828
-# Written down TAX value brought forward: two years of the restricted motor
-# vehicle allowance (capped at 3000 a year) against the 30000 cost. Column O
-# on the asset schedule. An asset sold in the year needs one -- the schedule
-# works out the balancing allowance from it.
+# Written down TAX value brought forward (asset schedule column O);
+# an asset sold in the year needs one for its balancing allowance.
 tax_wdv = 24000
 
 [[opening_fixed_assets]]

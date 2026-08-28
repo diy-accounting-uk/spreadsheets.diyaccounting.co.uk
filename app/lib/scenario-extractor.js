@@ -505,6 +505,11 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`description = "${escapeTomlString(asset.description)}"`);
       parts.push(`cost = ${asset.cost}`);
       parts.push(`acc_dep = ${asset.acc_dep}`);
+      if (asset.tax_wdv !== undefined) {
+        parts.push("# Written down TAX value brought forward (asset schedule column O);");
+        parts.push("# an asset sold in the year needs one for its balancing allowance.");
+        parts.push(`tax_wdv = ${asset.tax_wdv}`);
+      }
       parts.push("");
     }
   }
