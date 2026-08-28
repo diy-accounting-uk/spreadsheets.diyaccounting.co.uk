@@ -187,6 +187,7 @@ describe("buildGrouped", () => {
         "sourceJournalID": "bank",
         "diya-gl:bankAccountID": "1200",
         "diya-gl:bankCode": "si",
+        "debitCreditCode": "C",
         "postingDate": "2025-06-01",
         "detailComment": "Payment",
         "amount": 200,
@@ -196,6 +197,21 @@ describe("buildGrouped", () => {
     const { bank } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
     expect(bank["1200"].jun).toHaveLength(1);
     expect(bank["1200"].jun[0].code).toBe("si");
+    expect(bank["1200"].jun[0].direction).toBe("out");
+  });
+
+  it("rejects a bank line with no debit/credit code", () => {
+    const lines = [
+      {
+        "sourceJournalID": "bank",
+        "diya-gl:bankAccountID": "1200",
+        "diya-gl:bankCode": "si",
+        "postingDate": "2025-06-01",
+        "detailComment": "Payment",
+        "amount": 200,
+      },
+    ];
+    expect(() => buildGrouped(lines, BST_PURCHASE_CODE_MAP)).toThrow(/debitCreditCode/);
   });
 });
 

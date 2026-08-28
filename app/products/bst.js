@@ -308,30 +308,29 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
   }
 
-  // Debtors/Creditors checks
+  // Debtors/Creditors checks. Sum only the rows the scenario wrote: unwritten
+  // rows keep the template's own derived formulas (e.g. F7 pulls a monthly
+  // unpaid total), which are not part of the fixture's entries.
+  function checkEntryBlock(name, entries, cells) {
+    const expectedTotal = entries.reduce((s, e) => s + e.amount, 0);
+    const actualTotal = cells.slice(0, entries.length).reduce((s, v) => s + (v || 0), 0);
+    check(name, actualTotal, expectedTotal);
+  }
   if (expected.opening_debtors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
-    const totalOpeningDebtors = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    const actualOpeningDebtors = [dc.C5, dc.C6, dc.C7].reduce((s, v) => s + (v || 0), 0);
-    check("Opening Debtors", actualOpeningDebtors, totalOpeningDebtors);
+    checkEntryBlock("Opening Debtors", expected.opening_debtors, [dc.C5, dc.C6, dc.C7]);
   }
   if (expected.closing_debtors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
-    const totalClosingDebtors = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
-    const actualClosingDebtors = [dc.F5, dc.F6, dc.F7].reduce((s, v) => s + (v || 0), 0);
-    check("Closing Debtors", actualClosingDebtors, totalClosingDebtors);
+    checkEntryBlock("Closing Debtors", expected.closing_debtors, [dc.F5, dc.F6, dc.F7]);
   }
   if (expected.opening_creditors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
-    const totalOpeningCreditors = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    const actualOpeningCreditors = [dc.C12, dc.C13, dc.C14, dc.C15].reduce((s, v) => s + (v || 0), 0);
-    check("Opening Creditors", actualOpeningCreditors, totalOpeningCreditors);
+    checkEntryBlock("Opening Creditors", expected.opening_creditors, [dc.C12, dc.C13, dc.C14, dc.C15]);
   }
   if (expected.closing_creditors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
-    const totalClosingCreditors = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
-    const actualClosingCreditors = [dc.F12, dc.F13, dc.F14, dc.F15].reduce((s, v) => s + (v || 0), 0);
-    check("Closing Creditors", actualClosingCreditors, totalClosingCreditors);
+    checkEntryBlock("Closing Creditors", expected.closing_creditors, [dc.F12, dc.F13, dc.F14, dc.F15]);
   }
 
   if (taxData) {
