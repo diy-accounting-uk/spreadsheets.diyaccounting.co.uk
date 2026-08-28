@@ -1,0 +1,30 @@
+{
+  "product": "se",
+  "name": "Self Employed",
+  "page": "se.html",
+  "catalogue": "GB Accounts Self Employed",
+  "featuredScenario": "se-scenario-advanced",
+  "yearEnd": "2027-04-05",
+  "status": "RECONCILES",
+  "runs": 7,
+  "updated": "2026-08-27",
+  "features": {
+    "checks": true,
+    "sales": true,
+    "purchases": true,
+    "bank": true,
+    "payroll": true,
+    "openingBalances": true,
+    "fixedAssets": true,
+    "profitAndLoss": true,
+    "balanceSheet": false,
+    "stock": true,
+    "debtorsCreditors": true,
+    "vat": true,
+    "trialBalance": false,
+    "corporationTax": false,
+    "incomeTax": true,
+    "selfAssessment": true,
+    "screenshots": true
+  }
+}

@@ -12,7 +12,7 @@
 // Writes: web/spreadsheets.diyaccounting.co.uk/public/sitemap.xml
 
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, readdirSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { buildSitemapXml } from "../lib/sitemap-builder.js";
@@ -36,6 +36,16 @@ if (existsSync(CATALOGUE_TOML)) {
   products = cat.products || [];
 }
 
-const { xml, urlCount } = buildSitemapXml(products, articles);
+// Reconciliation pages, discovered from the metadata files the page builder writes
+const RECONCILIATION_DIR = resolve(PUBLIC_DIR, "reconciliation");
+let reconciliationPages = [];
+if (existsSync(RECONCILIATION_DIR)) {
+  reconciliationPages = readdirSync(RECONCILIATION_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => f.replace(/\.json$/, ""))
+    .sort();
+}
+
+const { xml, urlCount } = buildSitemapXml(products, articles, reconciliationPages);
 writeFileSync(SITEMAP_PATH, xml, "utf8");
 console.log(`Spreadsheets sitemap: ${SITEMAP_PATH} (${urlCount} URLs)`);

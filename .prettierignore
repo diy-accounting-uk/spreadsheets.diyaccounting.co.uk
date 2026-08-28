@@ -13,3 +13,6 @@ packages-archive/
 LICENSE
 pom.xml
 package-lock.json
+
+# Generated reconciliation pages (built by app/bin/build-reconciliation-pages.js)
+web/spreadsheets.diyaccounting.co.uk/public/reconciliation/

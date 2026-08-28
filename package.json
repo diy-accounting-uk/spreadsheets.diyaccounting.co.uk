@@ -21,6 +21,7 @@
     "update-tax-data": "scripts/update-tax-data.sh",
     "build:packages": "node app/bin/build-packages.js",
     "build:sitemaps": "node app/bin/build-sitemaps.js",
+    "build:reconciliation-pages": "node app/bin/build-reconciliation-pages.js",
     "build:knowledge-base": "node scripts/generate-knowledge-base-toml.cjs",
     "build:redirects": "node scripts/build-spreadsheets-redirects.cjs",
     "cdk:synth": "cd cdk-spreadsheets && npx cdk synth --require-approval never --ci true --strict --validation && cd ..",
