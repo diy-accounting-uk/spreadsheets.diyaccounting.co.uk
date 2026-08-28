@@ -649,6 +649,12 @@ async function hasExternalLinks(filePath) {
   return Object.keys(zip.files).some((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f));
 }
 
+// A leaf can quote another leaf, so the settling sweep runs more than once.
+// Every workbook in these packages is at most three links from the hub, and
+// each sweep costs only the workbooks whose inputs actually moved, so a small
+// cap is enough to reach a fixed point and still stop a cycle that will not.
+const MAX_SETTLE_ROUNDS = 4;
+
 // ── Multi-file: write data, recalculate across files, read results ──────────
 //
 // For multi-file products like Self Employed where cross-file external links
@@ -758,19 +764,23 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     // Pass 2: the hub, on the leaves' computed totals.
     await recalculate(readFile);
 
-    // Pass 3: the leaves again, now that the hub and their sibling leaves
-    // hold final values. Fixedassets reads the opening balance sheet and the
-    // tax rates from the hub and the year's asset purchases from Purchases
-    // and Sales; only the workbooks whose caches actually moved pay for a
-    // second recalculation.
-    let leafRecalculated = false;
-    for (const filename of leafFiles) {
-      if (!(await hasExternalLinks(resolve(sourceDir, filename)))) continue;
-      if (await recalculate(filename)) leafRecalculated = true;
+    // Passes 3 and 4: the leaves again, now that the hub and their sibling
+    // leaves hold final values, then the hub once more on whatever moved.
+    // Fixedassets reads the opening balance sheet and the tax rates from the
+    // hub and the year's asset purchases from Purchases and Sales, and
+    // Purchases reads the VAT rate from Sales -- one sweep in file-name order
+    // can refresh a workbook from a sibling that has not settled yet, so the
+    // pair of passes repeats until nothing moves. The cache-signature guard
+    // makes each repeat cost only the workbooks whose own inputs changed.
+    for (let round = 0; round < MAX_SETTLE_ROUNDS; round++) {
+      let leafRecalculated = false;
+      for (const filename of leafFiles) {
+        if (!(await hasExternalLinks(resolve(sourceDir, filename)))) continue;
+        if (await recalculate(filename)) leafRecalculated = true;
+      }
+      if (!leafRecalculated) break;
+      await recalculate(readFile);
     }
-
-    // Pass 4: the hub once more, carrying whatever pass 3 changed.
-    if (leafRecalculated) await recalculate(readFile);
 
     // Files that read FROM the hub and the leaves (e.g. Vat.xlsx) go last, so
     // every workbook they quote is already final.

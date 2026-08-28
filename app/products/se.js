@@ -865,7 +865,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
 
     // Tax calculation chain (6c)
-    check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
+    // The sheet has no negative taxable income: a profit under the personal
+    // allowance leaves it nil (verified against the template: E7 =
+    // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
+    check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
     check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 

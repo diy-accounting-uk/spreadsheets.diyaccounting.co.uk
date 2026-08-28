@@ -8,16 +8,25 @@ Status: RECONCILES
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 75000 | 75000 | 0 | PASS |
-| P&L: Gross = Sales - CoS - Direct | 40000 | 40000 | 0 | PASS |
-| P&L: Net = Gross - Expenses | 34030 | 34030 | 0 | PASS |
+| Gen Admin | 720 | 720 | 0 | PASS |
+| Legal & Professional | 1000 | 1000 | 0 | PASS |
+| P&L: Gross = Sales - CoS - Direct | 39500 | 39500 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 33530 | 33530 | 0 | PASS |
 | P&L: Total Sales = sum of monthly Sales sheets | 75000 | 75000 | 0 | PASS |
 | P&L: Expense lines sum = Total | 5970 | 5970 | 0 | PASS |
 | Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 52970 | 52970 | 0 | PASS |
+| Opening Stock | 3000 | 3000 | 0 | PASS |
+| Closing Stock | 2500 | 2500 | 0 | PASS |
+| Stock: CoS includes adjustment | 500 | 15500 | +15000 | PASS |
+| Opening Debtors | 6600 | 6600 | 0 | PASS |
+| Closing Debtors | 6700 | 6700 | 0 | PASS |
+| Opening Creditors | 1510 | 1510 | 0 | PASS |
+| Closing Creditors | 1510 | 1510 | 0 | PASS |
 | Fixed Assets: schedule total cost = asset additions | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: first addition recorded | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 12000 | 12000 | 0 | PASS |
-| P&L: Taxable Profit = Net Profit - Capital Allowances | 22030 | 22030 | 0 | PASS |
+| P&L: Taxable Profit = Net Profit - Capital Allowances | 21530 | 21530 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
@@ -37,20 +46,20 @@ Status: RECONCILES
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 1892 | 1892 | 0 | PASS |
-| NI Class 4 (lower) | 567.6 | 567.6 | 0 | PASS |
-| Total Tax + NI | 2460 | 2459.6 | -0.40000000000009095 | PASS |
+| Income Tax | 1792 | 1792 | 0 | PASS |
+| NI Class 4 (lower) | 537.6 | 537.6 | 0 | PASS |
+| Total Tax + NI | 2330 | 2329.6 | -0.40000000000009095 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
 | Tax: sheet splits the bands at the higher band start | 37701 | 37701 | 0 | PASS |
-| Tax at basic rate | 1892 | 1892 | 0 | PASS |
+| Tax at basic rate | 1792 | 1792 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 9460 | 9460 | 0 | PASS |
-| Tax: IT = Basic + Higher | 1892 | 1892 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 2459.6 | 2459.6 | 0 | PASS |
+| Tax: Taxable = Profit - Allowance | 8960 | 8960 | 0 | PASS |
+| Tax: IT = Basic + Higher | 1792 | 1792 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 2329.6 | 2329.6 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
-| SA103S: Net profit close to P&L Net | 34030 | 34030 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 22030 | 22030 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 33530 | 33530 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 21530 | 21530 | 0 | PASS |
 | P&L: Capital Allowances = SE Short chain | 12000 | 12000 | 0 | PASS |
 
 ## Business Details
@@ -69,9 +78,9 @@ Status: RECONCILES
 |---|------:|
 | Sales Turnover | 75,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 15,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 15,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 20,000 |
-| **Gross Profit** | 40,000 |
+| **Gross Profit** | 39,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee Costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 350 |
@@ -84,13 +93,13 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Finance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 1,200 |
 | Total Expenses | 5,970 |
-| **Net Profit** | 34,030 |
+| **Net Profit** | 33,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 12,000 |
-| Taxable Profit | 22,030 |
+| Taxable Profit | 21,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Income Tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 1,892 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 567.6 |
-| Net Income After Tax | 19,570.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 1,792 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 537.6 |
+| Net Income After Tax | 19,200.4 |
 
 ## Monthly Sales
 
@@ -113,19 +122,19 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 22,030 |
+| Profit from Self Employment | 21,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 9,460 |
+| Taxable Income | 8,960 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,701 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 1,892 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 1,792 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 0 |
-| **Total Income Tax** | 1,892 |
+| **Total Income Tax** | 1,792 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 567.6 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 537.6 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
-| **Total Tax + NI** | 2,459.6 |
+| **Total Tax + NI** | 2,329.6 |
 
 ## Self Assessment (SA103S)
 
@@ -134,47 +143,47 @@ Status: RECONCILES
 | Business name | — |
 | Accounting date | — |
 | Turnover | 75,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 35,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 35,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 2,400 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 350 |
-| **Net profit/loss** | 34,030 |
+| **Net profit/loss** | 33,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 22,030 |
+| **Taxable profit** | 21,530 |
 | VAT threshold note | — |
-| **Net profit for tax calc** | 22,030 |
+| **Net profit for tax calc** | 21,530 |
 
 ## Stock
 
 | | Amount |
 |---|------:|
-| Opening Stock | 0 |
-| Stock at Cost | 0 |
-| Closing Stock | 0 |
+| Opening Stock | 3,000 |
+| Stock at Cost | 3,000 |
+| Closing Stock | 2,500 |
 
 ## Debtors & Creditors
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 2 | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 1 | 4,620 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 2 | 1,980 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | 4,690 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | 2,010 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 4 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4 | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | 60 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | 200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 4 | 450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 1 | 60 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2 | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3 | 200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4 | 450 |
 
 ## Purchase Analysis
 
@@ -237,9 +246,9 @@ Status: RECONCILES
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C4 | Sales Turnover | 75000 | gl-cor:amount (salesTurnover) |
-| C6 | Cost of Sales (stock + direct) | 15000 | gl-cor:amount (costOfSales) |
+| C6 | Cost of Sales (stock + direct) | 15500 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 20000 | gl-cor:amount (directCosts) |
-| C9 | **Gross Profit** | 40000 | gl-cor:amount (grossProfit) |
+| C9 | **Gross Profit** | 39500 | gl-cor:amount (grossProfit) |
 | C11 | Employee Costs | 0 | accounts.purchases.5101 |
 | C12 | Premises Costs | 0 | accounts.purchases.5200 |
 | C13 | Repairs & Maintenance | 350 | accounts.purchases.5400 |
@@ -252,13 +261,13 @@ Status: RECONCILES
 | C20 | Interest & Finance | 0 | accounts.purchases.5803 |
 | C21 | Other Expenses | 1200 | accounts.purchases (other) |
 | C22 | Total Expenses | 5970 | gl-cor:amount (totalExpenses) |
-| C24 | **Net Profit** | 34030 | gl-cor:amount (netProfit) |
+| C24 | **Net Profit** | 33530 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 12000 | tax.capitalAllowances |
-| C28 | Taxable Profit | 22030 | gl-cor:amount (taxableProfit) |
+| C28 | Taxable Profit | 21530 | gl-cor:amount (taxableProfit) |
 | C30 | Income Tax | 0 | tax.incomeTax |
-| C32 | Tax at basic rate | 1892 | tax.incomeTax.basicRate |
-| C33 | NI Class 4 | 567.6 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 19570.4 | gl-cor:amount (netIncome) |
+| C32 | Tax at basic rate | 1792 | tax.incomeTax.basicRate |
+| C33 | NI Class 4 | 537.6 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 19200.4 | gl-cor:amount (netIncome) |
 | D4 | Apr | 6500 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 6000 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 6200 | gl-cor:amount (monthlySales.jun) |
@@ -276,46 +285,63 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 22030 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 21530 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 9460 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 8960 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
 | C9 | Basic band ceiling the sheet applies | 37701 | tax.incomeTax.higherBandStart (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| E8 | Tax at Basic Rate | 1892 | tax.incomeTax.basicRate |
+| E8 | Tax at Basic Rate | 1792 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 1892 | tax.incomeTax (total) |
+| E10 | **Total Income Tax** | 1792 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
-| E15 | NI Class 4 (lower band) | 567.6 | tax.nationalInsurance.class4MainRate |
+| E15 | NI Class 4 (lower band) | 537.6 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 2459.6 | gl-cor:taxAmount (totalTaxNI) |
+| E18 | **Total Tax + NI** | 2329.6 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 75000 | gl-cor:amount (sa103s.turnover) |
-| D46 | Cost of goods | 35000 | gl-cor:amount (sa103s.costOfGoods) |
+| D46 | Cost of goods | 35500 | gl-cor:amount (sa103s.costOfGoods) |
 | D51 | Other direct costs | 2400 | gl-cor:amount (sa103s.otherDirect) |
 | D55 | Employee costs | 0 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 0 | gl-cor:amount (sa103s.premises) |
 | D64 | Other expenses | 350 | gl-cor:amount (sa103s.otherExpenses) |
-| D71 | **Net profit/loss** | 34030 | gl-cor:amount (sa103s.netProfit) |
+| D71 | **Net profit/loss** | 33530 | gl-cor:amount (sa103s.netProfit) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 22030 | gl-cor:amount (sa103s.taxableProfit) |
-| D106 | **Net profit for tax calc** | 22030 | gl-cor:amount (sa103s.profitForTax) |
+| D99 | **Taxable profit** | 21530 | gl-cor:amount (sa103s.taxableProfit) |
+| D106 | **Net profit for tax calc** | 21530 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D5 | Opening Stock | 0 | accounts.assets.1100 (opening) |
-| D7 | Stock at Cost | 0 | accounts.assets.1100 (atCost) |
-| D30 | Closing Stock | 0 | accounts.assets.1100 (closing) |
+| D5 | Opening Stock | 3000 | accounts.assets.1100 (opening) |
+| D7 | Stock at Cost | 3000 | accounts.assets.1100 (atCost) |
+| D30 | Closing Stock | 2500 | accounts.assets.1100 (closing) |
+
+### Debtors & Creditors
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C5 | Opening Debtor 1 | 4620 | accounts.assets.1300 (opening[0]) |
+| C6 | Opening Debtor 2 | 1980 | accounts.assets.1300 (opening[1]) |
+| F5 | Closing Debtor 1 | 4690 | accounts.assets.1300 (closing[0]) |
+| F6 | Closing Debtor 2 | 2010 | accounts.assets.1300 (closing[1]) |
+| C12 | Opening Creditor 1 | 60 | accounts.liabilities.2100 (opening[0]) |
+| C13 | Opening Creditor 2 | 800 | accounts.liabilities.2100 (opening[1]) |
+| C14 | Opening Creditor 3 | 200 | accounts.liabilities.2100 (opening[2]) |
+| C15 | Opening Creditor 4 | 450 | accounts.liabilities.2100 (opening[3]) |
+| F12 | Closing Creditor 1 | 60 | accounts.liabilities.2100 (closing[0]) |
+| F13 | Closing Creditor 2 | 800 | accounts.liabilities.2100 (closing[1]) |
+| F14 | Closing Creditor 3 | 200 | accounts.liabilities.2100 (closing[2]) |
+| F15 | Closing Creditor 4 | 450 | accounts.liabilities.2100 (closing[3]) |
 
 ### PurchasesMar
 
