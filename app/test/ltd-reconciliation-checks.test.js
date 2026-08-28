@@ -163,6 +163,13 @@ describeCalc(
       }
     });
 
+    it("reads the register of members' nominal value and shares issued", () => {
+      const register = results["Companysecretary.xlsx!RegisterofMembers"];
+      expect(register).toBeDefined();
+      expect(register.F1).toBe(1);
+      expect(register.G1).toBe(100);
+    });
+
     it("reads the injected rates back from the Admin sheet", () => {
       const admin = results.Admin;
       expect(admin.P6).toBe(19);
@@ -201,6 +208,39 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    it("publishes the year-end stock and only the debtors left uncollected", () => {
+      expect(results.PubBalSht.E10).toBe(6000);
+      expect(results.PubBalSht.E11).toBe(10400);
+      expect(results.Stock.D6).toBe(10000);
+      expect(results.Stock.AB30).toBe(6000);
+      expect(results.Stock.Z30).toBe(-4000);
+    });
+
+    it("fails the published stock tie when PubBalSht E10 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E10", 10000);
+      expect(value).toBe(10000);
+      const name = "Published balance sheet: stock = year-end stock";
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E10", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the published debtors tie when PubBalSht E11 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E11", 237100);
+      expect(value).toBe(237100);
+      const name = "Published balance sheet: trade debtors = closing debtors";
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E11", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the stock count and its loss adjustment when the Stock sheet's count is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Stock", "AB30", 9000);
+      expect(value).toBe(9000);
+      const corrupted = checksWithCorruptedCell("Stock", "AB30", value);
+      expect(failureNames(corrupted)).toEqual(["Stock: physical count at the year end", "Stock: loss adjustment = count - calculated"]);
+    });
+
     it("fails the P&L depreciation tie when MnthP&L B40 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B40", 0);
       expect(value).toBe(0);
@@ -217,6 +257,15 @@ describeCalc(
       expect(value).toBe(0);
       const name = "Currentaccount.xlsx: closing balance = opening + receipts - payments";
       const corrupted = checksWithCorruptedCell("Currentaccount.xlsx!Mar", "A2", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the register tie when RegisterofMembers G1 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "RegisterofMembers", "G1", 0);
+      expect(value).toBe(0);
+      const name = "RegisterofMembers: nominal value x shares issued = PubBalSht share capital";
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!RegisterofMembers", "G1", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
@@ -241,7 +290,9 @@ describeCalc(
       const name = "P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales";
       const corrupted = checksWithCorruptedCell("Sales.xlsx!Apr", "H1", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name]);
+      // April's own row on the VAT interface is measured against the same
+      // leaf total, so it moves with it.
+      expect(failureNames(corrupted)).toEqual(["Vatinterface D6: Apr sales net = Sales.xlsx Apr", name]);
     });
 
     it("fails the tax data echo when the Admin VAT rate is corrupted via JSZip", async () => {

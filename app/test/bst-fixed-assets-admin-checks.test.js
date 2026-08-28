@@ -112,8 +112,9 @@ describeCalc("BST fixed-asset chain and Admin echo catch a broken workbook", () 
     const checks = bstCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
     for (const name of [
-      "Fixed Assets: New asset cost recorded",
-      "Fixed Assets: AIA claimed = cost x Admin AIA rate",
+      "Fixed Assets: schedule total cost = asset additions",
+      "Fixed Assets: first addition recorded",
+      "Fixed Assets: AIA claimed = schedule cost x Admin AIA rate",
       "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances",
       "P&L: Taxable Profit = Net Profit - Capital Allowances",
       "Admin: Personal Allowance = tax data",
@@ -134,12 +135,20 @@ describeCalc("BST fixed-asset chain and Admin echo catch a broken workbook", () 
     expect(capCheck.actual).toBeGreaterThan(0);
   });
 
-  it("corrupting the recorded asset cost breaks the cost-recorded check", async () => {
+  it("corrupting the first recorded asset cost breaks the first-addition check", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, [["Fixed Assets", "E67", 999999]]);
     const checks = bstCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
-    expect(checks.find((c) => c.name === "Fixed Assets: New asset cost recorded").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Fixed Assets: first addition recorded").pass).toBe(false);
+  });
+
+  it("corrupting the schedule total cost breaks the additions tie", async () => {
+    const reads = bstReads();
+    const results = await readWithCorruption(populatedPath, reads, [["Fixed Assets", "E1", 999999]]);
+    const checks = bstCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
+
+    expect(checks.find((c) => c.name === "Fixed Assets: schedule total cost = asset additions").pass).toBe(false);
   });
 
   it("corrupting the schedule's claimed allowance breaks the AIA-formula and P&L-tie checks", async () => {
@@ -147,7 +156,7 @@ describeCalc("BST fixed-asset chain and Admin echo catch a broken workbook", () 
     const results = await readWithCorruption(populatedPath, reads, [["Fixed Assets", "K1", 1]]);
     const checks = bstCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
-    expect(checks.find((c) => c.name === "Fixed Assets: AIA claimed = cost x Admin AIA rate").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Fixed Assets: AIA claimed = schedule cost x Admin AIA rate").pass).toBe(false);
     expect(checks.find((c) => c.name === "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances").pass).toBe(false);
   });
 
@@ -174,6 +183,6 @@ describeCalc("BST fixed-asset chain and Admin echo catch a broken workbook", () 
     const checks = bstCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
     expect(checks.find((c) => c.name === "Admin: AIA Rate = tax data").pass).toBe(false);
-    expect(checks.find((c) => c.name === "Fixed Assets: AIA claimed = cost x Admin AIA rate").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Fixed Assets: AIA claimed = schedule cost x Admin AIA rate").pass).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro BST"
-description = "Construction company, non-VAT, BST package. CIS sub-contractors, 2 employees."
+description = "Construction sole trader, non-VAT, BST package. Sub-contract labour bought in as direct costs, no payroll, no CIS suffered on own sales."
 product = "bst"
 tax_regime = "se"
 
@@ -561,5 +561,15 @@ payment = "Bank"
 code = "s"
 amount = 450
 
+# The van bought in September is coded f in the purchase journal, which
+# capitalises it out of the profit and loss account. Registering it here puts
+# it on the Fixed Assets schedule, where it earns its capital allowance.
+[[fixed_asset_additions]]
+date = 2025-09-01
+description = "Ford Transit van"
+reference = "Ford Dealer"
+cost = 12000
+
 [expected]
 total_sales = 75000
+fixed_asset_cost = 12000

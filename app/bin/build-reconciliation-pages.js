@@ -584,6 +584,11 @@ function pageShell({ title, description, canonical, body }) {
       .recon-section { margin-top: 2.5em; }
       .recon-facts { list-style: none; padding: 0; }
       .recon-facts li { margin-bottom: 0.3em; }
+      .recon-verdict { margin: 1.2em 0; padding: 0.8em 1em; border: 1px solid #ddd; border-left-width: 5px; border-radius: 4px; background: #fafafa; }
+      .recon-verdict-pass { border-left-color: #2e7d32; }
+      .recon-verdict-fail { border-left-color: #c62828; }
+      .recon-verdict h4 { margin-top: 0; }
+      .recon-verdict-meta { font-size: 0.85em; color: #555; margin-bottom: 0; }
     </style>
     <script src="../lib/analytics.js"></script>
   </head>
@@ -626,6 +631,48 @@ ${body}
   </body>
 </html>
 `;
+}
+
+// ── Judge verdict ───────────────────────────────────────────────────────────
+
+// Written by app/bin/judge-reconciliation.js when the judge runs. Absent otherwise.
+function loadVerdict(reportsDir, product) {
+  const path = join(reportsDir, `judge-verdict-${product}.json`);
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    console.log(`  judge verdict unreadable: ${error.message}`);
+    return null;
+  }
+}
+
+function renderConcern(concern) {
+  if (typeof concern === "string") return `<li>${escapeHtml(concern)}</li>`;
+  const where = concern.where ? ` (${concern.where})` : "";
+  const severity = concern.severity ? ` [${concern.severity}]` : "";
+  return `<li><strong>${escapeHtml(concern.figure ?? "")}</strong>${escapeHtml(where)}: ${escapeHtml(concern.why ?? "")}${escapeHtml(severity)}</li>`;
+}
+
+function renderVerdict(verdict) {
+  if (!verdict) return "";
+  const state = verdict.verdict === "fail" ? "fail" : "pass";
+  const parts = [
+    `        <div class="recon-verdict recon-verdict-${state}">`,
+    `          <h4>Plausibility review: ${escapeHtml(state)}</h4>`,
+    `          <p>${escapeHtml(verdict.summary ?? "")}</p>`,
+  ];
+  if (Array.isArray(verdict.concerns) && verdict.concerns.length > 0) {
+    parts.push("          <ul>");
+    parts.push(...verdict.concerns.map((concern) => `            ${renderConcern(concern)}`));
+    parts.push("          </ul>");
+  }
+  const stamp = [verdict.model, verdict.timestamp?.slice(0, 10)].filter(Boolean).join(", ");
+  parts.push(
+    `          <p class="recon-verdict-meta">Read back by ${escapeHtml(stamp)}. The arithmetic checks below run first and decide the status.</p>`,
+  );
+  parts.push("        </div>");
+  return parts.join("\n");
 }
 
 function renderSection(section, content) {
@@ -686,11 +733,13 @@ function buildProductPage(product, options) {
   const statementSections = bodySections.filter((section) => !taxSections.includes(section));
   const appendixSections = appendixIndex >= 0 ? report.sections.slice(appendixIndex + 1).filter((section) => section.level === 3) : [];
 
-  return { config, runs, featured, report, scenario, checksSection, statementSections, taxSections, appendixSections };
+  const verdict = loadVerdict(options.reportsDir, product);
+
+  return { config, runs, featured, report, scenario, verdict, checksSection, statementSections, taxSections, appendixSections };
 }
 
 function renderProductPage(product, built, shots) {
-  const { config, runs, featured, report, scenario, checksSection, statementSections, taxSections, appendixSections } = built;
+  const { config, runs, featured, report, scenario, verdict, checksSection, statementSections, taxSections, appendixSections } = built;
   const checks = checksSection?.blocks.find((block) => block.type === "table");
   const passes = checks ? checks.rows.filter((row) => /PASS/.test(row[row.length - 1])).length : 0;
   const warnings = checks ? checks.rows.filter((row) => /WARNING/.test(row[row.length - 1])).length : 0;
@@ -704,13 +753,16 @@ function renderProductPage(product, built, shots) {
     `          <li><strong>Checks:</strong> ${passes} passed, ${warnings} warnings, ${failures} failed</li>`,
     `          <li><strong>Reconciliation runs published:</strong> ${runs.length}</li>`,
     `        </ul>`,
+    renderVerdict(verdict),
     `        <h4>Every run</h4>`,
     renderTable({
       head: ["Year end", "Period", "Scenario", "Status"],
       align: ["left", "left", "left", "left"],
       rows: runs.map((run) => [run.yearEnd, run.label, run.scenario, run.status]),
     }),
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const checksHtml = checksSection ? renderBlocks(checksSection.blocks) : "";
 

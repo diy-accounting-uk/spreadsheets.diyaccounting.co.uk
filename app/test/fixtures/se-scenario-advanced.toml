@@ -3171,7 +3171,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3200
+amount = 23000
 description = "Aggregate customer receipts"
 
 [[bank.apr]]
@@ -3279,7 +3279,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3800
+amount = 22520
 description = "Aggregate customer receipts"
 
 [[bank.may]]
@@ -3360,7 +3360,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4500
+amount = 24800
 description = "Aggregate customer receipts"
 
 [[bank.jun]]
@@ -3477,7 +3477,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3600
+amount = 23360
 description = "Aggregate customer receipts"
 
 [[bank.jul]]
@@ -3576,7 +3576,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4200
+amount = 25620
 description = "Aggregate customer receipts"
 
 [[bank.aug]]
@@ -3657,7 +3657,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3000
+amount = 23360
 description = "Aggregate customer receipts"
 
 [[bank.sep]]
@@ -3792,7 +3792,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 5000
+amount = 25160
 description = "Aggregate customer receipts"
 
 [[bank.oct]]
@@ -3891,7 +3891,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4100
+amount = 24920
 description = "Aggregate customer receipts"
 
 [[bank.nov]]
@@ -3981,7 +3981,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3500
+amount = 22400
 description = "Aggregate customer receipts"
 
 [[bank.dec]]
@@ -4098,7 +4098,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4800
+amount = 25040
 description = "Aggregate customer receipts"
 
 [[bank.jan]]
@@ -4197,7 +4197,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 3900
+amount = 23960
 description = "Aggregate customer receipts"
 
 [[bank.feb]]
@@ -4278,7 +4278,7 @@ account = "1200"
 source = "Various customers"
 code = "DR"
 direction = "in"
-amount = 4400
+amount = 10560
 description = "Aggregate customer receipts"
 
 [[bank.mar]]
@@ -4787,6 +4787,62 @@ category = "computer"
 description = "Laptop (0.5 years old)"
 cost = 3000
 acc_dep = 270
+
+[[vat_straddling_sales]]
+period = "02Y1"
+date = 2025-02-14
+customer = "Acme Corp"
+invoice = "INV-0801"
+amount = 4800
+
+[[vat_straddling_sales]]
+period = "03Y1"
+date = 2025-03-18
+customer = "Beta Systems"
+invoice = "INV-0802"
+amount = 2400
+
+[[vat_straddling_sales]]
+period = "04Y2"
+date = 2026-04-10
+customer = "Acme Corp"
+invoice = "INV-1301"
+amount = 3600
+
+[[vat_straddling_sales]]
+period = "05Y2"
+date = 2026-05-12
+customer = "Gamma Ltd"
+invoice = "INV-1302"
+amount = 1800
+
+[[vat_straddling_purchases]]
+period = "02Y1"
+date = 2025-02-20
+supplier = "TechParts Ltd"
+invoice = "TP-2402"
+amount = 720
+
+[[vat_straddling_purchases]]
+period = "03Y1"
+date = 2025-03-24
+supplier = "WorkSpace Ltd"
+invoice = "WS-2402"
+amount = 1200
+
+[[vat_straddling_purchases]]
+period = "04Y2"
+date = 2026-04-15
+supplier = "Shell"
+invoice = "SH-2604"
+amount = 240
+
+[[vat_straddling_purchases]]
+period = "05Y2"
+date = 2026-05-19
+supplier = "BT Business"
+invoice = "BT-2605"
+amount = 360
 
 [expected]
 total_sales = 339200

@@ -25,6 +25,7 @@ guide_filename = "Taxi Driver User Guide.pdf"
 admin = "xl/worksheets/sheet33.xml"
 home = "xl/worksheets/sheet1.xml"
 se_short = "xl/worksheets/sheet3.xml"
+cellEditFn = "taxi"
 
 [sheets.sales]
 # Sales sheet XML paths for date pre-filling (one per month)

@@ -192,6 +192,79 @@ export function buildCellEdits(taxData, startYear) {
   return { numericEdits, stringEdits };
 }
 
+// ── Tax data → cell edits (Taxi Admin) ─────────────────────────────────────
+//
+// The Taxi Admin income tax block lists two bands (basic, higher), where BST
+// lists three (starter, basic, higher). Every band row therefore sits one row
+// higher than its BST counterpart, and NI Class 2 is on L16 rather than L17.
+// The Taxi workbook reads Admin N4, N6, N7, N11 and N12 for tax: writing the
+// BST positions here leaves N6 holding the starting rate and N12 holding zero,
+// which charges every pound above the personal allowance at the basic rate and
+// never reaches the higher band.
+
+export function buildTaxiCellEdits(taxData, startYear) {
+  const dates = generateAdminDates(startYear);
+  const ty = taxData.tax_year;
+  const it = taxData.income_tax;
+  const ni = taxData.national_insurance;
+  const ca = taxData.capital_allowances;
+  const dep = taxData.depreciation;
+  const mil = taxData.mileage;
+
+  const numericEdits = {};
+
+  // Dates — same positions as BST
+  for (const [cell, date] of Object.entries(dates)) {
+    numericEdits[cell] = toExcelSerial(date);
+  }
+
+  // Income tax — two bands, one row above the BST positions
+  numericEdits.N4 = it.personal_allowance;
+  numericEdits.N6 = it.basic_rate; // BST: starting_rate at N6
+  numericEdits.N7 = it.higher_rate; // BST: basic_rate at N7
+  numericEdits.K11 = it.basic_rate; // Display-only copy of the basic rate
+  numericEdits.N11 = it.starter_band_end;
+  numericEdits.M11 = it.basic_band_end; // BST: M12
+  numericEdits.K12 = it.higher_rate; // Display-only copy of the higher rate
+  numericEdits.L12 = it.higher_band_start; // BST: L13
+  numericEdits.N12 = it.higher_band_start; // BST: N13
+
+  // NI — L16 not L17 for Class 2
+  numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
+  numericEdits.L20 = ni.class4_lower_rate;
+  numericEdits.N20 = ni.class4_lower_limit;
+  numericEdits.L23 = ni.class4_upper_rate;
+  numericEdits.N23 = ni.class4_upper_limit;
+
+  // Capital allowances — same as BST
+  numericEdits.G4 = ca.annual_investment_allowance;
+  numericEdits.G5 = ca.writing_down_allowance;
+  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
+  numericEdits.G8 = ca.motor_vehicle_restriction;
+
+  // Depreciation — same as BST
+  numericEdits.G13 = dep.land_and_property;
+  numericEdits.G14 = dep.plant_and_machinery;
+  numericEdits.G15 = dep.fixtures_and_fittings;
+  numericEdits.G16 = dep.computer_equipment;
+  numericEdits.G17 = dep.motor_vehicles;
+
+  // Mileage — same as BST
+  numericEdits.F21 = mil.higher_rate_limit;
+  numericEdits.G21 = mil.higher_rate_pence;
+  numericEdits.F22 = mil.lower_rate_start;
+  numericEdits.G22 = mil.lower_rate_pence;
+
+  numericEdits.F26 = taxData.vat.registration_threshold;
+
+  const stringEdits = {
+    B23: ty.label,
+    B24: ty.next_label,
+  };
+
+  return { numericEdits, stringEdits };
+}
+
 // ── Tax data → cell edits (SE Financialaccounts Admin) ──────────────────────
 //
 // The SE Admin sheet has different cell positions from BST for income tax bands,
@@ -640,7 +713,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       if (!templateF21Value) throw new Error("Admin F21 has no year-end value in the template");
       templateYearEndSerial = parseFloat(templateF21Value[1]);
     } else {
-      const buildFn = sheetsConfig.cellEditFn === "se" ? buildSeCellEdits : buildCellEdits;
+      const buildFn = { se: buildSeCellEdits, taxi: buildTaxiCellEdits }[sheetsConfig.cellEditFn] ?? buildCellEdits;
       ({ numericEdits, stringEdits } = buildFn(taxData, startYear));
     }
 

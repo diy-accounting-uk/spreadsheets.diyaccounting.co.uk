@@ -579,6 +579,26 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Straddling VAT periods (SE, Ltd) -- sales and purchases falling in a VAT
+  // period either side of the accounting year, entered on the VAT workbook's
+  // own out-of-year sheets. `period` names the sheet pair (S02Y1/P02Y1 and so
+  // on) and the Vatinterface row it feeds.
+  for (const [table, entries, nameField] of [
+    ["vat_straddling_sales", expected.vat_straddling_sales, "customer"],
+    ["vat_straddling_purchases", expected.vat_straddling_purchases, "supplier"],
+  ]) {
+    if (!entries) continue;
+    for (const entry of entries) {
+      parts.push(`[[${table}]]`);
+      parts.push(`period = "${entry.period}"`);
+      parts.push(`date = ${entry.date}`);
+      parts.push(`${nameField} = "${escapeTomlString(entry[nameField])}"`);
+      parts.push(`invoice = "${entry.invoice}"`);
+      parts.push(`amount = ${entry.amount}`);
+      parts.push("");
+    }
+  }
+
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);

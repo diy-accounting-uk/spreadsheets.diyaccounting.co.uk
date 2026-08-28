@@ -76,6 +76,17 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
+// ── Stock sheet layout ─────────────────────────────────────────────────────
+// The Stock sheet runs a row per month end from row 8 to row 30 in steps of
+// two, under an opening row 6 fed from the opening balance sheet. Column D
+// carries the calculated value, column AB the physical count, and column Z
+// the difference between them, which the trial balance reads as the month's
+// stock movement. Row 30 is the last month of the year.
+
+const STOCK_FINAL_CALCULATED_CELL = "D30";
+const STOCK_FINAL_COUNT_CELL = "AB30";
+const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
+
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
 // depreciation (M:Q), one column per asset class, with net book value in E13.
@@ -162,6 +173,26 @@ const VAT_RATE = 0.2;
 function netOfVat(gross) {
   return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
 }
+
+// ── Vatreturns.xlsx Vatinterface layout ────────────────────────────────────
+// One row per VAT period, in date order. Rows 6-17 are the twelve accounting
+// months in period order (row 6 is always the period's first month, whatever
+// the year end -- the generator rewrites the month-tab references to match).
+// Rows 4 and 5 are the two VAT periods before the accounting year, rows 18
+// and 19 the two after it; each is fed by its own S/P entry sheet rather than
+// by a month tab. Column B is the period end date every VATQtr sheet looks up
+// on, C the payment due date, D/F the period's sales net and output VAT, H/J
+// its purchases net and input VAT, and E/G/I/K the rolling three-row sums the
+// VAT boxes read. M carries the flat-rate flag box 6 switches on.
+const VATINTERFACE_ROWS = { first: 4, last: 19, firstMonth: 6 };
+
+// Straddling VAT period name to the Vatinterface row it feeds, and to the
+// pair of entry sheets it is entered on (S<period> and P<period>).
+const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19 };
+
+// Column each straddling entry sheet takes its data in. The sheets compute
+// VAT and net from the gross figure in the amount column.
+const STRADDLING_COLUMNS = { date: "A", name: "B", invoice: "C", description: "D", amount: "F" };
 
 // spreadsheet-runner writes a cell by rewriting its XML in place, and when
 // the target is an empty self-closing cell that rewrite also swallows every
@@ -330,6 +361,20 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
   if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
+  // Register of members (Companysecretary.xlsx). Ordinary shares are issued
+  // at their £1 nominal value -- matching the template's own "Fully paid
+  // Ordinary Shares" placeholder row -- so the share count posted is the
+  // opening balance sheet's own share capital figure divided by that
+  // nominal value.
+  const companysecretaryWrites = {};
+  if (scenario.opening_balance?.share_capital !== undefined) {
+    const nominalValue = 1;
+    companysecretaryWrites.RegisterofMembers = {
+      F3: nominalValue,
+      G3: scenario.opening_balance.share_capital / nominalValue,
+    };
+  }
+
   // Opening/closing debtors (Sales.xlsx)
   if (scenario.opening_debtors) {
     if (!salesWrites.OpeningDebtors) salesWrites.OpeningDebtors = {};
@@ -374,11 +419,17 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
-  // Stock (Financialaccounts.xlsx Stock sheet)
-  if (scenario.stock) {
+  // Stock (Financialaccounts.xlsx Stock sheet). The opening figure reaches the
+  // sheet from the opening balance sheet (D6 and AB6 both read
+  // OpenAccounts!E15), so the only entry a year needs is the physical stock
+  // count. The sheet takes that in the ACTUAL STOCK VALUE column against the
+  // month end it was counted at; the difference from the calculated value
+  // becomes the stock loss adjustment in column Z, which is what the trial
+  // balance reads as the year's stock movement. Column B holds the month-end
+  // dates, so writing the count there moves no stock at all.
+  if (scenario.stock && scenario.stock.closing !== undefined) {
     if (!hubWrites.Stock) hubWrites.Stock = {};
-    if (scenario.stock.opening !== undefined) hubWrites.Stock.B5 = scenario.stock.opening;
-    if (scenario.stock.closing !== undefined) hubWrites.Stock.B8 = scenario.stock.closing;
+    hubWrites.Stock[STOCK_FINAL_COUNT_CELL] = scenario.stock.closing;
   }
 
   // Payslips.xlsx employee details (same layout as SE: 5 blocks at 26-row intervals)
@@ -571,16 +622,53 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
+  // Straddling VAT periods (Vatreturns.xlsx). A business registered for VAT on
+  // a cycle that does not line up with its accounting year still has to return
+  // the periods either side of it, and the workbook keeps a sales and a
+  // purchases entry sheet for each. Nothing on these sheets reaches
+  // Financialaccounts -- Vatreturns links Sales, Purchases and the hub, never
+  // the other way -- so an entry here moves the VAT return and leaves the
+  // trial balance alone.
+  //
+  // The purchases sheets carry a completeness warning in B2 that compares the
+  // net total against expense analysis columns O:AK. Those columns exist on
+  // the twelve month tabs but not on these sheets, so the warning fires for
+  // any entry at all. Nothing reads it, so it is left unasserted.
+  const vatReturnWrites = {};
+  function writeStraddlingPeriod(entries, sheetPrefix, nameField) {
+    for (const entry of entries) {
+      const row = STRADDLING_PERIOD_ROWS[entry.period];
+      if (!row) {
+        throw new Error(`Straddling VAT entry names period "${entry.period}", which Vatreturns.xlsx has no sheet for`);
+      }
+      const sheetName = `${sheetPrefix}${entry.period}`;
+      if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
+      const sheet = vatReturnWrites[sheetName];
+      const col = STRADDLING_COLUMNS;
+      const entryRow = Object.keys(sheet).filter((k) => k.startsWith(col.amount)).length + 5;
+      const d = shiftDate(parseDate(entry.date));
+      sheet[`${col.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      if (entry[nameField]) sheet[`${col.name}${entryRow}`] = entry[nameField];
+      if (entry.invoice) sheet[`${col.invoice}${entryRow}`] = entry.invoice;
+      if (entry.description) sheet[`${col.description}${entryRow}`] = entry.description;
+      sheet[`${col.amount}${entryRow}`] = entry.amount;
+    }
+  }
+  if (scenario.vat_straddling_sales) writeStraddlingPeriod(scenario.vat_straddling_sales, "S", "customer");
+  if (scenario.vat_straddling_purchases) writeStraddlingPeriod(scenario.vat_straddling_purchases, "P", "supplier");
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
   };
+  if (Object.keys(vatReturnWrites).length > 0) result["Vatreturns.xlsx"] = vatReturnWrites;
   for (const [fileName, writes] of Object.entries(bankFileWrites)) {
     if (Object.keys(writes).length > 0) result[fileName] = writes;
   }
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
+  if (Object.keys(companysecretaryWrites).length > 0) result["Companysecretary.xlsx"] = companysecretaryWrites;
   return result;
 }
 
@@ -689,6 +777,7 @@ export const CELL_MAP = [
   ["PubBalSht", "E29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
   ["PubBalSht", "F31", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
+  ["PubBalSht", "F36", "Called up share capital",  "accounts.capital.3000 (pubBS)",      "Published Balance Sheet", 1],
   ["PubBalSht", "F39", "**Shareholders' Funds**",  "gl-cor:amount (pubBS.equity)",       "Published Balance Sheet", 0],
   // ── Fixed asset note (PubNotes) — column G is the all-classes total ──
   ["PubNotes", "G8",  "Original cost brought forward", "gl-cor:amount (note1.costBf)",     "Fixed Asset Note", 1],
@@ -703,8 +792,10 @@ export const CELL_MAP = [
   ["PubNotes", "D35", "Directors emoluments",          "gl-cor:amount (note2.emoluments)", "Fixed Asset Note", 1],
   ["PubNotes", "D41", "Corporation tax for the year",  "gl-cor:taxAmount (note4.ct)",      "Fixed Asset Note", 1],
   // ── Stock ──
-  ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
-  ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
+  ["Stock", "D6",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
+  ["Stock", STOCK_FINAL_COUNT_CELL,      "Closing Stock (physical count)", "accounts.assets.1100 (closing)",           "Stock", 0],
+  ["Stock", STOCK_FINAL_CALCULATED_CELL, "Closing Stock (calculated)",     "accounts.assets.1100 (calculated)",        "Stock", 1],
+  ["Stock", STOCK_FINAL_ADJUSTMENT_CELL, "Stock loss adjustment",          "accounts.assets.1100 (lossAdjustment)",    "Stock", 1],
   // ── Trial Balance ──
   // Column D is the opening column, fed cell by cell from OpenAccounts.
   // Column EJ is the final balance: opening plus every in-year movement.
@@ -822,6 +913,12 @@ const SALES_MONTH_TOTAL_CELLS = { net: "H1", badDebts: "T1", assetSales: "U1" };
 // purchases (AI1, which reaches the balance sheet rather than the P&L).
 const PURCHASES_MONTH_TOTAL_CELLS = { net: "H1", materials: "O1", directorsWages: "R1", employeeWages: "S1", assetPurchases: "AI1" };
 
+// The twelve month tabs a recalculated book actually carries, in accounting
+// period order, taken from the period start date on its own Admin sheet.
+function fiscalMonthTabs(results) {
+  return results.Admin && typeof results.Admin.B9 === "number" ? monthTabsFromPeriodStart(results.Admin.B9) : getMonthTabNames(3);
+}
+
 // Month tab names in accounting-period order, taken from the period start
 // date the Admin sheet carries, so a leaf workbook's month totals line up
 // with the P&L's month columns whatever the year end.
@@ -936,8 +1033,17 @@ export function multiFileOptions(yearEndMonth) {
   }
   const vatQtrReads = {};
   for (let q = 1; q <= 5; q++) {
-    vatQtrReads[`VATQtr${q}`] = ["G5", "G9", "G13", "G15", "G17", "G21", "G23"];
+    vatQtrReads[`VATQtr${q}`] = ["G5", "G7", "G9", "G13", "G15", "G17", "G21", "G23"];
   }
+
+  // The interface rows themselves, so a break in the VAT chain names the
+  // period and the side it happened on instead of only showing up as a wrong
+  // quarter total.
+  const vatinterfaceCells = [];
+  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
+    for (const col of ["B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "M"]) vatinterfaceCells.push(`${col}${row}`);
+  }
+  vatQtrReads.Vatinterface = vatinterfaceCells;
 
   // Fixedassets Schedule: row 1 holds the whole-schedule totals, rows 57 and
   // 110 the existing and new sub-totals, and each class's own totals row the
@@ -979,6 +1085,11 @@ export function multiFileOptions(yearEndMonth) {
       },
       "Payslips.xlsx": {
         Payment: paymentCells,
+      },
+      "Companysecretary.xlsx": {
+        // F1 is the sheet's own nominal-value formula (=F3), G1 its own
+        // shares-issued total (=SUM(G3:G19)).
+        RegisterofMembers: ["F1", "G1"],
       },
       ...bankReads,
     },
@@ -1129,30 +1240,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
   if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
 
-  // Stock checks
-  if (expected.opening_stock !== undefined) {
-    const stock = results.Stock;
-    if (stock && stock.B5 !== undefined) check("Opening Stock", stock.B5 || 0, expected.opening_stock);
-    if (stock && stock.B8 !== undefined && expected.closing_stock !== undefined)
-      check("Closing Stock", stock.B8 || 0, expected.closing_stock);
+  // Stock and debtors on the published balance sheet. Both are derived: stock
+  // comes from the physical count against the calculated value, debtors from
+  // opening debtors plus everything invoiced less everything banked as a
+  // customer receipt. A balance sheet stays balanced whichever figure those
+  // chains land on, so anchoring the published lines to the scenario's own
+  // closing figures is the only way a stale opening balance or a year of
+  // uncollected sales shows up.
+  const stock = results.Stock;
+  const pubBS = results.PubBalSht;
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (openingStock !== undefined && stock) {
+    check("Stock: opening carried in from the opening balance sheet", stock.D6 || 0, openingStock);
   }
-
-  // Debtors/creditors checks
-  if (expected.opening_debtors) {
-    const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Opening Debtors total", total, total);
+  if (closingStock !== undefined && stock) {
+    check("Stock: physical count at the year end", stock[STOCK_FINAL_COUNT_CELL] || 0, closingStock);
+    check(
+      "Stock: loss adjustment = count - calculated",
+      stock[STOCK_FINAL_ADJUSTMENT_CELL] || 0,
+      (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
+    );
+    if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
   }
-  if (expected.closing_debtors) {
+  if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
-    if (total > 0) check("Closing Debtors total", total, total);
-  }
-  if (expected.opening_creditors) {
-    const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Opening Creditors total", total, total);
-  }
-  if (expected.closing_creditors) {
-    const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
-    if (total > 0) check("Closing Creditors total", total, total);
+    check("Published balance sheet: trade debtors = closing debtors", pubBS.E11 || 0, total);
   }
 
   // VAT chain: Sales/Purchases month VAT totals must flow through the
@@ -1175,6 +1288,122 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
     if (expected.vat_output_total !== undefined) check("VAT: annual output VAT", annualOutputVat, expected.vat_output_total);
     if (expected.vat_input_total !== undefined) check("VAT: annual input VAT", annualInputVat, expected.vat_input_total);
+  }
+
+  // ── Vatinterface: where in the VAT chain a break happened ────────────────
+  //
+  // The quarter totals above catch a break; these say where it is. Each
+  // interface row is compared against the leaf workbook or the straddling
+  // entry sheet that feeds it, each quarter column against the three period
+  // rows it sums, and each VAT box against the interface row its LOOKUP lands
+  // on. A month link that stops carrying fails on that month and side alone.
+  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
+  if (vatinterface) {
+    fiscalMonthTabs(results).forEach((tab, i) => {
+      const row = VATINTERFACE_ROWS.firstMonth + i;
+      const salesMonth = results[`Sales.xlsx!${tab}`];
+      const purchasesMonth = results[`Purchases.xlsx!${tab}`];
+      if (salesMonth) {
+        check(
+          `Vatinterface D${row}: ${tab} sales net = Sales.xlsx ${tab}`,
+          num(vatinterface[`D${row}`]),
+          num(salesMonth[SALES_MONTH_TOTAL_CELLS.net]),
+        );
+        check(`Vatinterface F${row}: ${tab} output VAT = Sales.xlsx ${tab}`, num(vatinterface[`F${row}`]), num(salesMonth.G1));
+      }
+      if (purchasesMonth) {
+        check(
+          `Vatinterface H${row}: ${tab} purchases net = Purchases.xlsx ${tab}`,
+          num(vatinterface[`H${row}`]),
+          num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.net]),
+        );
+        check(`Vatinterface J${row}: ${tab} input VAT = Purchases.xlsx ${tab}`, num(vatinterface[`J${row}`]), num(purchasesMonth.G1));
+      }
+    });
+
+    // The straddling periods, anchored in the entries the scenario put on
+    // their own sheets. The sheets compute VAT from the gross figure at the
+    // standard rate, so the expectation splits the same gross the same way.
+    const straddlingGross = (entries) => {
+      const byPeriod = {};
+      for (const entry of entries || []) byPeriod[entry.period] = (byPeriod[entry.period] || 0) + entry.amount;
+      return byPeriod;
+    };
+    const straddlingSales = straddlingGross(expected.vat_straddling_sales);
+    const straddlingPurchases = straddlingGross(expected.vat_straddling_purchases);
+    if (expected.vat_straddling_sales || expected.vat_straddling_purchases) {
+      for (const [period, row] of Object.entries(STRADDLING_PERIOD_ROWS)) {
+        const salesGross = straddlingSales[period] || 0;
+        const purchasesGross = straddlingPurchases[period] || 0;
+        check(
+          `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
+          num(vatinterface[`D${row}`]),
+          netOfVat(salesGross),
+        );
+        check(
+          `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
+          num(vatinterface[`F${row}`]),
+          salesGross - netOfVat(salesGross),
+        );
+        check(
+          `Vatinterface H${row}: ${period} purchases net = the straddling purchases entered for that period`,
+          num(vatinterface[`H${row}`]),
+          netOfVat(purchasesGross),
+        );
+        check(
+          `Vatinterface J${row}: ${period} input VAT = the straddling purchases entered for that period`,
+          num(vatinterface[`J${row}`]),
+          purchasesGross - netOfVat(purchasesGross),
+        );
+      }
+    }
+
+    // Each VAT box against the interface row its own quarter-end date selects,
+    // and that row's quarter columns against the three period rows they sum.
+    const quarterColumns = [
+      ["E", "D", "sales net"],
+      ["G", "F", "output VAT"],
+      ["I", "H", "purchases net"],
+      ["K", "J", "input VAT"],
+    ];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = vatQtr(q);
+      if (!qtr || typeof qtr.G5 !== "number") continue;
+      let row = null;
+      for (let r = VATINTERFACE_ROWS.first; r <= VATINTERFACE_ROWS.last; r++) {
+        if (Math.round(num(vatinterface[`B${r}`])) === Math.round(qtr.G5)) row = r;
+      }
+      check(`VAT Q${q}: quarter end date is one of the Vatinterface periods`, row === null ? 0 : 1, 1, 0);
+      if (row === null) continue;
+
+      if (row - 2 >= VATINTERFACE_ROWS.first) {
+        for (const [total, period, label] of quarterColumns) {
+          check(
+            `Vatinterface ${total}${row}: quarter ${label} = its three period rows`,
+            num(vatinterface[`${total}${row}`]),
+            num(vatinterface[`${period}${row - 2}`]) + num(vatinterface[`${period}${row - 1}`]) + num(vatinterface[`${period}${row}`]),
+          );
+        }
+      }
+
+      check(`VAT Q${q}: box 1 (G9) = Vatinterface quarter VAT due (G${row})`, num(qtr.G9), num(vatinterface[`G${row}`]));
+      check(`VAT Q${q}: box 4 (G15) = Vatinterface quarter VAT reclaimed (K${row})`, num(qtr.G15), num(vatinterface[`K${row}`]));
+      check(`VAT Q${q}: box 7 (G23) = Vatinterface quarter purchases net (I${row})`, num(qtr.G23), num(vatinterface[`I${row}`]));
+      // Box 6 is sales net of VAT, or sales including VAT when the flat rate
+      // scheme flag in column M is set.
+      const flatRate = num(vatinterface[`M${row}`]) > 0;
+      check(
+        `VAT Q${q}: box 6 (G21) = Vatinterface quarter sales ${flatRate ? "including" : "net of"} VAT`,
+        num(qtr.G21),
+        num(vatinterface[`E${row}`]) + (flatRate ? num(vatinterface[`G${row}`]) : 0),
+      );
+      check(
+        `VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`,
+        num(qtr.G7),
+        num(vatinterface[`C${row}`]),
+        0,
+      );
+    }
   }
 
   // ── Fixed assets: the published note against the asset schedule ──────────
@@ -1239,6 +1468,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const pubBalSht = results.PubBalSht;
   if (pubBalSht && notes) {
     check("Published balance sheet: fixed assets = fixed asset note net book value", num(pubBalSht.F6), num(notes.G20));
+  }
+
+  // The share register carries no opening/closing split of its own -- it is
+  // the company's live share register as of the accounts date -- so it ties
+  // to the closing balance sheet figure. F1 is the sheet's own nominal-value
+  // formula (=F3) and G1 its own shares-issued total (=SUM(G3:G19)).
+  const register = results["Companysecretary.xlsx!RegisterofMembers"];
+  if (register && pubBalSht) {
+    check(
+      "RegisterofMembers: nominal value x shares issued = PubBalSht share capital",
+      (register.F1 || 0) * (register.G1 || 0),
+      num(pubBalSht.F36),
+    );
   }
 
   // The Schedule's new-asset and disposal totals against what the scenario

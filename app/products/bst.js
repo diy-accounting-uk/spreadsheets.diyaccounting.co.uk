@@ -16,6 +16,10 @@ export const PRODUCT = {
   prefix: "GB Accounts Basic Sole Trader",
 };
 
+// Slots the Debtors & Creditors sheet gives each opening/closing block.
+const DEBTOR_SLOTS = 3;
+const CREDITOR_SLOTS = 4;
+
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
 export function cellWrites(scenario) {
@@ -77,45 +81,27 @@ export function cellWrites(scenario) {
     if (scenario.stock.closing !== undefined) writes.PurchasesStock.D30 = scenario.stock.closing;
   }
 
-  if (scenario.opening_debtors) {
+  // Debtors and creditors. The sheet's own columns C and F carry a monthly
+  // analysis of sales not yet received and purchases still to be paid, so a
+  // slot left unwritten keeps a monthly figure that is neither a debtor nor a
+  // creditor. Each block is filled to the end for that reason: what the report
+  // shows under these labels is then the scenario's entries and nothing else.
+  function writeEntryBlock(entries, nameColumn, amountColumn, firstRow, slots, nameField) {
+    if (!entries) return;
     if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 5;
-    for (const d of scenario.opening_debtors) {
-      writes["Debtors & Creditors"][`B${row}`] = d.customer;
-      writes["Debtors & Creditors"][`C${row}`] = d.amount;
-      row++;
+    const sheet = writes["Debtors & Creditors"];
+    for (let i = 0; i < slots; i++) {
+      const row = firstRow + i;
+      const entry = entries[i];
+      sheet[`${nameColumn}${row}`] = entry ? entry[nameField] : "";
+      sheet[`${amountColumn}${row}`] = entry ? entry.amount : "";
     }
   }
 
-  if (scenario.closing_debtors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 5;
-    for (const d of scenario.closing_debtors) {
-      writes["Debtors & Creditors"][`E${row}`] = d.customer;
-      writes["Debtors & Creditors"][`F${row}`] = d.amount;
-      row++;
-    }
-  }
-
-  if (scenario.opening_creditors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 12;
-    for (const c of scenario.opening_creditors) {
-      writes["Debtors & Creditors"][`B${row}`] = c.supplier;
-      writes["Debtors & Creditors"][`C${row}`] = c.amount;
-      row++;
-    }
-  }
-
-  if (scenario.closing_creditors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 12;
-    for (const c of scenario.closing_creditors) {
-      writes["Debtors & Creditors"][`E${row}`] = c.supplier;
-      writes["Debtors & Creditors"][`F${row}`] = c.amount;
-      row++;
-    }
-  }
+  writeEntryBlock(scenario.opening_debtors, "B", "C", 5, DEBTOR_SLOTS, "customer");
+  writeEntryBlock(scenario.closing_debtors, "E", "F", 5, DEBTOR_SLOTS, "customer");
+  writeEntryBlock(scenario.opening_creditors, "B", "C", 12, CREDITOR_SLOTS, "supplier");
+  writeEntryBlock(scenario.closing_creditors, "E", "F", 12, CREDITOR_SLOTS, "supplier");
 
   // Fixed asset additions go on the "Fixed Assets" sheet's Plant & Machinery
   // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots). That block
@@ -195,8 +181,11 @@ export const CELL_MAP = [
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Income Tax Calculation", 0],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
   [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
-  [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
-  [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
+  [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Income Tax Calculation", 1],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.higherBandStart (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Income Tax Calculation", 1],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
   [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
   [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
@@ -239,6 +228,8 @@ export const CELL_MAP = [
   ["Debtors & Creditors", "F13", "Closing Creditor 2","accounts.liabilities.2100 (closing[1])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F14", "Closing Creditor 3","accounts.liabilities.2100 (closing[2])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F15", "Closing Creditor 4","accounts.liabilities.2100 (closing[3])", "Debtors & Creditors", 1],
+  // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
+  ["PurchasesMar", "X1", "Purchases capitalised as fixed assets", "accounts.assets.fixedAssets (purchased)", "Purchase Analysis", 0],
   // ── Fixed Assets schedule ──
   ["Fixed Assets", "E67",  "New Asset Cost (Plant & Machinery)",     "accounts.assets.fixedAssets (cost)",             "Fixed Assets", 1],
   ["Fixed Assets", "E1",   "Total Original Cost",                   "accounts.assets.fixedAssets (totalCost)",        "Fixed Assets", 0],
@@ -343,6 +334,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   );
   check("P&L: Expense lines sum = Total", pl.C22, bstExpenseSum);
 
+  // Every coded purchase must reach an account. Eleven codes land in the P&L
+  // expense lines, "d" in direct costs, "s" in cost of sales alongside the
+  // stock movement, and "f" capitalises into the Purchases sheets' year-to-date
+  // fixed-asset column instead of the P&L. Anything the workbook drops shows up
+  // as a shortfall here even though every total on its own still adds up.
+  const purchases = results.PurchasesMar;
+  if (expected.purchases && purchases && results.PurchasesStock) {
+    const journalTotal = Object.values(expected.purchases)
+      .flat()
+      .reduce((s, tx) => s + tx.amount, 0);
+    const stockMovement = (results.PurchasesStock.D5 || 0) - (results.PurchasesStock.D30 || 0);
+    const stockPurchases = (pl.C6 || 0) - stockMovement;
+    const accountedFor = (pl.C22 || 0) + (pl.C7 || 0) + stockPurchases + (purchases.X1 || 0);
+    check("Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
+  }
+
   // Stock checks (6e)
   if (expected.opening_stock !== undefined && results.PurchasesStock) {
     check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
@@ -356,12 +363,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
   }
 
-  // Debtors/Creditors checks. Sum only the rows the scenario wrote: unwritten
-  // rows keep the template's own derived formulas (e.g. F7 pulls a monthly
-  // unpaid total), which are not part of the fixture's entries.
+  // Debtors/Creditors checks. Every slot in the block counts: the writer fills
+  // the ones the scenario does not use, so a monthly analysis figure surviving
+  // in one of them is a difference here rather than a stray row in the report.
   function checkEntryBlock(name, entries, cells) {
     const expectedTotal = entries.reduce((s, e) => s + e.amount, 0);
-    const actualTotal = cells.slice(0, entries.length).reduce((s, v) => s + (v || 0), 0);
+    const actualTotal = cells.reduce((s, v) => s + (typeof v === "number" ? v : 0), 0);
     check(name, actualTotal, expectedTotal);
   }
   if (expected.opening_debtors && results["Debtors & Creditors"]) {
@@ -388,11 +395,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.fixed_asset_additions && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
     const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
-    check("Fixed Assets: New asset cost recorded", fa.E67 || 0, expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: schedule total cost = asset additions", fa.E1 || 0, expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: first addition recorded", fa.E67 || 0, expected.fixed_asset_additions[0].cost);
 
     if (results.Admin) {
       const aiaRate = results.Admin.G4;
-      check("Fixed Assets: AIA claimed = cost x Admin AIA rate", fa.K1 || 0, (fa.E67 || 0) * aiaRate);
+      check("Fixed Assets: AIA claimed = schedule cost x Admin AIA rate", fa.K1 || 0, (fa.E1 || 0) * aiaRate);
     }
 
     // Mirrors the SE Short D80/D85/O80/O85 formulas (see the SE-Short-chain
@@ -447,6 +455,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Income Tax", computedIncomeTax, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+
+    // The rate and band the sheet actually applies, not the ones it is
+    // captioned with. A total that happens to be right because the whole
+    // taxable income sits in one band hides a wrong rate in the other.
+    check("Tax: sheet applies the basic rate to the lower band", tax.D8 || 0, taxData.income_tax.basic_rate, 0.0001);
+    check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
+    check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
+    check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
+    check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
 
     // Tax calculation chain (6c)
     check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));

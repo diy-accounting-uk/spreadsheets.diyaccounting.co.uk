@@ -692,5 +692,15 @@ payment = "Bank"
 code = "m"
 amount = 58
 
+# The dashcam and signage bought in May are coded f in the purchase journal,
+# which capitalises them out of the profit and loss account. Registering them
+# here puts them on the Fixed Assets schedule, where they earn their allowance.
+[[fixed_asset_additions]]
+date = 2025-05-10
+description = "Dashcam and vehicle signage"
+reference = "AMZ-0510"
+cost = 200
+
 [expected]
 total_sales = 38000
+fixed_asset_cost = 200
