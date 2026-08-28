@@ -18,20 +18,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   - **PR #31 (Ltd opening balance + runner cell-write fix)**:
     https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/31 —
     caught up on main, 102 tests green post-merge. Merges after #28.
-  - Wave 2 SE (items 5, 6, 10 + SE bank fix + operator-approved purchase-code recode)
-    is up as **PR #35: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/35**
-    — caught up on main, blast radius 110/110; awaiting the operator's four
-    reconciliation dispatches on its branch, then merge. Purchases-side monthly ties
-    follow in a later wave.
-  - Waves packed onto PR #35's branch (operator, 2026-08-28): the Ltd agent
-    (Wave 2 Ltd items 5/6/10 + Admin echo + CT600/PubNotes; worktree
-    `../spreadsheets-worktrees/wave2-ltd`, branch `claude/recon-wave2-ltd`) and the
-    BST/Taxi agent (Admin echo + fixed-asset scenario signal; worktree
-    `../spreadsheets-worktrees/wave2-bst-taxi`, branch `claude/recon-wave2-bst-taxi`)
-    run concurrently off `claude/recon-wave2-se`; coordinator merges both into that
-    branch, then one final four-way reconciliation dispatch verifies the packed PR.
-  - Still open in the runner: leaf-to-leaf external-link caches (Fixedassets reading
-    Sales/Purchases).
+  - **PR #35 (Wave 2 packed: SE + Ltd + BST + Taxi coverage)** at `2002b281`, full
+    suite 1229/1229, final four-way reconciliation round in flight — merge on green.
+    Ltd full scenario now runs 451 checks. Purchases-side SE monthly ties follow later.
+  - Next wave inputs, from the Ltd workstream: runner external-link caches miss
+    per-row cells (CT!K20 capital allowances reads 0 regardless of the Schedule) and
+    leaf-to-hub caches never refresh; reconcile.js should pass the package year-end
+    into checkCompliance; CONTEXT_LIMITED_COMPANY.md's PubP&L/PubBalSht/MnthP&L/CT
+    cell maps are wrong (corrections listed in the Ltd agent report, ltd.js CELL_MAP
+    already corrected). Operator flag: the Ltd fixture's turnover is ~double its
+    README's description — settle before the judge wave.
   Coordinator merges verified commits, pushes in batches; waves 3-5 follow per the plan.
 
 - [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
