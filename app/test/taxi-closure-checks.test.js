@@ -102,7 +102,7 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
       "P&L: Gross = Turnover - Cost of Sales",
       "P&L: Capital Allowances / Mileage Allowance mutually exclusive",
       "SA103S: Turnover = P&L Sales",
-      "SA103S: Net profit close to P&L Net",
+      "SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances",
       "SA103S: Profit for tax = Draft Tax E5",
     ]) {
       const check = checks.find((c) => c.name === name);
