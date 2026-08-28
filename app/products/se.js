@@ -736,7 +736,46 @@ export function reportSections(results) {
     const val = results[sheet]?.[cell];
     sectionMap.get(section).push({ label, value: fmt(val), indent });
   }
-  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const vat = vatSection(results);
+  if (vat) sections.push(vat);
+  return sections;
+}
+
+// The VAT the books actually charged, taken from the month tabs and from the
+// return itself. Every other statement in this report is stated net, so a
+// registered trader and an unregistered one carrying the same trade read
+// identically without it.
+function vatSection(results) {
+  const months = Object.values(MONTH_SHEETS)
+    .map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]])
+    .filter(([sales, purchases]) => sales || purchases);
+  if (months.length === 0) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
+  const salesVat = sum(0, "H1");
+  const salesNet = sum(0, "I1");
+  const purchasesVat = sum(1, "H1");
+  const purchasesNet = sum(1, "I1");
+
+  const rows = [
+    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1 },
+    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1 },
+    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1 },
+    { label: "Purchases invoiced including VAT", value: fmt(purchasesNet + purchasesVat), indent: 1 },
+    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1 },
+    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
+    { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
+  ];
+  for (let q = 1; q <= 4; q++) {
+    const boxes = results[`Vat.xlsx!VATQtr${q}`];
+    if (!boxes) continue;
+    rows.push({ label: `Q${q} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
+    rows.push({ label: `Q${q} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
+    rows.push({ label: `Q${q} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+  }
+  return { title: "VAT Returns", rows };
 }
 
 export function cellLabels() {

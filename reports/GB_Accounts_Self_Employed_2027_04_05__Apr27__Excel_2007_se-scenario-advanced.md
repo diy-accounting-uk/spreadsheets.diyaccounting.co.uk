@@ -492,9 +492,9 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 311,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product B — Software | 13,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product C — Training | 10,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 311,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product B sales (code b) | 13,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product C sales (code c) | 10,300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 3,700 |
 | **Sales Turnover** | 339,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
@@ -604,9 +604,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B5 | Product A — Consultancy | 311600 | accounts.sales.4000 |
-| B6 | Product B — Software | 13600 | accounts.sales.4001 |
-| B7 | Product C — Training | 10300 | accounts.sales.4002 |
+| B5 | Product A sales (code a) | 311600 | accounts.sales.4000 |
+| B6 | Product B sales (code b) | 13600 | accounts.sales.4001 |
+| B7 | Product C sales (code c) | 10300 | accounts.sales.4002 |
 | B8 | Other Income | 3700 | accounts.sales.4003 |
 | B9 | **Sales Turnover** | 339200 | gl-cor:amount (salesTurnover) |
 | B11 | Grants Received | 2083.33333333333 | accounts.sales.4004 |

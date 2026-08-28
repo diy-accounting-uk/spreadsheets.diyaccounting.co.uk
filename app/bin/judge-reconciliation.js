@@ -256,6 +256,11 @@ export function summariseScenario(scenario, scenarioName, product = null) {
       `VAT registered: yes${number}. Every journal amount below includes VAT at the standard rate; the accounts carry the net figures, so each one reads a sixth lower than the journal.`,
     );
   }
+  if (meta.vat_registered !== undefined) {
+    lines.push(
+      "The profit and loss account is stated net of VAT either way, so a registered business and an unregistered one carrying the same trade report the same profit. The VAT Returns section is where they differ.",
+    );
+  }
 
   if (Array.isArray(scenario.employees) && scenario.employees.length > 0) {
     lines.push(

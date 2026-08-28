@@ -14,10 +14,6 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   generate-commit run per product — the committed reports and pages still show pre-fix
   numbers, and the judge will rightly fail the next deploy until they refresh.
 
-- [ ] **ltd-brickwork scenarios need a fixture-and-writer rebuild** (judge finding):
-  the VAT and non-VAT reports are byte-identical, and with no bank journal debtors
-  absorb all sales. Outside CI's judge scope today.
-
 - [ ] **Shipped Taxi template: stale vehicle-changes nag** (judge finding):
   `PurchasesMar!T2` compares against the empty `'Fixed Assets'!$D$74` (the additions
   total lives at D62), so the nag fires on every package that codes anything to f.

@@ -17,7 +17,7 @@ Status: RECONCILES
 | Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 52970 | 52970 | 0 | PASS |
 | Opening Stock | 3000 | 3000 | 0 | PASS |
 | Closing Stock | 2500 | 2500 | 0 | PASS |
-| Stock: CoS includes adjustment | 500 | 15500 | +15000 | PASS |
+| Stock: cost of sales = stock purchases + stock movement | 15500 | 15500 | 0 | PASS |
 | Opening Debtors | 6600 | 6600 | 0 | PASS |
 | Closing Debtors | 6700 | 6700 | 0 | PASS |
 | Opening Creditors | 1510 | 1510 | 0 | PASS |

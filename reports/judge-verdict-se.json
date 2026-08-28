@@ -1,0 +1,72 @@
+{
+  "product": "se",
+  "verdict": "fail",
+  "summary": "Runs 1 and 3 read as credible sets of accounts for the businesses described, but run 2 (se-brickwork-pro-vat) is not: the VAT-registered version of BrickWork Pro carries the non-VAT scenario's figures throughout — fixed asset additions of £12,000 against a £14,400 gross (£12,000 net... see concerns), and more seriously a Purchase journal by code that nets to £41,000 of revenue spend yet the P&L is byte-for-byte identical to the non-VAT run, with capital additions of £12,000 where the scenario's fa code nets to £12,000 but the declared journal is £14,400 gross. The blocking issue is that the VAT run's turnover and cost lines are indistinguishable from the non-VAT run despite a sales journal 20% larger, indicating one journal's net conversion has been applied twice or the wrong journal driven through.",
+  "concerns": [
+    {
+      "figure": "Fixed asset additions £12,000 (Fixedassets.xlsx!Schedule Q1 / FAreconciliation E11), run se-brickwork-pro-vat",
+      "where": "Compliance check \"Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total\" and Fixedassets appendix",
+      "why": "The scenario declares fa-coded capital spend of £14,400 including VAT, i.e. £12,000 net — that part is consistent. But the same check in the non-VAT run also expects £12,000 against a £12,000 journal. Combined with every other P&L line being identical between the two runs, the VAT run cannot be distinguished from the non-VAT run at all; at least one of the two runs is being driven by the wrong journal. Check whether the VAT scenario's Purchases workbook was actually loaded with the VAT-inclusive amounts (a £360 advertising line should net to £300, £24,000 sub-contractors to £20,000, £18,000 stock to £15,000) rather than the non-VAT figures being reused.",
+      "severity": "blocking"
+    },
+    {
+      "figure": "Sales Turnover £75,000 (P&L B9), run se-brickwork-pro-vat",
+      "where": "Profit & Loss Account, cell B9, and Sales.xlsx monthly I1 cells",
+      "why": "The VAT scenario's sales journal totals £90,000 gross, which nets to £75,000 — arithmetically fine. However the monthly net sales (6,500 / 6,000 / 6,200 …) are numerically identical to the non-VAT run whose journal totalled £75,000 gross. Identical monthly nets across a VAT and a non-VAT scenario is only possible if the two scenarios share the same underlying month-by-month net data, which makes the VAT run's VAT boxes plausible but leaves no independent evidence that the VAT journal was processed. Worth confirming the Sales workbook for this run was populated from the £90,000 journal.",
+      "severity": "blocking"
+    },
+    {
+      "figure": "Total Tax + NI £0 (Income Tax E18), both BrickWork Pro runs",
+      "where": "Income Tax Calculation, E10/E15/E16/E18",
+      "why": "A sole trader with £14,830 operating profit shows nil income tax and nil Class 4 NI. This follows from the £12,000 capital allowance claim reducing taxable profit to £4,030, which is below the personal allowance, so it is defensible — but a reader should confirm the full £12,000 AIA claim was intended in a year with only £4,030 of remaining profit, since the allowance is wasted.",
+      "severity": "note"
+    },
+    {
+      "figure": "Capital allowances £12,000 with AIA/WDA claimed £0 (SA103S D80 / D85), all three runs",
+      "where": "Self Assessment (SA103S), cells D80 and D85",
+      "why": "The capital allowances line carries the full addition while the AIA/WDA line reads nil. Presentationally the split is odd for a return; confirm which box the product intends to populate.",
+      "severity": "note"
+    },
+    {
+      "figure": "Taxable profit £146,632.06 (SA103S D99) vs Net profit for tax calc £148,715.39 (D106), run se-scenario-advanced",
+      "where": "Self Assessment (SA103S), cells D99 and D106",
+      "why": "The two profit figures differ by £2,083.33, exactly the grants received line. The income tax computation uses the higher D106 figure. Worth checking which of the two is the intended taxable profit, since the grant treatment drives roughly £900 of tax.",
+      "severity": "note"
+    },
+    {
+      "figure": "Materials/Stock £5,450 and Sub-Contractors £6,666.67 against turnover £339,200 (P&L B14/B15), run se-scenario-advanced",
+      "where": "Profit & Loss Account, cells B14–B17",
+      "why": "Cost of sales of £16,137 on £339,200 turnover gives a 95% gross margin. For an IT consultancy where the cost base is wages (£92,736, shown below gross profit) this is plausible, but the scenario also declares opening stock £10,000 and closing stock £6,000 and no stock movement is visible in cost of sales. Confirm the £4,000 stock decrease has been taken to the P&L.",
+      "severity": "note"
+    },
+    {
+      "figure": "Bad Debts -£300 (P&L B29), run se-scenario-advanced",
+      "where": "Profit & Loss Account, cell B29, and monthly cell N29",
+      "why": "A negative bad debt expense in the admin block is a credit — a recovery or a reversal. It is small and self-consistent with the o-coded sales entry it derives from, but the sign should be confirmed as intended rather than a mis-signed pickup.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
+      "scenario": "se-brickwork-pro-nonvat",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-vat.md",
+      "scenario": "se-brickwork-pro-vat",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
+      "scenario": "se-scenario-advanced",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    }
+  ],
+  "timestamp": "2026-08-28T16:07:23.848Z"
+}
