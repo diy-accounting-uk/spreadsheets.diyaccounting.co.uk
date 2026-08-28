@@ -1276,33 +1276,49 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // gross amounts at the same rate the templates apply, summing the month
   // first and dividing once. Catches a month landing in the wrong column or
   // dropping out altogether.
-  const monthlyByCode = (journal, monthKey, code) => {
-    let gross = 0;
-    for (const tx of journal[monthKey] || []) if (tx.code === code) gross += tx.amount;
-    return netOfVat(gross);
+  // The writer shifts every transaction date into the package's fiscal year,
+  // and an end-of-month day that does not exist in the shifted month rolls
+  // into the next tab. The expectation buckets by the shifted date the same
+  // way, or a 31st posted near a short month reads as landing in the wrong
+  // column on every non-March year-end.
+  const fiscalTabs =
+    results.Admin && typeof results.Admin.B9 === "number"
+      ? monthTabsFromPeriodStart(results.Admin.B9)
+      : SCENARIO_MONTHS.map(({ key }) => key.charAt(0).toUpperCase() + key.slice(1));
+  const shiftedMonthlyBuckets = (journal) => {
+    const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
+    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const buckets = Object.fromEntries(fiscalTabs.map((tab) => [tab, {}]));
+    for (const txs of Object.values(journal)) {
+      for (const tx of txs) {
+        const d = parseDate(tx.date);
+        const shifted = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monthOffset, d.getUTCDate()));
+        const bucket = buckets[SHORT_MONTHS[shifted.getUTCMonth()]];
+        bucket[tx.code] = (bucket[tx.code] || 0) + tx.amount;
+      }
+    }
+    return buckets;
   };
   if (expected.sales) {
-    SCENARIO_MONTHS.forEach(({ key }, i) => {
+    const buckets = shiftedMonthlyBuckets(expected.sales);
+    fiscalTabs.forEach((tab, i) => {
       const col = MONTH_COLS[i];
       for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
-        check(`P&L ${key} ${col}${row} = Sales.xlsx "${code}" net`, num(pl[`${col}${row}`]), monthlyByCode(expected.sales, key, code));
+        check(`P&L ${tab} ${col}${row} = Sales.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0));
       }
       check(
-        `P&L ${key} ${col}${SALES_BAD_DEBT_ROW} = negated Sales.xlsx "o" net`,
+        `P&L ${tab} ${col}${SALES_BAD_DEBT_ROW} = negated Sales.xlsx "o" net`,
         num(pl[`${col}${SALES_BAD_DEBT_ROW}`]),
-        -monthlyByCode(expected.sales, key, "o"),
+        -netOfVat(buckets[tab].o || 0),
       );
     });
   }
   if (expected.purchases) {
-    SCENARIO_MONTHS.forEach(({ key }, i) => {
+    const buckets = shiftedMonthlyBuckets(expected.purchases);
+    fiscalTabs.forEach((tab, i) => {
       const col = MONTH_COLS[i];
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        check(
-          `P&L ${key} ${col}${row} = Purchases.xlsx "${code}" net`,
-          num(pl[`${col}${row}`]),
-          monthlyByCode(expected.purchases, key, code),
-        );
+        check(`P&L ${tab} ${col}${row} = Purchases.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0));
       }
     });
   }
