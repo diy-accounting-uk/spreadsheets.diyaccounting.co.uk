@@ -240,24 +240,30 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   return lines;
 }
 
-// Bank file → account ID mapping per product
+// Bank file → account ID mapping per product, with the payment-block columns
+// each file's writer uses. Ltd statement books carry a wider receipts-analysis
+// block than Cashaccount, which shifts their payments block right; SE files
+// mirror the columns the SE writer currently uses.
+const SE_PAYMENT_COLS = { date: "P", supplier: "Q", code: "S", amount: "T" };
+const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", code: "W", amount: "X" };
+const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", code: "T", amount: "U" };
 const BANK_FILES = {
   se: [
-    { file: "Bank.xlsx", accountID: "1200" },
-    { file: "Cash.xlsx", accountID: "1220" },
+    { file: "Bank.xlsx", accountID: "1200", payment: SE_PAYMENT_COLS },
+    { file: "Cash.xlsx", accountID: "1220", payment: SE_PAYMENT_COLS },
   ],
   ltd: [
-    { file: "Currentaccount.xlsx", accountID: "1200" },
-    { file: "Savingaccount.xlsx", accountID: "1210" },
-    { file: "Cashaccount.xlsx", accountID: "1220" },
-    { file: "Creditcardaccount.xlsx", accountID: "1230" },
+    { file: "Currentaccount.xlsx", accountID: "1200", payment: LTD_STATEMENT_PAYMENT_COLS },
+    { file: "Savingaccount.xlsx", accountID: "1210", payment: LTD_STATEMENT_PAYMENT_COLS },
+    { file: "Cashaccount.xlsx", accountID: "1220", payment: LTD_CASH_PAYMENT_COLS },
+    { file: "Creditcardaccount.xlsx", accountID: "1230", payment: LTD_STATEMENT_PAYMENT_COLS },
   ],
 };
 
 /**
  * Extract bank transactions from multi-file SE/Ltd product.
  * Receipts: rows 6+, A=date, B=source, E=code, F=amount
- * Payments: rows 6+, P=date, Q=supplier, S=code, T=amount
+ * Payments: rows 6+, columns per BANK_FILES[product] payment layout
  * Opening balance: A1 (code "BC")
  */
 export async function extractBankTransactions(sourceDir, product) {
@@ -268,7 +274,7 @@ export async function extractBankTransactions(sourceDir, product) {
   const lines = [];
   let entryNum = 1;
 
-  for (const { file, accountID } of bankFiles) {
+  for (const { file, accountID, payment } of bankFiles) {
     const filePath = resolve(sourceDir, file);
     if (!existsSync(filePath)) continue;
 
@@ -296,6 +302,7 @@ export async function extractBankTransactions(sourceDir, product) {
             "amount": obVal,
             "detailComment": "Opening balance",
             "diya-gl:bankCode": "BC",
+            "debitCreditCode": "D",
             "diya-gl:bankAccountID": accountID,
             "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
           });
@@ -321,20 +328,21 @@ export async function extractBankTransactions(sourceDir, product) {
           amount,
           "detailComment": typeof source === "string" ? source : "",
           "diya-gl:bankCode": codeStr,
+          "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
         });
       }
 
-      // Payments: rows 6+, P=date, Q=supplier, S=code, T=amount
+      // Payments: rows 6+, columns per the file's payment layout
       for (let row = 6; row <= 200; row++) {
-        const dateVal = readCellValue(xml, `P${row}`, sharedStrings);
-        const amount = readCellValue(xml, `T${row}`, sharedStrings);
+        const dateVal = readCellValue(xml, `${payment.date}${row}`, sharedStrings);
+        const amount = readCellValue(xml, `${payment.amount}${row}`, sharedStrings);
         if (dateVal === null || amount === null || typeof amount !== "number") break;
-        if (hasCellFormula(xml, `T${row}`)) break;
+        if (hasCellFormula(xml, `${payment.amount}${row}`)) break;
 
-        const supplier = readCellValue(xml, `Q${row}`, sharedStrings) || "";
-        const code = readCellValue(xml, `S${row}`, sharedStrings) || "";
+        const supplier = readCellValue(xml, `${payment.supplier}${row}`, sharedStrings) || "";
+        const code = readCellValue(xml, `${payment.code}${row}`, sharedStrings) || "";
         const codeStr = typeof code === "string" ? code : String(code);
 
         lines.push({
@@ -344,6 +352,7 @@ export async function extractBankTransactions(sourceDir, product) {
           amount,
           "detailComment": typeof supplier === "string" ? supplier : "",
           "diya-gl:bankCode": codeStr,
+          "debitCreditCode": "C",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
         });
