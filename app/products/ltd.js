@@ -140,6 +140,45 @@ const OPENING_BALANCE_CELLS = {
 
 const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"];
 
+// ── Fixedassets.xlsx Schedule layout ───────────────────────────────────────
+// Two blocks per asset class: assets already owned at the year start, and
+// assets bought during the year. Each block ends in a totals row, and the
+// published note (PubNotes) reads those totals class by class. Verified
+// against the template.
+//
+// Row layout: C = asset description, D = purchase reference, E = original
+// cost, F = accumulated depreciation brought forward. A new asset also takes
+// B = date purchased. A disposal is recorded on the row of the asset it
+// disposes of: U = date sold, V = sale value net of VAT, and the sheet's own
+// W/X formulas then pull that asset's cost and accumulated depreciation out.
+//
+// Motor vehicles have two sub-blocks, cars then vans and lorries; both roll
+// into the same class total. Scenario motor assets go to the vans rows,
+// which is what the fixture's van is, and which is the sub-block carrying
+// the van capital-allowance formulas.
+const SCHEDULE_ASSET_CLASSES = {
+  land: { existingRows: [8, 9, 10], existingTotalRow: 11, newTotalRow: 64, noteColumn: "B", rateCell: "H7" },
+  plant: { existingRows: [14, 15, 16, 17, 18, 19, 20, 21], existingTotalRow: 22, newTotalRow: 75, noteColumn: "C", rateCell: "H13" },
+  fixtures: { existingRows: [25, 26, 27, 28, 29], existingTotalRow: 30, newTotalRow: 83, noteColumn: "D", rateCell: "H24" },
+  computer: { existingRows: [33, 34, 35, 36, 37, 38, 39, 40], existingTotalRow: 41, newTotalRow: 94, noteColumn: "E", rateCell: "H32" },
+  motor: { existingRows: [50, 51, 52, 53, 54], existingTotalRow: 55, newTotalRow: 108, noteColumn: "F", rateCell: "H43" },
+};
+
+// Assets bought in the year all land on the New Plant & Machinery rows. A
+// scenario purchase carries a code letter and an amount, not an asset class,
+// so any single block is as faithful as another; the note's per-class rows
+// and its total both stay anchored to what was posted to Purchases.xlsx.
+const SCHEDULE_NEW_ASSET_ROWS = [67, 68, 69, 70, 71, 72, 73, 74];
+const SCHEDULE_NEW_ASSET_CLASS = "plant";
+
+// The Sales, Purchases and Fixedassets analysis columns all hold figures net
+// of VAT. Matches [vat].standard_rate in app/data/ltd-*.toml (Admin M19).
+const VAT_RATE = 0.2;
+
+function netOfVat(gross) {
+  return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
+}
+
 // spreadsheet-runner writes a cell by rewriting its XML in place, and when
 // the target is an empty self-closing cell that rewrite also swallows every
 // cell after it up to the next one that carries a value. On OpenAccounts the
@@ -410,26 +449,81 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
-  // Fixedassets.xlsx opening asset values
+  // Fixedassets.xlsx Schedule — assets owned at the year start, assets
+  // bought during the year, and disposals.
   const fixedAssetsWrites = {};
+  const existingAssetRowsUsed = [];
+
   if (scenario.opening_fixed_assets) {
     fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    let motorRow = 6;
-    let computerRow = 6;
+    const nextIndex = {};
     for (const asset of scenario.opening_fixed_assets) {
-      if (asset.category === "motor") {
-        fa[`E${motorRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
-        if (asset.description) fa[`D${motorRow}`] = asset.description;
-        motorRow++;
-      } else if (asset.category === "computer") {
-        fa[`E${computerRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
-        if (asset.description) fa[`D${computerRow}`] = asset.description;
-        computerRow++;
+      const layout = SCHEDULE_ASSET_CLASSES[asset.category];
+      if (!layout) {
+        throw new Error(`Opening fixed assets name asset class "${asset.category}", which the Schedule has no block for`);
       }
+      const index = nextIndex[asset.category] || 0;
+      const row = layout.existingRows[index];
+      if (row === undefined) {
+        throw new Error(`More opening ${asset.category} assets than the Schedule's ${layout.existingRows.length} rows for that class`);
+      }
+      nextIndex[asset.category] = index + 1;
+      if (asset.description) fa[`C${row}`] = asset.description;
+      fa[`E${row}`] = asset.cost;
+      if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      existingAssetRowsUsed.push(row);
     }
+  }
+
+  // Assets bought during the year are the "fa"-coded purchases. The same
+  // amounts also reach the trial balance through Purchases.xlsx's own fa
+  // analysis column, so the Schedule and the ledger have to agree — that is
+  // what FAreconciliation compares.
+  const assetPurchases = [];
+  if (scenario.purchases) {
+    for (const transactions of Object.values(scenario.purchases)) {
+      for (const tx of transactions) if (tx.code === "fa") assetPurchases.push(tx);
+    }
+  }
+  if (assetPurchases.length > 0) {
+    if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    if (assetPurchases.length > SCHEDULE_NEW_ASSET_ROWS.length) {
+      throw new Error(`${assetPurchases.length} "fa" purchases exceed the ${SCHEDULE_NEW_ASSET_ROWS.length} Schedule new-asset rows`);
+    }
+    assetPurchases.forEach((tx, i) => {
+      const row = SCHEDULE_NEW_ASSET_ROWS[i];
+      const d = shiftDate(parseDate(tx.date));
+      fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      if (tx.supplier) fa[`C${row}`] = tx.supplier;
+      fa[`E${row}`] = netOfVat(tx.amount);
+    });
+  }
+
+  // Disposals are the "fs"-coded sales. Each pairs with an asset already on
+  // the Schedule, in declaration order, so the sheet's disposal formulas
+  // resolve the right asset's cost and accumulated depreciation.
+  const assetDisposals = [];
+  if (scenario.sales) {
+    for (const transactions of Object.values(scenario.sales)) {
+      for (const tx of transactions) if (tx.code === "fs") assetDisposals.push(tx);
+    }
+  }
+  if (assetDisposals.length > 0) {
+    if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    if (assetDisposals.length > existingAssetRowsUsed.length) {
+      throw new Error(
+        `${assetDisposals.length} "fs" disposals but only ${existingAssetRowsUsed.length} Schedule asset rows to attach them to`,
+      );
+    }
+    assetDisposals.forEach((tx, i) => {
+      const row = existingAssetRowsUsed[i];
+      const d = shiftDate(parseDate(tx.date));
+      fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      fa[`V${row}`] = netOfVat(tx.amount);
+    });
   }
 
   // Bank entries — one workbook per bank account, receipts and payments on
@@ -543,7 +637,7 @@ export const CELL_MAP = [
   // B18-B40: Actual mapping from TrialBalance D64-D89 → MnthP&L C18-C40
   ["MnthP&L", "B18", "PAYE Wages + Non-PAYE Employee", "dpl:WagesAndSalaries (combined)", "Profit & Loss Account", 1],
   ["MnthP&L", "B19", "Directors Non-PAYE (code d)",  "accounts.purchases.5100",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B20", "PAYE Employee Wages",          "dpl:WagesAndSalaries (PAYE)",    "Profit & Loss Account", 1],
+  ["MnthP&L", "B20", "Employers National Insurance", "dpl:SocialSecurityCosts",        "Profit & Loss Account", 1],
   ["MnthP&L", "B21", "Premises (code r)",            "accounts.purchases.5200",        "Profit & Loss Account", 1],
   ["MnthP&L", "B22", "Light, Heat, Power (code p)",  "accounts.purchases.5201",        "Profit & Loss Account", 1],
   ["MnthP&L", "B23", "Distribution (code t)",        "accounts.purchases.5300",        "Profit & Loss Account", 1],
@@ -551,45 +645,70 @@ export const CELL_MAP = [
   ["MnthP&L", "B25", "Repairs & Maintenance (code m)","accounts.purchases.5400",       "Profit & Loss Account", 1],
   ["MnthP&L", "B26", "Consumables (code u)",         "accounts.purchases.5401",        "Profit & Loss Account", 1],
   ["MnthP&L", "B27", "Advertising (code a)",         "accounts.purchases.5500",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B28", "General Admin (code g)",       "accounts.purchases.5501",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B28", "Telephone, Postage & Stationery (code g)", "accounts.purchases.5501", "Profit & Loss Account", 1],
   ["MnthP&L", "B29", "Travel & Hotel (code h)",      "accounts.purchases.5600",        "Profit & Loss Account", 1],
   ["MnthP&L", "B30", "Motor Vehicle (code v)",       "accounts.purchases.5601",        "Profit & Loss Account", 1],
   ["MnthP&L", "B31", "Insurance (code n)",           "accounts.purchases.5700",        "Profit & Loss Account", 1],
   ["MnthP&L", "B32", "Leasing (code f)",             "accounts.purchases.5701",        "Profit & Loss Account", 1],
   ["MnthP&L", "B33", "Legal & Professional (code l)","accounts.purchases.5800",        "Profit & Loss Account", 1],
   ["MnthP&L", "B34", "Bad Debts (from Sales)",       "accounts.sales.4005",            "Profit & Loss Account", 1],
-  ["MnthP&L", "B35", "Depreciation (bank)",          "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
-  ["MnthP&L", "B36", "Depreciation (combined)",      "gl-cor:amount (depreciation2)",  "Profit & Loss Account", 1],
+  ["MnthP&L", "B35", "Bank Interest Paid",           "accounts.purchases.5701",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B36", "Bank Charges",                 "accounts.purchases.5702",        "Profit & Loss Account", 1],
   ["MnthP&L", "B37", "Charitable Donations (code y)","accounts.purchases.5801",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B38", "Goodwill (code z)",            "accounts.purchases.5802",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B39", "Depreciation 2",               "gl-cor:amount (depreciation3)",  "Profit & Loss Account", 1],
-  ["MnthP&L", "B40", "Depreciation 3",               "gl-cor:amount (depreciation4)",  "Profit & Loss Account", 1],
+  ["MnthP&L", "B38", "Goodwill written off (code z)","accounts.purchases.5802",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B39", "Loss on disposal of assets",   "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
+  ["MnthP&L", "B40", "Depreciation",                 "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
   ["MnthP&L", "B41", "Total Admin Expenses",       "gl-cor:amount (totalAdmin)",     "Profit & Loss Account", 0],
   ["MnthP&L", "B43", "**Operating Profit**",       "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
   ["MnthP&L", "B44", "Interest Received",          "gl-cor:amount (interestReceived)","Profit & Loss Account", 1],
   ["MnthP&L", "B45", "**Profit Before Tax**",      "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
   // ── Corporation Tax (CT600) ──
   [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K12", "Add back: Depreciation",      "gl-cor:amount (ct600.addBack)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K22", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax (CT600)", 0],
+  [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K22", "Profit after capital allowances","gl-cor:amount (ct600.afterAllowances)", "Corporation Tax (CT600)", 0],
+  [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax (CT600)", 1],
+  [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax (CT600)", 1],
   [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax (CT600)", 0],
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
-  // ── Published P&L (column D has formulas) ──
-  ["PubP&L", "D7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
-  ["PubP&L", "D8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
-  ["PubP&L", "D9",  "**Total Sales Turnover**",    "gl-cor:amount (pubPL.totalTurnover)","Published P&L", 0],
-  ["PubP&L", "D16", "Cost of Sales",               "gl-cor:amount (pubPL.cos)",       "Published P&L", 1],
-  ["PubP&L", "D18", "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",     "Published P&L", 0],
-  // ── Published Balance Sheet (column D has formulas) ──
-  ["PubBalSht", "D6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
-  ["PubBalSht", "D9",  "Stock",                    "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
-  ["PubBalSht", "D13", "Current Assets",           "gl-cor:amount (pubBS.currentAssets)","Published Balance Sheet", 0],
-  ["PubBalSht", "D15", "Creditors < 1 year",       "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
-  ["PubBalSht", "D22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
-  ["PubBalSht", "D26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
-  ["PubBalSht", "D28", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
-  ["PubBalSht", "D29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
+  // ── Published P&L (column B is last year, column F this year) ──
+  ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
+  ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
+  ["PubP&L", "F9",  "**Total Sales Turnover**",    "gl-cor:amount (pubPL.totalTurnover)","Published P&L", 0],
+  ["PubP&L", "F16", "Cost of Sales",               "gl-cor:amount (pubPL.cos)",       "Published P&L", 1],
+  ["PubP&L", "F18", "**Gross Profit**",            "gl-cor:amount (pubPL.gross)",     "Published P&L", 0],
+  ["PubP&L", "F44", "Administrative Expenses",     "gl-cor:amount (pubPL.admin)",     "Published P&L", 1],
+  ["PubP&L", "F46", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)", "Published P&L", 0],
+  ["PubP&L", "F49", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",       "Published P&L", 0],
+  // ── Published Balance Sheet (columns A/B are last year, E/F this year) ──
+  ["PubBalSht", "F6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
+  ["PubBalSht", "E10", "Stock at cost",            "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "E11", "Trade Debtors",            "accounts.assets.1300 (pubBS)",       "Published Balance Sheet", 1],
+  ["PubBalSht", "E12", "Cash at bank and in hand", "gl-cor:amount (pubBS.bankCash)",     "Published Balance Sheet", 1],
+  ["PubBalSht", "E13", "Current Assets",           "gl-cor:amount (pubBS.currentAssets)","Published Balance Sheet", 0],
+  ["PubBalSht", "E20", "Current Liabilities",      "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
+  ["PubBalSht", "F22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
+  ["PubBalSht", "F26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
+  ["PubBalSht", "E29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "F31", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
+  ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
+  ["PubBalSht", "F39", "**Shareholders' Funds**",  "gl-cor:amount (pubBS.equity)",       "Published Balance Sheet", 0],
+  // ── Fixed asset note (PubNotes) — column G is the all-classes total ──
+  ["PubNotes", "G8",  "Original cost brought forward", "gl-cor:amount (note1.costBf)",     "Fixed Asset Note", 1],
+  ["PubNotes", "G9",  "Additions",                     "gl-cor:amount (note1.additions)",  "Fixed Asset Note", 1],
+  ["PubNotes", "G10", "Disposals",                     "gl-cor:amount (note1.disposals)",  "Fixed Asset Note", 1],
+  ["PubNotes", "G11", "**Original cost carried forward**", "gl-cor:amount (note1.costCf)", "Fixed Asset Note", 0],
+  ["PubNotes", "G14", "Depreciation brought forward",  "gl-cor:amount (note1.depBf)",      "Fixed Asset Note", 1],
+  ["PubNotes", "G15", "Charge for the year",           "gl-cor:amount (note1.charge)",     "Fixed Asset Note", 1],
+  ["PubNotes", "G16", "On disposals",                  "gl-cor:amount (note1.depDisposals)","Fixed Asset Note", 1],
+  ["PubNotes", "G17", "**Depreciation carried forward**", "gl-cor:amount (note1.depCf)",   "Fixed Asset Note", 0],
+  ["PubNotes", "G20", "**Net book value**",            "gl-cor:amount (note1.nbv)",        "Fixed Asset Note", 0],
+  ["PubNotes", "D35", "Directors emoluments",          "gl-cor:amount (note2.emoluments)", "Fixed Asset Note", 1],
+  ["PubNotes", "D41", "Corporation tax for the year",  "gl-cor:taxAmount (note4.ct)",      "Fixed Asset Note", 1],
   // ── Stock ──
   ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
   ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
@@ -623,12 +742,138 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
+// Month tab order (matching the scenario key order) and the MnthP&L column
+// each month occupies — verified against the template (C = month 1 .. N =
+// month 12).
+const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
+
+// MnthP&L rows fed by a single Sales.xlsx or Purchases.xlsx analysis column
+// with nothing else mixed in, keyed by the scenario transaction code letter
+// (verified against the per-month TrialBalance formulas each row reads).
+// Materials (row 11) also carries the stock adjustment, wages (rows 18-20)
+// also carry WagesInterface payroll, and the bank and fixed asset rows come
+// from elsewhere entirely, so none of those tie 1:1 to a month's code total.
+const SALES_MONTHLY_TIE_ROWS = { a: 4, b: 5, c: 6, d: 7, g: 8 };
+// Sales code "o" ("Other") feeds the bad debts row negated — a template
+// quirk, verified against the formula chain (MnthP&L C34 = TrialBalance!O81,
+// TrialBalance row 81 = -[3]Apr!$T$1).
+const SALES_BAD_DEBT_ROW = 34;
+const PURCHASES_MONTHLY_TIE_ROWS = {
+  c: 12,
+  o: 13,
+  r: 21,
+  p: 22,
+  t: 23,
+  q: 24,
+  m: 25,
+  u: 26,
+  a: 27,
+  g: 28,
+  h: 29,
+  v: 30,
+  n: 31,
+  f: 32,
+  l: 33,
+  y: 37,
+  z: 38,
+};
+
+// Admin cells the generator injects from the tax-year TOML, and the TOML
+// path each one carries. Whole-number percentages where the sheet holds a
+// percentage, fractions where it holds a fraction.
+const ADMIN_TAX_DATA_CELLS = [
+  ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
+  ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
+  ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
+  ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
+  ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
+  ["G8", "writing down allowance (new assets)", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
+  ["E11", "motor vehicle cost threshold", (t) => t.capital_allowances.motor_vehicle_cost_threshold],
+  ["G11", "motor vehicle allowance restriction", (t) => t.capital_allowances.motor_vehicle_restriction],
+  ["G15", "depreciation rate, land and property", (t) => t.depreciation.land_and_property],
+  ["G16", "depreciation rate, plant and machinery", (t) => t.depreciation.plant_and_machinery],
+  ["G17", "depreciation rate, fixtures and fittings", (t) => t.depreciation.fixtures_and_fittings],
+  ["G18", "depreciation rate, computer equipment", (t) => t.depreciation.computer_equipment],
+  ["G19", "depreciation rate, motor vehicles", (t) => t.depreciation.motor_vehicles],
+  ["N16", "mileage higher rate limit", (t) => t.mileage.higher_rate_limit],
+  ["O16", "mileage higher rate pence", (t) => t.mileage.higher_rate_pence],
+  ["N17", "mileage lower rate start", (t) => t.mileage.lower_rate_start],
+  ["O17", "mileage lower rate pence", (t) => t.mileage.lower_rate_pence],
+  ["M19", "standard VAT rate", (t) => Math.round(t.vat.standard_rate * 100)],
+  ["M21", "standard VAT rate (second period)", (t) => Math.round(t.vat.standard_rate * 100)],
+];
+
+// Depreciation rates the published note quotes, and the Admin cell each one
+// should agree with.
+const NOTE_RATE_CELLS = [
+  ["B27", "G15", "land and property"],
+  ["B28", "G16", "plant and machinery"],
+  ["B29", "G17", "fixtures and fittings"],
+  ["B30", "G18", "computer equipment"],
+  ["B31", "G19", "motor vehicles"],
+];
+
+// CT600 boxes the template populates by formula, and where each reads from.
+const CT600_CELLS = [
+  "AK66",
+  "Z70",
+  "Z72",
+  "AJ74",
+  "AJ76",
+  "AJ92",
+  "AJ110",
+  "AJ126",
+  "AJ128",
+  "AJ131",
+  "AJ145",
+  "AJ154",
+  "AJ159",
+  "AJ163",
+  "AJ166",
+  "AA126",
+];
+
 export function standardReads() {
   const reads = {};
-  for (const [sheet, cell] of CELL_MAP) {
+  const add = (sheet, cell) => {
     if (!reads[sheet]) reads[sheet] = [];
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  };
+
+  for (const [sheet, cell] of CELL_MAP) add(sheet, cell);
+
+  // Every month column of the rows that tie to a Sales or Purchases month
+  // total, plus the fixed asset rows the note anchors.
+  const monthlyRows = [
+    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 39, 40]),
+  ];
+  for (const row of monthlyRows) {
+    for (const col of MONTH_COLS) add("MnthP&L", `${col}${row}`);
   }
+
+  // Fixed asset note, class column by class column.
+  for (const { noteColumn } of Object.values(SCHEDULE_ASSET_CLASSES)) {
+    for (const row of [8, 9, 10, 11, 14, 15, 16, 17, 20]) add("PubNotes", `${noteColumn}${row}`);
+  }
+  for (const [noteCell] of NOTE_RATE_CELLS) add("PubNotes", noteCell);
+  add("PubNotes", "A11");
+
+  // Corporation tax working sheet: the first financial year's own tax line,
+  // which is the figure the CT600 form carries.
+  for (const cell of ["I15", "I16", "I17", "I18", "G33", "I33", "I34", "K37"]) add(TAX_SHEET, cell);
+
+  for (const cell of CT600_CELLS) add("CT600", cell);
+
+  for (const [cell] of ADMIN_TAX_DATA_CELLS) add("Admin", cell);
+  add("Admin", "F21");
+  add("Admin", "B9");
+  add("Admin", "B32");
+  add("PubP&L", "D3");
+  add("PubBalSht", "D2");
+
+  // Directors wages, which the emoluments note reads.
+  add("TrialBalance", "EJ66");
+
   return reads;
 }
 
@@ -637,20 +882,47 @@ export function standardReads() {
 // Vatreturns.xlsx. Vatreturns links Sales, Purchases and Financialaccounts,
 // so it recalculates after the hub.
 export function multiFileOptions(yearEndMonth) {
+  const tabNames = getMonthTabNames(yearEndMonth || 3);
   const monthReads = {};
-  for (const tab of getMonthTabNames(yearEndMonth || 3)) {
+  for (const tab of tabNames) {
     monthReads[tab] = ["G1", "H1"];
   }
   const vatQtrReads = {};
   for (let q = 1; q <= 5; q++) {
     vatQtrReads[`VATQtr${q}`] = ["G5", "G9", "G13", "G15", "G17", "G21", "G23"];
   }
+
+  // Fixedassets Schedule: row 1 holds the whole-schedule totals, rows 57 and
+  // 110 the existing and new sub-totals, and each class's own totals row the
+  // figures the published note quotes. Column B on a class totals row is the
+  // sheet's own comparison against the opening balance sheet.
+  const scheduleReads = ["E1", "F1", "G1", "I1", "J1", "K1", "V1", "W1", "X1", "E57", "E110"];
+  for (const layout of Object.values(SCHEDULE_ASSET_CLASSES)) {
+    for (const totalRow of [layout.existingTotalRow, layout.newTotalRow]) {
+      for (const col of ["E", "F", "I", "W", "X"]) scheduleReads.push(`${col}${totalRow}`);
+    }
+    scheduleReads.push(`B${layout.existingTotalRow}`);
+    scheduleReads.push(layout.rateCell);
+  }
+
+  // Each bank workbook's own reconciliation block on the final month tab:
+  // A1 opening balance carried through the year, A2 closing balance.
+  const bankReads = {};
+  for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
+    bankReads[fileName] = { [tabNames[11]]: ["A1", "A2"] };
+  }
+
   return {
     postHubRecalc: ["Vatreturns.xlsx"],
     additionalReads: {
       "Sales.xlsx": monthReads,
       "Purchases.xlsx": monthReads,
       "Vatreturns.xlsx": vatQtrReads,
+      "Fixedassets.xlsx": {
+        Schedule: [...new Set(scheduleReads)],
+        FAreconciliation: ["E11", "K11"],
+      },
+      ...bankReads,
     },
   };
 }
@@ -689,6 +961,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
   }
+
+  // A template cell that resolves to blank reads back as the string the
+  // formula puts there (" "), so every arithmetic read goes through this.
+  const num = (v) => (typeof v === "number" ? v : 0);
 
   const pl = results["MnthP&L"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.B9, expected.total_sales);
@@ -833,6 +1109,245 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
     if (expected.vat_output_total !== undefined) check("VAT: annual output VAT", annualOutputVat, expected.vat_output_total);
     if (expected.vat_input_total !== undefined) check("VAT: annual input VAT", annualInputVat, expected.vat_input_total);
+  }
+
+  // ── Fixed assets: the published note against the asset schedule ──────────
+  //
+  // PubNotes reads the Schedule class by class across a cross-file external
+  // link, so reading both sides and comparing them proves the link carried
+  // the right figures. Every row is anchored in the Schedule's own totals,
+  // never in another cell of the note, so consistent zeros cannot pass.
+  const schedule = results["Fixedassets.xlsx!Schedule"];
+  const notes = results.PubNotes;
+  if (schedule && notes) {
+    for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
+      const col = layout.noteColumn;
+      const existing = layout.existingTotalRow;
+      const added = layout.newTotalRow;
+      const noteRow = (row) => num(notes[`${col}${row}`]);
+      const both = (scheduleCol) => num(schedule[`${scheduleCol}${existing}`]) + num(schedule[`${scheduleCol}${added}`]);
+
+      check(`Fixed asset note (${className}): cost brought forward = Schedule`, noteRow(8), num(schedule[`E${existing}`]));
+      check(`Fixed asset note (${className}): additions = Schedule`, noteRow(9), num(schedule[`E${added}`]));
+      check(`Fixed asset note (${className}): disposals at cost = Schedule`, noteRow(10), both("W"));
+      check(`Fixed asset note (${className}): cost carried forward`, noteRow(11), noteRow(8) + noteRow(9) - noteRow(10));
+      check(`Fixed asset note (${className}): depreciation brought forward = Schedule`, noteRow(14), num(schedule[`F${existing}`]));
+      check(`Fixed asset note (${className}): charge for the year = Schedule`, noteRow(15), both("I"));
+      check(`Fixed asset note (${className}): depreciation on disposals = Schedule`, noteRow(16), both("X"));
+      check(`Fixed asset note (${className}): depreciation carried forward`, noteRow(17), noteRow(14) + noteRow(15) - noteRow(16));
+      check(`Fixed asset note (${className}): net book value = cost less depreciation`, noteRow(20), noteRow(11) - noteRow(17));
+    }
+
+    check("Fixed asset note: total cost brought forward = Schedule existing assets", num(notes.G8), num(schedule.E57));
+    check("Fixed asset note: total additions = Schedule new assets", num(notes.G9), num(schedule.E110));
+    check("Fixed asset note: total charge for the year = Schedule", num(notes.G15), num(schedule.I1));
+    check("Fixed asset note: total disposals at cost = Schedule", num(notes.G10), num(schedule.W1));
+    check("Fixed asset note: total depreciation on disposals = Schedule", num(notes.G16), num(schedule.X1));
+    check(
+      "Fixed asset note: total net book value = the asset class columns",
+      num(notes.G20),
+      Object.values(SCHEDULE_ASSET_CLASSES).reduce((s, l) => s + num(notes[`${l.noteColumn}20`]), 0),
+    );
+
+    // The Schedule's own comparison of each class against the opening
+    // balance sheet. It writes the class name when the two agree and a
+    // "Check Opening Balance Sheet figures agree" warning when they do not.
+    for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
+      const label = schedule[`B${layout.existingTotalRow}`];
+      checks.push({
+        name: `Fixed asset schedule (${className}): agrees with the opening balance sheet`,
+        actual: typeof label === "string" ? label : "",
+        expected: "no warning",
+        pass: typeof label === "string" && !label.startsWith("Check"),
+        diff: 0,
+      });
+    }
+  }
+
+  // The balance sheet's fixed asset line is built from the trial balance,
+  // which takes the cost movements from Purchases and Sales and the
+  // depreciation from the Schedule. It can only equal the note's net book
+  // value when the Schedule and the two ledgers agree.
+  const pubBalSht = results.PubBalSht;
+  if (pubBalSht && notes) {
+    check("Published balance sheet: fixed assets = fixed asset note net book value", num(pubBalSht.F6), num(notes.G20));
+  }
+
+  // The Schedule's new-asset and disposal totals against what the scenario
+  // posted to Purchases.xlsx and Sales.xlsx, net of VAT — the same
+  // comparison FAreconciliation is built to make, made here because the
+  // sheet's own cross-file cells (E13/K13) are #REF! in the template.
+  const faReconciliation = results["Fixedassets.xlsx!FAreconciliation"];
+  if (faReconciliation && expected.purchases) {
+    let assetGross = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) if (tx.code === "fa") assetGross += tx.amount;
+    }
+    check("Fixed assets: Schedule additions = fixed asset purchases net of VAT", num(faReconciliation.E11), netOfVat(assetGross));
+  }
+  if (faReconciliation && expected.sales) {
+    let disposalGross = 0;
+    for (const transactions of Object.values(expected.sales)) {
+      for (const tx of transactions) if (tx.code === "fs") disposalGross += tx.amount;
+    }
+    check("Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT", num(faReconciliation.K11), netOfVat(disposalGross));
+  }
+
+  // The P&L depreciation and disposal lines carry the Schedule's annual
+  // figures across the same link, one twelfth per month.
+  if (schedule) {
+    check("P&L: depreciation = fixed asset note charge for the year", num(pl.B40), num(notes?.G15));
+    check(
+      "P&L: loss on disposal = Schedule cost less depreciation less proceeds",
+      num(pl.B39),
+      num(schedule.W1) - num(schedule.X1) - num(schedule.V1),
+    );
+  }
+
+  // ── Bank: each workbook's closing balance against the scenario's own cash
+  // movements for that account. The expectation is computed from the
+  // direction-tagged entries, not read back from a second formula, so a
+  // receipt posted as a payment, a dropped month or an opening balance that
+  // never carried forward shows up here.
+  if (expected.bank) {
+    const movements = {};
+    for (const fileName of Object.values(BANK_ACCOUNT_FILES)) {
+      movements[fileName] = { opening: 0, receipts: 0, payments: 0 };
+    }
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        const fileName = BANK_ACCOUNT_FILES[tx.account || "1200"];
+        if (!fileName) continue;
+        const movement = movements[fileName];
+        if (tx.code === "BC") movement.opening += tx.amount;
+        else if (tx.direction === "in") movement.receipts += tx.amount;
+        else if (tx.direction === "out") movement.payments += tx.amount;
+      }
+    }
+    for (const [fileName, movement] of Object.entries(movements)) {
+      const closingKey = Object.keys(results).find((k) => k.startsWith(`${fileName}!`));
+      if (!closingKey) continue;
+      check(
+        `${fileName}: closing balance = opening + receipts - payments`,
+        num(results[closingKey].A2),
+        movement.opening + movement.receipts - movement.payments,
+      );
+    }
+  }
+
+  // ── Monthly P&L against the monthly Sales and Purchases totals ───────────
+  //
+  // Each month column reads one Sales.xlsx or Purchases.xlsx analysis column
+  // through the trial balance. Both sides are net of VAT: the P&L holds the
+  // workbook's own net figure, and the expectation converts the scenario's
+  // gross amounts at the same rate the templates apply, summing the month
+  // first and dividing once. Catches a month landing in the wrong column or
+  // dropping out altogether.
+  const monthlyByCode = (journal, monthKey, code) => {
+    let gross = 0;
+    for (const tx of journal[monthKey] || []) if (tx.code === code) gross += tx.amount;
+    return netOfVat(gross);
+  };
+  if (expected.sales) {
+    SCENARIO_MONTHS.forEach(({ key }, i) => {
+      const col = MONTH_COLS[i];
+      for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
+        check(`P&L ${key} ${col}${row} = Sales.xlsx "${code}" net`, num(pl[`${col}${row}`]), monthlyByCode(expected.sales, key, code));
+      }
+      check(
+        `P&L ${key} ${col}${SALES_BAD_DEBT_ROW} = negated Sales.xlsx "o" net`,
+        num(pl[`${col}${SALES_BAD_DEBT_ROW}`]),
+        -monthlyByCode(expected.sales, key, "o"),
+      );
+    });
+  }
+  if (expected.purchases) {
+    SCENARIO_MONTHS.forEach(({ key }, i) => {
+      const col = MONTH_COLS[i];
+      for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
+        check(
+          `P&L ${key} ${col}${row} = Purchases.xlsx "${code}" net`,
+          num(pl[`${col}${row}`]),
+          monthlyByCode(expected.purchases, key, code),
+        );
+      }
+    });
+  }
+
+  // ── Admin: the rates the generator injected, read back ───────────────────
+  //
+  // Every downstream figure is arithmetically consistent with whatever rate
+  // sits here, so a wrong rate is invisible everywhere else. These compare
+  // the sheet against the tax-year TOML the package was generated from.
+  const admin = results.Admin;
+  if (admin && taxData) {
+    for (const [cell, label, fromTaxData] of ADMIN_TAX_DATA_CELLS) {
+      check(`Admin ${cell}: ${label}`, num(admin[cell]), fromTaxData(taxData), 0.0001);
+    }
+
+    // F21 is the year-end seed every other date in the package cascades
+    // from. Its own anchor row and the three published documents that quote
+    // the year end all have to land on it.
+    check("Admin: year-end seed drives the accounting period anchor", num(admin.B32), num(admin.F21), 0);
+    check("Published P&L: year end = Admin year-end seed", num(results["PubP&L"]?.D3), num(admin.F21), 0);
+    check("Published balance sheet: date = Admin year-end seed", num(pubBalSht?.D2), num(admin.F21), 0);
+    check("Fixed asset note: year end = Admin year-end seed", num(notes?.A11), num(admin.F21), 0);
+    check("Admin: accounting period is twelve months", num(admin.F21) - num(admin.B9) + 1, 365, 1);
+
+    // The note publishes the depreciation rates from the Schedule, which
+    // must agree with the rates injected into Admin.
+    if (notes) {
+      for (const [noteCell, adminCell, label] of NOTE_RATE_CELLS) {
+        check(`Fixed asset note: depreciation rate, ${label}`, num(notes[noteCell]), num(admin[adminCell]), 0.0001);
+      }
+    }
+  }
+
+  // ── The filed documents against the working sheets they derive from ──────
+  const corporationTax = results[TAX_SHEET];
+  const pubPL = results["PubP&L"];
+  if (corporationTax && pubPL) {
+    check("CT: operating profit = published P&L operating profit", num(corporationTax.K5), num(pubPL.F46));
+    check("CT: depreciation add-back = P&L depreciation", num(corporationTax.I8), num(pl.B40));
+    check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
+    check("CT: add-backs = depreciation + goodwill", num(corporationTax.K10), num(corporationTax.I7) + num(corporationTax.I8));
+    check("CT: profit plus add-backs", num(corporationTax.K12), num(corporationTax.K5) + num(corporationTax.K10));
+    check(
+      "CT: capital allowances = the allowance lines",
+      num(corporationTax.K20),
+      num(corporationTax.I15) + num(corporationTax.I16) + num(corporationTax.I17) + num(corporationTax.I18),
+    );
+    check("CT: profit after capital allowances", num(corporationTax.K22), num(corporationTax.K12) - num(corporationTax.K20));
+    check(
+      "CT: chargeable profit = profit after allowances + interest - losses brought forward",
+      num(corporationTax.K28),
+      num(corporationTax.K22) + num(corporationTax.K24) - num(corporationTax.K26),
+    );
+  }
+
+  const ct600 = results.CT600;
+  if (ct600 && corporationTax && pubPL) {
+    check("CT600: turnover = published P&L turnover", num(ct600.AK66), num(pubPL.F9));
+    check("CT600: trading profits = CT profit after capital allowances", num(ct600.Z70), num(corporationTax.K22));
+    check("CT600: losses brought forward = CT losses brought forward", num(ct600.Z72), num(corporationTax.K26));
+    check("CT600: net trading profits = trading profits - losses brought forward", num(ct600.AJ74), num(ct600.Z70) - num(ct600.Z72));
+    check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
+    check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
+    check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), num(corporationTax.K28));
+    // The form carries one financial year's tax rate and tax; the working
+    // sheet apportions the period across two. AJ126 mirrors the first.
+    check("CT600: tax rate = CT first financial year rate", num(ct600.AA126), num(corporationTax.G33));
+    check("CT600: corporation tax = CT first financial year tax", num(ct600.AJ126), num(corporationTax.I33));
+    check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
+    check("CT600: self assessment of tax payable", num(ct600.AJ145), num(ct600.AJ131));
+    check("CT600: tax outstanding", num(ct600.AJ166), num(ct600.AJ159) - num(ct600.AJ163));
+  }
+
+  if (notes && corporationTax) {
+    check("Fixed asset note: corporation tax for the year = CT charge", num(notes.D41), num(corporationTax.K35));
+  }
+  if (notes && results.TrialBalance) {
+    check("Fixed asset note: directors emoluments = trial balance directors wages", num(notes.D35), num(results.TrialBalance.EJ66));
   }
 
   if (taxData) {
