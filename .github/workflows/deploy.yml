@@ -122,12 +122,78 @@ jobs:
           fi
           echo "All reconciliation reports are RECONCILES"
 
-  deploy-spreadsheets:
-    name: 'deploy spreadsheets stack'
-    if: ${{ !cancelled() && (needs.reconciliation-check.result == 'success' || needs.reconciliation-check.result == 'skipped') && needs.params.outputs.skip-deploy != 'true' }}
+  reconciliation-judge:
+    name: 'judge reconciliation reports'
+    # Skipped until the operator sets ENABLE_LLM_JUDGE, so nothing calls Bedrock before the
+    # model access grant and the bedrock:InvokeModel policy are in place.
+    if: ${{ !cancelled() && vars.ENABLE_LLM_JUDGE == 'true' && (needs.reconciliation-check.result == 'success' || needs.reconciliation-check.result == 'skipped') }}
     needs:
       - params
       - reconciliation-check
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+
+      - name: Configure AWS role via GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - name: Assume AWS deployment role
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: true
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+
+      - name: Judge every product's reconciliation report
+        timeout-minutes: 15
+        run: |
+          FAIL=0
+          for product in taxi bst se ltd; do
+            npm run judge:reconciliation -- --package "$product" || FAIL=1
+          done
+          exit $FAIL
+
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: judge-verdicts
+          retention-days: 7
+          path: reports/judge-verdict-*.json
+
+  deploy-spreadsheets:
+    name: 'deploy spreadsheets stack'
+    if: ${{ !cancelled() && (needs.reconciliation-check.result == 'success' || needs.reconciliation-check.result == 'skipped') && (needs.reconciliation-judge.result == 'success' || needs.reconciliation-judge.result == 'skipped') && needs.params.outputs.skip-deploy != 'true' }}
+    needs:
+      - params
+      - reconciliation-check
+      - reconciliation-judge
     runs-on: ubuntu-24.04
     environment: ${{ needs.params.outputs.github-environment }}
     steps:

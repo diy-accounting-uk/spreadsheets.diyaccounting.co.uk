@@ -117,9 +117,7 @@ function sumField(rows, field) {
 
 function flattenMonths(journal) {
   if (!journal || typeof journal !== "object") return [];
-  return Object.values(journal)
-    .filter(Array.isArray)
-    .flat();
+  return Object.values(journal).filter(Array.isArray).flat();
 }
 
 function monthsCovered(journal) {
@@ -172,7 +170,9 @@ export function summariseScenario(scenario, scenarioName) {
   if (business.vat_number) lines.push(`VAT registered: yes, number ${business.vat_number}`);
 
   if (Array.isArray(scenario.employees) && scenario.employees.length > 0) {
-    lines.push(`Employees on the payroll: ${scenario.employees.length}, gross pay per period ${money.format(sumField(scenario.employees, "grossPay"))}`);
+    lines.push(
+      `Employees on the payroll: ${scenario.employees.length}, gross pay per period ${money.format(sumField(scenario.employees, "grossPay"))}`,
+    );
   }
 
   for (const [label, journal] of [
@@ -283,7 +283,8 @@ export function parseVerdict(message) {
   } catch {
     throw new Error(`Model response was not JSON: ${block.text.slice(0, 200)}`);
   }
-  if (parsed.verdict !== "pass" && parsed.verdict !== "fail") throw new Error(`Model returned an unknown verdict: ${JSON.stringify(parsed.verdict)}`);
+  if (parsed.verdict !== "pass" && parsed.verdict !== "fail")
+    throw new Error(`Model returned an unknown verdict: ${JSON.stringify(parsed.verdict)}`);
   if (typeof parsed.summary !== "string" || parsed.summary.length === 0) throw new Error("Model returned no summary");
   if (!Array.isArray(parsed.concerns)) throw new Error("Model returned no concerns list");
   return { verdict: parsed.verdict, summary: parsed.summary, concerns: parsed.concerns };

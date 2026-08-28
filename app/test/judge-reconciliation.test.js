@@ -128,7 +128,15 @@ describe("buildSystemPrompt", () => {
 });
 
 describe("buildUserPrompt", () => {
-  const runs = [{ file: "report.md", scenario: "ltd-scenario-full", yearEnd: "2027-03-31", content: REPORT, scenarioSummary: "Scenario: ltd-scenario-full" }];
+  const runs = [
+    {
+      file: "report.md",
+      scenario: "ltd-scenario-full",
+      yearEnd: "2027-03-31",
+      content: REPORT,
+      scenarioSummary: "Scenario: ltd-scenario-full",
+    },
+  ];
 
   it("wraps each run's scenario and report in its own data block", () => {
     const user = buildUserPrompt("ltd", runs);
@@ -170,7 +178,9 @@ describe("assemblePrompt", () => {
 
 describe("parseVerdict", () => {
   it("returns the verdict, summary and concerns", () => {
-    const verdict = parseVerdict(messageWith({ ...PASSING, concerns: [{ figure: "VAT", where: "VATQtr1", why: "zero", severity: "note" }] }));
+    const verdict = parseVerdict(
+      messageWith({ ...PASSING, concerns: [{ figure: "VAT", where: "VATQtr1", why: "zero", severity: "note" }] }),
+    );
     expect(verdict.verdict).toBe("pass");
     expect(verdict.concerns).toHaveLength(1);
   });
