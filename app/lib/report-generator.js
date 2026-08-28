@@ -12,12 +12,12 @@
 export const PROFIT_BRIDGE_TITLE = "Accounting profit to tax profit bridge";
 export const PROFIT_BRIDGE_CHECK = "Accounting profit to tax profit bridge closes to zero";
 
-// The residue is what the named adjustments do not explain, so it is stated
-// to the penny rather than rounded into looking like zero.
+// Lines print to the penny. The residue asks for more places than that, so a
+// difference under a penny is shown rather than rounded into a nil. A negated
+// nil line, and a residue that is float noise, both land on -0, which prints
+// as "-0" and reads as a defect.
 function bridgeAmount(value, fractionDigits = 2) {
   if (typeof value !== "number") return "—";
-  // A negated nil line, and a residue that is float noise, both land on -0,
-  // which prints as "-0" and reads as a defect.
   const rounded = Number(value.toFixed(fractionDigits));
   const amount = rounded === 0 ? 0 : rounded;
   return amount.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: fractionDigits });
