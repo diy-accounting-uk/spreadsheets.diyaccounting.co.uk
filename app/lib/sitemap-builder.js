@@ -7,7 +7,7 @@ export function escapeXml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export function buildSitemapXml(products, articles) {
+export function buildSitemapXml(products, articles, reconciliationPages = []) {
   const urls = [];
 
   // Main pages
@@ -24,6 +24,22 @@ export function buildSitemapXml(products, articles) {
   // Knowledge base articles
   for (const art of articles) {
     urls.push({ loc: `https://spreadsheets.diyaccounting.co.uk/articles/${escapeXml(art.id)}.md`, priority: "0.7" });
+  }
+
+  // Reconciliation pages, rebuilt by each product's generate workflow
+  if (reconciliationPages.length > 0) {
+    urls.push({
+      loc: "https://spreadsheets.diyaccounting.co.uk/reconciliation/index.html",
+      changefreq: "monthly",
+      priority: "0.6",
+    });
+    for (const page of reconciliationPages) {
+      urls.push({
+        loc: `https://spreadsheets.diyaccounting.co.uk/reconciliation/${escapeXml(page)}.html`,
+        changefreq: "monthly",
+        priority: "0.6",
+      });
+    }
   }
 
   const lines = [];

@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Taxi Driver reconciliation - DIY Accounting Spreadsheets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Reconciliation of the DIY Accounting Taxi Driver spreadsheets: input transactions, sheet screenshots, accounting statements and the tax computation." />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <meta property="og:title" content="Taxi Driver reconciliation - DIY Accounting Spreadsheets" />
+    <meta property="og:description" content="Reconciliation of the DIY Accounting Taxi Driver spreadsheets: input transactions, sheet screenshots, accounting statements and the tax computation." />
+    <meta property="og:url" content="https://spreadsheets.diyaccounting.co.uk/reconciliation/taxi.html" />
+    <meta property="og:site_name" content="DIY Accounting" />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href="https://spreadsheets.diyaccounting.co.uk/reconciliation/taxi.html" />
+    <link rel="stylesheet" href="../spreadsheets.css" />
+    <style>
+      .recon-scroll { overflow-x: auto; }
+      .recon-table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.9em; }
+      .recon-table th, .recon-table td { border: 1px solid #ddd; padding: 0.35em 0.6em; text-align: left; vertical-align: top; }
+      .recon-table th { background: #f5f5f5; font-weight: 600; }
+      .recon-table th.num, .recon-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+      .recon-details { margin: 0.8em 0; border: 1px solid #ddd; border-radius: 4px; padding: 0.4em 0.8em; }
+      .recon-details > summary { cursor: pointer; font-weight: 600; padding: 0.3em 0; }
+      .recon-shot { margin: 1.2em 0; }
+      .recon-shot img { max-width: 100%; border: 1px solid #ddd; }
+      .recon-shot figcaption { font-size: 0.9em; color: #555; margin-top: 0.4em; }
+      .recon-toc { margin: 1em 0 2em; padding: 0.8em 1em; background: #f7f7f7; border-radius: 4px; }
+      .recon-toc ol { margin: 0; padding-left: 1.4em; }
+      .recon-section { margin-top: 2.5em; }
+      .recon-facts { list-style: none; padding: 0; }
+      .recon-facts li { margin-bottom: 0.3em; }
+    </style>
+    <script src="../lib/analytics.js"></script>
+  </head>
+  <body>
+    <a href="#mainContent" class="skip-link">Skip to main content</a>
+
+    <nav class="top-nav" aria-label="Main navigation">
+      <a href="../index.html">Products</a>
+      <a href="../download.html">Download</a>
+      <a href="../knowledge-base.html">Knowledge Base</a>
+      <a href="../community.html">Community</a>
+      <a href="https://submit.diyaccounting.co.uk">Submit VAT MTD</a>
+      <a href="../donate.html">Donate</a>
+    </nav>
+
+    <header>
+      <h1>DIY Accounting Spreadsheets</h1>
+      <p class="subtitle">Excel bookkeeping and accounting software for UK small businesses</p>
+    </header>
+
+    <main id="mainContent">
+      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>
+      <h2 class="kb-page-title">Taxi Driver reconciliation</h2>
+      <p class="kb-page-description">Reconciliation Report: GB Accounts Taxi Driver 2027-04-05 (Apr27) Excel 2007. Every figure below comes from a scenario driven through the shipped workbooks and read back out of the recalculated sheets.</p>
+      <nav class="recon-toc" aria-label="On this page">
+        <ol>
+          <li><a href="#summary">Summary</a></li>
+          <li><a href="#reconciliation-checks">Reconciliation checks</a></li>
+          <li><a href="#input-transactions">Input transactions</a></li>
+          <li><a href="#screenshots">Screenshots</a></li>
+          <li><a href="#accounting-statements">Accounting statements</a></li>
+          <li><a href="#tax-review">Tax review</a></li>
+        </ol>
+      </nav>
+      <section class="recon-section" id="summary">
+        <h3>Summary</h3>
+        <ul class="recon-facts">
+          <li><strong>Status:</strong> RECONCILES</li>
+          <li><strong>Featured scenario:</strong> taxi-scenario-basic (Basic taxi driver)</li>
+          <li><strong>Year end:</strong> 2027-04-05</li>
+          <li><strong>Checks:</strong> 9 passed, 0 warnings, 0 failed</li>
+          <li><strong>Reconciliation runs published:</strong> 7</li>
+        </ul>
+        <h4>Every run</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Year end</th><th>Period</th><th>Scenario</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>2027-04-05</td><td>Apr27</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2026-04-05</td><td>Apr26</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2025-04-05</td><td>Apr25</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2024-04-05</td><td>Apr24</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2023-04-05</td><td>Apr23</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2022-04-05</td><td>Apr22</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2021-04-05</td><td>Apr21</td><td>taxi-scenario-basic</td><td>RECONCILES</td></tr>
+</tbody>
+</table></div>
+      </section>
+      <section class="recon-section" id="reconciliation-checks">
+        <h3>Reconciliation checks</h3>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Diff</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Total Sales</td><td>36000</td><td>36000</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Net = Gross - General Expenses</td><td>29640</td><td>29640</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: General expense lines sum = Total</td><td>1380</td><td>1380</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>3414</td><td>3414</td><td>0</td><td>PASS</td></tr>
+<tr><td>NI Class 4 (lower)</td><td>1024.2</td><td>1024.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI</td><td>4438</td><td>4438.2</td><td>+0.1999999999998181</td><td>PASS</td></tr>
+<tr><td>Tax: Taxable = Profit - Allowance</td><td>17070</td><td>17070</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: IT = Basic + Higher</td><td>3414</td><td>3414</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT + NI</td><td>4438.2</td><td>4438.2</td><td>0</td><td>PASS</td></tr>
+</tbody>
+</table></div>
+      </section>
+      <section class="recon-section" id="input-transactions">
+        <h3>Input transactions</h3>
+<h4>Month by month</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Month</th><th class="num">Sales entries</th><th class="num">Sales total</th><th class="num">Purchases entries</th><th class="num">Purchases total</th></tr></thead>
+<tbody>
+<tr><td>Apr</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">5</td><td class="num">2,200.00</td></tr>
+<tr><td>May</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Jun</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">8,300.00</td></tr>
+<tr><td>Jul</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">420.00</td></tr>
+<tr><td>Aug</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Sep</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Oct</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">2</td><td class="num">420.00</td></tr>
+<tr><td>Nov</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Dec</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Jan</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">3</td><td class="num">920.00</td></tr>
+<tr><td>Feb</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Mar</td><td class="num">15</td><td class="num">3,000.00</td><td class="num">1</td><td class="num">300.00</td></tr>
+<tr><td>Year</td><td class="num">180</td><td class="num"><strong>36,000.00</strong></td><td class="num">21</td><td class="num"><strong>14,360.00</strong></td></tr>
+</tbody>
+</table></div>
+<h4>Every entry</h4>
+<details class="recon-details" id="sales-journal">
+<summary>Sales journal: 180 entries, 36,000.00</summary>
+<h5>Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-04-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-08</td><td class="num">220.00</td></tr>
+<tr><td>2025-04-09</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-10</td><td class="num">210.00</td></tr>
+<tr><td>2025-04-11</td><td class="num">190.00</td></tr>
+<tr><td>2025-04-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-15</td><td class="num">220.00</td></tr>
+<tr><td>2025-04-16</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-21</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-22</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-23</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-24</td><td class="num">200.00</td></tr>
+<tr><td>2025-04-25</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-05-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-06</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-13</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-19</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-20</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-21</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-22</td><td class="num">200.00</td></tr>
+<tr><td>2025-05-23</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-06-02</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-03</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-06</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-13</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-19</td><td class="num">200.00</td></tr>
+<tr><td>2025-06-20</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-07-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-21</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-22</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-23</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-24</td><td class="num">200.00</td></tr>
+<tr><td>2025-07-25</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-08-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-06</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-13</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-19</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-20</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-21</td><td class="num">200.00</td></tr>
+<tr><td>2025-08-22</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-09-01</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-02</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-03</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-09-19</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-10-06</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-13</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-20</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-21</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-22</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-23</td><td class="num">200.00</td></tr>
+<tr><td>2025-10-24</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-11-03</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-06</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-07</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-13</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-14</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-19</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-20</td><td class="num">200.00</td></tr>
+<tr><td>2025-11-21</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-12-01</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-02</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-03</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-04</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-05</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-08</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-09</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-10</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-11</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-12</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-15</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-16</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-17</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-18</td><td class="num">200.00</td></tr>
+<tr><td>2025-12-19</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-01-05</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-06</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-07</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-08</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-09</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-12</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-13</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-14</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-15</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-16</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-19</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-20</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-21</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-22</td><td class="num">200.00</td></tr>
+<tr><td>2026-01-23</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-02-02</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-03</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-04</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-05</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-06</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-09</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-10</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-11</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-12</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-13</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-16</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-17</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-18</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-19</td><td class="num">200.00</td></tr>
+<tr><td>2026-02-20</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+<h5>Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-03-02</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-03</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-04</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-05</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-06</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-09</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-10</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-11</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-12</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-13</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-16</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-17</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-18</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-19</td><td class="num">200.00</td></tr>
+<tr><td>2026-03-20</td><td class="num">200.00</td></tr>
+</tbody>
+</table></div>
+</details>
+<details class="recon-details" id="purchase-journal">
+<summary>Purchase journal: 21 entries, 14,360.00</summary>
+<h5>Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-04-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+<tr><td>2025-04-06</td><td>DVLA</td><td>t</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-10</td><td>Insurance Co</td><td>t</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-20</td><td>Vodafone</td><td>g</td><td class="num">120.00</td></tr>
+<tr><td>2025-04-08</td><td>Council</td><td>l</td><td class="num">400.00</td></tr>
+</tbody>
+</table></div>
+<h5>May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-05-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-06-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+<tr><td>2025-06-01</td><td>Car Dealer</td><td>f</td><td class="num">8,000.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-07-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+<tr><td>2025-07-10</td><td>Vodafone</td><td>g</td><td class="num">120.00</td></tr>
+</tbody>
+</table></div>
+<h5>Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-08-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-09-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-10-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+<tr><td>2025-10-10</td><td>Vodafone</td><td>g</td><td class="num">120.00</td></tr>
+</tbody>
+</table></div>
+<h5>Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-11-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2025-12-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-01-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+<tr><td>2026-01-10</td><td>Vodafone</td><td>g</td><td class="num">120.00</td></tr>
+<tr><td>2026-01-20</td><td>Accountant</td><td>l</td><td class="num">500.00</td></tr>
+</tbody>
+</table></div>
+<h5>Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-02-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+<h5>Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>2026-03-15</td><td>Shell</td><td>d</td><td class="num">300.00</td></tr>
+</tbody>
+</table></div>
+</details>
+      </section>
+      <section class="recon-section" id="screenshots">
+        <h3>Screenshots</h3>
+        <figure class="recon-shot">
+          <img src="screenshots/taxi-gb-accounts-taxi-driver-profit-loss-acc.png" alt="Profit and loss account sheet of the populated workbook" loading="lazy" />
+          <figcaption>Profit and loss account — GB_Accounts_Taxi_Driver.xlsx, sheet Profit &amp; Loss Acc</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/taxi-gb-accounts-taxi-driver-draft-tax-calculation.png" alt="Draft tax calculation sheet of the populated workbook" loading="lazy" />
+          <figcaption>Draft tax calculation — GB_Accounts_Taxi_Driver.xlsx, sheet Draft Tax calculation</figcaption>
+        </figure>
+        <figure class="recon-shot">
+          <img src="screenshots/taxi-gb-accounts-taxi-driver-se-short.png" alt="Self assessment short pages sheet of the populated workbook" loading="lazy" />
+          <figcaption>Self assessment short pages — GB_Accounts_Taxi_Driver.xlsx, sheet SE Short</figcaption>
+        </figure>
+      </section>
+      <section class="recon-section" id="accounting-statements">
+        <h3>Accounting statements</h3>
+<h4>Business Details</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Business Name</td><td class="num">Basic taxi driver</td></tr>
+<tr><td>Description</td><td class="num">Description of business</td></tr>
+<tr><td>Address</td><td class="num">Taxi Driver</td></tr>
+<tr><td>Town</td><td class="num">5</td></tr>
+<tr><td>Postcode</td><td class="num">5</td></tr>
+<tr><td>UTR</td><td class="num">.</td></tr>
+</tbody>
+</table></div>
+<h4>Profit &amp; Loss Account</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Turnover (Total Fares)</td><td class="num">36,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Fuel</td><td class="num">3,600</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Car Hire / Rental</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Servicing</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Road Tax &amp; Insurance</td><td class="num">1,380</td></tr>
+<tr><td>Total Vehicle Running Costs</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Mileage Allowance</td><td class="num">4,980</td></tr>
+<tr><td><strong>Gross Profit</strong></td><td class="num">31,020</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee Costs</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises Costs</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;General Admin</td><td class="num">480</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Advertising</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Legal &amp; Professional</td><td class="num">900</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Interest &amp; Bank Charges</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Bank Charges</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Expenses</td><td class="num">0</td></tr>
+<tr><td>Total General Expenses</td><td class="num">1,380</td></tr>
+<tr><td><strong>Net Profit</strong></td><td class="num">29,640</td></tr>
+<tr><td>Taxable Profit</td><td class="num">0</td></tr>
+</tbody>
+</table></div>
+<details class="recon-details">
+<summary>Cell values behind these statements</summary>
+<h5>Business Details</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>C5</td><td>Business Name</td><td>Basic taxi driver</td><td>entityInformation.organizationIdentifier</td></tr>
+<tr><td>C7</td><td>Description</td><td>Description of business</td><td>entityInformation.organizationDescription</td></tr>
+<tr><td>C8</td><td>Address</td><td>Taxi Driver</td><td>gl-bus:organizationAddress</td></tr>
+<tr><td>C10</td><td>Town</td><td>5</td><td>gl-bus:organizationAddress (town)</td></tr>
+<tr><td>C12</td><td>Postcode</td><td>5</td><td>gl-bus:organizationAddress (postcode)</td></tr>
+<tr><td>O29</td><td>UTR</td><td>.</td><td>gl-taf:taxRegistrationNumber</td></tr>
+</tbody>
+</table></div>
+<h5>Profit &amp; Loss Acc</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>B5</td><td>Turnover (Total Fares)</td><td>36000</td><td>gl-cor:amount (salesTurnover)</td></tr>
+<tr><td>B6</td><td>Fuel</td><td>3600</td><td>accounts.purchases.5100 (fuel)</td></tr>
+<tr><td>B7</td><td>Car Hire / Rental</td><td>0</td><td>accounts.purchases.5200 (carHire)</td></tr>
+<tr><td>B8</td><td>Repairs &amp; Servicing</td><td>0</td><td>accounts.purchases.5300 (repairs)</td></tr>
+<tr><td>B9</td><td>Road Tax &amp; Insurance</td><td>1380</td><td>accounts.purchases.5400 (taxIns)</td></tr>
+<tr><td>B10</td><td>Total Vehicle Running Costs</td><td>0</td><td>gl-cor:amount (vehicleCosts)</td></tr>
+<tr><td>B11</td><td>Capital Allowances</td><td>0</td><td>tax.capitalAllowances</td></tr>
+<tr><td>B12</td><td>Mileage Allowance</td><td>4980</td><td>tax.mileage (allowance)</td></tr>
+<tr><td>B13</td><td><strong>Gross Profit</strong></td><td>31020</td><td>gl-cor:amount (grossProfit)</td></tr>
+<tr><td>B14</td><td>Employee Costs</td><td>0</td><td>accounts.purchases.5500</td></tr>
+<tr><td>B15</td><td>Premises Costs</td><td>0</td><td>accounts.purchases.5600</td></tr>
+<tr><td>B16</td><td>General Admin</td><td>480</td><td>accounts.purchases.5700</td></tr>
+<tr><td>B17</td><td>Advertising</td><td>0</td><td>accounts.purchases.5800</td></tr>
+<tr><td>B18</td><td>Legal &amp; Professional</td><td>900</td><td>accounts.purchases.5900</td></tr>
+<tr><td>B19</td><td>Interest &amp; Bank Charges</td><td>0</td><td>accounts.purchases.6000</td></tr>
+<tr><td>B20</td><td>Bank Charges</td><td>0</td><td>accounts.purchases.6100</td></tr>
+<tr><td>B21</td><td>Other Expenses</td><td>0</td><td>accounts.purchases.6200</td></tr>
+<tr><td>B22</td><td>Total General Expenses</td><td>1380</td><td>gl-cor:amount (totalGeneral)</td></tr>
+<tr><td>B23</td><td><strong>Net Profit</strong></td><td>29640</td><td>gl-cor:amount (netProfit)</td></tr>
+<tr><td>B24</td><td>Taxable Profit</td><td>0</td><td>gl-cor:amount (taxableProfit)</td></tr>
+</tbody>
+</table></div>
+<h5>Draft Tax calculation</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>E5</td><td>Profit from Self Employment</td><td>29640</td><td>gl-cor:amount (profitSE)</td></tr>
+<tr><td>E6</td><td>Less: Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
+<tr><td>E7</td><td>Taxable Income</td><td>17070</td><td>gl-cor:amount (taxableIncome)</td></tr>
+<tr><td>E8</td><td>Tax at Basic Rate (20%)</td><td>0</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>E9</td><td>Tax at Higher Rate (40%)</td><td>3414</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>E10</td><td><strong>Total Income Tax</strong></td><td>3414</td><td>tax.incomeTax (total)</td></tr>
+<tr><td>E14</td><td>NI Class 4 (lower band)</td><td>1024.2</td><td>tax.nationalInsurance.class4MainRate</td></tr>
+<tr><td>E15</td><td>NI Class 4 (upper band)</td><td>0</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>E17</td><td><strong>Total Tax + NI</strong></td><td>4438.2</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+</tbody>
+</table></div>
+</details>
+      </section>
+      <section class="recon-section" id="tax-review">
+        <h3>Tax review</h3>
+<h4>Draft Tax Calculation</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Profit from Self Employment</td><td class="num">29,640</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">12,570</td></tr>
+<tr><td>Taxable Income</td><td class="num">17,070</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%)</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">3,414</td></tr>
+<tr><td><strong>Total Income Tax</strong></td><td class="num">3,414</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">1,024.2</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">0</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">4,438.2</td></tr>
+</tbody>
+</table></div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <div class="footer-left">
+          <a href="https://diyaccounting.co.uk">diyaccounting.co.uk</a>
+          <a href="../knowledge-base.html">knowledge base</a>
+          <a href="index.html">reconciliation</a>
+          <a href="https://submit.diyaccounting.co.uk/privacy.html">privacy</a>
+          <a href="https://submit.diyaccounting.co.uk/terms.html">terms</a>
+          <a href="https://submit.diyaccounting.co.uk/accessibility.html">accessibility</a>
+        </div>
+        <div class="footer-center">
+          <p>&copy; 2025-2026 DIY Accounting Limited</p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
