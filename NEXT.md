@@ -25,16 +25,27 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     workbooks, matrix shrink to 3 year-ends, and the period-frame date convention
     (non-March roundtrip byte-identical). Full suite 2510/2510. Awaiting the operator's
     four reconciliation dispatches on `claude/recon-wave3`, then merge.
-    #36 MERGED. The final PR is up:
+    #36 MERGED. ENABLE_LLM_JUDGE is LIVE (operator-enabled; Bedrock grants done,
+    including bedrock-mantle:CreateInference on the actions role). The final PR is
     **PR #37: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/37**
-    (all three remaining workstreams merged into `claude/recon-wave5`, suite 2560/2560)
-    — VAT localisation + straddling coverage, RegisterofMembers + Cash.xlsx leg, and
-    the Bedrock judge gated behind ENABLE_LLM_JUDGE. Bedrock prerequisites DONE.
-    Operator sequence after #37 merges: dispatch the four reconciliations on its branch
-    first if desired, then merge; one normal generate-commit run per product to refresh
-    the stale committed reports (the judge correctly fails them today — they still show
-    the pre-fix £1.78M imbalance); then set ENABLE_LLM_JUDGE=true. That completes every
-    item in PLAN_RECONCILIATION_COVERAGE.md.
+    at `18bc581c` — VAT localisation + straddling coverage, RegisterofMembers +
+    Cash.xlsx leg, the Bedrock judge, and the judge-calibration pass. The judge's first
+    live verdicts caught five real defects, all fixed on the branch: Taxi's tax-band
+    cells written at BST positions (higher rate could never engage), Ltd stock written
+    into a date column (balance sheet carried opening stock), Ltd master data never
+    banking £226k of receipts (debtors £237k), BST publishing a template-derived figure
+    as a third closing debtor, and an extractor-invented laptop. All four products now
+    pass the judge live for the right reasons.
+    Operator sequence: dispatch the four reconciliations on `claude/recon-wave5`
+    (skip-commit), merge #37 on green, then one normal generate-commit run per product
+    to refresh the stale committed reports and pages. That completes every item in
+    PLAN_RECONCILIATION_COVERAGE.md.
+  - Deferred findings from the judge's first day (real, deliberately not in #37):
+    the ltd-brickwork scenarios need a fixture-and-writer rebuild (VAT and non-VAT
+    reports are byte-identical; no bank journal, so debtors absorb all sales); the
+    shipped Taxi template's PurchasesMar!T2 nag compares against an empty
+    'Fixed Assets'!$D$74 (additions total is D62) — binary template surgery plus a
+    regeneration pass.
   - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
     agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
     turnover is ~double its README's description — settle before the judge wave.
