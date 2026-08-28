@@ -6,7 +6,7 @@
 // Calls shared tools from app/lib/.
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
-import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
 
 export const PRODUCT = {
   id: "bst",
@@ -109,11 +109,12 @@ export function cellWrites(scenario) {
   // formula-driven from the cost in E -- the "EXISTING" (opening) block's
   // non-vehicle categories carry no such formula in this template, so an
   // opening-balance asset there would give zero capital-allowance signal.
-  if (scenario.fixed_asset_additions) {
+  const assetAdditions = fixedAssetAdditions(scenario, "f");
+  if (assetAdditions.length > 0) {
     if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
     const fa = writes["Fixed Assets"];
     let row = 67;
-    for (const asset of scenario.fixed_asset_additions) {
+    for (const asset of assetAdditions) {
       const d = parseDate(asset.date);
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`C${row}`] = asset.description;
@@ -160,8 +161,8 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "C24", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "C26", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C28", "Taxable Profit",                   "gl-cor:amount (taxableProfit)",     "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "C30", "Income Tax",                       "tax.incomeTax",                     "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "C32", "Tax at basic rate",                "tax.incomeTax.basicRate",           "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C30", "Other Income received",            "gl-cor:amount (otherIncomeReceived)", "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "C32", "Income Tax less CIS deducted",     "tax.incomeTax (net of CIS)",        "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C33", "NI Class 4",                       "tax.nationalInsurance.class4",      "Profit & Loss Account", 1],
   ["Profit & Loss Acc", "C35", "Net Income After Tax",             "gl-cor:amount (netIncome)",         "Profit & Loss Account", 0],
   // Monthly sales
@@ -350,17 +351,30 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
   }
 
-  // Stock checks (6e)
-  if (expected.opening_stock !== undefined && results.PurchasesStock) {
-    check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
+  // Stock. A fixture states it either as its own table or among the totals it
+  // declares, so both spellings are read here -- a fixture that says it one
+  // way and a check that only reads the other leaves the stock untested.
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (openingStock !== undefined && results.PurchasesStock) {
+    check("Opening Stock", results.PurchasesStock.D5 || 0, openingStock);
   }
-  if (expected.closing_stock !== undefined && results.PurchasesStock) {
-    check("Closing Stock", results.PurchasesStock.D30 || 0, expected.closing_stock);
+  if (closingStock !== undefined && results.PurchasesStock) {
+    check("Closing Stock", results.PurchasesStock.D30 || 0, closingStock);
   }
-  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined) {
-    // CoS should include stock adjustment: opening - closing adds to cost
-    const stockAdj = expected.opening_stock - expected.closing_stock;
-    check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
+  // Cost of sales is the stock bought in the year plus the fall in stock
+  // across it. Both parts come from the scenario, so the identity is exact.
+  // It used to be stated as cost of sales against the stock movement alone,
+  // with a tolerance as wide as cost of sales itself, which nothing could
+  // fail and which put a difference the size of the year's stock purchases
+  // on the face of the report.
+  if (openingStock !== undefined && closingStock !== undefined && expected.purchases) {
+    const stockMovement = openingStock - closingStock;
+    const stockPurchases = Object.values(expected.purchases)
+      .flat()
+      .filter((tx) => tx.code === "s")
+      .reduce((s, tx) => s + tx.amount, 0);
+    check("Stock: cost of sales = stock purchases + stock movement", pl.C6 || 0, stockPurchases + stockMovement);
   }
 
   // Debtors/Creditors checks. Every slot in the block counts: the writer fills
@@ -392,11 +406,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // taxable profit. The schedule's own AIA formula (cost x Admin!G4 rate) is
   // recomputed independently here from the read-back Admin rate, so this
   // check also stands in as the Admin-echo check for the AIA rate cell.
-  if (expected.fixed_asset_additions && results["Fixed Assets"]) {
+  const expectedAdditions = fixedAssetAdditions(expected, "f");
+  if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
-    const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
     check("Fixed Assets: schedule total cost = asset additions", fa.E1 || 0, expected.fixed_asset_cost ?? assetCost);
-    check("Fixed Assets: first addition recorded", fa.E67 || 0, expected.fixed_asset_additions[0].cost);
+    check("Fixed Assets: first addition recorded", fa.E67 || 0, expectedAdditions[0].cost);
 
     if (results.Admin) {
       const aiaRate = results.Admin.G4;
@@ -463,10 +478,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
     check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
     check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
+    // The profit and loss account's own tax line. It carries the whole income
+    // tax charge less the CIS already suffered on the trader's own sales, not
+    // the basic-rate band alone, and the row above it is other income rather
+    // than a second tax line -- both were labelled the other way round.
+    check("P&L: tax charged = Income Tax sheet total less CIS deducted", pl.C32 || 0, (tax.E10 || 0) - (tax.E11 || 0));
     check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
 
     // Tax calculation chain (6c)
-    check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
+    // The sheet has no negative taxable income: a profit under the personal
+    // allowance leaves it nil (verified against the template: E7 =
+    // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
+    check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
     check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 

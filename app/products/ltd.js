@@ -3,11 +3,13 @@
 //
 // ltd.js — Limited Company product definition (all year-end months).
 // Multi-file package: 15 xlsx files with cross-file external links.
-// Supports small profits CT rate only (19% for profits up to £50,000).
+// The shipped corporation tax working sheet charges the whole chargeable
+// profit at the small profits rate, with no main rate and no marginal relief.
 // Year-end month is determined by the tax data file (financial_year.end).
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -41,6 +43,18 @@ const BANK_ACCOUNT_FILES = {
   1210: "Savingaccount.xlsx",
   1220: "Cashaccount.xlsx",
   1230: "Creditcardaccount.xlsx",
+};
+
+// TrialBalance's own closing-balance echo of each bank workbook (verified
+// against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
+// EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
+// cells plus EJ26 ("Intra Cash & Bank Transfers"), not the bank workbooks
+// directly.
+const TRIAL_BALANCE_BANK_ECHO_CELLS = {
+  "Currentaccount.xlsx": "EJ22",
+  "Savingaccount.xlsx": "EJ23",
+  "Creditcardaccount.xlsx": "EJ24",
+  "Cashaccount.xlsx": "EJ25",
 };
 
 // Transfer code letter each bank workbook stands for. A workbook analyses
@@ -170,8 +184,22 @@ const SCHEDULE_NEW_ASSET_CLASS = "plant";
 // of VAT. Matches [vat].standard_rate in app/data/ltd-*.toml (Admin M19).
 const VAT_RATE = 0.2;
 
-function netOfVat(gross) {
-  return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
+// Cell G2 of a Sales.xlsx month tab holds the rate the whole book charges.
+// The first month reads Admin!M19, each later month reads the month before
+// it, and every Purchases month reads its own Sales month. Entering 0 there
+// is what the Company guide tells a business that is not registered for VAT
+// to do, and it is the only lever that turns VAT off end to end.
+const VAT_RATE_CELL = "G2";
+
+// A scenario says whether the business is registered in its own metadata.
+// Anything that does not say is registered, which is what every fixture
+// written before the flag existed means.
+export function vatRateFor(scenario) {
+  return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+}
+
+function netOfVat(gross, rate = VAT_RATE) {
+  return Math.round((gross / (1 + rate)) * 100) / 100;
 }
 
 // ── Vatreturns.xlsx Vatinterface layout ────────────────────────────────────
@@ -295,6 +323,8 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // which is what makes exporting a package and generating from the export
   // reproduce the same cells. A scenario that does not name its period start
   // is in the April-March frame its apr..mar month keys describe.
+  const rate = vatRateFor(scenario);
+
   const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
   const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
@@ -330,6 +360,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
   if (scenario.purchases) {
     processJournal(scenario.purchases, purchasesWrites, "supplier", "g");
+  }
+
+  // A business that is not registered for VAT turns the rate off on the first
+  // month's Sales tab, and the rest of the book follows that cell.
+  if (rate !== VAT_RATE) {
+    const firstTab = getMonthTabNames(yem)[0];
+    if (!salesWrites[firstTab]) salesWrites[firstTab] = {};
+    salesWrites[firstTab][VAT_RATE_CELL] = rate * 100;
   }
 
   // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet).
@@ -543,7 +581,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       const d = shiftDate(parseDate(tx.date));
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
-      fa[`E${row}`] = netOfVat(tx.amount);
+      fa[`E${row}`] = netOfVat(tx.amount, rate);
       newAssetRowsUsed.push(row);
     });
   }
@@ -570,7 +608,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       const row = disposalRows[i];
       const d = shiftDate(parseDate(tx.date));
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-      fa[`V${row}`] = netOfVat(tx.amount);
+      fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
   }
 
@@ -704,15 +742,15 @@ export const CELL_MAP = [
   ["OpenAccounts", "E34", "Retained Profit and Loss account",  "accounts.capital.3100 (opening)",      "Opening Balance Sheet", 1],
   ["OpenAccounts", "E37", "**Accuracy Check**",                "gl-cor:amount (openingBalanceCheck)",  "Opening Balance Sheet", 0],
   // ── Management P&L (MnthP&L) ──
-  ["MnthP&L", "B4",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
-  ["MnthP&L", "B5",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
-  ["MnthP&L", "B6",  "Product C — Training",      "accounts.sales.4002",            "Profit & Loss Account", 1],
-  ["MnthP&L", "B7",  "Other Direct Income",       "accounts.sales.4003",            "Profit & Loss Account", 1],
-  ["MnthP&L", "B8",  "Grants Received",           "accounts.sales.4004",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B4",  "Product A sales (code a)",  "accounts.sales.4000",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B5",  "Product B sales (code b)",  "accounts.sales.4001",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B6",  "Product C sales (code c)",  "accounts.sales.4002",            "Profit & Loss Account", 1],
+  ["MnthP&L", "B7",  "Other Direct Income (code d)", "accounts.sales.4003",         "Profit & Loss Account", 1],
+  ["MnthP&L", "B8",  "Grants Received (code g)",  "accounts.sales.4004",            "Profit & Loss Account", 1],
   ["MnthP&L", "B9",  "**Sales Turnover**",        "gl-cor:amount (salesTurnover)",  "Profit & Loss Account", 0],
-  ["MnthP&L", "B11", "Materials / Stock",          "accounts.purchases.5000",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B12", "Sub-Contractors",            "accounts.purchases.5001",        "Profit & Loss Account", 1],
-  ["MnthP&L", "B13", "Other Direct Costs",         "accounts.purchases.5002",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B11", "Materials / Stock (code s)", "accounts.purchases.5000",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B12", "Sub-Contractors (code c)",   "accounts.purchases.5001",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B13", "Other Direct Costs (code o)","accounts.purchases.5002",        "Profit & Loss Account", 1],
   ["MnthP&L", "B14", "Cost of Sales",              "gl-cor:amount (costOfSales)",    "Profit & Loss Account", 0],
   ["MnthP&L", "B16", "**Gross Profit**",           "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
   // B18-B40: Actual mapping from TrialBalance D64-D89 → MnthP&L C18-C40
@@ -743,19 +781,31 @@ export const CELL_MAP = [
   ["MnthP&L", "B43", "**Operating Profit**",       "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
   ["MnthP&L", "B44", "Interest Received",          "gl-cor:amount (interestReceived)","Profit & Loss Account", 1],
   ["MnthP&L", "B45", "**Profit Before Tax**",      "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
-  // ── Corporation Tax (CT600) ──
-  [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K22", "Profit after capital allowances","gl-cor:amount (ct600.afterAllowances)", "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
+  // ── Corporation Tax working sheet ──
+  [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K22", "Profit after capital allowances","gl-cor:amount (ct600.afterAllowances)", "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
+  // ── The CT600's own tax boxes, so the report states what the form files
+  // as well as what the working sheet charges. Boxes 53 to 56 carry no
+  // formula in the shipped template, so they read as dashes and box 63,
+  // which the form calls the total of boxes 46 and 56, files the first
+  // financial year row on its own. ──
+  ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
+  ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
+  ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
+  ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
+  ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
+  ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
+  ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -822,6 +872,11 @@ export const CELL_MAP = [
   ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
+  ["TrialBalance", "EJ22", "Final: Bank Current Account",              "accounts.assets.1200 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ23", "Final: Bank Savings Account",              "accounts.assets.1210 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ24", "Final: Credit Card Account",               "accounts.assets.1230 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
@@ -981,9 +1036,11 @@ export function standardReads() {
   for (const [noteCell] of NOTE_RATE_CELLS) add("PubNotes", noteCell);
   add("PubNotes", "A11");
 
-  // Corporation tax working sheet: the first financial year's own tax line,
-  // which is the figure the CT600 form carries.
-  for (const cell of ["I15", "I16", "I17", "I18", "G33", "I33", "I34", "K37"]) add(TAX_SHEET, cell);
+  // Corporation tax working sheet: the allowance lines, and the two dated
+  // tax rows whose day counts, profit shares, rates and tax the charge for
+  // the year is built from.
+  for (const cell of ["I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+    add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
 
@@ -1028,8 +1085,8 @@ export function multiFileOptions(yearEndMonth) {
   const salesMonthReads = {};
   const purchasesMonthReads = {};
   for (const tab of tabNames) {
-    salesMonthReads[tab] = ["G1", ...Object.values(SALES_MONTH_TOTAL_CELLS)];
-    purchasesMonthReads[tab] = ["G1", ...Object.values(PURCHASES_MONTH_TOTAL_CELLS)];
+    salesMonthReads[tab] = ["G1", VAT_RATE_CELL, ...Object.values(SALES_MONTH_TOTAL_CELLS)];
+    purchasesMonthReads[tab] = ["G1", VAT_RATE_CELL, ...Object.values(PURCHASES_MONTH_TOTAL_CELLS)];
   }
   const vatQtrReads = {};
   for (let q = 1; q <= 5; q++) {
@@ -1103,7 +1160,46 @@ export function reportSections(results) {
     const val = results[sheet]?.[cell];
     sectionMap.get(section).push({ label, value: fmt(val), indent });
   }
-  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const vat = vatSection(results);
+  if (vat) sections.push(vat);
+  return sections;
+}
+
+// The VAT the books actually charged, taken from the month tabs and from the
+// return itself. Every other statement in this report is stated net, so a
+// registered company and an unregistered one carrying the same trade read
+// identically without it.
+function vatSection(results) {
+  const months = fiscalMonthTabs(results)
+    .map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]])
+    .filter(([sales, purchases]) => sales || purchases);
+  if (months.length === 0) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
+  const salesVat = sum(0, "G1");
+  const salesNet = sum(0, SALES_MONTH_TOTAL_CELLS.net);
+  const purchasesVat = sum(1, "G1");
+  const purchasesNet = sum(1, PURCHASES_MONTH_TOTAL_CELLS.net);
+
+  const rows = [
+    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1 },
+    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1 },
+    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1 },
+    { label: "Purchases invoiced including VAT", value: fmt(purchasesNet + purchasesVat), indent: 1 },
+    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1 },
+    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
+    { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
+  ];
+  for (let q = 1; q <= 4; q++) {
+    const boxes = results[`Vatreturns.xlsx!VATQtr${q}`];
+    if (!boxes) continue;
+    rows.push({ label: `Q${q} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
+    rows.push({ label: `Q${q} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
+    rows.push({ label: `Q${q} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+  }
+  return { title: "VAT Returns", rows };
 }
 
 export function cellLabels() {
@@ -1142,6 +1238,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // A template cell that resolves to blank reads back as the string the
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  const rate = vatRateFor(expected);
 
   const pl = results["MnthP&L"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.B9, expected.total_sales);
@@ -1288,7 +1386,34 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
     if (expected.vat_output_total !== undefined) check("VAT: annual output VAT", annualOutputVat, expected.vat_output_total);
     if (expected.vat_input_total !== undefined) check("VAT: annual input VAT", annualInputVat, expected.vat_input_total);
+
+    // Both sides of the year against the journals that fed them, split at the
+    // rate the scenario's registration status puts in the book. A business
+    // that is not registered has to land on nil here, and it lands there
+    // because the rate cell is zero, not because the journals are empty.
+    const journalVat = (journal) => {
+      let total = 0;
+      for (const transactions of Object.values(journal || {})) {
+        for (const tx of transactions) total += tx.amount - netOfVat(tx.amount, rate);
+      }
+      return total;
+    };
+    if (expected.sales) check("VAT: annual output VAT = the sales journal at the book's rate", annualOutputVat, journalVat(expected.sales));
+    if (expected.purchases) {
+      check("VAT: annual input VAT = the purchase journal at the book's rate", annualInputVat, journalVat(expected.purchases));
+    }
   }
+
+  // The rate cell itself, month by month on both journals. A non-registered
+  // scenario writes 0 into the first Sales month and nothing else; every
+  // other month has to arrive at the same rate down the template's own chain
+  // of references, so a month that broke away from it shows up here.
+  fiscalMonthTabs(results).forEach((tab) => {
+    for (const journal of ["Sales.xlsx", "Purchases.xlsx"]) {
+      const month = results[`${journal}!${tab}`];
+      if (month) check(`${journal} ${tab}: VAT rate charged (${VAT_RATE_CELL})`, num(month[VAT_RATE_CELL]), rate * 100, 0);
+    }
+  });
 
   // ── Vatinterface: where in the VAT chain a break happened ────────────────
   //
@@ -1338,22 +1463,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(
           `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
           num(vatinterface[`D${row}`]),
-          netOfVat(salesGross),
+          netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
           num(vatinterface[`F${row}`]),
-          salesGross - netOfVat(salesGross),
+          salesGross - netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface H${row}: ${period} purchases net = the straddling purchases entered for that period`,
           num(vatinterface[`H${row}`]),
-          netOfVat(purchasesGross),
+          netOfVat(purchasesGross, rate),
         );
         check(
           `Vatinterface J${row}: ${period} input VAT = the straddling purchases entered for that period`,
           num(vatinterface[`J${row}`]),
-          purchasesGross - netOfVat(purchasesGross),
+          purchasesGross - netOfVat(purchasesGross, rate),
         );
       }
     }
@@ -1493,14 +1618,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.purchases)) {
       for (const tx of transactions) if (tx.code === "fa") assetGross += tx.amount;
     }
-    check("Fixed assets: Schedule additions = fixed asset purchases net of VAT", num(faReconciliation.E11), netOfVat(assetGross));
+    check("Fixed assets: Schedule additions = fixed asset purchases net of VAT", num(faReconciliation.E11), netOfVat(assetGross, rate));
   }
   if (faReconciliation && expected.sales) {
     let disposalGross = 0;
     for (const transactions of Object.values(expected.sales)) {
       for (const tx of transactions) if (tx.code === "fs") disposalGross += tx.amount;
     }
-    check("Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT", num(faReconciliation.K11), netOfVat(disposalGross));
+    check(
+      "Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT",
+      num(faReconciliation.K11),
+      netOfVat(disposalGross, rate),
+    );
   }
 
   // The P&L depreciation and disposal lines carry the Schedule's annual
@@ -1543,6 +1672,39 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         movement.opening + movement.receipts - movement.payments,
       );
     }
+
+    // TrialBalance echoes each bank workbook's closing balance across the
+    // cross-file link (verified against the template: TrialBalance!EJ<n> =
+    // -[<link>]<lastMonth>!$F$1-... cascaded from the workbook's own A2).
+    // Tie each echo to the same scenario-derived movement the per-workbook
+    // check above already computed, so a break in the OpenAccounts ->
+    // TrialBalance link is caught at its own link rather than only showing
+    // up downstream on the published balance sheet.
+    if (results.TrialBalance) {
+      const tb = results.TrialBalance;
+      for (const [fileName, movement] of Object.entries(movements)) {
+        const echoCell = TRIAL_BALANCE_BANK_ECHO_CELLS[fileName];
+        check(
+          `Trial Balance: ${fileName} closing balance echo (${echoCell})`,
+          num(tb[echoCell]),
+          movement.opening + movement.receipts - movement.payments,
+        );
+      }
+
+      // PubBalSht!E12 "Cash at bank and in hand" reproduces the sheet's own
+      // aggregation formula exactly (verified against the template: E12 =
+      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25)). The three
+      // statement-book accounts (Current, Savings, Credit Card) are summed
+      // first, then Cash and the Intra Cash & Bank Transfers row are added
+      // on top -- the credit card balance is summed straight in alongside
+      // the other three, not netted off as a creditor. EJ26 nets out any
+      // receipt or payment analysed under another account's transfer code,
+      // so a transfer between the company's own bank accounts never moves
+      // the combined total, whether or not both legs were entered.
+      const sumFirstThree = num(tb.EJ22) + num(tb.EJ23) + num(tb.EJ24);
+      const expectedE12 = sumFirstThree > 0 ? sumFirstThree + num(tb.EJ25) + num(tb.EJ26) : num(tb.EJ25);
+      check("Published balance sheet: cash at bank = Trial Balance bank account aggregate", num(pubBalSht?.E12), expectedE12);
+    }
   }
 
   // ── Monthly P&L against the monthly Sales and Purchases totals ───────────
@@ -1576,12 +1738,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     fiscalTabs.forEach((tab, i) => {
       const col = MONTH_COLS[i];
       for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
-        check(`P&L ${tab} ${col}${row} = Sales.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0));
+        check(`P&L ${tab} ${col}${row} = Sales.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0, rate));
       }
       check(
         `P&L ${tab} ${col}${SALES_BAD_DEBT_ROW} = negated Sales.xlsx "o" net`,
         num(pl[`${col}${SALES_BAD_DEBT_ROW}`]),
-        -netOfVat(buckets[tab].o || 0),
+        -netOfVat(buckets[tab].o || 0, rate),
       );
     });
   }
@@ -1590,7 +1752,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     fiscalTabs.forEach((tab, i) => {
       const col = MONTH_COLS[i];
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        check(`P&L ${tab} ${col}${row} = Purchases.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0));
+        check(`P&L ${tab} ${col}${row} = Purchases.xlsx "${code}" net`, num(pl[`${col}${row}`]), netOfVat(buckets[tab][code] || 0, rate));
       }
     });
   }
@@ -1699,7 +1861,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     let wCodePurchasesNet = 0;
     if (expected.purchases) {
       for (const transactions of Object.values(expected.purchases)) {
-        for (const tx of transactions) if (tx.code === "w") wCodePurchasesNet += netOfVat(tx.amount);
+        for (const tx of transactions) if (tx.code === "w") wCodePurchasesNet += netOfVat(tx.amount, rate);
       }
     }
     check(
@@ -1799,22 +1961,57 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(corporationTax.K28),
       num(corporationTax.K22) + num(corporationTax.K24) - num(corporationTax.K26),
     );
+    // The whole distance between the profit the accounts report and the
+    // profit charged to tax, in one line. This is what a comparison of
+    // "chargeable against operating" was reaching for; that one was written
+    // with a tolerance as wide as the chargeable profit itself, and it is not
+    // true at all of a year whose capital allowances beat its add-backs.
+    check(
+      "CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses",
+      num(corporationTax.K28),
+      num(corporationTax.K5) + num(corporationTax.K10) - num(corporationTax.K20) + num(corporationTax.K24) - num(corporationTax.K26),
+    );
   }
 
   const ct600 = results.CT600;
   if (ct600 && corporationTax && pubPL) {
+    // The return has no box for a trading loss. Box 155 carries the working
+    // sheet's profit after capital allowances while that is a profit and
+    // leaves the cell blank when it is a loss, and the chargeable-profits box
+    // follows it down (verified against the template: Z70 =
+    // IF(CorporationTax!K22>0,...," "), AJ92 = IF(AJ74>0,...,0)). Comparing
+    // against the floor the form applies is what makes a year whose capital
+    // allowances beat the profit readable; a box carrying the wrong positive
+    // figure, or carrying anything at all against a loss, still fails.
+    const onTheForm = (working) => (working > 0 ? working : 0);
     check("CT600: turnover = published P&L turnover", num(ct600.AK66), num(pubPL.F9));
-    check("CT600: trading profits = CT profit after capital allowances", num(ct600.Z70), num(corporationTax.K22));
+    check("CT600: trading profits = CT profit after capital allowances", num(ct600.Z70), onTheForm(num(corporationTax.K22)));
     check("CT600: losses brought forward = CT losses brought forward", num(ct600.Z72), num(corporationTax.K26));
     check("CT600: net trading profits = trading profits - losses brought forward", num(ct600.AJ74), num(ct600.Z70) - num(ct600.Z72));
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
     check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
-    check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), num(corporationTax.K28));
-    // The form carries one financial year's tax rate and tax; the working
-    // sheet apportions the period across two. AJ126 mirrors the first.
-    check("CT600: tax rate = CT first financial year rate", num(ct600.AA126), num(corporationTax.G33));
-    check("CT600: corporation tax = CT first financial year tax", num(ct600.AJ126), num(corporationTax.I33));
+    check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), onTheForm(num(corporationTax.K28)));
+    // The form sets out two financial year rows: boxes 43 to 46 and boxes 53
+    // to 56. Only the first is wired to the working sheet (C126 =
+    // CorporationTax!E33, N126 = F33, AA126 = G33, AJ126 = I33). The second
+    // row's cells carry no formula at all, so box 63, which the form calls
+    // the total of boxes 46 and 56, files the first tax row on its own.
+    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33));
+    check("CT600: corporation tax = first tax row tax", num(ct600.AJ126), num(corporationTax.I33));
+    check("CT600: second financial year tax box is blank", num(ct600.AJ128), 0);
     check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
+    // What the form files against what the accounts charge. The second tax
+    // row never reaches the form, so this gap is the whole of the working
+    // sheet's second row and belongs to the shipped template. A run is not
+    // stopped for it.
+    checks.push({
+      name: "CT600: tax payable against the working sheet's charge for the year",
+      actual: num(ct600.AJ131),
+      expected: num(corporationTax.K35),
+      pass: Math.abs(num(ct600.AJ131) - num(corporationTax.K35)) <= 1,
+      diff: num(ct600.AJ131) - num(corporationTax.K35),
+      severity: "warning",
+    });
     check("CT600: self assessment of tax payable", num(ct600.AJ145), num(ct600.AJ131));
     check("CT600: tax outstanding", num(ct600.AJ166), num(ct600.AJ159) - num(ct600.AJ163));
   }
@@ -1830,31 +2027,50 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ct = results[TAX_SHEET];
     const profit = ct.K28 || 0;
     if (profit > 0) {
-      const rate = taxData.corporation_tax.small_profits_rate;
-      const expectedCT = Math.round(profit * rate);
-      check("Corporation Tax", ct.K35 || 0, expectedCT);
+      // How the working sheet builds the charge. Rows 33 and 34 are two
+      // dated rate rows: row 33 runs from Admin L6 to N6, the accounting
+      // period itself, and row 34 from Admin L7 to N7, the year after it.
+      // Each row is a year long, A35 is the two together, and each row
+      // takes that share of the same chargeable profit (F33 =
+      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate (I33 =
+      // F33*G33/100). The charge for the year is the two rows added up.
+      const days = num(ct.A35);
+      check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
+      if (days > 0) {
+        check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
+        check("CT: second tax row profit = chargeable profit by its share of those days", num(ct.F34), (profit * num(ct.A34)) / days);
+      }
+      check("CT: first tax row tax = its profit at its rate", num(ct.I33), (num(ct.F33) * num(ct.G33)) / 100);
+      check("CT: second tax row tax = its profit at its rate", num(ct.I34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
-      // CT calculation chain (6d)
-      check("CT: Chargeable >= Operating", ct.K28 || 0, ct.K5 || 0, ct.K28); // chargeable includes add-backs
+      // Both rows carry the rate injected into the Admin sheet, so whatever
+      // the year end, the charge is the chargeable profit at that one rate.
+      const admin = results.Admin;
+      if (admin) {
+        check("CT: charge for the year = chargeable profit at the Admin corporation tax rate", num(ct.K35), (profit * num(admin.P6)) / 100);
+      }
+
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
-      // Marginal relief warning (8g) — if profit > small profits limit, CT should be higher than small rate
-      const smallLimit = taxData.corporation_tax.small_profits_limit || 50000;
-      const mainRate = taxData.corporation_tax.main_rate || 0.25;
-      if (profit > smallLimit) {
-        const mainRateCT = Math.round(profit * mainRate);
-        const marginalCheck = {
-          name: "CT: Marginal relief expected (profit > £50K)",
-          actual: ct.K35 || 0,
-          expected: mainRateCT,
-          pass: false,
-          diff: (ct.K35 || 0) - mainRateCT,
-          severity: "warning",
-        };
-        checks.push(marginalCheck);
-      }
+      // The charge the period's profit actually bears. The working sheet
+      // holds one rate per row and no relief step, and the CT600's marginal
+      // rate relief boxes, 64 and 65, carry no formula either, so a profit
+      // between the small profits limit and the main rate limit is charged
+      // at the small profits rate rather than at the main rate less relief.
+      // The gap belongs to the shipped workbook, not to the scenario driven
+      // through it, so it is reported and the run is not stopped for it.
+      const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
+      checks.push({
+        name: "CT: charge for the year against the statutory computation with marginal relief",
+        actual: num(ct.K35),
+        expected: statutory,
+        pass: Math.abs(num(ct.K35) - statutory) <= 1,
+        diff: num(ct.K35) - statutory,
+        severity: "warning",
+      });
     }
   }
 

@@ -69,7 +69,7 @@ describeCalc(
       results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
         saveRecalculatedTo: savedDir,
       });
-      checks = ltdCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+      checks = ltdCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
     }, 300000);
 
     afterAll(() => {

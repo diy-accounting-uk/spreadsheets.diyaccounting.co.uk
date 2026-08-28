@@ -106,6 +106,19 @@ describe("summariseScenario", () => {
     expect(summary).toContain("BrickWork Pro Ltd");
     expect(summary).toContain("Bricklaying and plastering");
     expect(summary).toContain("VAT registered: yes, number 987654321");
+    expect(summary).toContain("includes VAT at the standard rate");
+  });
+
+  it("says so when the business is not registered for VAT", () => {
+    const notRegistered = {
+      ...scenario,
+      metadata: { ...scenario.metadata, name: "BrickWork Pro Ltd non-VAT", vat_registered: false },
+      business: { ...scenario.business, vat_number: undefined },
+    };
+    const summary = summariseScenario(notRegistered, "ltd-brickwork-pro-nonvat");
+    expect(summary).toContain("VAT registered: no");
+    expect(summary).toContain("the VAT return boxes are nil");
+    expect(summary).not.toContain("VAT registered: yes");
   });
 
   it("totals each journal and counts the months it covers", () => {
@@ -118,6 +131,22 @@ describe("summariseScenario", () => {
     const summary = summariseScenario({ metadata: { name: "Bare" } }, "bare");
     expect(summary).not.toContain("Sales journal");
     expect(summary).not.toContain("Opening balances");
+  });
+
+  it("totals the sales journal by code and names the asset disposals in it", () => {
+    const withDisposal = {
+      ...scenario,
+      sales: {
+        apr: [
+          { amount: 1000, code: "a" },
+          { amount: 15000, code: "fs" },
+        ],
+        may: [{ amount: 500, code: "a" }],
+      },
+    };
+    const summary = summariseScenario(withDisposal, "se-scenario-advanced", PRODUCTS.se);
+    expect(summary).toContain("Sales journal by code: a 1,500.00, fs 15,000.00");
+    expect(summary).toContain("Asset disposals inside that journal: 15,000.00 coded fs (fixed asset sales).");
   });
 
   it("totals the purchase journal by code", () => {
@@ -154,6 +183,12 @@ describe("summariseScenario", () => {
     const summary = summariseScenario(scenario, "bst-scenario-basic", PRODUCTS.bst);
     expect(summary).toContain("How this product's workbooks treat the entries above:");
     expect(summary).toContain("Debtors & Creditors sheet");
+  });
+
+  it("tells the judge what the Limited Company corporation tax sheet and CT600 do", () => {
+    const summary = summariseScenario(scenario, "ltd-scenario-full", PRODUCTS.ltd);
+    expect(summary).toContain("charges the whole chargeable profit at the small profits rate");
+    expect(summary).toContain("boxes 53 to 56, carries no formula");
   });
 
   it("says nothing about capital spending or product behaviour without a product", () => {
@@ -298,11 +333,27 @@ describe("requestVerdict", () => {
   });
 
   it("returns a fail verdict rather than treating it as an error", async () => {
-    const failing = { verdict: "fail", summary: "All four VAT quarters read zero.", concerns: [] };
+    const failing = {
+      verdict: "fail",
+      summary: "All four VAT quarters read zero.",
+      concerns: [{ figure: "VAT box 5", where: "VATQtr1 G17", why: "Nil for a registered trader.", severity: "blocking" }],
+    };
     const create = vi.fn().mockResolvedValue(messageWith(failing));
     const verdict = await requestVerdict({ messages: { create } }, prompt);
     expect(verdict.verdict).toBe("fail");
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a fail that records nothing blocking, and takes the coherent answer", async () => {
+    const outranItsEvidence = {
+      verdict: "fail",
+      summary: "Something looked wrong.",
+      concerns: [{ figure: "Additions", where: "Schedule Q1", why: "On second look this reconciles.", severity: "note" }],
+    };
+    const create = vi.fn().mockResolvedValueOnce(messageWith(outranItsEvidence)).mockResolvedValue(messageWith(PASSING));
+    const verdict = await requestVerdict({ messages: { create } }, prompt);
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(verdict.verdict).toBe("pass");
   });
 });
 

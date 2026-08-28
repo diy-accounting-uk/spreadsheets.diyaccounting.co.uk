@@ -60,7 +60,13 @@ in the summary that it does not block the run.
 Give a verdict of `pass` or `fail`, a summary of one or two sentences, and a list of concerns.
 
 Each concern names the figure, says where in the report it appears, and says why it looks
-wrong. Write it so someone can go to that sheet and check.
+wrong. Write it so someone can go to that sheet and check. Mark it `blocking` when it is a
+reason to fail and `note` when it is not.
 
 Raise a concern only when you have one. An empty list is a good answer for a clean run.
 Never fail a run on a concern you cannot point to a figure for.
+
+The verdict has to agree with the concerns beneath it. A `fail` needs at least one concern
+marked `blocking`; if every concern you end up recording is a note, the verdict is `pass`.
+Work the figures out before you write the summary, and if a figure you were going to fail on
+turns out to reconcile, say so in the concern and let the verdict follow it.

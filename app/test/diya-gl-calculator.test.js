@@ -122,22 +122,22 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Profit & Loss Acc"].C18).toBe(4560);
   });
 
-  it("C22: Total Expenses = 57452", () => {
+  it("C22: Total Expenses = 125852", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(results["Profit & Loss Acc"].C22).toBe(57452);
+    expect(results["Profit & Loss Acc"].C22).toBe(125852);
   });
 
-  it("C24: Net Profit = 333908", () => {
+  it("C24: Net Profit = 265508", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(results["Profit & Loss Acc"].C24).toBe(333908);
+    expect(results["Profit & Loss Acc"].C24).toBe(265508);
   });
 
-  it("C28: Taxable Profit = 333908 (no capital allowances)", () => {
+  it("C28: Taxable Profit = 265508 (no capital allowances)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(results["Profit & Loss Acc"].C28).toBe(333908);
+    expect(results["Profit & Loss Acc"].C28).toBe(265508);
   });
 
   // ── Monthly sales ──
@@ -156,16 +156,16 @@ describe("calculateFromDiyaGl — BST", () => {
 
   // ── Income Tax checks ──
 
-  it("E5: Profit from SE = 333908", () => {
+  it("E5: Profit from SE = 265508", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(results["Income Tax"].E5).toBe(333908);
+    expect(results["Income Tax"].E5).toBe(265508);
   });
 
-  it("E10: Total Income Tax = 120995 (tolerance 1)", () => {
+  it("E10: Total Income Tax = 93635 (tolerance 1)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(Math.abs(results["Income Tax"].E10 - 120995)).toBeLessThanOrEqual(1);
+    expect(Math.abs(results["Income Tax"].E10 - 93635)).toBeLessThanOrEqual(1);
   });
 
   it("E15: NI Class 4 lower = 2262", () => {
@@ -177,8 +177,8 @@ describe("calculateFromDiyaGl — BST", () => {
   it("E18: Total Tax + NI matches Excel (tolerance 1)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    // Excel: 128929.76
-    expect(Math.abs(results["Income Tax"].E18 - 128929.76)).toBeLessThanOrEqual(1);
+    // Excel: 100201.96
+    expect(Math.abs(results["Income Tax"].E18 - 100201.96)).toBeLessThanOrEqual(1);
   });
 
   // ── Business Details ──

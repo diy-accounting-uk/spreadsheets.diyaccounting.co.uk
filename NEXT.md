@@ -14,13 +14,25 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   generate-commit run per product — the committed reports and pages still show pre-fix
   numbers, and the judge will rightly fail the next deploy until they refresh.
 
-- [ ] **Brickwork scenario rebuild — NOW A DEPLOY BLOCKER, fix in flight**: the deploy
-  judge (run 33178939074) failed SE and Ltd on their brickwork runs — the non-VAT twins
-  file full VAT quarters, no bank journal so debtors absorb all sales, capital and CIS
-  figures inconsistent. Rebuild in worktree `../spreadsheets-worktrees/brickwork`,
-  branch `claude/recon-brickwork`. Until it merges (plus the report-refresh runs),
-  deploys fail the judge; `skip-reconciliation-check` is the designed override if a
-  deploy cannot wait.
+- [ ] **Shipped Basic Sole Trader template: two income tax bands** (judge finding): the
+  Income Tax sheet works basic and higher only, with no additional rate and no
+  personal-allowance taper, so a profit over the higher-rate threshold is charged 40%
+  all the way up. Precision Code's £265,508 is the scenario that shows it. Binary
+  template surgery on the band table plus the Admin cells to feed it.
+
+- [ ] **Shipped Limited Company template: no marginal relief, and a CT600 that files half
+  the charge** (judge finding): the CorporationTax sheet charges the whole chargeable profit
+  at the rate in `Admin!P6`/`P7`, which the generator fills with the small profits rate.
+  `F33 = IF(K28>0,K28*A33/A35,0)`, `I33 = F33*G33/100`, `K35 = SUM(I33:I34)` — one rate cell
+  per row, no main rate, no relief step, and the CT600's relief boxes 64 and 65 (`Y133`,
+  `Y135`) carry no formula either. Precision Code's £147,519.90 chargeable profit is charged
+  £28,028.78 where the statutory computation gives £35,342.77 (25% less 3/200 of £250,000 −
+  £147,519.90), an undercharge of £7,313.99 carried into the accounts and the fixed asset
+  note. Separately, the form's second financial year row (boxes 53–56) is wired to nothing,
+  so box 63 = `AJ126+AJ128` files £13,995.22, the first tax row alone, against a £28,028.78
+  charge. Both read identically at a 31 March year-end and at a 30 September one. Binary
+  template surgery: a relief step on the working sheet with the Admin cells to feed it, and
+  wiring CT600 row 128 to `CorporationTax!` row 34.
 
 - [ ] **Shipped-template defects found regenerating the coverage map** (details in
   SHEET_COVERAGE_GAPS.md on PR #38's branch): `HPfinance` rows 10+ carry `#REF!` in

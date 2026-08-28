@@ -51,3 +51,6 @@ reports/populated/
 reports/screenshots/
 *.log
 .scratch/
+
+# Judge verdicts are written per run; CI attaches them as artefacts.
+reports/judge-verdict-*.json

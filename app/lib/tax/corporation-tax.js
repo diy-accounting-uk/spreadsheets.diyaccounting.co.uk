@@ -5,16 +5,24 @@
 
 /**
  * Calculate corporation tax with marginal relief.
+ *
+ * The upper limit arrives as main_rate_limit in the ltd-<year>.toml rate
+ * tables and as small_profits_limit_upper from callers that build the rates
+ * by hand, so both names are read. The relief fraction is taken as it comes:
+ * the financial years before 2023 carry a zero fraction and a zero upper
+ * limit because there was one rate and no relief, and defaulting either of
+ * those away invents a relief those years never had.
+ *
  * @param {number} profit - profit chargeable to CT
- * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, small_profits_limit_upper, marginal_relief_fraction }
+ * @param {Object} ctRates - { small_profits_rate, main_rate, small_profits_limit, main_rate_limit, marginal_relief_fraction }
  * @returns {{ profitChargeable, smallProfitsRate, mainRate, corporationTax, marginalRelief }}
  */
 export function calculateCorporationTax(profit, ctRates) {
   const spr = ctRates.small_profits_rate;
   const mr = ctRates.main_rate;
   const spl = ctRates.small_profits_limit;
-  const splu = ctRates.small_profits_limit_upper || 250000;
-  const mrf = ctRates.marginal_relief_fraction || 0.015;
+  const splu = ctRates.main_rate_limit ?? ctRates.small_profits_limit_upper ?? 250000;
+  const mrf = ctRates.marginal_relief_fraction ?? 0.015;
 
   if (profit <= 0) {
     return { profitChargeable: profit, smallProfitsRate: spr, mainRate: mr, corporationTax: 0, marginalRelief: 0 };

@@ -865,6 +865,18 @@ supplier = "Smith & Co"
 code = "l"
 amount = 300
 
+[[purchases.apr]]
+date = 2025-04-30
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.apr]]
+date = 2025-04-30
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.may]]
 date = 2025-05-01
 supplier = "WorkSpace Ltd"
@@ -1069,6 +1081,18 @@ supplier = "Smith & Co"
 code = "l"
 amount = 300
 
+[[purchases.may]]
+date = 2025-05-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.may]]
+date = 2025-05-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "WorkSpace Ltd"
@@ -1266,6 +1290,18 @@ date = 2025-06-30
 supplier = "Directors loan"
 code = "i"
 amount = 250
+
+[[purchases.jun]]
+date = 2025-06-30
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.jun]]
+date = 2025-06-30
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
 
 [[purchases.jul]]
 date = 2025-07-01
@@ -1471,6 +1507,18 @@ supplier = "Smith & Co"
 code = "l"
 amount = 300
 
+[[purchases.jul]]
+date = 2025-07-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.jul]]
+date = 2025-07-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "WorkSpace Ltd"
@@ -1662,6 +1710,18 @@ date = 2025-08-31
 supplier = "Smith & Co"
 code = "l"
 amount = 300
+
+[[purchases.aug]]
+date = 2025-08-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.aug]]
+date = 2025-08-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
 
 [[purchases.sep]]
 date = 2025-09-01
@@ -1860,6 +1920,18 @@ date = 2025-09-30
 supplier = "Directors loan"
 code = "i"
 amount = 208
+
+[[purchases.sep]]
+date = 2025-09-30
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.sep]]
+date = 2025-09-30
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
 
 [[purchases.oct]]
 date = 2025-10-01
@@ -2071,6 +2143,18 @@ supplier = "Smith & Co"
 code = "l"
 amount = 300
 
+[[purchases.oct]]
+date = 2025-10-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.oct]]
+date = 2025-10-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "WorkSpace Ltd"
@@ -2256,6 +2340,18 @@ date = 2025-11-30
 supplier = "Smith & Co"
 code = "l"
 amount = 300
+
+[[purchases.nov]]
+date = 2025-11-30
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.nov]]
+date = 2025-11-30
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
 
 [[purchases.dec]]
 date = 2025-12-01
@@ -2455,6 +2551,18 @@ supplier = "Directors loan"
 code = "i"
 amount = 167
 
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.dec]]
+date = 2025-12-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "WorkSpace Ltd"
@@ -2652,6 +2760,18 @@ date = 2026-01-31
 supplier = "Smith & Co"
 code = "l"
 amount = 300
+
+[[purchases.jan]]
+date = 2026-01-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.jan]]
+date = 2026-01-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
 
 [[purchases.feb]]
 date = 2026-02-01
@@ -2851,6 +2971,18 @@ supplier = "Shell"
 code = "m"
 amount = 120
 
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "WorkSpace Ltd"
@@ -3037,6 +3169,18 @@ supplier = "Directors loan"
 code = "i"
 amount = 125
 
+[[purchases.mar]]
+date = 2026-03-31
+supplier = "Alice Johnson"
+code = "e"
+amount = 3500
+
+[[purchases.mar]]
+date = 2026-03-31
+supplier = "Bob Williams"
+code = "e"
+amount = 2200
+
 [stock]
 opening = 10000
 closing = 6000
@@ -3127,7 +3271,7 @@ cost = 36000
 [expected]
 total_sales = 409900
 gross_profit = 391360
-net_profit = 333908
+net_profit = 265508
 total_premises = 15840
 total_gen_admin = 1962
 total_legal = 4560

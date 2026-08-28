@@ -94,7 +94,7 @@ describeCalc("BST closure identities catch a broken workbook", () => {
   it("the intact workbook passes the monthly-sum and capital-allowances closure checks", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, null, null, null);
-    const checks = bstCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
 
     const monthlyCheck = checks.find((c) => c.name === "P&L: Total Sales = sum of monthly Sales sheets");
     const capCheck = checks.find((c) => c.name === "P&L: Capital Allowances = SE Short chain");
@@ -105,7 +105,7 @@ describeCalc("BST closure identities catch a broken workbook", () => {
   it("corrupting one month's Sales total breaks the monthly-sum closure check", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, "Profit & Loss Acc", "D4", 999999);
-    const checks = bstCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
 
     const monthlyCheck = checks.find((c) => c.name === "P&L: Total Sales = sum of monthly Sales sheets");
     expect(monthlyCheck.pass).toBe(false);
@@ -114,16 +114,39 @@ describeCalc("BST closure identities catch a broken workbook", () => {
   it("corrupting the P&L capital allowances cell breaks the SE Short chain closure check", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, "Profit & Loss Acc", "C26", 12345);
-    const checks = bstCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
 
     const capCheck = checks.find((c) => c.name === "P&L: Capital Allowances = SE Short chain");
     expect(capCheck.pass).toBe(false);
   });
 
+  it("the intact workbook ties cost of sales to the stock bought and the stock movement", async () => {
+    const results = await readWithCorruption(populatedPath, bstReads(), null, null, null);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
+    const stockCheck = checks.find((c) => c.name === "Stock: cost of sales = stock purchases + stock movement");
+    expect(stockCheck).toBeDefined();
+    expect(stockCheck.expected).toBeGreaterThan(0);
+    expect(stockCheck.pass).toBe(true);
+  });
+
+  it("corrupting the cost of sales cell breaks the stock tie", async () => {
+    const results = await readWithCorruption(populatedPath, bstReads(), "Profit & Loss Acc", "C6", 999999);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
+    const stockCheck = checks.find((c) => c.name === "Stock: cost of sales = stock purchases + stock movement");
+    expect(stockCheck.pass).toBe(false);
+  });
+
+  it("corrupting the P&L tax line breaks the tie to the Income Tax sheet", async () => {
+    const results = await readWithCorruption(populatedPath, bstReads(), "Profit & Loss Acc", "C32", 1);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
+    const name = "P&L: tax charged = Income Tax sheet total less CIS deducted";
+    expect(checks.find((c) => c.name === name).pass).toBe(false);
+  });
+
   it("corrupting the SE Short balancing charge cell also breaks the capital-allowances chain check", async () => {
     const reads = bstReads();
     const results = await readWithCorruption(populatedPath, reads, "SE Short", "O85", -50000);
-    const checks = bstCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
 
     const capCheck = checks.find((c) => c.name === "P&L: Capital Allowances = SE Short chain");
     expect(capCheck.pass).toBe(false);

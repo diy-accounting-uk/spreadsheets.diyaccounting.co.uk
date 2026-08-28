@@ -40,4 +40,31 @@ describe("calculateCorporationTax", () => {
     const result = calculateCorporationTax(50000, CT_RATES);
     expect(result.corporationTax).toBe(9500); // 50000 * 0.19
   });
+
+  it("reads the upper limit from main_rate_limit, the name the rate tables use", () => {
+    const rates = {
+      small_profits_rate: 0.19,
+      main_rate: 0.25,
+      small_profits_limit: 50000,
+      main_rate_limit: 250000,
+      marginal_relief_fraction: 0.015,
+    };
+    const result = calculateCorporationTax(100000, rates);
+    expect(result.corporationTax).toBe(22750);
+    expect(result.marginalRelief).toBe(2250);
+  });
+
+  it("charges one rate and no relief for a year whose relief fraction is zero", () => {
+    // FY2020 to FY2022: one rate of 19%, no small profits limit, no relief.
+    const rates = {
+      small_profits_rate: 0.19,
+      main_rate: 0.19,
+      small_profits_limit: 0,
+      main_rate_limit: 0,
+      marginal_relief_fraction: 0,
+    };
+    const result = calculateCorporationTax(147519.897839506, rates);
+    expect(result.corporationTax).toBeCloseTo(28028.7806, 4);
+    expect(result.marginalRelief).toBe(0);
+  });
 });

@@ -44,6 +44,25 @@ export function extractTaxYearStart(scenario) {
   return null;
 }
 
+// The assets a year bought, for the products whose asset schedule is a
+// separate sheet from the purchase journal. A purchase coded as capital
+// reaches the journal's own fixed asset analysis column and stops there, so a
+// scenario that lists no additions of its own would leave that spend
+// capitalised in one book and absent from the other, earning no capital
+// allowance at all. A scenario that does list them is taken at its word --
+// that is where an asset's description, reference and its own cost live.
+export function fixedAssetAdditions(scenario, capitalCode) {
+  if (scenario.fixed_asset_additions) return scenario.fixed_asset_additions;
+  const additions = [];
+  for (const transactions of Object.values(scenario.purchases || {})) {
+    for (const tx of transactions) {
+      if (tx.code !== capitalCode) continue;
+      additions.push({ date: tx.date, description: tx.supplier, reference: tx.supplier, cost: tx.amount });
+    }
+  }
+  return additions;
+}
+
 export function loadScenario(path) {
   return parseTOML(readFileSync(path, "utf8"));
 }

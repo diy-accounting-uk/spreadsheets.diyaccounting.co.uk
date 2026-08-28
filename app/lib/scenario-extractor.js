@@ -249,6 +249,23 @@ export function computeGrossSales(salesLines) {
 // Filter functions for each subset
 // ============================================================================
 
+// The Basic Sole Trader package has no payroll workbook. A sole trader's
+// staff wages reach its profit and loss account through the purchase journal
+// under the employee-costs code, which is how the package is meant to be
+// kept, so the payroll journal is folded in that way rather than dropped --
+// a business billing this much and paying nobody is not the trade the
+// scenario describes. The proprietor's own drawings are not an expense and
+// stay out, which is what leaving the director's account behind does.
+const BST_STAFF_WAGES_ACCOUNT = "5101";
+
+export function bstStaffWagesAsPurchases(lines) {
+  return lines.map((line) =>
+    line.sourceJournalID === "payroll" && line.accountMainID === BST_STAFF_WAGES_ACCOUNT
+      ? { ...line, sourceJournalID: "purchases", amount: line["diya-gl:grossPay"] ?? line.amount }
+      : line,
+  );
+}
+
 export function filterBst(lines) {
   return lines.filter((l) => {
     if (l.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(l.accountMainID);

@@ -68,8 +68,22 @@ const BANK_LAYOUTS = {
 // column.
 const VAT_RATE = 0.2;
 
-function netOfVat(gross) {
-  return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
+// Cell H2 of a Sales.xlsx month tab holds the rate the whole book charges.
+// April carries the figure, each later month reads the month before it, and
+// every Purchases month reads its own Sales month. Entering 0 there is what
+// the Self Employed guide tells a business that is not registered for VAT to
+// do, and it is the only lever that turns VAT off end to end.
+const VAT_RATE_CELL = "H2";
+
+// A scenario says whether the business is registered in its own metadata.
+// Anything that does not say is registered, which is what every fixture
+// written before the flag existed means.
+export function vatRateFor(scenario) {
+  return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+}
+
+function netOfVat(gross, rate = VAT_RATE) {
+  return Math.round((gross / (1 + rate)) * 100) / 100;
 }
 
 // ── Vat.xlsx Vatinterface layout ───────────────────────────────────────────
@@ -93,7 +107,13 @@ const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19 };
 const STRADDLING_SALES_COLUMNS = { date: "A", name: "B", invoice: "C", amount: "E" };
 const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", description: "E", amount: "G" };
 
+// The StockControl physical-count cells for the two ends of the accounting
+// year -- row 6 is the opening count and row 30 the count at the year end.
+const STOCK_OPENING_COUNT_CELL = "AB6";
+const STOCK_CLOSING_COUNT_CELL = "AB30";
+
 export function cellWrites(scenario) {
+  const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
   const bankWrites = {};
@@ -133,6 +153,14 @@ export function cellWrites(scenario) {
         row++;
       }
     }
+  }
+
+  // A business that is not registered for VAT turns the rate off on April's
+  // Sales tab, and the rest of the book follows that cell.
+  if (rate !== VAT_RATE) {
+    const firstTab = MONTH_SHEETS.apr;
+    if (!salesWrites[firstTab]) salesWrites[firstTab] = {};
+    salesWrites[firstTab][VAT_RATE_CELL] = rate * 100;
   }
 
   // Bank and Cash entries — routed to a workbook by account, then to the
@@ -186,12 +214,6 @@ export function cellWrites(scenario) {
     }
   }
 
-  // Stock
-  if (scenario.stock) {
-    // StockControl in Financialaccounts.xlsx — need to find correct cells
-    // For now, stock is written via the scenario expected values in compliance checks
-  }
-
   // Opening/closing debtors — column G is "Sales Value including Vat", the
   // only column the sheet's own G1 total (SUM(G5:G300)) reads. Column D
   // carries no header and no formula anywhere in the workbook.
@@ -243,6 +265,19 @@ export function cellWrites(scenario) {
 
   // Business Details (in Financialaccounts.xlsx hub)
   const hubWrites = {};
+
+  // Stock (StockControl). The sheet takes a physical count against each month
+  // end, row 6 for the year's opening through row 30 for its close, and the
+  // P&L's materials line takes each month's count off the month before it
+  // (C14 = Apr purchases + AB6 - AB8, D14 = May purchases + AB8 - AB10, ...).
+  // The twelve months therefore telescope to AB6 - AB30 whatever is entered
+  // between them, so the two ends of the year are the whole of the year's
+  // stock movement. Without them the movement never reaches cost of sales.
+  if (scenario.stock) {
+    hubWrites.StockControl = {};
+    if (scenario.stock.opening !== undefined) hubWrites.StockControl[STOCK_OPENING_COUNT_CELL] = scenario.stock.opening;
+    if (scenario.stock.closing !== undefined) hubWrites.StockControl[STOCK_CLOSING_COUNT_CELL] = scenario.stock.closing;
+  }
   if (scenario.business || scenario.metadata) {
     hubWrites["Business Details"] = {};
     const bd = hubWrites["Business Details"];
@@ -393,7 +428,7 @@ export function cellWrites(scenario) {
       // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
-      fa[`E${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+      fa[`E${row}`] = netOfVat(tx.amount, rate);
     });
   }
 
@@ -421,7 +456,7 @@ export function cellWrites(scenario) {
       const row = disposalRows[i];
       const d = parseDate(tx.date);
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-      fa[`V${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+      fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
   }
 
@@ -493,9 +528,9 @@ export const CELL_MAP = [
   // ── Business Details ──
   ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
   // ── Profit & Loss Account ──
-  ["Profit & Loss Account", "B5",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B6",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B7",  "Product C — Training",      "accounts.sales.4002",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B5",  "Product A sales (code a)",  "accounts.sales.4000",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B6",  "Product B sales (code b)",  "accounts.sales.4001",            "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B7",  "Product C sales (code c)",  "accounts.sales.4002",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B8",  "Other Income",              "accounts.sales.4003",            "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B9",  "**Sales Turnover**",        "gl-cor:amount (salesTurnover)",  "Profit & Loss Account", 0],
   ["Profit & Loss Account", "B11", "Grants Received",           "accounts.sales.4004",            "Profit & Loss Account", 1],
@@ -537,11 +572,20 @@ export const CELL_MAP = [
   ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
   ["SE Short", "D8",   "Accounting date",                "documentInfo.periodCoveredEnd",             "Self Assessment (SA103S)", 0],
   ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
+  ["SE Short", "O38",  "Other business income",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
+  // The return sets its expense captions in two columns. Reporting only the
+  // left one leaves a reader adding up half the analysis against the whole
+  // total, and finding it short.
   ["SE Short", "D46",  "Cost of sales",                  "gl-cor:amount (sa103s.costOfSales)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "D51",  "Other direct costs",             "gl-cor:amount (sa103s.otherDirect)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D51",  "Car, van and travel",            "gl-cor:amount (sa103s.travel)",             "Self Assessment (SA103S)", 1],
   ["SE Short", "D55",  "Employee costs",                 "gl-cor:amount (sa103s.employeeCosts)",      "Self Assessment (SA103S)", 1],
   ["SE Short", "D60",  "Premises costs",                 "gl-cor:amount (sa103s.premises)",           "Self Assessment (SA103S)", 1],
-  ["SE Short", "D64",  "Other expenses",                 "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "D64",  "Repairs and renewals",           "gl-cor:amount (sa103s.repairs)",            "Self Assessment (SA103S)", 1],
+  ["SE Short", "O46",  "Accountancy, legal and professional", "gl-cor:amount (sa103s.legal)",         "Self Assessment (SA103S)", 1],
+  ["SE Short", "O51",  "Interest and bank charges",      "gl-cor:amount (sa103s.interest)",           "Self Assessment (SA103S)", 1],
+  ["SE Short", "O55",  "Phone, stationery and office costs", "gl-cor:amount (sa103s.office)",         "Self Assessment (SA103S)", 1],
+  ["SE Short", "O60",  "Other business expenses",        "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "O64",  "**Total expenses**",             "gl-cor:amount (sa103s.totalExpenses)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
@@ -575,6 +619,30 @@ export const CELL_MAP = [
   ["VitalTax", "E7",  "Q3 Expenses",      "gl-cor:amount (vitalTax.q3Exp)",      "Quarterly Summary", 1],
   ["VitalTax", "F7",  "Q4 Expenses",      "gl-cor:amount (vitalTax.q4Exp)",      "Quarterly Summary", 1],
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
+  // ── Admin (generator-injected tax data) — cell positions verified against
+  // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
+  // SE's income tax band cells sit one row above BST's (M11/N12 rather than
+  // M12/N13) and NI Class 2 sits at L16 rather than L17.
+  ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
+  ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
+  ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0],
+  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.lowerRatePence",              "Admin (Generator Injected)", 0],
+  ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
+  ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];
 
 // Additional reads from leaf files (Bank.xlsx and Cash.xlsx closing
@@ -609,8 +677,8 @@ export function multiFileOptions() {
   const salesMonthReads = {};
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
-    salesMonthReads[tab] = ["H1", "I1"];
-    purchasesMonthReads[tab] = ["H1", "I1"];
+    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    purchasesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
   }
 
   // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
@@ -695,6 +763,8 @@ export function standardReads() {
   // against the template: C4=[6]Apr!$M$1, D4=$N$1, E4=$O$1, H4=$T$1). CELL_MAP
   // above already carries C4-C15 for the report; the rest are read here so
   // every month is available to check without bloating the report appendix.
+  reads.StockControl = [STOCK_OPENING_COUNT_CELL, STOCK_CLOSING_COUNT_CELL];
+
   reads.Wagesinterface = reads.Wagesinterface || [];
   for (let i = 0; i < WAGES_MONTH_ROWS.length; i++) {
     for (const col of ["C", "D", "E", "H"]) {
@@ -713,7 +783,46 @@ export function reportSections(results) {
     const val = results[sheet]?.[cell];
     sectionMap.get(section).push({ label, value: fmt(val), indent });
   }
-  return [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const vat = vatSection(results);
+  if (vat) sections.push(vat);
+  return sections;
+}
+
+// The VAT the books actually charged, taken from the month tabs and from the
+// return itself. Every other statement in this report is stated net, so a
+// registered trader and an unregistered one carrying the same trade read
+// identically without it.
+function vatSection(results) {
+  const months = Object.values(MONTH_SHEETS)
+    .map((tab) => [results[`Sales.xlsx!${tab}`], results[`Purchases.xlsx!${tab}`]])
+    .filter(([sales, purchases]) => sales || purchases);
+  if (months.length === 0) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const sum = (side, cell) => months.reduce((total, pair) => total + num(pair[side]?.[cell]), 0);
+  const salesVat = sum(0, "H1");
+  const salesNet = sum(0, "I1");
+  const purchasesVat = sum(1, "H1");
+  const purchasesNet = sum(1, "I1");
+
+  const rows = [
+    { label: "Sales invoiced including VAT", value: fmt(salesNet + salesVat), indent: 1 },
+    { label: "VAT charged on sales", value: fmt(salesVat), indent: 1 },
+    { label: "Sales net of VAT", value: fmt(salesNet), indent: 1 },
+    { label: "Purchases invoiced including VAT", value: fmt(purchasesNet + purchasesVat), indent: 1 },
+    { label: "VAT reclaimed on purchases", value: fmt(purchasesVat), indent: 1 },
+    { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
+    { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
+  ];
+  for (let q = 1; q <= 4; q++) {
+    const boxes = results[`Vat.xlsx!VATQtr${q}`];
+    if (!boxes) continue;
+    rows.push({ label: `Q${q} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
+    rows.push({ label: `Q${q} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
+    rows.push({ label: `Q${q} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+  }
+  return { title: "VAT Returns", rows };
 }
 
 export function cellLabels() {
@@ -739,6 +848,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+  }
+
+  const rate = vatRateFor(expected);
+
+  // A template cell that resolves to blank reads back as the string the
+  // formula puts there (" "), so every arithmetic read goes through this.
+  const num = (v) => (typeof v === "number" ? v : 0);
+
+  // The rate cell itself, month by month on both journals. A non-registered
+  // scenario writes 0 into April's Sales tab and nothing else; every other
+  // month has to arrive at the same rate down the template's own chain of
+  // references, so a month that broke away from it shows up here.
+  for (const tab of Object.values(MONTH_SHEETS)) {
+    for (const journal of ["Sales.xlsx", "Purchases.xlsx"]) {
+      const month = results[`${journal}!${tab}`];
+      if (month) {
+        const read = month[VAT_RATE_CELL];
+        check(`${journal} ${tab}: VAT rate charged (${VAT_RATE_CELL})`, typeof read === "number" ? read : 0, rate * 100, 0);
+      }
+    }
   }
 
   const pl = results["Profit & Loss Account"];
@@ -790,9 +919,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
 
   // Stock check
-  if (expected.opening_stock !== undefined) {
-    const sc = results.StockControl;
-    if (sc) check("Opening Stock", sc.B5 || 0, expected.opening_stock, expected.opening_stock * 0.01);
+  // Stock. The counts at the two ends of the year, read back from the sheet
+  // they were entered on, and the movement between them reaching cost of
+  // sales. The materials line carries the year's stock-coded purchases plus
+  // the fall in stock across it, so a stock movement that never reaches the
+  // accounts shows up here and nowhere else.
+  const stockControl = results.StockControl;
+  // A fixture states its stock either as its own table or among the totals it
+  // declares, so both spellings are read here.
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (stockControl && openingStock !== undefined) {
+    check("Stock: opening count", num(stockControl[STOCK_OPENING_COUNT_CELL]), openingStock);
+  }
+  if (stockControl && closingStock !== undefined) {
+    check("Stock: count at the year end", num(stockControl[STOCK_CLOSING_COUNT_CELL]), closingStock);
+  }
+  if (openingStock !== undefined && closingStock !== undefined && expected.purchases) {
+    let stockPurchasesNet = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) if (tx.code === "s") stockPurchasesNet += netOfVat(tx.amount, rate);
+    }
+    check("P&L: materials = stock purchases net + the year's stock movement", num(pl.B14), stockPurchasesNet + openingStock - closingStock);
   }
 
   // Debtors/creditors checks — read the real G1 total (SUM(G5:G300) of the
@@ -826,7 +974,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
 
     // Tax calculation chain (6c)
-    check("Tax: Taxable = Profit - Allowance", tax.E7, (tax.E5 || 0) - (tax.E6 || 0));
+    // The sheet has no negative taxable income: a profit under the personal
+    // allowance leaves it nil (verified against the template: E7 =
+    // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
+    check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
     check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
@@ -834,19 +985,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const seShort = results["SE Short"];
     if (seShort) {
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
-      if (seShort.D71) {
-        // SA103S profit excludes depreciation (not an allowable expense for
-        // income tax -- capital allowances substitute for it), while the
-        // accounting P&L operating profit (B37) deducts it. Add the P&L's
-        // own depreciation charge back before comparing the two.
-        const plDepreciationAddback = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
-        check(
-          "SA103S: Net profit close to P&L Net - Grants + Depreciation addback",
-          seShort.D71,
-          pl.B37 - (pl.B11 || 0) + plDepreciationAddback,
-          Math.abs(pl.B37) * 0.01,
-        );
-      }
+      // The return's total expenses line and the profit it carries, each
+      // against the accounts they are built from. Depreciation is not an
+      // allowable expense for income tax -- capital allowances stand in for
+      // it -- so the total the return works from takes it back out, which is
+      // the whole of the difference between the two profits. Both are exact
+      // identities; the profit was previously compared to a rebuilt figure
+      // with a one per cent tolerance.
+      const plDepreciation = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+      check(
+        "SA103S: total expenses = cost of sales + admin expenses less depreciation",
+        num(seShort.O64),
+        num(pl.B17) + num(pl.B35) - plDepreciation,
+      );
+      check(
+        "SA103S: net profit = turnover + other business income - total expenses",
+        num(seShort.D71),
+        num(seShort.D38) + num(seShort.O38) - num(seShort.O64),
+      );
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
 
       // Capital allowances carry from Schedule to SA103S across the
@@ -890,7 +1046,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.purchases)) {
       for (const tx of transactions) if (tx.code === "fa") faGross += tx.amount;
     }
-    const faNet = Math.round((faGross / (1 + VAT_RATE)) * 100) / 100;
+    const faNet = netOfVat(faGross, rate);
     check("Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", fr.E11 || 0, faNet);
   }
   if (fr && expected.sales) {
@@ -898,7 +1054,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.sales)) {
       for (const tx of transactions) if (tx.code === "fs") fsGross += tx.amount;
     }
-    const fsNet = Math.round((fsGross / (1 + VAT_RATE)) * 100) / 100;
+    const fsNet = netOfVat(fsGross, rate);
     check("Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", fr.K11 || 0, fsNet);
   }
 
@@ -970,10 +1126,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
 
       for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
-        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        const net = netOfVat(byCode[code] || 0, rate);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Sales.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
-      const badDebtNet = Math.round(((byCode.o || 0) / (1 + VAT_RATE)) * 100) / 100;
+      const badDebtNet = netOfVat(byCode.o || 0, rate);
       check(
         `P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`,
         pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0,
@@ -996,7 +1152,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
 
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        const net = netOfVat(byCode[code] || 0, rate);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }
@@ -1053,7 +1209,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       let wCodeNet = 0;
       if (expected.purchases) {
         for (const transactions of Object.values(expected.purchases)) {
-          for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + VAT_RATE);
+          for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + rate);
         }
       }
       check(
@@ -1141,27 +1297,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     let purchasesNet = 0;
     if (expected.sales) {
       for (const txs of Object.values(expected.sales)) {
-        for (const tx of txs) if (inQuarter(tx.date)) outputVat += tx.amount - tx.amount / (1 + VAT_RATE);
+        for (const tx of txs) if (inQuarter(tx.date)) outputVat += tx.amount - tx.amount / (1 + rate);
       }
     }
     if (expected.purchases) {
       for (const txs of Object.values(expected.purchases)) {
         for (const tx of txs) {
           if (!inQuarter(tx.date)) continue;
-          inputVat += tx.amount - tx.amount / (1 + VAT_RATE);
-          purchasesNet += tx.amount / (1 + VAT_RATE);
+          inputVat += tx.amount - tx.amount / (1 + rate);
+          purchasesNet += tx.amount / (1 + rate);
         }
       }
     }
     // The last quarter of a 6 April year runs past it, so its window picks up
     // the straddling entry sheets alongside the year's own last months.
     for (const entry of expected.vat_straddling_sales || []) {
-      if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + VAT_RATE);
+      if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
     for (const entry of expected.vat_straddling_purchases || []) {
       if (!inQuarter(entry.date)) continue;
-      inputVat += entry.amount - entry.amount / (1 + VAT_RATE);
-      purchasesNet += entry.amount / (1 + VAT_RATE);
+      inputVat += entry.amount - entry.amount / (1 + rate);
+      purchasesNet += entry.amount / (1 + rate);
     }
     check(`VAT Q${q}: box 1/3 output VAT (G9) = scenario sales VAT for the quarter`, qtr.G9 || 0, outputVat, 1);
     check(`VAT Q${q}: box 4 input VAT (G15) = scenario purchases VAT for the quarter`, qtr.G15 || 0, inputVat, 1);
@@ -1177,8 +1333,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // link that stops carrying fails on that month and side alone.
   const vatinterface = results["Vat.xlsx!Vatinterface"];
   if (vatinterface) {
-    const num = (v) => (typeof v === "number" ? v : 0);
-
     Object.values(MONTH_SHEETS).forEach((tab, i) => {
       const row = VATINTERFACE_ROWS.firstMonth + i;
       const salesMonth = results[`Sales.xlsx!${tab}`];
@@ -1210,22 +1364,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(
           `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
           num(vatinterface[`D${row}`]),
-          netOfVat(salesGross),
+          netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
           num(vatinterface[`F${row}`]),
-          salesGross - netOfVat(salesGross),
+          salesGross - netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface H${row}: ${period} purchases net = the straddling purchases entered for that period`,
           num(vatinterface[`H${row}`]),
-          netOfVat(purchasesGross),
+          netOfVat(purchasesGross, rate),
         );
         check(
           `Vatinterface J${row}: ${period} input VAT = the straddling purchases entered for that period`,
           num(vatinterface[`J${row}`]),
-          purchasesGross - netOfVat(purchasesGross),
+          purchasesGross - netOfVat(purchasesGross, rate),
         );
       }
     }
@@ -1274,6 +1428,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0,
       );
     }
+  }
+
+  // Admin echo: the generator injects the tax year's rates, bands and
+  // thresholds from the TOML into the Admin sheet, and every workbook in
+  // the package reads from there. Nothing else asserts the injected values
+  // equal what the run was generated from -- a wrong rate here is
+  // arithmetically invisible to every downstream check, the same failure
+  // shape as the shipped-zeros VAT bug. BST, Taxi and Ltd already carry this
+  // check; SE's cell positions differ (buildSeCellEdits() in
+  // app/lib/generator.js), so the comparisons are repeated here rather than
+  // shared.
+  if (taxData && results.Admin) {
+    const admin = results.Admin;
+    const it = taxData.income_tax;
+    const ni = taxData.national_insurance;
+    const ca = taxData.capital_allowances;
+    const mil = taxData.mileage;
+    check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
+    check("Admin: Basic Rate = tax data", admin.N6, it.basic_rate, 0.0001);
+    check("Admin: Higher Rate = tax data", admin.N7, it.higher_rate, 0.0001);
+    check("Admin: Basic Band End = tax data", admin.M11, it.basic_band_end);
+    check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
+    check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
+    check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
+    check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
+    check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
+    check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
+    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
+    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
+    check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
+    check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
+    check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);
+    check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
+    check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
+    check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
   }
 
   return checks;

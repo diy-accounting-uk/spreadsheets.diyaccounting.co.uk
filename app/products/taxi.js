@@ -7,7 +7,7 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSerial } from "../lib/generator.js";
-import { parseDate, MONTH_SHEETS, extractTaxYearStart } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
 
 export const PRODUCT = {
   id: "taxi",
@@ -124,11 +124,12 @@ export function cellWrites(scenario, targetStartYear = null) {
   // schedule, so this write is a separate, deliberate step modelling the
   // same real-world double entry (cash purchase in Purchases, asset
   // registered in the Fixed Assets book).
-  if (scenario.fixed_asset_additions) {
+  const assetAdditions = fixedAssetAdditions(scenario, "f");
+  if (assetAdditions.length > 0) {
     if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
     const fa = writes["Fixed Assets"];
     let row = 47;
-    for (const asset of scenario.fixed_asset_additions) {
+    for (const asset of assetAdditions) {
       const d = parseDate(asset.date);
       fa[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`B${row}`] = asset.description;
@@ -331,9 +332,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // allowance is recomputed independently from the read-back Admin rate and
   // restriction, so this check also stands in as the Admin-echo check for
   // those two cells.
-  if (expected.fixed_asset_additions && results["Fixed Assets"]) {
+  const expectedAdditions = fixedAssetAdditions(expected, "f");
+  if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
-    const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
     check("Fixed Assets: New asset cost recorded", fa.D47 || 0, expected.fixed_asset_cost ?? assetCost);
 
     if (results.Admin) {
