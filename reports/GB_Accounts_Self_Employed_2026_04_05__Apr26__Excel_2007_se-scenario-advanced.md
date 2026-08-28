@@ -333,129 +333,15 @@ Status: RECONCILES
 | VAT Q3: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 17259.999999999993 | 17260 | +7.275957614183426e-12 | PASS |
 | VAT Q3: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 3480.1249999999995 | 3480.125 | +4.547473508864641e-13 | PASS |
 | VAT Q3: box 7 net purchases (G23) = scenario purchases net for the quarter | 17400.625 | 17400.625 | 0 | PASS |
-| VAT Q4: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 11553.3333333333 | 11553.3333333333 | 0 | PASS |
-| VAT Q4: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 10159.499999999969 | 10159.5 | +3.092281986027956e-11 | PASS |
+| VAT Q4: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 10953.3333333333 | 10953.3333333333 | 0 | PASS |
+| VAT Q4: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 9599.499999999969 | 9599.50000000001 | +4.001776687800884e-11 | PASS |
 | VAT Q4: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| VAT Q4: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 11553.333333333328 | 11553.3333333333 | -2.9103830456733704e-11 | PASS |
-| VAT Q4: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 1393.833333333333 | 1393.83333333333 | -2.9558577807620168e-12 | PASS |
-| VAT Q4: box 7 net purchases (G23) = scenario purchases net for the quarter | 6969.166666666667 | 6969.16666666667 | +2.7284841053187847e-12 | PASS |
-| VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 5405.583333333337 | 5405.58333333334 | +3.637978807091713e-12 | PASS |
+| VAT Q4: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 10953.333333333328 | 10953.3333333333 | -2.9103830456733704e-11 | PASS |
+| VAT Q4: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 1353.833333333333 | 1353.83333333333 | -2.9558577807620168e-12 | PASS |
+| VAT Q4: box 7 net purchases (G23) = scenario purchases net for the quarter | 6769.166666666667 | 6769.16666666667 | +2.7284841053187847e-12 | PASS |
+| VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 5226.66666666667 | 5226.66666666667 | 0 | PASS |
+| VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 4605.583333333337 | 4605.58333333334 | +3.637978807091713e-12 | PASS |
 | VAT Q5: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| Vatinterface D6: Apr sales net = Sales.xlsx Apr | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
-| Vatinterface F6: Apr output VAT = Sales.xlsx Apr | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
-| Vatinterface H6: Apr purchases net = Purchases.xlsx Apr | 4259.375 | 4259.375 | 0 | PASS |
-| Vatinterface J6: Apr input VAT = Purchases.xlsx Apr | 851.875 | 851.875 | 0 | PASS |
-| Vatinterface D7: May sales net = Sales.xlsx May | 27433.3333333333 | 27433.3333333333 | 0 | PASS |
-| Vatinterface F7: May output VAT = Sales.xlsx May | 5486.66666666667 | 5486.66666666667 | 0 | PASS |
-| Vatinterface H7: May purchases net = Purchases.xlsx May | 5312.5 | 5312.5 | 0 | PASS |
-| Vatinterface J7: May input VAT = Purchases.xlsx May | 1062.5 | 1062.5 | 0 | PASS |
-| Vatinterface D8: Jun sales net = Sales.xlsx Jun | 29333.3333333333 | 29333.3333333333 | 0 | PASS |
-| Vatinterface F8: Jun output VAT = Sales.xlsx Jun | 5866.66666666667 | 5866.66666666667 | 0 | PASS |
-| Vatinterface H8: Jun purchases net = Purchases.xlsx Jun | 7547.5 | 7547.5 | 0 | PASS |
-| Vatinterface J8: Jun input VAT = Purchases.xlsx Jun | 1509.5 | 1509.5 | 0 | PASS |
-| Vatinterface D9: Jul sales net = Sales.xlsx Jul | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
-| Vatinterface F9: Jul output VAT = Sales.xlsx Jul | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
-| Vatinterface H9: Jul purchases net = Purchases.xlsx Jul | 7549.375 | 7549.375 | 0 | PASS |
-| Vatinterface J9: Jul input VAT = Purchases.xlsx Jul | 1509.875 | 1509.875 | 0 | PASS |
-| Vatinterface D10: Aug sales net = Sales.xlsx Aug | 30016.6666666667 | 30016.6666666667 | 0 | PASS |
-| Vatinterface F10: Aug output VAT = Sales.xlsx Aug | 6003.33333333333 | 6003.33333333333 | 0 | PASS |
-| Vatinterface H10: Aug purchases net = Purchases.xlsx Aug | 3671.04166666667 | 3671.04166666667 | 0 | PASS |
-| Vatinterface J10: Aug input VAT = Purchases.xlsx Aug | 734.208333333333 | 734.208333333333 | 0 | PASS |
-| Vatinterface D11: Sep sales net = Sales.xlsx Sep | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
-| Vatinterface F11: Sep output VAT = Sales.xlsx Sep | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
-| Vatinterface H11: Sep purchases net = Purchases.xlsx Sep | 4145.83333333333 | 4145.83333333333 | 0 | PASS |
-| Vatinterface J11: Sep input VAT = Purchases.xlsx Sep | 829.166666666667 | 829.166666666667 | 0 | PASS |
-| Vatinterface D12: Oct sales net = Sales.xlsx Oct | 42133.3333333333 | 42133.3333333333 | 0 | PASS |
-| Vatinterface F12: Oct output VAT = Sales.xlsx Oct | 8426.66666666667 | 8426.66666666667 | 0 | PASS |
-| Vatinterface H12: Oct purchases net = Purchases.xlsx Oct | 35838.125 | 35838.125 | 0 | PASS |
-| Vatinterface J12: Oct input VAT = Purchases.xlsx Oct | 7167.625 | 7167.625 | 0 | PASS |
-| Vatinterface D13: Nov sales net = Sales.xlsx Nov | 29433.3333333333 | 29433.3333333333 | 0 | PASS |
-| Vatinterface F13: Nov output VAT = Sales.xlsx Nov | 5886.66666666667 | 5886.66666666667 | 0 | PASS |
-| Vatinterface H13: Nov purchases net = Purchases.xlsx Nov | 5765 | 5765 | 0 | PASS |
-| Vatinterface J13: Nov input VAT = Purchases.xlsx Nov | 1153 | 1153 | 0 | PASS |
-| Vatinterface D14: Dec sales net = Sales.xlsx Dec | 27333.3333333333 | 27333.3333333333 | 0 | PASS |
-| Vatinterface F14: Dec output VAT = Sales.xlsx Dec | 5466.66666666667 | 5466.66666666667 | 0 | PASS |
-| Vatinterface H14: Dec purchases net = Purchases.xlsx Dec | 7876.25 | 7876.25 | 0 | PASS |
-| Vatinterface J14: Dec input VAT = Purchases.xlsx Dec | 1575.25 | 1575.25 | 0 | PASS |
-| Vatinterface D15: Jan sales net = Sales.xlsx Jan | 29533.3333333333 | 29533.3333333333 | 0 | PASS |
-| Vatinterface F15: Jan output VAT = Sales.xlsx Jan | 5906.66666666667 | 5906.66666666667 | 0 | PASS |
-| Vatinterface H15: Jan purchases net = Purchases.xlsx Jan | 3759.375 | 3759.375 | 0 | PASS |
-| Vatinterface J15: Jan input VAT = Purchases.xlsx Jan | 751.875 | 751.875 | 0 | PASS |
-| Vatinterface D16: Feb sales net = Sales.xlsx Feb | 28633.3333333333 | 28633.3333333333 | 0 | PASS |
-| Vatinterface F16: Feb output VAT = Sales.xlsx Feb | 5726.66666666667 | 5726.66666666667 | 0 | PASS |
-| Vatinterface H16: Feb purchases net = Purchases.xlsx Feb | 3663.75 | 3663.75 | 0 | PASS |
-| Vatinterface J16: Feb input VAT = Purchases.xlsx Feb | 732.75 | 732.75 | 0 | PASS |
-| Vatinterface D17: Mar sales net = Sales.xlsx Mar | 26133.3333333333 | 26133.3333333333 | 0 | PASS |
-| Vatinterface F17: Mar output VAT = Sales.xlsx Mar | 5226.66666666667 | 5226.66666666667 | 0 | PASS |
-| Vatinterface H17: Mar purchases net = Purchases.xlsx Mar | 3105.41666666667 | 3105.41666666667 | 0 | PASS |
-| Vatinterface J17: Mar input VAT = Purchases.xlsx Mar | 621.083333333333 | 621.083333333333 | 0 | PASS |
-| Vatinterface D4: 02Y1 sales net = the straddling sales entered for that period | 4000 | 4000 | 0 | PASS |
-| Vatinterface F4: 02Y1 output VAT = the straddling sales entered for that period | 800 | 800 | 0 | PASS |
-| Vatinterface H4: 02Y1 purchases net = the straddling purchases entered for that period | 600 | 600 | 0 | PASS |
-| Vatinterface J4: 02Y1 input VAT = the straddling purchases entered for that period | 120 | 120 | 0 | PASS |
-| Vatinterface D5: 03Y1 sales net = the straddling sales entered for that period | 2000 | 2000 | 0 | PASS |
-| Vatinterface F5: 03Y1 output VAT = the straddling sales entered for that period | 400 | 400 | 0 | PASS |
-| Vatinterface H5: 03Y1 purchases net = the straddling purchases entered for that period | 1000 | 1000 | 0 | PASS |
-| Vatinterface J5: 03Y1 input VAT = the straddling purchases entered for that period | 200 | 200 | 0 | PASS |
-| Vatinterface D18: 04Y2 sales net = the straddling sales entered for that period | 3000 | 3000 | 0 | PASS |
-| Vatinterface F18: 04Y2 output VAT = the straddling sales entered for that period | 600 | 600 | 0 | PASS |
-| Vatinterface H18: 04Y2 purchases net = the straddling purchases entered for that period | 200 | 200 | 0 | PASS |
-| Vatinterface J18: 04Y2 input VAT = the straddling purchases entered for that period | 40 | 40 | 0 | PASS |
-| Vatinterface D19: 05Y2 sales net = the straddling sales entered for that period | 1500 | 1500 | 0 | PASS |
-| Vatinterface F19: 05Y2 output VAT = the straddling sales entered for that period | 300 | 300 | 0 | PASS |
-| Vatinterface H19: 05Y2 purchases net = the straddling purchases entered for that period | 300 | 300 | 0 | PASS |
-| Vatinterface J19: 05Y2 input VAT = the straddling purchases entered for that period | 60 | 60 | 0 | PASS |
-| VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E9: quarter sales net = its three period rows | 84899.9999999999 | 84899.9999999999 | 0 | PASS |
-| Vatinterface G9: quarter output VAT = its three period rows | 16980.000000000007 | 16980 | -7.275957614183426e-12 | PASS |
-| Vatinterface I9: quarter purchases net = its three period rows | 20409.375 | 20409.375 | 0 | PASS |
-| Vatinterface K9: quarter input VAT = its three period rows | 4081.875 | 4081.875 | 0 | PASS |
-| VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G9) | 16980 | 16980 | 0 | PASS |
-| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K9) | 4081.875 | 4081.875 | 0 | PASS |
-| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I9) | 20409.375 | 20409.375 | 0 | PASS |
-| VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 84899.9999999999 | 84899.9999999999 | 0 | PASS |
-| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C9) | 45900 | 45900 | 0 | PASS |
-| VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E12: quarter sales net = its three period rows | 100283.3333333333 | 100283.333333333 | -3.055902197957039e-10 | PASS |
-| Vatinterface G12: quarter output VAT = its three period rows | 20056.66666666667 | 20056.6666666667 | +2.9103830456733704e-11 | PASS |
-| Vatinterface I12: quarter purchases net = its three period rows | 43655 | 43655 | 0 | PASS |
-| Vatinterface K12: quarter input VAT = its three period rows | 8731 | 8731 | 0 | PASS |
-| VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G12) | 20056.6666666667 | 20056.6666666667 | 0 | PASS |
-| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K12) | 8731 | 8731 | 0 | PASS |
-| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I12) | 43655 | 43655 | 0 | PASS |
-| VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 100283.333333333 | 100283.333333333 | 0 | PASS |
-| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C12) | 45991 | 45991 | 0 | PASS |
-| VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E15: quarter sales net = its three period rows | 86299.9999999999 | 86299.9999999999 | 0 | PASS |
-| Vatinterface G15: quarter output VAT = its three period rows | 17260.000000000007 | 17260 | -7.275957614183426e-12 | PASS |
-| Vatinterface I15: quarter purchases net = its three period rows | 17400.625 | 17400.625 | 0 | PASS |
-| Vatinterface K15: quarter input VAT = its three period rows | 3480.125 | 3480.125 | 0 | PASS |
-| VAT Q3: box 1 (G9) = Vatinterface quarter VAT due (G15) | 17260 | 17260 | 0 | PASS |
-| VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K15) | 3480.125 | 3480.125 | 0 | PASS |
-| VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I15) | 17400.625 | 17400.625 | 0 | PASS |
-| VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 86299.9999999999 | 86299.9999999999 | 0 | PASS |
-| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C15) | 46081 | 46081 | 0 | PASS |
-| VAT Q4: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E18: quarter sales net = its three period rows | 57766.6666666666 | 57766.6666666666 | 0 | PASS |
-| Vatinterface G18: quarter output VAT = its three period rows | 11553.33333333334 | 11553.3333333333 | -4.001776687800884e-11 | PASS |
-| Vatinterface I18: quarter purchases net = its three period rows | 6969.16666666667 | 6969.16666666667 | 0 | PASS |
-| Vatinterface K18: quarter input VAT = its three period rows | 1393.833333333333 | 1393.83333333333 | -2.9558577807620168e-12 | PASS |
-| VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G18) | 11553.3333333333 | 11553.3333333333 | 0 | PASS |
-| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K18) | 1393.83333333333 | 1393.83333333333 | 0 | PASS |
-| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I18) | 6969.16666666667 | 6969.16666666667 | 0 | PASS |
-| VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 57766.6666666666 | 57766.6666666666 | 0 | PASS |
-| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C18) | 46173 | 46173 | 0 | PASS |
-| VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E19: quarter sales net = its three period rows | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| Vatinterface G19: quarter output VAT = its three period rows | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| Vatinterface I19: quarter purchases net = its three period rows | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| Vatinterface K19: quarter input VAT = its three period rows | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G19) | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K19) | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 46203 | 46203 | 0 | PASS |
 
 ## Business Details
 
@@ -943,90 +829,6 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G1 |  | 10400 |  |
 
-### Sales.xlsx!Apr
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5566.66666666667 |  |
-| I1 |  | 27833.3333333333 |  |
-
-### Sales.xlsx!May
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5486.66666666667 |  |
-| I1 |  | 27433.3333333333 |  |
-
-### Sales.xlsx!Jun
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5866.66666666667 |  |
-| I1 |  | 29333.3333333333 |  |
-
-### Sales.xlsx!Jul
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5626.66666666667 |  |
-| I1 |  | 28133.3333333333 |  |
-
-### Sales.xlsx!Aug
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 6003.33333333333 |  |
-| I1 |  | 30016.6666666667 |  |
-
-### Sales.xlsx!Sep
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5626.66666666667 |  |
-| I1 |  | 28133.3333333333 |  |
-
-### Sales.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 8426.66666666667 |  |
-| I1 |  | 42133.3333333333 |  |
-
-### Sales.xlsx!Nov
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5886.66666666667 |  |
-| I1 |  | 29433.3333333333 |  |
-
-### Sales.xlsx!Dec
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5466.66666666667 |  |
-| I1 |  | 27333.3333333333 |  |
-
-### Sales.xlsx!Jan
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5906.66666666667 |  |
-| I1 |  | 29533.3333333333 |  |
-
-### Sales.xlsx!Feb
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5726.66666666667 |  |
-| I1 |  | 28633.3333333333 |  |
-
-### Sales.xlsx!Mar
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 5226.66666666667 |  |
-| I1 |  | 26133.3333333333 |  |
-
 ### Purchases.xlsx!OpeningCreditors
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -1039,90 +841,6 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G1 |  | 1710 |  |
 
-### Purchases.xlsx!Apr
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 851.875 |  |
-| I1 |  | 4259.375 |  |
-
-### Purchases.xlsx!May
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 1062.5 |  |
-| I1 |  | 5312.5 |  |
-
-### Purchases.xlsx!Jun
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 1509.5 |  |
-| I1 |  | 7547.5 |  |
-
-### Purchases.xlsx!Jul
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 1509.875 |  |
-| I1 |  | 7549.375 |  |
-
-### Purchases.xlsx!Aug
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 734.208333333333 |  |
-| I1 |  | 3671.04166666667 |  |
-
-### Purchases.xlsx!Sep
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 829.166666666667 |  |
-| I1 |  | 4145.83333333333 |  |
-
-### Purchases.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 7167.625 |  |
-| I1 |  | 35838.125 |  |
-
-### Purchases.xlsx!Nov
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 1153 |  |
-| I1 |  | 5765 |  |
-
-### Purchases.xlsx!Dec
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 1575.25 |  |
-| I1 |  | 7876.25 |  |
-
-### Purchases.xlsx!Jan
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 751.875 |  |
-| I1 |  | 3759.375 |  |
-
-### Purchases.xlsx!Feb
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 732.75 |  |
-| I1 |  | 3663.75 |  |
-
-### Purchases.xlsx!Mar
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H1 |  | 621.083333333333 |  |
-| I1 |  | 3105.41666666667 |  |
-
 ### Vat.xlsx!VATQtr1
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -1134,7 +852,6 @@ Status: RECONCILES
 | G13 |  | 16980 |  |
 | G15 |  | 4081.875 |  |
 | G17 |  | 12898.125 |  |
-| G21 |  | 84899.9999999999 |  |
 | G23 |  | 20409.375 |  |
 
 ### Vat.xlsx!VATQtr2
@@ -1148,7 +865,6 @@ Status: RECONCILES
 | G13 |  | 20056.6666666667 |  |
 | G15 |  | 8731 |  |
 | G17 |  | 11325.6666666667 |  |
-| G21 |  | 100283.333333333 |  |
 | G23 |  | 43655 |  |
 
 ### Vat.xlsx!VATQtr3
@@ -1162,7 +878,6 @@ Status: RECONCILES
 | G13 |  | 17260 |  |
 | G15 |  | 3480.125 |  |
 | G17 |  | 13779.875 |  |
-| G21 |  | 86299.9999999999 |  |
 | G23 |  | 17400.625 |  |
 
 ### Vat.xlsx!VATQtr4
@@ -1171,13 +886,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46142 |  |
 | G7 |  | 46173 |  |
-| G9 |  | 11553.3333333333 |  |
+| G9 |  | 10953.3333333333 |  |
 | G11 |  | 0 |  |
-| G13 |  | 11553.3333333333 |  |
-| G15 |  | 1393.83333333333 |  |
-| G17 |  | 10159.5 |  |
-| G21 |  | 57766.6666666666 |  |
-| G23 |  | 6969.16666666667 |  |
+| G13 |  | 10953.3333333333 |  |
+| G15 |  | 1353.83333333333 |  |
+| G17 |  | 9599.50000000001 |  |
+| G23 |  | 6769.16666666667 |  |
 
 ### Vat.xlsx!VATQtr5
 
@@ -1185,186 +899,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46173 |  |
 | G7 |  | 46203 |  |
-| G9 |  | 6126.66666666667 |  |
+| G9 |  | 5226.66666666667 |  |
 | G11 |  | 0 |  |
-| G13 |  | 6126.66666666667 |  |
-| G15 |  | 721.083333333333 |  |
-| G17 |  | 5405.58333333334 |  |
-| G21 |  | 30633.3333333333 |  |
-| G23 |  | 3605.41666666667 |  |
-
-### Vat.xlsx!Vatinterface
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| B4 |  | 45716 |  |
-| C4 |  | 45747 |  |
-| D4 |  | 4000 |  |
-| F4 |  | 800 |  |
-| H4 |  | 600 |  |
-| J4 |  | 120 |  |
-| M4 |  | 0 |  |
-| B5 |  | 45747 |  |
-| C5 |  | 45777 |  |
-| D5 |  | 2000 |  |
-| F5 |  | 400 |  |
-| H5 |  | 1000 |  |
-| J5 |  | 200 |  |
-| M5 |  | 0 |  |
-| B6 |  | 45777 |  |
-| C6 |  | 45808 |  |
-| D6 |  | 27833.3333333333 |  |
-| E6 |  | 33833.3333333333 |  |
-| F6 |  | 5566.66666666667 |  |
-| G6 |  | 6766.66666666667 |  |
-| H6 |  | 4259.375 |  |
-| I6 |  | 5859.375 |  |
-| J6 |  | 851.875 |  |
-| K6 |  | 1171.875 |  |
-| M6 |  | 0 |  |
-| B7 |  | 45808 |  |
-| C7 |  | 45838 |  |
-| D7 |  | 27433.3333333333 |  |
-| E7 |  | 57266.6666666666 |  |
-| F7 |  | 5486.66666666667 |  |
-| G7 |  | 11453.3333333333 |  |
-| H7 |  | 5312.5 |  |
-| I7 |  | 10571.875 |  |
-| J7 |  | 1062.5 |  |
-| K7 |  | 2114.375 |  |
-| M7 |  | 0 |  |
-| B8 |  | 45838 |  |
-| C8 |  | 45869 |  |
-| D8 |  | 29333.3333333333 |  |
-| E8 |  | 84599.9999999999 |  |
-| F8 |  | 5866.66666666667 |  |
-| G8 |  | 16920 |  |
-| H8 |  | 7547.5 |  |
-| I8 |  | 17119.375 |  |
-| J8 |  | 1509.5 |  |
-| K8 |  | 3423.875 |  |
-| M8 |  | 0 |  |
-| B9 |  | 45869 |  |
-| C9 |  | 45900 |  |
-| D9 |  | 28133.3333333333 |  |
-| E9 |  | 84899.9999999999 |  |
-| F9 |  | 5626.66666666667 |  |
-| G9 |  | 16980 |  |
-| H9 |  | 7549.375 |  |
-| I9 |  | 20409.375 |  |
-| J9 |  | 1509.875 |  |
-| K9 |  | 4081.875 |  |
-| M9 |  | 0 |  |
-| B10 |  | 45900 |  |
-| C10 |  | 45930 |  |
-| D10 |  | 30016.6666666667 |  |
-| E10 |  | 87483.3333333333 |  |
-| F10 |  | 6003.33333333333 |  |
-| G10 |  | 17496.6666666667 |  |
-| H10 |  | 3671.04166666667 |  |
-| I10 |  | 18767.9166666667 |  |
-| J10 |  | 734.208333333333 |  |
-| K10 |  | 3753.58333333333 |  |
-| M10 |  | 0 |  |
-| B11 |  | 45930 |  |
-| C11 |  | 45961 |  |
-| D11 |  | 28133.3333333333 |  |
-| E11 |  | 86283.3333333333 |  |
-| F11 |  | 5626.66666666667 |  |
-| G11 |  | 17256.6666666667 |  |
-| H11 |  | 4145.83333333333 |  |
-| I11 |  | 15366.25 |  |
-| J11 |  | 829.166666666667 |  |
-| K11 |  | 3073.25 |  |
-| M11 |  | 0 |  |
-| B12 |  | 45961 |  |
-| C12 |  | 45991 |  |
-| D12 |  | 42133.3333333333 |  |
-| E12 |  | 100283.333333333 |  |
-| F12 |  | 8426.66666666667 |  |
-| G12 |  | 20056.6666666667 |  |
-| H12 |  | 35838.125 |  |
-| I12 |  | 43655 |  |
-| J12 |  | 7167.625 |  |
-| K12 |  | 8731 |  |
-| M12 |  | 0 |  |
-| B13 |  | 45991 |  |
-| C13 |  | 46022 |  |
-| D13 |  | 29433.3333333333 |  |
-| E13 |  | 99699.9999999999 |  |
-| F13 |  | 5886.66666666667 |  |
-| G13 |  | 19940 |  |
-| H13 |  | 5765 |  |
-| I13 |  | 45748.9583333333 |  |
-| J13 |  | 1153 |  |
-| K13 |  | 9149.79166666667 |  |
-| M13 |  | 0 |  |
-| B14 |  | 46022 |  |
-| C14 |  | 46053 |  |
-| D14 |  | 27333.3333333333 |  |
-| E14 |  | 98899.9999999999 |  |
-| F14 |  | 5466.66666666667 |  |
-| G14 |  | 19780 |  |
-| H14 |  | 7876.25 |  |
-| I14 |  | 49479.375 |  |
-| J14 |  | 1575.25 |  |
-| K14 |  | 9895.875 |  |
-| M14 |  | 0 |  |
-| B15 |  | 46053 |  |
-| C15 |  | 46081 |  |
-| D15 |  | 29533.3333333333 |  |
-| E15 |  | 86299.9999999999 |  |
-| F15 |  | 5906.66666666667 |  |
-| G15 |  | 17260 |  |
-| H15 |  | 3759.375 |  |
-| I15 |  | 17400.625 |  |
-| J15 |  | 751.875 |  |
-| K15 |  | 3480.125 |  |
-| M15 |  | 0 |  |
-| B16 |  | 46081 |  |
-| C16 |  | 46112 |  |
-| D16 |  | 28633.3333333333 |  |
-| E16 |  | 85499.9999999999 |  |
-| F16 |  | 5726.66666666667 |  |
-| G16 |  | 17100 |  |
-| H16 |  | 3663.75 |  |
-| I16 |  | 15299.375 |  |
-| J16 |  | 732.75 |  |
-| K16 |  | 3059.875 |  |
-| M16 |  | 0 |  |
-| B17 |  | 46112 |  |
-| C17 |  | 46142 |  |
-| D17 |  | 26133.3333333333 |  |
-| E17 |  | 84299.9999999999 |  |
-| F17 |  | 5226.66666666667 |  |
-| G17 |  | 16860 |  |
-| H17 |  | 3105.41666666667 |  |
-| I17 |  | 10528.5416666667 |  |
-| J17 |  | 621.083333333333 |  |
-| K17 |  | 2105.70833333333 |  |
-| M17 |  | 0 |  |
-| B18 |  | 46142 |  |
-| C18 |  | 46173 |  |
-| D18 |  | 3000 |  |
-| E18 |  | 57766.6666666666 |  |
-| F18 |  | 600 |  |
-| G18 |  | 11553.3333333333 |  |
-| H18 |  | 200 |  |
-| I18 |  | 6969.16666666667 |  |
-| J18 |  | 40 |  |
-| K18 |  | 1393.83333333333 |  |
-| M18 |  | 0 |  |
-| B19 |  | 46173 |  |
-| C19 |  | 46203 |  |
-| D19 |  | 1500 |  |
-| E19 |  | 30633.3333333333 |  |
-| F19 |  | 300 |  |
-| G19 |  | 6126.66666666667 |  |
-| H19 |  | 300 |  |
-| I19 |  | 3605.41666666667 |  |
-| J19 |  | 60 |  |
-| K19 |  | 721.083333333333 |  |
-| M19 |  | 0 |  |
+| G13 |  | 5226.66666666667 |  |
+| G15 |  | 621.083333333333 |  |
+| G17 |  | 4605.58333333334 |  |
+| G23 |  | 3105.41666666667 |  |
 
 ### Fixedassets.xlsx!Schedule
 

@@ -18,18 +18,25 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   - **PR #31 (Ltd opening balance + runner cell-write fix)**:
     https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/31 —
     caught up on main, 102 tests green post-merge. Merges after #28.
-  - **PR #35 merged** (Wave 2 packed, all four products; Ltd runs 451 checks on every
-    year-end). Next packed wave IN FLIGHT off main, three concurrent agents, one PR:
-    - Runner caches (worktree `../spreadsheets-worktrees/wave3-runner`, branch
-      `claude/recon-wave3-runner`): external-link cache gaps (per-row cells, leaf-to-hub,
-      leaf-to-leaf) + the checks they unblock (CT!K20, Schedule B11 row, SE
-      FAreconciliation E13/K13).
-    - Wave 3 checks (worktree `../spreadsheets-worktrees/wave3-checks`, branch
-      `claude/recon-wave3-checks`): payroll/WagesInterface/Payslips!Payment, SE VAT box
-      values + VATQtr5, brickwork-pro-vat in CI, SE purchases-side monthly ties.
-    - Wave 4 guard (worktree `../spreadsheets-worktrees/wave3-guard`, branch
-      `claude/recon-wave3-guard`): formula-presence catalogue guard, non-March Ltd
-      roundtrip, LibreOffice matrix shrink to 3 representative year-ends.
+  - **PR #35 merged** (Wave 2 packed). **PR #36 up: Waves 3+4 packed**
+    (https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/36) —
+    cache refresh (CT!K20 live at 44,000), payroll end-to-end, SE VAT boxes + VATQtr5,
+    brickwork-pro-vat in CI, purchases-side ties, formula-presence guard over 1,254
+    workbooks, matrix shrink to 3 year-ends, and the period-frame date convention
+    (non-March roundtrip byte-identical). Full suite 2510/2510. Awaiting the operator's
+    four reconciliation dispatches on `claude/recon-wave3`, then merge.
+    **PR #36 fully proven** (`4209f3a2`): all four reconciliations green, including the
+    SE VAT boxes live for the first time (the cache rework exposed a 0 == 0 check; the
+    window now year-aligns to the scenario). AWAITING OPERATOR MERGE.
+    Waves 5+6 are code complete on branches off the wave3 lineage, integrating into
+    `claude/recon-wave5` after #36 merges: `claude/recon-wave5-vat` (VAT localisation +
+    straddling fixtures, 7 commits), `claude/recon-wave5-misc` (RegisterofMembers +
+    Cash.xlsx leg), `claude/recon-wave6-judge` (LLM judge, live-verified on Bedrock,
+    gated behind ENABLE_LLM_JUDGE). Bedrock prerequisites are DONE (model agreement
+    accepted us-east-1; scoped InvokeModel policy on the actions role). Operator
+    sequence after both PRs merge: one normal generate-commit run per product to
+    refresh the stale committed reports (the judge correctly fails them today — they
+    still show the pre-fix £1.78M imbalance), then set ENABLE_LLM_JUDGE=true.
   - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
     agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
     turnover is ~double its README's description — settle before the judge wave.

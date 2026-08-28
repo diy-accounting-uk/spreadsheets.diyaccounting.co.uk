@@ -1080,6 +1080,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // 2025-07-31, not 2025-06-30). Rather than hard-code that offset, each
   // quarter's window is derived from its own G5 (quarter-end) date, so the
   // check tracks whatever the generator actually computed.
+  //
+  // G5 is dated in the package's own year, the scenario's transactions in
+  // the base year cellWrites copies straight through, so the two only line
+  // up on the one package whose year end matches the fixture. Both books
+  // run April to March, so shifting the window by whole accounting years
+  // brings it onto the scenario's dates while leaving the months it covers
+  // -- and so the quarter it tests -- exactly as the generator set them.
+  const accountingYearOf = (d) => (d.getUTCMonth() >= 3 ? d.getUTCFullYear() : d.getUTCFullYear() - 1);
+  const scenarioTransactionYears = [...Object.values(expected.sales || {}), ...Object.values(expected.purchases || {})]
+    .flat()
+    .map((tx) => accountingYearOf(parseDate(tx.date)));
+  const scenarioAccountingYear = scenarioTransactionYears.length ? Math.min(...scenarioTransactionYears) : null;
+
   for (let q = 1; q <= 5; q++) {
     const qtr = results[`Vat.xlsx!VATQtr${q}`];
     if (!qtr || !qtr.G5) continue;
@@ -1109,8 +1122,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // Quarter window: the 3 calendar months ending at G5's own month
     // (verified against generator.js -- monthsFromStart is always a
     // multiple of 3 for Q1-Q4).
-    const qEnd = excelSerialToUtcDate(qtr.G5);
-    const qStart = new Date(Date.UTC(qEnd.getUTCFullYear(), qEnd.getUTCMonth() - 2, 1));
+    const bookEnd = excelSerialToUtcDate(qtr.G5);
+    const bookStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() - 2, 1));
+    // Q1-Q4 all start inside the book's own accounting year, so the start
+    // month dates the year the whole window belongs to. Q4's third month
+    // falls in the year after and lands on no scenario transaction, which
+    // is what the book's own empty Vatinterface row for it totals.
+    const yearShift = scenarioAccountingYear === null ? 0 : scenarioAccountingYear - accountingYearOf(bookStart);
+    const qStart = new Date(Date.UTC(bookStart.getUTCFullYear() + yearShift, bookStart.getUTCMonth(), 1));
+    // Day 0 of the next month is this month's last day, so the shifted
+    // window still ends on a month end in a leap year.
+    const qEnd = new Date(Date.UTC(bookEnd.getUTCFullYear() + yearShift, bookEnd.getUTCMonth() + 1, 0));
     const inQuarter = (dateStr) => {
       const d = parseDate(dateStr);
       return d >= qStart && d <= qEnd;
