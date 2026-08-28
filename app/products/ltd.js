@@ -36,22 +36,6 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
-// Scenario month keys (apr, may, ... mar) in order, with their 0-indexed month numbers
-const SCENARIO_MONTHS = [
-  { key: "apr", month: 3 },
-  { key: "may", month: 4 },
-  { key: "jun", month: 5 },
-  { key: "jul", month: 6 },
-  { key: "aug", month: 7 },
-  { key: "sep", month: 8 },
-  { key: "oct", month: 9 },
-  { key: "nov", month: 10 },
-  { key: "dec", month: 11 },
-  { key: "jan", month: 0 },
-  { key: "feb", month: 1 },
-  { key: "mar", month: 2 },
-];
-
 const BANK_ACCOUNT_FILES = {
   1200: "Currentaccount.xlsx",
   1210: "Savingaccount.xlsx",
@@ -255,6 +239,17 @@ function writeOpeningBalance(sheet, openingBalance) {
   if (taxPosted) sheet.E26 = taxTotal;
 }
 
+// Move a date forward by whole months. A day the shifted month does not have
+// clamps to that month's end, so each of the period's twelve months lands on
+// its own tab: a 31st shifted into a 30-day month stays in that month rather
+// than rolling into the next one and doubling up with the month after it.
+function shiftMonths(d, monthOffset) {
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth() + monthOffset;
+  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(d.getUTCDate(), lastDayOfShiftedMonth)));
+}
+
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -262,32 +257,25 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Default to March year-end if not specified
   const yem = yearEndMonth || 3;
 
-  // The scenario assumes a March year-end (Apr-Mar). For other year-ends,
-  // shift dates so the scenario's accounting period maps to the target's.
-  // Source period start: April of the scenario year (month index 3)
-  // Target period start: month after year-end (yearEndMonth % 12)
-  const sourceStartMonth = 3; // April (0-indexed)
+  // Dates belong to the accounting period their own scenario covers, and get
+  // shifted by the whole-month gap between that period and the target's, so
+  // the twelve months land on the twelve month tabs in order. A scenario
+  // already in the target's period has a zero gap and is written as it stands,
+  // which is what makes exporting a package and generating from the export
+  // reproduce the same cells. A scenario that does not name its period start
+  // is in the April-March frame its apr..mar month keys describe.
+  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
   const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
 
-  // Build tab name sequence for the target year-end
-  const tabNames = getMonthTabNames(yem);
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
-  function shiftDate(d) {
-    const shifted = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monthOffset, d.getUTCDate()));
-    return shifted;
-  }
-
-  // Map a shifted date to the correct tab name
-  function getTabForDate(shifted) {
-    const m = shifted.getUTCMonth();
-    const tabMonth = SHORT_MONTHS[m];
-    if (tabNames.includes(tabMonth)) return tabMonth;
-    return tabNames[0]; // fallback
-  }
+  // The twelve tabs are the twelve months, whatever the year end, so a shifted
+  // date's month names its tab.
+  const getTabForDate = (shifted) => SHORT_MONTHS[shifted.getUTCMonth()];
 
   function processJournal(entries, writes, nameField, codeDefault) {
-    for (const [monthKey, transactions] of Object.entries(entries)) {
+    for (const transactions of Object.values(entries)) {
       for (const tx of transactions) {
         const d = parseDate(tx.date);
         const shifted = shiftDate(d);
@@ -422,20 +410,16 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
   // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
   if (scenario.payroll) {
-    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
-      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
-      if (!sm) continue;
-      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
-      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+    for (const entries of Object.values(scenario.payroll)) {
+      if (entries.length === 0) continue;
+      // The tab follows the pay date, the same rule the other journals use, so
+      // the date the tab shows is always the date the tab was chosen from.
+      const paidOn = shiftDate(parseDate(entries[0].date));
+      const tabName = getTabForDate(paidOn);
 
       if (!payslipsWrites[tabName]) payslipsWrites[tabName] = {};
       const sheet = payslipsWrites[tabName];
-      // Write wages paid date from first entry
-      if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
-        const shifted2 = shiftDate(d);
-        sheet.M49 = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
-      }
+      sheet.M49 = toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate());
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
         const row = 51 + i;
         const e = entries[i];
@@ -546,13 +530,10 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     const receiptRows = {};
     const paymentRows = {};
 
-    for (const [monthKey, transactions] of Object.entries(scenario.bank)) {
-      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
-      if (!sm) continue;
-      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
-      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
-
+    for (const transactions of Object.values(scenario.bank)) {
       for (const tx of transactions) {
+        const d = shiftDate(parseDate(tx.date));
+        const tabName = getTabForDate(d);
         const acct = tx.account || "1200";
         const fileName = BANK_ACCOUNT_FILES[acct];
         if (!fileName) throw new Error(`Bank entry dated ${tx.date} names unknown account ${acct}`);
@@ -582,7 +563,6 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const rows = isReceipt ? receiptRows : paymentRows;
         if (!rows[rowKey]) rows[rowKey] = 6;
         const row = rows[rowKey]++;
-        const d = shiftDate(parseDate(tx.date));
         sheet[`${block.date}${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
         sheet[`${block.code}${row}`] = tx.code;
@@ -1331,23 +1311,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // gross amounts at the same rate the templates apply, summing the month
   // first and dividing once. Catches a month landing in the wrong column or
   // dropping out altogether.
-  // The writer shifts every transaction date into the package's fiscal year,
-  // and an end-of-month day that does not exist in the shifted month rolls
-  // into the next tab. The expectation buckets by the shifted date the same
-  // way, or a 31st posted near a short month reads as landing in the wrong
-  // column on every non-March year-end.
+  // The writer shifts every transaction date onto the package's month tabs, so
+  // the expectation buckets by the shifted date the same way, or every month
+  // reads as landing in the wrong column on a non-March year-end.
   const fiscalTabs =
-    results.Admin && typeof results.Admin.B9 === "number"
-      ? monthTabsFromPeriodStart(results.Admin.B9)
-      : SCENARIO_MONTHS.map(({ key }) => key.charAt(0).toUpperCase() + key.slice(1));
+    results.Admin && typeof results.Admin.B9 === "number" ? monthTabsFromPeriodStart(results.Admin.B9) : getMonthTabNames(3);
   const shiftedMonthlyBuckets = (journal) => {
     const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
     const buckets = Object.fromEntries(fiscalTabs.map((tab) => [tab, {}]));
     for (const txs of Object.values(journal)) {
       for (const tx of txs) {
-        const d = parseDate(tx.date);
-        const shifted = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monthOffset, d.getUTCDate()));
+        const shifted = shiftMonths(parseDate(tx.date), monthOffset);
         const bucket = buckets[SHORT_MONTHS[shifted.getUTCMonth()]];
         bucket[tx.code] = (bucket[tx.code] || 0) + tx.amount;
       }
