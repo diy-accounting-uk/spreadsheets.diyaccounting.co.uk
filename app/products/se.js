@@ -327,6 +327,12 @@ export function cellWrites(scenario) {
       if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      // Column O is the written down TAX value brought forward, the figure
+      // the capital allowance columns work from. The schedule computes a
+      // disposal's balancing allowance as that value less the sale proceeds,
+      // so an asset sold in the year without one leaves the whole capital
+      // allowance block, and every figure downstream of it, in error.
+      if (asset.tax_wdv) fa[`O${row}`] = asset.tax_wdv;
       existingAssetRowsUsed[asset.category].push(row);
     }
   }
@@ -748,21 +754,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // ── Fixed assets (Fixedassets.xlsx Schedule vs Purchases/Sales, and P&L) ──
   //
-  // 1. Note vs schedule. FAreconciliation!E11/K11 independently re-sum the
-  //    Schedule's own New-asset rows (a same-file reference, not an
-  //    external link) -- comparing them against the scenario's own
-  //    "fa"/"fs"-coded net totals proves cellWrites() populated the
-  //    Schedule consistently with what was posted to Purchases.xlsx/
-  //    Sales.xlsx. FAreconciliation!E13/K13 -- the sheet's OWN intended
-  //    cross-file comparison against those two workbooks -- read 0
-  //    regardless of real data: runMultiFileSpreadsheet() only injects
-  //    recalculated leaf values into the HUB's (Financialaccounts.xlsx)
-  //    external link cache, not into other leaves' caches, and
-  //    Fixedassets.xlsx's links to Purchases.xlsx/Sales.xlsx are leaf-to-
-  //    leaf. E13/K13 are not read or asserted here; see the final report
-  //    for the runner change that would make FAreconciliation's own check
-  //    live.
+  // 1. Note vs schedule. FAreconciliation is the workbook's own tie-out
+  //    between the asset schedule and the two ledgers. E11/K11 re-sum the
+  //    Schedule's New-asset and disposal rows; E13/K13 read the cumulative
+  //    fixed asset totals straight out of Purchases.xlsx and Sales.xlsx
+  //    across a leaf-to-leaf external link. Comparing the two sides is the
+  //    comparison the sheet was built to make. The scenario's own
+  //    "fa"/"fs"-coded net totals then anchor both sides to what a customer
+  //    actually typed in, so a schedule and a ledger that agree on the wrong
+  //    figure still fails.
   const fr = results["Fixedassets.xlsx!FAreconciliation"];
+  if (fr) {
+    check("Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total", fr.E11 || 0, fr.E13 || 0);
+    check("Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total", fr.K11 || 0, fr.K13 || 0);
+  }
   if (fr && expected.purchases) {
     let faGross = 0;
     for (const transactions of Object.values(expected.purchases)) {
