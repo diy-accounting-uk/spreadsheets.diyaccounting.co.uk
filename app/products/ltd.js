@@ -350,6 +350,20 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
   if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
+  // Register of members (Companysecretary.xlsx). Ordinary shares are issued
+  // at their £1 nominal value -- matching the template's own "Fully paid
+  // Ordinary Shares" placeholder row -- so the share count posted is the
+  // opening balance sheet's own share capital figure divided by that
+  // nominal value.
+  const companysecretaryWrites = {};
+  if (scenario.opening_balance?.share_capital !== undefined) {
+    const nominalValue = 1;
+    companysecretaryWrites.RegisterofMembers = {
+      F3: nominalValue,
+      G3: scenario.opening_balance.share_capital / nominalValue,
+    };
+  }
+
   // Opening/closing debtors (Sales.xlsx)
   if (scenario.opening_debtors) {
     if (!salesWrites.OpeningDebtors) salesWrites.OpeningDebtors = {};
@@ -637,6 +651,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
+  if (Object.keys(companysecretaryWrites).length > 0) result["Companysecretary.xlsx"] = companysecretaryWrites;
   return result;
 }
 
@@ -745,6 +760,7 @@ export const CELL_MAP = [
   ["PubBalSht", "E29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
   ["PubBalSht", "F31", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
+  ["PubBalSht", "F36", "Called up share capital",  "accounts.capital.3000 (pubBS)",      "Published Balance Sheet", 1],
   ["PubBalSht", "F39", "**Shareholders' Funds**",  "gl-cor:amount (pubBS.equity)",       "Published Balance Sheet", 0],
   // ── Fixed asset note (PubNotes) — column G is the all-classes total ──
   ["PubNotes", "G8",  "Original cost brought forward", "gl-cor:amount (note1.costBf)",     "Fixed Asset Note", 1],
@@ -1050,6 +1066,11 @@ export function multiFileOptions(yearEndMonth) {
       },
       "Payslips.xlsx": {
         Payment: paymentCells,
+      },
+      "Companysecretary.xlsx": {
+        // F1 is the sheet's own nominal-value formula (=F3), G1 its own
+        // shares-issued total (=SUM(G3:G19)).
+        RegisterofMembers: ["F1", "G1"],
       },
       ...bankReads,
     },
@@ -1426,6 +1447,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const pubBalSht = results.PubBalSht;
   if (pubBalSht && notes) {
     check("Published balance sheet: fixed assets = fixed asset note net book value", num(pubBalSht.F6), num(notes.G20));
+  }
+
+  // The share register carries no opening/closing split of its own -- it is
+  // the company's live share register as of the accounts date -- so it ties
+  // to the closing balance sheet figure. F1 is the sheet's own nominal-value
+  // formula (=F3) and G1 its own shares-issued total (=SUM(G3:G19)).
+  const register = results["Companysecretary.xlsx!RegisterofMembers"];
+  if (register && pubBalSht) {
+    check(
+      "RegisterofMembers: nominal value x shares issued = PubBalSht share capital",
+      (register.F1 || 0) * (register.G1 || 0),
+      num(pubBalSht.F36),
+    );
   }
 
   // The Schedule's new-asset and disposal totals against what the scenario

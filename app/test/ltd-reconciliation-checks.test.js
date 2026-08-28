@@ -163,6 +163,13 @@ describeCalc(
       }
     });
 
+    it("reads the register of members' nominal value and shares issued", () => {
+      const register = results["Companysecretary.xlsx!RegisterofMembers"];
+      expect(register).toBeDefined();
+      expect(register.F1).toBe(1);
+      expect(register.G1).toBe(100);
+    });
+
     it("reads the injected rates back from the Admin sheet", () => {
       const admin = results.Admin;
       expect(admin.P6).toBe(19);
@@ -217,6 +224,15 @@ describeCalc(
       expect(value).toBe(0);
       const name = "Currentaccount.xlsx: closing balance = opening + receipts - payments";
       const corrupted = checksWithCorruptedCell("Currentaccount.xlsx!Mar", "A2", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the register tie when RegisterofMembers G1 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "RegisterofMembers", "G1", 0);
+      expect(value).toBe(0);
+      const name = "RegisterofMembers: nominal value x shares issued = PubBalSht share capital";
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!RegisterofMembers", "G1", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
