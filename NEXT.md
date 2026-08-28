@@ -33,11 +33,6 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   could pass the package year-end into checkCompliance (Admin F21 is anchored to B32,
   not the run's own year-end).
 
-- [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
-  VAT quarter-end dropdown work, now archived at
-  `_developers/archive/PLAN_VAT_QUARTER_DROPDOWN.md` (all four surfaces deployed and
-  live-verified 2026-08-24; Philippe closed).
-
 ## Discipline
 
 - Generated `packages/` output is committed; regenerating is a mass binary commit — one
