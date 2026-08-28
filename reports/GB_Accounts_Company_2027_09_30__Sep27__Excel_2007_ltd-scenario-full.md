@@ -777,7 +777,7 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
 | **Profit Before Tax** | 177,215.39 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -793,6 +793,18 @@ Status: RECONCILES (with warnings)
 | **Profit Chargeable to CT** | 147,519.9 |
 | **Corporation Tax** | 28,028.78 |
 | Tax Outstanding | 27,964.27 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 73,659.05 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 13,995.22 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 13,995.22 |
 
 ## Published P&L
 
@@ -1319,6 +1331,25 @@ Status: RECONCILES (with warnings)
 | I34 |  | 14033.561827304 |  |
 | K37 |  | 64.5061728395062 |  |
 
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 73659.0461168531 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 13995.2187622021 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 13995.2187622021 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 341283.333333333 |  |
+| Z70 |  | 147180.391666666 |  |
+| AJ74 |  | 147180.391666666 |  |
+| AJ76 |  | 339.506172839506 |  |
+| AJ92 |  | 147519.897839506 |  |
+| AJ110 |  | 147519.897839506 |  |
+| AJ145 |  | 13995.2187622021 |  |
+| AJ154 |  | 64.5061728395062 |  |
+| AJ159 |  | 13930.7125893626 |  |
+| AJ166 |  | 13930.7125893626 |  |
+
 ### PubP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -1459,24 +1490,6 @@ Status: RECONCILES (with warnings)
 | EJ91 | **Audit Accuracy Check** | 3.19232640322298e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
 | L34 |  | -1673.2 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 341283.333333333 |  |
-| Z70 |  | 147180.391666666 |  |
-| AJ74 |  | 147180.391666666 |  |
-| AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 147519.897839506 |  |
-| AJ110 |  | 147519.897839506 |  |
-| AJ126 |  | 13995.2187622021 |  |
-| AJ131 |  | 13995.2187622021 |  |
-| AJ145 |  | 13995.2187622021 |  |
-| AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 13930.7125893626 |  |
-| AJ166 |  | 13930.7125893626 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 

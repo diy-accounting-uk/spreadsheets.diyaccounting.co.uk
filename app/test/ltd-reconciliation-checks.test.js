@@ -631,10 +631,7 @@ describeCalc(
       const value = await readFilledCell(savedDir, "Financialaccounts.xlsx", "CT600", "AJ128", 14033.56);
       expect(value).toBe(14033.56);
       const corrupted = checksWithCorruptedCell("CT600", "AJ128", value);
-      expect(failureNames(corrupted)).toEqual([
-        "CT600: second financial year tax box is blank",
-        "CT600: tax payable = tax chargeable",
-      ]);
+      expect(failureNames(corrupted)).toEqual(["CT600: second financial year tax box is blank", "CT600: tax payable = tax chargeable"]);
     });
   },
   900000,

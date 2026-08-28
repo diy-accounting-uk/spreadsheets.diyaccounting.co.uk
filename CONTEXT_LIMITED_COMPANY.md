@@ -423,7 +423,7 @@ One scenario exercises the Ltd product, generated from Precision Code Ltd exampl
 - **Expected:** total_sales = 169,200 (net of VAT)
 - **Checks:** Total Sales, Gross Profit, Net Profit, Corporation Tax, CT600 boxes, PubP&L, PubBalSht
 
-The full scenario is used in CI matrix reconciliation. Corporation Tax is verified by computing `profit * small_profits_rate` from the package's own tax data and comparing against the CorporationTax K35 cell.
+The full scenario is used in CI matrix reconciliation. The corporation tax charge is checked against how the working sheet builds it: two dated tax rows, each a year long, each taking that share of the chargeable profit at the rate injected into `Admin!P6`/`P7`, summed into K35. The shipped sheet has no marginal relief step, so K35 comes out at the small profits rate however large the profit; the run reports the gap against the statutory computation as a warning.
 
 The old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml` are being replaced by `ltd-scenario-full.toml`. The old `ltd-scenario-basic` remains temporarily used by the E2E test until Phase 5 completes the switchover.
 
@@ -458,7 +458,10 @@ From Financialaccounts.xlsx after recalculation:
 | Total Sales | MnthP&L B9 | Matches `expected.total_sales` (tolerance 1) |
 | Gross Profit | MnthP&L B16 | Matches `expected.gross_profit` (tolerance 1) |
 | Net Profit | MnthP&L B45 | Matches `expected.net_profit` (tolerance 1) |
-| Corporation Tax | CorporationTax K35 | Matches `round(K28 * small_profits_rate)` (tolerance 1) |
+| CT: charge for the year = the two tax rows | CorporationTax K35, I33, I34 | `K35 = I33 + I34` (tolerance 1) |
+| CT: charge for the year = chargeable profit at the Admin corporation tax rate | CorporationTax K35, K28, Admin P6 | `K35 = K28 * P6 / 100` (tolerance 1) |
+| CT: charge for the year against the statutory computation with marginal relief | CorporationTax K35, K28 | Warning. `K35` against the main rate less marginal relief; passes when the profit is outside the relief band |
+| CT600: tax payable against the working sheet's charge for the year | CT600 AJ131, CorporationTax K35 | Warning. Box 63 files the first tax row only, so it falls short by the second |
 
 ## Filing Taxonomy Mapping
 
