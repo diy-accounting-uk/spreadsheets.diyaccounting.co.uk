@@ -619,6 +619,30 @@ export const CELL_MAP = [
   ["VitalTax", "E7",  "Q3 Expenses",      "gl-cor:amount (vitalTax.q3Exp)",      "Quarterly Summary", 1],
   ["VitalTax", "F7",  "Q4 Expenses",      "gl-cor:amount (vitalTax.q4Exp)",      "Quarterly Summary", 1],
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
+  // ── Admin (generator-injected tax data) — cell positions verified against
+  // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
+  // SE's income tax band cells sit one row above BST's (M11/N12 rather than
+  // M12/N13) and NI Class 2 sits at L16 rather than L17.
+  ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
+  ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
+  ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0],
+  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.lowerRatePence",              "Admin (Generator Injected)", 0],
+  ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
+  ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];
 
 // Additional reads from leaf files (Bank.xlsx and Cash.xlsx closing
@@ -1404,6 +1428,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0,
       );
     }
+  }
+
+  // Admin echo: the generator injects the tax year's rates, bands and
+  // thresholds from the TOML into the Admin sheet, and every workbook in
+  // the package reads from there. Nothing else asserts the injected values
+  // equal what the run was generated from -- a wrong rate here is
+  // arithmetically invisible to every downstream check, the same failure
+  // shape as the shipped-zeros VAT bug. BST, Taxi and Ltd already carry this
+  // check; SE's cell positions differ (buildSeCellEdits() in
+  // app/lib/generator.js), so the comparisons are repeated here rather than
+  // shared.
+  if (taxData && results.Admin) {
+    const admin = results.Admin;
+    const it = taxData.income_tax;
+    const ni = taxData.national_insurance;
+    const ca = taxData.capital_allowances;
+    const mil = taxData.mileage;
+    check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
+    check("Admin: Basic Rate = tax data", admin.N6, it.basic_rate, 0.0001);
+    check("Admin: Higher Rate = tax data", admin.N7, it.higher_rate, 0.0001);
+    check("Admin: Basic Band End = tax data", admin.M11, it.basic_band_end);
+    check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
+    check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
+    check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
+    check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
+    check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
+    check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
+    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
+    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
+    check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
+    check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
+    check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);
+    check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
+    check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
+    check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
   }
 
   return checks;
