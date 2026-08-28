@@ -7,28 +7,56 @@ Status: RECONCILES
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
+| Sales.xlsx Apr: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Apr: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx May: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx May: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jun: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jun: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jul: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jul: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Aug: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Aug: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Sep: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Sep: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Oct: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Oct: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Nov: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Nov: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Dec: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Dec: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jan: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jan: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Feb: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Feb: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
 | Total Sales | 339200 | 339200 | 0 | PASS |
-| P&L: Gross = Turnover + Grants - CoS | 325146.6666666666 | 325146.666666666 | -6.402842700481415e-10 | PASS |
-| P&L: Operating = Gross - Admin | 180975.391666666 | 180975.391666666 | 0 | PASS |
-| P&L: PBT = Operating | 180975.391666666 | 180975.391666666 | 0 | PASS |
+| P&L: Gross = Turnover + Grants - CoS | 321146.6666666666 | 321146.666666666 | -6.402842700481415e-10 | PASS |
+| P&L: Operating = Gross - Admin | 176975.391666666 | 176975.391666666 | 0 | PASS |
+| P&L: PBT = Operating | 176975.391666666 | 176975.391666666 | 0 | PASS |
 | P&L: Admin lines sum = Total | 144171.27499999997 | 144171.275 | +2.9103830456733704e-11 | PASS |
 | VitalTax: annual product sales = P&L Products A+B+C | 335500 | 335500 | 0 | PASS |
-| VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 9470 | 9470 | 0 | PASS |
+| VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 13470 | 13470 | 0 | PASS |
 | Motor Expenses | 6332 | 6331.875 | -0.125 | PASS |
 | Legal & Professional | 6925 | 6925 | 0 | PASS |
+| Stock: opening count | 10000 | 10000 | 0 | PASS |
+| Stock: count at the year end | 6000 | 6000 | 0 | PASS |
+| P&L: materials = stock purchases net + the year's stock movement | 9450 | 9450 | 0 | PASS |
 | Opening Debtors total | 10800 | 10800 | 0 | PASS |
 | Closing Debtors total | 10400 | 10400 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
-| Income Tax | 46918 | 46917.9566666665 | -0.04333333350223256 | PASS |
+| Income Tax | 45318 | 45317.9566666665 | -0.04333333350223256 | PASS |
 | NI Class 4 (lower) | 3393 | 3393 | 0 | PASS |
-| Total Tax + NI | 52280 | 52279.8644999998 | -0.13550000020040898 | PASS |
-| Tax: Taxable = Profit - Allowance | 136145.391666666 | 136145.391666666 | 0 | PASS |
-| Tax: IT = Basic + Higher | 46917.9566666665 | 46917.9566666665 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 52279.86449999983 | 52279.8644999998 | -2.9103830456733704e-11 | PASS |
+| Total Tax + NI | 50600 | 50599.8644999998 | -0.13550000020040898 | PASS |
+| Tax: Taxable = Profit - Allowance | 132145.391666666 | 132145.391666666 | 0 | PASS |
+| Tax: IT = Basic + Higher | 45317.9566666665 | 45317.9566666665 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 50599.86449999983 | 50599.8644999998 | -2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
-| SA103S: Net profit close to P&L Net - Grants + Depreciation addback | 190632.05833333265 | 190632.058333333 | +3.4924596548080444e-10 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 148715.391666666 | 148715.391666666 | 0 | PASS |
+| SA103S: total expenses = cost of sales + admin expenses less depreciation | 152567.9416666667 | 152567.941666667 | +2.9103830456733704e-10 | PASS |
+| SA103S: net profit = turnover + other business income - total expenses | 186632.058333333 | 186632.058333333 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 144715.391666666 | 144715.391666666 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
@@ -457,6 +485,26 @@ Status: RECONCILES
 | VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
 | VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
 | VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 45473 | 45473 | 0 | PASS |
+| Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
+| Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 3.45 | 3.45 | 0 | PASS |
+| Admin: NI Class 4 Lower Rate = tax data | 0.09 | 0.09 | 0 | PASS |
+| Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
+| Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
+| Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
+| Admin: WDA Rate = tax data | 0.18 | 0.18 | 0 | PASS |
+| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
+| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
+| Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
+| Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
+| Admin: VAT Registration Threshold = tax data | 85000 | 85000 | 0 | PASS |
+| Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 
 ## Business Details
 
@@ -468,17 +516,17 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 311,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product B — Software | 13,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product C — Training | 10,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 311,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product B sales (code b) | 13,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product C sales (code c) | 10,300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 3,700 |
 | **Sales Turnover** | 339,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 5,450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 9,450 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 6,666.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 4,020 |
-| Cost of Sales | 16,136.67 |
-| **Gross Profit** | 325,146.67 |
+| Cost of Sales | 20,136.67 |
+| **Gross Profit** | 321,146.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Wages & Salaries | 92,735.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power | 13,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 950 |
@@ -494,23 +542,23 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss (Profit) on Disposal of Assets | 172 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
 | Total Admin Expenses | 144,171.28 |
-| **Operating Profit** | 180,975.39 |
-| **Profit Before Tax** | 180,975.39 |
+| **Operating Profit** | 176,975.39 |
+| **Profit Before Tax** | 176,975.39 |
 
 ## Income Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 148,715.39 |
+| Profit from Self Employment | 144,715.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 136,145.39 |
+| Taxable Income | 132,145.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 39,377.76 |
-| **Total Income Tax** | 46,917.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 37,777.76 |
+| **Total Income Tax** | 45,317.96 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,393 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,968.91 |
-| **Total Tax + NI** | 52,279.86 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,888.91 |
+| **Total Tax + NI** | 50,599.86 |
 
 ## Self Assessment (SA103S)
 
@@ -519,18 +567,24 @@ Status: RECONCILES
 | Business name | — |
 | Accounting date | — |
 | Turnover | 339,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 16,136.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 7,881.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 20,136.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel | 7,881.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 92,735.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 13,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 950 |
-| **Net profit/loss** | 190,632.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals | 950 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional | 6,925 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | 3,035 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
+| **Total expenses** | 152,567.94 |
+| **Net profit/loss** | 186,632.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 146,632.06 |
+| **Taxable profit** | 142,632.06 |
 | VAT threshold note | — |
-| **Net profit for tax calc** | 148,715.39 |
+| **Net profit for tax calc** | 144,715.39 |
 
 ## Payroll Summary
 
@@ -563,8 +617,57 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 Expenses | 2,282.5 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 Expenses | 2,602.5 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses | 2,182.5 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 2,402.5 |
-| **Annual Expenses** | 9,470 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 6,402.5 |
+| **Annual Expenses** | 13,470 |
+
+## Admin (Generator Injected)
+
+| | Amount |
+|---|------:|
+| Personal Allowance | 12,570 |
+| Basic Rate | 0.2 |
+| Higher Rate | 0.4 |
+| Basic Band End | 37,700 |
+| Higher Band Start | 37,701 |
+| NI Class 2 Weekly Rate | 3.45 |
+| NI Class 4 Lower Rate | 0.09 |
+| NI Class 4 Lower Limit | 12,570 |
+| NI Class 4 Upper Rate | 0.02 |
+| NI Class 4 Upper Limit | 50,270 |
+| Annual Investment Allowance Rate | 1 |
+| Writing Down Allowance Rate | 0.18 |
+| Motor Vehicle Cost Threshold | 12,000 |
+| Motor Vehicle Restriction | 3,000 |
+| Mileage Higher Rate Limit | 10,000 |
+| Mileage Higher Rate Pence | 0.45 |
+| Mileage Lower Rate Start | 10,001 |
+| Mileage Lower Rate Pence | 0.25 |
+| VAT Registration Threshold | 85,000 |
+| VAT Standard Rate | 0.2 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
+| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,980 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 4,081.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 12,898.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 20,056.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 8,731 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 11,325.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 17,260 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 3,480.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 13,779.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 11,553.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 1,393.83 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 10,159.5 |
 
 ---
 
@@ -580,17 +683,17 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B5 | Product A — Consultancy | 311600 | accounts.sales.4000 |
-| B6 | Product B — Software | 13600 | accounts.sales.4001 |
-| B7 | Product C — Training | 10300 | accounts.sales.4002 |
+| B5 | Product A sales (code a) | 311600 | accounts.sales.4000 |
+| B6 | Product B sales (code b) | 13600 | accounts.sales.4001 |
+| B7 | Product C sales (code c) | 10300 | accounts.sales.4002 |
 | B8 | Other Income | 3700 | accounts.sales.4003 |
 | B9 | **Sales Turnover** | 339200 | gl-cor:amount (salesTurnover) |
 | B11 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
-| B14 | Materials / Stock | 5450 | accounts.purchases.5000 |
+| B14 | Materials / Stock | 9450 | accounts.purchases.5000 |
 | B15 | Sub-Contractors | 6666.66666666667 | accounts.purchases.5001 |
 | B16 | Other Direct Costs | 4020 | accounts.purchases.5002 |
-| B17 | Cost of Sales | 16136.6666666667 | gl-cor:amount (costOfSales) |
-| B19 | **Gross Profit** | 325146.666666666 | gl-cor:amount (grossProfit) |
+| B17 | Cost of Sales | 20136.6666666667 | gl-cor:amount (costOfSales) |
+| B19 | **Gross Profit** | 321146.666666666 | gl-cor:amount (grossProfit) |
 | B21 | Wages & Salaries | 92735.7333333333 | accounts.purchases.5101 |
 | B22 | Light, Heat, Power | 13200 | accounts.purchases.5201 |
 | B23 | Repairs & Maintenance | 950 | accounts.purchases.5400 |
@@ -606,8 +709,8 @@ Status: RECONCILES
 | B33 | Loss (Profit) on Disposal of Assets | 172 | gl-cor:amount (lossOnDisposal) |
 | B34 | Depreciation | 11740 | gl-cor:amount (depreciation) |
 | B35 | Total Admin Expenses | 144171.275 | gl-cor:amount (totalAdmin) |
-| B37 | **Operating Profit** | 180975.391666666 | gl-cor:amount (operatingProfit) |
-| B39 | **Profit Before Tax** | 180975.391666666 | gl-cor:amount (profitBeforeTax) |
+| B37 | **Operating Profit** | 176975.391666666 | gl-cor:amount (operatingProfit) |
+| B39 | **Profit Before Tax** | 176975.391666666 | gl-cor:amount (profitBeforeTax) |
 | C5 |  | 25333.3333333333 |  |
 | D5 |  | 25633.3333333333 |  |
 | E5 |  | 26533.3333333333 |  |
@@ -829,33 +932,39 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 148715.391666666 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 144715.391666666 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 136145.391666666 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 132145.391666666 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7540.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate (40%) | 39377.7566666665 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 46917.9566666665 | tax.incomeTax (total) |
+| E9 | Tax at Higher Rate (40%) | 37777.7566666665 | tax.incomeTax.higherRate |
+| E10 | **Total Income Tax** | 45317.9566666665 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3393 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1968.90783333333 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 52279.8644999998 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1888.90783333333 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 50599.8644999998 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 339200 | gl-cor:amount (sa103s.turnover) |
-| D46 | Cost of sales | 16136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
-| D51 | Other direct costs | 7881.875 | gl-cor:amount (sa103s.otherDirect) |
+| O38 | Other business income | 0 | gl-cor:amount (sa103s.otherIncome) |
+| D46 | Cost of sales | 20136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
+| D51 | Car, van and travel | 7881.875 | gl-cor:amount (sa103s.travel) |
 | D55 | Employee costs | 92735.7333333333 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 13200 | gl-cor:amount (sa103s.premises) |
-| D64 | Other expenses | 950 | gl-cor:amount (sa103s.otherExpenses) |
-| D71 | **Net profit/loss** | 190632.058333333 | gl-cor:amount (sa103s.netProfit) |
+| D64 | Repairs and renewals | 950 | gl-cor:amount (sa103s.repairs) |
+| O46 | Accountancy, legal and professional | 6925 | gl-cor:amount (sa103s.legal) |
+| O51 | Interest and bank charges | 800 | gl-cor:amount (sa103s.interest) |
+| O55 | Phone, stationery and office costs | 3035 | gl-cor:amount (sa103s.office) |
+| O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
+| O64 | **Total expenses** | 152567.941666667 | gl-cor:amount (sa103s.totalExpenses) |
+| D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
 | D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 146632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
-| D106 | **Net profit for tax calc** | 148715.391666666 | gl-cor:amount (sa103s.profitForTax) |
+| D99 | **Taxable profit** | 142632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
+| D106 | **Net profit for tax calc** | 144715.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Wagesinterface
 
@@ -922,8 +1031,40 @@ Status: RECONCILES
 | C7 | Q1 Expenses | 2282.5 | gl-cor:amount (vitalTax.q1Exp) |
 | D7 | Q2 Expenses | 2602.5 | gl-cor:amount (vitalTax.q2Exp) |
 | E7 | Q3 Expenses | 2182.5 | gl-cor:amount (vitalTax.q3Exp) |
-| F7 | Q4 Expenses | 2402.5 | gl-cor:amount (vitalTax.q4Exp) |
-| G7 | **Annual Expenses** | 9470 | gl-cor:amount (vitalTax.annualExp) |
+| F7 | Q4 Expenses | 6402.5 | gl-cor:amount (vitalTax.q4Exp) |
+| G7 | **Annual Expenses** | 13470 | gl-cor:amount (vitalTax.annualExp) |
+
+### Admin
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N4 | Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
+| N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
+| N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
+| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
+| L16 | NI Class 2 Weekly Rate | 3.45 | tax.nationalInsurance.class2WeeklyRate |
+| L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4LowerRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
+| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
+| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
+| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
+| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| F26 | VAT Registration Threshold | 85000 | tax.vat.registrationThreshold |
+| F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
+
+### StockControl
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| AB6 |  | 10000 |  |
+| AB30 |  | 6000 |  |
 
 ### Bank.xlsx!Mar
 
@@ -957,6 +1098,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5566.66666666667 |  |
 | I1 |  | 27833.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!May
 
@@ -964,6 +1106,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5486.66666666667 |  |
 | I1 |  | 27433.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jun
 
@@ -971,6 +1114,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5866.66666666667 |  |
 | I1 |  | 29333.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jul
 
@@ -978,6 +1122,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Aug
 
@@ -985,6 +1130,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 6003.33333333333 |  |
 | I1 |  | 30016.6666666667 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Sep
 
@@ -992,6 +1138,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Oct
 
@@ -999,6 +1146,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 8426.66666666667 |  |
 | I1 |  | 42133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Nov
 
@@ -1006,6 +1154,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5886.66666666667 |  |
 | I1 |  | 29433.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Dec
 
@@ -1013,6 +1162,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5466.66666666667 |  |
 | I1 |  | 27333.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jan
 
@@ -1020,6 +1170,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5906.66666666667 |  |
 | I1 |  | 29533.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Feb
 
@@ -1027,6 +1178,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5726.66666666667 |  |
 | I1 |  | 28633.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Mar
 
@@ -1034,6 +1186,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5226.66666666667 |  |
 | I1 |  | 26133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!OpeningCreditors
 
@@ -1053,6 +1206,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 851.875 |  |
 | I1 |  | 4259.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!May
 
@@ -1060,6 +1214,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1062.5 |  |
 | I1 |  | 5312.5 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jun
 
@@ -1067,6 +1222,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1509.5 |  |
 | I1 |  | 7547.5 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jul
 
@@ -1074,6 +1230,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1509.875 |  |
 | I1 |  | 7549.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Aug
 
@@ -1081,6 +1238,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 734.208333333333 |  |
 | I1 |  | 3671.04166666667 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Sep
 
@@ -1088,6 +1246,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 829.166666666667 |  |
 | I1 |  | 4145.83333333333 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Oct
 
@@ -1095,6 +1254,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 7167.625 |  |
 | I1 |  | 35838.125 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Nov
 
@@ -1102,6 +1262,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1153 |  |
 | I1 |  | 5765 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Dec
 
@@ -1109,6 +1270,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1575.25 |  |
 | I1 |  | 7876.25 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jan
 
@@ -1116,6 +1278,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 751.875 |  |
 | I1 |  | 3759.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Feb
 
@@ -1123,6 +1286,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 732.75 |  |
 | I1 |  | 3663.75 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Mar
 
@@ -1130,6 +1294,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 621.083333333333 |  |
 | I1 |  | 3105.41666666667 |  |
+| H2 |  | 20 |  |
 
 ### Vat.xlsx!VATQtr1
 
