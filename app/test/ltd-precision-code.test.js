@@ -89,7 +89,7 @@ describeCalc(
     // ── Corporation Tax assertions ────────────────────────────────────────
 
     it("CorporationTax: operating profit from P&L", () => {
-      expect(results["CorporationTax"].K5).toBe(results["MnthP&L"].B45);
+      expect(results["CorporationTax"].K5).toBe(results["MnthP&L"].B43);
     });
 
     it("CorporationTax: profit chargeable > 0", () => {
@@ -101,18 +101,20 @@ describeCalc(
       expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 0);
     });
 
-    it("CorporationTax: tax outstanding = CT", () => {
-      expect(results["CorporationTax"].K39).toBe(results["CorporationTax"].K35);
+    it("CorporationTax: tax outstanding = CT less tax deducted at source", () => {
+      const ct = results["CorporationTax"];
+      expect(ct.K39).toBeCloseTo(ct.K35 - ct.K37, 6);
     });
 
     // ── Published P&L assertions ──────────────────────────────────────────
+    // Column B carries last year's figures and column F this year's.
 
     it("PubP&L: gross profit > 0", () => {
-      expect(results["PubP&L"]?.D9).toBeGreaterThan(0);
+      expect(results["PubP&L"]?.F18).toBeGreaterThan(0);
     });
 
     it("PubP&L: profit before tax > 0", () => {
-      expect(results["PubP&L"]?.D18).toBeGreaterThan(0);
+      expect(results["PubP&L"]?.F49).toBeGreaterThan(0);
     });
 
     // ── Published Balance Sheet assertions ─────────────────────────────────

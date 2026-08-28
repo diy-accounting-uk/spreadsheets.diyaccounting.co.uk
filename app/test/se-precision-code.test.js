@@ -91,8 +91,15 @@ describeCalc(
 
     // ── Income Tax assertions ─────────────────────────────────────────────
 
-    it("Income Tax: profit = P&L profit before tax", () => {
-      expect(results["Income Tax"].E5).toBe(results["Profit & Loss Account"].B39);
+    it("Income Tax: profit = SE Short tax-basis profit for tax calc", () => {
+      // Income Tax!E5 reads 'SE Full'!O210, the tax-basis profit -- P&L!B39
+      // is the accounting profit, which is not the same figure once real
+      // capital allowances and depreciation are in play (accounting
+      // depreciation is added back and replaced by capital allowances for
+      // income tax purposes). SE Short!D106 independently derives the same
+      // tax-basis figure through the SA103S boxes; the two staying equal is
+      // the live cross-check, not equality with the accounting P&L.
+      expect(results["Income Tax"].E5).toBe(results["SE Short"].D106);
     });
 
     it("Income Tax: personal allowance applied", () => {

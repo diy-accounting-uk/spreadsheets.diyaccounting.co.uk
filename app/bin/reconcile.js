@@ -193,7 +193,10 @@ async function main() {
       let taxData = null;
       if (startYear) {
         const regime = productMod.PRODUCT.taxRegime;
-        const taxDataName = regime === "ltd" ? `ltd-${endYear}.toml` : `se-${startYear}-${endYear}.toml`;
+        // A Jan-Mar year-end belongs to the financial year that started the
+        // previous April, which is the TOML the generator built it from.
+        const ltdFinancialYear = endMonth <= 3 ? endYear - 1 : endYear;
+        const taxDataName = regime === "ltd" ? `ltd-${ltdFinancialYear}.toml` : `se-${startYear}-${endYear}.toml`;
         const taxDataFile = resolve(APP_DIR, "data", taxDataName);
         if (existsSync(taxDataFile)) {
           taxData = parseTOML(readFileSync(taxDataFile, "utf8"));
@@ -204,12 +207,7 @@ async function main() {
       // Product module owns compliance checks. Fixture anchors (opening_debtors,
       // closing_creditors, ...) are top-level scenario tables, not [expected] keys,
       // so checks that anchor against fixtures need the whole scenario merged in.
-      const checks = productMod.checkCompliance(
-        { ...results },
-        { ...scenario, ...scenario.expected },
-        taxData,
-        calculateExpectedTax,
-      );
+      const checks = productMod.checkCompliance({ ...results }, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
 
       // Report naming: <product>_<scenario>.md

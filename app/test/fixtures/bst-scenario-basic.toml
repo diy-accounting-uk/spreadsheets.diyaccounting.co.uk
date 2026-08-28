@@ -3106,6 +3106,12 @@ supplier = "Shell"
 invoice = "SH-2603"
 amount = 150
 
+[[fixed_asset_additions]]
+date = 2025-09-15
+description = "MacBook Pro workstation"
+reference = "INV-EQ-001"
+cost = 3600
+
 [expected]
 total_sales = 409900
 gross_profit = 391360
@@ -3113,3 +3119,4 @@ net_profit = 333908
 total_premises = 15840
 total_gen_admin = 1962
 total_legal = 4560
+fixed_asset_cost = 3600

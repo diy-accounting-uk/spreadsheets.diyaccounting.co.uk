@@ -869,10 +869,23 @@ supplier = "Car Dealer"
 code = "f"
 amount = 8000
 
+# The Purchases entry above records the cash payment (code "f" reaches only
+# the Purchases analysis column, which no P&L formula reads). Registering
+# the same vehicle on the Fixed Assets sheet's "Vehicles under £12,000
+# bought after" block is what actually claims a capital allowance -- this
+# is the double entry the legacy template requires, since the two sheets
+# are not linked.
+[[fixed_asset_additions]]
+date = 2025-06-01
+description = "Taxi vehicle"
+reference = "Car Dealer"
+cost = 8000
+
 # === EXPECTED RESULTS ===
 # 180 working days × £200/day = £36,000 total sales
 # Expenses: fuel 3600 + road tax/insurance 1380 + admin 480 + legal 900 = 6360
 # Net profit: 36000 - 6360 = 29640
 
 [expected]
+fixed_asset_cost = 8000
 total_sales = 36000

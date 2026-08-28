@@ -32,6 +32,7 @@ import {
   filterAdvanced,
   filterFull,
   buildGrouped,
+  seDrawingsFromDividends,
   buildOpeningBalance,
   formatScenarioToml,
   buildSubsetBookToml,
@@ -163,6 +164,10 @@ const bstToml = formatScenarioToml(
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
+    // In-year Plant & Machinery addition ("Bought AFTER" block on the Fixed
+    // Assets schedule) so the capital allowance line stops reading zero.
+    // 100% Annual Investment Allowance applies, so the full cost is claimed.
+    fixed_asset_additions: [{ date: "2025-09-15", description: "MacBook Pro workstation", reference: "INV-EQ-001", cost: 3600 }],
   },
 );
 
@@ -178,7 +183,7 @@ const bstDiya = writeDiyaGlSubset(
 // Extract SE (advanced)
 // ============================================================================
 
-const advLines = filterAdvanced(allLines);
+const advLines = seDrawingsFromDividends(filterAdvanced(allLines));
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));

@@ -33,10 +33,40 @@ export const MULTI_FILE = true;
 //   p=premises, m=repairs, g=general admin, v=motor, h=HP/lease,
 //   a=advertising, l=legal, y=other expenses, fa=fixed assets
 
-// Bank receipt codes (amount goes to col F, code to col E)
-const RECEIPT_CODES = new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]);
-// Bank payment codes (amount goes to col T, code to col S)
-const PAYMENT_CODES = new Set(["CR", "DR", "W", "B", "J", "RP", "DL", "DV", "X"]);
+// Bank/cash entries route to one of two leaf files by account ID.
+const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
+
+// Column layout of the receipts and payments blocks in each workbook's month
+// tabs, and the code letters each block has an analysis column for --
+// verified against the templates. Bank.xlsx row 5: receipts E/F feed G:M
+// under BC/DR/CR/K/RV/DL/X; payments S/T feed U:AC under BC/CR/DR/W/B/J/
+// RP/DL/X. Cash.xlsx row 5: receipts E/F feed G:J under BB/DR/CR/DL;
+// payments P/Q feed R:X under BB/CR/DR/W/J/RP/DL. A code means opposite
+// things on the two sides (CR is a creditor refund received but a
+// creditor payment made), so direction cannot be inferred from the code
+// alone -- every entry names its own direction. Cash.xlsx has no "X"
+// analysis column at all; its own transfer code is "BB".
+const BANK_LAYOUTS = {
+  "Bank.xlsx": {
+    receipt: { date: "A", source: "B", code: "E", amount: "F" },
+    payment: { date: "O", source: "P", code: "S", amount: "T" },
+    receiptCodes: new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]),
+    paymentCodes: new Set(["BC", "CR", "DR", "W", "B", "J", "RP", "DL", "X"]),
+  },
+  "Cash.xlsx": {
+    receipt: { date: "A", source: "B", code: "E", amount: "F" },
+    payment: { date: "L", source: "M", code: "P", amount: "Q" },
+    receiptCodes: new Set(["BB", "DR", "CR", "DL"]),
+    paymentCodes: new Set(["BB", "CR", "DR", "W", "J", "RP", "DL"]),
+  },
+};
+
+// Matches [vat].standard_rate in app/data/se-*.toml (Admin!F27). Used to
+// convert a scenario's gross transaction amount to the net-of-VAT figure
+// the Sales.xlsx/Purchases.xlsx/Fixedassets.xlsx analysis columns hold --
+// all read the I column ("Sales/Purchases Net of Vat"), never the gross G
+// column.
+const VAT_RATE = 0.2;
 
 export function cellWrites(scenario) {
   const salesWrites = {};
@@ -80,9 +110,12 @@ export function cellWrites(scenario) {
     }
   }
 
-  // Bank and Cash entries — split by account and receipt/payment direction
+  // Bank and Cash entries — routed to a workbook by account, then to the
+  // receipt or payment block by the entry's own explicit direction (a code
+  // letter alone cannot say which side a line belongs on -- see
+  // BANK_LAYOUTS above).
   if (scenario.bank) {
-    // Track receipt row and payment row per month per account
+    // Track receipt row and payment row per month per file
     const receiptRows = {};
     const paymentRows = {};
 
@@ -91,34 +124,39 @@ export function cellWrites(scenario) {
 
       for (const tx of transactions) {
         const acct = tx.account || "1200";
-        const targetWrites = acct === "1220" ? cashWrites : bankWrites;
+        const fileName = BANK_ACCOUNT_FILES[acct];
+        if (!fileName) throw new Error(`cellWrites: bank entry dated ${tx.date} names unknown account "${acct}"`);
+        const targetWrites = fileName === "Cash.xlsx" ? cashWrites : bankWrites;
         if (!targetWrites[sheetName]) targetWrites[sheetName] = {};
         const sheet = targetWrites[sheetName];
-        const d = parseDate(tx.date);
-        const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-
-        const rowKey = `${acct}:${sheetName}`;
 
         if (tx.code === "BC") {
-          // Opening balance goes in A1
+          // Opening balance goes in A1, not a receipt row.
           sheet.A1 = tx.amount;
-        } else if (RECEIPT_CODES.has(tx.code)) {
-          // Receipt: A=date, B=source, E=code, F=amount (rows start at 6)
-          if (!receiptRows[rowKey]) receiptRows[rowKey] = 6;
-          const row = receiptRows[rowKey]++;
-          sheet[`A${row}`] = serial;
-          if (tx.source) sheet[`B${row}`] = tx.source;
-          sheet[`E${row}`] = tx.code;
-          sheet[`F${row}`] = tx.amount;
-        } else if (PAYMENT_CODES.has(tx.code)) {
-          // Payment: P=date, Q=supplier, S=code, T=amount (rows start at 6)
-          if (!paymentRows[rowKey]) paymentRows[rowKey] = 6;
-          const row = paymentRows[rowKey]++;
-          sheet[`P${row}`] = serial;
-          if (tx.source) sheet[`Q${row}`] = tx.source;
-          sheet[`S${row}`] = tx.code;
-          sheet[`T${row}`] = tx.amount;
+          continue;
         }
+
+        if (tx.direction !== "in" && tx.direction !== "out") {
+          throw new Error(`cellWrites: bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
+        }
+        const layout = BANK_LAYOUTS[fileName];
+        const isReceipt = tx.direction === "in";
+        const block = isReceipt ? layout.receipt : layout.payment;
+        const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
+        if (!analysedCodes.has(tx.code)) {
+          throw new Error(`cellWrites: ${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code "${tx.code}"`);
+        }
+
+        const rowKey = `${fileName}:${sheetName}`;
+        const rows = isReceipt ? receiptRows : paymentRows;
+        if (!rows[rowKey]) rows[rowKey] = 6;
+        const row = rows[rowKey]++;
+        const d = parseDate(tx.date);
+        const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        sheet[`${block.date}${row}`] = serial;
+        if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        sheet[`${block.code}${row}`] = tx.code;
+        sheet[`${block.amount}${row}`] = tx.amount;
       }
     }
   }
@@ -243,29 +281,113 @@ export function cellWrites(scenario) {
     }
   }
 
-  // Fixedassets.xlsx opening asset values
+  // Fixedassets.xlsx Schedule sheet -- verified against the template:
+  //   Existing assets (bought before the year start): rows 8-10 land,
+  //   14-18 plant, 22-26 fixtures, 30-34 computers, 38-54 motor. Each row:
+  //   C=asset description, D=purchase reference, E=original cost,
+  //   F=accumulated depreciation brought forward.
+  //   New assets (bought during the year): rows 61-63 land, 67-71 plant,
+  //   75-79 fixtures, 83-87 computers, 91-107 motor. Same C/D/E layout;
+  //   B=date purchased, U=date sold, V=sale value (net of VAT) for an
+  //   in-year disposal recorded on the same row as the asset it disposes of.
+  // Row 1 carries the sheet's own column totals (E1=total cost,
+  // F1=total acc dep b/f, G1=total WDV b/f, I1=total depreciation charge,
+  // J1=total acc dep c/f, K1=total WDV c/f, Q1/R1/S1=capital allowance
+  // totals, V1/W1/X1/Y1/Z1=disposal totals) -- these feed both the P&L
+  // depreciation/disposal lines and the SA103S capital allowance boxes via
+  // cross-file external links, and FAreconciliation (a second sheet in the
+  // same workbook) independently sums the New-asset rows and compares the
+  // total against Purchases.xlsx's and Sales.xlsx's own fa/fs-coded column
+  // totals -- the workbook's own note-vs-schedule tie-out.
+  const EXISTING_ASSET_ROWS = { motor: [38, 39, 40, 41, 42], computer: [30, 31, 32, 33, 34] };
+  const NEW_PLANT_ROWS = [67, 68, 69, 70, 71];
+
   const fixedAssetsWrites = {};
+  const existingAssetRowsUsed = { motor: [], computer: [] };
+
   if (scenario.opening_fixed_assets) {
     fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    // Row 6: Existing Motor Vehicles (E=cost, Y=acc dep)
-    // Row 7: Existing Motor Vehicle 2
-    // Rows in "Existing" sections: Motor(6-10), Land(G col area), Plant(K col area), Computer(S col area)
-    let motorRow = 6;
-    let computerRow = 6; // computers use S column area
+    const nextRow = { motor: 0, computer: 0 };
     for (const asset of scenario.opening_fixed_assets) {
-      if (asset.category === "motor") {
-        fa[`E${motorRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${motorRow}`] = asset.acc_dep;
-        if (asset.description) fa[`D${motorRow}`] = asset.description;
-        motorRow++;
-      } else if (asset.category === "computer") {
-        fa[`E${computerRow}`] = asset.cost;
-        if (asset.acc_dep) fa[`Y${computerRow}`] = asset.acc_dep;
-        if (asset.description) fa[`D${computerRow}`] = asset.description;
-        computerRow++;
-      }
+      const rows = EXISTING_ASSET_ROWS[asset.category];
+      if (!rows) throw new Error(`cellWrites: unknown opening_fixed_assets category "${asset.category}"`);
+      const row = rows[nextRow[asset.category]++];
+      if (row === undefined)
+        throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
+      // Written left-to-right (C, then E, then F). setCellValue/setCellString
+      // in spreadsheet-runner.js replaces a matched cell together with every
+      // self-closing sibling up to the row's next already-closed cell -- an
+      // earlier write onto a later (rightward) column silently deletes any
+      // not-yet-written cell in between, template formula cells included.
+      // Once a cell has been written it is properly closed, so writing
+      // strictly left-to-right, ending on the row's rightmost written
+      // column, is the only order that survives every scenario the SE
+      // template's row layout throws at it.
+      if (asset.description) fa[`C${row}`] = asset.description;
+      fa[`E${row}`] = asset.cost;
+      if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      existingAssetRowsUsed[asset.category].push(row);
     }
+  }
+
+  // New fixed asset purchases (Purchases.xlsx code "fa") all land on the
+  // New Plant & Machinery rows. FAreconciliation only checks the aggregate
+  // New-asset total against Purchases.xlsx's cumulative fa total, not which
+  // category holds it, so any category is a faithful, provable tie-out
+  // target without inventing an asset-class taxonomy the scenario data
+  // doesn't carry.
+  const faPurchases = [];
+  if (scenario.purchases) {
+    for (const transactions of Object.values(scenario.purchases)) {
+      for (const tx of transactions) if (tx.code === "fa") faPurchases.push(tx);
+    }
+  }
+  if (faPurchases.length > 0) {
+    if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    if (faPurchases.length > NEW_PLANT_ROWS.length) {
+      throw new Error(
+        `cellWrites: ${faPurchases.length} "fa" purchase(s) exceed the ${NEW_PLANT_ROWS.length} Schedule New Plant & Machinery rows`,
+      );
+    }
+    faPurchases.forEach((tx, i) => {
+      const row = NEW_PLANT_ROWS[i];
+      const d = parseDate(tx.date);
+      // Left-to-right column order (B, then C, then E) -- see the opening
+      // asset writer above for why the order matters.
+      fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      if (tx.supplier) fa[`C${row}`] = tx.supplier;
+      fa[`E${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+    });
+  }
+
+  // Fixed asset disposals (Sales.xlsx code "fs") pair with the existing
+  // asset row they disposed of, in declaration order -- the sale value
+  // (net of VAT) lands on the same row as the asset's original cost so the
+  // Schedule's own disposal formulas (cost and depreciation at disposal)
+  // resolve against the right asset.
+  const fsDisposals = [];
+  if (scenario.sales) {
+    for (const transactions of Object.values(scenario.sales)) {
+      for (const tx of transactions) if (tx.code === "fs") fsDisposals.push(tx);
+    }
+  }
+  if (fsDisposals.length > 0) {
+    if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
+    const fa = fixedAssetsWrites.Schedule;
+    const disposalRows = [...existingAssetRowsUsed.motor, ...existingAssetRowsUsed.computer];
+    if (fsDisposals.length > disposalRows.length) {
+      throw new Error(
+        `cellWrites: ${fsDisposals.length} "fs" disposal(s) but only ${disposalRows.length} existing fixed asset row(s) to attach them to`,
+      );
+    }
+    fsDisposals.forEach((tx, i) => {
+      const row = disposalRows[i];
+      const d = parseDate(tx.date);
+      fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      fa[`V${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+    });
   }
 
   const result = {
@@ -321,11 +443,11 @@ export const CELL_MAP = [
   ["Profit & Loss Account", "B27", "Advertising",               "accounts.purchases.5500",        "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B28", "Legal & Professional",      "accounts.purchases.5800",        "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B29", "Bad Debts",                 "accounts.sales.4005",            "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B30", "Depreciation",              "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B31", "Other Expenses",            "accounts.purchases (other)",     "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B32", "Charitable Donations",      "accounts.purchases.5801",        "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B33", "Goodwill Amortisation",     "accounts.purchases.5802",        "Profit & Loss Account", 1],
-  ["Profit & Loss Account", "B34", "Loss on Disposal",          "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B30", "Bank Interest Paid",        "accounts.purchases.5701",        "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B31", "HP Interest, Lease, Bank Charges", "accounts.purchases.5702", "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B32", "Other Expenses",            "accounts.purchases (other)",     "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B33", "Loss (Profit) on Disposal of Assets", "gl-cor:amount (lossOnDisposal)", "Profit & Loss Account", 1],
+  ["Profit & Loss Account", "B34", "Depreciation",              "gl-cor:amount (depreciation)",   "Profit & Loss Account", 1],
   ["Profit & Loss Account", "B35", "Total Admin Expenses",      "gl-cor:amount (totalAdmin)",     "Profit & Loss Account", 0],
   ["Profit & Loss Account", "B37", "**Operating Profit**",      "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
   ["Profit & Loss Account", "B39", "**Profit Before Tax**",     "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
@@ -385,13 +507,22 @@ export const CELL_MAP = [
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
 ];
 
-// Additional reads from leaf files (Bank.xlsx closing balance, Vat.xlsx quarterly returns)
+// Additional reads from leaf files (Bank.xlsx closing balance, Vat.xlsx
+// quarterly returns, Fixedassets.xlsx Schedule and FAreconciliation totals).
+//
+// Cash.xlsx's closing balance is NOT read here. additionalReads keys its
+// results by raw sheet name, not by file -- Bank.xlsx and Cash.xlsx both
+// have a "Mar" sheet, so requesting both would silently overwrite one
+// file's A1/A2 with the other's (last file processed wins) under the same
+// "Mar" key. Reading Cash.xlsx's closing balance safely needs
+// runMultiFileSpreadsheet to nest additionalReads results by filename;
+// until then it is proven directly against the recalculated file in
+// app/test/se-reconciliation-checks.test.js instead of shipped here.
 export function multiFileOptions() {
   return {
     postHubRecalc: ["Vat.xlsx"],
     additionalReads: {
       "Bank.xlsx": { Mar: ["A1", "A2"] },
-      "Cash.xlsx": { Mar: ["A1", "A2"] },
       // G1 = SUM(G5:G300), the total gross debtor/creditor value on each sheet.
       "Sales.xlsx": {
         OpeningDebtors: ["G1"],
@@ -407,15 +538,47 @@ export function multiFileOptions() {
         VATQtr3: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
         VATQtr4: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
       },
+      "Fixedassets.xlsx": {
+        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1"],
+        FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
+      },
     },
   };
 }
+
+// Month tab order (matches MONTH_SHEETS/scenario key order) and the P&L
+// column each occupies -- verified against the template (C=Apr .. N=Mar).
+const MONTH_KEYS = ["apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec", "jan", "feb", "mar"];
+const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
+
+// P&L rows fed by a single Sales.xlsx/Purchases.xlsx code column with no
+// other adjustment mixed in (verified against the template's per-month
+// formulas), keyed by the scenario transaction code letter. Materials
+// (P&L row 14) also carries a StockControl adjustment and Wages (row 21)
+// also carries a Wagesinterface payroll addback, so neither ties 1:1 to a
+// single month's code total and both are left out here.
+const SALES_MONTHLY_TIE_ROWS = { a: 5, b: 6, c: 7, d: 8, g: 11 };
+// Sales code "o" ("Other") feeds P&L row 29 ("Bad Debts written off")
+// negated -- a template quirk, not a naming error; verified against the
+// formula (`C29 = -[2]Apr!$U$1`).
+const SALES_BAD_DEBT_ROW = 29;
+const PURCHASES_MONTHLY_TIE_ROWS = { c: 15, o: 16, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32 };
 
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {
     if (!reads[sheet]) reads[sheet] = [];
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
+  }
+  const plRows = [
+    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34]),
+  ];
+  reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
+  for (const row of plRows) {
+    for (const col of MONTH_COLS) {
+      const cell = `${col}${row}`;
+      if (!reads["Profit & Loss Account"].includes(cell)) reads["Profit & Loss Account"].push(cell);
+    }
   }
   return reads;
 }
@@ -548,10 +711,168 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const seShort = results["SE Short"];
     if (seShort) {
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
-      if (seShort.D71) check("SA103S: Net profit close to P&L Net - Grants", seShort.D71, pl.B37 - (pl.B11 || 0), Math.abs(pl.B37) * 0.01);
+      if (seShort.D71) {
+        // SA103S profit excludes depreciation (not an allowable expense for
+        // income tax -- capital allowances substitute for it), while the
+        // accounting P&L operating profit (B37) deducts it. Add the P&L's
+        // own depreciation charge back before comparing the two.
+        const plDepreciationAddback = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+        check(
+          "SA103S: Net profit close to P&L Net - Grants + Depreciation addback",
+          seShort.D71,
+          pl.B37 - (pl.B11 || 0) + plDepreciationAddback,
+          Math.abs(pl.B37) * 0.01,
+        );
+      }
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
+
+      // Capital allowances carry from Schedule to SA103S across the
+      // cross-file external link (Fixedassets.xlsx -> Financialaccounts.xlsx).
+      // Mirrors the SA103S cells' own formulas so the check is a genuine
+      // "did the link carry the right value" proof, not a fixture compared
+      // to itself.
+      // WDA (SE Short D85) has no live signal in this scenario: every new
+      // asset claims 100% AIA (Schedule's P flag defaults to 1) and no
+      // opening tax-written-down-value is fed into the Schedule's O column
+      // for existing assets, so both sides of that identity are always 0 --
+      // asserting it would be a check that can only ever pass on 0 = 0. Not
+      // added; see the final report for what scenario data would give it
+      // real signal.
+      const sched = results["Fixedassets.xlsx!Schedule"];
+      if (sched) {
+        const expectedAIA = (sched.Q1 || 0) > 0 ? sched.Q1 : 0;
+        check("SA103S: Capital allowances (AIA/FYA) = Schedule Q1", seShort.D80 || 0, expectedAIA);
+      }
     }
   }
+
+  // ── Fixed assets (Fixedassets.xlsx Schedule vs Purchases/Sales, and P&L) ──
+  //
+  // 1. Note vs schedule. FAreconciliation!E11/K11 independently re-sum the
+  //    Schedule's own New-asset rows (a same-file reference, not an
+  //    external link) -- comparing them against the scenario's own
+  //    "fa"/"fs"-coded net totals proves cellWrites() populated the
+  //    Schedule consistently with what was posted to Purchases.xlsx/
+  //    Sales.xlsx. FAreconciliation!E13/K13 -- the sheet's OWN intended
+  //    cross-file comparison against those two workbooks -- read 0
+  //    regardless of real data: runMultiFileSpreadsheet() only injects
+  //    recalculated leaf values into the HUB's (Financialaccounts.xlsx)
+  //    external link cache, not into other leaves' caches, and
+  //    Fixedassets.xlsx's links to Purchases.xlsx/Sales.xlsx are leaf-to-
+  //    leaf. E13/K13 are not read or asserted here; see the final report
+  //    for the runner change that would make FAreconciliation's own check
+  //    live.
+  const fr = results["Fixedassets.xlsx!FAreconciliation"];
+  if (fr && expected.purchases) {
+    let faGross = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) if (tx.code === "fa") faGross += tx.amount;
+    }
+    const faNet = Math.round((faGross / (1 + VAT_RATE)) * 100) / 100;
+    check("Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", fr.E11 || 0, faNet);
+  }
+  if (fr && expected.sales) {
+    let fsGross = 0;
+    for (const transactions of Object.values(expected.sales)) {
+      for (const tx of transactions) if (tx.code === "fs") fsGross += tx.amount;
+    }
+    const fsNet = Math.round((fsGross / (1 + VAT_RATE)) * 100) / 100;
+    check("Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", fr.K11 || 0, fsNet);
+  }
+
+  const sched = results["Fixedassets.xlsx!Schedule"];
+  if (sched) {
+    // 2. Closing NBV identity within the Schedule itself: cost minus
+    //    accumulated depreciation carried forward. (The equivalent opening
+    //    identity does not hold in this template: the "New Fixed Assets"
+    //    rows have no opening-WDV formula at all -- G is blank for a New
+    //    row regardless of E -- so G1 is the existing-assets figure alone
+    //    while E1/F1 include in-year additions. Asserting G1 = E1-F1 would
+    //    be checking a false identity, not the workbook's own logic.)
+    check("Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", sched.K1 || 0, (sched.E1 || 0) - (sched.J1 || 0));
+
+    // 3. P&L depreciation and disposal lines carry the Schedule's own
+    //    annual totals across the cross-file link (each month books 1/12
+    //    of the annual figure, so the 12 months' P&L cells sum back to it).
+    if (pl) {
+      const plDepreciation = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+      check("P&L: Depreciation (row 34, summed) = Schedule I1", plDepreciation, sched.I1 || 0);
+      const plDisposalLoss = MONTH_COLS.reduce((s, col) => s + (pl[`${col}33`] || 0), 0);
+      const expectedDisposalLoss = -((sched.V1 || 0) - (sched.W1 || 0) + (sched.X1 || 0));
+      check("P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)", plDisposalLoss, expectedDisposalLoss);
+    }
+  }
+
+  // ── Bank (item 6): Bank.xlsx closing balance vs the scenario's own cash
+  // movements for the current account. Computed independently from the raw
+  // scenario.bank transactions (direction in/out), not read back from a
+  // second spreadsheet formula, so a wrong closing balance -- wrong
+  // opening balance carried forward, a receipt posted as a payment, a
+  // month dropped -- shows up as a mismatch. Cash.xlsx (account 1220) has
+  // no live read here; see the multiFileOptions() comment.
+  if (expected.bank) {
+    let openingBC = 0;
+    let receipts = 0;
+    let payments = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if ((tx.account || "1200") !== "1200") continue;
+        if (tx.code === "BC") openingBC += tx.amount;
+        else if (tx.direction === "in") receipts += tx.amount;
+        else if (tx.direction === "out") payments += tx.amount;
+      }
+    }
+    const bankMar = results["Bank.xlsx!Mar"];
+    if (bankMar) check("Bank.xlsx closing balance (Mar!A2)", bankMar.A2 || 0, openingBC + receipts - payments);
+  }
+
+  // ── Monthly P&L vs monthly Sales/Purchases (item 10) ──
+  //
+  // Each month's P&L category cell reads a single Sales.xlsx/Purchases.xlsx
+  // column via cross-file external link (verified against the template's
+  // per-month formulas -- see SALES_MONTHLY_TIE_ROWS/PURCHASES_MONTHLY_TIE_ROWS).
+  // Both sides are net of VAT: the P&L cells hold the workbook's own net
+  // total, and the "expected" side here converts the scenario's gross
+  // transaction amounts to net using the same 20% rate the templates use
+  // (VAT_RATE, see the Fixedassets writer above) -- comparing net to net,
+  // not the gross scenario amount to the net P&L figure. This catches a
+  // month landing in the wrong column or a whole month dropping out.
+  if (pl && expected.sales) {
+    for (let i = 0; i < MONTH_KEYS.length; i++) {
+      const monthTx = expected.sales[MONTH_KEYS[i]] || [];
+      const col = MONTH_COLS[i];
+      const byCode = {};
+      for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
+
+      for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
+        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Sales.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
+      }
+      const badDebtNet = Math.round(((byCode.o || 0) / (1 + VAT_RATE)) * 100) / 100;
+      check(
+        `P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`,
+        pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0,
+        -badDebtNet,
+      );
+    }
+  }
+  // Purchases.xlsx side NOT asserted here. Every Purchases.xlsx amount
+  // write lands on a template cell (column G) that pre-exists self-closing,
+  // immediately followed by the VAT formula cell (H) in already-closed
+  // form -- spreadsheet-runner.js's setCellValue()/setCellString() regex
+  // replace does not stop at the next cell boundary, only at the next
+  // "</c>", so writing G silently deletes the adjacent H formula along with
+  // it. With H gone, I (net) reads G-0 = G: every Purchases.xlsx row comes
+  // back net = gross, off by the VAT rate on every purchase, every month,
+  // every scenario -- confirmed against the recalculated file (Apr "p" net
+  // read 1200, the gross WorkSpace Ltd rent, not 1000). Sales.xlsx is not
+  // affected: its template has no pre-existing G cell at all (the row is
+  // populated as new cells via the safe insert path), which is why the
+  // sales-side ties above hold. See the final report for the exact fix
+  // (the swallow needs to stop at the next "<c " as well as the next
+  // "</c>") and for how this already explains the pre-existing
+  // total_motor_gross/total_legal_gross expected values being named
+  // "gross" while compared against what the sheet calls its net column.
 
   return checks;
 }

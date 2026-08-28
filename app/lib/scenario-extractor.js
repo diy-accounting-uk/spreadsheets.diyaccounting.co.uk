@@ -77,21 +77,21 @@ export const SE_PURCHASE_CODE_MAP = {
   5001: "c",
   5002: "o",
   5101: "w",
-  5200: "r",
+  5200: "p", // Premises (combined Rent/Light/Heat column)
   5201: "p",
-  5300: "t",
-  5301: "q",
+  5300: "g", // postage -> Administration Telephone Postage & Stationery
+  5301: "o", // equipment hire -> Other Direct Business Costs
   5400: "m",
-  5401: "u",
+  5401: "y", // general shopping -> Other Expenses
   5500: "a",
   5501: "g",
   5600: "h",
   5601: "v",
-  5700: "n",
-  5701: "f",
+  5700: "y", // insurance -> Other Expenses (no insurance column)
+  5701: "g", // office equipment -> Administration & Stationery
   5800: "l",
   5801: "y",
-  5802: "z",
+  5802: "l", // one-off consulting -> Legal & Professional
   5803: "l", // loan interest -> legal
   5900: "fa",
   5100: "w", // directors wages -> employee wages in SE
@@ -263,6 +263,9 @@ export function filterAdvanced(lines) {
     if (l.sourceJournalID === "purchases") return SE_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
     if (l.sourceJournalID === "bank") return SE_BANK_ACCOUNTS.has(l["diya-gl:bankAccountID"]);
     if (l.sourceJournalID === "payroll") return true;
+    // The opening fixed assets post to the SE Schedule; the rest of the
+    // opening journal has no SE surface.
+    if (isOpeningBalanceLine(l)) return l.accountMainID === "0030" || l.accountMainID === "0040";
     return false;
   });
 }
@@ -274,6 +277,16 @@ export function filterFull(lines) {
 // ============================================================================
 // Build grouped transaction data for TOML fixture
 // ============================================================================
+
+// A company pays dividends; a sole trader takes drawings. The SE scenario
+// reinterprets the master's dividend payments as proprietor drawings.
+export function seDrawingsFromDividends(lines) {
+  return lines.map((line) =>
+    line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "DV"
+      ? { ...line, "diya-gl:bankCode": "DL", "detailComment": "Proprietor", "lineItemComment": "Quarterly drawings payment" }
+      : line,
+  );
+}
 
 export function buildGrouped(filteredLines, purchaseCodeMap) {
   const sales = {};
@@ -496,6 +509,22 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Fixed asset additions (BST, Taxi) -- an in-year purchase that claims a
+  // capital allowance immediately, written both as a top-level table (for
+  // cellWrites, which puts it on the Fixed Assets schedule) and echoed into
+  // [expected] below (for checkCompliance, which is sometimes called with
+  // just scenario.expected rather than the whole merged scenario).
+  if (expected.fixed_asset_additions) {
+    for (const asset of expected.fixed_asset_additions) {
+      parts.push("[[fixed_asset_additions]]");
+      parts.push(`date = ${asset.date}`);
+      parts.push(`description = "${escapeTomlString(asset.description)}"`);
+      parts.push(`reference = "${escapeTomlString(asset.reference)}"`);
+      parts.push(`cost = ${asset.cost}`);
+      parts.push("");
+    }
+  }
+
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
@@ -507,6 +536,10 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
+  if (expected.fixed_asset_additions) {
+    const totalCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    parts.push(`fixed_asset_cost = ${totalCost}`);
+  }
   parts.push("");
 
   return parts.join("\n");

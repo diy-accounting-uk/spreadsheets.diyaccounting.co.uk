@@ -19,7 +19,9 @@ import {
   filterAdvanced,
   filterFull,
   buildGrouped,
+  seDrawingsFromDividends,
   buildOpeningBalance,
+  isOpeningBalanceLine,
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
@@ -119,7 +121,8 @@ export function diyaGlToScenario(book, lines, product) {
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
-  const filteredLines = filter(lines);
+  let filteredLines = filter(lines);
+  if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   const grouped = buildGrouped(filteredLines, purchaseCodeMap);
 
   // Compute expected values
@@ -236,6 +239,26 @@ export function diyaGlToScenario(book, lines, product) {
   if (product === "ltd" || product === "se") {
     const openingBalance = buildOpeningBalance(filteredLines);
     if (Object.keys(openingBalance).length > 0) scenario.opening_balance = openingBalance;
+  }
+
+  // SE posts opening fixed assets as individual Schedule rows, so the
+  // opening journal's cost and depreciation lines become per-asset entries.
+  if (product === "se") {
+    const SE_ASSET_CATEGORIES = { "0030": "computer", "0040": "motor" };
+    const assets = [];
+    const lastByCategory = {};
+    for (const line of filteredLines.filter(isOpeningBalanceLine)) {
+      const category = SE_ASSET_CATEGORIES[line.accountMainID];
+      if (!category) continue;
+      if (line.debitCreditCode === "D") {
+        const asset = { category, description: line.lineItemComment || "", cost: line.amount };
+        assets.push(asset);
+        lastByCategory[category] = asset;
+      } else if (lastByCategory[category]) {
+        lastByCategory[category].acc_dep = (lastByCategory[category].acc_dep || 0) + line.amount;
+      }
+    }
+    if (assets.length > 0) scenario.opening_fixed_assets = assets;
   }
 
   // Employees from book.toml

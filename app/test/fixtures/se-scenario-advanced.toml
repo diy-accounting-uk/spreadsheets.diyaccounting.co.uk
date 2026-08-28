@@ -720,7 +720,7 @@ amount = 360
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.apr]]
@@ -744,7 +744,7 @@ amount = 45
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Hiscox"
-code = "n"
+code = "y"
 amount = 1440
 
 [[purchases.apr]]
@@ -768,13 +768,13 @@ amount = 180
 [[purchases.apr]]
 date = 2025-04-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.apr]]
@@ -798,13 +798,13 @@ amount = 48
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Xerox"
-code = "f"
+code = "g"
 amount = 180
 
 [[purchases.apr]]
@@ -822,7 +822,7 @@ amount = 18
 [[purchases.apr]]
 date = 2025-04-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 42
 
 [[purchases.apr]]
@@ -876,13 +876,13 @@ amount = 8
 [[purchases.apr]]
 date = 2025-04-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.apr]]
 date = 2025-04-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.apr]]
@@ -906,7 +906,7 @@ amount = 300
 [[purchases.may]]
 date = 2025-05-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.may]]
@@ -948,13 +948,13 @@ amount = 180
 [[purchases.may]]
 date = 2025-05-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.may]]
@@ -978,13 +978,13 @@ amount = 48
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Hilti"
-code = "q"
+code = "o"
 amount = 240
 
 [[purchases.may]]
 date = 2025-05-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.may]]
@@ -1056,7 +1056,7 @@ amount = 60
 [[purchases.may]]
 date = 2025-05-20
 supplier = "ParcelForce"
-code = "t"
+code = "g"
 amount = 180
 
 [[purchases.may]]
@@ -1074,7 +1074,7 @@ amount = 8
 [[purchases.may]]
 date = 2025-05-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.may]]
@@ -1086,7 +1086,7 @@ amount = 48
 [[purchases.may]]
 date = 2025-05-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.may]]
@@ -1110,7 +1110,7 @@ amount = 300
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jun]]
@@ -1152,13 +1152,13 @@ amount = 180
 [[purchases.jun]]
 date = 2025-06-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.jun]]
@@ -1182,7 +1182,7 @@ amount = 48
 [[purchases.jun]]
 date = 2025-06-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.jun]]
@@ -1200,7 +1200,7 @@ amount = 18
 [[purchases.jun]]
 date = 2025-06-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 30
 
 [[purchases.jun]]
@@ -1266,7 +1266,7 @@ amount = 8
 [[purchases.jun]]
 date = 2025-06-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.jun]]
@@ -1278,7 +1278,7 @@ amount = 360
 [[purchases.jun]]
 date = 2025-06-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.jun]]
@@ -1308,7 +1308,7 @@ amount = 250
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jul]]
@@ -1332,7 +1332,7 @@ amount = 45
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "J. Smith Consulting"
-code = "z"
+code = "l"
 amount = 3000
 
 [[purchases.jul]]
@@ -1356,13 +1356,13 @@ amount = 180
 [[purchases.jul]]
 date = 2025-07-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.jul]]
@@ -1386,13 +1386,13 @@ amount = 48
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Xerox"
-code = "f"
+code = "g"
 amount = 180
 
 [[purchases.jul]]
@@ -1410,7 +1410,7 @@ amount = 18
 [[purchases.jul]]
 date = 2025-07-12
 supplier = "ToolHire"
-code = "q"
+code = "o"
 amount = 480
 
 [[purchases.jul]]
@@ -1464,7 +1464,7 @@ amount = 60
 [[purchases.jul]]
 date = 2025-07-20
 supplier = "DHL"
-code = "t"
+code = "g"
 amount = 120
 
 [[purchases.jul]]
@@ -1482,13 +1482,13 @@ amount = 8
 [[purchases.jul]]
 date = 2025-07-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.jul]]
 date = 2025-07-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.jul]]
@@ -1512,7 +1512,7 @@ amount = 300
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.aug]]
@@ -1554,13 +1554,13 @@ amount = 180
 [[purchases.aug]]
 date = 2025-08-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.aug]]
@@ -1590,7 +1590,7 @@ amount = 48
 [[purchases.aug]]
 date = 2025-08-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.aug]]
@@ -1602,7 +1602,7 @@ amount = 18
 [[purchases.aug]]
 date = 2025-08-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 48
 
 [[purchases.aug]]
@@ -1674,13 +1674,13 @@ amount = 8
 [[purchases.aug]]
 date = 2025-08-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.aug]]
 date = 2025-08-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.aug]]
@@ -1704,7 +1704,7 @@ amount = 300
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.sep]]
@@ -1746,13 +1746,13 @@ amount = 180
 [[purchases.sep]]
 date = 2025-09-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.sep]]
@@ -1770,19 +1770,19 @@ amount = 48
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Hilti"
-code = "q"
+code = "o"
 amount = 360
 
 [[purchases.sep]]
 date = 2025-09-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.sep]]
 date = 2025-09-10
 supplier = "Royal Mail"
-code = "t"
+code = "g"
 amount = 96
 
 [[purchases.sep]]
@@ -1854,7 +1854,7 @@ amount = 8
 [[purchases.sep]]
 date = 2025-09-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.sep]]
@@ -1872,7 +1872,7 @@ amount = 300
 [[purchases.sep]]
 date = 2025-09-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.sep]]
@@ -1902,7 +1902,7 @@ amount = 208
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.oct]]
@@ -1926,7 +1926,7 @@ amount = 45
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Simply Business"
-code = "n"
+code = "y"
 amount = 360
 
 [[purchases.oct]]
@@ -1950,13 +1950,13 @@ amount = 180
 [[purchases.oct]]
 date = 2025-10-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.oct]]
@@ -1980,13 +1980,13 @@ amount = 48
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Xerox"
-code = "f"
+code = "g"
 amount = 180
 
 [[purchases.oct]]
@@ -2010,7 +2010,7 @@ amount = 18
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.oct]]
@@ -2076,13 +2076,13 @@ amount = 8
 [[purchases.oct]]
 date = 2025-10-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.oct]]
 date = 2025-10-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.oct]]
@@ -2112,7 +2112,7 @@ amount = 300
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.nov]]
@@ -2154,13 +2154,13 @@ amount = 180
 [[purchases.nov]]
 date = 2025-11-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.nov]]
@@ -2184,7 +2184,7 @@ amount = 48
 [[purchases.nov]]
 date = 2025-11-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.nov]]
@@ -2250,7 +2250,7 @@ amount = 60
 [[purchases.nov]]
 date = 2025-11-20
 supplier = "ParcelForce"
-code = "t"
+code = "g"
 amount = 240
 
 [[purchases.nov]]
@@ -2268,13 +2268,13 @@ amount = 8
 [[purchases.nov]]
 date = 2025-11-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.nov]]
 date = 2025-11-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.nov]]
@@ -2298,7 +2298,7 @@ amount = 300
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.dec]]
@@ -2340,13 +2340,13 @@ amount = 180
 [[purchases.dec]]
 date = 2025-12-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.dec]]
@@ -2370,7 +2370,7 @@ amount = 48
 [[purchases.dec]]
 date = 2025-12-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.dec]]
@@ -2388,7 +2388,7 @@ amount = 18
 [[purchases.dec]]
 date = 2025-12-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.dec]]
@@ -2448,7 +2448,7 @@ amount = 8
 [[purchases.dec]]
 date = 2025-12-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.dec]]
@@ -2460,7 +2460,7 @@ amount = 420
 [[purchases.dec]]
 date = 2025-12-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.dec]]
@@ -2496,7 +2496,7 @@ amount = 167
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.jan]]
@@ -2538,13 +2538,13 @@ amount = 180
 [[purchases.jan]]
 date = 2026-01-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.jan]]
@@ -2568,19 +2568,19 @@ amount = 48
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Hilti"
-code = "q"
+code = "o"
 amount = 180
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Xerox"
-code = "f"
+code = "g"
 amount = 180
 
 [[purchases.jan]]
@@ -2640,7 +2640,7 @@ amount = 60
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "DHL"
-code = "t"
+code = "g"
 amount = 180
 
 [[purchases.jan]]
@@ -2658,7 +2658,7 @@ amount = 8
 [[purchases.jan]]
 date = 2026-01-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.jan]]
@@ -2670,7 +2670,7 @@ amount = 36
 [[purchases.jan]]
 date = 2026-01-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.jan]]
@@ -2694,7 +2694,7 @@ amount = 300
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.feb]]
@@ -2736,13 +2736,13 @@ amount = 180
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.feb]]
@@ -2772,7 +2772,7 @@ amount = 48
 [[purchases.feb]]
 date = 2026-02-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.feb]]
@@ -2784,13 +2784,13 @@ amount = 18
 [[purchases.feb]]
 date = 2026-02-12
 supplier = "ToolHire"
-code = "q"
+code = "o"
 amount = 360
 
 [[purchases.feb]]
 date = 2026-02-14
 supplier = "Toolstation"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.feb]]
@@ -2862,13 +2862,13 @@ amount = 8
 [[purchases.feb]]
 date = 2026-02-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.feb]]
 date = 2026-02-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.feb]]
@@ -2892,7 +2892,7 @@ amount = 120
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "WorkSpace Ltd"
-code = "r"
+code = "p"
 amount = 1200
 
 [[purchases.mar]]
@@ -2934,13 +2934,13 @@ amount = 180
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "Argos"
-code = "u"
+code = "y"
 amount = 22
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Ryman"
-code = "u"
+code = "y"
 amount = 24
 
 [[purchases.mar]]
@@ -2958,13 +2958,13 @@ amount = 48
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Amazon"
-code = "u"
+code = "y"
 amount = 36
 
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Royal Mail"
-code = "t"
+code = "g"
 amount = 144
 
 [[purchases.mar]]
@@ -3030,7 +3030,7 @@ amount = 8
 [[purchases.mar]]
 date = 2026-03-22
 supplier = "Screwfix"
-code = "u"
+code = "y"
 amount = 18
 
 [[purchases.mar]]
@@ -3048,7 +3048,7 @@ amount = 360
 [[purchases.mar]]
 date = 2026-03-25
 supplier = "Wilko"
-code = "u"
+code = "y"
 amount = 15
 
 [[purchases.mar]]
@@ -3429,11 +3429,11 @@ description = "VAT payment Q1 Apr-Jun"
 [[bank.jul]]
 date = 2025-07-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
 direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.jul]]
 date = 2025-07-19
@@ -3744,11 +3744,11 @@ description = "Van sale proceeds"
 [[bank.oct]]
 date = 2025-10-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
 direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.oct]]
 date = 2025-10-19
@@ -4059,11 +4059,11 @@ description = "Directors loan advance"
 [[bank.jan]]
 date = 2026-01-15
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
 direction = "out"
 amount = 3000
-description = "Quarterly dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.jan]]
 date = 2026-01-19
@@ -4311,11 +4311,11 @@ description = "Accountancy fee payment"
 [[bank.mar]]
 date = 2026-03-31
 account = "1200"
-source = "Dividend"
-code = "DV"
+source = "Proprietor"
+code = "DL"
 direction = "out"
 amount = 6000
-description = "Final dividend payment"
+description = "Quarterly drawings payment"
 
 [[bank.apr]]
 date = 2025-04-01
@@ -4464,4 +4464,4 @@ acc_dep = 270
 [expected]
 total_sales = 339200
 total_motor_net = 6332
-total_legal_net = 4425
+total_legal_net = 6925

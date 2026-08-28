@@ -16,15 +16,10 @@ import { resolve, dirname, join } from "path";
 import { tmpdir } from "os";
 import { fileURLToPath } from "url";
 import JSZip from "jszip";
-import {
-  runMultiFileSpreadsheet,
-  hasLibreOffice,
-  buildSheetMap,
-  readCellValue,
-  loadSharedStrings,
-} from "../lib/spreadsheet-runner.js";
+import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import {
   cellWrites as seCellWrites,
   standardReads as seReads,
@@ -78,9 +73,11 @@ describeCalc(
     let scenario;
     let mergedExpected;
     let saveDir;
+    let taxDataForFixedAssets;
 
     beforeAll(async () => {
       const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+      taxDataForFixedAssets = taxData;
       const productMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
 
       const fileBuffers = {};
@@ -183,6 +180,177 @@ describeCalc(
       const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], G1: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    // ── Fixed assets: Schedule vs Purchases/Sales, and P&L (item 5) ────────
+
+    it("Schedule new-asset additions carry a real non-zero signal (FAreconciliation E11)", () => {
+      expect(results["Fixedassets.xlsx!FAreconciliation"].E11).toBeGreaterThan(0);
+    });
+
+    it("Schedule disposals carry a real non-zero signal (FAreconciliation K11)", () => {
+      expect(results["Fixedassets.xlsx!FAreconciliation"].K11).toBeGreaterThan(0);
+    });
+
+    it("P&L depreciation (summed monthly) carries a real non-zero signal", () => {
+      const total = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"].reduce(
+        (s, col) => s + (results["Profit & Loss Account"][`${col}34`] || 0),
+        0,
+      );
+      expect(total).toBeGreaterThan(0);
+    });
+
+    it.each([
+      ["Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", "FAreconciliation", "E11"],
+      ["Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", "FAreconciliation", "K11"],
+      ["Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", "Schedule", "K1"],
+      ["SA103S: Capital allowances (AIA/FYA) = Schedule Q1", "SE Short", "D80"],
+    ])("%s passes on the intact book and fails when %s!%s is corrupted", async (checkName, sheetName, cellRef) => {
+      const fileName = sheetName === "SE Short" ? "Financialaccounts.xlsx" : "Fixedassets.xlsx";
+      const resultKey = sheetName === "SE Short" ? sheetName : `Fixedassets.xlsx!${sheetName}`;
+
+      const intactChecks = seCheckCompliance(results, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      const intactCheck = intactChecks.find((c) => c.name === checkName);
+      expect(intactCheck).toBeDefined();
+      expect(intactCheck.pass).toBe(true);
+
+      const realValue = results[resultKey][cellRef];
+      const corrupted = await readCorruptedCell(join(saveDir, fileName), sheetName, cellRef, realValue + 5000);
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    it("P&L depreciation (row 34, summed) = Schedule I1 passes on the intact book and fails when a month's cell is corrupted", async () => {
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === "P&L: Depreciation (row 34, summed) = Schedule I1");
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+
+      const realValue = results["Profit & Loss Account"].C34;
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "C34", realValue + 5000);
+      const corruptedResults = {
+        ...results,
+        "Profit & Loss Account": { ...results["Profit & Loss Account"], C34: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L: Depreciation (row 34, summed) = Schedule I1");
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    it("P&L loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) passes on the intact book and fails when a month's cell is corrupted", async () => {
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === "P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)");
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+
+      const realValue = results["Profit & Loss Account"].C33;
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "C33", realValue - 5000);
+      const corruptedResults = {
+        ...results,
+        "Profit & Loss Account": { ...results["Profit & Loss Account"], C33: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)");
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    // ── Bank (item 6): Bank.xlsx closing balance vs the scenario's own
+    // cash movements. Cash.xlsx is proven directly here (JSZip reads, not
+    // through checkCompliance) -- see se.js's multiFileOptions() comment
+    // for why Cash.xlsx's closing balance cannot be shipped as a
+    // checkCompliance() check with the current runner.
+
+    it("Bank.xlsx closing balance carries a real non-zero signal", () => {
+      expect(results["Bank.xlsx!Mar"].A2).not.toBe(0);
+    });
+
+    it("Bank.xlsx closing balance (Mar!A2) passes on the intact book and fails when corrupted", async () => {
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === "Bank.xlsx closing balance (Mar!A2)");
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Bank.xlsx"), "Mar", "A2", results["Bank.xlsx!Mar"].A2 + 5000);
+      const corruptedResults = { ...results, "Bank.xlsx!Mar": { ...results["Bank.xlsx!Mar"], A2: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "Bank.xlsx closing balance (Mar!A2)");
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    it("Cash.xlsx closing balance matches the scenario's own petty cash movements", async () => {
+      let openingBC = 0;
+      let receipts = 0;
+      let payments = 0;
+      for (const transactions of Object.values(mergedExpected.bank)) {
+        for (const tx of transactions) {
+          if (tx.account !== "1220") continue;
+          if (tx.code === "BC") openingBC += tx.amount;
+          else if (tx.direction === "in") receipts += tx.amount;
+          else if (tx.direction === "out") payments += tx.amount;
+        }
+      }
+      const expectedClosing = openingBC + receipts - payments;
+      expect(expectedClosing).not.toBe(0);
+
+      const zip = await JSZip.loadAsync(readFileSync(join(saveDir, "Cash.xlsx")));
+      const sheetMap = await buildSheetMap(zip);
+      const sharedStrings = await loadSharedStrings(zip);
+      const xml = await zip.file(sheetMap.get("Mar")).async("string");
+      const actualClosing = readCellValue(xml, "A2", sharedStrings);
+      expect(actualClosing).toBe(expectedClosing);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Cash.xlsx"), "Mar", "A2", actualClosing + 500);
+      expect(corrupted).not.toBe(expectedClosing);
+    });
+
+    // ── Monthly P&L vs monthly Sales.xlsx (item 10) ─────────────────────
+    // Purchases.xlsx is not asserted here -- see se.js's checkCompliance()
+    // comment for the runner bug that makes every Purchases.xlsx net
+    // figure read as gross today.
+
+    it.each([
+      ["P&L apr col C5 = Sales.xlsx a-coded net", "C5"],
+      ["P&L may col D6 = Sales.xlsx b-coded net", "D6"],
+      ["P&L mar col N5 = Sales.xlsx a-coded net", "N5"],
+      ["P&L aug col G11 = Sales.xlsx g-coded net", "G11"],
+    ])("%s carries a real non-zero signal and passes on the intact book", (checkName, cellRef) => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl[cellRef]).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === checkName);
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+    });
+
+    it("P&L apr col C5 = Sales.xlsx a-coded net fails when the P&L cell is corrupted", async () => {
+      const realValue = results["Profit & Loss Account"].C5;
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "C5", realValue + 5000);
+      const corruptedResults = {
+        ...results,
+        "Profit & Loss Account": { ...results["Profit & Loss Account"], C5: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L apr col C5 = Sales.xlsx a-coded net");
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    it("P&L mar col N29 = -(Sales.xlsx o-coded net) (Bad Debts) passes on the intact book and fails when corrupted", async () => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl.N29).not.toBe(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === "P&L mar col N29 = -(Sales.xlsx o-coded net)");
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "N29", pl.N29 - 5000);
+      const corruptedResults = { ...results, "Profit & Loss Account": { ...pl, N29: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L mar col N29 = -(Sales.xlsx o-coded net)");
       expect(corruptedCheck.pass).toBe(false);
     });
   },
