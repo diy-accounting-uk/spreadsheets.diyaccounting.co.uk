@@ -77,7 +77,7 @@ export const PRODUCTS = {
     notes: [
       "Purchases coded f are capitalised. They reach the Purchases sheets' year-to-date fixed asset column, reported as Purchases capitalised as fixed assets, and are excluded from the profit and loss account by design.",
       "Purchases coded s are stock and coded d are direct costs. Both sit above gross profit, in cost of sales and direct costs, not in the expense lines.",
-      "The Debtors & Creditors sheet is the workbook's monthly analysis of sales not yet received and purchases still to be paid. Any opening or closing slot the scenario does not fill keeps that monthly figure, so a report can list more rows than the scenario has entries, carrying amounts that are not debtors or creditors at all.",
+      "The Debtors & Creditors sheet holds three debtor slots and four creditor slots on each side. A slot the scenario has no entry for is left empty and reads as a dash.",
     ],
   },
   se: {

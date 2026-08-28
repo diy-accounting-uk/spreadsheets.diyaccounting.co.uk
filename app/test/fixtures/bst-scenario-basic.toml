@@ -3107,10 +3107,22 @@ invoice = "SH-2603"
 amount = 150
 
 [[fixed_asset_additions]]
-date = 2025-09-15
-description = "MacBook Pro workstation"
-reference = "INV-EQ-001"
-cost = 3600
+date = 2025-05-15
+description = "New laptop for development"
+reference = "PUR-FA-001"
+cost = 1800
+
+[[fixed_asset_additions]]
+date = 2025-07-15
+description = "Office furniture"
+reference = "PUR-FA-003"
+cost = 1200
+
+[[fixed_asset_additions]]
+date = 2025-10-25
+description = "Ford Transit Custom van"
+reference = "PUR-FA-002"
+cost = 36000
 
 [expected]
 total_sales = 409900
@@ -3119,4 +3131,4 @@ net_profit = 333908
 total_premises = 15840
 total_gen_admin = 1962
 total_legal = 4560
-fixed_asset_cost = 3600
+fixed_asset_cost = 39000

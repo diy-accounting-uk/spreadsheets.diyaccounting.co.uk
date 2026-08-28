@@ -16,6 +16,10 @@ export const PRODUCT = {
   prefix: "GB Accounts Basic Sole Trader",
 };
 
+// Slots the Debtors & Creditors sheet gives each opening/closing block.
+const DEBTOR_SLOTS = 3;
+const CREDITOR_SLOTS = 4;
+
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
 export function cellWrites(scenario) {
@@ -77,45 +81,27 @@ export function cellWrites(scenario) {
     if (scenario.stock.closing !== undefined) writes.PurchasesStock.D30 = scenario.stock.closing;
   }
 
-  if (scenario.opening_debtors) {
+  // Debtors and creditors. The sheet's own columns C and F carry a monthly
+  // analysis of sales not yet received and purchases still to be paid, so a
+  // slot left unwritten keeps a monthly figure that is neither a debtor nor a
+  // creditor. Each block is filled to the end for that reason: what the report
+  // shows under these labels is then the scenario's entries and nothing else.
+  function writeEntryBlock(entries, nameColumn, amountColumn, firstRow, slots, nameField) {
+    if (!entries) return;
     if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 5;
-    for (const d of scenario.opening_debtors) {
-      writes["Debtors & Creditors"][`B${row}`] = d.customer;
-      writes["Debtors & Creditors"][`C${row}`] = d.amount;
-      row++;
+    const sheet = writes["Debtors & Creditors"];
+    for (let i = 0; i < slots; i++) {
+      const row = firstRow + i;
+      const entry = entries[i];
+      sheet[`${nameColumn}${row}`] = entry ? entry[nameField] : "";
+      sheet[`${amountColumn}${row}`] = entry ? entry.amount : "";
     }
   }
 
-  if (scenario.closing_debtors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 5;
-    for (const d of scenario.closing_debtors) {
-      writes["Debtors & Creditors"][`E${row}`] = d.customer;
-      writes["Debtors & Creditors"][`F${row}`] = d.amount;
-      row++;
-    }
-  }
-
-  if (scenario.opening_creditors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 12;
-    for (const c of scenario.opening_creditors) {
-      writes["Debtors & Creditors"][`B${row}`] = c.supplier;
-      writes["Debtors & Creditors"][`C${row}`] = c.amount;
-      row++;
-    }
-  }
-
-  if (scenario.closing_creditors) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    let row = 12;
-    for (const c of scenario.closing_creditors) {
-      writes["Debtors & Creditors"][`E${row}`] = c.supplier;
-      writes["Debtors & Creditors"][`F${row}`] = c.amount;
-      row++;
-    }
-  }
+  writeEntryBlock(scenario.opening_debtors, "B", "C", 5, DEBTOR_SLOTS, "customer");
+  writeEntryBlock(scenario.closing_debtors, "E", "F", 5, DEBTOR_SLOTS, "customer");
+  writeEntryBlock(scenario.opening_creditors, "B", "C", 12, CREDITOR_SLOTS, "supplier");
+  writeEntryBlock(scenario.closing_creditors, "E", "F", 12, CREDITOR_SLOTS, "supplier");
 
   // Fixed asset additions go on the "Fixed Assets" sheet's Plant & Machinery
   // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots). That block
@@ -377,12 +363,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
   }
 
-  // Debtors/Creditors checks. Sum only the rows the scenario wrote: unwritten
-  // rows keep the template's own derived formulas (e.g. F7 pulls a monthly
-  // unpaid total), which are not part of the fixture's entries.
+  // Debtors/Creditors checks. Every slot in the block counts: the writer fills
+  // the ones the scenario does not use, so a monthly analysis figure surviving
+  // in one of them is a difference here rather than a stray row in the report.
   function checkEntryBlock(name, entries, cells) {
     const expectedTotal = entries.reduce((s, e) => s + e.amount, 0);
-    const actualTotal = cells.slice(0, entries.length).reduce((s, v) => s + (v || 0), 0);
+    const actualTotal = cells.reduce((s, v) => s + (typeof v === "number" ? v : 0), 0);
     check(name, actualTotal, expectedTotal);
   }
   if (expected.opening_debtors && results["Debtors & Creditors"]) {
@@ -409,11 +395,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.fixed_asset_additions && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
     const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
-    check("Fixed Assets: New asset cost recorded", fa.E67 || 0, expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: schedule total cost = asset additions", fa.E1 || 0, expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: first addition recorded", fa.E67 || 0, expected.fixed_asset_additions[0].cost);
 
     if (results.Admin) {
       const aiaRate = results.Admin.G4;
-      check("Fixed Assets: AIA claimed = cost x Admin AIA rate", fa.K1 || 0, (fa.E67 || 0) * aiaRate);
+      check("Fixed Assets: AIA claimed = schedule cost x Admin AIA rate", fa.K1 || 0, (fa.E1 || 0) * aiaRate);
     }
 
     // Mirrors the SE Short D80/D85/O80/O85 formulas (see the SE-Short-chain

@@ -157,6 +157,14 @@ const bstTotalPremises = Math.round(bstByCode.p || 0);
 const bstTotalGenAdmin = Math.round(bstByCode.g || 0);
 const bstTotalLegal = Math.round(bstByCode.l || 0);
 
+// Purchases coded f capitalise out of the profit and loss account. The Fixed
+// Assets schedule is where they earn their capital allowance, so the same
+// purchases are registered there. A schedule short of the journal strands the
+// spend in neither statement.
+const bstFixedAssetAdditions = bstPurchLines
+  .filter((l) => BST_PURCHASE_CODE_MAP[l.accountMainID] === "f")
+  .map((l) => ({ date: l.postingDate, description: l.lineItemComment, reference: l.documentReference, cost: l.amount }));
+
 const bstToml = formatScenarioToml(
   {
     name: "Precision Code - basic sole trader",
@@ -187,10 +195,10 @@ const bstToml = formatScenarioToml(
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
-    // In-year Plant & Machinery addition ("Bought AFTER" block on the Fixed
-    // Assets schedule) so the capital allowance line stops reading zero.
-    // 100% Annual Investment Allowance applies, so the full cost is claimed.
-    fixed_asset_additions: [{ date: "2025-09-15", description: "MacBook Pro workstation", reference: "INV-EQ-001", cost: 3600 }],
+    // In-year additions go in the "Bought AFTER" block on the Fixed Assets
+    // schedule. 100% Annual Investment Allowance applies, so the full cost is
+    // claimed in the year.
+    fixed_asset_additions: bstFixedAssetAdditions,
   },
 );
 
