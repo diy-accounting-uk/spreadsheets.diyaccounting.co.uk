@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Company 2027-09-30 (Sep27) Excel 2007
 
 Scenario: ltd-brickwork-pro-vat
-Status: RECONCILES
+Status: RECONCILES (with warnings)
 
 ## Compliance Checks
 
@@ -670,15 +670,24 @@ Status: RECONCILES
 | CT600: interest received = CT interest received | 0 | 0 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 7969 | 7969 | 0 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 7969 | 7969 | 0 | PASS |
-| CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
+| CT600: corporation tax = first tax row tax | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: second financial year tax box is blank | 0 | 0 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: tax payable against the working sheet's charge for the year | 1514.11 | 756.019357045144 | -758.0906429548559 | **WARNING** |
 | CT600: self assessment of tax payable | 756.019357045144 | 756.019357045144 | 0 | PASS |
 | CT600: tax outstanding | 756.019357045144 | 756.019357045144 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 1514.11 | 1514.11 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 0 | 0 | 0 | PASS |
-| Corporation Tax | 1514 | 1514.11 | +0.10999999999989996 | PASS |
+| CT: the two tax rows together span the days the charge is spread over | 731 | 731 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 3979.049247606019 | 3979.04924760602 | +9.094947017729282e-13 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 3989.950752393981 | 3989.95075239398 | -9.094947017729282e-13 | PASS |
+| CT: first tax row tax = its profit at its rate | 756.0193570451438 | 756.019357045144 | +2.2737367544323206e-13 | PASS |
+| CT: second tax row tax = its profit at its rate | 758.0906429548562 | 758.090642954856 | -2.2737367544323206e-13 | PASS |
+| CT: charge for the year = the two tax rows | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
+| CT: charge for the year = chargeable profit at the Admin corporation tax rate | 1514.11 | 1514.11 | 0 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 1514.11 | 1514.11 | 0 | PASS |
+| CT: charge for the year against the statutory computation with marginal relief | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
 
 ## Business Details
 
@@ -753,7 +762,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
 | **Profit Before Tax** | 18,769 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -769,6 +778,18 @@ Status: RECONCILES
 | **Profit Chargeable to CT** | 7,969 |
 | **Corporation Tax** | 1,514.11 |
 | Tax Outstanding | 1,514.11 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 3,979.05 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 756.02 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 756.02 |
 
 ## Published P&L
 
@@ -1281,10 +1302,34 @@ Status: RECONCILES
 | I16 |  | 0 |  |
 | I17 |  | 0 |  |
 | I18 |  | 0 |  |
+| A33 |  | 365 |  |
+| A34 |  | 366 |  |
+| A35 |  | 731 |  |
+| F33 |  | 3979.04924760602 |  |
+| F34 |  | 3989.95075239398 |  |
 | G33 |  | 19 |  |
+| G34 |  | 19 |  |
 | I33 |  | 756.019357045144 |  |
 | I34 |  | 758.090642954856 |  |
 | K37 |  | 0 |  |
+
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 3979.04924760602 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 756.019357045144 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 756.019357045144 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 112500 |  |
+| Z70 |  | 7969 |  |
+| AJ74 |  | 7969 |  |
+| AJ92 |  | 7969 |  |
+| AJ110 |  | 7969 |  |
+| AJ145 |  | 756.019357045144 |  |
+| AJ154 |  | 0 |  |
+| AJ159 |  | 756.019357045144 |  |
+| AJ166 |  | 756.019357045144 |  |
 
 ### PubP&L
 
@@ -1426,23 +1471,6 @@ Status: RECONCILES
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 0 |  |
 | L34 |  | -126.7 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 112500 |  |
-| Z70 |  | 7969 |  |
-| AJ74 |  | 7969 |  |
-| AJ92 |  | 7969 |  |
-| AJ110 |  | 7969 |  |
-| AJ126 |  | 756.019357045144 |  |
-| AJ131 |  | 756.019357045144 |  |
-| AJ145 |  | 756.019357045144 |  |
-| AJ154 |  | 0 |  |
-| AJ159 |  | 756.019357045144 |  |
-| AJ166 |  | 756.019357045144 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 

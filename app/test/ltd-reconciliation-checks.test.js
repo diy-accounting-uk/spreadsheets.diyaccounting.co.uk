@@ -20,6 +20,7 @@ import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, 
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   cellWrites as ltdCellWrites,
   standardReads as ltdReads,
@@ -66,8 +67,40 @@ async function readCorruptedCell(savedDir, fileName, sheetName, cellRef, newValu
   return readCellValue(reloadedXml, cellRef, sharedStrings);
 }
 
+// Puts a value into a cell the template leaves empty — the box carries no
+// <v> to overwrite, so filling one is how a box that should be blank is made
+// to read as filled.
+function fillEmptyCell(xml, cellRef, newValue) {
+  const pattern = new RegExp(`<c r="${cellRef}"([^>]*?)/>`, "s");
+  if (!pattern.test(xml)) throw new Error(`fillEmptyCell: empty cell ${cellRef} not found in sheet XML`);
+  return xml.replace(pattern, (_match, attrs) => `<c r="${cellRef}"${attrs}><v>${newValue}</v></c>`);
+}
+
+// The same round trip as readCorruptedCell, for a cell that starts out empty.
+async function readFilledCell(savedDir, fileName, sheetName, cellRef, newValue) {
+  const zip = await JSZip.loadAsync(readFileSync(resolve(savedDir, fileName)));
+  const sheetMap = await buildSheetMap(zip);
+  const sheetPath = sheetMap.get(sheetName);
+  if (!sheetPath) throw new Error(`readFilledCell: sheet ${sheetName} not found in ${fileName}`);
+  const xml = await zip.file(sheetPath).async("string");
+  zip.file(sheetPath, fillEmptyCell(xml, cellRef, newValue));
+
+  const corruptedBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  const reloadedZip = await JSZip.loadAsync(corruptedBuffer);
+  const sharedStrings = await loadSharedStrings(reloadedZip);
+  const reloadedXml = await reloadedZip.file(sheetPath).async("string");
+  return readCellValue(reloadedXml, cellRef, sharedStrings);
+}
+
 function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
+}
+
+function warningNamed(checks, name) {
+  const found = checks.find((c) => c.name === name);
+  if (!found) throw new Error(`no check named ${name}`);
+  if (found.severity !== "warning") throw new Error(`${name} is not a warning`);
+  return found;
 }
 
 describeCalc(
@@ -527,6 +560,116 @@ describeCalc(
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       // The box is also one side of the form's own net-trading-profits sum.
       expect(failureNames(corrupted)).toEqual([name, "CT600: net trading profits = trading profits - losses brought forward"]);
+    });
+
+    // ── The corporation tax charge and what the CT600 files of it ──
+
+    it("spreads the chargeable profit over the accounting period and the year after it", () => {
+      const ct = results.CorporationTax;
+      // Row 33 runs the twelve months of the accounting period, row 34 the
+      // twelve after it, so each is a year long and the profit is spread over
+      // both of them.
+      expect([365, 366]).toContain(ct.A33);
+      expect([365, 366]).toContain(ct.A34);
+      expect(ct.A35).toBe(ct.A33 + ct.A34);
+      expect(ct.F33 + ct.F34).toBeCloseTo(ct.K28, 6);
+      expect(ct.F33).toBeCloseTo((ct.K28 * ct.A33) / ct.A35, 6);
+      // Both rows carry the one rate the Admin sheet holds, so the charge is
+      // the whole chargeable profit at the small profits rate.
+      expect(ct.G33).toBe(19);
+      expect(ct.G34).toBe(19);
+      expect(ct.I33 + ct.I34).toBeCloseTo(ct.K35, 6);
+      expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 6);
+    });
+
+    it("warns that the charge carries no marginal relief, and says what the statutory figure is", () => {
+      const ct = results.CorporationTax;
+      const statutory = calculateCorporationTax(ct.K28, taxData.corporation_tax).corporationTax;
+      // The profit sits between the £50,000 and £250,000 limits, so the
+      // statutory computation is the main rate less relief and the sheet's
+      // small profits rate falls short of it.
+      expect(ct.K28).toBeGreaterThan(taxData.corporation_tax.small_profits_limit);
+      expect(ct.K28).toBeLessThan(taxData.corporation_tax.main_rate_limit);
+      expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
+
+      const warning = warningNamed(checks, "CT: charge for the year against the statutory computation with marginal relief");
+      expect(warning.pass).toBe(false);
+      expect(warning.expected).toBeCloseTo(statutory, 6);
+      expect(warning.actual).toBeCloseTo(ct.K35, 6);
+      // A warning does not stop the run.
+      expect(failureNames(checks)).not.toContain(warning.name);
+    });
+
+    it("passes that warning for a profit the small profits rate is the right rate for", () => {
+      const smallProfit = { ...results, CorporationTax: { ...results.CorporationTax, K28: 40000, K35: 7600 } };
+      const name = "CT: charge for the year against the statutory computation with marginal relief";
+      const warning = warningNamed(ltdCheckCompliance(smallProfit, expected, taxData, calculateExpectedTax), name);
+      expect(warning.expected).toBe(7600);
+      expect(warning.pass).toBe(true);
+    });
+
+    it("warns that the CT600 files the first tax row alone", () => {
+      const ct = results.CorporationTax;
+      const ct600 = results.CT600;
+      // Boxes 53 to 56, the form's second financial year row, carry no
+      // formula, so box 63 is box 46 on its own.
+      expect(ct600.AJ128).toBeNull();
+      expect(ct600.AJ126).toBeCloseTo(ct.I33, 6);
+      expect(ct600.AJ131).toBeCloseTo(ct.I33, 6);
+
+      const warning = warningNamed(checks, "CT600: tax payable against the working sheet's charge for the year");
+      expect(warning.pass).toBe(false);
+      expect(warning.expected).toBeCloseTo(ct.K35, 6);
+      expect(warning.diff).toBeCloseTo(-ct.I34, 6);
+      expect(failureNames(checks)).not.toContain(warning.name);
+    });
+
+    it("fails the second tax row and the charge above it when CorporationTax I34 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I34", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "I34", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: second tax row tax = its profit at its rate",
+        "CT: charge for the year = the two tax rows",
+      ]);
+    });
+
+    it("fails the first tax row and the box that files it when CorporationTax I33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "I33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT600: corporation tax = first tax row tax",
+        "CT: first tax row tax = its profit at its rate",
+        "CT: charge for the year = the two tax rows",
+      ]);
+    });
+
+    it("fails the first row's share of the profit when CorporationTax F33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "F33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "F33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: first tax row profit = chargeable profit by its share of those days",
+        "CT: first tax row tax = its profit at its rate",
+      ]);
+    });
+
+    it("fails the days the charge is spread over when CorporationTax A34 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "A34", 300);
+      expect(value).toBe(300);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "A34", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: the two tax rows together span the days the charge is spread over",
+        "CT: second tax row profit = chargeable profit by its share of those days",
+      ]);
+    });
+
+    it("fails the blank second financial year box when CT600 AJ128 is filled via JSZip", async () => {
+      const value = await readFilledCell(savedDir, "Financialaccounts.xlsx", "CT600", "AJ128", 14033.56);
+      expect(value).toBe(14033.56);
+      const corrupted = checksWithCorruptedCell("CT600", "AJ128", value);
+      expect(failureNames(corrupted)).toEqual(["CT600: second financial year tax box is blank", "CT600: tax payable = tax chargeable"]);
     });
   },
   900000,

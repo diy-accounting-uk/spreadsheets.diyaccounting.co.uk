@@ -3,11 +3,13 @@
 //
 // ltd.js — Limited Company product definition (all year-end months).
 // Multi-file package: 15 xlsx files with cross-file external links.
-// Supports small profits CT rate only (19% for profits up to £50,000).
+// The shipped corporation tax working sheet charges the whole chargeable
+// profit at the small profits rate, with no main rate and no marginal relief.
 // Year-end month is determined by the tax data file (financial_year.end).
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -779,19 +781,31 @@ export const CELL_MAP = [
   ["MnthP&L", "B43", "**Operating Profit**",       "gl-cor:amount (operatingProfit)","Profit & Loss Account", 0],
   ["MnthP&L", "B44", "Interest Received",          "gl-cor:amount (interestReceived)","Profit & Loss Account", 1],
   ["MnthP&L", "B45", "**Profit Before Tax**",      "gl-cor:amount (profitBeforeTax)","Profit & Loss Account", 0],
-  // ── Corporation Tax (CT600) ──
-  [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K22", "Profit after capital allowances","gl-cor:amount (ct600.afterAllowances)", "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax (CT600)", 1],
-  [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax (CT600)", 0],
-  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax (CT600)", 0],
+  // ── Corporation Tax working sheet ──
+  [TAX_SHEET, "K5",  "Operating Profit",            "gl-cor:amount (ct600.box145)",  "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "I7",  "Add back: Goodwill",          "gl-cor:amount (ct600.addBackGoodwill)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "I8",  "Add back: Depreciation",      "gl-cor:amount (ct600.addBackDepreciation)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K10", "Add back: total",             "gl-cor:amount (ct600.addBack)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K12", "Operational profit chargeable","gl-cor:amount (ct600.adjustedProfit)", "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K20", "Less: Capital Allowances",    "tax.capitalAllowances (ct600)",  "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K22", "Profit after capital allowances","gl-cor:amount (ct600.afterAllowances)", "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K24", "Add: gross bank interest",    "gl-cor:amount (ct600.interest)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax working sheet", 1],
+  [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
+  // ── The CT600's own tax boxes, so the report states what the form files
+  // as well as what the working sheet charges. Boxes 53 to 56 carry no
+  // formula in the shipped template, so they read as dashes and box 63,
+  // which the form calls the total of boxes 46 and 56, files the first
+  // financial year row on its own. ──
+  ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
+  ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
+  ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
+  ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
+  ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
+  ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
+  ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1022,9 +1036,11 @@ export function standardReads() {
   for (const [noteCell] of NOTE_RATE_CELLS) add("PubNotes", noteCell);
   add("PubNotes", "A11");
 
-  // Corporation tax working sheet: the first financial year's own tax line,
-  // which is the figure the CT600 form carries.
-  for (const cell of ["I15", "I16", "I17", "I18", "G33", "I33", "I34", "K37"]) add(TAX_SHEET, cell);
+  // Corporation tax working sheet: the allowance lines, and the two dated
+  // tax rows whose day counts, profit shares, rates and tax the charge for
+  // the year is built from.
+  for (const cell of ["I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+    add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
 
@@ -1975,11 +1991,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
     check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
     check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), onTheForm(num(corporationTax.K28)));
-    // The form carries one financial year's tax rate and tax; the working
-    // sheet apportions the period across two. AJ126 mirrors the first.
-    check("CT600: tax rate = CT first financial year rate", num(ct600.AA126), num(corporationTax.G33));
-    check("CT600: corporation tax = CT first financial year tax", num(ct600.AJ126), num(corporationTax.I33));
+    // The form sets out two financial year rows: boxes 43 to 46 and boxes 53
+    // to 56. Only the first is wired to the working sheet (C126 =
+    // CorporationTax!E33, N126 = F33, AA126 = G33, AJ126 = I33). The second
+    // row's cells carry no formula at all, so box 63, which the form calls
+    // the total of boxes 46 and 56, files the first tax row on its own.
+    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33));
+    check("CT600: corporation tax = first tax row tax", num(ct600.AJ126), num(corporationTax.I33));
+    check("CT600: second financial year tax box is blank", num(ct600.AJ128), 0);
     check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
+    // What the form files against what the accounts charge. The second tax
+    // row never reaches the form, so this gap is the whole of the working
+    // sheet's second row and belongs to the shipped template. A run is not
+    // stopped for it.
+    checks.push({
+      name: "CT600: tax payable against the working sheet's charge for the year",
+      actual: num(ct600.AJ131),
+      expected: num(corporationTax.K35),
+      pass: Math.abs(num(ct600.AJ131) - num(corporationTax.K35)) <= 1,
+      diff: num(ct600.AJ131) - num(corporationTax.K35),
+      severity: "warning",
+    });
     check("CT600: self assessment of tax payable", num(ct600.AJ145), num(ct600.AJ131));
     check("CT600: tax outstanding", num(ct600.AJ166), num(ct600.AJ159) - num(ct600.AJ163));
   }
@@ -1995,29 +2027,50 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ct = results[TAX_SHEET];
     const profit = ct.K28 || 0;
     if (profit > 0) {
-      const rate = taxData.corporation_tax.small_profits_rate;
-      const expectedCT = Math.round(profit * rate);
-      check("Corporation Tax", ct.K35 || 0, expectedCT);
+      // How the working sheet builds the charge. Rows 33 and 34 are two
+      // dated rate rows: row 33 runs from Admin L6 to N6, the accounting
+      // period itself, and row 34 from Admin L7 to N7, the year after it.
+      // Each row is a year long, A35 is the two together, and each row
+      // takes that share of the same chargeable profit (F33 =
+      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate (I33 =
+      // F33*G33/100). The charge for the year is the two rows added up.
+      const days = num(ct.A35);
+      check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
+      if (days > 0) {
+        check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
+        check("CT: second tax row profit = chargeable profit by its share of those days", num(ct.F34), (profit * num(ct.A34)) / days);
+      }
+      check("CT: first tax row tax = its profit at its rate", num(ct.I33), (num(ct.F33) * num(ct.G33)) / 100);
+      check("CT: second tax row tax = its profit at its rate", num(ct.I34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
+
+      // Both rows carry the rate injected into the Admin sheet, so whatever
+      // the year end, the charge is the chargeable profit at that one rate.
+      const admin = results.Admin;
+      if (admin) {
+        check("CT: charge for the year = chargeable profit at the Admin corporation tax rate", num(ct.K35), (profit * num(admin.P6)) / 100);
+      }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
-      // Marginal relief warning (8g) — if profit > small profits limit, CT should be higher than small rate
-      const smallLimit = taxData.corporation_tax.small_profits_limit || 50000;
-      const mainRate = taxData.corporation_tax.main_rate || 0.25;
-      if (profit > smallLimit) {
-        const mainRateCT = Math.round(profit * mainRate);
-        const marginalCheck = {
-          name: "CT: Marginal relief expected (profit > £50K)",
-          actual: ct.K35 || 0,
-          expected: mainRateCT,
-          pass: false,
-          diff: (ct.K35 || 0) - mainRateCT,
-          severity: "warning",
-        };
-        checks.push(marginalCheck);
-      }
+      // The charge the period's profit actually bears. The working sheet
+      // holds one rate per row and no relief step, and the CT600's marginal
+      // rate relief boxes, 64 and 65, carry no formula either, so a profit
+      // between the small profits limit and the main rate limit is charged
+      // at the small profits rate rather than at the main rate less relief.
+      // The gap belongs to the shipped workbook, not to the scenario driven
+      // through it, so it is reported and the run is not stopped for it.
+      const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
+      checks.push({
+        name: "CT: charge for the year against the statutory computation with marginal relief",
+        actual: num(ct.K35),
+        expected: statutory,
+        pass: Math.abs(num(ct.K35) - statutory) <= 1,
+        diff: num(ct.K35) - statutory,
+        severity: "warning",
+      });
     }
   }
 

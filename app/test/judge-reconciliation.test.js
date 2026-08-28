@@ -185,6 +185,12 @@ describe("summariseScenario", () => {
     expect(summary).toContain("Debtors & Creditors sheet");
   });
 
+  it("tells the judge what the Limited Company corporation tax sheet and CT600 do", () => {
+    const summary = summariseScenario(scenario, "ltd-scenario-full", PRODUCTS.ltd);
+    expect(summary).toContain("charges the whole chargeable profit at the small profits rate");
+    expect(summary).toContain("boxes 53 to 56, carries no formula");
+  });
+
   it("says nothing about capital spending or product behaviour without a product", () => {
     const summary = summariseScenario(scenario, "ltd-brickwork-pro-vat");
     expect(summary).not.toContain("Capital spending inside that journal");

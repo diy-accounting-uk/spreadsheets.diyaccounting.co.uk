@@ -662,6 +662,7 @@ Status: RECONCILES
 | CT: capital allowances = the allowance lines | 12000 | 12000 | 0 | PASS |
 | CT: profit after capital allowances | -9046 | -9046 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | -9046 | -9046 | 0 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | -9046 | -9046 | 0 | PASS |
 | CT600: turnover = published P&L turnover | 75000 | 75000 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 0 | 0 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
@@ -669,9 +670,11 @@ Status: RECONCILES
 | CT600: interest received = CT interest received | 0 | 0 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 0 | 0 | 0 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 0 | 0 | 0 | PASS |
-| CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 0 | 0 | 0 | PASS |
+| CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
+| CT600: corporation tax = first tax row tax | 0 | 0 | 0 | PASS |
+| CT600: second financial year tax box is blank | 0 | 0 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 0 | 0 | 0 | PASS |
+| CT600: tax payable against the working sheet's charge for the year | 0 | 0 | 0 | PASS |
 | CT600: self assessment of tax payable | 0 | 0 | 0 | PASS |
 | CT600: tax outstanding | 0 | 0 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 0 | 0 | 0 | PASS |
@@ -750,7 +753,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
 | **Profit Before Tax** | 1,754 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -766,6 +769,18 @@ Status: RECONCILES
 | **Profit Chargeable to CT** | -9,046 |
 | **Corporation Tax** | 0 |
 | Tax Outstanding | 0 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 0 |
 
 ## Published P&L
 
@@ -852,6 +867,30 @@ Status: RECONCILES
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | 0 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 52,970 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 52,970 |
+| **VAT due for the year** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 0 |
 
 ---
 
@@ -1253,10 +1292,33 @@ Status: RECONCILES
 | I16 |  | 0 |  |
 | I17 |  | 0 |  |
 | I18 |  | 0 |  |
+| A33 |  | 365 |  |
+| A34 |  | 366 |  |
+| A35 |  | 731 |  |
+| F33 |  | 0 |  |
+| F34 |  | 0 |  |
 | G33 |  | 19 |  |
+| G34 |  | 19 |  |
 | I33 |  | 0 |  |
 | I34 |  | 0 |  |
 | K37 |  | 0 |  |
+
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 0 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 0 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 0 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 75000 |  |
+| AJ74 |  | 0 |  |
+| AJ92 |  | 0 |  |
+| AJ110 |  | 0 |  |
+| AJ145 |  | 0 |  |
+| AJ154 |  | 0 |  |
+| AJ159 |  | 0 |  |
+| AJ166 |  | 0 |  |
 
 ### PubP&L
 
@@ -1398,22 +1460,6 @@ Status: RECONCILES
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 0 |  |
 | L34 |  | -126.7 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 75000 |  |
-| AJ74 |  | 0 |  |
-| AJ92 |  | 0 |  |
-| AJ110 |  | 0 |  |
-| AJ126 |  | 0 |  |
-| AJ131 |  | 0 |  |
-| AJ145 |  | 0 |  |
-| AJ154 |  | 0 |  |
-| AJ159 |  | 0 |  |
-| AJ166 |  | 0 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 
