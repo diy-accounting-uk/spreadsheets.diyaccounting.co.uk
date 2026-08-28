@@ -16,7 +16,14 @@ import { resolve, dirname, join } from "path";
 import { tmpdir } from "os";
 import { fileURLToPath } from "url";
 import JSZip from "jszip";
-import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
+import {
+  runMultiFileSpreadsheet,
+  hasLibreOffice,
+  buildSheetMap,
+  readCellValue,
+  loadSharedStrings,
+  toExcelSerial,
+} from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
@@ -64,6 +71,13 @@ async function readCorruptedCell(filePath, sheetName, cellRef, newValue) {
   const sharedStrings = await loadSharedStrings(reloadedZip);
   const reloadedXml = await reloadedZip.file(sheetPath).async("string");
   return readCellValue(reloadedXml, cellRef, sharedStrings);
+}
+
+// Moves an Excel date serial on by one calendar year, keeping its month and
+// day -- the way the same book's quarter ends fall in the next year's package.
+function excelSerialPlusOneYear(serial) {
+  const d = new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 86400000);
+  return toExcelSerial(d.getUTCFullYear() + 1, d.getUTCMonth() + 1, d.getUTCDate());
 }
 
 describeCalc(
@@ -463,6 +477,35 @@ describeCalc(
       const corruptedResults = { ...results, "Vat.xlsx!VATQtr1": { ...qtr, G15: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    it("VAT Q1-Q4 box values tie to the scenario when the package's year end is a year after the fixture's", () => {
+      // Every SE package but the one matching the fixture's own year runs
+      // this way: the book carries its own quarter dates while cellWrites
+      // copies the scenario's base-year transaction dates straight through.
+      // Advancing only the quarter dates is exactly that package -- the same
+      // book, the same box values, a year later.
+      const shifted = { ...results };
+      for (let q = 1; q <= 5; q++) {
+        const key = `Vat.xlsx!VATQtr${q}`;
+        const qtr = results[key];
+        shifted[key] = { ...qtr, G5: excelSerialPlusOneYear(qtr.G5), G7: excelSerialPlusOneYear(qtr.G7) };
+      }
+
+      const checks = seCheckCompliance(shifted, mergedExpected, null, undefined);
+      for (let q = 1; q <= 4; q++) {
+        for (const box of [
+          `box 1/3 output VAT (G9) = scenario sales VAT for the quarter`,
+          `box 4 input VAT (G15) = scenario purchases VAT for the quarter`,
+          `box 7 net purchases (G23) = scenario purchases net for the quarter`,
+        ]) {
+          const check = checks.find((c) => c.name === `VAT Q${q}: ${box}`);
+          expect(check).toBeDefined();
+          expect(check.expected).toBeGreaterThan(0);
+          expect(check.actual).toBeGreaterThan(0);
+          expect(check.pass).toBe(true);
+        }
+      }
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {
