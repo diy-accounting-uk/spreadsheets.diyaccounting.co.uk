@@ -18,13 +18,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   - **PR #31 (Ltd opening balance + runner cell-write fix)**:
     https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/31 —
     caught up on main, 102 tests green post-merge. Merges after #28.
-  - Wave 2 SE (items 5, 6, 10 + SE bank fix) code complete on `claude/recon-wave2-se`
-    (worktree `../spreadsheets-worktrees/wave2-se`, 52/52 green); catches up after #28
-    and #31 merge. Purchases-side monthly ties deliberately unshipped until #31's
-    runner fix is in its base. Operator decision open: six invalid purchase codes in
-    the SE fixture (~£9.7k/yr never reaches the P&L) need per-category recoding.
+  - Wave 2 SE (items 5, 6, 10 + SE bank fix + operator-approved purchase-code recode)
+    is up as **PR #35: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/35**
+    — caught up on main, blast radius 110/110; awaiting the operator's four
+    reconciliation dispatches on its branch, then merge. Purchases-side monthly ties
+    follow in a later wave.
   - Still open in the runner: leaf-to-leaf external-link caches (Fixedassets reading
-    Sales/Purchases). Wave 2 Ltd dispatches after #31 merges.
+    Sales/Purchases). Wave 2 Ltd dispatches after #35 merges.
   Coordinator merges verified commits, pushes in batches; waves 3-5 follow per the plan.
 
 - [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
