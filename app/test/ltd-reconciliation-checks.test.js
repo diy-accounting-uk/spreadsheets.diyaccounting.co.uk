@@ -270,6 +270,64 @@ describeCalc(
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill"]);
     });
+
+    it("carries the schedule's per-asset capital allowance rows into the tax computation", () => {
+      const schedule = results["Fixedassets.xlsx!Schedule"];
+      const corporationTax = results.CorporationTax;
+      // The three purchases claim the annual investment allowance in full;
+      // the van brought forward takes a restricted writing down allowance and
+      // then a balancing allowance for the shortfall on its sale.
+      expect(schedule.Q1).toBe(32500);
+      expect(schedule.R1).toBe(3000);
+      expect(schedule.Y1).toBe(8500);
+      expect(corporationTax.I15).toBe(32500);
+      expect(corporationTax.I17).toBe(3000);
+      expect(corporationTax.I18).toBe(8500);
+      expect(corporationTax.K20).toBe(44000);
+    });
+
+    it("fails the investment allowance tie when the Schedule total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "Q1", 0);
+      expect(value).toBe(0);
+      const name = "CT: annual investment allowance = Schedule annual investment allowance";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "Q1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the writing down allowance tie when the Schedule total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "R1", 0);
+      expect(value).toBe(0);
+      const name = "CT: writing down allowances = Schedule writing down allowances";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "R1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the balancing allowance tie when the Schedule disposal total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "Y1", 0);
+      expect(value).toBe(0);
+      const name = "CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "Y1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the capital allowance total and the profit below it when CorporationTax K20 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "K20", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "K20", value);
+      expect(failureNames(corrupted)).toEqual(["CT: capital allowances = the allowance lines", "CT: profit after capital allowances"]);
+    });
+
+    it("fails the schedule's opening balance verdict when it is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "B55", "Check Opening Balance Sheet figures agree");
+      expect(value).toBe("Check Opening Balance Sheet figures agree");
+      const name = "Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "B55", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
   },
   900000,
 );
