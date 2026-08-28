@@ -18,6 +18,9 @@ Status: RECONCILES
 | P&L: Total Sales = sum of monthly Sales sheets | 409900 | 409900 | 0 | PASS |
 | P&L: Expense lines sum = Total | 125852 | 125852 | 0 | PASS |
 | Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 179392.25 | 179392 | -0.25 | PASS |
+| Opening Stock | 10000 | 10000 | 0 | PASS |
+| Closing Stock | 6000 | 6000 | 0 | PASS |
+| Stock: cost of sales = stock purchases + stock movement | 10540 | 10540 | 0 | PASS |
 | Opening Debtors | 10800 | 10800 | 0 | PASS |
 | Closing Debtors | 10400 | 10400 | 0 | PASS |
 | Opening Creditors | 2220 | 2220 | 0 | PASS |
