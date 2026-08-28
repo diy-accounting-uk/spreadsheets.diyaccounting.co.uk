@@ -216,7 +216,12 @@ function purchaseCodeLines(scenario, product) {
 
   const capitalCodes = product?.capitalCodes ?? {};
   const capital = [...byCode.entries()].filter(([code]) => code in capitalCodes);
-  const lines = [`Purchase journal by code: ${[...byCode.entries()].sort().map(([code, total]) => `${code} ${money.format(total)}`).join(", ")}`];
+  const lines = [
+    `Purchase journal by code: ${[...byCode.entries()]
+      .sort()
+      .map(([code, total]) => `${code} ${money.format(total)}`)
+      .join(", ")}`,
+  ];
 
   const capitalTotal = capital.reduce((total, [, amount]) => total + amount, 0);
   if (capitalTotal > 0) {
