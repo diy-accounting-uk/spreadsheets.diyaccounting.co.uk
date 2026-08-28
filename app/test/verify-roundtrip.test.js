@@ -55,15 +55,31 @@ const PRODUCTS = [
     years: "ltd-2025",
     yearEnd: "2026-03-31",
   },
+  {
+    // A non-March year-end exercises the tab-rename and formula-rewrite path
+    // (getMonthTabSequence, renameMonthTabs, renameExternalLinkSheetNames,
+    // rewriteVatinterfaceFormulas) that the March-only run above never
+    // touches, since March is the template's native tab order. label is
+    // distinct from the CLI --package value (still "ltd") so it gets its own
+    // target/ directories instead of colliding with the March run's.
+    name: "ltd",
+    label: "ltd-may",
+    data: "examples/precision-code-ltd/full",
+    years: "ltd-2025",
+    // ltd-2025's financial_year runs 2025-04-01..2026-03-31, so the year-end
+    // must be a month-end inside that window.
+    yearEnd: "2025-05-31",
+  },
 ];
 
 describe.skipIf(!hasLibreOffice())("Double-roundtrip fidelity", () => {
   for (const product of PRODUCTS) {
-    it(`${product.name}: pass 2 export equals pass 1 export`, { timeout: STEP_TIMEOUT_MS }, () => {
-      const pkg1 = resolve(ROOT, "target", `${product.name}-rt-pkg1`);
-      const data1 = resolve(ROOT, "target", `${product.name}-rt-data1`);
-      const pkg2 = resolve(ROOT, "target", `${product.name}-rt-pkg2`);
-      const data2 = resolve(ROOT, "target", `${product.name}-rt-data2`);
+    const label = product.label || product.name;
+    it(`${label}: pass 2 export equals pass 1 export`, { timeout: STEP_TIMEOUT_MS }, () => {
+      const pkg1 = resolve(ROOT, "target", `${label}-rt-pkg1`);
+      const data1 = resolve(ROOT, "target", `${label}-rt-data1`);
+      const pkg2 = resolve(ROOT, "target", `${label}-rt-pkg2`);
+      const data2 = resolve(ROOT, "target", `${label}-rt-data2`);
 
       // Pass 1: original diya-gl → Excel → export
       run([

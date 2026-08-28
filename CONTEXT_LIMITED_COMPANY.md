@@ -362,15 +362,15 @@ The B-column formulas reference `[1]Admin!$B$6` through `[1]Admin!$B$38` and are
 
 ### Date shifting in scenarios
 
-Scenarios are authored assuming a March year-end (April to March). For other year-ends, transaction dates are shifted:
+A scenario's dates belong to the accounting period that scenario covers. A diya-gl book names that period in `book.toml` (`documentInfo.periodCoveredStart`); a scenario TOML names none and runs April to March, which is what its `apr`..`mar` month keys mean. Dates move onto the target package's months by the gap between the two period starts:
 
 ```
-sourceStartMonth = 3          // April (0-indexed)
+sourceStartMonth = the scenario's own period start month (0-indexed)
 targetStartMonth = M % 12     // month after year-end (0-indexed)
 monthOffset = ((targetStartMonth - sourceStartMonth) + 12) % 12
 ```
 
-Each transaction date is shifted by `monthOffset` months and mapped to the correct tab name for the target year-end.
+Each transaction date moves forward by `monthOffset` months, clamped to the last day of the month it lands in so a 31st cannot roll into the following tab, and its shifted month names its tab. Data exported from a package of the same year-end has a zero gap and goes back unchanged, which is what makes the export/generate roundtrip lossless.
 
 ## Multi-File Recalculation Pipeline
 
@@ -378,9 +378,12 @@ The reconciliation pipeline (`app/lib/spreadsheet-runner.js: runMultiFileSpreads
 
 1. **Inject scenario data** -- write cell values into leaf file xlsx zips (Sales.xlsx, Purchases.xlsx) via XML surgery.
 2. **Recalculate leaf files** -- xls roundtrip each leaf file through LibreOffice (xlsx -> xls -> xlsx). This forces full formula recalculation. LibreOffice cannot resolve external links during `--convert-to`, so leaves are processed first.
-3. **Cache injection** -- read computed row 1 totals from recalculated leaf files, then update the hub file's (Financialaccounts.xlsx) external link cache XML (`xl/externalLinks/externalLinkN.xml`) with fresh values from the leaves.
-4. **Recalculate hub** -- xls roundtrip the hub file. The injected cache values allow TrialBalance, MnthP&L, CorporationTax, etc. to compute correctly.
-5. **Read results** -- extract cell values from the recalculated hub for compliance checks.
+3. **Refresh the hub's caches** -- read the recalculated leaf files and write their values into the hub's external link cache XML (`xl/externalLinks/externalLinkN.xml`), adding every cell the hub's formulas address that the cache never carried. The capital allowance notes address Schedule rows one by one, so without those additions `CorporationTax!K20` reads 0 whatever the schedule holds.
+4. **Recalculate hub** -- xls roundtrip the hub file. The refreshed cache values allow TrialBalance, MnthP&L, CorporationTax, etc. to compute correctly.
+5. **Refresh and recalculate the leaves that read back** -- Fixedassets reads the opening balance sheet and the tax rates from the hub, so its schedule and its per-class agreement with the opening figures only resolve after the hub. The hub then gets one more refresh and roundtrip to carry what changed. Vatreturns goes last.
+6. **Read results** -- extract cell values from the recalculated hub, plus `additionalReads` from the leaf workbooks, for compliance checks.
+
+Each pass recalculates from a pristine copy of the file the scenario data was written into: LibreOffice ignores an external link cache injected into a file it wrote itself.
 
 Populated files can optionally be saved to `reports/populated/` for manual inspection.
 

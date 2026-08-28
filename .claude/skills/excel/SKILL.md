@@ -249,20 +249,16 @@ When workbook A references workbook B (e.g. `[2]Sales!Apr!$H$1`), Excel stores:
 
 The `sheetId` attribute in `<sheetData>` is a **sequential zero-based index** into the `<sheetNames>` list. It is NOT the `sheetId` from the target workbook's `workbook.xml`. This distinction is critical when looking up sheet names.
 
-### updateExternalLinkCaches(workDir, hubFile)
+### refreshExternalLinkCaches(workDir, fileName)
 
-After leaf files (Sales, Purchases, bank accounts) are recalculated via xls roundtrip, their computed values must be injected into the hub file's (Financialaccounts) external link caches before the hub can be recalculated.
+Rebuilds one workbook's external link caches from the current contents of the sibling workbooks it points at, and reports whether anything changed. It runs on every workbook, not just the hub: Fixedassets reads the opening balance sheet and the tax rates back from Financialaccounts, and reads the year's asset purchases straight out of Purchases and Sales.
 
 Algorithm:
-1. Open the hub xlsx, find all `xl/externalLinks/externalLinkN.xml` files
-2. For each external link, read its `.rels` file to find the target filename (e.g. `Sales.xlsx`)
-3. Open the recalculated leaf file, build its sheet map
-4. For each `<sheetData sheetId="N">` block in the external link XML:
-   - Map `sheetId` to sheet name via the sequential `<sheetNames>` index
-   - Find each `<cell r="A1">` in the cached data
-   - Read the fresh value from the recalculated leaf's sheet XML using `readCellValue()`
-   - Replace the cached `<cell>` element with the fresh value
-5. Write the updated hub file back
+
+1. Read `<externalReferences>` in `xl/workbook.xml` — its order gives the `[N]` prefix each formula uses — and follow the workbook rels to each `externalLinkN.xml`.
+2. Scan every worksheet's `<f>` elements and the workbook's defined names for `[N]Sheet!$A$1` and `'[N]Sheet Name'!$A$1` references, expanding ranges. That is the set of cells the workbook actually addresses.
+3. Resolve each link's target by taking the **basename** of any `Target` in its `.rels` and checking for a sibling of that name in `workDir`. A LibreOffice save rewrites the target to a long relative path, so matching the whole string does not work.
+4. For each `<sheetData sheetId="N">` block, take the union of the cells already cached and the cells step 2 found for that sheet, read each one out of the target workbook, and write the block back.
 
 ```js
 const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)]
@@ -272,7 +268,13 @@ const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)]
 const sheetName = sheetNames[parseInt(sheetId, 10)];
 ```
 
-Only numeric values are updated (the accounting workbooks use numbers for all computed totals). String values in the cache are left unchanged.
+Three traps:
+
+- **The cache only lists cells the workbook held values for when Excel last saved it.** A formula addressing any other cell reads blank for ever. The corporation tax capital allowance notes address `[1]Schedule!$E$67` and up one row at a time; the shipped cache carries only that sheet's column totals, so `CorporationTax!K20` read 0 whatever the schedule held. Adding the missing cells is what step 2 is for.
+- **The cache groups its cells into `<row r="N">` elements**, exactly like a worksheet. Emit bare `<cell>` elements and LibreOffice discards the whole link and computes every formula over it as a blank — silently, no error.
+- **LibreOffice ignores a cache injected into a file it wrote itself.** Feeding refreshed values back into the output of an earlier xls roundtrip produces zeros. Each recalculation pass has to start again from the pristine file the scenario data was written into.
+
+Numbers, strings, booleans and error values all get written back (`t="str"`, `t="b"`, `t="e"`). Carrying an error faithfully matters: a leaf whose own formulas are in error must not look like a zero to the workbook reading it.
 
 ## Vatinterface Formula Rewriting
 
@@ -362,26 +364,41 @@ Used for SE and Ltd products where multiple xlsx files have cross-file external 
 
 ### Pipeline Steps
 
+The files form a cycle, not a tree: leaves feed the hub, and several leaves read
+back from the hub or from each other. Recalculation walks that cycle in four
+passes. Every pass starts again from a pristine copy of the file the scenario
+data was written into, because LibreOffice ignores a cache injected into a file
+it wrote itself.
+
 ```
 1. Write scenario data into leaf xlsx files (Sales, Purchases)
    via setCellValue/setCellString
 
-2. Copy all xlsx files to a shared temp directory
-   (so relative external link paths resolve)
+2. Copy all xlsx files to a shared temp directory, and keep a
+   pristine copy of each one to recalculate from
 
-3. xls roundtrip each LEAF file
-   (recalculates internal formulas: VAT, net amounts, row totals)
+Pass 1: xls roundtrip each LEAF file
+   (internal formulas: VAT, net amounts, row totals)
 
-4. Read computed values from recalculated leaves
-   Inject into hub's external link cache XML
-   (updateExternalLinkCaches)
+Pass 2: refresh the HUB's caches, xls roundtrip the hub
+   (TrialBalance, MnthP&L, CorporationTax)
 
-5. xls roundtrip the HUB file
-   (now has fresh cached values from leaves,
-    recalculates TrialBalance, MnthP&L, CorporationTax, etc.)
+Pass 3: refresh each LEAF's caches, xls roundtrip the ones that
+   moved (Fixedassets picks up the opening balance sheet, the tax
+   rates, and the ledgers' fixed asset totals)
 
-6. Read final results from recalculated hub
+Pass 4: refresh the HUB's caches again and roundtrip it, carrying
+   whatever pass 3 changed
+
+Last: postHubRecalc files (Vatreturns, Vat) — refresh, roundtrip
+
+3. Read final results from the recalculated hub, plus additionalReads
+   from any leaf
 ```
+
+A workbook whose refreshed caches fingerprint the same as the last time it was
+recalculated is skipped, so the extra passes only cost LibreOffice runs where
+something actually moved.
 
 ### runMultiFileSpreadsheet()
 
@@ -426,7 +443,7 @@ Running xls roundtrip twice on the same file compounds formatting loss and data 
 
 ### LibreOffice Never Resolves External Links
 
-`libreoffice --convert-to` does not resolve external link references between files, even when all files are in the same directory. This is why `updateExternalLinkCaches()` exists -- it manually reads values from recalculated leaves and injects them into the hub's external link XML.
+`libreoffice --convert-to` does not resolve external link references between files, even when all files are in the same directory. This is why `refreshExternalLinkCaches()` exists -- it reads values out of the recalculated siblings and writes them into the external link XML.
 
 ### setup-java with Temurin Does Not Provide JDK 25
 

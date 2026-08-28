@@ -20,7 +20,12 @@ import JSZip from "jszip";
 import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as ltdCellWrites, standardReads as ltdReads, checkCompliance as ltdCheckCompliance } from "../products/ltd.js";
+import {
+  cellWrites as ltdCellWrites,
+  standardReads as ltdReads,
+  checkCompliance as ltdCheckCompliance,
+  multiFileOptions as ltdMultiFileOptions,
+} from "../products/ltd.js";
 import { parse as parseTOML } from "smol-toml";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
@@ -68,6 +73,7 @@ describeCalc(
 
       savedDir = mkdtempSync(join(tmpdir(), "ltd-opening-balance-"));
       results = await runMultiFileSpreadsheet(fileBuffers, ltdCellWrites(scenario), ltdReads(), "Financialaccounts.xlsx", {
+        ...ltdMultiFileOptions(3),
         saveRecalculatedTo: savedDir,
       });
       checks = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax);

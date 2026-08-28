@@ -167,8 +167,22 @@ jobs:
           if [[ "$RECONCILE_ALL" == "true" ]]; then
             YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
-            YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" \
-              | head -24 \
+            # Three representative year-ends rather than the full monthly
+            # rotation: the year-ends are mechanical tab-name/formula-rewrite
+            # rotations of the same template (see app/lib/spreadsheet-runner.js
+            # getMonthTabSequence), and the JSZip catalogue guards already
+            # cover the per-year-end variation across every shipped package.
+            # LibreOffice reconciliation only needs one representative of each
+            # rewrite class:
+            #   - latest March: the template's native tab order, no rename
+            #   - latest June: a 30-day mid-year month, fully rewritten tabs
+            #   - latest February: the short month, and (on a leap year) the
+            #     class of year-end that straddles a Feb 29 FY
+            LATEST_MARCH=$(echo "$ALL_YEAR_ENDS" | grep -m1 -- '-03-31$')
+            LATEST_JUNE=$(echo "$ALL_YEAR_ENDS" | grep -m1 -- '-06-30$')
+            LATEST_FEBRUARY=$(echo "$ALL_YEAR_ENDS" | grep -m1 -E -- '-02-(28|29)$')
+            YEAR_ENDS=$(printf '%s\n' "$LATEST_MARCH" "$LATEST_JUNE" "$LATEST_FEBRUARY" \
+              | sed '/^$/d' | sort -ru \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
@@ -288,7 +302,9 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - name: Reconcile extra scenarios against latest package
-        run: npm run reconciliation -- --package ltd --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
+        run: |
+          npm run reconciliation -- --package ltd --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
+          npm run reconciliation -- --package ltd --scenario brickwork-pro-vat --year-end ${{ needs.generate.outputs.latest }}
       - uses: actions/upload-artifact@v7
         with:
           name: ltd-extra-reports

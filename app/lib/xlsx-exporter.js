@@ -7,13 +7,7 @@
 
 import JSZip from "jszip";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
-import {
-  BST_PURCHASE_CODE_MAP,
-  SE_PURCHASE_CODE_MAP,
-  LTD_PURCHASE_CODE_MAP,
-  LTD_SALES_CODE_MAP,
-  MONTH_ORDER,
-} from "./scenario-extractor.js";
+import { BST_PURCHASE_CODE_MAP, SE_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "./scenario-extractor.js";
 
 /**
  * Build reverse code map: { code → accountMainID }.
@@ -84,6 +78,19 @@ const BST_PURCHASE_SHEETS = [
   "PurchasesMar",
 ];
 const MONTH_SHEETS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+const CALENDAR_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Month tabs in accounting-period order.
+ *
+ * A non-March year end renames the twelve month tabs in place, so the
+ * workbook's own sheet order is the period's month order — Jun…May for a May
+ * year end. Reading the tabs in that order keeps exported postings in period
+ * order instead of the template's Apr…Mar order.
+ */
+function monthSheetsInPeriodOrder(sheetMap) {
+  return [...sheetMap.keys()].filter((name) => MONTH_SHEETS.includes(name));
+}
 
 /**
  * Extract transaction lines from a single-file BST product.
@@ -167,16 +174,14 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   const lines = [];
   let entryNum = 1;
 
-  // Sales.xlsx: sheets Apr-Mar
+  // Sales.xlsx: one sheet per month of the accounting period
   const salesPath = resolve(sourceDir, "Sales.xlsx");
   const salesZip = await JSZip.loadAsync(readFileSync(salesPath));
   const salesSheetMap = await buildSheetMap(salesZip);
   const salesStrings = await loadSharedStrings(salesZip);
 
-  for (let mi = 0; mi < 12; mi++) {
-    const sheetName = MONTH_SHEETS[mi];
+  for (const sheetName of monthSheetsInPeriodOrder(salesSheetMap)) {
     const sheetPath = salesSheetMap.get(sheetName);
-    if (!sheetPath) continue;
     const xml = await salesZip.file(sheetPath).async("string");
 
     for (let row = 5; row <= 300; row++) {
@@ -202,16 +207,14 @@ export async function extractMultiFileTransactions(sourceDir, product) {
     }
   }
 
-  // Purchases.xlsx: sheets Apr-Mar
+  // Purchases.xlsx: one sheet per month of the accounting period
   const purchasesPath = resolve(sourceDir, "Purchases.xlsx");
   const purchasesZip = await JSZip.loadAsync(readFileSync(purchasesPath));
   const purchasesSheetMap = await buildSheetMap(purchasesZip);
   const purchasesStrings = await loadSharedStrings(purchasesZip);
 
-  for (let mi = 0; mi < 12; mi++) {
-    const sheetName = MONTH_SHEETS[mi];
+  for (const sheetName of monthSheetsInPeriodOrder(purchasesSheetMap)) {
     const sheetPath = purchasesSheetMap.get(sheetName);
-    if (!sheetPath) continue;
     const xml = await purchasesZip.file(sheetPath).async("string");
 
     for (let row = 5; row <= 300; row++) {
@@ -284,10 +287,8 @@ export async function extractBankTransactions(sourceDir, product) {
     const sharedStrings = await loadSharedStrings(zip);
     let obEmitted = false;
 
-    for (let mi = 0; mi < 12; mi++) {
-      const sheetName = MONTH_SHEETS[mi];
+    for (const sheetName of monthSheetsInPeriodOrder(sheetMap)) {
       const sheetPath = sheetMap.get(sheetName);
-      if (!sheetPath) continue;
       const xml = await zip.file(sheetPath).async("string");
 
       // Opening balance in A1 (can appear in any sheet — cellWrites places it in the month of the BC date)
@@ -381,10 +382,8 @@ export async function extractPayrollTransactions(sourceDir) {
   const lines = [];
   let entryNum = 1;
 
-  for (let mi = 0; mi < 12; mi++) {
-    const sheetName = MONTH_SHEETS[mi];
+  for (const sheetName of monthSheetsInPeriodOrder(sheetMap)) {
     const sheetPath = sheetMap.get(sheetName);
-    if (!sheetPath) continue;
     const xml = await zip.file(sheetPath).async("string");
 
     for (let row = 51; row <= 55; row++) {
@@ -397,11 +396,13 @@ export async function extractPayrollTransactions(sourceDir) {
       const netPay = readCellValue(xml, `R${row}`, sharedStrings) || 0;
       const employerNI = readCellValue(xml, `S${row}`, sharedStrings) || 0;
 
-      // Derive posting date from month tab (last day of that month, approximate from other data)
-      // Use the date from row 49 col M (date wages paid) if available
+      // M49 holds the date the wages were paid. It is the only date the tab
+      // carries, so a payroll row without it has no posting date to export.
       const wageDate = readCellValue(xml, "M49", sharedStrings);
-      const postingDate =
-        wageDate && typeof wageDate === "number" && wageDate > 1 ? excelSerialToDate(wageDate) : `${MONTH_SHEETS[mi]}-unknown`;
+      if (typeof wageDate !== "number" || wageDate <= 1) {
+        throw new Error(`Payslips.xlsx ${sheetName} row ${row} has pay but no wages-paid date in M49`);
+      }
+      const postingDate = excelSerialToDate(wageDate);
 
       lines.push({
         "sourceJournalID": "payroll",
@@ -571,6 +572,48 @@ export async function extractJournalEntries(sourceDir, product) {
   }
 
   return lines;
+}
+
+/**
+ * The 0-indexed calendar month a package's accounting period starts in.
+ *
+ * The multi-file month tabs are renamed for the package's year end, so their
+ * order names the period. The single-file templates carry one fixed April-March
+ * period and never rename their tabs.
+ */
+export async function extractPeriodStartMonth(sourceDir, product) {
+  if (product === "bst" || product === "taxi") return CALENDAR_MONTHS.indexOf("Apr");
+
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Sales.xlsx")));
+  const first = monthSheetsInPeriodOrder(await buildSheetMap(zip))[0];
+  if (!first) throw new Error(`Sales.xlsx in ${sourceDir} has no month tabs, so its accounting period is unknown`);
+  return CALENDAR_MONTHS.indexOf(first);
+}
+
+/**
+ * The accounting period the exported postings cover, to the month: the start
+ * month comes from the tab order and the year from the postings themselves.
+ * Opening balances are brought forward from before the period, so they take no
+ * part in it.
+ */
+export function periodCovered(startMonthIndex, lines) {
+  const postings = lines.filter((line) => line.sourceJournalID !== "journal");
+  if (postings.length === 0) throw new Error("No postings to take an accounting period from");
+
+  let startYear = Infinity;
+  for (const line of postings) {
+    const [year, month] = line.postingDate.split("-").map(Number);
+    const yearPeriodStarts = month - 1 >= startMonthIndex ? year : year - 1;
+    if (yearPeriodStarts < startYear) startYear = yearPeriodStarts;
+  }
+
+  const isoDay = (d) => d.toISOString().slice(0, 10);
+  return {
+    start: isoDay(new Date(Date.UTC(startYear, startMonthIndex, 1))),
+    end: isoDay(new Date(Date.UTC(startYear + 1, startMonthIndex, 0))),
+  };
 }
 
 /**

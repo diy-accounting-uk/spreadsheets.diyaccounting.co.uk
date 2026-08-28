@@ -36,22 +36,6 @@ function getMonthTabNames(yearEndMonth) {
   return tabs;
 }
 
-// Scenario month keys (apr, may, ... mar) in order, with their 0-indexed month numbers
-const SCENARIO_MONTHS = [
-  { key: "apr", month: 3 },
-  { key: "may", month: 4 },
-  { key: "jun", month: 5 },
-  { key: "jul", month: 6 },
-  { key: "aug", month: 7 },
-  { key: "sep", month: 8 },
-  { key: "oct", month: 9 },
-  { key: "nov", month: 10 },
-  { key: "dec", month: 11 },
-  { key: "jan", month: 0 },
-  { key: "feb", month: 1 },
-  { key: "mar", month: 2 },
-];
-
 const BANK_ACCOUNT_FILES = {
   1200: "Currentaccount.xlsx",
   1210: "Savingaccount.xlsx",
@@ -255,6 +239,17 @@ function writeOpeningBalance(sheet, openingBalance) {
   if (taxPosted) sheet.E26 = taxTotal;
 }
 
+// Move a date forward by whole months. A day the shifted month does not have
+// clamps to that month's end, so each of the period's twelve months lands on
+// its own tab: a 31st shifted into a 30-day month stays in that month rather
+// than rolling into the next one and doubling up with the month after it.
+function shiftMonths(d, monthOffset) {
+  const year = d.getUTCFullYear();
+  const month = d.getUTCMonth() + monthOffset;
+  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(d.getUTCDate(), lastDayOfShiftedMonth)));
+}
+
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -262,32 +257,25 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Default to March year-end if not specified
   const yem = yearEndMonth || 3;
 
-  // The scenario assumes a March year-end (Apr-Mar). For other year-ends,
-  // shift dates so the scenario's accounting period maps to the target's.
-  // Source period start: April of the scenario year (month index 3)
-  // Target period start: month after year-end (yearEndMonth % 12)
-  const sourceStartMonth = 3; // April (0-indexed)
+  // Dates belong to the accounting period their own scenario covers, and get
+  // shifted by the whole-month gap between that period and the target's, so
+  // the twelve months land on the twelve month tabs in order. A scenario
+  // already in the target's period has a zero gap and is written as it stands,
+  // which is what makes exporting a package and generating from the export
+  // reproduce the same cells. A scenario that does not name its period start
+  // is in the April-March frame its apr..mar month keys describe.
+  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
   const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
 
-  // Build tab name sequence for the target year-end
-  const tabNames = getMonthTabNames(yem);
+  const shiftDate = (d) => shiftMonths(d, monthOffset);
 
-  function shiftDate(d) {
-    const shifted = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monthOffset, d.getUTCDate()));
-    return shifted;
-  }
-
-  // Map a shifted date to the correct tab name
-  function getTabForDate(shifted) {
-    const m = shifted.getUTCMonth();
-    const tabMonth = SHORT_MONTHS[m];
-    if (tabNames.includes(tabMonth)) return tabMonth;
-    return tabNames[0]; // fallback
-  }
+  // The twelve tabs are the twelve months, whatever the year end, so a shifted
+  // date's month names its tab.
+  const getTabForDate = (shifted) => SHORT_MONTHS[shifted.getUTCMonth()];
 
   function processJournal(entries, writes, nameField, codeDefault) {
-    for (const [monthKey, transactions] of Object.entries(entries)) {
+    for (const transactions of Object.values(entries)) {
       for (const tx of transactions) {
         const d = parseDate(tx.date);
         const shifted = shiftDate(d);
@@ -422,20 +410,16 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
   // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
   if (scenario.payroll) {
-    for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
-      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
-      if (!sm) continue;
-      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
-      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
+    for (const entries of Object.values(scenario.payroll)) {
+      if (entries.length === 0) continue;
+      // The tab follows the pay date, the same rule the other journals use, so
+      // the date the tab shows is always the date the tab was chosen from.
+      const paidOn = shiftDate(parseDate(entries[0].date));
+      const tabName = getTabForDate(paidOn);
 
       if (!payslipsWrites[tabName]) payslipsWrites[tabName] = {};
       const sheet = payslipsWrites[tabName];
-      // Write wages paid date from first entry
-      if (entries.length > 0) {
-        const d = parseDate(entries[0].date);
-        const shifted2 = shiftDate(d);
-        sheet.M49 = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
-      }
+      sheet.M49 = toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate());
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
         const row = 51 + i;
         const e = entries[i];
@@ -444,7 +428,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
-        sheet[`S${row}`] = e.employerNI;
+        // Column S is a blank spacer in the template (self-closing, no
+        // formula, never summed); column T is the real employer-NI data
+        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
+        // WagesInterface!H reads. Verified against the template.
+        sheet[`T${row}`] = e.employerNI;
       }
     }
   }
@@ -472,6 +460,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      // Column O is the written down TAX value brought forward, the figure
+      // the capital allowance columns work from. The schedule computes a
+      // disposal's balancing allowance as that value less the sale proceeds,
+      // so an asset sold in the year without one leaves the whole capital
+      // allowance block, and every figure downstream of it, in error.
+      if (asset.tax_wdv) fa[`O${row}`] = asset.tax_wdv;
       existingAssetRowsUsed.push(row);
     }
   }
@@ -536,13 +530,10 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     const receiptRows = {};
     const paymentRows = {};
 
-    for (const [monthKey, transactions] of Object.entries(scenario.bank)) {
-      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
-      if (!sm) continue;
-      const shifted = new Date(Date.UTC(2000, sm.month + monthOffset, 1));
-      const tabName = SHORT_MONTHS[shifted.getUTCMonth()];
-
+    for (const transactions of Object.values(scenario.bank)) {
       for (const tx of transactions) {
+        const d = shiftDate(parseDate(tx.date));
+        const tabName = getTabForDate(d);
         const acct = tx.account || "1200";
         const fileName = BANK_ACCOUNT_FILES[acct];
         if (!fileName) throw new Error(`Bank entry dated ${tx.date} names unknown account ${acct}`);
@@ -572,7 +563,6 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const rows = isReceipt ? receiptRows : paymentRows;
         if (!rows[rowKey]) rows[rowKey] = 6;
         const row = rows[rowKey]++;
-        const d = shiftDate(parseDate(tx.date));
         sheet[`${block.date}${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
         sheet[`${block.code}${row}`] = tx.code;
@@ -910,6 +900,25 @@ export function standardReads() {
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
 
+  // PAYE/NI creditor -- row 34's first-month movement column. Column L
+  // holds the fiscal year's first month regardless of year-end (verified
+  // against the template: L34 = -(WagesInterface!D4+E4+H4)-(...director
+  // row, always 0...)+(...statutory pay, always 0...)). The row's later
+  // months also net HMRC bank payments (RP-coded), which is the bank
+  // workstream's territory, not payroll's -- this one movement column
+  // isolates the payroll-only contribution.
+  add("TrialBalance", "L34");
+
+  // WagesInterface -- one row per month (rows 4-15, Apr-Mar template order,
+  // remapped to fiscalTabs the same as every other monthly read here).
+  // C=gross pay, D=PAYE income tax, E=employee NI, H=employer NI (verified
+  // against the template: C4=[9]Apr!$M$1-C17, D4=$N$1-D17, E4=$O$1-E17,
+  // H4=$T$1-H17, where the C17/D17/etc subtraction is a second, director-
+  // only block that cellWrites() never populates and so always reads 0).
+  for (let row = 4; row <= 15; row++) {
+    for (const col of ["C", "D", "E", "H"]) add("WagesInterface", `${col}${row}`);
+  }
+
   return reads;
 }
 
@@ -933,8 +942,10 @@ export function multiFileOptions(yearEndMonth) {
   // Fixedassets Schedule: row 1 holds the whole-schedule totals, rows 57 and
   // 110 the existing and new sub-totals, and each class's own totals row the
   // figures the published note quotes. Column B on a class totals row is the
-  // sheet's own comparison against the opening balance sheet.
-  const scheduleReads = ["E1", "F1", "G1", "I1", "J1", "K1", "V1", "W1", "X1", "E57", "E110"];
+  // sheet's own comparison against the opening balance sheet. Q/R carry the
+  // annual investment and writing down allowances, Y/Z the balancing
+  // allowance and charge a disposal throws off.
+  const scheduleReads = ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"];
   for (const layout of Object.values(SCHEDULE_ASSET_CLASSES)) {
     for (const totalRow of [layout.existingTotalRow, layout.newTotalRow]) {
       for (const col of ["E", "F", "I", "W", "X"]) scheduleReads.push(`${col}${totalRow}`);
@@ -950,6 +961,12 @@ export function multiFileOptions(yearEndMonth) {
     bankReads[fileName] = { [tabNames[11]]: ["A1", "A2"] };
   }
 
+  // Payslips!Payment -- one row per month (rows 4-15, same template order as
+  // WagesInterface). D = NI due (employer + employee), E = income tax due,
+  // I = total amount payable (verified against the template).
+  const paymentCells = [];
+  for (let row = 4; row <= 15; row++) for (const col of ["D", "E", "I"]) paymentCells.push(`${col}${row}`);
+
   return {
     postHubRecalc: ["Vatreturns.xlsx"],
     additionalReads: {
@@ -959,6 +976,9 @@ export function multiFileOptions(yearEndMonth) {
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
         FAreconciliation: ["E11", "K11"],
+      },
+      "Payslips.xlsx": {
+        Payment: paymentCells,
       },
       ...bankReads,
     },
@@ -998,6 +1018,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+  }
+
+  // Some of the workbook's own verdicts are wording, not arithmetic: the
+  // cell either names what it found or tells the reader to go and fix
+  // something. The report shows both sides as text and the diff column stays
+  // empty.
+  function checkText(name, actual, accepts, expectedDescription) {
+    checks.push({ name, actual, expected: expectedDescription, pass: accepts(actual), diff: "" });
   }
 
   // A template cell that resolves to blank reads back as the string the
@@ -1188,13 +1216,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
 
     // The Schedule's own per-class comparison against the opening balance
-    // sheet (column B on each class totals row) is read but not asserted.
-    // It reads OpenAccounts through a leaf-to-hub external link, and
-    // runMultiFileSpreadsheet only refreshes the hub's link caches, so the
-    // comparison runs against the template's cached zeros whatever the
-    // scenario holds. Asserting it here would fail on correct data. The
-    // opening figures reach the trial balance by a different route, which
-    // the opening balance checks above cover.
+    // sheet. Column B on each class totals row reads OpenAccounts across a
+    // leaf-to-hub external link and reports either the class name or a
+    // warning to go back and check the opening figures. It is the only place
+    // the fixed asset schedule and the opening balance sheet meet, so a
+    // class entered on one and not the other shows up here and nowhere else.
+    for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
+      const verdict = schedule[`B${layout.existingTotalRow}`];
+      checkText(
+        `Fixed asset schedule (${className}): opening cost and depreciation agree with the opening balance sheet`,
+        typeof verdict === "string" ? verdict : "",
+        (text) => text.startsWith("Existing "),
+        "an Existing ... heading",
+      );
+    }
   }
 
   // The balance sheet's fixed asset line is built from the trial balance,
@@ -1276,23 +1311,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // gross amounts at the same rate the templates apply, summing the month
   // first and dividing once. Catches a month landing in the wrong column or
   // dropping out altogether.
-  // The writer shifts every transaction date into the package's fiscal year,
-  // and an end-of-month day that does not exist in the shifted month rolls
-  // into the next tab. The expectation buckets by the shifted date the same
-  // way, or a 31st posted near a short month reads as landing in the wrong
-  // column on every non-March year-end.
+  // The writer shifts every transaction date onto the package's month tabs, so
+  // the expectation buckets by the shifted date the same way, or every month
+  // reads as landing in the wrong column on a non-March year-end.
   const fiscalTabs =
-    results.Admin && typeof results.Admin.B9 === "number"
-      ? monthTabsFromPeriodStart(results.Admin.B9)
-      : SCENARIO_MONTHS.map(({ key }) => key.charAt(0).toUpperCase() + key.slice(1));
+    results.Admin && typeof results.Admin.B9 === "number" ? monthTabsFromPeriodStart(results.Admin.B9) : getMonthTabNames(3);
   const shiftedMonthlyBuckets = (journal) => {
     const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
     const buckets = Object.fromEntries(fiscalTabs.map((tab) => [tab, {}]));
     for (const txs of Object.values(journal)) {
       for (const tx of txs) {
-        const d = parseDate(tx.date);
-        const shifted = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + monthOffset, d.getUTCDate()));
+        const shifted = shiftMonths(parseDate(tx.date), monthOffset);
         const bucket = buckets[SHORT_MONTHS[shifted.getUTCMonth()]];
         bucket[tx.code] = (bucket[tx.code] || 0) + tx.amount;
       }
@@ -1356,6 +1386,106 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     });
   }
 
+  // ── Payroll: WagesInterface monthly ties, the P&L wages route, the
+  // PAYE/NI creditor, and Payslips!Payment (item 4) ──
+  //
+  // WagesInterface rows 4-15 hold one month each (Apr-Mar template order,
+  // remapped to fiscalTabs the same as everything else here), split across
+  // two row blocks per month: rows 4-15 read the block-5 payslip rows the
+  // scenario writer fills (C4=[9]Apr!$M$1-C17 etc), and rows 17-28 read a
+  // second, director-only block (M2 in the month tab) that cellWrites never
+  // populates -- verified against the template, and confirmed against the
+  // recalculated file that the row 17-28 side stays 0. So rows 4-15 alone
+  // carry the whole month's payroll, directors included.
+  if (expected.payroll) {
+    // Same date-shift math cellWrites() uses to place each scenario month's
+    // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
+    // = 3) shifts by the offset from April to this package's first fiscal
+    // month, landing on the same tab fiscalTabs already names by index.
+    const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
+    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
+    for (const [monthKey, entries] of Object.entries(expected.payroll)) {
+      const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
+      if (sourceMonth === -1) continue;
+      const tab = SHORT_MONTHS[(sourceMonth + monthOffset) % 12];
+      payrollByTab[tab].push(...entries);
+    }
+
+    let totalGross = 0;
+    let totalEmployerNI = 0;
+    fiscalTabs.forEach((tab, i) => {
+      const entries = payrollByTab[tab] || [];
+      const sums = entries.reduce(
+        (s, e) => ({
+          grossPay: s.grossPay + (e.grossPay || 0),
+          incomeTax: s.incomeTax + (e.incomeTax || 0),
+          employeeNI: s.employeeNI + (e.employeeNI || 0),
+          employerNI: s.employerNI + (e.employerNI || 0),
+        }),
+        { grossPay: 0, incomeTax: 0, employeeNI: 0, employerNI: 0 },
+      );
+      totalGross += sums.grossPay;
+      totalEmployerNI += sums.employerNI;
+
+      const row = 4 + i;
+      const wi = results.WagesInterface || {};
+      check(`WagesInterface ${tab} C${row} gross pay`, num(wi[`C${row}`]), sums.grossPay);
+      check(`WagesInterface ${tab} D${row} income tax`, num(wi[`D${row}`]), sums.incomeTax);
+      check(`WagesInterface ${tab} E${row} employee NI`, num(wi[`E${row}`]), sums.employeeNI);
+      check(`WagesInterface ${tab} H${row} employer NI`, num(wi[`H${row}`]), sums.employerNI);
+
+      // Payslips!Payment: same row layout as WagesInterface (verified
+      // against the template). D = NI due (employer + employee), E = income
+      // tax due, I = total amount payable = D + E (F/G/H -- statutory pay
+      // recovered, NIC compensation, student loan -- stay 0 in this
+      // fixture).
+      const payment = results["Payslips.xlsx!Payment"] || {};
+      const niDue = sums.employerNI + sums.employeeNI;
+      check(`Payslips!Payment ${tab} D${row} NI due`, num(payment[`D${row}`]), niDue);
+      check(`Payslips!Payment ${tab} E${row} income tax due`, num(payment[`E${row}`]), sums.incomeTax);
+      check(`Payslips!Payment ${tab} I${row} total amount payable`, num(payment[`I${row}`]), niDue + sums.incomeTax);
+    });
+
+    // P&L route: MnthP&L B18 (PAYE Wages + Non-PAYE Employee) reads
+    // TrialBalance!O64+O65, where row 64 is WagesInterface!C-I summed across
+    // the year (I -- statutory pay -- is always 0 here) and row 65 is
+    // Purchases.xlsx's own "w"-coded net total, which this fixture does
+    // carry a casual-worker entry for. B20 (Employers NI) reads
+    // TrialBalance!O67 = WagesInterface!H summed across the year. Verified
+    // against the template formula chain.
+    let wCodePurchasesNet = 0;
+    if (expected.purchases) {
+      for (const transactions of Object.values(expected.purchases)) {
+        for (const tx of transactions) if (tx.code === "w") wCodePurchasesNet += netOfVat(tx.amount);
+      }
+    }
+    check(
+      "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net",
+      num(pl.B18),
+      totalGross + wCodePurchasesNet,
+    );
+    check("MnthP&L: Employers National Insurance (B20) = payroll employer NI", num(pl.B20), totalEmployerNI);
+
+    // PAYE/NI creditor: TrialBalance row 34's first-fiscal-month movement
+    // column (verified against the template: column position L, always the
+    // year's first month regardless of year-end) moves by
+    // -(WagesInterface!D+E+H) that month -- income tax, employee NI and
+    // employer NI due to HMRC. Later months' movement also nets HMRC bank
+    // payments (RP-coded), which belongs to the bank workstream, so this
+    // localises to the payroll-only first month rather than the year-end
+    // balance.
+    if (results.TrialBalance && fiscalTabs.length > 0) {
+      const firstMonthEntries = payrollByTab[fiscalTabs[0]] || [];
+      const firstMonthTax = firstMonthEntries.reduce((s, e) => s + (e.incomeTax || 0) + (e.employeeNI || 0) + (e.employerNI || 0), 0);
+      check(
+        "Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due",
+        num(results.TrialBalance.L34),
+        -firstMonthTax,
+      );
+    }
+  }
+
   // ── Admin: the rates the generator injected, read back ───────────────────
   //
   // Every downstream figure is arithmetically consistent with whatever rate
@@ -1398,12 +1528,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
     check("CT: add-backs = depreciation + goodwill", num(corporationTax.K10), num(corporationTax.I7) + num(corporationTax.I8));
     check("CT: profit plus add-backs", num(corporationTax.K12), num(corporationTax.K5) + num(corporationTax.K10));
-    // The allowance lines themselves read zero in this pipeline whatever the
-    // schedule holds: the capital allowance notes address individual
-    // Schedule rows (E67 and up), and the hub's external link cache carries
-    // only the column totals, so the per-row tests all see blanks. The sum
-    // identity still holds and localises a break once the cache carries
-    // those cells.
+    // Each allowance line against the schedule column it claims from. The
+    // notes behind these lines address Schedule rows one by one, so they
+    // only carry figures when every one of those rows reaches the tax
+    // computation, and each line is anchored in the schedule rather than in
+    // its own total.
+    if (schedule) {
+      check("CT: annual investment allowance = Schedule annual investment allowance", num(corporationTax.I15), num(schedule.Q1));
+      check(
+        "CT: writing down allowances = Schedule writing down allowances",
+        num(corporationTax.I16) + num(corporationTax.I17),
+        num(schedule.R1),
+      );
+      check(
+        "CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge",
+        num(corporationTax.I18),
+        num(schedule.Y1) - num(schedule.Z1),
+      );
+    }
     check(
       "CT: capital allowances = the allowance lines",
       num(corporationTax.K20),
