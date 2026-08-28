@@ -313,7 +313,8 @@ export function cellWrites(scenario) {
       const rows = EXISTING_ASSET_ROWS[asset.category];
       if (!rows) throw new Error(`cellWrites: unknown opening_fixed_assets category "${asset.category}"`);
       const row = rows[nextRow[asset.category]++];
-      if (row === undefined) throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
+      if (row === undefined)
+        throw new Error(`cellWrites: too many opening ${asset.category} assets for the Schedule template (max ${rows.length})`);
       // Written left-to-right (C, then E, then F). setCellValue/setCellString
       // in spreadsheet-runner.js replaces a matched cell together with every
       // self-closing sibling up to the row's next already-closed cell -- an
@@ -346,7 +347,9 @@ export function cellWrites(scenario) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
     if (faPurchases.length > NEW_PLANT_ROWS.length) {
-      throw new Error(`cellWrites: ${faPurchases.length} "fa" purchase(s) exceed the ${NEW_PLANT_ROWS.length} Schedule New Plant & Machinery rows`);
+      throw new Error(
+        `cellWrites: ${faPurchases.length} "fa" purchase(s) exceed the ${NEW_PLANT_ROWS.length} Schedule New Plant & Machinery rows`,
+      );
     }
     faPurchases.forEach((tx, i) => {
       const row = NEW_PLANT_ROWS[i];
@@ -375,7 +378,9 @@ export function cellWrites(scenario) {
     const fa = fixedAssetsWrites.Schedule;
     const disposalRows = [...existingAssetRowsUsed.motor, ...existingAssetRowsUsed.computer];
     if (fsDisposals.length > disposalRows.length) {
-      throw new Error(`cellWrites: ${fsDisposals.length} "fs" disposal(s) but only ${disposalRows.length} existing fixed asset row(s) to attach them to`);
+      throw new Error(
+        `cellWrites: ${fsDisposals.length} "fs" disposal(s) but only ${disposalRows.length} existing fixed asset row(s) to attach them to`,
+      );
     }
     fsDisposals.forEach((tx, i) => {
       const row = disposalRows[i];
@@ -565,7 +570,9 @@ export function standardReads() {
     if (!reads[sheet]) reads[sheet] = [];
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
   }
-  const plRows = [...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34])];
+  const plRows = [
+    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34]),
+  ];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
   for (const row of plRows) {
     for (const col of MONTH_COLS) {
@@ -842,7 +849,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Sales.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
       const badDebtNet = Math.round(((byCode.o || 0) / (1 + VAT_RATE)) * 100) / 100;
-      check(`P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`, pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0, -badDebtNet);
+      check(
+        `P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`,
+        pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0,
+        -badDebtNet,
+      );
     }
   }
   // Purchases.xlsx side NOT asserted here. Every Purchases.xlsx amount

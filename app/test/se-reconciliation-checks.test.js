@@ -16,13 +16,7 @@ import { resolve, dirname, join } from "path";
 import { tmpdir } from "os";
 import { fileURLToPath } from "url";
 import JSZip from "jszip";
-import {
-  runMultiFileSpreadsheet,
-  hasLibreOffice,
-  buildSheetMap,
-  readCellValue,
-  loadSharedStrings,
-} from "../lib/spreadsheet-runner.js";
+import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
@@ -200,7 +194,10 @@ describeCalc(
     });
 
     it("P&L depreciation (summed monthly) carries a real non-zero signal", () => {
-      const total = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"].reduce((s, col) => s + (results["Profit & Loss Account"][`${col}34`] || 0), 0);
+      const total = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"].reduce(
+        (s, col) => s + (results["Profit & Loss Account"][`${col}34`] || 0),
+        0,
+      );
       expect(total).toBeGreaterThan(0);
     });
 
