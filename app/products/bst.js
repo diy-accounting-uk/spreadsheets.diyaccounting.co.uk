@@ -117,6 +117,26 @@ export function cellWrites(scenario) {
     }
   }
 
+  // Fixed asset additions go on the "Fixed Assets" sheet's Plant & Machinery
+  // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots). That block
+  // is the only one whose K column (First Year Allowance / AIA claimed) is
+  // formula-driven from the cost in E -- the "EXISTING" (opening) block's
+  // non-vehicle categories carry no such formula in this template, so an
+  // opening-balance asset there would give zero capital-allowance signal.
+  if (scenario.fixed_asset_additions) {
+    if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
+    const fa = writes["Fixed Assets"];
+    let row = 67;
+    for (const asset of scenario.fixed_asset_additions) {
+      const d = parseDate(asset.date);
+      fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      if (asset.description) fa[`C${row}`] = asset.description;
+      if (asset.reference) fa[`D${row}`] = asset.reference;
+      fa[`E${row}`] = asset.cost;
+      row++;
+    }
+  }
+
   return writes;
 }
 
@@ -219,6 +239,34 @@ export const CELL_MAP = [
   ["Debtors & Creditors", "F13", "Closing Creditor 2","accounts.liabilities.2100 (closing[1])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F14", "Closing Creditor 3","accounts.liabilities.2100 (closing[2])", "Debtors & Creditors", 1],
   ["Debtors & Creditors", "F15", "Closing Creditor 4","accounts.liabilities.2100 (closing[3])", "Debtors & Creditors", 1],
+  // ── Fixed Assets schedule ──
+  ["Fixed Assets", "E67",  "New Asset Cost (Plant & Machinery)",     "accounts.assets.fixedAssets (cost)",             "Fixed Assets", 1],
+  ["Fixed Assets", "E1",   "Total Original Cost",                   "accounts.assets.fixedAssets (totalCost)",        "Fixed Assets", 0],
+  ["Fixed Assets", "K1",   "Total First Year Allowance / AIA",      "tax.capitalAllowances.aia (schedule)",           "Fixed Assets", 1],
+  ["Fixed Assets", "L1",   "Total Writing Down Allowance",          "tax.capitalAllowances.wda (schedule)",           "Fixed Assets", 1],
+  ["Fixed Assets", "M1",   "Total Written Down Tax Value",          "tax.capitalAllowances.writtenDownValue (schedule)", "Fixed Assets", 1],
+  ["Fixed Assets", "Q1",   "Total Capital Allowance on Disposal",   "tax.capitalAllowances.disposals (schedule)",     "Fixed Assets", 1],
+  ["Fixed Assets", "R1",   "Total Balancing Charge",                "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1],
+  // ── Admin (generator-injected tax data) ──
+  ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
+  ["Admin", "N7",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
+  ["Admin", "N8",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "M12", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
+  ["Admin", "N13", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "L17", "NI Class 2 Rate",                     "tax.nationalInsurance.class2Rate",        "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
+  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
+  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0],
+  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.lowerRatePence",              "Admin (Generator Injected)", 0],
+  ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
 ];
 
 export function standardReads() {
@@ -331,6 +379,63 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.closing_creditors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
     checkEntryBlock("Closing Creditors", expected.closing_creditors, [dc.F12, dc.F13, dc.F14, dc.F15]);
+  }
+
+  // Fixed asset chain: Fixed Assets sheet -> P&L capital allowances ->
+  // taxable profit. The schedule's own AIA formula (cost x Admin!G4 rate) is
+  // recomputed independently here from the read-back Admin rate, so this
+  // check also stands in as the Admin-echo check for the AIA rate cell.
+  if (expected.fixed_asset_additions && results["Fixed Assets"]) {
+    const fa = results["Fixed Assets"];
+    const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    check("Fixed Assets: New asset cost recorded", fa.E67 || 0, expected.fixed_asset_cost ?? assetCost);
+
+    if (results.Admin) {
+      const aiaRate = results.Admin.G4;
+      check("Fixed Assets: AIA claimed = cost x Admin AIA rate", fa.K1 || 0, (fa.E67 || 0) * aiaRate);
+    }
+
+    // Mirrors the SE Short D80/D85/O80/O85 formulas (see the SE-Short-chain
+    // check below) but computed directly from the schedule's own totals, so
+    // a break in either the schedule or the SE Short link is caught.
+    const d80 = (fa.K1 || 0) > 0 ? fa.K1 : 0;
+    const o80 = (fa.L1 || 0) + (fa.Q1 || 0) > 0 ? (fa.L1 || 0) + (fa.Q1 || 0) : 0;
+    const d85 = (fa.M1 || 0) + (fa.L1 || 0) < 1000 ? fa.M1 || 0 : 0;
+    const o85 = (fa.R1 || 0) > 0 ? fa.R1 : 0;
+    check("Fixed Assets: Schedule capital allowance total = P&L Capital Allowances", pl.C26 || 0, -o85 + d80 + d85 + o80);
+  }
+  check("P&L: Taxable Profit = Net Profit - Capital Allowances", pl.C28, (pl.C24 || 0) - (pl.C26 || 0));
+
+  // Admin echo: the generator injects the tax year's rates, bands and
+  // thresholds from the TOML into the Admin sheet, and the whole tax
+  // calculation reads from there. Nothing else asserts the injected values
+  // equal what the run was generated from -- a wrong rate here is
+  // arithmetically invisible to every downstream check.
+  if (taxData && results.Admin) {
+    const admin = results.Admin;
+    const it = taxData.income_tax;
+    const ni = taxData.national_insurance;
+    const ca = taxData.capital_allowances;
+    const mil = taxData.mileage;
+    check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
+    check("Admin: Basic Rate = tax data", admin.N7, it.basic_rate, 0.0001);
+    check("Admin: Higher Rate = tax data", admin.N8, it.higher_rate, 0.0001);
+    check("Admin: Basic Band End = tax data", admin.M12, it.basic_band_end);
+    check("Admin: Higher Band Start = tax data", admin.N13, it.higher_band_start);
+    check("Admin: NI Class 2 Rate = tax data", admin.L17, ni.class2_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
+    check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
+    check("Admin: NI Class 4 Upper Rate = tax data", admin.L23, ni.class4_upper_rate, 0.0001);
+    check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
+    check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
+    check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
+    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
+    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
+    check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
+    check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
+    check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);
+    check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
+    check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
   }
 
   if (taxData) {
