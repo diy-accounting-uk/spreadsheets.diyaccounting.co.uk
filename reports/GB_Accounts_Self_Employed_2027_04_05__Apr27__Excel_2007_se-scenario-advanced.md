@@ -485,6 +485,26 @@ Status: RECONCILES
 | VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
 | VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
 | VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 46568 | 46568 | 0 | PASS |
+| Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
+| Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 0 | 0 | 0 | PASS |
+| Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
+| Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
+| Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
+| Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
+| Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
+| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
+| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
+| Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
+| Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
+| Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
+| Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 
 ## Business Details
 
@@ -599,6 +619,31 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses | 2,182.5 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 6,402.5 |
 | **Annual Expenses** | 13,470 |
+
+## Admin (Generator Injected)
+
+| | Amount |
+|---|------:|
+| Personal Allowance | 12,570 |
+| Basic Rate | 0.2 |
+| Higher Rate | 0.4 |
+| Basic Band End | 37,700 |
+| Higher Band Start | 37,701 |
+| NI Class 2 Weekly Rate | 0 |
+| NI Class 4 Lower Rate | 0.06 |
+| NI Class 4 Lower Limit | 12,570 |
+| NI Class 4 Upper Rate | 0.02 |
+| NI Class 4 Upper Limit | 50,270 |
+| Annual Investment Allowance Rate | 1 |
+| Writing Down Allowance Rate | 0.14 |
+| Motor Vehicle Cost Threshold | 12,000 |
+| Motor Vehicle Restriction | 3,000 |
+| Mileage Higher Rate Limit | 10,000 |
+| Mileage Higher Rate Pence | 0.45 |
+| Mileage Lower Rate Start | 10,001 |
+| Mileage Lower Rate Pence | 0.25 |
+| VAT Registration Threshold | 90,000 |
+| VAT Standard Rate | 0.2 |
 
 ## VAT Returns
 
@@ -988,6 +1033,31 @@ Status: RECONCILES
 | E7 | Q3 Expenses | 2182.5 | gl-cor:amount (vitalTax.q3Exp) |
 | F7 | Q4 Expenses | 6402.5 | gl-cor:amount (vitalTax.q4Exp) |
 | G7 | **Annual Expenses** | 13470 | gl-cor:amount (vitalTax.annualExp) |
+
+### Admin
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N4 | Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
+| N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
+| N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
+| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
+| L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
+| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.wdaRate |
+| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
+| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
+| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
+| F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 
 ### StockControl
 

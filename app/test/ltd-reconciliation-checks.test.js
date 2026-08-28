@@ -261,6 +261,44 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    // ── Trial Balance bank echoes and the published cash-at-bank aggregate
+    // (SHEET_COVERAGE_GAPS.md "Largest gaps by risk" item 1's remainder:
+    // PubBalSht!E12 was read but never compared to the four bank workbooks'
+    // closing balances). TrialBalance!EJ22-EJ25 echo each workbook's closing
+    // balance across the cross-file link, and E12 reproduces the sheet's own
+    // formula: IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25) -- the
+    // credit card balance (EJ24) summed straight in, not netted off as a
+    // creditor.
+
+    it("reads a non-zero Trial Balance echo for every bank workbook, and a non-zero published cash-at-bank total", () => {
+      const tb = results.TrialBalance;
+      expect(tb.EJ22).not.toBe(0); // Currentaccount.xlsx
+      expect(tb.EJ23).not.toBe(0); // Savingaccount.xlsx
+      expect(tb.EJ24).not.toBe(0); // Creditcardaccount.xlsx
+      expect(tb.EJ25).not.toBe(0); // Cashaccount.xlsx
+      expect(results.PubBalSht.E12).not.toBe(0);
+    });
+
+    it("fails the Trial Balance echo (and, downstream, the published cash-at-bank aggregate) when EJ22 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ22", 0);
+      expect(value).toBe(0);
+      const echoName = "Trial Balance: Currentaccount.xlsx closing balance echo (EJ22)";
+      const aggregateName = "Published balance sheet: cash at bank = Trial Balance bank account aggregate";
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ22", value);
+      expect(corrupted.find((c) => c.name === echoName).pass).toBe(false);
+      expect(corrupted.find((c) => c.name === aggregateName).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([echoName, aggregateName]);
+    });
+
+    it("fails only the published cash-at-bank aggregate when PubBalSht E12 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E12", 0);
+      expect(value).toBe(0);
+      const name = "Published balance sheet: cash at bank = Trial Balance bank account aggregate";
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E12", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
     it("fails the register tie when RegisterofMembers G1 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "RegisterofMembers", "G1", 0);
       expect(value).toBe(0);

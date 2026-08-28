@@ -43,6 +43,18 @@ const BANK_ACCOUNT_FILES = {
   1230: "Creditcardaccount.xlsx",
 };
 
+// TrialBalance's own closing-balance echo of each bank workbook (verified
+// against the template: EJ22 = Current, EJ23 = Savings, EJ24 = Credit Card,
+// EJ25 = Cash). PubBalSht!E12 "Cash at bank and in hand" reads these four
+// cells plus EJ26 ("Intra Cash & Bank Transfers"), not the bank workbooks
+// directly.
+const TRIAL_BALANCE_BANK_ECHO_CELLS = {
+  "Currentaccount.xlsx": "EJ22",
+  "Savingaccount.xlsx": "EJ23",
+  "Creditcardaccount.xlsx": "EJ24",
+  "Cashaccount.xlsx": "EJ25",
+};
+
 // Transfer code letter each bank workbook stands for. A workbook analyses
 // transfers under the other three letters; it never transfers to itself.
 const BANK_TRANSFER_CODES = {
@@ -846,6 +858,11 @@ export const CELL_MAP = [
   ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
+  ["TrialBalance", "EJ22", "Final: Bank Current Account",              "accounts.assets.1200 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ23", "Final: Bank Savings Account",              "accounts.assets.1210 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ24", "Final: Credit Card Account",               "accounts.assets.1230 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
+  ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
@@ -1638,6 +1655,39 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(results[closingKey].A2),
         movement.opening + movement.receipts - movement.payments,
       );
+    }
+
+    // TrialBalance echoes each bank workbook's closing balance across the
+    // cross-file link (verified against the template: TrialBalance!EJ<n> =
+    // -[<link>]<lastMonth>!$F$1-... cascaded from the workbook's own A2).
+    // Tie each echo to the same scenario-derived movement the per-workbook
+    // check above already computed, so a break in the OpenAccounts ->
+    // TrialBalance link is caught at its own link rather than only showing
+    // up downstream on the published balance sheet.
+    if (results.TrialBalance) {
+      const tb = results.TrialBalance;
+      for (const [fileName, movement] of Object.entries(movements)) {
+        const echoCell = TRIAL_BALANCE_BANK_ECHO_CELLS[fileName];
+        check(
+          `Trial Balance: ${fileName} closing balance echo (${echoCell})`,
+          num(tb[echoCell]),
+          movement.opening + movement.receipts - movement.payments,
+        );
+      }
+
+      // PubBalSht!E12 "Cash at bank and in hand" reproduces the sheet's own
+      // aggregation formula exactly (verified against the template: E12 =
+      // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25)). The three
+      // statement-book accounts (Current, Savings, Credit Card) are summed
+      // first, then Cash and the Intra Cash & Bank Transfers row are added
+      // on top -- the credit card balance is summed straight in alongside
+      // the other three, not netted off as a creditor. EJ26 nets out any
+      // receipt or payment analysed under another account's transfer code,
+      // so a transfer between the company's own bank accounts never moves
+      // the combined total, whether or not both legs were entered.
+      const sumFirstThree = num(tb.EJ22) + num(tb.EJ23) + num(tb.EJ24);
+      const expectedE12 = sumFirstThree > 0 ? sumFirstThree + num(tb.EJ25) + num(tb.EJ26) : num(tb.EJ25);
+      check("Published balance sheet: cash at bank = Trial Balance bank account aggregate", num(pubBalSht?.E12), expectedE12);
     }
   }
 
