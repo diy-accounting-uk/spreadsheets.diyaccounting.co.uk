@@ -500,8 +500,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // Expense line totals (6f)
-  if (expected.total_motor_gross) check("Motor Expenses", pl.B25 || 0, expected.total_motor_gross);
-  if (expected.total_legal_gross) check("Legal & Professional", pl.B28 || 0, expected.total_legal_gross);
+  if (expected.total_motor_net) check("Motor Expenses", pl.B25 || 0, expected.total_motor_net);
+  if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
 
   // Stock check
   if (expected.opening_stock !== undefined) {

@@ -73,7 +73,7 @@ describeCalc(
 
     it("MnthP&L: gross profit = turnover - cost of sales", () => {
       const pl = results["MnthP&L"];
-      expect(pl.B16).toBe(pl.B9 - (pl.B14 || 0));
+      expect(pl.B16).toBeCloseTo(pl.B9 - (pl.B14 || 0), 6);
     });
 
     it("MnthP&L: operating profit = gross - admin", () => {

@@ -205,6 +205,45 @@ CT600 <-- CorporationTax (mirrors for HMRC return)
       <-- PubP&L, TrialBalance, OpenAccounts
 ```
 
+### Financialaccounts.xlsx OpenAccounts sheet
+
+Last year's closing balance sheet, typed in by hand. Column C holds the row labels, column E the figures. Nothing on this sheet is a formula except the audit checks, so every figure has to be written.
+
+**Company details.** E2 = company name, E3 = registration number, E4 = telephone, E5/E6 = first and second director, E8 = principal activity. The registered office sits apart from these: J3, J4, J5 and J6 are the address lines with the postcode in N6. The CT603 tax reference goes in O3 (P3 and Q3 take the rest of a split reference), and Q5 takes losses brought forward. CT600 reads all of these.
+
+**Balance sheet.** Three rows take a total in column E alongside its parts, and audit-check themselves in column B:
+
+```
+Row 13  Tangible assets     E13 = net book value
+        cost         G13=Land & Buildings  H13=Plant & Machinery  I13=Fixtures & Fittings
+                     J13=Computer Technology  K13=Motor Vehicles
+        acc. dep.    M13, N13, O13, P13, Q13 (same five classes)
+        B13 = E13 - SUM(G13:K13) + SUM(M13:Q13)
+Row 18  Cash and Bank       E18 = total
+        G18=Current  H18=Savings  I18=Credit Card  J18=Cash
+        B18 = E18 - SUM(G18:J18)
+Row 26  Taxation & Social   E26 = total
+        G26=HMRC PAYE  H26=HMRC VAT  I26=HMRC CIS
+        B26 = E26 - SUM(G26:I26)
+```
+
+Cost and accumulated depreciation are separate inputs; the sheet never derives one from the other. Everything else is one figure in column E, entered positive whichever side it sits on:
+
+```
+E15 Stock at cost          E20 Trade Creditors        E28 Long Term Debtors (3-5 years)
+E16 Trade Debtors          E21 Net wages due          E30 Directors Loan Account
+                           E22 Wage deductions due    E31 Long Term Creditors (over 1 year)
+                           E23 Dividends due          E33 Called up share capital
+                           E24 Corporation Tax        E34 Retained Profit and Loss account
+                                                      E35 Capital Reserves
+```
+
+**E37 is the sheet's accuracy check**: `E13+E15+E16+E18-E20-E21-E22-E23-E24-E26+E28-E30-E31-E33-E34-E35`. It reads zero when the opening balance sheet balances.
+
+`TrialBalance` column D is the opening column, wired cell by cell to this sheet: D6-D10 to the cost columns, D11-D15 to the negated depreciation columns, D19/D20 to stock and debtors, D22-D25 to the four bank columns, D28-D35 to the creditors, D39 to the directors loan, D42-D44 to capital and reserves. D91 sums the opening column and reads zero when the openings balance. Column EJ is the final balance: opening plus every in-year movement.
+
+A balance sheet that never posts is still a balanced one, so `EJ91` stays at zero whether the openings land or not. `E37` and `D91` are the checks that can tell the difference.
+
 ### Sales.xlsx (each monthly sheet)
 
 ```

@@ -421,22 +421,40 @@ export async function extractPayrollTransactions(sourceDir) {
   return lines;
 }
 
-// OpenAccounts cell → journal entry mapping for Ltd
+// OpenAccounts cell → journal entry mapping for Ltd. Inverts the cell map
+// cellWrites uses: fixed assets as separate cost (row 13, G-K) and
+// accumulated depreciation (row 13, M-Q) per class, bank across G18-J18,
+// tax creditors across G26-I26, everything else a single figure in column E.
+// Land & buildings has no ledger account, so its columns are not exported.
 const OA_JOURNAL_MAP = [
-  { cell: "D16", accountMainID: "1200", dc: "D", comment: "Current account opening balance" },
-  { cell: "H16", accountMainID: "1210", dc: "D", comment: "Savings account opening balance" },
-  { cell: "J16", accountMainID: "1220", dc: "D", comment: "Cash account opening balance" },
-  { cell: "I16", accountMainID: "1230", dc: "D", comment: "Credit card account opening balance" },
-  { cell: "K12", accountMainID: "0040", dc: "D", comment: "Motor vehicle net book value" },
-  { cell: "J12", accountMainID: "0030", dc: "D", comment: "Computer equipment net book value" },
-  { cell: "D14", accountMainID: "1100", dc: "D", comment: "Opening stock" },
-  { cell: "D15", accountMainID: "1300", dc: "D", comment: "Trade debtors" },
-  { cell: "D19", accountMainID: "2100", dc: "C", comment: "Trade creditors" },
-  { cell: "D20", accountMainID: "2300", dc: "C", comment: "Corporation Tax liability" },
-  { cell: "D24", accountMainID: "2200", dc: "C", comment: "VAT liability" },
-  { cell: "D29", accountMainID: "3000", dc: "C", comment: "Share capital" },
-  { cell: "D30", accountMainID: "3100", dc: "C", comment: "Retained earnings" },
-  { cell: "D31", accountMainID: "2500", dc: "C", comment: "Directors loan" },
+  { cell: "G18", accountMainID: "1200", dc: "D", comment: "Current account opening balance" },
+  { cell: "H18", accountMainID: "1210", dc: "D", comment: "Savings account opening balance" },
+  { cell: "I18", accountMainID: "1230", dc: "D", comment: "Credit card account opening balance" },
+  { cell: "J18", accountMainID: "1220", dc: "D", comment: "Cash account opening balance" },
+  { cell: "H13", accountMainID: "0010", dc: "D", comment: "Plant and machinery cost" },
+  { cell: "N13", accountMainID: "0010", dc: "C", comment: "Plant and machinery accumulated depreciation" },
+  { cell: "I13", accountMainID: "0020", dc: "D", comment: "Fixtures and fittings cost" },
+  { cell: "O13", accountMainID: "0020", dc: "C", comment: "Fixtures and fittings accumulated depreciation" },
+  { cell: "J13", accountMainID: "0030", dc: "D", comment: "Computer equipment cost" },
+  { cell: "P13", accountMainID: "0030", dc: "C", comment: "Computer equipment accumulated depreciation" },
+  { cell: "K13", accountMainID: "0040", dc: "D", comment: "Motor vehicle cost" },
+  { cell: "Q13", accountMainID: "0040", dc: "C", comment: "Motor vehicle accumulated depreciation" },
+  { cell: "E15", accountMainID: "1100", dc: "D", comment: "Opening stock" },
+  { cell: "E16", accountMainID: "1300", dc: "D", comment: "Trade debtors" },
+  { cell: "E28", accountMainID: "1400", dc: "D", comment: "Long term debtors" },
+  { cell: "E20", accountMainID: "2100", dc: "C", comment: "Trade creditors" },
+  { cell: "E21", accountMainID: "2150", dc: "C", comment: "Net wages due" },
+  { cell: "E22", accountMainID: "2160", dc: "C", comment: "Wage deductions due" },
+  { cell: "E23", accountMainID: "3200", dc: "C", comment: "Dividends due" },
+  { cell: "E24", accountMainID: "2300", dc: "C", comment: "Corporation Tax liability" },
+  { cell: "G26", accountMainID: "2400", dc: "C", comment: "PAYE due" },
+  { cell: "H26", accountMainID: "2200", dc: "C", comment: "VAT liability" },
+  { cell: "I26", accountMainID: "2410", dc: "C", comment: "CIS due" },
+  { cell: "E30", accountMainID: "2500", dc: "C", comment: "Directors loan" },
+  { cell: "E31", accountMainID: "2600", dc: "C", comment: "Long term creditors" },
+  { cell: "E33", accountMainID: "3000", dc: "C", comment: "Share capital" },
+  { cell: "E34", accountMainID: "3100", dc: "C", comment: "Retained earnings" },
+  { cell: "E35", accountMainID: "3300", dc: "C", comment: "Capital reserves" },
 ];
 
 /**
@@ -461,11 +479,13 @@ export async function extractJournalEntries(sourceDir, product) {
 
   const lines = [];
   let entryNum = 1;
+  let lineNum = 1;
 
   for (const mapping of OA_JOURNAL_MAP) {
     const val = readCellValue(xml, mapping.cell, sharedStrings);
     if (val === null || typeof val !== "number" || val === 0) continue;
 
+    const flip = { D: "C", C: "D" };
     lines.push({
       sourceJournalID: "journal",
       postingDate: "2025-04-01", // Opening balance date — will be normalised on double-roundtrip
@@ -473,7 +493,12 @@ export async function extractJournalEntries(sourceDir, product) {
       amount: Math.abs(val),
       detailComment: "Opening balances",
       lineItemComment: mapping.comment,
-      debitCreditCode: mapping.dc,
+      documentType: "journal",
+      documentReference: "OB-001",
+      taxCode: "OS",
+      taxRate: 0,
+      debitCreditCode: val >= 0 ? mapping.dc : flip[mapping.dc],
+      lineNumber: lineNum++,
       entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
     });
   }

@@ -92,6 +92,130 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
+// ── OpenAccounts layout ────────────────────────────────────────────────────
+// Row 13 takes fixed assets as original cost (G:K) and accumulated
+// depreciation (M:Q), one column per asset class, with net book value in E13.
+// Row 18 splits the bank balances across G:J and totals them in E18, and
+// row 26 splits the tax and social security creditors across G:I into E26.
+// Everything else is a single figure in column E. The sheet's own audit
+// checks (B13, B18, B26) compare each total against its parts, and E37
+// checks the whole opening balance sheet balances.
+
+const OPENING_FIXED_ASSET_COLUMNS = {
+  land_buildings: { cost: "G", depreciation: "M" },
+  plant_machinery: { cost: "H", depreciation: "N" },
+  fixtures_fittings: { cost: "I", depreciation: "O" },
+  computer_technology: { cost: "J", depreciation: "P" },
+  motor_vehicles: { cost: "K", depreciation: "Q" },
+};
+
+const OPENING_BANK_COLUMNS = {
+  current_account: "G",
+  savings_account: "H",
+  credit_card: "I",
+  cash: "J",
+};
+
+const OPENING_TAX_COLUMNS = {
+  paye_due: "G",
+  vat_due: "H",
+  cis_due: "I",
+};
+
+const OPENING_BALANCE_CELLS = {
+  stock: "E15",
+  trade_debtors: "E16",
+  trade_creditors: "E20",
+  net_wages_due: "E21",
+  wage_deductions_due: "E22",
+  dividends_due: "E23",
+  corporation_tax: "E24",
+  long_term_debtors: "E28",
+  directors_loan: "E30",
+  long_term_creditors: "E31",
+  share_capital: "E33",
+  retained_earnings: "E34",
+  capital_reserves: "E35",
+};
+
+const FIXED_ASSET_BANDS = ["fixed_asset_cost", "fixed_asset_depreciation"];
+
+// spreadsheet-runner writes a cell by rewriting its XML in place, and when
+// the target is an empty self-closing cell that rewrite also swallows every
+// cell after it up to the next one that carries a value. On OpenAccounts the
+// whole input grid is empty self-closing cells, so a write can drop the ones
+// to its right. Ordering the writes left to right, top to bottom means every
+// dropped cell is re-created by a later write.
+function inSheetOrder(cells) {
+  const position = (ref) => {
+    const [, column, row] = /^([A-Z]+)(\d+)$/.exec(ref);
+    let columnNumber = 0;
+    for (const letter of column) columnNumber = columnNumber * 26 + letter.charCodeAt(0) - 64;
+    return [Number(row), columnNumber];
+  };
+  return Object.fromEntries(
+    Object.entries(cells).sort(([a], [b]) => {
+      const [rowA, columnA] = position(a);
+      const [rowB, columnB] = position(b);
+      return rowA - rowB || columnA - columnB;
+    }),
+  );
+}
+
+function writeOpeningBalance(sheet, openingBalance) {
+  for (const key of Object.keys(openingBalance)) {
+    if (FIXED_ASSET_BANDS.includes(key)) continue;
+    if (!OPENING_BALANCE_CELLS[key] && !OPENING_BANK_COLUMNS[key] && !OPENING_TAX_COLUMNS[key]) {
+      throw new Error(`Opening balance "${key}" has no row on the opening balance sheet`);
+    }
+  }
+
+  for (const [key, cell] of Object.entries(OPENING_BALANCE_CELLS)) {
+    if (openingBalance[key] !== undefined) sheet[cell] = openingBalance[key];
+  }
+
+  const cost = openingBalance.fixed_asset_cost || {};
+  const depreciation = openingBalance.fixed_asset_depreciation || {};
+  for (const assetClass of [...Object.keys(cost), ...Object.keys(depreciation)]) {
+    if (!OPENING_FIXED_ASSET_COLUMNS[assetClass]) {
+      throw new Error(`Opening fixed assets name asset class "${assetClass}", which the opening balance sheet has no column for`);
+    }
+  }
+  let totalCost = 0;
+  let totalDepreciation = 0;
+  for (const [assetClass, columns] of Object.entries(OPENING_FIXED_ASSET_COLUMNS)) {
+    if (cost[assetClass] !== undefined) {
+      sheet[`${columns.cost}13`] = cost[assetClass];
+      totalCost += cost[assetClass];
+    }
+    if (depreciation[assetClass] !== undefined) {
+      sheet[`${columns.depreciation}13`] = depreciation[assetClass];
+      totalDepreciation += depreciation[assetClass];
+    }
+  }
+  if (totalCost !== 0 || totalDepreciation !== 0) sheet.E13 = totalCost - totalDepreciation;
+
+  let bankTotal = 0;
+  let bankPosted = false;
+  for (const [key, column] of Object.entries(OPENING_BANK_COLUMNS)) {
+    if (openingBalance[key] === undefined) continue;
+    sheet[`${column}18`] = openingBalance[key];
+    bankTotal += openingBalance[key];
+    bankPosted = true;
+  }
+  if (bankPosted) sheet.E18 = bankTotal;
+
+  let taxTotal = 0;
+  let taxPosted = false;
+  for (const [key, column] of Object.entries(OPENING_TAX_COLUMNS)) {
+    if (openingBalance[key] === undefined) continue;
+    sheet[`${column}26`] = openingBalance[key];
+    taxTotal += openingBalance[key];
+    taxPosted = true;
+  }
+  if (taxPosted) sheet.E26 = taxTotal;
+}
+
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -150,7 +274,9 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     processJournal(scenario.purchases, purchasesWrites, "supplier", "g");
   }
 
-  // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet)
+  // Business Details (in Financialaccounts.xlsx hub, OpenAccounts sheet).
+  // Column E holds the company's own details, the registered office address
+  // sits in J3:J6 with the postcode in N6, and the CT603 tax reference in O3.
   const hubWrites = {};
   if (scenario.business || scenario.metadata) {
     if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
@@ -158,36 +284,24 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     const biz = scenario.business || {};
     bd.E2 = biz.name || scenario.metadata?.name || "";
     if (biz.company_number) bd.E3 = biz.company_number;
-    if (biz.address) bd.E4 = `${biz.address}, ${biz.town || ""} ${biz.postcode || ""}`.trim();
-    if (biz.utr) bd.E6 = biz.utr;
+    if (biz.phone) bd.E4 = biz.phone;
+    if (biz.description) bd.E8 = biz.description;
+    if (biz.address) bd.J3 = biz.address;
+    if (biz.town) bd.J4 = biz.town;
+    if (biz.postcode) bd.N6 = biz.postcode;
+    if (biz.utr) bd.O3 = biz.utr;
+
+    const directors = (scenario.employees || []).filter((e) => e.isDirector);
+    if (directors[0]?.name) bd.E5 = directors[0].name;
+    if (directors[1]?.name) bd.E6 = directors[1].name;
   }
 
   // Opening balance sheet (OpenAccounts)
   if (scenario.opening_balance) {
     if (!hubWrites.OpenAccounts) hubWrites.OpenAccounts = {};
-    const oa = hubWrites.OpenAccounts;
-    const ob = scenario.opening_balance;
-    if (ob.fixed_assets) oa.D12 = ob.fixed_assets;
-    if (ob.plant_machinery) oa.H12 = ob.plant_machinery;
-    if (ob.fixtures) oa.I12 = ob.fixtures;
-    if (ob.computer_equipment) oa.J12 = ob.computer_equipment;
-    if (ob.motor_vehicles) oa.K12 = ob.motor_vehicles;
-    if (ob.stock) oa.D14 = ob.stock;
-    if (ob.trade_debtors) oa.D15 = ob.trade_debtors;
-    if (ob.current_account) oa.D16 = ob.current_account;
-    if (ob.savings_account) oa.H16 = ob.savings_account;
-    if (ob.credit_card) oa.I16 = ob.credit_card;
-    if (ob.cash) oa.J16 = ob.cash;
-    if (ob.trade_creditors) oa.D19 = ob.trade_creditors;
-    if (ob.corporation_tax) oa.D20 = ob.corporation_tax;
-    if (ob.wages_due) oa.D21 = ob.wages_due;
-    if (ob.paye_ni_due) oa.D22 = ob.paye_ni_due;
-    if (ob.dividends_due) oa.D23 = ob.dividends_due;
-    if (ob.vat_liability) oa.D24 = ob.vat_liability;
-    if (ob.share_capital) oa.D29 = ob.share_capital;
-    if (ob.retained_earnings) oa.D30 = ob.retained_earnings;
-    if (ob.directors_loan) oa.D31 = ob.directors_loan;
+    writeOpeningBalance(hubWrites.OpenAccounts, scenario.opening_balance);
   }
+  if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
   // Opening/closing debtors (Sales.xlsx)
   if (scenario.opening_debtors) {
@@ -393,10 +507,27 @@ export const TAX_SHEET = "CorporationTax";
 // prettier-ignore
 export const CELL_MAP = [
   // ── Business Details (OpenAccounts sheet) ──
-  ["OpenAccounts", "E2",  "Company Name",          "entityInformation.organizationIdentifier",  "Business Details", 0],
-  ["OpenAccounts", "E3",  "Company Number",        "diya-gl:companyNumber",                     "Business Details", 0],
-  ["OpenAccounts", "E4",  "Address",               "gl-bus:organizationAddress",                "Business Details", 0],
-  ["OpenAccounts", "E6",  "UTR",                   "gl-taf:taxRegistrationNumber",              "Business Details", 0],
+  ["OpenAccounts", "E2",  "Company Name (including Limited)",  "entityInformation.organizationIdentifier",  "Business Details", 0],
+  ["OpenAccounts", "E3",  "Company registration number",       "diya-gl:companyNumber",                     "Business Details", 0],
+  ["OpenAccounts", "E4",  "Telephone number",                  "gl-bus:organizationTelephone",              "Business Details", 0],
+  ["OpenAccounts", "E5",  "First Director's Name",             "diya-gl:directorName",                      "Business Details", 0],
+  ["OpenAccounts", "E8",  "Principal activity",                "gl-bus:organizationDescription",            "Business Details", 0],
+  ["OpenAccounts", "J3",  "Registered Office Address",         "gl-bus:organizationAddress",                "Business Details", 0],
+  ["OpenAccounts", "J4",  "Registered Office Town",            "gl-bus:organizationAddress",                "Business Details", 0],
+  ["OpenAccounts", "N6",  "Postcode",                          "gl-bus:organizationAddress",                "Business Details", 0],
+  ["OpenAccounts", "O3",  "Tax Reference per CT603 Notice",    "gl-taf:taxRegistrationNumber",              "Business Details", 0],
+  // ── Opening Balance Sheet (OpenAccounts sheet) ──
+  ["OpenAccounts", "E13", "Tangible assets (net book value)",  "gl-cor:amount (opening.fixedAssets)",  "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E15", "Stock at cost",                     "accounts.assets.1100 (opening)",       "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E16", "Trade Debtors",                     "accounts.assets.1300 (opening)",       "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E18", "Cash and Bank Balances",            "gl-cor:amount (opening.bank)",         "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E20", "Trade Creditors",                   "accounts.liabilities.2100 (opening)",  "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E24", "Corporation Tax",                   "accounts.liabilities.2300 (opening)",  "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E26", "Taxation and Social Security",      "gl-cor:amount (opening.taxAndSocial)", "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E30", "Directors Loan Account",            "accounts.liabilities.2500 (opening)",  "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E33", "Called up share capital",           "accounts.capital.3000 (opening)",      "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E34", "Retained Profit and Loss account",  "accounts.capital.3100 (opening)",      "Opening Balance Sheet", 1],
+  ["OpenAccounts", "E37", "**Accuracy Check**",                "gl-cor:amount (openingBalanceCheck)",  "Opening Balance Sheet", 0],
   // ── Management P&L (MnthP&L) ──
   ["MnthP&L", "B4",  "Product A — Consultancy",   "accounts.sales.4000",            "Profit & Loss Account", 1],
   ["MnthP&L", "B5",  "Product B — Software",      "accounts.sales.4001",            "Profit & Loss Account", 1],
@@ -463,7 +594,33 @@ export const CELL_MAP = [
   ["Stock", "B5",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
   ["Stock", "B8",  "Closing Stock",              "accounts.assets.1100 (closing)",      "Stock", 0],
   // ── Trial Balance ──
-  ["TrialBalance", "EJ91", "Audit Accuracy Check", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
+  // Column D is the opening column, fed cell by cell from OpenAccounts.
+  // Column EJ is the final balance: opening plus every in-year movement.
+  ["TrialBalance", "D6",  "Opening: Fixed Asset Land & Property",      "accounts.assets (opening cost)",     "Trial Balance", 1],
+  ["TrialBalance", "D7",  "Opening: Fixed Asset Plant & Machinery",    "accounts.assets.0010 (opening cost)","Trial Balance", 1],
+  ["TrialBalance", "D8",  "Opening: Fixed Asset Fixtures & Fittings",  "accounts.assets.0020 (opening cost)","Trial Balance", 1],
+  ["TrialBalance", "D9",  "Opening: Fixed Asset Computers",            "accounts.assets.0030 (opening cost)","Trial Balance", 1],
+  ["TrialBalance", "D10", "Opening: Fixed Asset Motor Vehicles",       "accounts.assets.0040 (opening cost)","Trial Balance", 1],
+  ["TrialBalance", "D11", "Opening: Acc Depreciation Land & Property", "accounts.assets (opening dep)",      "Trial Balance", 1],
+  ["TrialBalance", "D12", "Opening: Acc Depreciation Plant & Machinery","accounts.assets.0010 (opening dep)","Trial Balance", 1],
+  ["TrialBalance", "D13", "Opening: Acc Depreciation Fixtures",        "accounts.assets.0020 (opening dep)", "Trial Balance", 1],
+  ["TrialBalance", "D14", "Opening: Acc Depreciation Computers",       "accounts.assets.0030 (opening dep)", "Trial Balance", 1],
+  ["TrialBalance", "D15", "Opening: Acc Depreciation Motor Vehicles",  "accounts.assets.0040 (opening dep)", "Trial Balance", 1],
+  ["TrialBalance", "D19", "Opening: Stock",                            "accounts.assets.1100 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D20", "Opening: Trade Debtors",                    "accounts.assets.1300 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D22", "Opening: Bank Current Account",             "accounts.assets.1200 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D23", "Opening: Bank Savings Account",             "accounts.assets.1210 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D24", "Opening: Credit Card Account",              "accounts.assets.1230 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D25", "Opening: Cash Account",                     "accounts.assets.1220 (opening)",     "Trial Balance", 1],
+  ["TrialBalance", "D28", "Opening: Trade Creditors",                  "accounts.liabilities.2100 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D33", "Opening: Creditor HMRC Vat",                "accounts.liabilities.2200 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D35", "Opening: Creditor HMRC Corporation Tax",    "accounts.liabilities.2300 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D39", "Opening: Directors Loan Account",           "accounts.liabilities.2500 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
+  ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
+  ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
+  ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
 export function standardReads() {
@@ -545,6 +702,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // else in this file reads that account.
   check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
+  // Opening balances. A balance sheet that never posts is still balanced, so
+  // EJ91 alone cannot tell an unposted opening from a posted one. These
+  // checks tie each opening figure to the trial balance row it feeds.
+  if (expected.opening_balance) {
+    const ob = expected.opening_balance;
+    const oa = results.OpenAccounts;
+    const tb = results.TrialBalance;
+    const cost = ob.fixed_asset_cost || {};
+    const depreciation = ob.fixed_asset_depreciation || {};
+    const sum = (o) => Object.values(o).reduce((s, v) => s + v, 0);
+
+    check("Opening balance sheet: accuracy check (E37)", oa.E37 || 0, 0);
+    check("Trial Balance: opening balances audit check (D91)", tb.D91 || 0, 0);
+
+    check("Trial Balance opening: fixed asset cost", (tb.D6 || 0) + (tb.D7 || 0) + (tb.D8 || 0) + (tb.D9 || 0) + (tb.D10 || 0), sum(cost));
+    check(
+      "Trial Balance opening: accumulated depreciation",
+      (tb.D11 || 0) + (tb.D12 || 0) + (tb.D13 || 0) + (tb.D14 || 0) + (tb.D15 || 0),
+      -sum(depreciation),
+    );
+    check("Trial Balance opening: stock", tb.D19 || 0, ob.stock || 0);
+    check("Trial Balance opening: trade debtors", tb.D20 || 0, ob.trade_debtors || 0);
+    check("Trial Balance opening: bank current account", tb.D22 || 0, ob.current_account || 0);
+    check("Trial Balance opening: bank savings account", tb.D23 || 0, ob.savings_account || 0);
+    check("Trial Balance opening: credit card account", tb.D24 || 0, ob.credit_card || 0);
+    check("Trial Balance opening: cash account", tb.D25 || 0, ob.cash || 0);
+    check("Trial Balance opening: trade creditors", tb.D28 || 0, -(ob.trade_creditors || 0));
+    check("Trial Balance opening: HMRC VAT creditor", tb.D33 || 0, -(ob.vat_due || 0));
+    check("Trial Balance opening: HMRC corporation tax creditor", tb.D35 || 0, -(ob.corporation_tax || 0));
+    check("Trial Balance opening: directors loan", tb.D39 || 0, -(ob.directors_loan || 0));
+    check("Trial Balance opening: share capital", tb.D42 || 0, -(ob.share_capital || 0));
+    check("Trial Balance opening: revenue reserve", tb.D43 || 0, -(ob.retained_earnings || 0));
+
+    // The directors loan is the one opening balance the year also moves, so
+    // its final balance proves the opening survived into the closing column
+    // rather than being overwritten by the in-year postings.
+    if (expected.bank) {
+      let loanMovement = 0;
+      for (const transactions of Object.values(expected.bank)) {
+        for (const tx of transactions) {
+          if (tx.code !== "DL") continue;
+          loanMovement += tx.direction === "out" ? tx.amount : -tx.amount;
+        }
+      }
+      check("Trial Balance: directors loan final = opening + movement", tb.EJ39 || 0, (tb.D39 || 0) + loanMovement);
+    }
+  }
+
   // P&L internal consistency (6a)
   check("P&L: Gross = Turnover - CoS", pl.B16, pl.B9 - (pl.B14 || 0));
   check("P&L: Operating = Gross - Admin", pl.B43, pl.B16 - (pl.B41 || 0));
@@ -579,8 +784,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: Admin lines sum = Total", pl.B41, ltdAdminSum);
 
   // Expense line totals (6f) — Ltd P&L keeps purchases at gross (same as SE)
-  if (expected.total_premises_gross) check("Premises", pl.B21 || 0, expected.total_premises_gross);
-  if (expected.total_legal_gross) check("Legal & Professional", pl.B33 || 0, expected.total_legal_gross);
+  if (expected.total_premises_net) check("Premises", pl.B21 || 0, expected.total_premises_net);
+  if (expected.total_legal_net) check("Legal & Professional", pl.B33 || 0, expected.total_legal_net);
 
   // Stock checks
   if (expected.opening_stock !== undefined) {

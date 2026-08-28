@@ -57,6 +57,14 @@ export function aggregateByAccountAndMonth(lines) {
 }
 
 /**
+ * Sum the values of an object, treating a missing object as zero.
+ */
+function sumValues(obj) {
+  if (!obj) return 0;
+  return Object.values(obj).reduce((total, value) => total + value, 0);
+}
+
+/**
  * Sum all amounts for a given accountMainID across all months.
  */
 function annualTotal(aggregated, accountMainID) {
@@ -669,13 +677,42 @@ function calculateLtdResults(book, lines, taxData, scenario) {
 
   // Opening balance sheet values
   const ob = scenario.opening_balance || {};
+  const openingCost = sumValues(ob.fixed_asset_cost);
+  const openingDepreciation = sumValues(ob.fixed_asset_depreciation);
+  const openingFixedAssets = openingCost - openingDepreciation;
+  const openingBank = (ob.current_account || 0) + (ob.savings_account || 0) + (ob.credit_card || 0) + (ob.cash || 0);
+  const openingTaxAndSocial = (ob.paye_due || 0) + (ob.vat_due || 0) + (ob.cis_due || 0);
+  const directors = (scenario.employees || []).filter((e) => e.isDirector);
+
+  // Directors loan movements reach the ledger as bank lines coded DL. A
+  // payment out of the bank repays the loan, so it debits the account and
+  // moves its (credit) balance towards zero.
+  const directorsLoanMovement = lines
+    .filter((l) => l.sourceJournalID === "bank" && l["diya-gl:bankCode"] === "DL")
+    .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
 
   return {
     "OpenAccounts": {
       E2: biz.name || entity.organizationIdentifier || "",
       E3: biz.company_number || "",
-      E4: biz.address ? `${biz.address}, ${biz.town || ""} ${biz.postcode || ""}`.trim() : "",
-      E6: biz.utr || "",
+      E4: biz.phone || "",
+      E5: directors[0]?.name || "",
+      E8: biz.description || entity.organizationDescription || "",
+      J3: biz.address || "",
+      J4: biz.town || "",
+      N6: biz.postcode || "",
+      O3: biz.utr || "",
+      E13: openingFixedAssets,
+      E15: ob.stock || 0,
+      E16: ob.trade_debtors || 0,
+      E18: openingBank,
+      E20: ob.trade_creditors || 0,
+      E24: ob.corporation_tax || 0,
+      E26: openingTaxAndSocial,
+      E30: ob.directors_loan || 0,
+      E33: ob.share_capital || 0,
+      E34: ob.retained_earnings || 0,
+      E37: 0, // Opening balance sheet accuracy check
     },
     "MnthP&L": {
       B4: productA,
@@ -733,7 +770,7 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       D18: grossProfit, // Gross Profit
     },
     "PubBalSht": {
-      D6: (ob.motor_vehicles || 0) + (ob.computer_equipment || 0) + (ob.fixed_assets || 0) + (ob.plant_machinery || 0) + (ob.fixtures || 0),
+      D6: openingFixedAssets,
       D9: scenario.stock?.closing ?? 0,
       D13: 0, // Current assets — needs full balance sheet
       D15: 0, // Creditors < 1 year
@@ -747,6 +784,30 @@ function calculateLtdResults(book, lines, taxData, scenario) {
       B8: scenario.stock?.closing ?? 0,
     },
     "TrialBalance": {
+      D6: ob.fixed_asset_cost?.land_buildings || 0,
+      D7: ob.fixed_asset_cost?.plant_machinery || 0,
+      D8: ob.fixed_asset_cost?.fixtures_fittings || 0,
+      D9: ob.fixed_asset_cost?.computer_technology || 0,
+      D10: ob.fixed_asset_cost?.motor_vehicles || 0,
+      D11: -(ob.fixed_asset_depreciation?.land_buildings || 0),
+      D12: -(ob.fixed_asset_depreciation?.plant_machinery || 0),
+      D13: -(ob.fixed_asset_depreciation?.fixtures_fittings || 0),
+      D14: -(ob.fixed_asset_depreciation?.computer_technology || 0),
+      D15: -(ob.fixed_asset_depreciation?.motor_vehicles || 0),
+      D19: ob.stock || 0,
+      D20: ob.trade_debtors || 0,
+      D22: ob.current_account || 0,
+      D23: ob.savings_account || 0,
+      D24: ob.credit_card || 0,
+      D25: ob.cash || 0,
+      D28: -(ob.trade_creditors || 0),
+      D33: -(ob.vat_due || 0),
+      D35: -(ob.corporation_tax || 0),
+      D39: -(ob.directors_loan || 0),
+      D42: -(ob.share_capital || 0),
+      D43: -(ob.retained_earnings || 0),
+      D91: 0, // Opening balances audit check — should be ~0
+      EJ39: -(ob.directors_loan || 0) + directorsLoanMovement,
       EJ91: 0, // Audit accuracy check — should be ~0
     },
   };
