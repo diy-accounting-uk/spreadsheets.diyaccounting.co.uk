@@ -351,12 +351,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
   }
 
-  // Stock checks (6e)
-  if (expected.opening_stock !== undefined && results.PurchasesStock) {
-    check("Opening Stock", results.PurchasesStock.D5 || 0, expected.opening_stock);
+  // Stock. A fixture states it either as its own table or among the totals it
+  // declares, so both spellings are read here -- a fixture that says it one
+  // way and a check that only reads the other leaves the stock untested.
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (openingStock !== undefined && results.PurchasesStock) {
+    check("Opening Stock", results.PurchasesStock.D5 || 0, openingStock);
   }
-  if (expected.closing_stock !== undefined && results.PurchasesStock) {
-    check("Closing Stock", results.PurchasesStock.D30 || 0, expected.closing_stock);
+  if (closingStock !== undefined && results.PurchasesStock) {
+    check("Closing Stock", results.PurchasesStock.D30 || 0, closingStock);
   }
   // Cost of sales is the stock bought in the year plus the fall in stock
   // across it. Both parts come from the scenario, so the identity is exact.
@@ -364,8 +368,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // with a tolerance as wide as cost of sales itself, which nothing could
   // fail and which put a difference the size of the year's stock purchases
   // on the face of the report.
-  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined && expected.purchases) {
-    const stockMovement = expected.opening_stock - expected.closing_stock;
+  if (openingStock !== undefined && closingStock !== undefined && expected.purchases) {
+    const stockMovement = openingStock - closingStock;
     const stockPurchases = Object.values(expected.purchases)
       .flat()
       .filter((tx) => tx.code === "s")
