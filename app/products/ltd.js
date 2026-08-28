@@ -1553,7 +1553,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.sales)) {
       for (const tx of transactions) if (tx.code === "fs") disposalGross += tx.amount;
     }
-    check("Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT", num(faReconciliation.K11), netOfVat(disposalGross, rate));
+    check(
+      "Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT",
+      num(faReconciliation.K11),
+      netOfVat(disposalGross, rate),
+    );
   }
 
   // The P&L depreciation and disposal lines carry the Schedule's annual

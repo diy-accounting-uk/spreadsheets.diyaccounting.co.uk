@@ -461,11 +461,7 @@ describeCalc(
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       // The same cell is the month's own interface tie and part of the
       // quarter sum, so both move with it.
-      expect(failureNames(corrupted)).toEqual([
-        "VAT: Q1-Q4 box 1 = Sales VAT",
-        name,
-        "Vatinterface F9: Jul output VAT = Sales.xlsx Jul",
-      ]);
+      expect(failureNames(corrupted)).toEqual(["VAT: Q1-Q4 box 1 = Sales VAT", name, "Vatinterface F9: Jul output VAT = Sales.xlsx Jul"]);
     });
 
     it("fails the year's input VAT against the purchase journal when a Purchases month's VAT total is corrupted via JSZip", async () => {

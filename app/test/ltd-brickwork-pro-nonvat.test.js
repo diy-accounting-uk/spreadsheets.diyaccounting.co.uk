@@ -43,7 +43,10 @@ async function readCorruptedCell(savedDir, fileName, sheetName, cellRef, newValu
   const xml = await zip.file(sheetPath).async("string");
   const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
   if (!pattern.test(xml)) throw new Error(`readCorruptedCell: cell ${cellRef} carries no cached value`);
-  zip.file(sheetPath, xml.replace(pattern, (_m, pre, _old, post) => `${pre}${newValue}${post}`));
+  zip.file(
+    sheetPath,
+    xml.replace(pattern, (_m, pre, _old, post) => `${pre}${newValue}${post}`),
+  );
 
   const reloaded = await JSZip.loadAsync(await zip.generateAsync({ type: "nodebuffer" }));
   const sharedStrings = await loadSharedStrings(reloaded);
