@@ -212,7 +212,7 @@ const advToml = formatScenarioToml(
   advGrouped,
   {
     total_sales: advTotalSales,
-    total_motor_gross: Math.round(advByCode.v || 0),
+    total_motor_net: Math.round((advByCode.v || 0) / 1.2),
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
