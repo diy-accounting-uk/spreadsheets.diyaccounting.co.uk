@@ -685,16 +685,24 @@ Status: RECONCILES (with warnings)
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 147519.897839506 | 147519.897839506 | 0 | PASS |
-| CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
+| CT600: corporation tax = first tax row tax | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: second financial year tax box is blank | 0 | 0 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: tax payable against the working sheet's charge for the year | 28028.7805895061 | 13995.2187622021 | -14033.561827304 | **WARNING** |
 | CT600: self assessment of tax payable | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
 | CT600: tax outstanding | 13930.7125893626 | 13930.7125893626 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
-| Corporation Tax | 28029 | 28028.7805895061 | -0.2194104939007957 | PASS |
+| CT: the two tax rows together span the days the charge is spread over | 731 | 731 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 73659.0461168532 | 73659.0461168531 | -1.0186340659856796e-10 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 73860.8517226528 | 73860.8517226527 | -1.0186340659856796e-10 | PASS |
+| CT: first tax row tax = its profit at its rate | 13995.21876220209 | 13995.2187622021 | +9.094947017729282e-12 | PASS |
+| CT: second tax row tax = its profit at its rate | 14033.561827304015 | 14033.561827304 | -1.4551915228366852e-11 | PASS |
+| CT: charge for the year = the two tax rows | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
+| CT: charge for the year = chargeable profit at the Admin corporation tax rate | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
-| CT: Marginal relief expected (profit > £50K) | 36880 | 28028.7805895061 | -8851.2194104939 | **WARNING** |
+| CT: charge for the year against the statutory computation with marginal relief | 35342.772927469094 | 28028.7805895061 | -7313.9923379629945 | **WARNING** |
 
 ## Business Details
 
@@ -1300,7 +1308,13 @@ Status: RECONCILES (with warnings)
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
+| A33 |  | 365 |  |
+| A34 |  | 366 |  |
+| A35 |  | 731 |  |
+| F33 |  | 73659.0461168531 |  |
+| F34 |  | 73860.8517226527 |  |
 | G33 |  | 19 |  |
+| G34 |  | 19 |  |
 | I33 |  | 13995.2187622021 |  |
 | I34 |  | 14033.561827304 |  |
 | K37 |  | 64.5061728395062 |  |

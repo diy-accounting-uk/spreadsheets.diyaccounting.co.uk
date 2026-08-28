@@ -677,6 +677,7 @@ Status: RECONCILES (with warnings)
 | CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
 | CT: profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
@@ -684,17 +685,24 @@ Status: RECONCILES (with warnings)
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
 | CT600: profits before deductions = trading profits + interest | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 147519.897839506 | 147519.897839506 | 0 | PASS |
-| CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
+| CT600: corporation tax = first tax row tax | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: second financial year tax box is blank | 0 | 0 | 0 | PASS |
 | CT600: tax payable = tax chargeable | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
+| CT600: tax payable against the working sheet's charge for the year | 28028.7805895061 | 13995.2187622021 | -14033.561827304 | **WARNING** |
 | CT600: self assessment of tax payable | 13995.2187622021 | 13995.2187622021 | 0 | PASS |
 | CT600: tax outstanding | 13930.7125893626 | 13930.7125893626 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
-| Corporation Tax | 28029 | 28028.7805895061 | -0.2194104939007957 | PASS |
-| CT: Chargeable >= Operating | 176940.391666666 | 147519.897839506 | -29420.493827159982 | PASS |
+| CT: the two tax rows together span the days the charge is spread over | 731 | 731 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 73659.0461168532 | 73659.0461168531 | -1.0186340659856796e-10 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 73860.8517226528 | 73860.8517226527 | -1.0186340659856796e-10 | PASS |
+| CT: first tax row tax = its profit at its rate | 13995.21876220209 | 13995.2187622021 | +9.094947017729282e-12 | PASS |
+| CT: second tax row tax = its profit at its rate | 14033.561827304015 | 14033.561827304 | -1.4551915228366852e-11 | PASS |
+| CT: charge for the year = the two tax rows | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
+| CT: charge for the year = chargeable profit at the Admin corporation tax rate | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
-| CT: Marginal relief expected (profit > £50K) | 36880 | 28028.7805895061 | -8851.2194104939 | **WARNING** |
+| CT: charge for the year against the statutory computation with marginal relief | 35342.772927469094 | 28028.7805895061 | -7313.9923379629945 | **WARNING** |
 
 ## Business Details
 
@@ -871,6 +879,30 @@ Status: RECONCILES (with warnings)
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
+| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 3,423.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 17,256.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 3,073.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 19,780 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 9,895.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 9,884.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 16,860 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 2,105.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 14,754.29 |
 
 ---
 
@@ -1276,7 +1308,13 @@ Status: RECONCILES (with warnings)
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
+| A33 |  | 365 |  |
+| A34 |  | 366 |  |
+| A35 |  | 731 |  |
+| F33 |  | 73659.0461168531 |  |
+| F34 |  | 73860.8517226527 |  |
 | G33 |  | 19 |  |
+| G34 |  | 19 |  |
 | I33 |  | 13995.2187622021 |  |
 | I34 |  | 14033.561827304 |  |
 | K37 |  | 64.5061728395062 |  |
