@@ -469,6 +469,46 @@ Status: RECONCILES
 | VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 2265 | 2265 | 0 | PASS |
 | VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 10050 | 10050 | 0 | PASS |
 | VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 46568 | 46568 | 0 | PASS |
+| Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
+| Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
+| Admin: NI Class 2 Weekly Rate = tax data | 0 | 0 | 0 | PASS |
+| Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
+| Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
+| Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
+| Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
+| Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
+| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
+| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
+| Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
+| Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
+| Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
+| Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 31,345 |
+| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 1,200 |
+| Less grants, taxed as other business income below | Profit & Loss Account!B11 | 0 |
+| Less net loss for the year (box 21) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 22) | SE Short!D80 | -12,000 |
+| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
+| Less other capital allowances (box 24) | SE Short!O80 | 0 |
+| Add balancing charges (box 25) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
+| Add grants as other business income (box 29) | SE Short!O99 | 0 |
+| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| **Tax profit the bridge computes** | | **20,545** |
+| Tax profit the sheet carries | Income Tax!E5 | 20,545 |
+| **Residue** | | **0** |
 
 ## Business Details
 
@@ -543,10 +583,15 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 2,250 |
 | **Total expenses** | 79,955 |
 | **Net profit/loss** | 32,545 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 20,545 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 0 |
 | VAT threshold note | — |
 | **Net profit for tax calc** | 20,545 |
 
@@ -583,6 +628,31 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses | 5,625 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 6,125 |
 | **Annual Expenses** | 23,000 |
+
+## Admin (Generator Injected)
+
+| | Amount |
+|---|------:|
+| Personal Allowance | 12,570 |
+| Basic Rate | 0.2 |
+| Higher Rate | 0.4 |
+| Basic Band End | 37,700 |
+| Higher Band Start | 37,701 |
+| NI Class 2 Weekly Rate | 0 |
+| NI Class 4 Lower Rate | 0.06 |
+| NI Class 4 Lower Limit | 12,570 |
+| NI Class 4 Upper Rate | 0.02 |
+| NI Class 4 Upper Limit | 50,270 |
+| Annual Investment Allowance Rate | 1 |
+| Writing Down Allowance Rate | 0.14 |
+| Motor Vehicle Cost Threshold | 12,000 |
+| Motor Vehicle Restriction | 3,000 |
+| Mileage Higher Rate Limit | 10,000 |
+| Mileage Higher Rate Pence | 0.45 |
+| Mileage Lower Rate Start | 10,001 |
+| Mileage Lower Rate Pence | 0.25 |
+| VAT Registration Threshold | 90,000 |
+| VAT Standard Rate | 0.2 |
 
 ## VAT Returns
 
@@ -899,10 +969,15 @@ Status: RECONCILES
 | O60 | Other business expenses | 2250 | gl-cor:amount (sa103s.otherExpenses) |
 | O64 | **Total expenses** | 79955 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 32545 | gl-cor:amount (sa103s.netProfit) |
+| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
+| O80 | Other capital allowances (box 24) | 0 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 20545 | gl-cor:amount (sa103s.taxableProfit) |
+| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Grants as other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 20545 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Wagesinterface
@@ -972,6 +1047,31 @@ Status: RECONCILES
 | E7 | Q3 Expenses | 5625 | gl-cor:amount (vitalTax.q3Exp) |
 | F7 | Q4 Expenses | 6125 | gl-cor:amount (vitalTax.q4Exp) |
 | G7 | **Annual Expenses** | 23000 | gl-cor:amount (vitalTax.annualExp) |
+
+### Admin
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N4 | Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
+| N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
+| N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
+| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
+| L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
+| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.wdaRate |
+| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
+| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
+| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
+| F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 
 ### StockControl
 

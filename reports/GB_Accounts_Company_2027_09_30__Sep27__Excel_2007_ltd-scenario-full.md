@@ -708,6 +708,22 @@ Status: RECONCILES (with warnings)
 | CT: charge for the year = chargeable profit at the Admin corporation tax rate | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
 | CT: charge for the year against the statutory computation with marginal relief | 35342.772927469094 | 28028.7805895061 | -7313.9923379629945 | **WARNING** |
+| Accounting profit to tax profit bridge closes to zero | 0 | -5.238689482212067e-10 | -5.238689482212067e-10 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the management profit and loss account | MnthP&L!B45 | 177,215.39 |
+| Less bank interest received, net of tax deducted at source | MnthP&L!B44 | -275 |
+| Add back goodwill written off | CorporationTax!I7 | 2,500 |
+| Add back depreciation charged in the year | CorporationTax!I8 | 11,740 |
+| Less capital allowances | CorporationTax!K20 | -44,000 |
+| Add gross bank interest received | CorporationTax!K24 | 339.51 |
+| Less losses brought forward | CorporationTax!K26 | 0 |
+| **Tax profit the bridge computes** | | **147,519.9** |
+| Tax profit the sheet carries | CorporationTax!K28 | 147,519.9 |
+| **Residue** | | **0** |
 
 ## Business Details
 

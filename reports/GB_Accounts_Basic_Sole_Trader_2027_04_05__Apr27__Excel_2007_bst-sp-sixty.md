@@ -53,6 +53,25 @@ Status: RECONCILES
 | SA103S: Net profit close to P&L Net | 31812 | 31812 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 31612 | 31612 | 0 | PASS |
 | P&L: Capital Allowances = SE Short chain | 200 | 200 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 31,812 |
+| Add other business income (box 9) | SE Short!O38 | 0 |
+| Less net loss for the year (box 21) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 22) | SE Short!D80 | -200 |
+| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
+| Less other capital allowances (box 24) | SE Short!O80 | 0 |
+| Add balancing charges (box 25) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
+| Add other business income (box 29) | SE Short!O99 | 0 |
+| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| **Tax profit the bridge computes** | | **31,612** |
+| Tax profit the sheet carries | Income Tax!E5 | 31,612 |
+| **Residue** | | **0** |
 
 ## Business Details
 
@@ -140,13 +159,17 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 580 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9) | — |
 | **Net profit/loss** | 31,812 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 31,612 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29) | 0 |
 | VAT threshold note | — |
 | **Net profit for tax calc** | 31,612 |
 
@@ -302,12 +325,15 @@ Status: RECONCILES
 | D60 | Premises costs | 0 | gl-cor:amount (sa103s.premises) |
 | D64 | Other expenses | 580 | gl-cor:amount (sa103s.otherExpenses) |
 | D71 | **Net profit/loss** | 31812 | gl-cor:amount (sa103s.netProfit) |
+| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 200 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 31612 | gl-cor:amount (sa103s.taxableProfit) |
+| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 31612 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock

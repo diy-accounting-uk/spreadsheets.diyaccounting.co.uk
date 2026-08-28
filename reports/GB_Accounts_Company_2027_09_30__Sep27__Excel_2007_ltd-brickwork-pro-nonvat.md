@@ -234,6 +234,11 @@ Status: RECONCILES
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 10580.699999999997 | 10580.7 | +3.637978807091713e-12 | PASS |
+| Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 0 | 0 | 0 | PASS |
+| Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 0 | 0 | 0 | PASS |
+| Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 0 | 0 | 0 | PASS |
+| Published balance sheet: cash at bank = Trial Balance bank account aggregate | 10580.7 | 10580.7 | 0 | PASS |
 | P&L Oct C4 = Sales.xlsx "a" net | 6500 | 6500 | 0 | PASS |
 | P&L Oct C5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Oct C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
@@ -679,6 +684,22 @@ Status: RECONCILES
 | CT600: tax outstanding | 0 | 0 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 0 | 0 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 0 | 0 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the management profit and loss account | MnthP&L!B45 | 1,754 |
+| Less bank interest received, net of tax deducted at source | MnthP&L!B44 | 0 |
+| Add back goodwill written off | CorporationTax!I7 | 0 |
+| Add back depreciation charged in the year | CorporationTax!I8 | 1,200 |
+| Less capital allowances | CorporationTax!K20 | -12,000 |
+| Add gross bank interest received | CorporationTax!K24 | 0 |
+| Less losses brought forward | CorporationTax!K26 | 0 |
+| **Tax profit the bridge computes** | | **-9,046** |
+| Tax profit the sheet carries | CorporationTax!K28 | -9,046 |
+| **Residue** | | **0** |
 
 ## Business Details
 
@@ -865,6 +886,11 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -27,090 |
 | **Opening Balances Audit Check** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 10,580.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | 0 |
 | **Audit Accuracy Check** | 0 |
 
@@ -1456,6 +1482,11 @@ Status: RECONCILES
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -27090 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
+| EJ22 | Final: Bank Current Account | 10580.7 | accounts.assets.1200 (final) |
+| EJ23 | Final: Bank Savings Account | 0 | accounts.assets.1210 (final) |
+| EJ24 | Final: Credit Card Account | 0 | accounts.assets.1230 (final) |
+| EJ25 | Final: Cash Account | 0 | accounts.assets.1220 (final) |
+| EJ26 | Final: Intra Cash & Bank Transfers | 0 | gl-cor:amount (intraTransfers) |
 | EJ39 | Final: Directors Loan Account | 0 | accounts.liabilities.2500 (final) |
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 0 |  |

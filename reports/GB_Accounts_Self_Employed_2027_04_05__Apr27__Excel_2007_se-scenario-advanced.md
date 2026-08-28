@@ -505,6 +505,26 @@ Status: RECONCILES
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 176,975.39 |
+| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 11,740 |
+| Less grants, taxed as other business income below | Profit & Loss Account!B11 | -2,083.33 |
+| Less net loss for the year (box 21) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 22) | SE Short!D80 | -32,500 |
+| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
+| Less other capital allowances (box 24) | SE Short!O80 | -11,500 |
+| Add balancing charges (box 25) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
+| Add grants as other business income (box 29) | SE Short!O99 | 2,083.33 |
+| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| **Tax profit the bridge computes** | | **144,715.39** |
+| Tax profit the sheet carries | Income Tax!E5 | 144,715.39 |
+| **Residue** | | **0** |
 
 ## Business Details
 
@@ -579,10 +599,15 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
 | **Total expenses** | 152,567.94 |
 | **Net profit/loss** | 186,632.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 11,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 142,632.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 2,083.33 |
 | VAT threshold note | — |
 | **Net profit for tax calc** | 144,715.39 |
 
@@ -960,10 +985,15 @@ Status: RECONCILES
 | O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
 | O64 | **Total expenses** | 152567.941666667 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
+| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
+| O80 | Other capital allowances (box 24) | 11500 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 142632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
+| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Grants as other business income (box 29) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 144715.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Wagesinterface

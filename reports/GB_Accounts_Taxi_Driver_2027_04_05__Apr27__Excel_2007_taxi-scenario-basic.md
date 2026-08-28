@@ -50,6 +50,26 @@ Status: RECONCILES
 | Tax: IT = Basic + Higher | 3190 | 3190 | 0 | PASS |
 | Tax: Total = IT + NI | 4147 | 4147 | 0 | PASS |
 | SA103S: Profit for tax = Draft Tax E5 | 28520 | 28520 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Net profit per the profit and loss account | Profit & Loss Acc!B23 | 28,520 |
+| Add capital allowances charged in cost of sales | Profit & Loss Acc!B10 | 1,120 |
+| Add other business income (box 9) | SE Short!O38 | 0 |
+| Less net loss for the year (box 21) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 22) | SE Short!D80 | 0 |
+| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
+| Less other capital allowances (box 24) | SE Short!O80 | -1,120 |
+| Add balancing charges (box 25) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
+| Add other business income (box 29) | SE Short!O99 | 0 |
+| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| **Tax profit the bridge computes** | | **28,520** |
+| Tax profit the sheet carries | Draft Tax calculation!E5 | 28,520 |
+| **Residue** | | **0** |
 
 ## Business Details
 
@@ -92,7 +112,17 @@ Status: RECONCILES
 | | Amount |
 |---|------:|
 | Turnover | 36,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9) | — |
 | **Net profit/loss** | 29,640 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 22) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Small-balance allowance (box 23) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 1,120 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 26) | 0 |
+| **Net business profit (box 27)** | 28,520 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29) | 0 |
 | **Net profit for tax calc** | 28,520 |
 
 ## Draft Tax Calculation
@@ -196,6 +226,15 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 36000 | gl-cor:amount (sa103s.turnover) |
 | D71 | **Net profit/loss** | 29640 | gl-cor:amount (sa103s.netProfit) |
+| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
+| D80 | Annual investment allowance (box 22) | 0 | tax.capitalAllowances.aia (sa103s) |
+| D85 | Small-balance allowance (box 23) | 0 | tax.capitalAllowances.smallPool (sa103s) |
+| O80 | Other capital allowances (box 24) | 1120 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
+| D94 | Goods and services for own use (box 26) | 0 | gl-cor:amount (sa103s.ownUse) |
+| D99 | **Net business profit (box 27)** | 28520 | gl-cor:amount (sa103s.taxableProfit) |
+| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 28520 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Draft Tax calculation
