@@ -25,18 +25,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     workbooks, matrix shrink to 3 year-ends, and the period-frame date convention
     (non-March roundtrip byte-identical). Full suite 2510/2510. Awaiting the operator's
     four reconciliation dispatches on `claude/recon-wave3`, then merge.
-    **PR #36 fully proven** (`4209f3a2`): all four reconciliations green, including the
-    SE VAT boxes live for the first time (the cache rework exposed a 0 == 0 check; the
-    window now year-aligns to the scenario). AWAITING OPERATOR MERGE.
-    Waves 5+6 are code complete on branches off the wave3 lineage, integrating into
-    `claude/recon-wave5` after #36 merges: `claude/recon-wave5-vat` (VAT localisation +
-    straddling fixtures, 7 commits), `claude/recon-wave5-misc` (RegisterofMembers +
-    Cash.xlsx leg), `claude/recon-wave6-judge` (LLM judge, live-verified on Bedrock,
-    gated behind ENABLE_LLM_JUDGE). Bedrock prerequisites are DONE (model agreement
-    accepted us-east-1; scoped InvokeModel policy on the actions role). Operator
-    sequence after both PRs merge: one normal generate-commit run per product to
-    refresh the stale committed reports (the judge correctly fails them today — they
-    still show the pre-fix £1.78M imbalance), then set ENABLE_LLM_JUDGE=true.
+    #36 MERGED. The final PR is up:
+    **PR #37: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/37**
+    (all three remaining workstreams merged into `claude/recon-wave5`, suite 2560/2560)
+    — VAT localisation + straddling coverage, RegisterofMembers + Cash.xlsx leg, and
+    the Bedrock judge gated behind ENABLE_LLM_JUDGE. Bedrock prerequisites DONE.
+    Operator sequence after #37 merges: dispatch the four reconciliations on its branch
+    first if desired, then merge; one normal generate-commit run per product to refresh
+    the stale committed reports (the judge correctly fails them today — they still show
+    the pre-fix £1.78M imbalance); then set ENABLE_LLM_JUDGE=true. That completes every
+    item in PLAN_RECONCILIATION_COVERAGE.md.
   - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
     agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
     turnover is ~double its README's description — settle before the judge wave.
