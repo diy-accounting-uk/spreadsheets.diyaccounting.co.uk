@@ -497,7 +497,10 @@ function resolveLinkTarget(relsXml, workDir) {
     } catch {
       // leave the raw target alone if it is not percent-encoded
     }
-    const fileName = target.replace(/^file:\/+/, "").split(/[/\\]/).pop();
+    const fileName = target
+      .replace(/^file:\/+/, "")
+      .split(/[/\\]/)
+      .pop();
     if (!fileName || !fileName.endsWith(".xlsx")) continue;
     if (existsSync(resolve(workDir, fileName))) return fileName;
   }
