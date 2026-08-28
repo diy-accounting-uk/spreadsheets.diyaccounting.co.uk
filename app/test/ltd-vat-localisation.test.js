@@ -174,10 +174,7 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Vatreturns.xlsx", "VATQtr1", "G9", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("Vatreturns.xlsx!VATQtr1", "G9", value);
-      expect(failureNames(corrupted)).toEqual([
-        "VAT: Q1-Q4 box 1 = Sales VAT",
-        "VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8)",
-      ]);
+      expect(failureNames(corrupted)).toEqual(["VAT: Q1-Q4 box 1 = Sales VAT", "VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8)"]);
     });
 
     it("fails the straddling period's own row when it is corrupted via JSZip", async () => {

@@ -160,9 +160,12 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Vat.xlsx", "Vatinterface", "D18", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("Vat.xlsx!Vatinterface", "D18", value);
+      // On a 6 April year end the straddling row falls inside two quarter
+      // windows, so both of those quarter columns move with it.
       expect(failureNames(corrupted)).toEqual([
         "Vatinterface D18: 04Y2 sales net = the straddling sales entered for that period",
         "Vatinterface E18: quarter sales net = its three period rows",
+        "Vatinterface E19: quarter sales net = its three period rows",
       ]);
     });
   },
