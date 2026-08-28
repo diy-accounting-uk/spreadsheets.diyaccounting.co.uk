@@ -7,45 +7,45 @@ Status: RECONCILES
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
-| Total Sales | 75000 | 75000 | 0 | PASS |
+| Total Sales | 112500 | 112500 | 0 | PASS |
 | Trial Balance: audit accuracy (EJ91) | 0 | 0 | 0 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 0 | 0 | 0 | PASS |
 | Trial Balance opening: accumulated depreciation | 0 | 0 | 0 | PASS |
 | Trial Balance opening: stock | 3000 | 3000 | 0 | PASS |
-| Trial Balance opening: trade debtors | 7920 | 7920 | 0 | PASS |
+| Trial Balance opening: trade debtors | 11880 | 11880 | 0 | PASS |
 | Trial Balance opening: bank current account | 20000 | 20000 | 0 | PASS |
 | Trial Balance opening: bank savings account | 0 | 0 | 0 | PASS |
 | Trial Balance opening: credit card account | 0 | 0 | 0 | PASS |
 | Trial Balance opening: cash account | 0 | 0 | 0 | PASS |
-| Trial Balance opening: trade creditors | -1812 | -1812 | 0 | PASS |
+| Trial Balance opening: trade creditors | -2718 | -2718 | 0 | PASS |
 | Trial Balance opening: HMRC VAT creditor | -1000 | -1000 | 0 | PASS |
 | Trial Balance opening: HMRC corporation tax creditor | -900 | -900 | 0 | PASS |
 | Trial Balance opening: directors loan | 0 | 0 | 0 | PASS |
 | Trial Balance opening: share capital | -100 | -100 | 0 | PASS |
-| Trial Balance opening: revenue reserve | -27108 | -27108 | 0 | PASS |
+| Trial Balance opening: revenue reserve | -30162 | -30162 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | 0 | 0 | 0 | PASS |
-| P&L: Gross = Turnover - CoS | 39500 | 39500 | 0 | PASS |
-| P&L: Operating = Gross - Admin | 1754 | 1754 | 0 | PASS |
-| P&L: PBT = Operating + Interest | 1754 | 1754 | 0 | PASS |
-| P&L: Admin lines sum = Total | 37746 | 37746 | 0 | PASS |
-| Legal & Professional | 1000 | 1000 | 0 | PASS |
+| P&L: Gross = Turnover - CoS | 59500 | 59500 | 0 | PASS |
+| P&L: Operating = Gross - Admin | 18769 | 18769 | 0 | PASS |
+| P&L: PBT = Operating + Interest | 18769 | 18769 | 0 | PASS |
+| P&L: Admin lines sum = Total | 40731 | 40731 | 0 | PASS |
+| Legal & Professional | 1500 | 1500 | 0 | PASS |
 | Stock: opening carried in from the opening balance sheet | 3000 | 3000 | 0 | PASS |
 | Stock: physical count at the year end | 2500 | 2500 | 0 | PASS |
 | Stock: loss adjustment = count - calculated | -500 | -500 | 0 | PASS |
 | Published balance sheet: stock = year-end stock | 2500 | 2500 | 0 | PASS |
-| Published balance sheet: trade debtors = closing debtors | 8040 | 8040 | 0 | PASS |
-| VAT: Q1-Q4 box 1 = Sales VAT | 15000 | 15000 | 0 | PASS |
-| VAT: Q1-Q4 box 4 = Purchases VAT | 10594 | 10594 | 0 | PASS |
-| VAT Q1: box 5 = box 3 - box 4 | 1214 | 1214 | 0 | PASS |
-| VAT Q2: box 5 = box 3 - box 4 | -656 | -656 | 0 | PASS |
-| VAT Q3: box 5 = box 3 - box 4 | 1794 | 1794 | 0 | PASS |
-| VAT Q4: box 5 = box 3 - box 4 | 2054 | 2054 | 0 | PASS |
-| VAT: annual output VAT | 15000 | 15000 | 0 | PASS |
-| VAT: annual input VAT | 10594 | 10594 | 0 | PASS |
-| VAT: annual output VAT = the sales journal at the book's rate | 15000 | 15000 | 0 | PASS |
-| VAT: annual input VAT = the purchase journal at the book's rate | 10594 | 10594 | 0 | PASS |
+| Published balance sheet: trade debtors = closing debtors | 12060 | 12060 | 0 | PASS |
+| VAT: Q1-Q4 box 1 = Sales VAT | 22500 | 22500 | 0 | PASS |
+| VAT: Q1-Q4 box 4 = Purchases VAT | 14691 | 14691 | 0 | PASS |
+| VAT Q1: box 5 = box 3 - box 4 | 1821 | 1821 | 0 | PASS |
+| VAT Q2: box 5 = box 3 - box 4 | 216 | 216 | 0 | PASS |
+| VAT Q3: box 5 = box 3 - box 4 | 2691 | 2691 | 0 | PASS |
+| VAT Q4: box 5 = box 3 - box 4 | 3081 | 3081 | 0 | PASS |
+| VAT: annual output VAT | 22500 | 22500 | 0 | PASS |
+| VAT: annual input VAT | 14691 | 14691 | 0 | PASS |
+| VAT: annual output VAT = the sales journal at the book's rate | 22500 | 22500 | 0 | PASS |
+| VAT: annual input VAT = the purchase journal at the book's rate | 14691 | 14691 | 0 | PASS |
 | Sales.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
@@ -70,103 +70,103 @@ Status: RECONCILES
 | Purchases.xlsx Aug: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Vatinterface D6: Oct sales net = Sales.xlsx Oct | 6500 | 6500 | 0 | PASS |
-| Vatinterface F6: Oct output VAT = Sales.xlsx Oct | 1300 | 1300 | 0 | PASS |
-| Vatinterface H6: Oct purchases net = Purchases.xlsx Oct | 3310 | 3310 | 0 | PASS |
-| Vatinterface J6: Oct input VAT = Purchases.xlsx Oct | 662 | 662 | 0 | PASS |
-| Vatinterface D7: Nov sales net = Sales.xlsx Nov | 6000 | 6000 | 0 | PASS |
-| Vatinterface F7: Nov output VAT = Sales.xlsx Nov | 1200 | 1200 | 0 | PASS |
-| Vatinterface H7: Nov purchases net = Purchases.xlsx Nov | 7510 | 7510 | 0 | PASS |
-| Vatinterface J7: Nov input VAT = Purchases.xlsx Nov | 1502 | 1502 | 0 | PASS |
-| Vatinterface D8: Dec sales net = Sales.xlsx Dec | 6200 | 6200 | 0 | PASS |
-| Vatinterface F8: Dec output VAT = Sales.xlsx Dec | 1240 | 1240 | 0 | PASS |
-| Vatinterface H8: Dec purchases net = Purchases.xlsx Dec | 1810 | 1810 | 0 | PASS |
-| Vatinterface J8: Dec input VAT = Purchases.xlsx Dec | 362 | 362 | 0 | PASS |
-| Vatinterface D9: Jan sales net = Sales.xlsx Jan | 5800 | 5800 | 0 | PASS |
-| Vatinterface F9: Jan output VAT = Sales.xlsx Jan | 1160 | 1160 | 0 | PASS |
-| Vatinterface H9: Jan purchases net = Purchases.xlsx Jan | 1860 | 1860 | 0 | PASS |
-| Vatinterface J9: Jan input VAT = Purchases.xlsx Jan | 372 | 372 | 0 | PASS |
-| Vatinterface D10: Feb sales net = Sales.xlsx Feb | 6500 | 6500 | 0 | PASS |
-| Vatinterface F10: Feb output VAT = Sales.xlsx Feb | 1300 | 1300 | 0 | PASS |
-| Vatinterface H10: Feb purchases net = Purchases.xlsx Feb | 6510 | 6510 | 0 | PASS |
-| Vatinterface J10: Feb input VAT = Purchases.xlsx Feb | 1302 | 1302 | 0 | PASS |
-| Vatinterface D11: Mar sales net = Sales.xlsx Mar | 6300 | 6300 | 0 | PASS |
-| Vatinterface F11: Mar output VAT = Sales.xlsx Mar | 1260 | 1260 | 0 | PASS |
-| Vatinterface H11: Mar purchases net = Purchases.xlsx Mar | 13510 | 13510 | 0 | PASS |
-| Vatinterface J11: Mar input VAT = Purchases.xlsx Mar | 2702 | 2702 | 0 | PASS |
-| Vatinterface D12: Apr sales net = Sales.xlsx Apr | 6800 | 6800 | 0 | PASS |
-| Vatinterface F12: Apr output VAT = Sales.xlsx Apr | 1360 | 1360 | 0 | PASS |
-| Vatinterface H12: Apr purchases net = Purchases.xlsx Apr | 1510 | 1510 | 0 | PASS |
-| Vatinterface J12: Apr input VAT = Purchases.xlsx Apr | 302 | 302 | 0 | PASS |
-| Vatinterface D13: May sales net = Sales.xlsx May | 6200 | 6200 | 0 | PASS |
-| Vatinterface F13: May output VAT = Sales.xlsx May | 1240 | 1240 | 0 | PASS |
-| Vatinterface H13: May purchases net = Purchases.xlsx May | 6510 | 6510 | 0 | PASS |
-| Vatinterface J13: May input VAT = Purchases.xlsx May | 1302 | 1302 | 0 | PASS |
-| Vatinterface D14: Jun sales net = Sales.xlsx Jun | 5500 | 5500 | 0 | PASS |
-| Vatinterface F14: Jun output VAT = Sales.xlsx Jun | 1100 | 1100 | 0 | PASS |
-| Vatinterface H14: Jun purchases net = Purchases.xlsx Jun | 1510 | 1510 | 0 | PASS |
-| Vatinterface J14: Jun input VAT = Purchases.xlsx Jun | 302 | 302 | 0 | PASS |
-| Vatinterface D15: Jul sales net = Sales.xlsx Jul | 6000 | 6000 | 0 | PASS |
-| Vatinterface F15: Jul output VAT = Sales.xlsx Jul | 1200 | 1200 | 0 | PASS |
-| Vatinterface H15: Jul purchases net = Purchases.xlsx Jul | 1910 | 1910 | 0 | PASS |
-| Vatinterface J15: Jul input VAT = Purchases.xlsx Jul | 382 | 382 | 0 | PASS |
-| Vatinterface D16: Aug sales net = Sales.xlsx Aug | 6500 | 6500 | 0 | PASS |
-| Vatinterface F16: Aug output VAT = Sales.xlsx Aug | 1300 | 1300 | 0 | PASS |
-| Vatinterface H16: Aug purchases net = Purchases.xlsx Aug | 5510 | 5510 | 0 | PASS |
-| Vatinterface J16: Aug input VAT = Purchases.xlsx Aug | 1102 | 1102 | 0 | PASS |
-| Vatinterface D17: Sep sales net = Sales.xlsx Sep | 6700 | 6700 | 0 | PASS |
-| Vatinterface F17: Sep output VAT = Sales.xlsx Sep | 1340 | 1340 | 0 | PASS |
-| Vatinterface H17: Sep purchases net = Purchases.xlsx Sep | 1510 | 1510 | 0 | PASS |
-| Vatinterface J17: Sep input VAT = Purchases.xlsx Sep | 302 | 302 | 0 | PASS |
+| Vatinterface D6: Oct sales net = Sales.xlsx Oct | 9750 | 9750 | 0 | PASS |
+| Vatinterface F6: Oct output VAT = Sales.xlsx Oct | 1950 | 1950 | 0 | PASS |
+| Vatinterface H6: Oct purchases net = Purchases.xlsx Oct | 4965 | 4965 | 0 | PASS |
+| Vatinterface J6: Oct input VAT = Purchases.xlsx Oct | 993 | 993 | 0 | PASS |
+| Vatinterface D7: Nov sales net = Sales.xlsx Nov | 9000 | 9000 | 0 | PASS |
+| Vatinterface F7: Nov output VAT = Sales.xlsx Nov | 1800 | 1800 | 0 | PASS |
+| Vatinterface H7: Nov purchases net = Purchases.xlsx Nov | 11265 | 11265 | 0 | PASS |
+| Vatinterface J7: Nov input VAT = Purchases.xlsx Nov | 2253 | 2253 | 0 | PASS |
+| Vatinterface D8: Dec sales net = Sales.xlsx Dec | 9300 | 9300 | 0 | PASS |
+| Vatinterface F8: Dec output VAT = Sales.xlsx Dec | 1860 | 1860 | 0 | PASS |
+| Vatinterface H8: Dec purchases net = Purchases.xlsx Dec | 2715 | 2715 | 0 | PASS |
+| Vatinterface J8: Dec input VAT = Purchases.xlsx Dec | 543 | 543 | 0 | PASS |
+| Vatinterface D9: Jan sales net = Sales.xlsx Jan | 8700 | 8700 | 0 | PASS |
+| Vatinterface F9: Jan output VAT = Sales.xlsx Jan | 1740 | 1740 | 0 | PASS |
+| Vatinterface H9: Jan purchases net = Purchases.xlsx Jan | 2790 | 2790 | 0 | PASS |
+| Vatinterface J9: Jan input VAT = Purchases.xlsx Jan | 558 | 558 | 0 | PASS |
+| Vatinterface D10: Feb sales net = Sales.xlsx Feb | 9750 | 9750 | 0 | PASS |
+| Vatinterface F10: Feb output VAT = Sales.xlsx Feb | 1950 | 1950 | 0 | PASS |
+| Vatinterface H10: Feb purchases net = Purchases.xlsx Feb | 9765 | 9765 | 0 | PASS |
+| Vatinterface J10: Feb input VAT = Purchases.xlsx Feb | 1953 | 1953 | 0 | PASS |
+| Vatinterface D11: Mar sales net = Sales.xlsx Mar | 9450 | 9450 | 0 | PASS |
+| Vatinterface F11: Mar output VAT = Sales.xlsx Mar | 1890 | 1890 | 0 | PASS |
+| Vatinterface H11: Mar purchases net = Purchases.xlsx Mar | 14265 | 14265 | 0 | PASS |
+| Vatinterface J11: Mar input VAT = Purchases.xlsx Mar | 2853 | 2853 | 0 | PASS |
+| Vatinterface D12: Apr sales net = Sales.xlsx Apr | 10200 | 10200 | 0 | PASS |
+| Vatinterface F12: Apr output VAT = Sales.xlsx Apr | 2040 | 2040 | 0 | PASS |
+| Vatinterface H12: Apr purchases net = Purchases.xlsx Apr | 2265 | 2265 | 0 | PASS |
+| Vatinterface J12: Apr input VAT = Purchases.xlsx Apr | 453 | 453 | 0 | PASS |
+| Vatinterface D13: May sales net = Sales.xlsx May | 9300 | 9300 | 0 | PASS |
+| Vatinterface F13: May output VAT = Sales.xlsx May | 1860 | 1860 | 0 | PASS |
+| Vatinterface H13: May purchases net = Purchases.xlsx May | 9765 | 9765 | 0 | PASS |
+| Vatinterface J13: May input VAT = Purchases.xlsx May | 1953 | 1953 | 0 | PASS |
+| Vatinterface D14: Jun sales net = Sales.xlsx Jun | 8250 | 8250 | 0 | PASS |
+| Vatinterface F14: Jun output VAT = Sales.xlsx Jun | 1650 | 1650 | 0 | PASS |
+| Vatinterface H14: Jun purchases net = Purchases.xlsx Jun | 2265 | 2265 | 0 | PASS |
+| Vatinterface J14: Jun input VAT = Purchases.xlsx Jun | 453 | 453 | 0 | PASS |
+| Vatinterface D15: Jul sales net = Sales.xlsx Jul | 9000 | 9000 | 0 | PASS |
+| Vatinterface F15: Jul output VAT = Sales.xlsx Jul | 1800 | 1800 | 0 | PASS |
+| Vatinterface H15: Jul purchases net = Purchases.xlsx Jul | 2865 | 2865 | 0 | PASS |
+| Vatinterface J15: Jul input VAT = Purchases.xlsx Jul | 573 | 573 | 0 | PASS |
+| Vatinterface D16: Aug sales net = Sales.xlsx Aug | 9750 | 9750 | 0 | PASS |
+| Vatinterface F16: Aug output VAT = Sales.xlsx Aug | 1950 | 1950 | 0 | PASS |
+| Vatinterface H16: Aug purchases net = Purchases.xlsx Aug | 8265 | 8265 | 0 | PASS |
+| Vatinterface J16: Aug input VAT = Purchases.xlsx Aug | 1653 | 1653 | 0 | PASS |
+| Vatinterface D17: Sep sales net = Sales.xlsx Sep | 10050 | 10050 | 0 | PASS |
+| Vatinterface F17: Sep output VAT = Sales.xlsx Sep | 2010 | 2010 | 0 | PASS |
+| Vatinterface H17: Sep purchases net = Purchases.xlsx Sep | 2265 | 2265 | 0 | PASS |
+| Vatinterface J17: Sep input VAT = Purchases.xlsx Sep | 453 | 453 | 0 | PASS |
 | VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E8: quarter sales net = its three period rows | 18700 | 18700 | 0 | PASS |
-| Vatinterface G8: quarter output VAT = its three period rows | 3740 | 3740 | 0 | PASS |
-| Vatinterface I8: quarter purchases net = its three period rows | 12630 | 12630 | 0 | PASS |
-| Vatinterface K8: quarter input VAT = its three period rows | 2526 | 2526 | 0 | PASS |
-| VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8) | 3740 | 3740 | 0 | PASS |
-| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 2526 | 2526 | 0 | PASS |
-| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 12630 | 12630 | 0 | PASS |
-| VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 18700 | 18700 | 0 | PASS |
+| Vatinterface E8: quarter sales net = its three period rows | 28050 | 28050 | 0 | PASS |
+| Vatinterface G8: quarter output VAT = its three period rows | 5610 | 5610 | 0 | PASS |
+| Vatinterface I8: quarter purchases net = its three period rows | 18945 | 18945 | 0 | PASS |
+| Vatinterface K8: quarter input VAT = its three period rows | 3789 | 3789 | 0 | PASS |
+| VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8) | 5610 | 5610 | 0 | PASS |
+| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 3789 | 3789 | 0 | PASS |
+| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 18945 | 18945 | 0 | PASS |
+| VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 28050 | 28050 | 0 | PASS |
 | VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 46418 | 46418 | 0 | PASS |
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E11: quarter sales net = its three period rows | 18600 | 18600 | 0 | PASS |
-| Vatinterface G11: quarter output VAT = its three period rows | 3720 | 3720 | 0 | PASS |
-| Vatinterface I11: quarter purchases net = its three period rows | 21880 | 21880 | 0 | PASS |
-| Vatinterface K11: quarter input VAT = its three period rows | 4376 | 4376 | 0 | PASS |
-| VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 3720 | 3720 | 0 | PASS |
-| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4376 | 4376 | 0 | PASS |
-| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 21880 | 21880 | 0 | PASS |
-| VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 18600 | 18600 | 0 | PASS |
+| Vatinterface E11: quarter sales net = its three period rows | 27900 | 27900 | 0 | PASS |
+| Vatinterface G11: quarter output VAT = its three period rows | 5580 | 5580 | 0 | PASS |
+| Vatinterface I11: quarter purchases net = its three period rows | 26820 | 26820 | 0 | PASS |
+| Vatinterface K11: quarter input VAT = its three period rows | 5364 | 5364 | 0 | PASS |
+| VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 5580 | 5580 | 0 | PASS |
+| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 5364 | 5364 | 0 | PASS |
+| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 26820 | 26820 | 0 | PASS |
+| VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 27900 | 27900 | 0 | PASS |
 | VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46507 | 46507 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E14: quarter sales net = its three period rows | 18500 | 18500 | 0 | PASS |
-| Vatinterface G14: quarter output VAT = its three period rows | 3700 | 3700 | 0 | PASS |
-| Vatinterface I14: quarter purchases net = its three period rows | 9530 | 9530 | 0 | PASS |
-| Vatinterface K14: quarter input VAT = its three period rows | 1906 | 1906 | 0 | PASS |
-| VAT Q3: box 1 (G9) = Vatinterface quarter VAT due (G14) | 3700 | 3700 | 0 | PASS |
-| VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K14) | 1906 | 1906 | 0 | PASS |
-| VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I14) | 9530 | 9530 | 0 | PASS |
-| VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 18500 | 18500 | 0 | PASS |
+| Vatinterface E14: quarter sales net = its three period rows | 27750 | 27750 | 0 | PASS |
+| Vatinterface G14: quarter output VAT = its three period rows | 5550 | 5550 | 0 | PASS |
+| Vatinterface I14: quarter purchases net = its three period rows | 14295 | 14295 | 0 | PASS |
+| Vatinterface K14: quarter input VAT = its three period rows | 2859 | 2859 | 0 | PASS |
+| VAT Q3: box 1 (G9) = Vatinterface quarter VAT due (G14) | 5550 | 5550 | 0 | PASS |
+| VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K14) | 2859 | 2859 | 0 | PASS |
+| VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I14) | 14295 | 14295 | 0 | PASS |
+| VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 27750 | 27750 | 0 | PASS |
 | VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46599 | 46599 | 0 | PASS |
 | VAT Q4: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E17: quarter sales net = its three period rows | 19200 | 19200 | 0 | PASS |
-| Vatinterface G17: quarter output VAT = its three period rows | 3840 | 3840 | 0 | PASS |
-| Vatinterface I17: quarter purchases net = its three period rows | 8930 | 8930 | 0 | PASS |
-| Vatinterface K17: quarter input VAT = its three period rows | 1786 | 1786 | 0 | PASS |
-| VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G17) | 3840 | 3840 | 0 | PASS |
-| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 1786 | 1786 | 0 | PASS |
-| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 8930 | 8930 | 0 | PASS |
-| VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 19200 | 19200 | 0 | PASS |
+| Vatinterface E17: quarter sales net = its three period rows | 28800 | 28800 | 0 | PASS |
+| Vatinterface G17: quarter output VAT = its three period rows | 5760 | 5760 | 0 | PASS |
+| Vatinterface I17: quarter purchases net = its three period rows | 13395 | 13395 | 0 | PASS |
+| Vatinterface K17: quarter input VAT = its three period rows | 2679 | 2679 | 0 | PASS |
+| VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G17) | 5760 | 5760 | 0 | PASS |
+| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2679 | 2679 | 0 | PASS |
+| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 13395 | 13395 | 0 | PASS |
+| VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 28800 | 28800 | 0 | PASS |
 | VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46691 | 46691 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E18: quarter sales net = its three period rows | 13200 | 13200 | 0 | PASS |
-| Vatinterface G18: quarter output VAT = its three period rows | 2640 | 2640 | 0 | PASS |
-| Vatinterface I18: quarter purchases net = its three period rows | 7020 | 7020 | 0 | PASS |
-| Vatinterface K18: quarter input VAT = its three period rows | 1404 | 1404 | 0 | PASS |
-| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G18) | 2640 | 2640 | 0 | PASS |
-| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K18) | 1404 | 1404 | 0 | PASS |
-| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I18) | 7020 | 7020 | 0 | PASS |
-| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 13200 | 13200 | 0 | PASS |
+| Vatinterface E18: quarter sales net = its three period rows | 19800 | 19800 | 0 | PASS |
+| Vatinterface G18: quarter output VAT = its three period rows | 3960 | 3960 | 0 | PASS |
+| Vatinterface I18: quarter purchases net = its three period rows | 10530 | 10530 | 0 | PASS |
+| Vatinterface K18: quarter input VAT = its three period rows | 2106 | 2106 | 0 | PASS |
+| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G18) | 3960 | 3960 | 0 | PASS |
+| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K18) | 2106 | 2106 | 0 | PASS |
+| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I18) | 10530 | 10530 | 0 | PASS |
+| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 19800 | 19800 | 0 | PASS |
 | VAT Q5: payment due date (G7) = Vatinterface final date for payment (C18) | 46721 | 46721 | 0 | PASS |
 | Fixed asset note (land): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): additions = Schedule | 0 | 0 | 0 | PASS |
@@ -230,77 +230,77 @@ Status: RECONCILES
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 0 | 0 | 0 | PASS |
 | P&L: depreciation = fixed asset note charge for the year | 1200 | 1200 | 0 | PASS |
 | P&L: loss on disposal = Schedule cost less depreciation less proceeds | 0 | 0 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 10666.699999999997 | 10666.7 | +3.637978807091713e-12 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 28624.699999999997 | 28624.7 | +3.637978807091713e-12 | PASS |
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
-| P&L Oct C4 = Sales.xlsx "a" net | 6500 | 6500 | 0 | PASS |
+| P&L Oct C4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
 | P&L Oct C5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Oct C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Oct C7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Oct C8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Oct C34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Nov D4 = Sales.xlsx "a" net | 6000 | 6000 | 0 | PASS |
+| P&L Nov D4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
 | P&L Nov D5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Nov D6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Nov D7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Nov D8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Nov D34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Dec E4 = Sales.xlsx "a" net | 6200 | 6200 | 0 | PASS |
+| P&L Dec E4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
 | P&L Dec E5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Dec E6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Dec E7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Dec E8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Dec E34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jan F4 = Sales.xlsx "a" net | 5800 | 5800 | 0 | PASS |
+| P&L Jan F4 = Sales.xlsx "a" net | 8700 | 8700 | 0 | PASS |
 | P&L Jan F5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Jan F6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Jan F7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Jan F8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Jan F34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Feb G4 = Sales.xlsx "a" net | 6500 | 6500 | 0 | PASS |
+| P&L Feb G4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
 | P&L Feb G5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Feb G6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Feb G7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Feb G8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Feb G34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Mar H4 = Sales.xlsx "a" net | 6300 | 6300 | 0 | PASS |
+| P&L Mar H4 = Sales.xlsx "a" net | 9450 | 9450 | 0 | PASS |
 | P&L Mar H5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Mar H6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Mar H7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Mar H8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Mar H34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Apr I4 = Sales.xlsx "a" net | 6800 | 6800 | 0 | PASS |
+| P&L Apr I4 = Sales.xlsx "a" net | 10200 | 10200 | 0 | PASS |
 | P&L Apr I5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Apr I6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Apr I7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Apr I8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Apr I34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L May J4 = Sales.xlsx "a" net | 6200 | 6200 | 0 | PASS |
+| P&L May J4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
 | P&L May J5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L May J6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L May J7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L May J8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L May J34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jun K4 = Sales.xlsx "a" net | 5500 | 5500 | 0 | PASS |
+| P&L Jun K4 = Sales.xlsx "a" net | 8250 | 8250 | 0 | PASS |
 | P&L Jun K5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Jun K6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Jun K7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Jun K8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Jun K34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jul L4 = Sales.xlsx "a" net | 6000 | 6000 | 0 | PASS |
+| P&L Jul L4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
 | P&L Jul L5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Jul L6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Jul L7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Jul L8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Jul L34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Aug M4 = Sales.xlsx "a" net | 6500 | 6500 | 0 | PASS |
+| P&L Aug M4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
 | P&L Aug M5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Aug M6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Aug M7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
 | P&L Aug M8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
 | P&L Aug M34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Sep N4 = Sales.xlsx "a" net | 6700 | 6700 | 0 | PASS |
+| P&L Sep N4 = Sales.xlsx "a" net | 10050 | 10050 | 0 | PASS |
 | P&L Sep N5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Sep N6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
 | P&L Sep N7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
@@ -315,15 +315,15 @@ Status: RECONCILES
 | P&L Oct C25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Oct C26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Oct C27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Oct C28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Oct C28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Oct C29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Oct C30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
-| P&L Oct C31 = Purchases.xlsx "n" net | 1200 | 1200 | 0 | PASS |
+| P&L Oct C30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Oct C31 = Purchases.xlsx "n" net | 1800 | 1800 | 0 | PASS |
 | P&L Oct C32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Oct C33 = Purchases.xlsx "l" net | 600 | 600 | 0 | PASS |
+| P&L Oct C33 = Purchases.xlsx "l" net | 900 | 900 | 0 | PASS |
 | P&L Oct C37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
 | P&L Oct C38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Nov D12 = Purchases.xlsx "c" net | 6000 | 6000 | 0 | PASS |
+| P&L Nov D12 = Purchases.xlsx "c" net | 9000 | 9000 | 0 | PASS |
 | P&L Nov D13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
 | P&L Nov D21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
 | P&L Nov D22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
@@ -332,9 +332,9 @@ Status: RECONCILES
 | P&L Nov D25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Nov D26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Nov D27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Nov D28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Nov D28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Nov D29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Nov D30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Nov D30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Nov D31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Nov D32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Nov D33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -348,10 +348,10 @@ Status: RECONCILES
 | P&L Dec E24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
 | P&L Dec E25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Dec E26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Dec E27 = Purchases.xlsx "a" net | 300 | 300 | 0 | PASS |
-| P&L Dec E28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Dec E27 = Purchases.xlsx "a" net | 450 | 450 | 0 | PASS |
+| P&L Dec E28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Dec E29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Dec E30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Dec E30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Dec E31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Dec E32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Dec E33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -363,18 +363,18 @@ Status: RECONCILES
 | P&L Jan F22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
 | P&L Jan F23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
 | P&L Jan F24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Jan F25 = Purchases.xlsx "m" net | 350 | 350 | 0 | PASS |
+| P&L Jan F25 = Purchases.xlsx "m" net | 525 | 525 | 0 | PASS |
 | P&L Jan F26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Jan F27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Jan F28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Jan F28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jan F29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jan F30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Jan F30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Jan F31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Jan F32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Jan F33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
 | P&L Jan F37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
 | P&L Jan F38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Feb G12 = Purchases.xlsx "c" net | 5000 | 5000 | 0 | PASS |
+| P&L Feb G12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
 | P&L Feb G13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
 | P&L Feb G21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
 | P&L Feb G22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
@@ -383,9 +383,9 @@ Status: RECONCILES
 | P&L Feb G25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Feb G26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Feb G27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Feb G28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Feb G28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Feb G29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Feb G30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Feb G30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Feb G31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Feb G32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Feb G33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -400,9 +400,9 @@ Status: RECONCILES
 | P&L Mar H25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Mar H26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Mar H27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Mar H28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Mar H28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Mar H29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Mar H30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Mar H30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Mar H31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Mar H32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Mar H33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -417,15 +417,15 @@ Status: RECONCILES
 | P&L Apr I25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Apr I26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Apr I27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Apr I28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Apr I28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Apr I29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Apr I30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Apr I30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Apr I31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Apr I32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Apr I33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
 | P&L Apr I37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
 | P&L Apr I38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L May J12 = Purchases.xlsx "c" net | 5000 | 5000 | 0 | PASS |
+| P&L May J12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
 | P&L May J13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
 | P&L May J21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
 | P&L May J22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
@@ -434,9 +434,9 @@ Status: RECONCILES
 | P&L May J25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L May J26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L May J27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L May J28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L May J28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L May J29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L May J30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L May J30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L May J31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L May J32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L May J33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -451,9 +451,9 @@ Status: RECONCILES
 | P&L Jun K25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jun K26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Jun K27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Jun K28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Jun K28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jun K29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jun K30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Jun K30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Jun K31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Jun K32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Jun K33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -468,15 +468,15 @@ Status: RECONCILES
 | P&L Jul L25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Jul L26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Jul L27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Jul L28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Jul L28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Jul L29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jul L30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Jul L30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Jul L31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Jul L32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Jul L33 = Purchases.xlsx "l" net | 400 | 400 | 0 | PASS |
+| P&L Jul L33 = Purchases.xlsx "l" net | 600 | 600 | 0 | PASS |
 | P&L Jul L37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
 | P&L Jul L38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Aug M12 = Purchases.xlsx "c" net | 4000 | 4000 | 0 | PASS |
+| P&L Aug M12 = Purchases.xlsx "c" net | 6000 | 6000 | 0 | PASS |
 | P&L Aug M13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
 | P&L Aug M21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
 | P&L Aug M22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
@@ -485,9 +485,9 @@ Status: RECONCILES
 | P&L Aug M25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Aug M26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Aug M27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Aug M28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Aug M28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Aug M29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Aug M30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Aug M30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Aug M31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Aug M32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Aug M33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
@@ -502,38 +502,38 @@ Status: RECONCILES
 | P&L Sep N25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
 | P&L Sep N26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
 | P&L Sep N27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Sep N28 = Purchases.xlsx "g" net | 60 | 60 | 0 | PASS |
+| P&L Sep N28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
 | P&L Sep N29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Sep N30 = Purchases.xlsx "v" net | 200 | 200 | 0 | PASS |
+| P&L Sep N30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
 | P&L Sep N31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
 | P&L Sep N32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
 | P&L Sep N33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
 | P&L Sep N37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
 | P&L Sep N38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Oct turnover = Sales.xlsx Oct net less bad debts and asset sales | 6500 | 6500 | 0 | PASS |
-| P&L Oct expense lines = Purchases.xlsx Oct net less materials, wages and asset purchases | 2060 | 2060 | 0 | PASS |
-| P&L Nov turnover = Sales.xlsx Nov net less bad debts and asset sales | 6000 | 6000 | 0 | PASS |
-| P&L Nov expense lines = Purchases.xlsx Nov net less materials, wages and asset purchases | 6260 | 6260 | 0 | PASS |
-| P&L Dec turnover = Sales.xlsx Dec net less bad debts and asset sales | 6200 | 6200 | 0 | PASS |
-| P&L Dec expense lines = Purchases.xlsx Dec net less materials, wages and asset purchases | 560 | 560 | 0 | PASS |
-| P&L Jan turnover = Sales.xlsx Jan net less bad debts and asset sales | 5800 | 5800 | 0 | PASS |
-| P&L Jan expense lines = Purchases.xlsx Jan net less materials, wages and asset purchases | 610 | 610 | 0 | PASS |
-| P&L Feb turnover = Sales.xlsx Feb net less bad debts and asset sales | 6500 | 6500 | 0 | PASS |
-| P&L Feb expense lines = Purchases.xlsx Feb net less materials, wages and asset purchases | 5260 | 5260 | 0 | PASS |
-| P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 6300 | 6300 | 0 | PASS |
-| P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 260 | 260 | 0 | PASS |
-| P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales | 6800 | 6800 | 0 | PASS |
-| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 260 | 260 | 0 | PASS |
-| P&L May turnover = Sales.xlsx May net less bad debts and asset sales | 6200 | 6200 | 0 | PASS |
-| P&L May expense lines = Purchases.xlsx May net less materials, wages and asset purchases | 5260 | 5260 | 0 | PASS |
-| P&L Jun turnover = Sales.xlsx Jun net less bad debts and asset sales | 5500 | 5500 | 0 | PASS |
-| P&L Jun expense lines = Purchases.xlsx Jun net less materials, wages and asset purchases | 260 | 260 | 0 | PASS |
-| P&L Jul turnover = Sales.xlsx Jul net less bad debts and asset sales | 6000 | 6000 | 0 | PASS |
-| P&L Jul expense lines = Purchases.xlsx Jul net less materials, wages and asset purchases | 660 | 660 | 0 | PASS |
-| P&L Aug turnover = Sales.xlsx Aug net less bad debts and asset sales | 6500 | 6500 | 0 | PASS |
-| P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases | 4260 | 4260 | 0 | PASS |
-| P&L Sep turnover = Sales.xlsx Sep net less bad debts and asset sales | 6700 | 6700 | 0 | PASS |
-| P&L Sep expense lines = Purchases.xlsx Sep net less materials, wages and asset purchases | 260 | 260 | 0 | PASS |
+| P&L Oct turnover = Sales.xlsx Oct net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Oct expense lines = Purchases.xlsx Oct net less materials, wages and asset purchases | 3090 | 3090 | 0 | PASS |
+| P&L Nov turnover = Sales.xlsx Nov net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
+| P&L Nov expense lines = Purchases.xlsx Nov net less materials, wages and asset purchases | 9390 | 9390 | 0 | PASS |
+| P&L Dec turnover = Sales.xlsx Dec net less bad debts and asset sales | 9300 | 9300 | 0 | PASS |
+| P&L Dec expense lines = Purchases.xlsx Dec net less materials, wages and asset purchases | 840 | 840 | 0 | PASS |
+| P&L Jan turnover = Sales.xlsx Jan net less bad debts and asset sales | 8700 | 8700 | 0 | PASS |
+| P&L Jan expense lines = Purchases.xlsx Jan net less materials, wages and asset purchases | 915 | 915 | 0 | PASS |
+| P&L Feb turnover = Sales.xlsx Feb net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Feb expense lines = Purchases.xlsx Feb net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
+| P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 9450 | 9450 | 0 | PASS |
+| P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
+| P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales | 10200 | 10200 | 0 | PASS |
+| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
+| P&L May turnover = Sales.xlsx May net less bad debts and asset sales | 9300 | 9300 | 0 | PASS |
+| P&L May expense lines = Purchases.xlsx May net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
+| P&L Jun turnover = Sales.xlsx Jun net less bad debts and asset sales | 8250 | 8250 | 0 | PASS |
+| P&L Jun expense lines = Purchases.xlsx Jun net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
+| P&L Jul turnover = Sales.xlsx Jul net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
+| P&L Jul expense lines = Purchases.xlsx Jul net less materials, wages and asset purchases | 990 | 990 | 0 | PASS |
+| P&L Aug turnover = Sales.xlsx Aug net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases | 6390 | 6390 | 0 | PASS |
+| P&L Sep turnover = Sales.xlsx Sep net less bad debts and asset sales | 10050 | 10050 | 0 | PASS |
+| P&L Sep expense lines = Purchases.xlsx Sep net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
 | WagesInterface Oct C4 gross pay | 2548 | 2548 | 0 | PASS |
 | WagesInterface Oct D4 income tax | 90.5 | 90.5 | 0 | PASS |
 | WagesInterface Oct E4 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -650,32 +650,35 @@ Status: RECONCILES
 | Fixed asset note: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
 | Fixed asset note: depreciation rate, computer equipment | 0.33 | 0.33 | 0 | PASS |
 | Fixed asset note: depreciation rate, motor vehicles | 0.25 | 0.25 | 0 | PASS |
-| Published P&L: operating profit = management P&L operating profit | 1754 | 1754 | 0 | PASS |
-| CT: operating profit = published P&L operating profit | 1754 | 1754 | 0 | PASS |
+| Published P&L: operating profit = management P&L operating profit | 18769 | 18769 | 0 | PASS |
+| CT: operating profit = published P&L operating profit | 18769 | 18769 | 0 | PASS |
 | CT: depreciation add-back = P&L depreciation | 1200 | 1200 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 0 | 0 | 0 | PASS |
 | CT: add-backs = depreciation + goodwill | 1200 | 1200 | 0 | PASS |
-| CT: profit plus add-backs | 2954 | 2954 | 0 | PASS |
+| CT: profit plus add-backs | 19969 | 19969 | 0 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 12000 | 12000 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 0 | 0 | 0 | PASS |
 | CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 0 | 0 | 0 | PASS |
 | CT: capital allowances = the allowance lines | 12000 | 12000 | 0 | PASS |
-| CT: profit after capital allowances | -9046 | -9046 | 0 | PASS |
-| CT: chargeable profit = profit after allowances + interest - losses brought forward | -9046 | -9046 | 0 | PASS |
-| CT600: turnover = published P&L turnover | 75000 | 75000 | 0 | PASS |
-| CT600: trading profits = CT profit after capital allowances | 0 | 0 | 0 | PASS |
+| CT: profit after capital allowances | 7969 | 7969 | 0 | PASS |
+| CT: chargeable profit = profit after allowances + interest - losses brought forward | 7969 | 7969 | 0 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 7969 | 7969 | 0 | PASS |
+| CT600: turnover = published P&L turnover | 112500 | 112500 | 0 | PASS |
+| CT600: trading profits = CT profit after capital allowances | 7969 | 7969 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
-| CT600: net trading profits = trading profits - losses brought forward | 0 | 0 | 0 | PASS |
+| CT600: net trading profits = trading profits - losses brought forward | 7969 | 7969 | 0 | PASS |
 | CT600: interest received = CT interest received | 0 | 0 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 0 | 0 | 0 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 0 | 0 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 7969 | 7969 | 0 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 7969 | 7969 | 0 | PASS |
 | CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 0 | 0 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 0 | 0 | 0 | PASS |
-| CT600: self assessment of tax payable | 0 | 0 | 0 | PASS |
-| CT600: tax outstanding | 0 | 0 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 0 | 0 | 0 | PASS |
+| CT600: corporation tax = CT first financial year tax | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: self assessment of tax payable | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| CT600: tax outstanding | 756.019357045144 | 756.019357045144 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 1514.11 | 1514.11 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 0 | 0 | 0 | PASS |
+| Corporation Tax | 1514 | 1514.11 | +0.10999999999989996 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 1514.11 | 1514.11 | 0 | PASS |
 
 ## Business Details
 
@@ -697,31 +700,31 @@ Status: RECONCILES
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Tangible assets (net book value) | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 3,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 7,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 11,880 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash and Bank Balances | 20,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 1,812 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 2,718 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 1,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan Account | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Retained Profit and Loss account | 27,108 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Retained Profit and Loss account | 30,162 |
 | **Accuracy Check** | 0 |
 
 ## Profit & Loss Account
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 112,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Product B sales (code b) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Product C sales (code c) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income (code d) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received (code g) | 0 |
-| **Sales Turnover** | 75,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock (code s) | 15,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors (code c) | 20,000 |
+| **Sales Turnover** | 112,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock (code s) | 23,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors (code c) | 30,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs (code o) | 0 |
-| Cost of Sales | 35,500 |
-| **Gross Profit** | 39,500 |
+| Cost of Sales | 53,000 |
+| **Gross Profit** | 59,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 30,576 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Non-PAYE (code d) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employers National Insurance | 0 |
@@ -729,15 +732,15 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power (code p) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Distribution (code t) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Equipment Hire (code q) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance (code m) | 350 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance (code m) | 525 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Consumables (code u) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 300 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage & Stationery (code g) | 720 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising (code a) | 450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Telephone, Postage & Stationery (code g) | 1,080 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Travel & Hotel (code h) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v) | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Insurance (code n) | 1,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor Vehicle (code v) | 3,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Insurance (code n) | 1,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Leasing (code f) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional (code l) | 1,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional (code l) | 1,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts (from Sales) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bank Interest Paid | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bank Charges | 0 |
@@ -745,40 +748,40 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Goodwill written off (code z) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on disposal of assets | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 1,200 |
-| Total Admin Expenses | 37,746 |
-| **Operating Profit** | 1,754 |
+| Total Admin Expenses | 40,731 |
+| **Operating Profit** | 18,769 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
-| **Profit Before Tax** | 1,754 |
+| **Profit Before Tax** | 18,769 |
 
 ## Corporation Tax (CT600)
 
 | | Amount |
 |---|------:|
-| Operating Profit | 1,754 |
+| Operating Profit | 18,769 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 1,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 1,200 |
-| Operational profit chargeable | 2,954 |
+| Operational profit chargeable | 19,969 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 12,000 |
-| Profit after capital allowances | -9,046 |
+| Profit after capital allowances | 7,969 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | -9,046 |
-| **Corporation Tax** | 0 |
-| Tax Outstanding | 0 |
+| **Profit Chargeable to CT** | 7,969 |
+| **Corporation Tax** | 1,514.11 |
+| Tax Outstanding | 1,514.11 |
 
 ## Published P&L
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Sales Turnover | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales Turnover | 112,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Investment Grants | -0 |
-| **Total Sales Turnover** | 75,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 35,500 |
-| **Gross Profit** | 39,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 37,746 |
-| **Operating Profit** | 1,754 |
-| **Profit Before Tax** | 1,754 |
+| **Total Sales Turnover** | 112,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 53,000 |
+| **Gross Profit** | 59,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 40,731 |
+| **Operating Profit** | 18,769 |
+| **Profit Before Tax** | 18,769 |
 
 ## Published Balance Sheet
 
@@ -786,17 +789,17 @@ Status: RECONCILES
 |---|------:|
 | Fixed Assets (NBV) | 10,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 2,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 8,040 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 10,666.7 |
-| Current Assets | 21,206.7 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 3,044.7 |
-| **Net Current Assets** | 18,162 |
-| **Total Assets less CL** | 28,962 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 12,060 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 28,624.7 |
+| Current Assets | 43,184.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 6,467.81 |
+| **Net Current Assets** | 36,716.89 |
+| **Total Assets less CL** | 47,516.89 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 0 |
-| **Net Assets** | 28,962 |
+| **Net Assets** | 47,516.89 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| **Shareholders' Funds** | 28,962 |
+| **Shareholders' Funds** | 47,516.89 |
 
 ## Fixed Asset Note
 
@@ -812,7 +815,7 @@ Status: RECONCILES
 | **Depreciation carried forward** | 1,200 |
 | **Net book value** | 10,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 1,514.11 |
 
 ## Stock
 
@@ -838,20 +841,44 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Computers | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Motor Vehicles | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Stock | 3,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Debtors | 7,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Debtors | 11,880 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Bank Current Account | 20,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Bank Savings Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Cash Account | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors | -1,812 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Trade Creditors | -2,718 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Vat | -1,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor HMRC Corporation Tax | -900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Directors Loan Account | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -27,108 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -30,162 |
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | 0 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 135,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 22,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 112,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 88,146 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 14,691 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 73,455 |
+| **VAT due for the year** | 7,809 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 5,610 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 3,789 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 1,821 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 5,580 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 5,364 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 216 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 5,550 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 2,859 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 2,691 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 5,760 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 2,679 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 3,081 |
 
 ---
 
@@ -871,30 +898,30 @@ Status: RECONCILES
 | N6 | Postcode | S1 2AB | gl-bus:organizationAddress |
 | O3 | Tax Reference per CT603 Notice | 9876543210 | gl-taf:taxRegistrationNumber |
 | E15 | Stock at cost | 3000 | accounts.assets.1100 (opening) |
-| E16 | Trade Debtors | 7920 | accounts.assets.1300 (opening) |
+| E16 | Trade Debtors | 11880 | accounts.assets.1300 (opening) |
 | E18 | Cash and Bank Balances | 20000 | gl-cor:amount (opening.bank) |
-| E20 | Trade Creditors | 1812 | accounts.liabilities.2100 (opening) |
+| E20 | Trade Creditors | 2718 | accounts.liabilities.2100 (opening) |
 | E24 | Corporation Tax | 900 | accounts.liabilities.2300 (opening) |
 | E26 | Taxation and Social Security | 1000 | gl-cor:amount (opening.taxAndSocial) |
 | E33 | Called up share capital | 100 | accounts.capital.3000 (opening) |
-| E34 | Retained Profit and Loss account | 27108 | accounts.capital.3100 (opening) |
+| E34 | Retained Profit and Loss account | 30162 | accounts.capital.3100 (opening) |
 | E37 | **Accuracy Check** | 0 | gl-cor:amount (openingBalanceCheck) |
 
 ### MnthP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B4 | Product A sales (code a) | 75000 | accounts.sales.4000 |
+| B4 | Product A sales (code a) | 112500 | accounts.sales.4000 |
 | B5 | Product B sales (code b) | 0 | accounts.sales.4001 |
 | B6 | Product C sales (code c) | 0 | accounts.sales.4002 |
 | B7 | Other Direct Income (code d) | 0 | accounts.sales.4003 |
 | B8 | Grants Received (code g) | 0 | accounts.sales.4004 |
-| B9 | **Sales Turnover** | 75000 | gl-cor:amount (salesTurnover) |
-| B11 | Materials / Stock (code s) | 15500 | accounts.purchases.5000 |
-| B12 | Sub-Contractors (code c) | 20000 | accounts.purchases.5001 |
+| B9 | **Sales Turnover** | 112500 | gl-cor:amount (salesTurnover) |
+| B11 | Materials / Stock (code s) | 23000 | accounts.purchases.5000 |
+| B12 | Sub-Contractors (code c) | 30000 | accounts.purchases.5001 |
 | B13 | Other Direct Costs (code o) | 0 | accounts.purchases.5002 |
-| B14 | Cost of Sales | 35500 | gl-cor:amount (costOfSales) |
-| B16 | **Gross Profit** | 39500 | gl-cor:amount (grossProfit) |
+| B14 | Cost of Sales | 53000 | gl-cor:amount (costOfSales) |
+| B16 | **Gross Profit** | 59500 | gl-cor:amount (grossProfit) |
 | B18 | PAYE Wages + Non-PAYE Employee | 30576 | dpl:WagesAndSalaries (combined) |
 | B19 | Directors Non-PAYE (code d) | 0 | accounts.purchases.5100 |
 | B20 | Employers National Insurance | 0 | dpl:SocialSecurityCosts |
@@ -902,15 +929,15 @@ Status: RECONCILES
 | B22 | Light, Heat, Power (code p) | 0 | accounts.purchases.5201 |
 | B23 | Distribution (code t) | 0 | accounts.purchases.5300 |
 | B24 | Equipment Hire (code q) | 0 | accounts.purchases.5301 |
-| B25 | Repairs & Maintenance (code m) | 350 | accounts.purchases.5400 |
+| B25 | Repairs & Maintenance (code m) | 525 | accounts.purchases.5400 |
 | B26 | Consumables (code u) | 0 | accounts.purchases.5401 |
-| B27 | Advertising (code a) | 300 | accounts.purchases.5500 |
-| B28 | Telephone, Postage & Stationery (code g) | 720 | accounts.purchases.5501 |
+| B27 | Advertising (code a) | 450 | accounts.purchases.5500 |
+| B28 | Telephone, Postage & Stationery (code g) | 1080 | accounts.purchases.5501 |
 | B29 | Travel & Hotel (code h) | 0 | accounts.purchases.5600 |
-| B30 | Motor Vehicle (code v) | 2400 | accounts.purchases.5601 |
-| B31 | Insurance (code n) | 1200 | accounts.purchases.5700 |
+| B30 | Motor Vehicle (code v) | 3600 | accounts.purchases.5601 |
+| B31 | Insurance (code n) | 1800 | accounts.purchases.5700 |
 | B32 | Leasing (code f) | 0 | accounts.purchases.5701 |
-| B33 | Legal & Professional (code l) | 1000 | accounts.purchases.5800 |
+| B33 | Legal & Professional (code l) | 1500 | accounts.purchases.5800 |
 | B34 | Bad Debts (from Sales) | 0 | accounts.sales.4005 |
 | B35 | Bank Interest Paid | 0 | accounts.purchases.5701 |
 | B36 | Bank Charges | 0 | accounts.purchases.5702 |
@@ -918,22 +945,22 @@ Status: RECONCILES
 | B38 | Goodwill written off (code z) | 0 | accounts.purchases.5802 |
 | B39 | Loss on disposal of assets | 0 | gl-cor:amount (lossOnDisposal) |
 | B40 | Depreciation | 1200 | gl-cor:amount (depreciation) |
-| B41 | Total Admin Expenses | 37746 | gl-cor:amount (totalAdmin) |
-| B43 | **Operating Profit** | 1754 | gl-cor:amount (operatingProfit) |
+| B41 | Total Admin Expenses | 40731 | gl-cor:amount (totalAdmin) |
+| B43 | **Operating Profit** | 18769 | gl-cor:amount (operatingProfit) |
 | B44 | Interest Received | 0 | gl-cor:amount (interestReceived) |
-| B45 | **Profit Before Tax** | 1754 | gl-cor:amount (profitBeforeTax) |
-| C4 |  | 6500 |  |
-| D4 |  | 6000 |  |
-| E4 |  | 6200 |  |
-| F4 |  | 5800 |  |
-| G4 |  | 6500 |  |
-| H4 |  | 6300 |  |
-| I4 |  | 6800 |  |
-| J4 |  | 6200 |  |
-| K4 |  | 5500 |  |
-| L4 |  | 6000 |  |
-| M4 |  | 6500 |  |
-| N4 |  | 6700 |  |
+| B45 | **Profit Before Tax** | 18769 | gl-cor:amount (profitBeforeTax) |
+| C4 |  | 9750 |  |
+| D4 |  | 9000 |  |
+| E4 |  | 9300 |  |
+| F4 |  | 8700 |  |
+| G4 |  | 9750 |  |
+| H4 |  | 9450 |  |
+| I4 |  | 10200 |  |
+| J4 |  | 9300 |  |
+| K4 |  | 8250 |  |
+| L4 |  | 9000 |  |
+| M4 |  | 9750 |  |
+| N4 |  | 10050 |  |
 | C5 |  | 0 |  |
 | D5 |  | 0 |  |
 | E5 |  | 0 |  |
@@ -995,16 +1022,16 @@ Status: RECONCILES
 | M34 |  | 0 |  |
 | N34 |  | 0 |  |
 | C12 |  | 0 |  |
-| D12 |  | 6000 |  |
+| D12 |  | 9000 |  |
 | E12 |  | 0 |  |
 | F12 |  | 0 |  |
-| G12 |  | 5000 |  |
+| G12 |  | 7500 |  |
 | H12 |  | 0 |  |
 | I12 |  | 0 |  |
-| J12 |  | 5000 |  |
+| J12 |  | 7500 |  |
 | K12 |  | 0 |  |
 | L12 |  | 0 |  |
-| M12 |  | 4000 |  |
+| M12 |  | 6000 |  |
 | N12 |  | 0 |  |
 | C13 |  | 0 |  |
 | D13 |  | 0 |  |
@@ -1069,7 +1096,7 @@ Status: RECONCILES
 | C25 |  | 0 |  |
 | D25 |  | 0 |  |
 | E25 |  | 0 |  |
-| F25 |  | 350 |  |
+| F25 |  | 525 |  |
 | G25 |  | 0 |  |
 | H25 |  | 0 |  |
 | I25 |  | 0 |  |
@@ -1092,7 +1119,7 @@ Status: RECONCILES
 | N26 |  | 0 |  |
 | C27 |  | 0 |  |
 | D27 |  | 0 |  |
-| E27 |  | 300 |  |
+| E27 |  | 450 |  |
 | F27 |  | 0 |  |
 | G27 |  | 0 |  |
 | H27 |  | 0 |  |
@@ -1102,18 +1129,18 @@ Status: RECONCILES
 | L27 |  | 0 |  |
 | M27 |  | 0 |  |
 | N27 |  | 0 |  |
-| C28 |  | 60 |  |
-| D28 |  | 60 |  |
-| E28 |  | 60 |  |
-| F28 |  | 60 |  |
-| G28 |  | 60 |  |
-| H28 |  | 60 |  |
-| I28 |  | 60 |  |
-| J28 |  | 60 |  |
-| K28 |  | 60 |  |
-| L28 |  | 60 |  |
-| M28 |  | 60 |  |
-| N28 |  | 60 |  |
+| C28 |  | 90 |  |
+| D28 |  | 90 |  |
+| E28 |  | 90 |  |
+| F28 |  | 90 |  |
+| G28 |  | 90 |  |
+| H28 |  | 90 |  |
+| I28 |  | 90 |  |
+| J28 |  | 90 |  |
+| K28 |  | 90 |  |
+| L28 |  | 90 |  |
+| M28 |  | 90 |  |
+| N28 |  | 90 |  |
 | C29 |  | 0 |  |
 | D29 |  | 0 |  |
 | E29 |  | 0 |  |
@@ -1126,19 +1153,19 @@ Status: RECONCILES
 | L29 |  | 0 |  |
 | M29 |  | 0 |  |
 | N29 |  | 0 |  |
-| C30 |  | 200 |  |
-| D30 |  | 200 |  |
-| E30 |  | 200 |  |
-| F30 |  | 200 |  |
-| G30 |  | 200 |  |
-| H30 |  | 200 |  |
-| I30 |  | 200 |  |
-| J30 |  | 200 |  |
-| K30 |  | 200 |  |
-| L30 |  | 200 |  |
-| M30 |  | 200 |  |
-| N30 |  | 200 |  |
-| C31 |  | 1200 |  |
+| C30 |  | 300 |  |
+| D30 |  | 300 |  |
+| E30 |  | 300 |  |
+| F30 |  | 300 |  |
+| G30 |  | 300 |  |
+| H30 |  | 300 |  |
+| I30 |  | 300 |  |
+| J30 |  | 300 |  |
+| K30 |  | 300 |  |
+| L30 |  | 300 |  |
+| M30 |  | 300 |  |
+| N30 |  | 300 |  |
+| C31 |  | 1800 |  |
 | D31 |  | 0 |  |
 | E31 |  | 0 |  |
 | F31 |  | 0 |  |
@@ -1162,7 +1189,7 @@ Status: RECONCILES
 | L32 |  | 0 |  |
 | M32 |  | 0 |  |
 | N32 |  | 0 |  |
-| C33 |  | 600 |  |
+| C33 |  | 900 |  |
 | D33 |  | 0 |  |
 | E33 |  | 0 |  |
 | F33 |  | 0 |  |
@@ -1171,7 +1198,7 @@ Status: RECONCILES
 | I33 |  | 0 |  |
 | J33 |  | 0 |  |
 | K33 |  | 0 |  |
-| L33 |  | 400 |  |
+| L33 |  | 600 |  |
 | M33 |  | 0 |  |
 | N33 |  | 0 |  |
 | C37 |  | 0 |  |
@@ -1198,18 +1225,18 @@ Status: RECONCILES
 | L38 |  | 0 |  |
 | M38 |  | 0 |  |
 | N38 |  | 0 |  |
-| C9 |  | 6500 |  |
-| D9 |  | 6000 |  |
-| E9 |  | 6200 |  |
-| F9 |  | 5800 |  |
-| G9 |  | 6500 |  |
-| H9 |  | 6300 |  |
-| I9 |  | 6800 |  |
-| J9 |  | 6200 |  |
-| K9 |  | 5500 |  |
-| L9 |  | 6000 |  |
-| M9 |  | 6500 |  |
-| N9 |  | 6700 |  |
+| C9 |  | 9750 |  |
+| D9 |  | 9000 |  |
+| E9 |  | 9300 |  |
+| F9 |  | 8700 |  |
+| G9 |  | 9750 |  |
+| H9 |  | 9450 |  |
+| I9 |  | 10200 |  |
+| J9 |  | 9300 |  |
+| K9 |  | 8250 |  |
+| L9 |  | 9000 |  |
+| M9 |  | 9750 |  |
+| N9 |  | 10050 |  |
 | C39 |  | 0 |  |
 | D39 |  | 0 |  |
 | E39 |  | 0 |  |
@@ -1239,38 +1266,38 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| K5 | Operating Profit | 1754 | gl-cor:amount (ct600.box145) |
+| K5 | Operating Profit | 18769 | gl-cor:amount (ct600.box145) |
 | I8 | Add back: Depreciation | 1200 | gl-cor:amount (ct600.addBackDepreciation) |
 | K10 | Add back: total | 1200 | gl-cor:amount (ct600.addBack) |
-| K12 | Operational profit chargeable | 2954 | gl-cor:amount (ct600.adjustedProfit) |
+| K12 | Operational profit chargeable | 19969 | gl-cor:amount (ct600.adjustedProfit) |
 | K20 | Less: Capital Allowances | 12000 | tax.capitalAllowances (ct600) |
-| K22 | Profit after capital allowances | -9046 | gl-cor:amount (ct600.afterAllowances) |
+| K22 | Profit after capital allowances | 7969 | gl-cor:amount (ct600.afterAllowances) |
 | K24 | Add: gross bank interest | 0 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
-| K28 | **Profit Chargeable to CT** | -9046 | gl-cor:amount (ct600.box315) |
-| K35 | **Corporation Tax** | 0 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 0 | gl-cor:taxAmount (ct600.box515) |
+| K28 | **Profit Chargeable to CT** | 7969 | gl-cor:amount (ct600.box315) |
+| K35 | **Corporation Tax** | 1514.11 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 1514.11 | gl-cor:taxAmount (ct600.box515) |
 | I15 |  | 12000 |  |
 | I16 |  | 0 |  |
 | I17 |  | 0 |  |
 | I18 |  | 0 |  |
 | G33 |  | 19 |  |
-| I33 |  | 0 |  |
-| I34 |  | 0 |  |
+| I33 |  | 756.019357045144 |  |
+| I34 |  | 758.090642954856 |  |
 | K37 |  | 0 |  |
 
 ### PubP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| F7 | Sales Turnover | 75000 | gl-cor:amount (pubPL.salesTurnover) |
+| F7 | Sales Turnover | 112500 | gl-cor:amount (pubPL.salesTurnover) |
 | F8 | Investment Grants | 0 | gl-cor:amount (pubPL.grants) |
-| F9 | **Total Sales Turnover** | 75000 | gl-cor:amount (pubPL.totalTurnover) |
-| F16 | Cost of Sales | 35500 | gl-cor:amount (pubPL.cos) |
-| F18 | **Gross Profit** | 39500 | gl-cor:amount (pubPL.gross) |
-| F44 | Administrative Expenses | 37746 | gl-cor:amount (pubPL.admin) |
-| F46 | **Operating Profit** | 1754 | gl-cor:amount (pubPL.operating) |
-| F49 | **Profit Before Tax** | 1754 | gl-cor:amount (pubPL.pbt) |
+| F9 | **Total Sales Turnover** | 112500 | gl-cor:amount (pubPL.totalTurnover) |
+| F16 | Cost of Sales | 53000 | gl-cor:amount (pubPL.cos) |
+| F18 | **Gross Profit** | 59500 | gl-cor:amount (pubPL.gross) |
+| F44 | Administrative Expenses | 40731 | gl-cor:amount (pubPL.admin) |
+| F46 | **Operating Profit** | 18769 | gl-cor:amount (pubPL.operating) |
+| F49 | **Profit Before Tax** | 18769 | gl-cor:amount (pubPL.pbt) |
 | D3 |  | 46660 |  |
 
 ### PubBalSht
@@ -1279,17 +1306,17 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | F6 | Fixed Assets (NBV) | 10800 | gl-cor:amount (pubBS.fixedAssets) |
 | E10 | Stock at cost | 2500 | accounts.assets.1100 (pubBS) |
-| E11 | Trade Debtors | 8040 | accounts.assets.1300 (pubBS) |
-| E12 | Cash at bank and in hand | 10666.7 | gl-cor:amount (pubBS.bankCash) |
-| E13 | Current Assets | 21206.7 | gl-cor:amount (pubBS.currentAssets) |
-| E20 | Current Liabilities | 3044.7 | gl-cor:amount (pubBS.creditors) |
-| F22 | **Net Current Assets** | 18162 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 28962 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| E11 | Trade Debtors | 12060 | accounts.assets.1300 (pubBS) |
+| E12 | Cash at bank and in hand | 28624.7 | gl-cor:amount (pubBS.bankCash) |
+| E13 | Current Assets | 43184.7 | gl-cor:amount (pubBS.currentAssets) |
+| E20 | Current Liabilities | 6467.81 | gl-cor:amount (pubBS.creditors) |
+| F22 | **Net Current Assets** | 36716.89 | gl-cor:amount (pubBS.netCurrent) |
+| F26 | **Total Assets less CL** | 47516.89 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 0 | accounts.liabilities.2500 (pubBS) |
 | F31 | Other Creditors | 0 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 28962 | gl-cor:amount (pubBS.netAssets) |
+| F33 | **Net Assets** | 47516.89 | gl-cor:amount (pubBS.netAssets) |
 | F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
-| F39 | **Shareholders' Funds** | 28962 | gl-cor:amount (pubBS.equity) |
+| F39 | **Shareholders' Funds** | 47516.89 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 46660 |  |
 
 ### PubNotes
@@ -1306,7 +1333,7 @@ Status: RECONCILES
 | G17 | **Depreciation carried forward** | 1200 | gl-cor:amount (note1.depCf) |
 | G20 | **Net book value** | 10800 | gl-cor:amount (note1.nbv) |
 | D35 | Directors emoluments | 0 | gl-cor:amount (note2.emoluments) |
-| D41 | Corporation tax for the year | 0 | gl-cor:taxAmount (note4.ct) |
+| D41 | Corporation tax for the year | 1514.11 | gl-cor:taxAmount (note4.ct) |
 | B8 |  | 0 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
@@ -1383,17 +1410,17 @@ Status: RECONCILES
 | D14 | Opening: Acc Depreciation Computers | 0 | accounts.assets.0030 (opening dep) |
 | D15 | Opening: Acc Depreciation Motor Vehicles | 0 | accounts.assets.0040 (opening dep) |
 | D19 | Opening: Stock | 3000 | accounts.assets.1100 (opening) |
-| D20 | Opening: Trade Debtors | 7920 | accounts.assets.1300 (opening) |
+| D20 | Opening: Trade Debtors | 11880 | accounts.assets.1300 (opening) |
 | D22 | Opening: Bank Current Account | 20000 | accounts.assets.1200 (opening) |
 | D23 | Opening: Bank Savings Account | 0 | accounts.assets.1210 (opening) |
 | D24 | Opening: Credit Card Account | 0 | accounts.assets.1230 (opening) |
 | D25 | Opening: Cash Account | 0 | accounts.assets.1220 (opening) |
-| D28 | Opening: Trade Creditors | -1812 | accounts.liabilities.2100 (opening) |
+| D28 | Opening: Trade Creditors | -2718 | accounts.liabilities.2100 (opening) |
 | D33 | Opening: Creditor HMRC Vat | -1000 | accounts.liabilities.2200 (opening) |
 | D35 | Opening: Creditor HMRC Corporation Tax | -900 | accounts.liabilities.2300 (opening) |
 | D39 | Opening: Directors Loan Account | 0 | accounts.liabilities.2500 (opening) |
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
-| D43 | Opening: Revenue Reserve P&L Account | -27108 | accounts.capital.3100 (opening) |
+| D43 | Opening: Revenue Reserve P&L Account | -30162 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
 | EJ39 | Final: Directors Loan Account | 0 | accounts.liabilities.2500 (final) |
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
@@ -1404,16 +1431,17 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| AK66 |  | 75000 |  |
-| AJ74 |  | 0 |  |
-| AJ92 |  | 0 |  |
-| AJ110 |  | 0 |  |
-| AJ126 |  | 0 |  |
-| AJ131 |  | 0 |  |
-| AJ145 |  | 0 |  |
+| AK66 |  | 112500 |  |
+| Z70 |  | 7969 |  |
+| AJ74 |  | 7969 |  |
+| AJ92 |  | 7969 |  |
+| AJ110 |  | 7969 |  |
+| AJ126 |  | 756.019357045144 |  |
+| AJ131 |  | 756.019357045144 |  |
+| AJ145 |  | 756.019357045144 |  |
 | AJ154 |  | 0 |  |
-| AJ159 |  | 0 |  |
-| AJ166 |  | 0 |  |
+| AJ159 |  | 756.019357045144 |  |
+| AJ166 |  | 756.019357045144 |  |
 | AA126 |  | 19 |  |
 
 ### Admin
@@ -1500,9 +1528,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1300 |  |
+| G1 |  | 1950 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6500 |  |
+| H1 |  | 9750 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1510,9 +1538,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1200 |  |
+| G1 |  | 1800 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6000 |  |
+| H1 |  | 9000 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1520,9 +1548,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1240 |  |
+| G1 |  | 1860 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6200 |  |
+| H1 |  | 9300 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1530,9 +1558,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1160 |  |
+| G1 |  | 1740 |  |
 | G2 |  | 20 |  |
-| H1 |  | 5800 |  |
+| H1 |  | 8700 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1540,9 +1568,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1300 |  |
+| G1 |  | 1950 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6500 |  |
+| H1 |  | 9750 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1550,9 +1578,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1260 |  |
+| G1 |  | 1890 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6300 |  |
+| H1 |  | 9450 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1560,9 +1588,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1360 |  |
+| G1 |  | 2040 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6800 |  |
+| H1 |  | 10200 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1570,9 +1598,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1240 |  |
+| G1 |  | 1860 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6200 |  |
+| H1 |  | 9300 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1580,9 +1608,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1100 |  |
+| G1 |  | 1650 |  |
 | G2 |  | 20 |  |
-| H1 |  | 5500 |  |
+| H1 |  | 8250 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1590,9 +1618,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1200 |  |
+| G1 |  | 1800 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6000 |  |
+| H1 |  | 9000 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1600,9 +1628,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1300 |  |
+| G1 |  | 1950 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6500 |  |
+| H1 |  | 9750 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1610,9 +1638,9 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1340 |  |
+| G1 |  | 2010 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6700 |  |
+| H1 |  | 10050 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -1620,10 +1648,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 662 |  |
+| G1 |  | 993 |  |
 | G2 |  | 20 |  |
-| H1 |  | 3310 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 4965 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1632,10 +1660,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1502 |  |
+| G1 |  | 2253 |  |
 | G2 |  | 20 |  |
-| H1 |  | 7510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 11265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1644,10 +1672,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 362 |  |
+| G1 |  | 543 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1810 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2715 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1656,10 +1684,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 372 |  |
+| G1 |  | 558 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1860 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2790 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1668,10 +1696,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1302 |  |
+| G1 |  | 1953 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 9765 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1680,10 +1708,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 2702 |  |
+| G1 |  | 2853 |  |
 | G2 |  | 20 |  |
-| H1 |  | 13510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 14265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 12000 |  |
@@ -1692,10 +1720,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 302 |  |
+| G1 |  | 453 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1704,10 +1732,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1302 |  |
+| G1 |  | 1953 |  |
 | G2 |  | 20 |  |
-| H1 |  | 6510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 9765 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1716,10 +1744,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 302 |  |
+| G1 |  | 453 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1728,10 +1756,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 382 |  |
+| G1 |  | 573 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1910 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2865 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1740,10 +1768,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1102 |  |
+| G1 |  | 1653 |  |
 | G2 |  | 20 |  |
-| H1 |  | 5510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 8265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1752,10 +1780,10 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 302 |  |
+| G1 |  | 453 |  |
 | G2 |  | 20 |  |
-| H1 |  | 1510 |  |
-| O1 |  | 1250 |  |
+| H1 |  | 2265 |  |
+| O1 |  | 1875 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
@@ -1766,12 +1794,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46387 |  |
 | G7 |  | 46418 |  |
-| G9 |  | 3740 |  |
-| G13 |  | 3740 |  |
-| G15 |  | 2526 |  |
-| G17 |  | 1214 |  |
-| G21 |  | 18700 |  |
-| G23 |  | 12630 |  |
+| G9 |  | 5610 |  |
+| G13 |  | 5610 |  |
+| G15 |  | 3789 |  |
+| G17 |  | 1821 |  |
+| G21 |  | 28050 |  |
+| G23 |  | 18945 |  |
 
 ### Vatreturns.xlsx!VATQtr2
 
@@ -1779,12 +1807,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46477 |  |
 | G7 |  | 46507 |  |
-| G9 |  | 3720 |  |
-| G13 |  | 3720 |  |
-| G15 |  | 4376 |  |
-| G17 |  | -656 |  |
-| G21 |  | 18600 |  |
-| G23 |  | 21880 |  |
+| G9 |  | 5580 |  |
+| G13 |  | 5580 |  |
+| G15 |  | 5364 |  |
+| G17 |  | 216 |  |
+| G21 |  | 27900 |  |
+| G23 |  | 26820 |  |
 
 ### Vatreturns.xlsx!VATQtr3
 
@@ -1792,12 +1820,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46568 |  |
 | G7 |  | 46599 |  |
-| G9 |  | 3700 |  |
-| G13 |  | 3700 |  |
-| G15 |  | 1906 |  |
-| G17 |  | 1794 |  |
-| G21 |  | 18500 |  |
-| G23 |  | 9530 |  |
+| G9 |  | 5550 |  |
+| G13 |  | 5550 |  |
+| G15 |  | 2859 |  |
+| G17 |  | 2691 |  |
+| G21 |  | 27750 |  |
+| G23 |  | 14295 |  |
 
 ### Vatreturns.xlsx!VATQtr4
 
@@ -1805,12 +1833,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46660 |  |
 | G7 |  | 46691 |  |
-| G9 |  | 3840 |  |
-| G13 |  | 3840 |  |
-| G15 |  | 1786 |  |
-| G17 |  | 2054 |  |
-| G21 |  | 19200 |  |
-| G23 |  | 8930 |  |
+| G9 |  | 5760 |  |
+| G13 |  | 5760 |  |
+| G15 |  | 2679 |  |
+| G17 |  | 3081 |  |
+| G21 |  | 28800 |  |
+| G23 |  | 13395 |  |
 
 ### Vatreturns.xlsx!VATQtr5
 
@@ -1818,12 +1846,12 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | G5 |  | 46691 |  |
 | G7 |  | 46721 |  |
-| G9 |  | 2640 |  |
-| G13 |  | 2640 |  |
-| G15 |  | 1404 |  |
-| G17 |  | 1236 |  |
-| G21 |  | 13200 |  |
-| G23 |  | 7020 |  |
+| G9 |  | 3960 |  |
+| G13 |  | 3960 |  |
+| G15 |  | 2106 |  |
+| G17 |  | 1854 |  |
+| G21 |  | 19800 |  |
+| G23 |  | 10530 |  |
 
 ### Vatreturns.xlsx!Vatinterface
 
@@ -1845,157 +1873,157 @@ Status: RECONCILES
 | M5 |  | 0 |  |
 | B6 |  | 46326 |  |
 | C6 |  | 46356 |  |
-| D6 |  | 6500 |  |
-| E6 |  | 6500 |  |
-| F6 |  | 1300 |  |
-| G6 |  | 1300 |  |
-| H6 |  | 3310 |  |
-| I6 |  | 3310 |  |
-| J6 |  | 662 |  |
-| K6 |  | 662 |  |
+| D6 |  | 9750 |  |
+| E6 |  | 9750 |  |
+| F6 |  | 1950 |  |
+| G6 |  | 1950 |  |
+| H6 |  | 4965 |  |
+| I6 |  | 4965 |  |
+| J6 |  | 993 |  |
+| K6 |  | 993 |  |
 | M6 |  | 0 |  |
 | B7 |  | 46356 |  |
 | C7 |  | 46387 |  |
-| D7 |  | 6000 |  |
-| E7 |  | 12500 |  |
-| F7 |  | 1200 |  |
-| G7 |  | 2500 |  |
-| H7 |  | 7510 |  |
-| I7 |  | 10820 |  |
-| J7 |  | 1502 |  |
-| K7 |  | 2164 |  |
+| D7 |  | 9000 |  |
+| E7 |  | 18750 |  |
+| F7 |  | 1800 |  |
+| G7 |  | 3750 |  |
+| H7 |  | 11265 |  |
+| I7 |  | 16230 |  |
+| J7 |  | 2253 |  |
+| K7 |  | 3246 |  |
 | M7 |  | 0 |  |
 | B8 |  | 46387 |  |
 | C8 |  | 46418 |  |
-| D8 |  | 6200 |  |
-| E8 |  | 18700 |  |
-| F8 |  | 1240 |  |
-| G8 |  | 3740 |  |
-| H8 |  | 1810 |  |
-| I8 |  | 12630 |  |
-| J8 |  | 362 |  |
-| K8 |  | 2526 |  |
+| D8 |  | 9300 |  |
+| E8 |  | 28050 |  |
+| F8 |  | 1860 |  |
+| G8 |  | 5610 |  |
+| H8 |  | 2715 |  |
+| I8 |  | 18945 |  |
+| J8 |  | 543 |  |
+| K8 |  | 3789 |  |
 | M8 |  | 0 |  |
 | B9 |  | 46418 |  |
 | C9 |  | 46446 |  |
-| D9 |  | 5800 |  |
-| E9 |  | 18000 |  |
-| F9 |  | 1160 |  |
-| G9 |  | 3600 |  |
-| H9 |  | 1860 |  |
-| I9 |  | 11180 |  |
-| J9 |  | 372 |  |
-| K9 |  | 2236 |  |
+| D9 |  | 8700 |  |
+| E9 |  | 27000 |  |
+| F9 |  | 1740 |  |
+| G9 |  | 5400 |  |
+| H9 |  | 2790 |  |
+| I9 |  | 16770 |  |
+| J9 |  | 558 |  |
+| K9 |  | 3354 |  |
 | M9 |  | 0 |  |
 | B10 |  | 46446 |  |
 | C10 |  | 46477 |  |
-| D10 |  | 6500 |  |
-| E10 |  | 18500 |  |
-| F10 |  | 1300 |  |
-| G10 |  | 3700 |  |
-| H10 |  | 6510 |  |
-| I10 |  | 10180 |  |
-| J10 |  | 1302 |  |
-| K10 |  | 2036 |  |
+| D10 |  | 9750 |  |
+| E10 |  | 27750 |  |
+| F10 |  | 1950 |  |
+| G10 |  | 5550 |  |
+| H10 |  | 9765 |  |
+| I10 |  | 15270 |  |
+| J10 |  | 1953 |  |
+| K10 |  | 3054 |  |
 | M10 |  | 0 |  |
 | B11 |  | 46477 |  |
 | C11 |  | 46507 |  |
-| D11 |  | 6300 |  |
-| E11 |  | 18600 |  |
-| F11 |  | 1260 |  |
-| G11 |  | 3720 |  |
-| H11 |  | 13510 |  |
-| I11 |  | 21880 |  |
-| J11 |  | 2702 |  |
-| K11 |  | 4376 |  |
+| D11 |  | 9450 |  |
+| E11 |  | 27900 |  |
+| F11 |  | 1890 |  |
+| G11 |  | 5580 |  |
+| H11 |  | 14265 |  |
+| I11 |  | 26820 |  |
+| J11 |  | 2853 |  |
+| K11 |  | 5364 |  |
 | M11 |  | 0 |  |
 | B12 |  | 46507 |  |
 | C12 |  | 46538 |  |
-| D12 |  | 6800 |  |
-| E12 |  | 19600 |  |
-| F12 |  | 1360 |  |
-| G12 |  | 3920 |  |
-| H12 |  | 1510 |  |
-| I12 |  | 21530 |  |
-| J12 |  | 302 |  |
-| K12 |  | 4306 |  |
+| D12 |  | 10200 |  |
+| E12 |  | 29400 |  |
+| F12 |  | 2040 |  |
+| G12 |  | 5880 |  |
+| H12 |  | 2265 |  |
+| I12 |  | 26295 |  |
+| J12 |  | 453 |  |
+| K12 |  | 5259 |  |
 | M12 |  | 0 |  |
 | B13 |  | 46538 |  |
 | C13 |  | 46568 |  |
-| D13 |  | 6200 |  |
-| E13 |  | 19300 |  |
-| F13 |  | 1240 |  |
-| G13 |  | 3860 |  |
-| H13 |  | 6510 |  |
-| I13 |  | 21530 |  |
-| J13 |  | 1302 |  |
-| K13 |  | 4306 |  |
+| D13 |  | 9300 |  |
+| E13 |  | 28950 |  |
+| F13 |  | 1860 |  |
+| G13 |  | 5790 |  |
+| H13 |  | 9765 |  |
+| I13 |  | 26295 |  |
+| J13 |  | 1953 |  |
+| K13 |  | 5259 |  |
 | M13 |  | 0 |  |
 | B14 |  | 46568 |  |
 | C14 |  | 46599 |  |
-| D14 |  | 5500 |  |
-| E14 |  | 18500 |  |
-| F14 |  | 1100 |  |
-| G14 |  | 3700 |  |
-| H14 |  | 1510 |  |
-| I14 |  | 9530 |  |
-| J14 |  | 302 |  |
-| K14 |  | 1906 |  |
+| D14 |  | 8250 |  |
+| E14 |  | 27750 |  |
+| F14 |  | 1650 |  |
+| G14 |  | 5550 |  |
+| H14 |  | 2265 |  |
+| I14 |  | 14295 |  |
+| J14 |  | 453 |  |
+| K14 |  | 2859 |  |
 | M14 |  | 0 |  |
 | B15 |  | 46599 |  |
 | C15 |  | 46630 |  |
-| D15 |  | 6000 |  |
-| E15 |  | 17700 |  |
-| F15 |  | 1200 |  |
-| G15 |  | 3540 |  |
-| H15 |  | 1910 |  |
-| I15 |  | 9930 |  |
-| J15 |  | 382 |  |
-| K15 |  | 1986 |  |
+| D15 |  | 9000 |  |
+| E15 |  | 26550 |  |
+| F15 |  | 1800 |  |
+| G15 |  | 5310 |  |
+| H15 |  | 2865 |  |
+| I15 |  | 14895 |  |
+| J15 |  | 573 |  |
+| K15 |  | 2979 |  |
 | M15 |  | 0 |  |
 | B16 |  | 46630 |  |
 | C16 |  | 46660 |  |
-| D16 |  | 6500 |  |
-| E16 |  | 18000 |  |
-| F16 |  | 1300 |  |
-| G16 |  | 3600 |  |
-| H16 |  | 5510 |  |
-| I16 |  | 8930 |  |
-| J16 |  | 1102 |  |
-| K16 |  | 1786 |  |
+| D16 |  | 9750 |  |
+| E16 |  | 27000 |  |
+| F16 |  | 1950 |  |
+| G16 |  | 5400 |  |
+| H16 |  | 8265 |  |
+| I16 |  | 13395 |  |
+| J16 |  | 1653 |  |
+| K16 |  | 2679 |  |
 | M16 |  | 0 |  |
 | B17 |  | 46660 |  |
 | C17 |  | 46691 |  |
-| D17 |  | 6700 |  |
-| E17 |  | 19200 |  |
-| F17 |  | 1340 |  |
-| G17 |  | 3840 |  |
-| H17 |  | 1510 |  |
-| I17 |  | 8930 |  |
-| J17 |  | 302 |  |
-| K17 |  | 1786 |  |
+| D17 |  | 10050 |  |
+| E17 |  | 28800 |  |
+| F17 |  | 2010 |  |
+| G17 |  | 5760 |  |
+| H17 |  | 2265 |  |
+| I17 |  | 13395 |  |
+| J17 |  | 453 |  |
+| K17 |  | 2679 |  |
 | M17 |  | 0 |  |
 | B18 |  | 46691 |  |
 | C18 |  | 46721 |  |
 | D18 |  | 0 |  |
-| E18 |  | 13200 |  |
+| E18 |  | 19800 |  |
 | F18 |  | 0 |  |
-| G18 |  | 2640 |  |
+| G18 |  | 3960 |  |
 | H18 |  | 0 |  |
-| I18 |  | 7020 |  |
+| I18 |  | 10530 |  |
 | J18 |  | 0 |  |
-| K18 |  | 1404 |  |
+| K18 |  | 2106 |  |
 | M18 |  | 0 |  |
 | B19 |  | 46721 |  |
 | C19 |  | 46752 |  |
 | D19 |  | 0 |  |
-| E19 |  | 6700 |  |
+| E19 |  | 10050 |  |
 | F19 |  | 0 |  |
-| G19 |  | 1340 |  |
+| G19 |  | 2010 |  |
 | H19 |  | 0 |  |
-| I19 |  | 1510 |  |
+| I19 |  | 2265 |  |
 | J19 |  | 0 |  |
-| K19 |  | 302 |  |
+| K19 |  | 453 |  |
 | M19 |  | 0 |  |
 
 ### Fixedassets.xlsx!Schedule
@@ -2137,8 +2165,8 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 12026.7 |  |
-| A2 |  | 10666.7 |  |
+| A1 |  | 29390.7 |  |
+| A2 |  | 28624.7 |  |
 
 ### Savingaccount.xlsx!Sep
 

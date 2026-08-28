@@ -677,6 +677,7 @@ Status: RECONCILES (with warnings)
 | CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
 | CT: profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
@@ -692,7 +693,6 @@ Status: RECONCILES (with warnings)
 | Fixed asset note: corporation tax for the year = CT charge | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
 | Corporation Tax | 28029 | 28028.7805895061 | -0.2194104939007957 | PASS |
-| CT: Chargeable >= Operating | 176940.391666666 | 147519.897839506 | -29420.493827159982 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
 | CT: Marginal relief expected (profit > £50K) | 36880 | 28028.7805895061 | -8851.2194104939 | **WARNING** |
 
@@ -871,6 +871,30 @@ Status: RECONCILES (with warnings)
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
+| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 3,423.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 17,256.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 3,073.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 19,780 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 9,895.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 9,884.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 16,860 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 2,105.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 14,754.29 |
 
 ---
 

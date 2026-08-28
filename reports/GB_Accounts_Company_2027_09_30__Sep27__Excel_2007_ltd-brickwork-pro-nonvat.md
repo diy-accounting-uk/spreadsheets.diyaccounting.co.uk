@@ -662,6 +662,7 @@ Status: RECONCILES
 | CT: capital allowances = the allowance lines | 12000 | 12000 | 0 | PASS |
 | CT: profit after capital allowances | -9046 | -9046 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | -9046 | -9046 | 0 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | -9046 | -9046 | 0 | PASS |
 | CT600: turnover = published P&L turnover | 75000 | 75000 | 0 | PASS |
 | CT600: trading profits = CT profit after capital allowances | 0 | 0 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
@@ -852,6 +853,30 @@ Status: RECONCILES
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | 0 |
 | **Audit Accuracy Check** | 0 |
+
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 52,970 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 52,970 |
+| **VAT due for the year** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 0 |
 
 ---
 

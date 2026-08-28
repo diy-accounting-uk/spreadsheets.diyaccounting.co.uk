@@ -574,6 +574,30 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 3,750 |
 | **Annual Expenses** | 15,000 |
 
+## VAT Returns
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 75,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 52,970 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 52,970 |
+| **VAT due for the year** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 0 |
+
 ---
 
 ## Appendix: Cell Values
