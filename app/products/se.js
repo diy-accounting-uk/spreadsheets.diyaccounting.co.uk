@@ -1058,7 +1058,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + VAT_RATE);
         }
       }
-      check("P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI", pl.B21 || 0, wCodeNet + totalGross + totalEmployerNI);
+      check(
+        "P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI",
+        pl.B21 || 0,
+        wCodeNet + totalGross + totalEmployerNI,
+      );
     }
   }
 
@@ -1183,7 +1187,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const [period, row] of Object.entries(STRADDLING_PERIOD_ROWS)) {
         const salesGross = straddlingSales[period] || 0;
         const purchasesGross = straddlingPurchases[period] || 0;
-        check(`Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`, num(vatinterface[`D${row}`]), netOfVat(salesGross));
+        check(
+          `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
+          num(vatinterface[`D${row}`]),
+          netOfVat(salesGross),
+        );
         check(
           `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
           num(vatinterface[`F${row}`]),
@@ -1239,7 +1247,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(qtr.G21),
         num(vatinterface[`E${row}`]) + (flatRate ? num(vatinterface[`G${row}`]) : 0),
       );
-      check(`VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`, num(qtr.G7), num(vatinterface[`C${row}`]), 0);
+      check(
+        `VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`,
+        num(qtr.G7),
+        num(vatinterface[`C${row}`]),
+        0,
+      );
     }
   }
 

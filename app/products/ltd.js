@@ -1262,7 +1262,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const salesMonth = results[`Sales.xlsx!${tab}`];
       const purchasesMonth = results[`Purchases.xlsx!${tab}`];
       if (salesMonth) {
-        check(`Vatinterface D${row}: ${tab} sales net = Sales.xlsx ${tab}`, num(vatinterface[`D${row}`]), num(salesMonth[SALES_MONTH_TOTAL_CELLS.net]));
+        check(
+          `Vatinterface D${row}: ${tab} sales net = Sales.xlsx ${tab}`,
+          num(vatinterface[`D${row}`]),
+          num(salesMonth[SALES_MONTH_TOTAL_CELLS.net]),
+        );
         check(`Vatinterface F${row}: ${tab} output VAT = Sales.xlsx ${tab}`, num(vatinterface[`F${row}`]), num(salesMonth.G1));
       }
       if (purchasesMonth) {
@@ -1289,7 +1293,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const [period, row] of Object.entries(STRADDLING_PERIOD_ROWS)) {
         const salesGross = straddlingSales[period] || 0;
         const purchasesGross = straddlingPurchases[period] || 0;
-        check(`Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`, num(vatinterface[`D${row}`]), netOfVat(salesGross));
+        check(
+          `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
+          num(vatinterface[`D${row}`]),
+          netOfVat(salesGross),
+        );
         check(
           `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
           num(vatinterface[`F${row}`]),
@@ -1347,7 +1355,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(qtr.G21),
         num(vatinterface[`E${row}`]) + (flatRate ? num(vatinterface[`G${row}`]) : 0),
       );
-      check(`VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`, num(qtr.G7), num(vatinterface[`C${row}`]), 0);
+      check(
+        `VAT Q${q}: payment due date (G7) = Vatinterface final date for payment (C${row})`,
+        num(qtr.G7),
+        num(vatinterface[`C${row}`]),
+        0,
+      );
     }
   }
 
