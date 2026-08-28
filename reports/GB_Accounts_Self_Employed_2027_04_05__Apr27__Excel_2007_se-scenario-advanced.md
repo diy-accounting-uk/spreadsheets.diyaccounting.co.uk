@@ -40,6 +40,9 @@ Status: RECONCILES
 | VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 13470 | 13470 | 0 | PASS |
 | Motor Expenses | 6332 | 6331.875 | -0.125 | PASS |
 | Legal & Professional | 6925 | 6925 | 0 | PASS |
+| Stock: opening count | 10000 | 10000 | 0 | PASS |
+| Stock: count at the year end | 6000 | 6000 | 0 | PASS |
+| P&L: materials = stock purchases net + the year's stock movement | 9450 | 9450 | 0 | PASS |
 | Opening Debtors total | 10800 | 10800 | 0 | PASS |
 | Closing Debtors total | 10400 | 10400 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
