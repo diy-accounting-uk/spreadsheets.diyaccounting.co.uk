@@ -189,4 +189,26 @@ describe("Self Employed: the BrickWork Pro twins ask for different VAT rates", (
     expect(total(nonVat.sales)).toBe(75000);
     expect(total(vat.sales)).toBe(90000);
   });
+
+  // The two fixtures only mean anything as a pair: same trade, same dates,
+  // same codes, one journal stated including VAT and one without. Comparing
+  // them line by line is what stops an edit to one of them drifting away
+  // from the other.
+  it("matches the twins line by line, entry for entry", () => {
+    for (const journal of ["sales", "purchases"]) {
+      const plain = Object.entries(nonVat[journal]);
+      expect(plain.length).toBe(Object.keys(vat[journal]).length);
+      for (const [month, entries] of plain) {
+        const withVat = vat[journal][month];
+        expect(withVat, `${journal}.${month}`).toHaveLength(entries.length);
+        entries.forEach((tx, i) => {
+          const twin = withVat[i];
+          const where = `${journal}.${month}[${i}]`;
+          expect(twin.date.getTime(), where).toBe(tx.date.getTime());
+          expect(twin.code, where).toBe(tx.code);
+          expect(twin.amount, where).toBeCloseTo(tx.amount * 1.2, 2);
+        });
+      }
+    }
+  });
 });

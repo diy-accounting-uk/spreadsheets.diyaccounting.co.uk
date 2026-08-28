@@ -106,7 +106,7 @@ describe("summariseScenario", () => {
     expect(summary).toContain("BrickWork Pro Ltd");
     expect(summary).toContain("Bricklaying and plastering");
     expect(summary).toContain("VAT registered: yes, number 987654321");
-    expect(summary).toContain("include VAT at the standard rate");
+    expect(summary).toContain("includes VAT at the standard rate");
   });
 
   it("says so when the business is not registered for VAT", () => {
