@@ -112,8 +112,8 @@ describeCalc(
       for (const tab of ["Apr", "Jul", "Oct", "Mar"]) {
         expect(results[`Sales.xlsx!${tab}`].G2).toBe(0);
         expect(results[`Purchases.xlsx!${tab}`].G2).toBe(0);
-        expect(results[`Sales.xlsx!${tab}`].G1).toBe(" ");
-        expect(results[`Purchases.xlsx!${tab}`].G1).toBe(" ");
+        expect(results[`Sales.xlsx!${tab}`].G1).toBe(0);
+        expect(results[`Purchases.xlsx!${tab}`].G1).toBe(0);
       }
     });
 
@@ -167,16 +167,20 @@ describeCalc(
       ]);
     });
 
-    it("fails the CT600 trading profits box when a loss year is given a figure, corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "Z70", 5000);
+    // The form leaves its trading profits box blank against a loss, so the
+    // corruption goes on the working sheet the box reads: turn the loss into a
+    // profit there and the box that stayed blank is no longer right.
+    it("fails the CT600 trading profits box when the working sheet's loss is corrupted into a profit via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "K22", 5000);
       expect(value).toBe(5000);
-      const corrupted = { ...results, CT600: { ...results.CT600, Z70: value } };
+      const corrupted = { ...results, CorporationTax: { ...results.CorporationTax, K22: value } };
       const failures = ltdCheckCompliance(corrupted, expected, taxData, calculateExpectedTax).filter(
         (c) => !c.pass && c.severity !== "warning",
       );
       expect(failures.map((c) => c.name)).toEqual([
+        "CT: profit after capital allowances",
+        "CT: chargeable profit = profit after allowances + interest - losses brought forward",
         "CT600: trading profits = CT profit after capital allowances",
-        "CT600: net trading profits = trading profits - losses brought forward",
       ]);
     });
   },

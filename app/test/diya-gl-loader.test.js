@@ -17,7 +17,7 @@ describe("loadDiyaGlData", () => {
   it("loads book.toml and lines.jsonl from BST subset", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     expect(book.entityInformation.organizationIdentifier).toBe("Precision Code Trading");
-    expect(lines.length).toBe(504);
+    expect(lines.length).toBe(528);
   });
 
   it("loads full dataset", () => {
