@@ -8,7 +8,7 @@ Status: RECONCILES (with warnings)
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 3.292370820418e-10 | +3.292370820418e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 3.19232640322298e-10 | +3.19232640322298e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 33000 | 33000 | 0 | PASS |
@@ -27,9 +27,9 @@ Status: RECONCILES (with warnings)
 | Trial Balance opening: revenue reserve | -45702 | -45702 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | -13000 | -13000 | 0 | PASS |
 | P&L: Gross = Turnover - CoS | 326496.66666666634 | 326496.666666666 | -3.4924596548080444e-10 | PASS |
-| P&L: Operating = Gross - Admin | 268842.791666666 | 268842.791666666 | 0 | PASS |
-| P&L: PBT = Operating + Interest | 269117.791666666 | 269117.791666666 | 0 | PASS |
-| P&L: Admin lines sum = Total | 57653.875 | 57653.875 | 0 | PASS |
+| P&L: Operating = Gross - Admin | 180940.391666666 | 180940.391666666 | 0 | PASS |
+| P&L: PBT = Operating + Interest | 181215.391666666 | 181215.391666666 | 0 | PASS |
+| P&L: Admin lines sum = Total | 145556.27500000002 | 145556.275 | -2.9103830456733704e-11 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
 | Opening Debtors total | 10800 | 10800 | 0 | PASS |
@@ -42,6 +42,120 @@ Status: RECONCILES (with warnings)
 | VAT Q2: box 5 = box 3 - box 4 | 14183.4166666667 | 14183.4166666667 | 0 | PASS |
 | VAT Q3: box 5 = box 3 - box 4 | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q4: box 5 = box 3 - box 4 | 14754.29166666667 | 14754.2916666667 | +3.092281986027956e-11 | PASS |
+| Vatinterface D6: Apr sales net = Sales.xlsx Apr | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
+| Vatinterface F6: Apr output VAT = Sales.xlsx Apr | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
+| Vatinterface H6: Apr purchases net = Purchases.xlsx Apr | 4259.375 | 4259.375 | 0 | PASS |
+| Vatinterface J6: Apr input VAT = Purchases.xlsx Apr | 851.875 | 851.875 | 0 | PASS |
+| Vatinterface D7: May sales net = Sales.xlsx May | 27433.3333333333 | 27433.3333333333 | 0 | PASS |
+| Vatinterface F7: May output VAT = Sales.xlsx May | 5486.66666666667 | 5486.66666666667 | 0 | PASS |
+| Vatinterface H7: May purchases net = Purchases.xlsx May | 5312.5 | 5312.5 | 0 | PASS |
+| Vatinterface J7: May input VAT = Purchases.xlsx May | 1062.5 | 1062.5 | 0 | PASS |
+| Vatinterface D8: Jun sales net = Sales.xlsx Jun | 29333.3333333333 | 29333.3333333333 | 0 | PASS |
+| Vatinterface F8: Jun output VAT = Sales.xlsx Jun | 5866.66666666667 | 5866.66666666667 | 0 | PASS |
+| Vatinterface H8: Jun purchases net = Purchases.xlsx Jun | 7547.5 | 7547.5 | 0 | PASS |
+| Vatinterface J8: Jun input VAT = Purchases.xlsx Jun | 1509.5 | 1509.5 | 0 | PASS |
+| Vatinterface D9: Jul sales net = Sales.xlsx Jul | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
+| Vatinterface F9: Jul output VAT = Sales.xlsx Jul | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
+| Vatinterface H9: Jul purchases net = Purchases.xlsx Jul | 7549.375 | 7549.375 | 0 | PASS |
+| Vatinterface J9: Jul input VAT = Purchases.xlsx Jul | 1509.875 | 1509.875 | 0 | PASS |
+| Vatinterface D10: Aug sales net = Sales.xlsx Aug | 30016.6666666667 | 30016.6666666667 | 0 | PASS |
+| Vatinterface F10: Aug output VAT = Sales.xlsx Aug | 6003.33333333333 | 6003.33333333333 | 0 | PASS |
+| Vatinterface H10: Aug purchases net = Purchases.xlsx Aug | 3671.04166666667 | 3671.04166666667 | 0 | PASS |
+| Vatinterface J10: Aug input VAT = Purchases.xlsx Aug | 734.208333333333 | 734.208333333333 | 0 | PASS |
+| Vatinterface D11: Sep sales net = Sales.xlsx Sep | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
+| Vatinterface F11: Sep output VAT = Sales.xlsx Sep | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
+| Vatinterface H11: Sep purchases net = Purchases.xlsx Sep | 4145.83333333333 | 4145.83333333333 | 0 | PASS |
+| Vatinterface J11: Sep input VAT = Purchases.xlsx Sep | 829.166666666667 | 829.166666666667 | 0 | PASS |
+| Vatinterface D12: Oct sales net = Sales.xlsx Oct | 42133.3333333333 | 42133.3333333333 | 0 | PASS |
+| Vatinterface F12: Oct output VAT = Sales.xlsx Oct | 8426.66666666667 | 8426.66666666667 | 0 | PASS |
+| Vatinterface H12: Oct purchases net = Purchases.xlsx Oct | 35838.125 | 35838.125 | 0 | PASS |
+| Vatinterface J12: Oct input VAT = Purchases.xlsx Oct | 7167.625 | 7167.625 | 0 | PASS |
+| Vatinterface D13: Nov sales net = Sales.xlsx Nov | 29433.3333333333 | 29433.3333333333 | 0 | PASS |
+| Vatinterface F13: Nov output VAT = Sales.xlsx Nov | 5886.66666666667 | 5886.66666666667 | 0 | PASS |
+| Vatinterface H13: Nov purchases net = Purchases.xlsx Nov | 5765 | 5765 | 0 | PASS |
+| Vatinterface J13: Nov input VAT = Purchases.xlsx Nov | 1153 | 1153 | 0 | PASS |
+| Vatinterface D14: Dec sales net = Sales.xlsx Dec | 27333.3333333333 | 27333.3333333333 | 0 | PASS |
+| Vatinterface F14: Dec output VAT = Sales.xlsx Dec | 5466.66666666667 | 5466.66666666667 | 0 | PASS |
+| Vatinterface H14: Dec purchases net = Purchases.xlsx Dec | 7876.25 | 7876.25 | 0 | PASS |
+| Vatinterface J14: Dec input VAT = Purchases.xlsx Dec | 1575.25 | 1575.25 | 0 | PASS |
+| Vatinterface D15: Jan sales net = Sales.xlsx Jan | 29533.3333333333 | 29533.3333333333 | 0 | PASS |
+| Vatinterface F15: Jan output VAT = Sales.xlsx Jan | 5906.66666666667 | 5906.66666666667 | 0 | PASS |
+| Vatinterface H15: Jan purchases net = Purchases.xlsx Jan | 3759.375 | 3759.375 | 0 | PASS |
+| Vatinterface J15: Jan input VAT = Purchases.xlsx Jan | 751.875 | 751.875 | 0 | PASS |
+| Vatinterface D16: Feb sales net = Sales.xlsx Feb | 28633.3333333333 | 28633.3333333333 | 0 | PASS |
+| Vatinterface F16: Feb output VAT = Sales.xlsx Feb | 5726.66666666667 | 5726.66666666667 | 0 | PASS |
+| Vatinterface H16: Feb purchases net = Purchases.xlsx Feb | 3663.75 | 3663.75 | 0 | PASS |
+| Vatinterface J16: Feb input VAT = Purchases.xlsx Feb | 732.75 | 732.75 | 0 | PASS |
+| Vatinterface D17: Mar sales net = Sales.xlsx Mar | 26133.3333333333 | 26133.3333333333 | 0 | PASS |
+| Vatinterface F17: Mar output VAT = Sales.xlsx Mar | 5226.66666666667 | 5226.66666666667 | 0 | PASS |
+| Vatinterface H17: Mar purchases net = Purchases.xlsx Mar | 3105.41666666667 | 3105.41666666667 | 0 | PASS |
+| Vatinterface J17: Mar input VAT = Purchases.xlsx Mar | 621.083333333333 | 621.083333333333 | 0 | PASS |
+| Vatinterface D4: 02Y1 sales net = the straddling sales entered for that period | 4000 | 4000 | 0 | PASS |
+| Vatinterface F4: 02Y1 output VAT = the straddling sales entered for that period | 800 | 800 | 0 | PASS |
+| Vatinterface H4: 02Y1 purchases net = the straddling purchases entered for that period | 600 | 600 | 0 | PASS |
+| Vatinterface J4: 02Y1 input VAT = the straddling purchases entered for that period | 120 | 120 | 0 | PASS |
+| Vatinterface D5: 03Y1 sales net = the straddling sales entered for that period | 2000 | 2000 | 0 | PASS |
+| Vatinterface F5: 03Y1 output VAT = the straddling sales entered for that period | 400 | 400 | 0 | PASS |
+| Vatinterface H5: 03Y1 purchases net = the straddling purchases entered for that period | 1000 | 1000 | 0 | PASS |
+| Vatinterface J5: 03Y1 input VAT = the straddling purchases entered for that period | 200 | 200 | 0 | PASS |
+| Vatinterface D18: 04Y2 sales net = the straddling sales entered for that period | 3000 | 3000 | 0 | PASS |
+| Vatinterface F18: 04Y2 output VAT = the straddling sales entered for that period | 600 | 600 | 0 | PASS |
+| Vatinterface H18: 04Y2 purchases net = the straddling purchases entered for that period | 200 | 200 | 0 | PASS |
+| Vatinterface J18: 04Y2 input VAT = the straddling purchases entered for that period | 40 | 40 | 0 | PASS |
+| Vatinterface D19: 05Y2 sales net = the straddling sales entered for that period | 1500 | 1500 | 0 | PASS |
+| Vatinterface F19: 05Y2 output VAT = the straddling sales entered for that period | 300 | 300 | 0 | PASS |
+| Vatinterface H19: 05Y2 purchases net = the straddling purchases entered for that period | 300 | 300 | 0 | PASS |
+| Vatinterface J19: 05Y2 input VAT = the straddling purchases entered for that period | 60 | 60 | 0 | PASS |
+| VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
+| Vatinterface E8: quarter sales net = its three period rows | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
+| Vatinterface G8: quarter output VAT = its three period rows | 16920.000000000007 | 16920 | -7.275957614183426e-12 | PASS |
+| Vatinterface I8: quarter purchases net = its three period rows | 17119.375 | 17119.375 | 0 | PASS |
+| Vatinterface K8: quarter input VAT = its three period rows | 3423.875 | 3423.875 | 0 | PASS |
+| VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8) | 16920 | 16920 | 0 | PASS |
+| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 3423.875 | 3423.875 | 0 | PASS |
+| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 17119.375 | 17119.375 | 0 | PASS |
+| VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
+| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 45869 | 45869 | 0 | PASS |
+| VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
+| Vatinterface E11: quarter sales net = its three period rows | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
+| Vatinterface G11: quarter output VAT = its three period rows | 17256.66666666667 | 17256.6666666667 | +2.9103830456733704e-11 | PASS |
+| Vatinterface I11: quarter purchases net = its three period rows | 15366.25 | 15366.25 | 0 | PASS |
+| Vatinterface K11: quarter input VAT = its three period rows | 3073.25 | 3073.25 | 0 | PASS |
+| VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 17256.6666666667 | 17256.6666666667 | 0 | PASS |
+| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 3073.25 | 3073.25 | 0 | PASS |
+| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 15366.25 | 15366.25 | 0 | PASS |
+| VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
+| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 45961 | 45961 | 0 | PASS |
+| VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
+| Vatinterface E14: quarter sales net = its three period rows | 98899.9999999999 | 98899.9999999999 | 0 | PASS |
+| Vatinterface G14: quarter output VAT = its three period rows | 19780.000000000007 | 19780 | -7.275957614183426e-12 | PASS |
+| Vatinterface I14: quarter purchases net = its three period rows | 49479.375 | 49479.375 | 0 | PASS |
+| Vatinterface K14: quarter input VAT = its three period rows | 9895.875 | 9895.875 | 0 | PASS |
+| VAT Q3: box 1 (G9) = Vatinterface quarter VAT due (G14) | 19780 | 19780 | 0 | PASS |
+| VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K14) | 9895.875 | 9895.875 | 0 | PASS |
+| VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I14) | 49479.375 | 49479.375 | 0 | PASS |
+| VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 98899.9999999999 | 98899.9999999999 | 0 | PASS |
+| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46053 | 46053 | 0 | PASS |
+| VAT Q4: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
+| Vatinterface E17: quarter sales net = its three period rows | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
+| Vatinterface G17: quarter output VAT = its three period rows | 16860.000000000007 | 16860 | -7.275957614183426e-12 | PASS |
+| Vatinterface I17: quarter purchases net = its three period rows | 10528.54166666667 | 10528.5416666667 | +3.092281986027956e-11 | PASS |
+| Vatinterface K17: quarter input VAT = its three period rows | 2105.708333333333 | 2105.70833333333 | -3.183231456205249e-12 | PASS |
+| VAT Q4: box 1 (G9) = Vatinterface quarter VAT due (G17) | 16860 | 16860 | 0 | PASS |
+| VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2105.70833333333 | 2105.70833333333 | 0 | PASS |
+| VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 10528.5416666667 | 10528.5416666667 | 0 | PASS |
+| VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
+| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46142 | 46142 | 0 | PASS |
+| VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
+| Vatinterface E18: quarter sales net = its three period rows | 57766.6666666666 | 57766.6666666666 | 0 | PASS |
+| Vatinterface G18: quarter output VAT = its three period rows | 11553.33333333334 | 11553.3333333333 | -4.001776687800884e-11 | PASS |
+| Vatinterface I18: quarter purchases net = its three period rows | 6969.16666666667 | 6969.16666666667 | 0 | PASS |
+| Vatinterface K18: quarter input VAT = its three period rows | 1393.833333333333 | 1393.83333333333 | -2.9558577807620168e-12 | PASS |
+| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G18) | 11553.3333333333 | 11553.3333333333 | 0 | PASS |
+| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K18) | 1393.83333333333 | 1393.83333333333 | 0 | PASS |
+| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I18) | 6969.16666666667 | 6969.16666666667 | 0 | PASS |
+| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 57766.6666666666 | 57766.6666666666 | 0 | PASS |
+| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C18) | 46173 | 46173 | 0 | PASS |
 | Fixed asset note (land): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): additions = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
@@ -407,6 +521,93 @@ Status: RECONCILES (with warnings)
 | P&L Feb expense lines = Purchases.xlsx Feb net less materials, wages and asset purchases | 3113.75 | 3113.75 | 0 | PASS |
 | P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 25833.3333333333 | 25833.3333333333 | 0 | PASS |
 | P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 2855.41666666667 | 2855.416666666667 | -3.183231456205249e-12 | PASS |
+| WagesInterface Apr C4 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Apr D4 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Apr E4 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Apr H4 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Apr D4 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Apr E4 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Apr I4 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface May C5 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface May D5 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface May E5 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface May H5 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment May D5 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment May E5 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment May I5 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Jun C6 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Jun D6 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Jun E6 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Jun H6 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Jun D6 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Jun E6 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Jun I6 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Jul C7 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Jul D7 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Jul E7 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Jul H7 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Jul D7 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Jul E7 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Jul I7 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Aug C8 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Aug D8 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Aug E8 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Aug H8 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Aug D8 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Aug E8 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Aug I8 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Sep C9 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Sep D9 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Sep E9 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Sep H9 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Sep D9 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Sep E9 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Sep I9 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Oct C10 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Oct D10 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Oct E10 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Oct H10 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Oct D10 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Oct E10 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Oct I10 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Nov C11 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Nov D11 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Nov E11 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Nov H11 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Nov D11 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Nov E11 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Nov I11 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Dec C12 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Dec D12 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Dec E12 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Dec H12 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Dec D12 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Dec E12 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Dec I12 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Jan C13 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Jan D13 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Jan E13 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Jan H13 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Jan D13 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Jan E13 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Jan I13 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Feb C14 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Feb D14 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Feb E14 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Feb H14 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Feb D14 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Feb E14 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Feb I14 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| WagesInterface Mar C15 gross pay | 6748 | 6748 | 0 | PASS |
+| WagesInterface Mar D15 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface Mar E15 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface Mar H15 employer NI | 577.2 | 577.2 | 0 | PASS |
+| Payslips!Payment Mar D15 NI due | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment Mar E15 income tax due | 800 | 800 | 0 | PASS |
+| Payslips!Payment Mar I15 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net | 81642.67 | 81642.6666666667 | -0.0033333332976326346 | PASS |
+| MnthP&L: Employers National Insurance (B20) = payroll employer NI | 6926.399999999999 | 6926.4 | +9.094947017729282e-13 | PASS |
+| Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due | -1673.2 | -1673.2 | 0 | PASS |
 | Admin P6: corporation tax small profits rate | 19 | 19 | 0 | PASS |
 | Admin P7: corporation tax small profits rate (second year) | 19 | 19 | 0 | PASS |
 | Admin G5: annual investment allowance | 100 | 100 | 0 | PASS |
@@ -436,36 +637,36 @@ Status: RECONCILES (with warnings)
 | Fixed asset note: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
 | Fixed asset note: depreciation rate, computer equipment | 0.33 | 0.33 | 0 | PASS |
 | Fixed asset note: depreciation rate, motor vehicles | 0.25 | 0.25 | 0 | PASS |
-| Published P&L: operating profit = management P&L operating profit | 268842.791666666 | 268842.791666666 | 0 | PASS |
-| CT: operating profit = published P&L operating profit | 268842.791666666 | 268842.791666666 | 0 | PASS |
+| Published P&L: operating profit = management P&L operating profit | 180940.391666666 | 180940.391666666 | 0 | PASS |
+| CT: operating profit = published P&L operating profit | 180940.391666666 | 180940.391666666 | 0 | PASS |
 | CT: depreciation add-back = P&L depreciation | 11740 | 11740 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 2500 | 2500 | 0 | PASS |
 | CT: add-backs = depreciation + goodwill | 14240 | 14240 | 0 | PASS |
-| CT: profit plus add-backs | 283082.791666666 | 283082.791666666 | 0 | PASS |
+| CT: profit plus add-backs | 195180.391666666 | 195180.391666666 | 0 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 32500 | 32500 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 3000 | 3000 | 0 | PASS |
 | CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 8500 | 8500 | 0 | PASS |
 | CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
-| CT: profit after capital allowances | 239082.791666666 | 239082.791666666 | 0 | PASS |
-| CT: chargeable profit = profit after allowances + interest - losses brought forward | 239422.29783950548 | 239422.297839506 | +5.238689482212067e-10 | PASS |
+| CT: profit after capital allowances | 151180.391666666 | 151180.391666666 | 0 | PASS |
+| CT: chargeable profit = profit after allowances + interest - losses brought forward | 151519.8978395055 | 151519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
-| CT600: trading profits = CT profit after capital allowances | 239082.791666666 | 239082.791666666 | 0 | PASS |
+| CT600: trading profits = CT profit after capital allowances | 151180.391666666 | 151180.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
-| CT600: net trading profits = trading profits - losses brought forward | 239082.791666666 | 239082.791666666 | 0 | PASS |
+| CT600: net trading profits = trading profits - losses brought forward | 151180.391666666 | 151180.391666666 | 0 | PASS |
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 239422.29783950548 | 239422.297839506 | +5.238689482212067e-10 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 239422.297839506 | 239422.297839506 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 151519.8978395055 | 151519.897839506 | +5.238689482212067e-10 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 151519.897839506 | 151519.897839506 | 0 | PASS |
 | CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 22745.1182947531 | 22745.1182947531 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 22745.1182947531 | 22745.1182947531 | 0 | PASS |
-| CT600: self assessment of tax payable | 22745.1182947531 | 22745.1182947531 | 0 | PASS |
-| CT600: tax outstanding | 22680.6121219135 | 22680.6121219135 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 45490.2365895061 | 45490.2365895061 | 0 | PASS |
+| CT600: corporation tax = CT first financial year tax | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
+| CT600: self assessment of tax payable | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
+| CT600: tax outstanding | 14329.8841219135 | 14329.8841219135 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 28788.7805895061 | 28788.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
-| Corporation Tax | 45490 | 45490.2365895061 | +0.23658950610115426 | PASS |
-| CT: Chargeable >= Operating | 268842.791666666 | 239422.297839506 | -29420.493827159982 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 45425.73041666659 | 45425.7304166666 | +7.275957614183426e-12 | PASS |
-| CT: Marginal relief expected (profit > £50K) | 59856 | 45490.2365895061 | -14365.763410493899 | **WARNING** |
+| Corporation Tax | 28789 | 28788.7805895061 | -0.2194104939007957 | PASS |
+| CT: Chargeable >= Operating | 180940.391666666 | 151519.897839506 | -29420.493827159982 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 28724.274416666594 | 28724.2744166666 | +7.275957614183426e-12 | PASS |
+| CT: Marginal relief expected (profit > £50K) | 37880 | 28788.7805895061 | -9091.2194104939 | **WARNING** |
 
 ## Business Details
 
@@ -512,9 +713,9 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 2,670 |
 | Cost of Sales | 14,786.67 |
 | **Gross Profit** | 326,496.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 666.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 81,642.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Non-PAYE (code d) | 4,166.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Employers National Insurance | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employers National Insurance | 6,926.4 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises (code r) | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power (code p) | 1,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Distribution (code t) | 800 |
@@ -535,27 +736,27 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Goodwill written off (code z) | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on disposal of assets | 172 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
-| Total Admin Expenses | 57,653.88 |
-| **Operating Profit** | 268,842.79 |
+| Total Admin Expenses | 145,556.28 |
+| **Operating Profit** | 180,940.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
-| **Profit Before Tax** | 269,117.79 |
+| **Profit Before Tax** | 181,215.39 |
 
 ## Corporation Tax (CT600)
 
 | | Amount |
 |---|------:|
-| Operating Profit | 268,842.79 |
+| Operating Profit | 180,940.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 11,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 14,240 |
-| Operational profit chargeable | 283,082.79 |
+| Operational profit chargeable | 195,180.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 44,000 |
-| Profit after capital allowances | 239,082.79 |
+| Profit after capital allowances | 151,180.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 339.51 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | 239,422.3 |
-| **Corporation Tax** | 45,490.24 |
-| Tax Outstanding | 45,425.73 |
+| **Profit Chargeable to CT** | 151,519.9 |
+| **Corporation Tax** | 28,788.78 |
+| Tax Outstanding | 28,724.27 |
 
 ## Published P&L
 
@@ -566,9 +767,9 @@ Status: RECONCILES (with warnings)
 | **Total Sales Turnover** | 341,283.33 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 14,786.67 |
 | **Gross Profit** | 326,496.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 57,653.88 |
-| **Operating Profit** | 268,842.79 |
-| **Profit Before Tax** | 269,182.3 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 145,556.28 |
+| **Operating Profit** | 180,940.39 |
+| **Profit Before Tax** | 181,279.9 |
 
 ## Published Balance Sheet
 
@@ -579,13 +780,13 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 237,100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 23,844 |
 | Current Assets | 270,944 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 19,439.94 |
-| **Net Current Assets** | 251,504.06 |
-| **Total Assets less CL** | 282,494.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 90,640.88 |
+| **Net Current Assets** | 180,303.12 |
+| **Total Assets less CL** | 211,293.12 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 13,000 |
-| **Net Assets** | 269,494.06 |
-| **Shareholders' Funds** | 269,494.06 |
+| **Net Assets** | 198,293.12 |
+| **Shareholders' Funds** | 198,293.12 |
 
 ## Fixed Asset Note
 
@@ -601,7 +802,7 @@ Status: RECONCILES (with warnings)
 | **Depreciation carried forward** | 4,510 |
 | **Net book value** | 30,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 4,166.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 45,490.24 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 28,788.78 |
 
 ## Stock
 
@@ -684,9 +885,9 @@ Status: RECONCILES (with warnings)
 | B13 | Other Direct Costs | 2670 | accounts.purchases.5002 |
 | B14 | Cost of Sales | 14786.6666666667 | gl-cor:amount (costOfSales) |
 | B16 | **Gross Profit** | 326496.666666666 | gl-cor:amount (grossProfit) |
-| B18 | PAYE Wages + Non-PAYE Employee | 666.666666666667 | dpl:WagesAndSalaries (combined) |
+| B18 | PAYE Wages + Non-PAYE Employee | 81642.6666666667 | dpl:WagesAndSalaries (combined) |
 | B19 | Directors Non-PAYE (code d) | 4166.66666666667 | accounts.purchases.5100 |
-| B20 | Employers National Insurance | 0 | dpl:SocialSecurityCosts |
+| B20 | Employers National Insurance | 6926.4 | dpl:SocialSecurityCosts |
 | B21 | Premises (code r) | 12000 | accounts.purchases.5200 |
 | B22 | Light, Heat, Power (code p) | 1200 | accounts.purchases.5201 |
 | B23 | Distribution (code t) | 800 | accounts.purchases.5300 |
@@ -707,10 +908,10 @@ Status: RECONCILES (with warnings)
 | B38 | Goodwill written off (code z) | 2500 | accounts.purchases.5802 |
 | B39 | Loss on disposal of assets | 172 | gl-cor:amount (lossOnDisposal) |
 | B40 | Depreciation | 11740 | gl-cor:amount (depreciation) |
-| B41 | Total Admin Expenses | 57653.875 | gl-cor:amount (totalAdmin) |
-| B43 | **Operating Profit** | 268842.791666666 | gl-cor:amount (operatingProfit) |
+| B41 | Total Admin Expenses | 145556.275 | gl-cor:amount (totalAdmin) |
+| B43 | **Operating Profit** | 180940.391666666 | gl-cor:amount (operatingProfit) |
 | B44 | Interest Received | 275 | gl-cor:amount (interestReceived) |
-| B45 | **Profit Before Tax** | 269117.791666666 | gl-cor:amount (profitBeforeTax) |
+| B45 | **Profit Before Tax** | 181215.391666666 | gl-cor:amount (profitBeforeTax) |
 | C4 |  | 25333.3333333333 |  |
 | D4 |  | 25633.3333333333 |  |
 | E4 |  | 26533.3333333333 |  |
@@ -1028,25 +1229,25 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| K5 | Operating Profit | 268842.791666666 | gl-cor:amount (ct600.box145) |
+| K5 | Operating Profit | 180940.391666666 | gl-cor:amount (ct600.box145) |
 | I7 | Add back: Goodwill | 2500 | gl-cor:amount (ct600.addBackGoodwill) |
 | I8 | Add back: Depreciation | 11740 | gl-cor:amount (ct600.addBackDepreciation) |
 | K10 | Add back: total | 14240 | gl-cor:amount (ct600.addBack) |
-| K12 | Operational profit chargeable | 283082.791666666 | gl-cor:amount (ct600.adjustedProfit) |
+| K12 | Operational profit chargeable | 195180.391666666 | gl-cor:amount (ct600.adjustedProfit) |
 | K20 | Less: Capital Allowances | 44000 | tax.capitalAllowances (ct600) |
-| K22 | Profit after capital allowances | 239082.791666666 | gl-cor:amount (ct600.afterAllowances) |
+| K22 | Profit after capital allowances | 151180.391666666 | gl-cor:amount (ct600.afterAllowances) |
 | K24 | Add: gross bank interest | 339.506172839506 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
-| K28 | **Profit Chargeable to CT** | 239422.297839506 | gl-cor:amount (ct600.box315) |
-| K35 | **Corporation Tax** | 45490.2365895061 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 45425.7304166666 | gl-cor:taxAmount (ct600.box515) |
+| K28 | **Profit Chargeable to CT** | 151519.897839506 | gl-cor:amount (ct600.box315) |
+| K35 | **Corporation Tax** | 28788.7805895061 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 28724.2744166666 | gl-cor:taxAmount (ct600.box515) |
 | I15 |  | 32500 |  |
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
 | G33 |  | 19 |  |
-| I33 |  | 22745.1182947531 |  |
-| I34 |  | 22745.1182947531 |  |
+| I33 |  | 14394.3902947531 |  |
+| I34 |  | 14394.3902947531 |  |
 | K37 |  | 64.5061728395062 |  |
 
 ### PubP&L
@@ -1058,9 +1259,9 @@ Status: RECONCILES (with warnings)
 | F9 | **Total Sales Turnover** | 341283.333333333 | gl-cor:amount (pubPL.totalTurnover) |
 | F16 | Cost of Sales | 14786.6666666667 | gl-cor:amount (pubPL.cos) |
 | F18 | **Gross Profit** | 326496.666666666 | gl-cor:amount (pubPL.gross) |
-| F44 | Administrative Expenses | 57653.875 | gl-cor:amount (pubPL.admin) |
-| F46 | **Operating Profit** | 268842.791666666 | gl-cor:amount (pubPL.operating) |
-| F49 | **Profit Before Tax** | 269182.297839506 | gl-cor:amount (pubPL.pbt) |
+| F44 | Administrative Expenses | 145556.275 | gl-cor:amount (pubPL.admin) |
+| F46 | **Operating Profit** | 180940.391666666 | gl-cor:amount (pubPL.operating) |
+| F49 | **Profit Before Tax** | 181279.897839506 | gl-cor:amount (pubPL.pbt) |
 | D3 |  | 46112 |  |
 
 ### PubBalSht
@@ -1072,13 +1273,13 @@ Status: RECONCILES (with warnings)
 | E11 | Trade Debtors | 237100 | accounts.assets.1300 (pubBS) |
 | E12 | Cash at bank and in hand | 23844 | gl-cor:amount (pubBS.bankCash) |
 | E13 | Current Assets | 270944 | gl-cor:amount (pubBS.currentAssets) |
-| E20 | Current Liabilities | 19439.93875 | gl-cor:amount (pubBS.creditors) |
-| F22 | **Net Current Assets** | 251504.06125 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 282494.06125 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| E20 | Current Liabilities | 90640.88275 | gl-cor:amount (pubBS.creditors) |
+| F22 | **Net Current Assets** | 180303.11725 | gl-cor:amount (pubBS.netCurrent) |
+| F26 | **Total Assets less CL** | 211293.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | F31 | Other Creditors | 13000 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 269494.06125 | gl-cor:amount (pubBS.netAssets) |
-| F39 | **Shareholders' Funds** | 269494.06125 | gl-cor:amount (pubBS.equity) |
+| F33 | **Net Assets** | 198293.11725 | gl-cor:amount (pubBS.netAssets) |
+| F39 | **Shareholders' Funds** | 198293.11725 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 46112 |  |
 
 ### PubNotes
@@ -1095,7 +1296,7 @@ Status: RECONCILES (with warnings)
 | G17 | **Depreciation carried forward** | 4510 | gl-cor:amount (note1.depCf) |
 | G20 | **Net book value** | 30990 | gl-cor:amount (note1.nbv) |
 | D35 | Directors emoluments | 4166.66666666667 | gl-cor:amount (note2.emoluments) |
-| D41 | Corporation tax for the year | 45490.2365895061 | gl-cor:taxAmount (note4.ct) |
+| D41 | Corporation tax for the year | 28788.7805895061 | gl-cor:taxAmount (note4.ct) |
 | B8 |  | 0 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
@@ -1183,25 +1384,26 @@ Status: RECONCILES (with warnings)
 | D43 | Opening: Revenue Reserve P&L Account | -45702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
-| EJ91 | **Audit Accuracy Check** | 3.292370820418e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ91 | **Audit Accuracy Check** | 3.19232640322298e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
+| L34 |  | -1673.2 |  |
 
 ### CT600
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | AK66 |  | 341283.333333333 |  |
-| Z70 |  | 239082.791666666 |  |
-| AJ74 |  | 239082.791666666 |  |
+| Z70 |  | 151180.391666666 |  |
+| AJ74 |  | 151180.391666666 |  |
 | AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 239422.297839506 |  |
-| AJ110 |  | 239422.297839506 |  |
-| AJ126 |  | 22745.1182947531 |  |
-| AJ131 |  | 22745.1182947531 |  |
-| AJ145 |  | 22745.1182947531 |  |
+| AJ92 |  | 151519.897839506 |  |
+| AJ110 |  | 151519.897839506 |  |
+| AJ126 |  | 14394.3902947531 |  |
+| AJ131 |  | 14394.3902947531 |  |
+| AJ145 |  | 14394.3902947531 |  |
 | AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 22680.6121219135 |  |
-| AJ166 |  | 22680.6121219135 |  |
+| AJ159 |  | 14329.8841219135 |  |
+| AJ166 |  | 14329.8841219135 |  |
 | AA126 |  | 19 |  |
 
 ### Admin
@@ -1230,6 +1432,59 @@ Status: RECONCILES (with warnings)
 | F21 |  | 46112 |  |
 | B9 |  | 45748 |  |
 | B32 |  | 46112 |  |
+
+### WagesInterface
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C4 |  | 6748 |  |
+| D4 |  | 800 |  |
+| E4 |  | 296 |  |
+| H4 |  | 577.2 |  |
+| C5 |  | 6748 |  |
+| D5 |  | 800 |  |
+| E5 |  | 296 |  |
+| H5 |  | 577.2 |  |
+| C6 |  | 6748 |  |
+| D6 |  | 800 |  |
+| E6 |  | 296 |  |
+| H6 |  | 577.2 |  |
+| C7 |  | 6748 |  |
+| D7 |  | 800 |  |
+| E7 |  | 296 |  |
+| H7 |  | 577.2 |  |
+| C8 |  | 6748 |  |
+| D8 |  | 800 |  |
+| E8 |  | 296 |  |
+| H8 |  | 577.2 |  |
+| C9 |  | 6748 |  |
+| D9 |  | 800 |  |
+| E9 |  | 296 |  |
+| H9 |  | 577.2 |  |
+| C10 |  | 6748 |  |
+| D10 |  | 800 |  |
+| E10 |  | 296 |  |
+| H10 |  | 577.2 |  |
+| C11 |  | 6748 |  |
+| D11 |  | 800 |  |
+| E11 |  | 296 |  |
+| H11 |  | 577.2 |  |
+| C12 |  | 6748 |  |
+| D12 |  | 800 |  |
+| E12 |  | 296 |  |
+| H12 |  | 577.2 |  |
+| C13 |  | 6748 |  |
+| D13 |  | 800 |  |
+| E13 |  | 296 |  |
+| H13 |  | 577.2 |  |
+| C14 |  | 6748 |  |
+| D14 |  | 800 |  |
+| E14 |  | 296 |  |
+| H14 |  | 577.2 |  |
+| C15 |  | 6748 |  |
+| D15 |  | 800 |  |
+| E15 |  | 296 |  |
+| H15 |  | 577.2 |  |
 
 ### Sales.xlsx!Apr
 
@@ -1476,6 +1731,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 45838 |  |
+| G7 |  | 45869 |  |
 | G9 |  | 16920 |  |
 | G13 |  | 16920 |  |
 | G15 |  | 3423.875 |  |
@@ -1488,6 +1744,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 45930 |  |
+| G7 |  | 45961 |  |
 | G9 |  | 17256.6666666667 |  |
 | G13 |  | 17256.6666666667 |  |
 | G15 |  | 3073.25 |  |
@@ -1500,6 +1757,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46022 |  |
+| G7 |  | 46053 |  |
 | G9 |  | 19780 |  |
 | G13 |  | 19780 |  |
 | G15 |  | 9895.875 |  |
@@ -1512,6 +1770,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46112 |  |
+| G7 |  | 46142 |  |
 | G9 |  | 16860 |  |
 | G13 |  | 16860 |  |
 | G15 |  | 2105.70833333333 |  |
@@ -1524,12 +1783,186 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G5 |  | 46142 |  |
-| G9 |  | 10953.3333333333 |  |
-| G13 |  | 10953.3333333333 |  |
-| G15 |  | 1353.83333333333 |  |
-| G17 |  | 9599.50000000001 |  |
-| G21 |  | 54766.6666666666 |  |
-| G23 |  | 6769.16666666667 |  |
+| G7 |  | 46173 |  |
+| G9 |  | 11553.3333333333 |  |
+| G13 |  | 11553.3333333333 |  |
+| G15 |  | 1393.83333333333 |  |
+| G17 |  | 10159.5 |  |
+| G21 |  | 57766.6666666666 |  |
+| G23 |  | 6969.16666666667 |  |
+
+### Vatreturns.xlsx!Vatinterface
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| B4 |  | 45716 |  |
+| C4 |  | 45747 |  |
+| D4 |  | 4000 |  |
+| F4 |  | 800 |  |
+| H4 |  | 600 |  |
+| J4 |  | 120 |  |
+| M4 |  | 0 |  |
+| B5 |  | 45747 |  |
+| C5 |  | 45777 |  |
+| D5 |  | 2000 |  |
+| F5 |  | 400 |  |
+| H5 |  | 1000 |  |
+| J5 |  | 200 |  |
+| M5 |  | 0 |  |
+| B6 |  | 45777 |  |
+| C6 |  | 45808 |  |
+| D6 |  | 27833.3333333333 |  |
+| E6 |  | 33833.3333333333 |  |
+| F6 |  | 5566.66666666667 |  |
+| G6 |  | 6766.66666666667 |  |
+| H6 |  | 4259.375 |  |
+| I6 |  | 5859.375 |  |
+| J6 |  | 851.875 |  |
+| K6 |  | 1171.875 |  |
+| M6 |  | 0 |  |
+| B7 |  | 45808 |  |
+| C7 |  | 45838 |  |
+| D7 |  | 27433.3333333333 |  |
+| E7 |  | 57266.6666666666 |  |
+| F7 |  | 5486.66666666667 |  |
+| G7 |  | 11453.3333333333 |  |
+| H7 |  | 5312.5 |  |
+| I7 |  | 10571.875 |  |
+| J7 |  | 1062.5 |  |
+| K7 |  | 2114.375 |  |
+| M7 |  | 0 |  |
+| B8 |  | 45838 |  |
+| C8 |  | 45869 |  |
+| D8 |  | 29333.3333333333 |  |
+| E8 |  | 84599.9999999999 |  |
+| F8 |  | 5866.66666666667 |  |
+| G8 |  | 16920 |  |
+| H8 |  | 7547.5 |  |
+| I8 |  | 17119.375 |  |
+| J8 |  | 1509.5 |  |
+| K8 |  | 3423.875 |  |
+| M8 |  | 0 |  |
+| B9 |  | 45869 |  |
+| C9 |  | 45900 |  |
+| D9 |  | 28133.3333333333 |  |
+| E9 |  | 84899.9999999999 |  |
+| F9 |  | 5626.66666666667 |  |
+| G9 |  | 16980 |  |
+| H9 |  | 7549.375 |  |
+| I9 |  | 20409.375 |  |
+| J9 |  | 1509.875 |  |
+| K9 |  | 4081.875 |  |
+| M9 |  | 0 |  |
+| B10 |  | 45900 |  |
+| C10 |  | 45930 |  |
+| D10 |  | 30016.6666666667 |  |
+| E10 |  | 87483.3333333333 |  |
+| F10 |  | 6003.33333333333 |  |
+| G10 |  | 17496.6666666667 |  |
+| H10 |  | 3671.04166666667 |  |
+| I10 |  | 18767.9166666667 |  |
+| J10 |  | 734.208333333333 |  |
+| K10 |  | 3753.58333333333 |  |
+| M10 |  | 0 |  |
+| B11 |  | 45930 |  |
+| C11 |  | 45961 |  |
+| D11 |  | 28133.3333333333 |  |
+| E11 |  | 86283.3333333333 |  |
+| F11 |  | 5626.66666666667 |  |
+| G11 |  | 17256.6666666667 |  |
+| H11 |  | 4145.83333333333 |  |
+| I11 |  | 15366.25 |  |
+| J11 |  | 829.166666666667 |  |
+| K11 |  | 3073.25 |  |
+| M11 |  | 0 |  |
+| B12 |  | 45961 |  |
+| C12 |  | 45991 |  |
+| D12 |  | 42133.3333333333 |  |
+| E12 |  | 100283.333333333 |  |
+| F12 |  | 8426.66666666667 |  |
+| G12 |  | 20056.6666666667 |  |
+| H12 |  | 35838.125 |  |
+| I12 |  | 43655 |  |
+| J12 |  | 7167.625 |  |
+| K12 |  | 8731 |  |
+| M12 |  | 0 |  |
+| B13 |  | 45991 |  |
+| C13 |  | 46022 |  |
+| D13 |  | 29433.3333333333 |  |
+| E13 |  | 99699.9999999999 |  |
+| F13 |  | 5886.66666666667 |  |
+| G13 |  | 19940 |  |
+| H13 |  | 5765 |  |
+| I13 |  | 45748.9583333333 |  |
+| J13 |  | 1153 |  |
+| K13 |  | 9149.79166666667 |  |
+| M13 |  | 0 |  |
+| B14 |  | 46022 |  |
+| C14 |  | 46053 |  |
+| D14 |  | 27333.3333333333 |  |
+| E14 |  | 98899.9999999999 |  |
+| F14 |  | 5466.66666666667 |  |
+| G14 |  | 19780 |  |
+| H14 |  | 7876.25 |  |
+| I14 |  | 49479.375 |  |
+| J14 |  | 1575.25 |  |
+| K14 |  | 9895.875 |  |
+| M14 |  | 0 |  |
+| B15 |  | 46053 |  |
+| C15 |  | 46081 |  |
+| D15 |  | 29533.3333333333 |  |
+| E15 |  | 86299.9999999999 |  |
+| F15 |  | 5906.66666666667 |  |
+| G15 |  | 17260 |  |
+| H15 |  | 3759.375 |  |
+| I15 |  | 17400.625 |  |
+| J15 |  | 751.875 |  |
+| K15 |  | 3480.125 |  |
+| M15 |  | 0 |  |
+| B16 |  | 46081 |  |
+| C16 |  | 46112 |  |
+| D16 |  | 28633.3333333333 |  |
+| E16 |  | 85499.9999999999 |  |
+| F16 |  | 5726.66666666667 |  |
+| G16 |  | 17100 |  |
+| H16 |  | 3663.75 |  |
+| I16 |  | 15299.375 |  |
+| J16 |  | 732.75 |  |
+| K16 |  | 3059.875 |  |
+| M16 |  | 0 |  |
+| B17 |  | 46112 |  |
+| C17 |  | 46142 |  |
+| D17 |  | 26133.3333333333 |  |
+| E17 |  | 84299.9999999999 |  |
+| F17 |  | 5226.66666666667 |  |
+| G17 |  | 16860 |  |
+| H17 |  | 3105.41666666667 |  |
+| I17 |  | 10528.5416666667 |  |
+| J17 |  | 621.083333333333 |  |
+| K17 |  | 2105.70833333333 |  |
+| M17 |  | 0 |  |
+| B18 |  | 46142 |  |
+| C18 |  | 46173 |  |
+| D18 |  | 3000 |  |
+| E18 |  | 57766.6666666666 |  |
+| F18 |  | 600 |  |
+| G18 |  | 11553.3333333333 |  |
+| H18 |  | 200 |  |
+| I18 |  | 6969.16666666667 |  |
+| J18 |  | 40 |  |
+| K18 |  | 1393.83333333333 |  |
+| M18 |  | 0 |  |
+| B19 |  | 46173 |  |
+| C19 |  | 46203 |  |
+| D19 |  | 1500 |  |
+| E19 |  | 30633.3333333333 |  |
+| F19 |  | 300 |  |
+| G19 |  | 6126.66666666667 |  |
+| H19 |  | 300 |  |
+| I19 |  | 3605.41666666667 |  |
+| J19 |  | 60 |  |
+| K19 |  | 721.083333333333 |  |
+| M19 |  | 0 |  |
 
 ### Fixedassets.xlsx!Schedule
 
@@ -1617,6 +2050,47 @@ Status: RECONCILES (with warnings)
 |------|-----------|-------|-----------------|
 | E11 |  | 32500 |  |
 | K11 |  | 12500 |  |
+
+### Payslips.xlsx!Payment
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D4 |  | 873.2 |  |
+| E4 |  | 800 |  |
+| I4 |  | 1673.2 |  |
+| D5 |  | 873.2 |  |
+| E5 |  | 800 |  |
+| I5 |  | 1673.2 |  |
+| D6 |  | 873.2 |  |
+| E6 |  | 800 |  |
+| I6 |  | 1673.2 |  |
+| D7 |  | 873.2 |  |
+| E7 |  | 800 |  |
+| I7 |  | 1673.2 |  |
+| D8 |  | 873.2 |  |
+| E8 |  | 800 |  |
+| I8 |  | 1673.2 |  |
+| D9 |  | 873.2 |  |
+| E9 |  | 800 |  |
+| I9 |  | 1673.2 |  |
+| D10 |  | 873.2 |  |
+| E10 |  | 800 |  |
+| I10 |  | 1673.2 |  |
+| D11 |  | 873.2 |  |
+| E11 |  | 800 |  |
+| I11 |  | 1673.2 |  |
+| D12 |  | 873.2 |  |
+| E12 |  | 800 |  |
+| I12 |  | 1673.2 |  |
+| D13 |  | 873.2 |  |
+| E13 |  | 800 |  |
+| I13 |  | 1673.2 |  |
+| D14 |  | 873.2 |  |
+| E14 |  | 800 |  |
+| I14 |  | 1673.2 |  |
+| D15 |  | 873.2 |  |
+| E15 |  | 800 |  |
+| I15 |  | 1673.2 |  |
 
 ### Currentaccount.xlsx!Mar
 

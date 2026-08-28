@@ -108,31 +108,31 @@ describeCalc(
 
     it("carries each month's own sales and purchases VAT onto its interface row", () => {
       const vatinterface = results["Vat.xlsx!Vatinterface"];
-      expect(vatinterface.F9).toBe(results["Sales.xlsx!Jul"].H1);
-      expect(vatinterface.D9).toBe(results["Sales.xlsx!Jul"].I1);
-      expect(vatinterface.J17).toBe(results["Purchases.xlsx!Mar"].H1);
-      expect(vatinterface.H17).toBe(results["Purchases.xlsx!Mar"].I1);
+      expect(vatinterface.F9).toBeCloseTo(results["Sales.xlsx!Jul"].H1, 6);
+      expect(vatinterface.D9).toBeCloseTo(results["Sales.xlsx!Jul"].I1, 6);
+      expect(vatinterface.J17).toBeCloseTo(results["Purchases.xlsx!Mar"].H1, 6);
+      expect(vatinterface.H17).toBeCloseTo(results["Purchases.xlsx!Mar"].I1, 6);
       expect(vatinterface.F9).toBeGreaterThan(0);
     });
 
     it("puts the straddling periods on the rows either side of the year", () => {
       const vatinterface = results["Vat.xlsx!Vatinterface"];
       // 4800 gross before the year, 3600 gross after it, both at 20%.
-      expect(vatinterface.D4).toBe(4000);
-      expect(vatinterface.F4).toBe(800);
-      expect(vatinterface.D18).toBe(3000);
-      expect(vatinterface.F18).toBe(600);
-      expect(vatinterface.H18).toBe(200);
-      expect(vatinterface.J18).toBe(40);
+      expect(vatinterface.D4).toBeCloseTo(4000, 6);
+      expect(vatinterface.F4).toBeCloseTo(800, 6);
+      expect(vatinterface.D18).toBeCloseTo(3000, 6);
+      expect(vatinterface.F18).toBeCloseTo(600, 6);
+      expect(vatinterface.H18).toBeCloseTo(200, 6);
+      expect(vatinterface.J18).toBeCloseTo(40, 6);
     });
 
     it("reaches the last two VAT quarters without reaching the books", () => {
       const vatinterface = results["Vat.xlsx!Vatinterface"];
       // A 6 April year end puts the fourth and fifth quarters on the rows the
       // straddling entry sheets feed, so their boxes carry that data.
-      expect(results["Vat.xlsx!VATQtr4"].G9).toBe(vatinterface.G18);
-      expect(vatinterface.G18).toBe(vatinterface.F16 + vatinterface.F17 + vatinterface.F18);
-      expect(results["Vat.xlsx!VATQtr5"].G9).toBe(vatinterface.G19);
+      expect(results["Vat.xlsx!VATQtr4"].G9).toBeCloseTo(vatinterface.G18, 6);
+      expect(vatinterface.G18).toBeCloseTo(vatinterface.F16 + vatinterface.F17 + vatinterface.F18, 6);
+      expect(results["Vat.xlsx!VATQtr5"].G9).toBeCloseTo(vatinterface.G19, 6);
       expect(results["Profit & Loss Account"].B9).toBeCloseTo(expected.total_sales, 0);
     });
 

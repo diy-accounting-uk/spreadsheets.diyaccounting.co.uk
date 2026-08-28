@@ -119,22 +119,22 @@ describeCalc(
 
     it("carries each month's own sales and purchases VAT onto its interface row", () => {
       const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
-      expect(vatinterface.F6).toBe(results["Sales.xlsx!Apr"].G1);
-      expect(vatinterface.D6).toBe(results["Sales.xlsx!Apr"].H1);
-      expect(vatinterface.J17).toBe(results["Purchases.xlsx!Mar"].G1);
-      expect(vatinterface.H17).toBe(results["Purchases.xlsx!Mar"].H1);
+      expect(vatinterface.F6).toBeCloseTo(results["Sales.xlsx!Apr"].G1, 6);
+      expect(vatinterface.D6).toBeCloseTo(results["Sales.xlsx!Apr"].H1, 6);
+      expect(vatinterface.J17).toBeCloseTo(results["Purchases.xlsx!Mar"].G1, 6);
+      expect(vatinterface.H17).toBeCloseTo(results["Purchases.xlsx!Mar"].H1, 6);
       expect(vatinterface.F6).toBeGreaterThan(0);
     });
 
     it("puts the straddling periods on the rows either side of the year", () => {
       const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
       // 4800 gross before the year, 3600 gross after it, both at 20%.
-      expect(vatinterface.D4).toBe(4000);
-      expect(vatinterface.F4).toBe(800);
-      expect(vatinterface.D18).toBe(3000);
-      expect(vatinterface.F18).toBe(600);
-      expect(vatinterface.H18).toBe(200);
-      expect(vatinterface.J18).toBe(40);
+      expect(vatinterface.D4).toBeCloseTo(4000, 6);
+      expect(vatinterface.F4).toBeCloseTo(800, 6);
+      expect(vatinterface.D18).toBeCloseTo(3000, 6);
+      expect(vatinterface.F18).toBeCloseTo(600, 6);
+      expect(vatinterface.H18).toBeCloseTo(200, 6);
+      expect(vatinterface.J18).toBeCloseTo(40, 6);
     });
 
     it("reaches the fifth VAT quarter's boxes without reaching the books", () => {
@@ -142,9 +142,9 @@ describeCalc(
       const qtr5 = results["Vatreturns.xlsx!VATQtr5"];
       // Q5 is the quarter ending on the straddling row, so its box 1 is the
       // year's last two months plus the straddling period's own output VAT.
-      expect(qtr5.G9).toBe(vatinterface.G18);
-      expect(vatinterface.G18).toBe(vatinterface.F16 + vatinterface.F17 + vatinterface.F18);
-      expect(qtr5.G15).toBe(vatinterface.K18);
+      expect(qtr5.G9).toBeCloseTo(vatinterface.G18, 6);
+      expect(vatinterface.G18).toBeCloseTo(vatinterface.F16 + vatinterface.F17 + vatinterface.F18, 6);
+      expect(qtr5.G15).toBeCloseTo(vatinterface.K18, 6);
       // The books never see any of it.
       expect(Math.abs(results.TrialBalance.EJ91)).toBeLessThanOrEqual(1);
       expect(results["MnthP&L"].B9).toBeCloseTo(expected.total_sales, 0);
