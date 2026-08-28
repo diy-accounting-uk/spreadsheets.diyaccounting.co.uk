@@ -164,6 +164,10 @@ const bstToml = formatScenarioToml(
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
+    // In-year Plant & Machinery addition ("Bought AFTER" block on the Fixed
+    // Assets schedule) so the capital allowance line stops reading zero.
+    // 100% Annual Investment Allowance applies, so the full cost is claimed.
+    fixed_asset_additions: [{ date: "2025-09-15", description: "MacBook Pro workstation", reference: "INV-EQ-001", cost: 3600 }],
   },
 );
 

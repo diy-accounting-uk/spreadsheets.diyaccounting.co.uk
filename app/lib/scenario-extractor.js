@@ -509,6 +509,22 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Fixed asset additions (BST, Taxi) -- an in-year purchase that claims a
+  // capital allowance immediately, written both as a top-level table (for
+  // cellWrites, which puts it on the Fixed Assets schedule) and echoed into
+  // [expected] below (for checkCompliance, which is sometimes called with
+  // just scenario.expected rather than the whole merged scenario).
+  if (expected.fixed_asset_additions) {
+    for (const asset of expected.fixed_asset_additions) {
+      parts.push("[[fixed_asset_additions]]");
+      parts.push(`date = ${asset.date}`);
+      parts.push(`description = "${escapeTomlString(asset.description)}"`);
+      parts.push(`reference = "${escapeTomlString(asset.reference)}"`);
+      parts.push(`cost = ${asset.cost}`);
+      parts.push("");
+    }
+  }
+
   // Expected values
   parts.push("[expected]");
   parts.push(`total_sales = ${expected.total_sales}`);
@@ -520,6 +536,10 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
+  if (expected.fixed_asset_additions) {
+    const totalCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    parts.push(`fixed_asset_cost = ${totalCost}`);
+  }
   parts.push("");
 
   return parts.join("\n");
