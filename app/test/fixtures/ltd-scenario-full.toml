@@ -4583,6 +4583,9 @@ category = "motor"
 description = "Van (2.5 years old)"
 cost = 30000
 acc_dep = 9828
+# Written down TAX value brought forward (asset schedule column O);
+# an asset sold in the year needs one for its balancing allowance.
+tax_wdv = 24000
 
 [[opening_fixed_assets]]
 category = "computer"

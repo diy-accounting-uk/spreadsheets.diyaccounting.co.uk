@@ -201,7 +201,20 @@ describeCalc(
       expect(total).toBeGreaterThan(0);
     });
 
+    it("reads the ledger side of the reconciliation across the leaf-to-leaf links", () => {
+      const fr = results["Fixedassets.xlsx!FAreconciliation"];
+      // E13 comes from Purchases.xlsx and K13 from Sales.xlsx; E15/K15 are
+      // the sheet's own differences against its schedule totals. All four
+      // read blank until those two ledgers reach this workbook's caches.
+      expect(fr.E13).toBeGreaterThan(0);
+      expect(fr.K13).toBeGreaterThan(0);
+      expect(fr.E15).toBe(0);
+      expect(fr.K15).toBe(0);
+    });
+
     it.each([
+      ["Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total", "FAreconciliation", "E13"],
+      ["Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total", "FAreconciliation", "K13"],
       ["Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", "FAreconciliation", "E11"],
       ["Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", "FAreconciliation", "K11"],
       ["Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", "Schedule", "K1"],

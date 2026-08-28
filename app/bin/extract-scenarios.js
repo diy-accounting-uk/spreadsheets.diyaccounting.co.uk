@@ -222,7 +222,7 @@ const advToml = formatScenarioToml(
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: [
-      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828 },
+      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
       { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
     ],
     opening_debtors: openingDebtors,
@@ -284,7 +284,7 @@ const fullToml = formatScenarioToml(
     opening_stock: 10000,
     closing_stock: 6000,
     opening_fixed_assets: [
-      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828 },
+      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
       { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
     ],
     opening_debtors: openingDebtors,

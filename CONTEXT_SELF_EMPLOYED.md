@@ -14,7 +14,7 @@
 | MULTI_FILE | `true` -- multiple xlsx files with cross-file external links |
 | Package structure | 9 xlsx files + user guide PDF + payslip guide PDF |
 
-SE is a **multi-file** product. The package contains 9 separate xlsx workbooks linked via Excel external references. During reconciliation, the `runMultiFileSpreadsheet()` pipeline resolves cross-file dependencies by recalculating leaf files first, injecting their values into the hub's external link cache, then recalculating the hub.
+SE is a **multi-file** product. The package contains 9 separate xlsx workbooks linked via Excel external references. During reconciliation, the `runMultiFileSpreadsheet()` pipeline resolves cross-file dependencies by recalculating the leaf files first, refreshing each workbook's external link cache from its siblings, and recalculating in passes until every file has seen its sources' final values.
 
 SE packages always have a 6 April year-end (following the UK tax year). During generation, a **Payslip 05** companion package is also created by extracting `Payslips.xlsx` and the payslip guide from each SE package.
 
@@ -270,15 +270,15 @@ The key challenge: LibreOffice `--convert-to` does not resolve external links be
    - This forces LibreOffice to recalculate all formulas within each file
    - Sales.xlsx row 1 totals, Purchases.xlsx row 1 totals, etc. are now computed
 
-3. INJECT EXTERNAL LINK CACHES: updateExternalLinkCaches()
+3. REFRESH THE HUB'S EXTERNAL LINK CACHES: refreshExternalLinkCaches()
    - Open the hub file (Financialaccounts.xlsx) as a zip
    - For each xl/externalLinks/externalLinkN.xml.rels:
-     - Find the relative target filename (e.g. Sales.xlsx)
+     - Match the target on its basename against the sibling files
      - Open the corresponding recalculated leaf file
      - Read fresh cell values from the leaf
    - For each xl/externalLinks/externalLinkN.xml:
-     - Parse <sheetData> sections with cached values
-     - Replace old cached <cell r="XX"><v>...</v></cell> with fresh values
+     - Write back every cell the cache already held, plus every cell
+       the hub's formulas address that it never held
    - Write the updated hub back to disk
 
 4. RECALCULATE HUB: xls roundtrip on Financialaccounts.xlsx
@@ -286,10 +286,23 @@ The key challenge: LibreOffice `--convert-to` does not resolve external links be
    - LibreOffice recalculates all hub formulas using these cached values
    - P&L, Income Tax, etc. are now computed correctly
 
-5. READ RESULTS: Open the recalculated hub and extract cell values
+5. REFRESH AND RECALCULATE THE LEAVES THAT READ BACK: Fixedassets reads
+   the tax rates from the hub and the fixed asset totals from
+   Purchases.xlsx and Sales.xlsx, so it recalculates after them. The hub
+   then gets one more refresh and roundtrip to carry what changed.
+
+6. REFRESH AND RECALCULATE Vat.xlsx last, once every workbook it quotes
+   is final
+
+7. READ RESULTS: Open the recalculated hub and extract cell values
    - Reads from Profit & Loss Account and Income Tax sheets
+   - Plus additionalReads from the leaf workbooks
    - Returns structured results for compliance checking
 ```
+
+Each pass recalculates from a pristine copy of the file the scenario data was
+written into: LibreOffice ignores an external link cache injected into a file
+it wrote itself.
 
 ### xls Roundtrip Detail
 

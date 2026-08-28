@@ -472,6 +472,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (asset.description) fa[`C${row}`] = asset.description;
       fa[`E${row}`] = asset.cost;
       if (asset.acc_dep) fa[`F${row}`] = asset.acc_dep;
+      // Column O is the written down TAX value brought forward, the figure
+      // the capital allowance columns work from. The schedule computes a
+      // disposal's balancing allowance as that value less the sale proceeds,
+      // so an asset sold in the year without one leaves the whole capital
+      // allowance block, and every figure downstream of it, in error.
+      if (asset.tax_wdv) fa[`O${row}`] = asset.tax_wdv;
       existingAssetRowsUsed.push(row);
     }
   }
@@ -933,8 +939,10 @@ export function multiFileOptions(yearEndMonth) {
   // Fixedassets Schedule: row 1 holds the whole-schedule totals, rows 57 and
   // 110 the existing and new sub-totals, and each class's own totals row the
   // figures the published note quotes. Column B on a class totals row is the
-  // sheet's own comparison against the opening balance sheet.
-  const scheduleReads = ["E1", "F1", "G1", "I1", "J1", "K1", "V1", "W1", "X1", "E57", "E110"];
+  // sheet's own comparison against the opening balance sheet. Q/R carry the
+  // annual investment and writing down allowances, Y/Z the balancing
+  // allowance and charge a disposal throws off.
+  const scheduleReads = ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"];
   for (const layout of Object.values(SCHEDULE_ASSET_CLASSES)) {
     for (const totalRow of [layout.existingTotalRow, layout.newTotalRow]) {
       for (const col of ["E", "F", "I", "W", "X"]) scheduleReads.push(`${col}${totalRow}`);
@@ -998,6 +1006,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+  }
+
+  // Some of the workbook's own verdicts are wording, not arithmetic: the
+  // cell either names what it found or tells the reader to go and fix
+  // something. The report shows both sides as text and the diff column stays
+  // empty.
+  function checkText(name, actual, accepts, expectedDescription) {
+    checks.push({ name, actual, expected: expectedDescription, pass: accepts(actual), diff: "" });
   }
 
   // A template cell that resolves to blank reads back as the string the
@@ -1188,13 +1204,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
 
     // The Schedule's own per-class comparison against the opening balance
-    // sheet (column B on each class totals row) is read but not asserted.
-    // It reads OpenAccounts through a leaf-to-hub external link, and
-    // runMultiFileSpreadsheet only refreshes the hub's link caches, so the
-    // comparison runs against the template's cached zeros whatever the
-    // scenario holds. Asserting it here would fail on correct data. The
-    // opening figures reach the trial balance by a different route, which
-    // the opening balance checks above cover.
+    // sheet. Column B on each class totals row reads OpenAccounts across a
+    // leaf-to-hub external link and reports either the class name or a
+    // warning to go back and check the opening figures. It is the only place
+    // the fixed asset schedule and the opening balance sheet meet, so a
+    // class entered on one and not the other shows up here and nowhere else.
+    for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
+      const verdict = schedule[`B${layout.existingTotalRow}`];
+      checkText(
+        `Fixed asset schedule (${className}): opening cost and depreciation agree with the opening balance sheet`,
+        typeof verdict === "string" ? verdict : "",
+        (text) => text.startsWith("Existing "),
+        "an Existing ... heading",
+      );
+    }
   }
 
   // The balance sheet's fixed asset line is built from the trial balance,
@@ -1398,12 +1421,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
     check("CT: add-backs = depreciation + goodwill", num(corporationTax.K10), num(corporationTax.I7) + num(corporationTax.I8));
     check("CT: profit plus add-backs", num(corporationTax.K12), num(corporationTax.K5) + num(corporationTax.K10));
-    // The allowance lines themselves read zero in this pipeline whatever the
-    // schedule holds: the capital allowance notes address individual
-    // Schedule rows (E67 and up), and the hub's external link cache carries
-    // only the column totals, so the per-row tests all see blanks. The sum
-    // identity still holds and localises a break once the cache carries
-    // those cells.
+    // Each allowance line against the schedule column it claims from. The
+    // notes behind these lines address Schedule rows one by one, so they
+    // only carry figures when every one of those rows reaches the tax
+    // computation, and each line is anchored in the schedule rather than in
+    // its own total.
+    if (schedule) {
+      check("CT: annual investment allowance = Schedule annual investment allowance", num(corporationTax.I15), num(schedule.Q1));
+      check(
+        "CT: writing down allowances = Schedule writing down allowances",
+        num(corporationTax.I16) + num(corporationTax.I17),
+        num(schedule.R1),
+      );
+      check(
+        "CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge",
+        num(corporationTax.I18),
+        num(schedule.Y1) - num(schedule.Z1),
+      );
+    }
     check(
       "CT: capital allowances = the allowance lines",
       num(corporationTax.K20),
