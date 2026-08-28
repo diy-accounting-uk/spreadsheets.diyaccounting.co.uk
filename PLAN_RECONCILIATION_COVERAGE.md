@@ -204,7 +204,21 @@ WagesInterface reads), SE VAT values workstream, CI scenario workstream
 **Wave 4 — Batch 4 PR: items 11, 13, 14.** Formula-presence guard (new catalogue test),
 non-March roundtrip, LibreOffice matrix shrink.
 
-**Wave 5 — the judge**, once the pages are stable input.
+**Wave 5 — coverage-gaps PR: resolve SHEET_COVERAGE_GAPS.md's risk list.** One PR
+closing every gap in the report's "Largest gaps by risk", except the two legs already
+owned elsewhere (bank read-backs land with item 6 in Wave 2; WagesInterface with item 4
+in Wave 3 — this wave verifies both landed and covers what they left).
+
+| Workstream | Owns | Work |
+|---|---|---|
+| Bank leg completion | ltd.js/se.js bank sections | Closing-balance reads for all four Ltd bank workbooks and SE Cash.xlsx (file-qualified result keys make the same-named month tabs readable); reconcile each to the scenario's cash movements |
+| Admin echo | all four product modules | Read back the injected rates, bands, thresholds, VAT rate, and Ltd's year-end seed (Admin!F21) from every product's Admin sheet and assert against the tax-data TOML — a wrong rate is otherwise arithmetically invisible |
+| Published documents | ltd.js | CT600 box values tied to the CorporationTax working sheet; PubNotes fixed-asset note tied to the Schedule (with item 5 if that lands first) |
+| VAT localisation | ltd.js/se.js, scenario fixtures | Vatinterface mid-chain reads so a break is localised, not just caught; SE VATQtr box values including VATQtr5; a fixture exercising the straddling-period S/P sheets in both products |
+| Payroll remainder | ltd.js/se.js | Payslips!Payment monthly PAYE/NI-due figures tied to the payroll fixture |
+| Below the line | ltd.js, bst/taxi fixtures | RegisterofMembers nominal value × shares issued = balance sheet share capital; BST and Taxi scenario fixed assets so their capital-allowance lines carry non-zero signal |
+
+**Wave 6 — the judge**, once the pages are stable input.
 
 Every wave proves its checks by breaking a copy before the PR opens, the way the
 month-links guard was proven against the pre-fix packages.

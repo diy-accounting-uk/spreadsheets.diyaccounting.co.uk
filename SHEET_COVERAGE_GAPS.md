@@ -171,7 +171,9 @@ checks on sheets already touched and closes none of these gaps.
 
 ## Largest gaps by risk
 
-Ordered by how much customer-facing arithmetic sits on the untouched sheet.
+Ordered by how much customer-facing arithmetic sits on the untouched sheet. Every item
+now has an owner: PLAN_RECONCILIATION_COVERAGE.md's Wave 5 (the coverage-gaps PR)
+resolves this list, except the two legs named below that land earlier with Waves 2 and 3.
 
 1. **The four Ltd bank workbooks, and SE `Cash.xlsx` — write-only.** These are touched by
    the letter of the definition and hollow in practice. Ltd writes 48 month tabs across
@@ -180,27 +182,34 @@ Ordered by how much customer-facing arithmetic sits on the untouched sheet.
    branch drops the `Cash.xlsx` read entirely. The operator's stated case is data entry in a
    cash or bank sheet reaching the balance sheet, and that leg is unverified for every
    account in the largest product. This is item 6 in the plan and it outranks every
-   genuinely untouched sheet below.
+   genuinely untouched sheet below. *Owner: Wave 2 (item 6); Wave 5 completes the leg —
+   all four Ltd accounts plus SE Cash.xlsx, readable now that additionalReads results
+   carry file-qualified keys.*
 2. **`Financialaccounts!Admin`, all four products.** The generator injects the tax year's
    rates, bands, thresholds, VAT rate and — for Ltd — the year-end date that every other
    date cascades from. Nothing reads any of it back. A wrong value here is arithmetically
    invisible: every downstream check passes on a consistently wrong rate. This is the same
-   failure shape as the shipped-zeros VAT bug.
+   failure shape as the shipped-zeros VAT bug. *Owner: Wave 5 (Admin echo workstream).*
 3. **Ltd `CT600` and `PubNotes`.** The corporation tax return and the statutory fixed-asset
    note are what the customer actually files. The pipeline asserts the CorporationTax
    working sheet and the Schedule, then never checks the two published documents derived
-   from them. PubNotes is planned as item 5; CT600 is in no wave.
+   from them. PubNotes is planned as item 5; CT600 was in no wave. *Owner: Wave 5
+   (published documents workstream), sharing PubNotes with item 5 if that lands first.*
 4. **`Vatinterface` and the eight straddling-period S/P sheets, both Ltd and SE.**
    Vatinterface is the exact sheet the VAT bug ran through. Ltd now anchors the chain at
    both ends, so a break is caught, but not localised; SE checks the VATQtr boxes for
    presence only, and SE never reads VATQtr5 at all. The straddling-period sheets have no
-   fixture exercising them in either product.
+   fixture exercising them in either product. *Owner: Wave 5 (VAT localisation
+   workstream).*
 5. **`Payslips!Payment` and `WagesInterface`, both Ltd and SE.** Payroll is written into the
    month tabs and vanishes. Payment computes real money owed to HMRC each month; on Ltd,
    WagesInterface is the only route from payroll into the P&L wages lines and the balance
-   sheet PAYE/NI creditor. Item 4 covers WagesInterface; nothing covers Payment.
+   sheet PAYE/NI creditor. Item 4 covers WagesInterface; Payment is Wave 5's. *Owner:
+   WagesInterface with Wave 3 (item 4); Payslips!Payment with Wave 5 (payroll
+   remainder).*
 
-Two sheets carry arithmetic worth naming but sit below the line: Ltd
-`RegisterofMembers`, whose nominal value times shares issued should equal the balance sheet
-share capital, and the BST and Taxi `Fixed Assets` sheets, which feed a capital allowance
-line that always reads zero because no fixture gives either product an asset.
+Two sheets carry arithmetic worth naming but sit below the line, and Wave 5's
+below-the-line workstream takes both: Ltd `RegisterofMembers`, whose nominal value times
+shares issued should equal the balance sheet share capital, and the BST and Taxi
+`Fixed Assets` sheets, which feed a capital allowance line that always reads zero because
+no fixture gives either product an asset.
