@@ -8,6 +8,7 @@ import { join } from "path";
 import {
   DEFAULT_MODEL,
   VERDICT_SCHEMA,
+  VERDICT_TOOL,
   assemblePrompt,
   buildSystemPrompt,
   buildUserPrompt,
@@ -38,8 +39,12 @@ function reportsDirWith(files) {
   return dir;
 }
 
-function messageWith(payload) {
-  return { content: [{ type: "text", text: typeof payload === "string" ? payload : JSON.stringify(payload) }] };
+function messageWith(input) {
+  return { content: [{ type: "tool_use", name: VERDICT_TOOL, input }] };
+}
+
+function textOnlyMessage(text) {
+  return { content: [{ type: "text", text }] };
 }
 
 const PASSING = { verdict: "pass", summary: "The accounts match the scenario.", concerns: [] };
@@ -185,17 +190,17 @@ describe("parseVerdict", () => {
     expect(verdict.concerns).toHaveLength(1);
   });
 
-  it("ignores thinking blocks and reads the text block", () => {
+  it("ignores thinking blocks and reads the tool call", () => {
     const message = { content: [{ type: "thinking", thinking: "" }, ...messageWith(PASSING).content] };
     expect(parseVerdict(message).verdict).toBe("pass");
   });
 
-  it("throws when the response holds no text block", () => {
-    expect(() => parseVerdict({ content: [{ type: "thinking", thinking: "" }] })).toThrow(/no text block/);
+  it("throws when the response holds no verdict tool call", () => {
+    expect(() => parseVerdict({ content: [{ type: "thinking", thinking: "" }] })).toThrow(/no record_verdict call/);
   });
 
-  it("throws when the text is not JSON", () => {
-    expect(() => parseVerdict(messageWith("The accounts look fine to me."))).toThrow(/not JSON/);
+  it("throws when the model answers in prose instead of calling the tool", () => {
+    expect(() => parseVerdict(textOnlyMessage("The accounts look fine to me."))).toThrow(/no record_verdict call/);
   });
 
   it("throws on a verdict outside pass and fail", () => {
@@ -216,13 +221,15 @@ describe("parseVerdict", () => {
 describe("requestVerdict", () => {
   const prompt = { system: "system", user: "user" };
 
-  it("sends the schema, the effort setting and no sampling parameters", async () => {
+  it("forces the verdict tool and sends no sampling parameters", async () => {
     const create = vi.fn().mockResolvedValue(messageWith(PASSING));
     await requestVerdict({ messages: { create } }, prompt);
     const request = create.mock.calls[0][0];
     expect(request.model).toBe(DEFAULT_MODEL);
-    expect(request.output_config.format).toEqual({ type: "json_schema", schema: VERDICT_SCHEMA });
-    expect(request.output_config.effort).toBe("high");
+    expect(request.tools[0]).toMatchObject({ name: VERDICT_TOOL, input_schema: VERDICT_SCHEMA });
+    expect(request.tools[0].strict).toBeUndefined();
+    expect(request.tool_choice).toEqual({ type: "tool", name: VERDICT_TOOL });
+    expect(request.output_config).toEqual({ effort: "high" });
     expect(request.temperature).toBeUndefined();
     expect(request.top_p).toBeUndefined();
   });
@@ -235,7 +242,7 @@ describe("requestVerdict", () => {
   });
 
   it("retries once when the first response cannot be parsed", async () => {
-    const create = vi.fn().mockResolvedValueOnce(messageWith("not json")).mockResolvedValue(messageWith(PASSING));
+    const create = vi.fn().mockResolvedValueOnce(textOnlyMessage("not a tool call")).mockResolvedValue(messageWith(PASSING));
     const verdict = await requestVerdict({ messages: { create } }, prompt);
     expect(create).toHaveBeenCalledTimes(2);
     expect(verdict.verdict).toBe("pass");
