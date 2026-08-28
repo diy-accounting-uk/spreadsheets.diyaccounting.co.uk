@@ -276,7 +276,11 @@ export function cellWrites(scenario) {
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
-        sheet[`S${row}`] = e.employerNI;
+        // Column S is a blank spacer in the template (self-closing, no
+        // formula, never summed); column T is the real employer-NI data
+        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
+        // Wagesinterface!H reads. Verified against the template.
+        sheet[`T${row}`] = e.employerNI;
       }
     }
   }
@@ -519,6 +523,25 @@ export const CELL_MAP = [
 // until then it is proven directly against the recalculated file in
 // app/test/se-reconciliation-checks.test.js instead of shipped here.
 export function multiFileOptions() {
+  // Every VATQtr sheet shares the same box layout (verified against the
+  // template): G5 quarter-end date, G7 payment-due date, G9 box 1/3 output
+  // VAT, G11 EU acquisitions (always a static 0 -- no formula, never
+  // generator-written), G13 box 3 total (=G9+G11), G15 box 4 input VAT
+  // reclaimed, G17 box 5 net VAT due (=G13-G15), G23 box 7 net purchases
+  // value. Qtr5 is the straddling period at the accounting year end -- SE
+  // reads Qtr1-4 only today.
+  const vatQtrCells = ["G5", "G7", "G9", "G11", "G13", "G15", "G17", "G23"];
+  const vatQtrReads = {};
+  for (let q = 1; q <= 5; q++) vatQtrReads[`VATQtr${q}`] = vatQtrCells;
+
+  // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
+  // as Wagesinterface): D = NI due (employer + employee), E = income tax
+  // due, I = total amount payable (verified against the template:
+  // D4=Apr!T1+Apr!O1, E4=Apr!N1, I4=D4+E4-F4-G4+H4, with F/G/H always 0 in
+  // this fixture -- no statutory pay or student loan data).
+  const paymentCells = {};
+  for (const row of WAGES_MONTH_ROWS) paymentCells[row] = ["D", "E", "I"].map((c) => `${c}${row}`);
+
   return {
     postHubRecalc: ["Vat.xlsx"],
     additionalReads: {
@@ -532,15 +555,13 @@ export function multiFileOptions() {
         OpeningCreditors: ["G1"],
         ClosingCreditors: ["G1"],
       },
-      "Vat.xlsx": {
-        VATQtr1: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
-        VATQtr2: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
-        VATQtr3: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
-        VATQtr4: ["G5", "G7", "G9", "G13", "G15", "G17", "G23"],
-      },
+      "Vat.xlsx": vatQtrReads,
       "Fixedassets.xlsx": {
         Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1"],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
+      },
+      "Payslips.xlsx": {
+        Payment: Object.values(paymentCells).flat(),
       },
     },
   };
@@ -564,6 +585,12 @@ const SALES_MONTHLY_TIE_ROWS = { a: 5, b: 6, c: 7, d: 8, g: 11 };
 const SALES_BAD_DEBT_ROW = 29;
 const PURCHASES_MONTHLY_TIE_ROWS = { c: 15, o: 16, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32 };
 
+// Wagesinterface and Payslips!Payment both hold one row per month, Apr at
+// row 4 through Mar at row 15 — verified against the template. SE always
+// runs a 6 April year-end, so this row order matches MONTH_KEYS directly
+// with no year-end shift (unlike Ltd, which has to remap via fiscalTabs).
+const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {
@@ -580,6 +607,20 @@ export function standardReads() {
       if (!reads["Profit & Loss Account"].includes(cell)) reads["Profit & Loss Account"].push(cell);
     }
   }
+
+  // Wagesinterface — one row per month (rows 4-15 = Apr-Mar), columns
+  // C=gross pay, D=PAYE income tax, E=employee NI, H=employer NI (verified
+  // against the template: C4=[6]Apr!$M$1, D4=$N$1, E4=$O$1, H4=$T$1). CELL_MAP
+  // above already carries C4-C15 for the report; the rest are read here so
+  // every month is available to check without bloating the report appendix.
+  reads.Wagesinterface = reads.Wagesinterface || [];
+  for (let i = 0; i < WAGES_MONTH_ROWS.length; i++) {
+    for (const col of ["C", "D", "E", "H"]) {
+      const cell = `${col}${WAGES_MONTH_ROWS[i]}`;
+      if (!reads.Wagesinterface.includes(cell)) reads.Wagesinterface.push(cell);
+    }
+  }
+
   return reads;
 }
 
@@ -856,23 +897,162 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
     }
   }
-  // Purchases.xlsx side NOT asserted here. Every Purchases.xlsx amount
-  // write lands on a template cell (column G) that pre-exists self-closing,
-  // immediately followed by the VAT formula cell (H) in already-closed
-  // form -- spreadsheet-runner.js's setCellValue()/setCellString() regex
-  // replace does not stop at the next cell boundary, only at the next
-  // "</c>", so writing G silently deletes the adjacent H formula along with
-  // it. With H gone, I (net) reads G-0 = G: every Purchases.xlsx row comes
-  // back net = gross, off by the VAT rate on every purchase, every month,
-  // every scenario -- confirmed against the recalculated file (Apr "p" net
-  // read 1200, the gross WorkSpace Ltd rent, not 1000). Sales.xlsx is not
-  // affected: its template has no pre-existing G cell at all (the row is
-  // populated as new cells via the safe insert path), which is why the
-  // sales-side ties above hold. See the final report for the exact fix
-  // (the swallow needs to stop at the next "<c " as well as the next
-  // "</c>") and for how this already explains the pre-existing
-  // total_motor_gross/total_legal_gross expected values being named
-  // "gross" while compared against what the sheet calls its net column.
+  // Purchases.xlsx side, same shape as the sales-side ties above. Previously
+  // unasserted: writing the amount cell (column G) used to silently delete
+  // the adjacent VAT formula cell (H) because the cell-replace regex ran up
+  // to the next "</c>" rather than stopping at the next cell's own open tag,
+  // so every Purchases.xlsx row read net = gross. spreadsheet-runner.js's
+  // cellElementPattern now stops at "<c " as well as "</c>", so this ties
+  // net to net like the sales side.
+  if (pl && expected.purchases) {
+    for (let i = 0; i < MONTH_KEYS.length; i++) {
+      const monthTx = expected.purchases[MONTH_KEYS[i]] || [];
+      const col = MONTH_COLS[i];
+      const byCode = {};
+      for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
+
+      for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
+        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
+      }
+    }
+  }
+
+  // ── Payroll: Wagesinterface monthly ties (item 4) ──
+  //
+  // Wagesinterface reads Payslips.xlsx directly (no subtraction/second row
+  // the way Ltd's does -- verified against the template), so each month's
+  // gross pay, income tax, employee NI and employer NI ties straight to the
+  // scenario's payroll entries for that month.
+  if (expected.payroll) {
+    let totalGross = 0;
+    let totalEmployerNI = 0;
+    for (let i = 0; i < MONTH_KEYS.length; i++) {
+      const entries = expected.payroll[MONTH_KEYS[i]] || [];
+      const sums = entries.reduce(
+        (s, e) => ({
+          grossPay: s.grossPay + (e.grossPay || 0),
+          incomeTax: s.incomeTax + (e.incomeTax || 0),
+          employeeNI: s.employeeNI + (e.employeeNI || 0),
+          employerNI: s.employerNI + (e.employerNI || 0),
+        }),
+        { grossPay: 0, incomeTax: 0, employeeNI: 0, employerNI: 0 },
+      );
+      totalGross += sums.grossPay;
+      totalEmployerNI += sums.employerNI;
+      const row = WAGES_MONTH_ROWS[i];
+      const wi = results.Wagesinterface || {};
+      check(`Wagesinterface ${MONTH_KEYS[i]} C${row} gross pay`, wi[`C${row}`] || 0, sums.grossPay);
+      check(`Wagesinterface ${MONTH_KEYS[i]} D${row} income tax`, wi[`D${row}`] || 0, sums.incomeTax);
+      check(`Wagesinterface ${MONTH_KEYS[i]} E${row} employee NI`, wi[`E${row}`] || 0, sums.employeeNI);
+      check(`Wagesinterface ${MONTH_KEYS[i]} H${row} employer NI`, wi[`H${row}`] || 0, sums.employerNI);
+
+      // Payslips!Payment: the monthly PAYE/NI remittance schedule, same row
+      // layout as Wagesinterface (verified against the template). D = NI
+      // due (employer + employee), E = income tax due, I = total amount
+      // payable = D + E (F/G/H -- statutory pay recovered, NIC
+      // compensation, student loan -- stay 0, no such data in this fixture).
+      const payment = results["Payslips.xlsx!Payment"] || {};
+      const niDue = sums.employerNI + sums.employeeNI;
+      check(`Payslips!Payment ${MONTH_KEYS[i]} D${row} NI due`, payment[`D${row}`] || 0, niDue);
+      check(`Payslips!Payment ${MONTH_KEYS[i]} E${row} income tax due`, payment[`E${row}`] || 0, sums.incomeTax);
+      check(`Payslips!Payment ${MONTH_KEYS[i]} I${row} total amount payable`, payment[`I${row}`] || 0, niDue + sums.incomeTax);
+    }
+
+    // P&L route: Wages & Salaries (row 21) = Purchases.xlsx "w"-coded net
+    // (directors/employee wages posted as ordinary purchases, if any) plus
+    // the payroll route's gross pay and employer NI (verified against the
+    // template formula: C21 = [3]Apr!$S$1 + Wagesinterface!C4 +
+    // Wagesinterface!H4 - Wagesinterface!I4, and I -- statutory pay -- is
+    // always 0 here).
+    if (pl) {
+      let wCodeNet = 0;
+      if (expected.purchases) {
+        for (const transactions of Object.values(expected.purchases)) {
+          for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + VAT_RATE);
+        }
+      }
+      check("P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI", pl.B21 || 0, wCodeNet + totalGross + totalEmployerNI);
+    }
+  }
+
+  // ── SE VAT quarters: box-level values (item 9) ──
+  //
+  // Each VATQtr sheet's boxes are LOOKUP formulas against Vatinterface,
+  // which in turn reads Sales.xlsx/Purchases.xlsx month totals -- anchored
+  // here directly in the scenario's own dated transactions (not a second
+  // spreadsheet read) so a break anywhere in that chain shows up as a value
+  // mismatch. The quarter boundaries are NOT the calendar Apr-Jun/Jul-Sep
+  // split a VAT-registration-aligned business would expect: the generator
+  // computes them from a VAT start month one month after the accounting
+  // year start (`vatStartMonth` in generator.js), so Q1 here runs May-Jul,
+  // not Apr-Jun -- confirmed against a real generated package (VATQtr1 G5 =
+  // 2025-07-31, not 2025-06-30). Rather than hard-code that offset, each
+  // quarter's window is derived from its own G5 (quarter-end) date, so the
+  // check tracks whatever the generator actually computed.
+  for (let q = 1; q <= 5; q++) {
+    const qtr = results[`Vat.xlsx!VATQtr${q}`];
+    if (!qtr || !qtr.G5) continue;
+
+    // Box 3 total = box 1 + EU acquisitions (G11, always a static 0 in this
+    // template -- no formula, never generator-written), and box 5 = box 3 -
+    // box 4. Both hold regardless of whether the quarter carries fixture
+    // data, so they run for Q5 (the straddling period) too.
+    check(`VAT Q${q}: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)`, qtr.G13 || 0, (qtr.G9 || 0) + (qtr.G11 || 0));
+    check(`VAT Q${q}: box 5 net due (G17) = box 3 (G13) - box 4 (G15)`, qtr.G17 || 0, (qtr.G13 || 0) - (qtr.G15 || 0));
+
+    // G7 is the payment-due date (LOOKUP into Vatinterface's C column, which
+    // is itself just the next row's date), not a value box -- confirmed
+    // against the template, contrary to the box-1 label some docs give it.
+    // The one provable thing about it without hand-rolling a month-end
+    // rollforward is that it falls after the quarter-end.
+    check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
+
+    // Q5 is the straddling period at the accounting year end. This fixture
+    // has no S04Y2/S05Y2/P04Y2/P05Y2 data to anchor it against, and the
+    // template's own rolling 3-row SUM for the box columns bleeds March's
+    // already-counted VAT into Q5's box values rather than reading as a
+    // clean 0 -- confirmed against a real generated package. The identities
+    // above still hold there; the value checks below only run for Q1-Q4,
+    // where the quarter window sits entirely inside this scenario's dates.
+    if (q === 5) continue;
+
+    // Quarter window: the 3 calendar months ending at G5's own month
+    // (verified against generator.js -- monthsFromStart is always a
+    // multiple of 3 for Q1-Q4).
+    const qEnd = excelSerialToUtcDate(qtr.G5);
+    const qStart = new Date(Date.UTC(qEnd.getUTCFullYear(), qEnd.getUTCMonth() - 2, 1));
+    const inQuarter = (dateStr) => {
+      const d = parseDate(dateStr);
+      return d >= qStart && d <= qEnd;
+    };
+
+    let outputVat = 0;
+    let inputVat = 0;
+    let purchasesNet = 0;
+    if (expected.sales) {
+      for (const txs of Object.values(expected.sales)) {
+        for (const tx of txs) if (inQuarter(tx.date)) outputVat += tx.amount - tx.amount / (1 + VAT_RATE);
+      }
+    }
+    if (expected.purchases) {
+      for (const txs of Object.values(expected.purchases)) {
+        for (const tx of txs) {
+          if (!inQuarter(tx.date)) continue;
+          inputVat += tx.amount - tx.amount / (1 + VAT_RATE);
+          purchasesNet += tx.amount / (1 + VAT_RATE);
+        }
+      }
+    }
+    check(`VAT Q${q}: box 1/3 output VAT (G9) = scenario sales VAT for the quarter`, qtr.G9 || 0, outputVat, 1);
+    check(`VAT Q${q}: box 4 input VAT (G15) = scenario purchases VAT for the quarter`, qtr.G15 || 0, inputVat, 1);
+    check(`VAT Q${q}: box 7 net purchases (G23) = scenario purchases net for the quarter`, qtr.G23 || 0, purchasesNet, 1);
+  }
 
   return checks;
+}
+
+function excelSerialToUtcDate(serial) {
+  const epoch = Date.UTC(1899, 11, 30);
+  return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
 }

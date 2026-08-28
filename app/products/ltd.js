@@ -444,7 +444,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
-        sheet[`S${row}`] = e.employerNI;
+        // Column S is a blank spacer in the template (self-closing, no
+        // formula, never summed); column T is the real employer-NI data
+        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
+        // WagesInterface!H reads. Verified against the template.
+        sheet[`T${row}`] = e.employerNI;
       }
     }
   }
@@ -910,6 +914,25 @@ export function standardReads() {
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
 
+  // PAYE/NI creditor -- row 34's first-month movement column. Column L
+  // holds the fiscal year's first month regardless of year-end (verified
+  // against the template: L34 = -(WagesInterface!D4+E4+H4)-(...director
+  // row, always 0...)+(...statutory pay, always 0...)). The row's later
+  // months also net HMRC bank payments (RP-coded), which is the bank
+  // workstream's territory, not payroll's -- this one movement column
+  // isolates the payroll-only contribution.
+  add("TrialBalance", "L34");
+
+  // WagesInterface -- one row per month (rows 4-15, Apr-Mar template order,
+  // remapped to fiscalTabs the same as every other monthly read here).
+  // C=gross pay, D=PAYE income tax, E=employee NI, H=employer NI (verified
+  // against the template: C4=[9]Apr!$M$1-C17, D4=$N$1-D17, E4=$O$1-E17,
+  // H4=$T$1-H17, where the C17/D17/etc subtraction is a second, director-
+  // only block that cellWrites() never populates and so always reads 0).
+  for (let row = 4; row <= 15; row++) {
+    for (const col of ["C", "D", "E", "H"]) add("WagesInterface", `${col}${row}`);
+  }
+
   return reads;
 }
 
@@ -950,6 +973,12 @@ export function multiFileOptions(yearEndMonth) {
     bankReads[fileName] = { [tabNames[11]]: ["A1", "A2"] };
   }
 
+  // Payslips!Payment -- one row per month (rows 4-15, same template order as
+  // WagesInterface). D = NI due (employer + employee), E = income tax due,
+  // I = total amount payable (verified against the template).
+  const paymentCells = [];
+  for (let row = 4; row <= 15; row++) for (const col of ["D", "E", "I"]) paymentCells.push(`${col}${row}`);
+
   return {
     postHubRecalc: ["Vatreturns.xlsx"],
     additionalReads: {
@@ -959,6 +988,9 @@ export function multiFileOptions(yearEndMonth) {
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
         FAreconciliation: ["E11", "K11"],
+      },
+      "Payslips.xlsx": {
+        Payment: paymentCells,
       },
       ...bankReads,
     },
@@ -1354,6 +1386,106 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         );
       }
     });
+  }
+
+  // ── Payroll: WagesInterface monthly ties, the P&L wages route, the
+  // PAYE/NI creditor, and Payslips!Payment (item 4) ──
+  //
+  // WagesInterface rows 4-15 hold one month each (Apr-Mar template order,
+  // remapped to fiscalTabs the same as everything else here), split across
+  // two row blocks per month: rows 4-15 read the block-5 payslip rows the
+  // scenario writer fills (C4=[9]Apr!$M$1-C17 etc), and rows 17-28 read a
+  // second, director-only block (M2 in the month tab) that cellWrites never
+  // populates -- verified against the template, and confirmed against the
+  // recalculated file that the row 17-28 side stays 0. So rows 4-15 alone
+  // carry the whole month's payroll, directors included.
+  if (expected.payroll) {
+    // Same date-shift math cellWrites() uses to place each scenario month's
+    // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
+    // = 3) shifts by the offset from April to this package's first fiscal
+    // month, landing on the same tab fiscalTabs already names by index.
+    const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
+    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
+    for (const [monthKey, entries] of Object.entries(expected.payroll)) {
+      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
+      if (!sm) continue;
+      const tab = SHORT_MONTHS[(sm.month + monthOffset) % 12];
+      payrollByTab[tab].push(...entries);
+    }
+
+    let totalGross = 0;
+    let totalEmployerNI = 0;
+    fiscalTabs.forEach((tab, i) => {
+      const entries = payrollByTab[tab] || [];
+      const sums = entries.reduce(
+        (s, e) => ({
+          grossPay: s.grossPay + (e.grossPay || 0),
+          incomeTax: s.incomeTax + (e.incomeTax || 0),
+          employeeNI: s.employeeNI + (e.employeeNI || 0),
+          employerNI: s.employerNI + (e.employerNI || 0),
+        }),
+        { grossPay: 0, incomeTax: 0, employeeNI: 0, employerNI: 0 },
+      );
+      totalGross += sums.grossPay;
+      totalEmployerNI += sums.employerNI;
+
+      const row = 4 + i;
+      const wi = results.WagesInterface || {};
+      check(`WagesInterface ${tab} C${row} gross pay`, num(wi[`C${row}`]), sums.grossPay);
+      check(`WagesInterface ${tab} D${row} income tax`, num(wi[`D${row}`]), sums.incomeTax);
+      check(`WagesInterface ${tab} E${row} employee NI`, num(wi[`E${row}`]), sums.employeeNI);
+      check(`WagesInterface ${tab} H${row} employer NI`, num(wi[`H${row}`]), sums.employerNI);
+
+      // Payslips!Payment: same row layout as WagesInterface (verified
+      // against the template). D = NI due (employer + employee), E = income
+      // tax due, I = total amount payable = D + E (F/G/H -- statutory pay
+      // recovered, NIC compensation, student loan -- stay 0 in this
+      // fixture).
+      const payment = results["Payslips.xlsx!Payment"] || {};
+      const niDue = sums.employerNI + sums.employeeNI;
+      check(`Payslips!Payment ${tab} D${row} NI due`, num(payment[`D${row}`]), niDue);
+      check(`Payslips!Payment ${tab} E${row} income tax due`, num(payment[`E${row}`]), sums.incomeTax);
+      check(`Payslips!Payment ${tab} I${row} total amount payable`, num(payment[`I${row}`]), niDue + sums.incomeTax);
+    });
+
+    // P&L route: MnthP&L B18 (PAYE Wages + Non-PAYE Employee) reads
+    // TrialBalance!O64+O65, where row 64 is WagesInterface!C-I summed across
+    // the year (I -- statutory pay -- is always 0 here) and row 65 is
+    // Purchases.xlsx's own "w"-coded net total, which this fixture does
+    // carry a casual-worker entry for. B20 (Employers NI) reads
+    // TrialBalance!O67 = WagesInterface!H summed across the year. Verified
+    // against the template formula chain.
+    let wCodePurchasesNet = 0;
+    if (expected.purchases) {
+      for (const transactions of Object.values(expected.purchases)) {
+        for (const tx of transactions) if (tx.code === "w") wCodePurchasesNet += netOfVat(tx.amount);
+      }
+    }
+    check(
+      "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net",
+      num(pl.B18),
+      totalGross + wCodePurchasesNet,
+    );
+    check("MnthP&L: Employers National Insurance (B20) = payroll employer NI", num(pl.B20), totalEmployerNI);
+
+    // PAYE/NI creditor: TrialBalance row 34's first-fiscal-month movement
+    // column (verified against the template: column position L, always the
+    // year's first month regardless of year-end) moves by
+    // -(WagesInterface!D+E+H) that month -- income tax, employee NI and
+    // employer NI due to HMRC. Later months' movement also nets HMRC bank
+    // payments (RP-coded), which belongs to the bank workstream, so this
+    // localises to the payroll-only first month rather than the year-end
+    // balance.
+    if (results.TrialBalance && fiscalTabs.length > 0) {
+      const firstMonthEntries = payrollByTab[fiscalTabs[0]] || [];
+      const firstMonthTax = firstMonthEntries.reduce((s, e) => s + (e.incomeTax || 0) + (e.employeeNI || 0) + (e.employerNI || 0), 0);
+      check(
+        "Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due",
+        num(results.TrialBalance.L34),
+        -firstMonthTax,
+      );
+    }
   }
 
   // ── Admin: the rates the generator injected, read back ───────────────────
