@@ -224,7 +224,7 @@ describeCalc(
     it("fails one month's tie when a single MnthP&L month cell is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "G21", 0);
       expect(value).toBe(0);
-      const name = 'P&L aug G21 = Purchases.xlsx "r" net';
+      const name = 'P&L Aug G21 = Purchases.xlsx "r" net';
       const corrupted = checksWithCorruptedCell("MnthP&L", "G21", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       // That month's expense columns are also totalled against the leaf
