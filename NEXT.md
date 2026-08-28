@@ -7,12 +7,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## Open items
 
 - [ ] **Refresh the committed reports and pages** — PLAN_RECONCILIATION_COVERAGE.md is
-  COMPLETE and archived (`_developers/archive/`): PRs #27/#28/#29/#31/#35/#36/#37 all
-  merged, all four products green through the deterministic gates and passing the live
-  Bedrock judge (ENABLE_LLM_JUDGE on; Bedrock grants done). The judge's first day
-  caught five real defects, all fixed. Remaining operator step: one normal
-  generate-commit run per product — the committed reports and pages still show pre-fix
-  numbers, and the judge will rightly fail the next deploy until they refresh.
+  COMPLETE and archived (`_developers/archive/`): PRs #27/#28/#29/#31/#35/#36/#37/#38
+  all merged, all four products green through the deterministic gates and passing the
+  live Bedrock judge (ENABLE_LLM_JUDGE on; Bedrock grants done). Remaining operator
+  step: one normal generate-commit run per product — the committed reports and pages
+  predate the final fixes, and the deploy judge fails until they refresh.
 
 - [ ] **Shipped Basic Sole Trader template: two income tax bands** (judge finding): the
   Income Tax sheet works basic and higher only, with no additional rate and no
