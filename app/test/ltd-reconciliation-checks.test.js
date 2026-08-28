@@ -227,6 +227,20 @@ describeCalc(
       const name = 'P&L aug G21 = Purchases.xlsx "r" net';
       const corrupted = checksWithCorruptedCell("MnthP&L", "G21", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      // That month's expense columns are also totalled against the leaf
+      // workbook's own row 1, so both ties over the cell move together.
+      expect(failureNames(corrupted)).toEqual([
+        name,
+        "P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases",
+      ]);
+    });
+
+    it("fails the leaf month tie when a Sales month total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Sales.xlsx", "Apr", "H1", 0);
+      expect(value).toBe(0);
+      const name = "P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales";
+      const corrupted = checksWithCorruptedCell("Sales.xlsx!Apr", "H1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
 

@@ -816,6 +816,32 @@ const NOTE_RATE_CELLS = [
   ["B31", "G19", "motor vehicles"],
 ];
 
+// MnthP&L row 9 is the month's sales turnover, the sum of the five product
+// rows above it.
+const MONTHLY_TURNOVER_ROW = 9;
+
+// Row 1 of a Sales.xlsx month tab totals each analysis column: H1 the whole
+// month net of VAT, T1 the bad debts written off and U1 the fixed asset
+// sales. Turnover is what is left.
+const SALES_MONTH_TOTAL_CELLS = { net: "H1", badDebts: "T1", assetSales: "U1" };
+
+// Row 1 of a Purchases.xlsx month tab: H1 the whole month net of VAT, and
+// the four columns whose P&L rows carry something else as well — materials
+// (O1, which the stock adjustment also feeds), directors and employee wages
+// (R1 and S1, which the payroll summary also feeds) and fixed asset
+// purchases (AI1, which reaches the balance sheet rather than the P&L).
+const PURCHASES_MONTH_TOTAL_CELLS = { net: "H1", materials: "O1", directorsWages: "R1", employeeWages: "S1", assetPurchases: "AI1" };
+
+// Month tab names in accounting-period order, taken from the period start
+// date the Admin sheet carries, so a leaf workbook's month totals line up
+// with the P&L's month columns whatever the year end.
+function monthTabsFromPeriodStart(startSerial) {
+  const epoch = Date.UTC(1899, 11, 30);
+  const start = new Date(epoch + Math.round(startSerial) * 24 * 60 * 60 * 1000);
+  const firstMonth = start.getUTCMonth();
+  return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
+}
+
 // CT600 boxes the template populates by formula, and where each reads from.
 const CT600_CELLS = [
   "AK66",
@@ -848,7 +874,14 @@ export function standardReads() {
   // Every month column of the rows that tie to a Sales or Purchases month
   // total, plus the fixed asset rows the note anchors.
   const monthlyRows = [
-    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 39, 40]),
+    ...new Set([
+      ...Object.values(SALES_MONTHLY_TIE_ROWS),
+      SALES_BAD_DEBT_ROW,
+      ...Object.values(PURCHASES_MONTHLY_TIE_ROWS),
+      MONTHLY_TURNOVER_ROW,
+      39,
+      40,
+    ]),
   ];
   for (const row of monthlyRows) {
     for (const col of MONTH_COLS) add("MnthP&L", `${col}${row}`);
@@ -886,9 +919,11 @@ export function standardReads() {
 // so it recalculates after the hub.
 export function multiFileOptions(yearEndMonth) {
   const tabNames = getMonthTabNames(yearEndMonth || 3);
-  const monthReads = {};
+  const salesMonthReads = {};
+  const purchasesMonthReads = {};
   for (const tab of tabNames) {
-    monthReads[tab] = ["G1", "H1"];
+    salesMonthReads[tab] = ["G1", ...Object.values(SALES_MONTH_TOTAL_CELLS)];
+    purchasesMonthReads[tab] = ["G1", ...Object.values(PURCHASES_MONTH_TOTAL_CELLS)];
   }
   const vatQtrReads = {};
   for (let q = 1; q <= 5; q++) {
@@ -918,8 +953,8 @@ export function multiFileOptions(yearEndMonth) {
   return {
     postHubRecalc: ["Vatreturns.xlsx"],
     additionalReads: {
-      "Sales.xlsx": monthReads,
-      "Purchases.xlsx": monthReads,
+      "Sales.xlsx": salesMonthReads,
+      "Purchases.xlsx": purchasesMonthReads,
       "Vatreturns.xlsx": vatQtrReads,
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
@@ -1267,6 +1302,39 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           `P&L ${key} ${col}${row} = Purchases.xlsx "${code}" net`,
           num(pl[`${col}${row}`]),
           monthlyByCode(expected.purchases, key, code),
+        );
+      }
+    });
+  }
+
+  // The same month columns against the leaf workbooks' own row 1 totals.
+  // The checks above prove the scenario landed where it was meant to; these
+  // prove the cross-file links carried each month's total into the right
+  // column of the P&L, without going through the fixture at all.
+  if (results.Admin && typeof results.Admin.B9 === "number") {
+    monthTabsFromPeriodStart(results.Admin.B9).forEach((tab, i) => {
+      const col = MONTH_COLS[i];
+      const salesMonth = results[`Sales.xlsx!${tab}`];
+      if (salesMonth) {
+        check(
+          `P&L ${tab} turnover = Sales.xlsx ${tab} net less bad debts and asset sales`,
+          num(pl[`${col}${MONTHLY_TURNOVER_ROW}`]),
+          num(salesMonth[SALES_MONTH_TOTAL_CELLS.net]) -
+            num(salesMonth[SALES_MONTH_TOTAL_CELLS.badDebts]) -
+            num(salesMonth[SALES_MONTH_TOTAL_CELLS.assetSales]),
+        );
+      }
+      const purchasesMonth = results[`Purchases.xlsx!${tab}`];
+      if (purchasesMonth) {
+        const tiedRows = Object.values(PURCHASES_MONTHLY_TIE_ROWS).reduce((sum, row) => sum + num(pl[`${col}${row}`]), 0);
+        check(
+          `P&L ${tab} expense lines = Purchases.xlsx ${tab} net less materials, wages and asset purchases`,
+          tiedRows,
+          num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.net]) -
+            num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.materials]) -
+            num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.directorsWages]) -
+            num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.employeeWages]) -
+            num(purchasesMonth[PURCHASES_MONTH_TOTAL_CELLS.assetPurchases]),
         );
       }
     });
