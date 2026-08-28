@@ -8,17 +8,33 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 - [ ] **Reconciliation coverage** — PLAN_RECONCILIATION_COVERAGE.md IN EXECUTION as concurrent
   worktree sub-agents (2026-08-27). In flight:
-  - Wave 0 (EJ91 assert) merged to `claude/vat-dataflow-reconciliation` (PR #27, `37a76b21`).
-    Its remainder: `ltd-scenario-full` does not balance (EJ91 ≈ -£1.77M, Directors Loan
-    Account posts one-sided) — fix in flight, worktree `../spreadsheets-worktrees/dla-fix`,
-    branch `claude/recon-dla-imbalance`; reconcile reports ANOMALYDETECTED for that scenario
-    until it lands.
+  - Wave 0 (EJ91 assert) and its remainder (Ltd bank payments posted into the wrong
+    columns; EJ91 now 0) are merged to `claude/vat-dataflow-reconciliation` (PR #27,
+    `9305c096`). One further remainder in flight: the Ltd opening balance sheet never
+    posts (writes miss OpenAccounts' input cells; extractor hardcodes fixed_assets
+    21087 vs the journal's 22902) — worktree `../spreadsheets-worktrees/ltd-opening`,
+    branch `claude/recon-ltd-opening-balance`. SE carries the same bank-column fault;
+    folded into the Wave 2 SE agent's bank workstream.
+  - Opening-balance fix is code complete on `claude/recon-ltd-opening-balance`
+    (E37 = 0, EJ91 holds, 131 tests green) — held off #27 while the operator verifies it;
+    opens as its own PR once #27 merges. Coordinator work to fold in first: fix
+    `spreadsheet-runner.js` setCellValue/setCellString greedy capture (a write into an
+    empty self-closing cell swallows following empty cells and the row boundary;
+    workaround `inSheetOrder()` in ltd.js masks it, real fix is a lazy/exact match).
   - Pages (all four products, builder + workflows + seed) verified and up as
     **PR #29: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/29**
     — awaiting operator merge, independent of #27/#28.
-  - Wave 2 SE (items 5, 6, 10): worktree `../spreadsheets-worktrees/wave2-se`, branch
-    `claude/recon-wave2-se` (based on `claude/recon-batch1`). Wave 2 Ltd waits for the
-    directors-loan fix (same fixture file).
+  - Wave 2 SE (items 5, 6, 10 + SE bank fix) code complete on `claude/recon-wave2-se`
+    (worktree `../spreadsheets-worktrees/wave2-se`, 52/52 green). Purchases-side monthly
+    ties deliberately unshipped until the runner cell-write fix lands (net reads as gross
+    today). Operator decision open: six invalid purchase codes in the SE fixture
+    (~£9.7k/yr never reaches the P&L) need per-category recoding.
+  - Runner cell-write fix landed on `claude/recon-ltd-opening-balance` (`6eecef8b`,
+    blast radius green; Ltd premises/legal expecteds retuned to net — the gross values
+    only ever matched because the bug deleted the Purchases VAT formulas). Generator was
+    never affected; shipped packages are clean. Still open in the runner: leaf-to-leaf
+    external-link caches (Fixedassets reading Sales/Purchases). Wave 2 Ltd dispatches
+    after the opening-balance PR opens.
   - Wave 1 (SE + BST + Taxi checks, items 1, 2, 7) verified and up as
     **PR #28: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/28**
     — awaiting operator merge, after #27 (its SE fixture-anchored checks need #27's
