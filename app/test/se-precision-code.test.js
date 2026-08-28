@@ -124,20 +124,18 @@ describeCalc(
     // ── Bank closing balance (6k) ────────────────────────────────────────
 
     it("Bank: Mar sheet has closing balance", () => {
-      const bank = results.Mar;
-      if (bank) {
-        // A2 = closing balance formula
-        expect(bank.A2).toBeDefined();
-      }
+      const bank = results["Bank.xlsx!Mar"];
+      expect(bank).toBeDefined();
+      // A2 = closing balance formula
+      expect(bank.A2).toBeDefined();
     });
 
     // ── VAT quarterly (6j) ───────────────────────────────────────────────
 
     it("VAT Q1: has output VAT", () => {
-      const q1 = results.VATQtr1;
-      if (q1) {
-        expect(q1.G7).toBeDefined();
-      }
+      const q1 = results["Vat.xlsx!VATQtr1"];
+      expect(q1).toBeDefined();
+      expect(q1.G7).toBeDefined();
     });
   },
   300000,

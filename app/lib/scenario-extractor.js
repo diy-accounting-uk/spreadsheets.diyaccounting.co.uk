@@ -219,10 +219,15 @@ export function buildGrouped(filteredLines, purchaseCodeMap) {
       const acctId = line["diya-gl:bankAccountID"];
       if (!bank[acctId]) bank[acctId] = {};
       if (!bank[acctId][month]) bank[acctId][month] = [];
+      const debitCredit = line.debitCreditCode;
+      if (debitCredit !== "D" && debitCredit !== "C") {
+        throw new Error(`Bank line ${line.entryNumber} has no debitCreditCode; cannot tell a receipt from a payment`);
+      }
       bank[acctId][month].push({
         date: line.postingDate,
         source: line.detailComment,
         code: line["diya-gl:bankCode"],
+        direction: debitCredit === "D" ? "in" : "out",
         amount: line.amount,
         description: line.lineItemComment || "",
       });
@@ -311,6 +316,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`account = "${acctId}"`);
         parts.push(`source = "${escapeTomlString(txn.source)}"`);
         parts.push(`code = "${txn.code}"`);
+        parts.push(`direction = "${txn.direction}"`);
         parts.push(`amount = ${txn.amount}`);
         if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
         parts.push("");

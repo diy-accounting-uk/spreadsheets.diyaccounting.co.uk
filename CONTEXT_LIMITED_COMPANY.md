@@ -272,9 +272,13 @@ Each monthly sheet has two sections:
 
 **Payments (columns S-AN):** S=date, T=supplier, U=invoice, V=cheque, W=code, X=amount. Code letters include BS/BD/BC (transfers), CR (creditors), W (wages), J (interest), B (charges), LDR/LCR (long-term), RP (PAYE), RV (VAT), RC (CIS), RT (Corp Tax), DV (dividends), DL (directors loan), X (contra). Columns Y-AN are formula-driven analysis by code.
 
+**Cashaccount.xlsx is narrower.** Its receipts analyse only BB/BS/BD, DR, K, LDR/LCR and DL, so its payments section starts four columns earlier: P=date, Q=supplier, R=invoice, S=reference, T=code, U=amount, analysis V-AJ. A code the cash book has no column for (RV, RC, X) cannot be posted there at all.
+
 Reconciliation cells A1-A4: A1=opening balance, A2=closing (formula), A3=statement balance (user), A4=difference (formula).
 
 Row 1 totals feed TrialBalance via external links [4]-[7]. Analysis columns use shared formulas.
+
+Several code letters (CR, RV, RC, DL, X and the transfers) appear on both sides, so the code alone cannot say which section a line belongs in. Scenario bank entries carry `direction = "in"` or `"out"`, taken from the master book's `debitCreditCode`. A line written into the wrong section overwrites that section's analysis formulas, and the polluted Row 1 total then feeds whatever the analysis column drives in the TrialBalance.
 
 ### Vatreturns.xlsx
 

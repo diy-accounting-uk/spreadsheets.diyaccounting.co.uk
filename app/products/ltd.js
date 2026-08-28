@@ -52,6 +52,46 @@ const SCENARIO_MONTHS = [
   { key: "mar", month: 2 },
 ];
 
+const BANK_ACCOUNT_FILES = {
+  1200: "Currentaccount.xlsx",
+  1210: "Savingaccount.xlsx",
+  1220: "Cashaccount.xlsx",
+  1230: "Creditcardaccount.xlsx",
+};
+
+// Transfer code letter each bank workbook stands for. A workbook analyses
+// transfers under the other three letters; it never transfers to itself.
+const BANK_TRANSFER_CODES = {
+  "Currentaccount.xlsx": "BB",
+  "Savingaccount.xlsx": "BS",
+  "Cashaccount.xlsx": "BC",
+  "Creditcardaccount.xlsx": "BD",
+};
+
+// Column layout of the receipts and payments blocks in each bank workbook's
+// month tabs, and the code letters each block has an analysis column for.
+// Cashaccount analyses fewer receipt codes than the three statement books,
+// which shifts its payments block four columns to the left.
+function bankLayout(fileName) {
+  const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
+  if (fileName === "Cashaccount.xlsx") {
+    return {
+      receipt: { date: "A", source: "B", code: "E", amount: "F" },
+      payment: { date: "P", source: "Q", code: "T", amount: "U" },
+      receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
+      paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
+    };
+  }
+  return {
+    receipt: { date: "A", source: "B", code: "E", amount: "F" },
+    payment: { date: "S", source: "T", code: "W", amount: "X" },
+    receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
+    paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
+  };
+}
+
+const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
+
 export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const salesWrites = {};
   const purchasesWrites = {};
@@ -278,13 +318,8 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     }
   }
 
-  // Bank entries — Ltd has 4 bank files mapped by account ID
-  const BANK_ACCOUNT_FILES = {
-    1200: "Currentaccount.xlsx",
-    1210: "Savingaccount.xlsx",
-    1220: "Cashaccount.xlsx",
-    1230: "Creditcardaccount.xlsx",
-  };
+  // Bank entries — one workbook per bank account, receipts and payments on
+  // opposite sides of each month tab.
   const bankFileWrites = {};
   if (scenario.bank) {
     const receiptRows = {};
@@ -298,32 +333,39 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
 
       for (const tx of transactions) {
         const acct = tx.account || "1200";
-        const fileName = BANK_ACCOUNT_FILES[acct] || "Currentaccount.xlsx";
+        const fileName = BANK_ACCOUNT_FILES[acct];
+        if (!fileName) throw new Error(`Bank entry dated ${tx.date} names unknown account ${acct}`);
         if (!bankFileWrites[fileName]) bankFileWrites[fileName] = {};
         if (!bankFileWrites[fileName][tabName]) bankFileWrites[fileName][tabName] = {};
         const sheet = bankFileWrites[fileName][tabName];
-        const d = parseDate(tx.date);
-        const shifted2 = shiftDate(d);
-        const serial = toExcelSerial(shifted2.getUTCFullYear(), shifted2.getUTCMonth() + 1, shifted2.getUTCDate());
-        const rowKey = `${fileName}:${tabName}`;
 
+        // BC on a bank entry marks the account's opening balance, which the
+        // workbook takes in A1 rather than as a statement line.
         if (tx.code === "BC") {
           sheet.A1 = tx.amount;
-        } else if (["BC", "DR", "CR", "K", "RV", "DL", "X"].includes(tx.code)) {
-          if (!receiptRows[rowKey]) receiptRows[rowKey] = 6;
-          const row = receiptRows[rowKey]++;
-          sheet[`A${row}`] = serial;
-          if (tx.source) sheet[`B${row}`] = tx.source;
-          sheet[`E${row}`] = tx.code;
-          sheet[`F${row}`] = tx.amount;
-        } else {
-          if (!paymentRows[rowKey]) paymentRows[rowKey] = 6;
-          const row = paymentRows[rowKey]++;
-          sheet[`P${row}`] = serial;
-          if (tx.source) sheet[`Q${row}`] = tx.source;
-          sheet[`S${row}`] = tx.code;
-          sheet[`T${row}`] = tx.amount;
+          continue;
         }
+
+        if (tx.direction !== "in" && tx.direction !== "out") {
+          throw new Error(`Bank entry dated ${tx.date} (${tx.code} ${tx.amount}) has no direction`);
+        }
+        const layout = BANK_LAYOUTS[fileName];
+        const isReceipt = tx.direction === "in";
+        const block = isReceipt ? layout.receipt : layout.payment;
+        const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
+        if (!analysedCodes.includes(tx.code)) {
+          throw new Error(`${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code ${tx.code}`);
+        }
+
+        const rowKey = `${fileName}:${tabName}`;
+        const rows = isReceipt ? receiptRows : paymentRows;
+        if (!rows[rowKey]) rows[rowKey] = 6;
+        const row = rows[rowKey]++;
+        const d = shiftDate(parseDate(tx.date));
+        sheet[`${block.date}${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        sheet[`${block.code}${row}`] = tx.code;
+        sheet[`${block.amount}${row}`] = tx.amount;
       }
     }
   }
@@ -433,6 +475,29 @@ export function standardReads() {
   return reads;
 }
 
+// Leaf-file reads for the VAT chain: each month tab's VAT (G1) and gross
+// total (H1) from Sales.xlsx and Purchases.xlsx, plus every VATQtr box from
+// Vatreturns.xlsx. Vatreturns links Sales, Purchases and Financialaccounts,
+// so it recalculates after the hub.
+export function multiFileOptions(yearEndMonth) {
+  const monthReads = {};
+  for (const tab of getMonthTabNames(yearEndMonth || 3)) {
+    monthReads[tab] = ["G1", "H1"];
+  }
+  const vatQtrReads = {};
+  for (let q = 1; q <= 5; q++) {
+    vatQtrReads[`VATQtr${q}`] = ["G5", "G9", "G13", "G15", "G17", "G21", "G23"];
+  }
+  return {
+    postHubRecalc: ["Vatreturns.xlsx"],
+    additionalReads: {
+      "Sales.xlsx": monthReads,
+      "Purchases.xlsx": monthReads,
+      "Vatreturns.xlsx": vatQtrReads,
+    },
+  };
+}
+
 export function reportSections(results) {
   const sectionMap = new Map();
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
@@ -472,6 +537,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_sales !== undefined) check("Total Sales", pl.B9, expected.total_sales);
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B16, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B45, expected.net_profit);
+
+  // Trial balance audit accuracy check -- the workbook's own whole-book
+  // self-check. EJ91 sums every account's year-end closing balance across
+  // the full chart (balance sheet items, income, cost of sales, expenses),
+  // so any posting that does not balance shows up here even when nothing
+  // else in this file reads that account.
+  check("Trial Balance: audit accuracy (EJ91)", results.TrialBalance.EJ91, 0);
 
   // P&L internal consistency (6a)
   check("P&L: Gross = Turnover - CoS", pl.B16, pl.B9 - (pl.B14 || 0));
@@ -534,6 +606,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.closing_creditors) {
     const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
     if (total > 0) check("Closing Creditors total", total, total);
+  }
+
+  // VAT chain: Sales/Purchases month VAT totals must flow through the
+  // Vatinterface external links into the VATQtr boxes. The month totals are
+  // read straight from the leaf workbooks, so a broken link chain shows up
+  // as a quarter-sum mismatch here rather than as consistent zeros.
+  const salesMonthKeys = Object.keys(results).filter((k) => k.startsWith("Sales.xlsx!"));
+  const purchasesMonthKeys = Object.keys(results).filter((k) => k.startsWith("Purchases.xlsx!"));
+  const vatQtr = (n) => results[`Vatreturns.xlsx!VATQtr${n}`];
+  if (salesMonthKeys.length === 12 && purchasesMonthKeys.length === 12 && vatQtr(1)) {
+    const annualOutputVat = salesMonthKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+    const annualInputVat = purchasesMonthKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+    const sumBox = (cell) => [1, 2, 3, 4].reduce((s, n) => s + (vatQtr(n)?.[cell] || 0), 0);
+
+    check("VAT: Q1-Q4 box 1 = Sales VAT", sumBox("G9"), annualOutputVat);
+    check("VAT: Q1-Q4 box 4 = Purchases VAT", sumBox("G15"), annualInputVat);
+    for (const n of [1, 2, 3, 4]) {
+      const q = vatQtr(n);
+      if (q) check(`VAT Q${n}: box 5 = box 3 - box 4`, q.G17 || 0, (q.G13 || 0) - (q.G15 || 0));
+    }
+    if (expected.vat_output_total !== undefined) check("VAT: annual output VAT", annualOutputVat, expected.vat_output_total);
+    if (expected.vat_input_total !== undefined) check("VAT: annual input VAT", annualInputVat, expected.vat_input_total);
   }
 
   if (taxData) {

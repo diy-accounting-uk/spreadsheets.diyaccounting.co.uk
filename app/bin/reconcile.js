@@ -171,6 +171,7 @@ async function main() {
 
         const saveDir = resolve(populatedDir, `${pkgSlug}_${scenarioName}`);
         results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+          ...(productMod.multiFileOptions ? productMod.multiFileOptions(endMonth) : {}),
           saveRecalculatedTo: saveDir,
         });
       } else {
@@ -200,8 +201,15 @@ async function main() {
         }
       }
 
-      // Product module owns compliance checks
-      const checks = productMod.checkCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+      // Product module owns compliance checks. Fixture anchors (opening_debtors,
+      // closing_creditors, ...) are top-level scenario tables, not [expected] keys,
+      // so checks that anchor against fixtures need the whole scenario merged in.
+      const checks = productMod.checkCompliance(
+        { ...results },
+        { ...scenario, ...scenario.expected },
+        taxData,
+        calculateExpectedTax,
+      );
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
 
       // Report naming: <product>_<scenario>.md
