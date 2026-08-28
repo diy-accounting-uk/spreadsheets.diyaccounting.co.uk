@@ -27,24 +27,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
     Sales/Purchases). Wave 2 Ltd dispatches after #31 merges.
   Coordinator merges verified commits, pushes in batches; waves 3-5 follow per the plan.
 
-- [ ] **VAT quarter-end dropdown does not roll with the package year** — plan approved, IN
-  EXECUTION on branch `claude/vat-quarter-dropdown`. Plan: `PLAN_VAT_QUARTER_DROPDOWN.md`
-  (three surfaces: dropdown list, stale caches, wrong-figures remap). Customer waiting
-  (Philippe Clavier; draft reply held at `../tmp/reply-to-philippe-clavier.md`).
-
-  In flight:
-
-  State: surfaces 1–3 merged, regenerated, and deployed live (Mar27 artefact
-  verified). Surface 4 found live (closed-workbook link update reads stale
-  Financialaccounts Admin caches) — fix at
-  **PR 4: https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/4**
-  (whole-dir Mar26 byte-identity; also heals the four bank-account workbooks).
-
-  All four surfaces are deployed and live-verified (Aug27 artefact checked on
-  both failure paths, 2026-08-24). The guard test covers the 4th chain link and
-  the monthly `generate-ltd` schedule has run. Philippe is closed — he filed
-  before the deadline and confirmed it on 2026-08-24. Remaining: the operator's
-  six-donor decision.
+- [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
+  VAT quarter-end dropdown work, now archived at
+  `_developers/archive/PLAN_VAT_QUARTER_DROPDOWN.md` (all four surfaces deployed and
+  live-verified 2026-08-24; Philippe closed).
 
 ## Discipline
 

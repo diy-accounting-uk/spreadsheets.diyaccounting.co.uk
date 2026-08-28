@@ -194,6 +194,8 @@ export const CELL_MAP = [
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "O80",  "WDA + Capital Allowance claimed", "tax.capitalAllowances.wda (sa103s)",       "Self Assessment (SA103S)", 1],
+  ["SE Short", "O85",  "Balancing Charge",               "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1],
   ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "A32",  "VAT threshold note",             "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
@@ -275,6 +277,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   check("P&L: Gross = Sales - CoS - Direct", pl.C9, pl.C4 - (pl.C6 || 0) - (pl.C7 || 0));
   check("P&L: Net = Gross - Expenses", pl.C24, pl.C9 - (pl.C22 || 0));
 
+  // Whole-book closure: no dedicated audit-accuracy cell exists in this
+  // single-file workbook (unlike Ltd's TrialBalance!EJ91), so the annual
+  // Total Sales figure tying back to the twelve monthly Sales sheet totals
+  // is the closest whole-book check available -- it catches a month
+  // dropping out of the SUM(D4:O4) range or reading the wrong Sales tab.
+  const monthlySalesSum = [pl.D4, pl.E4, pl.F4, pl.G4, pl.H4, pl.I4, pl.J4, pl.K4, pl.L4, pl.M4, pl.N4, pl.O4].reduce(
+    (s, v) => s + (v || 0),
+    0,
+  );
+  check("P&L: Total Sales = sum of monthly Sales sheets", pl.C4, monthlySalesSum);
+
   // Total expenses cross-check (6b)
   const bstExpenseSum = [pl.C11, pl.C12, pl.C13, pl.C14, pl.C15, pl.C16, pl.C17, pl.C18, pl.C19, pl.C20, pl.C21].reduce(
     (s, v) => s + (v || 0),
@@ -341,6 +354,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.C4);
       if (seShort.D71) check("SA103S: Net profit close to P&L Net", seShort.D71, pl.C24, pl.C24 * 0.01);
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
+
+      // P&L capital allowances (C26) is fed entirely from the SE Short
+      // capital allowances chain, which in turn reads Fixed Assets. This
+      // ties the two independently-computed figures together.
+      const seShortCapitalAllowances = -(seShort.O85 || 0) + (seShort.D80 || 0) + (seShort.D85 || 0) + (seShort.O80 || 0);
+      check("P&L: Capital Allowances = SE Short chain", pl.C26 || 0, seShortCapitalAllowances);
     }
   }
 
