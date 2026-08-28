@@ -486,6 +486,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       for (const tx of transactions) if (tx.code === "fa") assetPurchases.push(tx);
     }
   }
+  const newAssetRowsUsed = [];
   if (assetPurchases.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
@@ -498,12 +499,15 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
       fa[`E${row}`] = netOfVat(tx.amount);
+      newAssetRowsUsed.push(row);
     });
   }
 
   // Disposals are the "fs"-coded sales. Each pairs with an asset already on
   // the Schedule, in declaration order, so the sheet's disposal formulas
-  // resolve the right asset's cost and accumulated depreciation.
+  // resolve the right asset's cost and accumulated depreciation. Assets
+  // brought forward come first; a scenario that lists none still has this
+  // year's purchases to dispose of.
   const assetDisposals = [];
   if (scenario.sales) {
     for (const transactions of Object.values(scenario.sales)) {
@@ -513,13 +517,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (assetDisposals.length > 0) {
     if (!fixedAssetsWrites.Schedule) fixedAssetsWrites.Schedule = {};
     const fa = fixedAssetsWrites.Schedule;
-    if (assetDisposals.length > existingAssetRowsUsed.length) {
-      throw new Error(
-        `${assetDisposals.length} "fs" disposals but only ${existingAssetRowsUsed.length} Schedule asset rows to attach them to`,
-      );
+    const disposalRows = [...existingAssetRowsUsed, ...newAssetRowsUsed];
+    if (assetDisposals.length > disposalRows.length) {
+      throw new Error(`${assetDisposals.length} "fs" disposals but only ${disposalRows.length} Schedule asset rows to attach them to`);
     }
     assetDisposals.forEach((tx, i) => {
-      const row = existingAssetRowsUsed[i];
+      const row = disposalRows[i];
       const d = shiftDate(parseDate(tx.date));
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       fa[`V${row}`] = netOfVat(tx.amount);
@@ -1302,6 +1305,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const corporationTax = results[TAX_SHEET];
   const pubPL = results["PubP&L"];
   if (corporationTax && pubPL) {
+    // The published P&L and the management P&L reach operating profit down
+    // different formula paths, one from the trial balance's closing column
+    // and one from its month-by-month columns.
+    check("Published P&L: operating profit = management P&L operating profit", num(pubPL.F46), num(pl.B43));
     check("CT: operating profit = published P&L operating profit", num(corporationTax.K5), num(pubPL.F46));
     check("CT: depreciation add-back = P&L depreciation", num(corporationTax.I8), num(pl.B40));
     check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
