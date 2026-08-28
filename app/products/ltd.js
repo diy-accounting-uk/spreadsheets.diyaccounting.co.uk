@@ -1403,12 +1403,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // = 3) shifts by the offset from April to this package's first fiscal
     // month, landing on the same tab fiscalTabs already names by index.
     const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
     const payrollByTab = Object.fromEntries(fiscalTabs.map((tab) => [tab, []]));
     for (const [monthKey, entries] of Object.entries(expected.payroll)) {
-      const sm = SCENARIO_MONTHS.find((s) => s.key === monthKey);
-      if (!sm) continue;
-      const tab = SHORT_MONTHS[(sm.month + monthOffset) % 12];
+      const sourceMonth = SHORT_MONTHS.findIndex((m) => m.toLowerCase() === monthKey);
+      if (sourceMonth === -1) continue;
+      const tab = SHORT_MONTHS[(sourceMonth + monthOffset) % 12];
       payrollByTab[tab].push(...entries);
     }
 
