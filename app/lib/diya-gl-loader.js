@@ -275,6 +275,29 @@ export function diyaGlToScenario(book, lines, product) {
     if (assets.length > 0) scenario.opening_fixed_assets = assets;
   }
 
+  // A purchase coded f capitalises out of the profit and loss account, and
+  // earns its capital allowance only once the same asset is registered on the
+  // Fixed Assets schedule. The scenario extractor derives the BST additions
+  // from those purchases, and this path derives them by the same rule, so a
+  // package built from exported data claims what a package built from the
+  // fixture claims. The Taxi schedule takes vehicles only and the SE and Ltd
+  // schedules are written from their own asset journals, so neither derives
+  // its additions from the purchase journal.
+  if (product === "bst") {
+    const additions = purchaseLines
+      .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
+      .map((l) => ({
+        date: l.postingDate,
+        description: l.lineItemComment || "",
+        reference: l.documentReference || "",
+        cost: l.amount,
+      }));
+    if (additions.length > 0) {
+      scenario.fixed_asset_additions = additions;
+      expected.fixed_asset_cost = additions.reduce((total, asset) => total + asset.cost, 0);
+    }
+  }
+
   // Employees from book.toml
   if (book.employees) {
     scenario.employees = book.employees;
