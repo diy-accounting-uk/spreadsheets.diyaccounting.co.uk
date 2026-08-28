@@ -208,6 +208,39 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    it("publishes the year-end stock and only the debtors left uncollected", () => {
+      expect(results.PubBalSht.E10).toBe(6000);
+      expect(results.PubBalSht.E11).toBe(10400);
+      expect(results.Stock.D6).toBe(10000);
+      expect(results.Stock.AB30).toBe(6000);
+      expect(results.Stock.Z30).toBe(-4000);
+    });
+
+    it("fails the published stock tie when PubBalSht E10 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E10", 10000);
+      expect(value).toBe(10000);
+      const name = "Published balance sheet: stock = year-end stock";
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E10", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the published debtors tie when PubBalSht E11 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E11", 237100);
+      expect(value).toBe(237100);
+      const name = "Published balance sheet: trade debtors = closing debtors";
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E11", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the stock count and its loss adjustment when the Stock sheet's count is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Stock", "AB30", 9000);
+      expect(value).toBe(9000);
+      const corrupted = checksWithCorruptedCell("Stock", "AB30", value);
+      expect(failureNames(corrupted)).toEqual(["Stock: physical count at the year end", "Stock: loss adjustment = count - calculated"]);
+    });
+
     it("fails the P&L depreciation tie when MnthP&L B40 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B40", 0);
       expect(value).toBe(0);

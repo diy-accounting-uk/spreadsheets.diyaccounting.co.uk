@@ -51,11 +51,54 @@ const MAX_TOKENS = 16000;
 // More runs than this in one directory means a local tree with years of history in it.
 const MAX_RUNS = 6;
 
+// capitalCodes lists the purchase code letters a product capitalises. Those
+// purchases are meant to be absent from the profit and loss account, so their
+// total is stated on its own rather than being left to look like a shortfall.
+//
+// notes carries what the reports and the fixture cannot say for themselves:
+// how a product's sheets fill rows the scenario left empty, and where a
+// deliberate zero comes from. Everything here is a fact about the shipped
+// workbooks, checked against them, not an instruction about what to conclude.
 export const PRODUCTS = {
-  taxi: { name: "Taxi Driver", reportPrefix: "GB_Accounts_Taxi_Driver" },
-  bst: { name: "Basic Sole Trader", reportPrefix: "GB_Accounts_Basic_Sole_Trader" },
-  se: { name: "Self Employed", reportPrefix: "GB_Accounts_Self_Employed" },
-  ltd: { name: "Limited Company", reportPrefix: "GB_Accounts_Company" },
+  taxi: {
+    name: "Taxi Driver",
+    reportPrefix: "GB_Accounts_Taxi_Driver",
+    capitalCodes: { f: "vehicles and other fixed assets" },
+    notes: [
+      "Purchases coded f are capitalised. They reach the Purchases sheets' year-to-date fixed asset column and the Fixed Assets schedule, and are excluded from the profit and loss account by design.",
+      "The workbook charges either actual vehicle running costs with capital allowances, or the mileage allowance, whichever leaves the lower profit. The option it does not take reads zero, and so does every line beneath it that the option feeds.",
+      "Car Hire / Rental only carries purchases coded h. An owner-driver has none, and the line reads zero.",
+    ],
+  },
+  bst: {
+    name: "Basic Sole Trader",
+    reportPrefix: "GB_Accounts_Basic_Sole_Trader",
+    capitalCodes: { f: "fixed assets" },
+    notes: [
+      "Purchases coded f are capitalised. They reach the Purchases sheets' year-to-date fixed asset column, reported as Purchases capitalised as fixed assets, and are excluded from the profit and loss account by design.",
+      "Purchases coded s are stock and coded d are direct costs. Both sit above gross profit, in cost of sales and direct costs, not in the expense lines.",
+      "The Debtors & Creditors sheet is the workbook's monthly analysis of sales not yet received and purchases still to be paid. Any opening or closing slot the scenario does not fill keeps that monthly figure, so a report can list more rows than the scenario has entries, carrying amounts that are not debtors or creditors at all.",
+    ],
+  },
+  se: {
+    name: "Self Employed",
+    reportPrefix: "GB_Accounts_Self_Employed",
+    capitalCodes: { fa: "fixed assets" },
+    notes: [
+      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design.",
+      "Purchases coded s are stock and coded c are direct costs. Both sit above gross profit.",
+    ],
+  },
+  ltd: {
+    name: "Limited Company",
+    reportPrefix: "GB_Accounts_Company",
+    capitalCodes: { fa: "fixed assets" },
+    notes: [
+      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. Code f is insurance, an expense.",
+      "Trade debtors on the published balance sheet are the opening debtors plus everything invoiced, less everything banked as a customer receipt. The closing debtors table in the scenario is the supporting list for that figure, not a separate input.",
+      "Stock on the published balance sheet comes from the physical count entered against the last month end, through the stock loss adjustment the Stock sheet derives from it.",
+    ],
+  },
 };
 
 // This Bedrock endpoint rejects output_config.format and strict tool schemas, so the JSON
@@ -159,10 +202,35 @@ function flatEntries(object, prefix = "") {
   return lines;
 }
 
+// Totals the purchase journal by its code letter, so the judge can follow each code to the
+// line it feeds rather than measuring the whole journal against the expense total.
+function purchaseCodeLines(scenario, product) {
+  const rows = flattenMonths(scenario.purchases);
+  if (rows.length === 0) return [];
+
+  const byCode = new Map();
+  for (const row of rows) {
+    const code = row.code ?? "(none)";
+    byCode.set(code, (byCode.get(code) ?? 0) + (typeof row.amount === "number" ? row.amount : 0));
+  }
+
+  const capitalCodes = product?.capitalCodes ?? {};
+  const capital = [...byCode.entries()].filter(([code]) => code in capitalCodes);
+  const lines = [`Purchase journal by code: ${[...byCode.entries()].sort().map(([code, total]) => `${code} ${money.format(total)}`).join(", ")}`];
+
+  const capitalTotal = capital.reduce((total, [, amount]) => total + amount, 0);
+  if (capitalTotal > 0) {
+    const named = capital.map(([code, total]) => `${money.format(total)} coded ${code} (${capitalCodes[code]})`).join(", ");
+    const revenue = sumField(rows, "amount") - capitalTotal;
+    lines.push(`Capital spending inside that journal: ${named}. The remaining ${money.format(revenue)} is revenue spending.`);
+  }
+  return lines;
+}
+
 // A written summary of the scenario the workbooks were driven with. Everything here is
 // derived from the fixture, so the judge compares the report against the input, not against
 // its own arithmetic.
-export function summariseScenario(scenario, scenarioName) {
+export function summariseScenario(scenario, scenarioName, product = null) {
   const lines = [`Scenario: ${scenarioName}`];
   const meta = scenario.metadata ?? {};
   if (meta.name) lines.push(`Name: ${meta.name}`);
@@ -190,6 +258,8 @@ export function summariseScenario(scenario, scenarioName) {
     if (line) lines.push(line);
   }
 
+  lines.push(...purchaseCodeLines(scenario, product));
+
   for (const [label, records, field] of [
     ["Opening debtors", scenario.opening_debtors, "amount"],
     ["Closing debtors", scenario.closing_debtors, "amount"],
@@ -205,6 +275,11 @@ export function summariseScenario(scenario, scenarioName) {
   if (scenario.stock) lines.push(`Stock: ${flatEntries(scenario.stock).join(", ")}`);
   if (scenario.opening_balance) lines.push(`Opening balances: ${flatEntries(scenario.opening_balance).join("; ")}`);
   if (scenario.expected) lines.push(`Totals the scenario declares: ${flatEntries(scenario.expected).join("; ")}`);
+
+  if (product?.notes?.length) {
+    lines.push("How this product's workbooks treat the entries above:");
+    for (const note of product.notes) lines.push(`- ${note}`);
+  }
 
   return lines.join("\n");
 }
@@ -270,7 +345,7 @@ export function assemblePrompt(product, options = {}) {
   const enriched = runs.map((run) => {
     const content = readFileSync(run.path, "utf8");
     const fixture = join(fixturesDir, `${run.scenario}.toml`);
-    const scenarioSummary = existsSync(fixture) ? summariseScenario(loadScenario(fixture), run.scenario) : null;
+    const scenarioSummary = existsSync(fixture) ? summariseScenario(loadScenario(fixture), run.scenario, PRODUCTS[product]) : null;
     return { ...run, content, status: reportStatus(content), scenarioSummary };
   });
 

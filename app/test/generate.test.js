@@ -271,6 +271,68 @@ describe("buildSeCellEdits", () => {
   });
 });
 
+// ── Taxi cell edits ───────────────────────────────────────────────────────
+
+import { buildTaxiCellEdits } from "../lib/generator.js";
+
+// Reads numeric cell values straight out of a generated workbook's Admin sheet.
+async function readAdminCells(buffer, adminSheetPath, cellRefs) {
+  const JSZip = (await import("jszip")).default;
+  const zip = await JSZip.loadAsync(buffer);
+  const xml = await zip.file(adminSheetPath).async("string");
+  const values = {};
+  for (const ref of cellRefs) {
+    const match = new RegExp(`<c r="${ref}"[^>]*>(?:(?!</c>).)*?<v>([^<]*)</v>`, "s").exec(xml);
+    values[ref] = match ? parseFloat(match[1]) : undefined;
+  }
+  return values;
+}
+
+describe("buildTaxiCellEdits", () => {
+  const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+
+  it("uses the two-band positions the Taxi Admin sheet lists", () => {
+    const { numericEdits } = buildTaxiCellEdits(taxData, 2025);
+    expect(numericEdits.N6).toBe(0.2);
+    expect(numericEdits.N7).toBe(0.4);
+    expect(numericEdits.N8).toBeUndefined();
+    expect(numericEdits.M11).toBe(37700);
+    expect(numericEdits.M12).toBeUndefined();
+    expect(numericEdits.L12).toBe(37701);
+    expect(numericEdits.N12).toBe(37701);
+    expect(numericEdits.N13).toBeUndefined();
+  });
+
+  it("uses L16 for NI Class 2 and leaves the depreciation row alone", () => {
+    const taxData2021 = parseTOML(readFileSync(resolve(DATA_DIR, "se-2020-2021.toml"), "utf8"));
+    const { numericEdits } = buildTaxiCellEdits(taxData2021, 2020);
+    expect(numericEdits.L16).toBe(3.05);
+    expect(numericEdits.L17).toBeUndefined();
+  });
+
+  it("has no VAT standard rate, which the Taxi Admin sheet does not carry", () => {
+    const { numericEdits } = buildTaxiCellEdits(taxData, 2025);
+    expect(numericEdits.F26).toBe(90000);
+    expect(numericEdits.F27).toBeUndefined();
+  });
+
+  it("puts the rates and the band edge in the cells the Draft Tax calculation reads", async () => {
+    const templateBuffer = readFileSync(resolve(TAXI_DIR, "taxi-excel.xlsx"));
+    const productMeta = parseTOML(readFileSync(resolve(TAXI_DIR, "meta.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+
+    // Draft Tax calculation D8 reads Admin!N6, C9 reads Admin!N12 and D9 reads
+    // Admin!N7. Writing the BST positions instead leaves N6 at the starting
+    // rate and N12 at zero, and no income ever reaches the higher band.
+    const admin = await readAdminCells(buffer, productMeta.sheets.admin, ["N4", "N6", "N7", "N11", "N12"]);
+    expect(admin.N4).toBe(12570);
+    expect(admin.N6).toBe(0.2);
+    expect(admin.N7).toBe(0.4);
+    expect(admin.N11).toBe(0);
+    expect(admin.N12).toBe(37701);
+  });
+});
+
 describe("generatePayslipsCalendar", () => {
   it("generates 380 rows of C, D, F values", () => {
     const edits = generatePayslipsCalendar(2025);
