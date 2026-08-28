@@ -230,8 +230,8 @@ describe("calculateFromDiyaGl — SE", () => {
   it("B19: Gross Profit is positive and close to Excel", () => {
     const { book, lines } = loadDiyaGlData(SE_DATA);
     const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // Excel: 323539.33
-    expect(Math.abs(results["Profit & Loss Account"].B19 - 323539.33)).toBeLessThanOrEqual(1);
+    // Equipment hire is a direct cost, so it sits above the gross profit line.
+    expect(Math.abs(results["Profit & Loss Account"].B19 - 321919.33)).toBeLessThanOrEqual(1);
   });
 
   it("B37: Operating Profit is positive and reasonable", () => {
