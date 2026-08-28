@@ -1249,17 +1249,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // uncollected sales shows up.
   const stock = results.Stock;
   const pubBS = results.PubBalSht;
-  if (expected.opening_stock !== undefined && stock) {
-    check("Stock: opening carried in from the opening balance sheet", stock.D6 || 0, expected.opening_stock);
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (openingStock !== undefined && stock) {
+    check("Stock: opening carried in from the opening balance sheet", stock.D6 || 0, openingStock);
   }
-  if (expected.closing_stock !== undefined && stock) {
-    check("Stock: physical count at the year end", stock[STOCK_FINAL_COUNT_CELL] || 0, expected.closing_stock);
+  if (closingStock !== undefined && stock) {
+    check("Stock: physical count at the year end", stock[STOCK_FINAL_COUNT_CELL] || 0, closingStock);
     check(
       "Stock: loss adjustment = count - calculated",
       stock[STOCK_FINAL_ADJUSTMENT_CELL] || 0,
       (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
     );
-    if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, expected.closing_stock);
+    if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
   }
   if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);

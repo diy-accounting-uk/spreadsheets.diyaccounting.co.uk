@@ -32,6 +32,10 @@ Status: RECONCILES (with warnings)
 | P&L: Admin lines sum = Total | 145556.27500000002 | 145556.275 | -2.9103830456733704e-11 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
+| Stock: opening carried in from the opening balance sheet | 10000 | 10000 | 0 | PASS |
+| Stock: physical count at the year end | 6000 | 6000 | 0 | PASS |
+| Stock: loss adjustment = count - calculated | -4000 | -4000 | 0 | PASS |
+| Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
 | Published balance sheet: trade debtors = closing debtors | 10400 | 10400 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
 | VAT: Q1-Q4 box 4 = Purchases VAT | 18498.708333333332 | 18498.70833333333 | -3.637978807091713e-12 | PASS |
