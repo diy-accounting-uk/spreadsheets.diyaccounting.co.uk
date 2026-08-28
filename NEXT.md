@@ -14,9 +14,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   generate-commit run per product — the committed reports and pages still show pre-fix
   numbers, and the judge will rightly fail the next deploy until they refresh.
 
-- [ ] **ltd-brickwork scenarios need a fixture-and-writer rebuild** (judge finding):
-  the VAT and non-VAT reports are byte-identical, and with no bank journal debtors
-  absorb all sales. Outside CI's judge scope today.
+- [ ] **Brickwork scenario rebuild — NOW A DEPLOY BLOCKER, fix in flight**: the deploy
+  judge (run 33178939074) failed SE and Ltd on their brickwork runs — the non-VAT twins
+  file full VAT quarters, no bank journal so debtors absorb all sales, capital and CIS
+  figures inconsistent. Rebuild in worktree `../spreadsheets-worktrees/brickwork`,
+  branch `claude/recon-brickwork`. Until it merges (plus the report-refresh runs),
+  deploys fail the judge; `skip-reconciliation-check` is the designed override if a
+  deploy cannot wait.
 
 - [ ] **Shipped Taxi template: stale vehicle-changes nag** (judge finding):
   `PurchasesMar!T2` compares against the empty `'Fixed Assets'!$D$74` (the additions
