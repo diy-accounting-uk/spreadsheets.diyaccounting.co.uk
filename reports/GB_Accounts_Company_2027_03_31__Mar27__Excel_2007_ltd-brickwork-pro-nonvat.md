@@ -753,7 +753,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
 | **Profit Before Tax** | 1,754 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -769,6 +769,18 @@ Status: RECONCILES
 | **Profit Chargeable to CT** | -9,046 |
 | **Corporation Tax** | 0 |
 | Tax Outstanding | 0 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 0 |
 
 ## Published P&L
 
@@ -1291,6 +1303,23 @@ Status: RECONCILES
 | I34 |  | 0 |  |
 | K37 |  | 0 |  |
 
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 0 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 0 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 0 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 75000 |  |
+| AJ74 |  | 0 |  |
+| AJ92 |  | 0 |  |
+| AJ110 |  | 0 |  |
+| AJ145 |  | 0 |  |
+| AJ154 |  | 0 |  |
+| AJ159 |  | 0 |  |
+| AJ166 |  | 0 |  |
+
 ### PubP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -1431,22 +1460,6 @@ Status: RECONCILES
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 0 |  |
 | L34 |  | -126.7 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 75000 |  |
-| AJ74 |  | 0 |  |
-| AJ92 |  | 0 |  |
-| AJ110 |  | 0 |  |
-| AJ126 |  | 0 |  |
-| AJ131 |  | 0 |  |
-| AJ145 |  | 0 |  |
-| AJ154 |  | 0 |  |
-| AJ159 |  | 0 |  |
-| AJ166 |  | 0 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 

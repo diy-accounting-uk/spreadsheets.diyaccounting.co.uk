@@ -762,7 +762,7 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 0 |
 | **Profit Before Tax** | 18,769 |
 
-## Corporation Tax (CT600)
+## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
@@ -778,6 +778,18 @@ Status: RECONCILES (with warnings)
 | **Profit Chargeable to CT** | 7,969 |
 | **Corporation Tax** | 1,514.11 |
 | Tax Outstanding | 1,514.11 |
+
+## CT600 as filed
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 3,979.05 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 756.02 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | — |
+| **Box 63: corporation tax** | 756.02 |
 
 ## Published P&L
 
@@ -1301,6 +1313,24 @@ Status: RECONCILES (with warnings)
 | I34 |  | 758.090642954856 |  |
 | K37 |  | 0 |  |
 
+### CT600
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N126 | Box 44: amount of profit | 3979.04924760602 | gl-cor:amount (ct600.box44) |
+| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
+| AJ126 | Box 46: tax | 756.019357045144 | gl-cor:taxAmount (ct600.box46) |
+| AJ131 | **Box 63: corporation tax** | 756.019357045144 | gl-cor:taxAmount (ct600.box63) |
+| AK66 |  | 112500 |  |
+| Z70 |  | 7969 |  |
+| AJ74 |  | 7969 |  |
+| AJ92 |  | 7969 |  |
+| AJ110 |  | 7969 |  |
+| AJ145 |  | 756.019357045144 |  |
+| AJ154 |  | 0 |  |
+| AJ159 |  | 756.019357045144 |  |
+| AJ166 |  | 756.019357045144 |  |
+
 ### PubP&L
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -1441,23 +1471,6 @@ Status: RECONCILES (with warnings)
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 0 |  |
 | L34 |  | -126.7 |  |
-
-### CT600
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| AK66 |  | 112500 |  |
-| Z70 |  | 7969 |  |
-| AJ74 |  | 7969 |  |
-| AJ92 |  | 7969 |  |
-| AJ110 |  | 7969 |  |
-| AJ126 |  | 756.019357045144 |  |
-| AJ131 |  | 756.019357045144 |  |
-| AJ145 |  | 756.019357045144 |  |
-| AJ154 |  | 0 |  |
-| AJ159 |  | 756.019357045144 |  |
-| AJ166 |  | 756.019357045144 |  |
-| AA126 |  | 19 |  |
 
 ### Admin
 
