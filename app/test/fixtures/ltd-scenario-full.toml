@@ -4917,6 +4917,62 @@ description = "Laptop (0.5 years old)"
 cost = 3000
 acc_dep = 270
 
+[[vat_straddling_sales]]
+period = "02Y1"
+date = 2025-02-14
+customer = "Acme Corp"
+invoice = "INV-0801"
+amount = 4800
+
+[[vat_straddling_sales]]
+period = "03Y1"
+date = 2025-03-18
+customer = "Beta Systems"
+invoice = "INV-0802"
+amount = 2400
+
+[[vat_straddling_sales]]
+period = "04Y2"
+date = 2026-04-10
+customer = "Acme Corp"
+invoice = "INV-1301"
+amount = 3600
+
+[[vat_straddling_sales]]
+period = "05Y2"
+date = 2026-05-12
+customer = "Gamma Ltd"
+invoice = "INV-1302"
+amount = 1800
+
+[[vat_straddling_purchases]]
+period = "02Y1"
+date = 2025-02-20
+supplier = "TechParts Ltd"
+invoice = "TP-2402"
+amount = 720
+
+[[vat_straddling_purchases]]
+period = "03Y1"
+date = 2025-03-24
+supplier = "WorkSpace Ltd"
+invoice = "WS-2402"
+amount = 1200
+
+[[vat_straddling_purchases]]
+period = "04Y2"
+date = 2026-04-15
+supplier = "Shell"
+invoice = "SH-2604"
+amount = 240
+
+[[vat_straddling_purchases]]
+period = "05Y2"
+date = 2026-05-19
+supplier = "BT Business"
+invoice = "BT-2605"
+amount = 360
+
 [expected]
 total_sales = 341283
 total_legal_net = 4425
