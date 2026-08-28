@@ -53,6 +53,7 @@ Status: RECONCILES
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
 | Tax: sheet splits the bands at the higher band start | 37701 | 37701 | 0 | PASS |
 | Tax at basic rate | 1792 | 1792 | 0 | PASS |
+| P&L: tax charged = Income Tax sheet total less CIS deducted | 1792 | 1792 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 8960 | 8960 | 0 | PASS |
 | Tax: IT = Basic + Higher | 1792 | 1792 | 0 | PASS |
@@ -96,8 +97,8 @@ Status: RECONCILES
 | **Net Profit** | 33,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 12,000 |
 | Taxable Profit | 21,530 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 1,792 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Income received | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 1,792 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 537.6 |
 | Net Income After Tax | 19,200.4 |
 
@@ -264,8 +265,8 @@ Status: RECONCILES
 | C24 | **Net Profit** | 33530 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 12000 | tax.capitalAllowances |
 | C28 | Taxable Profit | 21530 | gl-cor:amount (taxableProfit) |
-| C30 | Income Tax | 0 | tax.incomeTax |
-| C32 | Tax at basic rate | 1792 | tax.incomeTax.basicRate |
+| C30 | Other Income received | 0 | gl-cor:amount (otherIncomeReceived) |
+| C32 | Income Tax less CIS deducted | 1792 | tax.incomeTax (net of CIS) |
 | C33 | NI Class 4 | 537.6 | tax.nationalInsurance.class4 |
 | C35 | Net Income After Tax | 19200.4 | gl-cor:amount (netIncome) |
 | D4 | Apr | 6500 | gl-cor:amount (monthlySales.apr) |
