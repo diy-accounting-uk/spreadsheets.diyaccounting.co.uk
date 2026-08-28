@@ -327,11 +327,27 @@ describe("requestVerdict", () => {
   });
 
   it("returns a fail verdict rather than treating it as an error", async () => {
-    const failing = { verdict: "fail", summary: "All four VAT quarters read zero.", concerns: [] };
+    const failing = {
+      verdict: "fail",
+      summary: "All four VAT quarters read zero.",
+      concerns: [{ figure: "VAT box 5", where: "VATQtr1 G17", why: "Nil for a registered trader.", severity: "blocking" }],
+    };
     const create = vi.fn().mockResolvedValue(messageWith(failing));
     const verdict = await requestVerdict({ messages: { create } }, prompt);
     expect(verdict.verdict).toBe("fail");
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a fail that records nothing blocking, and takes the coherent answer", async () => {
+    const outranItsEvidence = {
+      verdict: "fail",
+      summary: "Something looked wrong.",
+      concerns: [{ figure: "Additions", where: "Schedule Q1", why: "On second look this reconciles.", severity: "note" }],
+    };
+    const create = vi.fn().mockResolvedValueOnce(messageWith(outranItsEvidence)).mockResolvedValue(messageWith(PASSING));
+    const verdict = await requestVerdict({ messages: { create } }, prompt);
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(verdict.verdict).toBe("pass");
   });
 });
 
