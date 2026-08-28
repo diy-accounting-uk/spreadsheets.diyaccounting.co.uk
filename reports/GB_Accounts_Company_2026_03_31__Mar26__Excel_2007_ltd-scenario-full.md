@@ -99,7 +99,6 @@ Status: RECONCILES (with warnings)
 | Fixed asset schedule (computer): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Computers |  | PASS |
 | Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Motor Vehicles |  | PASS |
 | Published balance sheet: fixed assets = fixed asset note net book value | 30990 | 30990 | 0 | PASS |
-| RegisterofMembers: nominal value x shares issued = PubBalSht share capital | 100 | 100 | 0 | PASS |
 | Fixed assets: Schedule additions = fixed asset purchases net of VAT | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 12500 | 12500 | 0 | PASS |
 | P&L: depreciation = fixed asset note charge for the year | 11740 | 11740 | 0 | PASS |
@@ -673,7 +672,6 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 13,000 |
 | **Net Assets** | 198,293.12 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
 | **Shareholders' Funds** | 198,293.12 |
 
 ## Fixed Asset Note
@@ -1167,7 +1165,6 @@ Status: RECONCILES (with warnings)
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | F31 | Other Creditors | 13000 | gl-cor:amount (pubBS.otherCred) |
 | F33 | **Net Assets** | 198293.11725 | gl-cor:amount (pubBS.netAssets) |
-| F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
 | F39 | **Shareholders' Funds** | 198293.11725 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 46112 |  |
 
@@ -1802,13 +1799,6 @@ Status: RECONCILES (with warnings)
 | D15 |  | 873.2 |  |
 | E15 |  | 800 |  |
 | I15 |  | 1673.2 |  |
-
-### Companysecretary.xlsx!RegisterofMembers
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| F1 |  | 1 |  |
-| G1 |  | 100 |  |
 
 ### Currentaccount.xlsx!Mar
 

@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-scenario-advanced
-Status: ANOMALYDETECTED
+Status: RECONCILES
 
 ## Compliance Checks
 
@@ -38,7 +38,6 @@ Status: ANOMALYDETECTED
 | P&L: Depreciation (row 34, summed) = Schedule I1 | 11740 | 11739.999999999993 | -7.275957614183426e-12 | PASS |
 | P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) | 172 | 171.99999999999966 | -3.410605131648481e-13 | PASS |
 | Bank.xlsx closing balance (Mar!A2) | 12164 | 12164 | 0 | PASS |
-| Cash.xlsx closing balance (Mar!A2) | 480 | 480 | 0 | PASS |
 | P&L apr col C5 = Sales.xlsx a-coded net | 25333.33 | 25333.3333333333 | +0.0033333332976326346 | PASS |
 | P&L apr col C6 = Sales.xlsx b-coded net | 1800 | 1800 | 0 | PASS |
 | P&L apr col C7 = Sales.xlsx c-coded net | 0 | 0 | 0 | PASS |
@@ -319,27 +318,27 @@ Status: ANOMALYDETECTED
 | VAT Q1: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 16980 | 16980 | 0 | PASS |
 | VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 12898.125 | 12898.125 | 0 | PASS |
 | VAT Q1: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| VAT Q1: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 0 | 16980 | +16980 | **FAIL** |
-| VAT Q1: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 0 | 4081.875 | +4081.875 | **FAIL** |
-| VAT Q1: box 7 net purchases (G23) = scenario purchases net for the quarter | 0 | 20409.375 | +20409.375 | **FAIL** |
+| VAT Q1: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 16979.999999999993 | 16980 | +7.275957614183426e-12 | PASS |
+| VAT Q1: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 4081.875 | 4081.875 | 0 | PASS |
+| VAT Q1: box 7 net purchases (G23) = scenario purchases net for the quarter | 20409.375 | 20409.375 | 0 | PASS |
 | VAT Q2: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 20056.6666666667 | 20056.6666666667 | 0 | PASS |
 | VAT Q2: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 11325.6666666667 | 11325.6666666667 | 0 | PASS |
 | VAT Q2: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| VAT Q2: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 0 | 20056.6666666667 | +20056.6666666667 | **FAIL** |
-| VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 0 | 8731 | +8731 | **FAIL** |
-| VAT Q2: box 7 net purchases (G23) = scenario purchases net for the quarter | 0 | 43655 | +43655 | **FAIL** |
+| VAT Q2: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 20056.666666666657 | 20056.6666666667 | +4.3655745685100555e-11 | PASS |
+| VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 8731 | 8731 | 0 | PASS |
+| VAT Q2: box 7 net purchases (G23) = scenario purchases net for the quarter | 43655 | 43655 | 0 | PASS |
 | VAT Q3: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 17260 | 17260 | 0 | PASS |
 | VAT Q3: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 13779.875 | 13779.875 | 0 | PASS |
 | VAT Q3: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| VAT Q3: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 0 | 17260 | +17260 | **FAIL** |
-| VAT Q3: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 0 | 3480.125 | +3480.125 | **FAIL** |
-| VAT Q3: box 7 net purchases (G23) = scenario purchases net for the quarter | 0 | 17400.625 | +17400.625 | **FAIL** |
+| VAT Q3: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 17259.999999999993 | 17260 | +7.275957614183426e-12 | PASS |
+| VAT Q3: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 3480.1249999999995 | 3480.125 | +4.547473508864641e-13 | PASS |
+| VAT Q3: box 7 net purchases (G23) = scenario purchases net for the quarter | 17400.625 | 17400.625 | 0 | PASS |
 | VAT Q4: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 10953.3333333333 | 10953.3333333333 | 0 | PASS |
 | VAT Q4: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 9599.499999999969 | 9599.50000000001 | +4.001776687800884e-11 | PASS |
 | VAT Q4: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
-| VAT Q4: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 0 | 10953.3333333333 | +10953.3333333333 | **FAIL** |
-| VAT Q4: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 0 | 1353.83333333333 | +1353.83333333333 | **FAIL** |
-| VAT Q4: box 7 net purchases (G23) = scenario purchases net for the quarter | 0 | 6769.16666666667 | +6769.16666666667 | **FAIL** |
+| VAT Q4: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 10953.333333333328 | 10953.3333333333 | -2.9103830456733704e-11 | PASS |
+| VAT Q4: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 1353.833333333333 | 1353.83333333333 | -2.9558577807620168e-12 | PASS |
+| VAT Q4: box 7 net purchases (G23) = scenario purchases net for the quarter | 6769.166666666667 | 6769.16666666667 | +2.7284841053187847e-12 | PASS |
 | VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 5226.66666666667 | 5226.66666666667 | 0 | PASS |
 | VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 4605.583333333337 | 4605.58333333334 | +3.637978807091713e-12 | PASS |
 | VAT Q5: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
@@ -817,13 +816,6 @@ Status: ANOMALYDETECTED
 |------|-----------|-------|-----------------|
 | A1 |  | 20442 |  |
 | A2 |  | 12164 |  |
-
-### Cash.xlsx!Mar
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| A1 |  | 492 |  |
-| A2 |  | 480 |  |
 
 ### Sales.xlsx!OpeningDebtors
 
