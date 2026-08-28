@@ -242,15 +242,16 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 
 // Bank file → account ID mapping per product, with the payment-block columns
 // each file's writer uses. Ltd statement books carry a wider receipts-analysis
-// block than Cashaccount, which shifts their payments block right; SE files
-// mirror the columns the SE writer currently uses.
-const SE_PAYMENT_COLS = { date: "P", supplier: "Q", code: "S", amount: "T" };
+// block than Cashaccount, which shifts their payments block right; the SE
+// bank and cash books each carry their own narrower payments block.
+const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", code: "S", amount: "T" };
+const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", code: "P", amount: "Q" };
 const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", code: "W", amount: "X" };
 const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", code: "T", amount: "U" };
 const BANK_FILES = {
   se: [
-    { file: "Bank.xlsx", accountID: "1200", payment: SE_PAYMENT_COLS },
-    { file: "Cash.xlsx", accountID: "1220", payment: SE_PAYMENT_COLS },
+    { file: "Bank.xlsx", accountID: "1200", payment: SE_BANK_PAYMENT_COLS },
+    { file: "Cash.xlsx", accountID: "1220", payment: SE_CASH_PAYMENT_COLS },
   ],
   ltd: [
     { file: "Currentaccount.xlsx", accountID: "1200", payment: LTD_STATEMENT_PAYMENT_COLS },
@@ -457,11 +458,77 @@ const OA_JOURNAL_MAP = [
   { cell: "E35", accountMainID: "3300", dc: "C", comment: "Capital reserves" },
 ];
 
+// SE existing (opening) fixed asset rows on the Fixedassets.xlsx Schedule:
+// C=description, E=cost, F=accumulated depreciation. New-asset rows are not
+// exported — they regenerate from the fa-coded purchase transactions.
+const SE_SCHEDULE_EXISTING_ROWS = [
+  { rows: [30, 31, 32, 33, 34], accountMainID: "0030" },
+  { rows: [38, 39, 40, 41, 42], accountMainID: "0040" },
+];
+
+async function extractSeOpeningFixedAssets(sourceDir) {
+  const { readFileSync, existsSync } = await import("fs");
+  const { resolve } = await import("path");
+
+  const faPath = resolve(sourceDir, "Fixedassets.xlsx");
+  if (!existsSync(faPath)) return [];
+
+  const zip = await JSZip.loadAsync(readFileSync(faPath));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+  const schedulePath = sheetMap.get("Schedule");
+  if (!schedulePath) return [];
+  const xml = await zip.file(schedulePath).async("string");
+
+  const lines = [];
+  let entryNum = 1;
+  let lineNum = 1;
+  for (const { rows, accountMainID } of SE_SCHEDULE_EXISTING_ROWS) {
+    for (const row of rows) {
+      const cost = readCellValue(xml, `E${row}`, sharedStrings);
+      if (cost === null || typeof cost !== "number" || cost === 0) continue;
+      const description = readCellValue(xml, `C${row}`, sharedStrings);
+      const accDep = readCellValue(xml, `F${row}`, sharedStrings);
+      const base = {
+        sourceJournalID: "journal",
+        postingDate: "2025-04-01", // Opening balance date — normalised on double-roundtrip
+        accountMainID,
+        detailComment: "Opening balances",
+        documentType: "journal",
+        documentReference: "OB-001",
+        taxCode: "OS",
+        taxRate: 0,
+      };
+      lines.push({
+        ...base,
+        amount: cost,
+        lineItemComment: typeof description === "string" && description ? description : "Opening fixed asset cost",
+        debitCreditCode: "D",
+        lineNumber: lineNum++,
+        entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+      });
+      if (typeof accDep === "number" && accDep !== 0) {
+        lines.push({
+          ...base,
+          amount: accDep,
+          lineItemComment: "Accumulated depreciation",
+          debitCreditCode: "C",
+          lineNumber: lineNum++,
+          entryNumber: `EXP-FA-${String(entryNum++).padStart(4, "0")}`,
+        });
+      }
+    }
+  }
+  return lines;
+}
+
 /**
- * Extract journal entries (opening balances) from OpenAccounts sheet.
+ * Extract journal entries (opening balances): Ltd from the OpenAccounts
+ * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows.
  */
 export async function extractJournalEntries(sourceDir, product) {
-  if (product !== "ltd") return []; // Only Ltd has OpenAccounts
+  if (product === "se") return extractSeOpeningFixedAssets(sourceDir);
+  if (product !== "ltd") return [];
 
   const { readFileSync, existsSync } = await import("fs");
   const { resolve } = await import("path");

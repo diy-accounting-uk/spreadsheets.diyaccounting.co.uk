@@ -79,19 +79,19 @@ export const SE_PURCHASE_CODE_MAP = {
   5101: "w",
   5200: "p", // Premises (combined Rent/Light/Heat column)
   5201: "p",
-  5300: "t",
-  5301: "q",
+  5300: "g", // postage -> Administration Telephone Postage & Stationery
+  5301: "o", // equipment hire -> Other Direct Business Costs
   5400: "m",
-  5401: "u",
+  5401: "y", // general shopping -> Other Expenses
   5500: "a",
   5501: "g",
   5600: "h",
   5601: "v",
-  5700: "n",
-  5701: "f",
+  5700: "y", // insurance -> Other Expenses (no insurance column)
+  5701: "g", // office equipment -> Administration & Stationery
   5800: "l",
   5801: "y",
-  5802: "z",
+  5802: "l", // one-off consulting -> Legal & Professional
   5803: "l", // loan interest -> legal
   5900: "fa",
   5100: "w", // directors wages -> employee wages in SE
@@ -263,6 +263,9 @@ export function filterAdvanced(lines) {
     if (l.sourceJournalID === "purchases") return SE_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
     if (l.sourceJournalID === "bank") return SE_BANK_ACCOUNTS.has(l["diya-gl:bankAccountID"]);
     if (l.sourceJournalID === "payroll") return true;
+    // The opening fixed assets post to the SE Schedule; the rest of the
+    // opening journal has no SE surface.
+    if (isOpeningBalanceLine(l)) return l.accountMainID === "0030" || l.accountMainID === "0040";
     return false;
   });
 }
