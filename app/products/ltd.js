@@ -1895,6 +1895,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(corporationTax.K28),
       num(corporationTax.K22) + num(corporationTax.K24) - num(corporationTax.K26),
     );
+    // The whole distance between the profit the accounts report and the
+    // profit charged to tax, in one line. This is what a comparison of
+    // "chargeable against operating" was reaching for; that one was written
+    // with a tolerance as wide as the chargeable profit itself, and it is not
+    // true at all of a year whose capital allowances beat its add-backs.
+    check(
+      "CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses",
+      num(corporationTax.K28),
+      num(corporationTax.K5) + num(corporationTax.K10) - num(corporationTax.K20) + num(corporationTax.K24) - num(corporationTax.K26),
+    );
   }
 
   const ct600 = results.CT600;
@@ -1939,8 +1949,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const expectedCT = Math.round(profit * rate);
       check("Corporation Tax", ct.K35 || 0, expectedCT);
 
-      // CT calculation chain (6d)
-      check("CT: Chargeable >= Operating", ct.K28 || 0, ct.K5 || 0, ct.K28); // chargeable includes add-backs
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));

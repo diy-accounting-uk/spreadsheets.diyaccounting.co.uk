@@ -404,7 +404,11 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "K20", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("CorporationTax", "K20", value);
-      expect(failureNames(corrupted)).toEqual(["CT: capital allowances = the allowance lines", "CT: profit after capital allowances"]);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: capital allowances = the allowance lines",
+        "CT: profit after capital allowances",
+        "CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses",
+      ]);
     });
 
     it("fails the schedule's opening balance verdict when it is corrupted via JSZip", async () => {
