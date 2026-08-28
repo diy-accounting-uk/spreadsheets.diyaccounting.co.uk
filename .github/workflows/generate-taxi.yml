@@ -58,9 +58,11 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 env:
   NODE_VERSION: '24'
+  AWS_REGION: 'us-east-1'
 
 jobs:
 
@@ -189,6 +191,41 @@ jobs:
           cp reports/*.md /tmp/page-reports/ 2>/dev/null || true
       - run: rm -f reports/*.md
       - run: npm run reconciliation -- --package taxi --scenario basic --year-end ${{ matrix.year-end }}
+      - name: Check reconciliation
+        run: |
+          COUNT=0
+          FAIL=0
+          for f in reports/*.md; do
+            [ -f "$f" ] || continue
+            COUNT=$((COUNT + 1))
+            if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
+          done
+          if [ "$COUNT" -eq 0 ]; then
+            echo "::error::No reconciliation reports for ${{ matrix.year-end }}"
+            exit 1
+          fi
+          if [ "$FAIL" -eq 1 ]; then
+            echo "::error::Reconciliation anomaly for ${{ matrix.year-end }}"
+            exit 1
+          fi
+          echo "$COUNT reports, all RECONCILES"
+      # The check above stays authoritative for arithmetic. The judge covers the plausibility
+      # call it cannot make, and stays skipped until the operator sets ENABLE_LLM_JUDGE.
+      - name: Configure AWS role via GitHub OIDC
+        if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.SPREADSHEETS_ACTIONS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-chaining: false
+          audience: sts.amazonaws.com
+          role-skip-session-tagging: true
+          output-credentials: true
+          retry-max-attempts: 3
+      - name: Judge the reconciliation reports
+        if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
+        timeout-minutes: 10
+        run: npm run judge:reconciliation -- --package taxi
       - name: Copy latest populated to examples
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
@@ -203,6 +240,7 @@ jobs:
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
         run: |
           cp -f reports/*.md /tmp/page-reports/
+          cp -f reports/judge-verdict-*.json /tmp/page-reports/ 2>/dev/null || true
           npm run build:reconciliation-pages -- --product taxi --reports /tmp/page-reports
       - uses: actions/upload-artifact@v7
         if: ${{ matrix.year-end == needs.generate.outputs.latest }}
@@ -222,24 +260,6 @@ jobs:
           name: taxi-examples
           retention-days: 1
           path: examples/
-      - name: Check reconciliation
-        run: |
-          COUNT=0
-          FAIL=0
-          for f in reports/*.md; do
-            [ -f "$f" ] || continue
-            COUNT=$((COUNT + 1))
-            if grep "^Status:" "$f" | grep -q "ANOMALYDETECTED"; then FAIL=1; fi
-          done
-          if [ "$COUNT" -eq 0 ]; then
-            echo "::error::No reconciliation reports for ${{ matrix.year-end }}"
-            exit 1
-          fi
-          if [ "$FAIL" -eq 1 ]; then
-            echo "::error::Reconciliation anomaly for ${{ matrix.year-end }}"
-            exit 1
-          fi
-          echo "$COUNT reports, all RECONCILES"
 
   commit:
     runs-on: ubuntu-24.04
