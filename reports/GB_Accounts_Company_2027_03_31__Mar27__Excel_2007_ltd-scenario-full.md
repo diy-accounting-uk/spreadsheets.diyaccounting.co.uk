@@ -249,6 +249,11 @@ Status: RECONCILES (with warnings)
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 238864 | 238864 | 0 | PASS |
+| Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 10275 | 10275 | 0 | PASS |
+| Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 480 | 480 | 0 | PASS |
+| Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 1025 | 1025 | 0 | PASS |
+| Published balance sheet: cash at bank = Trial Balance bank account aggregate | 250544 | 250544 | 0 | PASS |
 | P&L Apr C4 = Sales.xlsx "a" net | 25333.33 | 25333.3333333333 | +0.0033333332976326346 | PASS |
 | P&L Apr C5 = Sales.xlsx "b" net | 1800 | 1800 | 0 | PASS |
 | P&L Apr C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
@@ -889,6 +894,11 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -45,702 |
 | **Opening Balances Audit Check** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 238,864 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 1,025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 480 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Directors Loan Account | -13,000 |
 | **Audit Accuracy Check** | 0 |
 
@@ -1486,6 +1496,11 @@ Status: RECONCILES (with warnings)
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -45702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
+| EJ22 | Final: Bank Current Account | 238864 | accounts.assets.1200 (final) |
+| EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
+| EJ24 | Final: Credit Card Account | 1025 | accounts.assets.1230 (final) |
+| EJ25 | Final: Cash Account | 480 | accounts.assets.1220 (final) |
+| EJ26 | Final: Intra Cash & Bank Transfers | -100 | gl-cor:amount (intraTransfers) |
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ91 | **Audit Accuracy Check** | 3.19232640322298e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
