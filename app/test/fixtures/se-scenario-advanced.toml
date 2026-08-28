@@ -720,7 +720,7 @@ amount = 360
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.apr]]
@@ -906,7 +906,7 @@ amount = 300
 [[purchases.may]]
 date = 2025-05-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.may]]
@@ -1110,7 +1110,7 @@ amount = 300
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.jun]]
@@ -1308,7 +1308,7 @@ amount = 250
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.jul]]
@@ -1512,7 +1512,7 @@ amount = 300
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.aug]]
@@ -1704,7 +1704,7 @@ amount = 300
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.sep]]
@@ -1902,7 +1902,7 @@ amount = 208
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.oct]]
@@ -2112,7 +2112,7 @@ amount = 300
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.nov]]
@@ -2298,7 +2298,7 @@ amount = 300
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.dec]]
@@ -2496,7 +2496,7 @@ amount = 167
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.jan]]
@@ -2694,7 +2694,7 @@ amount = 300
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.feb]]
@@ -2892,7 +2892,7 @@ amount = 120
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "WorkSpace Ltd"
-code = "p"
+code = "r"
 amount = 1200
 
 [[purchases.mar]]
@@ -3429,11 +3429,11 @@ description = "VAT payment Q1 Apr-Jun"
 [[bank.jul]]
 date = 2025-07-15
 account = "1200"
-source = "Proprietor"
-code = "DL"
+source = "Dividend"
+code = "DV"
 direction = "out"
 amount = 3000
-description = "Quarterly drawings payment"
+description = "Quarterly dividend payment"
 
 [[bank.jul]]
 date = 2025-07-19
@@ -3744,11 +3744,11 @@ description = "Van sale proceeds"
 [[bank.oct]]
 date = 2025-10-15
 account = "1200"
-source = "Proprietor"
-code = "DL"
+source = "Dividend"
+code = "DV"
 direction = "out"
 amount = 3000
-description = "Quarterly drawings payment"
+description = "Quarterly dividend payment"
 
 [[bank.oct]]
 date = 2025-10-19
@@ -4052,18 +4052,18 @@ date = 2026-01-15
 account = "1200"
 source = "Director loan"
 code = "DL"
-direction = "out"
+direction = "in"
 amount = 5000
 description = "Directors loan advance"
 
 [[bank.jan]]
 date = 2026-01-15
 account = "1200"
-source = "Proprietor"
-code = "DL"
+source = "Dividend"
+code = "DV"
 direction = "out"
 amount = 3000
-description = "Quarterly drawings payment"
+description = "Quarterly dividend payment"
 
 [[bank.jan]]
 date = 2026-01-19
@@ -4311,11 +4311,11 @@ description = "Accountancy fee payment"
 [[bank.mar]]
 date = 2026-03-31
 account = "1200"
-source = "Proprietor"
-code = "DL"
+source = "Dividend"
+code = "DV"
 direction = "out"
 amount = 6000
-description = "Quarterly drawings payment"
+description = "Final dividend payment"
 
 [[bank.apr]]
 date = 2025-04-01
@@ -4463,5 +4463,5 @@ acc_dep = 270
 
 [expected]
 total_sales = 339200
-total_motor_gross = 7598
-total_legal_gross = 5310
+total_motor_net = 6332
+total_legal_net = 4425

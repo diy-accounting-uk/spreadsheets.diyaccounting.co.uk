@@ -1,0 +1,30 @@
+{
+  "product": "bst",
+  "name": "Basic Sole Trader",
+  "page": "bst.html",
+  "catalogue": "GB Accounts Basic Sole Trader",
+  "featuredScenario": "bst-scenario-basic",
+  "yearEnd": "2027-04-05",
+  "status": "RECONCILES",
+  "runs": 7,
+  "updated": "2026-08-27",
+  "features": {
+    "checks": true,
+    "sales": true,
+    "purchases": true,
+    "bank": false,
+    "payroll": false,
+    "openingBalances": true,
+    "fixedAssets": false,
+    "profitAndLoss": true,
+    "balanceSheet": false,
+    "stock": true,
+    "debtorsCreditors": true,
+    "vat": false,
+    "trialBalance": false,
+    "corporationTax": false,
+    "incomeTax": true,
+    "selfAssessment": true,
+    "screenshots": true
+  }
+}

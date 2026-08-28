@@ -46,9 +46,16 @@ function toExcelSerial(year, month, day) {
 
 // ── XML cell editing (same approach as generator.js) ────────────────────────
 
+// Matches exactly the target cell's element: either self-closing, or an open
+// tag whose content may not run into a sibling's <c start or another cell's
+// </c> close. A greedier scan here swallows the self-closing siblings after
+// the target (they carry no </c> to stop at) and with them the row boundary.
+function cellElementPattern(cellRef) {
+  return new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/>|>(?:(?!</c>|<c[\\s>]).)*</c>)`, "s");
+}
+
 function setCellValue(xml, cellRef, value) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCell(xml, cellRef, value);
 
   const [fullMatch, openTag] = match;
@@ -57,8 +64,7 @@ function setCellValue(xml, cellRef, value) {
 }
 
 function setCellString(xml, cellRef, str) {
-  const cellPattern = new RegExp(`(<c\\s+r="${cellRef}"\\s[^>]*?)(/?>)((?:(?!</c>).)*(?:</c>)?)`, "s");
-  const match = xml.match(cellPattern);
+  const match = xml.match(cellElementPattern(cellRef));
   if (!match) return insertCellString(xml, cellRef, str);
 
   const [fullMatch, openTag] = match;
@@ -510,7 +516,12 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     const filenames = Object.keys(fileBuffers);
 
     // Recalculate leaf files via xls roundtrip (xlsx → xls → xlsx).
-    const leafFiles = filenames.filter((f) => f !== readFile);
+    // postHubRecalc files are excluded: they recalculate after the hub, and
+    // a roundtrip here would let LibreOffice rewrite their external link
+    // rels to temp-dir relative paths, which updateExternalLinkCaches no
+    // longer recognises as sibling files.
+    const postHub = options.postHubRecalc || [];
+    const leafFiles = filenames.filter((f) => f !== readFile && !postHub.includes(f));
     for (const filename of leafFiles) {
       if (!filename.endsWith(".xlsx")) continue;
       const xlsxPath = resolve(workDir, filename);
@@ -524,11 +535,15 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     // Recalculate the hub file
     xslRoundtrip(soffice, userProfile, workDir, resolve(workDir, readFile));
 
-    // Recalculate files that read FROM the hub (e.g. Vat.xlsx) — they need fresh hub data
+    // Recalculate files that read FROM the hub and leaves (e.g. Vat.xlsx).
+    // Refresh their external link caches first — the xls roundtrip resolves
+    // external references from the cached values, so without this step they
+    // compute from the template's stale zeros, not the scenario data.
     if (options.postHubRecalc) {
       for (const filename of options.postHubRecalc) {
         const xlsxPath = resolve(workDir, filename);
         if (existsSync(xlsxPath)) {
+          await updateExternalLinkCaches(workDir, filename);
           xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
         }
       }
@@ -555,8 +570,12 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
       }
     }
 
-    // Read from additional recalculated files (e.g. Vat.xlsx, Bank.xlsx)
+    // Read from additional recalculated files (e.g. Vat.xlsx, Bank.xlsx).
     // options.additionalReads = { "Vat.xlsx": { "VATQtr1": ["G7","G15","G17"] }, "Bank.xlsx": { "Mar": ["A2"] } }
+    // Results are keyed "<filename>!<sheetName>" — several leaf files carry
+    // identically named sheets (Bank.xlsx Mar, Cash.xlsx Mar, every month
+    // tab in Sales.xlsx and Purchases.xlsx), and a bare sheet-name key would
+    // silently merge them.
     if (options.additionalReads) {
       for (const [filename, sheetReads] of Object.entries(options.additionalReads)) {
         const filePath = resolve(workDir, filename);
@@ -569,9 +588,10 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
           const sheetPath = fileSheetMap.get(sheetName);
           if (!sheetPath) continue;
           const xml = await fileZip.file(sheetPath).async("string");
-          if (!results[sheetName]) results[sheetName] = {};
+          const resultKey = `${filename}!${sheetName}`;
+          if (!results[resultKey]) results[resultKey] = {};
           for (const cellRef of cellRefs) {
-            results[sheetName][cellRef] = readCellValue(xml, cellRef, fileSharedStrings);
+            results[resultKey][cellRef] = readCellValue(xml, cellRef, fileSharedStrings);
           }
         }
       }

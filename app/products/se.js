@@ -656,8 +656,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // Expense line totals (6f)
-  if (expected.total_motor_gross) check("Motor Expenses", pl.B25 || 0, expected.total_motor_gross);
-  if (expected.total_legal_gross) check("Legal & Professional", pl.B28 || 0, expected.total_legal_gross);
+  if (expected.total_motor_net) check("Motor Expenses", pl.B25 || 0, expected.total_motor_net);
+  if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
 
   // Stock check
   if (expected.opening_stock !== undefined) {
@@ -671,23 +671,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // Purchases.xlsx, not a fixture total compared to itself.
   if (expected.opening_debtors) {
     const total = expected.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    const od = results.OpeningDebtors;
-    if (total > 0 && od) check("Opening Debtors total", od.G1 || 0, total);
+    if (total > 0) check("Opening Debtors total", results["Sales.xlsx!OpeningDebtors"]?.G1 || 0, total);
   }
   if (expected.closing_debtors) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
-    const cd = results.ClosingDebtors;
-    if (total > 0 && cd) check("Closing Debtors total", cd.G1 || 0, total);
+    if (total > 0) check("Closing Debtors total", results["Sales.xlsx!ClosingDebtors"]?.G1 || 0, total);
   }
   if (expected.opening_creditors) {
     const total = expected.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    const oc = results.OpeningCreditors;
-    if (total > 0 && oc) check("Opening Creditors total", oc.G1 || 0, total);
+    if (total > 0) check("Opening Creditors total", results["Purchases.xlsx!OpeningCreditors"]?.G1 || 0, total);
   }
   if (expected.closing_creditors) {
     const total = expected.closing_creditors.reduce((s, c) => s + c.amount, 0);
-    const cc = results.ClosingCreditors;
-    if (total > 0 && cc) check("Closing Creditors total", cc.G1 || 0, total);
+    if (total > 0) check("Closing Creditors total", results["Purchases.xlsx!ClosingCreditors"]?.G1 || 0, total);
   }
 
   if (taxData) {

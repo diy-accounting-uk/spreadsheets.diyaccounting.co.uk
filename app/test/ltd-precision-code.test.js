@@ -14,7 +14,7 @@ import { fileURLToPath } from "url";
 import { runMultiFileSpreadsheet, hasLibreOffice } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as ltdCellWrites, standardReads as ltdReads } from "../products/ltd.js";
+import { cellWrites as ltdCellWrites, standardReads as ltdReads, multiFileOptions as ltdOptions } from "../products/ltd.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -54,7 +54,7 @@ describeCalc(
       const writes = ltdCellWrites(scenario);
       const reads = ltdReads();
 
-      results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx");
+      results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", ltdOptions());
     }, 300000);
 
     // ── P&L assertions ───────────────────────────────────────────────────
@@ -73,7 +73,7 @@ describeCalc(
 
     it("MnthP&L: gross profit = turnover - cost of sales", () => {
       const pl = results["MnthP&L"];
-      expect(pl.B16).toBe(pl.B9 - (pl.B14 || 0));
+      expect(pl.B16).toBeCloseTo(pl.B9 - (pl.B14 || 0), 6);
     });
 
     it("MnthP&L: operating profit = gross - admin", () => {
@@ -119,6 +119,32 @@ describeCalc(
 
     it("PubBalSht: sheet was read", () => {
       expect(results["PubBalSht"]).toBeDefined();
+    });
+
+    // ── VAT chain: Sales/Purchases month totals → Vatinterface → VATQtr ──
+
+    it("VAT: quarterly box 1 sums to the Sales workbook's annual VAT", () => {
+      const salesKeys = Object.keys(results).filter((k) => k.startsWith("Sales.xlsx!"));
+      expect(salesKeys.length).toBe(12);
+      const annualOutputVat = salesKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+      const box1Sum = [1, 2, 3, 4].reduce((s, n) => s + (results[`Vatreturns.xlsx!VATQtr${n}`]?.G9 || 0), 0);
+      expect(box1Sum).toBeCloseTo(annualOutputVat, 0);
+    });
+
+    it("VAT: quarterly box 4 sums to the Purchases workbook's annual VAT", () => {
+      const purchasesKeys = Object.keys(results).filter((k) => k.startsWith("Purchases.xlsx!"));
+      expect(purchasesKeys.length).toBe(12);
+      const annualInputVat = purchasesKeys.reduce((s, k) => s + (results[k].G1 || 0), 0);
+      const box4Sum = [1, 2, 3, 4].reduce((s, n) => s + (results[`Vatreturns.xlsx!VATQtr${n}`]?.G15 || 0), 0);
+      expect(box4Sum).toBeCloseTo(annualInputVat, 0);
+    });
+
+    it("VAT: each quarter's box 5 is box 3 minus box 4", () => {
+      for (const n of [1, 2, 3, 4]) {
+        const q = results[`Vatreturns.xlsx!VATQtr${n}`];
+        expect(q, `VATQtr${n} was not read`).toBeDefined();
+        expect(q.G17 || 0, `VATQtr${n}`).toBeCloseTo((q.G13 || 0) - (q.G15 || 0), 1);
+      }
     });
   },
   300000,

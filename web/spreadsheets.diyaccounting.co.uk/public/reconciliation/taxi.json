@@ -1,0 +1,30 @@
+{
+  "product": "taxi",
+  "name": "Taxi Driver",
+  "page": "taxi.html",
+  "catalogue": "GB Accounts Taxi Driver",
+  "featuredScenario": "taxi-scenario-basic",
+  "yearEnd": "2027-04-05",
+  "status": "RECONCILES",
+  "runs": 7,
+  "updated": "2026-08-27",
+  "features": {
+    "checks": true,
+    "sales": true,
+    "purchases": true,
+    "bank": false,
+    "payroll": false,
+    "openingBalances": false,
+    "fixedAssets": false,
+    "profitAndLoss": true,
+    "balanceSheet": false,
+    "stock": false,
+    "debtorsCreditors": false,
+    "vat": false,
+    "trialBalance": false,
+    "corporationTax": false,
+    "incomeTax": true,
+    "selfAssessment": false,
+    "screenshots": true
+  }
+}

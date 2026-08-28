@@ -154,19 +154,19 @@ describeCalc(
     // ── Debtors / creditors (real sheet reads, not a fixture compared to itself) ──
 
     it("Opening Debtors total reads the real OpeningDebtors!G1 invoice-value sum", () => {
-      expect(results.OpeningDebtors.G1).toBe(10800);
+      expect(results["Sales.xlsx!OpeningDebtors"].G1).toBe(10800);
     });
 
     it("Closing Debtors total reads the real ClosingDebtors!G1 invoice-value sum", () => {
-      expect(results.ClosingDebtors.G1).toBe(10400);
+      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(10400);
     });
 
     it("Opening Creditors total reads the real OpeningCreditors!G1 invoice-value sum", () => {
-      expect(results.OpeningCreditors.G1).toBe(2220);
+      expect(results["Purchases.xlsx!OpeningCreditors"].G1).toBe(2220);
     });
 
     it("Closing Creditors total reads the real ClosingCreditors!G1 invoice-value sum", () => {
-      expect(results.ClosingCreditors.G1).toBe(1710);
+      expect(results["Purchases.xlsx!ClosingCreditors"].G1).toBe(1710);
     });
 
     it.each([
@@ -180,9 +180,10 @@ describeCalc(
       expect(intactCheck).toBeDefined();
       expect(intactCheck.pass).toBe(true);
 
-      const realValue = results[sheetName].G1;
+      const resultKey = `${fileName}!${sheetName}`;
+      const realValue = results[resultKey].G1;
       const corrupted = await readCorruptedCell(join(saveDir, fileName), sheetName, "G1", realValue + 500);
-      const corruptedResults = { ...results, [sheetName]: { ...results[sheetName], G1: corrupted } };
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], G1: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
       expect(corruptedCheck.pass).toBe(false);

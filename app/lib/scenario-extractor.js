@@ -122,6 +122,94 @@ export const BST_SALES_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004
 export const SE_BANK_ACCOUNTS = new Set(["1200", "1220"]);
 
 // ============================================================================
+// Opening balances
+// ============================================================================
+
+// Journal entries whose documentReference starts with this carry the balances
+// brought forward from the previous year. Later journals (stock adjustments,
+// year-end accruals) share sourceJournalID "journal" but are in-year postings.
+const OPENING_BALANCE_DOCUMENT_PREFIX = "OB-";
+
+// Fixed asset accounts, and the asset class each belongs to on the opening
+// balance sheet. Cost and accumulated depreciation post to the same account
+// and are told apart by the debit/credit code.
+export const OPENING_FIXED_ASSET_CLASSES = {
+  "0010": "plant_machinery",
+  "0020": "fixtures_fittings",
+  "0030": "computer_technology",
+  "0040": "motor_vehicles",
+};
+
+// Every other account that can carry an opening balance, the scenario key it
+// becomes, and the side it sits on. The opening balance sheet takes each
+// figure as a positive number and applies the sign itself, so a balance on
+// its natural side is positive here.
+export const OPENING_BALANCE_LINES = {
+  1100: { key: "stock", normalSide: "D" },
+  1300: { key: "trade_debtors", normalSide: "D" },
+  1200: { key: "current_account", normalSide: "D" },
+  1210: { key: "savings_account", normalSide: "D" },
+  1220: { key: "cash", normalSide: "D" },
+  1230: { key: "credit_card", normalSide: "D" },
+  1400: { key: "long_term_debtors", normalSide: "D" },
+  2100: { key: "trade_creditors", normalSide: "C" },
+  2150: { key: "net_wages_due", normalSide: "C" },
+  2160: { key: "wage_deductions_due", normalSide: "C" },
+  2200: { key: "vat_due", normalSide: "C" },
+  2300: { key: "corporation_tax", normalSide: "C" },
+  2400: { key: "paye_due", normalSide: "C" },
+  2410: { key: "cis_due", normalSide: "C" },
+  2500: { key: "directors_loan", normalSide: "C" },
+  2600: { key: "long_term_creditors", normalSide: "C" },
+  3000: { key: "share_capital", normalSide: "C" },
+  3100: { key: "retained_earnings", normalSide: "C" },
+  3200: { key: "dividends_due", normalSide: "C" },
+  3300: { key: "capital_reserves", normalSide: "C" },
+};
+
+export function isOpeningBalanceLine(line) {
+  return line.sourceJournalID === "journal" && String(line.documentReference || "").startsWith(OPENING_BALANCE_DOCUMENT_PREFIX);
+}
+
+/**
+ * Build the opening balance sheet figures from a book's opening journal.
+ *
+ * Fixed assets come back as cost and accumulated depreciation per asset
+ * class, because the opening balance sheet takes the two separately and
+ * derives net book value from them. Every other account becomes one scalar
+ * key on the same object.
+ *
+ * @param {Array} lines - parsed lines.jsonl entries (any journal)
+ * @returns {Object} opening balance figures, {} when the book has no opening journal
+ */
+export function buildOpeningBalance(lines) {
+  const balance = {};
+  const cost = {};
+  const depreciation = {};
+
+  for (const line of lines.filter(isOpeningBalanceLine)) {
+    const assetClass = OPENING_FIXED_ASSET_CLASSES[line.accountMainID];
+    if (assetClass) {
+      const band = line.debitCreditCode === "D" ? cost : depreciation;
+      band[assetClass] = (band[assetClass] || 0) + line.amount;
+      continue;
+    }
+    const account = OPENING_BALANCE_LINES[line.accountMainID];
+    if (!account) {
+      throw new Error(
+        `Opening balance line ${line.entryNumber} posts to account ${line.accountMainID}, which has no opening balance sheet row`,
+      );
+    }
+    const signed = line.debitCreditCode === account.normalSide ? line.amount : -line.amount;
+    balance[account.key] = (balance[account.key] || 0) + signed;
+  }
+
+  if (Object.keys(cost).length > 0) balance.fixed_asset_cost = cost;
+  if (Object.keys(depreciation).length > 0) balance.fixed_asset_depreciation = depreciation;
+  return balance;
+}
+
+// ============================================================================
 // Utility functions
 // ============================================================================
 
@@ -219,10 +307,15 @@ export function buildGrouped(filteredLines, purchaseCodeMap) {
       const acctId = line["diya-gl:bankAccountID"];
       if (!bank[acctId]) bank[acctId] = {};
       if (!bank[acctId][month]) bank[acctId][month] = [];
+      const debitCredit = line.debitCreditCode;
+      if (debitCredit !== "D" && debitCredit !== "C") {
+        throw new Error(`Bank line ${line.entryNumber} has no debitCreditCode; cannot tell a receipt from a payment`);
+      }
       bank[acctId][month].push({
         date: line.postingDate,
         source: line.detailComment,
         code: line["diya-gl:bankCode"],
+        direction: debitCredit === "D" ? "in" : "out",
         amount: line.amount,
         description: line.lineItemComment || "",
       });
@@ -311,6 +404,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`account = "${acctId}"`);
         parts.push(`source = "${escapeTomlString(txn.source)}"`);
         parts.push(`code = "${txn.code}"`);
+        parts.push(`direction = "${txn.direction}"`);
         parts.push(`amount = ${txn.amount}`);
         if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
         parts.push("");
@@ -370,13 +464,24 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
-  // Opening balance sheet (Ltd)
+  // Opening balance sheet (Ltd). Fixed assets arrive as per-class sub-tables
+  // of cost and accumulated depreciation; everything else is a scalar.
   if (expected.opening_balance) {
+    const entries = Object.entries(expected.opening_balance);
     parts.push("[opening_balance]");
-    for (const [k, v] of Object.entries(expected.opening_balance)) {
+    for (const [k, v] of entries) {
+      if (typeof v === "object") continue;
       parts.push(`${k} = ${v}`);
     }
     parts.push("");
+    for (const [k, v] of entries) {
+      if (typeof v !== "object") continue;
+      parts.push(`[opening_balance.${k}]`);
+      for (const [assetClass, amount] of Object.entries(v)) {
+        parts.push(`${assetClass} = ${amount}`);
+      }
+      parts.push("");
+    }
   }
 
   // Opening fixed assets
@@ -399,9 +504,9 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
-  if (expected.total_motor_gross !== undefined) parts.push(`total_motor_gross = ${expected.total_motor_gross}`);
-  if (expected.total_legal_gross !== undefined) parts.push(`total_legal_gross = ${expected.total_legal_gross}`);
-  if (expected.total_premises_gross !== undefined) parts.push(`total_premises_gross = ${expected.total_premises_gross}`);
+  if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
+  if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
+  if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
   parts.push("");
 
   return parts.join("\n");
