@@ -14,7 +14,7 @@ import {
   LTD_SALES_CODE_MAP,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
-  MONTH_ORDER,
+  MONTH_NAMES,
   filterBst,
   filterAdvanced,
   filterFull,
@@ -90,6 +90,13 @@ export function loadDiyaGlData(dataDir, offset) {
 
   if (offset) {
     lines = applyOffset(lines, offset);
+    // The period has to travel with the postings, or the book would claim a
+    // period its own lines no longer sit in.
+    const parsed = parseOffset(offset);
+    const info = book.documentInfo || {};
+    for (const key of ["periodCoveredStart", "periodCoveredEnd"]) {
+      if (info[key]) info[key] = new Date(shiftDate(new Date(info[key]).toISOString().slice(0, 10), parsed));
+    }
   }
 
   return { book, lines };
@@ -190,9 +197,16 @@ export function diyaGlToScenario(book, lines, product) {
     }
   }
 
+  // The month the book's own accounting period starts in. cellWrites maps that
+  // period onto the target package's month tabs, so a book already exported
+  // from a package of the same year end is left where it is.
+  const periodStart = book.documentInfo?.periodCoveredStart;
+  if (!periodStart) throw new Error("book.toml has no documentInfo.periodCoveredStart, so its accounting period is unknown");
+
   const scenario = {
     metadata,
     business,
+    period_start_month: new Date(periodStart).getUTCMonth() + 1,
     sales: grouped.sales,
     purchases: grouped.purchases,
     expected,
@@ -218,7 +232,7 @@ export function diyaGlToScenario(book, lines, product) {
   if (payrollLines.length > 0) {
     const payrollByMonth = {};
     for (const line of payrollLines) {
-      const month = MONTH_ORDER[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
+      const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
       if (!payrollByMonth[month]) payrollByMonth[month] = [];
       payrollByMonth[month].push({
         date: line.postingDate,

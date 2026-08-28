@@ -18,6 +18,8 @@ import {
   extractPayrollTransactions,
   extractJournalEntries,
   extractMetadata,
+  extractPeriodStartMonth,
+  periodCovered,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
@@ -82,11 +84,16 @@ async function main() {
   writeFileSync(resolve(resolvedOutput, "lines.jsonl"), jsonlContent);
   console.log(`  lines.jsonl: ${lines.length} entries`);
 
-  // Write minimal book.toml
+  // Write minimal book.toml. The period the lines cover has to be stated: it
+  // is what tells a later generate run whether these dates are already in the
+  // frame of the package it is filling, or need shifting onto it.
+  const period = periodCovered(await extractPeriodStartMonth(resolvedSource, packageName), lines);
   const bookLines = [
     "[documentInfo]",
     'entriesType = "journal"',
     'language = "en"',
+    `periodCoveredStart = ${period.start}`,
+    `periodCoveredEnd = ${period.end}`,
     'defaultCurrency = "GBP"',
     `entriesComment = "Exported from ${packageName} package"`,
     "",

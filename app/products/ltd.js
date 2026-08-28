@@ -262,11 +262,14 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // Default to March year-end if not specified
   const yem = yearEndMonth || 3;
 
-  // The scenario assumes a March year-end (Apr-Mar). For other year-ends,
-  // shift dates so the scenario's accounting period maps to the target's.
-  // Source period start: April of the scenario year (month index 3)
-  // Target period start: month after year-end (yearEndMonth % 12)
-  const sourceStartMonth = 3; // April (0-indexed)
+  // Dates belong to the accounting period their own scenario covers, and get
+  // shifted by the whole-month gap between that period and the target's, so
+  // the twelve months land on the twelve month tabs in order. A scenario
+  // already in the target's period has a zero gap and is written as it stands,
+  // which is what makes exporting a package and generating from the export
+  // reproduce the same cells. A scenario that does not name its period start
+  // is in the April-March frame its apr..mar month keys describe.
+  const sourceStartMonth = (scenario.period_start_month || 4) - 1;
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
   const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
 
@@ -1276,7 +1279,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // gross amounts at the same rate the templates apply, summing the month
   // first and dividing once. Catches a month landing in the wrong column or
   // dropping out altogether.
-  // The writer shifts every transaction date into the package's fiscal year,
+  // The writer shifts every transaction date onto the package's month tabs,
   // and an end-of-month day that does not exist in the shifted month rolls
   // into the next tab. The expectation buckets by the shifted date the same
   // way, or a 31st posted near a short month reads as landing in the wrong
@@ -1287,7 +1290,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       : SCENARIO_MONTHS.map(({ key }) => key.charAt(0).toUpperCase() + key.slice(1));
   const shiftedMonthlyBuckets = (journal) => {
     const targetStartMonth = SHORT_MONTHS.indexOf(fiscalTabs[0]);
-    const monthOffset = (targetStartMonth - 3 + 12) % 12;
+    const monthOffset = (targetStartMonth - ((expected.period_start_month || 4) - 1) + 12) % 12;
     const buckets = Object.fromEntries(fiscalTabs.map((tab) => [tab, {}]));
     for (const txs of Object.values(journal)) {
       for (const tx of txs) {
