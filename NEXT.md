@@ -18,16 +18,23 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   - **PR #31 (Ltd opening balance + runner cell-write fix)**:
     https://github.com/diy-accounting-uk/spreadsheets.diyaccounting.co.uk/pull/31 —
     caught up on main, 102 tests green post-merge. Merges after #28.
-  - **PR #35 (Wave 2 packed: SE + Ltd + BST + Taxi coverage)** at `2002b281`, full
-    suite 1229/1229, final four-way reconciliation round in flight — merge on green.
-    Ltd full scenario now runs 451 checks. Purchases-side SE monthly ties follow later.
-  - Next wave inputs, from the Ltd workstream: runner external-link caches miss
-    per-row cells (CT!K20 capital allowances reads 0 regardless of the Schedule) and
-    leaf-to-hub caches never refresh; reconcile.js should pass the package year-end
-    into checkCompliance; CONTEXT_LIMITED_COMPANY.md's PubP&L/PubBalSht/MnthP&L/CT
-    cell maps are wrong (corrections listed in the Ltd agent report, ltd.js CELL_MAP
-    already corrected). Operator flag: the Ltd fixture's turnover is ~double its
-    README's description — settle before the judge wave.
+  - **PR #35 merged** (Wave 2 packed, all four products; Ltd runs 451 checks on every
+    year-end). Next packed wave IN FLIGHT off main, three concurrent agents, one PR:
+    - Runner caches (worktree `../spreadsheets-worktrees/wave3-runner`, branch
+      `claude/recon-wave3-runner`): external-link cache gaps (per-row cells, leaf-to-hub,
+      leaf-to-leaf) + the checks they unblock (CT!K20, Schedule B11 row, SE
+      FAreconciliation E13/K13).
+    - Wave 3 checks (worktree `../spreadsheets-worktrees/wave3-checks`, branch
+      `claude/recon-wave3-checks`): payroll/WagesInterface/Payslips!Payment, SE VAT box
+      values + VATQtr5, brickwork-pro-vat in CI, SE purchases-side monthly ties.
+    - Wave 4 guard (worktree `../spreadsheets-worktrees/wave3-guard`, branch
+      `claude/recon-wave3-guard`): formula-presence catalogue guard, non-March Ltd
+      roundtrip, LibreOffice matrix shrink to 3 representative year-ends.
+  - Still open: CONTEXT_LIMITED_COMPANY.md cell-map corrections (listed in the Ltd
+    agent report; ltd.js CELL_MAP already corrected). Operator flag: the Ltd fixture's
+    turnover is ~double its README's description — settle before the judge wave.
+    reconcile.js could pass the package year-end into checkCompliance (F21 is anchored
+    to B32, not the run's own year-end).
   Coordinator merges verified commits, pushes in batches; waves 3-5 follow per the plan.
 
 - [ ] **VAT dropdown six-donor decision** (operator) — the one open remainder of the
