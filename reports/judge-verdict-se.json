@@ -1,24 +1,30 @@
 {
   "product": "se",
   "verdict": "pass",
-  "summary": "All three Self Employed runs read as plausible accounts for the businesses described: the two BrickWork Pro runs show construction-appropriate materials, sub-contractor and motor costs with a labourer's payroll of 18,000 and Employment-Allowance-nil employer NI, VAT boxes nil for the unregistered trader and 7,809 due for the registered one on the same underlying profit; the Precision Code consultancy shows payroll as its largest cost, real depreciation and disposals, and income tax and Class 4 NI at credible rates on a 144,715 profit. The concerns recorded are all figures that reconcile once the product's stated treatments are applied, and none of them blocks the run.",
+  "summary": "All three runs read as plausible accounts for the businesses described: both BrickWork Pro runs show a construction trader with materials, subcontractors, one labourer's wages, motor costs and depreciation on the van, and the VAT-registered version reports net figures a sixth below its journal with four live VAT quarters while the unregistered one correctly shows nil VAT; the Precision Code run shows a consultancy dominated by wages and premises with disposals flowing through the asset schedule. The concerns recorded are notes on presentation (negative bad debts, the two SA103S profit lines) and do not block any run.",
   "concerns": [
     {
-      "figure": "Capital allowances 12,000 / fixed asset additions 12,000 (Fixedassets Schedule Q1, FAreconciliation E11, SA103S D80) in se-brickwork-pro-vat",
-      "where": "se-brickwork-pro-vat: Fixed asset checks and SA103S Capital allowances",
-      "why": "The VAT scenario's fa-coded purchases total 14,400.00 including VAT, so the net cost that should reach the asset schedule is 12,000.00 — which is exactly what is reported. This is the same 12,000 as the non-VAT run whose journal was 12,000 net, so both reconcile as designed and this is not a discrepancy. Noted only because the identical figure across a VAT and a non-VAT run invites a second look.",
+      "figure": "Sub-Contractors £20,000 (P&L B15) vs purchase journal c-coded £20,000; capital allowances £12,000 against fa-coded journal £12,000",
+      "where": "Run se-brickwork-pro-nonvat, Profit & Loss Account and SA103S",
+      "why": "Cross-checked as credible, not a fault: the non-VAT construction trader shows materials £15,500 (stock purchases £15,000 plus the £500 stock fall), subcontractors £20,000, wages £18,000 for the single labourer, motor £2,400 and depreciation £1,200 on the £12,000 van/plant. Turnover £75,000 is under the registration threshold, so nil VAT boxes are the design the scenario states, and profit after £12,000 capital allowances (£3,530) falls below the personal allowance, which is why income tax and Class 4 are legitimately nil.",
       "severity": "note"
     },
     {
-      "figure": "Sub-Contractors 6,666.67 against Wages & Salaries 92,735.73 (P&L B15 / B21) in se-scenario-advanced",
-      "where": "se-scenario-advanced: Profit & Loss Account",
-      "why": "For an IT consultancy the cost mix is credible (payroll dominates, small stock and direct costs), but the c-coded 8,000 gross journal lands in a caption labelled Sub-Contractors while stock-coded purchases of 6,540 gross produce a Materials line of 9,450 after the 4,000 stock fall. Worth a reader confirming that a software consultancy is meant to carry 10,000 opening and 6,000 closing stock at all.",
+      "figure": "Repairs & Maintenance £950 and Motor Expenses £6,331.88 for an IT consultancy",
+      "where": "Run se-scenario-advanced, Profit & Loss Account rows B23 and B25",
+      "why": "Not a blocker, but worth an eye: for a software/IT consultancy the largest costs are correctly wages £92,735.73 and premises/light-heat £13,200, with materials only £9,450 — the trade shape reads right. Motor at £6.3k on £339k turnover is plausible but is the one line a reviewer might want to see substantiated.",
       "severity": "note"
     },
     {
-      "figure": "SA103S Taxable profit 142,632.06 vs Net profit for tax calc 144,715.39 (SE Short D99 / D106) in se-scenario-advanced",
-      "where": "se-scenario-advanced: Self Assessment (SA103S)",
-      "why": "The two lines differ by 2,083.33, which is exactly the Grants Received figure on the P&L (B11). The scenario notes state D106 = D99 + grants and that tax is charged on the higher figure, so this reconciles and is not a fault; recorded only so a reader can tie the two lines together.",
+      "figure": "Bad Debts -£300 (P&L B29)",
+      "where": "Run se-scenario-advanced, Profit & Loss Account",
+      "why": "A negative bad-debt charge in the admin column comes from the o-coded credit note of £360 gross (£300 net) being pushed through row 29 with a sign flip, as the check 'P&L mar col N29 = -(Sales.xlsx o-coded net)' confirms. It reads oddly as a negative expense rather than a credit to turnover, but it is small, explained by the code mapping, and does not distort the profit.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S taxable profit £142,632.06 vs net profit for tax calc £144,715.39",
+      "where": "Run se-scenario-advanced, Self Assessment (SA103S) rows D99 and D106",
+      "why": "The £2,083.33 gap is exactly the grants figure carried at P&L B11, which the scenario summary states is how D106 is built (D99 + O99 - O94). Tax is charged on the higher figure, so the computation is the conservative one. Noted only so a reader is not surprised by two different profit figures on the same page.",
       "severity": "note"
     }
   ],
@@ -44,5 +50,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T16:53:45.921Z"
+  "timestamp": "2026-08-28T17:03:11.043Z"
 }

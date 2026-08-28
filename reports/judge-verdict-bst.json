@@ -1,54 +1,36 @@
 {
   "product": "bst",
   "verdict": "pass",
-  "summary": "All three Basic Sole Trader runs read as credible accounts for the trades described: bricklayer with sub-contract labour and materials above gross profit, IT consultancy with a small stock/direct element and heavy overheads, and a taxi driver whose largest expense is motor costs. Nothing blocking; a few presentational and classification points are noted below for a human to glance at, none of which stop the run.",
+  "summary": "All three Basic Sole Trader runs read as credible accounts for the trades described: the bricklayer shows materials/stock, sub-contract direct costs and van costs; the IT consultancy shows wages, premises and a high gross margin explained by the sheet layout; the taxi driver's largest cost is motor expenses. The only oddities are presentational quirks the scenario notes or minor scale points, none of which block the runs.",
   "concerns": [
     {
-      "figure": "Income Tax P&L line C30 = 0 while \"Tax at basic rate\" C32 carries the whole charge (£1,792 / £105,395 / £3,808.40)",
-      "where": "Profit & Loss Account, cells C30 and C32, all three runs",
-      "why": "The line labelled Income Tax shows nil in every run and the tax actually sits on the row below. Self-consistent and the totals chain through to Net Income After Tax, but a reader looking at the P&L would think no income tax had been computed. Worth confirming the label/cell mapping is intended.",
+      "figure": "Employee Costs £0 and Premises Costs £0 (P&L, cells C11/C12) in bst-brickwork-pro-nonvat",
+      "where": "Profit & Loss Account, BrickWork Pro run",
+      "why": "A building trader with no wages and no premises cost looks thin at first sight, but the scenario states there is no payroll and no employee-costs or premises code in the purchase journal (labour is bought in as direct costs, code d £20,000). It reconciles to the journal, so this is a note only.",
       "severity": "note"
     },
     {
-      "figure": "Tax at basic rate £105,395 with Tax at Higher Rate £97,854.80 on taxable income £282,338",
-      "where": "bst-scenario-basic, Profit & Loss C32 and Income Tax E8/E9",
-      "why": "The P&L row labelled \"Tax at basic rate\" carries the full income tax including the higher-rate element, and the sheet has no additional-rate (45%) band or personal-allowance taper at £294,908 profit. The arithmetic is internally consistent with the injected two-band Admin rates, so this is a product scope point rather than a mis-post, but the resulting liability understates a real 2027 return.",
+      "figure": "Fixed Assets \"New Asset Cost (Plant & Machinery)\" £1,800 against Total Original Cost £39,000 (cells E67 / E1) in bst-scenario-basic",
+      "where": "Fixed Assets section, Precision Code run",
+      "why": "The single displayed addition row is only £1,800 while the schedule total is £39,000 across three additions. The report's own check labels E67 as \"first addition recorded\" so the presentation is by design, but a reader glancing at the schedule sees a figure twenty times smaller than the total. Worth a look, not a blocker.",
       "severity": "note"
     },
     {
-      "figure": "New Asset Cost (Plant & Machinery) £1,800 against Total Original Cost £39,000",
-      "where": "bst-scenario-basic, Fixed Assets E67 vs E1",
-      "why": "The reported single-asset figure is only the first of three additions; the schedule total is correct at £39,000. Presentational only, but a reader comparing the two lines will query the £37,200 gap.",
+      "figure": "Income Tax line £0 on the P&L (cell C30) in all three runs, with tax shown on the \"Tax at basic rate\" line beneath it",
+      "where": "Profit & Loss Account, all three runs",
+      "why": "The P&L Income Tax row reads zero while the actual charge (£1,792 / £78,035 / £3,808.40) appears on the basic-rate row below and flows correctly into Net Income After Tax and the SA103S. Self-consistent and the tax chain reconciles, so presentational only.",
       "severity": "note"
     },
     {
-      "figure": "Advertising £4,560 equal to Legal & Professional £4,560",
-      "where": "bst-scenario-basic, Profit & Loss C17 and C18 (journal codes a and l)",
-      "why": "Two unrelated expense codes carrying an identical annual total is unusual for 393 real purchase entries and suggests the source data reuses one amount. Not material to profit, worth a look at the source journal.",
+      "figure": "Advertising £4,560 equal to Legal & Professional £4,560 (cells C17/C18) in bst-scenario-basic",
+      "where": "Profit & Loss Account, Precision Code run",
+      "why": "Two unrelated expense lines carrying an identical figure suggests the same journal code (l 4,560.00) may have been mapped to both rows; total expenses still tie to the journal, so this is a coding question rather than a mis-statement.",
       "severity": "note"
     },
     {
-      "figure": "Cost of Sales £10,540 and Direct Costs £8,000 in an IT consultancy",
-      "where": "bst-scenario-basic, Profit & Loss C6 and C7, plus Stock opening £10,000 / closing £6,000",
-      "why": "A software and consultancy business holding £6,000–£10,000 of stock is atypical; the amounts are small relative to £409,900 turnover and are consistent with the declared journal codes s and d, so this does not distort the accounts, but the stock element deserves a sanity check against what is actually held.",
-      "severity": "note"
-    },
-    {
-      "figure": "Other Expenses £17,882 (code o) as the second largest overhead",
-      "where": "bst-scenario-basic, Profit & Loss C21",
-      "why": "An unanalysed \"other\" line of £17,882, larger than premises, admin, legal and motor individually, is the kind of catch-all a reviewer would want broken down before the accounts are filed. It is fed by a declared journal code so it is not missing money.",
-      "severity": "note"
-    },
-    {
-      "figure": "Fixed asset addition £200 taken as AIA for a private hire driver, with no vehicle on the schedule",
-      "where": "bst-sp-sixty, Fixed Assets E1 and Purchase Analysis £200",
-      "why": "A taxi business with £38,000 of fares shows only a £200 capital addition and no car on the fixed asset schedule, so no vehicle depreciation or WDA arises. Consistent with the scenario (motor costs claimed as actual running costs, £2,708) and the Admin motor restriction is unused, but the absence of the trade's main asset is worth noting.",
-      "severity": "note"
-    },
-    {
-      "figure": "All debtor and creditor slots shown as dashes; Stock opening, at cost and closing all £0",
-      "where": "bst-sp-sixty, Debtors & Creditors and Stock sections",
-      "why": "Every working capital line is empty. The scenario declares no debtor, creditor or stock entries and a cash-basis taxi driver holding no stock is plausible, so these zeros are the product working as designed rather than lost data.",
+      "figure": "Stock opening £10,000 / closing £6,000 and Cost of Sales £10,540 in an IT consultancy (bst-scenario-basic)",
+      "where": "Stock section and P&L cell C6, Precision Code run",
+      "why": "Stock in a software/consultancy business is unusual, but at £6k-£10k against £409,900 turnover it is immaterial and is not the largest cost (employee costs £69,200 are), so the trade still matches the accounts.",
       "severity": "note"
     }
   ],
@@ -74,5 +56,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T16:09:51.383Z"
+  "timestamp": "2026-08-28T17:01:56.965Z"
 }

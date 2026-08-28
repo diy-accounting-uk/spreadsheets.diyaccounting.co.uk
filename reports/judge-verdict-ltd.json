@@ -1,42 +1,36 @@
 {
   "product": "ltd",
   "verdict": "pass",
-  "summary": "All three runs read as credible sets of Ltd accounts for the trades described: the construction pair show materials, sub-contractors, wages and plant depreciation on turnover of £75k/£112.5k, VAT boxes are nil only in the genuinely unregistered scenario and fully populated in the registered one, and the IT consultancy shows consultancy-shaped costs, payroll with employer NI, and asset additions/disposal handled through the fixed asset note. Nothing blocks the runs; the concerns below are for a human to look at.",
+  "summary": "All three runs read as plausible sets of company accounts for the businesses described: construction turnover with sub-contractor and materials cost of sales, payroll, depreciation on the new plant, and VAT boxes that behave as the scenario states (nil for the unregistered company, £7,809 for the registered one). The IT consultancy run also hangs together, with two presentational/computational oddities worth a look but nothing that undermines the story the accounts tell.",
   "concerns": [
     {
-      "figure": "Marginal relief warning: corporation tax £28,028.78 vs expected £36,880 on chargeable profit £147,519.90",
-      "where": "ltd-scenario-full, Compliance Checks last row and Corporation Tax (CT600) section / CorporationTax!K35",
-      "why": "The report's own check flags that with profits well over £50,000 the marginal/main-rate calculation is not being applied; the charge is computed at an effective rate below the expected figure. The report explains this as a warning, so it is not blocking, but the CT charge should be verified against the correct rate bands.",
+      "figure": "Materials / Stock (code s) £15,500 in the P&L against a purchase journal of £15,000 coded s",
+      "where": "ltd-brickwork-pro-nonvat, Profit & Loss Account, Cost of Sales",
+      "why": "The extra £500 is the stock loss adjustment (opening 3,000 less closing count 2,500) flowing through cost of sales, so it reconciles; noted only so a reader who compares the journal code total to the line is not surprised. Same pattern in the VAT run (£23,000 against £22,500 coded s).",
       "severity": "note"
     },
     {
-      "figure": "Corporation tax for the year in the fixed asset note £28,028.78 against CT600 tax payable £13,995.22",
-      "where": "ltd-scenario-full, Fixed Asset Note \"Corporation tax for the year\" (PubNotes D41) vs CT600 AJ126/AJ131",
-      "why": "The published note carries roughly double the CT600 self-assessed figure (the same doubling appears in the VAT scenario: note £1,514.11 vs CT600 £756.02). One of the two presentations of the same year's tax charge is likely picking up both financial-year apportionment columns.",
+      "figure": "Marginal relief warning: expected £36,880, actual corporation tax £28,028.78",
+      "where": "ltd-scenario-full, Compliance Checks final row and Corporation Tax (CT600) section",
+      "why": "Profit chargeable of £147,520 is above the £50k lower limit, so the workbook applies a rate below the main rate. The report already flags this as a warning and the deterministic checks tie the CT600 boxes together; it is a tax-rate question for a person, not a broken figure.",
       "severity": "note"
     },
     {
-      "figure": "Published Balance Sheet: Directors Loan £13,000 and Other Creditors £13,000, with net assets £195,053.12",
-      "where": "ltd-scenario-full, Published Balance Sheet E29 and F31",
-      "why": "The same £13,000 appears on two adjacent lines; if it is the same director's loan shown twice, only one deduction should feed net assets. Worth confirming the sheet is not double-labelling one balance.",
+      "figure": "Profit Before Tax £177,215.39 in the management P&L against £177,279.90 in the Published P&L",
+      "where": "ltd-scenario-full, Profit & Loss Account vs Published P&L",
+      "why": "The two statements differ by £64.51, which is the tax deducted at source on bank interest (CorporationTax K37 / CT600 AJ154); the published sheet uses gross interest of £339.51 while the management P&L uses net £275. Presentational, but a reader will notice two different PBT figures in the same pack.",
       "severity": "note"
     },
     {
-      "figure": "Published P&L profit before tax £177,279.90 against management P&L profit before tax £177,215.39",
-      "where": "ltd-scenario-full, Published P&L F49 vs MnthP&L B45",
-      "why": "The two statements report a different PBT for the same year (£64.51 apart, matching the tax-deducted-at-source figure in CorporationTax K37). Presentational, but the two profit figures should agree or the difference be explained.",
+      "figure": "Directors Loan £13,000 and Other Creditors £13,000 both shown below Total Assets less CL",
+      "where": "ltd-scenario-full, Published Balance Sheet",
+      "why": "The same £13,000 appears on two adjacent lines, yet Net Assets is £195,053.12 = £208,053.12 less £13,000, so only one deduction is made. The layout duplicates the label rather than the amount; worth confirming the sheet's presentation of long-term creditors.",
       "severity": "note"
     },
     {
-      "figure": "Bank and cash £250,544 against turnover £341,283 and opening cash £30,500",
-      "where": "ltd-scenario-full, Published Balance Sheet E12 / Currentaccount.xlsx Sep A2 £238,864",
-      "why": "Cash has grown roughly eightfold with no dividends and only a £7,000 reduction in the director's loan, so nearly all the year's profit is sitting in the current account. Internally consistent with the bank journal but an unusual pattern worth a glance at the bank workbook.",
-      "severity": "note"
-    },
-    {
-      "figure": "Non-VAT construction scenario: chargeable profit -£9,046 and corporation tax £0 on an accounting profit of £1,754",
-      "where": "ltd-brickwork-pro-nonvat, Corporation Tax (CT600) section",
-      "why": "The negative chargeable profit and nil tax follow from £12,000 of AIA on the year's plant purchase, and the scenario notes the CT600 profit boxes read nil by design, so this is not an error. Recorded only so a reader is not surprised by nil tax with a reported profit.",
+      "figure": "Corporation tax for the year £1,514.11 in the fixed asset note against CT600 tax payable £756.02",
+      "where": "ltd-brickwork-pro-vat, Fixed Asset Note and CT600 cells AJ126/AJ131",
+      "why": "The note carries roughly double the CT600 figure because the working sheet apportions the chargeable profit across two financial years (I33 £756.02 + I34 £758.09 = £1,514.11) while the CT600 boxes show only the first year's slice. The total charged to the accounts is the correct £1,514.11, so it reconciles, but the CT600 boxes read low for the year.",
       "severity": "note"
     }
   ],
@@ -62,5 +56,5 @@
       "status": "RECONCILES (with warnings)"
     }
   ],
-  "timestamp": "2026-08-28T16:37:13.725Z"
+  "timestamp": "2026-08-28T17:02:49.635Z"
 }

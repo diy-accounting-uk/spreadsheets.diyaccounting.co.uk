@@ -1,18 +1,30 @@
 {
   "product": "taxi",
   "verdict": "pass",
-  "summary": "Both taxi runs read as credible owner-driver accounts: fares, fuel, road tax/insurance, repairs and admin costs all appear at sensible scale for a 12-month period, capitalised vehicle spend is excluded from the P&L as the product intends, and the self-assessment and tax figures follow from the reported profit. The only points worth a human glance are the second scenario's £200 capitalised asset carrying no capital allowance and its blank Fixed Assets cost cell; neither blocks the run.",
+  "summary": "Run 1 (taxi-scenario-basic) reads as a credible owner-driver set of accounts: fares £36,000, fuel £3,600, road tax/insurance £1,380, £8,000 vehicle capitalised with £1,120 WDA, and tax/NI of £4,147 on a £28,520 profit. Run 2 (SP Sixty Driving) also holds up on totals, but the profit&nbsp;&amp;&nbsp;loss cost of sales of £4,896 does not agree with the vehicle cost lines it is said to be built from (£2,708 + £580 + £1,580 + £28 = £4,896 only if the £28 allowance is included, which it is — so that reconciles), while the SA103S \"net profit for tax calc\" of £31,612 is £172 below the P&amp;L net profit of £31,784 with nothing in the report explaining the difference. That unexplained step is a note, not a blocker, so both runs pass.",
   "concerns": [
     {
-      "figure": "Fixed Assets: New Asset Cost blank (—) while Purchase Analysis shows Vehicle purchases capitalised 200",
-      "where": "taxi-scenario-sp-sixty, Fixed Assets section (no D47 row in appendix) vs PurchasesMar T1",
-      "why": "The £200 of code-f capital spend reaches the Purchases sheet's fixed asset column but no cost appears on the Fixed Assets schedule, and Total WDA/AIA are both zero, so the asset attracts no capital allowance at all. Worth confirming the schedule is meant to leave a small addition unrecorded rather than dropping it.",
+      "figure": "SA103S Net profit for tax calc 31,612 vs P&L Net Profit 31,784 (SE Short D106 / Profit & Loss B23)",
+      "where": "Run taxi-scenario-sp-sixty, Self Assessment (SA103S) and Profit & Loss Account",
+      "why": "In run 1 the SA103S profit for tax equals the P&L net profit exactly (28,520 both). In run 2 it is 172 lower, and the report gives no adjustment line to account for the step. The 200 capitalised purchase and the 28 capital allowance are the likely cause (31,812 - 200 = 31,612), which would mean the capitalised asset is being deducted again in the tax figure. Worth a look at SE Short D106 and the feeding cells, though the amount is immaterial and every deterministic tie-out passed.",
       "severity": "note"
     },
     {
-      "figure": "Capital Allowances 0 and Mileage Allowance 0 together",
-      "where": "taxi-scenario-sp-sixty, Profit & Loss Account B10 and B11",
-      "why": "The scenario says the sheet takes actual running costs with capital allowances or the mileage allowance, whichever gives the lower profit; here actual costs are taken but the capital allowance line is nil because the only addition (£200) generated no allowance. Self-consistent, but a reader may expect some allowance against a capitalised purchase.",
+      "figure": "Repairs & Servicing 0 (Profit & Loss B8)",
+      "where": "Run taxi-scenario-basic, Profit & Loss Account",
+      "why": "An owner-driver doing 12 months of fares with 3,600 of fuel records no repairs or servicing at all. The purchase journal genuinely has no 'r' coded entries so the sheet is faithful to its input, but a full year of taxi work with zero maintenance spend is an unusual fact pattern rather than a spreadsheet fault.",
+      "severity": "note"
+    },
+    {
+      "figure": "Fuel 2,708 against turnover 38,000 (Profit & Loss B6)",
+      "where": "Run taxi-scenario-sp-sixty, Profit & Loss Account",
+      "why": "Fuel is only about 7% of fares for a private hire driver, where 15-25% would be more typical. It matches the journal code d exactly so nothing has been lost in the workbook, but the underlying scenario looks fuel-light for the level of fares.",
+      "severity": "note"
+    },
+    {
+      "figure": "New Asset Cost (Vehicle under £12,000) 200, Fixed Assets D47",
+      "where": "Run taxi-scenario-sp-sixty, Fixed Assets",
+      "why": "The 200 of code f spend is the dashcam/signage described in the scenario, but it lands on a row labelled as a motor vehicle under 12,000 and attracts a 14% vehicle WDA rather than being pooled as plant. The classification is a presentational quirk of the schedule, not an arithmetic error, and the 28 allowance ties to the P&L.",
       "severity": "note"
     }
   ],
@@ -32,5 +44,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T15:56:03.061Z"
+  "timestamp": "2026-08-28T17:02:16.720Z"
 }
