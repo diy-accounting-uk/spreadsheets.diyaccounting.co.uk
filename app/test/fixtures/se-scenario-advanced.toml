@@ -4380,6 +4380,330 @@ direction = "out"
 amount = 12
 description = "Newspapers for reception"
 
+[[payroll.apr]]
+date = 2025-04-30
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.apr]]
+date = 2025-04-30
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.apr]]
+date = 2025-04-30
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.may]]
+date = 2025-05-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.may]]
+date = 2025-05-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.may]]
+date = 2025-05-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.jun]]
+date = 2025-06-30
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.jun]]
+date = 2025-06-30
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.jun]]
+date = 2025-06-30
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.jul]]
+date = 2025-07-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.jul]]
+date = 2025-07-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.jul]]
+date = 2025-07-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.aug]]
+date = 2025-08-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.aug]]
+date = 2025-08-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.aug]]
+date = 2025-08-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.sep]]
+date = 2025-09-30
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.sep]]
+date = 2025-09-30
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.sep]]
+date = 2025-09-30
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.oct]]
+date = 2025-10-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.oct]]
+date = 2025-10-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.oct]]
+date = 2025-10-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.nov]]
+date = 2025-11-30
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.nov]]
+date = 2025-11-30
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.nov]]
+date = 2025-11-30
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.dec]]
+date = 2025-12-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.dec]]
+date = 2025-12-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.dec]]
+date = 2025-12-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.jan]]
+date = 2026-01-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.jan]]
+date = 2026-01-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.jan]]
+date = 2026-01-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
+[[payroll.mar]]
+date = 2026-03-31
+name = "Alice Johnson"
+grossPay = 3500
+incomeTax = 530
+employeeNI = 200
+employerNI = 382.5
+netPay = 2770
+
+[[payroll.mar]]
+date = 2026-03-31
+name = "Bob Williams"
+grossPay = 2200
+incomeTax = 270
+employeeNI = 96
+employerNI = 187.5
+netPay = 1834
+
+[[payroll.mar]]
+date = 2026-03-31
+name = "Carol Smith"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 7.2
+netPay = 1048
+
 [stock]
 opening = 10000
 closing = 6000

@@ -366,6 +366,114 @@ describeCalc(
       const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L mar col N29 = -(Sales.xlsx o-coded net)");
       expect(corruptedCheck.pass).toBe(false);
     });
+
+    // ── Purchases.xlsx-side monthly P&L ties (item 10, previously unshipped
+    // while a runner bug made every Purchases.xlsx net read as gross) ──
+
+    it("P&L apr col C24 = Purchases.xlsx g-coded net carries a real non-zero signal and passes on the intact book", () => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl.C24).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const check = checks.find((c) => c.name === "P&L apr col C24 = Purchases.xlsx g-coded net");
+      expect(check).toBeDefined();
+      expect(check.pass).toBe(true);
+    });
+
+    it("P&L apr col C24 = Purchases.xlsx g-coded net fails when the P&L cell is corrupted", async () => {
+      const pl = results["Profit & Loss Account"];
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "C24", pl.C24 + 5000);
+      const corruptedResults = { ...results, "Profit & Loss Account": { ...pl, C24: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      const corruptedCheck = corruptedChecks.find((c) => c.name === "P&L apr col C24 = Purchases.xlsx g-coded net");
+      expect(corruptedCheck.pass).toBe(false);
+    });
+
+    // ── Payroll: Wagesinterface, Payslips!Payment, and the P&L wages route
+    // (item 4) ──
+
+    it("Wagesinterface apr C4 gross pay and H4 employer NI carry the payroll fixture's own totals and pass on the intact book", () => {
+      const wi = results.Wagesinterface;
+      expect(wi.C4).toBe(6748); // Alice 3500 + Bob 2200 + Carol 1048
+      expect(wi.H4).toBeCloseTo(577.2, 5); // 382.5 + 187.5 + 7.2
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === "Wagesinterface apr C4 gross pay").pass).toBe(true);
+      expect(checks.find((c) => c.name === "Wagesinterface apr H4 employer NI").pass).toBe(true);
+    });
+
+    it("Wagesinterface apr H4 employer NI fails when the cell is corrupted", async () => {
+      const wi = results.Wagesinterface;
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Wagesinterface", "H4", wi.H4 + 500);
+      const corruptedResults = { ...results, Wagesinterface: { ...wi, H4: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === "Wagesinterface apr H4 employer NI").pass).toBe(false);
+    });
+
+    it("Payslips!Payment apr I4 total amount payable = income tax + NI due, and fails when corrupted", async () => {
+      const payment = results["Payslips.xlsx!Payment"];
+      expect(payment.I4).toBeCloseTo(1673.2, 5); // 800 income tax + 296 employee NI + 577.2 employer NI
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === "Payslips!Payment apr I4 total amount payable").pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Payslips.xlsx"), "Payment", "I4", payment.I4 + 500);
+      const corruptedResults = { ...results, "Payslips.xlsx!Payment": { ...payment, I4: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === "Payslips!Payment apr I4 total amount payable").pass).toBe(false);
+    });
+
+    it("P&L Wages & Salaries (B21) routes payroll gross pay and employer NI, and fails when corrupted", async () => {
+      const pl = results["Profit & Loss Account"];
+      expect(pl.B21).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const name = "P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI";
+      expect(checks.find((c) => c.name === name).pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "B21", pl.B21 + 5000);
+      const corruptedResults = { ...results, "Profit & Loss Account": { ...pl, B21: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    // ── SE VAT quarter box values (item 9) ──
+
+    it("VAT Q1 box 1/3 output VAT (G9) matches the scenario's own dated sales and fails when corrupted", async () => {
+      const qtr = results["Vat.xlsx!VATQtr1"];
+      expect(qtr.G9).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const name = "VAT Q1: box 1/3 output VAT (G9) = scenario sales VAT for the quarter";
+      expect(checks.find((c) => c.name === name).pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Vat.xlsx"), "VATQtr1", "G9", qtr.G9 + 500);
+      const corruptedResults = { ...results, "Vat.xlsx!VATQtr1": { ...qtr, G9: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    it("VAT Q1 box 5 net due (G17) = box 3 - box 4 identity holds and fails when box 4 is corrupted", async () => {
+      const qtr = results["Vat.xlsx!VATQtr1"];
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const name = "VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15)";
+      expect(checks.find((c) => c.name === name).pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Vat.xlsx"), "VATQtr1", "G15", qtr.G15 + 500);
+      const corruptedResults = { ...results, "Vat.xlsx!VATQtr1": { ...qtr, G15: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {
+      const qtr = results["Vat.xlsx!VATQtr5"];
+      expect(qtr).toBeDefined();
+      expect(qtr.G5).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === "VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)").pass).toBe(true);
+      expect(checks.find((c) => c.name === "VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15)").pass).toBe(true);
+    });
   },
   300000,
 );

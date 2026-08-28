@@ -295,6 +295,24 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    // ── Payroll: WagesInterface, the PAYE/NI creditor, Payslips!Payment,
+    // and the P&L wages route (item 4) ──
+
+    it("WagesInterface Apr gross pay and employer NI carry the payroll fixture's own totals", () => {
+      const wi = results.WagesInterface;
+      expect(wi.C4).toBe(6748); // Alice 3500 + Bob 2200 + Carol 1048
+      expect(wi.H4).toBeCloseTo(577.2, 5); // 382.5 + 187.5 + 7.2
+    });
+
+    it("fails the gross pay tie when WagesInterface C4 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "C4", 0);
+      expect(value).toBe(0);
+      const name = "WagesInterface Apr C4 gross pay";
+      const corrupted = checksWithCorruptedCell("WagesInterface", "C4", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
     it("fails the writing down allowance tie when the Schedule total is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "R1", 0);
       expect(value).toBe(0);
@@ -304,11 +322,29 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    it("fails the employer NI tie when WagesInterface H4 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "H4", 0);
+      expect(value).toBe(0);
+      const name = "WagesInterface Apr H4 employer NI";
+      const corrupted = checksWithCorruptedCell("WagesInterface", "H4", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
     it("fails the balancing allowance tie when the Schedule disposal total is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "Y1", 0);
       expect(value).toBe(0);
       const name = "CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge";
       const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "Y1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the PAYE/NI creditor tie when TrialBalance L34 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "L34", 0);
+      expect(value).toBe(0);
+      const name = "Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due";
+      const corrupted = checksWithCorruptedCell("TrialBalance", "L34", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
@@ -327,6 +363,25 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "B55", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
+    });
+    it("fails the total-payable tie when Payslips!Payment I4 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Payment", "I4", 0);
+      expect(value).toBe(0);
+      const name = "Payslips!Payment Apr I4 total amount payable";
+      const corrupted = checksWithCorruptedCell("Payslips.xlsx!Payment", "I4", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the P&L PAYE-wages route when MnthP&L B18 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B18", 0);
+      expect(value).toBe(0);
+      const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net";
+      const corrupted = checksWithCorruptedCell("MnthP&L", "B18", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      // B18 also feeds the admin-lines-sum-to-total identity, so that check
+      // fails alongside the payroll-route check being proven here.
+      expect(failureNames(corrupted)).toEqual(["P&L: Admin lines sum = Total", name]);
     });
   },
   900000,

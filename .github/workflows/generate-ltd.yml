@@ -302,7 +302,9 @@ jobs:
           path: packages/
       - run: rm -f reports/*.md
       - name: Reconcile extra scenarios against latest package
-        run: npm run reconciliation -- --package ltd --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
+        run: |
+          npm run reconciliation -- --package ltd --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
+          npm run reconciliation -- --package ltd --scenario brickwork-pro-vat --year-end ${{ needs.generate.outputs.latest }}
       - uses: actions/upload-artifact@v7
         with:
           name: ltd-extra-reports
