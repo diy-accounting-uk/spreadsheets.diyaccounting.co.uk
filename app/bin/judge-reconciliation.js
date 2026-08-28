@@ -94,7 +94,7 @@ export const PRODUCTS = {
     reportPrefix: "GB_Accounts_Company",
     capitalCodes: { fa: "fixed assets" },
     notes: [
-      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. Code f is insurance, an expense.",
+      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. Code f is leasing, an expense.",
       "Trade debtors on the published balance sheet are the opening debtors plus everything invoiced, less everything banked as a customer receipt. The closing debtors table in the scenario is the supporting list for that figure, not a separate input.",
       "Stock on the published balance sheet comes from the physical count entered against the last month end, through the stock loss adjustment the Stock sheet derives from it.",
     ],
