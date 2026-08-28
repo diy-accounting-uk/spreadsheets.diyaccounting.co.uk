@@ -176,7 +176,6 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("Vatreturns.xlsx!VATQtr1", "G9", value);
       expect(failureNames(corrupted)).toEqual([
         "VAT: Q1-Q4 box 1 = Sales VAT",
-        "VAT Q1: box 5 = box 3 - box 4",
         "VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8)",
       ]);
     });

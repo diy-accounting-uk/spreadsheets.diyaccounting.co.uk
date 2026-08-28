@@ -241,7 +241,9 @@ describeCalc(
       const name = "P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales";
       const corrupted = checksWithCorruptedCell("Sales.xlsx!Apr", "H1", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name]);
+      // April's own row on the VAT interface is measured against the same
+      // leaf total, so it moves with it.
+      expect(failureNames(corrupted)).toEqual(["Vatinterface D6: Apr sales net = Sales.xlsx Apr", name]);
     });
 
     it("fails the tax data echo when the Admin VAT rate is corrupted via JSZip", async () => {
