@@ -8,6 +8,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSerial } from "../lib/generator.js";
 import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
+import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "taxi",
@@ -177,9 +178,19 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],
   // ── SE Short (SA103S) — formula cells only ──
-  ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
-  ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
-  ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "D38",  "Turnover",                               "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
+  ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D71",  "**Net profit/loss**",                    "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "O71",  "Net loss (box 21)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1],
+  ["SE Short", "D80",  "Annual investment allowance (box 22)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D85",  "Small-balance allowance (box 23)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1],
+  ["SE Short", "O80",  "Other capital allowances (box 24)",      "tax.capitalAllowances.wda (sa103s)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "O85",  "Balancing charges (box 25)",             "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "D94",  "Goods and services for own use (box 26)","gl-cor:amount (sa103s.ownUse)",             "Self Assessment (SA103S)", 1],
+  ["SE Short", "D99",  "**Net business profit (box 27)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
+  ["SE Short", "O94",  "Loss brought forward (box 28)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O99",  "Other business income (box 29)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1],
+  ["SE Short", "D106", "**Net profit for tax calc**",            "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
   // ── Draft Tax Calculation ──
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1],
@@ -256,6 +267,39 @@ function fmt(v) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
   if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
+}
+
+const num = (v) => (typeof v === "number" ? v : 0);
+
+// ── Accounting profit to tax profit bridge ─────────────────────────────────
+
+// The P&L charges the year's capital allowances inside cost of sales (B10),
+// so its net profit is already after them. The SA103S works the other way:
+// box 19 takes them back out of total expenses, box 20 is the profit before
+// any allowance, and boxes 22 to 25 then claim the allowances the schedule
+// actually gives. The bridge walks that route one box at a time and ends on
+// the profit the Draft Tax calculation charges.
+export function profitBridge(results) {
+  const pl = results["Profit & Loss Acc"];
+  const seShort = results["SE Short"];
+  const tax = results[TAX_SHEET];
+  if (!pl || !seShort || !tax) return null;
+
+  const rows = [
+    { label: "Net profit per the profit and loss account", cell: "Profit & Loss Acc!B23", value: num(pl.B23) },
+    { label: "Add capital allowances charged in cost of sales", cell: "Profit & Loss Acc!B10", value: num(pl.B10) },
+    { label: "Add other business income (box 9)", cell: "SE Short!O38", value: num(seShort.O38) },
+    { label: "Less net loss for the year (box 21)", cell: "SE Short!O71", value: -num(seShort.O71) },
+    { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -num(seShort.D80) },
+    { label: "Less small-balance allowance (box 23)", cell: "SE Short!D85", value: -num(seShort.D85) },
+    { label: "Less other capital allowances (box 24)", cell: "SE Short!O80", value: -num(seShort.O80) },
+    { label: "Add balancing charges (box 25)", cell: "SE Short!O85", value: num(seShort.O85) },
+    { label: "Add goods and services for own use (box 26)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Add other business income (box 29)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less loss brought forward (box 28)", cell: "SE Short!O94", value: -num(seShort.O94) },
+  ];
+
+  return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
@@ -410,6 +454,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       if (seShort && seShort.D106 !== undefined) check("SA103S: Profit for tax = Draft Tax E5", seShort.D106, tax.E5);
     }
   }
+
+  // The whole distance from the accounting profit to the profit tax is
+  // charged on, adjustment by adjustment, with nothing left over.
+  const bridge = profitBridge(results);
+  if (bridge) check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01);
 
   return checks;
 }

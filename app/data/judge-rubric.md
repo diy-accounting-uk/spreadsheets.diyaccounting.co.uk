@@ -50,7 +50,8 @@ Fail when the accounts do not tell the same story as the scenario. The patterns 
 
 Pass when the statements read as a plausible set of accounts for the business in the scenario.
 Rounding differences, warnings the report already explains, and presentational differences are
-not grounds to fail.
+not grounds to fail. A difference the report itself decomposes in a bridge line is not a
+blocker.
 
 A pass may still carry concerns. Record anything you would want a person to look at, and say
 in the summary that it does not block the run.

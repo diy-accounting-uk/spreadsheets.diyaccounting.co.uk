@@ -8,6 +8,7 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "se",
@@ -587,10 +588,15 @@ export const CELL_MAP = [
   ["SE Short", "O60",  "Other business expenses",        "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
   ["SE Short", "O64",  "**Total expenses**",             "gl-cor:amount (sa103s.totalExpenses)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
+  ["SE Short", "O71",  "Net loss (box 21)",              "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "O80",  "Other capital allowances (box 24)", "tax.capitalAllowances.wda (sa103s)",     "Self Assessment (SA103S)", 1],
+  ["SE Short", "O85",  "Balancing charges (box 25)",     "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
   ["SE Short", "D94",  "Other tax adjustments",          "gl-cor:amount (sa103s.otherAdjust)",        "Self Assessment (SA103S)", 1],
   ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
+  ["SE Short", "O94",  "Loss brought forward (box 28)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
+  ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A32",  "VAT threshold note",             "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
   // ── Wagesinterface (6m) — monthly payroll from Payslips.xlsx via external links ──
@@ -838,6 +844,38 @@ function fmt(v) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
   if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
+}
+
+// ── Accounting profit to tax profit bridge ─────────────────────────────────
+
+// Depreciation is not allowable for income tax, so the return's total
+// expenses line takes it back out and the capital allowance boxes stand in
+// for it. Grants sit in the accounts above gross profit; on the return they
+// are box 29, added after the trade's own taxable profit. Interest received
+// stays put: profit before tax carries it and box 9 carries it, so it is
+// inside both ends of the bridge and needs no line of its own.
+export function profitBridge(results) {
+  const pl = results["Profit & Loss Account"];
+  const seShort = results["SE Short"];
+  const tax = results[TAX_SHEET];
+  if (!pl || !seShort || !tax) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const rows = [
+    { label: "Profit before tax per the profit and loss account", cell: "Profit & Loss Account!B39", value: num(pl.B39) },
+    { label: "Add depreciation charged in the accounts", cell: "Profit & Loss Account!B34", value: num(pl.B34) },
+    { label: "Less grants, taxed as other business income below", cell: "Profit & Loss Account!B11", value: -num(pl.B11) },
+    { label: "Less net loss for the year (box 21)", cell: "SE Short!O71", value: -num(seShort.O71) },
+    { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -num(seShort.D80) },
+    { label: "Less small-balance allowance (box 23)", cell: "SE Short!D85", value: -num(seShort.D85) },
+    { label: "Less other capital allowances (box 24)", cell: "SE Short!O80", value: -num(seShort.O80) },
+    { label: "Add balancing charges (box 25)", cell: "SE Short!O85", value: num(seShort.O85) },
+    { label: "Add goods and services for own use (box 26)", cell: "SE Short!D94", value: num(seShort.D94) },
+    { label: "Add grants as other business income (box 29)", cell: "SE Short!O99", value: num(seShort.O99) },
+    { label: "Less loss brought forward (box 28)", cell: "SE Short!O94", value: -num(seShort.O94) },
+  ];
+
+  return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
@@ -1466,6 +1504,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
   }
+
+  // The whole distance from the accounting profit to the profit tax is
+  // charged on, adjustment by adjustment, with nothing left over.
+  const bridge = profitBridge(results);
+  if (bridge) check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01);
 
   return checks;
 }

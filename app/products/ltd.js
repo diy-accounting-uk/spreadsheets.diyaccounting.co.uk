@@ -10,6 +10,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
+import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -1217,6 +1218,34 @@ function fmt(v) {
   return String(v);
 }
 
+// ── Accounting profit to tax profit bridge ─────────────────────────────────
+
+// The working sheet starts at operating profit, so the management accounts'
+// bank interest comes out and goes back in: the accounts carry it net of the
+// tax deducted at source and the computation charges the gross figure. The
+// two interest lines below differ by exactly that tax, which the working
+// sheet then credits against the charge (CorporationTax!K37). Depreciation
+// and goodwill written off are not deductible and are added back; capital
+// allowances stand in for the depreciation.
+export function profitBridge(results) {
+  const pl = results["MnthP&L"];
+  const ct = results[TAX_SHEET];
+  if (!pl || !ct) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const rows = [
+    { label: "Profit before tax per the management profit and loss account", cell: "MnthP&L!B45", value: num(pl.B45) },
+    { label: "Less bank interest received, net of tax deducted at source", cell: "MnthP&L!B44", value: -num(pl.B44) },
+    { label: "Add back goodwill written off", cell: "CorporationTax!I7", value: num(ct.I7) },
+    { label: "Add back depreciation charged in the year", cell: "CorporationTax!I8", value: num(ct.I8) },
+    { label: "Less capital allowances", cell: "CorporationTax!K20", value: -num(ct.K20) },
+    { label: "Add gross bank interest received", cell: "CorporationTax!K24", value: num(ct.K24) },
+    { label: "Less losses brought forward", cell: "CorporationTax!K26", value: -num(ct.K26) },
+  ];
+
+  return buildProfitBridge(rows, `${TAX_SHEET}!K28`, num(ct.K28));
+}
+
 // ── Compliance checks ──────────────────────────────────────────────────────
 
 export function checkCompliance(results, expected, taxData, calculateExpectedTax) {
@@ -2073,6 +2102,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       });
     }
   }
+
+  // The whole distance from the accounting profit to the profit tax is
+  // charged on, adjustment by adjustment, with nothing left over.
+  const bridge = profitBridge(results);
+  if (bridge) check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01);
 
   return checks;
 }
