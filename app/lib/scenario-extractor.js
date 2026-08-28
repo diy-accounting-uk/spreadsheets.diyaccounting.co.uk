@@ -280,7 +280,7 @@ export function filterFull(lines) {
 export function seDrawingsFromDividends(lines) {
   return lines.map((line) =>
     line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "DV"
-      ? { ...line, "diya-gl:bankCode": "DL", detailComment: "Proprietor", lineItemComment: "Quarterly drawings payment" }
+      ? { ...line, "diya-gl:bankCode": "DL", "detailComment": "Proprietor", "lineItemComment": "Quarterly drawings payment" }
       : line,
   );
 }
