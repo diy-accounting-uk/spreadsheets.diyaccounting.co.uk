@@ -1,0 +1,36 @@
+{
+  "product": "ltd",
+  "verdict": "pass",
+  "summary": "The accounts read as a credible set for an IT consultancy: £341,283 turnover, all twelve months of sales and purchases present, payroll of £80,976 gross plus £6,926 employer NI, depreciation of £11,740 on the asset note, four VAT quarters with realistic output and input tax, and a balance sheet that carries fixed assets, stock, debtors and bank without a suspense line. Two items are worth a look but neither blocks the run.",
+  "concerns": [
+    {
+      "figure": "Corporation tax £28,028.78 on chargeable profit £147,519.90 (CorporationTax K35 / PubNotes D41)",
+      "where": "Corporation Tax (CT600) section and Fixed Asset Note 'Corporation tax for the year'",
+      "why": "The effective rate is 19.0% of chargeable profit, and the run's own check 'CT: Marginal relief expected (profit > £50K)' reports a WARNING with expected 36,880 against actual 28,028.78. Separately the CT600 sheet shows tax chargeable of £13,995.22 (19% of £73,659 of profit, i.e. roughly half the chargeable profit) while the note and CT summary carry £28,028.78 — the two tax figures in the same report do not describe the same charge, and neither reflects the 25% main rate that would apply to a £147k profit. Worth checking the rate/apportionment logic on the CorporationTax sheet, though the figure is the right order of magnitude and the sign is correct.",
+      "severity": "note"
+    },
+    {
+      "figure": "Profit before tax: £177,215.39 (MnthP&L B45) versus £177,279.90 (PubP&L F49)",
+      "where": "Profit & Loss Account vs Published P&L",
+      "why": "The management P&L adds interest received of £275 while the published P&L and CT600 use gross bank interest of £339.51, giving a £64.51 difference in profit before tax between the two statements of the same year. That is the tax-deducted-at-source element (CT600 AJ154 = 64.51), so it is explicable, but two different PBT figures presented side by side is worth a reviewer's eye.",
+      "severity": "note"
+    },
+    {
+      "figure": "Cash at bank and in hand £250,544 (PubBalSht E12)",
+      "where": "Published Balance Sheet, current assets",
+      "why": "Cash has grown from £30,500 to £250,544 in the year on turnover of £341,283 with only £13,000 of director's loan repayment and no dividends. It is arithmetically supported by the bank sheets (current £238,864 + savings £10,275 + cash £480, less the £1,025 card balance) and is consistent with the scenario's £692,906 bank journal, so it is not implausible, merely a striking cash retention for a consultancy of this size.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-scenario-full.md",
+      "scenario": "ltd-scenario-full",
+      "yearEnd": "2027-09-30",
+      "status": "RECONCILES (with warnings)"
+    }
+  ],
+  "timestamp": "2026-08-28T13:46:42.867Z"
+}

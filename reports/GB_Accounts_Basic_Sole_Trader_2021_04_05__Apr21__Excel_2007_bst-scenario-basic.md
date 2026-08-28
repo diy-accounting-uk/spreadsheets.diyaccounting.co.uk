@@ -15,16 +15,52 @@ Status: RECONCILES
 | Legal & Professional | 4560 | 4560 | 0 | PASS |
 | P&L: Gross = Sales - CoS - Direct | 391360 | 391360 | 0 | PASS |
 | P&L: Net = Gross - Expenses | 333908 | 333908 | 0 | PASS |
+| P&L: Total Sales = sum of monthly Sales sheets | 409900 | 409900 | 0 | PASS |
 | P&L: Expense lines sum = Total | 57452 | 57452 | 0 | PASS |
-| Income Tax | 121063 | 121063 | 0 | PASS |
+| Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 110992.25 | 110992 | -0.25 | PASS |
+| Opening Debtors | 10800 | 10800 | 0 | PASS |
+| Closing Debtors | 10400 | 10400 | 0 | PASS |
+| Opening Creditors | 2220 | 2220 | 0 | PASS |
+| Closing Creditors | 1710 | 1710 | 0 | PASS |
+| Fixed Assets: schedule total cost = asset additions | 39000 | 39000 | 0 | PASS |
+| Fixed Assets: first addition recorded | 1800 | 1800 | 0 | PASS |
+| Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 39000 | 39000 | 0 | PASS |
+| Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 39000 | 39000 | 0 | PASS |
+| P&L: Taxable Profit = Net Profit - Capital Allowances | 294908 | 294908 | 0 | PASS |
+| Admin: Personal Allowance = tax data | 12500 | 12500 | 0 | PASS |
+| Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Basic Band End = tax data | 37500 | 37500 | 0 | PASS |
+| Admin: Higher Band Start = tax data | 37501 | 37501 | 0 | PASS |
+| Admin: NI Class 2 Rate = tax data | 3.05 | 3.05 | 0 | PASS |
+| Admin: NI Class 4 Lower Rate = tax data | 0.09 | 0.09 | 0 | PASS |
+| Admin: NI Class 4 Lower Limit = tax data | 9500 | 9500 | 0 | PASS |
+| Admin: NI Class 4 Upper Rate = tax data | 0.02 | 0.02 | 0 | PASS |
+| Admin: NI Class 4 Upper Limit = tax data | 50000 | 50000 | 0 | PASS |
+| Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
+| Admin: WDA Rate = tax data | 0.18 | 0.18 | 0 | PASS |
+| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
+| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
+| Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
+| Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
+| Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
+| Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
+| Admin: VAT Registration Threshold = tax data | 85000 | 85000 | 0 | PASS |
+| Income Tax | 105463 | 105463 | 0 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
-| Total Tax + NI | 130386 | 130386.16 | +0.16000000000349246 | PASS |
-| Tax: Taxable = Profit - Allowance | 321408 | 321408 | 0 | PASS |
-| Tax: IT = Basic + Higher | 121063 | 121063 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 130386.16 | 130386.16 | 0 | PASS |
+| Total Tax + NI | 114006 | 114006.16 | +0.16000000000349246 | PASS |
+| Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
+| Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
+| Tax: sheet splits the bands at the higher band start | 37501 | 37501 | 0 | PASS |
+| Tax at basic rate | 7500 | 7500.2 | +0.1999999999998181 | PASS |
+| Tax at higher rate | 97963.20000000001 | 97962.8 | -0.40000000000873115 | PASS |
+| Tax: Taxable = Profit - Allowance | 282408 | 282408 | 0 | PASS |
+| Tax: IT = Basic + Higher | 105463 | 105463 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 114006.16 | 114006.16 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 409900 | 409900 | 0 | PASS |
 | SA103S: Net profit close to P&L Net | 333908 | 333908 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 333908 | 333908 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 294908 | 294908 | 0 | PASS |
+| P&L: Capital Allowances = SE Short chain | 39000 | 39000 | 0 | PASS |
 
 ## Business Details
 
@@ -41,7 +77,7 @@ Status: RECONCILES
 | | Amount |
 |---|------:|
 | Sales Turnover | 409,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | Other income |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
 | **Gross Profit** | 391,360 |
@@ -58,12 +94,12 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 17,882 |
 | Total Expenses | 57,452 |
 | **Net Profit** | 333,908 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 0 |
-| Taxable Profit | 333,908 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 39,000 |
+| Taxable Profit | 294,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Income Tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 121,063 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 9,323.16 |
-| Net Income After Tax | 203,521.84 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate | 105,463 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 8,543.16 |
+| Net Income After Tax | 180,901.84 |
 
 ## Monthly Sales
 
@@ -86,22 +122,25 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 333,908 |
+| Profit from Self Employment | 294,908 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,500 |
-| Taxable Income | 321,408 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,500.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 113,562.8 |
-| **Total Income Tax** | 121,063 |
+| Taxable Income | 282,408 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,501 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 7,500.2 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 97,962.8 |
+| **Total Income Tax** | 105,463 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,645 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 5,678.16 |
-| **Total Tax + NI** | 130,386.16 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 4,898.16 |
+| **Total Tax + NI** | 114,006.16 |
 
 ## Self Assessment (SA103S)
 
 | | Amount |
 |---|------:|
-| Business name | Precision Code Trading |
+| Business name | — |
 | Accounting date | — |
 | Turnover | 409,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
@@ -110,12 +149,14 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 1,140 |
 | **Net profit/loss** | 333,908 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 39,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 333,908 |
-| VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold |
-| **Net profit for tax calc** | 333,908 |
+| **Taxable profit** | 294,908 |
+| VAT threshold note | — |
+| **Net profit for tax calc** | 294,908 |
 
 ## Stock
 
@@ -134,7 +175,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3 | 2,400 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | 8,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | 420 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | 1,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | 300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | 600 |
@@ -143,6 +184,48 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2 | 300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3 | 60 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4 | 150 |
+
+## Purchase Analysis
+
+| | Amount |
+|---|------:|
+| Purchases capitalised as fixed assets | 39,000 |
+
+## Fixed Assets
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Plant & Machinery) | 1,800 |
+| Total Original Cost | 39,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total First Year Allowance / AIA | 39,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total Written Down Tax Value | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total Balancing Charge | 0 |
+
+## Admin (Generator Injected)
+
+| | Amount |
+|---|------:|
+| Personal Allowance | 12,500 |
+| Basic Rate | 0.2 |
+| Higher Rate | 0.4 |
+| Basic Band End | 37,500 |
+| Higher Band Start | 37,501 |
+| NI Class 2 Rate | 3.05 |
+| NI Class 4 Lower Rate | 0.09 |
+| NI Class 4 Lower Limit | 9,500 |
+| NI Class 4 Upper Rate | 0.02 |
+| NI Class 4 Upper Limit | 50,000 |
+| Annual Investment Allowance Rate | 1 |
+| Writing Down Allowance Rate | 0.18 |
+| Motor Vehicle Cost Threshold | 12,000 |
+| Motor Vehicle Restriction | 3,000 |
+| Mileage Higher Rate Limit | 10,000 |
+| Mileage Higher Rate Pence | 0.45 |
+| Mileage Lower Rate Start | 10,001 |
+| Mileage Lower Rate Pence | 0.25 |
+| VAT Registration Threshold | 85,000 |
 
 ---
 
@@ -163,7 +246,6 @@ Status: RECONCILES
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C4 | Sales Turnover | 409900 | gl-cor:amount (salesTurnover) |
-| C5 | Other Income | Other income | gl-cor:amount (otherIncome) |
 | C6 | Cost of Sales (stock + direct) | 10540 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 8000 | gl-cor:amount (directCosts) |
 | C9 | **Gross Profit** | 391360 | gl-cor:amount (grossProfit) |
@@ -180,12 +262,12 @@ Status: RECONCILES
 | C21 | Other Expenses | 17882 | accounts.purchases (other) |
 | C22 | Total Expenses | 57452 | gl-cor:amount (totalExpenses) |
 | C24 | **Net Profit** | 333908 | gl-cor:amount (netProfit) |
-| C26 | Capital Allowances | 0 | tax.capitalAllowances |
-| C28 | Taxable Profit | 333908 | gl-cor:amount (taxableProfit) |
+| C26 | Capital Allowances | 39000 | tax.capitalAllowances |
+| C28 | Taxable Profit | 294908 | gl-cor:amount (taxableProfit) |
 | C30 | Income Tax | 0 | tax.incomeTax |
-| C32 | Tax at basic rate | 121063 | tax.incomeTax.basicRate |
-| C33 | NI Class 4 | 9323.16 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 203521.84 | gl-cor:amount (netIncome) |
+| C32 | Tax at basic rate | 105463 | tax.incomeTax.basicRate |
+| C33 | NI Class 4 | 8543.16 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 180901.84 | gl-cor:amount (netIncome) |
 | D4 | Apr | 33400 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 32920 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 35200 | gl-cor:amount (monthlySales.jun) |
@@ -203,22 +285,24 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 333908 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 294908 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 321408 | gl-cor:amount (taxableIncome) |
-| E8 | Tax at Basic Rate (20%) | 7500.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate (40%) | 113562.8 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 121063 | tax.incomeTax (total) |
+| E7 | Taxable Income | 282408 | gl-cor:amount (taxableIncome) |
+| D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
+| C9 | Basic band ceiling the sheet applies | 37501 | tax.incomeTax.higherBandStart (applied) |
+| D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
+| E8 | Tax at Basic Rate | 7500.2 | tax.incomeTax.basicRate |
+| E9 | Tax at Higher Rate | 97962.8 | tax.incomeTax.higherRate |
+| E10 | **Total Income Tax** | 105463 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3645 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 5678.16 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 130386.16 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 4898.16 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 114006.16 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A7 | Business name | Precision Code Trading | entityInformation.organizationIdentifier |
 | D38 | Turnover | 409900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
 | D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
@@ -226,12 +310,13 @@ Status: RECONCILES
 | D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
 | D64 | Other expenses | 1140 | gl-cor:amount (sa103s.otherExpenses) |
 | D71 | **Net profit/loss** | 333908 | gl-cor:amount (sa103s.netProfit) |
-| D80 | Capital allowances | 0 | tax.capitalAllowances (sa103s) |
+| D80 | Capital allowances | 39000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
+| O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 333908 | gl-cor:amount (sa103s.taxableProfit) |
-| A32 | VAT threshold note | Business income - if your annual turnover was below £85000 vat threshold | gl-cor:detailComment (sa103s.notes) |
-| D106 | **Net profit for tax calc** | 333908 | gl-cor:amount (sa103s.profitForTax) |
+| D99 | **Taxable profit** | 294908 | gl-cor:amount (sa103s.taxableProfit) |
+| D106 | **Net profit for tax calc** | 294908 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
@@ -250,7 +335,6 @@ Status: RECONCILES
 | C7 | Opening Debtor 3 | 2400 | accounts.assets.1300 (opening[2]) |
 | F5 | Closing Debtor 1 | 8000 | accounts.assets.1300 (closing[0]) |
 | F6 | Closing Debtor 2 | 2400 | accounts.assets.1300 (closing[1]) |
-| F7 | Closing Debtor 3 | 420 | accounts.assets.1300 (closing[2]) |
 | C12 | Opening Creditor 1 | 1200 | accounts.liabilities.2100 (opening[0]) |
 | C13 | Opening Creditor 2 | 300 | accounts.liabilities.2100 (opening[1]) |
 | C14 | Opening Creditor 3 | 600 | accounts.liabilities.2100 (opening[2]) |
@@ -259,3 +343,45 @@ Status: RECONCILES
 | F13 | Closing Creditor 2 | 300 | accounts.liabilities.2100 (closing[1]) |
 | F14 | Closing Creditor 3 | 60 | accounts.liabilities.2100 (closing[2]) |
 | F15 | Closing Creditor 4 | 150 | accounts.liabilities.2100 (closing[3]) |
+
+### PurchasesMar
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| X1 | Purchases capitalised as fixed assets | 39000 | accounts.assets.fixedAssets (purchased) |
+
+### Fixed Assets
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| E67 | New Asset Cost (Plant & Machinery) | 1800 | accounts.assets.fixedAssets (cost) |
+| E1 | Total Original Cost | 39000 | accounts.assets.fixedAssets (totalCost) |
+| K1 | Total First Year Allowance / AIA | 39000 | tax.capitalAllowances.aia (schedule) |
+| L1 | Total Writing Down Allowance | 0 | tax.capitalAllowances.wda (schedule) |
+| M1 | Total Written Down Tax Value | 0 | tax.capitalAllowances.writtenDownValue (schedule) |
+| Q1 | Total Capital Allowance on Disposal | 0 | tax.capitalAllowances.disposals (schedule) |
+| R1 | Total Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (schedule) |
+
+### Admin
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| N4 | Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
+| N7 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
+| N8 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| M12 | Basic Band End | 37500 | tax.incomeTax.basicBandEnd |
+| N13 | Higher Band Start | 37501 | tax.incomeTax.higherBandStart |
+| L17 | NI Class 2 Rate | 3.05 | tax.nationalInsurance.class2Rate |
+| L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4LowerRate |
+| N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerLimit |
+| L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
+| N23 | NI Class 4 Upper Limit | 50000 | tax.nationalInsurance.class4UpperLimit |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
+| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
+| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
+| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
+| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| F26 | VAT Registration Threshold | 85000 | tax.vat.registrationThreshold |

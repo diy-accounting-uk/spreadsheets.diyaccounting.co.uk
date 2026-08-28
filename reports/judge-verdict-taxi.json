@@ -1,0 +1,36 @@
+{
+  "product": "taxi",
+  "verdict": "pass",
+  "summary": "The figures read as a plausible set of owner-driver taxi accounts: £36,000 fares, £3,600 fuel, £1,380 road tax and insurance, an £8,000 vehicle capitalised with a £1,120 writing down allowance, and tax/NI of £4,147 on £28,520 profit. Two presentational oddities are worth a look but do not block the run.",
+  "concerns": [
+    {
+      "figure": "Cost of Sales (vehicle costs) 6,100 vs listed vehicle cost lines 3,600 fuel + 1,380 road tax/insurance + 1,120 capital allowances = 6,100, while Purchase Analysis shows vehicle running costs of 4,980",
+      "where": "Profit & Loss Account B12 and PurchasesMar I2",
+      "why": "The Purchases sheet reports £4,980 of vehicle running costs for the year but the P&L vehicle cost lines only pick up £4,980 (3,600 + 1,380) plus allowances; the two labels agree numerically but the £4,980 figure is not itself shown on the P&L, so a reader reconciling the sheets should confirm which vehicle codes feed which line. No arithmetic gap, purely a traceability point.",
+      "severity": "note"
+    },
+    {
+      "figure": "General Admin 480 and Legal & Professional 900 sitting below Gross Profit while road tax and insurance sit in cost of sales",
+      "where": "Profit & Loss Account B16, B18 vs B9",
+      "why": "Classification is consistent with the scenario's code mapping (g and l to general expenses, t to vehicle costs), but a taxi driver with £900 of legal and professional fees against £36,000 of fares is on the high side and is worth a sanity check against the underlying journal. Not a blocker.",
+      "severity": "note"
+    },
+    {
+      "figure": "Repairs & Servicing 0",
+      "where": "Profit & Loss Account B8",
+      "why": "An owner-driver working a full year with £3,600 of fuel would normally incur some servicing or repair cost. The scenario's journal genuinely contains no code for repairs, so the zero is faithful to the input rather than a workbook fault, but it makes the expense profile look thin for the trade.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-basic.md",
+      "scenario": "taxi-scenario-basic",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    }
+  ],
+  "timestamp": "2026-08-28T13:38:27.999Z"
+}

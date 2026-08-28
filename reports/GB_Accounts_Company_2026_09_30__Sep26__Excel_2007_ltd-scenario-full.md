@@ -26,16 +26,17 @@ Status: RECONCILES (with warnings)
 | Trial Balance opening: share capital | -100 | -100 | 0 | PASS |
 | Trial Balance opening: revenue reserve | -45702 | -45702 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | -13000 | -13000 | 0 | PASS |
-| P&L: Gross = Turnover - CoS | 326496.66666666634 | 326496.666666666 | -3.4924596548080444e-10 | PASS |
-| P&L: Operating = Gross - Admin | 180940.391666666 | 180940.391666666 | 0 | PASS |
-| P&L: PBT = Operating + Interest | 181215.391666666 | 181215.391666666 | 0 | PASS |
+| P&L: Gross = Turnover - CoS | 322496.66666666634 | 322496.666666666 | -3.4924596548080444e-10 | PASS |
+| P&L: Operating = Gross - Admin | 176940.391666666 | 176940.391666666 | 0 | PASS |
+| P&L: PBT = Operating + Interest | 177215.391666666 | 177215.391666666 | 0 | PASS |
 | P&L: Admin lines sum = Total | 145556.27500000002 | 145556.275 | -2.9103830456733704e-11 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
-| Opening Debtors total | 10800 | 10800 | 0 | PASS |
-| Closing Debtors total | 10400 | 10400 | 0 | PASS |
-| Opening Creditors total | 2220 | 2220 | 0 | PASS |
-| Closing Creditors total | 1710 | 1710 | 0 | PASS |
+| Stock: opening carried in from the opening balance sheet | 10000 | 10000 | 0 | PASS |
+| Stock: physical count at the year end | 6000 | 6000 | 0 | PASS |
+| Stock: loss adjustment = count - calculated | -4000 | -4000 | 0 | PASS |
+| Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
+| Published balance sheet: trade debtors = closing debtors | 10400 | 10400 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
 | VAT: Q1-Q4 box 4 = Purchases VAT | 18498.708333333332 | 18498.70833333333 | -3.637978807091713e-12 | PASS |
 | VAT Q1: box 5 = box 3 - box 4 | 13496.125 | 13496.125 | 0 | PASS |
@@ -213,11 +214,12 @@ Status: RECONCILES (with warnings)
 | Fixed asset schedule (computer): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Computers |  | PASS |
 | Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Motor Vehicles |  | PASS |
 | Published balance sheet: fixed assets = fixed asset note net book value | 30990 | 30990 | 0 | PASS |
+| RegisterofMembers: nominal value x shares issued = PubBalSht share capital | 100 | 100 | 0 | PASS |
 | Fixed assets: Schedule additions = fixed asset purchases net of VAT | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 12500 | 12500 | 0 | PASS |
 | P&L: depreciation = fixed asset note charge for the year | 11740 | 11740 | 0 | PASS |
 | P&L: loss on disposal = Schedule cost less depreciation less proceeds | 172 | 172 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 12164 | 12164 | 0 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 238864 | 238864 | 0 | PASS |
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
@@ -637,36 +639,36 @@ Status: RECONCILES (with warnings)
 | Fixed asset note: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
 | Fixed asset note: depreciation rate, computer equipment | 0.33 | 0.33 | 0 | PASS |
 | Fixed asset note: depreciation rate, motor vehicles | 0.25 | 0.25 | 0 | PASS |
-| Published P&L: operating profit = management P&L operating profit | 180940.391666666 | 180940.391666666 | 0 | PASS |
-| CT: operating profit = published P&L operating profit | 180940.391666666 | 180940.391666666 | 0 | PASS |
+| Published P&L: operating profit = management P&L operating profit | 176940.391666666 | 176940.391666666 | 0 | PASS |
+| CT: operating profit = published P&L operating profit | 176940.391666666 | 176940.391666666 | 0 | PASS |
 | CT: depreciation add-back = P&L depreciation | 11740 | 11740 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 2500 | 2500 | 0 | PASS |
 | CT: add-backs = depreciation + goodwill | 14240 | 14240 | 0 | PASS |
-| CT: profit plus add-backs | 195180.391666666 | 195180.391666666 | 0 | PASS |
+| CT: profit plus add-backs | 191180.391666666 | 191180.391666666 | 0 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 32500 | 32500 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 3000 | 3000 | 0 | PASS |
 | CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 8500 | 8500 | 0 | PASS |
 | CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
-| CT: profit after capital allowances | 151180.391666666 | 151180.391666666 | 0 | PASS |
-| CT: chargeable profit = profit after allowances + interest - losses brought forward | 151519.8978395055 | 151519.897839506 | +5.238689482212067e-10 | PASS |
+| CT: profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
+| CT: chargeable profit = profit after allowances + interest - losses brought forward | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
-| CT600: trading profits = CT profit after capital allowances | 151180.391666666 | 151180.391666666 | 0 | PASS |
+| CT600: trading profits = CT profit after capital allowances | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
-| CT600: net trading profits = trading profits - losses brought forward | 151180.391666666 | 151180.391666666 | 0 | PASS |
+| CT600: net trading profits = trading profits - losses brought forward | 147180.391666666 | 147180.391666666 | 0 | PASS |
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 151519.8978395055 | 151519.897839506 | +5.238689482212067e-10 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 151519.897839506 | 151519.897839506 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 147519.8978395055 | 147519.897839506 | +5.238689482212067e-10 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 147519.897839506 | 147519.897839506 | 0 | PASS |
 | CT600: tax rate = CT first financial year rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = CT first financial year tax | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
-| CT600: self assessment of tax payable | 14394.3902947531 | 14394.3902947531 | 0 | PASS |
-| CT600: tax outstanding | 14329.8841219135 | 14329.8841219135 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 28788.7805895061 | 28788.7805895061 | 0 | PASS |
+| CT600: corporation tax = CT first financial year tax | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: self assessment of tax payable | 14014.3902947531 | 14014.3902947531 | 0 | PASS |
+| CT600: tax outstanding | 13949.8841219135 | 13949.8841219135 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 28028.7805895061 | 28028.7805895061 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
-| Corporation Tax | 28789 | 28788.7805895061 | -0.2194104939007957 | PASS |
-| CT: Chargeable >= Operating | 180940.391666666 | 151519.897839506 | -29420.493827159982 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 28724.274416666594 | 28724.2744166666 | +7.275957614183426e-12 | PASS |
-| CT: Marginal relief expected (profit > £50K) | 37880 | 28788.7805895061 | -9091.2194104939 | **WARNING** |
+| Corporation Tax | 28029 | 28028.7805895061 | -0.2194104939007957 | PASS |
+| CT: Chargeable >= Operating | 176940.391666666 | 147519.897839506 | -29420.493827159982 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
+| CT: Marginal relief expected (profit > £50K) | 36880 | 28028.7805895061 | -8851.2194104939 | **WARNING** |
 
 ## Business Details
 
@@ -708,11 +710,11 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income | 3,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
 | **Sales Turnover** | 341,283.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 5,450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 9,450 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 6,666.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 2,670 |
-| Cost of Sales | 14,786.67 |
-| **Gross Profit** | 326,496.67 |
+| Cost of Sales | 18,786.67 |
+| **Gross Profit** | 322,496.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 81,642.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Non-PAYE (code d) | 4,166.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employers National Insurance | 6,926.4 |
@@ -737,26 +739,26 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on disposal of assets | 172 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
 | Total Admin Expenses | 145,556.28 |
-| **Operating Profit** | 180,940.39 |
+| **Operating Profit** | 176,940.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
-| **Profit Before Tax** | 181,215.39 |
+| **Profit Before Tax** | 177,215.39 |
 
 ## Corporation Tax (CT600)
 
 | | Amount |
 |---|------:|
-| Operating Profit | 180,940.39 |
+| Operating Profit | 176,940.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 11,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 14,240 |
-| Operational profit chargeable | 195,180.39 |
+| Operational profit chargeable | 191,180.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 44,000 |
-| Profit after capital allowances | 151,180.39 |
+| Profit after capital allowances | 147,180.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 339.51 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | 151,519.9 |
-| **Corporation Tax** | 28,788.78 |
-| Tax Outstanding | 28,724.27 |
+| **Profit Chargeable to CT** | 147,519.9 |
+| **Corporation Tax** | 28,028.78 |
+| Tax Outstanding | 27,964.27 |
 
 ## Published P&L
 
@@ -765,28 +767,29 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Sales Turnover | 339,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Investment Grants | 2,083.33 |
 | **Total Sales Turnover** | 341,283.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 14,786.67 |
-| **Gross Profit** | 326,496.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 18,786.67 |
+| **Gross Profit** | 322,496.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 145,556.28 |
-| **Operating Profit** | 180,940.39 |
-| **Profit Before Tax** | 181,279.9 |
+| **Operating Profit** | 176,940.39 |
+| **Profit Before Tax** | 177,279.9 |
 
 ## Published Balance Sheet
 
 | | Amount |
 |---|------:|
 | Fixed Assets (NBV) | 30,990 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 10,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 237,100 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 23,844 |
-| Current Assets | 270,944 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 90,640.88 |
-| **Net Current Assets** | 180,303.12 |
-| **Total Assets less CL** | 211,293.12 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 6,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 10,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 250,544 |
+| Current Assets | 266,944 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 89,880.88 |
+| **Net Current Assets** | 177,063.12 |
+| **Total Assets less CL** | 208,053.12 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 13,000 |
-| **Net Assets** | 198,293.12 |
-| **Shareholders' Funds** | 198,293.12 |
+| **Net Assets** | 195,053.12 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
+| **Shareholders' Funds** | 195,053.12 |
 
 ## Fixed Asset Note
 
@@ -802,14 +805,16 @@ Status: RECONCILES (with warnings)
 | **Depreciation carried forward** | 4,510 |
 | **Net book value** | 30,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 4,166.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 28,788.78 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 28,028.78 |
 
 ## Stock
 
 | | Amount |
 |---|------:|
 | Opening Stock | 10,000 |
-| Closing Stock | 6,000 |
+| Closing Stock (physical count) | 6,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Stock (calculated) | 10,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Stock loss adjustment | -4,000 |
 
 ## Trial Balance
 
@@ -880,11 +885,11 @@ Status: RECONCILES (with warnings)
 | B7 | Other Direct Income | 3700 | accounts.sales.4003 |
 | B8 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
 | B9 | **Sales Turnover** | 341283.333333333 | gl-cor:amount (salesTurnover) |
-| B11 | Materials / Stock | 5450 | accounts.purchases.5000 |
+| B11 | Materials / Stock | 9450 | accounts.purchases.5000 |
 | B12 | Sub-Contractors | 6666.66666666667 | accounts.purchases.5001 |
 | B13 | Other Direct Costs | 2670 | accounts.purchases.5002 |
-| B14 | Cost of Sales | 14786.6666666667 | gl-cor:amount (costOfSales) |
-| B16 | **Gross Profit** | 326496.666666666 | gl-cor:amount (grossProfit) |
+| B14 | Cost of Sales | 18786.6666666667 | gl-cor:amount (costOfSales) |
+| B16 | **Gross Profit** | 322496.666666666 | gl-cor:amount (grossProfit) |
 | B18 | PAYE Wages + Non-PAYE Employee | 81642.6666666667 | dpl:WagesAndSalaries (combined) |
 | B19 | Directors Non-PAYE (code d) | 4166.66666666667 | accounts.purchases.5100 |
 | B20 | Employers National Insurance | 6926.4 | dpl:SocialSecurityCosts |
@@ -909,9 +914,9 @@ Status: RECONCILES (with warnings)
 | B39 | Loss on disposal of assets | 172 | gl-cor:amount (lossOnDisposal) |
 | B40 | Depreciation | 11740 | gl-cor:amount (depreciation) |
 | B41 | Total Admin Expenses | 145556.275 | gl-cor:amount (totalAdmin) |
-| B43 | **Operating Profit** | 180940.391666666 | gl-cor:amount (operatingProfit) |
+| B43 | **Operating Profit** | 176940.391666666 | gl-cor:amount (operatingProfit) |
 | B44 | Interest Received | 275 | gl-cor:amount (interestReceived) |
-| B45 | **Profit Before Tax** | 181215.391666666 | gl-cor:amount (profitBeforeTax) |
+| B45 | **Profit Before Tax** | 177215.391666666 | gl-cor:amount (profitBeforeTax) |
 | C4 |  | 25333.3333333333 |  |
 | D4 |  | 25633.3333333333 |  |
 | E4 |  | 26533.3333333333 |  |
@@ -1229,25 +1234,25 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| K5 | Operating Profit | 180940.391666666 | gl-cor:amount (ct600.box145) |
+| K5 | Operating Profit | 176940.391666666 | gl-cor:amount (ct600.box145) |
 | I7 | Add back: Goodwill | 2500 | gl-cor:amount (ct600.addBackGoodwill) |
 | I8 | Add back: Depreciation | 11740 | gl-cor:amount (ct600.addBackDepreciation) |
 | K10 | Add back: total | 14240 | gl-cor:amount (ct600.addBack) |
-| K12 | Operational profit chargeable | 195180.391666666 | gl-cor:amount (ct600.adjustedProfit) |
+| K12 | Operational profit chargeable | 191180.391666666 | gl-cor:amount (ct600.adjustedProfit) |
 | K20 | Less: Capital Allowances | 44000 | tax.capitalAllowances (ct600) |
-| K22 | Profit after capital allowances | 151180.391666666 | gl-cor:amount (ct600.afterAllowances) |
+| K22 | Profit after capital allowances | 147180.391666666 | gl-cor:amount (ct600.afterAllowances) |
 | K24 | Add: gross bank interest | 339.506172839506 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
-| K28 | **Profit Chargeable to CT** | 151519.897839506 | gl-cor:amount (ct600.box315) |
-| K35 | **Corporation Tax** | 28788.7805895061 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 28724.2744166666 | gl-cor:taxAmount (ct600.box515) |
+| K28 | **Profit Chargeable to CT** | 147519.897839506 | gl-cor:amount (ct600.box315) |
+| K35 | **Corporation Tax** | 28028.7805895061 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 27964.2744166666 | gl-cor:taxAmount (ct600.box515) |
 | I15 |  | 32500 |  |
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
 | G33 |  | 19 |  |
-| I33 |  | 14394.3902947531 |  |
-| I34 |  | 14394.3902947531 |  |
+| I33 |  | 14014.3902947531 |  |
+| I34 |  | 14014.3902947531 |  |
 | K37 |  | 64.5061728395062 |  |
 
 ### PubP&L
@@ -1257,11 +1262,11 @@ Status: RECONCILES (with warnings)
 | F7 | Sales Turnover | 339200 | gl-cor:amount (pubPL.salesTurnover) |
 | F8 | Investment Grants | 2083.33333333333 | gl-cor:amount (pubPL.grants) |
 | F9 | **Total Sales Turnover** | 341283.333333333 | gl-cor:amount (pubPL.totalTurnover) |
-| F16 | Cost of Sales | 14786.6666666667 | gl-cor:amount (pubPL.cos) |
-| F18 | **Gross Profit** | 326496.666666666 | gl-cor:amount (pubPL.gross) |
+| F16 | Cost of Sales | 18786.6666666667 | gl-cor:amount (pubPL.cos) |
+| F18 | **Gross Profit** | 322496.666666666 | gl-cor:amount (pubPL.gross) |
 | F44 | Administrative Expenses | 145556.275 | gl-cor:amount (pubPL.admin) |
-| F46 | **Operating Profit** | 180940.391666666 | gl-cor:amount (pubPL.operating) |
-| F49 | **Profit Before Tax** | 181279.897839506 | gl-cor:amount (pubPL.pbt) |
+| F46 | **Operating Profit** | 176940.391666666 | gl-cor:amount (pubPL.operating) |
+| F49 | **Profit Before Tax** | 177279.897839506 | gl-cor:amount (pubPL.pbt) |
 | D3 |  | 46295 |  |
 
 ### PubBalSht
@@ -1269,17 +1274,18 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | F6 | Fixed Assets (NBV) | 30990 | gl-cor:amount (pubBS.fixedAssets) |
-| E10 | Stock at cost | 10000 | accounts.assets.1100 (pubBS) |
-| E11 | Trade Debtors | 237100 | accounts.assets.1300 (pubBS) |
-| E12 | Cash at bank and in hand | 23844 | gl-cor:amount (pubBS.bankCash) |
-| E13 | Current Assets | 270944 | gl-cor:amount (pubBS.currentAssets) |
-| E20 | Current Liabilities | 90640.88275 | gl-cor:amount (pubBS.creditors) |
-| F22 | **Net Current Assets** | 180303.11725 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 211293.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| E10 | Stock at cost | 6000 | accounts.assets.1100 (pubBS) |
+| E11 | Trade Debtors | 10400 | accounts.assets.1300 (pubBS) |
+| E12 | Cash at bank and in hand | 250544 | gl-cor:amount (pubBS.bankCash) |
+| E13 | Current Assets | 266944 | gl-cor:amount (pubBS.currentAssets) |
+| E20 | Current Liabilities | 89880.88275 | gl-cor:amount (pubBS.creditors) |
+| F22 | **Net Current Assets** | 177063.11725 | gl-cor:amount (pubBS.netCurrent) |
+| F26 | **Total Assets less CL** | 208053.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | F31 | Other Creditors | 13000 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 198293.11725 | gl-cor:amount (pubBS.netAssets) |
-| F39 | **Shareholders' Funds** | 198293.11725 | gl-cor:amount (pubBS.equity) |
+| F33 | **Net Assets** | 195053.11725 | gl-cor:amount (pubBS.netAssets) |
+| F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
+| F39 | **Shareholders' Funds** | 195053.11725 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 46295 |  |
 
 ### PubNotes
@@ -1296,7 +1302,7 @@ Status: RECONCILES (with warnings)
 | G17 | **Depreciation carried forward** | 4510 | gl-cor:amount (note1.depCf) |
 | G20 | **Net book value** | 30990 | gl-cor:amount (note1.nbv) |
 | D35 | Directors emoluments | 4166.66666666667 | gl-cor:amount (note2.emoluments) |
-| D41 | Corporation tax for the year | 28788.7805895061 | gl-cor:taxAmount (note4.ct) |
+| D41 | Corporation tax for the year | 28028.7805895061 | gl-cor:taxAmount (note4.ct) |
 | B8 |  | 0 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
@@ -1353,8 +1359,10 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B5 | Opening Stock | 10000 | accounts.assets.1100 (opening) |
-| B8 | Closing Stock | 6000 | accounts.assets.1100 (closing) |
+| D6 | Opening Stock | 10000 | accounts.assets.1100 (opening) |
+| AB30 | Closing Stock (physical count) | 6000 | accounts.assets.1100 (closing) |
+| D30 | Closing Stock (calculated) | 10000 | accounts.assets.1100 (calculated) |
+| Z30 | Stock loss adjustment | -4000 | accounts.assets.1100 (lossAdjustment) |
 
 ### TrialBalance
 
@@ -1393,17 +1401,17 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | AK66 |  | 341283.333333333 |  |
-| Z70 |  | 151180.391666666 |  |
-| AJ74 |  | 151180.391666666 |  |
+| Z70 |  | 147180.391666666 |  |
+| AJ74 |  | 147180.391666666 |  |
 | AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 151519.897839506 |  |
-| AJ110 |  | 151519.897839506 |  |
-| AJ126 |  | 14394.3902947531 |  |
-| AJ131 |  | 14394.3902947531 |  |
-| AJ145 |  | 14394.3902947531 |  |
+| AJ92 |  | 147519.897839506 |  |
+| AJ110 |  | 147519.897839506 |  |
+| AJ126 |  | 14014.3902947531 |  |
+| AJ131 |  | 14014.3902947531 |  |
+| AJ145 |  | 14014.3902947531 |  |
 | AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 14329.8841219135 |  |
-| AJ166 |  | 14329.8841219135 |  |
+| AJ159 |  | 13949.8841219135 |  |
+| AJ166 |  | 13949.8841219135 |  |
 | AA126 |  | 19 |  |
 
 ### Admin
@@ -2092,12 +2100,19 @@ Status: RECONCILES (with warnings)
 | E15 |  | 800 |  |
 | I15 |  | 1673.2 |  |
 
+### Companysecretary.xlsx!RegisterofMembers
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| F1 |  | 1 |  |
+| G1 |  | 100 |  |
+
 ### Currentaccount.xlsx!Sep
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 20442 |  |
-| A2 |  | 12164 |  |
+| A1 |  | 240982 |  |
+| A2 |  | 238864 |  |
 
 ### Savingaccount.xlsx!Sep
 

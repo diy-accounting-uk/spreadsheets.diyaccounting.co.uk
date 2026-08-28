@@ -1,0 +1,36 @@
+{
+  "product": "se",
+  "verdict": "pass",
+  "summary": "The accounts read as a credible set for a VAT-registered IT consultancy with three employees: turnover £339,200 against the declared total, revenue purchases landing across cost of sales and admin, wages of £92,736 covering payroll gross plus employer NI, five VAT returns with real output and input VAT, depreciation and a loss on disposal from the fixed asset schedule, and income tax plus Class 4 NI of £51,149 on the profit. Two presentational oddities are worth a look but do not block the run.",
+  "concerns": [
+    {
+      "figure": "Capital allowances £32,500 vs fa-coded purchases £39,000 (SA103S D80 / Fixedassets Schedule Q1)",
+      "where": "Self Assessment (SA103S) 'Capital allowances' and Fixedassets.xlsx!Schedule Q1",
+      "why": "The scenario declares £39,000 of fa-coded capital spending, but the fixed asset schedule additions and the capital allowance claim are both £32,500. The £6,500 difference may be a gross/net or non-qualifying split, but it is not explained anywhere in the report and is worth tracing back to the purchase journal.",
+      "severity": "note"
+    },
+    {
+      "figure": "Bad Debts -£300 (P&L B29, Mar column N29)",
+      "where": "Profit & Loss Account, Bad Debts line",
+      "why": "A negative admin expense reduces total costs. It is consistent with an o-coded sales credit being posted as a bad debt recovery in March, so plausible, but a reader will query a negative bad debt charge in the expense column.",
+      "severity": "note"
+    },
+    {
+      "figure": "Stock movement (opening 10,000 / closing 6,000) not visible in cost of sales",
+      "where": "Profit & Loss Account, Cost of Sales £16,136.67",
+      "why": "The scenario states opening stock £10,000 and closing stock £6,000, a £4,000 charge, but cost of sales is built only from s-coded stock purchases (£5,450 Materials), c-coded direct costs and other direct costs. No opening/closing stock adjustment line appears, so the £4,000 movement may be omitted from gross profit.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
+      "scenario": "se-scenario-advanced",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    }
+  ],
+  "timestamp": "2026-08-28T13:38:39.221Z"
+}
