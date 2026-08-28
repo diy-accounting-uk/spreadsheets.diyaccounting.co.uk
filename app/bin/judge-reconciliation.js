@@ -88,6 +88,7 @@ export const PRODUCTS = {
     notes: [
       "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. The asset schedule carries them at their cost net of VAT, so a registered trader's schedule reads a sixth below the journal.",
       "Purchases coded s are stock and coded c are direct costs. Both sit above gross profit.",
+      "The SA103S sets its expense captions in two columns, and the total expenses line covers both. Adding up one column alone leaves the total looking short by the other.",
       "On the SA103S the taxable profit line carries the trade's own adjusted profit, and the line the income tax computation reads adds the other business income recorded above it (SE Short D106 = D99 + O99 - O94, where O99 is the grants line). The two differ by exactly the grants figure, and tax is charged on the higher one because that income is taxable too.",
       "The materials line carries the year's stock-coded purchases plus the fall in stock across the year. The stock counts themselves are entered against the two ends of the year on the StockControl sheet.",
     ],

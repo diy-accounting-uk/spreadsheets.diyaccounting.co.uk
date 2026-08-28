@@ -54,7 +54,8 @@ Status: RECONCILES
 | Tax: IT = Basic + Higher | 45317.9566666665 | 45317.9566666665 | 0 | PASS |
 | Tax: Total = IT - CIS + NI | 49468.86449999983 | 49468.8644999998 | -2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
-| SA103S: Net profit close to P&L Net - Grants + Depreciation addback | 186632.05833333265 | 186632.058333333 | +3.4924596548080444e-10 | PASS |
+| SA103S: total expenses = cost of sales + admin expenses less depreciation | 152567.9416666667 | 152567.941666667 | +2.9103830456733704e-10 | PASS |
+| SA103S: net profit = turnover + other business income - total expenses | 186632.058333333 | 186632.058333333 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 144715.391666666 | 144715.391666666 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 32500 | 32500 | 0 | PASS |
@@ -546,11 +547,17 @@ Status: RECONCILES
 | Business name | — |
 | Accounting date | — |
 | Turnover | 339,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 20,136.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 7,881.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel | 7,881.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 92,735.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 13,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 950 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals | 950 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional | 6,925 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | 3,035 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
+| **Total expenses** | 152,567.94 |
 | **Net profit/loss** | 186,632.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
@@ -896,11 +903,17 @@ Status: RECONCILES
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 339200 | gl-cor:amount (sa103s.turnover) |
+| O38 | Other business income | 0 | gl-cor:amount (sa103s.otherIncome) |
 | D46 | Cost of sales | 20136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
-| D51 | Other direct costs | 7881.875 | gl-cor:amount (sa103s.otherDirect) |
+| D51 | Car, van and travel | 7881.875 | gl-cor:amount (sa103s.travel) |
 | D55 | Employee costs | 92735.7333333333 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 13200 | gl-cor:amount (sa103s.premises) |
-| D64 | Other expenses | 950 | gl-cor:amount (sa103s.otherExpenses) |
+| D64 | Repairs and renewals | 950 | gl-cor:amount (sa103s.repairs) |
+| O46 | Accountancy, legal and professional | 6925 | gl-cor:amount (sa103s.legal) |
+| O51 | Interest and bank charges | 800 | gl-cor:amount (sa103s.interest) |
+| O55 | Phone, stationery and office costs | 3035 | gl-cor:amount (sa103s.office) |
+| O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
+| O64 | **Total expenses** | 152567.941666667 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
 | D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |

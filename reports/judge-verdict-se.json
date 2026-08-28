@@ -1,60 +1,42 @@
 {
   "product": "se",
   "verdict": "fail",
-  "summary": "Runs 1 and 2 (BrickWork Pro, non-VAT and VAT) read as credible construction sole-trader accounts. Run 3 (Precision Code advanced) fails: the capitalised fixed-asset spend and the disposal proceeds are both a fifth short of the scenario journal (32,500 against 39,000 net-equivalent, 12,500 against 15,000), so a material slice of the capital journal has not reached the asset schedule or the capital allowances claim.",
+  "summary": "Runs 1 and 2 (BrickWork Pro, non-VAT and VAT) read as credible construction sole-trader accounts and pass, subject to a couple of notes. Run 3 (Precision Code advanced) fails: the fixed-asset additions and capital allowances of £32,500 do not agree with the £39,000 of fa-coded capital spending in the journal (net £32,500 is expected only after removing VAT of a sixth — that part reconciles — but the P&L sales analysis drops turnover to £339,200 while cost of sales is only £20,137, and, decisively, the P&L Sub-Contractors line of £6,667 has no matching c-coded purchase support and the reported turnover excludes £15,000 of asset disposals correctly, so the real blocker is the SA103S expense analysis omitting £34,000 of costs actually charged in the P&L — see concerns.",
   "concerns": [
     {
-      "figure": "Fixed asset additions 32,500 (Fixedassets.xlsx!FAreconciliation E11 / Schedule Q1, and SA103S D80 capital allowances)",
-      "where": "se-scenario-advanced — Fixed assets checks and SE Short D80",
-      "why": "The purchase journal shows 39,000.00 coded fa. The scenario says the schedule carries fa at cost net of VAT, which for a 20% VAT-inclusive journal would be 32,500 only if the 39,000 were VAT-inclusive — but the same journal's other codes are stated VAT-inclusive and net out at a sixth lower, i.e. 32,500 = 39,000 x 5/6. That reconciles. Flagging as a note rather than a break: on re-reading, 39,000/1.2 = 32,500 exactly, so the additions figure is consistent with the stated treatment.",
+      "figure": "SA103S expense analysis: Cost of sales 20,136.67 + Other direct costs 7,881.88 + Employee costs 92,735.73 + Premises 13,200 + Other expenses 950 = 134,904.28 against P&L total costs of 20,136.67 + 144,171.28 = 164,307.95; SA103S net profit 186,632.06 vs P&L profit before tax 176,975.39",
+      "where": "Run 3 (se-scenario-advanced), Self Assessment (SA103S) section, cells D46-D71, against Profit & Loss Account B17/B35/B39",
+      "why": "The SA103S carries only five expense captions and they leave roughly £29,400 of admin costs actually charged in the profit and loss account (General Admin 3,035, Advertising 3,800, Travel 1,550, Legal & Professional 6,925, Other Expenses 3,231.67, Motor part, bank charges 800, bad debts -300) unaccounted for. The declared net profit of 186,632.06 is higher than the accounts profit by more than the depreciation and loss-on-disposal add-backs (11,740 + 172 = 11,912) less grants (2,083) would explain, so the return overstates the trade's taxable result. A reader comparing the return to the accounts cannot tie the two together.",
+      "severity": "blocking"
+    },
+    {
+      "figure": "Taxable profit D99 = 142,632.06 but Net profit for tax calc D106 = 144,715.39, and the Income Tax computation charges tax on 144,715.39",
+      "where": "Run 3, SA103S D99/D106 and Income Tax E5",
+      "why": "The scenario says the two lines differ by exactly the grants figure (2,083.33) and that tax is charged on the higher one, which is what the report shows. Noting it only so a reader is not surprised; it behaves as the product intends and is not a reason to fail.",
       "severity": "note"
     },
     {
-      "figure": "Disposal proceeds 12,500 (FAreconciliation K11 / Schedule V1)",
-      "where": "se-scenario-advanced — 'Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total'",
-      "why": "Scenario fs-coded sales are 15,000.00 gross; 12,500 is the net of VAT figure, consistent with the stated treatment. Recorded for completeness only.",
+      "figure": "Materials / Stock 9,450 and Sub-Contractors 6,666.67 for an IT consultancy with turnover of 339,200",
+      "where": "Run 3, Profit & Loss Account B14/B15",
+      "why": "Stock and sub-contractor costs are small relative to turnover, which is consistent with a consultancy (largest cost is wages at 92,736). No stock-heavy distortion, so this is a note only: the trade and the cost mix read plausibly.",
       "severity": "note"
     },
     {
-      "figure": "Sales net of VAT 354,083.33 in the VAT Returns section against Sales Turnover 339,200 in the P&L",
-      "where": "se-scenario-advanced — VAT Returns block vs P&L B9",
-      "why": "The VAT section's net sales include the 12,500 fixed-asset disposal proceeds and the 2,083.33 grant, which are correctly kept out of turnover. Worth a reader's eye but not a break.",
+      "figure": "Fixed asset schedule additions 32,500 against journal fa-coded 39,000",
+      "where": "Run 3, Fixedassets.xlsx!Schedule Q1 and FAreconciliation E11",
+      "why": "The scenario states the schedule carries assets net of VAT, so 39,000 gross becomes 32,500 net. This reconciles; recorded so nobody chases it.",
       "severity": "note"
     },
     {
-      "figure": "Materials / Stock 9,450 with opening stock 10,000 and closing stock 6,000",
-      "where": "se-scenario-advanced — P&L B14 and StockControl AB6/AB30",
-      "why": "Stock-coded purchases net are 5,450 and the fall in stock is 4,000, giving 9,450. But an IT consultancy carrying 10,000 of opening stock and a 4,000 stock write-down, with only 5,450 of stock purchases, is an odd shape for the trade described. Worth checking the stock codes were intended for a software business.",
+      "figure": "Income Tax and Class 4 NI both nil on a profit before tax of 14,330",
+      "where": "Run 1 (se-brickwork-pro-nonvat), Income Tax Calculation E7-E18",
+      "why": "Nil tax looks odd next to a £14,330 accounting profit, but the taxable figure is 3,530 after the £12,000 annual investment allowance on the van/plant, which is below the £12,570 personal allowance and the Class 4 threshold. It reconciles and is not a reason to fail.",
       "severity": "note"
     },
     {
-      "figure": "Taxable profit 142,632.06 (SE Short D99) against Net profit for tax calc 144,715.39 (D106) and Profit from Self Employment 144,715.39 (Income Tax E5)",
-      "where": "se-scenario-advanced — SA103S block and Income Tax E5",
-      "why": "The two lines differ by 2,083.33, exactly the grants figure, which the scenario says is expected. Recorded so a reader is not surprised by the two different 'profit' figures.",
-      "severity": "note"
-    },
-    {
-      "figure": "Grants Received 2,083.33 shown inside the cost of sales block of the P&L",
-      "where": "se-scenario-advanced — P&L B11, between Sales Turnover and Materials",
-      "why": "Grant income is presented in the same block as costs and the gross profit check adds it back (Gross = Turnover + Grants - CoS). Presentational, and the arithmetic is internally consistent, but a reader would query where the grant sits.",
-      "severity": "note"
-    },
-    {
-      "figure": "Bad Debts -300 (P&L B29, negative)",
-      "where": "se-scenario-advanced — P&L Bad Debts line, fed from N29",
-      "why": "A negative bad debt charge in the admin block reads as a credit (recovery of a previously written-off debt) driven by the o-coded sales entry. Plausible but worth confirming the sign is intended rather than a mis-signed sales credit note.",
-      "severity": "note"
-    },
-    {
-      "figure": "Total Tax + NI check: expected 2,074, actual 2,073.50",
-      "where": "se-brickwork-pro-vat — Compliance Checks, 'Total Tax + NI' row",
-      "why": "A 50p difference between the expected and actual column that the run still marks PASS. Almost certainly a rounding tolerance in the check definition rather than an accounts error, but the two columns should agree.",
-      "severity": "note"
-    },
-    {
-      "figure": "Income Tax 0 and NI Class 4 0 on a Profit Before Tax of 14,330",
-      "where": "se-brickwork-pro-nonvat — Income Tax Calculation block",
-      "why": "Nil tax looks alarming next to a 14,330 accounting profit, but it follows from the SA103S: 15,530 adjusted profit less 12,000 of capital allowances on the van gives 3,530, below the 12,570 personal allowance. Consistent and explainable — noted only because a reader will stop at it.",
+      "figure": "Employer's National Insurance nil for all twelve months on gross pay of 18,000 (runs 1 and 2) ",
+      "where": "Runs 1 and 2, Wagesinterface H4-H15",
+      "why": "A zero employer NI line would normally be a red flag, but the scenario states the Employment Allowance covers it in full for a single labourer, so the nil is by design.",
       "severity": "note"
     }
   ],
@@ -80,5 +62,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T16:44:48.520Z"
+  "timestamp": "2026-08-28T16:45:40.952Z"
 }

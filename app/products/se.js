@@ -572,11 +572,20 @@ export const CELL_MAP = [
   ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
   ["SE Short", "D8",   "Accounting date",                "documentInfo.periodCoveredEnd",             "Self Assessment (SA103S)", 0],
   ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
+  ["SE Short", "O38",  "Other business income",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
+  // The return sets its expense captions in two columns. Reporting only the
+  // left one leaves a reader adding up half the analysis against the whole
+  // total, and finding it short.
   ["SE Short", "D46",  "Cost of sales",                  "gl-cor:amount (sa103s.costOfSales)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "D51",  "Other direct costs",             "gl-cor:amount (sa103s.otherDirect)",        "Self Assessment (SA103S)", 1],
+  ["SE Short", "D51",  "Car, van and travel",            "gl-cor:amount (sa103s.travel)",             "Self Assessment (SA103S)", 1],
   ["SE Short", "D55",  "Employee costs",                 "gl-cor:amount (sa103s.employeeCosts)",      "Self Assessment (SA103S)", 1],
   ["SE Short", "D60",  "Premises costs",                 "gl-cor:amount (sa103s.premises)",           "Self Assessment (SA103S)", 1],
-  ["SE Short", "D64",  "Other expenses",                 "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "D64",  "Repairs and renewals",           "gl-cor:amount (sa103s.repairs)",            "Self Assessment (SA103S)", 1],
+  ["SE Short", "O46",  "Accountancy, legal and professional", "gl-cor:amount (sa103s.legal)",         "Self Assessment (SA103S)", 1],
+  ["SE Short", "O51",  "Interest and bank charges",      "gl-cor:amount (sa103s.interest)",           "Self Assessment (SA103S)", 1],
+  ["SE Short", "O55",  "Phone, stationery and office costs", "gl-cor:amount (sa103s.office)",         "Self Assessment (SA103S)", 1],
+  ["SE Short", "O60",  "Other business expenses",        "gl-cor:amount (sa103s.otherExpenses)",      "Self Assessment (SA103S)", 1],
+  ["SE Short", "O64",  "**Total expenses**",             "gl-cor:amount (sa103s.totalExpenses)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "D71",  "**Net profit/loss**",            "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
   ["SE Short", "D80",  "Capital allowances",             "tax.capitalAllowances (sa103s)",            "Self Assessment (SA103S)", 1],
   ["SE Short", "D85",  "AIA / WDA claimed",              "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
@@ -952,19 +961,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const seShort = results["SE Short"];
     if (seShort) {
       if (seShort.D38) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B9);
-      if (seShort.D71) {
-        // SA103S profit excludes depreciation (not an allowable expense for
-        // income tax -- capital allowances substitute for it), while the
-        // accounting P&L operating profit (B37) deducts it. Add the P&L's
-        // own depreciation charge back before comparing the two.
-        const plDepreciationAddback = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
-        check(
-          "SA103S: Net profit close to P&L Net - Grants + Depreciation addback",
-          seShort.D71,
-          pl.B37 - (pl.B11 || 0) + plDepreciationAddback,
-          Math.abs(pl.B37) * 0.01,
-        );
-      }
+      // The return's total expenses line and the profit it carries, each
+      // against the accounts they are built from. Depreciation is not an
+      // allowable expense for income tax -- capital allowances stand in for
+      // it -- so the total the return works from takes it back out, which is
+      // the whole of the difference between the two profits. Both are exact
+      // identities; the profit was previously compared to a rebuilt figure
+      // with a one per cent tolerance.
+      const plDepreciation = MONTH_COLS.reduce((s, col) => s + (pl[`${col}34`] || 0), 0);
+      check(
+        "SA103S: total expenses = cost of sales + admin expenses less depreciation",
+        num(seShort.O64),
+        num(pl.B17) + num(pl.B35) - plDepreciation,
+      );
+      check(
+        "SA103S: net profit = turnover + other business income - total expenses",
+        num(seShort.D71),
+        num(seShort.D38) + num(seShort.O38) - num(seShort.O64),
+      );
       if (seShort.D106) check("SA103S: Profit for tax = Income Tax E5", seShort.D106, tax.E5);
 
       // Capital allowances carry from Schedule to SA103S across the
