@@ -22,6 +22,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   deploys fail the judge; `skip-reconciliation-check` is the designed override if a
   deploy cannot wait.
 
+- [ ] **Shipped-template defects found regenerating the coverage map** (details in
+  SHEET_COVERAGE_GAPS.md on PR #38's branch): `HPfinance` rows 10+ carry `#REF!` in
+  both Ltd and SE (a second HP agreement computes nothing); `Salesinvoice` Product
+  Details G6 holds the margin percentage formula where the margin belongs, H6 empty;
+  Ltd `expensesform` hard-codes the 45p mileage rate in C30 so it goes stale silently.
+  All need binary template surgery plus regeneration.
+
 - [ ] **Shipped Taxi template: stale vehicle-changes nag** (judge finding):
   `PurchasesMar!T2` compares against the empty `'Fixed Assets'!$D$74` (the additions
   total lives at D62), so the nag fires on every package that codes anything to f.
