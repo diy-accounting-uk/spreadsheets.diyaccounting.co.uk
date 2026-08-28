@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro Ltd VAT"
-description = "Construction company registered for VAT, CIS sub-contractors, a director and one labourer on the payroll. Journal amounts include VAT at 20%. The Employment Allowance covers the employer's National Insurance, so that line is nil."
+description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
 vat_registered = true
@@ -20,307 +20,307 @@ vat_number = "376543219"
 date = 2025-04-10
 customer = "Acme Developments"
 code = "a"
-amount = 5460
+amount = 8190
 
 [[sales.apr]]
 date = 2025-04-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2340
+amount = 3510
 
 [[sales.may]]
 date = 2025-05-10
 customer = "Acme Developments"
 code = "a"
-amount = 5040
+amount = 7560
 
 [[sales.may]]
 date = 2025-05-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2160
+amount = 3240
 
 [[sales.jun]]
 date = 2025-06-10
 customer = "Acme Developments"
 code = "a"
-amount = 5208
+amount = 7812
 
 [[sales.jun]]
 date = 2025-06-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2232
+amount = 3348
 
 [[sales.jul]]
 date = 2025-07-10
 customer = "Acme Developments"
 code = "a"
-amount = 4872
+amount = 7308
 
 [[sales.jul]]
 date = 2025-07-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2088
+amount = 3132
 
 [[sales.aug]]
 date = 2025-08-10
 customer = "Acme Developments"
 code = "a"
-amount = 5460
+amount = 8190
 
 [[sales.aug]]
 date = 2025-08-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2340
+amount = 3510
 
 [[sales.sep]]
 date = 2025-09-10
 customer = "Acme Developments"
 code = "a"
-amount = 5292
+amount = 7938
 
 [[sales.sep]]
 date = 2025-09-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2268
+amount = 3402
 
 [[sales.oct]]
 date = 2025-10-10
 customer = "Acme Developments"
 code = "a"
-amount = 5712
+amount = 8568
 
 [[sales.oct]]
 date = 2025-10-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2448
+amount = 3672
 
 [[sales.nov]]
 date = 2025-11-10
 customer = "Acme Developments"
 code = "a"
-amount = 5208
+amount = 7812
 
 [[sales.nov]]
 date = 2025-11-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2232
+amount = 3348
 
 [[sales.dec]]
 date = 2025-12-10
 customer = "Acme Developments"
 code = "a"
-amount = 4620
+amount = 6930
 
 [[sales.dec]]
 date = 2025-12-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1980
+amount = 2970
 
 [[sales.jan]]
 date = 2026-01-10
 customer = "Acme Developments"
 code = "a"
-amount = 5040
+amount = 7560
 
 [[sales.jan]]
 date = 2026-01-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2160
+amount = 3240
 
 [[sales.feb]]
 date = 2026-02-10
 customer = "Acme Developments"
 code = "a"
-amount = 5460
+amount = 8190
 
 [[sales.feb]]
 date = 2026-02-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2340
+amount = 3510
 
 [[sales.mar]]
 date = 2026-03-10
 customer = "Acme Developments"
 code = "a"
-amount = 5628
+amount = 8442
 
 [[sales.mar]]
 date = 2026-03-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2412
+amount = 3618
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Direct Line"
 code = "n"
-amount = 1440
+amount = 2160
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "Smith & Co Accountants"
 code = "l"
-amount = 720
+amount = 1080
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "JB Plastering"
 code = "c"
-amount = 7200
+amount = 10800
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
 code = "a"
-amount = 360
+amount = 540
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.jun]]
 date = 2025-06-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Screwfix"
 code = "m"
-amount = 420
+amount = 630
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.aug]]
 date = 2025-08-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "JB Plastering"
 code = "c"
-amount = 6000
+amount = 9000
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.sep]]
 date = 2025-09-01
@@ -332,181 +332,181 @@ amount = 14400
 date = 2025-09-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.oct]]
 date = 2025-10-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.nov]]
 date = 2025-11-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Smith Bricklaying"
 code = "c"
-amount = 6000
+amount = 9000
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.dec]]
 date = 2025-12-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "CITB"
 code = "l"
-amount = 480
+amount = 720
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.feb]]
 date = 2026-02-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Smith Bricklaying"
 code = "c"
-amount = 4800
+amount = 7200
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Vodafone"
 code = "g"
-amount = 72
+amount = 108
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Jewson"
 code = "s"
-amount = 960
+amount = 1440
 
 [[purchases.mar]]
 date = 2026-03-08
 supplier = "Shell"
 code = "v"
-amount = 240
+amount = 360
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 540
+amount = 810
 
 [[payroll.apr]]
 date = 2025-04-28
@@ -748,7 +748,7 @@ account = "1200"
 source = "Opening debtors"
 code = "DR"
 direction = "in"
-amount = 7920
+amount = 11880
 description = "Invoices outstanding at the year start"
 
 [[bank.apr]]
@@ -757,7 +757,7 @@ account = "1200"
 source = "Opening creditors"
 code = "CR"
 direction = "out"
-amount = 1812
+amount = 2718
 description = "Invoices unpaid at the year start"
 
 [[bank.apr]]
@@ -775,7 +775,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7800
+amount = 11700
 description = "apr invoices settled"
 
 [[bank.may]]
@@ -784,7 +784,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 3972
+amount = 5958
 description = "apr invoices settled"
 
 [[bank.may]]
@@ -811,7 +811,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7200
+amount = 10800
 description = "may invoices settled"
 
 [[bank.jun]]
@@ -820,7 +820,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 9012
+amount = 13518
 description = "may invoices settled"
 
 [[bank.jun]]
@@ -847,7 +847,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7440
+amount = 11160
 description = "jun invoices settled"
 
 [[bank.jul]]
@@ -856,7 +856,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 2172
+amount = 3258
 description = "jun invoices settled"
 
 [[bank.jul]]
@@ -883,7 +883,7 @@ account = "1200"
 source = "HMRC"
 code = "RV"
 direction = "out"
-amount = 1100
+amount = 1900
 description = "Quarterly VAT payment"
 
 [[bank.aug]]
@@ -892,7 +892,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 6960
+amount = 10440
 description = "jul invoices settled"
 
 [[bank.aug]]
@@ -901,7 +901,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 2232
+amount = 3348
 description = "jul invoices settled"
 
 [[bank.aug]]
@@ -928,7 +928,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7800
+amount = 11700
 description = "aug invoices settled"
 
 [[bank.sep]]
@@ -937,7 +937,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 7812
+amount = 11718
 description = "aug invoices settled"
 
 [[bank.sep]]
@@ -964,7 +964,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7560
+amount = 11340
 description = "sep invoices settled"
 
 [[bank.oct]]
@@ -973,7 +973,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 16212
+amount = 17118
 description = "sep invoices settled"
 
 [[bank.oct]]
@@ -1000,7 +1000,7 @@ account = "1200"
 source = "HMRC"
 code = "RV"
 direction = "out"
-amount = 1100
+amount = 1900
 description = "Quarterly VAT payment"
 
 [[bank.nov]]
@@ -1009,7 +1009,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 8160
+amount = 12240
 description = "oct invoices settled"
 
 [[bank.nov]]
@@ -1018,7 +1018,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 1812
+amount = 2718
 description = "oct invoices settled"
 
 [[bank.nov]]
@@ -1045,7 +1045,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7440
+amount = 11160
 description = "nov invoices settled"
 
 [[bank.dec]]
@@ -1054,7 +1054,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 7812
+amount = 11718
 description = "nov invoices settled"
 
 [[bank.dec]]
@@ -1090,7 +1090,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 6600
+amount = 9900
 description = "dec invoices settled"
 
 [[bank.jan]]
@@ -1099,7 +1099,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 1812
+amount = 2718
 description = "dec invoices settled"
 
 [[bank.jan]]
@@ -1126,7 +1126,7 @@ account = "1200"
 source = "HMRC"
 code = "RV"
 direction = "out"
-amount = 1100
+amount = 1900
 description = "Quarterly VAT payment"
 
 [[bank.feb]]
@@ -1135,7 +1135,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7200
+amount = 10800
 description = "jan invoices settled"
 
 [[bank.feb]]
@@ -1144,7 +1144,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 2292
+amount = 3438
 description = "jan invoices settled"
 
 [[bank.feb]]
@@ -1171,7 +1171,7 @@ account = "1200"
 source = "Acme Developments and HomeStyle Renovations"
 code = "DR"
 direction = "in"
-amount = 7800
+amount = 11700
 description = "feb invoices settled"
 
 [[bank.mar]]
@@ -1180,7 +1180,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 6612
+amount = 9918
 description = "feb invoices settled"
 
 [[bank.mar]]
@@ -1204,62 +1204,62 @@ description = "Net wages"
 [[opening_debtors]]
 customer = "Acme Developments"
 invoice = "INV-0310"
-amount = 5544
+amount = 8316
 
 [[opening_debtors]]
 customer = "HomeStyle Renovations"
 invoice = "INV-0320"
-amount = 2376
+amount = 3564
 
 [[closing_debtors]]
 customer = "Acme Developments"
 invoice = "INV-1510"
-amount = 5628
+amount = 8442
 
 [[closing_debtors]]
 customer = "HomeStyle Renovations"
 invoice = "INV-1520"
-amount = 2412
+amount = 3618
 
 [[opening_creditors]]
 supplier = "Vodafone"
 invoice = "VF-2503"
-amount = 72
+amount = 108
 
 [[opening_creditors]]
 supplier = "Jewson"
 invoice = "JW-2503"
-amount = 960
+amount = 1440
 
 [[opening_creditors]]
 supplier = "Shell"
 invoice = "SH-2503"
-amount = 240
+amount = 360
 
 [[opening_creditors]]
 supplier = "Travis Perkins"
 invoice = "TP-2503"
-amount = 540
+amount = 810
 
 [[closing_creditors]]
 supplier = "Vodafone"
 invoice = "VF-2603"
-amount = 72
+amount = 108
 
 [[closing_creditors]]
 supplier = "Jewson"
 invoice = "JW-2603"
-amount = 960
+amount = 1440
 
 [[closing_creditors]]
 supplier = "Shell"
 invoice = "SH-2603"
-amount = 240
+amount = 360
 
 [[closing_creditors]]
 supplier = "Travis Perkins"
 invoice = "TP-2603"
-amount = 540
+amount = 810
 
 [[employees]]
 employeeID = "EMP001"
@@ -1284,15 +1284,15 @@ closing = 2500
 [opening_balance]
 current_account = 20000
 stock = 3000
-trade_debtors = 7920
-trade_creditors = 1812
+trade_debtors = 11880
+trade_creditors = 2718
 corporation_tax = 900
 share_capital = 100
 vat_due = 1000
-retained_earnings = 27108
+retained_earnings = 30162
 
 [expected]
-total_sales = 75000
-total_legal_net = 1000
-vat_output_total = 15000
-vat_input_total = 10594
+total_sales = 112500
+total_legal_net = 1500
+vat_output_total = 22500
+vat_input_total = 14691

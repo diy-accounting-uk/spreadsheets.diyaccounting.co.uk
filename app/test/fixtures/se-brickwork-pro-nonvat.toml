@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro SE non-VAT"
-description = "Construction sole trader below the VAT registration threshold, CIS sub-contractors, one labourer on the payroll. Journal amounts carry no VAT. The Employment Allowance covers the employer's National Insurance, so that line is nil."
+description = "Construction sole trader, CIS sub-contractors, one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "se"
 tax_regime = "se"
 vat_registered = false

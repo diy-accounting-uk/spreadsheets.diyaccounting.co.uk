@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro Ltd non-VAT"
-description = "Construction company below the VAT registration threshold, CIS sub-contractors, a director and one labourer on the payroll. Journal amounts carry no VAT. The Employment Allowance covers the employer's National Insurance, so that line is nil."
+description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
 vat_registered = false

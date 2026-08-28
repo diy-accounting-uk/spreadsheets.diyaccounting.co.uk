@@ -204,20 +204,38 @@ describe("Ltd Company: the BrickWork Pro twins ask for different VAT rates", () 
     expect(ltdCellWrites(vat, 2025, 3)["Sales.xlsx"].Apr).not.toHaveProperty("G2");
   });
 
-  it("carries the same trade, one journal VAT-inclusive and one not", () => {
+  // Two scenarios that report identical accounts cannot be told apart by
+  // anyone reading them, so the registered twin trades at a different size --
+  // over the registration threshold, which is why it is registered.
+  it("trades at a different size from the twin that is not registered", () => {
     const total = (journal) =>
       Object.values(journal)
         .flat()
         .reduce((sum, tx) => sum + tx.amount, 0);
     expect(total(nonVat.sales)).toBe(75000);
-    expect(total(vat.sales)).toBe(90000);
+    expect(total(vat.sales)).toBe(135000);
+    expect(total(vat.purchases)).toBeGreaterThan(total(nonVat.purchases));
   });
 
-  // The two fixtures only mean anything as a pair: same trade, same dates,
-  // same codes, one journal stated including VAT and one without. Comparing
-  // them line by line is what stops an edit to one of them drifting away
-  // from the other.
-  it("matches the twins line by line, entry for entry", () => {
+  it("splits each journal at its own rate, and declares the split it expects", () => {
+    for (const [scenario, rate] of [
+      [nonVat, 0],
+      [vat, 0.2],
+    ]) {
+      const total = (journal) =>
+        Object.values(journal)
+          .flat()
+          .reduce((sum, tx) => sum + tx.amount, 0);
+      const vatIn = (gross) => Math.round((gross - gross / (1 + rate)) * 100) / 100;
+      expect(scenario.expected.total_sales).toBeCloseTo(total(scenario.sales) / (1 + rate), 2);
+      if (scenario.expected.vat_output_total !== undefined) {
+        expect(scenario.expected.vat_output_total).toBeCloseTo(vatIn(total(scenario.sales)), 2);
+        expect(scenario.expected.vat_input_total).toBeCloseTo(vatIn(total(scenario.purchases)), 2);
+      }
+    }
+  });
+
+  it("keeps the same journal shape on both twins: same months, same dates, same codes", () => {
     for (const journal of ["sales", "purchases"]) {
       const plain = Object.entries(nonVat[journal]);
       expect(plain.length).toBe(Object.keys(vat[journal]).length);
@@ -225,11 +243,9 @@ describe("Ltd Company: the BrickWork Pro twins ask for different VAT rates", () 
         const withVat = vat[journal][month];
         expect(withVat, `${journal}.${month}`).toHaveLength(entries.length);
         entries.forEach((tx, i) => {
-          const twin = withVat[i];
           const where = `${journal}.${month}[${i}]`;
-          expect(twin.date.getTime(), where).toBe(tx.date.getTime());
-          expect(twin.code, where).toBe(tx.code);
-          expect(twin.amount, where).toBeCloseTo(tx.amount * 1.2, 2);
+          expect(withVat[i].date.getTime(), where).toBe(tx.date.getTime());
+          expect(withVat[i].code, where).toBe(tx.code);
         });
       }
     }

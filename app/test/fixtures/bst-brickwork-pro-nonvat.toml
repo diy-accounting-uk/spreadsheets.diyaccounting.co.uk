@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro BST"
-description = "Construction sole trader below the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales."
+description = "Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales."
 product = "bst"
 tax_regime = "se"
 vat_registered = false
