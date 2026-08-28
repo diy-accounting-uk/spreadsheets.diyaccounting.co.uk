@@ -45,6 +45,53 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   total lives at D62), so the nag fires on every package that codes anything to f.
   Binary template surgery plus a regeneration pass.
 
+- [ ] **Next-batch candidates (operator consolidation pending)** — method for all of
+  them: "Reconciliation-bug method" in CLAUDE.md. Each item is tested the same way:
+  discover cells from the template XML, assert anchored to the fixture, prove the check
+  breakable via JSZip corruption with an exact failure set, run the blast radius
+  serially, then the four generate dispatches (skip-commit) must go green including the
+  live judge.
+
+  Remaining from SHEET_COVERAGE_GAPS.md "Largest gaps" (its SE Admin and PubBalSht E12
+  items closed inside PR #38 after the report was committed — the report text is a few
+  hours behind its own branch):
+  - **SE `SE Full` (SA103F)**: a live HMRC return, every box formula-fed, never read;
+    can diverge from the asserted SE Short silently. Test: mirror SE Short's box
+    assertions — each SA103F box equals both its P&L source and its SE Short
+    counterpart on the advanced scenario; expected all-pass with non-zero values.
+  - **Ltd `Report`** (directors' report): turnover, both years' margins, dividend,
+    share register — nothing asserted; the dividend line is dead because nothing writes
+    `Boardmeeting!E4` (also the original plan's parked operator question about the
+    Report sheet). Test: write E4 from a scenario dividend, assert Report figures
+    against PubP&L/PubBalSht/RegisterofMembers; expected the filed report quotes the
+    same numbers the books carry, and the judge reads it coherent.
+  - **HPfinance (Ltd + SE)**: the capital/interest split deciding deductibility — no
+    fixture, plus the `#REF!` defect from row 10. One piece of work per product:
+    template surgery first, then a fixture agreement (counter-legged, EJ91 stays 0)
+    with checks that the split sums to the amount financed and the interest reaches
+    the P&L finance line. Expected: a second agreement's row computes.
+  - **Taxi `VitalTax`**: the MTD quarterly re-summing path, unasserted. Test: mirror
+    SE's VitalTax checks — quarterly rollups equal the P&L's own annual figures.
+
+  Clusters for batching:
+  - **Tax-engine surgery**: BST's two-band sheet + Ltd's missing marginal relief are
+    the same shape ("band table + Admin cells to feed it"); Taxi's band fix is the
+    proven pattern. Expected after surgery: the statutory figures the current warnings
+    carry (Ltd £35,342.77 on the fixture profit) become hard passes and the warnings
+    convert to checks.
+  - **Companysecretary/Report cluster**: Ltd Report + Boardmeeting dividend + the
+    covered RegisterofMembers as one "publish the directors' report properly"
+    workstream; Charges&Debentures (a charge implies a long-term creditor, unlinked)
+    adjacent if wanted.
+  - **Salesinvoice suite** (5 standalone sheets, Ltd + SE) with its G6 margin defect
+    (should be `C6-F6`, holds the percentage); formula-presence coverage rides along.
+  - **expensesform** (12 standalone claim months) with its hard-coded 45p mileage rate
+    in C30 — one visit; the rate should read a tax-year source.
+  - **Payslips!Admin** (payroll calendar, generator-written, rotates with the year end,
+    never read back — Ltd and SE): the last Admin-echo family member; assert the
+    calendar dates against `Admin!B9`'s rotation like the four closed echoes.
+  - **Cheap mirrors first**: Taxi VitalTax from SE's pattern; SE Full from SE Short's.
+
 - [ ] **Small follow-ups**: CONTEXT_LIMITED_COMPANY.md cell-map corrections (the Ltd
   agent report lists them; ltd.js CELL_MAP is already corrected); the Ltd fixture's
   turnover is ~double its README's description — reconcile the two; reconcile.js

@@ -84,6 +84,44 @@ npm run test:spreadsheetsBehaviour-prod     # Behaviour tests against production
 
 Behaviour tests use the `SPREADSHEETS_BASE_URL` environment variable to target different environments. Output is automatically teed to `spreadsheetsBehaviour.log` in the project root.
 
+## Reconciliation-bug method
+
+The working method behind the reconciliation coverage waves. Follow it for any change to
+checks, fixtures, or the judge.
+
+- **Discover from the XML, never from docs or assumption.** A cell's meaning comes from the
+  template's own labels and formulas (JSZip) cross-checked against the generator's write map
+  in `app/lib/generator.js`. The `CONTEXT_*.md` cell maps have been wrong before. Products
+  reuse layouts with rows shifted (Taxi's tax bands sat at BST's positions; SE's sit one row
+  above BST's) — verify per product.
+- **Assert what the sheet actually computes, anchored to the fixture.** A check comparing a
+  value to itself, or to a figure derived the same way, can never fail. Anchor one side in
+  the scenario data so self-consistent-but-wrong cannot pass. Where the sheet's behaviour is
+  a shipped-template limitation, assert the behaviour as it is and add a warning carrying
+  the true figure — never a check that hardcodes failure or asserts the defect as correct.
+- **Prove every check breakable.** Corrupt one cached `<v>` via JSZip in a copy of the
+  recalculated package and assert the exact failure set — the intended checks flip, nothing
+  else. A check without this proof does not exist.
+- **Fixture changes are source-derived.** Edit the master data (`examples/precision-code-ltd/`)
+  or the extractor build sections, then `node app/bin/extract-scenarios.js`; the CI sync gate
+  reverts hand-edited generated TOMLs. Every new transaction carries its counter-leg so
+  `TrialBalance!EJ91` stays 0. Hand-written fixtures (the brickwork TOMLs) may be edited
+  directly — verify with the sync gate either way.
+- **Runner conventions.** `additionalReads` results are keyed `<filename>!<sheetName>`.
+  Month-keyed expectations follow the period-frame shift in `ltd.js` (dates shift by the gap
+  between the book's declared period and the package's, with end-of-month clamping).
+- **Run LibreOffice tests serially.** Parallel vitest workers contend for soffice and
+  deadlock or time out: `npx vitest run --fileParallelism=false`. Tee anything long.
+- **Judge triage discipline.** When the LLM judge fails a run, classify each concern: a real
+  defect is fixed at source with a new deterministic check (so its class stops needing the
+  judge); a context gap gets a richer deterministic scenario summary or per-product note in
+  `app/bin/judge-reconciliation.js`. The rubric's standards are never softened. Template
+  defects the fixtures cannot fix become NEXT.md items with the hand-computed evidence.
+- **Verification ladder per change**: blast-radius tests serially → the featured scenario
+  reconciles RECONCILES → full `npm test` before any push → the four `generate-*` workflows
+  dispatched with skip-commit on the branch (deterministic gates plus the live judge under
+  OIDC) → merge → generate-commit refresh runs so the committed reports match.
+
 ## CDK Architecture
 
 **Single CDK application** (`cdk-spreadsheets/`):
