@@ -7,6 +7,30 @@ Status: RECONCILES
 
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
+| Sales.xlsx Apr: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Apr: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx May: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx May: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jun: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jun: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jul: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jul: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Aug: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Aug: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Sep: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Sep: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Oct: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Oct: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Nov: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Nov: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Dec: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Dec: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jan: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jan: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Feb: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Feb: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
 | Total Sales | 339200 | 339200 | 0 | PASS |
 | P&L: Gross = Turnover + Grants - CoS | 325146.6666666666 | 325146.666666666 | -6.402842700481415e-10 | PASS |
 | P&L: Operating = Gross - Admin | 180975.391666666 | 180975.391666666 | 0 | PASS |
@@ -957,6 +981,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5566.66666666667 |  |
 | I1 |  | 27833.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!May
 
@@ -964,6 +989,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5486.66666666667 |  |
 | I1 |  | 27433.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jun
 
@@ -971,6 +997,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5866.66666666667 |  |
 | I1 |  | 29333.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jul
 
@@ -978,6 +1005,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Aug
 
@@ -985,6 +1013,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 6003.33333333333 |  |
 | I1 |  | 30016.6666666667 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Sep
 
@@ -992,6 +1021,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5626.66666666667 |  |
 | I1 |  | 28133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Oct
 
@@ -999,6 +1029,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 8426.66666666667 |  |
 | I1 |  | 42133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Nov
 
@@ -1006,6 +1037,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5886.66666666667 |  |
 | I1 |  | 29433.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Dec
 
@@ -1013,6 +1045,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5466.66666666667 |  |
 | I1 |  | 27333.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Jan
 
@@ -1020,6 +1053,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5906.66666666667 |  |
 | I1 |  | 29533.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Feb
 
@@ -1027,6 +1061,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5726.66666666667 |  |
 | I1 |  | 28633.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Sales.xlsx!Mar
 
@@ -1034,6 +1069,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 5226.66666666667 |  |
 | I1 |  | 26133.3333333333 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!OpeningCreditors
 
@@ -1053,6 +1089,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 851.875 |  |
 | I1 |  | 4259.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!May
 
@@ -1060,6 +1097,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1062.5 |  |
 | I1 |  | 5312.5 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jun
 
@@ -1067,6 +1105,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1509.5 |  |
 | I1 |  | 7547.5 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jul
 
@@ -1074,6 +1113,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1509.875 |  |
 | I1 |  | 7549.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Aug
 
@@ -1081,6 +1121,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 734.208333333333 |  |
 | I1 |  | 3671.04166666667 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Sep
 
@@ -1088,6 +1129,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 829.166666666667 |  |
 | I1 |  | 4145.83333333333 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Oct
 
@@ -1095,6 +1137,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 7167.625 |  |
 | I1 |  | 35838.125 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Nov
 
@@ -1102,6 +1145,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1153 |  |
 | I1 |  | 5765 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Dec
 
@@ -1109,6 +1153,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 1575.25 |  |
 | I1 |  | 7876.25 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jan
 
@@ -1116,6 +1161,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 751.875 |  |
 | I1 |  | 3759.375 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Feb
 
@@ -1123,6 +1169,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 732.75 |  |
 | I1 |  | 3663.75 |  |
+| H2 |  | 20 |  |
 
 ### Purchases.xlsx!Mar
 
@@ -1130,6 +1177,7 @@ Status: RECONCILES
 |------|-----------|-------|-----------------|
 | H1 |  | 621.083333333333 |  |
 | I1 |  | 3105.41666666667 |  |
+| H2 |  | 20 |  |
 
 ### Vat.xlsx!VATQtr1
 

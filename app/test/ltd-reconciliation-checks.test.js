@@ -434,6 +434,62 @@ describeCalc(
       // fails alongside the payroll-route check being proven here.
       expect(failureNames(corrupted)).toEqual(["P&L: Admin lines sum = Total", name]);
     });
+
+    it("fails the VAT rate read when a Sales month's rate cell is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Sales.xlsx", "Jul", "G2", 0);
+      expect(value).toBe(0);
+      const name = "Sales.xlsx Jul: VAT rate charged (G2)";
+      const corrupted = checksWithCorruptedCell("Sales.xlsx!Jul", "G2", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the VAT rate read when a Purchases month's rate cell is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Purchases.xlsx", "Jul", "G2", 5);
+      expect(value).toBe(5);
+      const name = "Purchases.xlsx Jul: VAT rate charged (G2)";
+      const corrupted = checksWithCorruptedCell("Purchases.xlsx!Jul", "G2", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the year's output VAT against the sales journal when a Sales month's VAT total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Sales.xlsx", "Jul", "G1", 0);
+      expect(value).toBe(0);
+      const name = "VAT: annual output VAT = the sales journal at the book's rate";
+      const corrupted = checksWithCorruptedCell("Sales.xlsx!Jul", "G1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      // The same cell is the month's own interface tie and part of the
+      // quarter sum, so both move with it.
+      expect(failureNames(corrupted)).toEqual([
+        "VAT: Q1-Q4 box 1 = Sales VAT",
+        name,
+        "Vatinterface F9: Jul output VAT = Sales.xlsx Jul",
+      ]);
+    });
+
+    it("fails the year's input VAT against the purchase journal when a Purchases month's VAT total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Purchases.xlsx", "Jul", "G1", 0);
+      expect(value).toBe(0);
+      const name = "VAT: annual input VAT = the purchase journal at the book's rate";
+      const corrupted = checksWithCorruptedCell("Purchases.xlsx!Jul", "G1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([
+        "VAT: Q1-Q4 box 4 = Purchases VAT",
+        name,
+        "Vatinterface J9: Jul input VAT = Purchases.xlsx Jul",
+      ]);
+    });
+
+    it("fails the CT600 trading profits box when it is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "Z70", 1);
+      expect(value).toBe(1);
+      const name = "CT600: trading profits = CT profit after capital allowances";
+      const corrupted = checksWithCorruptedCell("CT600", "Z70", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      // The box is also one side of the form's own net-trading-profits sum.
+      expect(failureNames(corrupted)).toEqual([name, "CT600: net trading profits = trading profits - losses brought forward"]);
+    });
   },
   900000,
 );

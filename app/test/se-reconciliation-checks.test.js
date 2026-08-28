@@ -487,6 +487,30 @@ describeCalc(
       }
     });
 
+    it("the VAT rate read off a Sales month fails when that cell is corrupted", async () => {
+      const name = "Sales.xlsx Jul: VAT rate charged (H2)";
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === name).pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Sales.xlsx"), "Jul", "H2", 0);
+      expect(corrupted).toBe(0);
+      const corruptedResults = { ...results, "Sales.xlsx!Jul": { ...results["Sales.xlsx!Jul"], H2: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    it("the VAT rate read off a Purchases month fails when that cell is corrupted", async () => {
+      const name = "Purchases.xlsx Jul: VAT rate charged (H2)";
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      expect(checks.find((c) => c.name === name).pass).toBe(true);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Purchases.xlsx"), "Jul", "H2", 5);
+      expect(corrupted).toBe(5);
+      const corruptedResults = { ...results, "Purchases.xlsx!Jul": { ...results["Purchases.xlsx!Jul"], H2: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {
       const qtr = results["Vat.xlsx!VATQtr5"];
       expect(qtr).toBeDefined();

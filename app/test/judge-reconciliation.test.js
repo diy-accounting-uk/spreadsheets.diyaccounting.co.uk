@@ -106,6 +106,19 @@ describe("summariseScenario", () => {
     expect(summary).toContain("BrickWork Pro Ltd");
     expect(summary).toContain("Bricklaying and plastering");
     expect(summary).toContain("VAT registered: yes, number 987654321");
+    expect(summary).toContain("include VAT at the standard rate");
+  });
+
+  it("says so when the business is not registered for VAT", () => {
+    const notRegistered = {
+      ...scenario,
+      metadata: { ...scenario.metadata, name: "BrickWork Pro Ltd non-VAT", vat_registered: false },
+      business: { ...scenario.business, vat_number: undefined },
+    };
+    const summary = summariseScenario(notRegistered, "ltd-brickwork-pro-nonvat");
+    expect(summary).toContain("VAT registered: no");
+    expect(summary).toContain("the VAT return boxes are nil");
+    expect(summary).not.toContain("VAT registered: yes");
   });
 
   it("totals each journal and counts the months it covers", () => {
