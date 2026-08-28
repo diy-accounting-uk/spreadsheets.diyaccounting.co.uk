@@ -13,7 +13,7 @@ import { execSync } from "child_process";
 import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, cpSync } from "fs";
 import { resolve, dirname, basename } from "path";
 import { tmpdir } from "os";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 
 // ── Find LibreOffice binary ─────────────────────────────────────────────────
 
@@ -292,16 +292,19 @@ async function loadSharedStrings(zip) {
   return strings;
 }
 
-// Read a cell's value from sheet XML (after recalculation, values are in <v> tags)
+// Read a cell's value from sheet XML (after recalculation, values are in <v> tags).
+// An empty cell is written self-closing and carries no </c>, so the content
+// group must stop at the next cell's opening or closing tag; scanning past it
+// would hand back a later cell's value under this cell's reference.
 function readCellValue(xml, cellRef, sharedStrings = []) {
-  const cellPattern = new RegExp(`<c\\s+r="${cellRef}"[^>]*(?:/>|>(.*?)</c>)`, "s");
+  const cellPattern = new RegExp(`<c\\s+r="${cellRef}"(?=[\\s/>])([^>]*?)(?:/>|>((?:(?!</c>|<c[\\s>]).)*)</c>)`, "s");
   const match = xml.match(cellPattern);
   if (!match) return null;
 
-  const cellContent = match[1] || "";
+  const cellContent = match[2] || "";
 
   // Check for shared string type
-  const typeMatch = match[0].match(/\bt="([^"]*)"/);
+  const typeMatch = match[1].match(/\bt="([^"]*)"/);
   const cellType = typeMatch ? typeMatch[1] : null;
 
   // Extract <v> value
@@ -359,98 +362,288 @@ function xslRoundtrip(soffice, userProfile, workDir, xlsxPath) {
   }
 }
 
-// Update external link caches in hub file with values from recalculated leaf files.
-// External links in xlsx are stored in xl/externalLinks/externalLinkN.xml with
-// cached cell values. The corresponding .rels file maps each link to a target file.
-async function updateExternalLinkCaches(workDir, hubFile) {
-  const hubPath = resolve(workDir, hubFile);
-  const hubZip = await JSZip.loadAsync(readFileSync(hubPath));
+// ── External link caches ────────────────────────────────────────────────────
+//
+// A workbook that reads another workbook stores a copy of every cell it reads
+// in xl/externalLinks/externalLinkN.xml. LibreOffice never re-resolves those
+// links, so it computes from whatever the cache holds. Keeping the cache in
+// step with the recalculated sibling files is what makes cross-file formulas
+// produce real numbers here.
+//
+// Three things the cache does not give us for free. It only lists the cells the
+// workbook happened to hold values for when it was last saved in Excel, so a
+// formula addressing a cell the cache never carried reads blank forever; the
+// target filename in the .rels file is rewritten to a path by a LibreOffice
+// save, so it has to be matched on its basename; and LibreOffice ignores a
+// cache injected into a workbook it wrote itself, so every recalculation
+// starts again from the pristine file the scenario data was written into.
 
-  // Find all external links and their target files
-  const linkFiles = Object.keys(hubZip.files).filter((f) => f.match(/xl\/externalLinks\/externalLink\d+\.xml$/));
-  const relsFiles = Object.keys(hubZip.files).filter((f) => f.match(/xl\/externalLinks\/_rels\/externalLink\d+\.xml\.rels$/));
+// Maps the [N] prefix a formula uses to the externalLinkN.xml that defines it.
+// The prefix is the position of the <externalReference> in workbook.xml, one
+// based; the file it names comes from the workbook rels.
+async function buildExternalLinkIndex(zip) {
+  const wbFile = zip.file("xl/workbook.xml");
+  const relsFile = zip.file("xl/_rels/workbook.xml.rels");
+  if (!wbFile || !relsFile) return new Map();
 
-  for (const relsPath of relsFiles) {
-    const relsXml = await hubZip.file(relsPath).async("string");
-    // Find the relative target filename (second Target attribute, without path)
-    const targets = [...relsXml.matchAll(/Target="([^"]+)"/g)].map((m) => m[1]);
-    const relativeTarget = targets.find((t) => !t.includes("/") && !t.includes("%"));
-    if (!relativeTarget) continue;
+  const wbXml = await wbFile.async("string");
+  const relsXml = await relsFile.async("string");
 
-    // Find the corresponding externalLink XML
-    const linkNum = relsPath.match(/externalLink(\d+)/)[1];
-    const linkPath = `xl/externalLinks/externalLink${linkNum}.xml`;
-    if (!hubZip.files[linkPath]) continue;
-
-    // Load the recalculated leaf file
-    const leafPath = resolve(workDir, relativeTarget);
-    if (!existsSync(leafPath)) continue;
-
-    const leafZip = await JSZip.loadAsync(readFileSync(leafPath));
-    const leafSheetMap = await buildSheetMap(leafZip);
-
-    // Parse the external link XML and update cached values
-    let linkXml = await hubZip.file(linkPath).async("string");
-
-    // External link XML has <sheetNames> listing sheets by index, and
-    // <sheetData sheetId="N"> with cached values. sheetId is the sequential
-    // index into <sheetNames>, NOT the workbook's sheetId attribute.
-    const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
-
-    const sheetDataPattern = /<sheetData sheetId="(\d+)">([\s\S]*?)<\/sheetData>/g;
-    let match;
-    const replacements = [];
-
-    while ((match = sheetDataPattern.exec(linkXml)) !== null) {
-      const sheetId = match[1];
-      const oldSheetData = match[2];
-
-      // Map sequential sheetId to sheet name from <sheetNames>
-      const sheetName = sheetNames[parseInt(sheetId, 10)];
-      if (!sheetName) continue;
-
-      const leafSheetPath = leafSheetMap.get(sheetName);
-      if (!leafSheetPath) continue;
-
-      const leafXml = await leafZip.file(leafSheetPath).async("string");
-
-      // Extract cell references from the cached data and read fresh values
-      const cellPattern = /<cell r="([A-Z]+\d+)"[^>]*(?:\/>|>[\s\S]*?<\/cell>)/g;
-      let cellMatch;
-      let newSheetData = oldSheetData;
-
-      while ((cellMatch = cellPattern.exec(oldSheetData)) !== null) {
-        const cellRef = cellMatch[1];
-        const freshValue = readCellValue(leafXml, cellRef);
-        if (freshValue !== null && typeof freshValue === "number") {
-          // Replace the cached value
-          const oldCell = cellMatch[0];
-          const newCell = `<cell r="${cellRef}"><v>${freshValue}</v></cell>`;
-          newSheetData = newSheetData.replace(oldCell, newCell);
-        }
-      }
-
-      replacements.push({ sheetId, oldSheetData, newSheetData });
-    }
-
-    for (const { sheetId, oldSheetData, newSheetData } of replacements) {
-      linkXml = linkXml.replace(
-        `<sheetData sheetId="${sheetId}">${oldSheetData}</sheetData>`,
-        `<sheetData sheetId="${sheetId}">${newSheetData}</sheetData>`,
-      );
-    }
-
-    const origDate = hubZip.file(linkPath).date;
-    hubZip.file(linkPath, linkXml, { date: origDate });
+  const ridToTarget = new Map();
+  for (const [, rid, target] of relsXml.matchAll(/Id="(rId\d+)"[^>]*Target="([^"]*)"/g)) {
+    ridToTarget.set(rid, target);
   }
 
-  // Write back the updated hub file
-  const outBuffer = await hubZip.generateAsync({
+  const index = new Map();
+  const referencesBlock = wbXml.match(/<externalReferences>([\s\S]*?)<\/externalReferences>/);
+  if (!referencesBlock) return index;
+
+  let position = 0;
+  for (const [, rid] of referencesBlock[1].matchAll(/<externalReference[^>]*r:id="(rId\d+)"/g)) {
+    position += 1;
+    const target = ridToTarget.get(rid);
+    if (!target) continue;
+    const linkPath = `xl/${target.replace(/^\.?\//, "")}`;
+    index.set(position, linkPath);
+  }
+  return index;
+}
+
+function decodeFormulaText(xml) {
+  return xml
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+function numToCol(n) {
+  let col = "";
+  while (n > 0) {
+    const rem = (n - 1) % 26;
+    col = String.fromCharCode(65 + rem) + col;
+    n = Math.floor((n - 1) / 26);
+  }
+  return col;
+}
+
+function expandRange(fromRef, toRef) {
+  const [, fromCol, fromRow] = /^([A-Z]+)(\d+)$/.exec(fromRef);
+  const [, toCol, toRow] = /^([A-Z]+)(\d+)$/.exec(toRef);
+  const colStart = Math.min(colToNum(fromCol), colToNum(toCol));
+  const colEnd = Math.max(colToNum(fromCol), colToNum(toCol));
+  const rowStart = Math.min(Number(fromRow), Number(toRow));
+  const rowEnd = Math.max(Number(fromRow), Number(toRow));
+  const cells = [];
+  for (let row = rowStart; row <= rowEnd; row++) {
+    for (let col = colStart; col <= colEnd; col++) cells.push(`${numToCol(col)}${row}`);
+  }
+  return cells;
+}
+
+// External references appear in formulas as [3]Mar!$AB$2 or '[1]Mnth P&L'!A1,
+// singly or as the ends of a range.
+const EXTERNAL_REFERENCE_PATTERN =
+  /'\[(\d+)\]([^']+)'!(\$?[A-Z]{1,3}\$?\d{1,7})(?::(\$?[A-Z]{1,3}\$?\d{1,7}))?|\[(\d+)\]([A-Za-z0-9_.&$ -]+?)!(\$?[A-Z]{1,3}\$?\d{1,7})(?::(\$?[A-Z]{1,3}\$?\d{1,7}))?/g;
+
+// Every external cell this workbook's formulas and defined names address,
+// keyed "<link index>|<sheet name>".
+async function collectExternalCellRefs(zip) {
+  const refs = new Map();
+
+  const add = (linkIndex, sheetName, cellRefs) => {
+    const key = `${linkIndex}|${sheetName}`;
+    if (!refs.has(key)) refs.set(key, new Set());
+    const set = refs.get(key);
+    for (const cellRef of cellRefs) set.add(cellRef);
+  };
+
+  const scan = (text) => {
+    for (const match of decodeFormulaText(text).matchAll(EXTERNAL_REFERENCE_PATTERN)) {
+      const quoted = match[1] !== undefined;
+      const linkIndex = Number(quoted ? match[1] : match[5]);
+      const sheetName = quoted ? match[2] : match[6];
+      const first = (quoted ? match[3] : match[7]).replace(/\$/g, "");
+      const last = (quoted ? match[4] : match[8])?.replace(/\$/g, "");
+      add(linkIndex, sheetName, last ? expandRange(first, last) : [first]);
+    }
+  };
+
+  const sheetMap = await buildSheetMap(zip);
+  for (const sheetPath of new Set(sheetMap.values())) {
+    const sheetFile = zip.file(sheetPath);
+    if (!sheetFile) continue;
+    const xml = await sheetFile.async("string");
+    for (const formula of xml.matchAll(/<f[^>]*>([\s\S]*?)<\/f>/g)) scan(formula[1]);
+  }
+
+  const wbFile = zip.file("xl/workbook.xml");
+  if (wbFile) {
+    const wbXml = await wbFile.async("string");
+    for (const name of wbXml.matchAll(/<definedName[^>]*>([\s\S]*?)<\/definedName>/g)) scan(name[1]);
+  }
+
+  return refs;
+}
+
+// The sibling workbook a link points at. A LibreOffice save rewrites the
+// target to a path (absolute, relative or file:// URL), so match on basename.
+function resolveLinkTarget(relsXml, workDir) {
+  for (const [, rawTarget] of relsXml.matchAll(/Target="([^"]+)"/g)) {
+    let target = rawTarget;
+    try {
+      target = decodeURIComponent(target);
+    } catch {
+      // leave the raw target alone if it is not percent-encoded
+    }
+    const fileName = target.replace(/^file:\/+/, "").split(/[/\\]/).pop();
+    if (!fileName || !fileName.endsWith(".xlsx")) continue;
+    if (existsSync(resolve(workDir, fileName))) return fileName;
+  }
+  return null;
+}
+
+const ERROR_VALUE_PATTERN = /^#(NULL!|DIV\/0!|VALUE!|REF!|NAME\?|NUM!|N\/A)$/;
+
+function externalCacheCell(cellRef, value) {
+  if (typeof value === "number") return `<cell r="${cellRef}"><v>${value}</v></cell>`;
+  if (typeof value === "boolean") return `<cell r="${cellRef}" t="b"><v>${value ? 1 : 0}</v></cell>`;
+  const text = String(value);
+  if (ERROR_VALUE_PATTERN.test(text)) return `<cell r="${cellRef}" t="e"><v>${text}</v></cell>`;
+  const space = text.trim() === text ? "" : ` xml:space="preserve"`;
+  return `<cell r="${cellRef}" t="str"><v${space}>${escapeXml(text)}</v></cell>`;
+}
+
+function cellSortKey(cellRef) {
+  const [, column, row] = /^([A-Z]+)(\d+)$/.exec(cellRef);
+  return [Number(row), colToNum(column)];
+}
+
+// Rewrites every external link cache in `fileName` from the current contents
+// of the sibling workbooks it points at. Returns true when a cache changed,
+// which is the caller's signal that the workbook needs recalculating again.
+async function refreshExternalLinkCaches(workDir, fileName) {
+  const filePath = resolve(workDir, fileName);
+  if (!existsSync(filePath)) return false;
+
+  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const linkIndex = await buildExternalLinkIndex(zip);
+  if (linkIndex.size === 0) return false;
+
+  const referencedCells = await collectExternalCellRefs(zip);
+  let changed = false;
+
+  for (const [index, linkPath] of linkIndex) {
+    const linkFile = zip.file(linkPath);
+    if (!linkFile) continue;
+
+    const linkNumber = linkPath.match(/externalLink(\d+)\.xml$/)?.[1];
+    const relsFile = linkNumber && zip.file(`xl/externalLinks/_rels/externalLink${linkNumber}.xml.rels`);
+    if (!relsFile) continue;
+
+    const targetFile = resolveLinkTarget(await relsFile.async("string"), workDir);
+    if (!targetFile || targetFile === fileName) continue;
+
+    const targetZip = await JSZip.loadAsync(readFileSync(resolve(workDir, targetFile)));
+    const targetSheetMap = await buildSheetMap(targetZip);
+    const targetSharedStrings = await loadSharedStrings(targetZip);
+
+    const linkXml = await linkFile.async("string");
+    // sheetId is the position in <sheetNames>, not the workbook's own sheetId.
+    const sheetNames = [...linkXml.matchAll(/<sheetName val="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
+
+    const sheetXmlCache = new Map();
+    const readTargetCell = async (sheetName, cellRef) => {
+      if (!sheetXmlCache.has(sheetName)) {
+        const sheetPath = targetSheetMap.get(sheetName);
+        sheetXmlCache.set(sheetName, sheetPath ? await targetZip.file(sheetPath).async("string") : null);
+      }
+      const xml = sheetXmlCache.get(sheetName);
+      return xml === null ? null : readCellValue(xml, cellRef, targetSharedStrings);
+    };
+
+    const rewrites = [];
+    for (const block of linkXml.matchAll(/<sheetData\s+sheetId="(\d+)"[^>]*?(?:\/>|>([\s\S]*?)<\/sheetData>)/g)) {
+      const sheetId = Number(block[1]);
+      const sheetName = sheetNames[sheetId];
+      if (!sheetName || !targetSheetMap.has(sheetName)) continue;
+
+      const cachedCells = new Map();
+      for (const cell of (block[2] || "").matchAll(/<cell r="([A-Z]+\d+)"[^>]*(?:\/>|>[\s\S]*?<\/cell>)/g)) {
+        cachedCells.set(cell[1], cell[0]);
+      }
+
+      const wanted = new Set([...cachedCells.keys(), ...(referencedCells.get(`${index}|${sheetName}`) || [])]);
+      // The cache groups its cells into <row> elements, exactly like a
+      // worksheet. Emitting bare <cell> elements makes LibreOffice discard
+      // the whole link and compute the formulas as blanks.
+      const rows = new Map();
+      for (const cellRef of [...wanted].sort((a, b) => {
+        const [rowA, colA] = cellSortKey(a);
+        const [rowB, colB] = cellSortKey(b);
+        return rowA - rowB || colA - colB;
+      })) {
+        const value = await readTargetCell(sheetName, cellRef);
+        let cellXml;
+        if (value === null || value === undefined) {
+          if (!cachedCells.has(cellRef)) continue;
+          cellXml = cachedCells.get(cellRef);
+        } else {
+          cellXml = externalCacheCell(cellRef, value);
+        }
+        const [row] = cellSortKey(cellRef);
+        if (!rows.has(row)) rows.set(row, []);
+        rows.get(row).push(cellXml);
+      }
+
+      const rendered = [...rows.entries()].map(([row, cells]) => `<row r="${row}">${cells.join("")}</row>`);
+      const replacement = rendered.length
+        ? `<sheetData sheetId="${sheetId}">${rendered.join("")}</sheetData>`
+        : `<sheetData sheetId="${sheetId}"/>`;
+      if (replacement !== block[0]) rewrites.push({ from: block[0], to: replacement });
+    }
+
+    if (rewrites.length === 0) continue;
+
+    let updated = linkXml;
+    for (const { from, to } of rewrites) updated = updated.replace(from, to);
+    zip.file(linkPath, updated, { date: linkFile.date });
+    changed = true;
+  }
+
+  if (!changed) return false;
+
+  const outBuffer = await zip.generateAsync({
     type: "nodebuffer",
     compression: "DEFLATE",
     compressionOptions: { level: 1 },
   });
-  writeFileSync(hubPath, outBuffer);
+  writeFileSync(filePath, outBuffer);
+  return true;
+}
+
+// A fingerprint of everything a workbook currently believes about its
+// siblings. Two passes that end on the same fingerprint would recalculate to
+// the same numbers, so the second one can be skipped.
+async function externalLinkSignature(filePath) {
+  if (!existsSync(filePath)) return "";
+  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  const linkPaths = Object.keys(zip.files)
+    .filter((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f))
+    .sort();
+  const hash = createHash("sha256");
+  for (const linkPath of linkPaths) {
+    hash.update(linkPath);
+    hash.update(await zip.file(linkPath).async("string"));
+  }
+  return hash.digest("hex");
+}
+
+async function hasExternalLinks(filePath) {
+  if (!existsSync(filePath)) return false;
+  const zip = await JSZip.loadAsync(readFileSync(filePath));
+  return Object.keys(zip.files).some((f) => /xl\/externalLinks\/externalLink\d+\.xml$/.test(f));
 }
 
 // ── Multi-file: write data, recalculate across files, read results ──────────
@@ -469,7 +662,8 @@ async function updateExternalLinkCaches(workDir, hubFile) {
 export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads, readFile, options = {}) {
   const soffice = getLibreOffice();
   const workDir = resolve(tmpdir(), `spreadsheet-multi-${randomBytes(4).toString("hex")}`);
-  mkdirSync(workDir, { recursive: true });
+  const sourceDir = resolve(workDir, "source");
+  mkdirSync(sourceDir, { recursive: true });
 
   try {
     // 1. Write all files to the work directory
@@ -506,6 +700,9 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
         // Copy unchanged
         writeFileSync(resolve(workDir, filename), buffer);
       }
+      // Every recalculation starts again from this pristine copy: LibreOffice
+      // ignores an external link cache injected into a file it wrote itself.
+      cpSync(resolve(workDir, filename), resolve(sourceDir, filename));
     }
 
     // 2. Recalculate via LibreOffice xls roundtrip
@@ -515,38 +712,67 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
     const userProfile = `file://${resolve(workDir, "lo_profile")}`;
     const filenames = Object.keys(fileBuffers);
 
-    // Recalculate leaf files via xls roundtrip (xlsx → xls → xlsx).
-    // postHubRecalc files are excluded: they recalculate after the hub, and
-    // a roundtrip here would let LibreOffice rewrite their external link
-    // rels to temp-dir relative paths, which updateExternalLinkCaches no
-    // longer recognises as sibling files.
+    // The files form a cycle: leaves feed the hub, and several leaves read
+    // back from the hub or from each other. Recalculation walks that cycle in
+    // four passes, refreshing each workbook's external link caches from its
+    // siblings' current values before recalculating it.
     const postHub = options.postHubRecalc || [];
-    const leafFiles = filenames.filter((f) => f !== readFile && !postHub.includes(f));
+    const leafFiles = filenames.filter((f) => f !== readFile && !postHub.includes(f) && f.endsWith(".xlsx"));
+
+    // What each workbook's caches held the last time it was recalculated, so
+    // a later pass can skip a workbook whose siblings have not moved.
+    const cacheSignatures = new Map();
+
+    async function recalculate(filename) {
+      const target = resolve(workDir, filename);
+      const source = resolve(sourceDir, filename);
+      if (!existsSync(source)) return false;
+
+      const alreadyComputed = existsSync(target) ? readFileSync(target) : null;
+      cpSync(source, target);
+      await refreshExternalLinkCaches(workDir, filename);
+
+      const signature = await externalLinkSignature(target);
+      if (alreadyComputed && cacheSignatures.get(filename) === signature) {
+        writeFileSync(target, alreadyComputed);
+        return false;
+      }
+      cacheSignatures.set(filename, signature);
+      xslRoundtrip(soffice, userProfile, workDir, target);
+      return true;
+    }
+
+    // Pass 1: the leaves, on the scenario data just written into them. Their
+    // siblings hold nothing computed yet, so this pass takes each workbook's
+    // caches as they ship.
     for (const filename of leafFiles) {
-      if (!filename.endsWith(".xlsx")) continue;
       const xlsxPath = resolve(workDir, filename);
       if (!existsSync(xlsxPath)) continue;
+      cacheSignatures.set(filename, await externalLinkSignature(xlsxPath));
       xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
     }
 
-    // Inject recalculated leaf values into hub's external link caches
-    await updateExternalLinkCaches(workDir, readFile);
+    // Pass 2: the hub, on the leaves' computed totals.
+    await recalculate(readFile);
 
-    // Recalculate the hub file
-    xslRoundtrip(soffice, userProfile, workDir, resolve(workDir, readFile));
+    // Pass 3: the leaves again, now that the hub and their sibling leaves
+    // hold final values. Fixedassets reads the opening balance sheet and the
+    // tax rates from the hub and the year's asset purchases from Purchases
+    // and Sales; only the workbooks whose caches actually moved pay for a
+    // second recalculation.
+    let leafRecalculated = false;
+    for (const filename of leafFiles) {
+      if (!(await hasExternalLinks(resolve(sourceDir, filename)))) continue;
+      if (await recalculate(filename)) leafRecalculated = true;
+    }
 
-    // Recalculate files that read FROM the hub and leaves (e.g. Vat.xlsx).
-    // Refresh their external link caches first — the xls roundtrip resolves
-    // external references from the cached values, so without this step they
-    // compute from the template's stale zeros, not the scenario data.
-    if (options.postHubRecalc) {
-      for (const filename of options.postHubRecalc) {
-        const xlsxPath = resolve(workDir, filename);
-        if (existsSync(xlsxPath)) {
-          await updateExternalLinkCaches(workDir, filename);
-          xslRoundtrip(soffice, userProfile, workDir, xlsxPath);
-        }
-      }
+    // Pass 4: the hub once more, carrying whatever pass 3 changed.
+    if (leafRecalculated) await recalculate(readFile);
+
+    // Files that read FROM the hub and the leaves (e.g. Vat.xlsx) go last, so
+    // every workbook they quote is already final.
+    for (const filename of postHub) {
+      await recalculate(filename);
     }
 
     // 3. Read results from the specified readFile
@@ -611,4 +837,4 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
   }
 }
 
-export { toExcelSerial, buildSheetMap, readCellValue, loadSharedStrings, getLibreOffice, hasLibreOffice };
+export { toExcelSerial, buildSheetMap, readCellValue, loadSharedStrings, getLibreOffice, hasLibreOffice, refreshExternalLinkCaches };
