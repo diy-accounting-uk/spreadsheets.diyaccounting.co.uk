@@ -731,7 +731,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // asserting it would be a check that can only ever pass on 0 = 0. Not
       // added; see the final report for what scenario data would give it
       // real signal.
-      const sched = results.Schedule;
+      const sched = results["Fixedassets.xlsx!Schedule"];
       if (sched) {
         const expectedAIA = (sched.Q1 || 0) > 0 ? sched.Q1 : 0;
         check("SA103S: Capital allowances (AIA/FYA) = Schedule Q1", seShort.D80 || 0, expectedAIA);
@@ -755,7 +755,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   //    leaf. E13/K13 are not read or asserted here; see the final report
   //    for the runner change that would make FAreconciliation's own check
   //    live.
-  const fr = results.FAreconciliation;
+  const fr = results["Fixedassets.xlsx!FAreconciliation"];
   if (fr && expected.purchases) {
     let faGross = 0;
     for (const transactions of Object.values(expected.purchases)) {
@@ -773,7 +773,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", fr.K11 || 0, fsNet);
   }
 
-  const sched = results.Schedule;
+  const sched = results["Fixedassets.xlsx!Schedule"];
   if (sched) {
     // 2. Closing NBV identity within the Schedule itself: cost minus
     //    accumulated depreciation carried forward. (The equivalent opening
@@ -815,7 +815,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         else if (tx.direction === "out") payments += tx.amount;
       }
     }
-    const bankMar = results.Mar;
+    const bankMar = results["Bank.xlsx!Mar"];
     if (bankMar) check("Bank.xlsx closing balance (Mar!A2)", bankMar.A2 || 0, openingBC + receipts - payments);
   }
 

@@ -192,11 +192,11 @@ describeCalc(
     // ── Fixed assets: Schedule vs Purchases/Sales, and P&L (item 5) ────────
 
     it("Schedule new-asset additions carry a real non-zero signal (FAreconciliation E11)", () => {
-      expect(results.FAreconciliation.E11).toBeGreaterThan(0);
+      expect(results["Fixedassets.xlsx!FAreconciliation"].E11).toBeGreaterThan(0);
     });
 
     it("Schedule disposals carry a real non-zero signal (FAreconciliation K11)", () => {
-      expect(results.FAreconciliation.K11).toBeGreaterThan(0);
+      expect(results["Fixedassets.xlsx!FAreconciliation"].K11).toBeGreaterThan(0);
     });
 
     it("P&L depreciation (summed monthly) carries a real non-zero signal", () => {
@@ -211,15 +211,16 @@ describeCalc(
       ["SA103S: Capital allowances (AIA/FYA) = Schedule Q1", "SE Short", "D80"],
     ])("%s passes on the intact book and fails when %s!%s is corrupted", async (checkName, sheetName, cellRef) => {
       const fileName = sheetName === "SE Short" ? "Financialaccounts.xlsx" : "Fixedassets.xlsx";
+      const resultKey = sheetName === "SE Short" ? sheetName : `Fixedassets.xlsx!${sheetName}`;
 
       const intactChecks = seCheckCompliance(results, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
       const intactCheck = intactChecks.find((c) => c.name === checkName);
       expect(intactCheck).toBeDefined();
       expect(intactCheck.pass).toBe(true);
 
-      const realValue = results[sheetName][cellRef];
+      const realValue = results[resultKey][cellRef];
       const corrupted = await readCorruptedCell(join(saveDir, fileName), sheetName, cellRef, realValue + 5000);
-      const corruptedResults = { ...results, [sheetName]: { ...results[sheetName], [cellRef]: corrupted } };
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
       const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
       expect(corruptedCheck.pass).toBe(false);
@@ -266,7 +267,7 @@ describeCalc(
     // checkCompliance() check with the current runner.
 
     it("Bank.xlsx closing balance carries a real non-zero signal", () => {
-      expect(results.Mar.A2).not.toBe(0);
+      expect(results["Bank.xlsx!Mar"].A2).not.toBe(0);
     });
 
     it("Bank.xlsx closing balance (Mar!A2) passes on the intact book and fails when corrupted", async () => {
@@ -275,8 +276,8 @@ describeCalc(
       expect(check).toBeDefined();
       expect(check.pass).toBe(true);
 
-      const corrupted = await readCorruptedCell(join(saveDir, "Bank.xlsx"), "Mar", "A2", results.Mar.A2 + 5000);
-      const corruptedResults = { ...results, Mar: { ...results.Mar, A2: corrupted } };
+      const corrupted = await readCorruptedCell(join(saveDir, "Bank.xlsx"), "Mar", "A2", results["Bank.xlsx!Mar"].A2 + 5000);
+      const corruptedResults = { ...results, "Bank.xlsx!Mar": { ...results["Bank.xlsx!Mar"], A2: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       const corruptedCheck = corruptedChecks.find((c) => c.name === "Bank.xlsx closing balance (Mar!A2)");
       expect(corruptedCheck.pass).toBe(false);
