@@ -68,8 +68,22 @@ const BANK_LAYOUTS = {
 // column.
 const VAT_RATE = 0.2;
 
-function netOfVat(gross) {
-  return Math.round((gross / (1 + VAT_RATE)) * 100) / 100;
+// Cell H2 of a Sales.xlsx month tab holds the rate the whole book charges.
+// April carries the figure, each later month reads the month before it, and
+// every Purchases month reads its own Sales month. Entering 0 there is what
+// the Self Employed guide tells a business that is not registered for VAT to
+// do, and it is the only lever that turns VAT off end to end.
+const VAT_RATE_CELL = "H2";
+
+// A scenario says whether the business is registered in its own metadata.
+// Anything that does not say is registered, which is what every fixture
+// written before the flag existed means.
+export function vatRateFor(scenario) {
+  return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
+}
+
+function netOfVat(gross, rate = VAT_RATE) {
+  return Math.round((gross / (1 + rate)) * 100) / 100;
 }
 
 // ── Vat.xlsx Vatinterface layout ───────────────────────────────────────────
@@ -94,6 +108,7 @@ const STRADDLING_SALES_COLUMNS = { date: "A", name: "B", invoice: "C", amount: "
 const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", description: "E", amount: "G" };
 
 export function cellWrites(scenario) {
+  const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
   const bankWrites = {};
@@ -133,6 +148,14 @@ export function cellWrites(scenario) {
         row++;
       }
     }
+  }
+
+  // A business that is not registered for VAT turns the rate off on April's
+  // Sales tab, and the rest of the book follows that cell.
+  if (rate !== VAT_RATE) {
+    const firstTab = MONTH_SHEETS.apr;
+    if (!salesWrites[firstTab]) salesWrites[firstTab] = {};
+    salesWrites[firstTab][VAT_RATE_CELL] = rate * 100;
   }
 
   // Bank and Cash entries — routed to a workbook by account, then to the
@@ -393,7 +416,7 @@ export function cellWrites(scenario) {
       // asset writer above for why the order matters.
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (tx.supplier) fa[`C${row}`] = tx.supplier;
-      fa[`E${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+      fa[`E${row}`] = netOfVat(tx.amount, rate);
     });
   }
 
@@ -421,7 +444,7 @@ export function cellWrites(scenario) {
       const row = disposalRows[i];
       const d = parseDate(tx.date);
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
-      fa[`V${row}`] = Math.round((tx.amount / (1 + VAT_RATE)) * 100) / 100;
+      fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
   }
 
@@ -609,8 +632,8 @@ export function multiFileOptions() {
   const salesMonthReads = {};
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
-    salesMonthReads[tab] = ["H1", "I1"];
-    purchasesMonthReads[tab] = ["H1", "I1"];
+    salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    purchasesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
   }
 
   // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
@@ -739,6 +762,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+  }
+
+  const rate = vatRateFor(expected);
+
+  // The rate cell itself, month by month on both journals. A non-registered
+  // scenario writes 0 into April's Sales tab and nothing else; every other
+  // month has to arrive at the same rate down the template's own chain of
+  // references, so a month that broke away from it shows up here.
+  for (const tab of Object.values(MONTH_SHEETS)) {
+    for (const journal of ["Sales.xlsx", "Purchases.xlsx"]) {
+      const month = results[`${journal}!${tab}`];
+      if (month) {
+        const read = month[VAT_RATE_CELL];
+        check(`${journal} ${tab}: VAT rate charged (${VAT_RATE_CELL})`, typeof read === "number" ? read : 0, rate * 100, 0);
+      }
+    }
   }
 
   const pl = results["Profit & Loss Account"];
@@ -890,7 +929,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.purchases)) {
       for (const tx of transactions) if (tx.code === "fa") faGross += tx.amount;
     }
-    const faNet = Math.round((faGross / (1 + VAT_RATE)) * 100) / 100;
+    const faNet = netOfVat(faGross, rate);
     check("Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", fr.E11 || 0, faNet);
   }
   if (fr && expected.sales) {
@@ -898,7 +937,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     for (const transactions of Object.values(expected.sales)) {
       for (const tx of transactions) if (tx.code === "fs") fsGross += tx.amount;
     }
-    const fsNet = Math.round((fsGross / (1 + VAT_RATE)) * 100) / 100;
+    const fsNet = netOfVat(fsGross, rate);
     check("Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", fr.K11 || 0, fsNet);
   }
 
@@ -970,10 +1009,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
 
       for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) {
-        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        const net = netOfVat(byCode[code] || 0, rate);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Sales.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
-      const badDebtNet = Math.round(((byCode.o || 0) / (1 + VAT_RATE)) * 100) / 100;
+      const badDebtNet = netOfVat(byCode.o || 0, rate);
       check(
         `P&L ${MONTH_KEYS[i]} col ${col}${SALES_BAD_DEBT_ROW} = -(Sales.xlsx o-coded net)`,
         pl[`${col}${SALES_BAD_DEBT_ROW}`] || 0,
@@ -996,7 +1035,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
 
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        const net = Math.round(((byCode[code] || 0) / (1 + VAT_RATE)) * 100) / 100;
+        const net = netOfVat(byCode[code] || 0, rate);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }
@@ -1053,7 +1092,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       let wCodeNet = 0;
       if (expected.purchases) {
         for (const transactions of Object.values(expected.purchases)) {
-          for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + VAT_RATE);
+          for (const tx of transactions) if (tx.code === "w") wCodeNet += tx.amount / (1 + rate);
         }
       }
       check(
@@ -1141,27 +1180,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     let purchasesNet = 0;
     if (expected.sales) {
       for (const txs of Object.values(expected.sales)) {
-        for (const tx of txs) if (inQuarter(tx.date)) outputVat += tx.amount - tx.amount / (1 + VAT_RATE);
+        for (const tx of txs) if (inQuarter(tx.date)) outputVat += tx.amount - tx.amount / (1 + rate);
       }
     }
     if (expected.purchases) {
       for (const txs of Object.values(expected.purchases)) {
         for (const tx of txs) {
           if (!inQuarter(tx.date)) continue;
-          inputVat += tx.amount - tx.amount / (1 + VAT_RATE);
-          purchasesNet += tx.amount / (1 + VAT_RATE);
+          inputVat += tx.amount - tx.amount / (1 + rate);
+          purchasesNet += tx.amount / (1 + rate);
         }
       }
     }
     // The last quarter of a 6 April year runs past it, so its window picks up
     // the straddling entry sheets alongside the year's own last months.
     for (const entry of expected.vat_straddling_sales || []) {
-      if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + VAT_RATE);
+      if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
     for (const entry of expected.vat_straddling_purchases || []) {
       if (!inQuarter(entry.date)) continue;
-      inputVat += entry.amount - entry.amount / (1 + VAT_RATE);
-      purchasesNet += entry.amount / (1 + VAT_RATE);
+      inputVat += entry.amount - entry.amount / (1 + rate);
+      purchasesNet += entry.amount / (1 + rate);
     }
     check(`VAT Q${q}: box 1/3 output VAT (G9) = scenario sales VAT for the quarter`, qtr.G9 || 0, outputVat, 1);
     check(`VAT Q${q}: box 4 input VAT (G15) = scenario purchases VAT for the quarter`, qtr.G15 || 0, inputVat, 1);
@@ -1210,22 +1249,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(
           `Vatinterface D${row}: ${period} sales net = the straddling sales entered for that period`,
           num(vatinterface[`D${row}`]),
-          netOfVat(salesGross),
+          netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface F${row}: ${period} output VAT = the straddling sales entered for that period`,
           num(vatinterface[`F${row}`]),
-          salesGross - netOfVat(salesGross),
+          salesGross - netOfVat(salesGross, rate),
         );
         check(
           `Vatinterface H${row}: ${period} purchases net = the straddling purchases entered for that period`,
           num(vatinterface[`H${row}`]),
-          netOfVat(purchasesGross),
+          netOfVat(purchasesGross, rate),
         );
         check(
           `Vatinterface J${row}: ${period} input VAT = the straddling purchases entered for that period`,
           num(vatinterface[`J${row}`]),
-          purchasesGross - netOfVat(purchasesGross),
+          purchasesGross - netOfVat(purchasesGross, rate),
         );
       }
     }

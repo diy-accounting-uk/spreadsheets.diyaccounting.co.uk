@@ -1,15 +1,19 @@
 [metadata]
 name = "BrickWork Pro Ltd non-VAT"
-description = "Construction company, non-VAT registered, CIS sub-contractors"
+description = "Construction company below the VAT registration threshold, CIS sub-contractors, a director and one labourer on the payroll. Journal amounts carry no VAT. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
+vat_registered = false
 
 [business]
 name = "BrickWork Pro Ltd"
 description = "Bricklaying, plastering and general building"
+company_number = "87654321"
 address = "Unit 5, Industrial Estate"
 town = "Sheffield"
 postcode = "S1 2AB"
+phone = "0114 555 0100"
+utr = "9876543210"
 
 [[sales.apr]]
 date = 2025-04-10
@@ -51,7 +55,7 @@ amount = 1860
 date = 2025-07-10
 customer = "Acme Developments"
 code = "a"
-amount = 4059.9999999999995
+amount = 4060
 
 [[sales.jul]]
 date = 2025-07-20
@@ -111,7 +115,7 @@ amount = 1860
 date = 2025-12-10
 customer = "Acme Developments"
 code = "a"
-amount = 3849.9999999999995
+amount = 3850
 
 [[sales.dec]]
 date = 2025-12-20
@@ -503,5 +507,754 @@ supplier = "Travis Perkins"
 code = "s"
 amount = 450
 
+[[payroll.apr]]
+date = 2025-04-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.apr]]
+date = 2025-04-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[bank.apr]]
+date = 2025-04-01
+account = "1200"
+source = "Balance brought forward"
+code = "BC"
+direction = "in"
+amount = 20000
+description = "Current account opening balance"
+
+[[bank.apr]]
+date = 2025-04-12
+account = "1200"
+source = "Opening debtors"
+code = "DR"
+direction = "in"
+amount = 6600
+description = "Invoices outstanding at the year start"
+
+[[bank.apr]]
+date = 2025-04-18
+account = "1200"
+source = "Opening creditors"
+code = "CR"
+direction = "out"
+amount = 1510
+description = "Invoices unpaid at the year start"
+
+[[bank.apr]]
+date = 2025-04-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.may]]
+date = 2025-05-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6500
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 3310
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for apr"
+
+[[bank.may]]
+date = 2025-05-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jun]]
+date = 2025-06-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6000
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 7510
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for may"
+
+[[bank.jun]]
+date = 2025-06-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jul]]
+date = 2025-07-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6200
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1810
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jun"
+
+[[bank.jul]]
+date = 2025-07-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.aug]]
+date = 2025-08-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 5800
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1860
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jul"
+
+[[bank.aug]]
+date = 2025-08-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.sep]]
+date = 2025-09-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6500
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 6510
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for aug"
+
+[[bank.sep]]
+date = 2025-09-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.oct]]
+date = 2025-10-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6300
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 13510
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for sep"
+
+[[bank.oct]]
+date = 2025-10-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.nov]]
+date = 2025-11-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6800
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1510
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for oct"
+
+[[bank.nov]]
+date = 2025-11-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.dec]]
+date = 2025-12-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6200
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 6510
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for nov"
+
+[[bank.dec]]
+date = 2025-12-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jan]]
+date = 2026-01-01
+account = "1200"
+source = "HMRC"
+code = "RT"
+direction = "out"
+amount = 900
+description = "Corporation tax on last year's profit"
+
+[[bank.jan]]
+date = 2026-01-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 5500
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1510
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for dec"
+
+[[bank.jan]]
+date = 2026-01-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.feb]]
+date = 2026-02-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6000
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1910
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jan"
+
+[[bank.feb]]
+date = 2026-02-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.mar]]
+date = 2026-03-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6500
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 5510
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for feb"
+
+[[bank.mar]]
+date = 2026-03-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[opening_debtors]]
+customer = "Acme Developments"
+invoice = "INV-0310"
+amount = 4620
+
+[[opening_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-0320"
+amount = 1980
+
+[[closing_debtors]]
+customer = "Acme Developments"
+invoice = "INV-1510"
+amount = 4690
+
+[[closing_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-1520"
+amount = 2010
+
+[[opening_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2503"
+amount = 60
+
+[[opening_creditors]]
+supplier = "Jewson"
+invoice = "JW-2503"
+amount = 800
+
+[[opening_creditors]]
+supplier = "Shell"
+invoice = "SH-2503"
+amount = 200
+
+[[opening_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2503"
+amount = 450
+
+[[closing_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2603"
+amount = 60
+
+[[closing_creditors]]
+supplier = "Jewson"
+invoice = "JW-2603"
+amount = 800
+
+[[closing_creditors]]
+supplier = "Shell"
+invoice = "SH-2603"
+amount = 200
+
+[[closing_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2603"
+amount = 450
+
+[[employees]]
+employeeID = "EMP001"
+name = "Mike Brown"
+niNumber = "AB123456C"
+payFrequency = "monthly"
+grossPay = 1048
+isDirector = true
+
+[[employees]]
+employeeID = "EMP002"
+name = "Tom Davies"
+niNumber = "CD654321A"
+payFrequency = "monthly"
+grossPay = 1500
+niCategory = "A"
+
+[stock]
+opening = 3000
+closing = 2500
+
+[opening_balance]
+current_account = 20000
+stock = 3000
+trade_debtors = 6600
+trade_creditors = 1510
+corporation_tax = 900
+share_capital = 100
+retained_earnings = 27090
+
 [expected]
-total_sales = 62500
+total_sales = 75000
+total_legal_net = 1000
+vat_output_total = 0
+vat_input_total = 0

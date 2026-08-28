@@ -1,8 +1,9 @@
 [metadata]
 name = "BrickWork Pro BST"
-description = "Construction sole trader, non-VAT, BST package. Sub-contract labour bought in as direct costs, no payroll, no CIS suffered on own sales."
+description = "Construction sole trader below the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales."
 product = "bst"
 tax_regime = "se"
+vat_registered = false
 
 [business]
 name = "BrickWork Pro Trading"
@@ -51,7 +52,7 @@ amount = 1860
 date = 2025-07-10
 customer = "Acme Developments"
 payment = "Bank"
-amount = 4059.9999999999995
+amount = 4060
 
 [[sales.jul]]
 date = 2025-07-20
@@ -111,7 +112,7 @@ amount = 1860
 date = 2025-12-10
 customer = "Acme Developments"
 payment = "Bank"
-amount = 3849.9999999999995
+amount = 3850
 
 [[sales.dec]]
 date = 2025-12-20
@@ -158,412 +159,415 @@ amount = 2010
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Direct Line"
-payment = "Bank"
 code = "o"
 amount = 1200
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "Smith & Co Accountants"
-payment = "Bank"
 code = "l"
 amount = 600
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "JB Plastering"
-payment = "Bank"
 code = "d"
 amount = 6000
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
-payment = "Bank"
 code = "a"
 amount = 300
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.jun]]
 date = 2025-06-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Screwfix"
-payment = "Bank"
 code = "r"
 amount = 350
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.aug]]
 date = 2025-08-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "JB Plastering"
-payment = "Bank"
 code = "d"
 amount = 5000
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Ford Dealer"
-payment = "Bank"
 code = "f"
 amount = 12000
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.oct]]
 date = 2025-10-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.nov]]
 date = 2025-11-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Smith Bricklaying"
-payment = "Bank"
 code = "d"
 amount = 5000
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.dec]]
 date = 2025-12-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "CITB"
-payment = "Bank"
 code = "l"
 amount = 400
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.feb]]
 date = 2026-02-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Smith Bricklaying"
-payment = "Bank"
 code = "d"
 amount = 4000
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Vodafone"
-payment = "Bank"
 code = "g"
 amount = 60
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Jewson"
-payment = "Bank"
 code = "s"
 amount = 800
 
 [[purchases.mar]]
 date = 2026-03-08
 supplier = "Shell"
-payment = "Bank"
 code = "m"
 amount = 200
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Travis Perkins"
-payment = "Bank"
 code = "s"
 amount = 450
 
-# The van bought in September is coded f in the purchase journal, which
-# capitalises it out of the profit and loss account. Registering it here puts
-# it on the Fixed Assets schedule, where it earns its capital allowance.
+[[opening_debtors]]
+customer = "Acme Developments"
+invoice = "INV-0310"
+amount = 4620
+
+[[opening_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-0320"
+amount = 1980
+
+[[closing_debtors]]
+customer = "Acme Developments"
+invoice = "INV-1510"
+amount = 4690
+
+[[closing_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-1520"
+amount = 2010
+
+[[opening_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2503"
+amount = 60
+
+[[opening_creditors]]
+supplier = "Jewson"
+invoice = "JW-2503"
+amount = 800
+
+[[opening_creditors]]
+supplier = "Shell"
+invoice = "SH-2503"
+amount = 200
+
+[[opening_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2503"
+amount = 450
+
+[[closing_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2603"
+amount = 60
+
+[[closing_creditors]]
+supplier = "Jewson"
+invoice = "JW-2603"
+amount = 800
+
+[[closing_creditors]]
+supplier = "Shell"
+invoice = "SH-2603"
+amount = 200
+
+[[closing_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2603"
+amount = 450
+
+[stock]
+opening = 3000
+closing = 2500
+
 [[fixed_asset_additions]]
 date = 2025-09-01
 description = "Ford Transit van"
@@ -572,4 +576,8 @@ cost = 12000
 
 [expected]
 total_sales = 75000
+total_gen_admin = 720
+total_legal = 1000
+opening_stock = 3000
+closing_stock = 2500
 fixed_asset_cost = 12000

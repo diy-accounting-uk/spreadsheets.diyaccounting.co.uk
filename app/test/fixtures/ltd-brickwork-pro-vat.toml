@@ -1,507 +1,1298 @@
 [metadata]
 name = "BrickWork Pro Ltd VAT"
-description = "Construction company, VAT registered, CIS sub-contractors"
+description = "Construction company registered for VAT, CIS sub-contractors, a director and one labourer on the payroll. Journal amounts include VAT at 20%. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
+vat_registered = true
 
 [business]
 name = "BrickWork Pro Ltd"
 description = "Bricklaying, plastering and general building"
+company_number = "87654321"
 address = "Unit 5, Industrial Estate"
 town = "Sheffield"
 postcode = "S1 2AB"
+phone = "0114 555 0100"
+utr = "9876543210"
+vat_number = "376543219"
 
 [[sales.apr]]
 date = 2025-04-10
 customer = "Acme Developments"
 code = "a"
-amount = 4550
+amount = 5460
 
 [[sales.apr]]
 date = 2025-04-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1950
+amount = 2340
 
 [[sales.may]]
 date = 2025-05-10
 customer = "Acme Developments"
 code = "a"
-amount = 4200
+amount = 5040
 
 [[sales.may]]
 date = 2025-05-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1800
+amount = 2160
 
 [[sales.jun]]
 date = 2025-06-10
 customer = "Acme Developments"
 code = "a"
-amount = 4340
+amount = 5208
 
 [[sales.jun]]
 date = 2025-06-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1860
+amount = 2232
 
 [[sales.jul]]
 date = 2025-07-10
 customer = "Acme Developments"
 code = "a"
-amount = 4059.9999999999995
+amount = 4872
 
 [[sales.jul]]
 date = 2025-07-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1740
+amount = 2088
 
 [[sales.aug]]
 date = 2025-08-10
 customer = "Acme Developments"
 code = "a"
-amount = 4550
+amount = 5460
 
 [[sales.aug]]
 date = 2025-08-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1950
+amount = 2340
 
 [[sales.sep]]
 date = 2025-09-10
 customer = "Acme Developments"
 code = "a"
-amount = 4410
+amount = 5292
 
 [[sales.sep]]
 date = 2025-09-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1890
+amount = 2268
 
 [[sales.oct]]
 date = 2025-10-10
 customer = "Acme Developments"
 code = "a"
-amount = 4760
+amount = 5712
 
 [[sales.oct]]
 date = 2025-10-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2040
+amount = 2448
 
 [[sales.nov]]
 date = 2025-11-10
 customer = "Acme Developments"
 code = "a"
-amount = 4340
+amount = 5208
 
 [[sales.nov]]
 date = 2025-11-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1860
+amount = 2232
 
 [[sales.dec]]
 date = 2025-12-10
 customer = "Acme Developments"
 code = "a"
-amount = 3849.9999999999995
+amount = 4620
 
 [[sales.dec]]
 date = 2025-12-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1650
+amount = 1980
 
 [[sales.jan]]
 date = 2026-01-10
 customer = "Acme Developments"
 code = "a"
-amount = 4200
+amount = 5040
 
 [[sales.jan]]
 date = 2026-01-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1800
+amount = 2160
 
 [[sales.feb]]
 date = 2026-02-10
 customer = "Acme Developments"
 code = "a"
-amount = 4550
+amount = 5460
 
 [[sales.feb]]
 date = 2026-02-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 1950
+amount = 2340
 
 [[sales.mar]]
 date = 2026-03-10
 customer = "Acme Developments"
 code = "a"
-amount = 4690
+amount = 5628
 
 [[sales.mar]]
 date = 2026-03-20
 customer = "HomeStyle Renovations"
 code = "a"
-amount = 2010
+amount = 2412
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Direct Line"
 code = "n"
-amount = 1200
+amount = 1440
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "Smith & Co Accountants"
 code = "l"
-amount = 600
+amount = 720
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "JB Plastering"
 code = "c"
-amount = 6000
+amount = 7200
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
 code = "a"
-amount = 300
+amount = 360
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.jun]]
 date = 2025-06-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Screwfix"
 code = "m"
-amount = 350
+amount = 420
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.aug]]
 date = 2025-08-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "JB Plastering"
 code = "c"
-amount = 5000
+amount = 6000
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Ford Dealer"
 code = "fa"
-amount = 12000
+amount = 14400
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.oct]]
 date = 2025-10-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.nov]]
 date = 2025-11-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Smith Bricklaying"
 code = "c"
-amount = 5000
+amount = 6000
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.dec]]
 date = 2025-12-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "CITB"
 code = "l"
-amount = 400
+amount = 480
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.feb]]
 date = 2026-02-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Smith Bricklaying"
 code = "c"
-amount = 4000
+amount = 4800
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Vodafone"
 code = "g"
-amount = 60
+amount = 72
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Jewson"
 code = "s"
-amount = 800
+amount = 960
 
 [[purchases.mar]]
 date = 2026-03-08
 supplier = "Shell"
 code = "v"
-amount = 200
+amount = 240
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Travis Perkins"
 code = "s"
-amount = 450
+amount = 540
+
+[[payroll.apr]]
+date = 2025-04-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.apr]]
+date = 2025-04-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[bank.apr]]
+date = 2025-04-01
+account = "1200"
+source = "Balance brought forward"
+code = "BC"
+direction = "in"
+amount = 20000
+description = "Current account opening balance"
+
+[[bank.apr]]
+date = 2025-04-07
+account = "1200"
+source = "HMRC"
+code = "RV"
+direction = "out"
+amount = 1000
+description = "VAT outstanding at the year start"
+
+[[bank.apr]]
+date = 2025-04-12
+account = "1200"
+source = "Opening debtors"
+code = "DR"
+direction = "in"
+amount = 7920
+description = "Invoices outstanding at the year start"
+
+[[bank.apr]]
+date = 2025-04-18
+account = "1200"
+source = "Opening creditors"
+code = "CR"
+direction = "out"
+amount = 1812
+description = "Invoices unpaid at the year start"
+
+[[bank.apr]]
+date = 2025-04-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.may]]
+date = 2025-05-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7800
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 3972
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for apr"
+
+[[bank.may]]
+date = 2025-05-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jun]]
+date = 2025-06-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7200
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 9012
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for may"
+
+[[bank.jun]]
+date = 2025-06-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jul]]
+date = 2025-07-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7440
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 2172
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jun"
+
+[[bank.jul]]
+date = 2025-07-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.aug]]
+date = 2025-08-07
+account = "1200"
+source = "HMRC"
+code = "RV"
+direction = "out"
+amount = 1100
+description = "Quarterly VAT payment"
+
+[[bank.aug]]
+date = 2025-08-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6960
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 2232
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jul"
+
+[[bank.aug]]
+date = 2025-08-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.sep]]
+date = 2025-09-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7800
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 7812
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for aug"
+
+[[bank.sep]]
+date = 2025-09-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.oct]]
+date = 2025-10-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7560
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 16212
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for sep"
+
+[[bank.oct]]
+date = 2025-10-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.nov]]
+date = 2025-11-07
+account = "1200"
+source = "HMRC"
+code = "RV"
+direction = "out"
+amount = 1100
+description = "Quarterly VAT payment"
+
+[[bank.nov]]
+date = 2025-11-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 8160
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1812
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for oct"
+
+[[bank.nov]]
+date = 2025-11-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.dec]]
+date = 2025-12-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7440
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 7812
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for nov"
+
+[[bank.dec]]
+date = 2025-12-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.jan]]
+date = 2026-01-01
+account = "1200"
+source = "HMRC"
+code = "RT"
+direction = "out"
+amount = 900
+description = "Corporation tax on last year's profit"
+
+[[bank.jan]]
+date = 2026-01-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 6600
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 1812
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for dec"
+
+[[bank.jan]]
+date = 2026-01-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.feb]]
+date = 2026-02-07
+account = "1200"
+source = "HMRC"
+code = "RV"
+direction = "out"
+amount = 1100
+description = "Quarterly VAT payment"
+
+[[bank.feb]]
+date = 2026-02-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7200
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 2292
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jan"
+
+[[bank.feb]]
+date = 2026-02-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[bank.mar]]
+date = 2026-03-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 7800
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 6612
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for feb"
+
+[[bank.mar]]
+date = 2026-03-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 2421.3
+description = "Net wages"
+
+[[opening_debtors]]
+customer = "Acme Developments"
+invoice = "INV-0310"
+amount = 5544
+
+[[opening_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-0320"
+amount = 2376
+
+[[closing_debtors]]
+customer = "Acme Developments"
+invoice = "INV-1510"
+amount = 5628
+
+[[closing_debtors]]
+customer = "HomeStyle Renovations"
+invoice = "INV-1520"
+amount = 2412
+
+[[opening_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2503"
+amount = 72
+
+[[opening_creditors]]
+supplier = "Jewson"
+invoice = "JW-2503"
+amount = 960
+
+[[opening_creditors]]
+supplier = "Shell"
+invoice = "SH-2503"
+amount = 240
+
+[[opening_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2503"
+amount = 540
+
+[[closing_creditors]]
+supplier = "Vodafone"
+invoice = "VF-2603"
+amount = 72
+
+[[closing_creditors]]
+supplier = "Jewson"
+invoice = "JW-2603"
+amount = 960
+
+[[closing_creditors]]
+supplier = "Shell"
+invoice = "SH-2603"
+amount = 240
+
+[[closing_creditors]]
+supplier = "Travis Perkins"
+invoice = "TP-2603"
+amount = 540
+
+[[employees]]
+employeeID = "EMP001"
+name = "Mike Brown"
+niNumber = "AB123456C"
+payFrequency = "monthly"
+grossPay = 1048
+isDirector = true
+
+[[employees]]
+employeeID = "EMP002"
+name = "Tom Davies"
+niNumber = "CD654321A"
+payFrequency = "monthly"
+grossPay = 1500
+niCategory = "A"
+
+[stock]
+opening = 3000
+closing = 2500
+
+[opening_balance]
+current_account = 20000
+stock = 3000
+trade_debtors = 7920
+trade_creditors = 1812
+corporation_tax = 900
+share_capital = 100
+vat_due = 1000
+retained_earnings = 27108
 
 [expected]
-total_sales = 62500
+total_sales = 75000
+total_legal_net = 1000
+vat_output_total = 15000
+vat_input_total = 10594
