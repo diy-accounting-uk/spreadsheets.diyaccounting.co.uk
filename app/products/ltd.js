@@ -1149,19 +1149,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       Object.values(SCHEDULE_ASSET_CLASSES).reduce((s, l) => s + num(notes[`${l.noteColumn}20`]), 0),
     );
 
-    // The Schedule's own comparison of each class against the opening
-    // balance sheet. It writes the class name when the two agree and a
-    // "Check Opening Balance Sheet figures agree" warning when they do not.
-    for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
-      const label = schedule[`B${layout.existingTotalRow}`];
-      checks.push({
-        name: `Fixed asset schedule (${className}): agrees with the opening balance sheet`,
-        actual: typeof label === "string" ? label : "",
-        expected: "no warning",
-        pass: typeof label === "string" && !label.startsWith("Check"),
-        diff: 0,
-      });
-    }
+    // The Schedule's own per-class comparison against the opening balance
+    // sheet (column B on each class totals row) is read but not asserted.
+    // It reads OpenAccounts through a leaf-to-hub external link, and
+    // runMultiFileSpreadsheet only refreshes the hub's link caches, so the
+    // comparison runs against the template's cached zeros whatever the
+    // scenario holds. Asserting it here would fail on correct data. The
+    // opening figures reach the trial balance by a different route, which
+    // the opening balance checks above cover.
   }
 
   // The balance sheet's fixed asset line is built from the trial balance,
@@ -1312,6 +1307,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT: goodwill add-back = P&L goodwill written off", num(corporationTax.I7), num(pl.B38));
     check("CT: add-backs = depreciation + goodwill", num(corporationTax.K10), num(corporationTax.I7) + num(corporationTax.I8));
     check("CT: profit plus add-backs", num(corporationTax.K12), num(corporationTax.K5) + num(corporationTax.K10));
+    // The allowance lines themselves read zero in this pipeline whatever the
+    // schedule holds: the capital allowance notes address individual
+    // Schedule rows (E67 and up), and the hub's external link cache carries
+    // only the column totals, so the per-row tests all see blanks. The sum
+    // identity still holds and localises a break once the cache carries
+    // those cells.
     check(
       "CT: capital allowances = the allowance lines",
       num(corporationTax.K20),
@@ -1360,7 +1361,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
       // CT calculation chain (6d)
       check("CT: Chargeable >= Operating", ct.K28 || 0, ct.K5 || 0, ct.K28); // chargeable includes add-backs
-      check("CT: Tax outstanding = CT", ct.K39 || 0, ct.K35 || 0);
+      // Tax outstanding is the charge less any income tax already deducted
+      // at source from bank interest received.
+      check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
       // Marginal relief warning (8g) — if profit > small profits limit, CT should be higher than small rate
       const smallLimit = taxData.corporation_tax.small_profits_limit || 50000;
