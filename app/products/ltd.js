@@ -268,18 +268,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const targetStartMonth = yem % 12; // month after year-end (0-indexed)
   const monthOffset = (targetStartMonth - sourceStartMonth + 12) % 12;
 
-  // Build tab name sequence for the target year-end
-  const tabNames = getMonthTabNames(yem);
-
   const shiftDate = (d) => shiftMonths(d, monthOffset);
 
-  // Map a shifted date to the correct tab name
-  function getTabForDate(shifted) {
-    const m = shifted.getUTCMonth();
-    const tabMonth = SHORT_MONTHS[m];
-    if (tabNames.includes(tabMonth)) return tabMonth;
-    return tabNames[0]; // fallback
-  }
+  // The twelve tabs are the twelve months, whatever the year end, so a shifted
+  // date's month names its tab.
+  const getTabForDate = (shifted) => SHORT_MONTHS[shifted.getUTCMonth()];
 
   function processJournal(entries, writes, nameField, codeDefault) {
     for (const [monthKey, transactions] of Object.entries(entries)) {
