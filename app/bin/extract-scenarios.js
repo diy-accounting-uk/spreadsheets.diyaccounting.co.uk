@@ -32,6 +32,7 @@ import {
   filterAdvanced,
   filterFull,
   buildGrouped,
+  seDrawingsFromDividends,
   buildOpeningBalance,
   formatScenarioToml,
   buildSubsetBookToml,
@@ -178,7 +179,7 @@ const bstDiya = writeDiyaGlSubset(
 // Extract SE (advanced)
 // ============================================================================
 
-const advLines = filterAdvanced(allLines);
+const advLines = seDrawingsFromDividends(filterAdvanced(allLines));
 const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));

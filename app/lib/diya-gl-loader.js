@@ -19,6 +19,7 @@ import {
   filterAdvanced,
   filterFull,
   buildGrouped,
+  seDrawingsFromDividends,
   buildOpeningBalance,
   computeGrossSales,
   computeSpreadsheetNetSales,
@@ -119,7 +120,8 @@ export function diyaGlToScenario(book, lines, product) {
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
-  const filteredLines = filter(lines);
+  let filteredLines = filter(lines);
+  if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   const grouped = buildGrouped(filteredLines, purchaseCodeMap);
 
   // Compute expected values

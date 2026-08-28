@@ -77,7 +77,7 @@ export const SE_PURCHASE_CODE_MAP = {
   5001: "c",
   5002: "o",
   5101: "w",
-  5200: "r",
+  5200: "p", // Premises (combined Rent/Light/Heat column)
   5201: "p",
   5300: "t",
   5301: "q",
@@ -274,6 +274,16 @@ export function filterFull(lines) {
 // ============================================================================
 // Build grouped transaction data for TOML fixture
 // ============================================================================
+
+// A company pays dividends; a sole trader takes drawings. The SE scenario
+// reinterprets the master's dividend payments as proprietor drawings.
+export function seDrawingsFromDividends(lines) {
+  return lines.map((line) =>
+    line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "DV"
+      ? { ...line, "diya-gl:bankCode": "DL", detailComment: "Proprietor", lineItemComment: "Quarterly drawings payment" }
+      : line,
+  );
+}
 
 export function buildGrouped(filteredLines, purchaseCodeMap) {
   const sales = {};
