@@ -19,13 +19,14 @@
 // Exit codes: 0 for a pass verdict, 1 for a fail verdict and 1 when the model cannot be
 // reached or its answer cannot be parsed after one retry.
 //
-// Operator prerequisites before turning this on:
-//   1. Grant bedrock:InvokeModel on the Anthropic model ARNs to the role the workflow
-//      assumes (SPREADSHEETS_DEPLOY_ROLE_ARN), scoped to
-//      arn:aws:bedrock:<region>::foundation-model/anthropic.* in the spreadsheets account.
-//   2. Request model access for the Anthropic models once, in the spreadsheets account and
-//      the region the workflow uses. This is a console grant per account and region.
-//   3. Set the ENABLE_LLM_JUDGE repository variable to "true". Until it is set, every judge
+// What this needs in AWS:
+//   1. The workflow role (SPREADSHEETS_ACTIONS_ROLE_ARN, assumed by OIDC) allows
+//      bedrock:InvokeModel and bedrock:InvokeModelWithResponseStream on
+//      arn:aws:bedrock:*::foundation-model/anthropic.* and the account's anthropic
+//      inference profiles.
+//   2. The model agreement for anthropic.claude-opus-5 is accepted in us-east-1. Model
+//      access is granted per account and region.
+//   3. The ENABLE_LLM_JUDGE repository variable is set to "true". Until it is, every judge
 //      step and job is skipped and nothing calls Bedrock.
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";

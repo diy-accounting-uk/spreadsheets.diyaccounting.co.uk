@@ -260,17 +260,6 @@ jobs:
           role-skip-session-tagging: true
           output-credentials: true
           retry-max-attempts: 3
-      - name: Assume AWS deployment role
-        if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: ${{ vars.SPREADSHEETS_DEPLOY_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-chaining: true
-          audience: sts.amazonaws.com
-          role-skip-session-tagging: true
-          output-credentials: true
-          retry-max-attempts: 3
       - name: Judge the reconciliation reports
         if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
         timeout-minutes: 10
