@@ -32,27 +32,27 @@ Status: RECONCILES
 | Sales.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
 | Total Sales | 339200 | 339200 | 0 | PASS |
-| P&L: Gross = Turnover + Grants - CoS | 325146.6666666666 | 325146.666666666 | -6.402842700481415e-10 | PASS |
-| P&L: Operating = Gross - Admin | 180975.391666666 | 180975.391666666 | 0 | PASS |
-| P&L: PBT = Operating | 180975.391666666 | 180975.391666666 | 0 | PASS |
+| P&L: Gross = Turnover + Grants - CoS | 321146.6666666666 | 321146.666666666 | -6.402842700481415e-10 | PASS |
+| P&L: Operating = Gross - Admin | 176975.391666666 | 176975.391666666 | 0 | PASS |
+| P&L: PBT = Operating | 176975.391666666 | 176975.391666666 | 0 | PASS |
 | P&L: Admin lines sum = Total | 144171.27499999997 | 144171.275 | +2.9103830456733704e-11 | PASS |
 | VitalTax: annual product sales = P&L Products A+B+C | 335500 | 335500 | 0 | PASS |
-| VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 9470 | 9470 | 0 | PASS |
+| VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 13470 | 13470 | 0 | PASS |
 | Motor Expenses | 6332 | 6331.875 | -0.125 | PASS |
 | Legal & Professional | 6925 | 6925 | 0 | PASS |
 | Opening Debtors total | 10800 | 10800 | 0 | PASS |
 | Closing Debtors total | 10400 | 10400 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
-| Income Tax | 46918 | 46917.9566666665 | -0.04333333350223256 | PASS |
+| Income Tax | 45318 | 45317.9566666665 | -0.04333333350223256 | PASS |
 | NI Class 4 (lower) | 2262 | 2262 | 0 | PASS |
-| Total Tax + NI | 51149 | 51148.8644999998 | -0.13550000020040898 | PASS |
-| Tax: Taxable = Profit - Allowance | 136145.391666666 | 136145.391666666 | 0 | PASS |
-| Tax: IT = Basic + Higher | 46917.9566666665 | 46917.9566666665 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 51148.86449999983 | 51148.8644999998 | -2.9103830456733704e-11 | PASS |
+| Total Tax + NI | 49469 | 49468.8644999998 | -0.13550000020040898 | PASS |
+| Tax: Taxable = Profit - Allowance | 132145.391666666 | 132145.391666666 | 0 | PASS |
+| Tax: IT = Basic + Higher | 45317.9566666665 | 45317.9566666665 | 0 | PASS |
+| Tax: Total = IT - CIS + NI | 49468.86449999983 | 49468.8644999998 | -2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
-| SA103S: Net profit close to P&L Net - Grants + Depreciation addback | 190632.05833333265 | 190632.058333333 | +3.4924596548080444e-10 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 148715.391666666 | 148715.391666666 | 0 | PASS |
+| SA103S: Net profit close to P&L Net - Grants + Depreciation addback | 186632.05833333265 | 186632.058333333 | +3.4924596548080444e-10 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 144715.391666666 | 144715.391666666 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
@@ -498,11 +498,11 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income | 3,700 |
 | **Sales Turnover** | 339,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 5,450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 9,450 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 6,666.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 4,020 |
-| Cost of Sales | 16,136.67 |
-| **Gross Profit** | 325,146.67 |
+| Cost of Sales | 20,136.67 |
+| **Gross Profit** | 321,146.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Wages & Salaries | 92,735.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power | 13,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 950 |
@@ -518,23 +518,23 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss (Profit) on Disposal of Assets | 172 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
 | Total Admin Expenses | 144,171.28 |
-| **Operating Profit** | 180,975.39 |
-| **Profit Before Tax** | 180,975.39 |
+| **Operating Profit** | 176,975.39 |
+| **Profit Before Tax** | 176,975.39 |
 
 ## Income Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 148,715.39 |
+| Profit from Self Employment | 144,715.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 136,145.39 |
+| Taxable Income | 132,145.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 39,377.76 |
-| **Total Income Tax** | 46,917.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 37,777.76 |
+| **Total Income Tax** | 45,317.96 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,968.91 |
-| **Total Tax + NI** | 51,148.86 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,888.91 |
+| **Total Tax + NI** | 49,468.86 |
 
 ## Self Assessment (SA103S)
 
@@ -543,18 +543,18 @@ Status: RECONCILES
 | Business name | — |
 | Accounting date | — |
 | Turnover | 339,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 16,136.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 20,136.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 7,881.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 92,735.73 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 13,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 950 |
-| **Net profit/loss** | 190,632.06 |
+| **Net profit/loss** | 186,632.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 146,632.06 |
+| **Taxable profit** | 142,632.06 |
 | VAT threshold note | — |
-| **Net profit for tax calc** | 148,715.39 |
+| **Net profit for tax calc** | 144,715.39 |
 
 ## Payroll Summary
 
@@ -587,8 +587,8 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 Expenses | 2,282.5 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 Expenses | 2,602.5 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Expenses | 2,182.5 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 2,402.5 |
-| **Annual Expenses** | 9,470 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Expenses | 6,402.5 |
+| **Annual Expenses** | 13,470 |
 
 ## VAT Returns
 
@@ -634,11 +634,11 @@ Status: RECONCILES
 | B8 | Other Income | 3700 | accounts.sales.4003 |
 | B9 | **Sales Turnover** | 339200 | gl-cor:amount (salesTurnover) |
 | B11 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
-| B14 | Materials / Stock | 5450 | accounts.purchases.5000 |
+| B14 | Materials / Stock | 9450 | accounts.purchases.5000 |
 | B15 | Sub-Contractors | 6666.66666666667 | accounts.purchases.5001 |
 | B16 | Other Direct Costs | 4020 | accounts.purchases.5002 |
-| B17 | Cost of Sales | 16136.6666666667 | gl-cor:amount (costOfSales) |
-| B19 | **Gross Profit** | 325146.666666666 | gl-cor:amount (grossProfit) |
+| B17 | Cost of Sales | 20136.6666666667 | gl-cor:amount (costOfSales) |
+| B19 | **Gross Profit** | 321146.666666666 | gl-cor:amount (grossProfit) |
 | B21 | Wages & Salaries | 92735.7333333333 | accounts.purchases.5101 |
 | B22 | Light, Heat, Power | 13200 | accounts.purchases.5201 |
 | B23 | Repairs & Maintenance | 950 | accounts.purchases.5400 |
@@ -654,8 +654,8 @@ Status: RECONCILES
 | B33 | Loss (Profit) on Disposal of Assets | 172 | gl-cor:amount (lossOnDisposal) |
 | B34 | Depreciation | 11740 | gl-cor:amount (depreciation) |
 | B35 | Total Admin Expenses | 144171.275 | gl-cor:amount (totalAdmin) |
-| B37 | **Operating Profit** | 180975.391666666 | gl-cor:amount (operatingProfit) |
-| B39 | **Profit Before Tax** | 180975.391666666 | gl-cor:amount (profitBeforeTax) |
+| B37 | **Operating Profit** | 176975.391666666 | gl-cor:amount (operatingProfit) |
+| B39 | **Profit Before Tax** | 176975.391666666 | gl-cor:amount (profitBeforeTax) |
 | C5 |  | 25333.3333333333 |  |
 | D5 |  | 25633.3333333333 |  |
 | E5 |  | 26533.3333333333 |  |
@@ -877,33 +877,33 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 148715.391666666 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 144715.391666666 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 136145.391666666 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 132145.391666666 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7540.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate (40%) | 39377.7566666665 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 46917.9566666665 | tax.incomeTax (total) |
+| E9 | Tax at Higher Rate (40%) | 37777.7566666665 | tax.incomeTax.higherRate |
+| E10 | **Total Income Tax** | 45317.9566666665 | tax.incomeTax (total) |
 | E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 2262 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1968.90783333333 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 51148.8644999998 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1888.90783333333 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 49468.8644999998 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 339200 | gl-cor:amount (sa103s.turnover) |
-| D46 | Cost of sales | 16136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
+| D46 | Cost of sales | 20136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
 | D51 | Other direct costs | 7881.875 | gl-cor:amount (sa103s.otherDirect) |
 | D55 | Employee costs | 92735.7333333333 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 13200 | gl-cor:amount (sa103s.premises) |
 | D64 | Other expenses | 950 | gl-cor:amount (sa103s.otherExpenses) |
-| D71 | **Net profit/loss** | 190632.058333333 | gl-cor:amount (sa103s.netProfit) |
+| D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
 | D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 146632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
-| D106 | **Net profit for tax calc** | 148715.391666666 | gl-cor:amount (sa103s.profitForTax) |
+| D99 | **Taxable profit** | 142632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
+| D106 | **Net profit for tax calc** | 144715.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Wagesinterface
 
@@ -970,8 +970,15 @@ Status: RECONCILES
 | C7 | Q1 Expenses | 2282.5 | gl-cor:amount (vitalTax.q1Exp) |
 | D7 | Q2 Expenses | 2602.5 | gl-cor:amount (vitalTax.q2Exp) |
 | E7 | Q3 Expenses | 2182.5 | gl-cor:amount (vitalTax.q3Exp) |
-| F7 | Q4 Expenses | 2402.5 | gl-cor:amount (vitalTax.q4Exp) |
-| G7 | **Annual Expenses** | 9470 | gl-cor:amount (vitalTax.annualExp) |
+| F7 | Q4 Expenses | 6402.5 | gl-cor:amount (vitalTax.q4Exp) |
+| G7 | **Annual Expenses** | 13470 | gl-cor:amount (vitalTax.annualExp) |
+
+### StockControl
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| AB6 |  | 10000 |  |
+| AB30 |  | 6000 |  |
 
 ### Bank.xlsx!Mar
 

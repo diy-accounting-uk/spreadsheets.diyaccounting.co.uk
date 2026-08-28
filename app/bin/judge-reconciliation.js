@@ -84,8 +84,9 @@ export const PRODUCTS = {
     name: "Self Employed",
     reportPrefix: "GB_Accounts_Self_Employed",
     capitalCodes: { fa: "fixed assets" },
+    disposalCodes: { fs: "fixed asset sales" },
     notes: [
-      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design.",
+      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. The asset schedule carries them at their cost net of VAT, so a registered trader's schedule reads a sixth below the journal.",
       "Purchases coded s are stock and coded c are direct costs. Both sit above gross profit.",
       "On the SA103S the taxable profit line carries the trade's own adjusted profit, and the line the income tax computation reads adds the other business income recorded above it (SE Short D106 = D99 + O99 - O94, where O99 is the grants line). The two differ by exactly the grants figure, and tax is charged on the higher one because that income is taxable too.",
       "The materials line carries the year's stock-coded purchases plus the fall in stock across the year. The stock counts themselves are entered against the two ends of the year on the StockControl sheet.",
@@ -95,8 +96,9 @@ export const PRODUCTS = {
     name: "Limited Company",
     reportPrefix: "GB_Accounts_Company",
     capitalCodes: { fa: "fixed assets" },
+    disposalCodes: { fs: "fixed asset sales" },
     notes: [
-      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design. Code f is leasing, an expense.",
+      "Purchases coded fa are capitalised and are excluded from the profit and loss account by design, and the asset schedule carries them at their cost net of VAT. Code f is leasing, an expense.",
       "Trade debtors on the published balance sheet are the opening debtors plus everything invoiced, less everything banked as a customer receipt. The closing debtors table in the scenario is the supporting list for that figure, not a separate input.",
       "Stock on the published balance sheet comes from the physical count entered against the last month end, through the stock loss adjustment the Stock sheet derives from it.",
       "The corporation tax working sheet takes capital allowances off the accounting profit. A year whose allowances beat that profit shows a negative profit chargeable to corporation tax and no tax to pay; the CT600 has no box for a trading loss, so its own profit boxes read nil.",
@@ -205,17 +207,49 @@ function flatEntries(object, prefix = "") {
   return lines;
 }
 
-// Totals the purchase journal by its code letter, so the judge can follow each code to the
-// line it feeds rather than measuring the whole journal against the expense total.
-function purchaseCodeLines(scenario, product) {
-  const rows = flattenMonths(scenario.purchases);
-  if (rows.length === 0) return [];
-
+// Totals a journal by its code letter, so the judge can follow each code to the line it
+// feeds rather than measuring the whole journal against one total.
+function totalsByCode(rows) {
   const byCode = new Map();
   for (const row of rows) {
     const code = row.code ?? "(none)";
     byCode.set(code, (byCode.get(code) ?? 0) + (typeof row.amount === "number" ? row.amount : 0));
   }
+  return byCode;
+}
+
+// The sales journal by code. An asset disposal is a sales entry under its own code, not a
+// separate journal, so without this line the schedule's disposals look like a movement the
+// scenario never described.
+function salesCodeLines(scenario, product) {
+  const rows = flattenMonths(scenario.sales);
+  if (rows.length === 0) return [];
+  const byCode = totalsByCode(rows);
+  if (byCode.size === 1 && byCode.has("(none)")) return [];
+
+  const lines = [
+    `Sales journal by code: ${[...byCode.entries()]
+      .sort()
+      .map(([code, total]) => `${code} ${money.format(total)}`)
+      .join(", ")}`,
+  ];
+  const disposalCodes = product?.disposalCodes ?? {};
+  const disposals = [...byCode.entries()].filter(([code]) => code in disposalCodes);
+  if (disposals.length > 0) {
+    lines.push(
+      `Asset disposals inside that journal: ${disposals
+        .map(([code, total]) => `${money.format(total)} coded ${code} (${disposalCodes[code]})`)
+        .join(", ")}. These are sales of fixed assets, not turnover, and they drive the disposals on the asset schedule.`,
+    );
+  }
+  return lines;
+}
+
+function purchaseCodeLines(scenario, product) {
+  const rows = flattenMonths(scenario.purchases);
+  if (rows.length === 0) return [];
+
+  const byCode = totalsByCode(rows);
 
   const capitalCodes = product?.capitalCodes ?? {};
   const capital = [...byCode.entries()].filter(([code]) => code in capitalCodes);
@@ -280,6 +314,7 @@ export function summariseScenario(scenario, scenarioName, product = null) {
     if (line) lines.push(line);
   }
 
+  lines.push(...salesCodeLines(scenario, product));
   lines.push(...purchaseCodeLines(scenario, product));
 
   for (const [label, records, field] of [

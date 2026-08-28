@@ -133,6 +133,22 @@ describe("summariseScenario", () => {
     expect(summary).not.toContain("Opening balances");
   });
 
+  it("totals the sales journal by code and names the asset disposals in it", () => {
+    const withDisposal = {
+      ...scenario,
+      sales: {
+        apr: [
+          { amount: 1000, code: "a" },
+          { amount: 15000, code: "fs" },
+        ],
+        may: [{ amount: 500, code: "a" }],
+      },
+    };
+    const summary = summariseScenario(withDisposal, "se-scenario-advanced", PRODUCTS.se);
+    expect(summary).toContain("Sales journal by code: a 1,500.00, fs 15,000.00");
+    expect(summary).toContain("Asset disposals inside that journal: 15,000.00 coded fs (fixed asset sales).");
+  });
+
   it("totals the purchase journal by code", () => {
     const coded = {
       ...scenario,

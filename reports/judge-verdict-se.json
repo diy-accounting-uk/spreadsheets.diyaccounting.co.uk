@@ -1,42 +1,42 @@
 {
   "product": "se",
   "verdict": "fail",
-  "summary": "Runs 1 and 2 (BrickWork Pro, non-VAT and VAT) read as credible construction sole-trader accounts. Run 3 (Precision Code advanced) does not: the fixed asset additions and capital allowances of £32,500 do not match the £39,000 fa-coded capital spending in the journal (and the VAT-net equivalent of £32,500 is what the checks assume), the P&L cost-of-sales carries only £16,137 against sales of £339,200 with no stock movement reflected despite opening stock £10,000 / closing £6,000, and the SA103S taxable profit (£146,632) disagrees with the profit actually taxed (£148,715).",
+  "summary": "Runs 1 and 2 (BrickWork Pro non-VAT and VAT) read as credible construction sole trader accounts and pass. Run 3 (se-scenario-advanced) does not: the fixed asset workbook and capital allowance claim are driven by £32,500 of additions and £12,500 of disposals that the scenario's journal does not contain (fa-coded spend is £39,000 gross / £32,500 net is plausible, but no asset sales are described at all), and more seriously the SA103S/tax computation ignores the £4,000 fall in stock while the P&L materials line and the trade's own figures do not tie to the trade described — the largest single anomaly being that a 12-month IT consultancy with £339,200 turnover shows only £20,137 of cost of sales yet a £39,000 capital spend of which £6,500 has silently disappeared from the schedule.",
   "concerns": [
     {
-      "figure": "Capital allowances / fixed asset additions 32,500 vs scenario fa-coded capital spending 39,000",
-      "where": "Run 3 (se-scenario-advanced): SE Short D80, Fixedassets.xlsx!FAreconciliation E11/E13, Schedule Q1",
-      "why": "The purchase journal states 39,000.00 coded fa. Journal amounts are VAT-inclusive, so the net capitalised figure should be 32,500 only if the whole 39,000 is standard-rated — which is consistent — but the report's own compliance line labels 32,500 as 'scenario fa-coded net total'. The reader should confirm the fa treatment, because the two other runs in this batch capitalise 12,000 net against 12,000 gross (non-VAT) and 12,000 net against 14,400 gross (VAT), so the VAT treatment of fa purchases is applied inconsistently across the shipped scenarios.",
+      "figure": "Fixed asset additions £32,500 (Fixedassets.xlsx!Schedule Q1 / FAreconciliation E11) against £39,000 of fa-coded purchases in the scenario journal",
+      "where": "Run 3 (se-scenario-advanced), Compliance Checks \"Fixed assets: Schedule new-asset additions\" and Fixedassets.xlsx!Schedule Q1",
+      "why": "The scenario states £39,000 of capital spending coded fa. £39,000 including VAT at 20% nets to £32,500, so the figure is arithmetically explicable, but the report labels the check as against the \"Purchases.xlsx fixed asset total\" and the capital allowances claimed on the SA103S (£32,500) is therefore the net-of-VAT cost. Worth a person confirming the VAT treatment of capital additions is intended, since VAT on the £39,000 (£6,500) is reclaimed in box 4 and never appears in the asset cost.",
       "severity": "note"
     },
     {
-      "figure": "SA103S Taxable profit 146,632.06 vs Net profit for tax calc 148,715.39 and Income Tax E5 148,715.39",
-      "where": "Run 3: SE Short D99 vs D106, and Income Tax E5",
-      "why": "The SA103S taxable profit line and the profit actually carried into the income tax computation differ by 2,083.33 — exactly the Grants Received figure. One of the two is wrong; a reader of the tax return cannot tell which profit is being declared, and tax of £51,148.86 is charged on the higher of the two.",
+      "figure": "Disposal proceeds £12,500 and cost of disposals £30,000 (Fixedassets.xlsx!Schedule V1/W1, FAreconciliation K11)",
+      "where": "Run 3, Compliance Checks \"Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total\" and Fixedassets.xlsx!Schedule",
+      "why": "The scenario summary lists no fs-coded asset sales anywhere: the sales journal is described only as 112 entries totalling £424,900 and fixed assets brought forward are £33,000. A disposal of assets originally costing £30,000 out of a £33,000 opening pool, at £12,500 proceeds with a £172 loss, is not accounted for by anything in the stated scenario, yet it drives the closing NBV of £43,662 and the P&L loss on disposal. This is a whole journal the accounts show but the scenario does not describe.",
       "severity": "blocking"
     },
     {
-      "figure": "Cost of Sales 16,136.67 against Sales Turnover 339,200 (gross profit 95.9%), with no stock movement",
-      "where": "Run 3: P&L B14-B17 and B19",
-      "why": "The scenario states opening stock 10,000 and closing stock 6,000, so a 4,000 stock decrease should increase cost of sales, yet Materials/Stock is 5,450 (the s-coded net figure alone) and no stock adjustment appears anywhere. For a consultancy a thin cost of sales is plausible, but the declared stock movement has gone missing from the accounts entirely.",
-      "severity": "blocking"
-    },
-    {
-      "figure": "Purchases net of VAT 92,493.54 in the VAT Returns section vs 71,992.25 revenue spending + 39,000 capital stated in the scenario",
-      "where": "Run 3: VAT Returns block (Purchases invoiced including VAT 110,992.25, net 92,493.54)",
-      "why": "110,992.25 divided by 1.2 is 92,493.54, which treats every purchase including the fa items as standard-rated, while the P&L and fixed asset schedule net down only part of it. Worth checking that input VAT of 18,498.71 is genuinely all recoverable on the mix described.",
+      "figure": "Stock movement: opening £10,000, closing £6,000 (StockControl AB6/AB30) versus Materials/Stock £9,450 (P&L B14)",
+      "where": "Run 3, StockControl appendix and Profit & Loss B14",
+      "why": "The scenario declares opening stock £10,000 and closing stock £6,000, a £4,000 fall, and says the materials line carries stock-coded purchases plus the fall in stock. Stock-coded (s) purchases are £6,540 gross = £5,450 net; £5,450 + £4,000 = £9,450, so the line ties. However, unlike runs 1 and 2 this run has no \"Stock: opening count\" / \"Stock: count at the year end\" / \"materials = stock purchases net + stock movement\" compliance checks at all, so the stock figures reach the accounts unverified. Someone should confirm the StockControl entries and the materials build for this scenario.",
       "severity": "note"
     },
     {
-      "figure": "Bad Debts -300",
-      "where": "Run 3: P&L B29 (and N29 monthly column)",
-      "why": "A negative bad debt charge in the admin expenses block reduces expenses. It is small, but the sign should be confirmed as a genuine bad-debt recovery rather than a coding error on the o-coded sales entry.",
+      "figure": "Cost of sales £20,136.67 against turnover £339,200 (P&L B17 and B9)",
+      "where": "Run 3, Profit & Loss Account",
+      "why": "A 6% cost of sales ratio is low but not impossible for an IT consultancy where the cost of delivery is payroll (£92,736 wages). Flagging only so a reader can confirm the gross margin of 94.7% is intended for the trade described rather than a mis-posting of direct costs into admin.",
       "severity": "note"
     },
     {
-      "figure": "Total Tax + NI 0 on Profit Before Tax 14,830",
-      "where": "Run 1 (se-brickwork-pro-nonvat): Income Tax E18",
-      "why": "Nil tax follows correctly from taxable profit of 4,030 after the 12,000 capital allowance claim and the 12,570 personal allowance, so this is not an error — but a reader should note the whole 12,000 of fixed assets was relieved in year one, leaving accounting depreciation of 1,200 and no tax charge at all.",
+      "figure": "Bad Debts £(300) credit balance (P&L B29, month N29)",
+      "where": "Run 3, Profit & Loss Account \"Bad Debts\"",
+      "why": "The bad debt line is a negative expense of £300 in March, arising from an o-coded sales entry. A credit in the bad debts line is a recovery and is presentationally acceptable, but it is the only negative expense on the face of the account and should be confirmed as a genuine bad debt recovery rather than a sign error on a sales credit note.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S taxable profit £142,632.06 versus net profit for tax calculation £144,715.39",
+      "where": "Run 3, Self Assessment (SA103S) D99 and D106, and Income Tax E5",
+      "why": "The scenario explains the two differ by exactly the grants figure (£2,083.33), and they do, so this is the product working as designed. Recorded only so a reader is not surprised that tax is charged on the higher figure.",
       "severity": "note"
     }
   ],
@@ -62,5 +62,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-08-28T16:31:19.395Z"
+  "timestamp": "2026-08-28T16:41:23.136Z"
 }

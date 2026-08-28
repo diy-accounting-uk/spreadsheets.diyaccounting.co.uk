@@ -892,22 +892,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // the fall in stock across it, so a stock movement that never reaches the
   // accounts shows up here and nowhere else.
   const stockControl = results.StockControl;
-  if (stockControl && expected.opening_stock !== undefined) {
-    check("Stock: opening count", num(stockControl.AB6), expected.opening_stock);
+  // A fixture states its stock either as its own table or among the totals it
+  // declares, so both spellings are read here.
+  const openingStock = expected.stock?.opening ?? expected.opening_stock;
+  const closingStock = expected.stock?.closing ?? expected.closing_stock;
+  if (stockControl && openingStock !== undefined) {
+    check("Stock: opening count", num(stockControl[STOCK_OPENING_COUNT_CELL]), openingStock);
   }
-  if (stockControl && expected.closing_stock !== undefined) {
-    check("Stock: count at the year end", num(stockControl.AB30), expected.closing_stock);
+  if (stockControl && closingStock !== undefined) {
+    check("Stock: count at the year end", num(stockControl[STOCK_CLOSING_COUNT_CELL]), closingStock);
   }
-  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined && expected.purchases) {
+  if (openingStock !== undefined && closingStock !== undefined && expected.purchases) {
     let stockPurchasesNet = 0;
     for (const transactions of Object.values(expected.purchases)) {
       for (const tx of transactions) if (tx.code === "s") stockPurchasesNet += netOfVat(tx.amount, rate);
     }
-    check(
-      "P&L: materials = stock purchases net + the year's stock movement",
-      num(pl.B14),
-      stockPurchasesNet + expected.opening_stock - expected.closing_stock,
-    );
+    check("P&L: materials = stock purchases net + the year's stock movement", num(pl.B14), stockPurchasesNet + openingStock - closingStock);
   }
 
   // Debtors/creditors checks — read the real G1 total (SUM(G5:G300) of the
