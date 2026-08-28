@@ -107,6 +107,11 @@ const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19 };
 const STRADDLING_SALES_COLUMNS = { date: "A", name: "B", invoice: "C", amount: "E" };
 const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", description: "E", amount: "G" };
 
+// The StockControl physical-count cells for the two ends of the accounting
+// year -- row 6 is the opening count and row 30 the count at the year end.
+const STOCK_OPENING_COUNT_CELL = "AB6";
+const STOCK_CLOSING_COUNT_CELL = "AB30";
+
 export function cellWrites(scenario) {
   const rate = vatRateFor(scenario);
   const salesWrites = {};
@@ -209,12 +214,6 @@ export function cellWrites(scenario) {
     }
   }
 
-  // Stock
-  if (scenario.stock) {
-    // StockControl in Financialaccounts.xlsx — need to find correct cells
-    // For now, stock is written via the scenario expected values in compliance checks
-  }
-
   // Opening/closing debtors — column G is "Sales Value including Vat", the
   // only column the sheet's own G1 total (SUM(G5:G300)) reads. Column D
   // carries no header and no formula anywhere in the workbook.
@@ -266,6 +265,19 @@ export function cellWrites(scenario) {
 
   // Business Details (in Financialaccounts.xlsx hub)
   const hubWrites = {};
+
+  // Stock (StockControl). The sheet takes a physical count against each month
+  // end, row 6 for the year's opening through row 30 for its close, and the
+  // P&L's materials line takes each month's count off the month before it
+  // (C14 = Apr purchases + AB6 - AB8, D14 = May purchases + AB8 - AB10, ...).
+  // The twelve months therefore telescope to AB6 - AB30 whatever is entered
+  // between them, so the two ends of the year are the whole of the year's
+  // stock movement. Without them the movement never reaches cost of sales.
+  if (scenario.stock) {
+    hubWrites.StockControl = {};
+    if (scenario.stock.opening !== undefined) hubWrites.StockControl[STOCK_OPENING_COUNT_CELL] = scenario.stock.opening;
+    if (scenario.stock.closing !== undefined) hubWrites.StockControl[STOCK_CLOSING_COUNT_CELL] = scenario.stock.closing;
+  }
   if (scenario.business || scenario.metadata) {
     hubWrites["Business Details"] = {};
     const bd = hubWrites["Business Details"];
@@ -718,6 +730,8 @@ export function standardReads() {
   // against the template: C4=[6]Apr!$M$1, D4=$N$1, E4=$O$1, H4=$T$1). CELL_MAP
   // above already carries C4-C15 for the report; the rest are read here so
   // every month is available to check without bloating the report appendix.
+  reads.StockControl = [STOCK_OPENING_COUNT_CELL, STOCK_CLOSING_COUNT_CELL];
+
   reads.Wagesinterface = reads.Wagesinterface || [];
   for (let i = 0; i < WAGES_MONTH_ROWS.length; i++) {
     for (const col of ["C", "D", "E", "H"]) {
@@ -805,6 +819,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const rate = vatRateFor(expected);
 
+  // A template cell that resolves to blank reads back as the string the
+  // formula puts there (" "), so every arithmetic read goes through this.
+  const num = (v) => (typeof v === "number" ? v : 0);
+
   // The rate cell itself, month by month on both journals. A non-registered
   // scenario writes 0 into April's Sales tab and nothing else; every other
   // month has to arrive at the same rate down the template's own chain of
@@ -868,9 +886,28 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
 
   // Stock check
-  if (expected.opening_stock !== undefined) {
-    const sc = results.StockControl;
-    if (sc) check("Opening Stock", sc.B5 || 0, expected.opening_stock, expected.opening_stock * 0.01);
+  // Stock. The counts at the two ends of the year, read back from the sheet
+  // they were entered on, and the movement between them reaching cost of
+  // sales. The materials line carries the year's stock-coded purchases plus
+  // the fall in stock across it, so a stock movement that never reaches the
+  // accounts shows up here and nowhere else.
+  const stockControl = results.StockControl;
+  if (stockControl && expected.opening_stock !== undefined) {
+    check("Stock: opening count", num(stockControl.AB6), expected.opening_stock);
+  }
+  if (stockControl && expected.closing_stock !== undefined) {
+    check("Stock: count at the year end", num(stockControl.AB30), expected.closing_stock);
+  }
+  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined && expected.purchases) {
+    let stockPurchasesNet = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) if (tx.code === "s") stockPurchasesNet += netOfVat(tx.amount, rate);
+    }
+    check(
+      "P&L: materials = stock purchases net + the year's stock movement",
+      num(pl.B14),
+      stockPurchasesNet + expected.opening_stock - expected.closing_stock,
+    );
   }
 
   // Debtors/creditors checks — read the real G1 total (SUM(G5:G300) of the
@@ -1258,8 +1295,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // link that stops carrying fails on that month and side alone.
   const vatinterface = results["Vat.xlsx!Vatinterface"];
   if (vatinterface) {
-    const num = (v) => (typeof v === "number" ? v : 0);
-
     Object.values(MONTH_SHEETS).forEach((tab, i) => {
       const row = VATINTERFACE_ROWS.firstMonth + i;
       const salesMonth = results[`Sales.xlsx!${tab}`];
