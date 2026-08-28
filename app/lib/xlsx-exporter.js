@@ -7,13 +7,7 @@
 
 import JSZip from "jszip";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
-import {
-  BST_PURCHASE_CODE_MAP,
-  SE_PURCHASE_CODE_MAP,
-  LTD_PURCHASE_CODE_MAP,
-  LTD_SALES_CODE_MAP,
-  MONTH_ORDER,
-} from "./scenario-extractor.js";
+import { BST_PURCHASE_CODE_MAP, SE_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "./scenario-extractor.js";
 
 /**
  * Build reverse code map: { code → accountMainID }.
@@ -180,7 +174,7 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   const lines = [];
   let entryNum = 1;
 
-  // Sales.xlsx: sheets Apr-Mar
+  // Sales.xlsx: one sheet per month of the accounting period
   const salesPath = resolve(sourceDir, "Sales.xlsx");
   const salesZip = await JSZip.loadAsync(readFileSync(salesPath));
   const salesSheetMap = await buildSheetMap(salesZip);
@@ -213,7 +207,7 @@ export async function extractMultiFileTransactions(sourceDir, product) {
     }
   }
 
-  // Purchases.xlsx: sheets Apr-Mar
+  // Purchases.xlsx: one sheet per month of the accounting period
   const purchasesPath = resolve(sourceDir, "Purchases.xlsx");
   const purchasesZip = await JSZip.loadAsync(readFileSync(purchasesPath));
   const purchasesSheetMap = await buildSheetMap(purchasesZip);
@@ -599,9 +593,10 @@ export async function extractPeriodStartMonth(sourceDir, product) {
 }
 
 /**
- * The accounting period the exported postings cover, from the period's start
- * month and the years the postings themselves carry. Opening balances are
- * brought forward from before the period, so they take no part in this.
+ * The accounting period the exported postings cover, to the month: the start
+ * month comes from the tab order and the year from the postings themselves.
+ * Opening balances are brought forward from before the period, so they take no
+ * part in it.
  */
 export function periodCovered(startMonthIndex, lines) {
   const postings = lines.filter((line) => line.sourceJournalID !== "journal");

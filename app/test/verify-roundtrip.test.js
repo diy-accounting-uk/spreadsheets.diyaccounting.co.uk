@@ -69,28 +69,13 @@ const PRODUCTS = [
     // ltd-2025's financial_year runs 2025-04-01..2026-03-31, so the year-end
     // must be a month-end inside that window.
     yearEnd: "2025-05-31",
-    // Known-broken: pass 1's export rolls the calendar year backwards for
-    // postings dated after this year-end (e.g. a line dated 2026-05-31 is
-    // followed by one dated 2025-06-01 instead of 2026-06-01), and pass 2
-    // then "corrects" the dates back onto the true calendar -- the two
-    // passes disagree because pass 1 is wrong, not because pass 2 is lossy.
-    // Reproducible locally by running this product's two generate+export
-    // passes and diffing lines.jsonl. Confirmed to be a real defect in the
-    // export/generate date arithmetic for non-March year-ends, not a
-    // test-setup issue -- out of scope for this file (it only adds year-end
-    // coverage to the roundtrip check). Left as an expected failure so the
-    // regression stays visible without breaking CI; it starts failing loudly
-    // (an unexpected pass) once the underlying date bug is fixed, which is
-    // the cue to drop knownBroken.
-    knownBroken: true,
   },
 ];
 
 describe.skipIf(!hasLibreOffice())("Double-roundtrip fidelity", () => {
   for (const product of PRODUCTS) {
     const label = product.label || product.name;
-    const test = product.knownBroken ? it.fails : it;
-    test(`${label}: pass 2 export equals pass 1 export`, { timeout: STEP_TIMEOUT_MS }, () => {
+    it(`${label}: pass 2 export equals pass 1 export`, { timeout: STEP_TIMEOUT_MS }, () => {
       const pkg1 = resolve(ROOT, "target", `${label}-rt-pkg1`);
       const data1 = resolve(ROOT, "target", `${label}-rt-data1`);
       const pkg2 = resolve(ROOT, "target", `${label}-rt-pkg2`);
