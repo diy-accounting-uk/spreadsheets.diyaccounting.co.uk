@@ -78,6 +78,8 @@ export const PRODUCTS = {
       "Purchases coded f are capitalised. They reach the Purchases sheets' year-to-date fixed asset column, reported as Purchases capitalised as fixed assets, and are excluded from the profit and loss account by design.",
       "Purchases coded s are stock and coded d are direct costs. Both sit above gross profit, in cost of sales and direct costs, not in the expense lines.",
       "The Debtors & Creditors sheet holds three debtor slots and four creditor slots on each side. A slot the scenario has no entry for is left empty and reads as a dash.",
+      "Gross profit on this product is sales less stock and direct costs only. Employee costs, premises and every other expense line sit below it, so a service business shows a high gross margin by the way the sheet is laid out rather than by anything about the trade.",
+      "The package has no payroll workbook. Staff wages reach the accounts through the purchase journal under the employee-costs code, and a sole trader's own drawings are not an expense and do not appear at all.",
     ],
   },
   se: {

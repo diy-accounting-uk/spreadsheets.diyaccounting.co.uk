@@ -29,6 +29,7 @@ import {
   SE_PURCHASE_CODE_MAP,
   MONTH_ORDER,
   filterBst,
+  bstStaffWagesAsPurchases,
   filterAdvanced,
   filterFull,
   buildGrouped,
@@ -135,7 +136,7 @@ const straddlingPurchases = [
 // Extract BST (basic)
 // ============================================================================
 
-const bstLines = filterBst(allLines);
+const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
 const bstSalesLines = bstLines.filter((l) => l.sourceJournalID === "sales");
 const bstTotalSales = computeGrossSales(bstSalesLines);
 const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP);

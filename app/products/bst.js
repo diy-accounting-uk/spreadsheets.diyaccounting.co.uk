@@ -6,7 +6,7 @@
 // Calls shared tools from app/lib/.
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
-import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
 
 export const PRODUCT = {
   id: "bst",
@@ -109,11 +109,12 @@ export function cellWrites(scenario) {
   // formula-driven from the cost in E -- the "EXISTING" (opening) block's
   // non-vehicle categories carry no such formula in this template, so an
   // opening-balance asset there would give zero capital-allowance signal.
-  if (scenario.fixed_asset_additions) {
+  const assetAdditions = fixedAssetAdditions(scenario, "f");
+  if (assetAdditions.length > 0) {
     if (!writes["Fixed Assets"]) writes["Fixed Assets"] = {};
     const fa = writes["Fixed Assets"];
     let row = 67;
-    for (const asset of scenario.fixed_asset_additions) {
+    for (const asset of assetAdditions) {
       const d = parseDate(asset.date);
       fa[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (asset.description) fa[`C${row}`] = asset.description;
@@ -401,11 +402,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // taxable profit. The schedule's own AIA formula (cost x Admin!G4 rate) is
   // recomputed independently here from the read-back Admin rate, so this
   // check also stands in as the Admin-echo check for the AIA rate cell.
-  if (expected.fixed_asset_additions && results["Fixed Assets"]) {
+  const expectedAdditions = fixedAssetAdditions(expected, "f");
+  if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
-    const assetCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
+    const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
     check("Fixed Assets: schedule total cost = asset additions", fa.E1 || 0, expected.fixed_asset_cost ?? assetCost);
-    check("Fixed Assets: first addition recorded", fa.E67 || 0, expected.fixed_asset_additions[0].cost);
+    check("Fixed Assets: first addition recorded", fa.E67 || 0, expectedAdditions[0].cost);
 
     if (results.Admin) {
       const aiaRate = results.Admin.G4;

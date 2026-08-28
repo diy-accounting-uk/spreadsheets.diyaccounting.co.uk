@@ -35,7 +35,7 @@ import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
 import { runSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
-import { loadScenario } from "../lib/scenario-loader.js";
+import { loadScenario, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { cellWrites as taxiCellWrites, standardReads as taxiReads, checkCompliance as taxiCheckCompliance } from "../products/taxi.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
@@ -79,6 +79,27 @@ async function readWithCorruption(path, reads, corruptions) {
   }
   return results;
 }
+
+// A purchase coded as capital reaches the journal's own fixed asset column
+// and stops there: the asset schedule is a separate sheet. A scenario that
+// lists no additions of its own used to leave that spend capitalised in one
+// book and absent from the other, earning no capital allowance at all.
+describe("a capitalised purchase reaches the asset schedule", () => {
+  it("derives the additions from the capitalised purchases when the scenario lists none", () => {
+    const spSixty = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-sp-sixty.toml"));
+    expect(spSixty.fixed_asset_additions).toBeUndefined();
+
+    const derived = fixedAssetAdditions(spSixty, "f");
+    expect(derived).toHaveLength(1);
+    expect(derived[0].cost).toBe(200);
+    expect(taxiCellWrites(spSixty)["Fixed Assets"].D47).toBe(200);
+  });
+
+  it("takes a scenario at its word when it lists them", () => {
+    const basic = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-basic.toml"));
+    expect(fixedAssetAdditions(basic, "f")).toBe(basic.fixed_asset_additions);
+  });
+});
 
 describeCalc("Taxi fixed-asset chain and Admin echo catch a broken workbook", () => {
   let scenario;
