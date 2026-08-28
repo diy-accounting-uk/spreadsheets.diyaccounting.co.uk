@@ -275,7 +275,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   const getTabForDate = (shifted) => SHORT_MONTHS[shifted.getUTCMonth()];
 
   function processJournal(entries, writes, nameField, codeDefault) {
-    for (const [monthKey, transactions] of Object.entries(entries)) {
+    for (const transactions of Object.values(entries)) {
       for (const tx of transactions) {
         const d = parseDate(tx.date);
         const shifted = shiftDate(d);
