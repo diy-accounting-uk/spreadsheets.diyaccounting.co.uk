@@ -26,7 +26,9 @@ import {
   standardReads as ltdReads,
   multiFileOptions as ltdOptions,
   checkCompliance as ltdCheckCompliance,
+  profitBridge as ltdProfitBridge,
 } from "../products/ltd.js";
+import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -390,7 +392,7 @@ describeCalc(
       const name = "CT: depreciation add-back = P&L depreciation";
       const corrupted = checksWithCorruptedCell("CorporationTax", "I8", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill"]);
+      expect(failureNames(corrupted)).toEqual([name, "CT: add-backs = depreciation + goodwill", PROFIT_BRIDGE_CHECK]);
     });
 
     it("carries the schedule's per-asset capital allowance rows into the tax computation", () => {
@@ -479,6 +481,7 @@ describeCalc(
         "CT: capital allowances = the allowance lines",
         "CT: profit after capital allowances",
         "CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses",
+        PROFIT_BRIDGE_CHECK,
       ]);
     });
 
@@ -663,6 +666,35 @@ describeCalc(
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
       ]);
+    });
+
+    it("walks the management profit before tax to the profit chargeable to corporation tax", () => {
+      const bridge = ltdProfitBridge(results);
+
+      // The accounts carry bank interest net of the tax deducted at source
+      // and the computation charges it gross, so the two interest lines
+      // differ by exactly that tax.
+      const netInterest = -bridge.rows.find((row) => row.cell === "MnthP&L!B44").value;
+      const grossInterest = bridge.rows.find((row) => row.cell === "CorporationTax!K24").value;
+      expect(grossInterest - netInterest).toBeCloseTo(results.CorporationTax.K37, 6);
+
+      expect(bridge.rows[0].value).toBe(results["MnthP&L"].B45);
+      expect(bridge.computed).toBeCloseTo(results.CorporationTax.K28, 6);
+      expect(bridge.residue).toBeCloseTo(0, 6);
+    });
+
+    it("breaks the bridge, by the interest it lost, when the management interest line is corrupted via JSZip", async () => {
+      const netInterest = results["MnthP&L"].B44;
+      expect(netInterest).toBeGreaterThan(0);
+
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B44", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("MnthP&L", "B44", value);
+
+      // The profit-before-tax identity reads the same cell, so it goes too.
+      expect(failureNames(corrupted)).toEqual(["P&L: PBT = Operating + Interest", PROFIT_BRIDGE_CHECK]);
+      const corruptedResults = { ...results, "MnthP&L": { ...results["MnthP&L"], B44: value } };
+      expect(ltdProfitBridge(corruptedResults).residue).toBeCloseTo(netInterest, 6);
     });
 
     it("fails the blank second financial year box when CT600 AJ128 is filled via JSZip", async () => {

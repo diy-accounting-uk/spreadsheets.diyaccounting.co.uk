@@ -25,7 +25,13 @@ import { parse as parseTOML } from "smol-toml";
 import { runSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as bstCellWrites, standardReads as bstReads, checkCompliance as bstCheckCompliance } from "../products/bst.js";
+import {
+  cellWrites as bstCellWrites,
+  standardReads as bstReads,
+  checkCompliance as bstCheckCompliance,
+  profitBridge as bstProfitBridge,
+} from "../products/bst.js";
+import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
 const SKIP = !hasLibreOffice();
@@ -48,6 +54,10 @@ function corruptCachedValue(xml, cellRef, value) {
   const replaced = match[0].replace(/<v>[^<]*<\/v>/, `<v>${value}</v>`);
   if (replaced === match[0]) throw new Error(`Cell ${cellRef} has no <v> to corrupt`);
   return xml.replace(match[0], replaced);
+}
+
+function failureNames(checks) {
+  return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
 // Loads a populated workbook, overwrites one cell's cached value in one
@@ -150,5 +160,29 @@ describeCalc("BST closure identities catch a broken workbook", () => {
 
     const capCheck = checks.find((c) => c.name === "P&L: Capital Allowances = SE Short chain");
     expect(capCheck.pass).toBe(false);
+  });
+
+  it("walks the net profit to the profit the income tax sheet charges with nothing left over", async () => {
+    const results = await readWithCorruption(populatedPath, bstReads(), null, null, null);
+    const bridge = bstProfitBridge(results);
+
+    expect(bridge.rows[0].value).toBe(results["Profit & Loss Acc"].C24);
+    expect(bridge.computed).toBeCloseTo(results["Income Tax"].E5, 6);
+    expect(bridge.residue).toBeCloseTo(0, 6);
+  });
+
+  it("breaks the bridge, by the allowance it lost, when the annual investment allowance is corrupted", async () => {
+    const reads = bstReads();
+    const intact = await readWithCorruption(populatedPath, reads, null, null, null);
+    const claimed = intact["SE Short"].D80;
+    expect(claimed).toBeGreaterThan(0);
+
+    const results = await readWithCorruption(populatedPath, reads, "SE Short", "D80", 0);
+    const checks = bstCheckCompliance(results, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
+
+    // The same cell feeds the P&L's capital allowance line, so that chain
+    // check goes with it. Nothing else moves.
+    expect(failureNames(checks)).toEqual(["P&L: Capital Allowances = SE Short chain", PROFIT_BRIDGE_CHECK]);
+    expect(bstProfitBridge(results).residue).toBeCloseTo(claimed, 6);
   });
 });

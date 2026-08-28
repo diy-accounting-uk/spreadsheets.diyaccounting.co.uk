@@ -32,7 +32,9 @@ import {
   standardReads as seReads,
   multiFileOptions as seOptions,
   checkCompliance as seCheckCompliance,
+  profitBridge as seProfitBridge,
 } from "../products/se.js";
+import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -71,6 +73,10 @@ async function readCorruptedCell(filePath, sheetName, cellRef, newValue) {
   const sharedStrings = await loadSharedStrings(reloadedZip);
   const reloadedXml = await reloadedZip.file(sheetPath).async("string");
   return readCellValue(reloadedXml, cellRef, sharedStrings);
+}
+
+function failureNames(checks) {
+  return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
 // Moves an Excel date serial on by one calendar year, keeping its month and
@@ -509,6 +515,30 @@ describeCalc(
       const corruptedResults = { ...results, "Purchases.xlsx!Jul": { ...results["Purchases.xlsx!Jul"], H2: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
+    });
+
+    it("walks the profit before tax to the profit the income tax sheet charges with nothing left over", () => {
+      const bridge = seProfitBridge(results);
+
+      // Depreciation is added back and the grants move to box 29, which is
+      // the whole of the distance to the return's own net profit.
+      expect(bridge.rows[0].value).toBe(results["Profit & Loss Account"].B39);
+      expect(bridge.rows[1].value).toBe(results["Profit & Loss Account"].B34);
+      expect(bridge.computed).toBeCloseTo(results["Income Tax"].E5, 6);
+      expect(bridge.residue).toBeCloseTo(0, 6);
+    });
+
+    it("breaks only the bridge, by the allowance it lost, when the box 24 allowance is corrupted", async () => {
+      const claimed = results["SE Short"].O80;
+      expect(claimed).toBeGreaterThan(0);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "SE Short", "O80", 0);
+      expect(corrupted).toBe(0);
+      const corruptedResults = { ...results, "SE Short": { ...results["SE Short"], O80: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+
+      expect(failureNames(corruptedChecks)).toEqual([PROFIT_BRIDGE_CHECK]);
+      expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {

@@ -26,7 +26,13 @@ import { parse as parseTOML } from "smol-toml";
 import { runSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { cellWrites as taxiCellWrites, standardReads as taxiReads, checkCompliance as taxiCheckCompliance } from "../products/taxi.js";
+import {
+  cellWrites as taxiCellWrites,
+  standardReads as taxiReads,
+  checkCompliance as taxiCheckCompliance,
+  profitBridge as taxiProfitBridge,
+} from "../products/taxi.js";
+import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
 const SKIP = !hasLibreOffice();
@@ -49,6 +55,10 @@ function corruptCachedValue(xml, cellRef, value) {
   const replaced = match[0].replace(/<v>[^<]*<\/v>/, `<v>${value}</v>`);
   if (replaced === match[0]) throw new Error(`Cell ${cellRef} has no <v> to corrupt`);
   return xml.replace(match[0], replaced);
+}
+
+function failureNames(checks) {
+  return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
 // Loads a populated workbook, optionally overwrites one cell's cached value
@@ -218,5 +228,31 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
     const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
 
     expect(checks.find((c) => c.name === "SA103S: Profit for tax = Draft Tax E5").pass).toBe(false);
+  });
+
+  it("walks the net profit to the profit the tax calculation charges with nothing left over", async () => {
+    const reads = taxiReads();
+    const results = await readWithCorruption(populatedPath, reads, null, null, null);
+    const bridge = taxiProfitBridge(results);
+
+    // The P&L charges the allowances inside cost of sales; the return takes
+    // them back out at box 20 and claims them again at boxes 22 to 24.
+    expect(bridge.rows[0].value).toBe(results["Profit & Loss Acc"].B23);
+    expect(bridge.rows[1].value).toBe(results["Profit & Loss Acc"].B10);
+    expect(bridge.computed).toBeCloseTo(results["Draft Tax calculation"].E5, 6);
+    expect(bridge.residue).toBeCloseTo(0, 6);
+  });
+
+  it("breaks only the bridge, by the allowance it lost, when the box 24 allowance is corrupted", async () => {
+    const reads = taxiReads();
+    const intact = await readWithCorruption(populatedPath, reads, null, null, null);
+    const claimed = intact["SE Short"].O80;
+    expect(claimed).toBeGreaterThan(0);
+
+    const results = await readWithCorruption(populatedPath, reads, "SE Short", "O80", 0);
+    const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
+
+    expect(failureNames(checks)).toEqual([PROFIT_BRIDGE_CHECK]);
+    expect(taxiProfitBridge(results).residue).toBeCloseTo(claimed, 6);
   });
 });

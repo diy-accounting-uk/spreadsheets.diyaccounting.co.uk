@@ -2,7 +2,7 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect } from "vitest";
-import { generateReport, generateSectionReports } from "../lib/report-generator.js";
+import { generateReport, generateSectionReports, buildProfitBridge, PROFIT_BRIDGE_TITLE } from "../lib/report-generator.js";
 
 const mockProductMod = {
   reportSections: (results) => [
@@ -22,6 +22,16 @@ const mockProductMod = {
   cellLabels: () => ({
     "Profit & Loss Acc!C4": { diyLabel: "Sales Turnover", glMapping: "gl-cor:amount (salesTurnover)" },
   }),
+};
+
+const bridgeRows = [
+  { label: "Net profit per the profit and loss account", cell: "Profit & Loss Acc!C24", value: 31812 },
+  { label: "Less annual investment allowance (box 22)", cell: "SE Short!D80", value: -200 },
+];
+
+const mockProductModWithBridge = {
+  ...mockProductMod,
+  profitBridge: () => buildProfitBridge(bridgeRows, "Income Tax!E5", 31612),
 };
 
 const mockResults = {
@@ -72,6 +82,40 @@ describe("generateReport", () => {
     expect(content).toContain("## Income Tax");
   });
 
+  it("includes the profit bridge, its cell references and a nil residue", () => {
+    const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, mockProductModWithBridge);
+    expect(content).toContain(`## ${PROFIT_BRIDGE_TITLE}`);
+    expect(content).toContain("| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 31,812 |");
+    expect(content).toContain("| Less annual investment allowance (box 22) | SE Short!D80 | -200 |");
+    expect(content).toContain("| **Tax profit the bridge computes** | | **31,612** |");
+    expect(content).toContain("| Tax profit the sheet carries | Income Tax!E5 | 31,612 |");
+    expect(content).toContain("| **Residue** | | **0** |");
+  });
+
+  it("states a residue the adjustments do not explain", () => {
+    const productMod = {
+      ...mockProductMod,
+      profitBridge: () => buildProfitBridge(bridgeRows, "Income Tax!E5", 31112),
+    };
+    const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, productMod);
+    expect(content).toContain("| **Residue** | | **500** |");
+  });
+
+  it("prints float noise in the residue as nil rather than a negative zero", () => {
+    const productMod = {
+      ...mockProductMod,
+      profitBridge: () => buildProfitBridge(bridgeRows, "Income Tax!E5", 31612 + 1e-11),
+    };
+    const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, productMod);
+    expect(content).toContain("| **Residue** | | **0** |");
+    expect(content).not.toContain("-0");
+  });
+
+  it("leaves the bridge out for a product that does not supply one", () => {
+    const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, mockProductMod);
+    expect(content).not.toContain(PROFIT_BRIDGE_TITLE);
+  });
+
   it("includes cell appendix with labels and mappings", () => {
     const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, mockProductMod);
     expect(content).toContain("## Appendix: Cell Values");
@@ -106,6 +150,14 @@ describe("generateSectionReports", () => {
     const reports = generateSectionReports(mockResults, mockProductMod);
     expect(reports["cell-values.md"]).toContain("## Profit & Loss Acc");
     expect(reports["cell-values.md"]).toContain("| C4 |");
+  });
+
+  it("gives the bridge its own file", () => {
+    const reports = generateSectionReports(mockResults, mockProductModWithBridge);
+    const bridge = reports["accounting-profit-to-tax-profit-bridge.md"];
+    expect(bridge).toBeDefined();
+    expect(bridge).toContain(`# ${PROFIT_BRIDGE_TITLE}`);
+    expect(bridge).toContain("| Tax profit the sheet carries | Income Tax!E5 | 31,612 |");
   });
 
   it("returns empty object when product has no reportSections", () => {
