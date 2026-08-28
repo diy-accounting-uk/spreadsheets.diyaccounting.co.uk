@@ -362,15 +362,15 @@ The B-column formulas reference `[1]Admin!$B$6` through `[1]Admin!$B$38` and are
 
 ### Date shifting in scenarios
 
-Scenarios are authored assuming a March year-end (April to March). For other year-ends, transaction dates are shifted:
+A scenario's dates belong to the accounting period that scenario covers. A diya-gl book names that period in `book.toml` (`documentInfo.periodCoveredStart`); a scenario TOML names none and runs April to March, which is what its `apr`..`mar` month keys mean. Dates move onto the target package's months by the gap between the two period starts:
 
 ```
-sourceStartMonth = 3          // April (0-indexed)
+sourceStartMonth = the scenario's own period start month (0-indexed)
 targetStartMonth = M % 12     // month after year-end (0-indexed)
 monthOffset = ((targetStartMonth - sourceStartMonth) + 12) % 12
 ```
 
-Each transaction date is shifted by `monthOffset` months and mapped to the correct tab name for the target year-end.
+Each transaction date moves forward by `monthOffset` months, clamped to the last day of the month it lands in so a 31st cannot roll into the following tab, and its shifted month names its tab. Data exported from a package of the same year-end has a zero gap and goes back unchanged, which is what makes the export/generate roundtrip lossless.
 
 ## Multi-File Recalculation Pipeline
 
