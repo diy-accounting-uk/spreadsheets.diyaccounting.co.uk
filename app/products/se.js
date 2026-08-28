@@ -1129,6 +1129,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
     }
+    // The last quarter of a 6 April year runs past it, so its window picks up
+    // the straddling entry sheets alongside the year's own last months.
+    for (const entry of expected.vat_straddling_sales || []) {
+      if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + VAT_RATE);
+    }
+    for (const entry of expected.vat_straddling_purchases || []) {
+      if (!inQuarter(entry.date)) continue;
+      inputVat += entry.amount - entry.amount / (1 + VAT_RATE);
+      purchasesNet += entry.amount / (1 + VAT_RATE);
+    }
     check(`VAT Q${q}: box 1/3 output VAT (G9) = scenario sales VAT for the quarter`, qtr.G9 || 0, outputVat, 1);
     check(`VAT Q${q}: box 4 input VAT (G15) = scenario purchases VAT for the quarter`, qtr.G15 || 0, inputVat, 1);
     check(`VAT Q${q}: box 7 net purchases (G23) = scenario purchases net for the quarter`, qtr.G23 || 0, purchasesNet, 1);
