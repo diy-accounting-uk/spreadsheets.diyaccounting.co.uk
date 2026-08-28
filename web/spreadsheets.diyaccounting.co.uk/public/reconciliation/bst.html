@@ -30,6 +30,11 @@
       .recon-section { margin-top: 2.5em; }
       .recon-facts { list-style: none; padding: 0; }
       .recon-facts li { margin-bottom: 0.3em; }
+      .recon-verdict { margin: 1.2em 0; padding: 0.8em 1em; border: 1px solid #ddd; border-left-width: 5px; border-radius: 4px; background: #fafafa; }
+      .recon-verdict-pass { border-left-color: #2e7d32; }
+      .recon-verdict-fail { border-left-color: #c62828; }
+      .recon-verdict h4 { margin-top: 0; }
+      .recon-verdict-meta { font-size: 0.85em; color: #555; margin-bottom: 0; }
     </style>
     <script src="../lib/analytics.js"></script>
   </head>
@@ -70,14 +75,26 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> bst-scenario-basic (Precision Code - basic sole trader)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 18 passed, 0 warnings, 0 failed</li>
-          <li><strong>Reconciliation runs published:</strong> 7</li>
+          <li><strong>Checks:</strong> 58 passed, 0 warnings, 0 failed</li>
+          <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
+        <div class="recon-verdict recon-verdict-pass">
+          <h4>Plausibility review: pass</h4>
+          <p>The P&amp;L, tax computation, stock, debtors/creditors and fixed asset schedule all track the scenario journals for an IT consultancy: sales 409,900 across twelve credible monthly figures, gross profit 391,360 after stock and direct costs, every one of the 13 revenue expense codes present, and the 39,000 of capital spend excluded from the P&amp;L but claimed as AIA. Nothing looks implausible; two presentational points are recorded as notes only and do not block the run.</p>
+          <ul>
+            <li><strong>SA103S 'AIA / WDA claimed' 0 and 'WDA + Capital Allowance claimed' 0 (D85, O80)</strong> (Self Assessment (SA103S) section): The Fixed Assets schedule and P&amp;L both show 39,000 claimed as AIA, and SA103S box D80 carries 39,000, but the AIA/WDA breakdown boxes on the same return read zero. The total capital allowance reconciles, so this is a presentational gap in the return's analysis boxes rather than a missing figure, but a reader filing SA103S would expect the AIA box to carry the 39,000. [note]</li>
+            <li><strong>SA103S 'Business name' and 'Accounting date' shown as dashes</strong> (Self Assessment (SA103S) section, first two rows): Business Details holds the name Precision Code Trading and the year-end is 2027-04-05, yet the return's identifying fields are blank. Cosmetic only, no monetary effect. [note]</li>
+            <li><strong>Fixed Assets 'New Asset Cost (Plant &amp; Machinery)' 1,800 against Total Original Cost 39,000</strong> (Fixed Assets section (E67 vs E1)): Only the first of the three additions is read back individually; the 1,800 is checked against the scenario's first addition and the schedule total ties to 39,000, so this is a reporting extract rather than a discrepancy. [note]</li>
+          </ul>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-28. The arithmetic checks below run first and decide the status.</p>
+        </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Year end</th><th>Period</th><th>Scenario</th><th>Status</th></tr></thead>
 <tbody>
+<tr><td>2027-04-05</td><td>Apr27</td><td>bst-brickwork-pro-nonvat</td><td>RECONCILES</td></tr>
 <tr><td>2027-04-05</td><td>Apr27</td><td>bst-scenario-basic</td><td>RECONCILES</td></tr>
+<tr><td>2027-04-05</td><td>Apr27</td><td>bst-sp-sixty</td><td>RECONCILES</td></tr>
 <tr><td>2026-04-05</td><td>Apr26</td><td>bst-scenario-basic</td><td>RECONCILES</td></tr>
 <tr><td>2025-04-05</td><td>Apr25</td><td>bst-scenario-basic</td><td>RECONCILES</td></tr>
 <tr><td>2024-04-05</td><td>Apr24</td><td>bst-scenario-basic</td><td>RECONCILES</td></tr>
@@ -94,22 +111,62 @@
 <tbody>
 <tr><td>Total Sales</td><td>409900</td><td>409900</td><td>0</td><td>PASS</td></tr>
 <tr><td>Gross Profit</td><td>391360</td><td>391360</td><td>0</td><td>PASS</td></tr>
-<tr><td>Net Profit</td><td>333908</td><td>333908</td><td>0</td><td>PASS</td></tr>
+<tr><td>Net Profit</td><td>265508</td><td>265508</td><td>0</td><td>PASS</td></tr>
 <tr><td>Premises Costs</td><td>15840</td><td>15840</td><td>0</td><td>PASS</td></tr>
 <tr><td>Gen Admin</td><td>1962</td><td>1962</td><td>0</td><td>PASS</td></tr>
 <tr><td>Legal &amp; Professional</td><td>4560</td><td>4560</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: Gross = Sales - CoS - Direct</td><td>391360</td><td>391360</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: Net = Gross - Expenses</td><td>333908</td><td>333908</td><td>0</td><td>PASS</td></tr>
-<tr><td>P&amp;L: Expense lines sum = Total</td><td>57452</td><td>57452</td><td>0</td><td>PASS</td></tr>
-<tr><td>Income Tax</td><td>120995</td><td>120995</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Net = Gross - Expenses</td><td>265508</td><td>265508</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Total Sales = sum of monthly Sales sheets</td><td>409900</td><td>409900</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Expense lines sum = Total</td><td>125852</td><td>125852</td><td>0</td><td>PASS</td></tr>
+<tr><td>Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets</td><td>179392.25</td><td>179392</td><td>-0.25</td><td>PASS</td></tr>
+<tr><td>Opening Stock</td><td>10000</td><td>10000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Closing Stock</td><td>6000</td><td>6000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Stock: cost of sales = stock purchases + stock movement</td><td>10540</td><td>10540</td><td>0</td><td>PASS</td></tr>
+<tr><td>Opening Debtors</td><td>10800</td><td>10800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Closing Debtors</td><td>10400</td><td>10400</td><td>0</td><td>PASS</td></tr>
+<tr><td>Opening Creditors</td><td>2220</td><td>2220</td><td>0</td><td>PASS</td></tr>
+<tr><td>Closing Creditors</td><td>1710</td><td>1710</td><td>0</td><td>PASS</td></tr>
+<tr><td>Fixed Assets: schedule total cost = asset additions</td><td>39000</td><td>39000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Fixed Assets: first addition recorded</td><td>1800</td><td>1800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Fixed Assets: AIA claimed = schedule cost x Admin AIA rate</td><td>39000</td><td>39000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Fixed Assets: Schedule capital allowance total = P&amp;L Capital Allowances</td><td>39000</td><td>39000</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Taxable Profit = Net Profit - Capital Allowances</td><td>226508</td><td>226508</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Personal Allowance = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Basic Rate = tax data</td><td>0.2</td><td>0.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Higher Rate = tax data</td><td>0.4</td><td>0.4</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Basic Band End = tax data</td><td>37700</td><td>37700</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Higher Band Start = tax data</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 2 Rate = tax data</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 4 Lower Rate = tax data</td><td>0.06</td><td>0.06</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 4 Lower Limit = tax data</td><td>12570</td><td>12570</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 4 Upper Rate = tax data</td><td>0.02</td><td>0.02</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: NI Class 4 Upper Limit = tax data</td><td>50270</td><td>50270</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: AIA Rate = tax data</td><td>1</td><td>1</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: WDA Rate = tax data</td><td>0.14</td><td>0.14</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Motor Vehicle Cost Threshold = tax data</td><td>12000</td><td>12000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Motor Vehicle Restriction = tax data</td><td>3000</td><td>3000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Mileage Higher Rate Limit = tax data</td><td>10000</td><td>10000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Mileage Higher Rate Pence = tax data</td><td>0.45</td><td>0.45</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Mileage Lower Rate Start = tax data</td><td>10001</td><td>10001</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: Mileage Lower Rate Pence = tax data</td><td>0.25</td><td>0.25</td><td>0</td><td>PASS</td></tr>
+<tr><td>Admin: VAT Registration Threshold = tax data</td><td>90000</td><td>90000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Income Tax</td><td>78035</td><td>78035</td><td>0</td><td>PASS</td></tr>
 <tr><td>NI Class 4 (lower)</td><td>2262</td><td>2262</td><td>0</td><td>PASS</td></tr>
-<tr><td>Total Tax + NI</td><td>128930</td><td>128929.76</td><td>-0.2400000000052387</td><td>PASS</td></tr>
-<tr><td>Tax: Taxable = Profit - Allowance</td><td>321338</td><td>321338</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: IT = Basic + Higher</td><td>120995</td><td>120995</td><td>0</td><td>PASS</td></tr>
-<tr><td>Tax: Total = IT - CIS + NI</td><td>128929.76</td><td>128929.76</td><td>0</td><td>PASS</td></tr>
+<tr><td>Total Tax + NI</td><td>83822</td><td>83821.76</td><td>-0.2400000000052387</td><td>PASS</td></tr>
+<tr><td>Tax: sheet applies the basic rate to the lower band</td><td>0.2</td><td>0.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: sheet applies the higher rate above the band</td><td>0.4</td><td>0.4</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: sheet splits the bands at the higher band start</td><td>37701</td><td>37701</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax at basic rate</td><td>7540</td><td>7540.2</td><td>+0.1999999999998181</td><td>PASS</td></tr>
+<tr><td>P&amp;L: tax charged = Income Tax sheet total less CIS deducted</td><td>78035</td><td>78035</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax at higher rate</td><td>70495.2</td><td>70494.8</td><td>-0.39999999999417923</td><td>PASS</td></tr>
+<tr><td>Tax: Taxable = Profit - Allowance</td><td>213938</td><td>213938</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: IT = Basic + Higher</td><td>78035</td><td>78035</td><td>0</td><td>PASS</td></tr>
+<tr><td>Tax: Total = IT - CIS + NI</td><td>83821.76</td><td>83821.76</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: Turnover = P&amp;L Sales</td><td>409900</td><td>409900</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Net profit close to P&amp;L Net</td><td>333908</td><td>333908</td><td>0</td><td>PASS</td></tr>
-<tr><td>SA103S: Profit for tax = Income Tax E5</td><td>333908</td><td>333908</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Net profit close to P&amp;L Net</td><td>265508</td><td>265508</td><td>0</td><td>PASS</td></tr>
+<tr><td>SA103S: Profit for tax = Income Tax E5</td><td>226508</td><td>226508</td><td>0</td><td>PASS</td></tr>
+<tr><td>P&amp;L: Capital Allowances = SE Short chain</td><td>39000</td><td>39000</td><td>0</td><td>PASS</td></tr>
 </tbody>
 </table></div>
       </section>
@@ -132,19 +189,19 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Month</th><th class="num">Sales entries</th><th class="num">Sales total</th><th class="num">Purchases entries</th><th class="num">Purchases total</th></tr></thead>
 <tbody>
-<tr><td>Apr</td><td class="num">9</td><td class="num">33,400.00</td><td class="num">31</td><td class="num">5,111.25</td></tr>
-<tr><td>May</td><td class="num">9</td><td class="num">32,920.00</td><td class="num">34</td><td class="num">6,375.00</td></tr>
-<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">33</td><td class="num">9,057.00</td></tr>
-<tr><td>Jul</td><td class="num">9</td><td class="num">33,760.00</td><td class="num">34</td><td class="num">9,059.25</td></tr>
-<tr><td>Aug</td><td class="num">10</td><td class="num">36,020.00</td><td class="num">32</td><td class="num">4,405.25</td></tr>
-<tr><td>Sep</td><td class="num">10</td><td class="num">33,760.00</td><td class="num">33</td><td class="num">4,975.00</td></tr>
-<tr><td>Oct</td><td class="num">10</td><td class="num">35,560.00</td><td class="num">35</td><td class="num">43,005.75</td></tr>
-<tr><td>Nov</td><td class="num">9</td><td class="num">35,320.00</td><td class="num">31</td><td class="num">6,918.00</td></tr>
-<tr><td>Dec</td><td class="num">8</td><td class="num">32,800.00</td><td class="num">33</td><td class="num">9,451.50</td></tr>
-<tr><td>Jan</td><td class="num">11</td><td class="num">35,440.00</td><td class="num">33</td><td class="num">4,511.25</td></tr>
-<tr><td>Feb</td><td class="num">9</td><td class="num">34,360.00</td><td class="num">33</td><td class="num">4,396.50</td></tr>
-<tr><td>Mar</td><td class="num">8</td><td class="num">31,360.00</td><td class="num">31</td><td class="num">3,726.50</td></tr>
-<tr><td>Year</td><td class="num">111</td><td class="num"><strong>409,900.00</strong></td><td class="num">393</td><td class="num"><strong>110,992.25</strong></td></tr>
+<tr><td>Apr</td><td class="num">9</td><td class="num">33,400.00</td><td class="num">33</td><td class="num">10,811.25</td></tr>
+<tr><td>May</td><td class="num">9</td><td class="num">32,920.00</td><td class="num">36</td><td class="num">12,075.00</td></tr>
+<tr><td>Jun</td><td class="num">9</td><td class="num">35,200.00</td><td class="num">35</td><td class="num">14,757.00</td></tr>
+<tr><td>Jul</td><td class="num">9</td><td class="num">33,760.00</td><td class="num">36</td><td class="num">14,759.25</td></tr>
+<tr><td>Aug</td><td class="num">10</td><td class="num">36,020.00</td><td class="num">34</td><td class="num">10,105.25</td></tr>
+<tr><td>Sep</td><td class="num">10</td><td class="num">33,760.00</td><td class="num">35</td><td class="num">10,675.00</td></tr>
+<tr><td>Oct</td><td class="num">10</td><td class="num">35,560.00</td><td class="num">37</td><td class="num">48,705.75</td></tr>
+<tr><td>Nov</td><td class="num">9</td><td class="num">35,320.00</td><td class="num">33</td><td class="num">12,618.00</td></tr>
+<tr><td>Dec</td><td class="num">8</td><td class="num">32,800.00</td><td class="num">35</td><td class="num">15,151.50</td></tr>
+<tr><td>Jan</td><td class="num">11</td><td class="num">35,440.00</td><td class="num">35</td><td class="num">10,211.25</td></tr>
+<tr><td>Feb</td><td class="num">9</td><td class="num">34,360.00</td><td class="num">35</td><td class="num">10,096.50</td></tr>
+<tr><td>Mar</td><td class="num">8</td><td class="num">31,360.00</td><td class="num">33</td><td class="num">9,426.50</td></tr>
+<tr><td>Year</td><td class="num">111</td><td class="num"><strong>409,900.00</strong></td><td class="num">417</td><td class="num"><strong>179,392.25</strong></td></tr>
 </tbody>
 </table></div>
 <h4>Every entry</h4>
@@ -335,7 +392,7 @@
 </table></div>
 </details>
 <details class="recon-details" id="purchase-journal">
-<summary>Purchase journal: 393 entries, 110,992.25</summary>
+<summary>Purchase journal: 417 entries, 179,392.25</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
@@ -371,6 +428,8 @@
 <tr><td>2025-04-25</td><td>Mileage claim</td><td>m</td><td class="num">38.25</td></tr>
 <tr><td>2025-04-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-04-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-04-30</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-04-30</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>May</h5>
@@ -411,6 +470,8 @@
 <tr><td>2025-05-25</td><td>Mileage claim</td><td>m</td><td class="num">54.00</td></tr>
 <tr><td>2025-05-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-05-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-05-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-05-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Jun</h5>
@@ -450,6 +511,8 @@
 <tr><td>2025-06-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
 <tr><td>2025-06-30</td><td>Directors loan</td><td>i</td><td class="num">250.00</td></tr>
+<tr><td>2025-06-30</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-06-30</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
@@ -490,6 +553,8 @@
 <tr><td>2025-07-25</td><td>Mileage claim</td><td>m</td><td class="num">20.25</td></tr>
 <tr><td>2025-07-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-07-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-07-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-07-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Aug</h5>
@@ -528,6 +593,8 @@
 <tr><td>2025-08-25</td><td>Mileage claim</td><td>m</td><td class="num">38.25</td></tr>
 <tr><td>2025-08-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-08-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-08-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-08-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Sep</h5>
@@ -567,6 +634,8 @@
 <tr><td>2025-09-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-09-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
 <tr><td>2025-09-30</td><td>Directors loan</td><td>i</td><td class="num">208.00</td></tr>
+<tr><td>2025-09-30</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-09-30</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Oct</h5>
@@ -608,6 +677,8 @@
 <tr><td>2025-10-25</td><td>Ford</td><td>f</td><td class="num">36,000.00</td></tr>
 <tr><td>2025-10-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-10-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-10-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-10-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Nov</h5>
@@ -645,6 +716,8 @@
 <tr><td>2025-11-25</td><td>Mileage claim</td><td>m</td><td class="num">81.00</td></tr>
 <tr><td>2025-11-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-11-30</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-11-30</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
@@ -684,6 +757,8 @@
 <tr><td>2025-12-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
 <tr><td>2025-12-31</td><td>Director</td><td>o</td><td class="num">5,000.00</td></tr>
 <tr><td>2025-12-31</td><td>Directors loan</td><td>i</td><td class="num">167.00</td></tr>
+<tr><td>2025-12-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2025-12-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Jan</h5>
@@ -723,6 +798,8 @@
 <tr><td>2026-01-25</td><td>Mileage claim</td><td>m</td><td class="num">38.25</td></tr>
 <tr><td>2026-01-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2026-01-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2026-01-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2026-01-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Feb</h5>
@@ -762,6 +839,8 @@
 <tr><td>2026-02-25</td><td>Mileage claim</td><td>m</td><td class="num">31.50</td></tr>
 <tr><td>2026-02-28</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
 <tr><td>2026-02-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
+<tr><td>2026-02-28</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2026-02-28</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 <h5>Mar</h5>
@@ -799,6 +878,8 @@
 <tr><td>2026-03-28</td><td>Shell</td><td>m</td><td class="num">120.00</td></tr>
 <tr><td>2026-03-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
 <tr><td>2026-03-31</td><td>Directors loan</td><td>i</td><td class="num">125.00</td></tr>
+<tr><td>2026-03-31</td><td>Alice Johnson</td><td>e</td><td class="num">3,500.00</td></tr>
+<tr><td>2026-03-31</td><td>Bob Williams</td><td>e</td><td class="num">2,200.00</td></tr>
 </tbody>
 </table></div>
 </details>
@@ -886,11 +967,11 @@
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
 <tr><td>Sales Turnover</td><td class="num">409,900</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Income</td><td class="num">Other income</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Income</td><td class="num">—</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct)</td><td class="num">10,540</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Direct Costs</td><td class="num">8,000</td></tr>
 <tr><td><strong>Gross Profit</strong></td><td class="num">391,360</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee Costs</td><td class="num">800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee Costs</td><td class="num">69,200</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises Costs</td><td class="num">15,840</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Repairs &amp; Maintenance</td><td class="num">1,140</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;General Admin</td><td class="num">1,962</td></tr>
@@ -901,14 +982,14 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Bad Debts</td><td class="num">500</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Interest &amp; Finance</td><td class="num">750</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Expenses</td><td class="num">17,882</td></tr>
-<tr><td>Total Expenses</td><td class="num">57,452</td></tr>
-<tr><td><strong>Net Profit</strong></td><td class="num">333,908</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances</td><td class="num">0</td></tr>
-<tr><td>Taxable Profit</td><td class="num">333,908</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Income Tax</td><td class="num">0</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at basic rate</td><td class="num">120,995</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4</td><td class="num">7,934.76</td></tr>
-<tr><td>Net Income After Tax</td><td class="num">204,978.24</td></tr>
+<tr><td>Total Expenses</td><td class="num">125,852</td></tr>
+<tr><td><strong>Net Profit</strong></td><td class="num">265,508</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances</td><td class="num">39,000</td></tr>
+<tr><td>Taxable Profit</td><td class="num">226,508</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other Income received</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted</td><td class="num">78,035</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4</td><td class="num">5,786.76</td></tr>
+<tr><td>Net Income After Tax</td><td class="num">142,686.24</td></tr>
 </tbody>
 </table></div>
 <h4>Monthly Sales</h4>
@@ -947,7 +1028,7 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3</td><td class="num">2,400</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1</td><td class="num">8,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2</td><td class="num">2,400</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3</td><td class="num">420</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3</td><td class="num">—</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1</td><td class="num">1,200</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2</td><td class="num">300</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3</td><td class="num">600</td></tr>
@@ -956,6 +1037,51 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2</td><td class="num">300</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3</td><td class="num">60</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4</td><td class="num">150</td></tr>
+</tbody>
+</table></div>
+<h4>Purchase Analysis</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Purchases capitalised as fixed assets</td><td class="num">39,000</td></tr>
+</tbody>
+</table></div>
+<h4>Fixed Assets</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;New Asset Cost (Plant &amp; Machinery)</td><td class="num">1,800</td></tr>
+<tr><td>Total Original Cost</td><td class="num">39,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total First Year Allowance / AIA</td><td class="num">39,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Writing Down Allowance</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Written Down Tax Value</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Capital Allowance on Disposal</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Total Balancing Charge</td><td class="num">0</td></tr>
+</tbody>
+</table></div>
+<h4>Admin (Generator Injected)</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>Personal Allowance</td><td class="num">12,570</td></tr>
+<tr><td>Basic Rate</td><td class="num">0.2</td></tr>
+<tr><td>Higher Rate</td><td class="num">0.4</td></tr>
+<tr><td>Basic Band End</td><td class="num">37,700</td></tr>
+<tr><td>Higher Band Start</td><td class="num">37,701</td></tr>
+<tr><td>NI Class 2 Rate</td><td class="num">0</td></tr>
+<tr><td>NI Class 4 Lower Rate</td><td class="num">0.06</td></tr>
+<tr><td>NI Class 4 Lower Limit</td><td class="num">12,570</td></tr>
+<tr><td>NI Class 4 Upper Rate</td><td class="num">0.02</td></tr>
+<tr><td>NI Class 4 Upper Limit</td><td class="num">50,270</td></tr>
+<tr><td>Annual Investment Allowance Rate</td><td class="num">1</td></tr>
+<tr><td>Writing Down Allowance Rate</td><td class="num">0.14</td></tr>
+<tr><td>Motor Vehicle Cost Threshold</td><td class="num">12,000</td></tr>
+<tr><td>Motor Vehicle Restriction</td><td class="num">3,000</td></tr>
+<tr><td>Mileage Higher Rate Limit</td><td class="num">10,000</td></tr>
+<tr><td>Mileage Higher Rate Pence</td><td class="num">0.45</td></tr>
+<tr><td>Mileage Lower Rate Start</td><td class="num">10,001</td></tr>
+<tr><td>Mileage Lower Rate Pence</td><td class="num">0.25</td></tr>
+<tr><td>VAT Registration Threshold</td><td class="num">90,000</td></tr>
 </tbody>
 </table></div>
 <details class="recon-details">
@@ -976,11 +1102,10 @@
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
 <tr><td>C4</td><td>Sales Turnover</td><td>409900</td><td>gl-cor:amount (salesTurnover)</td></tr>
-<tr><td>C5</td><td>Other Income</td><td>Other income</td><td>gl-cor:amount (otherIncome)</td></tr>
 <tr><td>C6</td><td>Cost of Sales (stock + direct)</td><td>10540</td><td>gl-cor:amount (costOfSales)</td></tr>
 <tr><td>C7</td><td>Direct Costs</td><td>8000</td><td>gl-cor:amount (directCosts)</td></tr>
 <tr><td>C9</td><td><strong>Gross Profit</strong></td><td>391360</td><td>gl-cor:amount (grossProfit)</td></tr>
-<tr><td>C11</td><td>Employee Costs</td><td>800</td><td>accounts.purchases.5101</td></tr>
+<tr><td>C11</td><td>Employee Costs</td><td>69200</td><td>accounts.purchases.5101</td></tr>
 <tr><td>C12</td><td>Premises Costs</td><td>15840</td><td>accounts.purchases.5200</td></tr>
 <tr><td>C13</td><td>Repairs &amp; Maintenance</td><td>1140</td><td>accounts.purchases.5400</td></tr>
 <tr><td>C14</td><td>General Admin</td><td>1962</td><td>accounts.purchases.5501</td></tr>
@@ -991,14 +1116,14 @@
 <tr><td>C19</td><td>Bad Debts</td><td>500</td><td>accounts.purchases.5801 (badDebts)</td></tr>
 <tr><td>C20</td><td>Interest &amp; Finance</td><td>750</td><td>accounts.purchases.5803</td></tr>
 <tr><td>C21</td><td>Other Expenses</td><td>17882</td><td>accounts.purchases (other)</td></tr>
-<tr><td>C22</td><td>Total Expenses</td><td>57452</td><td>gl-cor:amount (totalExpenses)</td></tr>
-<tr><td>C24</td><td><strong>Net Profit</strong></td><td>333908</td><td>gl-cor:amount (netProfit)</td></tr>
-<tr><td>C26</td><td>Capital Allowances</td><td>0</td><td>tax.capitalAllowances</td></tr>
-<tr><td>C28</td><td>Taxable Profit</td><td>333908</td><td>gl-cor:amount (taxableProfit)</td></tr>
-<tr><td>C30</td><td>Income Tax</td><td>0</td><td>tax.incomeTax</td></tr>
-<tr><td>C32</td><td>Tax at basic rate</td><td>120995</td><td>tax.incomeTax.basicRate</td></tr>
-<tr><td>C33</td><td>NI Class 4</td><td>7934.76</td><td>tax.nationalInsurance.class4</td></tr>
-<tr><td>C35</td><td>Net Income After Tax</td><td>204978.24</td><td>gl-cor:amount (netIncome)</td></tr>
+<tr><td>C22</td><td>Total Expenses</td><td>125852</td><td>gl-cor:amount (totalExpenses)</td></tr>
+<tr><td>C24</td><td><strong>Net Profit</strong></td><td>265508</td><td>gl-cor:amount (netProfit)</td></tr>
+<tr><td>C26</td><td>Capital Allowances</td><td>39000</td><td>tax.capitalAllowances</td></tr>
+<tr><td>C28</td><td>Taxable Profit</td><td>226508</td><td>gl-cor:amount (taxableProfit)</td></tr>
+<tr><td>C30</td><td>Other Income received</td><td>0</td><td>gl-cor:amount (otherIncomeReceived)</td></tr>
+<tr><td>C32</td><td>Income Tax less CIS deducted</td><td>78035</td><td>tax.incomeTax (net of CIS)</td></tr>
+<tr><td>C33</td><td>NI Class 4</td><td>5786.76</td><td>tax.nationalInsurance.class4</td></tr>
+<tr><td>C35</td><td>Net Income After Tax</td><td>142686.24</td><td>gl-cor:amount (netIncome)</td></tr>
 <tr><td>D4</td><td>Apr</td><td>33400</td><td>gl-cor:amount (monthlySales.apr)</td></tr>
 <tr><td>E4</td><td>May</td><td>32920</td><td>gl-cor:amount (monthlySales.may)</td></tr>
 <tr><td>F4</td><td>Jun</td><td>35200</td><td>gl-cor:amount (monthlySales.jun)</td></tr>
@@ -1017,36 +1142,39 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>E5</td><td>Profit from Self Employment</td><td>333908</td><td>gl-cor:amount (profitSE)</td></tr>
+<tr><td>E5</td><td>Profit from Self Employment</td><td>226508</td><td>gl-cor:amount (profitSE)</td></tr>
 <tr><td>E6</td><td>Less: Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
-<tr><td>E7</td><td>Taxable Income</td><td>321338</td><td>gl-cor:amount (taxableIncome)</td></tr>
-<tr><td>E8</td><td>Tax at Basic Rate (20%)</td><td>7540.2</td><td>tax.incomeTax.basicRate</td></tr>
-<tr><td>E9</td><td>Tax at Higher Rate (40%)</td><td>113454.8</td><td>tax.incomeTax.higherRate</td></tr>
-<tr><td>E10</td><td><strong>Total Income Tax</strong></td><td>120995</td><td>tax.incomeTax (total)</td></tr>
+<tr><td>E7</td><td>Taxable Income</td><td>213938</td><td>gl-cor:amount (taxableIncome)</td></tr>
+<tr><td>D8</td><td>Basic rate the sheet applies</td><td>0.2</td><td>tax.incomeTax.basicRate (applied)</td></tr>
+<tr><td>C9</td><td>Basic band ceiling the sheet applies</td><td>37701</td><td>tax.incomeTax.higherBandStart (applied)</td></tr>
+<tr><td>D9</td><td>Higher rate the sheet applies</td><td>0.4</td><td>tax.incomeTax.higherRate (applied)</td></tr>
+<tr><td>E8</td><td>Tax at Basic Rate</td><td>7540.2</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>E9</td><td>Tax at Higher Rate</td><td>70494.8</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>E10</td><td><strong>Total Income Tax</strong></td><td>78035</td><td>tax.incomeTax (total)</td></tr>
 <tr><td>E11</td><td>Less: CIS Deducted</td><td>0</td><td>diya-gl:cisDeduction (total)</td></tr>
 <tr><td>E15</td><td>NI Class 4 (lower band)</td><td>2262</td><td>tax.nationalInsurance.class4MainRate</td></tr>
-<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>5672.76</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
-<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>128929.76</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+<tr><td>E16</td><td>NI Class 4 (upper band)</td><td>3524.76</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>83821.76</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>SE Short</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
-<tr><td>A7</td><td>Business name</td><td>Precision Code Trading</td><td>entityInformation.organizationIdentifier</td></tr>
 <tr><td>D38</td><td>Turnover</td><td>409900</td><td>gl-cor:amount (sa103s.turnover)</td></tr>
 <tr><td>D46</td><td>Cost of goods</td><td>18540</td><td>gl-cor:amount (sa103s.costOfGoods)</td></tr>
 <tr><td>D51</td><td>Other direct costs</td><td>9458</td><td>gl-cor:amount (sa103s.otherDirect)</td></tr>
-<tr><td>D55</td><td>Employee costs</td><td>800</td><td>gl-cor:amount (sa103s.employeeCosts)</td></tr>
+<tr><td>D55</td><td>Employee costs</td><td>69200</td><td>gl-cor:amount (sa103s.employeeCosts)</td></tr>
 <tr><td>D60</td><td>Premises costs</td><td>15840</td><td>gl-cor:amount (sa103s.premises)</td></tr>
 <tr><td>D64</td><td>Other expenses</td><td>1140</td><td>gl-cor:amount (sa103s.otherExpenses)</td></tr>
-<tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>333908</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
-<tr><td>D80</td><td>Capital allowances</td><td>0</td><td>tax.capitalAllowances (sa103s)</td></tr>
+<tr><td>D71</td><td><strong>Net profit/loss</strong></td><td>265508</td><td>gl-cor:amount (sa103s.netProfit)</td></tr>
+<tr><td>D80</td><td>Capital allowances</td><td>39000</td><td>tax.capitalAllowances (sa103s)</td></tr>
 <tr><td>D85</td><td>AIA / WDA claimed</td><td>0</td><td>tax.capitalAllowances.aia (sa103s)</td></tr>
+<tr><td>O80</td><td>WDA + Capital Allowance claimed</td><td>0</td><td>tax.capitalAllowances.wda (sa103s)</td></tr>
+<tr><td>O85</td><td>Balancing Charge</td><td>0</td><td>tax.capitalAllowances.balancingCharge (sa103s)</td></tr>
 <tr><td>D94</td><td>Other tax adjustments</td><td>0</td><td>gl-cor:amount (sa103s.otherAdjust)</td></tr>
-<tr><td>D99</td><td><strong>Taxable profit</strong></td><td>333908</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
-<tr><td>A32</td><td>VAT threshold note</td><td>Business income - if your annual turnover was below £90000 vat threshold</td><td>gl-cor:detailComment (sa103s.notes)</td></tr>
-<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>333908</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
+<tr><td>D99</td><td><strong>Taxable profit</strong></td><td>226508</td><td>gl-cor:amount (sa103s.taxableProfit)</td></tr>
+<tr><td>D106</td><td><strong>Net profit for tax calc</strong></td><td>226508</td><td>gl-cor:amount (sa103s.profitForTax)</td></tr>
 </tbody>
 </table></div>
 <h5>PurchasesStock</h5>
@@ -1067,7 +1195,6 @@
 <tr><td>C7</td><td>Opening Debtor 3</td><td>2400</td><td>accounts.assets.1300 (opening[2])</td></tr>
 <tr><td>F5</td><td>Closing Debtor 1</td><td>8000</td><td>accounts.assets.1300 (closing[0])</td></tr>
 <tr><td>F6</td><td>Closing Debtor 2</td><td>2400</td><td>accounts.assets.1300 (closing[1])</td></tr>
-<tr><td>F7</td><td>Closing Debtor 3</td><td>420</td><td>accounts.assets.1300 (closing[2])</td></tr>
 <tr><td>C12</td><td>Opening Creditor 1</td><td>1200</td><td>accounts.liabilities.2100 (opening[0])</td></tr>
 <tr><td>C13</td><td>Opening Creditor 2</td><td>300</td><td>accounts.liabilities.2100 (opening[1])</td></tr>
 <tr><td>C14</td><td>Opening Creditor 3</td><td>600</td><td>accounts.liabilities.2100 (opening[2])</td></tr>
@@ -1078,6 +1205,51 @@
 <tr><td>F15</td><td>Closing Creditor 4</td><td>150</td><td>accounts.liabilities.2100 (closing[3])</td></tr>
 </tbody>
 </table></div>
+<h5>PurchasesMar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>X1</td><td>Purchases capitalised as fixed assets</td><td>39000</td><td>accounts.assets.fixedAssets (purchased)</td></tr>
+</tbody>
+</table></div>
+<h5>Fixed Assets</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>E67</td><td>New Asset Cost (Plant &amp; Machinery)</td><td>1800</td><td>accounts.assets.fixedAssets (cost)</td></tr>
+<tr><td>E1</td><td>Total Original Cost</td><td>39000</td><td>accounts.assets.fixedAssets (totalCost)</td></tr>
+<tr><td>K1</td><td>Total First Year Allowance / AIA</td><td>39000</td><td>tax.capitalAllowances.aia (schedule)</td></tr>
+<tr><td>L1</td><td>Total Writing Down Allowance</td><td>0</td><td>tax.capitalAllowances.wda (schedule)</td></tr>
+<tr><td>M1</td><td>Total Written Down Tax Value</td><td>0</td><td>tax.capitalAllowances.writtenDownValue (schedule)</td></tr>
+<tr><td>Q1</td><td>Total Capital Allowance on Disposal</td><td>0</td><td>tax.capitalAllowances.disposals (schedule)</td></tr>
+<tr><td>R1</td><td>Total Balancing Charge</td><td>0</td><td>tax.capitalAllowances.balancingCharge (schedule)</td></tr>
+</tbody>
+</table></div>
+<h5>Admin</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>N4</td><td>Personal Allowance</td><td>12570</td><td>tax.incomeTax.personalAllowance</td></tr>
+<tr><td>N7</td><td>Basic Rate</td><td>0.2</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>N8</td><td>Higher Rate</td><td>0.4</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>M12</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicBandEnd</td></tr>
+<tr><td>N13</td><td>Higher Band Start</td><td>37701</td><td>tax.incomeTax.higherBandStart</td></tr>
+<tr><td>L17</td><td>NI Class 2 Rate</td><td>0</td><td>tax.nationalInsurance.class2Rate</td></tr>
+<tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4LowerRate</td></tr>
+<tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerLimit</td></tr>
+<tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
+<tr><td>N23</td><td>NI Class 4 Upper Limit</td><td>50270</td><td>tax.nationalInsurance.class4UpperLimit</td></tr>
+<tr><td>G4</td><td>Annual Investment Allowance Rate</td><td>1</td><td>tax.capitalAllowances.aiaRate</td></tr>
+<tr><td>G5</td><td>Writing Down Allowance Rate</td><td>0.14</td><td>tax.capitalAllowances.wdaRate</td></tr>
+<tr><td>E8</td><td>Motor Vehicle Cost Threshold</td><td>12000</td><td>tax.capitalAllowances.motorVehicleCostThreshold</td></tr>
+<tr><td>G8</td><td>Motor Vehicle Restriction</td><td>3000</td><td>tax.capitalAllowances.motorVehicleRestriction</td></tr>
+<tr><td>F21</td><td>Mileage Higher Rate Limit</td><td>10000</td><td>tax.mileage.higherRateLimit</td></tr>
+<tr><td>G21</td><td>Mileage Higher Rate Pence</td><td>0.45</td><td>tax.mileage.higherRatePence</td></tr>
+<tr><td>F22</td><td>Mileage Lower Rate Start</td><td>10001</td><td>tax.mileage.lowerRateStart</td></tr>
+<tr><td>G22</td><td>Mileage Lower Rate Pence</td><td>0.25</td><td>tax.mileage.lowerRatePence</td></tr>
+<tr><td>F26</td><td>VAT Registration Threshold</td><td>90000</td><td>tax.vat.registrationThreshold</td></tr>
+</tbody>
+</table></div>
 </details>
       </section>
       <section class="recon-section" id="tax-review">
@@ -1086,37 +1258,42 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Profit from Self Employment</td><td class="num">333,908</td></tr>
+<tr><td>Profit from Self Employment</td><td class="num">226,508</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance</td><td class="num">12,570</td></tr>
-<tr><td>Taxable Income</td><td class="num">321,338</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%)</td><td class="num">7,540.2</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%)</td><td class="num">113,454.8</td></tr>
-<tr><td><strong>Total Income Tax</strong></td><td class="num">120,995</td></tr>
+<tr><td>Taxable Income</td><td class="num">213,938</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies</td><td class="num">0.2</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies</td><td class="num">37,701</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies</td><td class="num">0.4</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate</td><td class="num">7,540.2</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate</td><td class="num">70,494.8</td></tr>
+<tr><td><strong>Total Income Tax</strong></td><td class="num">78,035</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted</td><td class="num">-0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band)</td><td class="num">2,262</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">5,672.76</td></tr>
-<tr><td><strong>Total Tax + NI</strong></td><td class="num">128,929.76</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band)</td><td class="num">3,524.76</td></tr>
+<tr><td><strong>Total Tax + NI</strong></td><td class="num">83,821.76</td></tr>
 </tbody>
 </table></div>
 <h4>Self Assessment (SA103S)</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th></th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>Business name</td><td class="num">Precision Code Trading</td></tr>
+<tr><td>Business name</td><td class="num">—</td></tr>
 <tr><td>Accounting date</td><td class="num">—</td></tr>
 <tr><td>Turnover</td><td class="num">409,900</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Cost of goods</td><td class="num">18,540</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other direct costs</td><td class="num">9,458</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee costs</td><td class="num">800</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Employee costs</td><td class="num">69,200</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Premises costs</td><td class="num">15,840</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other expenses</td><td class="num">1,140</td></tr>
-<tr><td><strong>Net profit/loss</strong></td><td class="num">333,908</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital allowances</td><td class="num">0</td></tr>
+<tr><td><strong>Net profit/loss</strong></td><td class="num">265,508</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Capital allowances</td><td class="num">39,000</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge</td><td class="num">0</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments</td><td class="num">0</td></tr>
-<tr><td><strong>Taxable profit</strong></td><td class="num">333,908</td></tr>
-<tr><td>VAT threshold note</td><td class="num">Business income - if your annual turnover was below £90000 vat threshold</td></tr>
-<tr><td><strong>Net profit for tax calc</strong></td><td class="num">333,908</td></tr>
+<tr><td><strong>Taxable profit</strong></td><td class="num">226,508</td></tr>
+<tr><td>VAT threshold note</td><td class="num">—</td></tr>
+<tr><td><strong>Net profit for tax calc</strong></td><td class="num">226,508</td></tr>
 </tbody>
 </table></div>
       </section>
