@@ -6,8 +6,8 @@
   "featuredScenario": "taxi-scenario-basic",
   "yearEnd": "2027-04-05",
   "status": "RECONCILES",
-  "runs": 7,
-  "updated": "2026-08-27",
+  "runs": 8,
+  "updated": "2026-08-28",
   "features": {
     "checks": true,
     "sales": true,
@@ -24,7 +24,7 @@
     "trialBalance": false,
     "corporationTax": false,
     "incomeTax": true,
-    "selfAssessment": false,
+    "selfAssessment": true,
     "screenshots": true
   }
 }
