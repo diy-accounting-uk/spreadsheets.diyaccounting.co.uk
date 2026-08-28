@@ -1,6 +1,7 @@
 # Sheet coverage gaps: what the reconciliation flow never touches
 
-Date: 2026-08-28. Repo state: `main` at `0d0f5418`.
+Date: 2026-08-28. Repo state: `claude/recon-brickwork` at `82adde46` (PR #38), which carries the
+completed coverage waves, the VAT-registration mechanism and the LLM judge.
 
 ## Method
 
@@ -9,207 +10,194 @@ pipeline's own sheet references.
 
 **Sheet enumeration.** Each `.xlsx` under `app/templates/{bst,taxi,se,ltd}/` opened via JSZip
 and its sheet list read from `xl/workbook.xml`. 309 sheets across the four products.
-Every sheet carries `state="visible"`; there is not one hidden sheet in any template or in
-any generated package under `examples/`. The Hidden? column below is therefore "No"
-throughout, and is kept only so the absence is on the record.
+Every sheet carries `state="visible"`. There is not one hidden sheet in any template. The
+Hidden? column below is therefore "No" throughout, and is kept only so the absence is on the
+record.
 
 **Touched set.** A sheet counts as touched when `app/products/<product>.js` writes it
-(`cellWrites`), reads it (`CELL_MAP`, or `multiFileOptions().additionalReads`), or reads it
-directly out of `results` in `checkCompliance`.
+(`cellWrites`), reads it (`CELL_MAP`, `standardReads()`, or `multiFileOptions().additionalReads`),
+or reads it directly out of `results` in `checkCompliance`.
 
-One exception, stated so the counts are unambiguous. `se.js` `checkCompliance` reads
-`results.StockControl`, but `CELL_MAP` has no `StockControl` entry, so `standardReads()`
-never requests it and the value is always undefined. The check is dead. StockControl is
-counted here as untouched.
+**Conditional writes count as touched.** The Ltd bank workbooks, the SE `Bank.xlsx` and
+`Cash.xlsx` month tabs, and the straddling VAT entry sheets in both multi-file products are
+written only when a scenario carries entries for them. The pipeline addresses those sheets, so
+they are touched. All of them have at least one fixture that exercises them: `ltd-scenario-full`
+and `se-scenario-advanced` both carry `vat_straddling_sales`, `vat_straddling_purchases` and
+`opening_fixed_assets`, and six of the eleven fixtures carry a bank journal.
 
-**Conditional writes count as touched.** The Ltd bank workbooks and the SE `Bank.xlsx` /
-`Cash.xlsx` month tabs are written only when a scenario carries entries for that account.
-The pipeline addresses those sheets, so they are touched. What it never does is read most
-of them back — see "Largest gaps by risk".
+**Descriptions** come from each sheet's own shared strings and formulas, read straight out of the
+XML. Nothing here is inferred from a sheet name alone, and nothing is taken from the `CONTEXT_*`
+docs, whose cell maps are known to be stale in places.
 
-**In-flight branches** read with `git show`, not checked out: `origin/claude/recon-batch1`
-(PR #28), `origin/claude/recon-ltd-opening-balance` (PR #31), and the worktree
-`spreadsheets-worktrees/wave2-se` on `claude/recon-wave2-se`. PR #28 branched before PR #27
-merged, so its `ltd.js` diff shows the VAT chain and the `TrialBalance!EJ91` assertion as
-removals. That is a rebase artifact, not lost coverage, and is ignored here.
-
-**Descriptions** come from each sheet's own shared strings and formulas, or from the
-context docs where those name the sheet. Nothing here is inferred from a sheet name alone.
-
-One doc correction found along the way. `CONTEXT_SELF_EMPLOYED.md` describes SE
-`Financialaccounts.xlsx` as "~180 visible sheets (10 core + ~170 HMRC/quarterly report
-sheets)". The template and the generated package both hold 10 sheets, full stop.
-`CONTEXT_BASIC_SOLE_TRADER.md` lists "Fixed Assets" among the sections CELL_MAP covers;
-`bst.js` CELL_MAP has no Fixed Assets entry.
+**One change of status since the previous report.** SE `StockControl` was counted untouched
+because `checkCompliance` read `results.StockControl` while `CELL_MAP` had no entry for it, so
+the value was always undefined. `se.js` now writes the sheet's two physical-count cells and adds
+them to `standardReads()`, and the stock checks run against them. StockControl is touched.
 
 ## Basic Sole Trader (bst-excel.xlsx)
 
-33 sheets, single file. Touched: Business Details, SalesApr–SalesMar, PurchasesApr–PurchasesMar,
-PurchasesStock, Debtors & Creditors, Profit & Loss Acc, Income Tax, SE Short.
+33 sheets, single file. Untouched: 1.
 
-| File | Sheet | Hidden? | What it does | Coverage gap / would-be check | Closed by in-flight PR? |
-|---|---|---|---|---|---|
-| bst-excel.xlsx | Home | No | Navigation page. B2 "Basic Sole Trader Accounts", link headings C6 Sales, D6 Purchases, E6 Results. | Static navigation sheet — no reconciliation value. | — |
-| bst-excel.xlsx | Fixed Assets | No | Capital allowances working: "Purchase Reference", "Original Cost", "First Year Allow", "W Down Allowance", "Written Down Tax Value", "Capital Allowance", "Balancing Charge". | Scenario has no fixed asset entries for BST at all, so the sheet is empty and P&L C26 (Capital Allowances) always reads zero. Cover it by adding opening and in-year assets to the fixture, writing cost and pool, then asserting the sheet's capital allowance total equals P&L C26 and flows into taxable profit C28. | No |
-| bst-excel.xlsx | Admin | No | Tax year dates, income tax bands, NI thresholds, mileage rate, capital allowance rates. Written by the generator from the tax-year TOML; the whole tax calculation reads from here. | The generator writes it, the reconciliation never reads it back. A wrong band or rate injected for a tax year produces a wrong tax figure that every downstream check accepts. Cover it by reading the injected rate cells and asserting they equal the tax-year TOML values the run was generated from. | No |
+Touched: Business Details, SalesApr–SalesMar, PurchasesApr–PurchasesMar, PurchasesStock,
+Debtors & Creditors, Profit & Loss Acc, Income Tax, SE Short, Fixed Assets, Admin.
+
+| File | Sheet | Hidden? | What it does | Coverage gap / would-be check |
+|---|---|---|---|---|
+| bst-excel.xlsx | Home | No | Navigation page. B2 "Basic Sole Trader Accounts", column headings B6 Preparation, C6 Sales, D6 Purchases, E6 Results, and a `HYPERLINK` per sheet. B4 explains how to get back to this tab. | Static navigation sheet. No reconciliation value. |
 
 ## Taxi Driver (taxi-excel.xlsx)
 
-33 sheets, single file. Touched: Business Details, SalesApr–SalesMar, PurchasesApr–PurchasesMar,
-Profit & Loss Acc, Draft Tax calculation.
+33 sheets, single file. Untouched: 3.
 
-| File | Sheet | Hidden? | What it does | Coverage gap / would-be check | Closed by in-flight PR? |
-|---|---|---|---|---|---|
-| taxi-excel.xlsx | Home | No | Navigation page. B2 "Taxi Driver Accounts", link headings C6 Taxi Receipts, D6 Expenses, E6 Results. | Static navigation sheet — no reconciliation value. | — |
-| taxi-excel.xlsx | SE Short | No | SA103S self-assessment return page (A1 "HM Revenue & Customs"), fed from the P&L and feeding the Draft Tax calculation. | The customer's actual filing figures. Untouched on main: turnover, net profit and profit-for-tax are never compared to the P&L or the tax sheet. | **Yes — PR #28** adds D38, D71, D106 reads plus "SA103S: Turnover = P&L Sales", "SA103S: Net profit close to P&L Net" and "SA103S: Profit for tax = Draft Tax E5". |
-| taxi-excel.xlsx | VitalTax | No | Quarterly performance summary. C2–G2 = Q1, Q2, Q3, Q4, Annual; several rows marked "Not captured in DIY Accounting". | The MTD quarterly view of the same trade. Cover it as SE's VitalTax is covered on main: assert the annual column equals the P&L's own annual turnover and expense totals, so the two formula paths must agree. | No |
-| taxi-excel.xlsx | Fixed Assets | No | Vehicle capital allowances: "TOTAL FIXED ASSETS AT", "Original Cost", "Annual Investment Allowance", "W Down Allowance", "W Down Net Value", "Balancing Charge", with cost bands for vehicles under and over £12,000. | Feeds P&L B10 Capital Allowances, which PR #28 asserts is mutually exclusive with the mileage allowance but never anchors to an amount. Cover it by adding vehicle assets to the fixture and asserting the schedule's allowance total equals P&L B10. | No |
-| taxi-excel.xlsx | Wages Forecast | No | Forward budget of wage cost. C2 "Total Year" with twelve monthly £ columns. | Forecast tool, not part of the actual-results chain — no data-entry-to-tax path runs through it. | — |
-| taxi-excel.xlsx | Admin | No | Tax year dates, income tax bands, NI thresholds, mileage rate ("p per mile"). Generator-injected; the Draft Tax calculation reads from here. | Same gap as BST Admin: written by the generator, never read back. Cover it by asserting the injected rates equal the tax-year TOML the run used. | No |
+Touched: Business Details, SalesApr–SalesMar, PurchasesApr–PurchasesMar, Profit & Loss Acc,
+SE Short, Draft Tax calculation, Fixed Assets, Admin.
+
+| File | Sheet | Hidden? | What it does | Coverage gap / would-be check |
+|---|---|---|---|---|
+| taxi-excel.xlsx | Home | No | Navigation page. B2 "Taxi Driver Accounts", headings C6 Taxi Receipts, D6 Expenses, E6 Results, and a `HYPERLINK` per sheet. | Static navigation sheet. No reconciliation value. |
+| taxi-excel.xlsx | VitalTax | No | Quarterly performance summary for MTD. C2–G2 = Q1, Q2, Q3, Q4, Annual. Each row re-sums three months of a `'Profit & Loss Acc'` row across columns C:N, and G sums the four quarters. Turnover is row 5, cost of goods row 7, then eleven allowable-expense rows. Bad debt (row 20) and CIS payments (row 24) carry "Not captured in DIY Accounting". | A second formula path over the same P&L months, unread. Cover it as SE's VitalTax is covered: assert G5 equals the P&L's own annual turnover (B5) and each expense row's annual total equals its P&L annual figure, so the two paths must agree. |
+| taxi-excel.xlsx | Wages Forecast | No | Forward budget of wage cost. C2 "Total Year" with twelve monthly columns dated from `Admin!B5:B16`, all in £. | Forecast tool. No data-entry-to-tax path runs through it. |
 
 ## Self Employed (multi-file, 9 workbooks)
 
-100 sheets. Touched on main: Bank and Cash month tabs (write, plus `Bank.xlsx!Mar` A1/A2),
-Sales and Purchases in full, `Fixedassets!Schedule` (write), Payslips Employee and month
-tabs (write), hub Business Details / SE Short / Profit & Loss Account / VitalTax / Income
-Tax / Wagesinterface, and `Vat.xlsx` VATQtr1–4.
+100 sheets. Untouched: 11.
 
-| File | Sheet | Hidden? | What it does | Coverage gap / would-be check | Closed by in-flight PR? |
-|---|---|---|---|---|---|
-| Financialaccounts.xlsx | SE Full | No | SA103F detailed self-assessment pages (A1 "HM Revenue & Customs"). Context doc: "(detailed return)". | The long-form filing figures. Cover it by reading the SA103F turnover, expense and taxable profit boxes and asserting they agree with the P&L and with SE Short, so the two return forms cannot diverge. Note the "Balance Sheet Optional" boxes on this sheet are unlinked manual-entry cells the generator never populates. | No |
-| Financialaccounts.xlsx | StockControl | No | Opening and closing stock control. Context doc: "(opening/closing)". | `checkCompliance` reads `results.StockControl` but CELL_MAP has no entry, so the value is always undefined and the "Opening Stock" check never runs. Cover it by adding the opening and closing stock cells to CELL_MAP and asserting both against the fixture, plus that the cost-of-sales stock adjustment matches opening minus closing. | No |
-| Financialaccounts.xlsx | Profit Forecast | No | Forward budget. C2 "Total Year" with twelve monthly £ columns. Context doc: "(budget tool)". | Forecast tool, not part of the actual-results chain. | — |
-| Financialaccounts.xlsx | Admin | No | Month-end and tax-year dates (B2–B22), capital allowance rates (G4–G8), depreciation rates (G13–G17), income tax rates and bands (N4–N12), NI rates and limits (L16–N23), mileage rates (F21–G22), VAT threshold and rate (F26–F27). Generator-injected, and every linked workbook reads it. | The single highest-leverage sheet in the package and it is never read back. A wrong VAT rate here misprices every VAT figure; a wrong band misprices the tax. Cover it by asserting the injected cells equal the tax-year TOML values. | No |
-| Fixedassets.xlsx | FAreconciliation | No | Ties the asset schedule to the books. C6–C10 read `Schedule!E64/E72/E80/E88/E108`, C13 reads `[2]Mar!$AB$2` (purchases), H13 reads `[3]Mar!$V$2` (sales), and the sheet raises "Purchases exceed Assets listed on Schedule" / "Assets listed on Schedule exceed..." when the two sides disagree. | The workbook's own fixed-asset closure check, unread on main. | **Yes — `claude/recon-wave2-se`** adds `additionalReads` for E11/E13/E15 and K11/K13/K15 plus Schedule column totals. |
-| Fixedassets.xlsx | HPfinance | No | Hire purchase and lease agreements: "Finance Company", "Agreement Reference", "Total Amount Financed excluding Admin & Interest", "Admin Charges", "Total Interest Charged", "Number of Months", "BANK ANALYSIS PURPOSES", "Net Capital Repayment", "Monthly Interest". | Splits an HP payment into capital and interest, which decides how much of it is deductible. No fixture has an HP agreement, so the sheet is empty. Cover it by adding an agreement to the fixture and asserting the monthly capital and interest split sums to the total financed, and that the interest reaches the P&L finance line. | No |
-| Payslips.xlsx | Payslips | No | Printable payslip renderer. "Week or Month number (1-12 or 1 to 53)", "Start row", "Tax Code", "DEDUCTIONS FROM GROSS PAY", "Basic Hours", "Hourly Rate", "BASIC PAY", "Incremental Payments", "National Insurance", "Student loans". | Presentation of figures already asserted upstream in the month tabs. Low reconciliation value; a formula-presence guard is the right tier for it. | No |
-| Payslips.xlsx | Payment | No | Monthly PAYE and NI remittance schedule: "Inland Revenue Payment Due", "Amount Due Nat Insurance", "Amount Due Income Tax", "Statutory Pay Recovered", "Statutory Pay NIC Compensation", "Student Loan Deductions", "Total Amount Payable", "Payment Date", "Amount Paid", "Amount Outstanding". | Real money owed to HMRC, derived from the payroll the pipeline already writes. Cover it by asserting the total payable per month equals that month's income tax plus employee NI plus employer NI from the payroll fixture. | No |
-| Payslips.xlsx | Admin | No | Payroll calendar: "Month Sheet", "Date", "Week number", "Month number", "Date code", "Week in Month", "Weeks in month", W/M frequency codes. Generator-written. | Generator-written, never read back. A wrong week-in-month mapping silently shifts a pay run. Cover it by asserting the generated calendar matches the tax year the package was generated for. | No |
-| Salesinvoice.xlsx | Invoice Template | No | Printable invoice. Formulas pull the header from `'Business Details'` and the customer block by `LOOKUP` over `'Customer Details'`. | Standalone workbook with no external links (both context docs). Nothing it produces reaches the books, so no data-entry-to-tax path runs through it. | — |
-| Salesinvoice.xlsx | Invoice Database | No | Invoice line store: "Enter 1 to ACTIVATE INVOICE", "Sales Invoice Number", "Invoice Date", "Customer Account Number", "Carriage Charge", then "Product Code 1..20" and "Quantity" pairs. | Same — standalone, no link into the books. | — |
-| Salesinvoice.xlsx | Customer Details | No | Customer master: account number, credit terms, name, invoice address, delivery address. | Same — standalone reference data. | — |
-| Salesinvoice.xlsx | Product Details | No | Product master: "Product Code", "Product Description", "Product Selling Price", "VAT Rate", "Purchase Cost Price", "Gross Profit Margin", "Gross Profit Margin %". | Carries arithmetic (margin from price and cost) but stays inside this standalone file. Would only be worth covering if invoicing were wired into Sales.xlsx. | — |
-| Salesinvoice.xlsx | Business Details | No | Invoice header: "Business Name", address lines, post code, slogan, "Terms strictly 30 days net". | Static reference data for the invoice layout. | — |
-| Vat.xlsx | VATQtr5 | No | Fifth VAT quarter, for the period straddling the accounting year end. B25 notes "Box 2 is set to zero, any amounts due should be calculated and inserted manually". | Ltd reads VATQtr1–5; SE reads only 1–4. Cover it by extending the SE `additionalReads` loop to Qtr5 and asserting the same box identities (box 5 = box 3 − box 4). | No |
-| Vat.xlsx | Vatinterface | No | The bridge from month totals to the VAT boxes: "Final Date for Vat Payment", "Month Sales", "Quarter Sales Net of Vat", "Month Vat Output", "Quarter Vat Due Sales", "Month Purchases", "Quarter Purchases Net of vat", "Month Vat Input", "Quarter Vat Reclaimed Purchases". | This is the sheet the shipped-zeros VAT bug ran through. Ltd now anchors the chain end to end via leaf month reads; SE checks the VATQtr boxes for presence only. Cover it by reading the Sales and Purchases month VAT totals from the leaf files and asserting the quarter sums in the interface match, so consistent zeros cannot pass. | No |
-| Vat.xlsx | S02Y1 | No | Sales entered for a VAT period outside the financial year. A1 "USE FOR VAT PERIODS OUTSIDE FINANCIAL YEAR"; columns Sales Date, Customer Name, Sales Invoice Number, "Sales Net of Vat". | Straddling-period VAT. No fixture uses it. Cover it by adding a straddling-quarter transaction and asserting it lands in the right VATQtr box and does not double-count into the in-year P&L. | No |
-| Vat.xlsx | S03Y1 | No | Same, second out-of-year sales period. | Same. | No |
-| Vat.xlsx | S04Y2 | No | Same, third out-of-year sales period. | Same. | No |
-| Vat.xlsx | S05Y2 | No | Same, fourth out-of-year sales period. | Same. | No |
-| Vat.xlsx | P02Y1 | No | Purchases entered for a VAT period outside the financial year. A1 "USE FOR VAT PERIODS OUTSIDE FINANCIAL YEAR"; Purchase Date, "Purchases Net of Vat". | Same, input VAT side. | No |
-| Vat.xlsx | P03Y1 | No | Same, second out-of-year purchases period. | Same. | No |
-| Vat.xlsx | P04Y2 | No | Same, third out-of-year purchases period. | Same. | No |
-| Vat.xlsx | P05Y2 | No | Same, fourth out-of-year purchases period. | Same. | No |
+Touched: `Sales.xlsx` and `Purchases.xlsx` in full (month tabs written and read, opening and
+closing debtor/creditor sheets both), `Bank.xlsx` and `Cash.xlsx` month tabs (written, with each
+file's closing balance read from its Mar tab), hub Business Details / SE Short /
+Profit & Loss Account / VitalTax / Income Tax / Wagesinterface / StockControl,
+`Fixedassets.xlsx` Schedule and FAreconciliation, `Payslips.xlsx` Employee, month tabs and
+Payment, and the whole of `Vat.xlsx` except the sheets listed as untouched below (VATQtr1–5,
+Vatinterface and the eight straddling entry sheets are all addressed).
+
+| File | Sheet | Hidden? | What it does | Coverage gap / would-be check |
+|---|---|---|---|---|
+| Financialaccounts.xlsx | SE Full | No | The SA103F long-form self-assessment return. A1 "HM Revenue & Customs", N1 "Self-employment (full)". Every box is a live formula: D55 turnover reads `'Profit & Loss Account'!B9`, D66 cost of goods reads B14+B16, D70 subcontractors reads B15, D74 staff costs B21, D78 travel B25+B26, D82 premises B22, D86 repairs B23, D90 office costs B24, and the period dates read `Admin!B4` and `Admin!B17`. | The long-form filing figures, and SE's only unread return. SE Short is asserted box by box; the two forms can diverge and nothing notices. Cover it by reading the SA103F turnover, expense and taxable profit boxes and asserting each equals both its P&L source and its SE Short counterpart. The "Balance Sheet Optional" boxes on this sheet stay unlinked manual-entry cells the generator never populates. |
+| Financialaccounts.xlsx | Profit Forecast | No | Forward budget. B2 "ACTUAL Profit and Loss Account", C2 "Total Year", twelve monthly columns dated from `Admin!B5:B16`. | Forecast tool. No data-entry-to-tax path runs through it. |
+| Financialaccounts.xlsx | Admin | No | The tax year's data, injected by the generator. B2–B22 the month-end and tax-year dates, N4 personal allowance, N6 and N7 the basic and higher rates, M11 and N12 the band ends, L20/N20/L23/N23 the Class 4 NI rates and limits, E5 the writing down allowance, E8 and G8 the motor vehicle threshold and restriction, E14–E17 the depreciation rates, F21/G21/F22/G22 the mileage bands, F26 the VAT registration threshold and F27 the VAT rate. Every linked workbook reads it. | The highest-leverage sheet in the package, and the last Admin sheet in any product still never read back. BST, Taxi and Ltd all assert their injected cells against the tax-year TOML. SE asserts none. A wrong VAT rate here misprices every VAT figure and a wrong band misprices the tax, and every downstream check passes on the wrong value. Cover it the way `bst.js` does: read the cells above and assert each equals the `se-<year>.toml` value the run was generated from. |
+| Fixedassets.xlsx | HPfinance | No | Hire purchase and lease agreements. C2 "YEAR END LONG TERM CREDITORS" totalling E8:E14, then per-agreement columns: agreement date, finance company, reference, "Total Amount Financed excluding Admin & Interest", admin charges, total interest, number of months. I/J/K split each agreement into monthly payment, "Net Capital Repayment" and "Monthly Interest". | Splits an HP payment into capital and interest, which decides how much is deductible. No fixture has an agreement, so the sheet is empty. It also carries a template defect: only row 8's monthly-payment formula is intact. Rows 10, 12 and 14 read `=IF(H10>0,#REF!/H10," ")`, so a second agreement computes nothing. Cover it by adding an agreement to the fixture, asserting the capital and interest split sums to the total financed, and asserting the interest reaches the P&L finance line. Entering one on row 10 is what surfaces the `#REF!`. |
+| Payslips.xlsx | Payslips | No | Printable payslip renderer. F3 takes W or M, F4 the week or month number, and H3/H4 look the pay period up in the Payslips Admin calendar to find the sheet and start row. Every figure on the slip is an `INDIRECT` back into that month tab. Headings: "PAYMENTS THIS PERIOD", "GROSS PAY", "DEDUCTIONS FROM GROSS PAY", "Basic Hours", "Hourly Rate", "NET PAY", tax code, NI number and NI table. | Presentation of figures already asserted upstream in the month tabs and in Payslips!Payment. A formula-presence guard is the right tier. |
+| Payslips.xlsx | Admin | No | The payroll calendar the payslip renderer looks up. Columns "Month Sheet", "Date", "Week number", "Month number", "Date code", "Week in Month", one row per day of the tax year (rows 2–366). A2 derives each day's month tab name from B2 and the month number. Generator-written. | Generator-written, never read back. A wrong week-in-month mapping silently moves a pay run onto the wrong tab, and the Payslips renderer resolves against the wrong row. Cover it by asserting the generated calendar's first and last dates, and the week and month numbers at each month boundary, match the tax year the package was generated for. |
+| Salesinvoice.xlsx | Invoice Template | No | Printable invoice. Formulas pull the header from `'Business Details'` and the customer block by `LOOKUP` over `'Customer Details'`. | Standalone workbook with no external links. Nothing it produces reaches the books, so no data-entry-to-tax path runs through it. |
+| Salesinvoice.xlsx | Invoice Database | No | Invoice line store. "Enter 1 to ACTIVATE INVOICE", sales invoice number, invoice date, customer account number, carriage charge, then "Product Code 1..20" and quantity pairs. | Standalone. No link into the books. |
+| Salesinvoice.xlsx | Customer Details | No | Customer master: account number, credit terms, name, invoice address, delivery address. | Standalone reference data. |
+| Salesinvoice.xlsx | Product Details | No | Product master: code, description, selling price, VAT rate (defaulted to 20 down the column), purchase cost price, and formulas for gross profit margin (G) and margin % (H). | Carries arithmetic but stays inside the standalone file. One cell is wrong in the shipped template: G6 holds the margin-% formula `=IF(F6>0,(C6-F6)*100/C6," ")` instead of the margin `=C6-F6` its neighbours use, and H6 is empty. Worth fixing whether or not invoicing is ever wired into `Sales.xlsx`. |
+| Salesinvoice.xlsx | Business Details | No | Invoice header: business name, address lines, post code, slogan, "Terms strictly 30 days net". | Static reference data for the invoice layout. |
 
 ## Limited Company (multi-file, 13 workbooks plus a .docx)
 
-143 sheets. Touched on main: the four bank workbooks' month tabs (write only), Sales and
-Purchases in full, `Fixedassets!Schedule` (write), Payslips Employee and month tabs (write),
-hub OpenAccounts / TrialBalance / MnthP&L / PubP&L / PubBalSht / CorporationTax / Stock, and
-`Vatreturns.xlsx` VATQtr1–5.
+143 sheets. Untouched: 25.
 
-PR #31 changes only OpenAccounts and TrialBalance handling, both already touched, so it
-closes no sheet in this list.
+Touched: `Sales.xlsx` and `Purchases.xlsx` in full, all four bank workbooks' month tabs (written,
+with each file's closing balance read from its final month tab), hub OpenAccounts / TrialBalance /
+MnthP&L / PubP&L / PubBalSht / PubNotes / CorporationTax / CT600 / WagesInterface / Stock / Admin,
+`Fixedassets.xlsx` Schedule and FAreconciliation, `Payslips.xlsx` Employee, month tabs and
+Payment, `Companysecretary.xlsx` RegisterofMembers, and the whole of `Vatreturns.xlsx`.
 
-| File | Sheet | Hidden? | What it does | Coverage gap / would-be check | Closed by in-flight PR? |
-|---|---|---|---|---|---|
-| Financialaccounts.xlsx | PubNotes | No | Statutory notes to the accounts. "1. Tangible Assets" with columns Plant and Machinery, Fixtures & Fittings, Computer Equipment, Motor Vehicles, Total; rows Original Cost, Additions, Disposals, Charge for the year, On Disposals; the depreciation policy and per-class rates; "2. Directors emoluments"; "Gross dividend declared for the year ended". | Published fixed-asset figures the customer files. Planned as item 5 in PLAN_RECONCILIATION_COVERAGE.md: assert the note agrees with the Fixedassets Schedule totals, that NBV = cost − accumulated depreciation, that `PubBalSht!D6` equals the note NBV total, and that the P&L depreciation lines sum to the note's charge for the year. | No |
-| Financialaccounts.xlsx | Report | No | Directors' report. Reads company name from `OpenAccounts!E2`, balance sheet date from `PubBalSht!D2`, year-end and turnover from `PubP&L!E5/F9/B9`, and carries the signed declaration ("...constitute a true and correct record of all the transactions of my/our business for the year ended"). | The cover page of the filed accounts. Cover it by asserting its pulled figures equal their sources — a broken link here publishes a report with a blank or stale turnover. The plan records an open operator question on whether fixed asset figures should also appear here. | No |
-| Financialaccounts.xlsx | CT600 | No | The HMRC CT600 return form. Reads company details from OpenAccounts, "Total turnover from trade or profession" from `PubP&L!F9`, capital allowances from `CorporationTax!K22`, losses brought forward from `OpenAccounts!Q5`, interest from `TrialBalance!EJ58`, and rates from Admin. | The actual corporation tax return. The pipeline asserts the CorporationTax working sheet but never the form the customer files from it. Cover it by asserting each CT600 box equals its source: box turnover = PubP&L F9, net trading profits = the CorporationTax chargeable figure, tax = CorporationTax K35. | No |
-| Financialaccounts.xlsx | WagesInterface | No | Monthly payroll summary, one row per month from Payslips.xlsx: "Gross Wages paid", "Income Tax deducted", "Employees National Insurance deducted", "Other Deductions", "Net Wages Paid", "Employers National Insurance", "Recoverable Statutory Payments". The TrialBalance aggregates it into the P&L wages lines. | Payroll is written into Payslips and never verified downstream. Planned as item 4. Cover it by reading C4–C15 and the tax/NI columns and asserting each month equals the payroll fixture, and that the annual gross reaches the P&L wages lines. | No |
-| Financialaccounts.xlsx | Admin | No | F21 year-end date, B-column dates, tax rates. Every other date in the package cascades from F21 by formula. Generator-injected. | Generator-injected, never read back, and it drives the whole year-end rotation the Ltd product is built around. Cover it by asserting F21 equals the year-end the run was generated for and that the injected rates equal the tax-year TOML. | No |
-| Fixedassets.xlsx | FAreconciliation | No | Ties the asset schedule to the books. C6–C9 read `Schedule!E64/E75/E83/E94`, C13 reads the purchases-side March total and H13 the sales side, and the sheet raises "Purchases exceed Assets listed on Schedule" / "Sales exceed Assets listed on Schedule". | The workbook's own fixed-asset closure check, unread. The SE equivalent is being covered on `claude/recon-wave2-se`; the same reads apply here with Ltd's row offsets. | No |
-| Fixedassets.xlsx | HPfinance | No | Hire purchase and lease agreements: finance company, agreement reference, total financed excluding admin and interest, admin charges, total interest, number of months, net capital repayment, monthly interest. | No fixture has an HP agreement. Cover it by adding one and asserting the capital and interest split sums to the amount financed and that the interest reaches the P&L. | No |
-| Payslips.xlsx | Payslips | No | Printable payslip renderer (tax code, deductions from gross pay, basic hours, hourly rate, basic pay, NI, student loans). | Presentation of figures asserted upstream. Formula-presence tier. | No |
-| Payslips.xlsx | Payment | No | Monthly PAYE and NI remittance schedule: amount due NI, amount due income tax, statutory pay recovered, student loan deductions, total amount payable, payment date, amount paid, amount outstanding. | Real money owed to HMRC. Cover it by asserting the monthly total payable equals income tax plus employee NI plus employer NI from the payroll fixture, and that the year-end outstanding reaches the balance sheet PAYE/NI creditor line. | No |
-| Payslips.xlsx | Admin | No | Payroll calendar (month sheet, date, week number, month number, date code, week in month, weeks in month). Generator-written, and renamed for non-March year-ends. | Generator-written, never read back, and it rotates with the year-end. Cover it by asserting the calendar matches the year-end the package was generated for. | No |
-| Salesinvoice.xlsx | Invoice Template | No | Printable invoice, pulling the header from `'Business Details'` and the customer block by `LOOKUP` over `'Customer Details'`. | Standalone workbook, no external links. Nothing reaches the books. | — |
-| Salesinvoice.xlsx | Invoice Database | No | Invoice line store: activation flag, invoice number, date, customer account, carriage charge, twenty product-code and quantity pairs. | Same — standalone. | — |
-| Salesinvoice.xlsx | Customer Details | No | Customer master: account number, credit terms, name, invoice address, delivery address. | Same — standalone reference data. | — |
-| Salesinvoice.xlsx | Product Details | No | Product master: code, description, selling price, VAT rate, purchase cost price, gross profit margin and margin %. | Carries margin arithmetic but stays inside the standalone file. | — |
-| Salesinvoice.xlsx | Business Details | No | Invoice header: business name, address lines, post code, slogan, payment terms. | Static reference data. | — |
-| Vatreturns.xlsx | Vatinterface | No | The bridge from Sales and Purchases month totals to the VAT boxes: final payment date, month sales, quarter sales net of VAT, month VAT output, quarter VAT due, month purchases, quarter purchases net of VAT, month VAT input, quarter VAT reclaimed. | The chain through this sheet is now anchored end to end by the leaf-file month reads landed in PR #27, but the interface's own quarter columns are never read. Cover it by asserting each quarter column equals the sum of its three month rows, which localises a break to the interface rather than to the VATQtr boxes. | No |
-| Vatreturns.xlsx | S02Y1 | No | Sales for a VAT period outside the financial year. "USE FOR VAT PERIODS OUTSIDE FINANCIAL YEAR"; sales date, customer name, invoice number, sales net of VAT. | Straddling-period VAT, unexercised. Cover it by adding a straddling-quarter transaction and asserting it reaches the right VATQtr box without double-counting into the in-year P&L. | No |
-| Vatreturns.xlsx | S03Y1 | No | Same, second out-of-year sales period. | Same. | No |
-| Vatreturns.xlsx | S04Y2 | No | Same, third out-of-year sales period. | Same. | No |
-| Vatreturns.xlsx | S05Y2 | No | Same, fourth out-of-year sales period. | Same. | No |
-| Vatreturns.xlsx | P02Y1 | No | Purchases for a VAT period outside the financial year. Purchase date, purchases net of VAT. | Same, input VAT side. | No |
-| Vatreturns.xlsx | P03Y1 | No | Same, second out-of-year purchases period. | Same. | No |
-| Vatreturns.xlsx | P04Y2 | No | Same, third out-of-year purchases period. | Same. | No |
-| Vatreturns.xlsx | P05Y2 | No | Same, fourth out-of-year purchases period. | Same. | No |
-| Companysecretary.xlsx | Boardmeeting | No | Board minute record. G6 raises "UPDATE REGISTERMEMBERS" when a share transaction is entered. | Statutory record keeping, not arithmetic. No path to the balance sheet or the tax computation. | — |
-| Companysecretary.xlsx | Directors&Secretary | No | Appointments register: full name, address, date of appointment, capacity, board meeting confirming it, date of resignation. | Statutory record keeping — no reconciliation value. | — |
-| Companysecretary.xlsx | RegisterofMembers | No | Share register: member name and address, date shares purchased, certificate number, class of shares, nominal value, number issued, method of acquisition, date and number sold. | The only sheet here with figures. Nominal value times shares issued should equal the share capital line on the balance sheet (`OpenAccounts!D29` on the opening side, `PubBalSht` on the closing). Cover it by asserting that identity. | No |
-| Companysecretary.xlsx | DirectorsInterests | No | Register of other directorships and significant interests. | Statutory record keeping — no reconciliation value. | — |
-| Companysecretary.xlsx | Charges&Debentures | No | Register of mortgages and debentures: date, assets charged, directors' valuation, holder name and address, terms, confirming board meeting. | Statutory record keeping. A charge implies a long-term creditor, but nothing links this sheet to the balance sheet. | — |
-| expensesform.xlsx | Month 01 | No | Employee expenses claim form. "Description of Expense", "Destination and Purpose", "Mileage", "Expense Type", "Total Claimed", "Vat", "Net Expense", and analysis columns "General Admin", "Hotel & Travel", "Vehicle or Mileage", "Other Expenses", with a claimant signature block. | Standalone workbook with no external links (Ltd context doc). The claim is re-keyed into Purchases by hand, so no data-entry-to-tax path runs through it. Its VAT and net split is arithmetic a formula-presence guard should cover. | No |
-| expensesform.xlsx | Month 02 | No | Same claim form, second month. | Same. | No |
-| expensesform.xlsx | Month 03 | No | Same claim form, third month. | Same. | No |
-| expensesform.xlsx | Month 04 | No | Same claim form, fourth month. | Same. | No |
-| expensesform.xlsx | Month 05 | No | Same claim form, fifth month. | Same. | No |
-| expensesform.xlsx | Month 06 | No | Same claim form, sixth month. | Same. | No |
-| expensesform.xlsx | Month 07 | No | Same claim form, seventh month. | Same. | No |
-| expensesform.xlsx | Month 08 | No | Same claim form, eighth month. | Same. | No |
-| expensesform.xlsx | Month 09 | No | Same claim form, ninth month. | Same. | No |
-| expensesform.xlsx | Month 10 | No | Same claim form, tenth month. | Same. | No |
-| expensesform.xlsx | Month 11 | No | Same claim form, eleventh month. | Same. | No |
-| expensesform.xlsx | Month 12 | No | Same claim form, twelfth month. | Same. | No |
+| File | Sheet | Hidden? | What it does | Coverage gap / would-be check |
+|---|---|---|---|---|
+| Financialaccounts.xlsx | Report | No | The directors' report and client certificate, the cover pages of the filed accounts. A12 and A56 read the company name from `OpenAccounts!E2`, B46:B49 the registered office, C50 the phone number, I50 the registration number, F22 the balance sheet date from `PubBalSht!D2`, and the year end from `'PubP&L'!E5`. The business review quotes this year's turnover from `'PubP&L'!F9` against last year's B9, and computes both years' trading margins as F18/F9 and B18/B9. D94 reads the declared dividend from `[8]Boardmeeting!$E$4`, I95 the shares issued from `[8]RegisterofMembers!$G$1`, and A97/F97 the first member's name and holding. Then the going-concern and financial-control declarations. | The customer files this. Nothing checks a single figure on it, and a broken link publishes a report with a blank or stale turnover, margin or share count. Cover it by asserting each pulled figure equals its source: turnover = `PubP&L!F9`, margin = F18/F9, year end = `PubP&L!E5`, shares issued = the register's own G1, dividend = `Boardmeeting!E4`. That last one is the only route the board minute's dividend takes into a published document. |
+| Fixedassets.xlsx | HPfinance | No | Hire purchase and lease agreements. Same layout as SE's, over a longer block: C2 "YEAR END LONG TERM CREDITORS" totalling E8:E26, with the capital and interest split in I/J/K. | Same gap as SE. No fixture has an agreement, and the same `#REF!` defect runs down the sheet: row 8's monthly-payment formula is intact, rows 10 through 26 read `=IF(H10>0,#REF!/H10," ")`. Cover it by adding an agreement, asserting the split sums to the amount financed and that the interest reaches the P&L. |
+| Payslips.xlsx | Payslips | No | Printable payslip renderer, same as SE's: W/M and period number in F3/F4, `LOOKUP` into the Payslips Admin calendar for the sheet and start row, then `INDIRECT` reads for every figure on the slip. | Presentation of figures asserted upstream. Formula-presence tier. |
+| Payslips.xlsx | Admin | No | The payroll calendar, one row per day of the year, with month sheet name, date, week number, month number, date code and week-in-month. Generator-written, and the month names rotate with a non-March year end. | Generator-written, never read back, and it rotates with the year end the Ltd product is built around. Cover it by asserting the calendar's dates and month names match the year end the package was generated for. |
+| Salesinvoice.xlsx | Invoice Template | No | Printable invoice, pulling the header from `'Business Details'` and the customer block by `LOOKUP` over `'Customer Details'`. | Standalone workbook, no external links. Nothing reaches the books. |
+| Salesinvoice.xlsx | Invoice Database | No | Invoice line store: activation flag, invoice number, date, customer account, carriage charge, twenty product-code and quantity pairs. | Standalone. |
+| Salesinvoice.xlsx | Customer Details | No | Customer master: account number, credit terms, name, invoice address, delivery address. | Standalone reference data. |
+| Salesinvoice.xlsx | Product Details | No | Product master: code, description, selling price, VAT rate, purchase cost price, gross profit margin and margin %. | Carries margin arithmetic inside the standalone file, and the same G6 formula defect as SE's copy. |
+| Salesinvoice.xlsx | Business Details | No | Invoice header: business name, address lines, post code, slogan, payment terms. | Static reference data. |
+| Companysecretary.xlsx | Boardmeeting | No | The board minute. B2 the meeting date, B4 "1. Amount of dividend declared" with the figure in E4, B6 "2. Additional share capital issued" with quantity and cash received, and B8 raising "UPDATE REGISTERMEMBERS" when E8 carries a share issue. B10 any other business. | E4 is the dividend the directors' report publishes, across a cross-file link. Nothing writes it and nothing reads it, so the report's dividend line is always zero. Cover it with the Report work above: put a declared dividend in the fixture and assert `Report!D94` carries it. |
+| Companysecretary.xlsx | Directors&Secretary | No | Appointments register: full name, address, date of appointment, capacity, board meeting confirming it, date of resignation. Rows 2 and 3 are pre-labelled Director and Company Secretary, appointed at "Incorporation registration". | Statutory record keeping. No arithmetic and no path to the accounts. |
+| Companysecretary.xlsx | DirectorsInterests | No | Register of other directorships and significant interests. Name, address, date registered, details, other information, defaulted to "None". | Statutory record keeping. No reconciliation value. |
+| Companysecretary.xlsx | Charges&Debentures | No | Register of mortgages and debentures: date, assets charged, directors' valuation, holder name and address, terms, confirming board meeting. | Statutory record keeping. A charge implies a long-term creditor, but nothing links this sheet to the balance sheet. |
+| expensesform.xlsx | Month 01 | No | Employee expenses claim form. G3 flags VAT registration and H5 holds the rate. Per line: date, "Description of Expense", "Destination and Purpose", mileage, expense type, "Total Claimed", then formulas for VAT (`F10*H5/100/(1+H5/100)`) and "Net Expense", fanned out by type into "General Admin", "Hotel & Travel", "Vehicle or Mileage" and "Other Expenses". Row 30 turns the mileage total into a claim at the rate in C30. | Standalone workbook with no external links. The claim is re-keyed into Purchases by hand, so no data-entry-to-tax path runs through it. Its VAT split and its mileage rate are arithmetic a formula-presence guard should cover. The mileage rate in C30 is hard-coded at 45p rather than read from a tax-year source, so it goes stale without anything saying so. |
+| expensesform.xlsx | Month 02 | No | Same claim form, second month. | Same. |
+| expensesform.xlsx | Month 03 | No | Same claim form, third month. | Same. |
+| expensesform.xlsx | Month 04 | No | Same claim form, fourth month. | Same. |
+| expensesform.xlsx | Month 05 | No | Same claim form, fifth month. | Same. |
+| expensesform.xlsx | Month 06 | No | Same claim form, sixth month. | Same. |
+| expensesform.xlsx | Month 07 | No | Same claim form, seventh month. | Same. |
+| expensesform.xlsx | Month 08 | No | Same claim form, eighth month. | Same. |
+| expensesform.xlsx | Month 09 | No | Same claim form, ninth month. | Same. |
+| expensesform.xlsx | Month 10 | No | Same claim form, tenth month. | Same. |
+| expensesform.xlsx | Month 11 | No | Same claim form, eleventh month. | Same. |
+| expensesform.xlsx | Month 12 | No | Same claim form, twelfth month. | Same. |
 
 ## Summary
 
-| Package | Total sheets | Touched on main | Touched after in-flight PRs | Untouched (main) | Untouched (after in-flight) |
-|---|---|---|---|---|---|
-| Basic Sole Trader | 33 | 30 | 30 | 3 | 3 |
-| Taxi Driver | 33 | 27 | 28 | 6 | 5 |
-| Self Employed | 100 | 76 | 77 | 24 | 23 |
-| Limited Company | 143 | 102 | 102 | 41 | 41 |
-| **All four** | **309** | **235** | **237** | **74** | **72** |
+| Package | Total sheets | Touched | Untouched |
+|---|---|---|---|
+| Basic Sole Trader | 33 | 32 | 1 |
+| Taxi Driver | 33 | 30 | 3 |
+| Self Employed | 100 | 89 | 11 |
+| Limited Company | 143 | 118 | 25 |
+| **All four** | **309** | **269** | **40** |
 
-The three in-flight branches move two sheets: PR #28 gives Taxi its SA103S reads, and
-`claude/recon-wave2-se` gives SE the fixed-asset reconciliation reads. PR #31 deepens
-checks on sheets already touched and closes none of these gaps.
+The previous report counted 235 touched and 74 untouched on `main`. The coverage waves moved 34
+sheets: touched is up 34, untouched is down 34. The biggest single move is Ltd, from 41 untouched
+to 25, and every one of the four products gained.
 
 ## Largest gaps by risk
 
-Ordered by how much customer-facing arithmetic sits on the untouched sheet. Every item
-now has an owner: PLAN_RECONCILIATION_COVERAGE.md's Wave 5 (the coverage-gaps PR)
-resolves this list, except the two legs named below that land earlier with Waves 2 and 3.
+Ordered by how much customer-facing arithmetic sits on an untouched sheet. Every item in the
+previous report's top five was checked against the code rather than assumed closed. Four of the
+five are closed; the fifth is closed for three products out of four, and its remainder is item 1
+here.
 
-1. **The four Ltd bank workbooks, and SE `Cash.xlsx` — write-only.** These are touched by
-   the letter of the definition and hollow in practice. Ltd writes 48 month tabs across
-   Currentaccount, Savingaccount, Cashaccount and Creditcardaccount, and reads not one cell
-   back. SE reads `Bank.xlsx!Mar` A1/A2 on main and nothing from `Cash.xlsx`; the wave2-se
-   branch drops the `Cash.xlsx` read entirely. The operator's stated case is data entry in a
-   cash or bank sheet reaching the balance sheet, and that leg is unverified for every
-   account in the largest product. This is item 6 in the plan and it outranks every
-   genuinely untouched sheet below. *Owner: Wave 2 (item 6); Wave 5 completes the leg —
-   all four Ltd accounts plus SE Cash.xlsx, readable now that additionalReads results
-   carry file-qualified keys.*
-2. **`Financialaccounts!Admin`, all four products.** The generator injects the tax year's
-   rates, bands, thresholds, VAT rate and — for Ltd — the year-end date that every other
-   date cascades from. Nothing reads any of it back. A wrong value here is arithmetically
-   invisible: every downstream check passes on a consistently wrong rate. This is the same
-   failure shape as the shipped-zeros VAT bug. *Owner: Wave 5 (Admin echo workstream).*
-3. **Ltd `CT600` and `PubNotes`.** The corporation tax return and the statutory fixed-asset
-   note are what the customer actually files. The pipeline asserts the CorporationTax
-   working sheet and the Schedule, then never checks the two published documents derived
-   from them. PubNotes is planned as item 5; CT600 was in no wave. *Owner: Wave 5
-   (published documents workstream), sharing PubNotes with item 5 if that lands first.*
-4. **`Vatinterface` and the eight straddling-period S/P sheets, both Ltd and SE.**
-   Vatinterface is the exact sheet the VAT bug ran through. Ltd now anchors the chain at
-   both ends, so a break is caught, but not localised; SE checks the VATQtr boxes for
-   presence only, and SE never reads VATQtr5 at all. The straddling-period sheets have no
-   fixture exercising them in either product. *Owner: Wave 5 (VAT localisation
-   workstream).*
-5. **`Payslips!Payment` and `WagesInterface`, both Ltd and SE.** Payroll is written into the
-   month tabs and vanishes. Payment computes real money owed to HMRC each month; on Ltd,
-   WagesInterface is the only route from payroll into the P&L wages lines and the balance
-   sheet PAYE/NI creditor. Item 4 covers WagesInterface; Payment is Wave 5's. *Owner:
-   WagesInterface with Wave 3 (item 4); Payslips!Payment with Wave 5 (payroll
-   remainder).*
+What closed, and how:
 
-Two sheets carry arithmetic worth naming but sit below the line, and Wave 5's
-below-the-line workstream takes both: Ltd `RegisterofMembers`, whose nominal value times
-shares issued should equal the balance sheet share capital, and the BST and Taxi
-`Fixed Assets` sheets, which feed a capital allowance line that always reads zero because
-no fixture gives either product an asset.
+- **Bank read-backs.** `ltd.js` `multiFileOptions()` reads A1 and A2 from every bank workbook's
+  final month tab, and `checkCompliance` asserts each file's closing balance equals opening plus
+  receipts less payments, computed from the scenario's own direction-tagged entries. `se.js` does
+  the same for `Bank.xlsx` and `Cash.xlsx`. One link in that leg is still unasserted: `PubBalSht`
+  E12, "Cash at bank and in hand", is read into the report but never compared against the four
+  workbooks' closing balances.
+- **Admin echo.** Closed for BST, Taxi and Ltd. Not for SE. See item 1.
+- **Ltd CT600 and PubNotes.** Both are read and asserted in depth. The note is tied to the
+  Schedule class by class, and every CT600 box is tied to its source on the CorporationTax working
+  sheet or the published P&L.
+- **Vatinterface, both products.** Both read all sixteen interface rows across eleven columns.
+  Each month row is tied to its leaf workbook, each quarter column to the three period rows it
+  sums, and each VAT box to the interface row its `LOOKUP` lands on. SE now reads VATQtr5. The
+  eight straddling entry sheets are written and asserted, with fixtures in
+  `ltd-scenario-full.toml` and `se-scenario-advanced.toml`.
+- **Payslips!Payment and WagesInterface.** Both read, both tied month by month to the payroll
+  fixture, in both products.
+- **RegisterofMembers** is written and read, and nominal value times shares issued is asserted
+  against `PubBalSht!F36`. The **BST and Taxi Fixed Assets** sheets are written from the
+  scenario's asset additions and their allowance totals are asserted against the P&L capital
+  allowance line.
+
+What remains:
+
+1. **SE `Financialaccounts!Admin`.** The generator injects the tax year's allowance, rate, band,
+   NI, mileage and VAT figures here, and every workbook in the package reads them. Nothing reads
+   them back. A wrong value is arithmetically invisible, because every downstream check passes on
+   a consistently wrong rate. This is the same failure shape as the shipped-zeros VAT bug, and
+   the other three products already have the check `se.js` needs.
+2. **SE `SE Full` (SA103F).** A live HMRC return form, every box fed by formula from the P&L, and
+   never read. SE Short is asserted box by box, so the two returns can disagree without anything
+   failing.
+3. **Ltd `Report`.** The directors' report and client certificate the customer files. It quotes
+   turnover, both years' trading margins, the year end, the declared dividend and the share
+   register. Nothing asserts any of it. The dividend line is dead in every package, because
+   nothing writes `Boardmeeting!E4`.
+4. **`HPfinance`, both Ltd and SE.** The sheet that decides how much of an HP payment is
+   deductible. No fixture has an agreement, and the shipped templates carry a real defect: every
+   row after the first computes its monthly payment from `#REF!`. A customer entering a second
+   agreement gets nothing.
+5. **Taxi `VitalTax`.** The MTD quarterly view of the same trade, re-summed from the P&L's own
+   monthly columns down a second formula path. SE's equivalent is asserted against the P&L. Taxi's
+   is not.
+
+Two shipped-template defects sit on sheets that are touched, so they are not coverage gaps.
+Both already have an owner in `NEXT.md`, and both are recorded here because they change what a
+customer's tax figure comes out at:
+
+- **BST `Income Tax` works two bands only.** Rows 8 and 9 are the whole calculation: E8 charges
+  the basic rate up to `Admin!N13`, E9 charges the higher rate on everything above it. There is
+  no additional-rate band and no personal-allowance taper, since E6 takes `Admin!N4` flat. A
+  profit over the higher-rate threshold is charged 40% all the way up.
+- **Taxi `PurchasesMar!T2` nags against an empty cell.** It reads
+  `=IF(T1>'Fixed Assets'!$D$74,"ENTER VEHICLE CHANGES on Fixed Asset schedule",...)`, and D74
+  holds nothing. The additions total sits at D62. Any package that codes a purchase to "f" fires
+  the nag.
