@@ -288,6 +288,36 @@ export function seDrawingsFromDividends(lines) {
   );
 }
 
+/**
+ * Group the master book's payroll journal lines into a month-keyed structure
+ * matching what se.js/ltd.js cellWrites() expects on scenario.payroll: one
+ * entry per employee per month, carrying the same figures the Payslips.xlsx
+ * month tab takes (gross pay, income tax, employee NI, employer NI, net
+ * pay). Each payroll line already IS one employee's one month, so no
+ * grouping arithmetic is needed beyond bucketing by month.
+ *
+ * @param {Array} lines - parsed lines.jsonl entries (any journal)
+ * @returns {Object} { apr: [...], may: [...], ... }, {} when none present
+ */
+export function buildPayroll(lines) {
+  const payroll = {};
+  for (const line of lines) {
+    if (line.sourceJournalID !== "payroll") continue;
+    const month = getMonthKey(line.postingDate);
+    if (!payroll[month]) payroll[month] = [];
+    payroll[month].push({
+      date: line.postingDate,
+      name: line.detailComment,
+      grossPay: line["diya-gl:grossPay"],
+      incomeTax: line["diya-gl:incomeTax"],
+      employeeNI: line["diya-gl:employeeNI"],
+      employerNI: line["diya-gl:employerNI"],
+      netPay: line["diya-gl:netPay"],
+    });
+  }
+  return payroll;
+}
+
 export function buildGrouped(filteredLines, purchaseCodeMap) {
   const sales = {};
   const purchases = {};
@@ -420,6 +450,25 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`direction = "${txn.direction}"`);
         parts.push(`amount = ${txn.amount}`);
         if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+        parts.push("");
+      }
+    }
+  }
+
+  // Payroll (for Payslips.xlsx month tabs -- SE and Ltd)
+  if (grouped.payroll) {
+    for (const month of MONTH_ORDER) {
+      const entries = grouped.payroll[month];
+      if (!entries || entries.length === 0) continue;
+      for (const e of entries) {
+        parts.push(`[[payroll.${month}]]`);
+        parts.push(`date = ${e.date}`);
+        parts.push(`name = "${escapeTomlString(e.name)}"`);
+        parts.push(`grossPay = ${e.grossPay}`);
+        parts.push(`incomeTax = ${e.incomeTax}`);
+        parts.push(`employeeNI = ${e.employeeNI}`);
+        parts.push(`employerNI = ${e.employerNI}`);
+        parts.push(`netPay = ${e.netPay}`);
         parts.push("");
       }
     }

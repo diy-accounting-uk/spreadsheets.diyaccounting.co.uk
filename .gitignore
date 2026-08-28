@@ -50,3 +50,4 @@ web/spreadsheets.diyaccounting.co.uk/public/tests/
 reports/populated/
 reports/screenshots/
 *.log
+.scratch/
