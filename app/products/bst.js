@@ -357,10 +357,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.closing_stock !== undefined && results.PurchasesStock) {
     check("Closing Stock", results.PurchasesStock.D30 || 0, expected.closing_stock);
   }
-  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined) {
-    // CoS should include stock adjustment: opening - closing adds to cost
-    const stockAdj = expected.opening_stock - expected.closing_stock;
-    check("Stock: CoS includes adjustment", pl.C6 || 0, stockAdj, pl.C6); // CoS >= stock adjustment
+  // Cost of sales is the stock bought in the year plus the fall in stock
+  // across it. Both parts come from the scenario, so the identity is exact.
+  // It used to be stated as cost of sales against the stock movement alone,
+  // with a tolerance as wide as cost of sales itself, which nothing could
+  // fail and which put a difference the size of the year's stock purchases
+  // on the face of the report.
+  if (expected.opening_stock !== undefined && expected.closing_stock !== undefined && expected.purchases) {
+    const stockMovement = expected.opening_stock - expected.closing_stock;
+    const stockPurchases = Object.values(expected.purchases)
+      .flat()
+      .filter((tx) => tx.code === "s")
+      .reduce((s, tx) => s + tx.amount, 0);
+    check("Stock: cost of sales = stock purchases + stock movement", pl.C6 || 0, stockPurchases + stockMovement);
   }
 
   // Debtors/Creditors checks. Every slot in the block counts: the writer fills

@@ -1,0 +1,66 @@
+{
+  "product": "bst",
+  "verdict": "pass",
+  "summary": "All three Basic Sole Trader runs read as plausible accounts for the trades described: the bricklayer shows subcontract/materials above gross profit with AIA on the £12,000 van, the IT consultancy shows a consultancy-shaped cost base with £39,000 of capitalised equipment, and the taxi driver's largest expense is motor costs. Minor presentational points noted below do not block any run.",
+  "concerns": [
+    {
+      "figure": "Income Tax £0 alongside \"Tax at basic rate\" (P&L C30 vs C32)",
+      "where": "Profit & Loss Account, all three runs",
+      "why": "The P&L \"Income Tax\" line reads 0 while the tax charge actually deducted is shown on the next line (£1,792 / £105,395 / £3,808.40). A reader could take the zero as no tax charged; the Income Tax sheet total is correct, so this is presentational only.",
+      "severity": "note"
+    },
+    {
+      "figure": "Fixed Assets \"New Asset Cost (Plant & Machinery)\" 1,800 against Total Original Cost 39,000",
+      "where": "Fixed Assets sheet, cell E67 vs E1, bst-scenario-basic",
+      "why": "Only the first of the three additions is echoed in the reported row, so the headline asset cost line looks an order of magnitude below the schedule total. The schedule total and AIA of £39,000 agree with the journal, so this is a reporting extract artefact rather than a wrong figure.",
+      "severity": "note"
+    },
+    {
+      "figure": "Stock adjustment check: expected 500, actual 15,500 (diff +15,000)",
+      "where": "Compliance Checks, \"Stock: CoS includes adjustment\", bst-brickwork-pro-nonvat",
+      "why": "The check passes because cost of sales legitimately contains £15,000 of stock purchases plus the £500 stock movement, but the expected/actual mismatch on the face of the report invites a reader to think something is out by £15,000. Worth tightening the check definition.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S expense allocation (D46 cost of goods 18,540 / D51 other direct 9,458 / D64 other expenses 1,140)",
+      "where": "Self Assessment (SA103S) section, all three runs",
+      "why": "The SA103S boxes carry only a subset of the P&L expenses (e.g. £57,452 of expenses in the P&L against a handful of boxes summing far less), yet net profit on the form agrees with the P&L. The form's individual boxes therefore do not reconcile to the categories a reader would expect; net profit and taxable profit are correct so it does not affect the tax outcome.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S \"AIA / WDA claimed\" 0 with Capital allowances 39,000 / 12,000 / 200",
+      "where": "Self Assessment (SA103S), cells D85 and O80, all three runs",
+      "why": "The whole capital allowance is 100% AIA per the Fixed Assets schedule, so showing nil in the AIA box while £39,000 sits in the capital allowances line is inconsistent presentation on the return, though the taxable profit is right.",
+      "severity": "note"
+    },
+    {
+      "figure": "Zero debtors, creditors and stock throughout",
+      "where": "Debtors & Creditors and Stock sections, bst-sp-sixty",
+      "why": "All slots read as dashes and stock is nil. This matches the scenario, which declares no debtor, creditor or stock entries for a cash-basis private hire driver, so it is the product working as designed rather than a missing journal.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-brickwork-pro-nonvat.md",
+      "scenario": "bst-brickwork-pro-nonvat",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
+      "scenario": "bst-scenario-basic",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-sp-sixty.md",
+      "scenario": "bst-sp-sixty",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    }
+  ],
+  "timestamp": "2026-08-28T16:02:25.495Z"
+}

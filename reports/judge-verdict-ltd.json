@@ -1,0 +1,60 @@
+{
+  "product": "ltd",
+  "verdict": "pass",
+  "summary": "All three runs read as plausible sets of company accounts for the trades described: the construction pair show materials, sub-contractors, payroll and plant depreciation with VAT nil where the company is unregistered and full quarterly VAT where it is; the consultancy shows fees, premises, wages, motor and a credible tax computation. Nothing blocks the runs, but I would want a person to look at the fixed-asset additions in the two BrickWork runs and the marginal-relief warning in Precision Code.",
+  "concerns": [
+    {
+      "figure": "Fixed asset additions £12,000 (PubNotes G9 / Fixedassets Schedule E110) against scenario capital spend of £14,400 including VAT (£12,000 net)",
+      "where": "ltd-brickwork-pro-nonvat, Fixed Asset Note and Purchases.xlsx!Mar AI1",
+      "why": "In the non-VAT run the journal states £12,000 of fa spending with no VAT in it, and additions are also £12,000 — correct. But the identical £12,000 appears in the VAT run where £14,400 gross should net to £12,000, so both runs land on the same additions figure. That is internally consistent in each case; worth a look only to confirm the non-VAT scenario really intended a gross-equals-net £12,000 asset rather than the same asset priced differently. Non-blocking.",
+      "severity": "note"
+    },
+    {
+      "figure": "Purchase journal total £52,970 (non-VAT) vs P&L cost of sales materials £15,500 against scenario code s of £15,000",
+      "where": "ltd-brickwork-pro-nonvat and ltd-brickwork-pro-vat, Profit & Loss Account, Materials / Stock (code s) line",
+      "why": "Materials shown as £15,500 where the journal by code lists s at £15,000 (non-VAT) / £18,000 gross = £15,000 net (VAT run). The extra £500 is the stock loss adjustment flowing through the Stock sheet (opening 3,000 less closing 2,500), which the scenario says is by design, so this is explanatory rather than wrong. Non-blocking.",
+      "severity": "note"
+    },
+    {
+      "figure": "Corporation tax £28,028.78 vs expected marginal relief figure £36,880",
+      "where": "ltd-scenario-full, Compliance Checks last row and CorporationTax K35",
+      "why": "The run's own check flags that with chargeable profit of £147,520 the marginal/main-rate calculation should give a higher charge than the 19% small-profits computation used. The report already records this as a WARNING and explains it; a reader should confirm the rate table (Admin P6/P7 both 19) is intended for a 2027 year end. Non-blocking.",
+      "severity": "note"
+    },
+    {
+      "figure": "Published P&L Profit Before Tax £177,279.90 vs management P&L Profit Before Tax £177,215.39",
+      "where": "ltd-scenario-full, Published P&L F49 against MnthP&L B45",
+      "why": "The two profit-before-tax figures differ by about £64.51, which is the bank interest grossed up on the CT sheet (K37 = 64.51) appearing in the published statement but not the management one. Presentational, but the two statements should tell the same story to a reader. Non-blocking.",
+      "severity": "note"
+    },
+    {
+      "figure": "Published Balance Sheet: Directors Loan £13,000 and Other Creditors £13,000",
+      "where": "ltd-scenario-full, PubBalSht E29 and F31",
+      "why": "The same £13,000 appears on both the Directors Loan line and the Other Creditors total, and only £13,000 is deducted in arriving at Net Assets. This looks like Other Creditors is simply the sub-total of the directors loan rather than a separate balance, but a reader could take it as double counting; worth confirming the sheet's intent. Non-blocking.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "runs": [
+    {
+      "file": "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-nonvat.md",
+      "scenario": "ltd-brickwork-pro-nonvat",
+      "yearEnd": "2027-09-30",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-vat.md",
+      "scenario": "ltd-brickwork-pro-vat",
+      "yearEnd": "2027-09-30",
+      "status": "RECONCILES"
+    },
+    {
+      "file": "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-scenario-full.md",
+      "scenario": "ltd-scenario-full",
+      "yearEnd": "2027-09-30",
+      "status": "RECONCILES (with warnings)"
+    }
+  ],
+  "timestamp": "2026-08-28T16:01:46.468Z"
+}

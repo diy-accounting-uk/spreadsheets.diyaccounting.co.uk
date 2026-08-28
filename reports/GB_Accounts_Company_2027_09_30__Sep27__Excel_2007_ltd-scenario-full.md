@@ -43,6 +43,32 @@ Status: RECONCILES (with warnings)
 | VAT Q2: box 5 = box 3 - box 4 | 14183.4166666667 | 14183.4166666667 | 0 | PASS |
 | VAT Q3: box 5 = box 3 - box 4 | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q4: box 5 = box 3 - box 4 | 14754.29166666667 | 14754.2916666667 | +3.092281986027956e-11 | PASS |
+| VAT: annual output VAT = the sales journal at the book's rate | 70816.70999999998 | 70816.6666666667 | -0.04333333327667788 | PASS |
+| VAT: annual input VAT = the purchase journal at the book's rate | 18498.670000000002 | 18498.708333333332 | +0.038333333330228925 | PASS |
+| Sales.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx May: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx May: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jun: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jun: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jul: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jul: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Aug: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Aug: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Vatinterface D6: Oct sales net = Sales.xlsx Oct | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
 | Vatinterface F6: Oct output VAT = Sales.xlsx Oct | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
 | Vatinterface H6: Oct purchases net = Purchases.xlsx Oct | 4259.375 | 4259.375 | 0 | PASS |
@@ -704,15 +730,15 @@ Status: RECONCILES (with warnings)
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Product A — Consultancy | 311,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product B — Software | 13,600 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Product C — Training | 10,300 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income | 3,700 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Grants Received | 2,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product A sales (code a) | 311,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product B sales (code b) | 13,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Product C sales (code c) | 10,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Income (code d) | 3,700 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants Received (code g) | 2,083.33 |
 | **Sales Turnover** | 341,283.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock | 9,450 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors | 6,666.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs | 2,670 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Materials / Stock (code s) | 9,450 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sub-Contractors (code c) | 6,666.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs (code o) | 2,670 |
 | Cost of Sales | 18,786.67 |
 | **Gross Profit** | 322,496.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 81,642.67 |
@@ -879,15 +905,15 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B4 | Product A — Consultancy | 311600 | accounts.sales.4000 |
-| B5 | Product B — Software | 13600 | accounts.sales.4001 |
-| B6 | Product C — Training | 10300 | accounts.sales.4002 |
-| B7 | Other Direct Income | 3700 | accounts.sales.4003 |
-| B8 | Grants Received | 2083.33333333333 | accounts.sales.4004 |
+| B4 | Product A sales (code a) | 311600 | accounts.sales.4000 |
+| B5 | Product B sales (code b) | 13600 | accounts.sales.4001 |
+| B6 | Product C sales (code c) | 10300 | accounts.sales.4002 |
+| B7 | Other Direct Income (code d) | 3700 | accounts.sales.4003 |
+| B8 | Grants Received (code g) | 2083.33333333333 | accounts.sales.4004 |
 | B9 | **Sales Turnover** | 341283.333333333 | gl-cor:amount (salesTurnover) |
-| B11 | Materials / Stock | 9450 | accounts.purchases.5000 |
-| B12 | Sub-Contractors | 6666.66666666667 | accounts.purchases.5001 |
-| B13 | Other Direct Costs | 2670 | accounts.purchases.5002 |
+| B11 | Materials / Stock (code s) | 9450 | accounts.purchases.5000 |
+| B12 | Sub-Contractors (code c) | 6666.66666666667 | accounts.purchases.5001 |
+| B13 | Other Direct Costs (code o) | 2670 | accounts.purchases.5002 |
 | B14 | Cost of Sales | 18786.6666666667 | gl-cor:amount (costOfSales) |
 | B16 | **Gross Profit** | 322496.666666666 | gl-cor:amount (grossProfit) |
 | B18 | PAYE Wages + Non-PAYE Employee | 81642.6666666667 | dpl:WagesAndSalaries (combined) |
@@ -1499,6 +1525,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5566.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27833.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1508,6 +1535,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5486.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27433.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1517,6 +1545,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5866.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29333.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1526,6 +1555,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5626.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1535,6 +1565,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 6003.33333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 30016.6666666667 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1544,6 +1575,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5626.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1553,6 +1585,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 8426.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 42133.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 12500 |  |
@@ -1562,6 +1595,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5886.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29433.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1571,6 +1605,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5466.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 27333.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1580,6 +1615,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5906.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 29533.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1589,6 +1625,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5726.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 28633.3333333333 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
@@ -1598,6 +1635,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 5226.66666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 26133.3333333333 |  |
 | T1 |  | 300 |  |
 | U1 |  | 0 |  |
@@ -1607,6 +1645,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 851.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 4259.375 |  |
 | O1 |  | 500 |  |
 | R1 |  | 0 |  |
@@ -1618,6 +1657,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1062.5 |  |
+| G2 |  | 20 |  |
 | H1 |  | 5312.5 |  |
 | O1 |  | 600 |  |
 | R1 |  | 0 |  |
@@ -1629,6 +1669,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1509.5 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7547.5 |  |
 | O1 |  | 300 |  |
 | R1 |  | 0 |  |
@@ -1640,6 +1681,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1509.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7549.375 |  |
 | O1 |  | 600 |  |
 | R1 |  | 0 |  |
@@ -1651,6 +1693,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 734.208333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3671.04166666667 |  |
 | O1 |  | 450 |  |
 | R1 |  | 0 |  |
@@ -1662,6 +1705,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 829.166666666667 |  |
+| G2 |  | 20 |  |
 | H1 |  | 4145.83333333333 |  |
 | O1 |  | 200 |  |
 | R1 |  | 0 |  |
@@ -1673,6 +1717,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 7167.625 |  |
+| G2 |  | 20 |  |
 | H1 |  | 35838.125 |  |
 | O1 |  | 400 |  |
 | R1 |  | 0 |  |
@@ -1684,6 +1729,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1153 |  |
+| G2 |  | 20 |  |
 | H1 |  | 5765 |  |
 | O1 |  | 700 |  |
 | R1 |  | 0 |  |
@@ -1695,6 +1741,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1575.25 |  |
+| G2 |  | 20 |  |
 | H1 |  | 7876.25 |  |
 | O1 |  | 400 |  |
 | R1 |  | 4166.66666666667 |  |
@@ -1706,6 +1753,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 751.875 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3759.375 |  |
 | O1 |  | 500 |  |
 | R1 |  | 0 |  |
@@ -1717,6 +1765,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 732.75 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3663.75 |  |
 | O1 |  | 550 |  |
 | R1 |  | 0 |  |
@@ -1728,6 +1777,7 @@ Status: RECONCILES (with warnings)
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 621.083333333333 |  |
+| G2 |  | 20 |  |
 | H1 |  | 3105.41666666667 |  |
 | O1 |  | 250 |  |
 | R1 |  | 0 |  |
