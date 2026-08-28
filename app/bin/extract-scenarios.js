@@ -109,6 +109,28 @@ const closingCreditors = [
   { supplier: "Shell", invoice: "SH-2603", amount: 150 },
 ];
 
+// Sales and purchases in the VAT periods either side of the accounting year.
+// The VAT workbook keeps a pair of entry sheets per straddling period and the
+// figures reach the VAT return without ever touching the books, so these are
+// the only transactions in the fixture that move a VAT box and leave the
+// trial balance where it was. Gross amounts are multiples of six so the
+// standard-rate split is exact to the penny. Dates sit in the April-March
+// frame the month keys describe, two months before the year on 02Y1 and 03Y1
+// and two months after it on 04Y2 and 05Y2.
+const straddlingSales = [
+  { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
+  { period: "03Y1", date: "2025-03-18", customer: "Beta Systems", invoice: "INV-0802", amount: 2400 },
+  { period: "04Y2", date: "2026-04-10", customer: "Acme Corp", invoice: "INV-1301", amount: 3600 },
+  { period: "05Y2", date: "2026-05-12", customer: "Gamma Ltd", invoice: "INV-1302", amount: 1800 },
+];
+
+const straddlingPurchases = [
+  { period: "02Y1", date: "2025-02-20", supplier: "TechParts Ltd", invoice: "TP-2402", amount: 720 },
+  { period: "03Y1", date: "2025-03-24", supplier: "WorkSpace Ltd", invoice: "WS-2402", amount: 1200 },
+  { period: "04Y2", date: "2026-04-15", supplier: "Shell", invoice: "SH-2604", amount: 240 },
+  { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
+];
+
 // ============================================================================
 // Extract BST (basic)
 // ============================================================================
@@ -231,6 +253,8 @@ const advToml = formatScenarioToml(
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
+    vat_straddling_sales: straddlingSales,
+    vat_straddling_purchases: straddlingPurchases,
   },
 );
 
@@ -294,6 +318,8 @@ const fullToml = formatScenarioToml(
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
+    vat_straddling_sales: straddlingSales,
+    vat_straddling_purchases: straddlingPurchases,
   },
 );
 
