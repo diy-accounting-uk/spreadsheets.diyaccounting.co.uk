@@ -8,8 +8,8 @@ The driver works 5 days per week (Monday to Friday) as a private hire driver, wi
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 267 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`.
+- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **lines.jsonl** -- 267 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
