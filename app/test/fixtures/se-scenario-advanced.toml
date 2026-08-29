@@ -3390,6 +3390,15 @@ direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
+[[bank.jun]]
+date = 2025-06-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "B"
+direction = "out"
+amount = 2000
+description = "HP-2025-01 admin charges and interest"
+
 [[bank.jul]]
 date = 2025-07-01
 account = "1200"
@@ -3686,6 +3695,15 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+
+[[bank.sep]]
+date = 2025-09-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "B"
+direction = "out"
+amount = 1100
+description = "HP-2025-02 admin charges and interest"
 
 [[bank.oct]]
 date = 2025-10-01

@@ -208,12 +208,12 @@ The charge secures the 25,000 bank loan carried as a creditor falling due after 
 | 1 Jun 2025 | Close Brothers Asset Finance | HP-2025-01 | 13,000 | 200 | 1,800 | 20 months | Precision Tooling Supplies |
 | 1 Sep 2025 | Close Brothers Asset Finance | HP-2025-02 | 7,000 | 100 | 1,000 | 20 months | Precision Tooling Supplies |
 
-Each agreement's admin charges and interest (2,000 and 1,100) are booked on the savings account
-(1210) as bank-charges payments (code `B`), reaching the P&L's HP interest/bank charges line the
-same way every other direct bank charge does. Each agreement's amount financed (13,000 and 7,000)
-is booked on the same account as a creditor repayment (code `CR`). Booking both legs on the
-savings account, rather than the current account SE also reads, keeps the SE fixture's own income
-tax profit unaffected.
+Each agreement's admin charges and interest (2,000 and 1,100) are booked on the current account
+(1200) as bank-charges payments (code `B`), reaching the P&L's HP interest and bank charges line
+the same way every other direct bank charge does. The current account is the one the Self
+Employed subset reads, so the sole trader's profit and loss account carries the same finance
+charge the company's does. Each agreement's amount financed (13,000 and 7,000) is booked on the
+savings account as a creditor repayment (code `CR`).
 
 ## CIS Sub-Contractors
 
@@ -250,8 +250,8 @@ October is the low month: the 36,000 van purchase lands in it.
 
 | Account | Entries | Description |
 |---------|--------:|-------------|
-| 1200 -- Current account | 138 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments |
-| 1210 -- Savings account | 8 | Opening balance, transfer in, interest (x2), hire purchase charges and capital repayments (x4) |
+| 1200 -- Current account | 140 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments, hire purchase charges (x2) |
+| 1210 -- Savings account | 6 | Opening balance, transfer in, interest (x2), hire purchase capital repayments (x2) |
 | 1220 -- Cash account | 7 | Opening float, top-up, petty cash purchases (x5) |
 | 1230 -- Credit card | 8 | Hotel/travel charges (x3), annual fee, payments from current (x4) |
 
