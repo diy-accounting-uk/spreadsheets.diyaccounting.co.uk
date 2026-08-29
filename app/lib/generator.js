@@ -891,6 +891,17 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
   }
 
+  // Expenses claim form (Ltd only — when sheetsConfig.mileageMonth is
+  // present). The mileage rate is a literal on the first month's sheet and
+  // every other month chains from it, so one write moves the caption, the
+  // rate and the claim on all twelve.
+  if (sheetsConfig.mileageMonth) {
+    let monthXml = await zip.file(sheetsConfig.mileageMonth).async("string");
+    monthXml = setCellValue(monthXml, "C30", taxData.mileage.higher_rate_pence);
+    const monthDate = zip.file(sheetsConfig.mileageMonth).date;
+    zip.file(sheetsConfig.mileageMonth, monthXml, { date: monthDate });
+  }
+
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
   // quarter's default G5, then roll the whole cached date chain — the
   // externalLink1 Admin cache, the Vatinterface cached values, and each

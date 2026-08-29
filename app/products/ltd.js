@@ -1030,6 +1030,10 @@ function monthTabsFromPeriodStart(startSerial) {
   return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
 }
 
+// The expenses claim form's twelve month tabs, in the order the workbook
+// chains them from the first.
+const EXPENSES_FORM_MONTHS = Array.from({ length: 12 }, (_, i) => `Month ${String(i + 1).padStart(2, "0")}`);
+
 // CT600 boxes the template populates by formula, and where each reads from.
 const CT600_CELLS = [
   "B33",
@@ -1224,6 +1228,10 @@ export function multiFileOptions(yearEndMonth) {
         // shares-issued total (=SUM(G3:G19)).
         RegisterofMembers: ["F1", "G1"],
       },
+      // The expenses claim form's mileage rate. Month 01 holds the literal
+      // the generator writes and the other eleven chain from it, so reading
+      // all twelve proves the write and the chain that carries it.
+      "expensesform.xlsx": Object.fromEntries(EXPENSES_FORM_MONTHS.map((sheet) => [sheet, ["C30"]])),
       ...bankReads,
     },
   };
@@ -2225,6 +2233,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (results.CT600) {
       check("CT600: return period starts at the accounting period start", num(results.CT600.B33), num(admin.B9), 0);
       check("CT600: return period ends at the year end", num(results.CT600.M33), num(admin.F21), 0);
+    }
+
+    // The expenses claim form carries the same mileage rate the Admin sheet
+    // holds. It has no link back to the accounts, so the generator writes
+    // the first month and the other eleven read it off that one.
+    for (const sheet of EXPENSES_FORM_MONTHS) {
+      const form = results[`expensesform.xlsx!${sheet}`];
+      if (form) check(`Expenses form ${sheet}: mileage rate = tax data`, num(form.C30), taxData.mileage.higher_rate_pence, 0.0001);
     }
 
     // The note publishes the depreciation rates from the Schedule, which

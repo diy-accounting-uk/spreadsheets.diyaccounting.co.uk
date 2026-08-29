@@ -362,6 +362,21 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual(["Vatinterface D6: Apr sales net = Sales.xlsx Apr", name]);
     });
 
+    it("carries the tax year's mileage rate on every month of the expenses claim form", () => {
+      for (let month = 1; month <= 12; month++) {
+        const sheet = `Month ${String(month).padStart(2, "0")}`;
+        expect(results[`expensesform.xlsx!${sheet}`], sheet).toBeDefined();
+        expect(results[`expensesform.xlsx!${sheet}`].C30, sheet).toBeCloseTo(taxData.mileage.higher_rate_pence, 6);
+      }
+    });
+
+    it("fails one month of the expenses claim form when its mileage rate is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "expensesform.xlsx", "Month 05", "C30", 0.4);
+      expect(value).toBe(0.4);
+      const corrupted = checksWithCorruptedCell("expensesform.xlsx!Month 05", "C30", value);
+      expect(failureNames(corrupted)).toEqual(["Expenses form Month 05: mileage rate = tax data"]);
+    });
+
     it("fails the tax data echo when the Admin VAT rate is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "M19", 17.5);
       expect(value).toBe(17.5);
