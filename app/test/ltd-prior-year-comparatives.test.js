@@ -34,7 +34,7 @@ const OPENING_STOCK = 10000;
 // this one workbook on its own settles every cell under test.
 async function publishedPriorYear(openAccountsWrites) {
   const reads = {
-    OpenAccounts: Object.values(PRIOR_YEAR_CELLS),
+    "OpenAccounts": Object.values(PRIOR_YEAR_CELLS),
     "PubP&L": Object.values(PUBLISHED_PRIOR_YEAR),
   };
   return runSpreadsheet(readFileSync(HUB), { OpenAccounts: openAccountsWrites }, reads);

@@ -1381,12 +1381,10 @@ export function multiFileOptions(yearEndMonth) {
         ],
       },
       "Companysecretary.xlsx": {
-        // F1 is the sheet's own nominal-value formula (=F3), G1 its own
-        // shares-issued total (=SUM(G3:G19)). G3 and G4 are the first two
-        // members' own holdings, which the directors' report quotes a line
-        // each.
-        // One member a row: A the name, G the holding. The report prints the
-        // first two, and G1 sums the lot.
+        // One member a row: A the name, G the holding. F1 is the sheet's own
+        // nominal-value formula (=F3) and G1 its shares-issued total
+        // (=SUM(G3:G19)). The directors' report prints the first two members
+        // a line each.
         "RegisterofMembers": [
           "F1",
           "G1",
@@ -2259,7 +2257,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         (name) => name === member.name,
         member.name,
       );
-      check(`Register of members: row ${row} holds ${member.name}'s shares`, num(register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`]), member.shares, 0);
+      check(
+        `Register of members: row ${row} holds ${member.name}'s shares`,
+        num(register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+        member.shares,
+        0,
+      );
     });
   }
   if (report && register) {
