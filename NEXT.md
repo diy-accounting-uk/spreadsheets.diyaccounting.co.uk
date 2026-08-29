@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 4 merged (PR #42); the operator's generate-* refresh and deploy from main follow.
+Wave 4 merged (PR #42), refreshed and deployed green from main (deploy 33280314966). Wave 5 rebases onto that main before its CI.
 Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-deploy main). The operator dispatches every workflow on branches.
 
 | Track | Items | Status |
