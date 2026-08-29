@@ -234,6 +234,8 @@ function ltdIndicators(report, vatRegistered) {
   const allowances = value(report, "Corporation Tax working sheet", "Less: Capital Allowances");
   const charge = requireValue(report, "Corporation Tax working sheet", "Corporation Tax");
   const filed = value(report, "CT600 as filed", "Box 63: corporation tax");
+  const relief = value(report, "CT600 as filed", "Box 64: marginal rate relief");
+  const netOfRelief = value(report, "CT600 as filed", "Box 65: corporation tax net of marginal rate relief");
   const nbv = value(report, "Fixed Asset Note", "Net book value");
   const depreciation = value(report, "Fixed Asset Note", "Charge for the year");
   const stock = value(report, "Published Balance Sheet", "Stock at cost");
@@ -244,7 +246,7 @@ function ltdIndicators(report, vatRegistered) {
     `Balance sheet: net assets ${amount(netAssets)} against shareholders' funds ${amount(funds)}, difference ${amount(netAssets - funds)}.`,
     `Trial balance audit accuracy (cell EJ91): ${amount(audit)}.`,
     `Fixed assets: net book value ${amount(nbv)}, depreciation charged for the year ${amount(depreciation)}. Stock at the year end ${amount(stock)}.`,
-    `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}, box 63 as filed ${amount(filed)}.`,
+    `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}. The return files ${amount(filed)} in box 63 before marginal relief of ${amount(relief)}, leaving ${amount(netOfRelief)} in box 65.`,
     vatLine(report, vatRegistered),
     bridgeLine(report),
   ];

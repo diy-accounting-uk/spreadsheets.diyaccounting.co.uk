@@ -395,6 +395,10 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 |---------|-------|-------------|
 | F21 | Year-end date (Excel serial) | Computed from `financial_year.end` |
 | P6, P7 | CT small profits rate (whole %) | `corporation_tax.small_profits_rate * 100` |
+| P8 | CT main rate (whole %) | `corporation_tax.main_rate * 100` |
+| P9 | Marginal relief fraction | `corporation_tax.marginal_relief_fraction` |
+| P12 | Marginal relief lower limit | `corporation_tax.small_profits_limit` |
+| P13 | Marginal relief upper limit | `corporation_tax.main_rate_limit` |
 | G5, G7 | Annual investment allowance (whole %) | `capital_allowances.annual_investment_allowance * 100` |
 | G6, G8 | Writing down allowance main (whole %) | `capital_allowances.writing_down_allowance_main * 100` |
 | E11 | Motor vehicle cost threshold | `capital_allowances.motor_vehicle_cost_threshold` |
@@ -404,7 +408,11 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 | N17, O17 | Mileage lower rate start/pence | `mileage.lower_rate_start`, `mileage.lower_rate_pence` |
 | M19, M21 | VAT standard rate (whole %) | `vat.standard_rate * 100` |
 
+The generator also writes `Month 01!C30` in expensesform.xlsx from `mileage.higher_rate_pence`. The other eleven months chain from it, and the workbook has no link back to the accounts.
+
 All other dates in the Admin sheet (B2-B56 monthly dates, VAT quarter dates, etc.) are formula-driven from F21 -- the generator only sets F21.
+
+**The two corporation tax rate rows.** `Admin!K6/L6/N6` and `K7/L7/N7` set the accounting period out as the one or two UK financial years it falls in. Row 6 runs from the period start (`B9`) to the 31 March inside the period, clamped to the year end; row 7 from the day after that to `F21`. A 31 March year end fills row 6 and leaves row 7 with no days. `K6`/`K7` name each row's financial year, which is the calendar year its 1 April fell in. All six are formula cells whose cached values the generator rolls, because Fixedassets reads `Admin!N7` across the external link and a closed-workbook link update reads the stored value.
 
 **VAT quarter dates:** VATQtr1-5 G5 cells are set by the generator to the quarter-end dates computed from the year-end month. Q1=3 months, Q2=6, Q3=9, Q4=12, Q5=13 months from accounting year start.
 
@@ -423,7 +431,7 @@ One scenario exercises the Ltd product, generated from Precision Code Ltd exampl
 - **Expected:** total_sales = 169,200 (net of VAT)
 - **Checks:** Total Sales, Gross Profit, Net Profit, Corporation Tax, CT600 boxes, PubP&L, PubBalSht
 
-The full scenario is used in CI matrix reconciliation. The corporation tax charge is checked against how the working sheet builds it: two dated tax rows, each a year long, each taking that share of the chargeable profit at the rate injected into `Admin!P6`/`P7`, summed into K35. The shipped sheet has no marginal relief step, so K35 comes out at the small profits rate however large the profit; the run reports the gap against the statutory computation as a warning.
+The full scenario is used in CI matrix reconciliation. The corporation tax charge is checked against how the working sheet builds it: two dated tax rows, one per financial year the accounting period falls in, each taking its share of the chargeable profit, charged at the small profits rate up to its share of the lower limit and at the main rate above it, less marginal relief between the two limits, summed into K35. K35 equals the statutory computation at every year end and profit level.
 
 The old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml` are being replaced by `ltd-scenario-full.toml`. The old `ltd-scenario-basic` remains temporarily used by the E2E test until Phase 5 completes the switchover.
 
@@ -458,10 +466,16 @@ From Financialaccounts.xlsx after recalculation:
 | Total Sales | MnthP&L B9 | Matches `expected.total_sales` (tolerance 1) |
 | Gross Profit | MnthP&L B16 | Matches `expected.gross_profit` (tolerance 1) |
 | Net Profit | MnthP&L B45 | Matches `expected.net_profit` (tolerance 1) |
+| CT: the two tax rows span the accounting period | CorporationTax A35, Admin F21, B9 | `A35 = F21 - B9 + 1` (exact) |
+| CT: first/second tax row gross tax = its profit at its rate | CorporationTax J33/J34, F33/F34, G33/G34 | `J = F * G / 100` (tolerance 1) |
+| CT: first/second tax row marginal relief = its share of the profit against its share of the limits | CorporationTax L33/L34, F33/F34, A33/A34, A35, Admin P9, P12, P13 | `(P13 * A/A35 - F) * P9` inside the band, else 0 |
+| CT: first/second tax row tax = its gross tax less its marginal relief | CorporationTax I33/I34, J33/J34, L33/L34 | `I = J - L` (tolerance 1) |
 | CT: charge for the year = the two tax rows | CorporationTax K35, I33, I34 | `K35 = I33 + I34` (tolerance 1) |
-| CT: charge for the year = chargeable profit at the Admin corporation tax rate | CorporationTax K35, K28, Admin P6 | `K35 = K28 * P6 / 100` (tolerance 1) |
-| CT: charge for the year against the statutory computation with marginal relief | CorporationTax K35, K28 | Warning. `K35` against the main rate less marginal relief; passes when the profit is outside the relief band |
-| CT600: tax payable against the working sheet's charge for the year | CT600 AJ131, CorporationTax K35 | Warning. Box 63 files the first tax row only, so it falls short by the second |
+| CT: charge for the year = the statutory computation with marginal relief | CorporationTax K35, K28 | `K35` against the main rate less marginal relief (tolerance 1) |
+| CT600: corporation tax = first tax row gross tax | CT600 AJ126, CorporationTax J33 | Box 46 is the tax before relief |
+| CT600: marginal rate relief = the working sheet's relief | CT600 Y133, CorporationTax L33, L34 | Box 64 |
+| CT600: tax net of marginal relief = the working sheet's charge | CT600 Y135, CorporationTax K35 | Box 65 |
+| Expenses form Month NN: mileage rate = tax data | expensesform.xlsx Month 01-12 C30 | `mileage.higher_rate_pence` (tolerance 0.0001) |
 
 ## Filing Taxonomy Mapping
 
@@ -561,7 +575,7 @@ The commit job uses `continue-on-error: true` on the initial push, then a retry 
 |------|----------|-----------|
 | 2026-04-01 | Start with March year-end | Simplest -- accounting year aligns with PAYE year |
 | 2026-04-01 | F21 is the only date cell to set | All other dates are formula-driven |
-| 2026-04-01 | Small profits rate only (19%) | Marginal relief is TODO (PLAN_LTD_MARGINAL_RELIEF.md) |
+| 2026-04-01 | Small profits rate only (19%) | Superseded: the working sheet now charges the main rate less marginal relief |
 | 2026-04-02 | Unified product: ltd-mar -> ltd | Single product for all year-end months, parameterised by year-end date |
 | 2026-04-02 | Single "Any" template (Option B) | One template with generator transforms, not 12 separate templates |
 | 2026-04-02 | WDA main rate corrected to 14% for FY2026+ | Budget 2025 change effective 1 Apr 2026 |

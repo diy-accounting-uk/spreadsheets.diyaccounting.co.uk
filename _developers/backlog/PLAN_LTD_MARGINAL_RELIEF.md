@@ -1,48 +1,24 @@
-# PLAN: Corporation Tax Marginal Relief Support
+# PLAN: Corporation Tax marginal relief — what is still open
 
-## Background
+The working sheet charges marginal relief. `Admin!P8`, `P9`, `P12` and `P13` carry the main
+rate, the relief fraction and the two limits from `app/data/ltd-*.toml`; `CorporationTax`
+rows 33 and 34 apportion the limits across the financial years the accounting period falls
+in and take the relief off each row's gross tax; the CT600 files the gross tax in box 63,
+the relief in box 64 and the charge in box 65. Three things the sheet has no input for yet:
 
-Since April 2023, UK Corporation Tax has a two-tier rate structure:
-
-| Profit band | Rate |
-|-------------|------|
-| Up to £50,000 | 19% (small profits rate) |
-| £50,001–£250,000 | Marginal relief (effective rate between 19% and 25%) |
-| Over £250,000 | 25% (main rate) |
-
-The marginal relief fraction is 3/200. The formula is:
-
-```
-CT = profit × 25% − (upper_limit − profit) × (3/200)
-```
-
-Thresholds are divided by (1 + number of associated companies).
-
-## Current State
-
-The Ltd Company spreadsheet (Financialaccounts.xlsx CorporationTax sheet) calculates CT as:
-
-```
-CT = profit × Admin!P6 / 100
-```
-
-Where P6 is a single rate cell (currently 19 = small profits rate). There is no marginal relief calculation in the spreadsheet.
-
-The generated packages are annotated as supporting **small profits rate only** (profits up to £50,000).
-
-## TODO
-
-- [ ] Add marginal relief formula to the CorporationTax sheet in the template
-- [ ] Add upper/lower limit cells to the Admin sheet
-- [ ] Add associated companies count cell
-- [ ] Map new Admin cells to `ltd-*.toml` fields (`corporation_tax.small_profits_limit`, `main_rate_limit`, `marginal_relief_fraction`)
-- [ ] Update `buildLtdCellEdits()` to write the new cells
-- [ ] Update compliance checks to verify marginal relief calculation
-- [ ] Test with scenarios at different profit levels: under £50k, between £50k–£250k, over £250k
+- **Associated companies.** The limits are divided by one plus the number of associated
+  companies. There is no cell for the count, and the CT600's own boxes 38 and 41 carry no
+  formula. A `P14` count, a `/(1+Admin!$P$14)` divisor on both apportioned limits and the two
+  form boxes would close it.
+- **Franked investment income.** Relief is strictly `(U - A) x N/A x F`, where A is augmented
+  profits and N taxable total profits. With no input for franked investment income, A = N and
+  the ratio is 1.
+- **A period straddling a rate change.** One `ltd-<FY>.toml` feeds both tax rows, and the run
+  checks that both carry the same small profits rate. Every financial year from 2020 on
+  carries the same rates as the one after it, so nothing in the current data set needs two.
 
 ## Reference
 
 - HMRC marginal relief calculator: https://www.tax.service.gov.uk/marginal-relief-calculator
 - HMRC guidance: https://www.gov.uk/guidance/corporation-tax-marginal-relief
 - Appendix B (MRR validation): `_developers/hmrc-references/ct600-xml-samples/Appendix-B-CT-MRR-v9.0a.odt`
-- `app/data/ltd-*.toml` already has the fields: `main_rate`, `small_profits_rate`, `small_profits_limit`, `main_rate_limit`, `marginal_relief_fraction`
