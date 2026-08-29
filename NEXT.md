@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 | What | Where | Status |
 |---|---|---|
-| vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | `sp-vat-q5` off `claude/wave-3` | started |
+| vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, blast radius running; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
 | fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | `sp-fixture` off `claude/wave-3` | started |
 | sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
 
@@ -49,12 +49,12 @@ Checks, indicators and docs:
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
-- [ ] **VATQtr5: a fully consecutive fifth quarter** — Q5 ends on Vatinterface row 19, the last period the interface totals, so one period (row 17) is still declared
-  twice. A fully consecutive fifth quarter needs Vatinterface row 20, a `S/P 06Y2` entry
-  sheet pair in `Vatreturns.xlsx`/`Vat.xlsx`, Admin B-column rows in `Financialaccounts.xlsx`
-  for its period end and payment-due date, and `K2:K16` on the dropdown. Test: the
-  `VAT: periods more than one of the five returns declares` warning converts to a hard 0;
-  the featured Ltd scenario then reconciles with no warnings.
+- [ ] **VATQtr5: a fully consecutive fifth quarter** — code-complete on `claude/wave-3`
+  (Vatinterface row 20, `S06Y2`/`P06Y2` sheets, SE Admin B25, `K2:K16`, stagger 15; both
+  overlap warnings are hard zeros). Closes when the wave-3 regeneration lands. Remainder:
+  SE's per-quarter scenario-window checks still skip Q5 because `yearShift` in `se.js`
+  assumes a window inside the accounting year; Q5's boxes stay anchored on the
+  Vatinterface rows. Rework the shift to cover a window after the year end.
 
 Fixture:
 
