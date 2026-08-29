@@ -80,7 +80,6 @@ export const PRODUCTS = {
     capitalCodes: { f: "fixed assets" },
     notes: [
       "Gross profit on this product is sales less stock and direct costs only. Employee costs, premises and every other expense line sit below it, so a service business shows a high gross margin by the way the sheet is laid out.",
-      "The shipped income tax sheet works two bands, basic and higher, and applies no additional rate and no personal-allowance taper. Above the higher-rate threshold it charges 40% on everything, which is the tax table this product carries.",
     ],
   },
   se: {
