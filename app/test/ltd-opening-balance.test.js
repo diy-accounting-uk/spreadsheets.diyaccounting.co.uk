@@ -111,8 +111,12 @@ describeCalc(
     });
 
     it("posts the secured bank loan as a creditor falling due after more than one year", () => {
+      // D40 is the opening balance sheet column, unaffected by the year's
+      // hire purchase agreements. E30 is the year-end published figure,
+      // which also carries the two agreements' amounts financed (13,000 +
+      // 7,000) through HPfinance!E2 (verified against the template).
       expect(results.TrialBalance.D40).toBe(-25000);
-      expect(results.PubBalSht.E30).toBe(25000);
+      expect(results.PubBalSht.E30).toBe(45000);
     });
 
     it("carries the directors loan opening credit into the final balance", () => {

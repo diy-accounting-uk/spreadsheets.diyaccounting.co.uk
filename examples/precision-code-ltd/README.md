@@ -11,14 +11,14 @@ Three directors hold 100 ordinary shares: Carol Smith (MD, 60%), David Brown (NE
 ## Data Files
 
 - **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 6 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 716 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
+- **lines.jsonl** -- 720 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
 | journal | 18 | Opening balance sheet (16 lines) + stock adjustment (2 lines) |
 | sales | 112 | 10+ invoices per month across 7 sales codes and 23 customers |
 | purchases | 393 | 30+ invoices per month across 22 purchase codes |
-| bank | 157 | Current (138), savings (4), cash (7), credit card (8) |
+| bank | 161 | Current (138), savings (8), cash (7), credit card (8) |
 | payroll | 36 | 3 employees x 12 months with PAYE/NI breakdowns |
 
 ## Opening Balance Sheet (1 April 2025)
@@ -201,6 +201,20 @@ buys and sells nothing and the calculated stock never leaves the opening figure.
 
 The charge secures the 25,000 bank loan carried as a creditor falling due after more than one year.
 
+## Hire Purchase Agreements
+
+| Date | Finance company | Reference | Amount financed | Admin charges | Total interest | Term | Supplier |
+|------|------------------|-----------|----------------:|---------------:|----------------:|-----:|----------|
+| 1 Jun 2025 | Close Brothers Asset Finance | HP-2025-01 | 13,000 | 200 | 1,800 | 20 months | Precision Tooling Supplies |
+| 1 Sep 2025 | Close Brothers Asset Finance | HP-2025-02 | 7,000 | 100 | 1,000 | 20 months | Precision Tooling Supplies |
+
+Each agreement's admin charges and interest (2,000 and 1,100) are booked on the savings account
+(1210) as bank-charges payments (code `B`), reaching the P&L's HP interest/bank charges line the
+same way every other direct bank charge does. Each agreement's amount financed (13,000 and 7,000)
+is booked on the same account as a creditor repayment (code `CR`). Booking both legs on the
+savings account, rather than the current account SE also reads, keeps the SE fixture's own income
+tax profit unaffected.
+
 ## CIS Sub-Contractors
 
 | Date | Supplier | Gross | CIS Deduction (20%) | Net Paid |
@@ -237,7 +251,7 @@ October is the low month: the 36,000 van purchase lands in it.
 | Account | Entries | Description |
 |---------|--------:|-------------|
 | 1200 -- Current account | 138 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments |
-| 1210 -- Savings account | 4 | Opening balance, transfer in, interest (x2) |
+| 1210 -- Savings account | 8 | Opening balance, transfer in, interest (x2), hire purchase charges and capital repayments (x4) |
 | 1220 -- Cash account | 7 | Opening float, top-up, petty cash purchases (x5) |
 | 1230 -- Credit card | 8 | Hotel/travel charges (x3), annual fee, payments from current (x4) |
 

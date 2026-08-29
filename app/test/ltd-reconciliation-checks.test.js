@@ -919,10 +919,13 @@ describeCalc(
       expect(failureNames(onAnotherYearEnd)).toEqual(["Admin: year-end seed = the package's own year end"]);
     });
 
-    it("registers the charge over the company's assets and carries the loan it secures", () => {
+    it("registers the charge over the company's assets and carries the loan it secures, plus the hire purchase agreements", () => {
       const charges = results["Companysecretary.xlsx!Charges&Debentures"];
       expect(charges.C2).toBe(30000);
-      expect(results.PubBalSht.E30).toBe(25000);
+      // 25,000 secured bank loan plus the two hire purchase agreements'
+      // amounts financed (13,000 + 7,000), which reach the same TrialBalance
+      // row through HPfinance!E2 (verified against the template).
+      expect(results.PubBalSht.E30).toBe(45000);
     });
 
     it("fails the charge coverage when the directors valuation is corrupted via JSZip", async () => {
@@ -939,7 +942,7 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("PubBalSht", "E30", value);
       expect(failureNames(corrupted)).toEqual([
-        "Published balance sheet: creditors due after more than one year = the secured loan",
+        "Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements",
         "Charges register: the balance sheet carries a creditor falling due after more than one year",
       ]);
     });

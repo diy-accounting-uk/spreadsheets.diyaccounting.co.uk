@@ -518,6 +518,24 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Hire purchase agreements (SE, Ltd). Each finances an asset over a fixed
+  // term; the HPfinance sheet works out its own monthly payment, capital
+  // and interest split from these fields.
+  if (expected.hp_agreements) {
+    for (const agreement of expected.hp_agreements) {
+      parts.push("[[hp_agreements]]");
+      parts.push(`date = ${agreement.date}`);
+      parts.push(`finance_company = "${escapeTomlString(agreement.finance_company)}"`);
+      parts.push(`reference = "${escapeTomlString(agreement.reference)}"`);
+      parts.push(`amount_financed = ${agreement.amount_financed}`);
+      parts.push(`admin_charges = ${agreement.admin_charges}`);
+      parts.push(`total_interest = ${agreement.total_interest}`);
+      parts.push(`months = ${agreement.months}`);
+      parts.push(`supplier = "${escapeTomlString(agreement.supplier)}"`);
+      parts.push("");
+    }
+  }
+
   // Opening debtors
   if (expected.opening_debtors) {
     for (const d of expected.opening_debtors) {
