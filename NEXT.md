@@ -11,7 +11,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | Track | Items | Worktree | Status |
 |---|---|---|---|
 | ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
-| se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
+| se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | merged into `claude/wave-1`, blast radius running | 59 SA103F checks, 31 calendar checks |
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
 | vat-stagger | VATQtr5 stagger and dropdown range | landed on `claude/wave-1` `3c85466a`, 219 tests, worktree removed | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
@@ -52,10 +52,12 @@ Coverage checks still to write:
 - [ ] **Taxi `VitalTax` quarterly checks** — the MTD quarterly re-summing path,
   unasserted; SE's twin is the proven pattern. Test: each quarterly rollup and the G
   annual column equal the P&L's own figures; expected all-pass on taxi-scenario-basic.
-- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — the payroll calendar is
-  generator-written, rotates with the year end, and is never read back; the last
-  member of the Admin-echo family. Test: assert the calendar's month names and dates
-  against Admin!B9's rotation, as the four closed echoes do.
+- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — SE's echo landed in wave 1; Ltd's
+  is in the ltd-checks track. Remainder: `generatePayslipsCalendar` (generator.js) lays out
+  a fixed 53 weeks / 380 rows, so `I1 = B366` reads one day short in a tax year spanning a
+  leap February (2027-28). Fix the row count from the year and assert I1 against the year
+  end on a leap-year fixture. Also add an SA103F report indicator (box 30/46 divergence)
+  once the regenerated SE report carries the section `judge-reconciliation.test.js` parses.
 - [ ] **HPfinance fixture and capital/interest checks (Ltd and SE)** — the sheet that
   decides how much of an HP payment is deductible has no fixture. Depends on the
   #REF! repair below. Test: a fixture agreement (counter-legged, EJ91 stays 0),
