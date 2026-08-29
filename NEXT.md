@@ -6,9 +6,17 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. PR #40 (wave 3) is merged, refreshed (generate-* commits through `11b249b4`) and
-deployed green from `11b249b4`. The next PR branch starts from that main; the operator
-dispatches CI on branches.
+Wave 4 on `claude/wave-4` from main `418bec4b` (post-deploy green at `11b249b4`). Worktrees
+under `.worktrees/sp-<track>`. Tracks land locally with their blast radius, then the branch
+is pushed and a PR opened; the operator dispatches every workflow on it (generate-* with
+commit first, since the forecast templates and the taxi fixture change what is generated).
+
+| Track | Items | Status |
+|---|---|---|
+| forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` repairs and checks; Taxi `Draft Tax calculation` taper and additional rate with a high-profit taxi fixture | started |
+| se-q5-window | `yearShift` rework so SE's Q5 scenario window is checked like Q1-Q4 | started |
+| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK` via a scenario field and `cellWrites`; diya-gl schema brought up to the fixture's codes and fields | started |
+| fidelity-design | design only: inventory of Excel reconciliation and published-report scope per product against the JS engine, exporter, fidelity tests and diya-gl schema; rewrite of `PLAN_ROUNDTRIP_FIDELITY.md` into implementation tracks | started |
 
 ## Open items
 
