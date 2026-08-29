@@ -173,7 +173,7 @@ describeCalc(
     });
 
     it("Closing Debtors total reads the real ClosingDebtors!G1 invoice-value sum", () => {
-      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(10400);
+      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(7900);
     });
 
     it("Opening Creditors total reads the real OpeningCreditors!G1 invoice-value sum", () => {

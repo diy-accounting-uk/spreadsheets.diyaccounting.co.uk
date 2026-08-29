@@ -157,29 +157,37 @@ Quarterly dividends: Q1 3,000, Q2 3,000, Q3 3,000, Q4 (final) 6,000 = 15,000 tot
 
 ## HMRC Payments
 
-| Date | Payment | Amount |
-|------|---------|-------:|
-| 19th of each month | PAYE, employee NI and employer NI for the month | 1,673.20 |
-| 7 May 2025 | VAT, the prior year's fourth quarter | 1,500 |
-| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | 13,808.17 |
-| 1 Oct 2025 | Corporation tax for the prior year | 4,500 |
-| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | 14,456.50 |
-| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | 10,917.50 |
+| Date | Payment | Code | Amount |
+|------|---------|------|-------:|
+| 19th of each month | PAYE, employee NI and employer NI for the month | `RP` | 1,673.20 |
+| 7 May 2025 | VAT, the prior year's fourth quarter | `RP` | 1,500 |
+| 19 Jul 2025 | CIS deducted from BuildTech in June | `RC` | 1,000 |
+| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | `RP` | 13,808.17 |
+| 1 Oct 2025 | Corporation tax for the prior year | `RT` | 4,500 |
+| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | `RP` | 14,456.50 |
+| 19 Dec 2025 | CIS deducted from BuildTech in November | `RC` | 600 |
+| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | `RP` | 10,917.50 |
 
 The fourth quarter's VAT of 14,796.50 falls due after the year end and so stays a creditor, and
 so does this year's corporation tax: 29,221.27 charged, less the 64.51 the working sheet credits
 for tax already suffered on the interest received, leaves 29,156.77 owed.
 
-The Innovate UK grant of 2,500 is invoiced to sales account 4004 and its receipt carries bank
-code `RV`, so it credits the VAT creditor rather than settling the debtor. Recoding it to `DR`
-takes the year-end trade debtors to 7,900, which the hand-written closing debtors listing in
-`app/bin/extract-scenarios.js` does not match; the listing has to be derived from the ledger
-before that receipt can be coded properly.
+The Company bank workbooks analyse PAYE under `RP`, VAT under `RV`, CIS under `RC` and
+corporation tax under `RT` (Currentaccount columns AH, AI, AJ and AK), and the trial balance
+carries a creditor row for each. Corporation tax and the CIS remittances are coded that way
+here. The VAT payments still carry `RP`, so the PAYE creditor carries the year's 40,682.17 of
+VAT as well as the payroll's own deductions; coded `RV` it would come out at nil.
 
-Every one of these carries bank code `RP`. The Company bank workbooks analyse VAT under `RV`,
-CIS under `RC` and corporation tax under `RT`, which would split the balance sheet's tax
-creditors properly, but the Self Employed product this master data also feeds analyses no
-payment under those three codes, so recoding them means extending that product first.
+The Self Employed workbooks have one HMRC Payments column between them, analysed under `RP`
+(Bank.xlsx AA, Cash.xlsx W), so `app/products/se.js` writes a payment coded `RV`, `RC` or `RT`
+into that column.
+
+The Innovate UK grant of 2,500 is invoiced to sales account 4004 and its receipt carries bank
+code `DR`, so it settles the debtor it raised. Year-end trade debtors come to 7,900, worked out
+from the invoices raised and the money banked against them rather than listed by hand:
+`buildClosingDebtors` applies each receipt to the oldest invoice open, taking a receipt that
+names a customer to that customer's own oldest invoice and the aggregate banking runs to the
+oldest invoice on the book.
 
 ## Stock Movement
 

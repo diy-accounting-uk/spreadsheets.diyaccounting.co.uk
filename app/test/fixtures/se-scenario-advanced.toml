@@ -3469,7 +3469,7 @@ description = "Monthly PAYE/NI payment"
 date = 2025-07-19
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RC"
 direction = "out"
 amount = 1000
 description = "CIS deduction remittance"
@@ -3568,7 +3568,7 @@ description = "Aggregate supplier payments"
 date = 2025-08-05
 account = "1200"
 source = "Innovate UK"
-code = "RV"
+code = "DR"
 direction = "in"
 amount = 2500
 description = "Grant received"
@@ -3757,7 +3757,7 @@ description = "Directors loan repayment"
 date = 2025-10-01
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RT"
 direction = "out"
 amount = 4500
 description = "Corporation Tax prior year"
@@ -4000,7 +4000,7 @@ description = "Monthly PAYE/NI payment"
 date = 2025-12-19
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RC"
 direction = "out"
 amount = 600
 description = "CIS deduction remittance"
@@ -4794,12 +4794,17 @@ amount = 2400
 [[closing_debtors]]
 customer = "Acme Corp"
 invoice = "INV-1012"
-amount = 8000
+amount = 6100
 
 [[closing_debtors]]
-customer = "TechStart Ltd"
-invoice = "INV-1112"
-amount = 2400
+customer = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440
+
+[[closing_debtors]]
+customer = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360
 
 [[opening_creditors]]
 supplier = "WorkSpace Ltd"

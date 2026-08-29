@@ -1320,9 +1320,12 @@ export function standardReads() {
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
 
-  // Trade creditors' final balance, the row the hire purchase agreements'
-  // amounts financed are moved off at the year end.
-  add("TrialBalance", "EJ28");
+  // The creditor rows the bank codes settle: EJ28 trade creditors, EJ32 the
+  // CIS creditor ("RC"), EJ34 the PAYE creditor ("RP") and EJ35 corporation
+  // tax ("RT"). EH35 is the tax credit the template imputes on interest
+  // received, the one term of row 35 that comes from neither the opening
+  // balance nor the bank.
+  for (const cell of ["EJ28", "EJ32", "EJ34", "EJ35", "EH35"]) add("TrialBalance", cell);
 
   // PAYE/NI creditor -- row 34's first-month movement column. Column L
   // holds the fiscal year's first month regardless of year-end (verified
@@ -1928,6 +1931,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Published balance sheet: trade debtors = closing debtors", pubBS.E11 || 0, total);
   }
 
+  // The same figure again, from the ledger rather than the listing: the
+  // debtors brought forward, plus everything invoiced, less every receipt
+  // the banks took under code "DR" (Currentaccount J). The listing is worked
+  // out from the same journals, so a receipt coded to some other ledger --
+  // a customer's money credited to the VAT creditor, say -- moves the
+  // balance sheet and this expectation together with it and leaves the
+  // listing behind.
+  if (pubBS && expected.sales && expected.bank && expected.opening_debtors) {
+    let invoiced = 0;
+    for (const transactions of Object.values(expected.sales)) {
+      for (const tx of transactions) invoiced += tx.amount;
+    }
+    const broughtForward = expected.opening_debtors.reduce((total, d) => total + d.amount, 0);
+    check(
+      "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts",
+      num(pubBS.E11),
+      broughtForward + invoiced + netBankPayments("DR"),
+    );
+  }
+
   // VAT chain: Sales/Purchases month VAT totals must flow through the
   // Vatinterface external links into the VATQtr boxes. The month totals are
   // read straight from the leaf workbooks, so a broken link chain shows up
@@ -2467,6 +2490,55 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
       -num(finalBalances.EJ28),
       (expected.opening_balance?.trade_creditors || 0) + invoiced - netBankPayments("CR") - amountsFinanced,
+    );
+  }
+
+  // The PAYE creditor (row 34) takes the month's income tax and both
+  // National Insurance contributions off the payroll and gives back every
+  // payment made under "RP" (Currentaccount AH). Corporation tax and CIS
+  // have codes and rows of their own, so either of them paid under "RP"
+  // leaves this line short by what it paid.
+  if (finalBalances && expected.payroll && expected.bank) {
+    let payrollDue = 0;
+    for (const entries of Object.values(expected.payroll)) {
+      for (const entry of entries) payrollDue += entry.incomeTax + entry.employeeNI + entry.employerNI;
+    }
+    check(
+      "Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP",
+      -num(finalBalances.EJ34),
+      payrollDue - netBankPayments("RP"),
+    );
+  }
+
+  // The CIS creditor (row 32) takes the tax withheld from sub-contractors
+  // out of Purchases!AK and gives back the remittances paid under "RC"
+  // (Currentaccount AJ). Nothing writes a CIS certificate into Purchases, so
+  // the row carries the remittances alone and reads as a debit of them.
+  if (finalBalances && expected.bank) {
+    const remitted = netBankPayments("RC");
+    check("Trial Balance: CIS creditor = the remittances paid under RC", num(finalBalances.EJ32), remitted);
+    if (remitted !== 0) {
+      checks.push({
+        name: "CIS: sub-contractor tax withheld reaches the purchase journal",
+        actual: 0,
+        expected: remitted,
+        pass: false,
+        diff: -remitted,
+        severity: "warning",
+      });
+    }
+  }
+
+  // The corporation tax creditor (row 35): the opening balance and the
+  // charge the working sheet computes, less the tax credit the template
+  // imputes on interest received (EH35 = -EH58, a gross-up of the year's
+  // interest) and less every payment made under "RT" (Currentaccount AK).
+  const taxWorkingSheet = results[TAX_SHEET];
+  if (finalBalances && taxWorkingSheet && expected.bank && expected.opening_balance) {
+    check(
+      "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
+      -num(finalBalances.EJ35),
+      (expected.opening_balance.corporation_tax || 0) + num(taxWorkingSheet.K35) - num(finalBalances.EH35) - netBankPayments("RT"),
     );
   }
 

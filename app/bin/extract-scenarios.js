@@ -23,6 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
+  buildClosingDebtors,
   HP_AGREEMENT_FIELD,
   LTD_SALES_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
@@ -92,7 +93,14 @@ const openingDebtors = [
   { customer: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
 ];
 
-const closingDebtors = [
+// SE and Ltd bank their customer receipts, so what is still owed at the year
+// end comes off the ledger itself.
+const closingDebtors = buildClosingDebtors(allLines, openingDebtors);
+
+// The Basic Sole Trader subset carries no bank journal, so nothing in it can
+// settle an invoice and there is nothing to work the figure out from. Its
+// closing debtors are stated.
+const bstClosingDebtors = [
   { customer: "Acme Corp", invoice: "INV-1012", amount: 8000 },
   { customer: "TechStart Ltd", invoice: "INV-1112", amount: 2400 },
 ];
@@ -223,7 +231,7 @@ const bstToml = formatScenarioToml(
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,
-    closing_debtors: closingDebtors,
+    closing_debtors: bstClosingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
     // In-year additions go in the "Bought AFTER" block on the Fixed Assets
