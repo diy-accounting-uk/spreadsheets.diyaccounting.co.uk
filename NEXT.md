@@ -6,21 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 3 is on `claude/wave-3` (PR #40), rebased onto the post-deploy green main (deploy
-33252551051 at `79eecc50`). Remote head `1f16bc27` carries the branch regeneration
-(`d221e378`, `fb295a2a`, `1170f5e1`, `4e264856`). The four skip-commit generate-* proofs
-on that head failed at the pre-generation test job on three stale SE figures in
-`app/test/judge-reconciliation.test.js`; the fix is committed locally in worktree
-`.worktrees/sp-wave-3` as `ea4073c0` and NOT pushed. To meet the merge bar: push it, then
-the four skip-commit proofs and test.yml green. The operator dispatches CI on this branch.
-
-| Track | Landed on `claude/wave-3` |
-|---|---|
-| vat-q5 | `f529d5aa`; both featured scenarios reconcile with 0 warnings |
-| fixture | `a19160f0`; SE profit 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
-| sa103f | `1a5d1b7b` |
-
-Every later PR branch starts from a rebase onto the post-deploy green main.
+Nothing. PR #40 (wave 3) is merged; the operator runs generate-* on main with commit, then
+the deploy. Every later PR branch starts from a rebase onto that post-deploy green main, and
+the operator dispatches CI on branches.
 
 ## Open items
 
@@ -42,37 +30,22 @@ Checks, indicators and docs:
   `calculateExpectedTax`, which tapers and charges 45%. Dormant only because no taxi
   fixture crosses £100,000. Test: a high-profit taxi fixture makes the existing check fail,
   then the template repair (as BST's) makes it pass.
-- [ ] **Two comments cite `SHEET_COVERAGE_GAPS.md` by name** — `se-admin-echo-checks.test.js:13`
-  (say: every product asserts its injected Admin cells against the tax year TOML) and
-  `ltd-reconciliation-checks.test.js:328` (drop the parenthetical, keep the EJ22-EJ25 /
-  PubBalSht!E12 mechanism). Rides with the next code PR.
-- [ ] **SA103F report indicator** — the SE report now carries the SA103F section; add an
-  indicator in `report-indicators.js` explaining the box 30/46 divergence between the full
-  and short returns, with its `judge-reconciliation.test.js` expectation.
-- [ ] **HP agreements: SE counter-leg and Schedule additions** — code-complete on
-  `claude/wave-3` (HP charges and repayments through account 1200 so SE's finance line
-  carries them; the financed tooling on the Schedule as `fa` purchases; trade creditors
-  checked from the scenario). Closes when the wave-3 regeneration lands.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
-- [ ] **VATQtr5: a fully consecutive fifth quarter** — code-complete on `claude/wave-3`
-  (Vatinterface row 20, `S06Y2`/`P06Y2` sheets, SE Admin B25, `K2:K16`, stagger 15; both
-  overlap warnings are hard zeros). Closes when the wave-3 regeneration lands. Remainder:
-  SE's per-quarter scenario-window checks still skip Q5 because `yearShift` in `se.js`
-  assumes a window inside the accounting year; Q5's boxes stay anchored on the
-  Vatinterface rows. Rework the shift to cover a window after the year end.
+- [ ] **SE VAT Q5 scenario window** — `yearShift` in `se.js` assumes a quarter window inside
+  the accounting year, so the per-quarter scenario-window checks skip Q5, which now sits
+  wholly after the year end; Q5's boxes are anchored on the Vatinterface rows only. Rework
+  the shift so Q5's window is checked against the scenario like Q1-Q4.
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** — CT and CIS now coded `RT`/`RC`, the grant `DR`, closing
-  debtors derived from the fixture (code-complete on `claude/wave-3`). Still open: the four
-  VAT payments stay coded `RP`, so the PAYE creditor carries a 40,682.17 debit that
-  recoding to `RV` takes to nil; nothing writes the master data's `diya-gl:cisDeduction`
-  into `Purchases!AK`, so the CIS creditor reads as a 1,600 debit (a warning carries the
-  figure) — needs a scenario field and a `cellWrites` change; and
-  `web/.../schema/diya-gl-lines-v1.schema.json` omits bank codes `BB`, `RT`, `RC` and the
-  `diya-gl:hpAgreement` field the fixture uses (nothing validates against it).
+- [ ] **Ltd fixture remainders** — the four VAT payments stay coded `RP`, so the PAYE
+  creditor carries a 40,682.17 debit that recoding to `RV` takes to nil; nothing writes the
+  master data's `diya-gl:cisDeduction` into `Purchases!AK`, so the CIS creditor reads as a
+  1,600 debit (a warning carries the figure) — needs a scenario field and a `cellWrites`
+  change; `web/.../schema/diya-gl-lines-v1.schema.json` omits bank codes `BB`, `RT`, `RC`
+  and the `diya-gl:hpAgreement` field the fixture uses (nothing validates against it).
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
