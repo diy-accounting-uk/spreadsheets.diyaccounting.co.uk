@@ -788,7 +788,14 @@ describeCalc(
     it("files a nil dividend while nothing writes the board minute", () => {
       expect(results["Companysecretary.xlsx!Boardmeeting"].E4).toBeNull();
       expect(results.Report.D94).toBe(0);
-      expect(warningNamed(checks, "Board minute: a dividend is declared for the year").pass).toBe(false);
+
+      // The bank paid 15,000 of dividends and the published accounts carry
+      // none, because the line reads a trial balance row no month column
+      // feeds.
+      const warning = warningNamed(checks, "Published P&L: dividends published against the dividends the year paid");
+      expect(warning.pass).toBe(false);
+      expect(warning.actual).toBe(0);
+      expect(warning.expected).toBe(15000);
     });
 
     it("fails the report's turnover when Report E87 is corrupted via JSZip", async () => {

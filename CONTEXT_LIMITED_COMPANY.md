@@ -468,6 +468,12 @@ Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals
 | CT: charge for the year = chargeable profit at the Admin corporation tax rate | CorporationTax K35, K28, Admin P6 | `K35 = K28 * P6 / 100` (tolerance 1) |
 | CT: charge for the year against the statutory computation with marginal relief | CorporationTax K35, K28 | Warning. `K35` against the main rate less marginal relief; passes when the profit is outside the relief band |
 | CT600: tax payable against the working sheet's charge for the year | CT600 AJ131, CorporationTax K35 | Warning. Box 63 files the first tax row only, so it falls short by the second |
+| Published P&L: the prior year column is empty when no comparatives are entered | PubP&L B54 | Warning. `OpenAccounts!E48` reads this year's opening stock, so the prior year column publishes a profit of that size |
+| Published P&L: dividends published against the dividends the year paid | PubP&L F52, the scenario's `DV` bank payments | Warning. `EJ48` has no month column feeding it, so a year that paid dividends publishes none |
+| Directors' report figures | Report F22, E87, H87, D89, I89, D94, I95, F97, F98 | Each against the statement or register it reads |
+| Payslips calendar | Payslips Admin B2 and each payroll month's opening row | The tax calendar: week 1 the five days from 6 April, seven-day weeks after it, months of four, four and five weeks |
+| Charges register: the balance sheet carries a creditor falling due after more than one year | Charges&Debentures C2-C6, PubBalSht E30 | The secured creditor is above zero and no more than the directors valuation of the assets charged |
+| Stock: calculated stock = opening + materials bought - materials sold | Stock D6, D30, the scenario's `s` purchases and `a` sales | Both sides from the scenario, so the count adjustment cannot absorb a missing month |
 
 ## Filing Taxonomy Mapping
 

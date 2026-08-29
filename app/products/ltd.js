@@ -894,12 +894,19 @@ export const CELL_MAP = [
   ["PubP&L", "F44", "Administrative Expenses",     "gl-cor:amount (pubPL.admin)",     "Published P&L", 1],
   ["PubP&L", "F46", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)", "Published P&L", 0],
   ["PubP&L", "F49", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",       "Published P&L", 0],
+  ["PubP&L", "F50", "Corporation tax",             "gl-cor:taxAmount (pubPL.tax)",    "Published P&L", 1],
+  ["PubP&L", "F51", "**Profit after Tax**",        "gl-cor:amount (pubPL.pat)",       "Published P&L", 0],
+  ["PubP&L", "F52", "Dividends",                   "gl-cor:amount (pubPL.dividends)", "Published P&L", 1],
+  ["PubP&L", "F54", "**Retained Profit for the year**", "gl-cor:amount (pubPL.retained)", "Published P&L", 0],
   // ── Published Balance Sheet (columns A/B are last year, E/F this year) ──
   ["PubBalSht", "F6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
   ["PubBalSht", "E10", "Stock at cost",            "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E11", "Trade Debtors",            "accounts.assets.1300 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E12", "Cash at bank and in hand", "gl-cor:amount (pubBS.bankCash)",     "Published Balance Sheet", 1],
   ["PubBalSht", "E13", "Current Assets",           "gl-cor:amount (pubBS.currentAssets)","Published Balance Sheet", 0],
+  ["PubBalSht", "E16", "Trade Creditors",          "accounts.liabilities.2100 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E17", "Corporation Tax",          "accounts.liabilities.2300 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E18", "Taxation and Social Security", "gl-cor:amount (pubBS.taxAndSocial)", "Published Balance Sheet", 1],
   ["PubBalSht", "E20", "Current Liabilities",      "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
   ["PubBalSht", "F26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
@@ -2080,17 +2087,35 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   // The dividend the report declares is the figure the board minuted, read
   // across the link into Companysecretary.xlsx. Nothing in the writer fills
-  // that cell yet, so both sides are nil and the check holds only because
-  // the minute is empty; the warning carries that.
+  // that cell yet, so both sides are nil and the check holds only because the
+  // minute is empty.
   const boardMeeting = results["Companysecretary.xlsx!Boardmeeting"];
   if (report && boardMeeting) {
     check("Directors' report: dividend declared = the board minute", num(report.D94), num(boardMeeting.E4), 0);
+  }
+
+  // The whole dividend cycle stops at the bank. A payment coded DV reaches
+  // the trial balance's dividends creditor, but the published dividend line
+  // reads TrialBalance!EJ48, which no month column feeds, and nothing
+  // declares a dividend on the board minute the directors' report quotes. So
+  // a year that paid dividends publishes none, and the payment sits in the
+  // creditor instead of coming out of retained earnings. That belongs to the
+  // shipped workbook, so the run is not stopped for it and the warning
+  // carries what the year actually paid.
+  if (publishedPL && expected.bank) {
+    let dividendsPaid = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "DV") continue;
+        dividendsPaid += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
     checks.push({
-      name: "Board minute: a dividend is declared for the year",
-      actual: num(boardMeeting.E4),
-      expected: "a dividend the board minuted",
-      pass: num(boardMeeting.E4) > 0,
-      diff: "",
+      name: "Published P&L: dividends published against the dividends the year paid",
+      actual: num(publishedPL.F52),
+      expected: dividendsPaid,
+      pass: Math.abs(num(publishedPL.F52) - dividendsPaid) <= 1,
+      diff: num(publishedPL.F52) - dividendsPaid,
       severity: "warning",
     });
   }
