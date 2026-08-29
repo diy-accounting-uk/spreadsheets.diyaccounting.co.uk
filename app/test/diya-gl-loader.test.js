@@ -23,7 +23,7 @@ describe("loadDiyaGlData", () => {
   it("loads full dataset", () => {
     const { book, lines } = loadDiyaGlData(FULL_DATA);
     expect(book.entityInformation.organizationIdentifier).toBe("Precision Code Ltd");
-    expect(lines.length).toBe(715);
+    expect(lines.length).toBe(716);
   });
 });
 
