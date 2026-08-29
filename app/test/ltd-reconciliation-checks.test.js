@@ -99,13 +99,6 @@ function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
-function warningNamed(checks, name) {
-  const found = checks.find((c) => c.name === name);
-  if (!found) throw new Error(`no check named ${name}`);
-  if (found.severity !== "warning") throw new Error(`${name} is not a warning`);
-  return found;
-}
-
 describeCalc(
   "Limited Company: fixed assets, bank, monthly P&L and the filed documents",
   () => {
@@ -374,6 +367,21 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual(["Vatinterface D6: Apr sales net = Sales.xlsx Apr", name]);
     });
 
+    it("carries the tax year's mileage rate on every month of the expenses claim form", () => {
+      for (let month = 1; month <= 12; month++) {
+        const sheet = `Month ${String(month).padStart(2, "0")}`;
+        expect(results[`expensesform.xlsx!${sheet}`], sheet).toBeDefined();
+        expect(results[`expensesform.xlsx!${sheet}`].C30, sheet).toBeCloseTo(taxData.mileage.higher_rate_pence, 6);
+      }
+    });
+
+    it("fails one month of the expenses claim form when its mileage rate is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "expensesform.xlsx", "Month 05", "C30", 0.4);
+      expect(value).toBe(0.4);
+      const corrupted = checksWithCorruptedCell("expensesform.xlsx!Month 05", "C30", value);
+      expect(failureNames(corrupted)).toEqual(["Expenses form Month 05: mileage rate = tax data"]);
+    });
+
     it("fails the tax data echo when the Admin VAT rate is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "M19", 17.5);
       expect(value).toBe(17.5);
@@ -576,72 +584,66 @@ describeCalc(
 
     // ── The corporation tax charge and what the CT600 files of it ──
 
-    it("spreads the chargeable profit over the accounting period and the year after it", () => {
+    it("charges the whole chargeable profit in the one financial year the period falls in", () => {
       const ct = results.CorporationTax;
-      // Row 33 runs the twelve months of the accounting period, row 34 the
-      // twelve after it, so each is a year long and the profit is spread over
-      // both of them.
-      expect([365, 366]).toContain(ct.A33);
-      expect([365, 366]).toContain(ct.A34);
-      expect(ct.A35).toBe(ct.A33 + ct.A34);
-      expect(ct.F33 + ct.F34).toBeCloseTo(ct.K28, 6);
-      expect(ct.F33).toBeCloseTo((ct.K28 * ct.A33) / ct.A35, 6);
-      // Both rows carry the one rate the Admin sheet holds, so the charge is
-      // the whole chargeable profit at the small profits rate.
-      expect(ct.G33).toBe(19);
-      expect(ct.G34).toBe(19);
+      const admin = results.Admin;
+      // A 31 March year end runs 1 April to 31 March, which is one UK
+      // financial year, so row 33 takes the whole period and row 34 is empty.
+      expect(ct.A33).toBe(365);
+      expect(ct.A34).toBe(0);
+      expect(ct.A35).toBe(365);
+      expect(ct.A35).toBe(admin.F21 - admin.B9 + 1);
+      expect(ct.F33).toBeCloseTo(ct.K28, 6);
+      expect(ct.F34).toBe(0);
       expect(ct.I33 + ct.I34).toBeCloseTo(ct.K35, 6);
-      expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 6);
     });
 
-    it("warns that the charge carries no marginal relief, and says what the statutory figure is", () => {
+    it("names the accounting period on the working sheet and on the return", () => {
+      const admin = results.Admin;
+      expect(results.CorporationTax.E5).toBe(admin.B9);
+      expect(results.CorporationTax.H5).toBe(admin.F21);
+      expect(results.CT600.B33).toBe(admin.B9);
+      expect(results.CT600.M33).toBe(admin.F21);
+    });
+
+    it("charges the main rate less marginal relief on a profit inside the relief band", () => {
       const ct = results.CorporationTax;
       const statutory = calculateCorporationTax(ct.K28, taxData.corporation_tax).corporationTax;
       // The profit sits between the £50,000 and £250,000 limits, so the
-      // statutory computation is the main rate less relief and the sheet's
-      // small profits rate falls short of it.
+      // charge is the main rate on the whole profit less the relief that
+      // tapers it back towards the small profits rate.
       expect(ct.K28).toBeGreaterThan(taxData.corporation_tax.small_profits_limit);
       expect(ct.K28).toBeLessThan(taxData.corporation_tax.main_rate_limit);
+      expect(ct.G33).toBe(25);
+      expect(ct.J33).toBeCloseTo(ct.K28 * 0.25, 6);
+      expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
+      expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
-
-      const warning = warningNamed(checks, "CT: charge for the year against the statutory computation with marginal relief");
-      expect(warning.pass).toBe(false);
-      expect(warning.expected).toBeCloseTo(statutory, 6);
-      expect(warning.actual).toBeCloseTo(ct.K35, 6);
-      // A warning does not stop the run.
-      expect(failureNames(checks)).not.toContain(warning.name);
+      expect(ct.K35).toBeCloseTo(35342.772927, 4);
     });
 
-    it("passes that warning for a profit the small profits rate is the right rate for", () => {
-      const smallProfit = { ...results, CorporationTax: { ...results.CorporationTax, K28: 40000, K35: 7600 } };
-      const name = "CT: charge for the year against the statutory computation with marginal relief";
-      const warning = warningNamed(ltdCheckCompliance(smallProfit, expected, taxData, calculateExpectedTax), name);
-      expect(warning.expected).toBe(7600);
-      expect(warning.pass).toBe(true);
-    });
-
-    it("warns that the CT600 files the first tax row alone", () => {
+    it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
       const ct = results.CorporationTax;
       const ct600 = results.CT600;
-      // Boxes 53 to 56, the form's second financial year row, carry no
-      // formula, so box 63 is box 46 on its own.
-      expect(ct600.AJ128).toBeNull();
-      expect(ct600.AJ126).toBeCloseTo(ct.I33, 6);
-      expect(ct600.AJ131).toBeCloseTo(ct.I33, 6);
-
-      const warning = warningNamed(checks, "CT600: tax payable against the working sheet's charge for the year");
-      expect(warning.pass).toBe(false);
-      expect(warning.expected).toBeCloseTo(ct.K35, 6);
-      expect(warning.diff).toBeCloseTo(-ct.I34, 6);
-      expect(failureNames(checks)).not.toContain(warning.name);
+      expect(ct.I34).toBe(0);
+      expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
+      expect(ct600.AJ128).toBeCloseTo(0, 6);
+      expect(ct600.AJ131).toBeCloseTo(36879.97446, 4);
+      expect(ct600.Y133).toBeCloseTo(1537.201532, 4);
+      expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
+      expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
+      // The period lies in one financial year, so the second row is blank
+      // rather than filed as a nil year.
+      expect(ct600.C128).toBe("");
+      expect(ct600.N128).toBe("");
     });
 
     it("fails the second tax row and the charge above it when CorporationTax I34 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I34", 0);
-      expect(value).toBe(0);
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I34", 5000);
+      expect(value).toBe(5000);
       const corrupted = checksWithCorruptedCell("CorporationTax", "I34", value);
       expect(failureNames(corrupted)).toEqual([
-        "CT: second tax row tax = its profit at its rate",
+        "CT: second tax row tax = its gross tax less its marginal relief",
         "CT: charge for the year = the two tax rows",
       ]);
     });
@@ -651,9 +653,43 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("CorporationTax", "I33", value);
       expect(failureNames(corrupted)).toEqual([
-        "CT600: corporation tax = first tax row tax",
-        "CT: first tax row tax = its profit at its rate",
+        "CT: first tax row tax = its gross tax less its marginal relief",
         "CT: charge for the year = the two tax rows",
+      ]);
+    });
+
+    it("fails the box that files the gross tax when CT600 AJ126 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "AJ126", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CT600", "AJ126", value);
+      expect(failureNames(corrupted)).toEqual(["CT600: corporation tax = first tax row gross tax", "CT600: tax payable = tax chargeable"]);
+    });
+
+    it("fails the second financial year box when CT600 AJ128 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "AJ128", 5000);
+      expect(value).toBe(5000);
+      const corrupted = checksWithCorruptedCell("CT600", "AJ128", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT600: second financial year tax = second tax row gross tax",
+        "CT600: tax payable = tax chargeable",
+      ]);
+    });
+
+    it("fails the relief box when CT600 Y133 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "Y133", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CT600", "Y133", value);
+      expect(failureNames(corrupted)).toEqual(["CT600: marginal rate relief = the working sheet's relief"]);
+    });
+
+    it("fails the box the company pays from when CT600 Y135 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "Y135", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CT600", "Y135", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT600: tax net of marginal relief = the working sheet's charge",
+        "CT600: corporation tax chargeable = tax net of marginal relief",
+        "CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable",
       ]);
     });
 
@@ -662,8 +698,53 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("CorporationTax", "F33", value);
       expect(failureNames(corrupted)).toEqual([
+        "CT600: amount of profit = first tax row profit",
         "CT: first tax row profit = chargeable profit by its share of those days",
-        "CT: first tax row tax = its profit at its rate",
+        "CT: first tax row gross tax = its profit at its rate",
+        "CT: first tax row rate = the rate its share of the profit falls in",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      ]);
+    });
+
+    it("fails the relief and the tax under it when CorporationTax L33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "L33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "L33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT600: marginal rate relief = the working sheet's relief",
+        "CT: first tax row tax = its gross tax less its marginal relief",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      ]);
+    });
+
+    it("fails the gross tax and the tax under it when CorporationTax J33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "J33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "J33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT600: corporation tax = first tax row gross tax",
+        "CT: first tax row gross tax = its profit at its rate",
+        "CT: first tax row tax = its gross tax less its marginal relief",
+      ]);
+    });
+
+    it("fails the rate the profit is charged at when Admin P8 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P8", 19);
+      expect(value).toBe(19);
+      const corrupted = checksWithCorruptedCell("Admin", "P8", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Admin P8: corporation tax main rate",
+        "CT: first tax row rate = the rate its share of the profit falls in",
+      ]);
+    });
+
+    it("fails the relief when Admin P9 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P9", 0.03);
+      expect(value).toBe(0.03);
+      const corrupted = checksWithCorruptedCell("Admin", "P9", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Admin P9: marginal relief fraction",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
       ]);
     });
 
@@ -671,10 +752,47 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "A34", 300);
       expect(value).toBe(300);
       const corrupted = checksWithCorruptedCell("CorporationTax", "A34", value);
+      // A second row with days in it makes the form's own second financial
+      // year row due, and the boxes the template leaves blank are then wrong.
       expect(failureNames(corrupted)).toEqual([
+        "CT600: second financial year = second tax row financial year",
+        "CT600: second financial year rate = second tax row rate",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
       ]);
+    });
+
+    it("fails the period span when CorporationTax A35 is corrupted back to two years via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "A35", 730);
+      expect(value).toBe(730);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "A35", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: the two tax rows span the accounting period",
+        "CT: the two tax rows together span the days the charge is spread over",
+        "CT: first tax row profit = chargeable profit by its share of those days",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      ]);
+    });
+
+    it("fails the working sheet heading when CorporationTax H5 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "H5", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "H5", value);
+      expect(failureNames(corrupted)).toEqual(["CT: working sheet heading ends at the year end"]);
+    });
+
+    it("fails the return period when CT600 M33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "M33", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("CT600", "M33", value);
+      expect(failureNames(corrupted)).toEqual(["CT600: return period ends at the year end"]);
+    });
+
+    it("fails the second financial year row when Admin N7 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "N7", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("Admin", "N7", value);
+      expect(failureNames(corrupted)).toEqual(["Admin: second financial year row ends at the year end"]);
     });
 
     it("walks the management profit before tax to the profit chargeable to corporation tax", () => {
@@ -704,13 +822,6 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual(["P&L: PBT = Operating + Interest", PROFIT_BRIDGE_CHECK]);
       const corruptedResults = { ...results, "MnthP&L": { ...results["MnthP&L"], B44: value } };
       expect(ltdProfitBridge(corruptedResults).residue).toBeCloseTo(netInterest, 6);
-    });
-
-    it("fails the blank second financial year box when CT600 AJ128 is filled via JSZip", async () => {
-      const value = await readFilledCell(savedDir, "Financialaccounts.xlsx", "CT600", "AJ128", 14033.56);
-      expect(value).toBe(14033.56);
-      const corrupted = checksWithCorruptedCell("CT600", "AJ128", value);
-      expect(failureNames(corrupted)).toEqual(["CT600: second financial year tax box is blank", "CT600: tax payable = tax chargeable"]);
     });
 
     it("nets every journal category the report shows to the statement figure it lands as", () => {

@@ -1,7 +1,7 @@
 [product]
 id = "ltd"
 name = "Company"
-description = "Limited company accounts package (all year-end months). Supports small profits rate only (profits up to 50000)."
+description = "Limited company accounts package (all year-end months). Corporation tax at the small profits rate, the main rate, or the main rate less marginal relief."
 tax_regime = "ltd"
 
 [template]
@@ -32,6 +32,12 @@ payslip_guide_filename = "Payslip User Guide.pdf"
 [sheets.financialaccounts]
 admin = "xl/worksheets/sheet12.xml"
 cellEditFn = "ltd"
+
+[sheets.expensesform]
+mileageMonth = "xl/worksheets/sheet1.xml"
+
+[sheets.fixedassets]
+adminExternalLink = "xl/externalLinks/externalLink1.xml"
 
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"

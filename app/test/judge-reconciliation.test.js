@@ -439,7 +439,7 @@ describe("buildUserPrompt", () => {
 
   it("carries the product's notes on the shipped workbooks once, not per run", () => {
     const user = buildUserPrompt("ltd", runs);
-    expect(user.match(/second financial year row/g)).toHaveLength(1);
+    expect(user.match(/Boxes 53 to 56 stay blank/g)).toHaveLength(1);
   });
 
   it("sends no report body", () => {

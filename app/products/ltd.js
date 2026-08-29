@@ -875,17 +875,22 @@ export const CELL_MAP = [
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
   // ── The CT600's own tax boxes, so the report states what the form files
-  // as well as what the working sheet charges. Boxes 53 to 56 carry no
-  // formula in the shipped template, so they read as dashes and box 63,
-  // which the form calls the total of boxes 46 and 56, files the first
-  // financial year row on its own. ──
+  // as well as what the working sheet charges. Boxes 43 to 46 are the first
+  // financial year the accounting period falls in and boxes 53 to 56 the
+  // second, which stays blank when the period lies in one. Boxes 46 and 56
+  // are the tax before relief, box 64 the relief and box 65 the tax the
+  // company bears. ──
+  ["CT600", "C126",  "Box 43: financial year",      "gl-cor:period (ct600.box43)",     "CT600 as filed", 1],
   ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
   ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
   ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
+  ["CT600", "C128",  "Box 53: financial year",      "gl-cor:period (ct600.box53)",     "CT600 as filed", 1],
   ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
   ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
   ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
   ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
+  ["CT600", "Y133",  "Box 64: marginal rate relief","gl-cor:taxAmount (ct600.box64)",  "CT600 as filed", 1],
+  ["CT600", "Y135",  "**Box 65: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box65)", "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1053,6 +1058,10 @@ const PL_ROW_CAPTIONS = {
 const ADMIN_TAX_DATA_CELLS = [
   ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
   ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
+  ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
+  ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
+  ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
+  ["P13", "marginal relief upper limit", (t) => t.corporation_tax.main_rate_limit],
   ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
@@ -1114,8 +1123,15 @@ function monthTabsFromPeriodStart(startSerial) {
   return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
 }
 
+// The expenses claim form's twelve month tabs, in the order the workbook
+// chains them from the first.
+const EXPENSES_FORM_MONTHS = Array.from({ length: 12 }, (_, i) => `Month ${String(i + 1).padStart(2, "0")}`);
+
 // CT600 boxes the template populates by formula, and where each reads from.
 const CT600_CELLS = [
+  "B33",
+  "M33",
+  "W137",
   "AK66",
   "Z70",
   "Z72",
@@ -1171,7 +1187,30 @@ export function standardReads() {
   // Corporation tax working sheet: the allowance lines, and the two dated
   // tax rows whose day counts, profit shares, rates and tax the charge for
   // the year is built from.
-  for (const cell of ["I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+  for (const cell of [
+    "E5",
+    "H5",
+    "I15",
+    "I16",
+    "I17",
+    "I18",
+    "A33",
+    "A34",
+    "A35",
+    "E33",
+    "E34",
+    "F33",
+    "F34",
+    "G33",
+    "G34",
+    "J33",
+    "J34",
+    "L33",
+    "L34",
+    "I33",
+    "I34",
+    "K37",
+  ])
     add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
@@ -1180,6 +1219,8 @@ export function standardReads() {
   add("Admin", "F21");
   add("Admin", "B9");
   add("Admin", "B32");
+  // The two dated corporation tax rate rows the working sheet copies.
+  for (const cell of ["K6", "L6", "N6", "K7", "L7", "N7"]) add("Admin", cell);
   add("PubP&L", "D3");
   add("PubBalSht", "D2");
 
@@ -1307,6 +1348,10 @@ export function multiFileOptions(yearEndMonth) {
         // falling due after more than one year.
         "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
       },
+      // The expenses claim form's mileage rate. Month 01 holds the literal
+      // the generator writes and the other eleven chain from it, so reading
+      // all twelve proves the write and the chain that carries it.
+      "expensesform.xlsx": Object.fromEntries(EXPENSES_FORM_MONTHS.map((sheet) => [sheet, ["C30"]])),
       ...bankReads,
     },
   };
@@ -2576,6 +2621,31 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Fixed asset note: year end = Admin year-end seed", num(notes?.A11), num(admin.F21), 0);
     check("Admin: accounting period is twelve months", num(admin.F21) - num(admin.B9) + 1, 365, 1);
 
+    // The Admin rate table's two dated rows are the financial years the
+    // accounting period falls in, not the period and the year after it.
+    // Everything the corporation tax working sheet and the CT600 say about
+    // the period is a copy of these four dates.
+    check("Admin: first financial year row starts at the accounting period start", num(admin.L6), num(admin.B9), 0);
+    check("Admin: second financial year row starts the day the first one ends", num(admin.L7), num(admin.N6) + 1, 0);
+    check("Admin: second financial year row ends at the year end", num(admin.N7), num(admin.F21), 0);
+    if (results[TAX_SHEET]) {
+      check("CT: working sheet heading starts at the accounting period start", num(results[TAX_SHEET].E5), num(admin.B9), 0);
+      check("CT: working sheet heading ends at the year end", num(results[TAX_SHEET].H5), num(admin.F21), 0);
+      check("CT: the two tax rows span the accounting period", num(results[TAX_SHEET].A35), num(admin.F21) - num(admin.B9) + 1, 0);
+    }
+    if (results.CT600) {
+      check("CT600: return period starts at the accounting period start", num(results.CT600.B33), num(admin.B9), 0);
+      check("CT600: return period ends at the year end", num(results.CT600.M33), num(admin.F21), 0);
+    }
+
+    // The expenses claim form carries the same mileage rate the Admin sheet
+    // holds. It has no link back to the accounts, so the generator writes
+    // the first month and the other eleven read it off that one.
+    for (const sheet of EXPENSES_FORM_MONTHS) {
+      const form = results[`expensesform.xlsx!${sheet}`];
+      if (form) check(`Expenses form ${sheet}: mileage rate = tax data`, num(form.C30), taxData.mileage.higher_rate_pence, 0.0001);
+    }
+
     // The note publishes the depreciation rates from the Schedule, which
     // must agree with the rates injected into Admin.
     if (notes) {
@@ -2657,28 +2727,33 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
     check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
     check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), onTheForm(num(corporationTax.K28)));
-    // The form sets out two financial year rows: boxes 43 to 46 and boxes 53
-    // to 56. Only the first is wired to the working sheet (C126 =
-    // CorporationTax!E33, N126 = F33, AA126 = G33, AJ126 = I33). The second
-    // row's cells carry no formula at all, so box 63, which the form calls
-    // the total of boxes 46 and 56, files the first tax row on its own.
-    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33));
-    check("CT600: corporation tax = first tax row tax", num(ct600.AJ126), num(corporationTax.I33));
-    check("CT600: second financial year tax box is blank", num(ct600.AJ128), 0);
+    // The form sets out two financial year rows, boxes 43 to 46 and boxes 53
+    // to 56, one for each financial year the accounting period falls in.
+    // Boxes 46 and 56 carry the tax at the rate before relief, so box 63,
+    // which the form calls the total of the two, is the gross charge and
+    // box 65 is what the company bears once box 64's relief comes off.
+    check("CT600: financial year = first tax row financial year", num(ct600.C126), num(corporationTax.E33), 0);
+    check("CT600: amount of profit = first tax row profit", num(ct600.N126), num(corporationTax.F33));
+    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33), 0);
+    check("CT600: corporation tax = first tax row gross tax", num(ct600.AJ126), num(corporationTax.J33));
+    check("CT600: second financial year tax = second tax row gross tax", num(ct600.AJ128), num(corporationTax.J34));
+    if (num(corporationTax.A34) > 0) {
+      check("CT600: second financial year = second tax row financial year", num(ct600.C128), num(corporationTax.E34), 0);
+      check("CT600: second financial year profit = second tax row profit", num(ct600.N128), num(corporationTax.F34));
+      check("CT600: second financial year rate = second tax row rate", num(ct600.AA128), num(corporationTax.G34), 0);
+    }
     check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
-    // What the form files against what the accounts charge. The second tax
-    // row never reaches the form, so this gap is the whole of the working
-    // sheet's second row and belongs to the shipped template. A run is not
-    // stopped for it.
-    checks.push({
-      name: "CT600: tax payable against the working sheet's charge for the year",
-      actual: num(ct600.AJ131),
-      expected: num(corporationTax.K35),
-      pass: Math.abs(num(ct600.AJ131) - num(corporationTax.K35)) <= 1,
-      diff: num(ct600.AJ131) - num(corporationTax.K35),
-      severity: "warning",
-    });
-    check("CT600: self assessment of tax payable", num(ct600.AJ145), num(ct600.AJ131));
+    check("CT600: marginal rate relief = the working sheet's relief", num(ct600.Y133), num(corporationTax.L33) + num(corporationTax.L34));
+    check("CT600: tax net of marginal relief = the working sheet's charge", num(ct600.Y135), num(corporationTax.K35));
+    check("CT600: corporation tax chargeable = tax net of marginal relief", num(ct600.AJ145), num(ct600.Y135));
+    if (num(ct600.AJ110) > 0) {
+      check(
+        "CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable",
+        num(ct600.W137),
+        (num(ct600.Y135) * 100) / num(ct600.AJ110),
+        0.01,
+      );
+    }
     check("CT600: tax outstanding", num(ct600.AJ166), num(ct600.AJ159) - num(ct600.AJ163));
   }
 
@@ -2693,50 +2768,74 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ct = results[TAX_SHEET];
     const profit = ct.K28 || 0;
     if (profit > 0) {
-      // How the working sheet builds the charge. Rows 33 and 34 are two
-      // dated rate rows: row 33 runs from Admin L6 to N6, the accounting
-      // period itself, and row 34 from Admin L7 to N7, the year after it.
-      // Each row is a year long, A35 is the two together, and each row
-      // takes that share of the same chargeable profit (F33 =
-      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate (I33 =
-      // F33*G33/100). The charge for the year is the two rows added up.
+      // How the working sheet builds the charge. Rows 33 and 34 are the one
+      // or two UK financial years the accounting period falls in: row 33
+      // runs from Admin L6 to N6, the 31 March inside the period, and row 34
+      // from the day after that to the year end. A period wholly inside one
+      // financial year leaves row 34 empty. A35 is the two together, each
+      // row takes its share of the chargeable profit (F33 =
+      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate.
       const days = num(ct.A35);
       check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
       if (days > 0) {
         check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
         check("CT: second tax row profit = chargeable profit by its share of those days", num(ct.F34), (profit * num(ct.A34)) / days);
       }
-      check("CT: first tax row tax = its profit at its rate", num(ct.I33), (num(ct.F33) * num(ct.G33)) / 100);
-      check("CT: second tax row tax = its profit at its rate", num(ct.I34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row gross tax = its profit at its rate", num(ct.J33), (num(ct.F33) * num(ct.G33)) / 100);
+      check("CT: second tax row gross tax = its profit at its rate", num(ct.J34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row tax = its gross tax less its marginal relief", num(ct.I33), num(ct.J33) - num(ct.L33));
+      check("CT: second tax row tax = its gross tax less its marginal relief", num(ct.I34), num(ct.J34) - num(ct.L34));
       check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
-      // Both rows carry the rate injected into the Admin sheet, so whatever
-      // the year end, the charge is the chargeable profit at that one rate.
+      // Each row's share of the profit is charged at the small profits rate
+      // up to its share of the lower limit and at the main rate above it,
+      // with marginal relief tapering the gap up to the upper limit. Both
+      // limits are shared out over the period the same way the profit is.
       const admin = results.Admin;
-      if (admin) {
-        check("CT: charge for the year = chargeable profit at the Admin corporation tax rate", num(ct.K35), (profit * num(admin.P6)) / 100);
+      if (admin && days > 0) {
+        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days;
+        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days;
+        const reliefFor = (rowProfit, rowDays) =>
+          rowProfit > lowerLimit(rowDays) && rowProfit < upperLimit(rowDays) ? (upperLimit(rowDays) - rowProfit) * num(admin.P9) : 0;
+        const rateFor = (rowProfit, rowDays, smallProfitsRate) => (rowProfit <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
+
+        check(
+          "CT: first tax row rate = the rate its share of the profit falls in",
+          num(ct.G33),
+          rateFor(num(ct.F33), num(ct.A33), num(admin.P6)),
+          0,
+        );
+        check(
+          "CT: second tax row rate = the rate its share of the profit falls in",
+          num(ct.G34),
+          rateFor(num(ct.F34), num(ct.A34), num(admin.P7)),
+          0,
+        );
+        check(
+          "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+          num(ct.L33),
+          reliefFor(num(ct.F33), num(ct.A33)),
+        );
+        check(
+          "CT: second tax row marginal relief = its share of the profit against its share of the limits",
+          num(ct.L34),
+          reliefFor(num(ct.F34), num(ct.A34)),
+        );
+
+        // One tax-year TOML feeds both rows, so a period straddling a rate
+        // change would need two. Every financial year in the data set from
+        // 2020 on carries the same rates as the one after it.
+        check("CT: both financial year rows carry the same small profits rate", num(admin.P6), num(admin.P7), 0);
       }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
-      // The charge the period's profit actually bears. The working sheet
-      // holds one rate per row and no relief step, and the CT600's marginal
-      // rate relief boxes, 64 and 65, carry no formula either, so a profit
-      // between the small profits limit and the main rate limit is charged
-      // at the small profits rate rather than at the main rate less relief.
-      // The gap belongs to the shipped workbook, not to the scenario driven
-      // through it, so it is reported and the run is not stopped for it.
+      // The charge the period's profit actually bears, against the statutory
+      // computation worked independently of the sheet.
       const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
-      checks.push({
-        name: "CT: charge for the year against the statutory computation with marginal relief",
-        actual: num(ct.K35),
-        expected: statutory,
-        pass: Math.abs(num(ct.K35) - statutory) <= 1,
-        diff: num(ct.K35) - statutory,
-        severity: "warning",
-      });
+      check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }
   }
 

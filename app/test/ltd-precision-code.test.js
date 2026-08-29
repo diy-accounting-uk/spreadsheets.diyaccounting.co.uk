@@ -96,9 +96,21 @@ describeCalc(
       expect(results["CorporationTax"].K28).toBeGreaterThan(0);
     });
 
-    it("CorporationTax: CT at small profits rate (19%)", () => {
+    it("CorporationTax: the whole period sits in one financial year", () => {
       const ct = results["CorporationTax"];
-      expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 0);
+      expect(ct.A33).toBe(365);
+      expect(ct.A34).toBe(0);
+      expect(ct.A35).toBe(365);
+      expect(ct.F33).toBeCloseTo(ct.K28, 6);
+    });
+
+    it("CorporationTax: charges the statutory tax on the full fixture profit", () => {
+      const ct = results["CorporationTax"];
+      expect(ct.K28).toBeCloseTo(147519.897839506, 4);
+      expect(ct.G33).toBe(25);
+      expect(ct.J33).toBeCloseTo(36879.97446, 4);
+      expect(ct.L33).toBeCloseTo(1537.201532, 4);
+      expect(ct.K35).toBeCloseTo(35342.772927, 4);
     });
 
     it("CorporationTax: tax outstanding = CT less tax deducted at source", () => {
