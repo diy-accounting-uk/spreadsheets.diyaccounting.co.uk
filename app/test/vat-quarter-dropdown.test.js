@@ -9,6 +9,11 @@
 //   1. each VATQtr sheet's G5 data-validation is type="list" over
 //      $K$2:$K$15, and G5's cached serial is a member of the K2:K15 cached
 //      serials;
+//   1a. the five forms make one cycle: five different Vatinterface periods,
+//      Q1-Q4 a quarter apart and covering the twelve accounting months once
+//      each, and the spare fifth on the last period the interface carries --
+//      the periods VAT_RETURN_END_MONTHS names, measured from the interface's
+//      own first accounting month;
 //   2. chain consistency: each K cell's cached value equals the cached
 //      value of the cell its formula names (Vatinterface!B{n}, Ltd, or
 //      [n]Admin!$B$r, SE), each Vatinterface [n]Admin!$B$r cached value
@@ -32,6 +37,7 @@ import { readFileSync, readdirSync, existsSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
+import { fromExcelSerial, VAT_RETURN_END_MONTHS } from "../lib/generator.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -39,6 +45,16 @@ const PACKAGES_DIR = join(ROOT, "packages");
 
 const VAT_FILENAMES = ["Vatreturns.xlsx", "Vat.xlsx"];
 const VATQTR_SHEET_NAMES = ["VATQtr1", "VATQtr2", "VATQtr3", "VATQtr4", "VATQtr5"];
+
+// Vatinterface layout shared by both products: rows 4-19 are the VAT periods
+// in date order, and rows 6-17 are the twelve accounting months.
+const INTERFACE_FIRST_ROW = 4;
+const INTERFACE_LAST_ROW = 19;
+const FIRST_ACCOUNTING_MONTH_ROW = 6;
+
+function monthsBetween(earlier, later) {
+  return (later.getUTCFullYear() - earlier.getUTCFullYear()) * 12 + (later.getUTCMonth() - earlier.getUTCMonth());
+}
 
 // ── Discovery ────────────────────────────────────────────────────────────
 
@@ -284,6 +300,48 @@ for (const wb of workbooks) {
         ).toContain(g5.value);
       });
     }
+
+    it("the five return forms make one cycle over the Vatinterface periods", async () => {
+      const periodRows = new Map();
+      for (let row = INTERFACE_FIRST_ROW; row <= INTERFACE_LAST_ROW; row++) {
+        const period = getCellFormulaAndValue(viXml, `B${row}`);
+        if (period && period.value != null) periodRows.set(period.value, row);
+      }
+      const firstMonth = getCellFormulaAndValue(viXml, `B${FIRST_ACCOUNTING_MONTH_ROW}`);
+      expect(firstMonth && firstMonth.value != null, `${label}: Vatinterface B${FIRST_ACCOUNTING_MONTH_ROW} has no cached period date`).toBe(
+        true,
+      );
+      const firstMonthEnd = fromExcelSerial(firstMonth.value);
+
+      const rows = [];
+      for (const [index, sheetName] of VATQTR_SHEET_NAMES.entries()) {
+        const g5 = getCellFormulaAndValue(await getSheetXml(sheetName), "G5");
+        expect(g5 && g5.value != null, `${label} ${sheetName}: G5 cached value not found`).toBe(true);
+        expect(
+          monthsBetween(firstMonthEnd, fromExcelSerial(g5.value)) + 1,
+          `${label} ${sheetName}: months from the book's first accounting month to its period end`,
+        ).toBe(VAT_RETURN_END_MONTHS[index]);
+        const row = periodRows.get(g5.value);
+        expect(row, `${label} ${sheetName}: period end ${g5.value} is not one of the Vatinterface periods`).not.toBeUndefined();
+        rows.push(row);
+      }
+
+      expect(new Set(rows).size, `${label}: the five forms name rows [${rows.join(", ")}], not five different periods`).toBe(5);
+      expect(rows[4], `${label}: Q5 is not on the last period the Vatinterface carries`).toBe(INTERFACE_LAST_ROW);
+
+      // A return declares the period its date names and the two before it,
+      // which is what the interface's rolling three-row sums total.
+      const declaredBy = new Map();
+      rows.forEach((row, index) => {
+        for (const period of [row - 2, row - 1, row]) declaredBy.set(period, [...(declaredBy.get(period) ?? []), VATQTR_SHEET_NAMES[index]]);
+      });
+      for (let row = FIRST_ACCOUNTING_MONTH_ROW; row < FIRST_ACCOUNTING_MONTH_ROW + 12; row++) {
+        const quarterly = (declaredBy.get(row) ?? []).filter((name) => name !== "VATQtr5");
+        expect(quarterly, `${label}: the accounting month on row ${row} is not declared once by Q1-Q4`).toHaveLength(1);
+      }
+      const shared = [...declaredBy.entries()].filter(([, names]) => names.length > 1).map(([row]) => row);
+      expect(shared, `${label}: periods declared by more than one return`).toEqual([rows[3]]);
+    });
 
     it("K2:K15 cached values chain consistently to Vatinterface/Admin cache", async () => {
       const failures = [];

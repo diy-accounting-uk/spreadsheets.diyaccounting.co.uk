@@ -3,12 +3,17 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, rmSync } from "fs";
+import { execFileSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import JSZip from "jszip";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import {
   generateSpreadsheet,
   generateAdminDates,
+  fromExcelSerial,
+  VAT_RETURN_END_MONTHS,
   setCellCachedValue,
   toExcelSerial,
   buildCellEdits,
@@ -27,9 +32,12 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
+const ROOT = resolve(APP_DIR, "..");
 const BST_DIR = resolve(APP_DIR, "templates", "bst");
 const TAXI_DIR = resolve(APP_DIR, "templates", "taxi");
 const DATA_DIR = resolve(APP_DIR, "data");
+const NODE = process.execPath;
+const GENERATE_JS = resolve(APP_DIR, "bin", "generate.js");
 
 // ── Date helpers ────────────────────────────────────────────────────────────
 
@@ -170,6 +178,15 @@ describe("buildCellEdits", () => {
     expect(numericEdits.F26).toBe(90000);
   });
 
+  it("writes the allowance taper threshold and the additional rate band", () => {
+    const { numericEdits } = buildCellEdits(taxData, 2025);
+    expect(numericEdits.N5).toBe(100000);
+    expect(numericEdits.N9).toBe(0.45);
+    expect(numericEdits.K14).toBe(0.45);
+    expect(numericEdits.L14).toBe(125141);
+    expect(numericEdits.N14).toBe(125140);
+  });
+
   it("produces string edits for tax year labels", () => {
     const { stringEdits } = buildCellEdits(taxData, 2025);
     expect(stringEdits.B23).toBe("2025-26");
@@ -243,14 +260,24 @@ describe("buildSeCellEdits", () => {
     expect(numericEdits.N6).toBe(0.2);
     // SE puts higher rate at N7 (BST puts basic_rate there)
     expect(numericEdits.N7).toBe(0.4);
-    // SE has no N8 (BST puts higher_rate there)
-    expect(numericEdits.N8).toBeUndefined();
+    // SE puts the additional rate at N8 (BST puts higher_rate there)
+    expect(numericEdits.N8).toBe(0.45);
     // SE basic band end at M11 (BST uses M12)
     expect(numericEdits.M11).toBe(37700);
     expect(numericEdits.M12).toBeUndefined();
     // SE higher band start at L12/N12 (BST uses L13/N13)
     expect(numericEdits.L12).toBe(37701);
     expect(numericEdits.N12).toBe(37701);
+    // SE higher band end at L13/N13 (BST uses L14/N14)
+    expect(numericEdits.L13).toBe(125141);
+    expect(numericEdits.N13).toBe(125140);
+    expect(numericEdits.N14).toBeUndefined();
+  });
+
+  it("writes the allowance taper threshold and the additional rate band", () => {
+    const { numericEdits } = buildSeCellEdits(taxData, 2025);
+    expect(numericEdits.N5).toBe(100000);
+    expect(numericEdits.K13).toBe(0.45);
   });
 
   it("uses L16 for NI Class 2 (not L17)", () => {
@@ -737,6 +764,117 @@ describe("rewriteVatinterfaceFormulas", () => {
   });
 });
 
+// ── VAT return period defaults ──────────────────────────────────────────────
+
+// The five return forms take their default period end from
+// VAT_RETURN_END_MONTHS, counted in months from the first of the book's twelve
+// accounting months -- which is the Vatinterface's own row 6. Every expectation
+// below is measured against that row's generated date rather than against a
+// row number, so a generator that wrote the right rows for the wrong year still
+// fails.
+describe("VAT return period defaults", () => {
+  const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
+  const SE_DIR = resolve(APP_DIR, "templates", "se");
+  const FIRST_ACCOUNTING_MONTH_ROW = 6;
+  const LAST_INTERFACE_ROW = 19;
+
+  function cachedValue(xml, cellRef) {
+    const m = xml.match(new RegExp(`<c r="${cellRef}"[^>]*>(?:<f[^>]*>[\\s\\S]*?</f>)?<v>([^<]*)</v></c>`));
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function monthsBetween(earlier, later) {
+    return (later.getUTCFullYear() - earlier.getUTCFullYear()) * 12 + (later.getUTCMonth() - earlier.getUTCMonth());
+  }
+
+  // The generated workbook's own view of its VAT cycle: the interface period
+  // dates by row, and for each return form the row its G5 date names.
+  async function readCycle(buffer) {
+    const zip = await JSZip.loadAsync(buffer);
+    const sheetMap = await buildSheetMap(zip);
+    const viXml = await zip.file(sheetMap.get("Vatinterface")).async("string");
+
+    const periodRows = new Map();
+    for (let row = 4; row <= LAST_INTERFACE_ROW; row++) {
+      const serial = cachedValue(viXml, `B${row}`);
+      if (serial !== null) periodRows.set(serial, row);
+    }
+
+    const forms = [];
+    for (let q = 1; q <= 5; q++) {
+      const sheetXml = await zip.file(sheetMap.get(`VATQtr${q}`)).async("string");
+      const end = cachedValue(sheetXml, "G5");
+      const dropdown = [];
+      for (let k = 2; k <= 15; k++) dropdown.push(cachedValue(sheetXml, `K${k}`));
+      forms.push({ name: `Q${q}`, end, row: periodRows.get(end) ?? null, dropdown });
+    }
+    return { firstMonthEnd: fromExcelSerial(cachedValue(viXml, `B${FIRST_ACCOUNTING_MONTH_ROW}`)), forms };
+  }
+
+  function expectCycle(cycle, label) {
+    for (const [index, form] of cycle.forms.entries()) {
+      expect(form.row, `${label} ${form.name}: period end ${form.end} is not one of the Vatinterface periods`).not.toBeNull();
+      expect(form.dropdown, `${label} ${form.name}: period end is not in the K2:K15 dropdown`).toContain(form.end);
+      expect(monthsBetween(cycle.firstMonthEnd, fromExcelSerial(form.end)) + 1, `${label} ${form.name}: months from the book's first month`).toBe(
+        VAT_RETURN_END_MONTHS[index],
+      );
+    }
+
+    const rows = cycle.forms.map((form) => form.row);
+    expect(new Set(rows).size, `${label}: the five forms do not name five different periods`).toBe(5);
+    expect(rows[4], `${label}: Q5 is not on the last period the Vatinterface carries`).toBe(LAST_INTERFACE_ROW);
+
+    const timesDeclared = new Map();
+    for (const row of rows) for (const covered of [row - 2, row - 1, row]) timesDeclared.set(covered, (timesDeclared.get(covered) ?? 0) + 1);
+
+    // Q1-Q4 reach each of the twelve accounting months exactly once.
+    const quarterly = new Set(rows.slice(0, 4).flatMap((row) => [row - 2, row - 1, row]));
+    for (let row = FIRST_ACCOUNTING_MONTH_ROW; row < FIRST_ACCOUNTING_MONTH_ROW + 12; row++) {
+      expect(quarterly.has(row), `${label}: no return of Q1-Q4 reaches the accounting month on row ${row}`).toBe(true);
+    }
+
+    // The spare fifth form shares one period with the fourth, because the
+    // quarter after Q4 has no interface row to total it.
+    const shared = [...timesDeclared.entries()].filter(([, times]) => times > 1).map(([row]) => row);
+    expect(shared, `${label}: periods declared by more than one return`).toEqual([rows[3]]);
+  }
+
+  it("puts the Company returns on the book's own quarters for every year-end month", async () => {
+    const meta = parseTOML(readFileSync(resolve(LTD_DIR, "meta.toml"), "utf8"));
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(LTD_DIR, "Vatreturns.xlsx"));
+    const fyStart = new Date(taxData.financial_year.start);
+
+    for (let m = 0; m < 12; m++) {
+      const yearEnd = monthEnd(fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12), ((fyStart.getUTCMonth() + m) % 12) + 1);
+      const override = JSON.parse(JSON.stringify(taxData));
+      override.financial_year.end = yearEnd.toISOString().slice(0, 10);
+      const label = `Company year end ${override.financial_year.end}`;
+
+      const cycle = await readCycle(await generateSpreadsheet(templateBuffer, override, meta.sheets.vatreturns));
+      // Twelve accounting months end at the year end, so the first of them is
+      // eleven months earlier.
+      expect(monthsBetween(cycle.firstMonthEnd, yearEnd), `${label}: first accounting month`).toBe(11);
+      expectCycle(cycle, label);
+    }
+  }, 120000);
+
+  it("puts the Self Employed returns on the tax year's own quarters", async () => {
+    const meta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(readFileSync(resolve(SE_DIR, "Vat.xlsx")), taxData, meta.sheets.vat);
+    const cycle = await readCycle(buffer);
+
+    // A tax year ends on 5 April, mid-month, and its month tabs still run April
+    // to March, so the books open in the month the year starts in.
+    const yearStart = new Date(taxData.tax_year.start);
+    expect(cycle.firstMonthEnd.toISOString().slice(0, 10)).toBe(
+      monthEnd(yearStart.getUTCFullYear(), yearStart.getUTCMonth() + 1).toISOString().slice(0, 10),
+    );
+    expectCycle(cycle, "Self Employed");
+  }, 60000);
+});
+
 // ── Template and data file existence ────────────────────────────────────────
 
 describe("file structure", () => {
@@ -774,5 +912,46 @@ describe("file structure", () => {
     expect(data.tax_year.label).toBe("2025-26");
     expect(data.income_tax.personal_allowance).toBe(12570);
     expect(data.national_insurance.class4_lower_rate).toBe(0.06);
+  });
+});
+
+// ── generate.js CLI --output-dir ────────────────────────────────────────────
+
+function packagesGitStatus() {
+  return execFileSync("git", ["status", "--short", "packages/"], { cwd: ROOT, encoding: "utf8" });
+}
+
+describe("generate.js --output-dir", () => {
+  it("writes the generated package under the given directory and leaves packages/ untouched", () => {
+    const outDir = resolve(ROOT, "target", "generate-output-dir-test");
+    rmSync(outDir, { recursive: true, force: true });
+
+    const before = packagesGitStatus();
+
+    execFileSync(
+      NODE,
+      [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir", outDir, "--skip-guide"],
+      { cwd: ROOT, encoding: "utf8" },
+    );
+
+    const dirName = "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007";
+    expect(existsSync(resolve(outDir, dirName, "Financialaccountsto050426.xlsx"))).toBe(true);
+
+    // packages/ already ships this exact package (committed catalogue); the
+    // acceptance test is that generating into --output-dir leaves it byte-for-byte
+    // as git already has it, not that the path is absent.
+    expect(packagesGitStatus()).toBe(before);
+
+    rmSync(outDir, { recursive: true, force: true });
+  });
+
+  it("throws rather than silently falling back to packages/ when the flag has no value", () => {
+    expect(() =>
+      execFileSync(NODE, [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir"], {
+        cwd: ROOT,
+        encoding: "utf8",
+        stdio: "pipe",
+      }),
+    ).toThrow();
   });
 });

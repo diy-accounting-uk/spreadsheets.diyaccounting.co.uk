@@ -24,6 +24,18 @@ function stabilizeDirDates(zip) {
   }
 }
 
+// ── VAT return cycle ────────────────────────────────────────────────────────
+
+// Months from the book's first month to each of the five return forms' default
+// period ends. Q1-Q4 step a quarter at a time, so together they cover the
+// twelve accounting months once each. The fifth form is the spare a business
+// files when its VAT stagger runs behind its accounting year: it takes the
+// last period the Vatinterface carries, two months on from Q4 rather than
+// three, because the quarter one further on has no interface row to total it
+// and no entry in the K2:K15 dropdown to select it. That leaves Q4 and Q5
+// sharing their one overlapping period, which the reconciliation reports.
+export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 14];
+
 // ── Date helpers ────────────────────────────────────────────────────────────
 
 export function lastDayOfMonth(year, month) {
@@ -151,14 +163,21 @@ export function buildCellEdits(taxData, startYear) {
   }
 
   numericEdits.N4 = it.personal_allowance;
+  numericEdits.N5 = it.personal_allowance_taper_threshold;
   numericEdits.N6 = it.starting_rate;
   numericEdits.N7 = it.basic_rate;
   numericEdits.N8 = it.higher_rate;
+  numericEdits.N9 = it.additional_rate;
   numericEdits.N11 = it.starter_band_end;
   numericEdits.M12 = it.basic_band_end;
   numericEdits.N12 = 0;
   numericEdits.L13 = it.higher_band_start;
   numericEdits.N13 = it.higher_band_start;
+  // K12 and K13 are a shared-formula group (=N7, =N8); writing a value into
+  // K12 would orphan its follower. K14 sits outside the group.
+  numericEdits.K14 = it.additional_rate;
+  numericEdits.L14 = it.higher_band_end + 1;
+  numericEdits.N14 = it.higher_band_end;
 
   numericEdits.L17 = ni.class2_rate;
   numericEdits.L20 = ni.class4_lower_rate;
@@ -288,15 +307,19 @@ export function buildSeCellEdits(taxData, startYear) {
 
   // Income tax — DIFFERENT cell positions from BST
   numericEdits.N4 = it.personal_allowance;
+  numericEdits.N5 = it.personal_allowance_taper_threshold;
   numericEdits.N6 = it.basic_rate; // BST: starting_rate at N6
   numericEdits.N7 = it.higher_rate; // BST: basic_rate at N7
-  // No N8 in SE (BST has higher_rate at N8)
+  numericEdits.N8 = it.additional_rate; // BST: higher_rate at N8
   numericEdits.K11 = it.basic_rate; // Display-only copy of basic rate
   numericEdits.N11 = it.starter_band_end;
   numericEdits.M11 = it.basic_band_end; // BST: M12
-  numericEdits.K12 = 0;
+  numericEdits.K12 = it.higher_rate; // Display-only copy of the higher rate
   numericEdits.L12 = it.higher_band_start; // BST: L13
   numericEdits.N12 = it.higher_band_start; // BST: N13
+  numericEdits.K13 = it.additional_rate; // Display-only copy of the additional rate
+  numericEdits.L13 = it.higher_band_end + 1; // BST: L14
+  numericEdits.N13 = it.higher_band_end; // BST: N14
 
   // NI — L16 not L17 for Class 2
   numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
@@ -356,6 +379,12 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   // Corporation Tax rates (stored as whole-number percentages in the spreadsheet)
   numericEdits.P6 = Math.round(ct.small_profits_rate * 100);
   numericEdits.P7 = Math.round(ct.small_profits_rate * 100);
+  numericEdits.P8 = Math.round(ct.main_rate * 100);
+
+  // Marginal relief: the fraction and the two profit limits it tapers between
+  numericEdits.P9 = ct.marginal_relief_fraction;
+  numericEdits.P12 = ct.small_profits_limit;
+  numericEdits.P13 = ct.main_rate_limit;
 
   // Capital allowances (stored as whole-number percentages)
   numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);
@@ -398,15 +427,17 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
 // whose cached value matches the template's year-end-relative rule value;
 // non-matching cached cells (labels, non-date content) are left untouched.
 
+export function ltdAdminBColumnSerial(yearEndSerial, row) {
+  const monthsOffset = (row - (row % 2 === 0 ? 32 : 33)) / 2;
+  const anchor = fromExcelSerial(yearEndSerial);
+  const monthIndex = anchor.getUTCFullYear() * 12 + anchor.getUTCMonth() + monthsOffset;
+  const serial = toExcelSerial(monthEnd(Math.floor(monthIndex / 12), (monthIndex % 12) + 1));
+  // Odd rows hold the first day of the month after the preceding even row.
+  return row % 2 === 0 ? serial : serial + 1;
+}
+
 export function rollLtdAdminCachedDates(adminXml, templateYearEndSerial, yearEndSerial) {
-  const ruleValue = (anchorSerial, row) => {
-    const monthsOffset = (row - (row % 2 === 0 ? 32 : 33)) / 2;
-    const anchor = fromExcelSerial(anchorSerial);
-    const monthIndex = anchor.getUTCFullYear() * 12 + anchor.getUTCMonth() + monthsOffset;
-    const serial = toExcelSerial(monthEnd(Math.floor(monthIndex / 12), (monthIndex % 12) + 1));
-    // Odd rows hold the first day of the month after the preceding even row.
-    return row % 2 === 0 ? serial : serial + 1;
-  };
+  const ruleValue = ltdAdminBColumnSerial;
 
   const rows = new Set();
   for (const [, rowStr] of adminXml.matchAll(/<c r="B(\d+)"/g)) {
@@ -430,6 +461,68 @@ export function rollLtdAdminCachedDates(adminXml, templateYearEndSerial, yearEnd
   }
 
   return adminXml;
+}
+
+// ── Ltd Admin corporation tax rate rows ─────────────────────────────────────
+//
+// The Admin rate table sets out the accounting period as the one or two UK
+// financial years it falls in. Row 6 runs from the period start to the 31
+// March inside the period (or to the year end, whichever comes first) and row
+// 7 runs from the day after that to the year end, so a period wholly inside
+// one financial year leaves row 7 empty. K6 and K7 name each row's financial
+// year, which is the calendar year the 1 April before it started in.
+//
+// Fixedassets.xlsx reads Admin!N7 across the external link, and a spreadsheet
+// app updating that link against a closed Financialaccounts.xlsx reads the
+// STORED cached value rather than recalculating, so these six formula cells
+// need their cached values rolled to the package's own year end.
+
+export function ltdAdminFinancialYearRows(yearEndSerial) {
+  const yearEnd = fromExcelSerial(yearEndSerial);
+  const periodStart = fromExcelSerial(toExcelSerial(monthEnd(yearEnd.getUTCFullYear() - 1, yearEnd.getUTCMonth() + 1)) + 1);
+
+  let firstYearEnd = utcDate(periodStart.getUTCFullYear(), 3, 31);
+  if (firstYearEnd < periodStart) firstYearEnd = utcDate(periodStart.getUTCFullYear() + 1, 3, 31);
+  if (firstYearEnd > yearEnd) firstYearEnd = yearEnd;
+
+  const secondYearStart = fromExcelSerial(toExcelSerial(firstYearEnd) + 1);
+  const financialYearOf = (date) => date.getUTCFullYear() - (date.getUTCMonth() + 1 < 4 ? 1 : 0);
+
+  return {
+    K6: financialYearOf(periodStart),
+    L6: toExcelSerial(periodStart),
+    N6: toExcelSerial(firstYearEnd),
+    K7: financialYearOf(secondYearStart),
+    L7: toExcelSerial(secondYearStart),
+    N7: yearEndSerial,
+  };
+}
+
+export function rollLtdAdminCachedRateRows(adminXml, yearEndSerial) {
+  for (const [cellRef, value] of Object.entries(ltdAdminFinancialYearRows(yearEndSerial))) {
+    adminXml = setCellCachedValue(adminXml, cellRef, value);
+  }
+  return adminXml;
+}
+
+// Every Ltd Admin cell another workbook can cache across an external link,
+// resolved to the value this package's Admin sheet holds: the rates and
+// thresholds the generator writes, the two financial year rows, the B-column
+// date chain, and the date cells that echo it.
+
+export function ltdAdminCachedValues(taxData, yearEndSerial) {
+  const { numericEdits } = buildLtdCellEdits(taxData, yearEndSerial);
+  const values = { ...numericEdits, ...ltdAdminFinancialYearRows(yearEndSerial) };
+  for (let row = 2; row <= 56; row++) values[`B${row}`] = ltdAdminBColumnSerial(yearEndSerial, row);
+  values.F5 = values.B8;
+  values.F6 = values.B8;
+  values.F7 = values.B32;
+  values.F8 = values.B32;
+  values.L10 = values.B8;
+  values.N10 = values.B8;
+  values.L11 = values.B32;
+  values.N11 = values.B32;
+  return values;
 }
 
 // ── Payslips Admin calendar generation ──────────────────────────────────────
@@ -726,10 +819,45 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
     if (sheetsConfig.cellEditFn === "ltd") {
       adminXml = rollLtdAdminCachedDates(adminXml, templateYearEndSerial, toExcelSerial(endDate));
+      adminXml = rollLtdAdminCachedRateRows(adminXml, toExcelSerial(endDate));
     }
 
     const originalDate = zip.file(sheetsConfig.admin).date;
     zip.file(sheetsConfig.admin, adminXml, { date: originalDate });
+  }
+
+  // Fixedassets reads the Admin sheet's allowance rates and the accounting
+  // period across its external link. A spreadsheet app updating that link
+  // against a closed Financialaccounts.xlsx reads this cache until the user
+  // refreshes it, so it has to carry this package's values, not the
+  // template's snapshot.
+  if (sheetsConfig.adminExternalLink) {
+    const linkPath = sheetsConfig.adminExternalLink;
+    const relsPath = linkPath.replace(/externalLinks\/(externalLink\d+)\.xml$/, "externalLinks/_rels/$1.xml.rels");
+    const relsXml = await zip.file(relsPath).async("string");
+    if (!relsXml.includes('Target="Financialaccounts.xlsx"')) {
+      throw new Error(`${linkPath} does not target Financialaccounts.xlsx`);
+    }
+
+    const adminValues = ltdAdminCachedValues(taxData, toExcelSerial(endDate));
+    const linkXmlOriginal = await zip.file(linkPath).async("string");
+    const sheetNames = [...linkXmlOriginal.matchAll(/<sheetName val="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, "&"));
+    const adminSheetId = sheetNames.indexOf("Admin");
+    if (adminSheetId < 0) throw new Error(`${linkPath} lists no Admin sheet`);
+
+    const block = linkXmlOriginal.match(new RegExp(`<sheetData sheetId="${adminSheetId}">[\\s\\S]*?</sheetData>`));
+    if (!block) throw new Error(`${linkPath} caches no Admin cells`);
+    const rolledBlock = block[0].replace(/<cell r="([A-Z]+\d+)"([^>]*)><v>[^<]*<\/v><\/cell>/g, (_match, cellRef, attrs) => {
+      if (adminValues[cellRef] === undefined) {
+        throw new Error(`${linkPath} caches Admin!${cellRef}, which has no generated value`);
+      }
+      return `<cell r="${cellRef}"${attrs}><v>${adminValues[cellRef]}</v></cell>`;
+    });
+
+    const linkXml = linkXmlOriginal.replace(block[0], rolledBlock);
+    if (linkXml !== linkXmlOriginal) {
+      zip.file(linkPath, linkXml, { date: zip.file(linkPath).date, createFolders: false });
+    }
   }
 
   // Sales sheet generation (Taxi only — when sheetsConfig.sales is present)
@@ -768,7 +896,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     }
   }
 
-  // Payslips Admin calendar generation (SE only — when sheetsConfig.payslipsAdmin is present)
+  // Payslips Admin calendar generation (when sheetsConfig.payslipsAdmin is present)
   if (sheetsConfig.payslipsAdmin) {
     let payslipsXml = await zip.file(sheetsConfig.payslipsAdmin).async("string");
 
@@ -786,21 +914,36 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
   }
 
+  // Expenses claim form (Ltd only — when sheetsConfig.mileageMonth is
+  // present). The mileage rate is a literal on the first month's sheet and
+  // every other month chains from it, so one write moves the caption, the
+  // rate and the claim on all twelve.
+  if (sheetsConfig.mileageMonth) {
+    let monthXml = await zip.file(sheetsConfig.mileageMonth).async("string");
+    monthXml = setCellValue(monthXml, "C30", taxData.mileage.higher_rate_pence);
+    const monthDate = zip.file(sheetsConfig.mileageMonth).date;
+    zip.file(sheetsConfig.mileageMonth, monthXml, { date: monthDate });
+  }
+
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
-  // quarter's default G5, then roll the whole cached date chain — the
-  // externalLink1 Admin cache, the Vatinterface cached values, and each
-  // quarter sheet's K2:K15 dropdown list — to this package's year.
+  // return form's default G5 from VAT_RETURN_END_MONTHS, then roll the whole
+  // cached date chain — the externalLink1 Admin cache, the Vatinterface cached
+  // values, and each form's K2:K15 dropdown list — to this package's year.
   if (sheetsConfig.vatQtr1) {
     if (!sheetsConfig.vatinterface) {
       throw new Error("sheetsConfig has vatQtr sheets but no vatinterface path");
     }
 
-    // Accounting year start = month after year-end, one year earlier
-    // e.g. year-end Mar 2026 → start Apr 2025
+    // The first of the book's twelve month tabs, which is also the first
+    // accounting-year period the Vatinterface carries. A year that ends on a
+    // month end starts the month after, so year-end Mar 2026 gives Apr 2025.
+    // A Self Employed year ends on 5 April, mid-month, and its tabs still run
+    // April to March, so it takes the month its own start date falls in.
     const yearEndMonth = endDate.getUTCMonth() + 1; // 1-indexed
     const yearEndYear = endDate.getUTCFullYear();
-    const vatStartMonth = (yearEndMonth % 12) + 1; // month after year-end (1-indexed)
-    const vatStartYear = vatStartMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear;
+    const yearEndsOnMonthEnd = endDate.getUTCDate() === lastDayOfMonth(yearEndYear, yearEndMonth);
+    const vatStartMonth = yearEndsOnMonthEnd ? (yearEndMonth % 12) + 1 : startDate.getUTCMonth() + 1;
+    const vatStartYear = yearEndsOnMonthEnd ? (vatStartMonth > yearEndMonth ? yearEndYear - 1 : yearEndYear) : startYear;
 
     // Admin B-column serials this package's Financialaccounts will hold.
     const adminB = {};
@@ -865,8 +1008,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       const sheetPath = sheetsConfig[`vatQtr${q}`];
       if (!sheetPath) continue;
 
-      // Q1 = 3 months from start, Q2 = 6, Q3 = 9, Q4 = 12, Q5 = 13
-      const monthsFromStart = q <= 4 ? q * 3 : 13;
+      const monthsFromStart = VAT_RETURN_END_MONTHS[q - 1];
       const totalMonth = vatStartMonth + monthsFromStart - 1;
       const qMonth = ((totalMonth - 1) % 12) + 1;
       const qYear = vatStartYear + Math.floor((totalMonth - 1) / 12);

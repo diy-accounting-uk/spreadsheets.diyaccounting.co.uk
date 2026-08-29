@@ -177,6 +177,21 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
   ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],
+  // ── VitalTax — quarterly re-sum of P&L monthly columns C:N into its own
+  // C:F quarter columns and G annual column (verified against the template:
+  // C5=SUM(P&L!C5:E5) through F5=SUM(P&L!L5:N5), G5=SUM(C5:F5); the same
+  // pattern feeds row 29's re-sum of the P&L's Cost of Sales and Total
+  // Expenses rows) ──
+  ["VitalTax", "C5",  "Q1 Turnover",                         "gl-cor:amount (vitalTax.q1Turnover)",     "Quarterly Summary", 1],
+  ["VitalTax", "D5",  "Q2 Turnover",                         "gl-cor:amount (vitalTax.q2Turnover)",     "Quarterly Summary", 1],
+  ["VitalTax", "E5",  "Q3 Turnover",                         "gl-cor:amount (vitalTax.q3Turnover)",     "Quarterly Summary", 1],
+  ["VitalTax", "F5",  "Q4 Turnover",                         "gl-cor:amount (vitalTax.q4Turnover)",     "Quarterly Summary", 1],
+  ["VitalTax", "G5",  "**Annual Turnover**",                 "gl-cor:amount (vitalTax.annualTurnover)", "Quarterly Summary", 0],
+  ["VitalTax", "C29", "Q1 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q1Expenses)",     "Quarterly Summary", 1],
+  ["VitalTax", "D29", "Q2 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q2Expenses)",     "Quarterly Summary", 1],
+  ["VitalTax", "E29", "Q3 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q3Expenses)",     "Quarterly Summary", 1],
+  ["VitalTax", "F29", "Q4 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q4Expenses)",     "Quarterly Summary", 1],
+  ["VitalTax", "G29", "**Annual Total Allowable Expenses**", "gl-cor:amount (vitalTax.annualExpenses)", "Quarterly Summary", 0],
   // ── SE Short (SA103S) — formula cells only ──
   ["SE Short", "D38",  "Turnover",                               "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
   ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
@@ -235,12 +250,38 @@ export const CELL_MAP = [
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
 ];
 
+// P&L monthly columns, Apr through Mar (verified against the template:
+// 'Profit & Loss Acc'!C2:N2 read the Admin month-end dates in that order).
+const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
+// The three P&L monthly columns VitalTax sums into each of its own quarter
+// columns C:F (verified against the template: VitalTax!C5=SUM('Profit &
+// Loss Acc'!C5:E5), D5=SUM(F5:H5), E5=SUM(I5:K5), F5=SUM(L5:N5)).
+const QUARTER_MONTH_GROUPS = [
+  ["C", "D", "E"],
+  ["F", "G", "H"],
+  ["I", "J", "K"],
+  ["L", "M", "N"],
+];
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {
     if (!reads[sheet]) reads[sheet] = [];
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
   }
+
+  // VitalTax's quarterly re-sum reads P&L!C5:N5 (Turnover), C12:N12 (Cost
+  // of Sales) and C22:N22 (Total General Expenses) a month at a time. Read
+  // every monthly cell here so the checks below can verify the re-sum
+  // against the P&L's own figures rather than against itself.
+  reads["Profit & Loss Acc"] = reads["Profit & Loss Acc"] || [];
+  for (const row of [5, 12, 22]) {
+    for (const col of MONTH_COLS) {
+      const cell = `${col}${row}`;
+      if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
+    }
+  }
+
   return reads;
 }
 
@@ -338,6 +379,31 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const taxiExpenseSum = [pl.B14, pl.B15, pl.B16, pl.B17, pl.B18, pl.B19, pl.B20, pl.B21].reduce((s, v) => s + (v || 0), 0);
   check("P&L: General expense lines sum = Total", pl.B22, taxiExpenseSum);
   if (expected.total_legal !== undefined) check("Legal & Professional", pl.B18, expected.total_legal);
+
+  // VitalTax quarterly re-sum. Every P&L expense row VitalTax's row 29
+  // touches (rows 6-11 via row 7's mileage line plus rows 12-19, 21 and 26)
+  // covers the vehicle-cost block (rows 6-11, i.e. P&L!row 12) and the
+  // general-expense block (rows 14-21, i.e. P&L!row 22) exactly once each,
+  // so row 29 should equal P&L's own Cost of Sales plus Total Expenses,
+  // quarter by quarter and annually -- the MTD quarterly re-summing path
+  // this sheet exists for.
+  const vt = results.VitalTax;
+  if (vt) {
+    const plQuarterSum = (row, months) => months.reduce((s, col) => s + (pl[`${col}${row}`] || 0), 0);
+    const vtQuarterCols = ["C", "D", "E", "F"];
+    for (let q = 0; q < 4; q++) {
+      const vtCol = vtQuarterCols[q];
+      const months = QUARTER_MONTH_GROUPS[q];
+      check(`VitalTax: Q${q + 1} turnover = P&L Q${q + 1} turnover`, vt[`${vtCol}5`] || 0, plQuarterSum(5, months));
+      check(
+        `VitalTax: Q${q + 1} total allowable expenses = P&L Q${q + 1} Cost of Sales + Total Expenses`,
+        vt[`${vtCol}29`] || 0,
+        plQuarterSum(12, months) + plQuarterSum(22, months),
+      );
+    }
+    check("VitalTax: annual turnover = P&L annual turnover", vt.G5 || 0, pl.B5 || 0);
+    check("VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses", vt.G29 || 0, (pl.B12 || 0) + (pl.B22 || 0));
+  }
 
   // Every coded purchase must reach an account. The general expense codes land
   // in the P&L total, the four vehicle running-cost codes accumulate in the

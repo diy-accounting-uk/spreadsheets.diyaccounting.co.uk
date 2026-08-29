@@ -15,6 +15,16 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | P&L: Gross = Turnover - Cost of Sales | 29900 | 29900 | 0 | PASS |
 | P&L: Capital Allowances / Mileage Allowance mutually exclusive | 0 | 0 | 0 | PASS |
 | P&L: General expense lines sum = Total | 1380 | 1380 | 0 | PASS |
+| VitalTax: Q1 turnover = P&L Q1 turnover | 9000 | 9000 | 0 | PASS |
+| VitalTax: Q1 total allowable expenses = P&L Q1 Cost of Sales + Total Expenses | 3079.999999999996 | 3080 | +4.092726157978177e-12 | PASS |
+| VitalTax: Q2 turnover = P&L Q2 turnover | 9000 | 9000 | 0 | PASS |
+| VitalTax: Q2 total allowable expenses = P&L Q2 Cost of Sales + Total Expenses | 1299.9999999999989 | 1300 | +1.1368683772161603e-12 | PASS |
+| VitalTax: Q3 turnover = P&L Q3 turnover | 9000 | 9000 | 0 | PASS |
+| VitalTax: Q3 total allowable expenses = P&L Q3 Cost of Sales + Total Expenses | 1299.9999999999989 | 1300 | +1.1368683772161603e-12 | PASS |
+| VitalTax: Q4 turnover = P&L Q4 turnover | 9000 | 9000 | 0 | PASS |
+| VitalTax: Q4 total allowable expenses = P&L Q4 Cost of Sales + Total Expenses | 1799.9999999999989 | 1800 | +1.1368683772161603e-12 | PASS |
+| VitalTax: annual turnover = P&L annual turnover | 36000 | 36000 | 0 | PASS |
+| VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses | 7480 | 7480 | 0 | PASS |
 | Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles | 14360 | 14360 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 36000 | 36000 | 0 | PASS |
 | SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances | 29640 | 29640 | 0 | PASS |
@@ -108,6 +118,21 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | Total General Expenses | 1,380 |
 | **Net Profit** | 28,520 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Any Other Business Income | 0 |
+
+## Quarterly Summary
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 Turnover | 9,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 Turnover | 9,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 Turnover | 9,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Turnover | 9,000 |
+| **Annual Turnover** | 36,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 Total Allowable Expenses | 3,080 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 Total Allowable Expenses | 1,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 Total Allowable Expenses | 1,300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 Total Allowable Expenses | 1,800 |
+| **Annual Total Allowable Expenses** | 7,480 |
 
 ## Self Assessment (SA103S)
 
@@ -221,6 +246,57 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | B22 | Total General Expenses | 1380 | gl-cor:amount (totalGeneral) |
 | B23 | **Net Profit** | 28520 | gl-cor:amount (netProfit) |
 | B24 | Any Other Business Income | 0 | gl-cor:amount (otherIncome) |
+| C5 |  | 3000 |  |
+| D5 |  | 3000 |  |
+| E5 |  | 3000 |  |
+| F5 |  | 3000 |  |
+| G5 |  | 3000 |  |
+| H5 |  | 3000 |  |
+| I5 |  | 3000 |  |
+| J5 |  | 3000 |  |
+| K5 |  | 3000 |  |
+| L5 |  | 3000 |  |
+| M5 |  | 3000 |  |
+| N5 |  | 3000 |  |
+| C12 |  | 1773.33333333333 |  |
+| D12 |  | 393.333333333333 |  |
+| E12 |  | 393.333333333333 |  |
+| F12 |  | 393.333333333333 |  |
+| G12 |  | 393.333333333333 |  |
+| H12 |  | 393.333333333333 |  |
+| I12 |  | 393.333333333333 |  |
+| J12 |  | 393.333333333333 |  |
+| K12 |  | 393.333333333333 |  |
+| L12 |  | 393.333333333333 |  |
+| M12 |  | 393.333333333333 |  |
+| N12 |  | 393.333333333333 |  |
+| C22 |  | 520 |  |
+| D22 |  | 0 |  |
+| E22 |  | 0 |  |
+| F22 |  | 120 |  |
+| G22 |  | 0 |  |
+| H22 |  | 0 |  |
+| I22 |  | 120 |  |
+| J22 |  | 0 |  |
+| K22 |  | 0 |  |
+| L22 |  | 620 |  |
+| M22 |  | 0 |  |
+| N22 |  | 0 |  |
+
+### VitalTax
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C5 | Q1 Turnover | 9000 | gl-cor:amount (vitalTax.q1Turnover) |
+| D5 | Q2 Turnover | 9000 | gl-cor:amount (vitalTax.q2Turnover) |
+| E5 | Q3 Turnover | 9000 | gl-cor:amount (vitalTax.q3Turnover) |
+| F5 | Q4 Turnover | 9000 | gl-cor:amount (vitalTax.q4Turnover) |
+| G5 | **Annual Turnover** | 36000 | gl-cor:amount (vitalTax.annualTurnover) |
+| C29 | Q1 Total Allowable Expenses | 3080 | gl-cor:amount (vitalTax.q1Expenses) |
+| D29 | Q2 Total Allowable Expenses | 1300 | gl-cor:amount (vitalTax.q2Expenses) |
+| E29 | Q3 Total Allowable Expenses | 1300 | gl-cor:amount (vitalTax.q3Expenses) |
+| F29 | Q4 Total Allowable Expenses | 1800 | gl-cor:amount (vitalTax.q4Expenses) |
+| G29 | **Annual Total Allowable Expenses** | 7480 | gl-cor:amount (vitalTax.annualExpenses) |
 
 ### SE Short
 

@@ -184,12 +184,15 @@ export const CELL_MAP = [
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
   [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
   [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Income Tax Calculation", 1],
-  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.higherBandStart (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.basicBandEnd (applied)", "Income Tax Calculation", 1],
   [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Income Tax Calculation", 1],
   [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
   [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
-  [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
-  [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "C10", "Additional rate threshold the sheet applies", "tax.incomeTax.higherBandEnd (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "D10", "Additional rate the sheet applies",           "tax.incomeTax.additionalRate (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "E10", "Tax at Additional Rate",       "tax.incomeTax.additionalRate",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "E11", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
+  [TAX_SHEET, "E12", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
@@ -246,10 +249,13 @@ export const CELL_MAP = [
   ["Fixed Assets", "R1",   "Total Balancing Charge",                "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1],
   // ── Admin (generator-injected tax data) ──
   ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
+  ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "N7",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
   ["Admin", "N8",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "N9",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
   ["Admin", "M12", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
   ["Admin", "N13", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "N14", "Higher Band End",                     "tax.incomeTax.higherBandEnd",             "Admin (Generator Injected)", 0],
   ["Admin", "L17", "NI Class 2 Rate",                     "tax.nationalInsurance.class2Rate",        "Admin (Generator Injected)", 0],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
@@ -477,10 +483,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ca = taxData.capital_allowances;
     const mil = taxData.mileage;
     check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
+    check("Admin: Personal Allowance Taper Threshold = tax data", admin.N5, it.personal_allowance_taper_threshold);
     check("Admin: Basic Rate = tax data", admin.N7, it.basic_rate, 0.0001);
     check("Admin: Higher Rate = tax data", admin.N8, it.higher_rate, 0.0001);
+    check("Admin: Additional Rate = tax data", admin.N9, it.additional_rate, 0.0001);
     check("Admin: Basic Band End = tax data", admin.M12, it.basic_band_end);
     check("Admin: Higher Band Start = tax data", admin.N13, it.higher_band_start);
+    check("Admin: Higher Band End = tax data", admin.N14, it.higher_band_end);
     check("Admin: NI Class 2 Rate = tax data", admin.L17, ni.class2_rate, 0.0001);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
@@ -501,33 +510,44 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const tax = results[TAX_SHEET];
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
-    const computedIncomeTax = (tax.E10 || 0) - (tax.E11 || 0);
 
-    check("Income Tax", computedIncomeTax, expectedTax.income_tax);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
 
+    // The allowance the sheet hands out, not the headline one. Above 100,000
+    // of profit it falls by a pound for every two, and reaches nil at 125,140.
+    check("Tax: Personal allowance after taper", tax.E6 || 0, expectedTax.personal_allowance);
+
     // The rate and band the sheet actually applies, not the ones it is
     // captioned with. A total that happens to be right because the whole
-    // taxable income sits in one band hides a wrong rate in the other.
+    // taxable income sits in one band hides a wrong rate in the others.
     check("Tax: sheet applies the basic rate to the lower band", tax.D8 || 0, taxData.income_tax.basic_rate, 0.0001);
     check("Tax: sheet applies the higher rate above the band", tax.D9 || 0, taxData.income_tax.higher_rate, 0.0001);
-    check("Tax: sheet splits the bands at the higher band start", tax.C9 || 0, taxData.income_tax.higher_band_start);
+    check("Tax: sheet applies the additional rate above the higher band", tax.D10 || 0, taxData.income_tax.additional_rate, 0.0001);
+    check("Tax: sheet splits the basic and higher bands at the basic band end", tax.C9 || 0, taxData.income_tax.basic_band_end);
+    check("Tax: sheet splits the higher and additional bands at the higher band end", tax.C10 || 0, taxData.income_tax.higher_band_end);
     check("Tax at basic rate", tax.E8 || 0, expectedTax.income_tax_basic);
     // The profit and loss account's own tax line. It carries the whole income
     // tax charge less the CIS already suffered on the trader's own sales, not
     // the basic-rate band alone, and the row above it is other income rather
-    // than a second tax line -- both were labelled the other way round.
-    check("P&L: tax charged = Income Tax sheet total less CIS deducted", pl.C32 || 0, (tax.E10 || 0) - (tax.E11 || 0));
+    // than a second tax line. E12 already holds the CIS negated, so the two
+    // rows add.
+    check("P&L: tax charged = Income Tax sheet total less CIS deducted", pl.C32 || 0, (tax.E11 || 0) + (tax.E12 || 0));
     check("Tax at higher rate", tax.E9 || 0, expectedTax.income_tax_higher);
+    check("Tax at additional rate", tax.E10 || 0, expectedTax.income_tax_additional);
 
     // Tax calculation chain (6c)
     // The sheet has no negative taxable income: a profit under the personal
     // allowance leaves it nil (verified against the template: E7 =
     // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
     check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
-    check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
-    check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+    check("Tax: IT = Basic + Higher + Additional", tax.E11, (tax.E8 || 0) + (tax.E9 || 0) + (tax.E10 || 0));
+    // E12 already holds the contractor deductions negated (=-SalesMar!$K$1)
+    // and the sheet's own total is SUM(E11:E17), so the deduction line is
+    // added, not subtracted. Every fixture so far carries nil CIS, which is
+    // why subtracting it here passed.
+    check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E11 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
     // SA103S cross-check (6g)
     const seShort = results["SE Short"];

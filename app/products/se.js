@@ -14,6 +14,7 @@ import {
   categoryNettingCheckName,
   PROFIT_BRIDGE_CHECK,
   vatCycleRows,
+  vatReturnCoverage,
 } from "../lib/report-generator.js";
 
 export const PRODUCT = {
@@ -467,6 +468,37 @@ export function cellWrites(scenario) {
     });
   }
 
+  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
+  // rows are available for scenario agreements before the sheet's own
+  // layout runs out: row 8 (the "New" block's working master, whose
+  // monthly-payment formula was never broken) and row 10 (the first row
+  // the #REF! repair fixes). B=agreement date, C=finance company,
+  // D=reference, E=amount financed, F=admin charges, G=total interest,
+  // H=term in months, L=supplier. Written left to right per row, matching
+  // the Schedule writer above.
+  const HP_AGREEMENT_ROWS = [8, 10];
+  if (scenario.hp_agreements) {
+    if (!fixedAssetsWrites.HPfinance) fixedAssetsWrites.HPfinance = {};
+    const hp = fixedAssetsWrites.HPfinance;
+    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
+      throw new Error(
+        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
+      );
+    }
+    scenario.hp_agreements.forEach((agreement, i) => {
+      const row = HP_AGREEMENT_ROWS[i];
+      const d = parseDate(agreement.date);
+      hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      hp[`C${row}`] = agreement.finance_company;
+      hp[`D${row}`] = agreement.reference;
+      hp[`E${row}`] = agreement.amount_financed;
+      hp[`F${row}`] = agreement.admin_charges;
+      hp[`G${row}`] = agreement.total_interest;
+      hp[`H${row}`] = agreement.months;
+      hp[`L${row}`] = agreement.supplier;
+    });
+  }
+
   // Straddling VAT periods (Vat.xlsx). A business registered for VAT on a
   // cycle that does not line up with its accounting year still has to return
   // the periods either side of it, and the workbook keeps a sales and a
@@ -524,9 +556,10 @@ export function cellWrites(scenario) {
 //   C37=Operating Profit, C39=Profit before Tax
 //
 // Income Tax — column E:
-//   E5=Profit, E6=Personal Allowance, E7=Taxable Income
-//   E8=Basic rate tax, E9=Higher rate tax, E10=Total Income Tax
-//   E11=CIS deducted, E15=NI Class 4 lower, E16=NI Class 4 upper, E18=Total
+//   E5=Profit, E6=Personal Allowance after taper, E7=Taxable Income
+//   E8=Basic rate tax, E9=Higher rate tax, E10=Additional rate tax
+//   E11=Total Income Tax, E12=CIS deducted
+//   E15=NI Class 4 lower, E16=NI Class 4 upper, E18=Total
 
 export const TAX_SHEET = "Income Tax";
 
@@ -568,9 +601,13 @@ export const CELL_MAP = [
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Income Tax Calculation", 1],
   [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Income Tax Calculation", 0],
   [TAX_SHEET, "E8",  "Tax at Basic Rate (20%)",      "tax.incomeTax.basicRate",              "Income Tax Calculation", 1],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.basicBandEnd (applied)", "Income Tax Calculation", 1],
   [TAX_SHEET, "E9",  "Tax at Higher Rate (40%)",     "tax.incomeTax.higherRate",             "Income Tax Calculation", 1],
-  [TAX_SHEET, "E10", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
-  [TAX_SHEET, "E11", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "C10", "Additional rate threshold the sheet applies", "tax.incomeTax.higherBandEnd (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "D10", "Additional rate the sheet applies",           "tax.incomeTax.additionalRate (applied)", "Income Tax Calculation", 1],
+  [TAX_SHEET, "E10", "Tax at Additional Rate (45%)", "tax.incomeTax.additionalRate",         "Income Tax Calculation", 1],
+  [TAX_SHEET, "E11", "**Total Income Tax**",         "tax.incomeTax (total)",                "Income Tax Calculation", 0],
+  [TAX_SHEET, "E12", "Less: CIS Deducted",           "diya-gl:cisDeduction (total)",         "Income Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
@@ -605,6 +642,53 @@ export const CELL_MAP = [
   ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
   ["SE Short", "A32",  "VAT threshold note",             "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  // ── SE Full (SA103F) ──
+  // The full return, live in the same workbook as the short one and fed from
+  // the same profit and loss account and fixed asset schedule. Every cell
+  // here carries a formula; the box numbers are the sheet's own, read out of
+  // columns A and L beside each value. Nothing read this sheet back before,
+  // so the full return could carry a different figure from the short one
+  // beside it and no check would notice.
+  ["SE Full", "D55",  "Turnover (box 14)",                     "gl-cor:amount (sa103f.turnover)",            "Self Assessment (SA103F)", 0],
+  ["SE Full", "O55",  "Other business income (box 15)",        "gl-cor:amount (sa103f.otherIncome)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D66",  "Goods bought for resale (box 16)",      "gl-cor:amount (sa103f.costOfGoods)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D70",  "Subcontractor payments (box 17)",       "gl-cor:amount (sa103f.subcontractors)",      "Self Assessment (SA103F)", 1],
+  ["SE Full", "D74",  "Wages, salaries and staff costs (box 18)", "gl-cor:amount (sa103f.staffCosts)",       "Self Assessment (SA103F)", 1],
+  ["SE Full", "D78",  "Car, van and travel expenses (box 19)", "gl-cor:amount (sa103f.travel)",              "Self Assessment (SA103F)", 1],
+  ["SE Full", "D82",  "Rent, rates, power and insurance (box 20)", "gl-cor:amount (sa103f.premises)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D86",  "Repairs and renewals (box 21)",         "gl-cor:amount (sa103f.repairs)",             "Self Assessment (SA103F)", 1],
+  ["SE Full", "D90",  "Telephone, stationery and office costs (box 22)", "gl-cor:amount (sa103f.office)",    "Self Assessment (SA103F)", 1],
+  ["SE Full", "D94",  "Advertising and entertainment (box 23)", "gl-cor:amount (sa103f.advertising)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D98",  "Interest on bank and other loans (box 24)", "gl-cor:amount (sa103f.interest)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D102", "Bank, credit card and finance charges (box 25)", "gl-cor:amount (sa103f.bankCharges)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D106", "Irrecoverable debts written off (box 26)", "gl-cor:amount (sa103f.badDebts)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D110", "Accountancy, legal and professional fees (box 27)", "gl-cor:amount (sa103f.legal)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "D114", "Depreciation and loss on sale of assets (box 28)", "gl-cor:amount (sa103f.depreciation)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D118", "Other business expenses (box 29)",      "gl-cor:amount (sa103f.otherExpenses)",       "Self Assessment (SA103F)", 1],
+  ["SE Full", "D122", "**Total expenses (box 30)**",           "gl-cor:amount (sa103f.totalExpenses)",       "Self Assessment (SA103F)", 0],
+  ["SE Full", "O114", "Disallowable depreciation (box 43)",    "gl-cor:amount (sa103f.disallowableDepreciation)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O122", "**Total disallowable expenses (box 45)**", "gl-cor:amount (sa103f.totalDisallowable)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "D129", "**Net profit (box 46)**",               "gl-cor:amount (sa103f.netProfit)",           "Self Assessment (SA103F)", 0],
+  ["SE Full", "O129", "Net loss (box 47)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
+  ["SE Full", "D139", "Annual investment allowance (box 48)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D144", "Writing down allowances (box 49)",      "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D152", "Restricted allowances for expensive cars (box 51)", "tax.capitalAllowances.restricted (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O139", "Enhanced and other capital allowances (box 54)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O144", "Allowances on sale or cessation (box 55)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O149", "**Total capital allowances (box 56)**", "tax.capitalAllowances (sa103f)",             "Self Assessment (SA103F)", 0],
+  ["SE Full", "O160", "Balancing charge (box 58)",             "tax.capitalAllowances.balancingCharge (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D169", "Goods and services for own use (box 59)", "gl-cor:amount (sa103f.ownUse)",            "Self Assessment (SA103F)", 1],
+  ["SE Full", "D174", "**Total additions to net profit (box 60)**", "gl-cor:amount (sa103f.totalAdditions)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O169", "**Total deductions from net profit (box 62)**", "gl-cor:amount (sa103f.totalDeductions)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O174", "**Net business profit for tax purposes (box 63)**", "gl-cor:amount (sa103f.taxableProfit)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O179", "Net business loss for tax purposes (box 64)", "gl-cor:amount (sa103f.taxableLoss)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "O194", "**Adjusted profit (box 72)**",          "gl-cor:amount (sa103f.adjustedProfit)",      "Self Assessment (SA103F)", 0],
+  ["SE Full", "O199", "Loss brought forward set against this year (box 73)", "gl-cor:amount (sa103f.lossBroughtForward)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O204", "Other business income not in boxes 14, 15 or 59 (box 74)", "gl-cor:amount (sa103f.otherBusinessIncome)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O210", "**Total taxable profits from this business (box 75)**", "gl-cor:amount (sa103f.profitForTax)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "D219", "Adjusted loss (box 76)",                "gl-cor:amount (sa103f.adjustedLoss)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "O224", "Total loss to carry forward (box 79)",  "gl-cor:amount (sa103f.lossCarriedForward)",  "Self Assessment (SA103F)", 1],
+  ["SE Full", "D231", "Contractor deductions taken off (box 80)", "diya-gl:cisDeduction (sa103f)",           "Self Assessment (SA103F)", 1],
   // ── Wagesinterface (6m) — monthly payroll from Payslips.xlsx via external links ──
   ["Wagesinterface", "C4",  "Apr Gross Pay",    "diya-gl:grossPay (apr)",     "Payroll Summary", 1],
   ["Wagesinterface", "C5",  "May Gross Pay",    "diya-gl:grossPay (may)",     "Payroll Summary", 1],
@@ -633,13 +717,16 @@ export const CELL_MAP = [
   ["VitalTax", "G7",  "**Annual Expenses**","gl-cor:amount (vitalTax.annualExp)", "Quarterly Summary", 0],
   // ── Admin (generator-injected tax data) — cell positions verified against
   // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
-  // SE's income tax band cells sit one row above BST's (M11/N12 rather than
-  // M12/N13) and NI Class 2 sits at L16 rather than L17.
+  // SE's income tax band cells sit one row above BST's (M11/N12/N13 rather
+  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17.
   ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
+  ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
   ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
+  ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
   ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
   ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
+  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.higherBandEnd",             "Admin (Generator Injected)", 0],
   ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
@@ -724,9 +811,19 @@ export function multiFileOptions() {
         // state the year's asset movement rather than one closing total.
         Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
+        // E2 is the long-term-creditors total for the "New Hire Purchase
+        // Agreements" block (SUM(E8:E14)); I/J/K on rows 8 and 10 are the
+        // two scenario agreements' own monthly payment, capital and
+        // interest split.
+        HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
         Payment: Object.values(paymentCells).flat(),
+        // The payroll calendar the generator writes for the package's tax
+        // year: B2 its seed date, I1 (=B366) the year it runs to, N1 the tax
+        // year label the payslips print, and the name, date and month number
+        // on each sampled row.
+        Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
       },
     },
   };
@@ -779,6 +876,19 @@ const PL_ROW_CAPTIONS = {
 // with no year-end shift (unlike Ltd, which has to remap via fiscalTabs).
 const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
+// Payslips.xlsx!Admin holds a day-by-day payroll calendar: column A the
+// payroll month's name, B the date, C the week number, D the payroll month
+// number and F the week within that month. Row 2 is the first day of the tax
+// year and the sheet runs to row 381. These rows sample it -- one inside each
+// of the twelve payroll months, then the last day of the tax year (366) and
+// the last row on the sheet. Nothing about a check depends on which month a
+// sampled row falls in: each one reads the month number off the sheet itself.
+const PAYROLL_CALENDAR_SAMPLE_ROWS = [2, 33, 64, 95, 126, 157, 188, 219, 250, 281, 312, 343, 366, 381];
+
+// The month names the payroll calendar's own formula produces
+// (TEXT(DATE(...),"Mmm") on the tax year start plus the month number).
+const SHORT_MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 export function standardReads() {
   const reads = {};
   for (const [sheet, cell] of CELL_MAP) {
@@ -804,6 +914,25 @@ export function standardReads() {
   // above already carries C4-C15 for the report; the rest are read here so
   // every month is available to check without bloating the report appendix.
   reads.StockControl = [STOCK_OPENING_COUNT_CELL, STOCK_CLOSING_COUNT_CELL];
+
+  // SE Full cells the return quotes without them being boxes of their own,
+  // plus the boxes it prints with no formula behind them. The quoted cells
+  // are the period the return covers (Q2 = Admin!B4, V2 = Admin!B17) and the
+  // two capital allowance rates and the Class 4 threshold it prints in its
+  // captions (H136 = Admin!G4, G141 = Admin!G5, J280 = Admin!N4). The empty
+  // ones are boxes 50, 52, 53, 57 and 61, which a customer fills in by hand;
+  // reading them lets the box 56, 60 and 62 totals be checked as the exact
+  // sums the sheet computes rather than sums with terms left out.
+  reads["SE Full"] = reads["SE Full"] || [];
+  for (const cell of ["Q2", "V2", "H136", "G141", "J280", "D147", "D156", "D160", "O154", "D179"]) {
+    if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
+  }
+
+  // The Admin sheet's tax year start and end. Everything else the Admin echo
+  // checks compares is a rate or a threshold already in CELL_MAP; these two
+  // are dates, and they anchor the SA103F period and the payroll calendar.
+  reads.Admin = reads.Admin || [];
+  for (const cell of ["B4", "B17"]) if (!reads.Admin.includes(cell)) reads.Admin.push(cell);
 
   reads.Wagesinterface = reads.Wagesinterface || [];
   for (let i = 0; i < WAGES_MONTH_ROWS.length; i++) {
@@ -848,10 +977,7 @@ export function reportSections(results) {
 
 // The year's asset movement, laid out the way a fixed asset note lays it out.
 // The package has no such note, so without this the only closing figure in
-// the report is the schedule's own K1 column total -- and that total is
-// cost less accumulated depreciation over every row still on the sheet, an
-// asset sold during the year included. The last two rows state that
-// difference instead of leaving a reader to find it.
+// the report is the schedule's own K1 column total.
 function fixedAssetSection(results) {
   const schedule = results["Fixedassets.xlsx!Schedule"];
   if (!schedule) return null;
@@ -879,18 +1005,13 @@ function fixedAssetSection(results) {
       { label: "Accumulated depreciation on the assets sold (Schedule X1)", value: fmt(disposalDepreciation), indent: 1 },
       { label: "**Accumulated depreciation carried forward, disposals removed**", value: fmt(depreciationCarriedForward), indent: 0 },
       {
-        label: "**Net book value at the year end, disposals removed**",
+        label: "**Net book value at the year end (Schedule K1)**",
         value: fmt(costCarriedForward - depreciationCarriedForward),
         indent: 0,
       },
       { label: "", value: "" },
       { label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)", value: fmt(num(schedule.V1)), indent: 1 },
       { label: "Net book value of the assets sold at the date of sale", value: fmt(disposalBookValue), indent: 1 },
-      {
-        label: "Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet",
-        value: fmt(num(schedule.K1)),
-        indent: 1,
-      },
     ],
   };
 }
@@ -1143,6 +1264,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
   }
 
+  // Some of the workbook's own cells hold wording rather than arithmetic.
+  // The report shows both sides as text and the diff column stays empty.
+  function checkText(name, actual, expectedText) {
+    checks.push({ name, actual, expected: expectedText, pass: actual === expectedText, diff: "" });
+  }
+
   const rate = vatRateFor(expected);
 
   // A template cell that resolves to blank reads back as the string the
@@ -1262,21 +1389,33 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const profit = tax.E5 || 0;
     const expectedTax = calculateExpectedTax(profit, taxData);
 
-    check("Income Tax", tax.E10 || 0, expectedTax.income_tax);
+    check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
     check("NI Class 4 (lower)", tax.E15 || 0, expectedTax.ni_class4_lower);
     check("Total Tax + NI", tax.E18 || 0, expectedTax.total_tax_and_ni);
+
+    // The allowance the sheet hands out, not the headline one. Above 100,000
+    // of profit it falls by a pound for every two, and reaches nil at 125,140.
+    check("Tax: Personal allowance after taper", tax.E6 || 0, expectedTax.personal_allowance);
+    check("Tax at additional rate", tax.E10 || 0, expectedTax.income_tax_additional);
+
+    // The bands and rates the sheet actually applies, not the ones it is
+    // captioned with. A total that happens to be right because the whole
+    // taxable income sits in one band hides a wrong rate in the others.
+    check("Tax: sheet splits the basic and higher bands at the basic band end", tax.C9 || 0, taxData.income_tax.basic_band_end);
+    check("Tax: sheet splits the higher and additional bands at the higher band end", tax.C10 || 0, taxData.income_tax.higher_band_end);
+    check("Tax: sheet applies the additional rate above the higher band", tax.D10 || 0, taxData.income_tax.additional_rate, 0.0001);
 
     // Tax calculation chain (6c)
     // The sheet has no negative taxable income: a profit under the personal
     // allowance leaves it nil (verified against the template: E7 =
     // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
     check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
-    check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
-    // E11 already holds the contractor deductions negated (=-[2]Mar!$X$1) and
-    // the sheet's own total is SUM(E10:E17), so the deduction line is added,
+    check("Tax: IT = Basic + Higher + Additional", tax.E11, (tax.E8 || 0) + (tax.E9 || 0) + (tax.E10 || 0));
+    // E12 already holds the contractor deductions negated (=-[2]Mar!$X$1) and
+    // the sheet's own total is SUM(E11:E17), so the deduction line is added,
     // not subtracted. Every fixture so far carries nil CIS, which is why
     // subtracting it here passed.
-    check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E10 || 0) + (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+    check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E11 || 0) + (tax.E12 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
     // SA103S cross-check (6g)
     const seShort = results["SE Short"];
@@ -1322,6 +1461,194 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
   }
 
+  // ── SE Full (SA103F): the full return against the accounts and against the
+  // short return beside it ─────────────────────────────────────────────────
+  //
+  // SE Full is a live HMRC return sharing a workbook with SE Short, every box
+  // formula-fed from the profit and loss account, the fixed asset schedule or
+  // the Admin sheet. Nothing read it back, so it could carry a different
+  // figure from the short return and no check would notice. Cell addresses,
+  // box numbers and formulas are read out of the template's own sheet XML.
+  const seFull = results["SE Full"];
+  const sa103s = results["SE Short"];
+  if (seFull && pl) {
+    // Each box against the profit and loss figure its own formula names.
+    const sa103fPlSources = [
+      ["D55", "box 14 turnover", num(pl.B9)],
+      ["O55", "box 15 other business income", num(pl.B38)],
+      ["D66", "box 16 goods bought for resale", num(pl.B14) + num(pl.B16)],
+      ["D70", "box 17 subcontractor payments", num(pl.B15)],
+      ["D74", "box 18 wages, salaries and staff costs", num(pl.B21)],
+      ["D78", "box 19 car, van and travel expenses", num(pl.B25) + num(pl.B26)],
+      ["D82", "box 20 rent, rates, power and insurance", num(pl.B22)],
+      ["D86", "box 21 repairs and renewals", num(pl.B23)],
+      ["D90", "box 22 telephone, stationery and office costs", num(pl.B24)],
+      ["D94", "box 23 advertising and entertainment", num(pl.B27)],
+      ["D98", "box 24 interest on bank and other loans", num(pl.B30)],
+      ["D102", "box 25 bank, credit card and finance charges", num(pl.B31)],
+      ["D106", "box 26 irrecoverable debts written off", num(pl.B29)],
+      ["D110", "box 27 accountancy, legal and professional fees", num(pl.B28)],
+      ["D114", "box 28 depreciation and loss on sale of assets", num(pl.B33) + num(pl.B34)],
+      ["D118", "box 29 other business expenses", num(pl.B32)],
+      ["D122", "box 30 total expenses", num(pl.B17) + num(pl.B35)],
+      ["O114", "box 43 disallowable depreciation", num(pl.B34)],
+      ["O122", "box 45 total disallowable expenses", num(pl.B34)],
+      ["O204", "box 74 other business income", num(pl.B11)],
+    ];
+    for (const [cell, caption, plFigure] of sa103fPlSources) {
+      check(`SA103F ${caption} (${cell}) = the profit and loss account`, num(seFull[cell]), plFigure);
+    }
+
+    // The form's own arithmetic, each total against the boxes it adds up.
+    check(
+      "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
+      num(seFull.O149),
+      num(seFull.D139) +
+        num(seFull.D144) +
+        num(seFull.D147) +
+        num(seFull.D152) +
+        num(seFull.D156) +
+        num(seFull.D160) +
+        num(seFull.O139) +
+        num(seFull.O144),
+    );
+    check(
+      "SA103F box 46 net profit (D129) = boxes 14 and 15 less box 30",
+      num(seFull.D129),
+      Math.max(0, num(seFull.D55) + num(seFull.O55) - num(seFull.D122)),
+    );
+    check(
+      "SA103F box 60 total additions to net profit (D174) = boxes 45, 57, 58 and 59",
+      num(seFull.D174),
+      num(seFull.O122) + num(seFull.O154) + num(seFull.O160) + num(seFull.D169),
+    );
+    check("SA103F box 62 total deductions from net profit (O169) = boxes 56 and 61", num(seFull.O169), num(seFull.O149) + num(seFull.D179));
+    // Box 63 works from the net profit when there is one and from the net
+    // loss when there is not, which is what the box's own nested IF says.
+    const taxProfitFromNetProfit = num(seFull.D129) + num(seFull.D174) - num(seFull.O169);
+    const taxProfitFromNetLoss = -num(seFull.O129) + num(seFull.D174) - num(seFull.O169);
+    check(
+      "SA103F box 63 net business profit for tax purposes (O174) = box 46 or box 47, plus box 60, less box 62",
+      num(seFull.O174),
+      taxProfitFromNetProfit > 0 ? taxProfitFromNetProfit : Math.max(0, taxProfitFromNetLoss),
+    );
+    check("SA103F box 72 adjusted profit (O194) = box 63", num(seFull.O194), num(seFull.O174));
+    check(
+      "SA103F box 75 total taxable profits (O210) = box 72 less box 73 plus box 74",
+      num(seFull.O210),
+      num(seFull.O194) - num(seFull.O199) + num(seFull.O204),
+    );
+
+    // The capital allowance boxes have no profit and loss source: they read
+    // the fixed asset schedule across the cross-file external link.
+    const returnSchedule = results["Fixedassets.xlsx!Schedule"];
+    if (returnSchedule) {
+      check("SA103F box 48 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
+      check(
+        "SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51",
+        num(seFull.D144),
+        num(returnSchedule.R1) - num(seFull.D152),
+      );
+      check(
+        "SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000",
+        num(seFull.O139),
+        num(returnSchedule.R1) + num(returnSchedule.S1) < 1000 ? num(returnSchedule.S1) : 0,
+      );
+      check("SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1", num(seFull.O144), num(returnSchedule.Y1));
+      check("SA103F box 58 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
+    }
+
+    if (sa103s) {
+      // Boxes the two returns carry identically.
+      const sa103fCounterparts = [
+        ["D55", "D38", "box 14 turnover"],
+        ["O55", "O38", "box 15 other business income"],
+        ["D74", "D55", "box 18 wages, salaries and staff costs"],
+        ["D78", "D51", "box 19 car, van and travel expenses"],
+        ["D82", "D60", "box 20 rent, rates, power and insurance"],
+        ["D86", "D64", "box 21 repairs and renewals"],
+        ["D90", "O55", "box 22 telephone, stationery and office costs"],
+        ["D110", "O46", "box 27 accountancy, legal and professional fees"],
+        ["O129", "O71", "box 47 net loss"],
+        ["D139", "D80", "box 48 annual investment allowance"],
+        ["O139", "D85", "box 54 enhanced and other capital allowances"],
+        ["O160", "O85", "box 58 balancing charge"],
+        ["D169", "D94", "box 59 goods and services for own use"],
+        ["O174", "D99", "box 63 net business profit for tax purposes"],
+        ["O179", "O106", "box 64 net business loss for tax purposes"],
+        ["O199", "O94", "box 73 loss brought forward set against this year"],
+        ["O204", "O99", "box 74 other business income"],
+        ["O210", "D106", "box 75 total taxable profits"],
+        ["D231", "O124", "box 80 contractor deductions taken off"],
+      ];
+      for (const [fullCell, shortCell, caption] of sa103fCounterparts) {
+        check(`SA103F ${caption}: full return (${fullCell}) = short return (${shortCell})`, num(seFull[fullCell]), num(sa103s[shortCell]));
+      }
+
+      // Where the two forms differ by design. The full return has a
+      // disallowable column, so it totals expenses before the add-back and
+      // carries a net profit that much lower; the short return has no such
+      // column and takes depreciation out of the total instead. The two
+      // allowance layouts also split differently: the full return separates
+      // the restricted car allowances and the allowances on sale that the
+      // short return rolls into its own two boxes.
+      check(
+        "SA103F box 30 total expenses (D122) = the short return's total expenses with box 45 disallowable depreciation added back",
+        num(seFull.D122),
+        num(sa103s.O64) + num(seFull.O122),
+      );
+      check(
+        "SA103F box 46 net profit (D129) = the short return's net profit less box 45 disallowable depreciation",
+        num(seFull.D129),
+        num(sa103s.D71) - num(seFull.O122),
+      );
+      check(
+        "SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24",
+        num(seFull.O149),
+        num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80),
+      );
+    }
+
+    // The period and the rates the return prints on its own face, against the
+    // Admin sheet cells each one reads.
+    if (results.Admin) {
+      check("SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)", num(seFull.Q2), num(results.Admin.B4), 0);
+      check("SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)", num(seFull.V2), num(results.Admin.B17), 0);
+      check(
+        "SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4)",
+        num(seFull.H136),
+        num(results.Admin.G4),
+        0.0001,
+      );
+      check(
+        "SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)",
+        num(seFull.G141),
+        num(results.Admin.G5),
+        0.0001,
+      );
+      // The Class 4 threshold the return prints reads the Admin sheet's
+      // personal allowance, not its Class 4 lower limit. The two are the same
+      // figure in every tax year shipped so far, so the template's wiring is
+      // asserted as it stands and the true limit is carried as a warning in
+      // any year that parts them.
+      check(
+        "SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4)",
+        num(seFull.J280),
+        num(results.Admin.N4),
+      );
+      if (Math.abs(num(results.Admin.N4) - num(results.Admin.N20)) > 0.5) {
+        checks.push({
+          name: "SA103F: the Class 4 threshold the return prints against the Class 4 lower limit",
+          actual: num(seFull.J280),
+          expected: num(results.Admin.N20),
+          pass: false,
+          diff: num(seFull.J280) - num(results.Admin.N20),
+          severity: "warning",
+        });
+      }
+    }
+  }
+
   // ── Fixed assets (Fixedassets.xlsx Schedule vs Purchases/Sales, and P&L) ──
   //
   // 1. Note vs schedule. FAreconciliation is the workbook's own tie-out
@@ -1357,14 +1684,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const sched = results["Fixedassets.xlsx!Schedule"];
   if (sched) {
-    // 2. Closing NBV identity within the Schedule itself: cost minus
-    //    accumulated depreciation carried forward. (The equivalent opening
-    //    identity does not hold in this template: the "New Fixed Assets"
-    //    rows have no opening-WDV formula at all -- G is blank for a New
-    //    row regardless of E -- so G1 is the existing-assets figure alone
-    //    while E1/F1 include in-year additions. Asserting G1 = E1-F1 would
-    //    be checking a false identity, not the workbook's own logic.)
-    check("Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", sched.K1 || 0, (sched.E1 || 0) - (sched.J1 || 0));
+    // 2. Closing NBV identity within the Schedule itself: cost less
+    //    disposals, less depreciation carried forward less depreciation on
+    //    the disposals. (The equivalent opening identity does not hold in
+    //    this template: the "New Fixed Assets" rows have no opening-WDV
+    //    formula at all -- G is blank for a New row regardless of E -- so
+    //    G1 is the existing-assets figure alone while E1/F1 include in-year
+    //    additions. Asserting G1 = E1-F1 would be checking a false
+    //    identity, not the workbook's own logic.)
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      sched.K1 || 0,
+      (sched.E1 || 0) - (sched.W1 || 0) - ((sched.J1 || 0) - (sched.X1 || 0)),
+    );
 
     // The schedule's cost total against its own two halves, so the Fixed
     // Asset Schedule section's opening and additions lines are the sheet's
@@ -1385,6 +1717,53 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const expectedDisposalLoss = -((sched.V1 || 0) - (sched.W1 || 0) + (sched.X1 || 0));
       check("P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)", plDisposalLoss, expectedDisposalLoss);
     }
+  }
+
+  // ── HP finance agreements (Fixedassets.xlsx HPfinance sheet) ────────────
+  // Each check is anchored in the agreement's own fixture fields, not in
+  // another cell of the same sheet, so a schedule that is merely
+  // self-consistent cannot pass.
+  const hp = results["Fixedassets.xlsx!HPfinance"];
+  if (hp && expected.hp_agreements) {
+    const [agreement1, agreement2] = expected.hp_agreements;
+    if (agreement1) {
+      check(
+        "HP: first agreement monthly payment = the amount financed with charges over its term",
+        hp.I8 || 0,
+        (agreement1.amount_financed + agreement1.admin_charges + agreement1.total_interest) / agreement1.months,
+      );
+      check("HP: first agreement capital and interest split sums to the monthly payment", (hp.J8 || 0) + (hp.K8 || 0), hp.I8 || 0);
+    }
+    if (agreement2) {
+      check(
+        "HP: second agreement monthly payment computes",
+        hp.I10 || 0,
+        (agreement2.amount_financed + agreement2.admin_charges + agreement2.total_interest) / agreement2.months,
+      );
+      check("HP: second agreement capital and interest split sums to the monthly payment", (hp.J10 || 0) + (hp.K10 || 0), hp.I10 || 0);
+    }
+    check(
+      "HP: long term creditors = the agreements' amounts financed",
+      hp.E2 || 0,
+      expected.hp_agreements.reduce((s, a) => s + a.amount_financed, 0),
+    );
+  }
+
+  // The year's HP interest and admin charges reaching the P&L's own "HP
+  // Interest, Lease, Bank Charges" line, through Bank.xlsx/Cash.xlsx code
+  // "B" -- the same bank-charges code every other direct payment on that
+  // line already uses. Computed from the scenario's own bank transactions,
+  // not from the P&L cell it is compared to, so a broken cross-file link
+  // shows up here rather than passing by construction.
+  if (pl && expected.bank) {
+    let bankChargesTotal = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "B") continue;
+        bankChargesTotal += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    check("P&L: HP interest and charges reach the finance line (B31)", pl.B31 || 0, bankChargesTotal);
   }
 
   // ── Bank (item 6): each leaf's closing balance vs the scenario's own cash
@@ -1532,14 +1911,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // which in turn reads Sales.xlsx/Purchases.xlsx month totals -- anchored
   // here directly in the scenario's own dated transactions (not a second
   // spreadsheet read) so a break anywhere in that chain shows up as a value
-  // mismatch. The quarter boundaries are NOT the calendar Apr-Jun/Jul-Sep
-  // split a VAT-registration-aligned business would expect: the generator
-  // computes them from a VAT start month one month after the accounting
-  // year start (`vatStartMonth` in generator.js), so Q1 here runs May-Jul,
-  // not Apr-Jun -- confirmed against a real generated package (VATQtr1 G5 =
-  // 2025-07-31, not 2025-06-30). Rather than hard-code that offset, each
-  // quarter's window is derived from its own G5 (quarter-end) date, so the
-  // check tracks whatever the generator actually computed.
+  // mismatch. Each quarter's window is derived from its own G5 (quarter-end)
+  // date rather than hard-coded, so the check tracks whatever period the
+  // package was generated for and whatever period a reader picks from the
+  // dropdown.
   //
   // G5 is dated in the package's own year, the scenario's transactions in
   // the base year cellWrites copies straight through, so the two only line
@@ -1571,23 +1946,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // rollforward is that it falls after the quarter-end.
     check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
 
-    // Q5 is the straddling period at the accounting year end, and the
-    // template's rolling 3-row SUM carries two of the year's own months into
-    // it alongside the straddling period's own figures. That makes its window
-    // wider than the transaction dates below can describe, so its values are
-    // anchored on the Vatinterface rows instead (see the block after this
-    // loop). The identities above hold for every quarter.
+    // Q5 is the spare form, on the last period the Vatinterface carries, and
+    // the template's rolling 3-row SUM puts the two straddling periods after
+    // the year end into it alongside the year's own last month. That makes its
+    // window wider than the transaction dates below can describe, so its
+    // values are anchored on the Vatinterface rows instead (see the block
+    // after this loop). The identities above hold for every quarter.
     if (q === 5) continue;
 
-    // Quarter window: the 3 calendar months ending at G5's own month
-    // (verified against generator.js -- monthsFromStart is always a
-    // multiple of 3 for Q1-Q4).
+    // Quarter window: the 3 calendar months ending at G5's own month. Q1-Q4
+    // step a quarter at a time, so each window is three whole months.
     const bookEnd = excelSerialToUtcDate(qtr.G5);
     const bookStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() - 2, 1));
-    // Q1-Q4 all start inside the book's own accounting year, so the start
-    // month dates the year the whole window belongs to. Q4's third month
-    // falls in the year after and lands on no scenario transaction, which
-    // is what the book's own empty Vatinterface row for it totals.
+    // Q1-Q4 cover the twelve accounting months once each, so every window sits
+    // inside the book's own year and its start month dates that year.
     const yearShift = scenarioAccountingYear === null ? 0 : scenarioAccountingYear - accountingYearOf(bookStart);
     const qStart = new Date(Date.UTC(bookStart.getUTCFullYear() + yearShift, bookStart.getUTCMonth(), 1));
     // Day 0 of the next month is this month's last day, so the shifted
@@ -1615,8 +1987,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
     }
-    // The last quarter of a 6 April year runs past it, so its window picks up
-    // the straddling entry sheets alongside the year's own last months.
+    // A window that runs past the year end picks up the straddling entry
+    // sheets alongside the year's own months.
     for (const entry of expected.vat_straddling_sales || []) {
       if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
@@ -1734,6 +2106,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0,
       );
     }
+
+    // ── The five return forms as one cycle ────────────────────────
+    //
+    // Each form's own date decides which three interface rows it declares, so
+    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
+    // quarter apart and covering the twelve accounting months once each, and
+    // the spare fifth on the last period the interface carries.
+    const periods = vatinterfacePeriods(results);
+    const returnForms = [];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = results[`Vat.xlsx!VATQtr${q}`];
+      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
+    }
+    const coverage = vatReturnCoverage(periods, returnForms);
+    if (coverage.placed.length === 5) {
+      const [q1, q2, q3, q4, q5] = coverage.placed;
+      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
+      for (const [earlier, later] of [
+        [q1, q2],
+        [q2, q3],
+        [q3, q4],
+      ]) {
+        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
+      }
+      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
+      check(
+        "VAT: Q1-Q4 cover every month of the accounting year",
+        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
+        periods.filter((period) => period.inAccountingYear).length,
+        0,
+      );
+      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
+
+      // Five consecutive quarters need fifteen periods and the interface can
+      // total fourteen, so the spare cannot start where the fourth return
+      // ends. The period they share is the workbook's own limit, reported
+      // with the output VAT that would go in twice, and a run is not stopped
+      // for it.
+      checks.push({
+        name: "VAT: periods more than one of the five returns declares",
+        actual: coverage.shared.length,
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.length,
+        severity: "warning",
+      });
+      checks.push({
+        name: "VAT: output VAT declared on more than one of the five returns",
+        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        severity: "warning",
+      });
+    }
   }
 
   // Admin echo: the generator injects the tax year's rates, bands and
@@ -1752,10 +2179,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ca = taxData.capital_allowances;
     const mil = taxData.mileage;
     check("Admin: Personal Allowance = tax data", admin.N4, it.personal_allowance);
+    check("Admin: Personal Allowance Taper Threshold = tax data", admin.N5, it.personal_allowance_taper_threshold);
     check("Admin: Basic Rate = tax data", admin.N6, it.basic_rate, 0.0001);
     check("Admin: Higher Rate = tax data", admin.N7, it.higher_rate, 0.0001);
+    check("Admin: Additional Rate = tax data", admin.N8, it.additional_rate, 0.0001);
     check("Admin: Basic Band End = tax data", admin.M11, it.basic_band_end);
     check("Admin: Higher Band Start = tax data", admin.N12, it.higher_band_start);
+    check("Admin: Higher Band End = tax data", admin.N13, it.higher_band_end);
     check("Admin: NI Class 2 Weekly Rate = tax data", admin.L16, ni.class2_weekly_rate, 0.0001);
     check("Admin: NI Class 4 Lower Rate = tax data", admin.L20, ni.class4_lower_rate, 0.0001);
     check("Admin: NI Class 4 Lower Limit = tax data", admin.N20, ni.class4_lower_limit);
@@ -1771,6 +2201,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
+  }
+
+  // Payslips calendar echo: Payslips.xlsx's own Admin sheet carries a
+  // day-by-day payroll calendar the generator writes for the package's tax
+  // year (generatePayslipsCalendar in app/lib/generator.js seeds B2 and fills
+  // the week and month columns; every later date cascades from B2 and every
+  // month name is that many months on from B2's own month). Nothing read it
+  // back, so a package could ship a payroll year starting on the wrong date,
+  // dating every payslip in it to another year, with no check failing. Both
+  // ends are anchored on the accounts workbook's own tax year dates.
+  const payrollCalendar = results["Payslips.xlsx!Admin"];
+  if (payrollCalendar && results.Admin) {
+    const yearStartSerial = num(results.Admin.B4);
+    check(
+      "Payslips calendar: the payroll year starts on the accounts tax year start (B2 = Admin B4)",
+      num(payrollCalendar.B2),
+      yearStartSerial,
+      0,
+    );
+    check(
+      "Payslips calendar: the year the calendar runs to (I1) = the accounts tax year end (Admin B17)",
+      num(payrollCalendar.I1),
+      num(results.Admin.B17),
+      0,
+    );
+    if (taxData) {
+      checkText(
+        "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
+        payrollCalendar.N1,
+        taxData.tax_year.label,
+      );
+    }
+
+    const yearStartMonthIndex = excelSerialToUtcDate(yearStartSerial).getUTCMonth();
+    for (const row of PAYROLL_CALENDAR_SAMPLE_ROWS) {
+      check(
+        `Payslips calendar row ${row}: the date runs on unbroken from the tax year start`,
+        num(payrollCalendar[`B${row}`]),
+        yearStartSerial + row - 2,
+        0,
+      );
+      const monthsIn = num(payrollCalendar[`D${row}`]) - 1;
+      checkText(
+        `Payslips calendar row ${row}: the month name is its payroll month counted from the tax year start`,
+        payrollCalendar[`A${row}`],
+        SHORT_MONTH_NAMES[(yearStartMonthIndex + monthsIn) % 12],
+      );
+    }
   }
 
   // The whole distance from the accounting profit to the profit tax is

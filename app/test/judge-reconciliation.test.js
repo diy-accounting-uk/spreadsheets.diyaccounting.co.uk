@@ -288,7 +288,7 @@ describe("buildIndicators for the Basic Sole Trader", () => {
 
   it("states turnover, profit and the tax charged on it", () => {
     expect(text).toContain("Turnover 409,900.00, gross profit 391,360.00, net profit 265,508.00.");
-    expect(text).toContain("income tax 78,035.00");
+    expect(text).toContain("income tax 88,131.60");
   });
 
   it("says the product publishes no balance sheet and no VAT returns", () => {
@@ -439,7 +439,7 @@ describe("buildUserPrompt", () => {
 
   it("carries the product's notes on the shipped workbooks once, not per run", () => {
     const user = buildUserPrompt("ltd", runs);
-    expect(user.match(/second financial year row/g)).toHaveLength(1);
+    expect(user.match(/Boxes 53 to 56 stay blank/g)).toHaveLength(1);
   });
 
   it("sends no report body", () => {

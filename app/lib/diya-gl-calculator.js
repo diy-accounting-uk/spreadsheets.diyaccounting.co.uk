@@ -153,7 +153,7 @@ function calculateBstResults(book, lines, taxData, scenario) {
   const taxableProfit = netProfit - capitalAllowances;
 
   // Income Tax
-  const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, totalIncomeTax } = calculateIncomeTax(
+  const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, additionalRateTax, totalIncomeTax } = calculateIncomeTax(
     taxableProfit,
     taxData.income_tax,
   );
@@ -209,8 +209,9 @@ function calculateBstResults(book, lines, taxData, scenario) {
       E7: taxableIncome,
       E8: basicRateTax,
       E9: higherRateTax,
-      E10: totalIncomeTax,
-      E11: cisDeducted,
+      E10: additionalRateTax,
+      E11: totalIncomeTax,
+      E12: cisDeducted,
       E15: niLower,
       E16: niUpper,
       E18: totalTaxAndNI,
@@ -446,7 +447,7 @@ function calculateSeResults(book, lines, taxData, scenario) {
   const profitBeforeTax = operatingProfit; // No interest income for SE
 
   // Income Tax
-  const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, totalIncomeTax } = calculateIncomeTax(
+  const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, additionalRateTax, totalIncomeTax } = calculateIncomeTax(
     profitBeforeTax,
     taxData.income_tax,
   );
@@ -517,8 +518,9 @@ function calculateSeResults(book, lines, taxData, scenario) {
       E7: taxableIncome,
       E8: basicRateTax,
       E9: higherRateTax,
-      E10: totalIncomeTax,
-      E11: cisDeducted,
+      E10: additionalRateTax,
+      E11: totalIncomeTax,
+      E12: cisDeducted,
       E15: niLower,
       E16: niUpper,
       E18: totalTaxAndNI,

@@ -424,6 +424,18 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Register of members (Ltd). One shareholder a row, the holdings adding up
+  // to the share capital on the opening balance sheet.
+  if (metadata.members) {
+    for (const member of metadata.members) {
+      parts.push("[[members]]");
+      parts.push(`name = "${escapeTomlString(member.name)}"`);
+      parts.push(`shares = ${member.shares}`);
+      parts.push(`acquired = ${member.acquired}`);
+      parts.push("");
+    }
+  }
+
   // Sales
   for (const month of MONTH_ORDER) {
     const txns = grouped.sales[month];
@@ -491,11 +503,57 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
-  // Stock (if applicable)
+  // Stock (if applicable). materials_percent is the share of a product's net
+  // sales value that is direct materials; the Stock sheet needs it to move
+  // any stock at all, because its bought and sold columns are switched off
+  // while it is zero.
   if (expected.opening_stock !== undefined) {
     parts.push("[stock]");
     parts.push(`opening = ${expected.opening_stock}`);
     parts.push(`closing = ${expected.closing_stock}`);
+    if (expected.stock_materials_percent !== undefined) parts.push(`materials_percent = ${expected.stock_materials_percent}`);
+    parts.push("");
+  }
+
+  // Charges and debentures registered over the company's assets (Ltd). Each
+  // one secures a creditor falling due after more than one year.
+  if (expected.charges) {
+    for (const charge of expected.charges) {
+      parts.push("[[charges]]");
+      parts.push(`date = ${charge.date}`);
+      parts.push(`asset = "${escapeTomlString(charge.asset)}"`);
+      parts.push(`valuation = ${charge.valuation}`);
+      parts.push(`holder = "${escapeTomlString(charge.holder)}"`);
+      parts.push(`terms = "${escapeTomlString(charge.terms)}"`);
+      parts.push(`board_meeting = ${charge.board_meeting}`);
+      parts.push("");
+    }
+  }
+
+  // Hire purchase agreements (SE, Ltd). Each finances an asset over a fixed
+  // term; the HPfinance sheet works out its own monthly payment, capital
+  // and interest split from these fields.
+  if (expected.hp_agreements) {
+    for (const agreement of expected.hp_agreements) {
+      parts.push("[[hp_agreements]]");
+      parts.push(`date = ${agreement.date}`);
+      parts.push(`finance_company = "${escapeTomlString(agreement.finance_company)}"`);
+      parts.push(`reference = "${escapeTomlString(agreement.reference)}"`);
+      parts.push(`amount_financed = ${agreement.amount_financed}`);
+      parts.push(`admin_charges = ${agreement.admin_charges}`);
+      parts.push(`total_interest = ${agreement.total_interest}`);
+      parts.push(`months = ${agreement.months}`);
+      parts.push(`supplier = "${escapeTomlString(agreement.supplier)}"`);
+      parts.push("");
+    }
+  }
+
+  // The dividend the board declared for the year (Ltd). The minute carries
+  // the whole year's declaration; the bank pays it in instalments.
+  if (expected.dividend) {
+    parts.push("[dividend]");
+    parts.push(`board_meeting = ${expected.dividend.board_meeting}`);
+    parts.push(`declared = ${expected.dividend.declared}`);
     parts.push("");
   }
 

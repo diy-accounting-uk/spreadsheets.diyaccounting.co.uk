@@ -181,10 +181,10 @@ MnthP&L <-- TrialBalance (cumulative monthly deltas)                            
   |   C32 = TB!O79 = [2]$AE$1 (Leasing, code f)                                 |
   |   C33 = TB!O80 = [2]$AF$1 (Legal, code l)                                   |
   |   C34 = TB!O81 = -[3]$T$1 (Bad debts from Sales)                            |
-  |   C35-C36 = TB!O82-O83 (Depreciation from bank)                             |
+  |   C35-C36 = TB!O82-O83 (Bank interest paid, bank charges)                    |
   |   C37 = TB!O84 = [2]$AG$1 (Donations, code y)                               |
   |   C38 = TB!O85 = [2]$AH$1 (Goodwill, code z)                               |
-  |   C39-C40 = Depreciation formulas from Fixedassets Schedule                  |
+  |   C39 = loss on disposal, C40 = depreciation, from Fixedassets Schedule      |
   | B41 = Total Admin, B43 = Operating Profit, B45 = PBT                        |
   v                                                                              |
 PubP&L <-- MnthP&L (annual column reformatted for Companies House)              |
@@ -395,6 +395,10 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 |---------|-------|-------------|
 | F21 | Year-end date (Excel serial) | Computed from `financial_year.end` |
 | P6, P7 | CT small profits rate (whole %) | `corporation_tax.small_profits_rate * 100` |
+| P8 | CT main rate (whole %) | `corporation_tax.main_rate * 100` |
+| P9 | Marginal relief fraction | `corporation_tax.marginal_relief_fraction` |
+| P12 | Marginal relief lower limit | `corporation_tax.small_profits_limit` |
+| P13 | Marginal relief upper limit | `corporation_tax.main_rate_limit` |
 | G5, G7 | Annual investment allowance (whole %) | `capital_allowances.annual_investment_allowance * 100` |
 | G6, G8 | Writing down allowance main (whole %) | `capital_allowances.writing_down_allowance_main * 100` |
 | E11 | Motor vehicle cost threshold | `capital_allowances.motor_vehicle_cost_threshold` |
@@ -404,9 +408,13 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 | N17, O17 | Mileage lower rate start/pence | `mileage.lower_rate_start`, `mileage.lower_rate_pence` |
 | M19, M21 | VAT standard rate (whole %) | `vat.standard_rate * 100` |
 
+The generator also writes `Month 01!C30` in expensesform.xlsx from `mileage.higher_rate_pence`. The other eleven months chain from it, and the workbook has no link back to the accounts.
+
 All other dates in the Admin sheet (B2-B56 monthly dates, VAT quarter dates, etc.) are formula-driven from F21 -- the generator only sets F21.
 
-**VAT quarter dates:** VATQtr1-5 G5 cells are set by the generator to the quarter-end dates computed from the year-end month. Q1=3 months, Q2=6, Q3=9, Q4=12, Q5=13 months from accounting year start.
+**The two corporation tax rate rows.** `Admin!K6/L6/N6` and `K7/L7/N7` set the accounting period out as the one or two UK financial years it falls in. Row 6 runs from the period start (`B9`) to the 31 March inside the period, clamped to the year end; row 7 from the day after that to `F21`. A 31 March year end fills row 6 and leaves row 7 with no days. `K6`/`K7` name each row's financial year, which is the calendar year its 1 April fell in. All six are formula cells whose cached values the generator rolls, because Fixedassets reads `Admin!N7` across the external link and a closed-workbook link update reads the stored value.
+
+**VAT return period dates:** VATQtr1-5 G5 cells are set by the generator to period ends counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js): Q1=3, Q2=6, Q3=9, Q4=12, Q5=14. Q1-Q4 cover the twelve accounting months once each. Q5 is the spare form a business files when its VAT stagger runs behind its accounting year, and it sits on the last period the Vatinterface carries -- the quarter one further on has no interface row to total it and no entry in the K2:K15 dropdown. That leaves Q4 and Q5 sharing one period, which the reconciliation reports as a warning.
 
 **Payslips calendar:** The Payslips Admin sheet B2 = PAYE tax year start (6 April). Columns C/D/F are regenerated with week numbers, month numbers, and week-in-month numbers using the fixed pattern [4,4,5, 4,4,5, 4,4,5, 4,4,6] weeks per month.
 
@@ -423,7 +431,7 @@ One scenario exercises the Ltd product, generated from Precision Code Ltd exampl
 - **Expected:** total_sales = 169,200 (net of VAT)
 - **Checks:** Total Sales, Gross Profit, Net Profit, Corporation Tax, CT600 boxes, PubP&L, PubBalSht
 
-The full scenario is used in CI matrix reconciliation. The corporation tax charge is checked against how the working sheet builds it: two dated tax rows, each a year long, each taking that share of the chargeable profit at the rate injected into `Admin!P6`/`P7`, summed into K35. The shipped sheet has no marginal relief step, so K35 comes out at the small profits rate however large the profit; the run reports the gap against the statutory computation as a warning.
+The full scenario is used in CI matrix reconciliation. The corporation tax charge is checked against how the working sheet builds it: two dated tax rows, one per financial year the accounting period falls in, each taking its share of the chargeable profit, charged at the small profits rate up to its share of the lower limit and at the main rate above it, less marginal relief between the two limits, summed into K35. K35 equals the statutory computation at every year end and profit level.
 
 The old `ltd-scenario-basic.toml` and `ltd-scenario-extended.toml` are being replaced by `ltd-scenario-full.toml`. The old `ltd-scenario-basic` remains temporarily used by the E2E test until Phase 5 completes the switchover.
 
@@ -448,8 +456,14 @@ Sales columns: A=date (Excel serial), B=customer, E=code letter, F=gross amount.
 
 From Financialaccounts.xlsx after recalculation:
 
-- **MnthP&L:** B4-B9, B11-B14, B16, B18-B45 (annual P&L totals)
-- **CorporationTax:** K5, K12, K22, K28, K35, K39 (CT calculation chain)
+`standardReads()` derives every hub read from `CELL_MAP` in `app/products/ltd.js`, then adds
+the month columns and the working-sheet rows the checks need:
+
+- **MnthP&L:** B4-B9, B11-B14, B16, B18-B45 (annual totals), and C-N on every row that ties to a Sales or Purchases month total
+- **CorporationTax:** K5, I7, I8, K10, K12, K20, K22, K24, K26, K28, K35, K39, plus I15-I18 (allowance lines) and A33-A35/F33/F34/G33/G34/I33/I34/K37 (the two dated tax rows)
+- **PubP&L, PubBalSht, PubNotes, Report, CT600, Stock, TrialBalance, OpenAccounts, Admin, WagesInterface:** the cells in the tables below
+
+Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals, the five VATQtr sheets and Vatinterface, the Fixedassets Schedule and FAreconciliation, Payslips Payment and Admin, the four bank workbooks' closing balances, and Companysecretary's RegisterofMembers (F1, G1 and each member row's A and G), Boardmeeting (F2, E4) and Charges&Debentures.
 
 ### Compliance checks
 
@@ -458,10 +472,27 @@ From Financialaccounts.xlsx after recalculation:
 | Total Sales | MnthP&L B9 | Matches `expected.total_sales` (tolerance 1) |
 | Gross Profit | MnthP&L B16 | Matches `expected.gross_profit` (tolerance 1) |
 | Net Profit | MnthP&L B45 | Matches `expected.net_profit` (tolerance 1) |
+| CT: the two tax rows span the accounting period | CorporationTax A35, Admin F21, B9 | `A35 = F21 - B9 + 1` (exact) |
+| CT: first/second tax row gross tax = its profit at its rate | CorporationTax J33/J34, F33/F34, G33/G34 | `J = F * G / 100` (tolerance 1) |
+| CT: first/second tax row marginal relief = its share of the profit against its share of the limits | CorporationTax L33/L34, F33/F34, A33/A34, A35, Admin P9, P12, P13 | `(P13 * A/A35 - F) * P9` inside the band, else 0 |
+| CT: first/second tax row tax = its gross tax less its marginal relief | CorporationTax I33/I34, J33/J34, L33/L34 | `I = J - L` (tolerance 1) |
 | CT: charge for the year = the two tax rows | CorporationTax K35, I33, I34 | `K35 = I33 + I34` (tolerance 1) |
-| CT: charge for the year = chargeable profit at the Admin corporation tax rate | CorporationTax K35, K28, Admin P6 | `K35 = K28 * P6 / 100` (tolerance 1) |
-| CT: charge for the year against the statutory computation with marginal relief | CorporationTax K35, K28 | Warning. `K35` against the main rate less marginal relief; passes when the profit is outside the relief band |
-| CT600: tax payable against the working sheet's charge for the year | CT600 AJ131, CorporationTax K35 | Warning. Box 63 files the first tax row only, so it falls short by the second |
+| CT: charge for the year = the statutory computation with marginal relief | CorporationTax K35, K28 | `K35` against the main rate less marginal relief (tolerance 1) |
+| CT600: corporation tax = first tax row gross tax | CT600 AJ126, CorporationTax J33 | Box 46 is the tax before relief |
+| CT600: marginal rate relief = the working sheet's relief | CT600 Y133, CorporationTax L33, L34 | Box 64 |
+| CT600: tax net of marginal relief = the working sheet's charge | CT600 Y135, CorporationTax K35 | Box 65 |
+| Expenses form Month NN: mileage rate = tax data | expensesform.xlsx Month 01-12 C30 | `mileage.higher_rate_pence` (tolerance 0.0001) |
+| Published P&L: prior year closing stock / stock movement / retained profit while no comparatives are entered | OpenAccounts E48, PubP&L B14, B54 | Nil while the prior year block on OpenAccounts is empty |
+| Register of members: row N names / holds | RegisterofMembers A3-A19, G3-G19 | Each row against the scenario's `[[members]]` |
+| Directors' report: first / second shareholder named | Report A97, A98, the scenario's `[[members]]` | The report prints the first two members, and a blank second line when there is only one |
+| Board minute: dividend declared | Boardmeeting E4, the scenario's `[dividend]` | The minute carries the declaration |
+| Board minute: meeting date = the scenario's board meeting | Boardmeeting F2, Admin F21, the scenario's `[dividend]` | The minute's date on the period frame the book carries |
+| Published P&L: dividends appropriated = the dividend the board declared | PubP&L F52, the scenario's `[dividend]` | The appropriation line publishes the declaration |
+| Trial Balance: dividends creditor = opening plus declared less paid | TrialBalance EJ31, the opening balance, the scenario's `[dividend]` and its `DV` bank payments | The creditor carries what the members are still owed |
+| Directors' report figures | Report F22, E87, H87, D89, I89, D94, I95, F97, F98 | Each against the statement or register it reads |
+| Payslips calendar | Payslips Admin B2 and each payroll month's opening row | The tax calendar: week 1 the five days from 6 April, seven-day weeks after it, months of four, four and five weeks |
+| Charges register: the balance sheet carries a creditor falling due after more than one year | Charges&Debentures C2-C6, PubBalSht E30 | The secured creditor is above zero and no more than the directors valuation of the assets charged |
+| Stock: calculated stock = opening + materials bought - materials sold | Stock D6, D30, the scenario's `s` purchases and `a` sales | Both sides from the scenario, so the count adjustment cannot absorb a missing month |
 
 ## Filing Taxonomy Mapping
 
@@ -469,59 +500,188 @@ The Ltd product is the primary XBRL consumer — Companies House filing requires
 
 ### Published P&L (PubP&L) — FRS 102 Statutory Accounts
 
+Column F is this year, column B the prior year comparative. The cells below are this year's.
+
 | Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
 |------|-----------|-----------------|---------------------|
-| C5 | Turnover | `gl-cor:amount (pubPL.turnover)` | `frs102:TurnoverRevenue` |
-| C7 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
-| C9 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
-| C11 | Admin Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
-| C13 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
-| C17 | **Profit Before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
-| C19 | Tax on Profit | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
-| C21 | **Profit After Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+| F7 | Sales Turnover | `gl-cor:amount (pubPL.salesTurnover)` | `frs102:TurnoverRevenue` |
+| F8 | Investment Grants received | `gl-cor:amount (pubPL.grants)` | `frs102:OtherOperatingIncome` |
+| F9 | **Sales Turnover** | `gl-cor:amount (pubPL.totalTurnover)` | `frs102:TurnoverRevenue` |
+| F16 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
+| F18 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
+| F44 | Administrative Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
+| F46 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
+| F48 | Other Income | `gl-cor:amount (pubPL.otherIncome)` | `frs102:OtherOperatingIncome` |
+| F49 | **Profit (Loss) before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| F50 | Corporation tax | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
+| F51 | **Profit (Loss) after Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+| F52 | Dividends | `gl-cor:amount (pubPL.dividends)` | `frs102:DividendsPaid` |
+| F54 | **Retained Profit (Loss) for the year** | `gl-cor:amount (pubPL.retained)` | `frs102:RetainedEarningsAccumulatedLosses` |
+
+D3 carries the year end (`=Admin!B32`) and E5 the period end the directors' report quotes.
+
+The prior-year column comes from the "PREVIOUS YEAR PROFIT & LOSS ACCOUNT" block on
+OpenAccounts, rows 43 to 85, which the reader types in. `E48` ("Less Closing Stock") is the one
+cell the template fills for them: `IF(COUNT(E43:E47,E49:E76,E80:E85)=0,0,E15)`, this year's
+opening stock, because last year closed on whatever this year opened with. The COUNT guard keeps
+a book with no comparatives from publishing a negative prior-year cost of sales and a gross
+profit the size of its opening stock.
 
 ### Published Balance Sheet (PubBalSht) — FRS 102
 
+Columns A and B are the prior year, E and F this year. Column E holds the parts and column F the totals.
+
 | Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
 |------|-----------|-----------------|---------------------|
-| C5 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
-| C9 | Stock | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
-| C10 | Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
-| C11 | Bank & Cash | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
-| C13 | Creditors < 1 year | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
-| C15 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
-| C19 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
-| C22 | Share Capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
-| C23 | Retained Earnings | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
-| C25 | **Shareholders Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
+| F6 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
+| E10 | Stock at cost | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
+| E11 | Trade Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
+| E12 | Cash at bank and in hand | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
+| E13 | Current Assets | `gl-cor:amount (pubBS.currentAssets)` | `frs102:CurrentAssets` |
+| E20 | Current Liabilities | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
+| F22 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
+| F26 | **Total assets less current liabilities** | `gl-cor:amount (pubBS.totalAssetsLessCL)` | `frs102:TotalAssetsLessCurrentLiabilities` |
+| E29 | Directors Loan Account | `accounts.liabilities.2500 (pubBS)` | `frs102:CreditorsDueAfterOneYear` |
+| E30 | Creditors due after more than one year | `accounts.liabilities.2600 (pubBS)` | `frs102:CreditorsDueAfterOneYear` |
+| F31 | Other Creditors | `gl-cor:amount (pubBS.otherCred)` | `frs102:CreditorsDueAfterOneYear` |
+| F33 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
+| F36 | Called up share capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
+| F37 | Retained Profit and Loss account | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
+| F39 | **Shareholders' Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
 
-### Corporation Tax (CT600)
+D2 carries the balance sheet date (`='PubP&L'!D3`).
+
+### Corporation Tax working sheet (CorporationTax)
 
 | Cell | DIY Label | diya-gl Property | CT Computation Concept | CT600 Box |
 |------|-----------|-----------------|----------------------|-----------|
 | K5 | Operating Profit | `gl-cor:amount (ct600.box145)` | `ct-comp:ProfitLossPerAccounts` | 145 |
-| K12 | Add back: Depreciation | `gl-cor:amount (ct600.addBack)` | `ct-comp:AdjustmentsDepreciation` | — |
-| K22 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
-| K28 | **Profit Chargeable** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
+| I7 | Add back: Goodwill | `gl-cor:amount (ct600.addBackGoodwill)` | `ct-comp:AdjustmentsAmortisation` | — |
+| I8 | Add back: Depreciation | `gl-cor:amount (ct600.addBackDepreciation)` | `ct-comp:AdjustmentsDepreciation` | — |
+| K10 | Add back: total | `gl-cor:amount (ct600.addBack)` | `ct-comp:TotalAdjustments` | — |
+| K12 | Operational profit chargeable | `gl-cor:amount (ct600.adjustedProfit)` | `ct-comp:AdjustedProfitForThePeriod` | — |
+| K20 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
+| K22 | Profit after capital allowances | `gl-cor:amount (ct600.afterAllowances)` | `ct-comp:TradingProfits` | 155 |
+| K24 | Add: gross bank interest | `gl-cor:amount (ct600.interest)` | `ct-comp:NonTradeInterest` | 170 |
+| K26 | Less: losses brought forward | `gl-cor:amount (ct600.lossesBf)` | `ct-comp:LossesBroughtForward` | 160 |
+| K28 | **Profit Chargeable to CT** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
 | K35 | **Corporation Tax** | `gl-cor:taxAmount (ct600.box430)` | CT600 `CorporationTax` | 430 |
 | K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box515)` | CT600 `TaxPayable` | 515 |
 
+Rows 33 and 34 are the two dated tax rows the charge is built from: A33/A34 the days each
+covers, F33/F34 the share of the chargeable profit, G33/G34 the rate and I33/I34 the tax. K37
+holds the tax already deducted at source.
+
+### CT600 as filed
+
+| Cell | Box | DIY Label |
+|------|-----|-----------|
+| AK66 | 145 | Turnover |
+| Z70 | 155 | Trading profits |
+| Z72 | 160 | Losses brought forward |
+| AJ74 | 165 | Net trading profits |
+| AJ76 | 170 | Non-trade interest |
+| AJ92 | 235 | Profits before deductions |
+| AJ110 | 315 | Profits chargeable to corporation tax |
+| N126 / AA126 / AJ126 | 44 / 45 / 46 | First financial year: profit, rate, tax |
+| N128 / AA128 / AJ128 | 54 / 55 / 56 | Second financial year: no formula in the shipped template |
+| AJ131 | 63 | Corporation tax chargeable |
+| AJ145 | 525 | Self assessment of tax payable |
+| AJ159 / AJ163 / AJ166 | 595 / 600 / 605 | Tax already paid, repayable, outstanding |
+
 ### Management P&L (MnthP&L) — DPL Taxonomy
+
+Column B is the annual total (`=SUM(C:N)`); C to N are the twelve months in accounting-period order.
 
 | Cell | DIY Label | diya-gl Property | DPL / FRS 102 Concept |
 |------|-----------|-----------------|----------------------|
+| B4-B8 | Product A/B/C sales, other direct income, grants | `accounts.sales.4000`-`4004` | `frs102:TurnoverRevenue` |
 | B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` |
+| B11-B13 | Materials, sub-contractors, other direct costs | `accounts.purchases.5000`-`5002` | `frs102:CostOfSales` |
 | B14 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` |
 | B16 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` |
-| B18 | Directors Wages | `accounts.purchases.5100` | `dpl:WagesAndSalaries` |
-| B19 | Employee Wages | `accounts.purchases.5101` | `dpl:WagesAndSalaries` |
-| B20 | Premises | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
-| B26 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
-| B32 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
-| B35 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
-| B41 | Total Admin | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
+| B18 | PAYE Wages + Non-PAYE Employee | `dpl:WagesAndSalaries (combined)` | `dpl:WagesAndSalaries` |
+| B19 | Directors Non-PAYE (code d) | `accounts.purchases.5100` | `dpl:DirectorsRemuneration` |
+| B20 | Employers National Insurance | `dpl:SocialSecurityCosts` | `dpl:SocialSecurityCosts` |
+| B21 | Premises (code r) | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
+| B22 | Light, Heat, Power (code p) | `accounts.purchases.5201` | `dpl:RentRatesAndServicesCosts` |
+| B27 | Advertising (code a) | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
+| B33 | Legal & Professional (code l) | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
+| B34 | Bad Debts (from Sales) | `accounts.sales.4005` | `dpl:BadDebtsWrittenOff` |
+| B35 | Bank Interest Paid | `accounts.purchases.5701` | `dpl:InterestPayable` |
+| B36 | Bank Charges | `accounts.purchases.5702` | `dpl:BankCharges` |
+| B37 | Charitable Donations (code y) | `accounts.purchases.5801` | `dpl:CharitableDonations` |
+| B38 | Goodwill written off (code z) | `accounts.purchases.5802` | `frs102:AmortisationExpenseIntangibleAssets` |
+| B39 | Loss on disposal of assets | `gl-cor:amount (lossOnDisposal)` | `frs102:GainLossOnDisposalTangibleFixedAssets` |
+| B40 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
+| B41 | Total Admin Expenses | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
 | B43 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` |
+| B44 | Interest Received | `gl-cor:amount (interestReceived)` | `dpl:InterestReceived` |
 | B45 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+
+Rows 23 to 32 carry the remaining expense codes in the same pattern: distribution (t), equipment
+hire (q), repairs (m), consumables (u), telephone/postage/stationery (g), travel (h), motor (v),
+insurance (n) and leasing (f).
+
+### Stock sheet
+
+A row per month end from row 8 to row 30 in steps of two, under an opening row 6 fed from the
+opening balance sheet.
+
+| Column | Holds |
+|--------|-------|
+| B | The month end date |
+| D | The calculated stock value |
+| F | Direct materials bought, `[2]<Month>!O$1` from the purchases workbook |
+| H, N, T | The share of each product's net sales value that is direct materials |
+| L, R, X | Direct materials sold: the month's net sales for that product times its percentage |
+| Z | The stock loss adjustment, the physical count less the calculated value |
+| AB | The physical count |
+
+H4 is the switch for the whole table. Columns F, L, R and X read
+`IF((H$4+N$4+T$4)=0, 0, ...)`, so while all three percentages are zero the sheet buys and sells
+nothing, the calculated stock stays at the opening figure, and the entire movement falls out as
+a loss adjustment in Z. `cellWrites` writes H4 from the scenario's `[stock] materials_percent`.
+
+The trial balance reads the whole movement, not just the adjustment: row 19's month columns are
+`Stock!F<n> - L<n> - R<n> - X<n> + Z<n>`, so the year-end stock lands on the physical count
+either way.
+
+### Companysecretary.xlsx
+
+| Sheet | Holds |
+|-------|-------|
+| Boardmeeting | F2 the date the board met, E4 the dividend declared, E8 additional share capital issued |
+| Directors&Secretary | The register of directors |
+| RegisterofMembers | One member a row from row 3 to row 19: A name, C date acquired, F nominal value, G shares held. F1 = F3, G1 = SUM(G3:G19) |
+| DirectorsInterests | The register of directors' interests |
+| Charges&Debentures | One charge a row from row 2: A date, B assets charged, C the directors valuation at the date of charging, D holder, E terms, F the date of the board meeting that confirmed it. No formulas |
+
+`cellWrites` fills one RegisterofMembers row per scenario `[[members]]` entry, Boardmeeting
+F2/E4 from the scenario's `[dividend]`, and the Charges&Debentures rows from its
+`[[charges]]`. The board meeting date shifts with the accounting period the way every other
+in-year date does; a member's acquisition date does not, being older than the book.
+
+### Directors' report (Report)
+
+The filed narrative reads its figures from the statements and from Companysecretary.xlsx (`[8]`).
+
+| Cell | Reads | Figure |
+|------|-------|--------|
+| F22 | `PubBalSht!D2` | Year ended |
+| E84 | `OpenAccounts!E8` | Principal activity |
+| E87 / H87 | `'PubP&L'!F9` / `'PubP&L'!B9` | This year's and last year's turnover |
+| D89 / I89 | `F18/F9` / `B18/B9` | This year's and last year's trading margin, blank when there is no turnover |
+| D94 | `[8]Boardmeeting!$E$4` | Dividend declared |
+| I95 | `[8]RegisterofMembers!$G$1` | Ordinary shares issued |
+| A97 / F97 | `[8]RegisterofMembers!$A$3` / `$G$3` | First member and the shares held |
+| A98 / F98 | `[8]RegisterofMembers!$A$4` / `$G$4` | Second member and the shares held |
+
+The dividend cycle runs on one board resolution. `TrialBalance!EH48` reads
+`[8]Boardmeeting!$E$4` into the profit distribution and `EH31` reads it negated into the
+dividends creditor, whose month columns carry the bank's `DV` payments. So `PubP&L!F52`
+(= `TrialBalance!EJ48`) appropriates the declaration, the report quotes it at D94, and the
+creditor closes at opening plus declared less paid.
 
 ## CI Pipeline (.github/workflows/generate-ltd.yml)
 
@@ -561,7 +721,7 @@ The commit job uses `continue-on-error: true` on the initial push, then a retry 
 |------|----------|-----------|
 | 2026-04-01 | Start with March year-end | Simplest -- accounting year aligns with PAYE year |
 | 2026-04-01 | F21 is the only date cell to set | All other dates are formula-driven |
-| 2026-04-01 | Small profits rate only (19%) | Marginal relief is TODO (PLAN_LTD_MARGINAL_RELIEF.md) |
+| 2026-04-01 | Small profits rate only (19%) | Superseded: the working sheet now charges the main rate less marginal relief |
 | 2026-04-02 | Unified product: ltd-mar -> ltd | Single product for all year-end months, parameterised by year-end date |
 | 2026-04-02 | Single "Any" template (Option B) | One template with generator transforms, not 12 separate templates |
 | 2026-04-02 | WDA main rate corrected to 14% for FY2026+ | Budget 2025 change effective 1 Apr 2026 |

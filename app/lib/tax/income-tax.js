@@ -5,23 +5,33 @@
 
 /**
  * Calculate income tax from profit and tax rates.
+ *
+ * The personal allowance falls by one pound for every two pounds of income
+ * above the taper threshold (ITA 2007 s35). That divisor has not moved since
+ * 2010, so it sits in the formula rather than in the tax data.
+ *
  * @param {number} profit - taxable profit before personal allowance
- * @param {Object} taxRates - { personal_allowance, basic_band_end, basic_rate, higher_rate }
- * @returns {{ personalAllowance, taxableIncome, basicRateTax, higherRateTax, totalIncomeTax }}
+ * @param {Object} taxRates - { personal_allowance, personal_allowance_taper_threshold, basic_band_end,
+ *   higher_band_end, basic_rate, higher_rate, additional_rate }
+ * @returns {{ personalAllowance, taxableIncome, basicRateTax, higherRateTax, additionalRateTax, totalIncomeTax }}
  */
 export function calculateIncomeTax(profit, taxRates) {
-  const pa = taxRates.personal_allowance;
+  const withdrawn = Math.max(0, profit - taxRates.personal_allowance_taper_threshold) / 2;
+  const pa = Math.max(0, taxRates.personal_allowance - withdrawn);
   const taxableIncome = Math.max(0, profit - pa);
-  const basicBand = taxRates.basic_band_end;
-  const basicRateTax = Math.min(taxableIncome, basicBand) * taxRates.basic_rate;
-  const higherRateTax = Math.max(0, taxableIncome - basicBand) * taxRates.higher_rate;
-  const totalIncomeTax = basicRateTax + higherRateTax;
+  const basicBandEnd = taxRates.basic_band_end;
+  const higherBandEnd = taxRates.higher_band_end;
+  const basicRateTax = Math.min(taxableIncome, basicBandEnd) * taxRates.basic_rate;
+  const higherRateTax = Math.max(0, Math.min(taxableIncome, higherBandEnd) - basicBandEnd) * taxRates.higher_rate;
+  const additionalRateTax = Math.max(0, taxableIncome - higherBandEnd) * taxRates.additional_rate;
+  const totalIncomeTax = basicRateTax + higherRateTax + additionalRateTax;
 
   return {
     personalAllowance: pa,
     taxableIncome,
     basicRateTax,
     higherRateTax,
+    additionalRateTax,
     totalIncomeTax,
   };
 }
@@ -31,10 +41,14 @@ export function calculateIncomeTax(profit, taxRates) {
  * Computes income tax + NI Class 4 from profit and full tax data.
  * @param {number} profit - taxable profit
  * @param {Object} taxData - full tax data object (from app/data/*.toml)
- * @returns {{ income_tax, income_tax_basic, income_tax_higher, ni_class4_lower, ni_class4_upper, total_tax_and_ni }}
+ * @returns {{ income_tax, personal_allowance, income_tax_basic, income_tax_higher, income_tax_additional,
+ *   ni_class4_lower, ni_class4_upper, total_tax_and_ni }}
  */
 export function calculateExpectedTax(profit, taxData) {
-  const { totalIncomeTax, basicRateTax, higherRateTax } = calculateIncomeTax(profit, taxData.income_tax);
+  const { totalIncomeTax, personalAllowance, basicRateTax, higherRateTax, additionalRateTax } = calculateIncomeTax(
+    profit,
+    taxData.income_tax,
+  );
 
   const lowerLimit = taxData.national_insurance.class4_lower_limit;
   const upperLimit = taxData.national_insurance.class4_upper_limit;
@@ -45,8 +59,10 @@ export function calculateExpectedTax(profit, taxData) {
 
   return {
     income_tax: Math.round(totalIncomeTax),
+    personal_allowance: personalAllowance,
     income_tax_basic: basicRateTax,
     income_tax_higher: higherRateTax,
+    income_tax_additional: additionalRateTax,
     ni_class4_lower: Math.round(niLower * 10) / 10,
     ni_class4_upper: Math.round(niUpper * 10) / 10,
     total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),

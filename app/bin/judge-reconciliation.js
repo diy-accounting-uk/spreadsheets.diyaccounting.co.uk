@@ -80,7 +80,6 @@ export const PRODUCTS = {
     capitalCodes: { f: "fixed assets" },
     notes: [
       "Gross profit on this product is sales less stock and direct costs only. Employee costs, premises and every other expense line sit below it, so a service business shows a high gross margin by the way the sheet is laid out.",
-      "The shipped income tax sheet works two bands, basic and higher, and applies no additional rate and no personal-allowance taper. Above the higher-rate threshold it charges 40% on everything, which is the tax table this product carries.",
     ],
   },
   se: {
@@ -100,8 +99,8 @@ export const PRODUCTS = {
     disposalCodes: { fs: "fixed asset sales" },
     notes: [
       "The corporation tax working sheet takes capital allowances off the accounting profit. A year whose allowances beat that profit shows a negative profit chargeable to corporation tax and no tax to pay, and the CT600 profit boxes read nil because the form has no box for a trading loss.",
-      "The shipped working sheet charges the whole chargeable profit at the small profits rate, with no marginal relief step. A profit between the £50,000 and £250,000 limits is charged less than the statutory computation would give, and the run raises that as a warning.",
-      "The CT600's second financial year row, boxes 53 to 56, carries no formula, so box 63 files about half the charge the accounts carry. The run raises that as a warning too. It reads the same at every year end.",
+      "The working sheet sets the accounting period out as the one or two UK financial years it falls in. A 31 March year end fills one row and leaves the second empty; any other year end splits the profit at the 31 March inside the period and charges each part at its own rate, with the marginal relief limits shared out the same way.",
+      "Boxes 46 and 56 carry the tax at the rate before marginal relief, so box 63, which the form calls the total of the two, is the gross charge. Box 64 is the relief and box 65 is the charge the accounts carry. Boxes 53 to 56 stay blank when the accounting period lies inside one financial year.",
     ],
   },
 };

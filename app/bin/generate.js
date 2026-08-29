@@ -52,7 +52,7 @@ const PRODUCTS = {
   ltd: LTD,
 };
 
-async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide, opts = {}) {
+async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide, outputDir, opts = {}) {
   const productMeta = parseTOML(readFileSync(resolve(productDir, "meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", "meta.toml"), "utf8"));
 
@@ -89,7 +89,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
     .replace("{short_label}", label)
     .replace("{format}", sharedMeta.package.format);
 
-  const outDir = resolve(OUTPUT_DIR, dirName);
+  const outDir = resolve(outputDir, dirName);
   mkdirSync(outDir, { recursive: true });
 
   const TAB_RENAME_FILES = new Set([
@@ -217,8 +217,12 @@ function parseArgs(argv) {
 
   let outputDir = null;
   const outIdx = args.indexOf("--output-dir");
-  if (outIdx !== -1 && args[outIdx + 1]) {
-    outputDir = args[outIdx + 1];
+  if (outIdx !== -1) {
+    const value = args[outIdx + 1];
+    if (!value || value.startsWith("--")) {
+      throw new Error("--output-dir requires a path argument");
+    }
+    outputDir = value;
   }
 
   let offset = null;
@@ -254,14 +258,16 @@ async function main() {
     }
   }
 
+  const outputDir = outputDirOverride ? resolve(outputDirOverride) : OUTPUT_DIR;
+
   console.log("Package: ", packageFilter === "all" ? "all" : packageFilter);
   console.log(
     "Tax data:",
     tomlFiles.map((f) => f.split("/").pop()),
   );
-  console.log("Output:  ", OUTPUT_DIR);
+  console.log("Output:  ", outputDir);
 
-  mkdirSync(OUTPUT_DIR, { recursive: true });
+  mkdirSync(outputDir, { recursive: true });
 
   const results = [];
   for (const [, product] of productsToGenerate) {
@@ -291,7 +297,7 @@ async function main() {
           overrideTaxData.financial_year.end = yearEndDate.toISOString().slice(0, 10);
 
           const yearEndMonth = yearEndDate.getUTCMonth() + 1;
-          const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, {
+          const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, outputDir, {
             overrideTaxData,
             yearEndMonth,
           });
@@ -304,7 +310,7 @@ async function main() {
           const tyEndStr = typeof tyEnd === "string" ? tyEnd : new Date(tyEnd).toISOString().slice(0, 10);
           if (!yearEndFilter.includes(tyEndStr)) continue;
         }
-        const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide);
+        const result = await generateProduct(productDir, tomlFile, sourceDateEpoch, skipGuide, outputDir);
         if (result) results.push(result);
       }
     }
@@ -329,7 +335,10 @@ async function main() {
 
     // Use the last generated package (most recent year-end)
     const lastResult = results[results.length - 1];
-    const pkgDir = resolve(OUTPUT_DIR, lastResult.dirName);
+    const pkgDir = resolve(outputDir, lastResult.dirName);
+    // export.js and CI read the populated package flat from --output-dir (no
+    // dirName nesting), so an override still lands the recalculated files
+    // there directly; without one, recalculation happens in place.
     const finalOutputDir = outputDirOverride ? resolve(outputDirOverride) : pkgDir;
 
     // Extract year-end info from the directory name

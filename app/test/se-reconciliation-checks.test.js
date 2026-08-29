@@ -238,7 +238,11 @@ describeCalc(
       ["Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total", "FAreconciliation", "K13"],
       ["Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total", "FAreconciliation", "E11"],
       ["Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total", "FAreconciliation", "K11"],
-      ["Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", "Schedule", "K1"],
+      [
+        "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+        "Schedule",
+        "K1",
+      ],
       ["SA103S: Capital allowances (AIA/FYA) = Schedule Q1", "SE Short", "D80"],
     ])("%s passes on the intact book and fails when %s!%s is corrupted", async (checkName, sheetName, cellRef) => {
       const fileName = sheetName === "SE Short" ? "Financialaccounts.xlsx" : "Fixedassets.xlsx";
@@ -255,6 +259,42 @@ describeCalc(
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
       const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
       expect(corruptedCheck.pass).toBe(false);
+    });
+
+    it("corrupting Schedule!W1 fails the closing NBV check and the P&L loss-on-disposal tie, and nothing else", async () => {
+      const corrupted = await readCorruptedCell(join(saveDir, "Fixedassets.xlsx"), "Schedule", "W1", results["Fixedassets.xlsx!Schedule"].W1 + 5000);
+      const corruptedResults = {
+        ...results,
+        "Fixedassets.xlsx!Schedule": { ...results["Fixedassets.xlsx!Schedule"], W1: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      // W1 is read directly in only two JS-level checks: the new closing NBV
+      // identity and the P&L loss-on-disposal tie. "Fixed assets: Schedule
+      // disposals = Sales.xlsx fixed asset sales total" compares two
+      // FAreconciliation cells (K11 vs K13) that are themselves formula
+      // results in the real workbook -- corrupting the JS-level results
+      // object's Schedule.W1 does not recompute them, so that check is
+      // unaffected here even though the live spreadsheet ties the two
+      // together.
+      expect(failureNames(corruptedChecks)).toEqual([
+        "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+        "P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)",
+      ]);
+    });
+
+    it("corrupting Schedule!I1 fails the depreciation ties but leaves the closing NBV check passing", async () => {
+      const corrupted = await readCorruptedCell(join(saveDir, "Fixedassets.xlsx"), "Schedule", "I1", results["Fixedassets.xlsx!Schedule"].I1 + 5000);
+      const corruptedResults = {
+        ...results,
+        "Fixedassets.xlsx!Schedule": { ...results["Fixedassets.xlsx!Schedule"], I1: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      const closingNbvCheck = corruptedChecks.find(
+        (c) =>
+          c.name ===
+          "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      );
+      expect(closingNbvCheck.pass).toBe(true);
     });
 
     it("P&L depreciation (row 34, summed) = Schedule I1 passes on the intact book and fails when a month's cell is corrupted", async () => {
@@ -538,7 +578,12 @@ describeCalc(
       const corruptedResults = { ...results, "SE Short": { ...results["SE Short"], O80: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
 
-      expect(failureNames(corruptedChecks)).toEqual([PROFIT_BRIDGE_CHECK]);
+      // The full return totals the same three allowance boxes, so losing one
+      // breaks its box 56 alongside the bridge.
+      expect(failureNames(corruptedChecks)).toEqual([
+        "SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24",
+        PROFIT_BRIDGE_CHECK,
+      ]);
       expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);
     });
 
@@ -599,7 +644,12 @@ describeCalc(
 
       const nettingRow = seCategoryNetting(corruptedResults, mergedExpected).rows.find((row) => row.code === "purchases c");
       expect(nettingRow.residue).toBeCloseTo(-drift, 6);
-      expect(failureNames(corruptedChecks)).toEqual([categoryNettingCheckName(nettingRow)]);
+      // The subcontractor line is box 17 on the full return, so the drift
+      // breaks that box too.
+      expect(failureNames(corruptedChecks)).toEqual([
+        "SA103F box 17 subcontractor payments (D70) = the profit and loss account",
+        categoryNettingCheckName(nettingRow),
+      ]);
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {

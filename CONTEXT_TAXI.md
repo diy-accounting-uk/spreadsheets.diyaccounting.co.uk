@@ -396,9 +396,9 @@ Maps Taxi cells to diya-gl properties, XBRL / FRS 102 accounting concepts, and S
 | B7 | Car Hire / Rental | `accounts.purchases.5200` | `dpl:OperatingLeaseExpenditure` | Box 19 |
 | B8 | Repairs & Servicing | `accounts.purchases.5300` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
 | B9 | Road Tax & Insurance | `accounts.purchases.5400` | `dpl:InsuranceCosts` | Box 19 |
-| B10 | Total Vehicle Running Costs | `gl-cor:amount (vehicleCosts)` | `dpl:Vehicles` (total) | — |
-| B11 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Box 28 |
-| B12 | Mileage Allowance | `tax.mileage (allowance)` | `uk-tax:ApprovedMileageAllowance` | Box 19 (alt) |
+| B10 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| B11 | Mileage Allowance | `tax.mileage (allowance)` | `uk-tax:ApprovedMileageAllowance` | Box 19 (alt) |
+| B12 | Total Vehicle Running Costs | `gl-cor:amount (vehicleCosts)` | `dpl:Vehicles` (total) | — |
 | B13 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
 | B14 | Employee Costs | `accounts.purchases.5500` | `dpl:WagesAndSalaries` | Box 16 |
 | B15 | Premises Costs | `accounts.purchases.5600` | `dpl:RentRatesAndServicesCosts` | Box 17 |
@@ -411,7 +411,7 @@ Maps Taxi cells to diya-gl properties, XBRL / FRS 102 accounting concepts, and S
 | B22 | Total General Expenses | `gl-cor:amount (totalGeneral)` | `frs102:AdministrativeExpenses` | Box 25 |
 | B23 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
 
-Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicle running costs (B10) vs mileage allowance (B12). The selected option feeds into Gross Profit (B13).
+Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicle running costs (capital allowances at B10, mileage at B11, netted into the B12 total) vs mileage allowance. The selected option feeds into Gross Profit (B13).
 
 ### Draft Tax Calculation
 

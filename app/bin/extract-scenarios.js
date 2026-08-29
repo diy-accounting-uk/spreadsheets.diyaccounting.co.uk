@@ -132,6 +132,35 @@ const straddlingPurchases = [
   { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
 ];
 
+// Hire purchase agreements financing equipment (SE, Ltd). The first lands
+// on the HPfinance sheet's working master row (8); the second lands on the
+// first row the #REF! repair fixes (10). Figures are chosen so the monthly
+// payment, capital and interest split all come out exact to the penny:
+//   agreement 1: (13000 + 200 + 1800) / 20 = 750.00, interest 1800/20 = 90.00
+//   agreement 2: (7000 + 100 + 1000) / 20 = 405.00, interest 1000/20 = 50.00
+const hpAgreements = [
+  {
+    date: "2025-06-01",
+    finance_company: "Close Brothers Asset Finance",
+    reference: "HP-2025-01",
+    amount_financed: 13000,
+    admin_charges: 200,
+    total_interest: 1800,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  },
+  {
+    date: "2025-09-01",
+    finance_company: "Close Brothers Asset Finance",
+    reference: "HP-2025-02",
+    amount_financed: 7000,
+    admin_charges: 100,
+    total_interest: 1000,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  },
+];
+
 // ============================================================================
 // Extract BST (basic)
 // ============================================================================
@@ -264,6 +293,7 @@ const advToml = formatScenarioToml(
     closing_creditors: closingCreditors,
     vat_straddling_sales: straddlingSales,
     vat_straddling_purchases: straddlingPurchases,
+    hp_agreements: hpAgreements,
   },
 );
 
@@ -292,6 +322,31 @@ fullPurchLines.forEach((l) => {
   const c = LTD_PURCHASE_CODE_MAP[l.accountMainID];
   if (c) fullByCode[c] = (fullByCode[c] || 0) + l.amount;
 });
+// The share register and the board minute, both from the master book. The
+// register is the directors who hold shares; the minute is the dividend they
+// declared for the year. Each is tied back to the ledger it has to agree
+// with, so master data that moves without the other moving stops the extract
+// rather than publishing a book that does not add up.
+const NOMINAL_SHARE_VALUE = 1;
+const fullMembers = (book.directors || [])
+  .filter((d) => d.shares)
+  .map((d) => ({ name: d.name, shares: d.shares, acquired: d.appointed.toISOString().slice(0, 10) }));
+const fullOpeningBalance = buildOpeningBalance(fullLines);
+const fullSharesIssued = fullMembers.reduce((total, m) => total + m.shares, 0);
+if (fullSharesIssued * NOMINAL_SHARE_VALUE !== fullOpeningBalance.share_capital) {
+  throw new Error(
+    `Register of members holds ${fullSharesIssued} shares at ${NOMINAL_SHARE_VALUE} each, ` +
+      `against share capital of ${fullOpeningBalance.share_capital} on the opening balance sheet`,
+  );
+}
+
+const fullDividendsPaid = fullLines
+  .filter((l) => l["diya-gl:bankCode"] === "DV")
+  .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
+if (book.dividend.declared !== fullDividendsPaid) {
+  throw new Error(`The board minuted a dividend of ${book.dividend.declared}, against ${fullDividendsPaid} paid out of the bank`);
+}
+
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",
@@ -310,15 +365,34 @@ const fullToml = formatScenarioToml(
       vat_number: "123456789",
     },
     employees: book.employees || [],
+    members: fullMembers,
   },
   fullGrouped,
   {
     total_sales: fullTotalSales,
     total_premises_net: Math.round((fullByCode.r || 0) / 1.2),
     total_legal_net: Math.round((fullByCode.l || 0) / 1.2),
-    opening_balance: buildOpeningBalance(fullLines),
+    opening_balance: fullOpeningBalance,
     opening_stock: 10000,
     closing_stock: 6000,
+    // Three per cent of the consultancy's net sales is direct materials.
+    // Without it the Stock sheet's bought and sold columns stay switched off
+    // and the calculated stock never leaves the opening figure.
+    stock_materials_percent: 0.03,
+    charges: [
+      {
+        date: "2023-09-01",
+        asset: "Motor vehicles, being the company's delivery van",
+        valuation: 30000,
+        holder: "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA",
+        terms: "Fixed charge securing a five year business loan",
+        board_meeting: "2023-08-25",
+      },
+    ],
+    dividend: {
+      board_meeting: book.dividend.boardMeeting.toISOString().slice(0, 10),
+      declared: book.dividend.declared,
+    },
     opening_fixed_assets: [
       { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
       { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
@@ -329,6 +403,7 @@ const fullToml = formatScenarioToml(
     closing_creditors: closingCreditors,
     vat_straddling_sales: straddlingSales,
     vat_straddling_purchases: straddlingPurchases,
+    hp_agreements: hpAgreements,
   },
 );
 

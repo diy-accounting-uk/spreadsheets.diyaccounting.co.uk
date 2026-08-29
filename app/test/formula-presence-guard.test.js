@@ -241,6 +241,103 @@ for (const wb of workbooks) {
   });
 }
 
+// ── Template-level coverage ──────────────────────────────────────────────
+// packages/*/*.xlsx only exists after CI regenerates the catalogue from
+// app/templates/. Running the same guard directly over the templates means a
+// template repair (such as the Salesinvoice G6/H6 fix) is covered the moment
+// it lands, not after the next package build. A trial sweep of every
+// workbook under app/templates/*/*.xlsx came back clean, so the guard runs
+// over the whole template set here rather than being scoped to one workbook.
+
+const TEMPLATES_DIR = join(ROOT, "app", "templates");
+
+function findAllTemplateWorkbooks() {
+  const found = [];
+  if (!existsSync(TEMPLATES_DIR)) return found;
+  const dirNames = readdirSync(TEMPLATES_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => e.name)
+    .sort();
+  for (const dirName of dirNames) {
+    const dirPath = join(TEMPLATES_DIR, dirName);
+    const filenames = readdirSync(dirPath)
+      .filter((f) => f.endsWith(".xlsx"))
+      .sort();
+    for (const filename of filenames) {
+      found.push({ dirName, filename, filePath: join(dirPath, filename) });
+    }
+  }
+  return found;
+}
+
+const templateWorkbooks = findAllTemplateWorkbooks();
+
+describe("Formula presence template guard", () => {
+  it("discovers at least one template workbook per product directory", () => {
+    const byDir = new Map();
+    for (const wb of templateWorkbooks) byDir.set(wb.dirName, (byDir.get(wb.dirName) || 0) + 1);
+    for (const [dirName, count] of byDir) {
+      expect(count, `${dirName} template workbooks`).toBeGreaterThan(0);
+    }
+  });
+});
+
+for (const wb of templateWorkbooks) {
+  const label = `templates/${wb.dirName}/${wb.filename}`;
+
+  describe(label, () => {
+    let zip;
+    let sheetMap;
+
+    beforeAll(async () => {
+      const buffer = readFileSync(wb.filePath);
+      zip = await JSZip.loadAsync(buffer);
+      sheetMap = await buildSheetMap(zip);
+    });
+
+    it("has no missing-formula gaps in any sheet", async () => {
+      const gaps = [];
+      for (const [sheetName, file] of sheetMap) {
+        const xml = await zip.file(file).async("string");
+        const cells = parseCells(xml);
+        gaps.push(...findFormulaGaps(cells, `${label} ${sheetName}`));
+      }
+      expect(gaps, `${label}:\n${gaps.join("\n")}`).toEqual([]);
+    });
+  });
+}
+
+// ── Salesinvoice H-column breakability ───────────────────────────────────
+// The generic breakability proof below searches the whole catalogue for any
+// cell it can break. This one names the exact cell the Salesinvoice repair
+// depends on: H30 sits inside the repaired H6:H66 shared group with no
+// formula of its own, so stripping its <f> is invisible to the guard unless
+// the shared group itself is what brings it into view.
+describe("Formula presence guard breakability (Salesinvoice H column)", () => {
+  it("flags se/Salesinvoice.xlsx H30 when its shared formula is stripped", async () => {
+    const seSalesinvoice = templateWorkbooks.find((wb) => wb.dirName === "se" && wb.filename === "Salesinvoice.xlsx");
+    expect(seSalesinvoice, "se/Salesinvoice.xlsx not found among template workbooks").toBeTruthy();
+
+    const zip = await JSZip.loadAsync(readFileSync(seSalesinvoice.filePath));
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("Product Details");
+    expect(sheetPath, "Product Details sheet not found").toBeTruthy();
+    const xml = await zip.file(sheetPath).async("string");
+
+    const before = findFormulaGaps(parseCells(xml), "Product Details");
+    expect(before, "Product Details should start clean").toEqual([]);
+
+    const brokenXml = xml.replace(
+      `<c r="H30" s="64" t="str"><f t="shared" si="2"/><v xml:space="preserve"> </v></c>`,
+      `<c r="H30" s="64" t="str"><v xml:space="preserve"> </v></c>`,
+    );
+    expect(brokenXml, "H30 pattern not found to break").not.toEqual(xml);
+
+    const after = findFormulaGaps(parseCells(brokenXml), "Product Details");
+    expect(after.some((g) => g.includes("!H30:"))).toBe(true);
+  });
+});
+
 // ── Breakability proof ───────────────────────────────────────────────────
 // The guard must actually fail when a formula is missing. Takes a real,
 // known-good sheet from the catalogue, deletes one shared-formula follower's

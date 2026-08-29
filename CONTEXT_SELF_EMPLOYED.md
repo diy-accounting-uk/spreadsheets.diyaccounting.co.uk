@@ -184,12 +184,13 @@ Profit & Loss Account                                                |
 Income Tax                                                            |
   | Derives from P&L profit and Admin tax rates:                      |
   | E5 = Profit (from P&L B39)                                        |
-  | E6 = Personal Allowance (from Admin N4)                            |
+  | E6 = Personal Allowance, tapered above Admin N5 (from Admin N4)    |
   | E7 = Taxable Income (E5 - E6)                                     |
   | E8 = Basic rate tax (taxable * basic rate, capped at band end)     |
-  | E9 = Higher rate tax (excess * higher rate)                        |
-  | E10 = Total Income Tax                                             |
-  | E11 = CIS deducted                                                |
+  | E9 = Higher rate tax (band between C9 and C10 * higher rate)       |
+  | E10 = Additional rate tax (excess over C10 * additional rate)      |
+  | E11 = Total Income Tax (E8 + E9 + E10)                             |
+  | E12 = CIS deducted                                                |
   | E15 = NI Class 4 lower (profit in lower band * lower rate)        |
   | E16 = NI Class 4 upper (profit in upper band * upper rate)        |
   | E18 = Total Tax + NI (income tax + class 4 NI)                    |
@@ -338,13 +339,18 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 | Cell | Value | Source field |
 |------|-------|-------------|
 | N4 | Personal allowance (12570) | `income_tax.personal_allowance` |
+| N5 | Allowance taper threshold (100000) | `income_tax.personal_allowance_taper_threshold` |
 | N6 | Basic rate (0.20) | `income_tax.basic_rate` |
 | N7 | Higher rate (0.40) | `income_tax.higher_rate` |
+| N8 | Additional rate (0.45) | `income_tax.additional_rate` |
 | K11 | Basic rate display copy | `income_tax.basic_rate` |
 | N11 | Starter band end (0) | `income_tax.starter_band_end` |
 | M11 | Basic band end (37700) | `income_tax.basic_band_end` |
-| K12 | 0 (hardcoded) | -- |
+| K12 | Higher rate display copy | `income_tax.higher_rate` |
 | L12, N12 | Higher band start (37701) | `income_tax.higher_band_start` |
+| K13 | Additional rate display copy | `income_tax.additional_rate` |
+| L13 | Additional band start (125141) | `income_tax.higher_band_end` + 1 |
+| N13 | Higher band end (125140) | `income_tax.higher_band_end` |
 
 **National Insurance**:
 
@@ -366,9 +372,12 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 
 **String edits**: B23 (tax year label, e.g. "2025-26"), B24 (next tax year label)
 
-Additionally, the generator writes VAT quarter end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), computed from the accounting year start.
+Additionally, the generator writes VAT return period end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js). A tax year ends on 5 April, mid-month, and its month tabs still run April to March, so the first accounting month is the month the year starts in, not the month after the year end.
 
-The generator also writes payslip calendar data into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
+The generator also writes the payroll calendar into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
+It seeds B2 with the tax year start (6 April) and writes the week number (C), payroll month number (D) and week-in-month (F)
+down rows 2 to 381. Every other date on the sheet cascades from B2 (`B3 = B2+1`), each row's month name in column A is
+`TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")`, and I1 (`=B366`) is the last day of the tax year.
 
 ## Scenario Testing
 
@@ -421,7 +430,7 @@ Rows start at 5 within each month sheet.
 After recalculation, values are read from **Financialaccounts.xlsx**:
 
 - **Profit & Loss Account**: B5-B9 (sales categories + turnover), B11 (grants), B14-B17 (cost of sales), B19 (gross profit), B21-B35 (admin expenses), B37 (operating profit), B39 (profit before tax)
-- **Income Tax**: E5 (profit), E6 (personal allowance), E7 (taxable income), E8-E10 (IT basic/higher/total), E11 (CIS), E15-E16 (NI Class 4 lower/upper), E18 (total tax+NI)
+- **Income Tax**: E5 (profit), E6 (personal allowance after taper), E7 (taxable income), E8-E10 (IT basic/higher/additional), C9/C10/D10 (the bands and rate the sheet applies), E11 (total income tax), E12 (CIS), E15-E16 (NI Class 4 lower/upper), E18 (total tax+NI)
 
 ### Compliance Checks
 
@@ -432,7 +441,7 @@ The `checkCompliance()` function in `se.js` validates (tolerance of 1 for all ch
 | Total Sales | P&L B9 | `expected.total_sales` from scenario |
 | Gross Profit | P&L B19 | `expected.gross_profit` (if defined) |
 | Net Profit | P&L B39 | `expected.net_profit` (if defined) |
-| Income Tax | Income Tax E10 | Calculated from E5 profit + tax data rates |
+| Income Tax | Income Tax E11 | Calculated from E5 profit + tax data rates |
 | NI Class 4 (lower) | Income Tax E15 | Calculated from profit + NI bands |
 | Total Tax + NI | Income Tax E18 | Calculated sum of IT + NI |
 
@@ -500,8 +509,9 @@ Maps SE cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S/SA103F f
 | E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` | — |
 | E8 | Tax at Basic Rate | `tax.incomeTax.basicRate` | `uk-tax:IncomeTaxBasicRate` | — |
 | E9 | Tax at Higher Rate | `tax.incomeTax.higherRate` | `uk-tax:IncomeTaxHigherRate` | — |
-| E10 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` | — |
-| E11 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` | Box 17 |
+| E10 | Tax at Additional Rate | `tax.incomeTax.additionalRate` | `uk-tax:IncomeTaxCharged` | — |
+| E11 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` | — |
+| E12 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` | Box 17 |
 | E15 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` | — |
 | E16 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` | — |
 | E18 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` | — |

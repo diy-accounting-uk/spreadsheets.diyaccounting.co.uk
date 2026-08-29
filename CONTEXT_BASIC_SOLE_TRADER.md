@@ -174,12 +174,13 @@ User data entry
   │                              ┌─────────────┴─────────────┐
   │                              │ Income Tax                 │
   │                              │ E5  = Profit from SE       │◄── P&L / SE Short
-  │                              │ E6  = Personal Allowance   │◄── Admin N4
+  │                              │ E6  = Personal Allowance   │◄── Admin N4, N5
   │                              │ E7  = Taxable Income       │ = E5 - E6
-  │                              │ E8  = Starter band tax     │
-  │                              │ E9  = Basic rate tax       │◄── Admin N7 rate
-  │                              │ E10 = Higher rate tax      │◄── Admin N8 rate
-  │                              │ E11 = Tax credit/relief    │
+  │                              │ E8  = Basic rate tax       │◄── Admin N7 rate
+  │                              │ E9  = Higher rate tax      │◄── Admin N8 rate
+  │                              │ E10 = Additional rate tax  │◄── Admin N9 rate
+  │                              │ E11 = Total Income Tax     │ = E8 + E9 + E10
+  │                              │ E12 = CIS deducted         │
   │                              │ E15 = NI Class 4 (lower)   │◄── Admin L20, N20
   │                              │ E16 = NI Class 4 (upper)   │◄── Admin L23, N23
   │                              │ E18 = Total Tax + NI       │
@@ -257,14 +258,19 @@ All dates are stored as Excel serial numbers.
 | Cell | TOML Field | Example |
 |------|-----------|---------|
 | N4 | `income_tax.personal_allowance` | 12570 |
+| N5 | `income_tax.personal_allowance_taper_threshold` | 100000 |
 | N6 | `income_tax.starting_rate` | 0.00 |
 | N7 | `income_tax.basic_rate` | 0.20 |
 | N8 | `income_tax.higher_rate` | 0.40 |
+| N9 | `income_tax.additional_rate` | 0.45 |
 | N11 | `income_tax.starter_band_end` | 0 |
 | M12 | `income_tax.basic_band_end` | 37700 |
 | N12 | (hardcoded 0) | 0 |
 | L13 | `income_tax.higher_band_start` | 37701 |
 | N13 | `income_tax.higher_band_start` | 37701 |
+| K14 | `income_tax.additional_rate` | 0.45 |
+| L14 | `income_tax.higher_band_end` + 1 | 125141 |
+| N14 | `income_tax.higher_band_end` | 125140 |
 
 ### National Insurance Cells
 
@@ -376,7 +382,7 @@ Rows start at 5 for purchases.
 
 **Profit & Loss Acc**: C4, C5, C6, C7, C9, C11-C22, C24, C26, C28, C30, C32, C33, C35 (23 cells -- sales through net income after tax)
 
-**Income Tax**: E5, E6, E7, E8, E9, E10, E11, E15, E16, E18 (10 cells -- profit through total tax)
+**Income Tax**: E5, E6, E7, D8, C9, D9, E8, E9, C10, D10, E10, E11, E12, E15, E16, E18 (16 cells -- profit, the bands and rates the sheet applies, and the charge through total tax)
 
 ### Compliance Checks
 
@@ -391,7 +397,7 @@ Rows start at 5 for purchases.
 - Legal & Professional (C18 vs `total_legal`)
 
 **Tax checks** (dynamically calculated from tax data):
-- Income Tax: `(E10 - E11)` vs calculated income tax
+- Income Tax: E11 vs calculated income tax
 - NI Class 4 (lower): E15 vs calculated NI
 - Total Tax + NI: E18 vs calculated total
 
@@ -457,8 +463,11 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 | E5 | Profit from SE | `gl-cor:amount (profitSE)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
 | E6 | Personal Allowance | `tax.incomeTax.personalAllowance` | `uk-tax:PersonalAllowance` |
 | E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` |
-| E10 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` |
-| E11 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` |
+| E8 | Tax at Basic Rate | `tax.incomeTax.basicRate` | `uk-tax:IncomeTaxCharged` |
+| E9 | Tax at Higher Rate | `tax.incomeTax.higherRate` | `uk-tax:IncomeTaxCharged` |
+| E10 | Tax at Additional Rate | `tax.incomeTax.additionalRate` | `uk-tax:IncomeTaxCharged` |
+| E11 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` |
+| E12 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` |
 | E15 | NI Class 4 (lower) | `tax.nationalInsurance.class4MainRate` | `uk-tax:Class4NICsLowerRate` |
 | E16 | NI Class 4 (upper) | `tax.nationalInsurance.class4UpperRate` | `uk-tax:Class4NICsUpperRate` |
 | E18 | **Total Tax + NI** | `gl-cor:taxAmount (totalTaxNI)` | `uk-tax:TotalTaxAndNILiability` |

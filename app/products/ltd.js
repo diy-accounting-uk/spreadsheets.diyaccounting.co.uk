@@ -16,6 +16,7 @@ import {
   categoryNettingCheckName,
   PROFIT_BRIDGE_CHECK,
   vatCycleRows,
+  vatReturnCoverage,
 } from "../lib/report-generator.js";
 
 export const PRODUCT = {
@@ -97,6 +98,60 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
+// ── Payslips.xlsx Admin: the payroll calendar ──────────────────────────────
+// B2 carries the tax year's first day and every date under it is the row
+// above plus one, so the whole calendar hangs off that one cell. Column C is
+// the tax week, D the payroll month, F the week within that month, and A
+// names the month by rotating B2's own month (A = TEXT(DATE(YEAR(B$2),
+// MONTH(B$2)+(D-1), 1), "Mmm")).
+//
+// The calendar the columns follow is the tax calendar: week 1 is the five
+// days from 6 April, every week after it is seven days, and the payroll
+// months take four, four and five weeks a quarter with a sixth week on the
+// last. That fixes the row each month opens on, and the week and date it
+// opens with, from B2 alone.
+const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+const PAYROLL_FIRST_WEEK_DAYS = 5;
+const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
+const PAYSLIPS_CALENDAR_ANCHOR_CELL = "B2";
+
+// The row, tax week and day offset from B2 that each payroll month opens on.
+function payrollMonthStarts() {
+  const starts = [];
+  let weeksBefore = 0;
+  for (let month = 1; month <= 12; month++) {
+    const daysBefore = weeksBefore === 0 ? 0 : PAYROLL_FIRST_WEEK_DAYS + (weeksBefore - 1) * 7;
+    starts.push({ month, row: PAYSLIPS_CALENDAR_FIRST_ROW + daysBefore, daysBefore, week: weeksBefore + 1 });
+    weeksBefore += PAYROLL_WEEKS_PER_MONTH[month - 1];
+  }
+  return starts;
+}
+
+// ── Charges & Debentures register (Companysecretary.xlsx) ──────────────────
+// Row 1 is the header, one charge per row after it: A the date of the
+// transaction, B the assets charged, C the directors' valuation of those
+// assets at the date of charging, D the holder, E the terms and F the date
+// of the board meeting that confirmed it. The sheet carries no formulas at
+// all, so every cell is an entry.
+const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
+const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
+
+// ── Register of members and the board minute (Companysecretary.xlsx) ───────
+// The register runs one member a row from row 3: A the full name, C the date
+// the shares were acquired, F the nominal value of each share and G the
+// number held. F1 echoes F3, G1 sums G3:G19, and the directors' report quotes
+// A3/G3 and A4/G4 a line each across the cross-file link.
+//
+// The board minute is a single resolution: F2 the date the meeting was held
+// and E4 the dividend it declared. The trial balance reads E4 twice -- into
+// the dividends creditor (EH31, negated) and into the profit distribution
+// (EH48) -- so one declaration both charges the year's profit and raises the
+// creditor the bank's DV payments settle.
+const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
+const SHARE_NOMINAL_VALUE = 1;
+const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -107,6 +162,12 @@ const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f
 const STOCK_FINAL_CALCULATED_CELL = "D30";
 const STOCK_FINAL_COUNT_CELL = "AB30";
 const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
+
+// The share of a product's net sales value that is direct materials. The
+// sheet repeats H4 down its own product A column and reads the same cell for
+// every month, and the materials-bought column stays switched off while H4,
+// N4 and T4 are all zero.
+const STOCK_MATERIALS_PERCENT_CELL = "H4";
 
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
@@ -406,17 +467,58 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
   if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
-  // Register of members (Companysecretary.xlsx). Ordinary shares are issued
-  // at their £1 nominal value -- matching the template's own "Fully paid
-  // Ordinary Shares" placeholder row -- so the share count posted is the
-  // opening balance sheet's own share capital figure divided by that
-  // nominal value.
+  // Companysecretary.xlsx: the charges register, the share register and the
+  // board minute. Ordinary shares are issued at their £1 nominal value,
+  // matching the template's own "Fully paid Ordinary Shares" placeholder row.
   const companysecretaryWrites = {};
-  if (scenario.opening_balance?.share_capital !== undefined) {
-    const nominalValue = 1;
-    companysecretaryWrites.RegisterofMembers = {
-      F3: nominalValue,
-      G3: scenario.opening_balance.share_capital / nominalValue,
+  if (scenario.charges) {
+    companysecretaryWrites["Charges&Debentures"] = {};
+    const register = companysecretaryWrites["Charges&Debentures"];
+    scenario.charges.forEach((charge, index) => {
+      const row = CHARGE_REGISTER_ROWS[index];
+      if (row === undefined) return;
+      const date = parseDate(charge.date);
+      register[`${CHARGE_REGISTER_COLUMNS.date}${row}`] = toExcelSerial(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+      register[`${CHARGE_REGISTER_COLUMNS.asset}${row}`] = charge.asset;
+      register[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`] = charge.valuation;
+      register[`${CHARGE_REGISTER_COLUMNS.holder}${row}`] = charge.holder;
+      register[`${CHARGE_REGISTER_COLUMNS.terms}${row}`] = charge.terms;
+      const confirmed = parseDate(charge.board_meeting);
+      register[`${CHARGE_REGISTER_COLUMNS.boardMeeting}${row}`] = toExcelSerial(
+        confirmed.getUTCFullYear(),
+        confirmed.getUTCMonth() + 1,
+        confirmed.getUTCDate(),
+      );
+    });
+  }
+  if (scenario.members) {
+    companysecretaryWrites.RegisterofMembers = {};
+    const register = companysecretaryWrites.RegisterofMembers;
+    scenario.members.forEach((member, index) => {
+      const row = REGISTER_MEMBER_ROWS[index];
+      if (row === undefined) return;
+      register[`${REGISTER_MEMBER_COLUMNS.name}${row}`] = member.name;
+      register[`${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`] = SHARE_NOMINAL_VALUE;
+      register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`] = member.shares;
+      if (member.acquired) {
+        const acquired = parseDate(member.acquired);
+        register[`${REGISTER_MEMBER_COLUMNS.acquired}${row}`] = toExcelSerial(
+          acquired.getUTCFullYear(),
+          acquired.getUTCMonth() + 1,
+          acquired.getUTCDate(),
+        );
+      }
+    });
+  }
+
+  // The dividend the board declared, on the minute the directors' report and
+  // the trial balance both read. The meeting sits inside the accounting
+  // period, so its date shifts with the rest of the book.
+  if (scenario.dividend) {
+    const minuted = shiftDate(parseDate(scenario.dividend.board_meeting));
+    companysecretaryWrites.Boardmeeting = {
+      [BOARD_MINUTE_CELLS.date]: toExcelSerial(minuted.getUTCFullYear(), minuted.getUTCMonth() + 1, minuted.getUTCDate()),
+      [BOARD_MINUTE_CELLS.dividendDeclared]: scenario.dividend.declared,
     };
   }
 
@@ -472,8 +574,16 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // becomes the stock loss adjustment in column Z, which is what the trial
   // balance reads as the year's stock movement. Column B holds the month-end
   // dates, so writing the count there moves no stock at all.
+  //
+  // The calculated side needs one more entry. Column F ("Direct Material
+  // BOUGHT") reads the month's materials purchases only while at least one
+  // of the stock percentages H4, N4 or T4 is set, and column L values the
+  // materials sold as that percentage of the month's net sales. With all
+  // three left at zero the sheet buys and sells nothing and the calculated
+  // stock never leaves the opening figure.
   if (scenario.stock && scenario.stock.closing !== undefined) {
     if (!hubWrites.Stock) hubWrites.Stock = {};
+    if (scenario.stock.materials_percent !== undefined) hubWrites.Stock[STOCK_MATERIALS_PERCENT_CELL] = scenario.stock.materials_percent;
     hubWrites.Stock[STOCK_FINAL_COUNT_CELL] = scenario.stock.closing;
   }
 
@@ -617,6 +727,38 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       fa[`U${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       fa[`V${row}`] = netOfVat(tx.amount, rate);
     });
+  }
+
+  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
+  // rows are available for scenario agreements before the sheet's own
+  // layout runs out: row 8 (the "New" block's working master, whose
+  // monthly-payment formula was never broken) and row 10 (the first row
+  // the #REF! repair fixes). B=agreement date, C=finance company,
+  // D=reference, E=amount financed, F=admin charges, G=total interest,
+  // H=term in months, L=supplier. Written left to right per row, matching
+  // the Schedule writer above.
+  const HP_AGREEMENT_ROWS = [8, 10];
+  const hpFinanceWrites = {};
+  if (scenario.hp_agreements) {
+    const hp = hpFinanceWrites;
+    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
+      throw new Error(
+        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
+      );
+    }
+    scenario.hp_agreements.forEach((agreement, i) => {
+      const row = HP_AGREEMENT_ROWS[i];
+      const d = shiftDate(parseDate(agreement.date));
+      hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      hp[`C${row}`] = agreement.finance_company;
+      hp[`D${row}`] = agreement.reference;
+      hp[`E${row}`] = agreement.amount_financed;
+      hp[`F${row}`] = agreement.admin_charges;
+      hp[`G${row}`] = agreement.total_interest;
+      hp[`H${row}`] = agreement.months;
+      hp[`L${row}`] = agreement.supplier;
+    });
+    if (Object.keys(hpFinanceWrites).length > 0) fixedAssetsWrites.HPfinance = hpFinanceWrites;
   }
 
   // Bank entries — one workbook per bank account, receipts and payments on
@@ -802,17 +944,22 @@ export const CELL_MAP = [
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
   // ── The CT600's own tax boxes, so the report states what the form files
-  // as well as what the working sheet charges. Boxes 53 to 56 carry no
-  // formula in the shipped template, so they read as dashes and box 63,
-  // which the form calls the total of boxes 46 and 56, files the first
-  // financial year row on its own. ──
+  // as well as what the working sheet charges. Boxes 43 to 46 are the first
+  // financial year the accounting period falls in and boxes 53 to 56 the
+  // second, which stays blank when the period lies in one. Boxes 46 and 56
+  // are the tax before relief, box 64 the relief and box 65 the tax the
+  // company bears. ──
+  ["CT600", "C126",  "Box 43: financial year",      "gl-cor:period (ct600.box43)",     "CT600 as filed", 1],
   ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
   ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
   ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
+  ["CT600", "C128",  "Box 53: financial year",      "gl-cor:period (ct600.box53)",     "CT600 as filed", 1],
   ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
   ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
   ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
   ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
+  ["CT600", "Y133",  "Box 64: marginal rate relief","gl-cor:taxAmount (ct600.box64)",  "CT600 as filed", 1],
+  ["CT600", "Y135",  "**Box 65: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box65)", "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -822,16 +969,24 @@ export const CELL_MAP = [
   ["PubP&L", "F44", "Administrative Expenses",     "gl-cor:amount (pubPL.admin)",     "Published P&L", 1],
   ["PubP&L", "F46", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)", "Published P&L", 0],
   ["PubP&L", "F49", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",       "Published P&L", 0],
+  ["PubP&L", "F50", "Corporation tax",             "gl-cor:taxAmount (pubPL.tax)",    "Published P&L", 1],
+  ["PubP&L", "F51", "**Profit after Tax**",        "gl-cor:amount (pubPL.pat)",       "Published P&L", 0],
+  ["PubP&L", "F52", "Dividends",                   "gl-cor:amount (pubPL.dividends)", "Published P&L", 1],
+  ["PubP&L", "F54", "**Retained Profit for the year**", "gl-cor:amount (pubPL.retained)", "Published P&L", 0],
   // ── Published Balance Sheet (columns A/B are last year, E/F this year) ──
   ["PubBalSht", "F6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
   ["PubBalSht", "E10", "Stock at cost",            "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E11", "Trade Debtors",            "accounts.assets.1300 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E12", "Cash at bank and in hand", "gl-cor:amount (pubBS.bankCash)",     "Published Balance Sheet", 1],
   ["PubBalSht", "E13", "Current Assets",           "gl-cor:amount (pubBS.currentAssets)","Published Balance Sheet", 0],
+  ["PubBalSht", "E16", "Trade Creditors",          "accounts.liabilities.2100 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E17", "Corporation Tax",          "accounts.liabilities.2300 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E18", "Taxation and Social Security", "gl-cor:amount (pubBS.taxAndSocial)", "Published Balance Sheet", 1],
   ["PubBalSht", "E20", "Current Liabilities",      "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
   ["PubBalSht", "F26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
   ["PubBalSht", "E29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E30", "Creditors due after more than one year", "accounts.liabilities.2600 (pubBS)", "Published Balance Sheet", 1],
   ["PubBalSht", "F31", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
   ["PubBalSht", "F36", "Called up share capital",  "accounts.capital.3000 (pubBS)",      "Published Balance Sheet", 1],
@@ -848,6 +1003,16 @@ export const CELL_MAP = [
   ["PubNotes", "G20", "**Net book value**",            "gl-cor:amount (note1.nbv)",        "Fixed Asset Note", 0],
   ["PubNotes", "D35", "Directors emoluments",          "gl-cor:amount (note2.emoluments)", "Fixed Asset Note", 1],
   ["PubNotes", "D41", "Corporation tax for the year",  "gl-cor:taxAmount (note4.ct)",      "Fixed Asset Note", 1],
+  // ── Directors' report (Report) — the filed narrative's own figures. Every
+  // one is a formula reading somewhere else in the book, so the section
+  // states what the report tells Companies House beside what the accounts
+  // carry. ──
+  ["Report", "E87", "Sales turnover in the year",   "gl-cor:amount (report.turnover)",       "Directors' Report", 1],
+  ["Report", "H87", "Sales turnover last year",     "gl-cor:amount (report.priorTurnover)",  "Directors' Report", 1],
+  ["Report", "D89", "Trading margin",               "gl-cor:percentage (report.margin)",     "Directors' Report", 1],
+  ["Report", "I89", "Trading margin last year",     "gl-cor:percentage (report.priorMargin)","Directors' Report", 1],
+  ["Report", "D94", "Dividend declared",            "gl-cor:amount (report.dividend)",       "Directors' Report", 1],
+  ["Report", "I95", "Ordinary shares issued",       "gl-cor:quantity (report.sharesIssued)", "Directors' Report", 1],
   // ── Stock ──
   ["Stock", "D6",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
   ["Stock", STOCK_FINAL_COUNT_CELL,      "Closing Stock (physical count)", "accounts.assets.1100 (closing)",           "Stock", 0],
@@ -873,9 +1038,11 @@ export const CELL_MAP = [
   ["TrialBalance", "D24", "Opening: Credit Card Account",              "accounts.assets.1230 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D25", "Opening: Cash Account",                     "accounts.assets.1220 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D28", "Opening: Trade Creditors",                  "accounts.liabilities.2100 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D31", "Opening: Dividends Creditor",               "accounts.capital.3200 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D33", "Opening: Creditor HMRC Vat",                "accounts.liabilities.2200 (opening)","Trial Balance", 1],
   ["TrialBalance", "D35", "Opening: Creditor HMRC Corporation Tax",    "accounts.liabilities.2300 (opening)","Trial Balance", 1],
   ["TrialBalance", "D39", "Opening: Directors Loan Account",           "accounts.liabilities.2500 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D40", "Opening: Creditor Long Term",               "accounts.liabilities.2600 (opening)","Trial Balance", 1],
   ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
@@ -884,7 +1051,10 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ24", "Final: Credit Card Account",               "accounts.assets.1230 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
+  ["TrialBalance", "EJ31","Final: Dividends Creditor",                 "accounts.capital.3200 (final)",      "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ40","Final: Creditor Long Term",                 "accounts.liabilities.2600 (final)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ48","Final: Dividends declared",                 "gl-cor:amount (dividendsDeclared)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
@@ -960,6 +1130,10 @@ const PL_ROW_CAPTIONS = {
 const ADMIN_TAX_DATA_CELLS = [
   ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
   ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
+  ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
+  ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
+  ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
+  ["P13", "marginal relief upper limit", (t) => t.corporation_tax.main_rate_limit],
   ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
@@ -1015,14 +1189,24 @@ function fiscalMonthTabs(results) {
 // date the Admin sheet carries, so a leaf workbook's month totals line up
 // with the P&L's month columns whatever the year end.
 function monthTabsFromPeriodStart(startSerial) {
-  const epoch = Date.UTC(1899, 11, 30);
-  const start = new Date(epoch + Math.round(startSerial) * 24 * 60 * 60 * 1000);
-  const firstMonth = start.getUTCMonth();
+  const firstMonth = dateFromSerial(startSerial).getUTCMonth();
   return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
 }
 
+// The date an Excel serial stands for.
+function dateFromSerial(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
+}
+
+// The expenses claim form's twelve month tabs, in the order the workbook
+// chains them from the first.
+const EXPENSES_FORM_MONTHS = Array.from({ length: 12 }, (_, i) => `Month ${String(i + 1).padStart(2, "0")}`);
+
 // CT600 boxes the template populates by formula, and where each reads from.
 const CT600_CELLS = [
+  "B33",
+  "M33",
+  "W137",
   "AK66",
   "Z70",
   "Z72",
@@ -1078,7 +1262,30 @@ export function standardReads() {
   // Corporation tax working sheet: the allowance lines, and the two dated
   // tax rows whose day counts, profit shares, rates and tax the charge for
   // the year is built from.
-  for (const cell of ["I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+  for (const cell of [
+    "E5",
+    "H5",
+    "I15",
+    "I16",
+    "I17",
+    "I18",
+    "A33",
+    "A34",
+    "A35",
+    "E33",
+    "E34",
+    "F33",
+    "F34",
+    "G33",
+    "G34",
+    "J33",
+    "J34",
+    "L33",
+    "L34",
+    "I33",
+    "I34",
+    "K37",
+  ])
     add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
@@ -1087,8 +1294,28 @@ export function standardReads() {
   add("Admin", "F21");
   add("Admin", "B9");
   add("Admin", "B32");
+  // The two dated corporation tax rate rows the working sheet copies.
+  for (const cell of ["K6", "L6", "N6", "K7", "L7", "N7"]) add("Admin", cell);
   add("PubP&L", "D3");
   add("PubBalSht", "D2");
+
+  // The directors' report quotes the year end, both years' turnover and
+  // margin, the dividend the board minuted and the share register. F22 is
+  // the only date it takes from the balance sheet rather than the P&L.
+  for (const cell of ["F22", "E87", "H87", "D89", "I89", "D94", "I95", "A97", "F97", "A98", "F98"]) add("Report", cell);
+
+  // The published P&L's prior-year column (B) and its own period end date,
+  // which the report quotes alongside this year's figures. B14 is the prior
+  // year's stock movement, the line OpenAccounts!E48 feeds.
+  add("PubP&L", "B9");
+  add("PubP&L", "B14");
+  add("PubP&L", "B18");
+  add("PubP&L", "B54");
+  add("PubP&L", "E5");
+
+  // The prior year block's own closing stock line, the one cell in it the
+  // template fills with a formula rather than leaving for the reader.
+  add("OpenAccounts", "E48");
 
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
@@ -1178,15 +1405,44 @@ export function multiFileOptions(yearEndMonth) {
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
         FAreconciliation: ["E11", "K11"],
+        // E2 is the long-term-creditors total for the "New Hire Purchase
+        // Agreements" block (SUM(E8:E26)); I/J/K on rows 8 and 10 are the
+        // two scenario agreements' own monthly payment, capital and
+        // interest split.
+        HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
         Payment: paymentCells,
+        Admin: [
+          ...new Set([
+            PAYSLIPS_CALENDAR_ANCHOR_CELL,
+            ...payrollMonthStarts().flatMap(({ row }) => ["A", "B", "C", "D", "F"].map((col) => `${col}${row}`)),
+          ]),
+        ],
       },
       "Companysecretary.xlsx": {
-        // F1 is the sheet's own nominal-value formula (=F3), G1 its own
-        // shares-issued total (=SUM(G3:G19)).
-        RegisterofMembers: ["F1", "G1"],
+        // One member a row: A the name, G the holding. F1 is the sheet's own
+        // nominal-value formula (=F3) and G1 its shares-issued total
+        // (=SUM(G3:G19)). The directors' report prints the first two members
+        // a line each.
+        "RegisterofMembers": [
+          "F1",
+          "G1",
+          ...REGISTER_MEMBER_ROWS.flatMap((row) => [`${REGISTER_MEMBER_COLUMNS.name}${row}`, `${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+        ],
+        // F2 is the date the board met and E4 the dividend it declared. The
+        // directors' report and the trial balance both read E4 across the
+        // cross-file link.
+        "Boardmeeting": ["F2", "E4"],
+        // A registered charge and the directors' valuation of the asset
+        // charged, which the balance sheet has to carry as a creditor
+        // falling due after more than one year.
+        "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
       },
+      // The expenses claim form's mileage rate. Month 01 holds the literal
+      // the generator writes and the other eleven chain from it, so reading
+      // all twelve proves the write and the chain that carries it.
+      "expensesform.xlsx": Object.fromEntries(EXPENSES_FORM_MONTHS.map((sheet) => [sheet, ["C30"]])),
       ...bankReads,
     },
   };
@@ -1289,8 +1545,7 @@ function vatinterfaceRowEnding(results, end) {
 }
 
 function formatSerialDate(serial) {
-  const date = new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
-  return date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
+  return dateFromSerial(serial).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
 }
 
 // The " (period ending d Month yyyy)" a VAT return line carries, or nothing
@@ -1310,7 +1565,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     V1: "Sale proceeds of the assets sold in the year, net of VAT",
@@ -1482,7 +1737,11 @@ export function categoryNetting(results, scenario) {
 
 // ── Compliance checks ──────────────────────────────────────────────────────
 
-export function checkCompliance(results, expected, taxData, calculateExpectedTax) {
+// packageYearEnd is the YYYY-MM-DD the package's own directory name carries.
+// The reconciler passes it so the year-end seed can be measured against the
+// package it was generated for rather than against another cell of the same
+// run.
+export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
   function check(name, actual, expectedVal, tolerance = 1) {
@@ -1501,6 +1760,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // A template cell that resolves to blank reads back as the string the
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // The same cell read as wording. An unwritten cell reads back as null and a
+  // formula's blank as " ", and both mean the sheet names nobody.
+  const text = (v) => (v === null || v === undefined ? "" : String(v).trim());
 
   const rate = vatRateFor(expected);
 
@@ -1546,6 +1809,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Trial Balance opening: HMRC VAT creditor", tb.D33 || 0, -(ob.vat_due || 0));
     check("Trial Balance opening: HMRC corporation tax creditor", tb.D35 || 0, -(ob.corporation_tax || 0));
     check("Trial Balance opening: directors loan", tb.D39 || 0, -(ob.directors_loan || 0));
+    check("Trial Balance opening: creditors due after more than one year", tb.D40 || 0, -(ob.long_term_creditors || 0));
     check("Trial Balance opening: share capital", tb.D42 || 0, -(ob.share_capital || 0));
     check("Trial Balance opening: revenue reserve", tb.D43 || 0, -(ob.retained_earnings || 0));
 
@@ -1623,6 +1887,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
     );
     if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
+
+    // What the sheet works the year-end stock out to be, before anyone counts
+    // it: the opening figure, plus the materials bought in the year, less the
+    // materials its stock percentage reckons went out inside the product
+    // sales. Both sides come from the scenario, so a month of materials that
+    // never reached the sheet, or a percentage that never reached H4, shows
+    // up here instead of being absorbed into the count adjustment.
+    const materialsPercent = expected.stock?.materials_percent;
+    if (materialsPercent !== undefined) {
+      const bought = journalTotalsByCode(expected.purchases, rate, "g").net.s || 0;
+      const sold = materialsPercent * (journalTotalsByCode(expected.sales, rate, "a").net.a || 0);
+      check(
+        "Stock: calculated stock = opening + materials bought - materials sold",
+        num(stock[STOCK_FINAL_CALCULATED_CELL]),
+        num(stock.D6) + bought - sold,
+      );
+    }
   }
   if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
@@ -1792,6 +2073,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0,
       );
     }
+
+    // ── The five return forms as one cycle ────────────────────────────────
+    //
+    // Each form's own date decides which three interface rows it declares, so
+    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
+    // quarter apart and covering the twelve accounting months once each, and
+    // the spare fifth on the last period the interface carries.
+    const periods = vatinterfacePeriods(results);
+    const returnForms = [];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = vatQtr(q);
+      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
+    }
+    const coverage = vatReturnCoverage(periods, returnForms);
+    if (coverage.placed.length === 5) {
+      const [q1, q2, q3, q4, q5] = coverage.placed;
+      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
+      for (const [earlier, later] of [
+        [q1, q2],
+        [q2, q3],
+        [q3, q4],
+      ]) {
+        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
+      }
+      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
+      check(
+        "VAT: Q1-Q4 cover every month of the accounting year",
+        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
+        periods.filter((period) => period.inAccountingYear).length,
+        0,
+      );
+      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
+
+      // Five consecutive quarters need fifteen periods and the interface can
+      // total fourteen, so the spare cannot start where the fourth return
+      // ends. The period they share is the workbook's own limit, reported
+      // with the output VAT that would go in twice, and a run is not stopped
+      // for it.
+      checks.push({
+        name: "VAT: periods more than one of the five returns declares",
+        actual: coverage.shared.length,
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.length,
+        severity: "warning",
+      });
+      checks.push({
+        name: "VAT: output VAT declared on more than one of the five returns",
+        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        severity: "warning",
+      });
+    }
   }
 
   // ── Fixed assets: the published note against the asset schedule ──────────
@@ -1802,6 +2138,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // never in another cell of the note, so consistent zeros cannot pass.
   const schedule = results["Fixedassets.xlsx!Schedule"];
   const notes = results.PubNotes;
+  if (schedule) {
+    // Closing NBV identity within the Schedule itself: cost less disposals,
+    // less depreciation carried forward less depreciation on the disposals.
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      num(schedule.K1),
+      num(schedule.E1) - num(schedule.W1) - (num(schedule.J1) - num(schedule.X1)),
+    );
+  }
   if (schedule && notes) {
     for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
       const col = layout.noteColumn;
@@ -1871,6 +2216,218 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
+  // ── The directors' report against the statements it quotes ───────────────
+  //
+  // The report is the narrative that goes out with the accounts, and every
+  // figure on it is a formula reading somewhere else in the book (verified
+  // against the template: F22 = PubBalSht!D2, E87 = 'PubP&L'!F9, H87 =
+  // 'PubP&L'!B9, D89 and I89 the two years' gross margins, D94 =
+  // [8]Boardmeeting!$E$4, I95 = [8]RegisterofMembers!$G$1 and F97/F98 its
+  // $G$3/$G$4, where [8] is Companysecretary.xlsx). Nothing else in the book
+  // reads these cells, so a report quoting figures the accounts do not carry
+  // shows up here and nowhere else.
+  const report = results.Report;
+  const publishedPL = results["PubP&L"];
+  if (report && publishedPL) {
+    check("Directors' report: sales turnover = published P&L turnover", num(report.E87), num(publishedPL.F9), 0.01);
+    check("Directors' report: last year's turnover = published P&L prior year column", num(report.H87), num(publishedPL.B9), 0.01);
+
+    // Both margin cells carry the same rule: a year with turnover publishes
+    // gross profit over turnover, a year without publishes a blank. The
+    // fixture has no prior year, so this year's margin is a number and last
+    // year's is the blank the formula puts there.
+    const marginCheck = (name, cell, turnover, grossProfit) => {
+      if (turnover > 0) check(name, num(cell), grossProfit / turnover, 0.000001);
+      else
+        checkText(
+          name,
+          typeof cell === "string" ? cell : String(cell ?? ""),
+          (text) => text.trim() === "",
+          "blank, there being no turnover to divide by",
+        );
+    };
+    marginCheck(
+      "Directors' report: trading margin = published gross profit over turnover",
+      report.D89,
+      num(publishedPL.F9),
+      num(publishedPL.F18),
+    );
+    marginCheck(
+      "Directors' report: last year's trading margin = published prior year gross profit over turnover",
+      report.I89,
+      num(publishedPL.B9),
+      num(publishedPL.B18),
+    );
+
+    // The published P&L reaches turnover from the trial balance's closing
+    // column and the management P&L from its month columns, so tying the two
+    // is what anchors everything the report quotes to the scenario's own
+    // sales.
+    check("Published P&L: turnover = management P&L turnover", num(publishedPL.F9), num(pl.B9), 0.01);
+
+    // The prior year column is the "PREVIOUS YEAR PROFIT & LOSS ACCOUNT"
+    // block on OpenAccounts, rows 43 to 85, which the reader types in. E48
+    // ("Less Closing Stock") is the one cell the template fills for them: it
+    // echoes E15, this year's opening stock, because last year closed on
+    // whatever this year opened with. It only does so once something else in
+    // the block is entered -- otherwise a first-year book publishes a
+    // negative cost of sales the size of its opening stock and the same
+    // figure again as last year's profit.
+    const openAccounts = results.OpenAccounts;
+    if (openAccounts && expected.stock?.opening !== undefined) {
+      check("Published P&L: prior year closing stock while no comparatives are entered", num(openAccounts.E48), 0, 0);
+      check("Published P&L: prior year stock movement while no comparatives are entered", num(publishedPL.B14), 0, 0);
+      check("Published P&L: prior year retained profit while no comparatives are entered", num(publishedPL.B54), 0, 0);
+    }
+  }
+  if (report && pubBalSht) {
+    check("Directors' report: year end = published balance sheet date", num(report.F22), num(pubBalSht.D2), 0);
+  }
+  if (report && register) {
+    check("Directors' report: ordinary shares issued = register of members total", num(report.I95), num(register.G1), 0);
+    check("Directors' report: first member's holding = register of members", num(report.F97), num(register.G3), 0);
+    check("Directors' report: second member's holding = register of members", num(report.F98), num(register.G4), 0);
+  }
+
+  // ── The share register against the members the scenario carries ──────────
+  //
+  // The report prints a shareholder a line, the name from
+  // [8]RegisterofMembers!$A$n and the holding from $G$n. Both ends go against
+  // the scenario's own members, so a register nobody filled in and a report
+  // naming nobody each fail on their own.
+  if (register && expected.members) {
+    expected.members.slice(0, REGISTER_MEMBER_ROWS.length).forEach((member, index) => {
+      const row = REGISTER_MEMBER_ROWS[index];
+      checkText(
+        `Register of members: row ${row} names ${member.name}`,
+        text(register[`${REGISTER_MEMBER_COLUMNS.name}${row}`]),
+        (name) => name === member.name,
+        member.name,
+      );
+      check(
+        `Register of members: row ${row} holds ${member.name}'s shares`,
+        num(register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+        member.shares,
+        0,
+      );
+    });
+  }
+  if (report && expected.members) {
+    // The report prints two shareholder lines whatever the register holds, so
+    // a company with one member has to publish a blank second line rather
+    // than a stale name. Both are measured against the scenario's own
+    // members, the same side the register is measured against.
+    const printsMember = (name, printed, member) =>
+      checkText(name, text(printed), (line) => line === (member?.name || ""), member ? member.name : "blank, there being no second member");
+    printsMember("Directors' report: first shareholder named", report.A97, expected.members[0]);
+    printsMember("Directors' report: second shareholder named", report.A98, expected.members[1]);
+  }
+
+  // ── The dividend cycle, minute to balance sheet ──────────────────────────
+  //
+  // One board resolution drives the whole cycle. Boardmeeting!E4 carries the
+  // dividend declared; the trial balance reads it into the profit
+  // distribution (EH48) and, negated, into the dividends creditor (EH31);
+  // the published P&L appropriates it at F52 (= EJ48) and the directors'
+  // report quotes it at D94. The bank's DV payments come off the creditor
+  // month by month, so the creditor closes at opening plus declared less
+  // paid -- nil for a year that pays what it declares.
+  const boardMeeting = results["Companysecretary.xlsx!Boardmeeting"];
+  if (report && boardMeeting) {
+    check("Directors' report: dividend declared = the board minute", num(report.D94), num(boardMeeting.E4), 0);
+  }
+  if (boardMeeting && expected.dividend) {
+    check("Board minute: dividend declared = the scenario's declaration", num(boardMeeting.E4), expected.dividend.declared, 0);
+
+    // The minute's own date, on the period frame the book carries. A
+    // scenario's dates shift by the gap between its own accounting period
+    // and the package's, so the year end on the Admin sheet is what says how
+    // far this book moved the meeting.
+    const yearEndMonth = dateFromSerial(num(results.Admin.F21)).getUTCMonth() + 1;
+    const monthOffset = ((yearEndMonth % 12) - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
+    check(
+      "Board minute: meeting date = the scenario's board meeting",
+      num(boardMeeting.F2),
+      toExcelSerial(minuted.getUTCFullYear(), minuted.getUTCMonth() + 1, minuted.getUTCDate()),
+      0,
+    );
+  }
+  if (publishedPL && expected.dividend) {
+    check("Published P&L: dividends appropriated = the dividend the board declared", num(publishedPL.F52), expected.dividend.declared);
+  }
+  if (expected.dividend && expected.bank) {
+    let dividendsPaid = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "DV") continue;
+        dividendsPaid += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    // The trial balance carries a creditor as a negative balance, so the
+    // amount still owed to the members is the row negated.
+    const openingOwed = expected.opening_balance?.dividends_due || 0;
+    check(
+      "Trial Balance: dividends creditor = opening plus declared less paid",
+      -num(results.TrialBalance.EJ31),
+      openingOwed + expected.dividend.declared - dividendsPaid,
+    );
+  }
+
+  // ── The register of charges against the balance sheet ────────────────────
+  //
+  // A charge registered over the company's assets secures a debt, and a debt
+  // secured on an asset is a creditor falling due after more than one year.
+  // PubBalSht E30 reads -TrialBalance!EJ40, the only long-term creditor line
+  // in the book. The register's own valuation column is the ceiling: the
+  // directors valued the charged assets at the date of charging, and a
+  // creditor secured on them cannot exceed that valuation.
+  //
+  // The same TrialBalance row also carries -[1]HPfinance!$E$2 (verified
+  // against the template): the hire purchase agreements' amounts financed
+  // reach this line too, alongside -HPfinance!$E$2's opposite-signed twin on
+  // the Trade Creditors row. A hire purchase agreement is itself secured on
+  // the asset it finances, so it belongs in the same ceiling as the
+  // registered charge, not against it -- the total long-term creditor
+  // figure has to cover both.
+  const hp = results["Fixedassets.xlsx!HPfinance"];
+  const charges = results["Companysecretary.xlsx!Charges&Debentures"];
+  if (charges && pubBalSht) {
+    const chargedValue = CHARGE_REGISTER_ROWS.reduce((sum, row) => sum + num(charges[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`]), 0);
+    const longTermCreditors = num(pubBalSht.E30);
+    const hpAmountFinanced = num(hp?.E2);
+
+    // The creditor itself, against the scenario's own opening balance,
+    // whatever the year drew down or repaid on it (bank code LCR), and the
+    // hire purchase agreements' amounts financed. Without this the coverage
+    // check below could be satisfied by a balance sheet that carries any
+    // secured debt at all rather than this one.
+    if (expected.opening_balance?.long_term_creditors !== undefined) {
+      let drawnDown = 0;
+      for (const transactions of Object.values(expected.bank || {})) {
+        for (const tx of transactions) {
+          if (tx.code !== "LCR") continue;
+          drawnDown += tx.direction === "in" ? tx.amount : -tx.amount;
+        }
+      }
+      check(
+        "Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements",
+        longTermCreditors,
+        expected.opening_balance.long_term_creditors + drawnDown + hpAmountFinanced,
+      );
+    }
+
+    if (chargedValue > 0) {
+      checks.push({
+        name: "Charges register: the balance sheet carries a creditor falling due after more than one year",
+        actual: longTermCreditors,
+        expected: `more than 0 and no more than the ${chargedValue + hpAmountFinanced} the directors valued the charged assets and the hire purchase agreements finance`,
+        pass: longTermCreditors > 0 && longTermCreditors <= chargedValue + hpAmountFinanced,
+        diff: "",
+      });
+    }
+  }
+
   // The Schedule's new-asset and disposal totals against what the scenario
   // posted to Purchases.xlsx and Sales.xlsx, net of VAT — the same
   // comparison FAreconciliation is built to make, made here because the
@@ -1904,6 +2461,52 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(pl.B39),
       num(schedule.W1) - num(schedule.X1) - num(schedule.V1),
     );
+  }
+
+  // ── HP finance agreements (Fixedassets.xlsx HPfinance sheet) ────────────
+  // Each check is anchored in the agreement's own fixture fields, not in
+  // another cell of the same sheet, so a schedule that is merely
+  // self-consistent cannot pass.
+  if (hp && expected.hp_agreements) {
+    const [agreement1, agreement2] = expected.hp_agreements;
+    if (agreement1) {
+      check(
+        "HP: first agreement monthly payment = the amount financed with charges over its term",
+        num(hp.I8),
+        (agreement1.amount_financed + agreement1.admin_charges + agreement1.total_interest) / agreement1.months,
+      );
+      check("HP: first agreement capital and interest split sums to the monthly payment", num(hp.J8) + num(hp.K8), num(hp.I8));
+    }
+    if (agreement2) {
+      check(
+        "HP: second agreement monthly payment computes",
+        num(hp.I10),
+        (agreement2.amount_financed + agreement2.admin_charges + agreement2.total_interest) / agreement2.months,
+      );
+      check("HP: second agreement capital and interest split sums to the monthly payment", num(hp.J10) + num(hp.K10), num(hp.I10));
+    }
+    check(
+      "HP: long term creditors = the agreements' amounts financed",
+      num(hp.E2),
+      expected.hp_agreements.reduce((s, a) => s + a.amount_financed, 0),
+    );
+  }
+
+  // The year's HP interest and admin charges reaching the P&L's own "Bank
+  // Charges" line (MnthP&L!B36), through the "B" bank-payment code every
+  // other direct bank charge on that line already uses. Computed from the
+  // scenario's own bank transactions, not from the P&L cell it is compared
+  // to, so a broken cross-file link shows up here rather than passing by
+  // construction.
+  if (pl && expected.bank) {
+    let bankChargesTotal = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "B") continue;
+        bankChargesTotal += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), bankChargesTotal);
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash
@@ -2064,6 +2667,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // populates -- verified against the template, and confirmed against the
   // recalculated file that the row 17-28 side stays 0. So rows 4-15 alone
   // carry the whole month's payroll, directors included.
+  // ── Payslips!Admin: the payroll calendar every payslip dates from ────────
+  //
+  // The calendar is written into the package and nothing reads it back, so a
+  // wrong week or a month that opens on the wrong day would reach a user's
+  // payslips unnoticed. Each payroll month's opening row is compared with the
+  // tax calendar, anchored on the one date the whole sheet cascades from.
+  const payslipsAdmin = results["Payslips.xlsx!Admin"];
+  if (payslipsAdmin) {
+    const yearStart = num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]);
+    const yearStartDate = new Date(Date.UTC(1899, 11, 30) + Math.round(yearStart) * 24 * 60 * 60 * 1000);
+    checkText(
+      "Payslips calendar: the payroll year opens on 6 April",
+      yearStart ? formatSerialDate(yearStart) : "",
+      (text) => text.startsWith("6 April"),
+      "6 April",
+    );
+
+    const starts = payrollMonthStarts();
+    for (const { month, row, daysBefore, week } of starts) {
+      const monthName = SHORT_MONTHS[(yearStartDate.getUTCMonth() + month - 1) % 12];
+      check(
+        `Payslips calendar: payroll month ${month} opens on the first day of tax week ${week}`,
+        num(payslipsAdmin[`B${row}`]),
+        yearStart + daysBefore,
+        0,
+      );
+      check(`Payslips calendar: payroll month ${month} opens tax week ${week}`, num(payslipsAdmin[`C${row}`]), week, 0);
+      checkText(
+        `Payslips calendar: payroll month ${month} is named for the month it opens`,
+        String(payslipsAdmin[`A${row}`] ?? ""),
+        (text) => text === monthName,
+        monthName,
+      );
+    }
+    check(
+      "Payslips calendar: the payroll months are numbered one to twelve in order",
+      starts.reduce((sum, { month, row }) => sum + Math.abs(num(payslipsAdmin[`D${row}`]) - month), 0),
+      0,
+      0,
+    );
+    check(
+      "Payslips calendar: every payroll month opens on its own first week",
+      starts.reduce((sum, { row }) => sum + num(payslipsAdmin[`F${row}`]), 0),
+      starts.length,
+      0,
+    );
+  }
+
   if (expected.payroll) {
     // Same date-shift math cellWrites() uses to place each scenario month's
     // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
@@ -2166,12 +2817,44 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // F21 is the year-end seed every other date in the package cascades
     // from. Its own anchor row and the three published documents that quote
-    // the year end all have to land on it.
+    // the year end all have to land on it. The seed itself is measured
+    // against the year end the package was generated for, so a book dated to
+    // the wrong year end fails here rather than reading consistent with
+    // itself.
+    if (packageYearEnd) {
+      const [year, month, day] = packageYearEnd.split("-").map(Number);
+      check("Admin: year-end seed = the package's own year end", num(admin.F21), toExcelSerial(year, month, day), 0);
+    }
     check("Admin: year-end seed drives the accounting period anchor", num(admin.B32), num(admin.F21), 0);
     check("Published P&L: year end = Admin year-end seed", num(results["PubP&L"]?.D3), num(admin.F21), 0);
     check("Published balance sheet: date = Admin year-end seed", num(pubBalSht?.D2), num(admin.F21), 0);
     check("Fixed asset note: year end = Admin year-end seed", num(notes?.A11), num(admin.F21), 0);
     check("Admin: accounting period is twelve months", num(admin.F21) - num(admin.B9) + 1, 365, 1);
+
+    // The Admin rate table's two dated rows are the financial years the
+    // accounting period falls in, not the period and the year after it.
+    // Everything the corporation tax working sheet and the CT600 say about
+    // the period is a copy of these four dates.
+    check("Admin: first financial year row starts at the accounting period start", num(admin.L6), num(admin.B9), 0);
+    check("Admin: second financial year row starts the day the first one ends", num(admin.L7), num(admin.N6) + 1, 0);
+    check("Admin: second financial year row ends at the year end", num(admin.N7), num(admin.F21), 0);
+    if (results[TAX_SHEET]) {
+      check("CT: working sheet heading starts at the accounting period start", num(results[TAX_SHEET].E5), num(admin.B9), 0);
+      check("CT: working sheet heading ends at the year end", num(results[TAX_SHEET].H5), num(admin.F21), 0);
+      check("CT: the two tax rows span the accounting period", num(results[TAX_SHEET].A35), num(admin.F21) - num(admin.B9) + 1, 0);
+    }
+    if (results.CT600) {
+      check("CT600: return period starts at the accounting period start", num(results.CT600.B33), num(admin.B9), 0);
+      check("CT600: return period ends at the year end", num(results.CT600.M33), num(admin.F21), 0);
+    }
+
+    // The expenses claim form carries the same mileage rate the Admin sheet
+    // holds. It has no link back to the accounts, so the generator writes
+    // the first month and the other eleven read it off that one.
+    for (const sheet of EXPENSES_FORM_MONTHS) {
+      const form = results[`expensesform.xlsx!${sheet}`];
+      if (form) check(`Expenses form ${sheet}: mileage rate = tax data`, num(form.C30), taxData.mileage.higher_rate_pence, 0.0001);
+    }
 
     // The note publishes the depreciation rates from the Schedule, which
     // must agree with the rates injected into Admin.
@@ -2254,28 +2937,33 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("CT600: interest received = CT interest received", num(ct600.AJ76), num(corporationTax.K24));
     check("CT600: profits before deductions = trading profits + interest", num(ct600.AJ92), num(ct600.AJ74) + num(ct600.AJ76));
     check("CT600: profits chargeable = CT chargeable profit", num(ct600.AJ110), onTheForm(num(corporationTax.K28)));
-    // The form sets out two financial year rows: boxes 43 to 46 and boxes 53
-    // to 56. Only the first is wired to the working sheet (C126 =
-    // CorporationTax!E33, N126 = F33, AA126 = G33, AJ126 = I33). The second
-    // row's cells carry no formula at all, so box 63, which the form calls
-    // the total of boxes 46 and 56, files the first tax row on its own.
-    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33));
-    check("CT600: corporation tax = first tax row tax", num(ct600.AJ126), num(corporationTax.I33));
-    check("CT600: second financial year tax box is blank", num(ct600.AJ128), 0);
+    // The form sets out two financial year rows, boxes 43 to 46 and boxes 53
+    // to 56, one for each financial year the accounting period falls in.
+    // Boxes 46 and 56 carry the tax at the rate before relief, so box 63,
+    // which the form calls the total of the two, is the gross charge and
+    // box 65 is what the company bears once box 64's relief comes off.
+    check("CT600: financial year = first tax row financial year", num(ct600.C126), num(corporationTax.E33), 0);
+    check("CT600: amount of profit = first tax row profit", num(ct600.N126), num(corporationTax.F33));
+    check("CT600: tax rate = first tax row rate", num(ct600.AA126), num(corporationTax.G33), 0);
+    check("CT600: corporation tax = first tax row gross tax", num(ct600.AJ126), num(corporationTax.J33));
+    check("CT600: second financial year tax = second tax row gross tax", num(ct600.AJ128), num(corporationTax.J34));
+    if (num(corporationTax.A34) > 0) {
+      check("CT600: second financial year = second tax row financial year", num(ct600.C128), num(corporationTax.E34), 0);
+      check("CT600: second financial year profit = second tax row profit", num(ct600.N128), num(corporationTax.F34));
+      check("CT600: second financial year rate = second tax row rate", num(ct600.AA128), num(corporationTax.G34), 0);
+    }
     check("CT600: tax payable = tax chargeable", num(ct600.AJ131), num(ct600.AJ126) + num(ct600.AJ128));
-    // What the form files against what the accounts charge. The second tax
-    // row never reaches the form, so this gap is the whole of the working
-    // sheet's second row and belongs to the shipped template. A run is not
-    // stopped for it.
-    checks.push({
-      name: "CT600: tax payable against the working sheet's charge for the year",
-      actual: num(ct600.AJ131),
-      expected: num(corporationTax.K35),
-      pass: Math.abs(num(ct600.AJ131) - num(corporationTax.K35)) <= 1,
-      diff: num(ct600.AJ131) - num(corporationTax.K35),
-      severity: "warning",
-    });
-    check("CT600: self assessment of tax payable", num(ct600.AJ145), num(ct600.AJ131));
+    check("CT600: marginal rate relief = the working sheet's relief", num(ct600.Y133), num(corporationTax.L33) + num(corporationTax.L34));
+    check("CT600: tax net of marginal relief = the working sheet's charge", num(ct600.Y135), num(corporationTax.K35));
+    check("CT600: corporation tax chargeable = tax net of marginal relief", num(ct600.AJ145), num(ct600.Y135));
+    if (num(ct600.AJ110) > 0) {
+      check(
+        "CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable",
+        num(ct600.W137),
+        (num(ct600.Y135) * 100) / num(ct600.AJ110),
+        0.01,
+      );
+    }
     check("CT600: tax outstanding", num(ct600.AJ166), num(ct600.AJ159) - num(ct600.AJ163));
   }
 
@@ -2290,50 +2978,74 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ct = results[TAX_SHEET];
     const profit = ct.K28 || 0;
     if (profit > 0) {
-      // How the working sheet builds the charge. Rows 33 and 34 are two
-      // dated rate rows: row 33 runs from Admin L6 to N6, the accounting
-      // period itself, and row 34 from Admin L7 to N7, the year after it.
-      // Each row is a year long, A35 is the two together, and each row
-      // takes that share of the same chargeable profit (F33 =
-      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate (I33 =
-      // F33*G33/100). The charge for the year is the two rows added up.
+      // How the working sheet builds the charge. Rows 33 and 34 are the one
+      // or two UK financial years the accounting period falls in: row 33
+      // runs from Admin L6 to N6, the 31 March inside the period, and row 34
+      // from the day after that to the year end. A period wholly inside one
+      // financial year leaves row 34 empty. A35 is the two together, each
+      // row takes its share of the chargeable profit (F33 =
+      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate.
       const days = num(ct.A35);
       check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
       if (days > 0) {
         check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
         check("CT: second tax row profit = chargeable profit by its share of those days", num(ct.F34), (profit * num(ct.A34)) / days);
       }
-      check("CT: first tax row tax = its profit at its rate", num(ct.I33), (num(ct.F33) * num(ct.G33)) / 100);
-      check("CT: second tax row tax = its profit at its rate", num(ct.I34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row gross tax = its profit at its rate", num(ct.J33), (num(ct.F33) * num(ct.G33)) / 100);
+      check("CT: second tax row gross tax = its profit at its rate", num(ct.J34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row tax = its gross tax less its marginal relief", num(ct.I33), num(ct.J33) - num(ct.L33));
+      check("CT: second tax row tax = its gross tax less its marginal relief", num(ct.I34), num(ct.J34) - num(ct.L34));
       check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
-      // Both rows carry the rate injected into the Admin sheet, so whatever
-      // the year end, the charge is the chargeable profit at that one rate.
+      // Each row's share of the profit is charged at the small profits rate
+      // up to its share of the lower limit and at the main rate above it,
+      // with marginal relief tapering the gap up to the upper limit. Both
+      // limits are shared out over the period the same way the profit is.
       const admin = results.Admin;
-      if (admin) {
-        check("CT: charge for the year = chargeable profit at the Admin corporation tax rate", num(ct.K35), (profit * num(admin.P6)) / 100);
+      if (admin && days > 0) {
+        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days;
+        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days;
+        const reliefFor = (rowProfit, rowDays) =>
+          rowProfit > lowerLimit(rowDays) && rowProfit < upperLimit(rowDays) ? (upperLimit(rowDays) - rowProfit) * num(admin.P9) : 0;
+        const rateFor = (rowProfit, rowDays, smallProfitsRate) => (rowProfit <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
+
+        check(
+          "CT: first tax row rate = the rate its share of the profit falls in",
+          num(ct.G33),
+          rateFor(num(ct.F33), num(ct.A33), num(admin.P6)),
+          0,
+        );
+        check(
+          "CT: second tax row rate = the rate its share of the profit falls in",
+          num(ct.G34),
+          rateFor(num(ct.F34), num(ct.A34), num(admin.P7)),
+          0,
+        );
+        check(
+          "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+          num(ct.L33),
+          reliefFor(num(ct.F33), num(ct.A33)),
+        );
+        check(
+          "CT: second tax row marginal relief = its share of the profit against its share of the limits",
+          num(ct.L34),
+          reliefFor(num(ct.F34), num(ct.A34)),
+        );
+
+        // One tax-year TOML feeds both rows, so a period straddling a rate
+        // change would need two. Every financial year in the data set from
+        // 2020 on carries the same rates as the one after it.
+        check("CT: both financial year rows carry the same small profits rate", num(admin.P6), num(admin.P7), 0);
       }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
-      // The charge the period's profit actually bears. The working sheet
-      // holds one rate per row and no relief step, and the CT600's marginal
-      // rate relief boxes, 64 and 65, carry no formula either, so a profit
-      // between the small profits limit and the main rate limit is charged
-      // at the small profits rate rather than at the main rate less relief.
-      // The gap belongs to the shipped workbook, not to the scenario driven
-      // through it, so it is reported and the run is not stopped for it.
+      // The charge the period's profit actually bears, against the statutory
+      // computation worked independently of the sheet.
       const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
-      checks.push({
-        name: "CT: charge for the year against the statutory computation with marginal relief",
-        actual: num(ct.K35),
-        expected: statutory,
-        pass: Math.abs(num(ct.K35) - statutory) <= 1,
-        diff: num(ct.K35) - statutory,
-        severity: "warning",
-      });
+      check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }
   }
 

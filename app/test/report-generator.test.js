@@ -253,9 +253,20 @@ describe("vatCycleRows", () => {
       { name: "Q5", end: 18 },
     ]);
     const text = rows.map((row) => row.label).join("\n");
-    expect(text).toContain("Q4 and Q5 end one month apart rather than one quarter");
-    expect(text).toContain("both cover the periods ending period 16 and period 17");
+    expect(text).toContain("Q4 and Q5 both cover the periods ending period 16 and period 17");
     expect(text).toContain("would declare those periods twice");
+  });
+
+  it("names the one period the spare return shares with the fourth, and the VAT on it", () => {
+    const rows = vatCycleRows(periods, [
+      { name: "Q4", end: 16 },
+      { name: "Q5", end: 18 },
+    ]);
+    const text = rows.map((row) => `${row.label} ${row.value}`).join("\n");
+    expect(text).toContain("Q4 and Q5 both cover the period ending period 16");
+    expect(text).toContain("would declare that period twice");
+    expect(text).toContain("Output VAT on it 100");
+    expect(text).toContain("Input VAT on it 40");
   });
 
   it("says nothing at all when no return form names a period the interface carries", () => {
