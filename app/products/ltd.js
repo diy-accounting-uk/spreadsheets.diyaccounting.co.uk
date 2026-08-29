@@ -1157,10 +1157,13 @@ function fiscalMonthTabs(results) {
 // date the Admin sheet carries, so a leaf workbook's month totals line up
 // with the P&L's month columns whatever the year end.
 function monthTabsFromPeriodStart(startSerial) {
-  const epoch = Date.UTC(1899, 11, 30);
-  const start = new Date(epoch + Math.round(startSerial) * 24 * 60 * 60 * 1000);
-  const firstMonth = start.getUTCMonth();
+  const firstMonth = dateFromSerial(startSerial).getUTCMonth();
   return Array.from({ length: 12 }, (_, i) => SHORT_MONTHS[(firstMonth + i) % 12]);
+}
+
+// The date an Excel serial stands for.
+function dateFromSerial(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
 }
 
 // The expenses claim form's twelve month tabs, in the order the workbook
@@ -1505,8 +1508,7 @@ function vatinterfaceRowEnding(results, end) {
 }
 
 function formatSerialDate(serial) {
-  const date = new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
-  return date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
+  return dateFromSerial(serial).toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
 }
 
 // The " (period ending d Month yyyy)" a VAT return line carries, or nothing
@@ -2292,20 +2294,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (boardMeeting && expected.dividend) {
     check("Board minute: dividend declared = the scenario's declaration", num(boardMeeting.E4), expected.dividend.declared, 0);
 
-    // The minute has to sit inside the year it declares a dividend for. The
-    // scenario's own date shifts with the accounting period, so the period
-    // the book carries is what the date is measured against: Admin!B9 is the
-    // first day and F21 the year end.
-    const minuted = num(boardMeeting.F2);
-    const periodStart = num(results.Admin?.B9);
-    const yearEnd = num(results.Admin?.F21);
-    checks.push({
-      name: "Board minute: the meeting falls inside the accounting period",
-      actual: minuted,
-      expected: `between ${periodStart} and ${yearEnd}`,
-      pass: minuted >= periodStart && minuted <= yearEnd,
-      diff: "",
-    });
+    // The minute's own date, on the period frame the book carries. A
+    // scenario's dates shift by the gap between its own accounting period
+    // and the package's, so the year end on the Admin sheet is what says how
+    // far this book moved the meeting.
+    const yearEndMonth = dateFromSerial(num(results.Admin.F21)).getUTCMonth() + 1;
+    const monthOffset = ((yearEndMonth % 12) - ((expected.period_start_month || 4) - 1) + 12) % 12;
+    const minuted = shiftMonths(parseDate(expected.dividend.board_meeting), monthOffset);
+    check(
+      "Board minute: meeting date = the scenario's board meeting",
+      num(boardMeeting.F2),
+      toExcelSerial(minuted.getUTCFullYear(), minuted.getUTCMonth() + 1, minuted.getUTCDate()),
+      0,
+    );
   }
   if (publishedPL && expected.dividend) {
     check("Published P&L: dividends appropriated = the dividend the board declared", num(publishedPL.F52), expected.dividend.declared);

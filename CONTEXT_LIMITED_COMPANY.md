@@ -486,7 +486,7 @@ Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals
 | Register of members: row N names / holds | RegisterofMembers A3-A19, G3-G19 | Each row against the scenario's `[[members]]` |
 | Directors' report: first / second shareholder named | Report A97, A98, the scenario's `[[members]]` | The report prints the first two members, and a blank second line when there is only one |
 | Board minute: dividend declared | Boardmeeting E4, the scenario's `[dividend]` | The minute carries the declaration |
-| Board minute: the meeting falls inside the accounting period | Boardmeeting F2, Admin B9, F21 | A dividend for the year is declared in the year |
+| Board minute: meeting date = the scenario's board meeting | Boardmeeting F2, Admin F21, the scenario's `[dividend]` | The minute's date on the period frame the book carries |
 | Published P&L: dividends appropriated = the dividend the board declared | PubP&L F52, the scenario's `[dividend]` | The appropriation line publishes the declaration |
 | Trial Balance: dividends creditor = opening plus declared less paid | TrialBalance EJ31, the opening balance, the scenario's `[dividend]` and its `DV` bank payments | The creditor carries what the members are still owed |
 | Directors' report figures | Report F22, E87, H87, D89, I89, D94, I95, F97, F98 | Each against the statement or register it reads |

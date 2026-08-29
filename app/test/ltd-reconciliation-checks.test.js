@@ -969,7 +969,7 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "Boardmeeting", "F2", 40000);
       expect(value).toBe(40000);
       const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!Boardmeeting", "F2", value);
-      expect(failureNames(corrupted)).toEqual(["Board minute: the meeting falls inside the accounting period"]);
+      expect(failureNames(corrupted)).toEqual(["Board minute: meeting date = the scenario's board meeting"]);
     });
 
     it("fails the appropriation when the published dividend line is corrupted via JSZip", async () => {
