@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`.
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Tracks merge into `claude/wave-1` (PR #39); generate-* run there with skip-commit before merge to main.
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
@@ -14,7 +14,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | `sp-taxi` | started |
 | vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
-| pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` | started |
+| pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
 | template-design | design doc `PLAN_TEMPLATE_SURGERY.md` for the shipped-template items (SE/BST income tax, Ltd CT and CT600, Fixedassets NBV, HPfinance #REF!, Salesinvoice G6, expensesform mileage) | `sp-template-design` | started |
 
 Wave 2 (after the design lands): ltd-ct, se-tax, bst-tax, fixed-assets (+HP checks), salesinvoice (+formula presence), ltd-writes (Boardmeeting!E4, mileage rate).
