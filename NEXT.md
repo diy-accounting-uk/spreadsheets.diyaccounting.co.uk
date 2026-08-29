@@ -15,7 +15,7 @@ commit first, since the forecast templates and the taxi fixture change what is g
 |---|---|---|
 | forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` repairs and checks; Taxi `Draft Tax calculation` taper and additional rate with a high-profit taxi fixture | started |
 | se-q5-window | `yearShift` rework so SE's Q5 scenario window is checked like Q1-Q4 | landed on `claude/wave-4`, 1039 tests, worktree removed |
-| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK` via a scenario field and `cellWrites`; diya-gl schema brought up to the fixture's codes and fields | started |
+| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK`; schema brought up to the fixture with a validation test | merged into `claude/wave-4` `1cc9d259`, blast radius running; PAYE and CIS creditors 0, VAT creditor −9,135.79 measured |
 | fidelity-design | `PLAN_ROUNDTRIP_FIDELITY.md` rewritten: measured scope gap (JS side far behind the Excel checks; S1 flipped, exporter collapses account identity, schemas unvalidated), tracks T0-T7 | landed on `claude/wave-4` `7b2ccd58`, worktree removed |
 | fidelity-t0 | T0: per-product calculator split, `report.js` passes the scenario and reads `additionalReads`, published checks in the JS report, `verify-roundtrip.js` scorecard | started (runs alone; T1 schema v2 waits for ltd-fixture's v1 fixes; T2-T7 follow per the plan) |
 
@@ -49,12 +49,13 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** — the four VAT payments stay coded `RP`, so the PAYE
-  creditor carries a 40,682.17 debit that recoding to `RV` takes to nil; nothing writes the
-  master data's `diya-gl:cisDeduction` into `Purchases!AK`, so the CIS creditor reads as a
-  1,600 debit (a warning carries the figure) — needs a scenario field and a `cellWrites`
-  change; `web/.../schema/diya-gl-lines-v1.schema.json` omits bank codes `BB`, `RT`, `RC`
-  and the `diya-gl:hpAgreement` field the fixture uses (nothing validates against it).
+- [ ] **Ltd fixture remainders** — code-complete on `claude/wave-4` (VAT payments `RV`, CIS
+  certificates written, schema validated). Still open: SE's `Purchases.xlsx` AD (its CIS
+  column) is not written from the `cis_deduction` the SE scenario now carries (one write in
+  `se.js` plus a check); the brickwork fixtures carry 4,000 of `cisDeduction` their
+  hand-written TOMLs omit; `ajv` is imported by the schema test as a transitive dependency
+  of eslint and should be declared in `package.json`; the row counters at `ltd.js:853` and
+  `se.js:537` count any key starting with the amount column's letter.
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
