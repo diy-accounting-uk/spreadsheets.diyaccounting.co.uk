@@ -16,13 +16,14 @@
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import { resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
-import { readXlsxCellValues, readMultiFileXlsxCellValues, findXlsx } from "../lib/xlsx-reader.js";
+import { readXlsxCellValues, readMultiFileXlsxCellValues, readMultiFileAdditionalXlsxCellValues, findXlsx } from "../lib/xlsx-reader.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { generateSectionReports } from "../lib/report-generator.js";
-import { loadDiyaGlData, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
+import { loadDiyaGlData, extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
@@ -31,6 +32,14 @@ import * as ltd from "../products/ltd.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const PRODUCTS = { bst, taxi, se, ltd };
+
+// The package directory name carries this run's own year-end date
+// (YYYY-MM-DD), the same convention reconcile.js reads. --year-end overrides
+// it for a --source-dir whose own name does not carry a date.
+function packageYearEnd(dirName) {
+  const match = dirName.match(/(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
+}
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -46,6 +55,7 @@ function parseArgs(argv) {
   const dataDir = getArg("--data");
   const offset = getArg("--offset");
   const years = getArg("--years");
+  const yearEndArg = getArg("--year-end");
 
   if (!packageName) {
     console.error("Error: --package is required (bst, taxi, se, ltd)");
@@ -60,11 +70,11 @@ function parseArgs(argv) {
     process.exit(1);
   }
 
-  return { packageName, sourceDir, outputDir, mode, dataDir, offset, years };
+  return { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg };
 }
 
 async function main() {
-  const { packageName, sourceDir, outputDir, mode, dataDir, offset, years } = parseArgs(process.argv);
+  const { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg } = parseArgs(process.argv);
 
   const productMod = PRODUCTS[packageName];
   if (!productMod) {
@@ -95,12 +105,28 @@ async function main() {
       console.log(`Tax data:   extracted from book.toml (use --years for precise rates)`);
     }
 
-    const results = calculateFromDiyaGl(book, lines, packageName, taxData);
+    // diyaGlToScenario() builds the same scenario shape cellWrites() consumes
+    // on the Excel side: opening balances, stock, debtors, creditors and
+    // business details. Passing it through lights those up on the JS side too.
+    const scenario = diyaGlToScenario(book, lines, packageName);
+    const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
+
+    // Fixture anchors (opening_debtors, closing_creditors, ...) are top-level
+    // scenario tables, not [expected] keys, so checks that anchor against
+    // them need the whole scenario merged in — the same shape reconcile.js
+    // builds for the Excel side.
+    const mergedScenario = { ...scenario, ...scenario.expected };
+    const periodEnd = book.documentInfo?.periodCoveredEnd;
+    const yearEnd = yearEndArg || (periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null);
+    const checks =
+      typeof productMod.checkCompliance === "function"
+        ? productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd)
+        : [];
 
     const resolvedOutputDir = resolve(outputDir);
     mkdirSync(resolvedOutputDir, { recursive: true });
 
-    const sectionReports = generateSectionReports(results, productMod);
+    const sectionReports = generateSectionReports(results, productMod, mergedScenario, checks);
     for (const [filename, content] of Object.entries(sectionReports)) {
       writeFileSync(resolve(resolvedOutputDir, filename), content);
       console.log(`  Written: ${filename}`);
@@ -113,6 +139,14 @@ async function main() {
   const cellReads = productMod.standardReads();
   const resolvedSourceDir = resolve(sourceDir);
 
+  // The year-end date names the tab layout (non-March year ends rename the
+  // month tabs) that multiFileOptions() reads against. --year-end overrides
+  // it; failing that, the source directory's own name carries it the same
+  // way a packages/ directory does.
+  const yearEnd = yearEndArg || packageYearEnd(basename(resolvedSourceDir));
+  const yearEndMonth = yearEnd ? parseInt(yearEnd.split("-")[1], 10) : undefined;
+  const multiOpts = productMod.MULTI_FILE && typeof productMod.multiFileOptions === "function" ? productMod.multiFileOptions(yearEndMonth) : {};
+
   console.log(`=== report.js ===`);
   console.log(`Package:    ${packageName}`);
   console.log(`Source:     ${resolvedSourceDir}`);
@@ -124,6 +158,11 @@ async function main() {
   if (mode === "saved") {
     if (productMod.MULTI_FILE) {
       results = await readMultiFileXlsxCellValues(resolvedSourceDir, "Financialaccounts.xlsx", cellReads);
+      // The VAT Returns and Fixed Asset Schedule sections live on leaf files
+      // (Vatreturns.xlsx, Fixedassets.xlsx, ...), not the hub, so the hub-only
+      // read above never carries them. additionalReads names every cell
+      // reportSections() needs from those files, keyed "<filename>!<sheetName>".
+      Object.assign(results, await readMultiFileAdditionalXlsxCellValues(resolvedSourceDir, multiOpts.additionalReads));
     } else {
       const xlsxFile = findXlsx(resolvedSourceDir);
       if (!xlsxFile) {
@@ -141,7 +180,7 @@ async function main() {
       for (const f of xlsxFiles) {
         fileBuffers[f] = readFileSync(resolve(resolvedSourceDir, f));
       }
-      results = await runMultiFileSpreadsheet(fileBuffers, {}, cellReads, "Financialaccounts.xlsx");
+      results = await runMultiFileSpreadsheet(fileBuffers, {}, cellReads, "Financialaccounts.xlsx", multiOpts);
     } else {
       const xlsxFile = findXlsx(resolvedSourceDir);
       if (!xlsxFile) {

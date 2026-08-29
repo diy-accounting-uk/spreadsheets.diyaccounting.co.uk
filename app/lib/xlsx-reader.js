@@ -7,7 +7,7 @@
 // LibreOffice xls roundtrip).
 
 import JSZip from "jszip";
-import { readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync, existsSync } from "fs";
 import { resolve } from "path";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
 
@@ -49,6 +49,28 @@ export async function readMultiFileXlsxCellValues(sourceDir, readFile, cellReads
   const hubPath = resolve(sourceDir, readFile);
   const hubBuffer = readFileSync(hubPath);
   return readXlsxCellValues(hubBuffer, cellReads);
+}
+
+/**
+ * Read cell values from the leaf xlsx files of a multi-file package on disk,
+ * for a product's multiFileOptions().additionalReads. Mirrors the additional-
+ * reads step of runMultiFileSpreadsheet, but against the files as they sit on
+ * disk rather than after a LibreOffice recalculation.
+ * @param {string} sourceDir - path to directory containing xlsx files
+ * @param {Object} additionalReads - { "file.xlsx": { "SheetName": ["A1", ...] } }
+ * @returns {Object} { "file.xlsx!SheetName": { "A1": value, ... }, ... }
+ */
+export async function readMultiFileAdditionalXlsxCellValues(sourceDir, additionalReads) {
+  const results = {};
+  for (const [filename, sheetReads] of Object.entries(additionalReads || {})) {
+    const filePath = resolve(sourceDir, filename);
+    if (!existsSync(filePath)) continue;
+    const fileResults = await readXlsxCellValues(readFileSync(filePath), sheetReads);
+    for (const [sheetName, cells] of Object.entries(fileResults)) {
+      results[`${filename}!${sheetName}`] = cells;
+    }
+  }
+  return results;
 }
 
 /**
