@@ -986,16 +986,13 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual(["Trial Balance: dividends creditor = opening plus declared less paid"]);
     });
 
-    it("fails the register row and the report's shareholder line when RegisterofMembers A3 is corrupted via JSZip", async () => {
+    it("fails the register row when RegisterofMembers A3 is corrupted via JSZip", async () => {
       // Shared string 0 is the board minute's own heading, so the register
       // reads back a name that is not the member the scenario carries.
       const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "RegisterofMembers", "A3", 0);
       expect(value).not.toBe("Carol Smith");
       const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!RegisterofMembers", "A3", value);
-      expect(failureNames(corrupted)).toEqual([
-        "Register of members: row 3 names Carol Smith",
-        "Directors' report: first shareholder named = register of members",
-      ]);
+      expect(failureNames(corrupted)).toEqual(["Register of members: row 3 names Carol Smith"]);
     });
 
     it("fails a register row's holding when RegisterofMembers G5 is corrupted via JSZip", async () => {
@@ -1009,7 +1006,7 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Report", "A97", "David Brown");
       expect(value).toBe("David Brown");
       const corrupted = checksWithCorruptedCell("Report", "A97", value);
-      expect(failureNames(corrupted)).toEqual(["Directors' report: first shareholder named = register of members"]);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: first shareholder named"]);
     });
 
     it("fails the prior year closing stock when OpenAccounts E48 is corrupted via JSZip", async () => {

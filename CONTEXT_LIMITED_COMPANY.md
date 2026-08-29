@@ -484,7 +484,7 @@ Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals
 | Expenses form Month NN: mileage rate = tax data | expensesform.xlsx Month 01-12 C30 | `mileage.higher_rate_pence` (tolerance 0.0001) |
 | Published P&L: prior year closing stock / stock movement / retained profit while no comparatives are entered | OpenAccounts E48, PubP&L B14, B54 | Nil while the prior year block on OpenAccounts is empty |
 | Register of members: row N names / holds | RegisterofMembers A3-A19, G3-G19 | Each row against the scenario's `[[members]]` |
-| Directors' report: first / second shareholder named | Report A97, A98, RegisterofMembers A3, A4 | The report prints the register's names |
+| Directors' report: first / second shareholder named | Report A97, A98, the scenario's `[[members]]` | The report prints the first two members, and a blank second line when there is only one |
 | Board minute: dividend declared | Boardmeeting E4, the scenario's `[dividend]` | The minute carries the declaration |
 | Board minute: the meeting falls inside the accounting period | Boardmeeting F2, Admin B9, F21 | A dividend for the year is declared in the year |
 | Published P&L: dividends appropriated = the dividend the board declared | PubP&L F52, the scenario's `[dividend]` | The appropriation line publishes the declaration |

@@ -2265,11 +2265,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
     });
   }
-  if (report && register) {
-    const namesMember = (name, reported, registered) =>
-      checkText(name, text(reported), (printed) => printed !== "" && printed === text(registered), `the register's "${text(registered)}"`);
-    namesMember("Directors' report: first shareholder named = register of members", report.A97, register.A3);
-    namesMember("Directors' report: second shareholder named = register of members", report.A98, register.A4);
+  if (report && expected.members) {
+    // The report prints two shareholder lines whatever the register holds, so
+    // a company with one member has to publish a blank second line rather
+    // than a stale name. Both are measured against the scenario's own
+    // members, the same side the register is measured against.
+    const printsMember = (name, printed, member) =>
+      checkText(name, text(printed), (line) => line === (member?.name || ""), member ? member.name : "blank, there being no second member");
+    printsMember("Directors' report: first shareholder named", report.A97, expected.members[0]);
+    printsMember("Directors' report: second shareholder named", report.A98, expected.members[1]);
   }
 
   // ── The dividend cycle, minute to balance sheet ──────────────────────────
