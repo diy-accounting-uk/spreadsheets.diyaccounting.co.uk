@@ -114,8 +114,8 @@ checks, fixtures, or the judge.
   deadlock or time out: `npx vitest run --fileParallelism=false`. Tee anything long.
 - **Judge triage discipline.** When the LLM judge fails a run, classify each concern: a real
   defect is fixed at source with a new deterministic check (so its class stops needing the
-  judge); a context gap gets a richer deterministic scenario summary or per-product note in
-  `app/bin/judge-reconciliation.js`. The rubric's standards are never softened. Template
+  judge); a context gap gets a new indicator in `app/lib/report-indicators.js` or a per-product
+  note in `app/bin/judge-reconciliation.js`. The rubric's standards are never softened. Template
   defects the fixtures cannot fix become NEXT.md items with the hand-computed evidence.
 - **Verification ladder per change**: blast-radius tests serially → the featured scenario
   reconciles RECONCILES → full `npm test` before any push → the four `generate-*` workflows

@@ -1,73 +1,52 @@
 # Reconciliation judge rubric
 
-## What you are judging
+## What you are reviewing
 
-A reconciliation run takes a written scenario of business transactions, drives them through
-the shipped spreadsheet workbooks, recalculates the workbooks, and reads the figures back
-out into a report. You get the scenario summary and the report.
+A reconciliation run drives a written scenario of transactions through the shipped workbooks,
+recalculates them, and reads the figures back out. You get each run's headline and about a
+dozen indicators taken from its report.
 
-Your question is whether the reported figures make sense for the business described. You are
-the reader who knows what a set of accounts should look like, not a calculator.
-
-The scenario summary breaks the purchase journal down by code, states how much of it is
-capital spending, and ends with how that product's workbooks treat those entries: which codes
-never reach the profit and loss account, which rows the sheets fill in for themselves, and
-where a zero is the product working as designed. Read it before you weigh a total against a
-journal or call a line missing. It does not tell you what to conclude, and a figure it cannot
-account for is still yours to raise.
+This is a review of headline indicators, the kind you would give a feature after stand-up.
+It is not an audit. Read the indicators against the headline and say whether they tell the
+same story.
 
 ## What is already checked
 
-Deterministic checks run before you do. They compare cell against cell: totals against the
-sum of their parts, statements against each other, tax against the profit it is charged on.
-Any arithmetic failure has already stopped the run, so a report that reaches you adds up.
+Deterministic checks compare cell against cell before you see anything: totals against their
+parts, statements against each other, tax against the profit it is charged on. The first
+indicator says how many passed and names any that warned.
 
-Do not re-do that arithmetic. Adding up a column to confirm the total is work the checks have
-already done, and a difference of a penny or two is rounding, not an error.
+Do not re-do that arithmetic. A rounding difference of a penny or two is not a finding.
 
-## Fail the run when a figure is not credible
+## Pass
 
-Fail when the accounts do not tell the same story as the scenario. The patterns to look for:
+Pass when the indicators hold together with the headline. Warnings the run already names,
+rounding, and anything you would want a person to glance at but cannot fault are notes, not
+blockers. A pass may carry notes.
 
-- **A number that should be there is zero or missing.** A VAT-registered trader whose four
-  VAT quarters all show £0.00 is the case this judge exists for. Zeros are self-consistent,
-  so every arithmetic check passes, and a reader spots it at once. The same goes for a
-  business with payroll and no wages, purchases and no cost of sales, or fixed assets and no
-  depreciation.
-- **A whole journal has gone missing.** The scenario has twelve months of purchases and the
-  profit and loss account shows the sales side only.
-- **The trade does not match the accounts.** A construction company with no materials, a taxi
-  driver with no motor costs, a consultancy whose largest cost is stock.
-- **The period is wrong.** Twelve months of input against one month of output, or a year-end
-  figure that covers the wrong dates.
-- **The scale is wrong.** A figure out by a factor of ten or more against the transactions
-  that fed it, or a sign the wrong way round: negative sales, positive drawings in the profit
-  column, tax refunded on a profit.
-- **The balance sheet balances on nothing.** Both sides at zero, or the difference parked in a
-  suspense line.
+## Fail
 
-## Pass the run when the figures hold up
+Fail only when an indicator contradicts the headline. The cases:
 
-Pass when the statements read as a plausible set of accounts for the business in the scenario.
-Rounding differences, warnings the report already explains, and presentational differences are
-not grounds to fail. A difference the report itself decomposes in a bridge line is not a
-blocker.
+- A business the headline says is registered for VAT whose quarterly boxes all read nil, or
+  an unregistered one whose boxes carry VAT.
+- A balance sheet whose net assets and shareholders' funds differ, or a trial balance audit
+  cell that is not zero.
+- No tax charged on a clear taxable profit, or tax charged where there is no taxable profit.
+- A profit bridge with a residue other than zero.
+- Turnover or profit off the headline's scale by a factor of ten or more, or a sign the wrong
+  way round: negative sales, tax refunded on a profit.
 
-A pass may still carry concerns. Record anything you would want a person to look at, and say
-in the summary that it does not block the run.
+Every concern names an indicator from the digest and quotes its figure. Without one, you do
+not have a concern.
 
 ## How to answer
 
-Give a verdict of `pass` or `fail`, a summary of one or two sentences, and a list of concerns.
+Record your concerns first, then the verdict, then a summary of one or two sentences.
 
-Each concern names the figure, says where in the report it appears, and says why it looks
-wrong. Write it so someone can go to that sheet and check. Mark it `blocking` when it is a
-reason to fail and `note` when it is not.
-
-Raise a concern only when you have one. An empty list is a good answer for a clean run.
-Never fail a run on a concern you cannot point to a figure for.
+Each concern names the figure, says which indicator it came from, and says why it looks
+wrong. Mark it `blocking` when it is a reason to fail and `note` when it is not.
 
 The verdict has to agree with the concerns beneath it. A `fail` needs at least one concern
-marked `blocking`; if every concern you end up recording is a note, the verdict is `pass`.
-Work the figures out before you write the summary, and if a figure you were going to fail on
-turns out to reconcile, say so in the concern and let the verdict follow it.
+marked `blocking`; if everything you record is a note, the verdict is `pass`. An empty
+concerns list is a good answer for a clean run.
