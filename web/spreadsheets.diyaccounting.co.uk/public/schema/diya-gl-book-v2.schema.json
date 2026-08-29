@@ -62,6 +62,12 @@
           "type": "string",
           "description": "gl-cor:entriesComment — Free text note about this book"
         },
+        "diya-gl:schemaVersion": {
+          "type": "string",
+          "enum": ["v1", "v2"],
+          "default": "v2",
+          "description": "diya-gl: extension — Which published diya-gl schema this book conforms to. A v1 reader has to reject a v2 book, because debitCreditCode becomes required on journal lines and the new top-level tables are not part of v1's closed additionalProperties; this is how a book says which one it means."
+        },
         "diya-gl:vatStaggerGroup": {
           "type": "integer",
           "enum": [1, 2, 3],
