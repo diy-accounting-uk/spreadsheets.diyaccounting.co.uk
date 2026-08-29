@@ -19,7 +19,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; CIS sign in bst.js and the BST P&L | landed on `claude/wave-2` `50ede53b`, 1541 tests, worktree removed | SE 45,317.96 → 51,324.93; BST 78,035 → 88,131.60, both statutory |
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage; Fixedassets Admin link cache rolled per package | landed on `claude/wave-2`, 1619 tests, worktree removed | K35 28,028.78 → 35,342.77 statutory on every year end; box 65 = K35 |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
-| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | started |
+| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | merged into `claude/wave-2` `dc3e5e2a`, blast radius running, worktree removed | K1 43,662 → 30,990 both products; HPfinance!E2 feeds long-term creditors (25,000 → 45,000) |
 | ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | `sp-ltd-writes` off `claude/wave-2` | started |
 
 ## Open items
@@ -43,14 +43,14 @@ Coverage checks still to write:
   (both echoes; I1 now derives 5 April from the seed after the 2024 leap year failed the
   generate-se matrix). Remainder: an SA103F report indicator (box 30/46 divergence) once the
   regenerated SE report carries the section `judge-reconciliation.test.js` parses.
-- [ ] **HPfinance fixture and capital/interest checks (Ltd and SE)** — the sheet that
-  decides how much of an HP payment is deductible has no fixture. Depends on the
-  #REF! repair below. Test: a fixture agreement (counter-legged, EJ91 stays 0),
-  asserting the capital+interest split sums to the amount financed and the interest
-  reaches the P&L finance line; expected a second agreement's row computes.
-- [ ] **Salesinvoice suite formula-presence coverage (Ltd and SE)** — five standalone
-  sheets per product, currently untouched; rides with the G6 repair below. Test: the
-  formula-presence guard covers the workbook; expected zero gaps after the repair.
+- [ ] **HPfinance fixture and capital/interest checks (Ltd and SE)** — code-complete on
+  `claude/wave-2` (two agreements on rows 8 and 10, split and P&L ties checked; the
+  fixture posts the HP legs through the Ltd-only savings account so SE's anchored profit
+  stays put). Remainder: the SE P&L interest tie does not carry HP money, so an SE-side
+  HP counter-leg is still unproven; and the financed items are not on the Schedule as
+  additions.
+- [ ] **Salesinvoice suite formula-presence coverage (Ltd and SE)** — code-complete on
+  `claude/wave-2` (guard sweeps all 22 templates, zero gaps); closes with the refresh.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 
@@ -64,15 +64,11 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
   for its period end and payment-due date, and `K2:K16` on the dropdown. Test: the
   `VAT: periods more than one of the five returns declares` warning converts to a hard 0.
 - [ ] **Fixedassets Schedule retains sold assets in its closing NBV columns** (Ltd and
-  SE templates) — K = E − J with the disposal columns as memo-only, so K1 includes the
-  book value of assets sold in the year (SE advanced: 43,662 shown vs 30,990 true).
-  Ltd's published note computes the true figure; SE ships no note, and the SE report
-  now lays the movement out and names the quirk. Template fix: closing columns net of
-  disposals, or a proper disposals row.
+  SE) — code-complete on `claude/wave-2` (K nets disposals row by row; K1 = 30,990);
+  closes when generate-se and generate-ltd refresh packages and reports.
 
-- [ ] **HPfinance `#REF!` repair (Ltd and SE templates)** — rows 10 onward compute the
-  monthly payment from `#REF!`; a customer's second agreement computes nothing.
-  Test: after repair, row 10+ formulas mirror row 8's; the new HP checks pass.
+- [ ] **HPfinance `#REF!` repair (Ltd and SE templates)** — code-complete on
+  `claude/wave-2` (24 formulas repaired, template test); closes with the same refresh.
 - [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — code-complete
   on `claude/wave-2` (statutory £88,131.60 on £226,508 is a hard-pass check; judge note
   removed); closes when generate-bst refreshes packages and reports.
@@ -85,9 +81,9 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
   (row 128 wired, boxes 64/65 at Y133/Y135, boxes 66/70 read box 65); closes when
   generate-ltd refreshes packages and reports. Test: box 63 equals the working sheet's K35; the "box 56 is
   blank" hard check inverts to assert the wired value.
-- [ ] **Salesinvoice Product Details G6 margin (Ltd and SE templates)** — G6 holds the
-  margin-percentage formula where the margin belongs; H6 is empty. Test: G6 = C6-F6,
-  H6 the percentage; the suite's formula-presence coverage passes.
+- [ ] **Salesinvoice Product Details G6 margin (Ltd and SE templates)** — code-complete
+  on `claude/wave-2` (both shared groups G6:G66 and G67:G99 repaired, H carries the
+  percentage); closes with the refresh.
 - [ ] **Ltd expensesform mileage rate from a tax-year source** — code-complete on
   `claude/wave-2` (`Month 01!C30` generator-written, twelve month checks); closes when
   generate-ltd refreshes packages.
