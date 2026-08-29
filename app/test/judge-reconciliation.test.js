@@ -255,6 +255,15 @@ describe("buildIndicators for the Self Employed", () => {
     );
   });
 
+  it("states the SA103F full return's relation to the short return's figures", () => {
+    expect(text).toContain(
+      "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
+        "Total expenses (box 30) 164,307.94 = the short return's total expenses 152,567.94 plus total disallowable expenses (box 45) 11,740.00; " +
+        "net profit (box 46) 174,892.06 = the short return's net profit 186,632.06 less that same 11,740.00; " +
+        "total capital allowances (box 56) 44,000.00 sums the same allowances split across more boxes than the short return uses.",
+    );
+  });
+
   it("carries the grants line from the taxable profit to the profit tax is charged on", () => {
     expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 144,715.39");
     expect(text).toContain("Income tax: charged on a profit of 144,715.39");

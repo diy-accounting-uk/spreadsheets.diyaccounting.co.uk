@@ -190,6 +190,32 @@ function vatLine(report, vatRegistered) {
 }
 
 const SA103S = "Self Assessment (SA103S)";
+const SA103F = "Self Assessment (SA103F)";
+
+// The full return carries a disallowable-expenses column the short return has
+// not, so its total expenses and net profit differ from the short return's by
+// exactly that column, and its capital allowances split across more boxes to
+// the same total. Without this the judge reads the two returns' mismatched
+// figures as an error rather than the form difference it is.
+//
+// A report predating the SA103F checks carries no such section; the line is
+// left out of that digest rather than failing it, the same way vatLine treats
+// a report with no VAT Returns section.
+function sa103fLine(report) {
+  if (!report.sections.has(SA103F)) return null;
+  const shortExpenses = requireValue(report, SA103S, "Total expenses");
+  const shortNetProfit = requireValue(report, SA103S, "Net profit/loss");
+  const disallowable = requireValue(report, SA103F, "Total disallowable expenses (box 45)");
+  const fullExpenses = requireValue(report, SA103F, "Total expenses (box 30)");
+  const fullNetProfit = requireValue(report, SA103F, "Net profit (box 46)");
+  const capitalAllowances = requireValue(report, SA103F, "Total capital allowances (box 56)");
+  return [
+    "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not.",
+    `Total expenses (box 30) ${amount(fullExpenses)} = the short return's total expenses ${amount(shortExpenses)} plus total disallowable expenses (box 45) ${amount(disallowable)};`,
+    `net profit (box 46) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)};`,
+    `total capital allowances (box 56) ${amount(capitalAllowances)} sums the same allowances split across more boxes than the short return uses.`,
+  ].join(" ");
+}
 
 // The SA103S splits capital allowances across several boxes. Naming the first one alone
 // leaves the drop from net profit to taxable profit looking wider than the figure beside it,
@@ -303,6 +329,7 @@ function seIndicators(report, vatRegistered) {
       toLabel: "taxable profit",
     }),
     `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(forTax)}, which is the profit the income tax computation charges.`,
+    sa103fLine(report),
     incomeTaxLine(report, "Income Tax Calculation"),
     vatLine(report, vatRegistered),
     bridgeLine(report),
