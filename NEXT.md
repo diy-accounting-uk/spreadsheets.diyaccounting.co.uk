@@ -10,7 +10,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 |---|---|---|
 | vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | `sp-vat-q5` off `claude/wave-3` | started |
 | fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | `sp-fixture` off `claude/wave-3` | started |
-| sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | `sp-sa103f` off `claude/wave-3` | started |
+| sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
 
 Wave 3 integrates on `claude/wave-3` (from main `038d0f37`, after the operator's generate refresh); it rebases onto the post-deploy green main (deploy 33252551051 at `79eecc50`) before its CI. Every later PR branch starts from a rebase onto the post-deploy green main.
 
