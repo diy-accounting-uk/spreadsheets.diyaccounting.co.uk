@@ -4,6 +4,21 @@ Living handover for this repository. Rules and shape: `../NEXT.md` (DONE or OPEN
 deferred; a bug found fixing item A is A's remainder, not a new item; this file holds ONLY what
 to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` at this root.
 
+## In flight
+
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`.
+
+| Track | Items | Worktree | Status |
+|---|---|---|---|
+| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
+| se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
+| taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | `sp-taxi` | started |
+| vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
+| pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` | started |
+| template-design | design doc `PLAN_TEMPLATE_SURGERY.md` for the shipped-template items (SE/BST income tax, Ltd CT and CT600, Fixedassets NBV, HPfinance #REF!, Salesinvoice G6, expensesform mileage) | `sp-template-design` | started |
+
+Wave 2 (after the design lands): ltd-ct, se-tax, bst-tax, fixed-assets (+HP checks), salesinvoice (+formula presence), ltd-writes (Boardmeeting!E4, mileage rate).
+
 ## Open items
 
 Method for every check/fixture/template item below: "Reconciliation-bug method" in
