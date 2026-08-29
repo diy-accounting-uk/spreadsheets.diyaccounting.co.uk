@@ -1771,7 +1771,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
 
   // Some of the workbook's own verdicts are wording, not arithmetic: the
