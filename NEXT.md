@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (runs 33242626401, 33242627325, 33242628519, 33242629486). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (first runs failed on the fixture line count in diya-gl-loader.test.js, fixed on the branch and re-dispatched). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
