@@ -3135,7 +3135,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.apr]]
@@ -3201,15 +3201,6 @@ direction = "out"
 amount = 500
 description = "Pay credit card balance"
 
-[[bank.apr]]
-date = 2026-04-01
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 2800
-description = "VAT payment Q4 Jan-Mar"
-
 [[bank.may]]
 date = 2025-05-01
 account = "1200"
@@ -3243,7 +3234,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.may]]
@@ -3300,6 +3291,15 @@ direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
+[[bank.may]]
+date = 2025-05-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1500
+description = "VAT payment, prior year fourth quarter"
+
 [[bank.jun]]
 date = 2025-06-01
 account = "1200"
@@ -3333,7 +3333,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.jun]]
@@ -3418,15 +3418,6 @@ amount = 2300
 description = "Aggregate supplier payments"
 
 [[bank.jul]]
-date = 2025-07-07
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 3800
-description = "VAT payment Q1 Apr-Jun"
-
-[[bank.jul]]
 date = 2025-07-15
 account = "1200"
 source = "Dividend"
@@ -3441,7 +3432,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.jul]]
@@ -3508,6 +3499,15 @@ amount = 300
 description = "Pay credit card balance"
 
 [[bank.aug]]
+date = 2025-08-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 13808.17
+description = "VAT payment Q1 Apr-Jun"
+
+[[bank.aug]]
 date = 2025-08-01
 account = "1200"
 source = "WorkSpace Ltd"
@@ -3549,7 +3549,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.aug]]
@@ -3630,7 +3630,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.sep]]
@@ -3724,15 +3724,6 @@ amount = 3000
 description = "Aggregate supplier payments"
 
 [[bank.oct]]
-date = 2025-10-07
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 3200
-description = "VAT payment Q2 Jul-Sep"
-
-[[bank.oct]]
 date = 2025-10-15
 account = "1200"
 source = "Private buyer"
@@ -3756,7 +3747,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.oct]]
@@ -3823,6 +3814,15 @@ amount = 500
 description = "Pay credit card balance"
 
 [[bank.nov]]
+date = 2025-11-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 14456.5
+description = "VAT payment Q2 Jul-Sep"
+
+[[bank.nov]]
 date = 2025-11-01
 account = "1200"
 source = "WorkSpace Ltd"
@@ -3855,7 +3855,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.nov]]
@@ -3945,7 +3945,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.dec]]
@@ -4039,15 +4039,6 @@ amount = 2500
 description = "Aggregate supplier payments"
 
 [[bank.jan]]
-date = 2026-01-07
-account = "1200"
-source = "HMRC"
-code = "RV"
-direction = "in"
-amount = 1500
-description = "VAT refund Q3 Oct-Dec"
-
-[[bank.jan]]
 date = 2026-01-15
 account = "1200"
 source = "Director loan"
@@ -4071,7 +4062,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.jan]]
@@ -4129,6 +4120,15 @@ amount = 300
 description = "Pay credit card balance"
 
 [[bank.feb]]
+date = 2026-02-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 10917.5
+description = "VAT payment Q3 Oct-Dec"
+
+[[bank.feb]]
 date = 2026-02-01
 account = "1200"
 source = "WorkSpace Ltd"
@@ -4161,7 +4161,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.feb]]
@@ -4251,7 +4251,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1501
+amount = 1673.2
 description = "Monthly PAYE/NI payment"
 
 [[bank.mar]]
@@ -4815,6 +4815,15 @@ netPay = 1048
 [stock]
 opening = 10000
 closing = 6000
+materials_percent = 0.03
+
+[[charges]]
+date = 2023-09-01
+asset = "Motor vehicles, being the company's delivery van"
+valuation = 30000
+holder = "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA"
+terms = "Fixed charge securing a five year business loan"
+board_meeting = 2023-08-25
 
 [[opening_debtors]]
 customer = "Acme Corp"
@@ -4892,7 +4901,8 @@ trade_creditors = 2400
 vat_due = 1500
 corporation_tax = 4500
 share_capital = 100
-retained_earnings = 45702
+retained_earnings = 20702
+long_term_creditors = 25000
 
 [opening_balance.fixed_asset_cost]
 motor_vehicles = 30000

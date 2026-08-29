@@ -249,7 +249,11 @@ describeCalc(
       expect(results.PubBalSht.E11).toBe(10400);
       expect(results.Stock.D6).toBe(10000);
       expect(results.Stock.AB30).toBe(6000);
-      expect(results.Stock.Z30).toBe(-4000);
+      // 10,000 opening plus 5,450 of materials bought, less 3% of the 311,600
+      // of net product A sales the stock sheet reckons those materials went
+      // out inside, leaves 6,102 calculated against a count of 6,000.
+      expect(results.Stock.D30).toBeCloseTo(6102, 6);
+      expect(results.Stock.Z30).toBeCloseTo(-102, 6);
     });
 
     it("fails the published stock tie when PubBalSht E10 is corrupted via JSZip", async () => {
@@ -878,6 +882,48 @@ describeCalc(
 
       const onAnotherYearEnd = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax, "2026-04-30");
       expect(failureNames(onAnotherYearEnd)).toEqual(["Admin: year-end seed = the package's own year end"]);
+    });
+
+    it("registers the charge over the company's assets and carries the loan it secures", () => {
+      const charges = results["Companysecretary.xlsx!Charges&Debentures"];
+      expect(charges.C2).toBe(30000);
+      expect(results.PubBalSht.E30).toBe(25000);
+    });
+
+    it("fails the charge coverage when the directors valuation is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "Charges&Debentures", "C2", 10000);
+      expect(value).toBe(10000);
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!Charges&Debentures", "C2", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Charges register: the balance sheet carries a creditor falling due after more than one year",
+      ]);
+    });
+
+    it("fails the secured loan and its coverage when PubBalSht E30 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E30", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E30", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Published balance sheet: creditors due after more than one year = the secured loan",
+        "Charges register: the balance sheet carries a creditor falling due after more than one year",
+      ]);
+    });
+
+    it("fails the stock movement when the calculated closing stock is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Stock", "D30", 10000);
+      expect(value).toBe(10000);
+      const corrupted = checksWithCorruptedCell("Stock", "D30", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Stock: loss adjustment = count - calculated",
+        "Stock: calculated stock = opening + materials bought - materials sold",
+      ]);
+    });
+
+    it("fails the opening long-term creditor when TrialBalance D40 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "D40", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "D40", value);
+      expect(failureNames(corrupted)).toEqual(["Trial Balance opening: creditors due after more than one year"]);
     });
   },
   900000,

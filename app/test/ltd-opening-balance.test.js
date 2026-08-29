@@ -107,7 +107,12 @@ describeCalc(
       expect(tb.D19).toBe(10000);
       expect(tb.D20).toBe(10800);
       expect(tb.D42).toBe(-100);
-      expect(tb.D43).toBe(-45702);
+      expect(tb.D43).toBe(-20702);
+    });
+
+    it("posts the secured bank loan as a creditor falling due after more than one year", () => {
+      expect(results.TrialBalance.D40).toBe(-25000);
+      expect(results.PubBalSht.E30).toBe(25000);
     });
 
     it("carries the directors loan opening credit into the final balance", () => {

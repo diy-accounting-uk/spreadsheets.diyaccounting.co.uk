@@ -146,6 +146,12 @@ const STOCK_FINAL_CALCULATED_CELL = "D30";
 const STOCK_FINAL_COUNT_CELL = "AB30";
 const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
 
+// The share of a product's net sales value that is direct materials. The
+// sheet repeats H4 down its own product A column and reads the same cell for
+// every month, and the materials-bought column stays switched off while H4,
+// N4 and T4 are all zero.
+const STOCK_MATERIALS_PERCENT_CELL = "H4";
+
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
 // depreciation (M:Q), one column per asset class, with net book value in E13.
@@ -450,6 +456,26 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // opening balance sheet's own share capital figure divided by that
   // nominal value.
   const companysecretaryWrites = {};
+  if (scenario.charges) {
+    companysecretaryWrites["Charges&Debentures"] = {};
+    const register = companysecretaryWrites["Charges&Debentures"];
+    scenario.charges.forEach((charge, index) => {
+      const row = CHARGE_REGISTER_ROWS[index];
+      if (row === undefined) return;
+      const date = parseDate(charge.date);
+      register[`${CHARGE_REGISTER_COLUMNS.date}${row}`] = toExcelSerial(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+      register[`${CHARGE_REGISTER_COLUMNS.asset}${row}`] = charge.asset;
+      register[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`] = charge.valuation;
+      register[`${CHARGE_REGISTER_COLUMNS.holder}${row}`] = charge.holder;
+      register[`${CHARGE_REGISTER_COLUMNS.terms}${row}`] = charge.terms;
+      const confirmed = parseDate(charge.board_meeting);
+      register[`${CHARGE_REGISTER_COLUMNS.boardMeeting}${row}`] = toExcelSerial(
+        confirmed.getUTCFullYear(),
+        confirmed.getUTCMonth() + 1,
+        confirmed.getUTCDate(),
+      );
+    });
+  }
   if (scenario.opening_balance?.share_capital !== undefined) {
     const nominalValue = 1;
     companysecretaryWrites.RegisterofMembers = {
@@ -510,8 +536,16 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // becomes the stock loss adjustment in column Z, which is what the trial
   // balance reads as the year's stock movement. Column B holds the month-end
   // dates, so writing the count there moves no stock at all.
+  //
+  // The calculated side needs one more entry. Column F ("Direct Material
+  // BOUGHT") reads the month's materials purchases only while at least one
+  // of the stock percentages H4, N4 or T4 is set, and column L values the
+  // materials sold as that percentage of the month's net sales. With all
+  // three left at zero the sheet buys and sells nothing and the calculated
+  // stock never leaves the opening figure.
   if (scenario.stock && scenario.stock.closing !== undefined) {
     if (!hubWrites.Stock) hubWrites.Stock = {};
+    if (scenario.stock.materials_percent !== undefined) hubWrites.Stock[STOCK_MATERIALS_PERCENT_CELL] = scenario.stock.materials_percent;
     hubWrites.Stock[STOCK_FINAL_COUNT_CELL] = scenario.stock.closing;
   }
 
@@ -1706,6 +1740,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
     );
     if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
+
+    // What the sheet works the year-end stock out to be, before anyone counts
+    // it: the opening figure, plus the materials bought in the year, less the
+    // materials its stock percentage reckons went out inside the product
+    // sales. Both sides come from the scenario, so a month of materials that
+    // never reached the sheet, or a percentage that never reached H4, shows
+    // up here instead of being absorbed into the count adjustment.
+    const materialsPercent = expected.stock?.materials_percent;
+    if (materialsPercent !== undefined) {
+      const bought = journalTotalsByCode(expected.purchases, rate, "g").net.s || 0;
+      const sold = materialsPercent * (journalTotalsByCode(expected.sales, rate, "a").net.a || 0);
+      check(
+        "Stock: calculated stock = opening + materials bought - materials sold",
+        num(stock[STOCK_FINAL_CALCULATED_CELL]),
+        num(stock.D6) + bought - sold,
+      );
+    }
   }
   if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);

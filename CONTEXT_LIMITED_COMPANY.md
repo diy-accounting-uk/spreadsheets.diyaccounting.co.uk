@@ -595,6 +595,43 @@ Rows 23 to 32 carry the remaining expense codes in the same pattern: distributio
 hire (q), repairs (m), consumables (u), telephone/postage/stationery (g), travel (h), motor (v),
 insurance (n) and leasing (f).
 
+### Stock sheet
+
+A row per month end from row 8 to row 30 in steps of two, under an opening row 6 fed from the
+opening balance sheet.
+
+| Column | Holds |
+|--------|-------|
+| B | The month end date |
+| D | The calculated stock value |
+| F | Direct materials bought, `[2]<Month>!O$1` from the purchases workbook |
+| H, N, T | The share of each product's net sales value that is direct materials |
+| L, R, X | Direct materials sold: the month's net sales for that product times its percentage |
+| Z | The stock loss adjustment, the physical count less the calculated value |
+| AB | The physical count |
+
+H4 is the switch for the whole table. Columns F, L, R and X read
+`IF((H$4+N$4+T$4)=0, 0, ...)`, so while all three percentages are zero the sheet buys and sells
+nothing, the calculated stock stays at the opening figure, and the entire movement falls out as
+a loss adjustment in Z. `cellWrites` writes H4 from the scenario's `[stock] materials_percent`.
+
+The trial balance reads the whole movement, not just the adjustment: row 19's month columns are
+`Stock!F<n> - L<n> - R<n> - X<n> + Z<n>`, so the year-end stock lands on the physical count
+either way.
+
+### Companysecretary.xlsx
+
+| Sheet | Holds |
+|-------|-------|
+| Boardmeeting | E4 the dividend declared, E8 additional share capital issued |
+| Directors&Secretary | The register of directors |
+| RegisterofMembers | One member a row from row 3: A name, F nominal value, G shares held. F1 = F3, G1 = SUM(G3:G19) |
+| DirectorsInterests | The register of directors' interests |
+| Charges&Debentures | One charge a row from row 2: A date, B assets charged, C the directors valuation at the date of charging, D holder, E terms, F the date of the board meeting that confirmed it. No formulas |
+
+`cellWrites` fills RegisterofMembers F3/G3 from the opening share capital and the
+Charges&Debentures rows from the scenario's `[[charges]]`.
+
 ### Directors' report (Report)
 
 The filed narrative reads its figures from the statements and from Companysecretary.xlsx (`[8]`).
