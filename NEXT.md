@@ -13,7 +13,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
 | se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
-| vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
+| vat-stagger | VATQtr5 stagger and dropdown range | merged `3c85466a`, blast radius running | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
 | template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
 | income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; bst.js CIS sign | `sp-income-tax` off `claude/wave-2` | started |
@@ -72,11 +72,12 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
   tax understated ~£5,028) and stops at the higher rate; the Admin block carries no
   taper threshold. Confirmed by four independent judge samples. The SE sibling of the
   BST band item below.
-- [ ] **VATQtr5 default stagger is wrong as shipped** — generator sets Q1-Q4 at
-  quarterly steps but Q5 at one month after Q4 (`monthsFromStart = q <= 4 ? q * 3 : 13`),
-  so filing all five returns as shipped declares two periods twice, and the G5 dropdown
-  cannot even offer the correct next quarter end. The reports now state each return's
-  coverage; the template's fix is the stagger and the dropdown range.
+- [ ] **VATQtr5 default stagger** — remainder after wave 1: Q5 now ends on Vatinterface
+  row 19, the last period the interface totals, so one period (row 17) is still declared
+  twice. A fully consecutive fifth quarter needs Vatinterface row 20, a `S/P 06Y2` entry
+  sheet pair in `Vatreturns.xlsx`/`Vat.xlsx`, Admin B-column rows in `Financialaccounts.xlsx`
+  for its period end and payment-due date, and `K2:K16` on the dropdown. Test: the
+  `VAT: periods more than one of the five returns declares` warning converts to a hard 0.
 - [ ] **Fixedassets Schedule retains sold assets in its closing NBV columns** (Ltd and
   SE templates) — K = E − J with the disposal columns as memo-only, so K1 includes the
   book value of assets sold in the year (SE advanced: 43,662 shown vs 30,990 true).
