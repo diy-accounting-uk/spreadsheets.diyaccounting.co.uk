@@ -4,10 +4,10 @@
 // se-income-tax-bands.test.js — Drives the SE Income Tax sheet across the
 // whole band table by writing a profit straight into Income Tax!E5 and
 // recalculating Financialaccounts.xlsx on its own. The reconciliation fixtures
-// all sit above 125,140, where the personal allowance is already nil, so on
-// their own they cannot tell a correct taper from a formula that simply zeroes
-// the allowance over 100,000. The 110,000 row is the one that proves the
-// taper; the rows either side of it fix the band boundaries.
+// sit at one profit each, so on their own they cannot tell a correct taper
+// from a formula that simply zeroes the allowance over 100,000, nor fix where
+// one band ends and the next begins. The 110,000 and 121,615.39 rows prove
+// the taper; the rows either side of them fix the band boundaries.
 //
 // Every expected figure below is hand-computed from the 2025-26 rates, not
 // read back from the sheet.
@@ -39,6 +39,7 @@ const BAND_TABLE = [
   [30000, 12570, 17430, 3486, 0, 0, 3486],
   [60000, 12570, 47430, 7540, 3892, 0, 11432],
   [110000, 7570, 102430, 7540, 25892, 0, 33432],
+  [121615.391666666, 1762.304166667, 119853.087499999, 7540, 32861.235, 0, 40401.235],
   [125140, 0, 125140, 7540, 34976, 0, 42516],
   [144715.391666666, 0, 144715.391666666, 7540, 34976, 8808.92625, 51324.92625],
   [226508, 0, 226508, 7540, 34976, 45615.6, 88131.6],

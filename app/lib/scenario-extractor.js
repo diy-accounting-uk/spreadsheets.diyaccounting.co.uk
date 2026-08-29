@@ -210,6 +210,72 @@ export function buildOpeningBalance(lines) {
 }
 
 // ============================================================================
+// Closing debtors
+// ============================================================================
+
+// The bank code a customer receipt carries. Money banked under any other code
+// belongs to a different ledger and settles no invoice.
+const DEBTOR_RECEIPT_CODE = "DR";
+
+function byPostingDate(a, b) {
+  if (a.postingDate < b.postingDate) return -1;
+  return a.postingDate > b.postingDate ? 1 : 0;
+}
+
+/**
+ * Work out what customers still owed at the year end from the invoices raised
+ * and the money banked against them.
+ *
+ * Receipts settle the oldest invoice first. One that names a customer with an
+ * invoice open settles that customer's own oldest invoice; the aggregate
+ * banking runs, which name no single customer, settle the oldest invoice on
+ * the book. Whatever survives every receipt is the closing debtors listing,
+ * so the listing cannot drift away from the ledger the balance sheet
+ * publishes.
+ *
+ * @param {Array} lines - parsed lines.jsonl entries (any journal)
+ * @param {Array} openingDebtors - invoices brought forward, oldest first
+ * @returns {Array} {customer, invoice, amount} for every invoice left open
+ */
+export function buildClosingDebtors(lines, openingDebtors) {
+  const invoices = openingDebtors.map((d) => ({ customer: d.customer, invoice: d.invoice, outstanding: d.amount }));
+  for (const line of lines.filter((l) => l.sourceJournalID === "sales").sort(byPostingDate)) {
+    invoices.push({ customer: line.detailComment, invoice: line.documentReference, outstanding: line.amount });
+  }
+
+  const customersInvoiced = new Set(invoices.map((invoice) => invoice.customer));
+  const receipts = lines
+    .filter((l) => l.sourceJournalID === "bank" && l["diya-gl:bankCode"] === DEBTOR_RECEIPT_CODE && l.debitCreditCode === "D")
+    .sort(byPostingDate);
+
+  for (const receipt of receipts) {
+    const payer = customersInvoiced.has(receipt.detailComment) ? receipt.detailComment : null;
+    let unapplied = receipt.amount;
+    for (const invoice of invoices) {
+      if (unapplied <= 0) break;
+      if (invoice.outstanding <= 0) continue;
+      if (payer && invoice.customer !== payer) continue;
+      const settled = Math.min(unapplied, invoice.outstanding);
+      invoice.outstanding -= settled;
+      unapplied -= settled;
+    }
+    if (unapplied > 0.005) {
+      throw new Error(
+        `Bank receipt ${receipt.entryNumber} banks ${receipt.amount} from ${receipt.detailComment}, ${unapplied} of it against no open invoice`,
+      );
+    }
+  }
+
+  return invoices
+    .filter((invoice) => invoice.outstanding > 0.005)
+    .map((invoice) => ({
+      customer: invoice.customer,
+      invoice: invoice.invoice,
+      amount: Math.round(invoice.outstanding * 100) / 100,
+    }));
+}
+
+// ============================================================================
 // Utility functions
 // ============================================================================
 
@@ -266,10 +332,20 @@ export function bstStaffWagesAsPurchases(lines) {
   );
 }
 
+// A purchase carrying this field was bought under the hire purchase
+// agreement it names. The asset and the agreement only make sense together:
+// the purchase raises the creditor and the agreement's schedule reclassifies
+// it as long term finance. The Basic Sole Trader package has no finance
+// agreement schedule, so such a purchase stays out of that subset.
+export const HP_AGREEMENT_FIELD = "diya-gl:hpAgreement";
+
 export function filterBst(lines) {
   return lines.filter((l) => {
     if (l.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(l.accountMainID);
-    if (l.sourceJournalID === "purchases") return BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    if (l.sourceJournalID === "purchases") {
+      if (l[HP_AGREEMENT_FIELD]) return false;
+      return BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    }
     return false;
   });
 }

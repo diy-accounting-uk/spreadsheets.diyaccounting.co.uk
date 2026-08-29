@@ -69,6 +69,19 @@ const BANK_LAYOUTS = {
   },
 };
 
+// A Company book splits its HMRC payments four ways: PAYE under "RP", VAT
+// under "RV", CIS under "RC" and corporation tax under "RT". Both Self
+// Employed workbooks carry a single "HMRC Payments" column instead
+// (Bank.xlsx AA, Cash.xlsx W), analysed under "RP", so a payment coded for
+// any of the other three lands in that one column. Receipts keep their own
+// letters -- Bank.xlsx has an "HMRC Refunded" column under "RV".
+const SE_HMRC_PAYMENT_CODE = "RP";
+const COMPANY_TAX_PAYMENT_CODES = new Set(["RV", "RC", "RT"]);
+
+function paymentCodeFor(code) {
+  return COMPANY_TAX_PAYMENT_CODES.has(code) ? SE_HMRC_PAYMENT_CODE : code;
+}
+
 // Matches [vat].standard_rate in app/data/se-*.toml (Admin!F27). Used to
 // convert a scenario's gross transaction amount to the net-of-VAT figure
 // the Sales.xlsx/Purchases.xlsx/Fixedassets.xlsx analysis columns hold --
@@ -204,7 +217,8 @@ export function cellWrites(scenario) {
         const isReceipt = tx.direction === "in";
         const block = isReceipt ? layout.receipt : layout.payment;
         const analysedCodes = isReceipt ? layout.receiptCodes : layout.paymentCodes;
-        if (!analysedCodes.has(tx.code)) {
+        const code = isReceipt ? tx.code : paymentCodeFor(tx.code);
+        if (!analysedCodes.has(code)) {
           throw new Error(`cellWrites: ${fileName} analyses no ${isReceipt ? "receipt" : "payment"} under code "${tx.code}"`);
         }
 
@@ -216,7 +230,7 @@ export function cellWrites(scenario) {
         const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
-        sheet[`${block.code}${row}`] = tx.code;
+        sheet[`${block.code}${row}`] = code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }
     }

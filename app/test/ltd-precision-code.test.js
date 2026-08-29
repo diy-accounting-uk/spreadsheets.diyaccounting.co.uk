@@ -106,11 +106,11 @@ describeCalc(
 
     it("CorporationTax: charges the statutory tax on the full fixture profit", () => {
       const ct = results["CorporationTax"];
-      expect(ct.K28).toBeCloseTo(144419.897839506, 4);
+      expect(ct.K28).toBeCloseTo(124419.897839506, 4);
       expect(ct.G33).toBe(25);
-      expect(ct.J33).toBeCloseTo(36104.97446, 4);
-      expect(ct.L33).toBeCloseTo(1583.701532, 4);
-      expect(ct.K35).toBeCloseTo(34521.272927, 4);
+      expect(ct.J33).toBeCloseTo(31104.97446, 4);
+      expect(ct.L33).toBeCloseTo(1883.701532, 4);
+      expect(ct.K35).toBeCloseTo(29221.272927, 4);
     });
 
     it("CorporationTax: tax outstanding = CT less tax deducted at source", () => {
@@ -133,11 +133,11 @@ describeCalc(
     // book value instead of carrying its cost and depreciation forever.
     it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
       const sched = results["Fixedassets.xlsx!Schedule"];
-      expect(sched.E1).toBe(65500);
-      expect(sched.J1).toBe(21838);
+      expect(sched.E1).toBe(85500);
+      expect(sched.J1).toBe(23838);
       expect(sched.W1).toBe(30000);
       expect(sched.X1).toBe(17328);
-      expect(sched.K1).toBe(30990);
+      expect(sched.K1).toBe(48990);
     });
 
     // ── Published Balance Sheet assertions ─────────────────────────────────

@@ -1320,6 +1320,12 @@ supplier = "Directors loan"
 code = "l"
 amount = 250
 
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Precision Tooling Supplies"
+code = "fa"
+amount = 15600
+
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "WorkSpace Ltd"
@@ -1913,6 +1919,12 @@ date = 2025-09-30
 supplier = "Directors loan"
 code = "l"
 amount = 208
+
+[[purchases.sep]]
+date = 2025-09-01
+supplier = "Precision Tooling Supplies"
+code = "fa"
+amount = 8400
 
 [[purchases.oct]]
 date = 2025-10-01
@@ -3405,6 +3417,24 @@ direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
+[[bank.jun]]
+date = 2025-06-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "B"
+direction = "out"
+amount = 2000
+description = "HP-2025-01 admin charges and interest"
+
+[[bank.jun]]
+date = 2025-06-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "CR"
+direction = "out"
+amount = 13000
+description = "HP-2025-01 capital repayment"
+
 [[bank.jul]]
 date = 2025-07-01
 account = "1200"
@@ -3454,7 +3484,7 @@ description = "Monthly PAYE/NI payment"
 date = 2025-07-19
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RC"
 direction = "out"
 amount = 1000
 description = "CIS deduction remittance"
@@ -3553,7 +3583,7 @@ description = "Aggregate supplier payments"
 date = 2025-08-05
 account = "1200"
 source = "Innovate UK"
-code = "RV"
+code = "DR"
 direction = "in"
 amount = 2500
 description = "Grant received"
@@ -3702,6 +3732,24 @@ direction = "out"
 amount = 300
 description = "Accountancy fee payment"
 
+[[bank.sep]]
+date = 2025-09-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "B"
+direction = "out"
+amount = 1100
+description = "HP-2025-02 admin charges and interest"
+
+[[bank.sep]]
+date = 2025-09-01
+account = "1200"
+source = "Close Brothers Asset Finance"
+code = "CR"
+direction = "out"
+amount = 7000
+description = "HP-2025-02 capital repayment"
+
 [[bank.oct]]
 date = 2025-10-01
 account = "1200"
@@ -3724,7 +3772,7 @@ description = "Directors loan repayment"
 date = 2025-10-01
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RT"
 direction = "out"
 amount = 4500
 description = "Corporation Tax prior year"
@@ -3967,7 +4015,7 @@ description = "Monthly PAYE/NI payment"
 date = 2025-12-19
 account = "1200"
 source = "HMRC"
-code = "RP"
+code = "RC"
 direction = "out"
 amount = 600
 description = "CIS deduction remittance"
@@ -4341,24 +4389,6 @@ direction = "in"
 amount = 5000
 description = "Savings account opening balance"
 
-[[bank.jun]]
-date = 2025-06-01
-account = "1210"
-source = "Close Brothers Asset Finance"
-code = "B"
-direction = "out"
-amount = 2000
-description = "HP-2025-01 admin charges and interest"
-
-[[bank.jun]]
-date = 2025-06-01
-account = "1210"
-source = "Close Brothers Asset Finance"
-code = "CR"
-direction = "out"
-amount = 13000
-description = "HP-2025-01 capital repayment"
-
 [[bank.sep]]
 date = 2025-09-30
 account = "1210"
@@ -4367,24 +4397,6 @@ code = "K"
 direction = "in"
 amount = 125
 description = "Savings interest"
-
-[[bank.sep]]
-date = 2025-09-01
-account = "1210"
-source = "Close Brothers Asset Finance"
-code = "B"
-direction = "out"
-amount = 1100
-description = "HP-2025-02 admin charges and interest"
-
-[[bank.sep]]
-date = 2025-09-01
-account = "1210"
-source = "Close Brothers Asset Finance"
-code = "CR"
-direction = "out"
-amount = 7000
-description = "HP-2025-02 capital repayment"
 
 [[bank.mar]]
 date = 2026-03-15
@@ -4918,12 +4930,17 @@ amount = 2400
 [[closing_debtors]]
 customer = "Acme Corp"
 invoice = "INV-1012"
-amount = 8000
+amount = 6100
 
 [[closing_debtors]]
-customer = "TechStart Ltd"
-invoice = "INV-1112"
-amount = 2400
+customer = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440
+
+[[closing_debtors]]
+customer = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360
 
 [[opening_creditors]]
 supplier = "WorkSpace Ltd"
