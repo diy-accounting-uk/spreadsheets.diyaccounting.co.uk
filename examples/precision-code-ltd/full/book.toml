@@ -295,3 +295,181 @@ taxCode = "1257L"
 niCategory = "A"
 startDate = 2020-01-01
 isDirector = true
+
+[openingBalances]
+stock = 10000
+tradeDebtors = 10800
+tradeCreditors = 2400
+longTermCreditors = 25000
+vatDue = 1500
+corporationTaxDue = 4500
+directorsLoan = 20000
+shareCapital = 100
+retainedEarnings = 20702
+
+[openingBalances.fixedAssetCost]
+"motorVehicles" = 30000
+"computerTechnology" = 3000
+
+[openingBalances.fixedAssetDepreciation]
+"motorVehicles" = 9828
+"computerTechnology" = 270
+
+[openingBalances.bankAccounts]
+"1200" = 25000
+"1210" = 5000
+"1220" = 500
+
+[stock]
+openingValue = 10000
+closingValue = 6000
+materialsPercent = 0.03
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-0901"
+amount = 7200
+timing = "opening"
+
+[[debtors]]
+counterparty = "Beta Systems"
+invoice = "INV-0902"
+amount = 1200
+timing = "opening"
+
+[[debtors]]
+counterparty = "Gamma Ltd"
+invoice = "INV-0903"
+amount = 2400
+timing = "opening"
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-1012"
+amount = 6100
+timing = "closing"
+
+[[debtors]]
+counterparty = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440
+timing = "closing"
+
+[[debtors]]
+counterparty = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360
+timing = "closing"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2403"
+amount = 1200
+timing = "opening"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2403"
+amount = 300
+timing = "opening"
+
+[[creditors]]
+counterparty = "TechParts Ltd"
+invoice = "TP-2403"
+amount = 600
+timing = "opening"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2403"
+amount = 120
+timing = "opening"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2603"
+amount = 1200
+timing = "closing"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2603"
+amount = 300
+timing = "closing"
+
+[[creditors]]
+counterparty = "BT Business"
+invoice = "BT-2603"
+amount = 60
+timing = "closing"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2603"
+amount = 150
+timing = "closing"
+
+[[fixedAssets]]
+assetID = "LTD-FA-1"
+class = "motorVehicles"
+description = "Van (2.5 years old)"
+cost = 30000
+accumulatedDepreciation = 9828
+taxWrittenDownValue = 24000
+
+[[fixedAssets]]
+assetID = "LTD-FA-2"
+class = "computerTechnology"
+description = "Laptop (0.5 years old)"
+cost = 3000
+accumulatedDepreciation = 270
+
+[[hpAgreements]]
+agreementID = "HP-2025-01"
+financeCompany = "Close Brothers Asset Finance"
+supplier = "Precision Tooling Supplies"
+amountFinanced = 13000
+adminCharges = 200
+totalInterest = 1800
+termMonths = 20
+startDate = 2025-06-01
+
+[[hpAgreements]]
+agreementID = "HP-2025-02"
+financeCompany = "Close Brothers Asset Finance"
+supplier = "Precision Tooling Supplies"
+amountFinanced = 7000
+adminCharges = 100
+totalInterest = 1000
+termMonths = 20
+startDate = 2025-09-01
+
+[[dividends]]
+boardMeetingDate = 2026-03-31
+amount = 15000
+
+[[members]]
+memberID = "MEM-1"
+name = "Carol Smith"
+shares = 60
+acquiredDate = 2020-01-01
+
+[[members]]
+memberID = "MEM-2"
+name = "David Brown"
+shares = 25
+acquiredDate = 2021-06-15
+
+[[members]]
+memberID = "MEM-3"
+name = "Emma Wilson"
+shares = 15
+acquiredDate = 2022-03-01
+
+[[charges]]
+chargeDate = 2023-09-01
+description = "Motor vehicles, being the company's delivery van"
+valuation = 30000
+holder = "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA"
+terms = "Fixed charge securing a five year business loan"
+boardMeetingDate = 2023-08-25

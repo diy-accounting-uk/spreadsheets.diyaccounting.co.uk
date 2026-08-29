@@ -269,9 +269,9 @@ appointed = 2022-03-01
 # The minute the directors' report quotes. The board declares the year's
 # dividend in one resolution; the bank pays it in four instalments.
 
-[dividend]
-boardMeeting = 2026-03-31
-declared = 15000
+[[dividends]]
+boardMeetingDate = 2026-03-31
+amount = 15000
 
 # --- Employees on payroll ---
 
