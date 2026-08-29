@@ -55,6 +55,23 @@ Coverage checks still to write:
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 
+- [ ] **SE Income Tax: personal-allowance taper and additional rate** — the sheet grants
+  the full allowance at any profit (£144,715 in the advanced fixture keeps all £12,570;
+  tax understated ~£5,028) and stops at the higher rate; the Admin block carries no
+  taper threshold. Confirmed by four independent judge samples. The SE sibling of the
+  BST band item below.
+- [ ] **VATQtr5 default stagger is wrong as shipped** — generator sets Q1-Q4 at
+  quarterly steps but Q5 at one month after Q4 (`monthsFromStart = q <= 4 ? q * 3 : 13`),
+  so filing all five returns as shipped declares two periods twice, and the G5 dropdown
+  cannot even offer the correct next quarter end. The reports now state each return's
+  coverage; the template's fix is the stagger and the dropdown range.
+- [ ] **Fixedassets Schedule retains sold assets in its closing NBV columns** (Ltd and
+  SE templates) — K = E − J with the disposal columns as memo-only, so K1 includes the
+  book value of assets sold in the year (SE advanced: 43,662 shown vs 30,990 true).
+  Ltd's published note computes the true figure; SE ships no note, and the SE report
+  now lays the movement out and names the quirk. Template fix: closing columns net of
+  disposals, or a proper disposals row.
+
 - [ ] **HPfinance `#REF!` repair (Ltd and SE templates)** — rows 10 onward compute the
   monthly payment from `#REF!`; a customer's second agreement computes nothing.
   Test: after repair, row 10+ formulas mirror row 8's; the new HP checks pass.
@@ -90,6 +107,9 @@ Small follow-ups:
 - [ ] **Reconcile the Ltd fixture's turnover with its README** — the fixture publishes
   ~£341k net against the ~£184k the README's transaction list implies. Decide which
   is right and align the other.
+- [ ] **Render report front-matter on the published pages** — build-reconciliation-pages
+  ignores text before the first `##` heading, so the new scenario descriptions reach the
+  reports but not the pages. One-line parser change.
 - [ ] **Pass the package year-end into `checkCompliance`** — reconcile.js anchors
   Admin!F21 to B32 rather than the run's own year-end date. One extra argument.
 
