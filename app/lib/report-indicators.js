@@ -145,22 +145,42 @@ function bridgeLine(report) {
 function vatLine(report, vatRegistered) {
   const section = report.sections.get("VAT Returns");
   if (!section) return null;
+  // The box values live in the compliance-check rows, whose names are anchored by
+  // the product tests; the VAT Returns section's own layout is presentation and moves.
+  const boxCheck = (quarter, box, cell) => {
+    const pattern = new RegExp(`^VAT Q${quarter}: box ${box}(/3)?\\s*\\(${cell}\\)`);
+    const row = report.checks.find((entry) => pattern.test(entry.check));
+    if (!row) throw new Error(`no compliance check row for VAT Q${quarter} box ${box} (${cell})`);
+    return toNumber(row.actual);
+  };
   const boxes = [1, 2, 3, 4].map((quarter) => ({
     quarter,
-    output: value(report, "VAT Returns", `Q${quarter} box 1: VAT due on sales`),
-    input: value(report, "VAT Returns", `Q${quarter} box 4: VAT reclaimed on purchases`),
+    output: boxCheck(quarter, 1, "G9"),
+    input: boxCheck(quarter, 4, "G15"),
   }));
   const nonZero = boxes.filter((box) => box.output || box.input).length;
   const due = value(report, "VAT Returns", "VAT due for the year");
   const registration =
     vatRegistered === true ? "registered for VAT" : vatRegistered === false ? "not registered for VAT" : "of unstated VAT registration";
-  return [
+  const lines = [
     `VAT: the scenario is ${registration}.`,
     `Box 1 output VAT by quarter ${boxes.map((box) => amount(box.output)).join(" / ")};`,
     `box 4 input VAT ${boxes.map((box) => amount(box.input)).join(" / ")};`,
     `VAT due for the year ${amount(due)}.`,
     `${nonZero} of the four quarters carry a non-zero box.`,
-  ].join(" ");
+  ];
+  // The return cycle need not align with the accounting year; when the report names a
+  // month no shown return covers, carry that with the boxes so the annual line's excess
+  // over the quarters reads as period coverage, not a discrepancy.
+  const uncovered = [...section.keys()].find((label) => label.startsWith("No return above covers"));
+  if (uncovered && toNumber(due) !== 0) {
+    const outputOnIt = value(report, "VAT Returns", "Output VAT on it");
+    lines.push(
+      `The quarters shown sum below the annual line because ${uncovered.charAt(0).toLowerCase()}${uncovered.slice(1, uncovered.indexOf("."))}` +
+        ` (output VAT on it ${amount(outputOnIt)}); that month sat on the previous return of the same cycle.`,
+    );
+  }
+  return lines.join(" ");
 }
 
 const SA103S = "Self Assessment (SA103S)";
