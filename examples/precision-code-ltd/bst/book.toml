@@ -146,6 +146,12 @@ class1EmployeeUpperEarningsLimit = 50270
 class1EmployerRate = 0.15
 class1EmployerSecondaryThreshold = 5000
 employmentAllowance = 10500
+class2WeeklyRate = 3.45
+class2SmallProfitsThreshold = 6725
+class4MainRate = 0.06
+class4UpperRate = 0.02
+class4LowerProfits = 12570
+class4UpperProfits = 50270
 
 [tax.capitalAllowances]
 annualInvestmentAllowance = 1000000
@@ -155,3 +161,103 @@ specialRateWDA = 0.06
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
+
+[stock]
+openingValue = 10000
+closingValue = 6000
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-0901"
+amount = 7200
+timing = "opening"
+
+[[debtors]]
+counterparty = "Beta Systems"
+invoice = "INV-0902"
+amount = 1200
+timing = "opening"
+
+[[debtors]]
+counterparty = "Gamma Ltd"
+invoice = "INV-0903"
+amount = 2400
+timing = "opening"
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-1012"
+amount = 8000
+timing = "closing"
+
+[[debtors]]
+counterparty = "TechStart Ltd"
+invoice = "INV-1112"
+amount = 2400
+timing = "closing"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2403"
+amount = 1200
+timing = "opening"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2403"
+amount = 300
+timing = "opening"
+
+[[creditors]]
+counterparty = "TechParts Ltd"
+invoice = "TP-2403"
+amount = 600
+timing = "opening"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2403"
+amount = 120
+timing = "opening"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2603"
+amount = 1200
+timing = "closing"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2603"
+amount = 300
+timing = "closing"
+
+[[creditors]]
+counterparty = "BT Business"
+invoice = "BT-2603"
+amount = 60
+timing = "closing"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2603"
+amount = 150
+timing = "closing"
+
+[[fixedAssets]]
+assetID = "BST-FA-1"
+description = "New laptop for development"
+cost = 1800
+acquiredDate = 2025-05-15
+
+[[fixedAssets]]
+assetID = "BST-FA-2"
+description = "Office furniture"
+cost = 1200
+acquiredDate = 2025-07-15
+
+[[fixedAssets]]
+assetID = "BST-FA-3"
+description = "Ford Transit Custom van"
+cost = 36000
+acquiredDate = 2025-10-25

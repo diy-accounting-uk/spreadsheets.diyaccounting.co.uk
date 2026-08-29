@@ -8,8 +8,8 @@ The point of this example is the size of the profit. At 144,878 it clears the 10
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 155 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`.
+- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **lines.jsonl** -- 155 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|

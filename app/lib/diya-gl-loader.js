@@ -333,12 +333,16 @@ export function extractTaxDataFromBook(book) {
       personal_allowance_taper_threshold: it.personalAllowanceTaperThreshold || 100000,
     },
     national_insurance: {
-      class2_rate: 0,
-      class4_lower_rate: ni.class1EmployeeMainRate || 0.06,
-      class4_lower_limit: ni.class1EmployeePrimaryThreshold || 12570,
-      class4_upper_rate: ni.class1EmployeeUpperRate || 0.02,
-      class4_upper_limit: ni.class1EmployeeUpperEarningsLimit || 50270,
-      class2_weekly_rate: 0,
+      // Class 2 and Class 4 are the self-employed rates; a book with no
+      // employees at all (a sole trader with no payroll) declares only
+      // these and none of the class1* employer/employee fields, so the
+      // class1* fields are never a fallback for them.
+      class2_rate: ni.class2WeeklyRate ?? 0,
+      class2_weekly_rate: ni.class2WeeklyRate ?? 0,
+      class4_lower_rate: ni.class4MainRate ?? 0.06,
+      class4_lower_limit: ni.class4LowerProfits ?? 12570,
+      class4_upper_rate: ni.class4UpperRate ?? 0.02,
+      class4_upper_limit: ni.class4UpperProfits ?? 50270,
     },
     capital_allowances: {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,

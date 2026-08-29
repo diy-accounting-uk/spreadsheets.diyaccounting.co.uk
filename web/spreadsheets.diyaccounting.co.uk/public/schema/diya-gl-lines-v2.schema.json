@@ -1,11 +1,20 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.schema.json",
-  "title": "DIY Accounting GL-aligned Transaction Lines",
-  "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json",
+  "title": "DIY Accounting GL-aligned Transaction Lines (v2)",
+  "description": "A single financial transaction record. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf modules). Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 makes debitCreditCode required on journal lines and adds the fields that link a line to the book's asset, hire purchase and member registers.",
   "type": "object",
   "required": ["postingDate", "amount", "accountMainID", "sourceJournalID"],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "required": ["sourceJournalID"],
+        "properties": { "sourceJournalID": { "const": "journal" } }
+      },
+      "then": { "required": ["debitCreditCode"] }
+    }
+  ],
   "properties": {
     "entryNumber": {
       "type": "string",
@@ -37,7 +46,7 @@
     },
     "accountMainID": {
       "type": "string",
-      "description": "gl-cor:accountMainID — Nominal code from chart of accounts in book.toml"
+      "description": "gl-cor:accountMainID — Nominal code from the chart of accounts in book.toml. Must name an account the book declares; enforced by the validator, not this schema."
     },
     "accountMainDescription": {
       "type": "string",
@@ -54,7 +63,7 @@
     "debitCreditCode": {
       "type": "string",
       "enum": ["D", "C"],
-      "description": "gl-cor:debitCreditCode — D=Debit, C=Credit (Company Accounts only)"
+      "description": "gl-cor:debitCreditCode — D=Debit, C=Credit. Required on journal lines, because a journal line's sign is otherwise ambiguous."
     },
     "amount": {
       "type": "number",
@@ -186,13 +195,26 @@
     },
     "diya-gl:hpAgreement": {
       "type": "string",
-      "description": "diya-gl: extension — Reference of the hire purchase agreement that finances this purchase, matching an agreement on the finance schedule. A purchase carrying one reaches the books as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year."
+      "description": "diya-gl: extension — Reference of the hire purchase agreement that finances this purchase, matching an id on book.toml hpAgreements[]. A purchase carrying one reaches the books as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year."
     },
     "diya-gl:cisRate": {
       "type": "number",
       "minimum": 0,
       "maximum": 1,
       "description": "diya-gl: extension — CIS deduction rate (0.20=20% standard, 0.30=30% higher, 0=gross payment). CIS lines only."
+    },
+    "diya-gl:vatPeriodEnd": {
+      "type": "string",
+      "format": "date",
+      "description": "diya-gl: extension — The VAT return period this line is declared on, when that period falls outside the accounting year the book covers. This is what makes a straddling entry representable: the line's postingDate sits in one accounting year, but its VAT is due on the return ending vatPeriodEnd."
+    },
+    "diya-gl:assetID": {
+      "type": "string",
+      "description": "diya-gl: extension — The book.toml fixedAssets[] id this line moves: a capital purchase that registers the asset, or a disposal (an 'fs'-coded sale) that removes it."
+    },
+    "diya-gl:memberID": {
+      "type": "string",
+      "description": "diya-gl: extension — The book.toml members[] id a dividend payment line settles."
     }
   }
 }

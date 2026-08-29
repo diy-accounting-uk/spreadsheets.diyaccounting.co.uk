@@ -35,7 +35,7 @@ this schema. The schema is expressed as JSON Schema (draft 2020-12) for machine 
 ```json
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v1.schema.json",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json",
   "title": "DIY Accounting GL-aligned Transaction",
   "description": "A single financial transaction record. Field names are adapted from the XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-muc, gl-taf, gl-usk modules).",
   "type": "object",
@@ -231,6 +231,15 @@ this schema. The schema is expressed as JSON Schema (draft 2020-12) for machine 
   }
 }
 ```
+
+This excerpt is illustrative, not exhaustive: it stops before the `diya-gl:` bank, payroll, CIS and finance
+extension fields, which section 6 lists and `diya-gl-lines-v2.schema.json` declares in full — that file is
+the one a validator reads.
+
+v2's two changes to the rules above: `debitCreditCode` becomes required whenever `sourceJournalID` is
+`"journal"` (a journal line's sign was otherwise ambiguous), and three fields are new —
+`diya-gl:vatPeriodEnd`, `diya-gl:assetID` and `diya-gl:memberID` — each naming an entry on a book.toml
+register (section 4).
 
 ---
 
@@ -447,6 +456,21 @@ smallProfitsLimit = 50000
 mainRate = 0.25
 mainRateThreshold = 250000
 ```
+
+**v2 book tables.** The example above shows the tables `book.toml` has always had.
+`diya-gl-book-v2.schema.json` adds nine more, all optional, all arrays or objects at
+the top level: `openingBalances` (the trial balance brought forward — fixed asset cost
+and depreciation by class, stock, debtors, creditors, the four bank accounts, and every
+liability and equity account `buildOpeningBalance()` recognises), `stock` (opening and
+closing value, physical count, and the materials percentage the Stock sheet needs to
+move at all), `debtors` and `creditors` (named listings, each entry timed `"opening"` or
+`"closing"`), `fixedAssets` (the asset register, keyed by `assetID` so a line's
+`diya-gl:assetID` can name one), `hpAgreements` (hire purchase terms, keyed by
+`agreementID`), `dividends` (Company Accounts only), `members` (the register of members,
+keyed by `memberID`, distinct from `directors[]`), and `charges` (registered charges and
+debentures). `entityInformation` also gains the registered address and telephone fields,
+and `documentInfo` gains the VAT stagger group and payroll year start. Full field lists
+are in the schema file, not repeated here.
 
 ---
 
@@ -742,6 +766,10 @@ Not all fields are used by all products. Each product uses a subset:
 | `diya-gl:cisRate`            |   | ✓ |   | ✓ |
 | **Finance (diya-gl:)** | | | | |
 | `diya-gl:hpAgreement`        |   | ✓ |   | ✓ |
+| **Registers, v2 (diya-gl:)** | | | | |
+| `diya-gl:vatPeriodEnd`       |   | ✓ |   | ✓ |
+| `diya-gl:assetID`            | ✓ | ✓ | ✓ | ✓ |
+| `diya-gl:memberID`           |   |   |   | ✓ |
 
 ---
 
@@ -817,6 +845,7 @@ The `sourceJournalID` values map to xlsx workbooks in each product:
 
 ## 9. Versioning
 
-This schema is versioned as `v1`. The version is embedded in the JSON Schema `$id` URL.
-Future versions will maintain backward compatibility by only adding optional fields.
+This schema is versioned as `v2`. The version is embedded in the JSON Schema `$id` URL.
+An earlier `v1` existed but nothing outside this repository ever read it, so v2 replaced
+it in place rather than being published alongside it.
 The `diya-gl:product` value in `book.toml` determines which subset of the schema is active.

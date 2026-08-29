@@ -209,6 +209,67 @@ export function buildOpeningBalance(lines) {
   return balance;
 }
 
+// buildOpeningBalance()'s keys, snake_case and grouped by scenario concept,
+// against the diya-gl book v2 openingBalances field they become. The four
+// bank accounts fold into one bankAccounts table keyed by account code,
+// because that is how a book declares more than one without inventing a
+// name for each.
+const OPENING_BALANCE_V2_SCALARS = {
+  stock: "stock",
+  trade_debtors: "tradeDebtors",
+  trade_creditors: "tradeCreditors",
+  long_term_debtors: "longTermDebtors",
+  long_term_creditors: "longTermCreditors",
+  net_wages_due: "netWagesDue",
+  wage_deductions_due: "wageDeductionsDue",
+  vat_due: "vatDue",
+  corporation_tax: "corporationTaxDue",
+  paye_due: "payeDue",
+  cis_due: "cisDue",
+  directors_loan: "directorsLoan",
+  share_capital: "shareCapital",
+  retained_earnings: "retainedEarnings",
+  dividends_due: "dividendsDue",
+  capital_reserves: "capitalReserves",
+};
+
+const OPENING_BALANCE_V2_BANK_ACCOUNTS = { current_account: "1200", savings_account: "1210", cash: "1220", credit_card: "1230" };
+
+const OPENING_BALANCE_V2_ASSET_CLASSES = {
+  plant_machinery: "plantMachinery",
+  fixtures_fittings: "fixturesFittings",
+  computer_technology: "computerTechnology",
+  motor_vehicles: "motorVehicles",
+  land_buildings: "landBuildings",
+};
+
+function assetClassAmountsV2(amounts) {
+  const out = {};
+  for (const [key, value] of Object.entries(amounts || {})) out[OPENING_BALANCE_V2_ASSET_CLASSES[key]] = value;
+  return out;
+}
+
+/**
+ * Convert buildOpeningBalance()'s snake_case scenario shape into the
+ * diya-gl book v2 openingBalances table.
+ * @param {Object} balance - the object buildOpeningBalance() returns
+ * @returns {Object} openingBalances, in book v2's own field names
+ */
+export function toV2OpeningBalances(balance) {
+  const openingBalances = {};
+  for (const [key, v2key] of Object.entries(OPENING_BALANCE_V2_SCALARS)) {
+    if (balance[key] !== undefined) openingBalances[v2key] = balance[key];
+  }
+  const bankAccounts = {};
+  for (const [key, code] of Object.entries(OPENING_BALANCE_V2_BANK_ACCOUNTS)) {
+    if (balance[key] !== undefined) bankAccounts[code] = balance[key];
+  }
+  if (Object.keys(bankAccounts).length > 0) openingBalances.bankAccounts = bankAccounts;
+  if (balance.fixed_asset_cost) openingBalances.fixedAssetCost = assetClassAmountsV2(balance.fixed_asset_cost);
+  if (balance.fixed_asset_depreciation) openingBalances.fixedAssetDepreciation = assetClassAmountsV2(balance.fixed_asset_depreciation);
+  return openingBalances;
+}
+
 // ============================================================================
 // Closing debtors
 // ============================================================================
@@ -797,6 +858,11 @@ export function seAccountFilter(accounts) {
     sales: { ...accounts.sales },
     purchases: Object.fromEntries(Object.entries(accounts.purchases).filter(([k]) => SE_PURCHASE_CODE_MAP[k] !== undefined)),
     bank: Object.fromEntries(Object.entries(accounts.bank).filter(([k]) => SE_BANK_ACCOUNTS.has(k))),
+    // The SE subset's opening journal carries computer and motor vehicle
+    // fixed asset lines (see filterAdvanced's isOpeningBalanceLine branch),
+    // so the accounts those lines post to have to be declared too, or the
+    // subset's own chart of accounts falls short of its own lines.jsonl.
+    assets: Object.fromEntries(Object.entries(accounts.assets || {}).filter(([k]) => OPENING_FIXED_ASSET_CLASSES[k] !== undefined)),
   };
 }
 
@@ -808,7 +874,115 @@ export function fullAccountFilter(accounts) {
 // diya-gl subset book.toml builder
 // ============================================================================
 
-export function buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter) {
+// Renders the v2 book.toml tables buildSubsetBookToml cannot: opening
+// balances, stock, debtors, creditors, the fixed asset register, hire
+// purchase agreements, dividends, members and charges. Every value here
+// already exists somewhere in the master data or the JS literals
+// extract-scenarios.js carries for the hand-built parts of a scenario (the
+// debtor and creditor listings, the HP agreement terms); this only gives
+// each one a home in the diya-gl book format.
+function dateOnly(value) {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : value;
+}
+
+export function buildV2BookSections(v2) {
+  if (!v2) return [];
+  const lines = [];
+
+  if (v2.openingBalances) {
+    const ob = v2.openingBalances;
+    const scalarKeys = Object.entries(ob).filter(([, v]) => typeof v !== "object");
+    if (scalarKeys.length > 0) {
+      lines.push("[openingBalances]");
+      for (const [k, v] of scalarKeys) lines.push(`${k} = ${v}`);
+      lines.push("");
+    }
+    for (const nested of ["fixedAssetCost", "fixedAssetDepreciation", "bankAccounts"]) {
+      if (!ob[nested]) continue;
+      lines.push(`[openingBalances.${nested}]`);
+      for (const [k, v] of Object.entries(ob[nested])) lines.push(`"${k}" = ${v}`);
+      lines.push("");
+    }
+  }
+
+  if (v2.stock) {
+    lines.push("[stock]");
+    for (const [k, v] of Object.entries(v2.stock)) lines.push(`${k} = ${v}`);
+    lines.push("");
+  }
+
+  for (const [table, entries] of [
+    ["debtors", v2.debtors],
+    ["creditors", v2.creditors],
+  ]) {
+    for (const entry of entries || []) {
+      lines.push(`[[${table}]]`);
+      lines.push(`counterparty = "${escapeTomlString(entry.counterparty)}"`);
+      if (entry.invoice) lines.push(`invoice = "${entry.invoice}"`);
+      lines.push(`amount = ${entry.amount}`);
+      lines.push(`timing = "${entry.timing}"`);
+      lines.push("");
+    }
+  }
+
+  for (const asset of v2.fixedAssets || []) {
+    lines.push("[[fixedAssets]]");
+    lines.push(`assetID = "${asset.assetID}"`);
+    if (asset.class) lines.push(`class = "${asset.class}"`);
+    if (asset.description) lines.push(`description = "${escapeTomlString(asset.description)}"`);
+    lines.push(`cost = ${asset.cost}`);
+    if (asset.accumulatedDepreciation !== undefined) lines.push(`accumulatedDepreciation = ${asset.accumulatedDepreciation}`);
+    if (asset.taxWrittenDownValue !== undefined) lines.push(`taxWrittenDownValue = ${asset.taxWrittenDownValue}`);
+    if (asset.acquiredDate) lines.push(`acquiredDate = ${dateOnly(asset.acquiredDate)}`);
+    lines.push("");
+  }
+
+  for (const agreement of v2.hpAgreements || []) {
+    lines.push("[[hpAgreements]]");
+    lines.push(`agreementID = "${agreement.agreementID}"`);
+    if (agreement.description) lines.push(`description = "${escapeTomlString(agreement.description)}"`);
+    if (agreement.financeCompany) lines.push(`financeCompany = "${escapeTomlString(agreement.financeCompany)}"`);
+    if (agreement.supplier) lines.push(`supplier = "${escapeTomlString(agreement.supplier)}"`);
+    lines.push(`amountFinanced = ${agreement.amountFinanced}`);
+    lines.push(`adminCharges = ${agreement.adminCharges}`);
+    lines.push(`totalInterest = ${agreement.totalInterest}`);
+    lines.push(`termMonths = ${agreement.termMonths}`);
+    lines.push(`startDate = ${dateOnly(agreement.startDate)}`);
+    lines.push("");
+  }
+
+  for (const dividend of v2.dividends || []) {
+    lines.push("[[dividends]]");
+    if (dividend.declaredDate) lines.push(`declaredDate = ${dateOnly(dividend.declaredDate)}`);
+    lines.push(`boardMeetingDate = ${dateOnly(dividend.boardMeetingDate)}`);
+    lines.push(`amount = ${dividend.amount}`);
+    lines.push("");
+  }
+
+  for (const member of v2.members || []) {
+    lines.push("[[members]]");
+    lines.push(`memberID = "${member.memberID}"`);
+    lines.push(`name = "${escapeTomlString(member.name)}"`);
+    lines.push(`shares = ${member.shares}`);
+    if (member.acquiredDate) lines.push(`acquiredDate = ${dateOnly(member.acquiredDate)}`);
+    lines.push("");
+  }
+
+  for (const charge of v2.charges || []) {
+    lines.push("[[charges]]");
+    if (charge.chargeDate) lines.push(`chargeDate = ${dateOnly(charge.chargeDate)}`);
+    if (charge.description) lines.push(`description = "${escapeTomlString(charge.description)}"`);
+    lines.push(`valuation = ${charge.valuation}`);
+    if (charge.holder) lines.push(`holder = "${escapeTomlString(charge.holder)}"`);
+    if (charge.terms) lines.push(`terms = "${escapeTomlString(charge.terms)}"`);
+    if (charge.boardMeetingDate) lines.push(`boardMeetingDate = ${dateOnly(charge.boardMeetingDate)}`);
+    lines.push("");
+  }
+
+  return lines;
+}
+
+export function buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter, v2) {
   const subBook = [];
   subBook.push("[documentInfo]");
   subBook.push(`entriesType = "journal"`);
@@ -894,6 +1068,8 @@ export function buildSubsetBookToml(book, dirName, productEnum, taxSections, acc
       subBook.push("");
     }
   }
+
+  subBook.push(...buildV2BookSections(v2));
 
   return subBook.join("\n");
 }

@@ -38,6 +38,7 @@ import {
   buildPayroll,
   seDrawingsFromDividends,
   buildOpeningBalance,
+  toV2OpeningBalances,
   formatScenarioToml,
   buildSubsetBookToml,
   bstAccountFilter,
@@ -66,15 +67,20 @@ const allLines = linesRaw
   .filter((line) => line.trim().length > 0)
   .map((line) => JSON.parse(line));
 
+// The one dividend the master book declares for the year. book.dividends is
+// an array (a book could in principle declare more than one), but this
+// scenario only ever has the single board resolution.
+const masterDividend = book.dividends[0];
+
 // ============================================================================
 // Write diya-gl subset (book.toml + lines.jsonl in subdirectory)
 // ============================================================================
 
-function writeDiyaGlSubset(dirName, productEnum, filteredLines, taxSections, accountFilter) {
+function writeDiyaGlSubset(dirName, productEnum, filteredLines, taxSections, accountFilter, v2) {
   const dir = join(EXAMPLES_DIR, dirName);
   mkdirSync(dir, { recursive: true });
 
-  const bookContent = buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter);
+  const bookContent = buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter, v2);
   writeFileSync(join(dir, "book.toml"), bookContent);
 
   const jsonlLines = filteredLines.map((l) => JSON.stringify(l));
@@ -172,6 +178,50 @@ const hpAgreements = [
   },
 ];
 
+// The two fixed assets the SE and Ltd scenarios both carry at the opening
+// balance sheet date: a van and a laptop, each part-depreciated. tax_wdv is
+// the written down value the capital allowances working brings forward,
+// which is not the same figure as the accounting depreciation and has no
+// source in the master data -- there is only ever the one asset a class, so
+// it is stated directly rather than derived.
+const openingFixedAssets = [
+  { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
+  { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
+];
+
+const OPENING_ASSET_CLASSES = { motor: "motorVehicles", computer: "computerTechnology" };
+
+// The one charge registered over the Ltd scenario's assets: a fixed charge
+// securing the business loan the opening balance sheet's long_term_creditors
+// figure carries.
+const chargesRegister = [
+  {
+    date: "2023-09-01",
+    asset: "Motor vehicles, being the company's delivery van",
+    valuation: 30000,
+    holder: "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA",
+    terms: "Fixed charge securing a five year business loan",
+    board_meeting: "2023-08-25",
+  },
+];
+
+function openingFixedAssetsV2(prefix) {
+  return openingFixedAssets.map((asset, index) => ({
+    assetID: `${prefix}-FA-${index + 1}`,
+    class: OPENING_ASSET_CLASSES[asset.category],
+    description: asset.description,
+    cost: asset.cost,
+    accumulatedDepreciation: asset.acc_dep,
+    taxWrittenDownValue: asset.tax_wdv,
+  }));
+}
+
+// Named debtor/creditor listings, in the diya-gl book v2 shape: one entry a
+// row, timed opening or closing.
+function asLedgerListings(entries, nameField, timing) {
+  return entries.map((entry) => ({ counterparty: entry[nameField], invoice: entry.invoice, amount: entry.amount, timing }));
+}
+
 // ============================================================================
 // Extract BST (basic)
 // ============================================================================
@@ -243,12 +293,25 @@ const bstToml = formatScenarioToml(
   },
 );
 
+const bstV2 = {
+  stock: { openingValue: 10000, closingValue: 6000 },
+  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(bstClosingDebtors, "customer", "closing")],
+  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  fixedAssets: bstFixedAssetAdditions.map((asset, index) => ({
+    assetID: `BST-FA-${index + 1}`,
+    description: asset.description,
+    cost: asset.cost,
+    acquiredDate: asset.date,
+  })),
+};
+
 const bstDiya = writeDiyaGlSubset(
   "bst",
   "BasicSoleTrader",
   bstLines,
   ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"],
   bstAccountFilter,
+  bstV2,
 );
 
 // ============================================================================
@@ -294,10 +357,7 @@ const advToml = formatScenarioToml(
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
-    opening_fixed_assets: [
-      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
-      { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
-    ],
+    opening_fixed_assets: openingFixedAssets,
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
@@ -308,12 +368,30 @@ const advToml = formatScenarioToml(
   },
 );
 
+const advV2 = {
+  stock: { openingValue: 10000, closingValue: 6000 },
+  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(closingDebtors, "customer", "closing")],
+  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  fixedAssets: openingFixedAssetsV2("SE"),
+  hpAgreements: hpAgreements.map((agreement) => ({
+    agreementID: agreement.reference,
+    financeCompany: agreement.finance_company,
+    supplier: agreement.supplier,
+    amountFinanced: agreement.amount_financed,
+    adminCharges: agreement.admin_charges,
+    totalInterest: agreement.total_interest,
+    termMonths: agreement.months,
+    startDate: agreement.date,
+  })),
+};
+
 const advDiya = writeDiyaGlSubset(
   "advanced",
   "SelfEmployed",
   advLines,
   ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
   seAccountFilter,
+  advV2,
 );
 
 // ============================================================================
@@ -354,8 +432,8 @@ if (fullSharesIssued * NOMINAL_SHARE_VALUE !== fullOpeningBalance.share_capital)
 const fullDividendsPaid = fullLines
   .filter((l) => l["diya-gl:bankCode"] === "DV")
   .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
-if (book.dividend.declared !== fullDividendsPaid) {
-  throw new Error(`The board minuted a dividend of ${book.dividend.declared}, against ${fullDividendsPaid} paid out of the bank`);
+if (masterDividend.amount !== fullDividendsPaid) {
+  throw new Error(`The board minuted a dividend of ${masterDividend.amount}, against ${fullDividendsPaid} paid out of the bank`);
 }
 
 // Each hire purchase agreement pays for one purchase, at the purchase's cost
@@ -406,24 +484,12 @@ const fullToml = formatScenarioToml(
     // Without it the Stock sheet's bought and sold columns stay switched off
     // and the calculated stock never leaves the opening figure.
     stock_materials_percent: 0.03,
-    charges: [
-      {
-        date: "2023-09-01",
-        asset: "Motor vehicles, being the company's delivery van",
-        valuation: 30000,
-        holder: "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA",
-        terms: "Fixed charge securing a five year business loan",
-        board_meeting: "2023-08-25",
-      },
-    ],
+    charges: chargesRegister,
     dividend: {
-      board_meeting: book.dividend.boardMeeting.toISOString().slice(0, 10),
-      declared: book.dividend.declared,
+      board_meeting: masterDividend.boardMeetingDate.toISOString().slice(0, 10),
+      declared: masterDividend.amount,
     },
-    opening_fixed_assets: [
-      { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
-      { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
-    ],
+    opening_fixed_assets: openingFixedAssets,
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
@@ -434,12 +500,48 @@ const fullToml = formatScenarioToml(
   },
 );
 
+const fullMembersV2 = fullMembers.map((member, index) => ({
+  memberID: `MEM-${index + 1}`,
+  name: member.name,
+  shares: member.shares,
+  acquiredDate: member.acquired,
+}));
+
+const fullV2 = {
+  openingBalances: toV2OpeningBalances(fullOpeningBalance),
+  stock: { openingValue: 10000, closingValue: 6000, materialsPercent: 0.03 },
+  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(closingDebtors, "customer", "closing")],
+  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  fixedAssets: openingFixedAssetsV2("LTD"),
+  hpAgreements: hpAgreements.map((agreement) => ({
+    agreementID: agreement.reference,
+    financeCompany: agreement.finance_company,
+    supplier: agreement.supplier,
+    amountFinanced: agreement.amount_financed,
+    adminCharges: agreement.admin_charges,
+    totalInterest: agreement.total_interest,
+    termMonths: agreement.months,
+    startDate: agreement.date,
+  })),
+  dividends: [{ boardMeetingDate: masterDividend.boardMeetingDate.toISOString().slice(0, 10), amount: masterDividend.amount }],
+  members: fullMembersV2,
+  charges: chargesRegister.map((charge) => ({
+    chargeDate: charge.date,
+    description: charge.asset,
+    valuation: charge.valuation,
+    holder: charge.holder,
+    terms: charge.terms,
+    boardMeetingDate: charge.board_meeting,
+  })),
+};
+
 const fullDiya = writeDiyaGlSubset(
   "full",
   "Company",
   fullLines,
   ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"],
   fullAccountFilter,
+  fullV2,
 );
 
 // ============================================================================
