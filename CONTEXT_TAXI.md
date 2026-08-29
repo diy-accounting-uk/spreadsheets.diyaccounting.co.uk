@@ -187,8 +187,11 @@ Profit & Loss Acc (B-column)
   ▼
 Wages Forecast
   │ Monthly P&L forecast: actual months averaged into future months
-  │ Projected annual profit → estimated tax + NI
-  │ Output: forecast tax liability back to P&L financial health check
+  │ C19 = months that traded, C30 = projected annual profit
+  │ C35 = personal allowance, tapered away above Admin N5
+  │ C37, C38, C39 = the three tax bands, C40 = NI Class 4
+  │ C41 = forecast tax + NI, charged a twelfth a month on the
+  │ P&L financial health check (P&L row 32)
   │
   ▼
 Draft Tax calculation (E-column)
@@ -350,6 +353,8 @@ From `standardReads()`:
 **Profit & Loss Acc**: B5-B24 (20 cells covering sales, vehicle costs, gross profit, expenses, net profit)
 
 **Draft Tax calculation**: E5, E6, E7, C9, D8, C10, D10, E8, E9, E10, E11, E14, E15, E17 (profit, allowances, the rates and band edges the sheet applies, tax bands, NI, total)
+
+**Wages Forecast**: C19, C20, C22, C24, C28, C30, C34, C35, C36, C37, C38, C39, C40, C41 (months traded, the projected year, allowance, tax bands, NI, total)
 
 ### Compliance Checks
 

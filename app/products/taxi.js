@@ -146,6 +146,7 @@ export function cellWrites(scenario, targetStartYear = null) {
 // ── Standard reads for reconciliation ──────────────────────────────────────
 
 export const TAX_SHEET = "Draft Tax calculation";
+export const FORECAST_SHEET = "Wages Forecast";
 
 // prettier-ignore
 export const CELL_MAP = [
@@ -222,6 +223,25 @@ export const CELL_MAP = [
   [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1],
   [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1],
   [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0],
+  // ── Wages Forecast — the projected year the customer plans against.
+  // The actual half (rows 5 to 15) pulls the P&L's monthly columns; the
+  // forecast half (rows 19 to 30) repeats each month that traded and spreads
+  // the year's total across the months that did not, counting the trading
+  // months in C19. The tax block below it charges the projected profit. ──
+  [FORECAST_SHEET, "C19", "Months of actual trade",     "gl-cor:amount (forecast.monthsTraded)",  "Wages Forecast", 1],
+  [FORECAST_SHEET, "C20", "Forecast Sales Turnover",    "gl-cor:amount (forecast.turnover)",      "Wages Forecast", 1],
+  [FORECAST_SHEET, "C22", "Forecast Investment Grants", "gl-cor:amount (forecast.otherIncome)",   "Wages Forecast", 1],
+  [FORECAST_SHEET, "C24", "Forecast Cost of Sales",     "gl-cor:amount (forecast.costOfSales)",   "Wages Forecast", 1],
+  [FORECAST_SHEET, "C28", "Forecast General Expenses",  "gl-cor:amount (forecast.expenses)",      "Wages Forecast", 1],
+  [FORECAST_SHEET, "C30", "**Forecast Profit before Tax**", "gl-cor:amount (forecast.profit)",    "Wages Forecast", 0],
+  [FORECAST_SHEET, "C34", "Profit before Tax",          "gl-cor:amount (forecast.taxableProfit)", "Wages Forecast", 1],
+  [FORECAST_SHEET, "C35", "Personal Allowance",         "tax.incomeTax.personalAllowance",        "Wages Forecast", 1],
+  [FORECAST_SHEET, "C36", "Profit after Allowance",     "gl-cor:amount (forecast.taxableIncome)", "Wages Forecast", 1],
+  [FORECAST_SHEET, "C37", "Tax at standard rate",       "tax.incomeTax.basicRate",                "Wages Forecast", 1],
+  [FORECAST_SHEET, "C38", "Tax at higher rate",         "tax.incomeTax.higherRate",               "Wages Forecast", 1],
+  [FORECAST_SHEET, "C39", "Tax at additional rate",     "tax.incomeTax.additionalRate",           "Wages Forecast", 1],
+  [FORECAST_SHEET, "C40", "National Insurance",         "tax.nationalInsurance.class4",           "Wages Forecast", 1],
+  [FORECAST_SHEET, "C41", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Wages Forecast", 0],
   // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
   ["PurchasesMar", "I2", "Vehicle running costs for the year",  "accounts.purchases (vehicleRunningCosts)",  "Purchase Analysis", 0],
   ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "accounts.assets.fixedAssets (purchased)",   "Purchase Analysis", 0],
@@ -280,8 +300,10 @@ export function standardReads() {
   // of Sales) and C22:N22 (Total General Expenses) a month at a time. Read
   // every monthly cell here so the checks below can verify the re-sum
   // against the P&L's own figures rather than against itself.
+  // The Wages Forecast repeats the P&L's own monthly turnover, other income,
+  // cost of sales and expenses, so row 24 joins the three VitalTax needs.
   reads["Profit & Loss Acc"] = reads["Profit & Loss Acc"] || [];
-  for (const row of [5, 12, 22]) {
+  for (const row of [5, 12, 22, 24]) {
     for (const col of MONTH_COLS) {
       const cell = `${col}${row}`;
       if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
@@ -538,6 +560,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Tax: Total = IT + NI", tax.E17, (tax.E11 || 0) + (tax.E14 || 0) + (tax.E15 || 0));
 
       if (seShort && seShort.D106 !== undefined) check("SA103S: Profit for tax = Draft Tax E5", seShort.D106, tax.E5);
+    }
+
+    // The Wages Forecast prints its own tax and NI liability, and the P&L's
+    // financial health check charges a twelfth of it every month. It runs off
+    // its own chain from Admin, so nothing above proves any of it.
+    const forecast = results[FORECAST_SHEET];
+    if (forecast) {
+      const monthTotal = (row) => MONTH_COLS.reduce((sum, col) => sum + (pl[`${col}${row}`] || 0), 0);
+
+      // The forecast repeats a month that traded and spreads the year's total
+      // across the months that did not, so the projected year only equals the
+      // actual one when every month traded. C19 counts the trading months
+      // against the P&L's own monthly turnover.
+      const monthsTraded = MONTH_COLS.filter((col) => (pl[`${col}5`] || 0) > 0).length;
+      check("Forecast: months of actual trade = P&L months with turnover", forecast.C19 || 0, monthsTraded, 0);
+
+      if (monthsTraded === MONTH_COLS.length) {
+        check("Forecast: turnover = P&L turnover", forecast.C20 || 0, monthTotal(5));
+        check("Forecast: other business income = P&L other business income", forecast.C22 || 0, monthTotal(24));
+        check("Forecast: cost of sales = P&L cost of sales", forecast.C24 || 0, monthTotal(12));
+        check("Forecast: general expenses = P&L general expenses", forecast.C28 || 0, monthTotal(22));
+      }
+
+      check(
+        "Forecast: profit = turnover + other income - cost of sales - expenses",
+        forecast.C30 || 0,
+        (forecast.C20 || 0) + (forecast.C22 || 0) - (forecast.C24 || 0) - (forecast.C28 || 0),
+      );
+
+      const forecastProfit = forecast.C34 || 0;
+      const expectedForecastTax = calculateExpectedTax(forecastProfit, taxData);
+      check("Forecast: personal allowance after taper", forecast.C35 || 0, expectedForecastTax.personal_allowance);
+      check("Forecast: tax at standard rate", forecast.C37 || 0, expectedForecastTax.income_tax_basic);
+      check("Forecast: tax at higher rate", forecast.C38 || 0, expectedForecastTax.income_tax_higher);
+      check("Forecast: tax at additional rate", forecast.C39 || 0, expectedForecastTax.income_tax_additional);
+      check("Forecast: National Insurance", forecast.C40 || 0, expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
+      check("Forecast: tax and NI liability", forecast.C41 || 0, expectedForecastTax.total_tax_and_ni);
     }
   }
 
