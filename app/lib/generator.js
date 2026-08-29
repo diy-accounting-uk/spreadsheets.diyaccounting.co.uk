@@ -896,7 +896,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     }
   }
 
-  // Payslips Admin calendar generation (SE only — when sheetsConfig.payslipsAdmin is present)
+  // Payslips Admin calendar generation (when sheetsConfig.payslipsAdmin is present)
   if (sheetsConfig.payslipsAdmin) {
     let payslipsXml = await zip.file(sheetsConfig.payslipsAdmin).async("string");
 
