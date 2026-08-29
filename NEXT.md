@@ -11,13 +11,6 @@ CLAUDE.md — discover cells from the template XML, assert anchored to the fixtu
 each check breakable via JSZip corruption with an exact failure set, blast radius
 serially, then the four generate dispatches (skip-commit) green including the live judge.
 
-- [ ] **Prove the refreshed deploy** — the final step of the archived
-  PLAN_RECONCILIATION_COVERAGE.md (PRs #27-#38 merged). All four refresh runs have
-  committed their regenerated packages, reports and pages to main. The workflow-made
-  commits do not trigger deploy.yml (GITHUB_TOKEN pushes never trigger workflows), so
-  the last deploy on record predates them. Done when one dispatched deploy passes the
-  deterministic gates and the judge with no overrides.
-
 Coverage checks still to write:
 
 - [ ] **SE `SE Full` (SA103F) box assertions** — a live HMRC return, every box
