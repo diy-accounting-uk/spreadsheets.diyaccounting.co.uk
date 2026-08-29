@@ -93,37 +93,32 @@ function writeDiyaGlSubset(dirName, productEnum, filteredLines, taxSections, acc
 // Shared data
 // ============================================================================
 
-const openingDebtors = [
-  { customer: "Acme Corp", invoice: "INV-0901", amount: 7200 },
-  { customer: "Beta Systems", invoice: "INV-0902", amount: 1200 },
-  { customer: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
-];
+// The debtor and creditor ledgers the master book publishes. Each listing
+// names its counterparty and the invoice still open, timed opening or
+// closing, and every scenario takes the same two ledgers -- one business, one
+// year end.
+function ledgerListing(entries, nameField, timing) {
+  return (entries || [])
+    .filter((entry) => entry.timing === timing)
+    .map((entry) => ({ [nameField]: entry.counterparty, invoice: entry.invoice, amount: entry.amount }));
+}
 
-// SE and Ltd bank their customer receipts, so what is still owed at the year
-// end comes off the ledger itself.
+const openingDebtors = ledgerListing(book.debtors, "customer", "opening");
+const publishedClosingDebtors = ledgerListing(book.debtors, "customer", "closing");
+const openingCreditors = ledgerListing(book.creditors, "supplier", "opening");
+const closingCreditors = ledgerListing(book.creditors, "supplier", "closing");
+
+// What the bank journal leaves unsettled has to be the ledger the book
+// publishes. Working it out from the invoices raised and the money banked
+// keeps the two tied together, so master data that moves one without the
+// other stops the extract.
 const closingDebtors = buildClosingDebtors(allLines, openingDebtors);
-
-// The Basic Sole Trader subset carries no bank journal, so nothing in it can
-// settle an invoice and there is nothing to work the figure out from. Its
-// closing debtors are stated.
-const bstClosingDebtors = [
-  { customer: "Acme Corp", invoice: "INV-1012", amount: 8000 },
-  { customer: "TechStart Ltd", invoice: "INV-1112", amount: 2400 },
-];
-
-const openingCreditors = [
-  { supplier: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200 },
-  { supplier: "Smith & Co", invoice: "SC-2403", amount: 300 },
-  { supplier: "TechParts Ltd", invoice: "TP-2403", amount: 600 },
-  { supplier: "Shell", invoice: "SH-2403", amount: 120 },
-];
-
-const closingCreditors = [
-  { supplier: "WorkSpace Ltd", invoice: "WS-2603", amount: 1200 },
-  { supplier: "Smith & Co", invoice: "SC-2603", amount: 300 },
-  { supplier: "BT Business", invoice: "BT-2603", amount: 60 },
-  { supplier: "Shell", invoice: "SH-2603", amount: 150 },
-];
+const asDebtorKey = (debtor) => `${debtor.invoice} ${debtor.customer} ${debtor.amount}`;
+const workedOut = closingDebtors.map(asDebtorKey).sort().join(", ");
+const published = publishedClosingDebtors.map(asDebtorKey).sort().join(", ");
+if (workedOut !== published) {
+  throw new Error(`The bank journal leaves ${workedOut} owing, against a published closing debtor ledger of ${published}`);
+}
 
 // Sales and purchases in the VAT periods either side of the accounting year.
 // The VAT workbook keeps a pair of entry sheets per straddling period and the
@@ -216,12 +211,6 @@ function openingFixedAssetsV2(prefix) {
   }));
 }
 
-// Named debtor/creditor listings, in the diya-gl book v2 shape: one entry a
-// row, timed opening or closing.
-function asLedgerListings(entries, nameField, timing) {
-  return entries.map((entry) => ({ counterparty: entry[nameField], invoice: entry.invoice, amount: entry.amount, timing }));
-}
-
 // ============================================================================
 // Extract BST (basic)
 // ============================================================================
@@ -283,7 +272,7 @@ const bstToml = formatScenarioToml(
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,
-    closing_debtors: bstClosingDebtors,
+    closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
     // In-year additions go in the "Bought AFTER" block on the Fixed Assets
@@ -295,8 +284,8 @@ const bstToml = formatScenarioToml(
 
 const bstV2 = {
   stock: { openingValue: 10000, closingValue: 6000 },
-  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(bstClosingDebtors, "customer", "closing")],
-  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  debtors: book.debtors,
+  creditors: book.creditors,
   fixedAssets: bstFixedAssetAdditions.map((asset, index) => ({
     assetID: `BST-FA-${index + 1}`,
     description: asset.description,
@@ -370,8 +359,8 @@ const advToml = formatScenarioToml(
 
 const advV2 = {
   stock: { openingValue: 10000, closingValue: 6000 },
-  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(closingDebtors, "customer", "closing")],
-  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  debtors: book.debtors,
+  creditors: book.creditors,
   fixedAssets: openingFixedAssetsV2("SE"),
   hpAgreements: hpAgreements.map((agreement) => ({
     agreementID: agreement.reference,
@@ -510,8 +499,8 @@ const fullMembersV2 = fullMembers.map((member, index) => ({
 const fullV2 = {
   openingBalances: toV2OpeningBalances(fullOpeningBalance),
   stock: { openingValue: 10000, closingValue: 6000, materialsPercent: 0.03 },
-  debtors: [...asLedgerListings(openingDebtors, "customer", "opening"), ...asLedgerListings(closingDebtors, "customer", "closing")],
-  creditors: [...asLedgerListings(openingCreditors, "supplier", "opening"), ...asLedgerListings(closingCreditors, "supplier", "closing")],
+  debtors: book.debtors,
+  creditors: book.creditors,
   fixedAssets: openingFixedAssetsV2("LTD"),
   hpAgreements: hpAgreements.map((agreement) => ({
     agreementID: agreement.reference,

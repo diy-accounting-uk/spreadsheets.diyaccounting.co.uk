@@ -3203,12 +3203,17 @@ amount = 2400
 [[closing_debtors]]
 customer = "Acme Corp"
 invoice = "INV-1012"
-amount = 8000
+amount = 6100
 
 [[closing_debtors]]
-customer = "TechStart Ltd"
-invoice = "INV-1112"
-amount = 2400
+customer = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440
+
+[[closing_debtors]]
+customer = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360
 
 [[opening_creditors]]
 supplier = "WorkSpace Ltd"

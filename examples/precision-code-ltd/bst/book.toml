@@ -187,13 +187,19 @@ timing = "opening"
 [[debtors]]
 counterparty = "Acme Corp"
 invoice = "INV-1012"
-amount = 8000
+amount = 6100
 timing = "closing"
 
 [[debtors]]
-counterparty = "TechStart Ltd"
-invoice = "INV-1112"
-amount = 2400
+counterparty = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440
+timing = "closing"
+
+[[debtors]]
+counterparty = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360
 timing = "closing"
 
 [[creditors]]
