@@ -8,7 +8,6 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 | What | Where | Status |
 |---|---|---|
-| Regenerate `SHEET_COVERAGE_GAPS.md` from main (NEXT item below) | worktree `.worktrees/sp-coverage-gaps`, branch `claude/coverage-gaps` | started; lands docs-only on main |
 | Operator's deploy from main after the post-merge generate-* refresh | deploy.yml | generate-bst/se/ltd/taxi all green and committed (`9e057458`, `08a44a1a`, `72a6a117`, `79eecc50`); deploy is the operator's next step |
 | Full local unit suite on the merged main | worktree `.worktrees/sp-pages` (removed when it finishes) | running |
 
@@ -23,8 +22,21 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Checks, indicators and docs:
 
-- [ ] **Retire or refresh `SHEET_COVERAGE_GAPS.md`** — a dated snapshot that still says the
-  Report dividend line is dead and nothing writes `Boardmeeting!E4`; both are wired now.
+- [ ] **Forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`** — each prints a
+  "TAX & NI LIABILITY" nothing reads, and both are wrong by construction: the derived rows
+  carry formulas in columns D and E only (SE charges tax on April alone, Taxi on April and
+  May), and both use a flat allowance and two bands. Template fix: extend the formulas
+  across F:O and apply the taper and additional rate; then checks anchored to
+  `Profit & Loss Account!B33+B34` and `Schedule!Q1+R1+Y1-Z1` (SE) and the P&L (Taxi).
+- [ ] **Taxi `Draft Tax calculation`: taper and additional rate** — `E6` grants the full
+  allowance at any profit and `E10` sums two bands, while `taxi.js:502` compares E10 to
+  `calculateExpectedTax`, which tapers and charges 45%. Dormant only because no taxi
+  fixture crosses £100,000. Test: a high-profit taxi fixture makes the existing check fail,
+  then the template repair (as BST's) makes it pass.
+- [ ] **Two comments cite `SHEET_COVERAGE_GAPS.md` by name** — `se-admin-echo-checks.test.js:13`
+  (say: every product asserts its injected Admin cells against the tax year TOML) and
+  `ltd-reconciliation-checks.test.js:328` (drop the parenthetical, keep the EJ22-EJ25 /
+  PubBalSht!E12 mechanism). Rides with the next code PR.
 - [ ] **SA103F report indicator** — the SE report now carries the SA103F section; add an
   indicator in `report-indicators.js` explaining the box 30/46 divergence between the full
   and short returns, with its `judge-reconciliation.test.js` expectation.
