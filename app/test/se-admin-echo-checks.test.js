@@ -7,11 +7,9 @@
 // figures, capital allowance rates, mileage bands and VAT threshold/rate into
 // Financialaccounts.xlsx!Admin (see buildSeCellEdits() in
 // app/lib/generator.js), and every leaf workbook in the package reads from
-// there. Before this addition nothing read the cells back, so a wrong rate
-// was arithmetically invisible -- the same failure shape as the
-// shipped-zeros VAT bug. BST, Taxi and Ltd already carry this check; SE was
-// the one product without it (SHEET_COVERAGE_GAPS.md, "Largest gaps by
-// risk" item 1).
+// there. Nothing else reads those cells back, so a wrong rate would be
+// arithmetically invisible -- the same failure shape as the shipped-zeros
+// VAT bug.
 //
 // Each check is exercised on a real LibreOffice-recalculated multi-file
 // package, then again after corrupting one Admin cell's cached value
