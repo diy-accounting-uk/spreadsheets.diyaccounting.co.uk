@@ -163,6 +163,31 @@ function vatLine(report, vatRegistered) {
   ].join(" ");
 }
 
+const SA103S = "Self Assessment (SA103S)";
+
+// The SA103S splits capital allowances across several boxes. Naming the first one alone
+// leaves the drop from net profit to taxable profit looking wider than the figure beside it,
+// so every component is itemised and the total is stated with them.
+function allowances(report, { deductions, additions }) {
+  const claimed = deductions.map((label) => ({ label, figure: requireValue(report, SA103S, label) }));
+  return {
+    claimed,
+    total: claimed.reduce((sum, part) => sum + part.figure, 0),
+    added: additions.map((label) => `${label.toLowerCase()} ${amount(requireValue(report, SA103S, label))}`),
+  };
+}
+
+function selfAssessmentLine(report, split, { from, fromLabel, to, toLabel }) {
+  const opening = requireValue(report, SA103S, from);
+  const closing = requireValue(report, SA103S, to);
+  return [
+    `Self assessment: ${fromLabel} ${amount(opening)},`,
+    `less ${amount(split.total)} of capital allowances (${split.claimed.map((part) => `${part.label} ${amount(part.figure)}`).join(", ")}),`,
+    `plus ${split.added.join(" and ")},`,
+    `gives a ${toLabel} of ${amount(closing)}.`,
+  ].join(" ");
+}
+
 // The personal allowance is what separates a nil charge on a small profit from a nil charge
 // that has lost the profit, so the line carries both ends of the computation.
 function incomeTaxLine(report, section) {
@@ -209,16 +234,23 @@ function seIndicators(report, vatRegistered) {
   const turnover = requireValue(report, "Profit & Loss Account", "Sales Turnover");
   const gross = requireValue(report, "Profit & Loss Account", "Gross Profit");
   const pbt = requireValue(report, "Profit & Loss Account", "Profit Before Tax");
-  const saNet = requireValue(report, "Self Assessment (SA103S)", "Net profit/loss");
-  const allowances = value(report, "Self Assessment (SA103S)", "Capital allowances");
-  const taxable = requireValue(report, "Self Assessment (SA103S)", "Taxable profit");
-  const grants = value(report, "Self Assessment (SA103S)", "Grants as other business income (box 29)");
-  const forTax = requireValue(report, "Self Assessment (SA103S)", "Net profit for tax calc");
+  const split = allowances(report, {
+    deductions: ["Capital allowances", "AIA / WDA claimed", "Other capital allowances (box 24)"],
+    additions: ["Balancing charges (box 25)", "Other tax adjustments"],
+  });
+  const grants = requireValue(report, SA103S, "Grants as other business income (box 29)");
+  const forTax = requireValue(report, SA103S, "Net profit for tax calc");
 
   return [
     runLine(report),
     `Turnover ${amount(turnover)}, gross profit ${amount(gross)}, profit before tax ${amount(pbt)}.`,
-    `Self assessment: net profit ${amount(saNet)}, capital allowances ${amount(allowances)}, taxable profit ${amount(taxable)}, grants as other business income ${amount(grants)}, net profit for the tax calculation ${amount(forTax)}.`,
+    selfAssessmentLine(report, split, {
+      from: "Net profit/loss",
+      fromLabel: "net profit",
+      to: "Taxable profit",
+      toLabel: "taxable profit",
+    }),
+    `Grants as other business income ${amount(grants)} take that to a net profit for the tax calculation of ${amount(forTax)}, which is the profit the income tax computation charges.`,
     incomeTaxLine(report, "Income Tax Calculation"),
     vatLine(report, vatRegistered),
     bridgeLine(report),
@@ -230,14 +262,22 @@ function bstIndicators(report) {
   const turnover = requireValue(report, "Profit & Loss Account", "Sales Turnover");
   const gross = requireValue(report, "Profit & Loss Account", "Gross Profit");
   const net = requireValue(report, "Profit & Loss Account", "Net Profit");
-  const taxable = requireValue(report, "Profit & Loss Account", "Taxable Profit");
-  const allowances = value(report, "Profit & Loss Account", "Capital Allowances");
   const capitalised = value(report, "Purchase Analysis", "Purchases capitalised as fixed assets");
+  const split = allowances(report, {
+    deductions: ["Capital allowances", "AIA / WDA claimed", "WDA + Capital Allowance claimed"],
+    additions: ["Balancing Charge", "Other tax adjustments"],
+  });
 
   return [
     runLine(report),
     `Turnover ${amount(turnover)}, gross profit ${amount(gross)}, net profit ${amount(net)}.`,
-    `Capital allowances ${amount(allowances)} claimed against ${amount(capitalised)} of purchases capitalised as fixed assets, taking the taxable profit to ${amount(taxable)}.`,
+    `Capital allowances of ${amount(split.total)} claimed against ${amount(capitalised)} of purchases capitalised as fixed assets.`,
+    selfAssessmentLine(report, split, {
+      from: "Net profit/loss",
+      fromLabel: "net profit",
+      to: "Taxable profit",
+      toLabel: "taxable profit",
+    }),
     incomeTaxLine(report, "Income Tax Calculation"),
     bridgeLine(report),
     "This product publishes no balance sheet and no VAT returns: a profit and loss account and a self assessment return are the whole output.",
@@ -248,17 +288,25 @@ function taxiIndicators(report) {
   const turnover = requireValue(report, "Profit & Loss Account", "Turnover (Total Fares)");
   const gross = requireValue(report, "Profit & Loss Account", "Gross Profit");
   const net = requireValue(report, "Profit & Loss Account", "Net Profit");
-  const allowances = value(report, "Profit & Loss Account", "Capital Allowances");
   const mileage = value(report, "Profit & Loss Account", "Mileage Allowance");
   const running = value(report, "Purchase Analysis", "Vehicle running costs for the year");
   const capitalised = value(report, "Purchase Analysis", "Vehicle purchases capitalised");
-  const taxable = requireValue(report, "Self Assessment (SA103S)", "Net profit for tax calc");
+  const split = allowances(report, {
+    deductions: ["Annual investment allowance (box 22)", "Small-balance allowance (box 23)", "Other capital allowances (box 24)"],
+    additions: ["Balancing charges (box 25)", "Goods and services for own use (box 26)"],
+  });
 
   return [
     runLine(report),
     `Turnover ${amount(turnover)}, gross profit ${amount(gross)}, net profit ${amount(net)}.`,
     `Vehicle costs: running costs ${amount(running)} charged, mileage allowance ${amount(mileage)}. The workbook takes one of the two and leaves the other at zero.`,
-    `Capital allowances ${amount(allowances)} claimed against ${amount(capitalised)} of vehicle purchases capitalised. Taxable profit ${amount(taxable)}.`,
+    `Capital allowances of ${amount(split.total)} claimed against ${amount(capitalised)} of vehicle purchases capitalised.`,
+    selfAssessmentLine(report, split, {
+      from: "Net profit/loss",
+      fromLabel: "net profit",
+      to: "Net business profit (box 27)",
+      toLabel: "net business profit",
+    }),
     incomeTaxLine(report, "Draft Tax Calculation"),
     bridgeLine(report),
     "This product publishes no balance sheet and no VAT returns: a profit and loss account and a self assessment return are the whole output.",

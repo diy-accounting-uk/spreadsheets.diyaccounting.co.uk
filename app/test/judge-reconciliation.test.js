@@ -38,6 +38,7 @@ const FIXTURES = {
   seAdvanced: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
   bst: "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
   taxi: "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-basic.md",
+  taxiSpSixty: "GB_Accounts_Taxi_Driver_2027_04_05__Apr27__Excel_2007_taxi-scenario-sp-sixty.md",
 };
 
 function report(key) {
@@ -244,9 +245,18 @@ describe("the VAT indicator", () => {
 describe("buildIndicators for the Self Employed", () => {
   const text = indicatorText("se", "seAdvanced", { vatRegistered: true });
 
+  // 186,632.06 less 32,500.00 and 11,500.00 is 142,632.06. Naming only the 32,500.00 left a
+  // 11,500.00 hole between two figures printed side by side, which is what a reviewer sees.
+  it("itemises every capital allowance box so the drop to the taxable profit is exact", () => {
+    expect(text).toContain(
+      "Self assessment: net profit 186,632.06, less 44,000.00 of capital allowances " +
+        "(Capital allowances 32,500.00, AIA / WDA claimed 0.00, Other capital allowances (box 24) 11,500.00), " +
+        "plus balancing charges (box 25) 0.00 and other tax adjustments 0.00, gives a taxable profit of 142,632.06.",
+    );
+  });
+
   it("carries the grants line from the taxable profit to the profit tax is charged on", () => {
-    expect(text).toContain("taxable profit 142,632.06, grants as other business income 2,083.33");
-    expect(text).toContain("net profit for the tax calculation 144,715.39");
+    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 144,715.39");
     expect(text).toContain("Income tax: charged on a profit of 144,715.39");
   });
 
@@ -265,7 +275,15 @@ describe("buildIndicators for the Basic Sole Trader", () => {
   const text = indicatorText("bst", "bst");
 
   it("puts the capital allowances beside the assets they were claimed on", () => {
-    expect(text).toContain("Capital allowances 39,000.00 claimed against 39,000.00 of purchases capitalised as fixed assets");
+    expect(text).toContain("Capital allowances of 39,000.00 claimed against 39,000.00 of purchases capitalised as fixed assets");
+  });
+
+  it("itemises this product's allowance boxes too", () => {
+    expect(text).toContain(
+      "Self assessment: net profit 265,508.00, less 39,000.00 of capital allowances " +
+        "(Capital allowances 39,000.00, AIA / WDA claimed 0.00, WDA + Capital Allowance claimed 0.00), " +
+        "plus balancing charge 0.00 and other tax adjustments 0.00, gives a taxable profit of 226,508.00.",
+    );
   });
 
   it("states turnover, profit and the tax charged on it", () => {
@@ -286,7 +304,16 @@ describe("buildIndicators for the Taxi Driver", () => {
   });
 
   it("puts the capital allowances beside the vehicle purchases they were claimed on", () => {
-    expect(text).toContain("Capital allowances 1,120.00 claimed against 8,000.00 of vehicle purchases capitalised");
+    expect(text).toContain("Capital allowances of 1,120.00 claimed against 8,000.00 of vehicle purchases capitalised");
+  });
+
+  it("itemises an allowance this product really does split across two boxes", () => {
+    const split = indicatorText("taxi", "taxiSpSixty");
+    expect(split).toContain(
+      "less 200.00 of capital allowances (Annual investment allowance (box 22) 0.00, " +
+        "Small-balance allowance (box 23) 172.00, Other capital allowances (box 24) 28.00)",
+    );
+    expect(split).toContain("gives a net business profit of 31,612.00.");
   });
 });
 
