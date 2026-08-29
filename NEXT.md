@@ -6,13 +6,21 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-| What | Where | Status |
-|---|---|---|
-| vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, 1567 tests; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
-| fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | merged, worktree removed | landed on `claude/wave-3` `a19160f0`, 1866 tests; SE profit 144,715 → 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
-| sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
+Wave 3 is on `claude/wave-3` (PR #40), rebased onto the post-deploy green main (deploy
+33252551051 at `79eecc50`). Remote head `1f16bc27` carries the branch regeneration
+(`d221e378`, `fb295a2a`, `1170f5e1`, `4e264856`). The four skip-commit generate-* proofs
+on that head failed at the pre-generation test job on three stale SE figures in
+`app/test/judge-reconciliation.test.js`; the fix is committed locally in worktree
+`.worktrees/sp-wave-3` as `ea4073c0` and NOT pushed. To meet the merge bar: push it, then
+the four skip-commit proofs and test.yml green. The operator dispatches CI on this branch.
 
-Wave 3 is complete on `claude/wave-3`, rebased onto the post-deploy green main (deploy 33252551051 at `79eecc50`); PR open. Packages regenerated on the branch (`d221e378`, `fb295a2a`, `1170f5e1`, `4e264856`); the four skip-commit proofs and test.yml are the remaining gates. Every later PR branch starts from a rebase onto the post-deploy green main.
+| Track | Landed on `claude/wave-3` |
+|---|---|
+| vat-q5 | `f529d5aa`; both featured scenarios reconcile with 0 warnings |
+| fixture | `a19160f0`; SE profit 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
+| sa103f | `1a5d1b7b` |
+
+Every later PR branch starts from a rebase onto the post-deploy green main.
 
 ## Open items
 
