@@ -37,9 +37,9 @@ Trade: IT consultancy and software development
 | Purchases.xlsx Mar: VAT rate charged (H2) | 20 | 20 | 0 | PASS |
 | Total Sales | 339200 | 339200 | 0 | PASS |
 | P&L: Gross = Turnover + Grants - CoS | 321146.6666666666 | 321146.666666666 | -6.402842700481415e-10 | PASS |
-| P&L: Operating = Gross - Admin | 176975.391666666 | 176975.391666666 | 0 | PASS |
-| P&L: PBT = Operating | 176975.391666666 | 176975.391666666 | 0 | PASS |
-| P&L: Admin lines sum = Total | 144171.27499999997 | 144171.275 | +2.9103830456733704e-11 | PASS |
+| P&L: Operating = Gross - Admin | 171875.391666666 | 171875.391666666 | 0 | PASS |
+| P&L: PBT = Operating | 171875.391666666 | 171875.391666666 | 0 | PASS |
+| P&L: Admin lines sum = Total | 149271.27499999994 | 149271.275 | +5.820766091346741e-11 | PASS |
 | VitalTax: annual product sales = P&L Products A+B+C | 335500 | 335500 | 0 | PASS |
 | VitalTax: annual direct costs = P&L Materials + Other Direct Costs | 13470 | 13470 | 0 | PASS |
 | Motor Expenses | 6332 | 6331.875 | -0.125 | PASS |
@@ -48,25 +48,25 @@ Trade: IT consultancy and software development
 | Stock: count at the year end | 6000 | 6000 | 0 | PASS |
 | P&L: materials = stock purchases net + the year's stock movement | 9450 | 9450 | 0 | PASS |
 | Opening Debtors total | 10800 | 10800 | 0 | PASS |
-| Closing Debtors total | 10400 | 10400 | 0 | PASS |
+| Closing Debtors total | 7900 | 7900 | 0 | PASS |
 | Opening Creditors total | 2220 | 2220 | 0 | PASS |
 | Closing Creditors total | 1710 | 1710 | 0 | PASS |
-| Income Tax | 50346 | 50346.1566666665 | +0.156666666502133 | PASS |
+| Income Tax | 40401 | 40401.2349999998 | +0.23499999979685526 | PASS |
 | NI Class 4 (lower) | 3663.2 | 3663.18 | -0.01999999999998181 | PASS |
-| Total Tax + NI | 55898 | 55898.2444999998 | +0.24449999979697168 | PASS |
-| Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
+| Total Tax + NI | 45491 | 45491.3228333331 | +0.3228333330989699 | PASS |
+| Tax: Personal allowance after taper | 1762.3041666670033 | 1762.30416666687 | -1.3324097380973399e-10 | PASS |
 | Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
 | Tax: sheet splits the higher and additional bands at the higher band end | 150000 | 150000 | 0 | PASS |
 | Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 144715.391666666 | 144715.391666666 | 0 | PASS |
-| Tax: IT = Basic + Higher + Additional | 50346.1566666665 | 50346.1566666665 | 0 | PASS |
-| Tax: Total = IT + CIS deduction line + NI | 55898.24449999983 | 55898.2444999998 | -3.637978807091713e-11 | PASS |
+| Tax: Taxable = Profit - Allowance | 119853.08749999912 | 119853.087499999 | -1.1641532182693481e-10 | PASS |
+| Tax: IT = Basic + Higher + Additional | 40401.2349999998 | 40401.2349999998 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 45491.32283333313 | 45491.3228333331 | -2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
-| SA103S: total expenses = cost of sales + admin expenses less depreciation | 152567.9416666667 | 152567.941666667 | +2.9103830456733704e-10 | PASS |
-| SA103S: net profit = turnover + other business income - total expenses | 186632.058333333 | 186632.058333333 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 144715.391666666 | 144715.391666666 | 0 | PASS |
-| SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 32500 | 32500 | 0 | PASS |
+| SA103S: total expenses = cost of sales + admin expenses less depreciation | 155667.9416666667 | 155667.941666667 | +2.9103830456733704e-10 | PASS |
+| SA103S: net profit = turnover + other business income - total expenses | 183532.058333333 | 183532.058333333 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 121615.391666666 | 121615.391666666 | 0 | PASS |
+| SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 14 turnover (D55) = the profit and loss account | 339200 | 339200 | 0 | PASS |
 | SA103F box 15 other business income (O55) = the profit and loss account | 0 | 0 | 0 | PASS |
 | SA103F box 16 goods bought for resale (D66) = the profit and loss account | 13470 | 13470 | 0 | PASS |
@@ -78,23 +78,23 @@ Trade: IT consultancy and software development
 | SA103F box 22 telephone, stationery and office costs (D90) = the profit and loss account | 3035 | 3035 | 0 | PASS |
 | SA103F box 23 advertising and entertainment (D94) = the profit and loss account | 3800 | 3800 | 0 | PASS |
 | SA103F box 24 interest on bank and other loans (D98) = the profit and loss account | 0 | 0 | 0 | PASS |
-| SA103F box 25 bank, credit card and finance charges (D102) = the profit and loss account | 800 | 800 | 0 | PASS |
+| SA103F box 25 bank, credit card and finance charges (D102) = the profit and loss account | 3900 | 3900 | 0 | PASS |
 | SA103F box 26 irrecoverable debts written off (D106) = the profit and loss account | -300 | -300 | 0 | PASS |
 | SA103F box 27 accountancy, legal and professional fees (D110) = the profit and loss account | 6925 | 6925 | 0 | PASS |
-| SA103F box 28 depreciation and loss on sale of assets (D114) = the profit and loss account | 11912 | 11912 | 0 | PASS |
+| SA103F box 28 depreciation and loss on sale of assets (D114) = the profit and loss account | 13912 | 13912 | 0 | PASS |
 | SA103F box 29 other business expenses (D118) = the profit and loss account | 3231.66666666666 | 3231.66666666666 | 0 | PASS |
-| SA103F box 30 total expenses (D122) = the profit and loss account | 164307.9416666667 | 164307.941666667 | +2.9103830456733704e-10 | PASS |
-| SA103F box 43 disallowable depreciation (O114) = the profit and loss account | 11740 | 11740 | 0 | PASS |
-| SA103F box 45 total disallowable expenses (O122) = the profit and loss account | 11740 | 11740 | 0 | PASS |
+| SA103F box 30 total expenses (D122) = the profit and loss account | 169407.9416666667 | 169407.941666667 | +2.9103830456733704e-10 | PASS |
+| SA103F box 43 disallowable depreciation (O114) = the profit and loss account | 13740 | 13740 | 0 | PASS |
+| SA103F box 45 total disallowable expenses (O122) = the profit and loss account | 13740 | 13740 | 0 | PASS |
 | SA103F box 74 other business income (O204) = the profit and loss account | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
-| SA103F box 56 total capital allowances (O149) = boxes 48 to 55 | 44000 | 44000 | 0 | PASS |
-| SA103F box 46 net profit (D129) = boxes 14 and 15 less box 30 | 174892.058333333 | 174892.058333333 | 0 | PASS |
-| SA103F box 60 total additions to net profit (D174) = boxes 45, 57, 58 and 59 | 11740 | 11740 | 0 | PASS |
-| SA103F box 62 total deductions from net profit (O169) = boxes 56 and 61 | 44000 | 44000 | 0 | PASS |
-| SA103F box 63 net business profit for tax purposes (O174) = box 46 or box 47, plus box 60, less box 62 | 142632.058333333 | 142632.058333333 | 0 | PASS |
-| SA103F box 72 adjusted profit (O194) = box 63 | 142632.058333333 | 142632.058333333 | 0 | PASS |
-| SA103F box 75 total taxable profits (O210) = box 72 less box 73 plus box 74 | 144715.39166666634 | 144715.391666666 | -3.4924596548080444e-10 | PASS |
-| SA103F box 48 annual investment allowance (D139) = Schedule Q1 | 32500 | 32500 | 0 | PASS |
+| SA103F box 56 total capital allowances (O149) = boxes 48 to 55 | 64000 | 64000 | 0 | PASS |
+| SA103F box 46 net profit (D129) = boxes 14 and 15 less box 30 | 169792.058333333 | 169792.058333333 | 0 | PASS |
+| SA103F box 60 total additions to net profit (D174) = boxes 45, 57, 58 and 59 | 13740 | 13740 | 0 | PASS |
+| SA103F box 62 total deductions from net profit (O169) = boxes 56 and 61 | 64000 | 64000 | 0 | PASS |
+| SA103F box 63 net business profit for tax purposes (O174) = box 46 or box 47, plus box 60, less box 62 | 119532.058333333 | 119532.058333333 | 0 | PASS |
+| SA103F box 72 adjusted profit (O194) = box 63 | 119532.058333333 | 119532.058333333 | 0 | PASS |
+| SA103F box 75 total taxable profits (O210) = box 72 less box 73 plus box 74 | 121615.39166666633 | 121615.391666666 | -3.346940502524376e-10 | PASS |
+| SA103F box 48 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51 | 0 | 0 | 0 | PASS |
 | SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
 | SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1 | 8500 | 8500 | 0 | PASS |
@@ -108,40 +108,40 @@ Trade: IT consultancy and software development
 | SA103F box 22 telephone, stationery and office costs: full return (D90) = short return (O55) | 3035 | 3035 | 0 | PASS |
 | SA103F box 27 accountancy, legal and professional fees: full return (D110) = short return (O46) | 6925 | 6925 | 0 | PASS |
 | SA103F box 47 net loss: full return (O129) = short return (O71) | 0 | 0 | 0 | PASS |
-| SA103F box 48 annual investment allowance: full return (D139) = short return (D80) | 32500 | 32500 | 0 | PASS |
+| SA103F box 48 annual investment allowance: full return (D139) = short return (D80) | 52500 | 52500 | 0 | PASS |
 | SA103F box 54 enhanced and other capital allowances: full return (O139) = short return (D85) | 0 | 0 | 0 | PASS |
 | SA103F box 58 balancing charge: full return (O160) = short return (O85) | 0 | 0 | 0 | PASS |
 | SA103F box 59 goods and services for own use: full return (D169) = short return (D94) | 0 | 0 | 0 | PASS |
-| SA103F box 63 net business profit for tax purposes: full return (O174) = short return (D99) | 142632.058333333 | 142632.058333333 | 0 | PASS |
+| SA103F box 63 net business profit for tax purposes: full return (O174) = short return (D99) | 119532.058333333 | 119532.058333333 | 0 | PASS |
 | SA103F box 64 net business loss for tax purposes: full return (O179) = short return (O106) | 0 | 0 | 0 | PASS |
 | SA103F box 73 loss brought forward set against this year: full return (O199) = short return (O94) | 0 | 0 | 0 | PASS |
 | SA103F box 74 other business income: full return (O204) = short return (O99) | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
-| SA103F box 75 total taxable profits: full return (O210) = short return (D106) | 144715.391666666 | 144715.391666666 | 0 | PASS |
+| SA103F box 75 total taxable profits: full return (O210) = short return (D106) | 121615.391666666 | 121615.391666666 | 0 | PASS |
 | SA103F box 80 contractor deductions taken off: full return (D231) = short return (O124) | 0 | 0 | 0 | PASS |
-| SA103F box 30 total expenses (D122) = the short return's total expenses with box 45 disallowable depreciation added back | 164307.941666667 | 164307.941666667 | 0 | PASS |
-| SA103F box 46 net profit (D129) = the short return's net profit less box 45 disallowable depreciation | 174892.058333333 | 174892.058333333 | 0 | PASS |
-| SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24 | 44000 | 44000 | 0 | PASS |
+| SA103F box 30 total expenses (D122) = the short return's total expenses with box 45 disallowable depreciation added back | 169407.941666667 | 169407.941666667 | 0 | PASS |
+| SA103F box 46 net profit (D129) = the short return's net profit less box 45 disallowable depreciation | 169792.058333333 | 169792.058333333 | 0 | PASS |
+| SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24 | 64000 | 64000 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 44292 | 44292 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 44656 | 44656 | 0 | PASS |
 | SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4) | 1 | 1 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.18 | 0.18 | 0 | PASS |
 | SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4) | 12570 | 12570 | 0 | PASS |
 | SA103F: the Class 4 threshold the return prints against the Class 4 lower limit | 9568 | 12570 | +3002 | **WARNING** |
-| Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 32500 | 32500 | 0 | PASS |
+| Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
-| Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 32500 | 32500 | 0 | PASS |
+| Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total | 12500 | 12500 | 0 | PASS |
-| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 30990 | 30990 | 0 | PASS |
-| Fixed assets: Schedule total cost = existing assets plus assets bought in the year | 65500 | 65500 | 0 | PASS |
-| P&L: Depreciation (row 34, summed) = Schedule I1 | 11740 | 11739.999999999993 | -7.275957614183426e-12 | PASS |
+| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 48990 | 48990 | 0 | PASS |
+| Fixed assets: Schedule total cost = existing assets plus assets bought in the year | 85500 | 85500 | 0 | PASS |
+| P&L: Depreciation (row 34, summed) = Schedule I1 | 13740 | 13740 | 0 | PASS |
 | P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) | 172 | 171.99999999999966 | -3.410605131648481e-13 | PASS |
 | HP: first agreement monthly payment = the amount financed with charges over its term | 750 | 750 | 0 | PASS |
 | HP: first agreement capital and interest split sums to the monthly payment | 750 | 750 | 0 | PASS |
 | HP: second agreement monthly payment computes | 405 | 405 | 0 | PASS |
 | HP: second agreement capital and interest split sums to the monthly payment | 405 | 405 | 0 | PASS |
 | HP: long term creditors = the agreements' amounts financed | 20000 | 20000 | 0 | PASS |
-| P&L: HP interest and charges reach the finance line (B31) | 800 | 800 | 0 | PASS |
-| Bank.xlsx closing balance (Mar!A2) | 204415.42999999993 | 204415.43 | +5.820766091346741e-11 | PASS |
+| P&L: HP interest and charges reach the finance line (B31) | 3900 | 3900 | 0 | PASS |
+| Bank.xlsx closing balance (Mar!A2) | 181315.43 | 181315.43 | 0 | PASS |
 | Cash.xlsx closing balance (Mar!A2) | 480 | 480 | 0 | PASS |
 | P&L apr col C5 = Sales.xlsx a-coded net | 25333.33 | 25333.3333333333 | +0.0033333332976326346 | PASS |
 | P&L apr col C6 = Sales.xlsx b-coded net | 1800 | 1800 | 0 | PASS |
@@ -421,17 +421,17 @@ Trade: IT consultancy and software development
 | Payslips!Payment mar I15 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 92735.73333333332 | 92735.7333333333 | -2.9103830456733704e-11 | PASS |
 | VAT Q1: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 16920 | 16920 | 0 | PASS |
-| VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 13496.125 | 13496.125 | 0 | PASS |
+| VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 10896.125 | 10896.125 | 0 | PASS |
 | VAT Q1: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
 | VAT Q1: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 16919.999999999993 | 16920 | +7.275957614183426e-12 | PASS |
-| VAT Q1: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 3423.8749999999995 | 3423.875 | +4.547473508864641e-13 | PASS |
-| VAT Q1: box 7 net purchases (G23) = scenario purchases net for the quarter | 17119.374999999996 | 17119.375 | +3.637978807091713e-12 | PASS |
+| VAT Q1: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 6023.875 | 6023.875 | 0 | PASS |
+| VAT Q1: box 7 net purchases (G23) = scenario purchases net for the quarter | 30119.374999999996 | 30119.375 | +3.637978807091713e-12 | PASS |
 | VAT Q2: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 17256.6666666667 | 17256.6666666667 | 0 | PASS |
-| VAT Q2: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 14183.4166666667 | 14183.4166666667 | 0 | PASS |
+| VAT Q2: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 12783.4166666667 | 12783.4166666667 | 0 | PASS |
 | VAT Q2: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
 | VAT Q2: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 17256.666666666657 | 17256.6666666667 | +4.3655745685100555e-11 | PASS |
-| VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 3073.25 | 3073.25 | 0 | PASS |
-| VAT Q2: box 7 net purchases (G23) = scenario purchases net for the quarter | 15366.25 | 15366.25 | 0 | PASS |
+| VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 4473.25 | 4473.25 | 0 | PASS |
+| VAT Q2: box 7 net purchases (G23) = scenario purchases net for the quarter | 22366.25 | 22366.25 | 0 | PASS |
 | VAT Q3: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 19780 | 19780 | 0 | PASS |
 | VAT Q3: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q3: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
@@ -444,8 +444,8 @@ Trade: IT consultancy and software development
 | VAT Q4: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 16859.999999999993 | 16860 | +7.275957614183426e-12 | PASS |
 | VAT Q4: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 2105.7083333333335 | 2105.70833333333 | -3.637978807091713e-12 | PASS |
 | VAT Q4: box 7 net purchases (G23) = scenario purchases net for the quarter | 10528.541666666666 | 10528.5416666667 | +3.456079866737127e-11 | PASS |
-| VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 5405.583333333337 | 5405.58333333334 | +3.637978807091713e-12 | PASS |
+| VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 1100 | 1100 | 0 | PASS |
+| VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 920 | 920 | 0 | PASS |
 | VAT Q5: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
 | Vatinterface D6: Apr sales net = Sales.xlsx Apr | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
 | Vatinterface F6: Apr output VAT = Sales.xlsx Apr | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
@@ -457,8 +457,8 @@ Trade: IT consultancy and software development
 | Vatinterface J7: May input VAT = Purchases.xlsx May | 1062.5 | 1062.5 | 0 | PASS |
 | Vatinterface D8: Jun sales net = Sales.xlsx Jun | 29333.3333333333 | 29333.3333333333 | 0 | PASS |
 | Vatinterface F8: Jun output VAT = Sales.xlsx Jun | 5866.66666666667 | 5866.66666666667 | 0 | PASS |
-| Vatinterface H8: Jun purchases net = Purchases.xlsx Jun | 7547.5 | 7547.5 | 0 | PASS |
-| Vatinterface J8: Jun input VAT = Purchases.xlsx Jun | 1509.5 | 1509.5 | 0 | PASS |
+| Vatinterface H8: Jun purchases net = Purchases.xlsx Jun | 20547.5 | 20547.5 | 0 | PASS |
+| Vatinterface J8: Jun input VAT = Purchases.xlsx Jun | 4109.5 | 4109.5 | 0 | PASS |
 | Vatinterface D9: Jul sales net = Sales.xlsx Jul | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
 | Vatinterface F9: Jul output VAT = Sales.xlsx Jul | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
 | Vatinterface H9: Jul purchases net = Purchases.xlsx Jul | 7549.375 | 7549.375 | 0 | PASS |
@@ -469,8 +469,8 @@ Trade: IT consultancy and software development
 | Vatinterface J10: Aug input VAT = Purchases.xlsx Aug | 734.208333333333 | 734.208333333333 | 0 | PASS |
 | Vatinterface D11: Sep sales net = Sales.xlsx Sep | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
 | Vatinterface F11: Sep output VAT = Sales.xlsx Sep | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
-| Vatinterface H11: Sep purchases net = Purchases.xlsx Sep | 4145.83333333333 | 4145.83333333333 | 0 | PASS |
-| Vatinterface J11: Sep input VAT = Purchases.xlsx Sep | 829.166666666667 | 829.166666666667 | 0 | PASS |
+| Vatinterface H11: Sep purchases net = Purchases.xlsx Sep | 11145.8333333333 | 11145.8333333333 | 0 | PASS |
+| Vatinterface J11: Sep input VAT = Purchases.xlsx Sep | 2229.16666666667 | 2229.16666666667 | 0 | PASS |
 | Vatinterface D12: Oct sales net = Sales.xlsx Oct | 42133.3333333333 | 42133.3333333333 | 0 | PASS |
 | Vatinterface F12: Oct output VAT = Sales.xlsx Oct | 8426.66666666667 | 8426.66666666667 | 0 | PASS |
 | Vatinterface H12: Oct purchases net = Purchases.xlsx Oct | 35838.125 | 35838.125 | 0 | PASS |
@@ -511,24 +511,28 @@ Trade: IT consultancy and software development
 | Vatinterface F19: 05Y2 output VAT = the straddling sales entered for that period | 300 | 300 | 0 | PASS |
 | Vatinterface H19: 05Y2 purchases net = the straddling purchases entered for that period | 300 | 300 | 0 | PASS |
 | Vatinterface J19: 05Y2 input VAT = the straddling purchases entered for that period | 60 | 60 | 0 | PASS |
+| Vatinterface D20: 06Y2 sales net = the straddling sales entered for that period | 1000 | 1000 | 0 | PASS |
+| Vatinterface F20: 06Y2 output VAT = the straddling sales entered for that period | 200 | 200 | 0 | PASS |
+| Vatinterface H20: 06Y2 purchases net = the straddling purchases entered for that period | 400 | 400 | 0 | PASS |
+| Vatinterface J20: 06Y2 input VAT = the straddling purchases entered for that period | 80 | 80 | 0 | PASS |
 | VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E8: quarter sales net = its three period rows | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
 | Vatinterface G8: quarter output VAT = its three period rows | 16920.000000000007 | 16920 | -7.275957614183426e-12 | PASS |
-| Vatinterface I8: quarter purchases net = its three period rows | 17119.375 | 17119.375 | 0 | PASS |
-| Vatinterface K8: quarter input VAT = its three period rows | 3423.875 | 3423.875 | 0 | PASS |
+| Vatinterface I8: quarter purchases net = its three period rows | 30119.375 | 30119.375 | 0 | PASS |
+| Vatinterface K8: quarter input VAT = its three period rows | 6023.875 | 6023.875 | 0 | PASS |
 | VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8) | 16920 | 16920 | 0 | PASS |
-| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 3423.875 | 3423.875 | 0 | PASS |
-| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 17119.375 | 17119.375 | 0 | PASS |
+| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 6023.875 | 6023.875 | 0 | PASS |
+| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 30119.375 | 30119.375 | 0 | PASS |
 | VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
 | VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 44408 | 44408 | 0 | PASS |
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E11: quarter sales net = its three period rows | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | Vatinterface G11: quarter output VAT = its three period rows | 17256.66666666667 | 17256.6666666667 | +2.9103830456733704e-11 | PASS |
-| Vatinterface I11: quarter purchases net = its three period rows | 15366.25 | 15366.25 | 0 | PASS |
-| Vatinterface K11: quarter input VAT = its three period rows | 3073.25 | 3073.25 | 0 | PASS |
+| Vatinterface I11: quarter purchases net = its three period rows | 22366.24999999997 | 22366.25 | +2.9103830456733704e-11 | PASS |
+| Vatinterface K11: quarter input VAT = its three period rows | 4473.250000000004 | 4473.25 | -3.637978807091713e-12 | PASS |
 | VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 17256.6666666667 | 17256.6666666667 | 0 | PASS |
-| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 3073.25 | 3073.25 | 0 | PASS |
-| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 15366.25 | 15366.25 | 0 | PASS |
+| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4473.25 | 4473.25 | 0 | PASS |
+| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 22366.25 | 22366.25 | 0 | PASS |
 | VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 44500 | 44500 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
@@ -552,23 +556,24 @@ Trade: IT consultancy and software development
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
 | VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 44681 | 44681 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E19: quarter sales net = its three period rows | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| Vatinterface G19: quarter output VAT = its three period rows | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| Vatinterface I19: quarter purchases net = its three period rows | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| Vatinterface K19: quarter input VAT = its three period rows | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G19) | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K19) | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 44742 | 44742 | 0 | PASS |
+| Vatinterface E20: quarter sales net = its three period rows | 5500 | 5500 | 0 | PASS |
+| Vatinterface G20: quarter output VAT = its three period rows | 1100 | 1100 | 0 | PASS |
+| Vatinterface I20: quarter purchases net = its three period rows | 900 | 900 | 0 | PASS |
+| Vatinterface K20: quarter input VAT = its three period rows | 180 | 180 | 0 | PASS |
+| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G20) | 1100 | 1100 | 0 | PASS |
+| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K20) | 180 | 180 | 0 | PASS |
+| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I20) | 900 | 900 | 0 | PASS |
+| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 5500 | 5500 | 0 | PASS |
+| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 44773 | 44773 | 0 | PASS |
 | VAT: the five returns end on five different periods | 5 | 5 | 0 | PASS |
 | VAT: Q2 ends a quarter after Q1 | 3 | 3 | 0 | PASS |
 | VAT: Q3 ends a quarter after Q2 | 3 | 3 | 0 | PASS |
 | VAT: Q4 ends a quarter after Q3 | 3 | 3 | 0 | PASS |
+| VAT: Q5 ends a quarter after Q4 | 3 | 3 | 0 | PASS |
 | VAT: Q1-Q4 cover every month of the accounting year | 12 | 12 | 0 | PASS |
-| VAT: Q5 ends on the last period the Vatinterface carries | 19 | 19 | 0 | PASS |
-| VAT: periods more than one of the five returns declares | 0 | 1 | +1 | **WARNING** |
-| VAT: output VAT declared on more than one of the five returns | 0 | 5226.66666666667 | +5226.66666666667 | **WARNING** |
+| VAT: Q5 ends on the last period the Vatinterface carries | 20 | 20 | 0 | PASS |
+| VAT: periods more than one of the five returns declares | 0 | 0 | 0 | PASS |
+| VAT: output VAT declared on more than one of the five returns | 0 | 0 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
 | Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
@@ -623,7 +628,7 @@ Trade: IT consultancy and software development
 | Payslips calendar row 366: the month name is its payroll month counted from the tax year start | Mar | Mar |  | PASS |
 | Payslips calendar row 381: the date runs on unbroken from the tax year start | 44671 | 44671 | 0 | PASS |
 | Payslips calendar row 381: the month name is its payroll month counted from the tax year start | Mar | Mar |  | PASS |
-| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | -1.4551915228366852e-11 | -1.4551915228366852e-11 | PASS |
 | Category netting: Sales Product A (sales a) net reaches Profit & Loss Account!B5 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product B (sales b) net reaches Profit & Loss Account!B6 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product C (sales c) net reaches Profit & Loss Account!B7 with no residue | 0 | 0 | 0 | PASS |
@@ -648,19 +653,19 @@ Trade: IT consultancy and software development
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 176,975.39 |
-| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 11,740 |
+| Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 171,875.39 |
+| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 13,740 |
 | Less grants, taxed as other business income below | Profit & Loss Account!B11 | -2,083.33 |
 | Less net loss for the year (box 21) | SE Short!O71 | 0 |
-| Less annual investment allowance (box 22) | SE Short!D80 | -32,500 |
+| Less annual investment allowance (box 22) | SE Short!D80 | -52,500 |
 | Less small-balance allowance (box 23) | SE Short!D85 | 0 |
 | Less other capital allowances (box 24) | SE Short!O80 | -11,500 |
 | Add balancing charges (box 25) | SE Short!O85 | 0 |
 | Add goods and services for own use (box 26) | SE Short!D94 | 0 |
 | Add grants as other business income (box 29) | SE Short!O99 | 2,083.33 |
 | Less loss brought forward (box 28) | SE Short!O94 | 0 |
-| **Tax profit the bridge computes** | | **144,715.39** |
-| Tax profit the sheet carries | Income Tax!E5 | 144,715.39 |
+| **Tax profit the bridge computes** | | **121,615.39** |
+| Tax profit the sheet carries | Income Tax!E5 | 121,615.39 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -686,7 +691,7 @@ Journal amounts include VAT at 20%.
 | Legal & Professional Fees (purchases l) | 8,310 | 1,385 | 6,925 | Profit & Loss Account!B28 | 6,925 | 0 |
 | Other Expenses (purchases y) | 3,878 | 646.33 | 3,231.67 | Profit & Loss Account!B32 | 3,231.67 | 0 |
 | Purchases after stock adjustment, less the year's stock movement (purchases s) | 6,540 | 1,090 | 5,450 | Profit & Loss Account!B14 less the stock movement | 5,450 | 0 |
-| Capitalised fixed asset spend (purchases fa) | 39,000 | 6,500 | 32,500 | Fixedassets.xlsx!FAreconciliation!E11 | 32,500 | 0 |
+| Capitalised fixed asset spend (purchases fa) | 63,000 | 10,500 | 52,500 | Fixedassets.xlsx!FAreconciliation!E11 | 52,500 | 0 |
 | Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
 
 ## Business Details
@@ -720,32 +725,32 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Legal & Professional | 6,925 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts | -300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Bank Interest Paid | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;HP Interest, Lease, Bank Charges | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;HP Interest, Lease, Bank Charges | 3,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 3,231.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss (Profit) on Disposal of Assets | 172 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
-| Total Admin Expenses | 144,171.28 |
-| **Operating Profit** | 176,975.39 |
-| **Profit Before Tax** | 176,975.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 13,740 |
+| Total Admin Expenses | 149,271.28 |
+| **Operating Profit** | 171,875.39 |
+| **Profit Before Tax** | 171,875.39 |
 
 ## Income Tax Calculation
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 144,715.39 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 0 |
-| Taxable Income | 144,715.39 |
+| Profit from Self Employment | 121,615.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 1,762.3 |
+| Taxable Income | 119,853.09 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 42,806.16 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 32,861.23 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 150,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate (45%) | 0 |
-| **Total Income Tax** | 50,346.16 |
+| **Total Income Tax** | 40,401.23 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,663.18 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,888.91 |
-| **Total Tax + NI** | 55,898.24 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,426.91 |
+| **Total Tax + NI** | 45,491.32 |
 
 ## Self Assessment (SA103S)
 
@@ -761,22 +766,22 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 13,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals | 950 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional | 6,925 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest and bank charges | 3,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs | 3,035 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
-| **Total expenses** | 152,567.94 |
-| **Net profit/loss** | 186,632.06 |
+| **Total expenses** | 155,667.94 |
+| **Net profit/loss** | 183,532.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 11,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 142,632.06 |
+| **Taxable profit** | 119,532.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 2,083.33 |
 | VAT threshold note | — |
-| **Net profit for tax calc** | 144,715.39 |
+| **Net profit for tax calc** | 121,615.39 |
 
 ## Self Assessment (SA103F)
 
@@ -793,32 +798,32 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Telephone, stationery and office costs (box 22) | 3,035 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Advertising and entertainment (box 23) | 3,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest on bank and other loans (box 24) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Bank, credit card and finance charges (box 25) | 800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Bank, credit card and finance charges (box 25) | 3,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Irrecoverable debts written off (box 26) | -300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional fees (box 27) | 6,925 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation and loss on sale of assets (box 28) | 11,912 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation and loss on sale of assets (box 28) | 13,912 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses (box 29) | 3,231.67 |
-| **Total expenses (box 30)** | 164,307.94 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Disallowable depreciation (box 43) | 11,740 |
-| **Total disallowable expenses (box 45)** | 11,740 |
-| **Net profit (box 46)** | 174,892.06 |
+| **Total expenses (box 30)** | 169,407.94 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Disallowable depreciation (box 43) | 13,740 |
+| **Total disallowable expenses (box 45)** | 13,740 |
+| **Net profit (box 46)** | 169,792.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 47) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 48) | 32,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 48) | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Writing down allowances (box 49) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Restricted allowances for expensive cars (box 51) | 3,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Enhanced and other capital allowances (box 54) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 55) | 8,500 |
-| **Total capital allowances (box 56)** | 44,000 |
+| **Total capital allowances (box 56)** | 64,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 58) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 59) | 0 |
-| **Total additions to net profit (box 60)** | 11,740 |
-| **Total deductions from net profit (box 62)** | 44,000 |
-| **Net business profit for tax purposes (box 63)** | 142,632.06 |
+| **Total additions to net profit (box 60)** | 13,740 |
+| **Total deductions from net profit (box 62)** | 64,000 |
+| **Net business profit for tax purposes (box 63)** | 119,532.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 64) | 0 |
-| **Adjusted profit (box 72)** | 142,632.06 |
+| **Adjusted profit (box 72)** | 119,532.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 73) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 14, 15 or 59 (box 74) | 2,083.33 |
-| **Total taxable profits from this business (box 75)** | 144,715.39 |
+| **Total taxable profits from this business (box 75)** | 121,615.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 76) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 79) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 80) | 0 |
@@ -892,14 +897,14 @@ Journal amounts include VAT at 20%.
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost brought forward (Schedule E57) | 33,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Additions in the year (Schedule E110) | 32,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additions in the year (Schedule E110) | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of the assets sold in the year (Schedule W1) | 30,000 |
-| **Cost carried forward, disposals removed** | 35,500 |
+| **Cost carried forward, disposals removed** | 55,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation brought forward (Schedule F1) | 10,098 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation charged for the year (Schedule I1) | 11,740 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation charged for the year (Schedule I1) | 13,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation on the assets sold (Schedule X1) | 17,328 |
-| **Accumulated depreciation carried forward, disposals removed** | 4,510 |
-| **Net book value at the year end (Schedule K1)** | 30,990 |
+| **Accumulated depreciation carried forward, disposals removed** | 6,510 |
+| **Net book value at the year end (Schedule K1)** | 48,990 |
 | | |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sale proceeds of the assets sold, net of VAT (Schedule V1) | 12,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net book value of the assets sold at the date of sale | 12,672 |
@@ -911,38 +916,35 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
-| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 134,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 22,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 112,493.54 |
+| **VAT due for the year** | 48,317.96 |
 | **How the return periods line up with the accounting year** |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 30 April 2021, 31 May 2021, 30 June 2021 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 31 July 2021, 31 August 2021, 30 September 2021 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 31 October 2021, 30 November 2021, 31 December 2021 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 31 January 2022, 28 February 2022, 31 March 2022 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 31 March 2022, 30 April 2022, 31 May 2022 |
-| The returns above also cover the periods ending 30 April 2022, 31 May 2022, which fall outside the accounting year. |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 100 |
-| Q4 and Q5 both cover the period ending 31 March 2022. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. The book stops two months after the year end, so there is no row to total the quarter after the fourth return and the spare lands on the last period the book carries instead. Filing all five as they stand would declare that period twice. |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on it | 5,226.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on it | 621.08 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 30 April 2022, 31 May 2022, 30 June 2022 |
+| The returns above also cover the periods ending 30 April 2022, 31 May 2022, 30 June 2022, which fall outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 1,100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 180 |
 | **The return forms as the package fills them in** |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2021) box 1: VAT due on sales | 16,920 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2021) box 4: VAT reclaimed on purchases | 3,423.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2021) box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2021) box 4: VAT reclaimed on purchases | 6,023.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2021) box 5: net VAT due | 10,896.13 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2021) box 1: VAT due on sales | 17,256.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2021) box 4: VAT reclaimed on purchases | 3,073.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2021) box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2021) box 4: VAT reclaimed on purchases | 4,473.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2021) box 5: net VAT due | 12,783.42 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2021) box 1: VAT due on sales | 19,780 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2021) box 4: VAT reclaimed on purchases | 9,895.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2021) box 5: net VAT due | 9,884.13 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2022) box 1: VAT due on sales | 16,860 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2022) box 4: VAT reclaimed on purchases | 2,105.71 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2022) box 5: net VAT due | 14,754.29 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2022) box 1: VAT due on sales | 6,126.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2022) box 4: VAT reclaimed on purchases | 721.08 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2022) box 5: net VAT due | 5,405.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2022) box 1: VAT due on sales | 1,100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2022) box 4: VAT reclaimed on purchases | 180 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2022) box 5: net VAT due | 920 |
 
 ---
 
@@ -979,13 +981,13 @@ Journal amounts include VAT at 20%.
 | B28 | Legal & Professional | 6925 | accounts.purchases.5800 |
 | B29 | Bad Debts | -300 | accounts.sales.4005 |
 | B30 | Bank Interest Paid | 0 | accounts.purchases.5701 |
-| B31 | HP Interest, Lease, Bank Charges | 800 | accounts.purchases.5702 |
+| B31 | HP Interest, Lease, Bank Charges | 3900 | accounts.purchases.5702 |
 | B32 | Other Expenses | 3231.66666666666 | accounts.purchases (other) |
 | B33 | Loss (Profit) on Disposal of Assets | 172 | gl-cor:amount (lossOnDisposal) |
-| B34 | Depreciation | 11740 | gl-cor:amount (depreciation) |
-| B35 | Total Admin Expenses | 144171.275 | gl-cor:amount (totalAdmin) |
-| B37 | **Operating Profit** | 176975.391666666 | gl-cor:amount (operatingProfit) |
-| B39 | **Profit Before Tax** | 176975.391666666 | gl-cor:amount (profitBeforeTax) |
+| B34 | Depreciation | 13740 | gl-cor:amount (depreciation) |
+| B35 | Total Admin Expenses | 149271.275 | gl-cor:amount (totalAdmin) |
+| B37 | **Operating Profit** | 171875.391666666 | gl-cor:amount (operatingProfit) |
+| B39 | **Profit Before Tax** | 171875.391666666 | gl-cor:amount (profitBeforeTax) |
 | C5 |  | 25333.3333333333 |  |
 | D5 |  | 25633.3333333333 |  |
 | E5 |  | 26533.3333333333 |  |
@@ -1190,37 +1192,37 @@ Journal amounts include VAT at 20%.
 | L33 |  | 14.3333333333333 |  |
 | M33 |  | 14.3333333333333 |  |
 | N33 |  | 14.3333333333333 |  |
-| C34 |  | 978.333333333333 |  |
-| D34 |  | 978.333333333333 |  |
-| E34 |  | 978.333333333333 |  |
-| F34 |  | 978.333333333333 |  |
-| G34 |  | 978.333333333333 |  |
-| H34 |  | 978.333333333333 |  |
-| I34 |  | 978.333333333333 |  |
-| J34 |  | 978.333333333333 |  |
-| K34 |  | 978.333333333333 |  |
-| L34 |  | 978.333333333333 |  |
-| M34 |  | 978.333333333333 |  |
-| N34 |  | 978.333333333333 |  |
+| C34 |  | 1145 |  |
+| D34 |  | 1145 |  |
+| E34 |  | 1145 |  |
+| F34 |  | 1145 |  |
+| G34 |  | 1145 |  |
+| H34 |  | 1145 |  |
+| I34 |  | 1145 |  |
+| J34 |  | 1145 |  |
+| K34 |  | 1145 |  |
+| L34 |  | 1145 |  |
+| M34 |  | 1145 |  |
+| N34 |  | 1145 |  |
 
 ### Income Tax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 144715.391666666 | gl-cor:amount (profitSE) |
-| E6 | Less: Personal Allowance | 0 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 144715.391666666 | gl-cor:amount (taxableIncome) |
+| E5 | Profit from Self Employment | 121615.391666666 | gl-cor:amount (profitSE) |
+| E6 | Less: Personal Allowance | 1762.30416666687 | tax.incomeTax.personalAllowance |
+| E7 | Taxable Income | 119853.087499999 | gl-cor:amount (taxableIncome) |
 | E8 | Tax at Basic Rate (20%) | 7540 | tax.incomeTax.basicRate |
 | C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicBandEnd (applied) |
-| E9 | Tax at Higher Rate (40%) | 42806.1566666665 | tax.incomeTax.higherRate |
+| E9 | Tax at Higher Rate (40%) | 32861.2349999998 | tax.incomeTax.higherRate |
 | C10 | Additional rate threshold the sheet applies | 150000 | tax.incomeTax.higherBandEnd (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E10 | Tax at Additional Rate (45%) | 0 | tax.incomeTax.additionalRate |
-| E11 | **Total Income Tax** | 50346.1566666665 | tax.incomeTax (total) |
+| E11 | **Total Income Tax** | 40401.2349999998 | tax.incomeTax (total) |
 | E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3663.18 | tax.nationalInsurance.class4MainRate |
-| E16 | NI Class 4 (upper band) | 1888.90783333333 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 55898.2444999998 | gl-cor:taxAmount (totalTaxNI) |
+| E16 | NI Class 4 (upper band) | 1426.90783333333 | tax.nationalInsurance.class4UpperRate |
+| E18 | **Total Tax + NI** | 45491.3228333331 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
@@ -1234,21 +1236,21 @@ Journal amounts include VAT at 20%.
 | D60 | Premises costs | 13200 | gl-cor:amount (sa103s.premises) |
 | D64 | Repairs and renewals | 950 | gl-cor:amount (sa103s.repairs) |
 | O46 | Accountancy, legal and professional | 6925 | gl-cor:amount (sa103s.legal) |
-| O51 | Interest and bank charges | 800 | gl-cor:amount (sa103s.interest) |
+| O51 | Interest and bank charges | 3900 | gl-cor:amount (sa103s.interest) |
 | O55 | Phone, stationery and office costs | 3035 | gl-cor:amount (sa103s.office) |
 | O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
-| O64 | **Total expenses** | 152567.941666667 | gl-cor:amount (sa103s.totalExpenses) |
-| D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
+| O64 | **Total expenses** | 155667.941666667 | gl-cor:amount (sa103s.totalExpenses) |
+| D71 | **Net profit/loss** | 183532.058333333 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
-| D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
+| D80 | Capital allowances | 52500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | Other capital allowances (box 24) | 11500 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 142632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Taxable profit** | 119532.058333333 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 29) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc** | 144715.391666666 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc** | 121615.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### SE Full
 
@@ -1265,32 +1267,32 @@ Journal amounts include VAT at 20%.
 | D90 | Telephone, stationery and office costs (box 22) | 3035 | gl-cor:amount (sa103f.office) |
 | D94 | Advertising and entertainment (box 23) | 3800 | gl-cor:amount (sa103f.advertising) |
 | D98 | Interest on bank and other loans (box 24) | 0 | gl-cor:amount (sa103f.interest) |
-| D102 | Bank, credit card and finance charges (box 25) | 800 | gl-cor:amount (sa103f.bankCharges) |
+| D102 | Bank, credit card and finance charges (box 25) | 3900 | gl-cor:amount (sa103f.bankCharges) |
 | D106 | Irrecoverable debts written off (box 26) | -300 | gl-cor:amount (sa103f.badDebts) |
 | D110 | Accountancy, legal and professional fees (box 27) | 6925 | gl-cor:amount (sa103f.legal) |
-| D114 | Depreciation and loss on sale of assets (box 28) | 11912 | gl-cor:amount (sa103f.depreciation) |
+| D114 | Depreciation and loss on sale of assets (box 28) | 13912 | gl-cor:amount (sa103f.depreciation) |
 | D118 | Other business expenses (box 29) | 3231.66666666666 | gl-cor:amount (sa103f.otherExpenses) |
-| D122 | **Total expenses (box 30)** | 164307.941666667 | gl-cor:amount (sa103f.totalExpenses) |
-| O114 | Disallowable depreciation (box 43) | 11740 | gl-cor:amount (sa103f.disallowableDepreciation) |
-| O122 | **Total disallowable expenses (box 45)** | 11740 | gl-cor:amount (sa103f.totalDisallowable) |
-| D129 | **Net profit (box 46)** | 174892.058333333 | gl-cor:amount (sa103f.netProfit) |
+| D122 | **Total expenses (box 30)** | 169407.941666667 | gl-cor:amount (sa103f.totalExpenses) |
+| O114 | Disallowable depreciation (box 43) | 13740 | gl-cor:amount (sa103f.disallowableDepreciation) |
+| O122 | **Total disallowable expenses (box 45)** | 13740 | gl-cor:amount (sa103f.totalDisallowable) |
+| D129 | **Net profit (box 46)** | 169792.058333333 | gl-cor:amount (sa103f.netProfit) |
 | O129 | Net loss (box 47) | 0 | gl-cor:amount (sa103f.netLoss) |
-| D139 | Annual investment allowance (box 48) | 32500 | tax.capitalAllowances.aia (sa103f) |
+| D139 | Annual investment allowance (box 48) | 52500 | tax.capitalAllowances.aia (sa103f) |
 | D144 | Writing down allowances (box 49) | 0 | tax.capitalAllowances.wda (sa103f) |
 | D152 | Restricted allowances for expensive cars (box 51) | 3000 | tax.capitalAllowances.restricted (sa103f) |
 | O139 | Enhanced and other capital allowances (box 54) | 0 | tax.capitalAllowances.enhanced (sa103f) |
 | O144 | Allowances on sale or cessation (box 55) | 8500 | tax.capitalAllowances.balancingAllowance (sa103f) |
-| O149 | **Total capital allowances (box 56)** | 44000 | tax.capitalAllowances (sa103f) |
+| O149 | **Total capital allowances (box 56)** | 64000 | tax.capitalAllowances (sa103f) |
 | O160 | Balancing charge (box 58) | 0 | tax.capitalAllowances.balancingCharge (sa103f) |
 | D169 | Goods and services for own use (box 59) | 0 | gl-cor:amount (sa103f.ownUse) |
-| D174 | **Total additions to net profit (box 60)** | 11740 | gl-cor:amount (sa103f.totalAdditions) |
-| O169 | **Total deductions from net profit (box 62)** | 44000 | gl-cor:amount (sa103f.totalDeductions) |
-| O174 | **Net business profit for tax purposes (box 63)** | 142632.058333333 | gl-cor:amount (sa103f.taxableProfit) |
+| D174 | **Total additions to net profit (box 60)** | 13740 | gl-cor:amount (sa103f.totalAdditions) |
+| O169 | **Total deductions from net profit (box 62)** | 64000 | gl-cor:amount (sa103f.totalDeductions) |
+| O174 | **Net business profit for tax purposes (box 63)** | 119532.058333333 | gl-cor:amount (sa103f.taxableProfit) |
 | O179 | Net business loss for tax purposes (box 64) | 0 | gl-cor:amount (sa103f.taxableLoss) |
-| O194 | **Adjusted profit (box 72)** | 142632.058333333 | gl-cor:amount (sa103f.adjustedProfit) |
+| O194 | **Adjusted profit (box 72)** | 119532.058333333 | gl-cor:amount (sa103f.adjustedProfit) |
 | O199 | Loss brought forward set against this year (box 73) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
 | O204 | Other business income not in boxes 14, 15 or 59 (box 74) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
-| O210 | **Total taxable profits from this business (box 75)** | 144715.391666666 | gl-cor:amount (sa103f.profitForTax) |
+| O210 | **Total taxable profits from this business (box 75)** | 121615.391666666 | gl-cor:amount (sa103f.profitForTax) |
 | D219 | Adjusted loss (box 76) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
 | O224 | Total loss to carry forward (box 79) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 80) | 0 | diya-gl:cisDeduction (sa103f) |
@@ -1409,8 +1411,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 206705.63 |  |
-| A2 |  | 204415.43 |  |
+| A1 |  | 183605.63 |  |
+| A2 |  | 181315.43 |  |
 
 ### Cash.xlsx!Mar
 
@@ -1429,7 +1431,7 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 10400 |  |
+| G1 |  | 7900 |  |
 
 ### Sales.xlsx!Apr
 
@@ -1559,8 +1561,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| H1 |  | 1509.5 |  |
-| I1 |  | 7547.5 |  |
+| H1 |  | 4109.5 |  |
+| I1 |  | 20547.5 |  |
 | H2 |  | 20 |  |
 
 ### Purchases.xlsx!Jul
@@ -1583,8 +1585,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| H1 |  | 829.166666666667 |  |
-| I1 |  | 4145.83333333333 |  |
+| H1 |  | 2229.16666666667 |  |
+| I1 |  | 11145.8333333333 |  |
 | H2 |  | 20 |  |
 
 ### Purchases.xlsx!Oct
@@ -1644,10 +1646,10 @@ Journal amounts include VAT at 20%.
 | G9 |  | 16920 |  |
 | G11 |  | 0 |  |
 | G13 |  | 16920 |  |
-| G15 |  | 3423.875 |  |
-| G17 |  | 13496.125 |  |
+| G15 |  | 6023.875 |  |
+| G17 |  | 10896.125 |  |
 | G21 |  | 84599.9999999999 |  |
-| G23 |  | 17119.375 |  |
+| G23 |  | 30119.375 |  |
 
 ### Vat.xlsx!VATQtr2
 
@@ -1658,10 +1660,10 @@ Journal amounts include VAT at 20%.
 | G9 |  | 17256.6666666667 |  |
 | G11 |  | 0 |  |
 | G13 |  | 17256.6666666667 |  |
-| G15 |  | 3073.25 |  |
-| G17 |  | 14183.4166666667 |  |
+| G15 |  | 4473.25 |  |
+| G17 |  | 12783.4166666667 |  |
 | G21 |  | 86283.3333333333 |  |
-| G23 |  | 15366.25 |  |
+| G23 |  | 22366.25 |  |
 
 ### Vat.xlsx!VATQtr3
 
@@ -1695,15 +1697,15 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 44712 |  |
-| G7 |  | 44742 |  |
-| G9 |  | 6126.66666666667 |  |
+| G5 |  | 44742 |  |
+| G7 |  | 44773 |  |
+| G9 |  | 1100 |  |
 | G11 |  | 0 |  |
-| G13 |  | 6126.66666666667 |  |
-| G15 |  | 721.083333333333 |  |
-| G17 |  | 5405.58333333334 |  |
-| G21 |  | 30633.3333333333 |  |
-| G23 |  | 3605.41666666667 |  |
+| G13 |  | 1100 |  |
+| G15 |  | 180 |  |
+| G17 |  | 920 |  |
+| G21 |  | 5500 |  |
+| G23 |  | 900 |  |
 
 ### Vat.xlsx!Vatinterface
 
@@ -1751,10 +1753,10 @@ Journal amounts include VAT at 20%.
 | E8 |  | 84599.9999999999 |  |
 | F8 |  | 5866.66666666667 |  |
 | G8 |  | 16920 |  |
-| H8 |  | 7547.5 |  |
-| I8 |  | 17119.375 |  |
-| J8 |  | 1509.5 |  |
-| K8 |  | 3423.875 |  |
+| H8 |  | 20547.5 |  |
+| I8 |  | 30119.375 |  |
+| J8 |  | 4109.5 |  |
+| K8 |  | 6023.875 |  |
 | M8 |  | 0 |  |
 | B9 |  | 44408 |  |
 | C9 |  | 44439 |  |
@@ -1763,9 +1765,9 @@ Journal amounts include VAT at 20%.
 | F9 |  | 5626.66666666667 |  |
 | G9 |  | 16980 |  |
 | H9 |  | 7549.375 |  |
-| I9 |  | 20409.375 |  |
+| I9 |  | 33409.375 |  |
 | J9 |  | 1509.875 |  |
-| K9 |  | 4081.875 |  |
+| K9 |  | 6681.875 |  |
 | M9 |  | 0 |  |
 | B10 |  | 44439 |  |
 | C10 |  | 44469 |  |
@@ -1774,9 +1776,9 @@ Journal amounts include VAT at 20%.
 | F10 |  | 6003.33333333333 |  |
 | G10 |  | 17496.6666666667 |  |
 | H10 |  | 3671.04166666667 |  |
-| I10 |  | 18767.9166666667 |  |
+| I10 |  | 31767.9166666667 |  |
 | J10 |  | 734.208333333333 |  |
-| K10 |  | 3753.58333333333 |  |
+| K10 |  | 6353.58333333333 |  |
 | M10 |  | 0 |  |
 | B11 |  | 44469 |  |
 | C11 |  | 44500 |  |
@@ -1784,10 +1786,10 @@ Journal amounts include VAT at 20%.
 | E11 |  | 86283.3333333333 |  |
 | F11 |  | 5626.66666666667 |  |
 | G11 |  | 17256.6666666667 |  |
-| H11 |  | 4145.83333333333 |  |
-| I11 |  | 15366.25 |  |
-| J11 |  | 829.166666666667 |  |
-| K11 |  | 3073.25 |  |
+| H11 |  | 11145.8333333333 |  |
+| I11 |  | 22366.25 |  |
+| J11 |  | 2229.16666666667 |  |
+| K11 |  | 4473.25 |  |
 | M11 |  | 0 |  |
 | B12 |  | 44500 |  |
 | C12 |  | 44530 |  |
@@ -1796,9 +1798,9 @@ Journal amounts include VAT at 20%.
 | F12 |  | 8426.66666666667 |  |
 | G12 |  | 20056.6666666667 |  |
 | H12 |  | 35838.125 |  |
-| I12 |  | 43655 |  |
+| I12 |  | 50655 |  |
 | J12 |  | 7167.625 |  |
-| K12 |  | 8731 |  |
+| K12 |  | 10131 |  |
 | M12 |  | 0 |  |
 | B13 |  | 44530 |  |
 | C13 |  | 44561 |  |
@@ -1807,9 +1809,9 @@ Journal amounts include VAT at 20%.
 | F13 |  | 5886.66666666667 |  |
 | G13 |  | 19940 |  |
 | H13 |  | 5765 |  |
-| I13 |  | 45748.9583333333 |  |
+| I13 |  | 52748.9583333333 |  |
 | J13 |  | 1153 |  |
-| K13 |  | 9149.79166666667 |  |
+| K13 |  | 10549.7916666667 |  |
 | M13 |  | 0 |  |
 | B14 |  | 44561 |  |
 | C14 |  | 44592 |  |
@@ -1877,18 +1879,29 @@ Journal amounts include VAT at 20%.
 | J19 |  | 60 |  |
 | K19 |  | 721.083333333333 |  |
 | M19 |  | 0 |  |
+| B20 |  | 44742 |  |
+| C20 |  | 44773 |  |
+| D20 |  | 1000 |  |
+| E20 |  | 5500 |  |
+| F20 |  | 200 |  |
+| G20 |  | 1100 |  |
+| H20 |  | 400 |  |
+| I20 |  | 900 |  |
+| J20 |  | 80 |  |
+| K20 |  | 180 |  |
+| M20 |  | 0 |  |
 
 ### Fixedassets.xlsx!Schedule
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 | Total cost of every asset on the schedule, assets sold in the year included | 65500 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 85500 |  |
 | F1 | Total accumulated depreciation brought forward | 10098 |  |
 | G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
-| I1 | Total depreciation charged for the year | 11740 |  |
-| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 21838 |  |
-| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 30990 |  |
-| Q1 | Total annual investment allowance claimed | 32500 |  |
+| I1 | Total depreciation charged for the year | 13740 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
+| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 48990 |  |
+| Q1 | Total annual investment allowance claimed | 52500 |  |
 | R1 | Total writing down allowance claimed | 3000 |  |
 | S1 | Total tax written down value carried forward | 21000 |  |
 | V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
@@ -1897,14 +1910,14 @@ Journal amounts include VAT at 20%.
 | Y1 | Balancing allowance on the disposals | 8500 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 33000 |  |
-| E110 | Cost of the assets bought during the year | 32500 |  |
+| E110 | Cost of the assets bought during the year | 52500 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E11 | Additions the schedule lists, net of VAT | 32500 |  |
-| E13 | Fixed asset purchases the purchase journal carries, net of VAT | 32500 |  |
+| E11 | Additions the schedule lists, net of VAT | 52500 |  |
+| E13 | Fixed asset purchases the purchase journal carries, net of VAT | 52500 |  |
 | E15 | Purchases less schedule additions | 0 |  |
 | K11 | Disposal proceeds the schedule lists, net of VAT | 12500 |  |
 | K13 | Fixed asset sales the sales journal carries, net of VAT | 12500 |  |

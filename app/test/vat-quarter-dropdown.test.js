@@ -7,13 +7,14 @@
 // asserts, per workbook:
 //
 //   1. each VATQtr sheet's G5 data-validation is type="list" over
-//      $K$2:$K$15, and G5's cached serial is a member of the K2:K15 cached
+//      $K$2:$K$16, and G5's cached serial is a member of the K2:K16 cached
 //      serials;
 //   1a. the five forms make one cycle: five different Vatinterface periods,
-//      Q1-Q4 a quarter apart and covering the twelve accounting months once
-//      each, and the spare fifth on the last period the interface carries --
-//      the periods VAT_RETURN_END_MONTHS names, measured from the interface's
-//      own first accounting month;
+//      each a quarter after the one before it, Q1-Q4 covering the twelve
+//      accounting months once each and Q5 on the last period the interface
+//      carries, with no period reaching two forms -- the periods
+//      VAT_RETURN_END_MONTHS names, measured from the interface's own first
+//      accounting month;
 //   2. chain consistency: each K cell's cached value equals the cached
 //      value of the cell its formula names (Vatinterface!B{n}, Ltd, or
 //      [n]Admin!$B$r, SE), each Vatinterface [n]Admin!$B$r cached value
@@ -46,10 +47,10 @@ const PACKAGES_DIR = join(ROOT, "packages");
 const VAT_FILENAMES = ["Vatreturns.xlsx", "Vat.xlsx"];
 const VATQTR_SHEET_NAMES = ["VATQtr1", "VATQtr2", "VATQtr3", "VATQtr4", "VATQtr5"];
 
-// Vatinterface layout shared by both products: rows 4-19 are the VAT periods
+// Vatinterface layout shared by both products: rows 4-20 are the VAT periods
 // in date order, and rows 6-17 are the twelve accounting months.
 const INTERFACE_FIRST_ROW = 4;
-const INTERFACE_LAST_ROW = 19;
+const INTERFACE_LAST_ROW = 20;
 const FIRST_ACCOUNTING_MONTH_ROW = 6;
 
 function monthsBetween(earlier, later) {
@@ -282,21 +283,21 @@ for (const wb of workbooks) {
         const dv = findDataValidation(sheetXml, "G5");
         expect(dv, `${label} ${sheetName}: no dataValidation with sqref including G5`).not.toBeNull();
         expect(dv.type, `${label} ${sheetName}: G5 dataValidation type`).toBe("list");
-        expect(dv.formula1, `${label} ${sheetName}: G5 dataValidation formula1`).toBe("$K$2:$K$15");
+        expect(dv.formula1, `${label} ${sheetName}: G5 dataValidation formula1`).toBe("$K$2:$K$16");
 
         const g5 = getCellFormulaAndValue(sheetXml, "G5");
         expect(g5 && g5.value != null, `${label} ${sheetName}: G5 cell/cached value not found`).toBe(true);
 
         const kValues = [];
-        for (let row = 2; row <= 15; row++) {
+        for (let row = 2; row <= 16; row++) {
           const k = getCellFormulaAndValue(sheetXml, `K${row}`);
           if (k && k.value != null) kValues.push(k.value);
         }
-        expect(kValues, `${label} ${sheetName}: K2:K15 has ${kValues.length} cached values, expected 14`).toHaveLength(14);
+        expect(kValues, `${label} ${sheetName}: K2:K16 has ${kValues.length} cached values, expected 15`).toHaveLength(15);
 
         expect(
           kValues,
-          `${label} ${sheetName}: G5 default (serial ${g5.value}) is not a member of the shipped K2:K15 list [${kValues.join(", ")}]`,
+          `${label} ${sheetName}: G5 default (serial ${g5.value}) is not a member of the shipped K2:K16 list [${kValues.join(", ")}]`,
         ).toContain(g5.value);
       });
     }
@@ -328,6 +329,12 @@ for (const wb of workbooks) {
 
       expect(new Set(rows).size, `${label}: the five forms name rows [${rows.join(", ")}], not five different periods`).toBe(5);
       expect(rows[4], `${label}: Q5 is not on the last period the Vatinterface carries`).toBe(INTERFACE_LAST_ROW);
+      for (let index = 1; index < rows.length; index++) {
+        expect(
+          rows[index] - rows[index - 1],
+          `${label}: ${VATQTR_SHEET_NAMES[index]} does not end a quarter after ${VATQTR_SHEET_NAMES[index - 1]}`,
+        ).toBe(3);
+      }
 
       // A return declares the period its date names and the two before it,
       // which is what the interface's rolling three-row sums total.
@@ -340,10 +347,10 @@ for (const wb of workbooks) {
         expect(quarterly, `${label}: the accounting month on row ${row} is not declared once by Q1-Q4`).toHaveLength(1);
       }
       const shared = [...declaredBy.entries()].filter(([, names]) => names.length > 1).map(([row]) => row);
-      expect(shared, `${label}: periods declared by more than one return`).toEqual([rows[3]]);
+      expect(shared, `${label}: periods declared by more than one return`).toEqual([]);
     });
 
-    it("K2:K15 cached values chain consistently to Vatinterface/Admin cache", async () => {
+    it("K2:K16 cached values chain consistently to Vatinterface/Admin cache", async () => {
       const failures = [];
 
       // 1. Every Vatinterface cell whose formula is [n]Admin!$B$r: its own
@@ -377,12 +384,12 @@ for (const wb of workbooks) {
         }
       }
 
-      // 2. Every K2:K15 cell in every VATQtr sheet: its own cached value
+      // 2. Every K2:K16 cell in every VATQtr sheet: its own cached value
       //    must equal the cached value of the cell its formula names,
       //    either Vatinterface!B{n} (Ltd) or [n]Admin!$B$r directly (SE).
       for (const sheetName of vatQtrSheetNames) {
         const sheetXml = await getSheetXml(sheetName);
-        for (let row = 2; row <= 15; row++) {
+        for (let row = 2; row <= 16; row++) {
           const cellRef = `K${row}`;
           const cell = getCellFormulaAndValue(sheetXml, cellRef);
           if (!cell || cell.formula == null || cell.value == null) {

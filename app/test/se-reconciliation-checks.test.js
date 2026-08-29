@@ -173,7 +173,7 @@ describeCalc(
     });
 
     it("Closing Debtors total reads the real ClosingDebtors!G1 invoice-value sum", () => {
-      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(10400);
+      expect(results["Sales.xlsx!ClosingDebtors"].G1).toBe(7900);
     });
 
     it("Opening Creditors total reads the real OpeningCreditors!G1 invoice-value sum", () => {
@@ -202,6 +202,32 @@ describeCalc(
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
       const corruptedCheck = corruptedChecks.find((c) => c.name === checkName);
       expect(corruptedCheck.pass).toBe(false);
+    });
+
+    // ── The finance line: the hire purchase agreements' own charges ───────
+
+    it("carries the hire purchase charges and the ordinary bank charges on the P&L finance line", () => {
+      // The two agreements charge 2,000 and 1,100 of admin fees and interest,
+      // paid out of the current account under bank code "B" alongside 800 of
+      // ordinary bank charges. "B" is the code the P&L's HP interest, lease
+      // and bank charges line reads.
+      expect(results["Profit & Loss Account"].B31).toBeCloseTo(3900, 6);
+    });
+
+    it("fails the finance line ties when the P&L's own finance line is corrupted via JSZip", async () => {
+      const pl = results["Profit & Loss Account"];
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "B31", 0);
+      expect(corrupted).toBe(0);
+      const corruptedResults = { ...results, "Profit & Loss Account": { ...pl, B31: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, null, undefined);
+      // The line is one of the admin expenses and box 25 of the full return
+      // reads it, so both of those move with it.
+      expect(corruptedChecks.find((c) => c.name === "P&L: HP interest and charges reach the finance line (B31)").pass).toBe(false);
+      expect(failureNames(corruptedChecks)).toEqual([
+        "P&L: Admin lines sum = Total",
+        "SA103F box 25 bank, credit card and finance charges (D102) = the profit and loss account",
+        "P&L: HP interest and charges reach the finance line (B31)",
+      ]);
     });
 
     // ── Fixed assets: Schedule vs Purchases/Sales, and P&L (item 5) ────────
@@ -262,7 +288,12 @@ describeCalc(
     });
 
     it("corrupting Schedule!W1 fails the closing NBV check and the P&L loss-on-disposal tie, and nothing else", async () => {
-      const corrupted = await readCorruptedCell(join(saveDir, "Fixedassets.xlsx"), "Schedule", "W1", results["Fixedassets.xlsx!Schedule"].W1 + 5000);
+      const corrupted = await readCorruptedCell(
+        join(saveDir, "Fixedassets.xlsx"),
+        "Schedule",
+        "W1",
+        results["Fixedassets.xlsx!Schedule"].W1 + 5000,
+      );
       const corruptedResults = {
         ...results,
         "Fixedassets.xlsx!Schedule": { ...results["Fixedassets.xlsx!Schedule"], W1: corrupted },
@@ -283,7 +314,12 @@ describeCalc(
     });
 
     it("corrupting Schedule!I1 fails the depreciation ties but leaves the closing NBV check passing", async () => {
-      const corrupted = await readCorruptedCell(join(saveDir, "Fixedassets.xlsx"), "Schedule", "I1", results["Fixedassets.xlsx!Schedule"].I1 + 5000);
+      const corrupted = await readCorruptedCell(
+        join(saveDir, "Fixedassets.xlsx"),
+        "Schedule",
+        "I1",
+        results["Fixedassets.xlsx!Schedule"].I1 + 5000,
+      );
       const corruptedResults = {
         ...results,
         "Fixedassets.xlsx!Schedule": { ...results["Fixedassets.xlsx!Schedule"], I1: corrupted },
@@ -291,8 +327,7 @@ describeCalc(
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
       const closingNbvCheck = corruptedChecks.find(
         (c) =>
-          c.name ===
-          "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+          c.name === "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
       );
       expect(closingNbvCheck.pass).toBe(true);
     });

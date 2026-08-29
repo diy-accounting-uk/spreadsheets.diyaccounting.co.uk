@@ -249,15 +249,24 @@ describe("buildIndicators for the Self Employed", () => {
   // 11,500.00 hole between two figures printed side by side, which is what a reviewer sees.
   it("itemises every capital allowance box so the drop to the taxable profit is exact", () => {
     expect(text).toContain(
-      "Self assessment: net profit 186,632.06, less 44,000.00 of capital allowances " +
-        "(Capital allowances 32,500.00, AIA / WDA claimed 0.00, Other capital allowances (box 24) 11,500.00), " +
-        "plus balancing charges (box 25) 0.00 and other tax adjustments 0.00, gives a taxable profit of 142,632.06.",
+      "Self assessment: net profit 183,532.06, less 64,000.00 of capital allowances " +
+        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances (box 24) 11,500.00), " +
+        "plus balancing charges (box 25) 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,532.06.",
+    );
+  });
+
+  it("states the SA103F full return's relation to the short return's figures", () => {
+    expect(text).toContain(
+      "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
+        "Total expenses (box 30) 169,407.94 = the short return's total expenses 155,667.94 plus total disallowable expenses (box 45) 13,740.00; " +
+        "net profit (box 46) 169,792.06 = the short return's net profit 183,532.06 less that same 13,740.00; " +
+        "total capital allowances (box 56) 64,000.00 sums the same allowances split across more boxes than the short return uses.",
     );
   });
 
   it("carries the grants line from the taxable profit to the profit tax is charged on", () => {
-    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 144,715.39");
-    expect(text).toContain("Income tax: charged on a profit of 144,715.39");
+    expect(text).toContain("Grants as other business income 2,083.33 take that to a net profit for the tax calculation of 121,615.39");
+    expect(text).toContain("Income tax: charged on a profit of 121,615.39");
   });
 
   it("says the product publishes no balance sheet rather than leaving it unexplained", () => {

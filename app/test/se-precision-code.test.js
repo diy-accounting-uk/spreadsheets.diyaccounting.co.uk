@@ -102,15 +102,15 @@ describeCalc(
       expect(results["Income Tax"].E5).toBe(results["SE Short"].D106);
     });
 
-    it("Income Tax: the taper leaves this profit no personal allowance", () => {
-      // 144,715.39 is far enough above the 100,000 threshold that the whole
-      // 12,570 allowance is withdrawn.
-      expect(results["Income Tax"].E6).toBe(0);
+    it("Income Tax: the taper withdraws half the profit over the threshold from the allowance", () => {
+      // 121,615.39 is 21,615.39 over the 100,000 threshold, so 10,807.70 of
+      // the 12,570 allowance goes and 1,762.30 of it survives.
+      expect(results["Income Tax"].E6).toBeCloseTo(1762.3041666, 4);
     });
 
     it("Income Tax: taxable income = profit - allowance", () => {
       const tax = results["Income Tax"];
-      expect(tax.E7).toBe(tax.E5 - tax.E6);
+      expect(tax.E7).toBeCloseTo(tax.E5 - tax.E6, 6);
     });
 
     it("Income Tax: total income tax > 0", () => {
@@ -132,36 +132,49 @@ describeCalc(
 
     // The statutory charge on this fixture's profit, worked out by hand from
     // the 2025-26 rates rather than from anything the sheet computes:
-    //   profit                  144,715.391666666
-    //   allowance                       0  (12,570 - (144,715.39 - 100,000) / 2, floored)
+    //   profit                  121,615.391666666
+    //   allowance   1,762.304167       (12,570 - (121,615.39 - 100,000) / 2)
+    //   taxable   119,853.087500
     //   basic      37,700.000000 x 0.20 =  7,540.000000
-    //   higher     87,440.000000 x 0.40 = 34,976.000000   (125,140 - 37,700)
-    //   additional 19,575.391667 x 0.45 =  8,808.926250   (144,715.39 - 125,140)
-    //   income tax                      = 51,324.926250
-    //   NI         37,700 x 0.06 = 2,262.00, 94,445.391667 x 0.02 = 1,888.907833
-    //   tax and NI                      = 55,475.834083
+    //   higher     82,153.087500 x 0.40 = 32,861.235000   (119,853.09 - 37,700)
+    //   additional                    0                   (under 125,140)
+    //   income tax                      = 40,401.235000
+    //   NI         37,700 x 0.06 = 2,262.00, 71,345.391667 x 0.02 = 1,426.907833
+    //   tax and NI                      = 44,090.142833
     it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
       const tax = results["Income Tax"];
-      expect(tax.E5).toBeCloseTo(144715.391666666, 4);
-      expect(tax.E6).toBe(0);
+      expect(tax.E5).toBeCloseTo(121615.391666666, 4);
+      expect(tax.E6).toBeCloseTo(1762.3041666, 4);
+      expect(tax.E7).toBeCloseTo(119853.0875, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
-      expect(tax.E9).toBeCloseTo(34976, 2);
-      expect(tax.E10).toBeCloseTo(8808.92625, 2);
-      expect(tax.E11).toBeCloseTo(51324.92625, 2);
+      expect(tax.E9).toBeCloseTo(32861.235, 2);
+      expect(tax.E10).toBeCloseTo(0, 2);
+      expect(tax.E11).toBeCloseTo(40401.235, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1888.907833, 2);
-      expect(tax.E18).toBeCloseTo(55475.834083, 2);
+      expect(tax.E16).toBeCloseTo(1426.907833, 2);
+      expect(tax.E18).toBeCloseTo(44090.142833, 2);
+    });
+
+    // The two hire purchase agreements charge 2,000 and 1,100 of admin fees
+    // and interest, paid out of the current account under bank code "B".
+    // That is the code the P&L's own HP interest, lease and bank charges
+    // line reads, so the line has to carry them alongside the 800 of
+    // ordinary bank charges the year also paid.
+    it("carries the hire purchase agreements' charges on the P&L finance line", () => {
+      const agreementCharges = scenario.hp_agreements.reduce((total, a) => total + a.admin_charges + a.total_interest, 0);
+      expect(agreementCharges).toBe(3100);
+      expect(results["Profit & Loss Account"].B31).toBeCloseTo(3900, 6);
     });
 
     // ── Fixed assets: the Schedule nets the sold van out of the closing
     // book value instead of carrying its cost and depreciation forever.
     it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
       const sched = results["Fixedassets.xlsx!Schedule"];
-      expect(sched.E1).toBe(65500);
-      expect(sched.J1).toBe(21838);
+      expect(sched.E1).toBe(85500);
+      expect(sched.J1).toBe(23838);
       expect(sched.W1).toBe(30000);
       expect(sched.X1).toBe(17328);
-      expect(sched.K1).toBe(30990);
+      expect(sched.K1).toBe(48990);
     });
 
     // ── Bank closing balance (6k) ────────────────────────────────────────

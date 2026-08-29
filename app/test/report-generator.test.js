@@ -257,7 +257,7 @@ describe("vatCycleRows", () => {
     expect(text).toContain("would declare those periods twice");
   });
 
-  it("names the one period the spare return shares with the fourth, and the VAT on it", () => {
+  it("names the one period two returns share, and the VAT on it", () => {
     const rows = vatCycleRows(periods, [
       { name: "Q4", end: 16 },
       { name: "Q5", end: 18 },

@@ -137,7 +137,7 @@ export function vatCycleRows(periods, forms) {
     const names = [...new Set(shared.flatMap((period) => coverage.get(period.row)))].join(" and ");
     const months = shared.length === 1 ? "period" : "periods";
     rows.push({
-      label: `${names} both cover the ${months} ending ${shared.map((period) => period.endLabel).join(" and ")}. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. The book stops two months after the year end, so there is no row to total the quarter after the fourth return and the spare lands on the last period the book carries instead. Filing all five as they stand would declare ${shared.length === 1 ? "that period" : "those periods"} twice.`,
+      label: `${names} both cover the ${months} ending ${shared.map((period) => period.endLabel).join(" and ")}. The five forms are meant to run one quarter after another, each taking its period from a dropdown of the month ends the book carries, so no period should reach two of them. Filing all five as they stand would declare ${shared.length === 1 ? "that period" : "those periods"} twice.`,
       value: "",
     });
     rows.push({ label: `Output VAT on ${shared.length === 1 ? "it" : "those"}`, value: reportAmount(shared.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });

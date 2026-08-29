@@ -12,6 +12,7 @@ import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import {
   generateSpreadsheet,
   generateAdminDates,
+  seVatPaymentDueDate,
   fromExcelSerial,
   VAT_RETURN_END_MONTHS,
   setCellCachedValue,
@@ -91,6 +92,20 @@ describe("generateAdminDates", () => {
     expect(dates.B15.getUTCDate()).toBe(28); // Feb 2026 not leap
     expect(dates.B21.toISOString()).toBe("2027-01-31T00:00:00.000Z");
     expect(dates.B22.toISOString()).toBe("2027-07-31T00:00:00.000Z");
+  });
+});
+
+describe("seVatPaymentDueDate", () => {
+  it("falls a month after the last period the Vat.xlsx interface carries", () => {
+    // The interface's last period ends three months past the tax year, on
+    // generateAdminDates' own B20, and its payment is due a month later.
+    expect(seVatPaymentDueDate(2025).B25.toISOString()).toBe("2026-07-31T00:00:00.000Z");
+    expect(generateAdminDates(2025).B20.toISOString()).toBe("2026-06-30T00:00:00.000Z");
+  });
+
+  it("is written into the SE Admin sheet alongside the other dates", () => {
+    const { numericEdits } = buildSeCellEdits(parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8")), 2025);
+    expect(numericEdits.B25).toBe(toExcelSerial(utcDate(2026, 7, 31)));
   });
 });
 
@@ -776,7 +791,7 @@ describe("VAT return period defaults", () => {
   const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
   const SE_DIR = resolve(APP_DIR, "templates", "se");
   const FIRST_ACCOUNTING_MONTH_ROW = 6;
-  const LAST_INTERFACE_ROW = 19;
+  const LAST_INTERFACE_ROW = 20;
 
   function cachedValue(xml, cellRef) {
     const m = xml.match(new RegExp(`<c r="${cellRef}"[^>]*>(?:<f[^>]*>[\\s\\S]*?</f>)?<v>([^<]*)</v></c>`));
@@ -805,7 +820,7 @@ describe("VAT return period defaults", () => {
       const sheetXml = await zip.file(sheetMap.get(`VATQtr${q}`)).async("string");
       const end = cachedValue(sheetXml, "G5");
       const dropdown = [];
-      for (let k = 2; k <= 15; k++) dropdown.push(cachedValue(sheetXml, `K${k}`));
+      for (let k = 2; k <= 16; k++) dropdown.push(cachedValue(sheetXml, `K${k}`));
       forms.push({ name: `Q${q}`, end, row: periodRows.get(end) ?? null, dropdown });
     }
     return { firstMonthEnd: fromExcelSerial(cachedValue(viXml, `B${FIRST_ACCOUNTING_MONTH_ROW}`)), forms };
@@ -814,7 +829,7 @@ describe("VAT return period defaults", () => {
   function expectCycle(cycle, label) {
     for (const [index, form] of cycle.forms.entries()) {
       expect(form.row, `${label} ${form.name}: period end ${form.end} is not one of the Vatinterface periods`).not.toBeNull();
-      expect(form.dropdown, `${label} ${form.name}: period end is not in the K2:K15 dropdown`).toContain(form.end);
+      expect(form.dropdown, `${label} ${form.name}: period end is not in the K2:K16 dropdown`).toContain(form.end);
       expect(monthsBetween(cycle.firstMonthEnd, fromExcelSerial(form.end)) + 1, `${label} ${form.name}: months from the book's first month`).toBe(
         VAT_RETURN_END_MONTHS[index],
       );
@@ -823,6 +838,9 @@ describe("VAT return period defaults", () => {
     const rows = cycle.forms.map((form) => form.row);
     expect(new Set(rows).size, `${label}: the five forms do not name five different periods`).toBe(5);
     expect(rows[4], `${label}: Q5 is not on the last period the Vatinterface carries`).toBe(LAST_INTERFACE_ROW);
+    for (let index = 1; index < rows.length; index++) {
+      expect(rows[index] - rows[index - 1], `${label}: Q${index + 1} does not end a quarter after Q${index}`).toBe(3);
+    }
 
     const timesDeclared = new Map();
     for (const row of rows) for (const covered of [row - 2, row - 1, row]) timesDeclared.set(covered, (timesDeclared.get(covered) ?? 0) + 1);
@@ -833,10 +851,10 @@ describe("VAT return period defaults", () => {
       expect(quarterly.has(row), `${label}: no return of Q1-Q4 reaches the accounting month on row ${row}`).toBe(true);
     }
 
-    // The spare fifth form shares one period with the fourth, because the
-    // quarter after Q4 has no interface row to total it.
+    // Five consecutive quarters reach fifteen different periods, so no period
+    // is declared twice.
     const shared = [...timesDeclared.entries()].filter(([, times]) => times > 1).map(([row]) => row);
-    expect(shared, `${label}: periods declared by more than one return`).toEqual([rows[3]]);
+    expect(shared, `${label}: periods declared by more than one return`).toEqual([]);
   }
 
   it("puts the Company returns on the book's own quarters for every year-end month", async () => {

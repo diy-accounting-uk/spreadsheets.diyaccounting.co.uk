@@ -7,11 +7,9 @@
 // figures, capital allowance rates, mileage bands and VAT threshold/rate into
 // Financialaccounts.xlsx!Admin (see buildSeCellEdits() in
 // app/lib/generator.js), and every leaf workbook in the package reads from
-// there. Before this addition nothing read the cells back, so a wrong rate
-// was arithmetically invisible -- the same failure shape as the
-// shipped-zeros VAT bug. BST, Taxi and Ltd already carry this check; SE was
-// the one product without it (SHEET_COVERAGE_GAPS.md, "Largest gaps by
-// risk" item 1).
+// there. Every product asserts its injected Admin cells against the tax
+// year TOML the package was generated from, so a wrong rate is never
+// arithmetically invisible.
 //
 // Each check is exercised on a real LibreOffice-recalculated multi-file
 // package, then again after corrupting one Admin cell's cached value
@@ -224,7 +222,7 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
   // must notice.
   it.each([
     ["Income Tax!E6 (the tapered allowance)", "E6", 5000, ["Tax: Personal allowance after taper", "Tax: Taxable = Profit - Allowance"]],
-    ["Income Tax!E10 (the additional-rate charge)", "E10", 1, ["Tax at additional rate", "Tax: IT = Basic + Higher + Additional"]],
+    ["Income Tax!E10 (the additional-rate charge)", "E10", 1000, ["Tax at additional rate", "Tax: IT = Basic + Higher + Additional"]],
     [
       "Income Tax!E11 (the income tax total)",
       "E11",

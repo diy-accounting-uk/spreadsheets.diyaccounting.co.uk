@@ -164,7 +164,7 @@ describeCalc(
       expect(schedule.F55).toBe(9828);
       expect(schedule.E41).toBe(3000);
       expect(schedule.F41).toBe(270);
-      expect(schedule.E110).toBe(32500);
+      expect(schedule.E110).toBe(52500);
       // The van sold: proceeds, original cost and depreciation to the date
       // of sale all come off the schedule.
       expect(schedule.V1).toBe(12500);
@@ -176,9 +176,9 @@ describeCalc(
     it("publishes those figures in the fixed asset note", () => {
       const notes = results.PubNotes;
       expect(notes.G8).toBe(33000);
-      expect(notes.G9).toBe(32500);
+      expect(notes.G9).toBe(52500);
       expect(notes.G10).toBe(30000);
-      expect(notes.G11).toBe(35500);
+      expect(notes.G11).toBe(55500);
       expect(notes.G14).toBe(10098);
       expect(notes.G20).toBe(notes.G11 - notes.G17);
       expect(results.PubBalSht.F6).toBe(notes.G20);
@@ -269,7 +269,7 @@ describeCalc(
 
     it("publishes the year-end stock and only the debtors left uncollected", () => {
       expect(results.PubBalSht.E10).toBe(6000);
-      expect(results.PubBalSht.E11).toBe(10400);
+      expect(results.PubBalSht.E11).toBe(7900);
       expect(results.Stock.D6).toBe(10000);
       expect(results.Stock.AB30).toBe(6000);
       // 10,000 opening plus 5,450 of materials bought, less 3% of the 311,600
@@ -294,7 +294,12 @@ describeCalc(
       const name = "Published balance sheet: trade debtors = closing debtors";
       const corrupted = checksWithCorruptedCell("PubBalSht", "E11", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name]);
+      // The listing and the ledger both name the same figure, so a corrupted
+      // published line parts company with both of them.
+      expect(failureNames(corrupted)).toEqual([
+        name,
+        "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts",
+      ]);
     });
 
     it("fails the stock count and its loss adjustment when the Stock sheet's count is corrupted via JSZip", async () => {
@@ -324,14 +329,11 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
-    // ── Trial Balance bank echoes and the published cash-at-bank aggregate
-    // (SHEET_COVERAGE_GAPS.md "Largest gaps by risk" item 1's remainder:
-    // PubBalSht!E12 was read but never compared to the four bank workbooks'
-    // closing balances). TrialBalance!EJ22-EJ25 echo each workbook's closing
-    // balance across the cross-file link, and E12 reproduces the sheet's own
-    // formula: IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25) -- the
-    // credit card balance (EJ24) summed straight in, not netted off as a
-    // creditor.
+    // ── Trial Balance bank echoes and the published cash-at-bank aggregate.
+    // TrialBalance!EJ22-EJ25 echo each workbook's closing balance across the
+    // cross-file link, and PubBalSht!E12 reproduces the sheet's own formula:
+    // IF(SUM(EJ22:EJ24)>0, SUM(EJ22:EJ24)+EJ25+EJ26, EJ25) -- the credit card
+    // balance (EJ24) summed straight in, not netted off as a creditor.
 
     it("reads a non-zero Trial Balance echo for every bank workbook, and a non-zero published cash-at-bank total", () => {
       const tb = results.TrialBalance;
@@ -442,16 +444,16 @@ describeCalc(
     it("carries the schedule's per-asset capital allowance rows into the tax computation", () => {
       const schedule = results["Fixedassets.xlsx!Schedule"];
       const corporationTax = results.CorporationTax;
-      // The three purchases claim the annual investment allowance in full;
+      // The five purchases claim the annual investment allowance in full;
       // the van brought forward takes a restricted writing down allowance and
       // then a balancing allowance for the shortfall on its sale.
-      expect(schedule.Q1).toBe(32500);
+      expect(schedule.Q1).toBe(52500);
       expect(schedule.R1).toBe(3000);
       expect(schedule.Y1).toBe(8500);
-      expect(corporationTax.I15).toBe(32500);
+      expect(corporationTax.I15).toBe(52500);
       expect(corporationTax.I17).toBe(3000);
       expect(corporationTax.I18).toBe(8500);
-      expect(corporationTax.K20).toBe(44000);
+      expect(corporationTax.K20).toBe(64000);
     });
 
     it("fails the investment allowance tie when the Schedule total is corrupted via JSZip", async () => {
@@ -649,7 +651,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(34521.272927, 4);
+      expect(ct.K35).toBeCloseTo(29221.272927, 4);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -658,8 +660,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(36104.97446, 4);
-      expect(ct600.Y133).toBeCloseTo(1583.701532, 4);
+      expect(ct600.AJ131).toBeCloseTo(31104.97446, 4);
+      expect(ct600.Y133).toBeCloseTo(1883.701532, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank
@@ -1159,6 +1161,69 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("TrialBalance", "D40", value);
       expect(failureNames(corrupted)).toEqual(["Trial Balance opening: creditors due after more than one year"]);
+    });
+
+    // ── The creditor rows the bank codes settle. Liabilities sit negative on
+    // this trial balance, so a positive figure on one of these rows is the
+    // account overdrawn.
+
+    it("settles each creditor on the row its bank code names", () => {
+      const tb = results.TrialBalance;
+      // Trade creditors: 2,400 brought forward plus 134,992.25 invoiced, less
+      // 104,960 paid under CR and the 20,000 the two hire purchase agreements
+      // finance, which EH28 moves onto the long-term row.
+      expect(tb.EJ28).toBeCloseTo(-12432.25, 2);
+      // CIS: 1,600 remitted under RC against no certificate on the purchase
+      // journal, so the row reads as a debit of the remittances.
+      expect(tb.EJ32).toBeCloseTo(1600, 2);
+      // PAYE: 20,078.40 deducted by the payroll against 60,760.57 paid under
+      // RP, which still carries the year's VAT as well as the payroll's own
+      // monthly payments.
+      expect(tb.EJ34).toBeCloseTo(40682.17, 2);
+      // Corporation tax: 4,500 brought forward and paid off under RT, leaving
+      // this year's charge less the tax credit on interest received.
+      expect(tb.EJ35).toBeCloseTo(-29156.77, 2);
+    });
+
+    it("fails only the trade creditor tie when TrialBalance EJ28 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ28", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ28", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
+      ]);
+    });
+
+    it("fails only the CIS creditor tie when TrialBalance EJ32 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ32", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ32", value);
+      expect(failureNames(corrupted)).toEqual(["Trial Balance: CIS creditor = the remittances paid under RC"]);
+    });
+
+    it("fails only the PAYE creditor tie when TrialBalance EJ34 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ34", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ34", value);
+      expect(failureNames(corrupted)).toEqual(["Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP"]);
+    });
+
+    it("fails only the corporation tax creditor tie when TrialBalance EJ35 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ35", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ35", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
+      ]);
+    });
+
+    it("names the CIS the purchase journal never withheld as a warning rather than a failure", () => {
+      const warning = checks.find((c) => c.name === "CIS: sub-contractor tax withheld reaches the purchase journal");
+      expect(warning).toBeDefined();
+      expect(warning.severity).toBe("warning");
+      expect(warning.pass).toBe(false);
+      expect(warning.expected).toBe(1600);
+      expect(failureNames(checks)).not.toContain(warning.name);
     });
   },
   900000,

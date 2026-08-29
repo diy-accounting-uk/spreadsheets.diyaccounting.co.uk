@@ -278,7 +278,7 @@ Numbers, strings, booleans and error values all get written back (`t="str"`, `t=
 
 ## Vatinterface Formula Rewriting
 
-The Vatinterface sheet in Vatreturns.xlsx references the Financialaccounts Admin sheet's B-column for monthly dates (`[1]Admin!$B$6` through `[1]Admin!$B$38`, consecutive even rows).
+The Vatinterface sheet in Vatreturns.xlsx references the Financialaccounts Admin sheet's B-column for monthly dates (`[1]Admin!$B$6` through `[1]Admin!$B$40`, consecutive even rows).
 
 ### rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vatinterfacePath)
 
@@ -305,9 +305,9 @@ The dates behind the VATQtr `G5` dropdown are formula cells with cached values, 
 
 1. `xl/externalLinks/externalLink1.xml` — the cached Admin B-column serials (after checking via its `.rels` that the link targets `Financialaccounts.xlsx`)
 2. The Vatinterface sheet — every cell whose formula is `[1]Admin!$B$r`, resolved from the same Admin map
-3. Each VATQtr sheet's `K2:K15` (the `G5` validation list source) — each cell resolved from its own formula (`Vatinterface!B{n}` for Ltd, `[1]Admin!$B$r` for SE)
+3. Each VATQtr sheet's `K2:K16` (the `G5` validation list source) — each cell resolved from its own formula (`Vatinterface!B{n}` for Ltd, `[1]Admin!$B$r` for SE)
 
-Every unresolved reference throws, and each quarter's computed `G5` default must be a member of the 14 K values just written.
+Every unresolved reference throws, and each quarter's computed `G5` default must be a member of the 15 K values just written.
 
 ## XLS Roundtrip (Recalculation)
 

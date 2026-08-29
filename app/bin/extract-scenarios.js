@@ -23,6 +23,8 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
+  buildClosingDebtors,
+  HP_AGREEMENT_FIELD,
   LTD_SALES_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
   BST_PURCHASE_CODE_MAP,
@@ -91,7 +93,14 @@ const openingDebtors = [
   { customer: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
 ];
 
-const closingDebtors = [
+// SE and Ltd bank their customer receipts, so what is still owed at the year
+// end comes off the ledger itself.
+const closingDebtors = buildClosingDebtors(allLines, openingDebtors);
+
+// The Basic Sole Trader subset carries no bank journal, so nothing in it can
+// settle an invoice and there is nothing to work the figure out from. Its
+// closing debtors are stated.
+const bstClosingDebtors = [
   { customer: "Acme Corp", invoice: "INV-1012", amount: 8000 },
   { customer: "TechStart Ltd", invoice: "INV-1112", amount: 2400 },
 ];
@@ -117,12 +126,13 @@ const closingCreditors = [
 // trial balance where it was. Gross amounts are multiples of six so the
 // standard-rate split is exact to the penny. Dates sit in the April-March
 // frame the month keys describe, two months before the year on 02Y1 and 03Y1
-// and two months after it on 04Y2 and 05Y2.
+// and three months after it on 04Y2, 05Y2 and 06Y2.
 const straddlingSales = [
   { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
   { period: "03Y1", date: "2025-03-18", customer: "Beta Systems", invoice: "INV-0802", amount: 2400 },
   { period: "04Y2", date: "2026-04-10", customer: "Acme Corp", invoice: "INV-1301", amount: 3600 },
   { period: "05Y2", date: "2026-05-12", customer: "Gamma Ltd", invoice: "INV-1302", amount: 1800 },
+  { period: "06Y2", date: "2026-06-11", customer: "Beta Systems", invoice: "INV-1303", amount: 1200 },
 ];
 
 const straddlingPurchases = [
@@ -130,6 +140,7 @@ const straddlingPurchases = [
   { period: "03Y1", date: "2025-03-24", supplier: "WorkSpace Ltd", invoice: "WS-2402", amount: 1200 },
   { period: "04Y2", date: "2026-04-15", supplier: "Shell", invoice: "SH-2604", amount: 240 },
   { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
+  { period: "06Y2", date: "2026-06-16", supplier: "WorkSpace Ltd", invoice: "WS-2606", amount: 480 },
 ];
 
 // Hire purchase agreements financing equipment (SE, Ltd). The first lands
@@ -222,7 +233,7 @@ const bstToml = formatScenarioToml(
     opening_stock: 10000,
     closing_stock: 6000,
     opening_debtors: openingDebtors,
-    closing_debtors: closingDebtors,
+    closing_debtors: bstClosingDebtors,
     opening_creditors: openingCreditors,
     closing_creditors: closingCreditors,
     // In-year additions go in the "Bought AFTER" block on the Fixed Assets
@@ -345,6 +356,22 @@ const fullDividendsPaid = fullLines
   .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
 if (book.dividend.declared !== fullDividendsPaid) {
   throw new Error(`The board minuted a dividend of ${book.dividend.declared}, against ${fullDividendsPaid} paid out of the bank`);
+}
+
+// Each hire purchase agreement pays for one purchase, at the purchase's cost
+// net of VAT -- the VAT is the buyer's to settle, not the finance company's.
+// The purchase reaches the books as an ordinary trade creditor and the
+// year-end journal then moves the amount financed onto creditors falling due
+// after more than one year. HPfinance!E2 totals the amounts financed and the
+// trial balance reads it on both rows, so an agreement whose purchase is
+// missing leaves the asset off the schedule and the reclassification with
+// nothing to move.
+const hpFinanced = hpAgreements.reduce((total, agreement) => total + agreement.amount_financed, 0);
+const hpPurchasedNet = fullPurchLines
+  .filter((l) => l[HP_AGREEMENT_FIELD])
+  .reduce((total, l) => total + l.amount / (1 + (l.taxRate || 0)), 0);
+if (hpFinanced !== hpPurchasedNet) {
+  throw new Error(`Hire purchase agreements finance ${hpFinanced}, against ${hpPurchasedNet} of purchases net of VAT bought under them`);
 }
 
 const fullToml = formatScenarioToml(

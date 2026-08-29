@@ -11,14 +11,14 @@ Three directors hold 100 ordinary shares: Carol Smith (MD, 60%), David Brown (NE
 ## Data Files
 
 - **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 6 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 720 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
+- **lines.jsonl** -- 722 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
 | journal | 18 | Opening balance sheet (16 lines) + stock adjustment (2 lines) |
 | sales | 112 | 10+ invoices per month across 7 sales codes and 23 customers |
-| purchases | 393 | 30+ invoices per month across 22 purchase codes |
-| bank | 161 | Current (138), savings (8), cash (7), credit card (8) |
+| purchases | 395 | 30+ invoices per month across 22 purchase codes |
+| bank | 161 | Current (142), savings (4), cash (7), credit card (8) |
 | payroll | 36 | 3 employees x 12 months with PAYE/NI breakdowns |
 
 ## Opening Balance Sheet (1 April 2025)
@@ -116,11 +116,13 @@ turnover published is 341,283.
 
 | Code | Category | Gross Total |
 |------|----------|------------:|
-| 5900 | Fixed asset purchases | 39,000 |
+| 5900 | Fixed asset purchases | 63,000 |
 
-Fixed assets acquired: Dell laptop (1,800), Ford Transit Custom van (36,000), IKEA office furniture (1,200).
+Fixed assets acquired: Dell laptop (1,800), Ford Transit Custom van (36,000), IKEA office furniture
+(1,200), and the two items the hire purchase agreements below pay for, a test rig (15,600) and a
+bench calibration kit (8,400).
 
-| | **Total Purchases** | **110,992** |
+| | **Total Purchases** | **134,992** |
 |--|---------------------|------------:|
 
 ## Employees (PAYE Payroll)
@@ -155,28 +157,37 @@ Quarterly dividends: Q1 3,000, Q2 3,000, Q3 3,000, Q4 (final) 6,000 = 15,000 tot
 
 ## HMRC Payments
 
-| Date | Payment | Amount |
-|------|---------|-------:|
-| 19th of each month | PAYE, employee NI and employer NI for the month | 1,673.20 |
-| 7 May 2025 | VAT, the prior year's fourth quarter | 1,500 |
-| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | 13,808.17 |
-| 1 Oct 2025 | Corporation tax for the prior year | 4,500 |
-| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | 14,456.50 |
-| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | 10,917.50 |
+| Date | Payment | Code | Amount |
+|------|---------|------|-------:|
+| 19th of each month | PAYE, employee NI and employer NI for the month | `RP` | 1,673.20 |
+| 7 May 2025 | VAT, the prior year's fourth quarter | `RP` | 1,500 |
+| 19 Jul 2025 | CIS deducted from BuildTech in June | `RC` | 1,000 |
+| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | `RP` | 13,808.17 |
+| 1 Oct 2025 | Corporation tax for the prior year | `RT` | 4,500 |
+| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | `RP` | 14,456.50 |
+| 19 Dec 2025 | CIS deducted from BuildTech in November | `RC` | 600 |
+| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | `RP` | 10,917.50 |
 
-The fourth quarter's VAT of 14,796.50 falls due on 7 May 2026 and so stays a creditor at the
-year end, as does the 28,029 of corporation tax on this year's profit.
+The fourth quarter's VAT of 14,796.50 falls due after the year end and so stays a creditor, and
+so does this year's corporation tax: 29,221.27 charged, less the 64.51 the working sheet credits
+for tax already suffered on the interest received, leaves 29,156.77 owed.
+
+The Company bank workbooks analyse PAYE under `RP`, VAT under `RV`, CIS under `RC` and
+corporation tax under `RT` (Currentaccount columns AH, AI, AJ and AK), and the trial balance
+carries a creditor row for each. Corporation tax and the CIS remittances are coded that way
+here. The VAT payments still carry `RP`, so the PAYE creditor carries the year's 40,682.17 of
+VAT as well as the payroll's own deductions; coded `RV` it would come out at nil.
+
+The Self Employed workbooks have one HMRC Payments column between them, analysed under `RP`
+(Bank.xlsx AA, Cash.xlsx W), so `app/products/se.js` writes a payment coded `RV`, `RC` or `RT`
+into that column.
 
 The Innovate UK grant of 2,500 is invoiced to sales account 4004 and its receipt carries bank
-code `RV`, so it credits the VAT creditor rather than settling the debtor. Recoding it to `DR`
-takes the year-end trade debtors to 7,900, which the hand-written closing debtors listing in
-`app/bin/extract-scenarios.js` does not match; the listing has to be derived from the ledger
-before that receipt can be coded properly.
-
-Every one of these carries bank code `RP`. The Company bank workbooks analyse VAT under `RV`,
-CIS under `RC` and corporation tax under `RT`, which would split the balance sheet's tax
-creditors properly, but the Self Employed product this master data also feeds analyses no
-payment under those three codes, so recoding them means extending that product first.
+code `DR`, so it settles the debtor it raised. Year-end trade debtors come to 7,900, worked out
+from the invoices raised and the money banked against them rather than listed by hand:
+`buildClosingDebtors` applies each receipt to the oldest invoice open, taking a receipt that
+names a customer to that customer's own oldest invoice and the aggregate banking runs to the
+oldest invoice on the book.
 
 ## Stock Movement
 
@@ -208,12 +219,22 @@ The charge secures the 25,000 bank loan carried as a creditor falling due after 
 | 1 Jun 2025 | Close Brothers Asset Finance | HP-2025-01 | 13,000 | 200 | 1,800 | 20 months | Precision Tooling Supplies |
 | 1 Sep 2025 | Close Brothers Asset Finance | HP-2025-02 | 7,000 | 100 | 1,000 | 20 months | Precision Tooling Supplies |
 
-Each agreement's admin charges and interest (2,000 and 1,100) are booked on the savings account
-(1210) as bank-charges payments (code `B`), reaching the P&L's HP interest/bank charges line the
-same way every other direct bank charge does. Each agreement's amount financed (13,000 and 7,000)
-is booked on the same account as a creditor repayment (code `CR`). Booking both legs on the
-savings account, rather than the current account SE also reads, keeps the SE fixture's own income
-tax profit unaffected.
+Each agreement's admin charges and interest (2,000 and 1,100) are booked on the current account
+(1200) as bank-charges payments (code `B`), reaching the P&L's HP interest and bank charges line
+the same way every other direct bank charge does. The current account is the one the Self
+Employed subset reads, so the sole trader's profit and loss account carries the same finance
+charge the company's does. Each agreement's amount financed (13,000 and 7,000) is booked on the
+same account as a creditor repayment (code `CR`).
+
+Each agreement pays for something. Precision Tooling Supplies invoices the item on the day the
+agreement starts, gross of VAT, and the purchase carries the agreement's reference so the two
+stay tied: 15,600 for the test rig and 8,400 for the calibration kit, 13,000 and 7,000 net of
+VAT, which is what each agreement finances. The VAT is the company's own to settle. The purchase
+is coded `fa`, so it reaches the `Fixedassets.xlsx` Schedule as an addition at cost net of VAT
+and the books as an ordinary trade creditor; the year-end journal then moves the amount financed
+off trade creditors and onto creditors falling due after more than one year, through
+`TrialBalance!EH28` reading `[1]HPfinance!$E$2` and `EH40` its negative. The Basic Sole Trader
+package has no finance agreement schedule, so these two purchases stay out of that subset.
 
 ## CIS Sub-Contractors
 
@@ -232,17 +253,17 @@ tax profit unaffected.
 |-------|------:|----------:|----:|
 | Apr 2025 | 33,400 | 5,111 | 28,289 |
 | May 2025 | 32,920 | 6,375 | 26,545 |
-| Jun 2025 | 35,200 | 9,057 | 26,143 |
+| Jun 2025 | 35,200 | 24,657 | 10,543 |
 | Jul 2025 | 33,760 | 9,059 | 24,701 |
 | Aug 2025 | 36,020 | 4,405 | 31,615 |
-| Sep 2025 | 33,760 | 4,975 | 28,785 |
+| Sep 2025 | 33,760 | 13,375 | 20,385 |
 | Oct 2025 | 50,560 | 43,006 | 7,554 |
 | Nov 2025 | 35,320 | 6,918 | 28,402 |
 | Dec 2025 | 32,800 | 9,452 | 23,348 |
 | Jan 2026 | 35,440 | 4,511 | 30,929 |
 | Feb 2026 | 34,360 | 4,396 | 29,964 |
 | Mar 2026 | 31,360 | 3,726 | 27,634 |
-| **Total** | **424,900** | **110,992** | **313,908** |
+| **Total** | **424,900** | **134,992** | **289,908** |
 
 October is the low month: the 36,000 van purchase lands in it.
 
@@ -250,8 +271,8 @@ October is the low month: the 36,000 van purchase lands in it.
 
 | Account | Entries | Description |
 |---------|--------:|-------------|
-| 1200 -- Current account | 138 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments |
-| 1210 -- Savings account | 8 | Opening balance, transfer in, interest (x2), hire purchase charges and capital repayments (x4) |
+| 1200 -- Current account | 142 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments, hire purchase charges and capital repayments (x4) |
+| 1210 -- Savings account | 4 | Opening balance, transfer in, interest (x2) |
 | 1220 -- Cash account | 7 | Opening float, top-up, petty cash purchases (x5) |
 | 1230 -- Credit card | 8 | Hotel/travel charges (x3), annual fee, payments from current (x4) |
 
