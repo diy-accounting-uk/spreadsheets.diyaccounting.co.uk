@@ -1023,6 +1023,8 @@ function monthTabsFromPeriodStart(startSerial) {
 
 // CT600 boxes the template populates by formula, and where each reads from.
 const CT600_CELLS = [
+  "B33",
+  "M33",
   "AK66",
   "Z70",
   "Z72",
@@ -1078,7 +1080,7 @@ export function standardReads() {
   // Corporation tax working sheet: the allowance lines, and the two dated
   // tax rows whose day counts, profit shares, rates and tax the charge for
   // the year is built from.
-  for (const cell of ["I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+  for (const cell of ["E5", "H5", "I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
     add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
@@ -1087,6 +1089,8 @@ export function standardReads() {
   add("Admin", "F21");
   add("Admin", "B9");
   add("Admin", "B32");
+  // The two dated corporation tax rate rows the working sheet copies.
+  for (const cell of ["K6", "L6", "N6", "K7", "L7", "N7"]) add("Admin", cell);
   add("PubP&L", "D3");
   add("PubBalSht", "D2");
 
@@ -2173,6 +2177,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Fixed asset note: year end = Admin year-end seed", num(notes?.A11), num(admin.F21), 0);
     check("Admin: accounting period is twelve months", num(admin.F21) - num(admin.B9) + 1, 365, 1);
 
+    // The Admin rate table's two dated rows are the financial years the
+    // accounting period falls in, not the period and the year after it.
+    // Everything the corporation tax working sheet and the CT600 say about
+    // the period is a copy of these four dates.
+    check("Admin: first financial year row starts at the accounting period start", num(admin.L6), num(admin.B9), 0);
+    check("Admin: second financial year row starts the day the first one ends", num(admin.L7), num(admin.N6) + 1, 0);
+    check("Admin: second financial year row ends at the year end", num(admin.N7), num(admin.F21), 0);
+    if (results[TAX_SHEET]) {
+      check("CT: working sheet heading starts at the accounting period start", num(results[TAX_SHEET].E5), num(admin.B9), 0);
+      check("CT: working sheet heading ends at the year end", num(results[TAX_SHEET].H5), num(admin.F21), 0);
+      check("CT: the two tax rows span the accounting period", num(results[TAX_SHEET].A35), num(admin.F21) - num(admin.B9) + 1, 0);
+    }
+    if (results.CT600) {
+      check("CT600: return period starts at the accounting period start", num(results.CT600.B33), num(admin.B9), 0);
+      check("CT600: return period ends at the year end", num(results.CT600.M33), num(admin.F21), 0);
+    }
+
     // The note publishes the depreciation rates from the Schedule, which
     // must agree with the rates injected into Admin.
     if (notes) {
@@ -2290,13 +2311,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const ct = results[TAX_SHEET];
     const profit = ct.K28 || 0;
     if (profit > 0) {
-      // How the working sheet builds the charge. Rows 33 and 34 are two
-      // dated rate rows: row 33 runs from Admin L6 to N6, the accounting
-      // period itself, and row 34 from Admin L7 to N7, the year after it.
-      // Each row is a year long, A35 is the two together, and each row
-      // takes that share of the same chargeable profit (F33 =
-      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate (I33 =
-      // F33*G33/100). The charge for the year is the two rows added up.
+      // How the working sheet builds the charge. Rows 33 and 34 are the one
+      // or two UK financial years the accounting period falls in: row 33
+      // runs from Admin L6 to N6, the 31 March inside the period, and row 34
+      // from the day after that to the year end. A period wholly inside one
+      // financial year leaves row 34 empty. A35 is the two together, each
+      // row takes its share of the chargeable profit (F33 =
+      // IF(K28>0,K28*A33/A35,0)) and charges it at its own rate.
       const days = num(ct.A35);
       check("CT: the two tax rows together span the days the charge is spread over", num(ct.A33) + num(ct.A34), days);
       if (days > 0) {

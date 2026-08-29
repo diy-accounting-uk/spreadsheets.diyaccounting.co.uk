@@ -33,6 +33,9 @@ payslip_guide_filename = "Payslip User Guide.pdf"
 admin = "xl/worksheets/sheet12.xml"
 cellEditFn = "ltd"
 
+[sheets.fixedassets]
+adminExternalLink = "xl/externalLinks/externalLink1.xml"
+
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"
 

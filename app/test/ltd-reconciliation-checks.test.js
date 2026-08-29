@@ -571,22 +571,26 @@ describeCalc(
 
     // ── The corporation tax charge and what the CT600 files of it ──
 
-    it("spreads the chargeable profit over the accounting period and the year after it", () => {
+    it("charges the whole chargeable profit in the one financial year the period falls in", () => {
       const ct = results.CorporationTax;
-      // Row 33 runs the twelve months of the accounting period, row 34 the
-      // twelve after it, so each is a year long and the profit is spread over
-      // both of them.
-      expect([365, 366]).toContain(ct.A33);
-      expect([365, 366]).toContain(ct.A34);
-      expect(ct.A35).toBe(ct.A33 + ct.A34);
-      expect(ct.F33 + ct.F34).toBeCloseTo(ct.K28, 6);
-      expect(ct.F33).toBeCloseTo((ct.K28 * ct.A33) / ct.A35, 6);
-      // Both rows carry the one rate the Admin sheet holds, so the charge is
-      // the whole chargeable profit at the small profits rate.
-      expect(ct.G33).toBe(19);
-      expect(ct.G34).toBe(19);
+      const admin = results.Admin;
+      // A 31 March year end runs 1 April to 31 March, which is one UK
+      // financial year, so row 33 takes the whole period and row 34 is empty.
+      expect(ct.A33).toBe(365);
+      expect(ct.A34).toBe(0);
+      expect(ct.A35).toBe(365);
+      expect(ct.A35).toBe(admin.F21 - admin.B9 + 1);
+      expect(ct.F33).toBeCloseTo(ct.K28, 6);
+      expect(ct.F34).toBe(0);
       expect(ct.I33 + ct.I34).toBeCloseTo(ct.K35, 6);
-      expect(ct.K35).toBeCloseTo(ct.K28 * 0.19, 6);
+    });
+
+    it("names the accounting period on the working sheet and on the return", () => {
+      const admin = results.Admin;
+      expect(results.CorporationTax.E5).toBe(admin.B9);
+      expect(results.CorporationTax.H5).toBe(admin.F21);
+      expect(results.CT600.B33).toBe(admin.B9);
+      expect(results.CT600.M33).toBe(admin.F21);
     });
 
     it("warns that the charge carries no marginal relief, and says what the statutory figure is", () => {
@@ -615,25 +619,21 @@ describeCalc(
       expect(warning.pass).toBe(true);
     });
 
-    it("warns that the CT600 files the first tax row alone", () => {
+    it("files the whole charge on the return once the empty second row is worth nothing", () => {
       const ct = results.CorporationTax;
       const ct600 = results.CT600;
-      // Boxes 53 to 56, the form's second financial year row, carry no
-      // formula, so box 63 is box 46 on its own.
-      expect(ct600.AJ128).toBeNull();
+      expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.I33, 6);
-      expect(ct600.AJ131).toBeCloseTo(ct.I33, 6);
+      expect(ct600.AJ131).toBeCloseTo(ct.K35, 6);
 
       const warning = warningNamed(checks, "CT600: tax payable against the working sheet's charge for the year");
-      expect(warning.pass).toBe(false);
-      expect(warning.expected).toBeCloseTo(ct.K35, 6);
-      expect(warning.diff).toBeCloseTo(-ct.I34, 6);
-      expect(failureNames(checks)).not.toContain(warning.name);
+      expect(warning.pass).toBe(true);
+      expect(warning.diff).toBeCloseTo(0, 6);
     });
 
     it("fails the second tax row and the charge above it when CorporationTax I34 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I34", 0);
-      expect(value).toBe(0);
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "I34", 5000);
+      expect(value).toBe(5000);
       const corrupted = checksWithCorruptedCell("CorporationTax", "I34", value);
       expect(failureNames(corrupted)).toEqual([
         "CT: second tax row tax = its profit at its rate",
@@ -670,6 +670,38 @@ describeCalc(
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: second tax row profit = chargeable profit by its share of those days",
       ]);
+    });
+
+    it("fails the period span when CorporationTax A35 is corrupted back to two years via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "A35", 730);
+      expect(value).toBe(730);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "A35", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: the two tax rows span the accounting period",
+        "CT: the two tax rows together span the days the charge is spread over",
+        "CT: first tax row profit = chargeable profit by its share of those days",
+      ]);
+    });
+
+    it("fails the working sheet heading when CorporationTax H5 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "H5", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "H5", value);
+      expect(failureNames(corrupted)).toEqual(["CT: working sheet heading ends at the year end"]);
+    });
+
+    it("fails the return period when CT600 M33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CT600", "M33", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("CT600", "M33", value);
+      expect(failureNames(corrupted)).toEqual(["CT600: return period ends at the year end"]);
+    });
+
+    it("fails the second financial year row when Admin N7 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "N7", 46477);
+      expect(value).toBe(46477);
+      const corrupted = checksWithCorruptedCell("Admin", "N7", value);
+      expect(failureNames(corrupted)).toEqual(["Admin: second financial year row ends at the year end"]);
     });
 
     it("walks the management profit before tax to the profit chargeable to corporation tax", () => {
