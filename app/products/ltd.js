@@ -1408,7 +1408,10 @@ function journalTotalsByCode(journal, rate, defaultCode) {
 // One row per journal category that crosses into another statement, so the
 // gross-to-net step is stated where it happens rather than only in total.
 export function categoryNetting(results, scenario) {
-  if (!scenario) return null;
+  // With no journal there is nothing to net: every row would compare a nil
+  // against whatever the sheet holds and read as a category that lost its
+  // whole value on the way.
+  if (!scenario?.sales && !scenario?.purchases) return null;
   const pl = results["MnthP&L"];
   const fr = results["Fixedassets.xlsx!FAreconciliation"];
   if (!pl && !fr) return null;
