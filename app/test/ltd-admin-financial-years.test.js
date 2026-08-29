@@ -111,7 +111,9 @@ describe("Ltd Admin cached rate rows", () => {
 
     const zip = await JSZip.loadAsync(buffer);
     const linkXml = await zip.file(productMeta.sheets.fixedassets.adminExternalLink).async("string");
-    const cached = Object.fromEntries([...linkXml.matchAll(/<cell r="([A-Z]+\d+)"[^>]*><v>([^<]*)<\/v><\/cell>/g)].map((m) => [m[1], parseFloat(m[2])]));
+    const cached = Object.fromEntries(
+      [...linkXml.matchAll(/<cell r="([A-Z]+\d+)"[^>]*><v>([^<]*)<\/v><\/cell>/g)].map((m) => [m[1], parseFloat(m[2])]),
+    );
     expect(cached.L6).toBe(serial(2025, 1, 1));
     expect(cached.N7).toBe(serial(2025, 12, 31));
     expect(cached.N11).toBe(serial(2025, 12, 31));
