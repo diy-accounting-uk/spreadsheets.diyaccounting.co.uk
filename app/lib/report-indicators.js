@@ -180,6 +180,12 @@ function vatLine(report, vatRegistered) {
         ` (output VAT on it ${amount(outputOnIt)}); that month sat on the previous return of the same cycle.`,
     );
   }
+  // The package ships a fifth return form as well as the four quarters above. It is the
+  // spare a stagger that runs behind the accounting year needs, and it sits on the last
+  // period the book carries, which the fourth return already reaches. Without that here
+  // the fifth form's boxes read as a quarter that went missing from the four.
+  const spare = [...section.keys()].find((label) => label.includes("both cover the period"));
+  if (spare) lines.push(`The fifth return form is a spare: ${spare.slice(0, spare.indexOf(".") + 1)}`);
   return lines.join(" ");
 }
 

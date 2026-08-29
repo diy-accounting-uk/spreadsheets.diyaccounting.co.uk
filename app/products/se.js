@@ -14,6 +14,7 @@ import {
   categoryNettingCheckName,
   PROFIT_BRIDGE_CHECK,
   vatCycleRows,
+  vatReturnCoverage,
 } from "../lib/report-generator.js";
 
 export const PRODUCT = {
@@ -1532,14 +1533,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // which in turn reads Sales.xlsx/Purchases.xlsx month totals -- anchored
   // here directly in the scenario's own dated transactions (not a second
   // spreadsheet read) so a break anywhere in that chain shows up as a value
-  // mismatch. The quarter boundaries are NOT the calendar Apr-Jun/Jul-Sep
-  // split a VAT-registration-aligned business would expect: the generator
-  // computes them from a VAT start month one month after the accounting
-  // year start (`vatStartMonth` in generator.js), so Q1 here runs May-Jul,
-  // not Apr-Jun -- confirmed against a real generated package (VATQtr1 G5 =
-  // 2025-07-31, not 2025-06-30). Rather than hard-code that offset, each
-  // quarter's window is derived from its own G5 (quarter-end) date, so the
-  // check tracks whatever the generator actually computed.
+  // mismatch. Each quarter's window is derived from its own G5 (quarter-end)
+  // date rather than hard-coded, so the check tracks whatever period the
+  // package was generated for and whatever period a reader picks from the
+  // dropdown.
   //
   // G5 is dated in the package's own year, the scenario's transactions in
   // the base year cellWrites copies straight through, so the two only line
@@ -1571,23 +1568,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // rollforward is that it falls after the quarter-end.
     check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
 
-    // Q5 is the straddling period at the accounting year end, and the
-    // template's rolling 3-row SUM carries two of the year's own months into
-    // it alongside the straddling period's own figures. That makes its window
-    // wider than the transaction dates below can describe, so its values are
-    // anchored on the Vatinterface rows instead (see the block after this
-    // loop). The identities above hold for every quarter.
+    // Q5 is the spare form, on the last period the Vatinterface carries, and
+    // the template's rolling 3-row SUM puts the two straddling periods after
+    // the year end into it alongside the year's own last month. That makes its
+    // window wider than the transaction dates below can describe, so its
+    // values are anchored on the Vatinterface rows instead (see the block
+    // after this loop). The identities above hold for every quarter.
     if (q === 5) continue;
 
-    // Quarter window: the 3 calendar months ending at G5's own month
-    // (verified against generator.js -- monthsFromStart is always a
-    // multiple of 3 for Q1-Q4).
+    // Quarter window: the 3 calendar months ending at G5's own month. Q1-Q4
+    // step a quarter at a time, so each window is three whole months.
     const bookEnd = excelSerialToUtcDate(qtr.G5);
     const bookStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() - 2, 1));
-    // Q1-Q4 all start inside the book's own accounting year, so the start
-    // month dates the year the whole window belongs to. Q4's third month
-    // falls in the year after and lands on no scenario transaction, which
-    // is what the book's own empty Vatinterface row for it totals.
+    // Q1-Q4 cover the twelve accounting months once each, so every window sits
+    // inside the book's own year and its start month dates that year.
     const yearShift = scenarioAccountingYear === null ? 0 : scenarioAccountingYear - accountingYearOf(bookStart);
     const qStart = new Date(Date.UTC(bookStart.getUTCFullYear() + yearShift, bookStart.getUTCMonth(), 1));
     // Day 0 of the next month is this month's last day, so the shifted
@@ -1615,8 +1609,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
     }
-    // The last quarter of a 6 April year runs past it, so its window picks up
-    // the straddling entry sheets alongside the year's own last months.
+    // A window that runs past the year end picks up the straddling entry
+    // sheets alongside the year's own months.
     for (const entry of expected.vat_straddling_sales || []) {
       if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
@@ -1733,6 +1727,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(vatinterface[`C${row}`]),
         0,
       );
+    }
+
+    // ── The five return forms as one cycle ────────────────────────
+    //
+    // Each form's own date decides which three interface rows it declares, so
+    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
+    // quarter apart and covering the twelve accounting months once each, and
+    // the spare fifth on the last period the interface carries.
+    const periods = vatinterfacePeriods(results);
+    const returnForms = [];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = results[`Vat.xlsx!VATQtr${q}`];
+      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
+    }
+    const coverage = vatReturnCoverage(periods, returnForms);
+    if (coverage.placed.length === 5) {
+      const [q1, q2, q3, q4, q5] = coverage.placed;
+      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
+      for (const [earlier, later] of [
+        [q1, q2],
+        [q2, q3],
+        [q3, q4],
+      ]) {
+        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
+      }
+      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
+      check(
+        "VAT: Q1-Q4 cover every month of the accounting year",
+        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
+        periods.filter((period) => period.inAccountingYear).length,
+        0,
+      );
+      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
+
+      // Five consecutive quarters need fifteen periods and the interface can
+      // total fourteen, so the spare cannot start where the fourth return
+      // ends. The period they share is the workbook's own limit, reported
+      // with the output VAT that would go in twice, and a run is not stopped
+      // for it.
+      checks.push({
+        name: "VAT: periods more than one of the five returns declares",
+        actual: coverage.shared.length,
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.length,
+        severity: "warning",
+      });
+      checks.push({
+        name: "VAT: output VAT declared on more than one of the five returns",
+        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        severity: "warning",
+      });
     }
   }
 
