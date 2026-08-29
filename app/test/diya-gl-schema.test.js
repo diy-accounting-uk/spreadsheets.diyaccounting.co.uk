@@ -3,17 +3,17 @@
 //
 // diya-gl-schema.test.js — Holds the published book and lines schemas to
 // what the example books actually carry. Every book.toml and lines.jsonl
-// under examples/ is validated against the version it declares, so a field
-// or a code letter added to a fixture without being added to the schema
-// fails here rather than being discovered by whoever downloads the schema
-// and tries to validate their own book.
+// under examples/ is validated against them, so a field or a code letter
+// added to a fixture without being added to the schema fails here rather
+// than being discovered by whoever downloads the schema and tries to
+// validate their own book.
 
 import { describe, it, expect } from "vitest";
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, readdirSync, statSync } from "fs";
 import { resolve, dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
-import { validateBook, validateLines, bookSchemaVersion } from "../lib/diya-gl-schema.js";
+import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -49,18 +49,12 @@ describe("diya-gl schema", () => {
     expect(bookDirs.map((dir) => relative(ROOT, dir))).toContain("examples/precision-code-ltd/full");
   });
 
-  it.each(bookDirs.map((dir) => [relative(ROOT, dir), dir]))("validates %s against its declared schema version", (_name, dir) => {
+  it.each(bookDirs.map((dir) => [relative(ROOT, dir), dir]))("validates %s", (_name, dir) => {
     const book = readBook(dir);
     const lines = readLines(dir);
     const bookResult = validateBook(book);
     const linesResult = validateLines(lines, book);
     expect([...bookResult.errors, ...linesResult.errors]).toEqual([]);
-  });
-
-  it("declares every book as v1 or v2", () => {
-    for (const dir of bookDirs) {
-      expect(["v1", "v2"], relative(ROOT, dir)).toContain(bookSchemaVersion(readBook(dir)));
-    }
   });
 });
 
@@ -101,7 +95,7 @@ describe("diya-gl schema, proved breakable", () => {
     const journalLine = lines.find((l) => l.sourceJournalID === "journal");
     expect(journalLine.debitCreditCode).toBeDefined();
     const { debitCreditCode, ...withoutSign } = journalLine;
-    expect(validateLines([withoutSign], book, { version: "v2" }).valid).toBe(false);
+    expect(validateLines([withoutSign], book).valid).toBe(false);
   });
 
   it("rejects a line posting to an account the book does not declare", () => {
@@ -127,8 +121,8 @@ describe("diya-gl schema, proved breakable", () => {
         },
       ],
     };
-    expect(validateLines([hpLine], bookWithHp, { version: "v2" }).valid).toBe(true);
-    const result = validateLines([{ ...hpLine, "diya-gl:hpAgreement": "HP-NOT-DECLARED" }], bookWithHp, { version: "v2" });
+    expect(validateLines([hpLine], bookWithHp).valid).toBe(true);
+    const result = validateLines([{ ...hpLine, "diya-gl:hpAgreement": "HP-NOT-DECLARED" }], bookWithHp);
     expect(result.valid).toBe(false);
     expect(result.errors[0]).toContain("does not match any hpAgreements[].agreementID");
   });
@@ -136,26 +130,22 @@ describe("diya-gl schema, proved breakable", () => {
   it("rejects an asset purchase naming a fixed asset the book does not declare", () => {
     const line = { ...lines[0], "diya-gl:assetID": "ASSET-NOT-DECLARED" };
     const bookWithAssets = { ...book, fixedAssets: [{ assetID: "ASSET-0001", class: "computerTechnology", cost: 1000 }] };
-    expect(validateLines([line], bookWithAssets, { version: "v2" }).valid).toBe(false);
+    expect(validateLines([line], bookWithAssets).valid).toBe(false);
     const matching = { ...line, "diya-gl:assetID": "ASSET-0001" };
-    expect(validateLines([matching], bookWithAssets, { version: "v2" }).valid).toBe(true);
+    expect(validateLines([matching], bookWithAssets).valid).toBe(true);
   });
 
   it("rejects a dividend payment naming a member the book does not declare", () => {
     const line = { ...lines[0], "diya-gl:memberID": "MEMBER-NOT-DECLARED" };
     const bookWithMembers = { ...book, members: [{ memberID: "MEM-0001", name: "Carol Smith", shares: 60 }] };
-    expect(validateLines([line], bookWithMembers, { version: "v2" }).valid).toBe(false);
+    expect(validateLines([line], bookWithMembers).valid).toBe(false);
     const matching = { ...line, "diya-gl:memberID": "MEM-0001" };
-    expect(validateLines([matching], bookWithMembers, { version: "v2" }).valid).toBe(true);
+    expect(validateLines([matching], bookWithMembers).valid).toBe(true);
   });
 
-  it("rejects a book carrying a table its declared version forbids", () => {
-    // A v1 book with a stray [dividend] table (the shape the master book
-    // carried before this migrated it to the v2 dividends[] array) is
-    // exactly what v1's additionalProperties has always forbidden.
-    const v1Shaped = { ...book, documentInfo: { ...book.documentInfo }, dividend: { boardMeeting: new Date("2026-03-31"), declared: 15000 } };
-    delete v1Shaped.documentInfo["diya-gl:schemaVersion"];
-    expect(bookSchemaVersion(v1Shaped)).toBe("v1");
-    expect(validateBook(v1Shaped).valid).toBe(false);
+  it("rejects a book carrying a table the schema does not declare", () => {
+    const withStrayTable = { ...book, notATable: { anything: 1 } };
+    expect(validateBook(withStrayTable).valid).toBe(false);
+    expect(validateBook(book).valid).toBe(true);
   });
 });

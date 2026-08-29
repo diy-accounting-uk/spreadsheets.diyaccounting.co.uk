@@ -2,9 +2,9 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // diya-gl-schema.js — The one validator for diya-gl book.toml and lines.jsonl
-// data. Compiles the published JSON Schemas (v1 and v2, draft 2020-12) with
-// ajv, and adds the two rules JSON Schema itself cannot state: that every
-// accountMainID names an account the book declares, and that every
+// data. Compiles the published v2 JSON Schemas (draft 2020-12) with ajv, and
+// adds the two rules JSON Schema itself cannot state: that every line's
+// accountMainID names a declared account, and that every
 // diya-gl:hpAgreement, diya-gl:assetID and diya-gl:memberID names an entry
 // on the matching book.toml register.
 
@@ -21,31 +21,13 @@ function loadSchema(fileName) {
   return JSON.parse(readFileSync(resolve(SCHEMA_DIR, fileName), "utf8"));
 }
 
-const bookSchemas = { v1: loadSchema("diya-gl-book-v1.schema.json"), v2: loadSchema("diya-gl-book-v2.schema.json") };
-const linesSchemas = { v1: loadSchema("diya-gl-lines-v1.schema.json"), v2: loadSchema("diya-gl-lines-v2.schema.json") };
+const bookSchema = loadSchema("diya-gl-book-v2.schema.json");
+const linesSchema = loadSchema("diya-gl-lines-v2.schema.json");
 
-function makeAjv() {
-  const ajv = new Ajv2020({ allErrors: true });
-  addFormats(ajv);
-  return ajv;
-}
-
-const ajv = makeAjv();
-const compiledBook = { v1: ajv.compile(bookSchemas.v1), v2: ajv.compile(bookSchemas.v2) };
-const compiledLine = { v1: ajv.compile(linesSchemas.v1), v2: ajv.compile(linesSchemas.v2) };
-
-function assertVersion(version) {
-  if (version !== "v1" && version !== "v2") throw new Error(`Unknown diya-gl schema version: "${version}". Use "v1" or "v2".`);
-}
-
-/**
- * The schema version a book declares. Absent means the book predates the
- * version field, which is what v1 books are: v1's additionalProperties
- * forbids the key, so no v1 book can carry it.
- */
-export function bookSchemaVersion(book) {
-  return book?.documentInfo?.["diya-gl:schemaVersion"] || "v1";
-}
+const ajv = new Ajv2020({ allErrors: true });
+addFormats(ajv);
+const validateBookSchema = ajv.compile(bookSchema);
+const validateLineSchema = ajv.compile(linesSchema);
 
 function formatAjvError(prefix, error) {
   return `${prefix}${error.instancePath || "/"} ${error.message}`;
@@ -68,16 +50,13 @@ function withIsoDates(value) {
 }
 
 /**
- * Validate a parsed book.toml against the published JSON Schema.
+ * Validate a parsed book.toml against the published diya-gl-book-v2 schema.
  * @param {Object} book - parsed book.toml (TOML dates as JS Date instances, as every TOML parser returns them)
- * @param {{version?: "v1"|"v2"}} [options] - defaults to the book's own diya-gl:schemaVersion, or v1 if absent
  * @returns {{valid: boolean, errors: string[]}}
  */
-export function validateBook(book, { version = bookSchemaVersion(book) } = {}) {
-  assertVersion(version);
-  const validate = compiledBook[version];
-  const valid = validate(withIsoDates(book));
-  const errors = valid ? [] : validate.errors.map((e) => formatAjvError("book", e));
+export function validateBook(book) {
+  const valid = validateBookSchema(withIsoDates(book));
+  const errors = valid ? [] : validateBookSchema.errors.map((e) => formatAjvError("book", e));
   return { valid, errors };
 }
 
@@ -97,21 +76,18 @@ function declaredIDs(entries, idField) {
 }
 
 /**
- * Validate a book's lines.jsonl entries against the published JSON Schema,
- * then against the book: every accountMainID has to name a declared
- * account, and every diya-gl:hpAgreement / diya-gl:assetID / diya-gl:memberID
- * has to name an entry on the book's own hpAgreements / fixedAssets /
- * members register. A register the book does not declare is not checked,
- * because a v1 book or a product subset with no such register carries no
- * lines that could name one either.
+ * Validate a book's lines.jsonl entries against the published
+ * diya-gl-lines-v2 schema, then against the book: every accountMainID has
+ * to name a declared account, and every diya-gl:hpAgreement /
+ * diya-gl:assetID / diya-gl:memberID has to name an entry on the book's own
+ * hpAgreements / fixedAssets / members register. A register the book does
+ * not declare is not checked, because a product subset with no such
+ * register carries no lines that could name one either.
  * @param {Array} lines - parsed lines.jsonl entries
  * @param {Object} book - parsed book.toml, for the referential checks
- * @param {{version?: "v1"|"v2"}} [options] - defaults to the book's own diya-gl:schemaVersion, or v1 if absent
  * @returns {{valid: boolean, errors: string[]}}
  */
-export function validateLines(lines, book, { version = bookSchemaVersion(book) } = {}) {
-  assertVersion(version);
-  const validate = compiledLine[version];
+export function validateLines(lines, book) {
   const errors = [];
 
   const accountCodes = declaredAccountCodes(book);
@@ -121,8 +97,8 @@ export function validateLines(lines, book, { version = bookSchemaVersion(book) }
 
   lines.forEach((line, index) => {
     const label = `line ${index + 1} (${line.entryNumber || "no entryNumber"})`;
-    if (!validate(line)) {
-      for (const e of validate.errors) errors.push(formatAjvError(`${label}: `, e));
+    if (!validateLineSchema(line)) {
+      for (const e of validateLineSchema.errors) errors.push(formatAjvError(`${label}: `, e));
     }
     if (line.accountMainID !== undefined && !accountCodes.has(line.accountMainID)) {
       errors.push(`${label}: accountMainID "${line.accountMainID}" is not declared in book.toml accounts`);

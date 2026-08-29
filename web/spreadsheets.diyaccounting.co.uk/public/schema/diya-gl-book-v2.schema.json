@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json",
   "title": "DIY Accounting GL-aligned Book Configuration (v2)",
-  "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 adds the tables a book needs to state opening balances, stock, debtors, creditors, the fixed asset register, hire purchase agreements, dividends, the register of members and registered charges, none of which v1 could hold. v1 is unchanged and stays served at its own URL.",
+  "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 adds the tables a book needs to state opening balances, stock, debtors, creditors, the fixed asset register, hire purchase agreements, dividends, the register of members and registered charges.",
   "type": "object",
   "required": ["documentInfo", "entityInformation", "accounts"],
   "additionalProperties": false,
@@ -61,12 +61,6 @@
         "entriesComment": {
           "type": "string",
           "description": "gl-cor:entriesComment — Free text note about this book"
-        },
-        "diya-gl:schemaVersion": {
-          "type": "string",
-          "enum": ["v1", "v2"],
-          "default": "v2",
-          "description": "diya-gl: extension — Which published diya-gl schema this book conforms to. A v1 reader has to reject a v2 book, because debitCreditCode becomes required on journal lines and the new top-level tables are not part of v1's closed additionalProperties; this is how a book says which one it means."
         },
         "diya-gl:vatStaggerGroup": {
           "type": "integer",
@@ -343,6 +337,7 @@
         "stock": { "type": "number", "minimum": 0 },
         "tradeDebtors": { "type": "number", "minimum": 0 },
         "tradeCreditors": { "type": "number", "minimum": 0 },
+        "longTermDebtors": { "type": "number", "minimum": 0 },
         "bankAccounts": {
           "type": "object",
           "description": "Opening balance per bank account, keyed by the account code declared in accounts.bank.",
@@ -354,12 +349,15 @@
         "payeDue": { "type": "number" },
         "vatDue": { "type": "number" },
         "cisDue": { "type": "number" },
+        "netWagesDue": { "type": "number" },
+        "wageDeductionsDue": { "type": "number" },
         "corporationTaxDue": { "type": "number" },
         "dividendsDue": { "type": "number" },
         "directorsLoan": { "type": "number" },
         "longTermCreditors": { "type": "number" },
         "shareCapital": { "type": "number", "minimum": 0 },
-        "retainedEarnings": { "type": "number" }
+        "retainedEarnings": { "type": "number" },
+        "capitalReserves": { "type": "number" }
       }
     },
 
@@ -390,10 +388,10 @@
 
     "fixedAssets": {
       "type": "array",
-      "description": "diya-gl: extension — The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates.",
+      "description": "diya-gl: extension — The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates. class is optional: the Basic Sole Trader and Taxi Driver Fixed Assets sheets carry a flat list with no asset-class blocks, unlike the Self Employed and Company Schedule.",
       "items": {
         "type": "object",
-        "required": ["assetID", "class", "cost"],
+        "required": ["assetID", "cost"],
         "additionalProperties": false,
         "properties": {
           "assetID": {
@@ -402,7 +400,8 @@
           },
           "class": {
             "type": "string",
-            "enum": ["landBuildings", "plantMachinery", "fixturesFittings", "computerTechnology", "motorVehicles"]
+            "enum": ["landBuildings", "plantMachinery", "fixturesFittings", "computerTechnology", "motorVehicles"],
+            "description": "The Schedule block this asset belongs to (Self Employed and Company only)."
           },
           "description": { "type": "string" },
           "cost": { "type": "number", "minimum": 0 },
