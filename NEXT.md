@@ -9,7 +9,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 | What | Where | Status |
 |---|---|---|
 | vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, 1567 tests; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
-| fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | `sp-fixture` off `claude/wave-3` | started |
+| fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | merged, worktree removed | landed on `claude/wave-3` `a19160f0`, blast radius running; SE profit 144,715 → 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
 | sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
 
 Wave 3 integrates on `claude/wave-3` (from main `038d0f37`, after the operator's generate refresh); it rebases onto the post-deploy green main (deploy 33252551051 at `79eecc50`) before its CI. Every later PR branch starts from a rebase onto the post-deploy green main.
@@ -41,11 +41,10 @@ Checks, indicators and docs:
 - [ ] **SA103F report indicator** — the SE report now carries the SA103F section; add an
   indicator in `report-indicators.js` explaining the box 30/46 divergence between the full
   and short returns, with its `judge-reconciliation.test.js` expectation.
-- [ ] **HP agreements: SE counter-leg and Schedule additions** — the fixture posts the HP
-  interest and repayments through the Ltd-only savings account, so SE's P&L interest tie
-  carries no HP money; and the two financed items are not on the Schedule as additions.
-  Test: an SE-visible HP leg that keeps `Income Tax!E5` anchored, and Schedule rows for
-  the financed tooling with the HP creditor tying to `HPfinance!E2`.
+- [ ] **HP agreements: SE counter-leg and Schedule additions** — code-complete on
+  `claude/wave-3` (HP charges and repayments through account 1200 so SE's finance line
+  carries them; the financed tooling on the Schedule as `fa` purchases; trade creditors
+  checked from the scenario). Closes when the wave-3 regeneration lands.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
@@ -58,13 +57,14 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** (turnover/README aligned in wave 1: the fixture was
-  right) — the CT payment (4,500) and CIS remittances are bank-coded `RP` so they land
-  in the PAYE creditor; recoding to `RT`/`RC` throws in the SE writer (`se.js:61` analyses
-  no payment under `RV`/`RT`/`RC`), so the SE writer needs those codes first. The Innovate
-  UK grant receipt is coded `RV` (VAT creditor) instead of `DR`; recoding needs the
-  hand-written `closingDebtors` list in `extract-scenarios.js:94` to derive from the
-  fixture.
+- [ ] **Ltd fixture remainders** — CT and CIS now coded `RT`/`RC`, the grant `DR`, closing
+  debtors derived from the fixture (code-complete on `claude/wave-3`). Still open: the four
+  VAT payments stay coded `RP`, so the PAYE creditor carries a 40,682.17 debit that
+  recoding to `RV` takes to nil; nothing writes the master data's `diya-gl:cisDeduction`
+  into `Purchases!AK`, so the CIS creditor reads as a 1,600 debit (a warning carries the
+  figure) — needs a scenario field and a `cellWrites` change; and
+  `web/.../schema/diya-gl-lines-v1.schema.json` omits bank codes `BB`, `RT`, `RC` and the
+  `diya-gl:hpAgreement` field the fixture uses (nothing validates against it).
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
