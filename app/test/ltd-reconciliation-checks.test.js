@@ -249,7 +249,11 @@ describeCalc(
       expect(results.PubBalSht.E11).toBe(10400);
       expect(results.Stock.D6).toBe(10000);
       expect(results.Stock.AB30).toBe(6000);
-      expect(results.Stock.Z30).toBe(-4000);
+      // 10,000 opening plus 5,450 of materials bought, less 3% of the 311,600
+      // of net product A sales the stock sheet reckons those materials went
+      // out inside, leaves 6,102 calculated against a count of 6,000.
+      expect(results.Stock.D30).toBeCloseTo(6102, 6);
+      expect(results.Stock.Z30).toBeCloseTo(-102, 6);
     });
 
     it("fails the published stock tie when PubBalSht E10 is corrupted via JSZip", async () => {
@@ -335,13 +339,14 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
-    it("fails the register tie when RegisterofMembers G1 is corrupted via JSZip", async () => {
+    it("fails the register tie and the report's share line when RegisterofMembers G1 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "RegisterofMembers", "G1", 0);
       expect(value).toBe(0);
-      const name = "RegisterofMembers: nominal value x shares issued = PubBalSht share capital";
       const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!RegisterofMembers", "G1", value);
-      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name]);
+      expect(failureNames(corrupted)).toEqual([
+        "RegisterofMembers: nominal value x shares issued = PubBalSht share capital",
+        "Directors' report: ordinary shares issued = register of members total",
+      ]);
     });
 
     it("fails one month's tie when a single MnthP&L month cell is corrupted via JSZip", async () => {
@@ -762,6 +767,170 @@ describeCalc(
       const nettingRow = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases c");
       expect(nettingRow.residue).toBeCloseTo(-drift, 6);
       expect(failureNames(corrupted)).toEqual([categoryNettingCheckName(nettingRow)]);
+    });
+
+    it("quotes the published statements in the directors' report", () => {
+      const report = results.Report;
+      const publishedPL = results["PubP&L"];
+      expect(report.E87).toBeCloseTo(publishedPL.F9, 6);
+      expect(report.H87).toBe(publishedPL.B9);
+      expect(report.D89).toBeCloseTo(publishedPL.F18 / publishedPL.F9, 9);
+      expect(report.F22).toBe(results.PubBalSht.D2);
+      expect(report.I95).toBe(results["Companysecretary.xlsx!RegisterofMembers"].G1);
+      expect(report.F97).toBe(results["Companysecretary.xlsx!RegisterofMembers"].G3);
+    });
+
+    it("leaves last year's margin blank while the prior year column is empty", () => {
+      expect(results["PubP&L"].B9).toBe(0);
+      expect(String(results.Report.I89).trim()).toBe("");
+    });
+
+    it("files a nil dividend while nothing writes the board minute", () => {
+      expect(results["Companysecretary.xlsx!Boardmeeting"].E4).toBeNull();
+      expect(results.Report.D94).toBe(0);
+
+      // The bank paid 15,000 of dividends and the published accounts carry
+      // none, because the line reads a trial balance row no month column
+      // feeds.
+      const warning = warningNamed(checks, "Published P&L: dividends published against the dividends the year paid");
+      expect(warning.pass).toBe(false);
+      expect(warning.actual).toBe(0);
+      expect(warning.expected).toBe(15000);
+    });
+
+    it("fails the report's turnover when Report E87 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Report", "E87", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Report", "E87", value);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: sales turnover = published P&L turnover"]);
+    });
+
+    it("fails the report's prior year turnover when Report H87 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Report", "H87", 99);
+      expect(value).toBe(99);
+      const corrupted = checksWithCorruptedCell("Report", "H87", value);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: last year's turnover = published P&L prior year column"]);
+    });
+
+    it("fails the report's trading margin when the published gross profit is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubP&L", "F18", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("PubP&L", "F18", value);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: trading margin = published gross profit over turnover"]);
+    });
+
+    it("fails the report's year end when Report F22 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Report", "F22", 46000);
+      expect(value).toBe(46000);
+      const corrupted = checksWithCorruptedCell("Report", "F22", value);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: year end = published balance sheet date"]);
+    });
+
+    it("fails the report's dividend line when Report D94 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Report", "D94", 5000);
+      expect(value).toBe(5000);
+      const corrupted = checksWithCorruptedCell("Report", "D94", value);
+      expect(failureNames(corrupted)).toEqual(["Directors' report: dividend declared = the board minute"]);
+    });
+
+    it("fails the published turnover tie when the management turnover is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B9", 300000);
+      expect(value).toBe(300000);
+      const corrupted = checksWithCorruptedCell("MnthP&L", "B9", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Total Sales",
+        "P&L: Gross = Turnover - CoS",
+        "Published P&L: turnover = management P&L turnover",
+      ]);
+    });
+
+    it("dates the payroll calendar from 6 April and opens each payroll month on its own tax week", () => {
+      const calendar = results["Payslips.xlsx!Admin"];
+      // Month 6 opens tax week 22, twenty weeks and five days after 6 April.
+      expect(calendar.B2).toBe(45753);
+      expect(calendar.C147).toBe(22);
+      expect(calendar.D147).toBe(6);
+      expect(calendar.F147).toBe(1);
+      expect(calendar.A147).toBe("Sep");
+      expect(calendar.B147).toBe(calendar.B2 + 145);
+    });
+
+    it("fails the calendar's tax week when Payslips Admin C147 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Admin", "C147", 21);
+      expect(value).toBe(21);
+      const corrupted = checksWithCorruptedCell("Payslips.xlsx!Admin", "C147", value);
+      expect(failureNames(corrupted)).toEqual(["Payslips calendar: payroll month 6 opens tax week 22"]);
+    });
+
+    it("fails the calendar's opening date when Payslips Admin B147 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Admin", "B147", 45000);
+      expect(value).toBe(45000);
+      const corrupted = checksWithCorruptedCell("Payslips.xlsx!Admin", "B147", value);
+      expect(failureNames(corrupted)).toEqual(["Payslips calendar: payroll month 6 opens on the first day of tax week 22"]);
+    });
+
+    it("fails the calendar's month numbering when Payslips Admin D147 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Admin", "D147", 7);
+      expect(value).toBe(7);
+      const corrupted = checksWithCorruptedCell("Payslips.xlsx!Admin", "D147", value);
+      expect(failureNames(corrupted)).toEqual(["Payslips calendar: the payroll months are numbered one to twelve in order"]);
+    });
+
+    it("fails the calendar's week-in-month column when Payslips Admin F147 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Admin", "F147", 2);
+      expect(value).toBe(2);
+      const corrupted = checksWithCorruptedCell("Payslips.xlsx!Admin", "F147", value);
+      expect(failureNames(corrupted)).toEqual(["Payslips calendar: every payroll month opens on its own first week"]);
+    });
+
+    it("measures the year-end seed against the year end the package was generated for", () => {
+      const onItsOwnYearEnd = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax, "2026-03-31");
+      expect(failureNames(onItsOwnYearEnd)).toEqual([]);
+
+      const onAnotherYearEnd = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax, "2026-04-30");
+      expect(failureNames(onAnotherYearEnd)).toEqual(["Admin: year-end seed = the package's own year end"]);
+    });
+
+    it("registers the charge over the company's assets and carries the loan it secures", () => {
+      const charges = results["Companysecretary.xlsx!Charges&Debentures"];
+      expect(charges.C2).toBe(30000);
+      expect(results.PubBalSht.E30).toBe(25000);
+    });
+
+    it("fails the charge coverage when the directors valuation is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "Charges&Debentures", "C2", 10000);
+      expect(value).toBe(10000);
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!Charges&Debentures", "C2", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Charges register: the balance sheet carries a creditor falling due after more than one year",
+      ]);
+    });
+
+    it("fails the secured loan and its coverage when PubBalSht E30 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "E30", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("PubBalSht", "E30", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Published balance sheet: creditors due after more than one year = the secured loan",
+        "Charges register: the balance sheet carries a creditor falling due after more than one year",
+      ]);
+    });
+
+    it("fails the stock movement when the calculated closing stock is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Stock", "D30", 10000);
+      expect(value).toBe(10000);
+      const corrupted = checksWithCorruptedCell("Stock", "D30", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Stock: loss adjustment = count - calculated",
+        "Stock: calculated stock = opening + materials bought - materials sold",
+      ]);
+    });
+
+    it("fails the opening long-term creditor when TrialBalance D40 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "D40", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "D40", value);
+      expect(failureNames(corrupted)).toEqual(["Trial Balance opening: creditors due after more than one year"]);
     });
   },
   900000,
