@@ -35,10 +35,13 @@ Trade: IT consultancy and software development
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 39000 | 39000 | 0 | PASS |
 | P&L: Taxable Profit = Net Profit - Capital Allowances | 226508 | 226508 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12500 | 12500 | 0 | PASS |
+| Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Additional Rate = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Basic Band End = tax data | 37500 | 37500 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37501 | 37501 | 0 | PASS |
+| Admin: Higher Band End = tax data | 150000 | 150000 | 0 | PASS |
 | Admin: NI Class 2 Rate = tax data | 3.05 | 3.05 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.09 | 0.09 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 9500 | 9500 | 0 | PASS |
@@ -53,18 +56,22 @@ Trade: IT consultancy and software development
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 85000 | 85000 | 0 | PASS |
-| Income Tax | 78103 | 78103 | 0 | PASS |
+| Income Tax | 86929 | 86928.6 | -0.39999999999417923 | PASS |
 | NI Class 4 (lower) | 3645 | 3645 | 0 | PASS |
-| Total Tax + NI | 85278 | 85278.16 | +0.16000000000349246 | PASS |
+| Total Tax + NI | 94104 | 94103.76 | -0.2400000000052387 | PASS |
+| Tax: Personal allowance after taper | 0 | 0 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
-| Tax: sheet splits the bands at the higher band start | 37501 | 37501 | 0 | PASS |
-| Tax at basic rate | 7500 | 7500.2 | +0.1999999999998181 | PASS |
-| P&L: tax charged = Income Tax sheet total less CIS deducted | 78103 | 78103 | 0 | PASS |
-| Tax at higher rate | 70603.2 | 70602.8 | -0.39999999999417923 | PASS |
-| Tax: Taxable = Profit - Allowance | 214008 | 214008 | 0 | PASS |
-| Tax: IT = Basic + Higher | 78103 | 78103 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 85278.16 | 85278.16 | 0 | PASS |
+| Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
+| Tax: sheet splits the basic and higher bands at the basic band end | 37500 | 37500 | 0 | PASS |
+| Tax: sheet splits the higher and additional bands at the higher band end | 150000 | 150000 | 0 | PASS |
+| Tax at basic rate | 7500 | 7500 | 0 | PASS |
+| P&L: tax charged = Income Tax sheet total less CIS deducted | 86928.6 | 86928.6 | 0 | PASS |
+| Tax at higher rate | 45000 | 45000 | 0 | PASS |
+| Tax at additional rate | 34428.6 | 34428.6 | 0 | PASS |
+| Tax: Taxable = Profit - Allowance | 226508 | 226508 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 86928.6 | 86928.6 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 94103.76000000001 | 94103.76 | -1.4551915228366852e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 409900 | 409900 | 0 | PASS |
 | SA103S: Net profit close to P&L Net | 265508 | 265508 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 226508 | 226508 | 0 | PASS |
@@ -124,9 +131,9 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 39,000 |
 | Taxable Profit | 226,508 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income received | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 78,103 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 86,928.6 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 7,175.16 |
-| Net Income After Tax | 141,229.84 |
+| Net Income After Tax | 132,404.24 |
 
 ## Monthly Sales
 
@@ -150,18 +157,21 @@ Trade: IT consultancy and software development
 | | Amount |
 |---|------:|
 | Profit from Self Employment | 226,508 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,500 |
-| Taxable Income | 214,008 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 0 |
+| Taxable Income | 226,508 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,501 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 7,500.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 70,602.8 |
-| **Total Income Tax** | 78,103 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 7,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 45,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 150,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 34,428.6 |
+| **Total Income Tax** | 86,928.6 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,645 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 3,530.16 |
-| **Total Tax + NI** | 85,278.16 |
+| **Total Tax + NI** | 94,103.76 |
 
 ## Self Assessment (SA103S)
 
@@ -239,10 +249,13 @@ Trade: IT consultancy and software development
 | | Amount |
 |---|------:|
 | Personal Allowance | 12,500 |
+| Personal Allowance Taper Threshold | 100,000 |
 | Basic Rate | 0.2 |
 | Higher Rate | 0.4 |
+| Additional Rate | 0.45 |
 | Basic Band End | 37,500 |
 | Higher Band Start | 37,501 |
+| Higher Band End | 150,000 |
 | NI Class 2 Rate | 3.05 |
 | NI Class 4 Lower Rate | 0.09 |
 | NI Class 4 Lower Limit | 9,500 |
@@ -296,9 +309,9 @@ Trade: IT consultancy and software development
 | C26 | Capital Allowances | 39000 | tax.capitalAllowances |
 | C28 | Taxable Profit | 226508 | gl-cor:amount (taxableProfit) |
 | C30 | Other Income received | 0 | gl-cor:amount (otherIncomeReceived) |
-| C32 | Income Tax less CIS deducted | 78103 | tax.incomeTax (net of CIS) |
+| C32 | Income Tax less CIS deducted | 86928.6 | tax.incomeTax (net of CIS) |
 | C33 | NI Class 4 | 7175.16 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 141229.84 | gl-cor:amount (netIncome) |
+| C35 | Net Income After Tax | 132404.24 | gl-cor:amount (netIncome) |
 | D4 | Apr | 33400 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 32920 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 35200 | gl-cor:amount (monthlySales.jun) |
@@ -317,18 +330,21 @@ Trade: IT consultancy and software development
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | E5 | Profit from Self Employment | 226508 | gl-cor:amount (profitSE) |
-| E6 | Less: Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 214008 | gl-cor:amount (taxableIncome) |
+| E6 | Less: Personal Allowance | 0 | tax.incomeTax.personalAllowance |
+| E7 | Taxable Income | 226508 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
-| C9 | Basic band ceiling the sheet applies | 37501 | tax.incomeTax.higherBandStart (applied) |
+| C9 | Basic band ceiling the sheet applies | 37500 | tax.incomeTax.basicBandEnd (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| E8 | Tax at Basic Rate | 7500.2 | tax.incomeTax.basicRate |
-| E9 | Tax at Higher Rate | 70602.8 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 78103 | tax.incomeTax (total) |
-| E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
+| E8 | Tax at Basic Rate | 7500 | tax.incomeTax.basicRate |
+| E9 | Tax at Higher Rate | 45000 | tax.incomeTax.higherRate |
+| C10 | Additional rate threshold the sheet applies | 150000 | tax.incomeTax.higherBandEnd (applied) |
+| D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
+| E10 | Tax at Additional Rate | 34428.6 | tax.incomeTax.additionalRate |
+| E11 | **Total Income Tax** | 86928.6 | tax.incomeTax (total) |
+| E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
 | E15 | NI Class 4 (lower band) | 3645 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 3530.16 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 85278.16 | gl-cor:taxAmount (totalTaxNI) |
+| E18 | **Total Tax + NI** | 94103.76 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
@@ -401,10 +417,13 @@ Trade: IT consultancy and software development
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | N4 | Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
+| N5 | Personal Allowance Taper Threshold | 100000 | tax.incomeTax.personalAllowanceTaperThreshold |
 | N7 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N8 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| N9 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
 | M12 | Basic Band End | 37500 | tax.incomeTax.basicBandEnd |
 | N13 | Higher Band Start | 37501 | tax.incomeTax.higherBandStart |
+| N14 | Higher Band End | 150000 | tax.incomeTax.higherBandEnd |
 | L17 | NI Class 2 Rate | 3.05 | tax.nationalInsurance.class2Rate |
 | L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4LowerRate |
 | N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerLimit |
