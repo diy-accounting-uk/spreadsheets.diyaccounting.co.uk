@@ -15,9 +15,13 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
 | vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
-| template-design | design doc `PLAN_TEMPLATE_SURGERY.md` for the shipped-template items (SE/BST income tax, Ltd CT and CT600, Fixedassets NBV, HPfinance #REF!, Salesinvoice G6, expensesform mileage) | `sp-template-design` | started |
+| template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
+| income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; bst.js CIS sign | `sp-income-tax` off `claude/wave-2` | started |
+| ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
+| salesinvoice (wave 2) | Salesinvoice G6/H6; formula-presence guard over the Salesinvoice sheets | `sp-salesinvoice` off `claude/wave-2` | started |
+| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | waiting for ltd-checks (shared fixture master data) |
 
-Wave 2 (after the design lands): ltd-ct, se-tax, bst-tax, fixed-assets (+HP checks), salesinvoice (+formula presence), ltd-writes (Boardmeeting!E4, mileage rate).
+Still to dispatch: ltd-writes (Boardmeeting!E4 from the scenario) after ltd-ct lands.
 
 ## Open items
 
@@ -84,7 +88,7 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
   monthly payment from `#REF!`; a customer's second agreement computes nothing.
   Test: after repair, row 10+ formulas mirror row 8's; the new HP checks pass.
 - [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — the sheet
-  works basic and higher only, so £265,508 of profit charges 40% all the way up.
+  works basic and higher only, so £226,508 of profit charges 40% all the way up.
   Test: hand-computed statutory tax on the Precision Code profit becomes a hard-pass
   check; the current judge note about the limitation is removed.
 - [ ] **Ltd CorporationTax: marginal-relief step** — plan of record:
@@ -93,8 +97,9 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
   where statute gives £35,342.77. Test: the existing warning carrying the statutory
   figure converts to a hard-pass check; EJ91 and the CT600 ties stay green.
 - [ ] **Ltd CT600: wire row 128 (boxes 53-56)** — the form's second financial-year row
-  reads nothing, so box 63 files the first tax row alone (£13,995.22 against a
-  £28,028.78 charge). Test: box 63 equals the working sheet's K35; the "box 56 is
+  reads nothing, so box 63 files the first tax row alone (£14,014.39 against a
+  £28,028.78 charge on the 31 March 2026 package); underneath, Admin!L7/N7 name the year
+  after the period so the two tax rows split the profit 365/365. Test: box 63 equals the working sheet's K35; the "box 56 is
   blank" hard check inverts to assert the wired value.
 - [ ] **Salesinvoice Product Details G6 margin (Ltd and SE templates)** — G6 holds the
   margin-percentage formula where the margin belongs; H6 is empty. Test: G6 = C6-F6,
