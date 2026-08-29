@@ -193,6 +193,20 @@ describeCalc(
       expect(q1).toBeDefined();
       expect(q1.G7).toBeDefined();
     });
+
+    it("VAT Q5: declares the quarter after the year end on its own boxes", () => {
+      const q5 = results["Vat.xlsx!VATQtr5"];
+      expect(q5).toBeDefined();
+      // The fifth return ends three months past the year end, on 30 June.
+      const end = new Date(Date.UTC(1899, 11, 30) + q5.G5 * 24 * 60 * 60 * 1000);
+      expect(end.getUTCMonth()).toBe(5);
+      expect(end.getUTCDate()).toBe(30);
+      // 6600 gross sales and 1080 gross purchases on the three straddling
+      // sheet pairs dated April, May and June after the year end.
+      expect(q5.G9).toBeCloseTo(1100, 6);
+      expect(q5.G15).toBeCloseTo(180, 6);
+      expect(q5.G23).toBeCloseTo(900, 6);
+    });
   },
   300000,
 );

@@ -1930,17 +1930,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // package was generated for and whatever period a reader picks from the
   // dropdown.
   //
-  // G5 is dated in the package's own year, the scenario's transactions in
-  // the base year cellWrites copies straight through, so the two only line
-  // up on the one package whose year end matches the fixture. Both books
-  // run April to March, so shifting the window by whole accounting years
-  // brings it onto the scenario's dates while leaving the months it covers
-  // -- and so the quarter it tests -- exactly as the generator set them.
+  // G5 is dated on the package's own period, the scenario's transactions on
+  // the period its own book covers, and cellWrites copies those dates
+  // through unchanged. So the window moves onto the scenario by the gap
+  // between the two period frames: the whole months from the package's first
+  // accounting month to the scenario's. Admin B4 is the book's tax year
+  // start, and an SE year starts on 6 April, so the month it falls in is the
+  // first of the twelve month tabs. Every window shifts by that one gap,
+  // wherever it sits, so a quarter reaching past the year end -- or before it
+  // -- is checked on the periods it actually declares.
   const accountingYearOf = (d) => (d.getUTCMonth() >= 3 ? d.getUTCFullYear() : d.getUTCFullYear() - 1);
   const scenarioTransactionYears = [...Object.values(expected.sales || {}), ...Object.values(expected.purchases || {})]
     .flat()
     .map((tx) => accountingYearOf(parseDate(tx.date)));
   const scenarioAccountingYear = scenarioTransactionYears.length ? Math.min(...scenarioTransactionYears) : null;
+  const bookYearStartSerial = num(results.Admin?.B4);
+  const scenarioYearStart = scenarioAccountingYear === null ? null : new Date(Date.UTC(scenarioAccountingYear, 3, 1));
+  const monthShift =
+    scenarioYearStart && bookYearStartSerial ? monthsBetween(excelSerialToUtcDate(bookYearStartSerial), scenarioYearStart) : null;
 
   for (let q = 1; q <= 5; q++) {
     const qtr = results[`Vat.xlsx!VATQtr${q}`];
@@ -1948,8 +1955,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // Box 3 total = box 1 + EU acquisitions (G11, always a static 0 in this
     // template -- no formula, never generator-written), and box 5 = box 3 -
-    // box 4. Both hold regardless of whether the quarter carries fixture
-    // data, so they run for Q5 (the straddling period) too.
+    // box 4.
     check(`VAT Q${q}: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)`, qtr.G13 || 0, (qtr.G9 || 0) + (qtr.G11 || 0));
     check(`VAT Q${q}: box 5 net due (G17) = box 3 (G13) - box 4 (G15)`, qtr.G17 || 0, (qtr.G13 || 0) - (qtr.G15 || 0));
 
@@ -1960,25 +1966,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // rollforward is that it falls after the quarter-end.
     check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
 
-    // Q5's window is the quarter after the accounting year, so it holds the
-    // three straddling periods past the year end and none of the year's own
-    // months. The period-frame shift below moves a window onto the scenario's
-    // own year, which only makes sense for a window inside that year, so Q5's
-    // values are anchored on the Vatinterface rows instead (see the block
-    // after this loop). The identities above hold for every quarter.
-    if (q === 5) continue;
+    // The scenario has to name a period before a window can be moved onto it.
+    if (monthShift === null) continue;
 
-    // Quarter window: the 3 calendar months ending at G5's own month. Q1-Q4
-    // step a quarter at a time, so each window is three whole months.
+    // Quarter window: the three calendar months ending at G5's own month,
+    // moved onto the scenario's period frame. Day 0 of the month after is
+    // that month's last day, so the shifted window still ends on a month end
+    // in a leap year.
     const bookEnd = excelSerialToUtcDate(qtr.G5);
-    const bookStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() - 2, 1));
-    // Q1-Q4 cover the twelve accounting months once each, so every window sits
-    // inside the book's own year and its start month dates that year.
-    const yearShift = scenarioAccountingYear === null ? 0 : scenarioAccountingYear - accountingYearOf(bookStart);
-    const qStart = new Date(Date.UTC(bookStart.getUTCFullYear() + yearShift, bookStart.getUTCMonth(), 1));
-    // Day 0 of the next month is this month's last day, so the shifted
-    // window still ends on a month end in a leap year.
-    const qEnd = new Date(Date.UTC(bookEnd.getUTCFullYear() + yearShift, bookEnd.getUTCMonth() + 1, 0));
+    const qStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() + monthShift - 2, 1));
+    const qEnd = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() + monthShift + 1, 0));
     const inQuarter = (dateStr) => {
       const d = parseDate(dateStr);
       return d >= qStart && d <= qEnd;
@@ -2001,8 +1998,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
     }
-    // A window that runs past the year end picks up the straddling entry
-    // sheets alongside the year's own months.
+    // Periods outside the twelve accounting months are entered on the
+    // straddling sheets rather than a month tab, so a window that reaches
+    // past the year end or before it picks those entries up as well.
     for (const entry of expected.vat_straddling_sales || []) {
       if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
@@ -2275,6 +2273,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 function excelSerialToUtcDate(serial) {
   const epoch = Date.UTC(1899, 11, 30);
   return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
+}
+
+// Whole months from one date's month to another's, ignoring the day of the
+// month. Negative when the second date comes first.
+function monthsBetween(from, to) {
+  return (to.getUTCFullYear() - from.getUTCFullYear()) * 12 + (to.getUTCMonth() - from.getUTCMonth());
 }
 
 // The VAT periods the interface carries, one per row, with the VAT on each
