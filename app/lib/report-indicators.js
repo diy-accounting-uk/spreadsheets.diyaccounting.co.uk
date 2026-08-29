@@ -100,7 +100,8 @@ export function failedChecks(report) {
 
 export function checkActual(report, name) {
   const row = report.checks.find((check) => check.check === name);
-  return row ? toNumber(row.actual) : null;
+  if (!row) throw new Error(`Report has no check named ${name}`);
+  return toNumber(row.actual);
 }
 
 export function value(report, section, label) {

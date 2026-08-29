@@ -23,7 +23,7 @@ import {
   vatRegistrationOf,
   verdictRecord,
 } from "../bin/judge-reconciliation.js";
-import { buildIndicators, checkCounts, parseReport, requireValue, toNumber, value } from "../lib/report-indicators.js";
+import { buildIndicators, checkActual, checkCounts, parseReport, requireValue, toNumber, value } from "../lib/report-indicators.js";
 
 const ROOT = resolve(fileURLToPath(import.meta.url), "..", "..", "..");
 const REPORTS = resolve(ROOT, "reports");
@@ -163,6 +163,16 @@ describe("requireValue", () => {
   it("throws rather than dropping an indicator when the report loses a label", () => {
     const parsed = parseReport("## Published Balance Sheet\n\n| | Amount |\n|---|---:|\n| Net Assets | 10 |\n");
     expect(() => requireValue(parsed, "Published Balance Sheet", "Shareholders' Funds")).toThrow(/no Shareholders' Funds/);
+  });
+});
+
+describe("checkActual", () => {
+  it("reads the actual column of a named compliance check", () => {
+    expect(checkActual(parseReport(report("ltdVat")), "Trial Balance: audit accuracy (EJ91)")).toBe(0);
+  });
+
+  it("throws rather than dropping an indicator when the check is renamed away", () => {
+    expect(() => checkActual(parseReport(REPORT), "Trial Balance: audit accuracy (EJ91)")).toThrow(/no check named/);
   });
 });
 
