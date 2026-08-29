@@ -11,7 +11,9 @@ import JSZip from "jszip";
 import { readFileSync } from "fs";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { runSpreadsheet, buildSheetMap } from "../lib/spreadsheet-runner.js";
+import { runSpreadsheet, buildSheetMap, hasLibreOffice } from "../lib/spreadsheet-runner.js";
+
+const describeCalc = hasLibreOffice() ? describe : describe.skip;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -100,7 +102,7 @@ describe.each(Object.entries(TEMPLATES))("%s/Salesinvoice.xlsx Product Details f
 // LibreOffice actually recalculates it. One sample row from each shared
 // group (the si=0/si=2 group at row 6-66, and the si=1/si=3 group at
 // row 67-99), in each product's template.
-describe.each(Object.entries(TEMPLATES))(
+describeCalc.each(Object.entries(TEMPLATES))(
   "%s/Salesinvoice.xlsx Product Details recalculation",
   (product, templatePath) => {
     it(

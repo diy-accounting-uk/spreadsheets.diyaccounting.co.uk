@@ -262,6 +262,14 @@ role = "Company Secretary"
 shares = 15
 appointed = 2022-03-01
 
+# --- Dividend declared by the board ---
+# The minute the directors' report quotes. The board declares the year's
+# dividend in one resolution; the bank pays it in four instalments.
+
+[dividend]
+boardMeeting = 2026-03-31
+declared = 15000
+
 # --- Employees on payroll ---
 
 [[employees]]

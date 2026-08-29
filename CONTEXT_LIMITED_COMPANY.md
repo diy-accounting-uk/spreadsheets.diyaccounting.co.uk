@@ -463,7 +463,7 @@ the month columns and the working-sheet rows the checks need:
 - **CorporationTax:** K5, I7, I8, K10, K12, K20, K22, K24, K26, K28, K35, K39, plus I15-I18 (allowance lines) and A33-A35/F33/F34/G33/G34/I33/I34/K37 (the two dated tax rows)
 - **PubP&L, PubBalSht, PubNotes, Report, CT600, Stock, TrialBalance, OpenAccounts, Admin, WagesInterface:** the cells in the tables below
 
-Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals, the five VATQtr sheets and Vatinterface, the Fixedassets Schedule and FAreconciliation, Payslips Payment and Admin, the four bank workbooks' closing balances, and Companysecretary's RegisterofMembers, Boardmeeting and Charges&Debentures.
+Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals, the five VATQtr sheets and Vatinterface, the Fixedassets Schedule and FAreconciliation, Payslips Payment and Admin, the four bank workbooks' closing balances, and Companysecretary's RegisterofMembers (F1, G1 and each member row's A and G), Boardmeeting (F2, E4) and Charges&Debentures.
 
 ### Compliance checks
 
@@ -482,8 +482,13 @@ Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals
 | CT600: marginal rate relief = the working sheet's relief | CT600 Y133, CorporationTax L33, L34 | Box 64 |
 | CT600: tax net of marginal relief = the working sheet's charge | CT600 Y135, CorporationTax K35 | Box 65 |
 | Expenses form Month NN: mileage rate = tax data | expensesform.xlsx Month 01-12 C30 | `mileage.higher_rate_pence` (tolerance 0.0001) |
-| Published P&L: the prior year column is empty when no comparatives are entered | PubP&L B54 | Warning. `OpenAccounts!E48` reads this year's opening stock, so the prior year column publishes a profit of that size |
-| Published P&L: dividends published against the dividends the year paid | PubP&L F52, the scenario's `DV` bank payments | Warning. `EJ48` has no month column feeding it, so a year that paid dividends publishes none |
+| Published P&L: prior year closing stock / stock movement / retained profit while no comparatives are entered | OpenAccounts E48, PubP&L B14, B54 | Nil while the prior year block on OpenAccounts is empty |
+| Register of members: row N names / holds | RegisterofMembers A3-A19, G3-G19 | Each row against the scenario's `[[members]]` |
+| Directors' report: first / second shareholder named | Report A97, A98, the scenario's `[[members]]` | The report prints the first two members, and a blank second line when there is only one |
+| Board minute: dividend declared | Boardmeeting E4, the scenario's `[dividend]` | The minute carries the declaration |
+| Board minute: meeting date = the scenario's board meeting | Boardmeeting F2, Admin F21, the scenario's `[dividend]` | The minute's date on the period frame the book carries |
+| Published P&L: dividends appropriated = the dividend the board declared | PubP&L F52, the scenario's `[dividend]` | The appropriation line publishes the declaration |
+| Trial Balance: dividends creditor = opening plus declared less paid | TrialBalance EJ31, the opening balance, the scenario's `[dividend]` and its `DV` bank payments | The creditor carries what the members are still owed |
 | Directors' report figures | Report F22, E87, H87, D89, I89, D94, I95, F97, F98 | Each against the statement or register it reads |
 | Payslips calendar | Payslips Admin B2 and each payroll month's opening row | The tax calendar: week 1 the five days from 6 April, seven-day weeks after it, months of four, four and five weeks |
 | Charges register: the balance sheet carries a creditor falling due after more than one year | Charges&Debentures C2-C6, PubBalSht E30 | The secured creditor is above zero and no more than the directors valuation of the assets charged |
@@ -515,9 +520,12 @@ Column F is this year, column B the prior year comparative. The cells below are 
 
 D3 carries the year end (`=Admin!B32`) and E5 the period end the directors' report quotes.
 
-The prior-year column has a trap: `OpenAccounts!E48` ("Less Closing Stock") is a formula reading
-`E15`, this year's opening stock, so a book with no prior-year comparatives still publishes a
-negative prior-year cost of sales and a gross profit equal to the opening stock.
+The prior-year column comes from the "PREVIOUS YEAR PROFIT & LOSS ACCOUNT" block on
+OpenAccounts, rows 43 to 85, which the reader types in. `E48` ("Less Closing Stock") is the one
+cell the template fills for them: `IF(COUNT(E43:E47,E49:E76,E80:E85)=0,0,E15)`, this year's
+opening stock, because last year closed on whatever this year opened with. The COUNT guard keeps
+a book with no comparatives from publishing a negative prior-year cost of sales and a gross
+profit the size of its opening stock.
 
 ### Published Balance Sheet (PubBalSht) — FRS 102
 
@@ -643,14 +651,16 @@ either way.
 
 | Sheet | Holds |
 |-------|-------|
-| Boardmeeting | E4 the dividend declared, E8 additional share capital issued |
+| Boardmeeting | F2 the date the board met, E4 the dividend declared, E8 additional share capital issued |
 | Directors&Secretary | The register of directors |
-| RegisterofMembers | One member a row from row 3: A name, F nominal value, G shares held. F1 = F3, G1 = SUM(G3:G19) |
+| RegisterofMembers | One member a row from row 3 to row 19: A name, C date acquired, F nominal value, G shares held. F1 = F3, G1 = SUM(G3:G19) |
 | DirectorsInterests | The register of directors' interests |
 | Charges&Debentures | One charge a row from row 2: A date, B assets charged, C the directors valuation at the date of charging, D holder, E terms, F the date of the board meeting that confirmed it. No formulas |
 
-`cellWrites` fills RegisterofMembers F3/G3 from the opening share capital and the
-Charges&Debentures rows from the scenario's `[[charges]]`.
+`cellWrites` fills one RegisterofMembers row per scenario `[[members]]` entry, Boardmeeting
+F2/E4 from the scenario's `[dividend]`, and the Charges&Debentures rows from its
+`[[charges]]`. The board meeting date shifts with the accounting period the way every other
+in-year date does; a member's acquisition date does not, being older than the book.
 
 ### Directors' report (Report)
 
@@ -667,8 +677,11 @@ The filed narrative reads its figures from the statements and from Companysecret
 | A97 / F97 | `[8]RegisterofMembers!$A$3` / `$G$3` | First member and the shares held |
 | A98 / F98 | `[8]RegisterofMembers!$A$4` / `$G$4` | Second member and the shares held |
 
-Nothing in the writer fills `Boardmeeting!E4` or the register's name column, so the report
-files a nil dividend and an unnamed shareholder.
+The dividend cycle runs on one board resolution. `TrialBalance!EH48` reads
+`[8]Boardmeeting!$E$4` into the profit distribution and `EH31` reads it negated into the
+dividends creditor, whose month columns carry the bank's `DV` payments. So `PubP&L!F52`
+(= `TrialBalance!EJ48`) appropriates the declaration, the report quotes it at D94, and the
+creditor closes at opening plus declared less paid.
 
 ## CI Pipeline (.github/workflows/generate-ltd.yml)
 

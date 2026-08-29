@@ -1240,6 +1240,10 @@ payFrequency = "monthly"
 grossPay = 1500
 niCategory = "A"
 
+[[members]]
+name = "Mike Brown"
+shares = 100
+
 [stock]
 opening = 3000
 closing = 2500

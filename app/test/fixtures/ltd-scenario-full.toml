@@ -45,6 +45,21 @@ taxCode = "1257L"
 niCategory = "A"
 isDirector = true
 
+[[members]]
+name = "Carol Smith"
+shares = 60
+acquired = 2020-01-01
+
+[[members]]
+name = "David Brown"
+shares = 25
+acquired = 2021-06-15
+
+[[members]]
+name = "Emma Wilson"
+shares = 15
+acquired = 2022-03-01
+
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"
@@ -4880,6 +4895,10 @@ admin_charges = 100
 total_interest = 1000
 months = 20
 supplier = "Precision Tooling Supplies"
+
+[dividend]
+board_meeting = 2026-03-31
+declared = 15000
 
 [[opening_debtors]]
 customer = "Acme Corp"
