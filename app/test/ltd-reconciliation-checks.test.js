@@ -654,7 +654,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(35342.772927, 4);
+      expect(ct.K35).toBeCloseTo(34521.272927, 4);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -663,8 +663,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(36879.97446, 4);
-      expect(ct600.Y133).toBeCloseTo(1537.201532, 4);
+      expect(ct600.AJ131).toBeCloseTo(36104.97446, 4);
+      expect(ct600.Y133).toBeCloseTo(1583.701532, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank

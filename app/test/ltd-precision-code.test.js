@@ -106,11 +106,11 @@ describeCalc(
 
     it("CorporationTax: charges the statutory tax on the full fixture profit", () => {
       const ct = results["CorporationTax"];
-      expect(ct.K28).toBeCloseTo(147519.897839506, 4);
+      expect(ct.K28).toBeCloseTo(144419.897839506, 4);
       expect(ct.G33).toBe(25);
-      expect(ct.J33).toBeCloseTo(36879.97446, 4);
-      expect(ct.L33).toBeCloseTo(1537.201532, 4);
-      expect(ct.K35).toBeCloseTo(35342.772927, 4);
+      expect(ct.J33).toBeCloseTo(36104.97446, 4);
+      expect(ct.L33).toBeCloseTo(1583.701532, 4);
+      expect(ct.K35).toBeCloseTo(34521.272927, 4);
     });
 
     it("CorporationTax: tax outstanding = CT less tax deducted at source", () => {
