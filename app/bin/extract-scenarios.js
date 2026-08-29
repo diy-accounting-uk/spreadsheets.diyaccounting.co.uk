@@ -179,7 +179,7 @@ const hpAgreements = [
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
 const bstSalesLines = bstLines.filter((l) => l.sourceJournalID === "sales");
 const bstTotalSales = computeGrossSales(bstSalesLines);
-const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP);
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false });
 const bstPurchLines = bstLines.filter((l) => l.sourceJournalID === "purchases");
 const bstByCode = {};
 bstPurchLines.forEach((l) => {

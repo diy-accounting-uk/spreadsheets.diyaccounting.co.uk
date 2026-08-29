@@ -403,7 +403,13 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // date's month names its tab.
   const getTabForDate = (shifted) => SHORT_MONTHS[shifted.getUTCMonth()];
 
-  function processJournal(entries, writes, nameField, codeDefault) {
+  // Column A holds the entry date and nothing else on the row starts with an
+  // A, so the rows already written are the A-keys on the sheet. Matching the
+  // whole reference rather than its first letter keeps a write further right
+  // (AK, say) out of the count.
+  const isDateColumnKey = (key) => /^A\d+$/.test(key);
+
+  function processJournal(entries, writes, nameField, codeDefault, writeExtraColumns) {
     for (const transactions of Object.values(entries)) {
       for (const tx of transactions) {
         const d = parseDate(tx.date);
@@ -413,11 +419,12 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         if (!writes[tabName]) writes[tabName] = {};
         const sheet = writes[tabName];
 
-        const nextRow = Object.keys(sheet).filter((k) => k.startsWith("A")).length + 5;
+        const nextRow = Object.keys(sheet).filter(isDateColumnKey).length + 5;
         sheet[`A${nextRow}`] = toExcelSerial(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, shifted.getUTCDate());
         if (tx[nameField]) sheet[`B${nextRow}`] = tx[nameField];
         sheet[`E${nextRow}`] = tx.code || codeDefault;
         sheet[`F${nextRow}`] = tx.amount;
+        if (writeExtraColumns) writeExtraColumns(sheet, nextRow, tx);
       }
     }
   }
@@ -426,8 +433,19 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     processJournal(scenario.sales, salesWrites, "customer", "a");
   }
 
+  // A purchase from a CIS sub-contractor carries the tax the company withheld
+  // from it and pays over to HMRC. Column AK is the journal's CIS
+  // certificates column ("Tax Paid", verified against the template: AK1 =
+  // SUM(AK5:AK300), the header row reading "Contractors / CIS Certificates").
+  // TrialBalance reads AK1 twice: row 32 takes it as the CIS creditor
+  // (-[2]<Month>!$AK$1) and row 28 gives it back off trade creditors
+  // (-[2]<Month>!$F$1+[2]<Month>!$AK$1), so the withheld tax moves from the
+  // sub-contractor's ledger to HMRC's without either side of the books
+  // moving.
   if (scenario.purchases) {
-    processJournal(scenario.purchases, purchasesWrites, "supplier", "g");
+    processJournal(scenario.purchases, purchasesWrites, "supplier", "g", (sheet, row, tx) => {
+      if (tx.cis_deduction) sheet[`AK${row}`] = tx.cis_deduction;
+    });
   }
 
   // A business that is not registered for VAT turns the rate off on the first
@@ -1321,11 +1339,11 @@ export function standardReads() {
   add("TrialBalance", "EJ66");
 
   // The creditor rows the bank codes settle: EJ28 trade creditors, EJ32 the
-  // CIS creditor ("RC"), EJ34 the PAYE creditor ("RP") and EJ35 corporation
-  // tax ("RT"). EH35 is the tax credit the template imputes on interest
-  // received, the one term of row 35 that comes from neither the opening
-  // balance nor the bank.
-  for (const cell of ["EJ28", "EJ32", "EJ34", "EJ35", "EH35"]) add("TrialBalance", cell);
+  // CIS creditor ("RC"), EJ33 the VAT creditor ("RV"), EJ34 the PAYE creditor
+  // ("RP") and EJ35 corporation tax ("RT"). EH35 is the tax credit the
+  // template imputes on interest received, the one term of row 35 that comes
+  // from neither the opening balance nor the bank.
+  for (const cell of ["EJ28", "EJ32", "EJ33", "EJ34", "EJ35", "EH35"]) add("TrialBalance", cell);
 
   // PAYE/NI creditor -- row 34's first-month movement column. Column L
   // holds the fiscal year's first month regardless of year-end (verified
@@ -2472,23 +2490,41 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // after more than one year. Every term here comes from the scenario, so a
   // reclassification that moved the wrong figure, or moved nothing, shows up
   // instead of a sheet that only agrees with itself.
-  if (finalBalances && expected.purchases && expected.bank) {
-    let invoiced = 0;
-    for (const transactions of Object.values(expected.purchases)) {
-      for (const tx of transactions) invoiced += tx.amount;
+  // Everything invoiced through the purchase journal, and the CIS the
+  // company withheld from the sub-contractors among those invoices. Both
+  // rows below need the pair: what the sub-contractor is owed is the invoice
+  // less the tax withheld from it.
+  let invoiced = 0;
+  let cisWithheld = 0;
+  for (const transactions of Object.values(expected.purchases || {})) {
+    for (const tx of transactions) {
+      invoiced += tx.amount;
+      cisWithheld += tx.cis_deduction || 0;
     }
+  }
+
+  // Trade creditors (row 28) take every purchase invoiced and give back
+  // every payment made under "CR" and every CIS certificate on the journal
+  // (G28 = -[2]<Month>!$F$1+[2]<Month>!$AK$1). The year-end journal then
+  // moves the hire purchase agreements' amounts financed off the row: EH28
+  // reads [1]HPfinance!$E$2 and EH40 its negative, so the assets those
+  // agreements paid for stop being trade creditors and become creditors
+  // falling due after more than one year. Every term here comes from the
+  // scenario, so a reclassification that moved the wrong figure, or moved
+  // nothing, shows up instead of a sheet that only agrees with itself.
+  if (finalBalances && expected.purchases && expected.bank) {
     const amountsFinanced = (expected.hp_agreements || []).reduce((total, agreement) => total + agreement.amount_financed, 0);
     check(
-      "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
+      "Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed",
       -num(finalBalances.EJ28),
-      (expected.opening_balance?.trade_creditors || 0) + invoiced - netBankPayments("CR") - amountsFinanced,
+      (expected.opening_balance?.trade_creditors || 0) + invoiced - netBankPayments("CR") - cisWithheld - amountsFinanced,
     );
   }
 
   // The PAYE creditor (row 34) takes the month's income tax and both
   // National Insurance contributions off the payroll and gives back every
-  // payment made under "RP" (Currentaccount AH). Corporation tax and CIS
-  // have codes and rows of their own, so either of them paid under "RP"
+  // payment made under "RP" (Currentaccount AH). VAT, corporation tax and
+  // CIS have codes and rows of their own, so any of them paid under "RP"
   // leaves this line short by what it paid.
   if (finalBalances && expected.payroll && expected.bank) {
     let payrollDue = 0;
@@ -2502,23 +2538,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
-  // The CIS creditor (row 32) takes the tax withheld from sub-contractors
-  // out of Purchases!AK and gives back the remittances paid under "RC"
-  // (Currentaccount AJ). Nothing writes a CIS certificate into Purchases, so
-  // the row carries the remittances alone and reads as a debit of them.
-  if (finalBalances && expected.bank) {
-    const remitted = netBankPayments("RC");
-    check("Trial Balance: CIS creditor = the remittances paid under RC", num(finalBalances.EJ32), remitted);
-    if (remitted !== 0) {
-      checks.push({
-        name: "CIS: sub-contractor tax withheld reaches the purchase journal",
-        actual: 0,
-        expected: remitted,
-        pass: false,
-        diff: -remitted,
-        severity: "warning",
-      });
+  // The VAT creditor (row 33) takes the output VAT off every sales month
+  // (-[3]<Month>!$G$1), gives back the input VAT off every purchases month
+  // ([2]<Month>!$G$1) and settles what the bank paid under "RV"
+  // (Currentaccount AI, net of any refund received in column N). Both
+  // journals charge VAT at the book's own rate on every line they carry, so
+  // the two sides here are the scenario's own gross totals at that rate.
+  //
+  // The row moves on the accounting month, not on the VAT quarter. A return
+  // is filed and paid weeks after the quarter it covers ends, so the year's
+  // payments settle the quarter before the year and the first three within
+  // it, and the closing creditor is the fourth quarter still to pay plus
+  // whatever the paid quarters' own periods straddle the year by. That
+  // timing is why this figure is not any one return's box 5.
+  if (finalBalances && expected.sales && expected.purchases && expected.bank) {
+    let salesGross = 0;
+    for (const transactions of Object.values(expected.sales)) {
+      for (const tx of transactions) salesGross += tx.amount;
     }
+    const vatOn = (gross) => gross - netOfVat(gross, rate);
+    check(
+      "Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV",
+      -num(finalBalances.EJ33),
+      (expected.opening_balance?.vat_due || 0) + vatOn(salesGross) - vatOn(invoiced) - netBankPayments("RV"),
+    );
+  }
+
+  // The CIS creditor (row 32) takes the tax withheld from sub-contractors
+  // out of Purchases!AK (-[2]<Month>!$AK$1) and gives back the remittances
+  // paid under "RC" (Currentaccount AJ). What is withheld in a month is
+  // remitted by the 19th of the next one, so the row closes at what the
+  // final months withheld and had not yet paid over.
+  if (finalBalances && expected.purchases && expected.bank) {
+    check(
+      "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC",
+      -num(finalBalances.EJ32),
+      (expected.opening_balance?.cis_due || 0) + cisWithheld - netBankPayments("RC"),
+    );
   }
 
   // The corporation tax creditor (row 35): the opening balance and the
