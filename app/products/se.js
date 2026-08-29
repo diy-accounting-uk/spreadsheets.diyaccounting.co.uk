@@ -774,6 +774,11 @@ export function multiFileOptions() {
       },
       "Payslips.xlsx": {
         Payment: Object.values(paymentCells).flat(),
+        // The payroll calendar the generator writes for the package's tax
+        // year: B2 its seed date, I1 (=B366) the year it runs to, N1 the tax
+        // year label the payslips print, and the name, date and month number
+        // on each sampled row.
+        Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
       },
     },
   };
@@ -825,6 +830,19 @@ const PL_ROW_CAPTIONS = {
 // runs a 6 April year-end, so this row order matches MONTH_KEYS directly
 // with no year-end shift (unlike Ltd, which has to remap via fiscalTabs).
 const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+// Payslips.xlsx!Admin holds a day-by-day payroll calendar: column A the
+// payroll month's name, B the date, C the week number, D the payroll month
+// number and F the week within that month. Row 2 is the first day of the tax
+// year and the sheet runs to row 381. These rows sample it -- one inside each
+// of the twelve payroll months, then the last day of the tax year (366) and
+// the last row on the sheet. Nothing about a check depends on which month a
+// sampled row falls in: each one reads the month number off the sheet itself.
+const PAYROLL_CALENDAR_SAMPLE_ROWS = [2, 33, 64, 95, 126, 157, 188, 219, 250, 281, 312, 343, 366, 381];
+
+// The month names the payroll calendar's own formula produces
+// (TEXT(DATE(...),"Mmm") on the tax year start plus the month number).
+const SHORT_MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export function standardReads() {
   const reads = {};
@@ -1207,6 +1225,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+  }
+
+  // Some of the workbook's own cells hold wording rather than arithmetic.
+  // The report shows both sides as text and the diff column stays empty.
+  function checkText(name, actual, expectedText) {
+    checks.push({ name, actual, expected: expectedText, pass: actual === expectedText, diff: "" });
   }
 
   const rate = vatRateFor(expected);
@@ -2025,6 +2049,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
+  }
+
+  // Payslips calendar echo: Payslips.xlsx's own Admin sheet carries a
+  // day-by-day payroll calendar the generator writes for the package's tax
+  // year (generatePayslipsCalendar in app/lib/generator.js seeds B2 and fills
+  // the week and month columns; every later date cascades from B2 and every
+  // month name is that many months on from B2's own month). Nothing read it
+  // back, so a package could ship a payroll year starting on the wrong date,
+  // dating every payslip in it to another year, with no check failing. Both
+  // ends are anchored on the accounts workbook's own tax year dates.
+  const payrollCalendar = results["Payslips.xlsx!Admin"];
+  if (payrollCalendar && results.Admin) {
+    const yearStartSerial = num(results.Admin.B4);
+    check(
+      "Payslips calendar: the payroll year starts on the accounts tax year start (B2 = Admin B4)",
+      num(payrollCalendar.B2),
+      yearStartSerial,
+      0,
+    );
+    check(
+      "Payslips calendar: the year the calendar runs to (I1) = the accounts tax year end (Admin B17)",
+      num(payrollCalendar.I1),
+      num(results.Admin.B17),
+      0,
+    );
+    if (taxData) {
+      checkText(
+        "Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for",
+        payrollCalendar.N1,
+        taxData.tax_year.label,
+      );
+    }
+
+    const yearStartMonthIndex = excelSerialToUtcDate(yearStartSerial).getUTCMonth();
+    for (const row of PAYROLL_CALENDAR_SAMPLE_ROWS) {
+      check(
+        `Payslips calendar row ${row}: the date runs on unbroken from the tax year start`,
+        num(payrollCalendar[`B${row}`]),
+        yearStartSerial + row - 2,
+        0,
+      );
+      const monthsIn = num(payrollCalendar[`D${row}`]) - 1;
+      checkText(
+        `Payslips calendar row ${row}: the month name is its payroll month counted from the tax year start`,
+        payrollCalendar[`A${row}`],
+        SHORT_MONTH_NAMES[(yearStartMonthIndex + monthsIn) % 12],
+      );
+    }
   }
 
   // The whole distance from the accounting profit to the profit tax is
