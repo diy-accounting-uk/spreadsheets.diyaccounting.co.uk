@@ -74,7 +74,7 @@ and HPfinance; `Payslips.xlsx` Employee, the twelve month tabs, Payment and Admi
 | Salesinvoice.xlsx | Invoice Template | No | The printable invoice. G2 "SALES INVOICE". The header reads `'Business Details'`, N27 finds the active invoice with `=IF(SUM('Invoice Database'!A:A)=0," ",LOOKUP(1,'Invoice Database'!A:A,'Invoice Database'!B:B))`, and the customer block is a `LOOKUP` on N29 over `'Customer Details'`. Each line looks its unit cost and VAT rate up in `'Product Details'`, with P38 `=IF(L38=" "," ",J38*L38)` and V38 `=IF(N38=" ",0,P38*N38/100)`. | The workbook holds no external link, so nothing it computes reaches the books. Wiring it into `Sales.xlsx` is what would make a check meaningful; until then a formula-presence guard is the right tier. |
 | Salesinvoice.xlsx | Invoice Database | No | The invoice line store. A1 "Enter 1 to ACTIVATE INVOICE", B1 "Sales Invoice Number", C1 "Invoice Date", D1 "Customer Account Number", E1 "Carriage Charge", then "Product Code 1" to "Product Code 20", each followed by "Quantity". | Standalone. No link into the books. |
 | Salesinvoice.xlsx | Customer Details | No | The customer master: "Customer Account Number", "Credit Terms", "Customer Name", three invoice address lines and a post code, then "Delivery Name" and its own address block. | Standalone reference data. |
-| Salesinvoice.xlsx | Product Details | No | The product master: "Product Code", "Product Selling Price", "VAT Rate", "Purchase Cost Price", and G "Gross Profit Margin" `=IF(F2>0,C2-F2," ")` with H "Gross Profit Margin %" `=IF(F2>0,(C2-F2)*100/C2," ")`. | The margin formulas are now consistent down the block, so the arithmetic is sound but unreachable. One live risk stays: the "VAT Rate" column is a hard-coded 20 on every row, tied to no tax-year source, so it goes stale without anything saying so. A check needs the workbook wired into `Sales.xlsx` first; the rate could be generator-written from `se-<year>.toml` `vat.standard_rate` today. |
+| Salesinvoice.xlsx | Product Details | No | The product master: "Product Code", "Product Selling Price", "VAT Rate", "Purchase Cost Price", and G "Gross Profit Margin" `=IF(F2>0,C2-F2," ")` with H "Gross Profit Margin %" `=IF(F2>0,(C2-F2)*100/C2," ")`. | The margin formulas run consistently down the block, so the arithmetic is sound but unreachable. One live risk stays: the "VAT Rate" column is a hard-coded 20 on every row, tied to no tax-year source, so it goes stale without anything saying so. A check needs the workbook wired into `Sales.xlsx` first; the rate could be generator-written from `se-<year>.toml` `vat.standard_rate` today. |
 | Salesinvoice.xlsx | Business Details | No | The invoice header: "Business Name", three address lines, "Post Code", "Telephone", "VAT Registration Number" with the note "Not VAT registered? Enter single space in B11", two company slogans and three terms of trade, and B17 `="All goods remain the property of " & B3 & " until paid for in full"`. | Static reference data for the invoice layout. |
 
 ## Limited Company (multi-file, 13 workbooks plus a .docx)
@@ -97,7 +97,7 @@ HPfinance; `Payslips.xlsx` Employee, the twelve month tabs, Payment and Admin;
 | Salesinvoice.xlsx | Invoice Template | No | The printable invoice, cell for cell the same sheet as SE's: header from `'Business Details'`, customer block by `LOOKUP` over `'Customer Details'`, line prices and VAT rates from `'Product Details'`. | No external link, so nothing reaches the books. |
 | Salesinvoice.xlsx | Invoice Database | No | The invoice line store: activation flag, invoice number, date, customer account, carriage charge, twenty product-code and quantity pairs. | Standalone. |
 | Salesinvoice.xlsx | Customer Details | No | The customer master: account number, credit terms, name, invoice address, delivery address. | Standalone reference data. |
-| Salesinvoice.xlsx | Product Details | No | The product master with the same repaired margin columns as SE's. | Same standing as SE's, including the hard-coded 20 in the "VAT Rate" column. |
+| Salesinvoice.xlsx | Product Details | No | The product master, cell for cell the same as SE's, margin columns included. | Same standing as SE's, including the hard-coded 20 in the "VAT Rate" column. |
 | Salesinvoice.xlsx | Business Details | No | The invoice header: business name, address lines, post code, slogans, terms of trade. | Static reference data. |
 
 ## Summary
@@ -119,7 +119,8 @@ Ordered by the money or filing risk sitting on an untouched sheet.
    `Admin`. Nothing reads either. Both are also wrong by construction today: the derived rows
    carry formulas in columns D and E only, so the annual profit each charges tax on is one month
    of trade for SE and two for Taxi. Both charge two bands off an untapered allowance, while SE's
-   own `Income Tax` sheet applies the taper and the additional rate. Every term the checks need is already read somewhere else in the package.
+   own `Income Tax` sheet applies the taper and the additional rate. Every term the checks
+   need is already read somewhere else in the package.
 2. **`Payslips!Payslips`, both products.** The payslip the employer hands over. Its month tabs
    are asserted and its calendar is asserted, but the `LOOKUP` and `INDIRECT` pair that joins
    them is not. A wrong resolution prints the wrong period's pay with every upstream check green.
