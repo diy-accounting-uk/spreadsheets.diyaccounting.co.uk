@@ -17,7 +17,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
 | template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
 | income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; CIS sign in bst.js and the BST P&L | landed on `claude/wave-2` `50ede53b`, 1541 tests, worktree removed | SE 45,317.96 → 51,324.93; BST 78,035 → 88,131.60, both statutory |
-| ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
+| ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage; Fixedassets Admin link cache rolled per package | merged into `claude/wave-2`, blast radius running | K35 28,028.78 → 35,342.77 statutory on every year end; box 65 = K35 |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | started |
 
@@ -94,22 +94,21 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 - [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — code-complete
   on `claude/wave-2` (statutory £88,131.60 on £226,508 is a hard-pass check; judge note
   removed); closes when generate-bst refreshes packages and reports.
-- [ ] **Ltd CorporationTax: marginal-relief step** — plan of record:
-  `_developers/backlog/PLAN_LTD_MARGINAL_RELIEF.md`. The sheet charges the whole
-  chargeable profit at Admin!P6's single rate; £147,519.90 is charged £28,028.78
-  where statute gives £35,342.77. Test: the existing warning carrying the statutory
-  figure converts to a hard-pass check; EJ91 and the CT600 ties stay green.
-- [ ] **Ltd CT600: wire row 128 (boxes 53-56)** — the form's second financial-year row
-  reads nothing, so box 63 files the first tax row alone (£14,014.39 against a
-  £28,028.78 charge on the 31 March 2026 package); underneath, Admin!L7/N7 name the year
-  after the period so the two tax rows split the profit 365/365. Test: box 63 equals the working sheet's K35; the "box 56 is
+- [ ] **Ltd CorporationTax: marginal-relief step** — code-complete on `claude/wave-2`
+  (hard-pass check at the statutory £35,342.77; the Admin period dates repaired
+  underneath); closes when generate-ltd refreshes packages and reports. What stays open is
+  in `_developers/backlog/PLAN_LTD_MARGINAL_RELIEF.md`: associated companies, franked
+  investment income, a period straddling a rate change.
+- [ ] **Ltd CT600: wire row 128 (boxes 53-56)** — code-complete on `claude/wave-2`
+  (row 128 wired, boxes 64/65 at Y133/Y135, boxes 66/70 read box 65); closes when
+  generate-ltd refreshes packages and reports. Test: box 63 equals the working sheet's K35; the "box 56 is
   blank" hard check inverts to assert the wired value.
 - [ ] **Salesinvoice Product Details G6 margin (Ltd and SE templates)** — G6 holds the
   margin-percentage formula where the margin belongs; H6 is empty. Test: G6 = C6-F6,
   H6 the percentage; the suite's formula-presence coverage passes.
-- [ ] **Ltd expensesform mileage rate from a tax-year source** — C30 hard-codes 45p and
-  goes stale silently. Test: the rate reads a generator-written cell that echoes the
-  tax-year TOML, asserted like the other Admin echoes.
+- [ ] **Ltd expensesform mileage rate from a tax-year source** — code-complete on
+  `claude/wave-2` (`Month 01!C30` generator-written, twelve month checks); closes when
+  generate-ltd refreshes packages.
 - [ ] **Taxi `PurchasesMar!T2` vehicle-changes nag** — compares against the empty
   `'Fixed Assets'!$D$74`; the additions total lives at D62, so the nag fires on every
   package that codes anything to f. Test: nag references D62; a package with an
