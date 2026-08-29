@@ -12,7 +12,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 |---|---|---|---|
 | ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
 | se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
-| taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | `sp-taxi` | started |
+| taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
 | vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
 | template-design | design doc `PLAN_TEMPLATE_SURGERY.md` for the shipped-template items (SE/BST income tax, Ltd CT and CT600, Fixedassets NBV, HPfinance #REF!, Salesinvoice G6, expensesform mileage) | `sp-template-design` | started |
