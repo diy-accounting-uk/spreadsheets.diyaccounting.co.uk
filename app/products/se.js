@@ -941,10 +941,7 @@ export function reportSections(results) {
 
 // The year's asset movement, laid out the way a fixed asset note lays it out.
 // The package has no such note, so without this the only closing figure in
-// the report is the schedule's own K1 column total -- and that total is
-// cost less accumulated depreciation over every row still on the sheet, an
-// asset sold during the year included. The last two rows state that
-// difference instead of leaving a reader to find it.
+// the report is the schedule's own K1 column total.
 function fixedAssetSection(results) {
   const schedule = results["Fixedassets.xlsx!Schedule"];
   if (!schedule) return null;
@@ -972,18 +969,13 @@ function fixedAssetSection(results) {
       { label: "Accumulated depreciation on the assets sold (Schedule X1)", value: fmt(disposalDepreciation), indent: 1 },
       { label: "**Accumulated depreciation carried forward, disposals removed**", value: fmt(depreciationCarriedForward), indent: 0 },
       {
-        label: "**Net book value at the year end, disposals removed**",
+        label: "**Net book value at the year end (Schedule K1)**",
         value: fmt(costCarriedForward - depreciationCarriedForward),
         indent: 0,
       },
       { label: "", value: "" },
       { label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)", value: fmt(num(schedule.V1)), indent: 1 },
       { label: "Net book value of the assets sold at the date of sale", value: fmt(disposalBookValue), indent: 1 },
-      {
-        label: "Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet",
-        value: fmt(num(schedule.K1)),
-        indent: 1,
-      },
     ],
   };
 }
@@ -1656,14 +1648,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const sched = results["Fixedassets.xlsx!Schedule"];
   if (sched) {
-    // 2. Closing NBV identity within the Schedule itself: cost minus
-    //    accumulated depreciation carried forward. (The equivalent opening
-    //    identity does not hold in this template: the "New Fixed Assets"
-    //    rows have no opening-WDV formula at all -- G is blank for a New
-    //    row regardless of E -- so G1 is the existing-assets figure alone
-    //    while E1/F1 include in-year additions. Asserting G1 = E1-F1 would
-    //    be checking a false identity, not the workbook's own logic.)
-    check("Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", sched.K1 || 0, (sched.E1 || 0) - (sched.J1 || 0));
+    // 2. Closing NBV identity within the Schedule itself: cost less
+    //    disposals, less depreciation carried forward less depreciation on
+    //    the disposals. (The equivalent opening identity does not hold in
+    //    this template: the "New Fixed Assets" rows have no opening-WDV
+    //    formula at all -- G is blank for a New row regardless of E -- so
+    //    G1 is the existing-assets figure alone while E1/F1 include in-year
+    //    additions. Asserting G1 = E1-F1 would be checking a false
+    //    identity, not the workbook's own logic.)
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      sched.K1 || 0,
+      (sched.E1 || 0) - (sched.W1 || 0) - ((sched.J1 || 0) - (sched.X1 || 0)),
+    );
 
     // The schedule's cost total against its own two halves, so the Fixed
     // Asset Schedule section's opening and additions lines are the sheet's

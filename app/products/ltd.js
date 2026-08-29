@@ -1430,7 +1430,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     V1: "Sale proceeds of the assets sold in the year, net of VAT",
@@ -1999,6 +1999,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // never in another cell of the note, so consistent zeros cannot pass.
   const schedule = results["Fixedassets.xlsx!Schedule"];
   const notes = results.PubNotes;
+  if (schedule) {
+    // Closing NBV identity within the Schedule itself: cost less disposals,
+    // less depreciation carried forward less depreciation on the disposals.
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      num(schedule.K1),
+      num(schedule.E1) - num(schedule.W1) - (num(schedule.J1) - num(schedule.X1)),
+    );
+  }
   if (schedule && notes) {
     for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
       const col = layout.noteColumn;
