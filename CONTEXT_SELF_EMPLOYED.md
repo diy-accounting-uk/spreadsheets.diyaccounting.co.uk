@@ -38,7 +38,8 @@ SE packages always have a 6 April year-end (following the UK tax year). During g
 |          |                                   |                             |
 | +--------v-----------+ +--------------------+ +-------------------+       |
 | | Wagesinterface     | | StockControl       | | Profit Forecast   |      |
-| | (payroll summary)  | | (opening/closing)  | | (budget tool)     |      |
+| | (payroll summary)  | | (opening/closing)  | | (projected year   |      |
+| |                    | |                    | |  + tax forecast)  |      |
 | +--------------------+ +--------------------+ +-------------------+       |
 |                                                                           |
 | +----------------------------------------------------------------+       |
@@ -433,6 +434,7 @@ After recalculation, values are read from **Financialaccounts.xlsx**:
 
 - **Profit & Loss Account**: B5-B9 (sales categories + turnover), B11 (grants), B14-B17 (cost of sales), B19 (gross profit), B21-B35 (admin expenses), B37 (operating profit), B39 (profit before tax)
 - **Income Tax**: E5 (profit), E6 (personal allowance after taper), E7 (taxable income), E8-E10 (IT basic/higher/additional), C9/C10/D10 (the bands and rate the sheet applies), E11 (total income tax), E12 (CIS), E15-E16 (NI Class 4 lower/upper), E18 (total tax+NI)
+- **Profit Forecast**: C21 (months that traded), C22/C24/C26/C30/C33 (the projected year, each repeating a P&L row), C34 (forecast profit before tax), C37 (depreciation added back), C38 (capital allowances off the Fixedassets Schedule), C39 (taxable profit), C40 (personal allowance after taper), C41 (taxable income), C42-C44 (IT basic/higher/additional), C45 (NI Class 4), C46 (forecast tax + NI, charged a twelfth a month on the P&L financial health check)
 
 ### Compliance Checks
 
@@ -446,6 +448,7 @@ The `checkCompliance()` function in `se.js` validates (tolerance of 1 for all ch
 | Income Tax | Income Tax E11 | Calculated from E5 profit + tax data rates |
 | NI Class 4 (lower) | Income Tax E15 | Calculated from profit + NI bands |
 | Total Tax + NI | Income Tax E18 | Calculated sum of IT + NI |
+| Forecast: tax and NI liability | Profit Forecast C46 | Calculated from the forecast's own taxable profit (C39) |
 
 Tax checks use a shared `calculateExpectedTax()` callback (defined in `reconcile.js`) that independently computes expected income tax and NI Class 4 from the profit figure and tax data rates, providing a cross-check against the spreadsheet formulas.
 

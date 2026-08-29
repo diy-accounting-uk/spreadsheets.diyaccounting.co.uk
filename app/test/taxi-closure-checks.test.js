@@ -116,9 +116,12 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
       "SA103S: Profit for tax = Draft Tax E5",
       "Tax: sheet applies the basic rate to the lower band",
       "Tax: sheet applies the higher rate above the band",
-      "Tax: sheet splits the bands at the higher band start",
+      "Tax: sheet applies the additional rate above the higher band",
+      "Tax: sheet splits the basic and higher bands at the basic band end",
+      "Tax: sheet splits the higher and additional bands at the higher band end",
       "Tax at basic rate",
       "Tax at higher rate",
+      "Tax at additional rate",
     ]) {
       const check = checks.find((c) => c.name === name);
       expect(check, `missing check: ${name}`).toBeDefined();
@@ -131,7 +134,7 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
     const results = await readWithCorruption(populatedPath, reads, null, null, null);
     const tax = results["Draft Tax calculation"];
 
-    expect(tax.E7).toBeLessThan(taxData.income_tax.higher_band_start);
+    expect(tax.E7).toBeLessThan(taxData.income_tax.basic_band_end);
     expect(tax.E8).toBeCloseTo(tax.E7 * taxData.income_tax.basic_rate, 2);
     expect(tax.E9).toBe(0);
   });
@@ -149,7 +152,7 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
     const results = await readWithCorruption(populatedPath, reads, "Draft Tax calculation", "C9", 0);
     const checks = taxiCheckCompliance(results, scenario.expected, taxData, calculateExpectedTax);
 
-    expect(checks.find((c) => c.name === "Tax: sheet splits the bands at the higher band start").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Tax: sheet splits the basic and higher bands at the basic band end").pass).toBe(false);
   });
 
   it("breaks the band split check when tax charged in one band lands in the other", async () => {
