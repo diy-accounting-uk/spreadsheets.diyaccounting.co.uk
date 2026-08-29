@@ -16,7 +16,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | vat-stagger | VATQtr5 stagger and dropdown range | landed on `claude/wave-1` `3c85466a`, 219 tests, worktree removed | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
 | pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
 | template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
-| income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; bst.js CIS sign | `sp-income-tax` off `claude/wave-2` | started |
+| income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; CIS sign in bst.js and the BST P&L | merged into `claude/wave-2` `50ede53b`, blast radius running | SE 45,317.96 → 51,324.93; BST 78,035 → 88,131.60, both statutory |
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | waiting for ltd-checks (shared fixture master data) |
@@ -69,11 +69,12 @@ Coverage checks still to write:
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 
-- [ ] **SE Income Tax: personal-allowance taper and additional rate** — the sheet grants
-  the full allowance at any profit (£144,715 in the advanced fixture keeps all £12,570;
-  tax understated ~£5,028) and stops at the higher rate; the Admin block carries no
-  taper threshold. Confirmed by four independent judge samples. The SE sibling of the
-  BST band item below.
+- [ ] **SE Income Tax: personal-allowance taper and additional rate** — code-complete on
+  `claude/wave-2`; closes when generate-se refreshes packages and reports. Remainder found
+  on the way: `app/bin/generate.js:92` derives `outDir` from the module-level `packages/`
+  path and `--output-dir` only copies afterwards, so any `--output-dir` run (four in
+  `verify-roundtrip.test.js`) overwrites the committed catalogue. Make `--output-dir`
+  redirect generation.
 - [ ] **VATQtr5 default stagger** — remainder after wave 1: Q5 now ends on Vatinterface
   row 19, the last period the interface totals, so one period (row 17) is still declared
   twice. A fully consecutive fifth quarter needs Vatinterface row 20, a `S/P 06Y2` entry
@@ -90,10 +91,9 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 - [ ] **HPfinance `#REF!` repair (Ltd and SE templates)** — rows 10 onward compute the
   monthly payment from `#REF!`; a customer's second agreement computes nothing.
   Test: after repair, row 10+ formulas mirror row 8's; the new HP checks pass.
-- [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — the sheet
-  works basic and higher only, so £226,508 of profit charges 40% all the way up.
-  Test: hand-computed statutory tax on the Precision Code profit becomes a hard-pass
-  check; the current judge note about the limitation is removed.
+- [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — code-complete
+  on `claude/wave-2` (statutory £88,131.60 on £226,508 is a hard-pass check; judge note
+  removed); closes when generate-bst refreshes packages and reports.
 - [ ] **Ltd CorporationTax: marginal-relief step** — plan of record:
   `_developers/backlog/PLAN_LTD_MARGINAL_RELIEF.md`. The sheet charges the whole
   chargeable profit at Admin!P6's single rate; £147,519.90 is charged £28,028.78
