@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (bst, ltd, taxi green on the second dispatch after the fixture line-count fix; generate-se re-dispatched after the leap-year calendar fix). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is CI-verified on `claude/wave-1` (PR #39, all four generate-* runs green, ready to merge; its closed items are gone from the list below). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
@@ -20,8 +20,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage; Fixedassets Admin link cache rolled per package | landed on `claude/wave-2`, 1619 tests, worktree removed | K35 28,028.78 → 35,342.77 statutory on every year end; box 65 = K35 |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | started |
-
-Still to dispatch: ltd-writes (Boardmeeting!E4 from the scenario) after ltd-ct lands.
+| ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | `sp-ltd-writes` off `claude/wave-2` | started |
 
 ## Open items
 
@@ -32,14 +31,6 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Coverage checks still to write:
 
-- [ ] **SE `SE Full` (SA103F) box assertions** — a live HMRC return, every box
-  formula-fed, never read; can diverge from the asserted SE Short silently. Test:
-  each SA103F box equals both its P&L source and its SE Short counterpart on
-  se-scenario-advanced; expected all-pass with non-zero values.
-- [ ] **Ltd `Report` (directors' report) figure assertions** — turnover, both years'
-  margins, year end, dividend, share register; nothing asserted today. Test: Report
-  figures equal PubP&L/PubBalSht/RegisterofMembers sources on ltd-scenario-full;
-  expected the filed report quotes the books' numbers and the judge reads it coherent.
 - [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the dividend
   cycle is unwired end to end: bank `DV` payments reach the trial balance's dividends
   creditor, `PubP&L!F52` reads `TrialBalance!EJ48` which no month column feeds, nothing
@@ -48,13 +39,6 @@ Coverage checks still to write:
   dividend, E4 carries it, D94 shows it, F52 publishes it, and the creditor nets to the
   unpaid balance. With it: `RegisterofMembers!A3` (member name) is never written, so the
   report's shareholder lines publish a holding with no holder.
-- [ ] **`Charges&Debentures` to long-term creditors link check (Ltd)** — a registered
-  charge implies a long-term creditor; nothing links the register to the balance
-  sheet. Test: a fixture charge entry and an assertion the balance sheet's long-term
-  creditors line covers it; expected 0 = 0 is impossible once the fixture carries one.
-- [ ] **Taxi `VitalTax` quarterly checks** — the MTD quarterly re-summing path,
-  unasserted; SE's twin is the proven pattern. Test: each quarterly rollup and the G
-  annual column equal the P&L's own figures; expected all-pass on taxi-scenario-basic.
 - [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — code-complete on `claude/wave-1`
   (both echoes; I1 now derives 5 April from the seed after the 2024 leap year failed the
   generate-se matrix). Remainder: an SA103F report indicator (box 30/46 divergence) once the
@@ -107,16 +91,9 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 - [ ] **Ltd expensesform mileage rate from a tax-year source** — code-complete on
   `claude/wave-2` (`Month 01!C30` generator-written, twelve month checks); closes when
   generate-ltd refreshes packages.
-- [ ] **Taxi `PurchasesMar!T2` vehicle-changes nag** — compares against the empty
-  `'Fixed Assets'!$D$74`; the additions total lives at D62, so the nag fires on every
-  package that codes anything to f. Test: nag references D62; a package with an
-  f-coded purchase and a registered schedule addition shows no nag.
 
 Small follow-ups:
 
-- [ ] **CONTEXT_LIMITED_COMPANY.md cell-map corrections** — the Ltd workstream report
-  lists the wrong PubP&L/PubBalSht/MnthP&L/CT rows; ltd.js CELL_MAP is already
-  corrected. Docs-only.
 - [ ] **Ltd fixture remainders** (turnover/README aligned in wave 1: the fixture was
   right) — the CT payment (4,500) and CIS remittances are bank-coded `RP` so they land
   in the PAYE creditor; recoding to `RT`/`RC` throws in the SE writer (`se.js:61` analyses
@@ -125,11 +102,6 @@ Small follow-ups:
   hand-written `closingDebtors` list in `extract-scenarios.js:94` to derive from the
   fixture. `OpenAccounts!E48` is `=E15`, so the prior-year P&L column shows −10,000 cost
   of sales on zero turnover (a warning since wave 1).
-- [ ] **Render report front-matter on the published pages** — build-reconciliation-pages
-  ignores text before the first `##` heading, so the new scenario descriptions reach the
-  reports but not the pages. One-line parser change.
-- [ ] **Pass the package year-end into `checkCompliance`** — reconcile.js anchors
-  Admin!F21 to B32 rather than the run's own year-end date. One extra argument.
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
