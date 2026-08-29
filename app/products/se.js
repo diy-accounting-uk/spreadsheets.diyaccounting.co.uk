@@ -468,6 +468,37 @@ export function cellWrites(scenario) {
     });
   }
 
+  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
+  // rows are available for scenario agreements before the sheet's own
+  // layout runs out: row 8 (the "New" block's working master, whose
+  // monthly-payment formula was never broken) and row 10 (the first row
+  // the #REF! repair fixes). B=agreement date, C=finance company,
+  // D=reference, E=amount financed, F=admin charges, G=total interest,
+  // H=term in months, L=supplier. Written left to right per row, matching
+  // the Schedule writer above.
+  const HP_AGREEMENT_ROWS = [8, 10];
+  if (scenario.hp_agreements) {
+    if (!fixedAssetsWrites.HPfinance) fixedAssetsWrites.HPfinance = {};
+    const hp = fixedAssetsWrites.HPfinance;
+    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
+      throw new Error(
+        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
+      );
+    }
+    scenario.hp_agreements.forEach((agreement, i) => {
+      const row = HP_AGREEMENT_ROWS[i];
+      const d = parseDate(agreement.date);
+      hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      hp[`C${row}`] = agreement.finance_company;
+      hp[`D${row}`] = agreement.reference;
+      hp[`E${row}`] = agreement.amount_financed;
+      hp[`F${row}`] = agreement.admin_charges;
+      hp[`G${row}`] = agreement.total_interest;
+      hp[`H${row}`] = agreement.months;
+      hp[`L${row}`] = agreement.supplier;
+    });
+  }
+
   // Straddling VAT periods (Vat.xlsx). A business registered for VAT on a
   // cycle that does not line up with its accounting year still has to return
   // the periods either side of it, and the workbook keeps a sales and a
@@ -780,6 +811,11 @@ export function multiFileOptions() {
         // state the year's asset movement rather than one closing total.
         Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
+        // E2 is the long-term-creditors total for the "New Hire Purchase
+        // Agreements" block (SUM(E8:E14)); I/J/K on rows 8 and 10 are the
+        // two scenario agreements' own monthly payment, capital and
+        // interest split.
+        HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
         Payment: Object.values(paymentCells).flat(),
@@ -941,10 +977,7 @@ export function reportSections(results) {
 
 // The year's asset movement, laid out the way a fixed asset note lays it out.
 // The package has no such note, so without this the only closing figure in
-// the report is the schedule's own K1 column total -- and that total is
-// cost less accumulated depreciation over every row still on the sheet, an
-// asset sold during the year included. The last two rows state that
-// difference instead of leaving a reader to find it.
+// the report is the schedule's own K1 column total.
 function fixedAssetSection(results) {
   const schedule = results["Fixedassets.xlsx!Schedule"];
   if (!schedule) return null;
@@ -972,18 +1005,13 @@ function fixedAssetSection(results) {
       { label: "Accumulated depreciation on the assets sold (Schedule X1)", value: fmt(disposalDepreciation), indent: 1 },
       { label: "**Accumulated depreciation carried forward, disposals removed**", value: fmt(depreciationCarriedForward), indent: 0 },
       {
-        label: "**Net book value at the year end, disposals removed**",
+        label: "**Net book value at the year end (Schedule K1)**",
         value: fmt(costCarriedForward - depreciationCarriedForward),
         indent: 0,
       },
       { label: "", value: "" },
       { label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)", value: fmt(num(schedule.V1)), indent: 1 },
       { label: "Net book value of the assets sold at the date of sale", value: fmt(disposalBookValue), indent: 1 },
-      {
-        label: "Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet",
-        value: fmt(num(schedule.K1)),
-        indent: 1,
-      },
     ],
   };
 }
@@ -1656,14 +1684,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const sched = results["Fixedassets.xlsx!Schedule"];
   if (sched) {
-    // 2. Closing NBV identity within the Schedule itself: cost minus
-    //    accumulated depreciation carried forward. (The equivalent opening
-    //    identity does not hold in this template: the "New Fixed Assets"
-    //    rows have no opening-WDV formula at all -- G is blank for a New
-    //    row regardless of E -- so G1 is the existing-assets figure alone
-    //    while E1/F1 include in-year additions. Asserting G1 = E1-F1 would
-    //    be checking a false identity, not the workbook's own logic.)
-    check("Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", sched.K1 || 0, (sched.E1 || 0) - (sched.J1 || 0));
+    // 2. Closing NBV identity within the Schedule itself: cost less
+    //    disposals, less depreciation carried forward less depreciation on
+    //    the disposals. (The equivalent opening identity does not hold in
+    //    this template: the "New Fixed Assets" rows have no opening-WDV
+    //    formula at all -- G is blank for a New row regardless of E -- so
+    //    G1 is the existing-assets figure alone while E1/F1 include in-year
+    //    additions. Asserting G1 = E1-F1 would be checking a false
+    //    identity, not the workbook's own logic.)
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      sched.K1 || 0,
+      (sched.E1 || 0) - (sched.W1 || 0) - ((sched.J1 || 0) - (sched.X1 || 0)),
+    );
 
     // The schedule's cost total against its own two halves, so the Fixed
     // Asset Schedule section's opening and additions lines are the sheet's
@@ -1684,6 +1717,53 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const expectedDisposalLoss = -((sched.V1 || 0) - (sched.W1 || 0) + (sched.X1 || 0));
       check("P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1)", plDisposalLoss, expectedDisposalLoss);
     }
+  }
+
+  // ── HP finance agreements (Fixedassets.xlsx HPfinance sheet) ────────────
+  // Each check is anchored in the agreement's own fixture fields, not in
+  // another cell of the same sheet, so a schedule that is merely
+  // self-consistent cannot pass.
+  const hp = results["Fixedassets.xlsx!HPfinance"];
+  if (hp && expected.hp_agreements) {
+    const [agreement1, agreement2] = expected.hp_agreements;
+    if (agreement1) {
+      check(
+        "HP: first agreement monthly payment = the amount financed with charges over its term",
+        hp.I8 || 0,
+        (agreement1.amount_financed + agreement1.admin_charges + agreement1.total_interest) / agreement1.months,
+      );
+      check("HP: first agreement capital and interest split sums to the monthly payment", (hp.J8 || 0) + (hp.K8 || 0), hp.I8 || 0);
+    }
+    if (agreement2) {
+      check(
+        "HP: second agreement monthly payment computes",
+        hp.I10 || 0,
+        (agreement2.amount_financed + agreement2.admin_charges + agreement2.total_interest) / agreement2.months,
+      );
+      check("HP: second agreement capital and interest split sums to the monthly payment", (hp.J10 || 0) + (hp.K10 || 0), hp.I10 || 0);
+    }
+    check(
+      "HP: long term creditors = the agreements' amounts financed",
+      hp.E2 || 0,
+      expected.hp_agreements.reduce((s, a) => s + a.amount_financed, 0),
+    );
+  }
+
+  // The year's HP interest and admin charges reaching the P&L's own "HP
+  // Interest, Lease, Bank Charges" line, through Bank.xlsx/Cash.xlsx code
+  // "B" -- the same bank-charges code every other direct payment on that
+  // line already uses. Computed from the scenario's own bank transactions,
+  // not from the P&L cell it is compared to, so a broken cross-file link
+  // shows up here rather than passing by construction.
+  if (pl && expected.bank) {
+    let bankChargesTotal = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "B") continue;
+        bankChargesTotal += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    check("P&L: HP interest and charges reach the finance line (B31)", pl.B31 || 0, bankChargesTotal);
   }
 
   // ── Bank (item 6): each leaf's closing balance vs the scenario's own cash

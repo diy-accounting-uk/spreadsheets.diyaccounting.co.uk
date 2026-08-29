@@ -129,6 +129,17 @@ describeCalc(
       expect(results["PubP&L"]?.F49).toBeGreaterThan(0);
     });
 
+    // ── Fixed assets: the Schedule nets the sold van out of the closing
+    // book value instead of carrying its cost and depreciation forever.
+    it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
+      const sched = results["Fixedassets.xlsx!Schedule"];
+      expect(sched.E1).toBe(65500);
+      expect(sched.J1).toBe(21838);
+      expect(sched.W1).toBe(30000);
+      expect(sched.X1).toBe(17328);
+      expect(sched.K1).toBe(30990);
+    });
+
     // ── Published Balance Sheet assertions ─────────────────────────────────
 
     it("PubBalSht: sheet was read", () => {

@@ -692,6 +692,38 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     });
   }
 
+  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet). Only two
+  // rows are available for scenario agreements before the sheet's own
+  // layout runs out: row 8 (the "New" block's working master, whose
+  // monthly-payment formula was never broken) and row 10 (the first row
+  // the #REF! repair fixes). B=agreement date, C=finance company,
+  // D=reference, E=amount financed, F=admin charges, G=total interest,
+  // H=term in months, L=supplier. Written left to right per row, matching
+  // the Schedule writer above.
+  const HP_AGREEMENT_ROWS = [8, 10];
+  const hpFinanceWrites = {};
+  if (scenario.hp_agreements) {
+    const hp = hpFinanceWrites;
+    if (scenario.hp_agreements.length > HP_AGREEMENT_ROWS.length) {
+      throw new Error(
+        `cellWrites: ${scenario.hp_agreements.length} hp_agreements but only ${HP_AGREEMENT_ROWS.length} HPfinance rows available`,
+      );
+    }
+    scenario.hp_agreements.forEach((agreement, i) => {
+      const row = HP_AGREEMENT_ROWS[i];
+      const d = shiftDate(parseDate(agreement.date));
+      hp[`B${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+      hp[`C${row}`] = agreement.finance_company;
+      hp[`D${row}`] = agreement.reference;
+      hp[`E${row}`] = agreement.amount_financed;
+      hp[`F${row}`] = agreement.admin_charges;
+      hp[`G${row}`] = agreement.total_interest;
+      hp[`H${row}`] = agreement.months;
+      hp[`L${row}`] = agreement.supplier;
+    });
+    if (Object.keys(hpFinanceWrites).length > 0) fixedAssetsWrites.HPfinance = hpFinanceWrites;
+  }
+
   // Bank entries — one workbook per bank account, receipts and payments on
   // opposite sides of each month tab.
   const bankFileWrites = {};
@@ -1324,6 +1356,11 @@ export function multiFileOptions(yearEndMonth) {
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
         FAreconciliation: ["E11", "K11"],
+        // E2 is the long-term-creditors total for the "New Hire Purchase
+        // Agreements" block (SUM(E8:E26)); I/J/K on rows 8 and 10 are the
+        // two scenario agreements' own monthly payment, capital and
+        // interest split.
+        HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
         Payment: paymentCells,
@@ -1475,7 +1512,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     V1: "Sale proceeds of the assets sold in the year, net of VAT",
@@ -2044,6 +2081,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // never in another cell of the note, so consistent zeros cannot pass.
   const schedule = results["Fixedassets.xlsx!Schedule"];
   const notes = results.PubNotes;
+  if (schedule) {
+    // Closing NBV identity within the Schedule itself: cost less disposals,
+    // less depreciation carried forward less depreciation on the disposals.
+    check(
+      "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
+      num(schedule.K1),
+      num(schedule.E1) - num(schedule.W1) - (num(schedule.J1) - num(schedule.X1)),
+    );
+  }
   if (schedule && notes) {
     for (const [className, layout] of Object.entries(SCHEDULE_ASSET_CLASSES)) {
       const col = layout.noteColumn;
@@ -2229,15 +2275,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // in the book. The register's own valuation column is the ceiling: the
   // directors valued the charged assets at the date of charging, and a
   // creditor secured on them cannot exceed that valuation.
+  //
+  // The same TrialBalance row also carries -[1]HPfinance!$E$2 (verified
+  // against the template): the hire purchase agreements' amounts financed
+  // reach this line too, alongside -HPfinance!$E$2's opposite-signed twin on
+  // the Trade Creditors row. A hire purchase agreement is itself secured on
+  // the asset it finances, so it belongs in the same ceiling as the
+  // registered charge, not against it -- the total long-term creditor
+  // figure has to cover both.
+  const hp = results["Fixedassets.xlsx!HPfinance"];
   const charges = results["Companysecretary.xlsx!Charges&Debentures"];
   if (charges && pubBalSht) {
     const chargedValue = CHARGE_REGISTER_ROWS.reduce((sum, row) => sum + num(charges[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`]), 0);
     const longTermCreditors = num(pubBalSht.E30);
+    const hpAmountFinanced = num(hp?.E2);
 
-    // The creditor itself, against the scenario's own opening balance and
-    // whatever the year drew down or repaid on it (bank code LCR). Without
-    // this the coverage check below could be satisfied by a balance sheet
-    // that carries any secured debt at all rather than this one.
+    // The creditor itself, against the scenario's own opening balance,
+    // whatever the year drew down or repaid on it (bank code LCR), and the
+    // hire purchase agreements' amounts financed. Without this the coverage
+    // check below could be satisfied by a balance sheet that carries any
+    // secured debt at all rather than this one.
     if (expected.opening_balance?.long_term_creditors !== undefined) {
       let drawnDown = 0;
       for (const transactions of Object.values(expected.bank || {})) {
@@ -2247,9 +2304,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
       check(
-        "Published balance sheet: creditors due after more than one year = the secured loan",
+        "Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements",
         longTermCreditors,
-        expected.opening_balance.long_term_creditors + drawnDown,
+        expected.opening_balance.long_term_creditors + drawnDown + hpAmountFinanced,
       );
     }
 
@@ -2257,8 +2314,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       checks.push({
         name: "Charges register: the balance sheet carries a creditor falling due after more than one year",
         actual: longTermCreditors,
-        expected: `more than 0 and no more than the ${chargedValue} the directors valued the charged assets at`,
-        pass: longTermCreditors > 0 && longTermCreditors <= chargedValue,
+        expected: `more than 0 and no more than the ${chargedValue + hpAmountFinanced} the directors valued the charged assets and the hire purchase agreements finance`,
+        pass: longTermCreditors > 0 && longTermCreditors <= chargedValue + hpAmountFinanced,
         diff: "",
       });
     }
@@ -2297,6 +2354,52 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(pl.B39),
       num(schedule.W1) - num(schedule.X1) - num(schedule.V1),
     );
+  }
+
+  // ── HP finance agreements (Fixedassets.xlsx HPfinance sheet) ────────────
+  // Each check is anchored in the agreement's own fixture fields, not in
+  // another cell of the same sheet, so a schedule that is merely
+  // self-consistent cannot pass.
+  if (hp && expected.hp_agreements) {
+    const [agreement1, agreement2] = expected.hp_agreements;
+    if (agreement1) {
+      check(
+        "HP: first agreement monthly payment = the amount financed with charges over its term",
+        num(hp.I8),
+        (agreement1.amount_financed + agreement1.admin_charges + agreement1.total_interest) / agreement1.months,
+      );
+      check("HP: first agreement capital and interest split sums to the monthly payment", num(hp.J8) + num(hp.K8), num(hp.I8));
+    }
+    if (agreement2) {
+      check(
+        "HP: second agreement monthly payment computes",
+        num(hp.I10),
+        (agreement2.amount_financed + agreement2.admin_charges + agreement2.total_interest) / agreement2.months,
+      );
+      check("HP: second agreement capital and interest split sums to the monthly payment", num(hp.J10) + num(hp.K10), num(hp.I10));
+    }
+    check(
+      "HP: long term creditors = the agreements' amounts financed",
+      num(hp.E2),
+      expected.hp_agreements.reduce((s, a) => s + a.amount_financed, 0),
+    );
+  }
+
+  // The year's HP interest and admin charges reaching the P&L's own "Bank
+  // Charges" line (MnthP&L!B36), through the "B" bank-payment code every
+  // other direct bank charge on that line already uses. Computed from the
+  // scenario's own bank transactions, not from the P&L cell it is compared
+  // to, so a broken cross-file link shows up here rather than passing by
+  // construction.
+  if (pl && expected.bank) {
+    let bankChargesTotal = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "B") continue;
+        bankChargesTotal += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), bankChargesTotal);
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash

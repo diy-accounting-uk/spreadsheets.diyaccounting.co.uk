@@ -4708,6 +4708,26 @@ netPay = 1048
 opening = 10000
 closing = 6000
 
+[[hp_agreements]]
+date = 2025-06-01
+finance_company = "Close Brothers Asset Finance"
+reference = "HP-2025-01"
+amount_financed = 13000
+admin_charges = 200
+total_interest = 1800
+months = 20
+supplier = "Precision Tooling Supplies"
+
+[[hp_agreements]]
+date = 2025-09-01
+finance_company = "Close Brothers Asset Finance"
+reference = "HP-2025-02"
+amount_financed = 7000
+admin_charges = 100
+total_interest = 1000
+months = 20
+supplier = "Precision Tooling Supplies"
+
 [[opening_debtors]]
 customer = "Acme Corp"
 invoice = "INV-0901"

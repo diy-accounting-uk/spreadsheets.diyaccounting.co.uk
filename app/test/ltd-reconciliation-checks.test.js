@@ -235,6 +235,34 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([name]);
     });
 
+    it("fails the Schedule's own closing NBV identity when Schedule!K1 is corrupted via JSZip", async () => {
+      const real = results["Fixedassets.xlsx!Schedule"].K1;
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "K1", real + 5000);
+      const name = "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "K1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the closing NBV identity and the note/P&L disposal ties together when Schedule!W1 is corrupted via JSZip", async () => {
+      const real = results["Fixedassets.xlsx!Schedule"].W1;
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "W1", real + 5000);
+      const name = "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals";
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "W1", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      // W1 (the Schedule's own grand total for cost of the assets sold) also
+      // feeds the fixed asset note's disposals-at-cost row and the P&L's
+      // loss-on-disposal tie, so both move with it.
+      expect(failureNames(corrupted)).toEqual(
+        expect.arrayContaining([
+          name,
+          "Fixed asset note: total disposals at cost = Schedule",
+          "P&L: loss on disposal = Schedule cost less depreciation less proceeds",
+        ]),
+      );
+      expect(failureNames(corrupted)).toHaveLength(3);
+    });
+
     it("fails the balance sheet tie when PubBalSht F6 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "F6", 0);
       expect(value).toBe(0);
@@ -1009,10 +1037,13 @@ describeCalc(
       expect(failureNames(onAnotherYearEnd)).toEqual(["Admin: year-end seed = the package's own year end"]);
     });
 
-    it("registers the charge over the company's assets and carries the loan it secures", () => {
+    it("registers the charge over the company's assets and carries the loan it secures, plus the hire purchase agreements", () => {
       const charges = results["Companysecretary.xlsx!Charges&Debentures"];
       expect(charges.C2).toBe(30000);
-      expect(results.PubBalSht.E30).toBe(25000);
+      // 25,000 secured bank loan plus the two hire purchase agreements'
+      // amounts financed (13,000 + 7,000), which reach the same TrialBalance
+      // row through HPfinance!E2 (verified against the template).
+      expect(results.PubBalSht.E30).toBe(45000);
     });
 
     it("fails the charge coverage when the directors valuation is corrupted via JSZip", async () => {
@@ -1029,7 +1060,7 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("PubBalSht", "E30", value);
       expect(failureNames(corrupted)).toEqual([
-        "Published balance sheet: creditors due after more than one year = the secured loan",
+        "Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements",
         "Charges register: the balance sheet carries a creditor falling due after more than one year",
       ]);
     });

@@ -132,6 +132,35 @@ const straddlingPurchases = [
   { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
 ];
 
+// Hire purchase agreements financing equipment (SE, Ltd). The first lands
+// on the HPfinance sheet's working master row (8); the second lands on the
+// first row the #REF! repair fixes (10). Figures are chosen so the monthly
+// payment, capital and interest split all come out exact to the penny:
+//   agreement 1: (13000 + 200 + 1800) / 20 = 750.00, interest 1800/20 = 90.00
+//   agreement 2: (7000 + 100 + 1000) / 20 = 405.00, interest 1000/20 = 50.00
+const hpAgreements = [
+  {
+    date: "2025-06-01",
+    finance_company: "Close Brothers Asset Finance",
+    reference: "HP-2025-01",
+    amount_financed: 13000,
+    admin_charges: 200,
+    total_interest: 1800,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  },
+  {
+    date: "2025-09-01",
+    finance_company: "Close Brothers Asset Finance",
+    reference: "HP-2025-02",
+    amount_financed: 7000,
+    admin_charges: 100,
+    total_interest: 1000,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  },
+];
+
 // ============================================================================
 // Extract BST (basic)
 // ============================================================================
@@ -264,6 +293,7 @@ const advToml = formatScenarioToml(
     closing_creditors: closingCreditors,
     vat_straddling_sales: straddlingSales,
     vat_straddling_purchases: straddlingPurchases,
+    hp_agreements: hpAgreements,
   },
 );
 
@@ -343,6 +373,7 @@ const fullToml = formatScenarioToml(
     closing_creditors: closingCreditors,
     vat_straddling_sales: straddlingSales,
     vat_straddling_purchases: straddlingPurchases,
+    hp_agreements: hpAgreements,
   },
 );
 
