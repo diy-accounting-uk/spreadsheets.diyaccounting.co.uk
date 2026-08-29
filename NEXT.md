@@ -6,18 +6,22 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`.
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Tracks merge into `claude/wave-1` (PR #39); generate-* run there with skip-commit before merge to main.
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
-| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
-| se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | `sp-se-checks` | started |
-| taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | `sp-taxi` | started |
-| vat-stagger | VATQtr5 stagger and dropdown range | `sp-vat-stagger` | started |
-| pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` | started |
-| template-design | design doc `PLAN_TEMPLATE_SURGERY.md` for the shipped-template items (SE/BST income tax, Ltd CT and CT600, Fixedassets NBV, HPfinance #REF!, Salesinvoice G6, expensesform mileage) | `sp-template-design` | started |
+| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README; cash and stock notes; F21 year-end anchor | merged into `claude/wave-1` `9ff2476f`, blast radius running | cash 250,544 → 216,095; stock adjustment −4,000 → −102 |
+| se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | landed on `claude/wave-1`, 208 tests, worktree removed | 59 SA103F checks, 31 calendar checks |
+| taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
+| vat-stagger | VATQtr5 stagger and dropdown range | landed on `claude/wave-1` `3c85466a`, 219 tests, worktree removed | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
+| pages | report front-matter on pages; year-end into checkCompliance | `sp-pages` (now hosts `claude/wave-1`) | landed on `claude/wave-1` (PR #39), 28 tests; ltd.js year-end anchor handed to ltd-checks |
+| template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
+| income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; CIS sign in bst.js and the BST P&L | landed on `claude/wave-2` `50ede53b`, 1541 tests, worktree removed | SE 45,317.96 → 51,324.93; BST 78,035 → 88,131.60, both statutory |
+| ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
+| salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
+| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | waiting for ltd-checks (shared fixture master data) |
 
-Wave 2 (after the design lands): ltd-ct, se-tax, bst-tax, fixed-assets (+HP checks), salesinvoice (+formula presence), ltd-writes (Boardmeeting!E4, mileage rate).
+Still to dispatch: ltd-writes (Boardmeeting!E4 from the scenario) after ltd-ct lands.
 
 ## Open items
 
@@ -36,11 +40,14 @@ Coverage checks still to write:
   margins, year end, dividend, share register; nothing asserted today. Test: Report
   figures equal PubP&L/PubBalSht/RegisterofMembers sources on ltd-scenario-full;
   expected the filed report quotes the books' numbers and the judge reads it coherent.
-- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the Report's
-  dividend line D94 reads it across a cross-file link and is dead in every package.
-  Test: scenario declares a dividend, E4 carries it, Report D94 shows it, and the
-  dividend ties to the P&L appropriation/creditor the books carry. (This is the
-  original coverage plan's parked operator question about the Report sheet.)
+- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the dividend
+  cycle is unwired end to end: bank `DV` payments reach the trial balance's dividends
+  creditor, `PubP&L!F52` reads `TrialBalance!EJ48` which no month column feeds, nothing
+  declares on `Boardmeeting!E4`, and Report D94 reads E4 across a cross-file link. The
+  fixture pays 15,000 and publishes 0 (a warning since wave 1). Test: scenario declares a
+  dividend, E4 carries it, D94 shows it, F52 publishes it, and the creditor nets to the
+  unpaid balance. With it: `RegisterofMembers!A3` (member name) is never written, so the
+  report's shareholder lines publish a holding with no holder.
 - [ ] **`Charges&Debentures` to long-term creditors link check (Ltd)** — a registered
   charge implies a long-term creditor; nothing links the register to the balance
   sheet. Test: a fixture charge entry and an assertion the balance sheet's long-term
@@ -48,10 +55,12 @@ Coverage checks still to write:
 - [ ] **Taxi `VitalTax` quarterly checks** — the MTD quarterly re-summing path,
   unasserted; SE's twin is the proven pattern. Test: each quarterly rollup and the G
   annual column equal the P&L's own figures; expected all-pass on taxi-scenario-basic.
-- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — the payroll calendar is
-  generator-written, rotates with the year end, and is never read back; the last
-  member of the Admin-echo family. Test: assert the calendar's month names and dates
-  against Admin!B9's rotation, as the four closed echoes do.
+- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — SE's echo landed in wave 1; Ltd's
+  is in the ltd-checks track. Remainder: `generatePayslipsCalendar` (generator.js) lays out
+  a fixed 53 weeks / 380 rows, so `I1 = B366` reads one day short in a tax year spanning a
+  leap February (2027-28). Fix the row count from the year and assert I1 against the year
+  end on a leap-year fixture. Also add an SA103F report indicator (box 30/46 divergence)
+  once the regenerated SE report carries the section `judge-reconciliation.test.js` parses.
 - [ ] **HPfinance fixture and capital/interest checks (Ltd and SE)** — the sheet that
   decides how much of an HP payment is deductible has no fixture. Depends on the
   #REF! repair below. Test: a fixture agreement (counter-legged, EJ91 stays 0),
@@ -63,16 +72,15 @@ Coverage checks still to write:
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 
-- [ ] **SE Income Tax: personal-allowance taper and additional rate** — the sheet grants
-  the full allowance at any profit (£144,715 in the advanced fixture keeps all £12,570;
-  tax understated ~£5,028) and stops at the higher rate; the Admin block carries no
-  taper threshold. Confirmed by four independent judge samples. The SE sibling of the
-  BST band item below.
-- [ ] **VATQtr5 default stagger is wrong as shipped** — generator sets Q1-Q4 at
-  quarterly steps but Q5 at one month after Q4 (`monthsFromStart = q <= 4 ? q * 3 : 13`),
-  so filing all five returns as shipped declares two periods twice, and the G5 dropdown
-  cannot even offer the correct next quarter end. The reports now state each return's
-  coverage; the template's fix is the stagger and the dropdown range.
+- [ ] **SE Income Tax: personal-allowance taper and additional rate** — code-complete on
+  `claude/wave-2` (with the `generate.js --output-dir` redirect fix); closes when
+  generate-se refreshes packages and reports.
+- [ ] **VATQtr5 default stagger** — remainder after wave 1: Q5 now ends on Vatinterface
+  row 19, the last period the interface totals, so one period (row 17) is still declared
+  twice. A fully consecutive fifth quarter needs Vatinterface row 20, a `S/P 06Y2` entry
+  sheet pair in `Vatreturns.xlsx`/`Vat.xlsx`, Admin B-column rows in `Financialaccounts.xlsx`
+  for its period end and payment-due date, and `K2:K16` on the dropdown. Test: the
+  `VAT: periods more than one of the five returns declares` warning converts to a hard 0.
 - [ ] **Fixedassets Schedule retains sold assets in its closing NBV columns** (Ltd and
   SE templates) — K = E − J with the disposal columns as memo-only, so K1 includes the
   book value of assets sold in the year (SE advanced: 43,662 shown vs 30,990 true).
@@ -83,18 +91,18 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 - [ ] **HPfinance `#REF!` repair (Ltd and SE templates)** — rows 10 onward compute the
   monthly payment from `#REF!`; a customer's second agreement computes nothing.
   Test: after repair, row 10+ formulas mirror row 8's; the new HP checks pass.
-- [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — the sheet
-  works basic and higher only, so £265,508 of profit charges 40% all the way up.
-  Test: hand-computed statutory tax on the Precision Code profit becomes a hard-pass
-  check; the current judge note about the limitation is removed.
+- [ ] **BST Income Tax: additional-rate band and personal-allowance taper** — code-complete
+  on `claude/wave-2` (statutory £88,131.60 on £226,508 is a hard-pass check; judge note
+  removed); closes when generate-bst refreshes packages and reports.
 - [ ] **Ltd CorporationTax: marginal-relief step** — plan of record:
   `_developers/backlog/PLAN_LTD_MARGINAL_RELIEF.md`. The sheet charges the whole
   chargeable profit at Admin!P6's single rate; £147,519.90 is charged £28,028.78
   where statute gives £35,342.77. Test: the existing warning carrying the statutory
   figure converts to a hard-pass check; EJ91 and the CT600 ties stay green.
 - [ ] **Ltd CT600: wire row 128 (boxes 53-56)** — the form's second financial-year row
-  reads nothing, so box 63 files the first tax row alone (£13,995.22 against a
-  £28,028.78 charge). Test: box 63 equals the working sheet's K35; the "box 56 is
+  reads nothing, so box 63 files the first tax row alone (£14,014.39 against a
+  £28,028.78 charge on the 31 March 2026 package); underneath, Admin!L7/N7 name the year
+  after the period so the two tax rows split the profit 365/365. Test: box 63 equals the working sheet's K35; the "box 56 is
   blank" hard check inverts to assert the wired value.
 - [ ] **Salesinvoice Product Details G6 margin (Ltd and SE templates)** — G6 holds the
   margin-percentage formula where the margin belongs; H6 is empty. Test: G6 = C6-F6,
@@ -112,9 +120,14 @@ Small follow-ups:
 - [ ] **CONTEXT_LIMITED_COMPANY.md cell-map corrections** — the Ltd workstream report
   lists the wrong PubP&L/PubBalSht/MnthP&L/CT rows; ltd.js CELL_MAP is already
   corrected. Docs-only.
-- [ ] **Reconcile the Ltd fixture's turnover with its README** — the fixture publishes
-  ~£341k net against the ~£184k the README's transaction list implies. Decide which
-  is right and align the other.
+- [ ] **Ltd fixture remainders** (turnover/README aligned in wave 1: the fixture was
+  right) — the CT payment (4,500) and CIS remittances are bank-coded `RP` so they land
+  in the PAYE creditor; recoding to `RT`/`RC` throws in the SE writer (`se.js:61` analyses
+  no payment under `RV`/`RT`/`RC`), so the SE writer needs those codes first. The Innovate
+  UK grant receipt is coded `RV` (VAT creditor) instead of `DR`; recoding needs the
+  hand-written `closingDebtors` list in `extract-scenarios.js:94` to derive from the
+  fixture. `OpenAccounts!E48` is `=E15`, so the prior-year P&L column shows −10,000 cost
+  of sales on zero turnover (a warning since wave 1).
 - [ ] **Render report front-matter on the published pages** — build-reconciliation-pages
   ignores text before the first `##` heading, so the new scenario descriptions reach the
   reports but not the pages. One-line parser change.

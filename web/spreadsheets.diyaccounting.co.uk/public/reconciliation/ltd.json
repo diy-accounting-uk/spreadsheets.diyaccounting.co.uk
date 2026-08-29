@@ -7,7 +7,7 @@
   "yearEnd": "2027-09-30",
   "status": "RECONCILES (with warnings)",
   "runs": 94,
-  "updated": "2026-08-28",
+  "updated": "2026-08-29",
   "features": {
     "checks": true,
     "sales": true,
