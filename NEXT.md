@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 | What | Where | Status |
 |---|---|---|
-| vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, blast radius running; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
+| vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, 1567 tests; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
 | fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | `sp-fixture` off `claude/wave-3` | started |
 | sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
 
