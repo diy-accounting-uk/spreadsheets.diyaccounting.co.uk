@@ -13,7 +13,7 @@ commit first, since the forecast templates and the taxi fixture change what is g
 
 | Track | Items | Status |
 |---|---|---|
-| forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` repairs and checks; Taxi `Draft Tax calculation` taper and additional rate with a high-profit taxi fixture | started |
+| forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` tax blocks; Taxi `Draft Tax calculation` taper and additional rate; `kestrel-executive-cars` fixture | merged into `claude/wave-4` `e7f56450`, blast radius running |
 | se-q5-window | `yearShift` rework so SE's Q5 scenario window is checked like Q1-Q4 | landed on `claude/wave-4`, 1039 tests, worktree removed |
 | ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK`; schema brought up to the fixture with a validation test | landed on `claude/wave-4` `1cc9d259`, 432 tests; PAYE and CIS creditors 0, VAT creditor −9,135.79 measured |
 | fidelity-design | `PLAN_ROUNDTRIP_FIDELITY.md` rewritten: measured scope gap (JS side far behind the Excel checks; S1 flipped, exporter collapses account identity, schemas unvalidated), tracks T0-T7 | landed on `claude/wave-4` `7b2ccd58`, worktree removed |
@@ -28,17 +28,14 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Checks, indicators and docs:
 
-- [ ] **Forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`** — each prints a
-  "TAX & NI LIABILITY" nothing reads, and both are wrong by construction: the derived rows
-  carry formulas in columns D and E only (SE charges tax on April alone, Taxi on April and
-  May), and both use a flat allowance and two bands. Template fix: extend the formulas
-  across F:O and apply the taper and additional rate; then checks anchored to
-  `Profit & Loss Account!B33+B34` and `Schedule!Q1+R1+Y1-Z1` (SE) and the P&L (Taxi).
-- [ ] **Taxi `Draft Tax calculation`: taper and additional rate** — `E6` grants the full
-  allowance at any profit and `E10` sums two bands, while `taxi.js:502` compares E10 to
-  `calculateExpectedTax`, which tapers and charges 45%. Dormant only because no taxi
-  fixture crosses £100,000. Test: a high-profit taxi fixture makes the existing check fail,
-  then the template repair (as BST's) makes it pass.
+- [ ] **Forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`** — code-complete
+  on `claude/wave-4` (taper, additional band and Class 4 limits on both; checks tied to the
+  P&L and the Schedule). The "formulas in D and E only" claim was wrong: the followers are
+  self-closing shared-formula elements. Closes when the wave-4 regeneration lands.
+- [ ] **Taxi `Draft Tax calculation`: taper and additional rate** — code-complete on
+  `claude/wave-4` (a third band, Admin N5/N8/N13 generator-written, and the
+  `kestrel-executive-cars` fixture at a 144,878 profit that failed the check first). Closes
+  with the same regeneration.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
