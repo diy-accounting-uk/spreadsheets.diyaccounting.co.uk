@@ -10,7 +10,9 @@
 //      resolves via the workbook rels to Sales.xlsx, columns H and J to
 //      Purchases.xlsx, and <month> follows the package's accounting year
 //      (the month after the year-end month for Ltd, Apr..Mar for SE);
-//   2. the sibling Sales.xlsx and Purchases.xlsx workbooks name their month
+//   2. the five straddling rows (4, 5, 18, 19, 20) pull theirs from their own
+//      S/P entry sheet pair instead, and the workbook carries all ten sheets;
+//   3. the sibling Sales.xlsx and Purchases.xlsx workbooks name their month
 //      tabs in that same sequence, so every referenced tab exists.
 //
 // The month-collapse bug this guards against (every row reading the Apr
@@ -37,6 +39,11 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const FIRST_MONTH_ROW = 6;
 const SALES_COLS = ["D", "F", "M"];
 const PURCHASES_COLS = ["H", "J"];
+
+// The VAT periods either side of the accounting year, each keyed to the pair
+// of entry sheets it is entered on. Two run before the year, three after it,
+// so five consecutive quarters have a period to land on.
+const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // The twelve month-tab names for an accounting year starting the month
 // after yearEndMonth (1-indexed). Ltd year-end Apr 2026 -> May..Apr; the
@@ -187,6 +194,45 @@ describe.skipIf(workbooks.length === 0)("Vatinterface month links (all packages)
 
     expect(failures, failures.join("\n")).toEqual([]);
   });
+
+  it("every straddling row reads its own entry sheet pair", async () => {
+    const failures = [];
+
+    for (const wb of workbooks) {
+      const label = `${wb.dirName}/${wb.filename}`;
+      const zip = await JSZip.loadAsync(readFileSync(wb.filePath));
+      const sheetMap = await buildSheetMap(zip);
+      const viFile = sheetMap.get("Vatinterface");
+      if (!viFile) {
+        failures.push(`${label}: no Vatinterface sheet resolved via workbook.xml/rels`);
+        continue;
+      }
+      const viXml = await zip.file(viFile).async("string");
+
+      for (const [period, row] of Object.entries(STRADDLING_PERIOD_ROWS)) {
+        for (const [col, prefix] of [
+          ["D", "S"],
+          ["F", "S"],
+          ["H", "P"],
+          ["J", "P"],
+        ]) {
+          const sheetName = `${prefix}${period}`;
+          if (!sheetMap.has(sheetName)) {
+            failures.push(`${label}: no ${sheetName} sheet for the period on row ${row}`);
+            continue;
+          }
+          const cell = viXml.match(new RegExp(`<c r="${col}${row}"[^>]*><f>([^<]*)</f>`));
+          if (!cell) {
+            failures.push(`${label}: ${col}${row} has no formula`);
+          } else if (!cell[1].startsWith(`${sheetName}!`)) {
+            failures.push(`${label}: ${col}${row} reads ${cell[1]}, expected a ${sheetName}! reference`);
+          }
+        }
+      }
+    }
+
+    expect(failures, failures.join("\n")).toEqual([]);
+  }, 120_000);
 
   it("sibling Sales and Purchases workbooks carry the same month-tab sequence", async () => {
     const failures = [];

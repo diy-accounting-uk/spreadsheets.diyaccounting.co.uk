@@ -117,12 +117,13 @@ const closingCreditors = [
 // trial balance where it was. Gross amounts are multiples of six so the
 // standard-rate split is exact to the penny. Dates sit in the April-March
 // frame the month keys describe, two months before the year on 02Y1 and 03Y1
-// and two months after it on 04Y2 and 05Y2.
+// and three months after it on 04Y2, 05Y2 and 06Y2.
 const straddlingSales = [
   { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
   { period: "03Y1", date: "2025-03-18", customer: "Beta Systems", invoice: "INV-0802", amount: 2400 },
   { period: "04Y2", date: "2026-04-10", customer: "Acme Corp", invoice: "INV-1301", amount: 3600 },
   { period: "05Y2", date: "2026-05-12", customer: "Gamma Ltd", invoice: "INV-1302", amount: 1800 },
+  { period: "06Y2", date: "2026-06-11", customer: "Beta Systems", invoice: "INV-1303", amount: 1200 },
 ];
 
 const straddlingPurchases = [
@@ -130,6 +131,7 @@ const straddlingPurchases = [
   { period: "03Y1", date: "2025-03-24", supplier: "WorkSpace Ltd", invoice: "WS-2402", amount: 1200 },
   { period: "04Y2", date: "2026-04-15", supplier: "Shell", invoice: "SH-2604", amount: 240 },
   { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
+  { period: "06Y2", date: "2026-06-16", supplier: "WorkSpace Ltd", invoice: "WS-2606", amount: 480 },
 ];
 
 // Hire purchase agreements financing equipment (SE, Ltd). The first lands

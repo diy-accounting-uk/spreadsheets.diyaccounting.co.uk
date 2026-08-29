@@ -97,17 +97,17 @@ function netOfVat(gross, rate = VAT_RATE) {
 // ── Vat.xlsx Vatinterface layout ───────────────────────────────────────────
 // One row per VAT period, in date order. Rows 6-17 are the twelve accounting
 // months, Apr at row 6 through Mar at row 17. Rows 4 and 5 are the two VAT
-// periods before the accounting year, rows 18 and 19 the two after it; each
+// periods before the accounting year, rows 18 to 20 the three after it; each
 // is fed by its own S/P entry sheet rather than by a month tab. Column B is
 // the period end date every VATQtr sheet looks up on, C the payment due date,
 // D/F the period's sales net and output VAT, H/J its purchases net and input
 // VAT, and E/G/I/K the rolling three-row sums the VAT boxes read. M carries
 // the flat-rate flag box 6 switches on.
-const VATINTERFACE_ROWS = { first: 4, last: 19, firstMonth: 6 };
+const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
 
 // Straddling VAT period name to the Vatinterface row it feeds, and to the
 // pair of entry sheets it is entered on (S<period> and P<period>).
-const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19 };
+const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // The straddling entry sheets take the same fields as the month tabs but in
 // their own columns, and the sales and purchases sheets do not agree on them.
@@ -755,7 +755,7 @@ export function multiFileOptions() {
   // VAT, G11 EU acquisitions (always a static 0 -- no formula, never
   // generator-written), G13 box 3 total (=G9+G11), G15 box 4 input VAT
   // reclaimed, G17 box 5 net VAT due (=G13-G15), G23 box 7 net purchases
-  // value. Qtr5 ends a month after Qtr4, for a trader whose stagger runs
+  // value. Qtr5 is the quarter after Qtr4, for a trader whose stagger runs
   // past the accounting year end.
   const vatQtrCells = ["G5", "G7", "G9", "G11", "G13", "G15", "G17", "G21", "G23"];
   const vatQtrReads = {};
@@ -1946,10 +1946,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // rollforward is that it falls after the quarter-end.
     check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
 
-    // Q5 is the spare form, on the last period the Vatinterface carries, and
-    // the template's rolling 3-row SUM puts the two straddling periods after
-    // the year end into it alongside the year's own last month. That makes its
-    // window wider than the transaction dates below can describe, so its
+    // Q5's window is the quarter after the accounting year, so it holds the
+    // three straddling periods past the year end and none of the year's own
+    // months. The period-frame shift below moves a window onto the scenario's
+    // own year, which only makes sense for a window inside that year, so Q5's
     // values are anchored on the Vatinterface rows instead (see the block
     // after this loop). The identities above hold for every quarter.
     if (q === 5) continue;
@@ -2110,9 +2110,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // ── The five return forms as one cycle ────────────────────────
     //
     // Each form's own date decides which three interface rows it declares, so
-    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
-    // quarter apart and covering the twelve accounting months once each, and
-    // the spare fifth on the last period the interface carries.
+    // the five together are checked as a cycle: distinct periods, each a
+    // quarter after the one before it, Q1 to Q4 covering the twelve accounting
+    // months once each, and the fifth on the last period the interface
+    // carries.
     const periods = vatinterfacePeriods(results);
     const returnForms = [];
     for (let q = 1; q <= 5; q++) {
@@ -2127,6 +2128,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         [q1, q2],
         [q2, q3],
         [q3, q4],
+        [q4, q5],
       ]) {
         check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
       }
@@ -2139,27 +2141,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
 
-      // Five consecutive quarters need fifteen periods and the interface can
-      // total fourteen, so the spare cannot start where the fourth return
-      // ends. The period they share is the workbook's own limit, reported
-      // with the output VAT that would go in twice, and a run is not stopped
-      // for it.
-      checks.push({
-        name: "VAT: periods more than one of the five returns declares",
-        actual: coverage.shared.length,
-        expected: 0,
-        pass: coverage.shared.length === 0,
-        diff: coverage.shared.length,
-        severity: "warning",
-      });
-      checks.push({
-        name: "VAT: output VAT declared on more than one of the five returns",
-        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
-        expected: 0,
-        pass: coverage.shared.length === 0,
-        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
-        severity: "warning",
-      });
+      // Five consecutive quarters need fifteen periods and the interface
+      // carries seventeen, so no two returns reach the same one. A period
+      // declared twice would be filed twice, so it fails rather than warns,
+      // and the output VAT on it says what the second filing would repeat.
+      check("VAT: periods more than one of the five returns declares", coverage.shared.length, 0, 0);
+      check(
+        "VAT: output VAT declared on more than one of the five returns",
+        coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        0,
+        0,
+      );
     }
   }
 

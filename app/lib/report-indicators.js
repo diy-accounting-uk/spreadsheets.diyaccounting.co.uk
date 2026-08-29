@@ -181,11 +181,11 @@ function vatLine(report, vatRegistered) {
     );
   }
   // The package ships a fifth return form as well as the four quarters above. It is the
-  // spare a stagger that runs behind the accounting year needs, and it sits on the last
-  // period the book carries, which the fourth return already reaches. Without that here
-  // the fifth form's boxes read as a quarter that went missing from the four.
-  const spare = [...section.keys()].find((label) => label.includes("both cover the period"));
-  if (spare) lines.push(`The fifth return form is a spare: ${spare.slice(0, spare.indexOf(".") + 1)}`);
+  // quarter after the fourth, for a stagger that runs behind the accounting year, so every
+  // period it declares falls past the year end. Without that here the fifth form's boxes
+  // read as a quarter that went missing from the four.
+  const beyond = [...section.keys()].find((label) => label.includes("outside the accounting year"));
+  if (beyond) lines.push(`The fifth return form runs on past the year end: ${beyond.slice(0, beyond.indexOf(".") + 1)}`);
   return lines.join(" ");
 }
 

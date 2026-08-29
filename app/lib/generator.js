@@ -27,14 +27,12 @@ function stabilizeDirDates(zip) {
 // ── VAT return cycle ────────────────────────────────────────────────────────
 
 // Months from the book's first month to each of the five return forms' default
-// period ends. Q1-Q4 step a quarter at a time, so together they cover the
-// twelve accounting months once each. The fifth form is the spare a business
-// files when its VAT stagger runs behind its accounting year: it takes the
-// last period the Vatinterface carries, two months on from Q4 rather than
-// three, because the quarter one further on has no interface row to total it
-// and no entry in the K2:K15 dropdown to select it. That leaves Q4 and Q5
-// sharing their one overlapping period, which the reconciliation reports.
-export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 14];
+// period ends. Every form steps a quarter on from the one before it, so Q1-Q4
+// cover the twelve accounting months once each and Q5 is the quarter that
+// follows them, ending three months past the year end. The fifth form is the
+// one a business files when its VAT stagger runs behind its accounting year,
+// and it lands on the last of the twenty periods the Vatinterface carries.
+export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 15];
 
 // ── Date helpers ────────────────────────────────────────────────────────────
 
@@ -88,6 +86,15 @@ export function generateAdminDates(startYear) {
     B21: utcDate(startYear + 2, 1, 31),
     B22: utcDate(startYear + 2, 7, 31),
   };
+}
+
+// The Self Employed Vatinterface's last period ends three months past the tax
+// year and its payment falls due a month after that, which is later than any
+// date the Admin list above carries. Vat.xlsx reads it from Admin B25 across
+// the external link. The BST and Taxi Admin sheets share the list above but
+// have no VAT workbook, so the extra date is written only on the SE hub.
+export function seVatPaymentDueDate(startYear) {
+  return { B25: monthEnd(startYear + 1, 7) };
 }
 
 // ── XML cell editing ────────────────────────────────────────────────────────
@@ -290,7 +297,7 @@ export function buildTaxiCellEdits(taxData, startYear) {
 // NI Class 2, and VAT rate. Dates and other rates use the same positions.
 
 export function buildSeCellEdits(taxData, startYear) {
-  const dates = generateAdminDates(startYear);
+  const dates = { ...generateAdminDates(startYear), ...seVatPaymentDueDate(startYear) };
   const ty = taxData.tax_year;
   const it = taxData.income_tax;
   const ni = taxData.national_insurance;
@@ -928,7 +935,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
   // return form's default G5 from VAT_RETURN_END_MONTHS, then roll the whole
   // cached date chain — the externalLink1 Admin cache, the Vatinterface cached
-  // values, and each form's K2:K15 dropdown list — to this package's year.
+  // values, and each form's K2:K16 dropdown list — to this package's year.
   if (sheetsConfig.vatQtr1) {
     if (!sheetsConfig.vatinterface) {
       throw new Error("sheetsConfig has vatQtr sheets but no vatinterface path");
@@ -950,14 +957,14 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     if (taxData.financial_year) {
       // Ltd: the generated Admin B-column is year-end-relative around the
       // B32 = F21 anchor — B{r} = month end of (yearEnd + (r-32)/2 months).
-      for (let r = 6; r <= 38; r += 2) {
+      for (let r = 6; r <= 40; r += 2) {
         const monthIndex = yearEndYear * 12 + (yearEndMonth - 1) + (r - 32) / 2;
         adminB[r] = toExcelSerial(monthEnd(Math.floor(monthIndex / 12), (monthIndex % 12) + 1));
       }
     } else {
       // SE: the same B-column dates buildSeCellEdits writes into the
       // Financialaccounts Admin sheet.
-      for (const [cell, date] of Object.entries(generateAdminDates(startYear))) {
+      for (const [cell, date] of Object.entries({ ...generateAdminDates(startYear), ...seVatPaymentDueDate(startYear) })) {
         adminB[parseInt(cell.slice(1), 10)] = toExcelSerial(date);
       }
     }
@@ -1018,9 +1025,9 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       let sheetXml = await zip.file(sheetPath).async("string");
       sheetXml = setCellValue(sheetXml, "G5", serial);
 
-      // Roll the K2:K15 dropdown source list (cached formula values).
+      // Roll the K2:K16 dropdown source list (cached formula values).
       const kValues = [];
-      for (let k = 2; k <= 15; k++) {
+      for (let k = 2; k <= 16; k++) {
         const cellRef = `K${k}`;
         const match = matchCell(sheetXml, cellRef);
         if (!match) throw new Error(`Cell ${cellRef} not found in ${sheetPath}`);
@@ -1041,7 +1048,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       }
 
       if (!kValues.includes(serial)) {
-        throw new Error(`VATQtr${q} default G5 serial ${serial} is not in the K2:K15 list [${kValues.join(", ")}]`);
+        throw new Error(`VATQtr${q} default G5 serial ${serial} is not in the K2:K16 list [${kValues.join(", ")}]`);
       }
 
       const origDate = zip.file(sheetPath).date;

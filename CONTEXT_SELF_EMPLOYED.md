@@ -76,11 +76,11 @@ SE packages always have a 6 April year-end (following the UK tax year). During g
 
 +-----------------+
 | Vat.xlsx        |  (standalone -- NOT linked FROM Financialaccounts)
-| 14 sheets       |
+| 16 sheets       |
 | VATQtr1-5       |  Links TO: [1]Financialaccounts, [2]Sales, [3]Purchases
 | Vatinterface    |
-| S02Y1..S05Y2    |
-| P02Y1..P05Y2    |
+| S02Y1..S06Y2    |
+| P02Y1..P06Y2    |
 +-----------------+
 
 +-----------------+
@@ -229,11 +229,11 @@ Quarterly P&L summary (columns C-F = Q1-Q4, G = annual total):
 
 ### Vat.xlsx (separate file, reads FROM hub)
 
-Not in the main external link chain — Vat.xlsx reads from `[1]Financialaccounts` Admin sheet for dates and from `Vatinterface` for sales/purchase VAT totals. Each VATQtr sheet has:
+Not in the main external link chain — Vat.xlsx reads from `[1]Financialaccounts` Admin sheet for dates and from `Vatinterface` for sales/purchase VAT totals. The Vatinterface carries twenty periods on rows 4-20: the twelve accounting months on rows 6-17, two straddling periods before the year on rows 4 and 5, and three after it on rows 18, 19 and 20, each fed by its own `S`/`P` entry sheet pair. Each VATQtr sheet has:
 
 | Cell | Content | Source |
 |------|---------|--------|
-| G5 | Quarter-end date | Data entry (injected by generator) |
+| G5 | Quarter-end date | Data entry (injected by generator), picked from the `K2:K16` dropdown |
 | G7 | Box 1: VAT on sales | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!C:C)` |
 | G9 | Box 3: Total output VAT | Lookup from Vatinterface G column |
 | G13 | Box 3: Total (G9 + G11) | Formula |
@@ -372,7 +372,9 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 
 **String edits**: B23 (tax year label, e.g. "2025-26"), B24 (next tax year label)
 
-Additionally, the generator writes VAT return period end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js). A tax year ends on 5 April, mid-month, and its month tabs still run April to March, so the first accounting month is the month the year starts in, not the month after the year end.
+Additionally, the generator writes VAT return period end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js: 3, 6, 9, 12, 15). Each form is a quarter on from the one before it, so the five run consecutively and Q5 covers the three periods past the year end. A tax year ends on 5 April, mid-month, and its month tabs still run April to March, so the first accounting month is the month the year starts in, not the month after the year end.
+
+The Admin B-column date list ends at B20, the last period the Vatinterface carries. Its payment due date falls a month later, so the generator writes that one on **B25** (`seVatPaymentDueDate` in generator.js) and Vat.xlsx reads it as `[1]Admin!$B$25`.
 
 The generator also writes the payroll calendar into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
 It seeds B2 with the tax year start (6 April) and writes the week number (C), payroll month number (D) and week-in-month (F)

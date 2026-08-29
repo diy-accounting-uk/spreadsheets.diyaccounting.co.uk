@@ -321,11 +321,11 @@ Several code letters (CR, RV, RC, DL, X and the transfers) appear on both sides,
 
 ### Vatreturns.xlsx
 
-**Vatinterface sheet:** B4-B19 = month-end dates from `[1]Admin!$B${adminStartRow}`. D4-D19 = Sales VAT, F4-F19 = Sales net, H4-H19 = Purchases VAT, J4-J19 = Purchases net, M4-M19 = bank receipt analysis. All reference leaf file monthly tabs by name.
+**Vatinterface sheet:** rows 4-20, one per VAT period in date order. B = period end date from `[1]Admin!$B$r`, C = payment due date, D = sales net, F = sales output VAT, H = purchases net, J = purchases input VAT, E/G/I/K = the rolling three-row sums the VAT boxes read, M = the flat-rate flag. Rows 6-17 are the twelve accounting months and reference the leaf files' monthly tabs by name; rows 4, 5, 18, 19 and 20 are the straddling periods and reference their own S/P entry sheets.
 
-**VATQtr1-5 sheets:** G5 = quarter-end date (hardcoded by the generator). LOOKUP formulas reference Vatinterface by date for quarterly VAT calculations.
+**VATQtr1-5 sheets:** G5 = quarter-end date (written by the generator), chosen from the `K2:K16` dropdown of the twenty period ends the interface carries. LOOKUP formulas reference Vatinterface by date for quarterly VAT calculations.
 
-**S/P sheets:** S02Y1/S03Y1/S04Y2/S05Y2 (quarterly sales summaries), P02Y1/P03Y1/P04Y2/P05Y2 (quarterly purchase summaries).
+**S/P sheets:** S02Y1/S03Y1/S04Y2/S05Y2/S06Y2 (straddling sales entry), P02Y1/P03Y1/P04Y2/P05Y2/P06Y2 (straddling purchases entry).
 
 ## Non-March Year-End Transforms
 
@@ -358,7 +358,7 @@ Also uses placeholder-based two-pass renaming. Covers both `MonthName!` referenc
 
 The D-column and M-column formulas reference Sales/Purchases tabs by name (`[2]Apr!`, `[3]Apr!`), which are remapped to the correct target month names for non-March year-ends.
 
-The B-column formulas reference `[1]Admin!$B$6` through `[1]Admin!$B$38` and are NOT remapped: the generated Financialaccounts keeps the template Admin layout and sets only F21, so the Admin B-column recalculates relative to the `B32=F21` anchor and the template rows are correct for every year-end. The generator instead rolls the cached values of the whole chain (externalLink1 Admin cache, Vatinterface cells, VATQtr `K2:K15` dropdown lists) to the package's own year — see "VAT cached date chain" in `SKILL_EXCEL.md`.
+The B-column formulas reference `[1]Admin!$B$6` through `[1]Admin!$B$40` and are NOT remapped: the generated Financialaccounts keeps the template Admin layout and sets only F21, so the Admin B-column recalculates relative to the `B32=F21` anchor and the template rows are correct for every year-end. The generator instead rolls the cached values of the whole chain (externalLink1 Admin cache, Vatinterface cells, VATQtr `K2:K16` dropdown lists) to the package's own year — see "VAT cached date chain" in `SKILL_EXCEL.md`.
 
 ### Date shifting in scenarios
 
@@ -414,7 +414,7 @@ All other dates in the Admin sheet (B2-B56 monthly dates, VAT quarter dates, etc
 
 **The two corporation tax rate rows.** `Admin!K6/L6/N6` and `K7/L7/N7` set the accounting period out as the one or two UK financial years it falls in. Row 6 runs from the period start (`B9`) to the 31 March inside the period, clamped to the year end; row 7 from the day after that to `F21`. A 31 March year end fills row 6 and leaves row 7 with no days. `K6`/`K7` name each row's financial year, which is the calendar year its 1 April fell in. All six are formula cells whose cached values the generator rolls, because Fixedassets reads `Admin!N7` across the external link and a closed-workbook link update reads the stored value.
 
-**VAT return period dates:** VATQtr1-5 G5 cells are set by the generator to period ends counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js): Q1=3, Q2=6, Q3=9, Q4=12, Q5=14. Q1-Q4 cover the twelve accounting months once each. Q5 is the spare form a business files when its VAT stagger runs behind its accounting year, and it sits on the last period the Vatinterface carries -- the quarter one further on has no interface row to total it and no entry in the K2:K15 dropdown. That leaves Q4 and Q5 sharing one period, which the reconciliation reports as a warning.
+**VAT return period dates:** VATQtr1-5 G5 cells are set by the generator to period ends counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js): Q1=3, Q2=6, Q3=9, Q4=12, Q5=15. Every form is a quarter on from the one before it, so Q1-Q4 cover the twelve accounting months once each and Q5 covers the three periods past the year end. Q5 is the form a business files when its VAT stagger runs behind its accounting year, and it lands on Vatinterface row 20, the last of the twenty periods the interface carries. No period reaches two forms, and the reconciliation fails a run where one does.
 
 **Payslips calendar:** The Payslips Admin sheet B2 = PAYE tax year start (6 April). Columns C/D/F are regenerated with week numbers, month numbers, and week-in-month numbers using the fixed pattern [4,4,5, 4,4,5, 4,4,5, 4,4,6] weeks per month.
 

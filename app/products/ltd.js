@@ -274,17 +274,17 @@ function netOfVat(gross, rate = VAT_RATE) {
 // One row per VAT period, in date order. Rows 6-17 are the twelve accounting
 // months in period order (row 6 is always the period's first month, whatever
 // the year end -- the generator rewrites the month-tab references to match).
-// Rows 4 and 5 are the two VAT periods before the accounting year, rows 18
-// and 19 the two after it; each is fed by its own S/P entry sheet rather than
+// Rows 4 and 5 are the two VAT periods before the accounting year, rows 18 to
+// 20 the three after it; each is fed by its own S/P entry sheet rather than
 // by a month tab. Column B is the period end date every VATQtr sheet looks up
 // on, C the payment due date, D/F the period's sales net and output VAT, H/J
 // its purchases net and input VAT, and E/G/I/K the rolling three-row sums the
 // VAT boxes read. M carries the flat-rate flag box 6 switches on.
-const VATINTERFACE_ROWS = { first: 4, last: 19, firstMonth: 6 };
+const VATINTERFACE_ROWS = { first: 4, last: 20, firstMonth: 6 };
 
 // Straddling VAT period name to the Vatinterface row it feeds, and to the
 // pair of entry sheets it is entered on (S<period> and P<period>).
-const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19 };
+const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // Column each straddling entry sheet takes its data in. The sheets compute
 // VAT and net from the gross figure in the amount column.
@@ -1487,9 +1487,9 @@ function vatSection(results) {
     { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
     { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
   ];
-  // The package ships five return forms: four quarters from the VAT start
-  // month and one more, for a business whose quarter stagger does not line up
-  // with those four. Printing four left the fifth out of the report
+  // The package ships five return forms: five consecutive quarters from the
+  // VAT start month, for a business whose quarter stagger does not line up
+  // with its accounting year. Printing four left the fifth out of the report
   // altogether. Each form carries the period it was filled in for, and the
   // cycle rows above the boxes say which months each one reaches.
   const forms = [];
@@ -2077,9 +2077,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // ── The five return forms as one cycle ────────────────────────────────
     //
     // Each form's own date decides which three interface rows it declares, so
-    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
-    // quarter apart and covering the twelve accounting months once each, and
-    // the spare fifth on the last period the interface carries.
+    // the five together are checked as a cycle: distinct periods, each a
+    // quarter after the one before it, Q1 to Q4 covering the twelve accounting
+    // months once each, and the fifth on the last period the interface
+    // carries.
     const periods = vatinterfacePeriods(results);
     const returnForms = [];
     for (let q = 1; q <= 5; q++) {
@@ -2094,6 +2095,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         [q1, q2],
         [q2, q3],
         [q3, q4],
+        [q4, q5],
       ]) {
         check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
       }
@@ -2106,27 +2108,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
 
-      // Five consecutive quarters need fifteen periods and the interface can
-      // total fourteen, so the spare cannot start where the fourth return
-      // ends. The period they share is the workbook's own limit, reported
-      // with the output VAT that would go in twice, and a run is not stopped
-      // for it.
-      checks.push({
-        name: "VAT: periods more than one of the five returns declares",
-        actual: coverage.shared.length,
-        expected: 0,
-        pass: coverage.shared.length === 0,
-        diff: coverage.shared.length,
-        severity: "warning",
-      });
-      checks.push({
-        name: "VAT: output VAT declared on more than one of the five returns",
-        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
-        expected: 0,
-        pass: coverage.shared.length === 0,
-        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
-        severity: "warning",
-      });
+      // Five consecutive quarters need fifteen periods and the interface
+      // carries seventeen, so no two returns reach the same one. A period
+      // declared twice would be filed twice, so it fails rather than warns,
+      // and the output VAT on it says what the second filing would repeat.
+      check("VAT: periods more than one of the five returns declares", coverage.shared.length, 0, 0);
+      check(
+        "VAT: output VAT declared on more than one of the five returns",
+        coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        0,
+        0,
+      );
     }
   }
 
