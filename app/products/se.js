@@ -8,7 +8,13 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
-import { buildCategoryNetting, buildProfitBridge, categoryNettingCheckName, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import {
+  buildCategoryNetting,
+  buildProfitBridge,
+  categoryNettingCheckName,
+  PROFIT_BRIDGE_CHECK,
+  vatCycleRows,
+} from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "se",
@@ -810,12 +816,27 @@ export function standardReads() {
   return reads;
 }
 
+// What a section's cells actually sum, where the caption on the cells alone
+// would read as the whole trade. The VitalTax sheet quotes the three product
+// sales rows and the two direct cost rows, nothing else, so its annual
+// expenses figure is a fraction of the return's total expenses by design.
+const SECTION_CAPTIONS = {
+  "Quarterly Summary": [
+    "Sales here are the three product lines only (Profit & Loss Account rows 5 to 7), and expenses are the direct cost lines only (Materials and Other Direct Cost of Sales).",
+    "Grants, other income and every administrative expense are outside this summary and appear in the profit and loss account and on the SA103S.",
+  ],
+};
+
 export function reportSections(results) {
   const sectionMap = new Map();
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
     sectionMap.get(section).push({ label, value: fmt(val), indent });
+  }
+  for (const [section, captions] of Object.entries(SECTION_CAPTIONS)) {
+    const rows = sectionMap.get(section);
+    if (rows) rows.unshift(...captions.map((label) => ({ label, value: "" })));
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
   const fixedAssets = fixedAssetSection(results);
@@ -901,26 +922,25 @@ function vatSection(results) {
     { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
   ];
   // The package ships five return forms: four quarters from the VAT start
-  // month and one more ending a month after the fourth, for a trader whose
-  // stagger runs past the accounting year end. Printing four left the fifth
-  // out of the report altogether. Each form carries the period it was filled
-  // in for, so the dates go on the line rather than leaving a reader to work
-  // out why the quarters do not add up to the year.
+  // month and one more, for a business whose quarter stagger does not line up
+  // with those four. Printing four left the fifth out of the report
+  // altogether. Each form carries the period it was filled in for, and the
+  // cycle rows above the boxes say which months each one reaches.
+  const forms = [];
   const quarterRows = [];
   for (let q = 1; q <= 5; q++) {
     const boxes = results[`Vat.xlsx!VATQtr${q}`];
     if (!boxes) continue;
-    const period = periodEnding(num(boxes.G5));
+    const end = num(boxes.G5);
+    forms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, end) });
+    const period = periodEnding(end);
     quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
     quarterRows.push({ label: `Q${q}${period} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
     quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
   }
   if (quarterRows.length > 0) {
-    rows.push({
-      label:
-        "The return periods are the trader's own VAT quarters, and the last one ends a month after the fourth, so the boxes below cover their own periods and do not add up to the year's figures above.",
-      value: "",
-    });
+    rows.push(...vatCycleRows(vatinterfacePeriods(results), forms));
+    rows.push({ label: "**The return forms as the package fills them in**", value: "" });
     rows.push(...quarterRows);
   }
   return { title: "VAT Returns", rows };
@@ -1768,6 +1788,38 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 function excelSerialToUtcDate(serial) {
   const epoch = Date.UTC(1899, 11, 30);
   return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
+}
+
+// The VAT periods the interface carries, one per row, with the VAT on each
+// side and whether the period is one of the twelve accounting months.
+function vatinterfacePeriods(results) {
+  const vatinterface = results["Vat.xlsx!Vatinterface"];
+  if (!vatinterface) return [];
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const periods = [];
+  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
+    const end = num(vatinterface[`B${row}`]);
+    if (!end) continue;
+    periods.push({
+      row,
+      endLabel: periodEnding(end).replace(" (period ending ", "").replace(")", ""),
+      outputVat: num(vatinterface[`F${row}`]),
+      inputVat: num(vatinterface[`J${row}`]),
+      inAccountingYear: row >= VATINTERFACE_ROWS.firstMonth && row < VATINTERFACE_ROWS.firstMonth + 12,
+    });
+  }
+  return periods;
+}
+
+// The interface row a return form's own period end date lands on, or null
+// when the form names a date the interface does not carry.
+function vatinterfaceRowEnding(results, end) {
+  const vatinterface = results["Vat.xlsx!Vatinterface"];
+  if (!vatinterface || !end) return null;
+  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
+    if (Math.round(typeof vatinterface[`B${row}`] === "number" ? vatinterface[`B${row}`] : 0) === Math.round(end)) return row;
+  }
+  return null;
 }
 
 // The " (period ending d Month yyyy)" a VAT return line carries, or nothing

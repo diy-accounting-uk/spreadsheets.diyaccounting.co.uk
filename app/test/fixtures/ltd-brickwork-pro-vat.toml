@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro Ltd VAT"
-description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. The Employment Allowance covers the employer's National Insurance, so that line is nil."
+description = "Construction company, CIS sub-contractors, a director and one labourer on the payroll. Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. The trade scales 1.5 times against the non-VAT twin of this scenario, but both buy the same van at the same £12,000 net cost, so the £14,400 here is that same asset with VAT on it and net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil."
 product = "ltd"
 tax_regime = "ltd"
 vat_registered = true

@@ -33,8 +33,9 @@ import {
   multiFileOptions as seOptions,
   checkCompliance as seCheckCompliance,
   profitBridge as seProfitBridge,
+  categoryNetting as seCategoryNetting,
 } from "../products/se.js";
-import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import { categoryNettingCheckName, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -539,6 +540,66 @@ describeCalc(
 
       expect(failureNames(corruptedChecks)).toEqual([PROFIT_BRIDGE_CHECK]);
       expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);
+    });
+
+    it("nets every journal category the report shows to the statement figure it lands as", () => {
+      const netting = seCategoryNetting(results, mergedExpected);
+
+      expect(netting.rate).toBeGreaterThan(0);
+      expect(netting.rows.length).toBeGreaterThan(0);
+      for (const row of netting.rows) {
+        expect(row.gross).toBeGreaterThan(0);
+        expect(row.vat).toBeCloseTo(row.gross - row.net, 6);
+        expect(row.residue).toBeCloseTo(0, 6);
+      }
+
+      const capitalised = netting.rows.find((row) => row.code === "purchases fa");
+      expect(capitalised.cell).toBe("Fixedassets.xlsx!FAreconciliation!E11");
+      expect(capitalised.net).toBeCloseTo(results["Fixedassets.xlsx!FAreconciliation"].E11, 6);
+
+      const subcontractors = netting.rows.find((row) => row.code === "purchases c");
+      expect(subcontractors.cell).toBe("Profit & Loss Account!B15");
+      expect(subcontractors.net).toBeCloseTo(results["Profit & Loss Account"].B15, 6);
+    });
+
+    it("names the residue on the capitalised spend, and fails only the checks reading that cell, when the schedule additions drift", async () => {
+      const drift = 500;
+      const realValue = results["Fixedassets.xlsx!FAreconciliation"].E11;
+      expect(realValue).toBeGreaterThan(0);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Fixedassets.xlsx"), "FAreconciliation", "E11", realValue + drift);
+      expect(corrupted).toBe(realValue + drift);
+      const corruptedResults = {
+        ...results,
+        "Fixedassets.xlsx!FAreconciliation": { ...results["Fixedassets.xlsx!FAreconciliation"], E11: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+
+      const nettingRow = seCategoryNetting(corruptedResults, mergedExpected).rows.find((row) => row.code === "purchases fa");
+      expect(nettingRow.residue).toBeCloseTo(-drift, 6);
+      expect(failureNames(corruptedChecks)).toEqual([
+        "Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total",
+        "Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total",
+        categoryNettingCheckName(nettingRow),
+      ]);
+    });
+
+    it("names the residue on the subcontractor spend when the profit and loss line drifts", async () => {
+      const drift = 250;
+      const realValue = results["Profit & Loss Account"].B15;
+      expect(realValue).toBeGreaterThan(0);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), "Profit & Loss Account", "B15", realValue + drift);
+      expect(corrupted).toBe(realValue + drift);
+      const corruptedResults = {
+        ...results,
+        "Profit & Loss Account": { ...results["Profit & Loss Account"], B15: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+
+      const nettingRow = seCategoryNetting(corruptedResults, mergedExpected).rows.find((row) => row.code === "purchases c");
+      expect(nettingRow.residue).toBeCloseTo(-drift, 6);
+      expect(failureNames(corruptedChecks)).toEqual([categoryNettingCheckName(nettingRow)]);
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {

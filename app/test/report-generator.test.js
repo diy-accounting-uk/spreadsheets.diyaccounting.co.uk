@@ -2,7 +2,17 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect } from "vitest";
-import { generateReport, generateSectionReports, buildProfitBridge, PROFIT_BRIDGE_TITLE } from "../lib/report-generator.js";
+import {
+  generateReport,
+  generateSectionReports,
+  buildProfitBridge,
+  buildCategoryNetting,
+  categoryNettingCheckName,
+  categoryNettingLines,
+  vatCycleRows,
+  CATEGORY_NETTING_TITLE,
+  PROFIT_BRIDGE_TITLE,
+} from "../lib/report-generator.js";
 
 const mockProductMod = {
   reportSections: (results) => [
@@ -163,5 +173,92 @@ describe("generateSectionReports", () => {
   it("returns empty object when product has no reportSections", () => {
     const reports = generateSectionReports(mockResults, {});
     expect(Object.keys(reports)).toHaveLength(0);
+  });
+});
+
+describe("category netting", () => {
+  const nettingRows = [
+    { code: "purchases fa", label: "Capitalised fixed asset spend", gross: 14400, net: 12000, cell: "Schedule!E11", downstream: 12000 },
+    { code: "purchases c", label: "Sub contractors", gross: 36000, net: 30000, cell: "P&L!B15", downstream: 30000 },
+    { code: "purchases p", label: "Premises", gross: 0, net: 0, cell: "P&L!B22", downstream: 0 },
+  ];
+
+  it("derives the VAT stripped and the residue, and drops a category the scenario never used", () => {
+    const netting = buildCategoryNetting(0.2, nettingRows);
+    expect(netting.rows.map((row) => row.code)).toEqual(["purchases fa", "purchases c"]);
+    expect(netting.rows[0].vat).toBe(2400);
+    expect(netting.rows[0].residue).toBe(0);
+  });
+
+  it("states the residue when the downstream figure has drifted", () => {
+    const netting = buildCategoryNetting(0.2, [{ ...nettingRows[0], downstream: 11500 }]);
+    expect(netting.rows[0].residue).toBe(500);
+    expect(categoryNettingCheckName(netting.rows[0])).toBe(
+      "Category netting: Capitalised fixed asset spend (purchases fa) net reaches Schedule!E11 with no residue",
+    );
+  });
+
+  it("prints one row per category with the cell the net lands in", () => {
+    const lines = categoryNettingLines(buildCategoryNetting(0.2, nettingRows)).join("\n");
+    expect(lines).toContain(`## ${CATEGORY_NETTING_TITLE}`);
+    expect(lines).toContain("Journal amounts include VAT at 20%.");
+    expect(lines).toContain("| Capitalised fixed asset spend (purchases fa) | 14,400 | 2,400 | 12,000 | Schedule!E11 | 12,000 | 0 |");
+    expect(lines).not.toContain("Premises");
+  });
+
+  it("says gross equals net in one line when the rate is zero", () => {
+    const zeroRated = nettingRows.map((row) => ({ ...row, net: row.gross, downstream: row.gross }));
+    const lines = categoryNettingLines(buildCategoryNetting(0, zeroRated)).join("\n");
+    expect(lines).toContain("The books charge VAT at 0%.");
+    expect(lines).toContain("Gross equals net for all 2 journal categories");
+    expect(lines).not.toContain("| Journal category |");
+  });
+
+  it("puts the netting in the report and in its own section file", () => {
+    const productMod = { ...mockProductMod, categoryNetting: () => buildCategoryNetting(0.2, nettingRows) };
+    const { content } = generateReport("Pkg", "scen", mockResults, passingChecks, productMod);
+    expect(content).toContain(`## ${CATEGORY_NETTING_TITLE}`);
+    expect(generateSectionReports(mockResults, productMod)["journal-category-vat-netting.md"]).toContain(`# ${CATEGORY_NETTING_TITLE}`);
+  });
+});
+
+describe("vatCycleRows", () => {
+  // Twelve accounting months at rows 6-17, one period either side.
+  const periods = Array.from({ length: 14 }, (unused, index) => ({
+    row: 5 + index,
+    endLabel: `period ${5 + index}`,
+    outputVat: 100,
+    inputVat: 40,
+    inAccountingYear: 5 + index >= 6 && 5 + index <= 17,
+  }));
+
+  it("names the accounting month no shown return covers and the VAT sitting on it", () => {
+    const rows = vatCycleRows(periods, [
+      { name: "Q1", end: 9 },
+      { name: "Q2", end: 12 },
+      { name: "Q3", end: 15 },
+      { name: "Q4", end: 18 },
+    ]);
+    const text = rows.map((row) => `${row.label} ${row.value}`).join("\n");
+    expect(text).toContain("Q1 covers the periods ending period 7, period 8, period 9");
+    expect(text).toContain("No return above covers the accounting year's month ending period 6");
+    expect(text).toContain("Output VAT on it 100");
+    expect(text).toContain("Input VAT on it 40");
+    expect(text).toContain("The returns above also cover the period ending period 18, which falls outside the accounting year.");
+  });
+
+  it("says which periods two shown returns both cover", () => {
+    const rows = vatCycleRows(periods, [
+      { name: "Q4", end: 17 },
+      { name: "Q5", end: 18 },
+    ]);
+    const text = rows.map((row) => row.label).join("\n");
+    expect(text).toContain("Q4 and Q5 end one month apart rather than one quarter");
+    expect(text).toContain("both cover the periods ending period 16 and period 17");
+    expect(text).toContain("would declare those periods twice");
+  });
+
+  it("says nothing at all when no return form names a period the interface carries", () => {
+    expect(vatCycleRows(periods, [{ name: "Q1", end: null }])).toEqual([]);
   });
 });

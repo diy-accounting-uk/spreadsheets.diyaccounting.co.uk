@@ -91,21 +91,89 @@ export function categoryNettingLines(netting) {
   return lines;
 }
 
+// ── VAT return cycle ───────────────────────────────────────────────────────
+
+// A VAT quarter stagger follows the date the business registered, not its
+// accounting year, so the shown returns and the year's own VAT lines cover
+// different months and cannot be expected to agree. Left unstated that reads
+// as a broken total. This works it out from the sheets' own dates: which
+// periods each shown return covers, which months of the accounting year no
+// shown return reaches and what VAT is on them, which covered periods fall
+// outside the year, and where two shown returns cover the same period twice.
+//
+// periods: [{ row, endLabel, outputVat, inputVat, inAccountingYear }] in row
+// order, one per VAT period the interface carries.
+// forms:   [{ name, end }] where end is the row the form's own period end
+// date matches, or null when it matches none.
+export function vatCycleRows(periods, forms) {
+  const byRow = new Map(periods.map((period) => [period.row, period]));
+  const coverage = new Map();
+  const rows = [];
+
+  for (const form of forms) {
+    if (form.end === null || !byRow.has(form.end)) continue;
+    const covered = [form.end - 2, form.end - 1, form.end].filter((row) => byRow.has(row));
+    for (const row of covered) coverage.set(row, [...(coverage.get(row) ?? []), form.name]);
+    rows.push({
+      label: `${form.name} covers the periods ending`,
+      value: covered.map((row) => byRow.get(row).endLabel).join(", "),
+      indent: 1,
+    });
+  }
+  if (rows.length === 0) return [];
+
+  const missed = periods.filter((period) => period.inAccountingYear && !coverage.has(period.row));
+  if (missed.length > 0) {
+    const named = missed.map((period) => period.endLabel).join(", ");
+    rows.push({
+      label: `No return above covers the accounting year's ${missed.length === 1 ? "month" : "months"} ending ${named}. That month sat on the previous return of the same cycle, which is why the quarters below fall short of the year's own VAT lines.`,
+      value: "",
+    });
+    rows.push({ label: "Output VAT on it", value: reportAmount(missed.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
+    rows.push({ label: "Input VAT on it", value: reportAmount(missed.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
+  }
+
+  const outside = periods.filter((period) => !period.inAccountingYear && coverage.has(period.row));
+  if (outside.length > 0) {
+    rows.push({
+      label: `The returns above also cover the ${outside.length === 1 ? "period" : "periods"} ending ${outside.map((period) => period.endLabel).join(", ")}, ${outside.length === 1 ? "which falls" : "which fall"} outside the accounting year.`,
+      value: "",
+    });
+    rows.push({ label: "Output VAT on those", value: reportAmount(outside.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
+    rows.push({ label: "Input VAT on those", value: reportAmount(outside.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
+  }
+
+  const doubled = periods.filter((period) => (coverage.get(period.row) ?? []).length > 1);
+  if (doubled.length > 0) {
+    const forms = [...new Set(doubled.flatMap((period) => coverage.get(period.row)))].join(" and ");
+    rows.push({
+      label: `${forms} end one month apart rather than one quarter, so both cover the ${doubled.length === 1 ? "period" : "periods"} ending ${doubled.map((period) => period.endLabel).join(" and ")}. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. As shipped it is dated a month after the fourth, so filing all of them as they stand would declare ${doubled.length === 1 ? "that period" : "those periods"} twice.`,
+      value: "",
+    });
+  }
+
+  return [{ label: "**How the return periods line up with the accounting year**", value: "" }, ...rows];
+}
+
 export function generateReport(packageName, scenarioName, results, checks, productMod, scenario) {
   const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
   const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
   const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
-  const lines = [
-    `# Reconciliation Report: ${packageName}`,
-    ``,
-    `Scenario: ${scenarioName}`,
-    `Status: ${status}`,
+  const lines = [`# Reconciliation Report: ${packageName}`, ``, `Scenario: ${scenarioName}`, `Status: ${status}`];
+
+  // The scenario's own words about the business the figures below belong to.
+  // Without them a reader has the figures and no account of what was put in.
+  const metadata = scenario?.metadata ?? {};
+  if (metadata.description) lines.push(``, metadata.description);
+  if (scenario?.business?.description) lines.push(``, `Trade: ${scenario.business.description}`);
+
+  lines.push(
     ``,
     `## Compliance Checks`,
     ``,
     `| Check | Expected | Actual | Diff | Result |`,
     `|-------|----------|--------|------|--------|`,
-  ];
+  );
 
   for (const c of checks) {
     const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";

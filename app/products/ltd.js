@@ -10,7 +10,13 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
-import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import {
+  buildCategoryNetting,
+  buildProfitBridge,
+  categoryNettingCheckName,
+  PROFIT_BRIDGE_CHECK,
+  vatCycleRows,
+} from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -918,6 +924,36 @@ const PURCHASES_MONTHLY_TIE_ROWS = {
   z: 38,
 };
 
+// The management P&L's own caption for each tied row, taken from column A of
+// the template. The netting table names a category the way the statement it
+// feeds names it, so a reader can follow the letter to the line.
+const PL_ROW_CAPTIONS = {
+  4: "Sales Product A",
+  5: "Sales Product B",
+  6: "Sales Product C",
+  7: "Other Income",
+  8: "Investment Grants received",
+  12: "Sub contractors",
+  13: "Other Direct Cost of Sales",
+  18: "Wages and Salaries",
+  21: "Premises Rent & Rates",
+  22: "Premises Light & Heating",
+  23: "Distribution Transport Costs",
+  24: "Equipment Tools & Plant Hire",
+  25: "Repairs & Maintenance",
+  26: "Consumable Materials",
+  27: "Advertising & Promotion",
+  28: "Telephone Postage & Stationery",
+  29: "Travel & Hotel Expenses",
+  30: "Motor Vehicle Expenses",
+  31: "Insurance Costs",
+  32: "Leasing Charges",
+  33: "Legal & Professional Fees",
+  34: "Bad Debts written off",
+  37: "Charitable Donations",
+  38: "Goodwill written off",
+};
+
 // Admin cells the generator injects from the tax-year TOML, and the TOML
 // path each one carries. Whole-number percentages where the sheet holds a
 // percentage, fractions where it holds a fraction.
@@ -1027,7 +1063,9 @@ export function standardReads() {
     ]),
   ];
   for (const row of monthlyRows) {
-    for (const col of MONTH_COLS) add("MnthP&L", `${col}${row}`);
+    // Column B is the row's own SUM(C:N), the annual figure the netting
+    // table compares a journal category against.
+    for (const col of ["B", ...MONTH_COLS]) add("MnthP&L", `${col}${row}`);
   }
 
   // Fixed asset note, class column by class column.
@@ -1193,15 +1231,101 @@ function vatSection(results) {
     { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
     { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
   ];
-  for (let q = 1; q <= 4; q++) {
+  // The package ships five return forms: four quarters from the VAT start
+  // month and one more, for a business whose quarter stagger does not line up
+  // with those four. Printing four left the fifth out of the report
+  // altogether. Each form carries the period it was filled in for, and the
+  // cycle rows above the boxes say which months each one reaches.
+  const forms = [];
+  const quarterRows = [];
+  for (let q = 1; q <= 5; q++) {
     const boxes = results[`Vatreturns.xlsx!VATQtr${q}`];
     if (!boxes) continue;
-    rows.push({ label: `Q${q} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
-    rows.push({ label: `Q${q} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
-    rows.push({ label: `Q${q} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+    const end = num(boxes.G5);
+    forms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, end) });
+    const period = periodEnding(end);
+    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
+    quarterRows.push({ label: `Q${q}${period} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
+    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+  }
+  if (quarterRows.length > 0) {
+    rows.push(...vatCycleRows(vatinterfacePeriods(results), forms));
+    rows.push({ label: "**The return forms as the package fills them in**", value: "" });
+    rows.push(...quarterRows);
   }
   return { title: "VAT Returns", rows };
 }
+
+// The VAT periods the interface carries, one per row, with the VAT on each
+// side and whether the period is one of the twelve accounting months.
+function vatinterfacePeriods(results) {
+  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
+  if (!vatinterface) return [];
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const periods = [];
+  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
+    const end = num(vatinterface[`B${row}`]);
+    if (!end) continue;
+    periods.push({
+      row,
+      endLabel: formatSerialDate(end),
+      outputVat: num(vatinterface[`F${row}`]),
+      inputVat: num(vatinterface[`J${row}`]),
+      inAccountingYear: row >= VATINTERFACE_ROWS.firstMonth && row < VATINTERFACE_ROWS.firstMonth + 12,
+    });
+  }
+  return periods;
+}
+
+// The interface row a return form's own period end date lands on, or null
+// when the form names a date the interface does not carry.
+function vatinterfaceRowEnding(results, end) {
+  const vatinterface = results["Vatreturns.xlsx!Vatinterface"];
+  if (!vatinterface || !end) return null;
+  for (let row = VATINTERFACE_ROWS.first; row <= VATINTERFACE_ROWS.last; row++) {
+    if (Math.round(typeof vatinterface[`B${row}`] === "number" ? vatinterface[`B${row}`] : 0) === Math.round(end)) return row;
+  }
+  return null;
+}
+
+function formatSerialDate(serial) {
+  const date = new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
+  return date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
+}
+
+// The " (period ending d Month yyyy)" a VAT return line carries, or nothing
+// at all when the form has no date on it.
+function periodEnding(serial) {
+  return serial ? ` (period ending ${formatSerialDate(serial)})` : "";
+}
+
+// The asset workbook's totals rows carry no caption of their own, so the
+// appendix printed them as bare letters and a reader had to guess which
+// column was cost, which was depreciation and which was the disposals.
+// Every label here is the column's formula read back from the template.
+const FIXED_ASSET_CELL_LABELS = {
+  "Fixedassets.xlsx!Schedule": {
+    E1: "Total cost of every asset on the schedule, assets sold in the year included",
+    F1: "Total accumulated depreciation brought forward",
+    G1: "Total net book value brought forward (cost less depreciation brought forward)",
+    I1: "Total depreciation charged for the year",
+    J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
+    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    Q1: "Total annual investment allowance claimed",
+    R1: "Total writing down allowance claimed",
+    V1: "Sale proceeds of the assets sold in the year, net of VAT",
+    W1: "Cost of the assets sold in the year",
+    X1: "Accumulated depreciation on the assets sold in the year",
+    Y1: "Balancing allowance on the disposals",
+    Z1: "Balancing charge on the disposals",
+    E57: "Cost of the assets owned at the start of the year",
+    E110: "Cost of the assets bought during the year",
+  },
+  "Fixedassets.xlsx!FAreconciliation": {
+    E11: "Additions the schedule lists, net of VAT",
+    K11: "Disposal proceeds the schedule lists, net of VAT",
+  },
+};
 
 export function cellLabels() {
   const labels = {};
@@ -1209,12 +1333,17 @@ export function cellLabels() {
     const key = `${sheet}!${cell}`;
     labels[key] = { diyLabel, glMapping };
   }
+  for (const [sheet, cells] of Object.entries(FIXED_ASSET_CELL_LABELS)) {
+    for (const [cell, diyLabel] of Object.entries(cells)) labels[`${sheet}!${cell}`] = { diyLabel, glMapping: "" };
+  }
   return labels;
 }
 
 function fmt(v) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  // A nil that arrived by negation carries a sign bit and prints as "-0",
+  // which reads as a defect in a statement.
+  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
@@ -1244,6 +1373,106 @@ export function profitBridge(results) {
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!K28`, num(ct.K28));
+}
+
+// ── Journal category VAT netting ───────────────────────────────────────────
+
+// A journal row takes its own VAT off its own gross and rounds nothing
+// (template: H = G * rate / (100 + rate), I = G - H), and the analysis
+// columns the statements read sum those row figures. Netting an annual
+// total instead leaves pennies behind, so the netting table sums per entry
+// the same way the sheet does.
+function sheetNetOfVat(gross, rate) {
+  return gross - (gross * rate) / (1 + rate);
+}
+
+// Journal totals by code letter: gross as entered, net the way the journal
+// rows net it, and net the way the asset schedule holds it -- the writer
+// puts a cost rounded to the penny on a schedule row, so a category that
+// lands there is compared against the rounded figure.
+function journalTotalsByCode(journal, rate, defaultCode) {
+  const gross = {};
+  const net = {};
+  const scheduleNet = {};
+  for (const transactions of Object.values(journal || {})) {
+    for (const tx of transactions) {
+      const code = tx.code || defaultCode;
+      gross[code] = (gross[code] || 0) + tx.amount;
+      net[code] = (net[code] || 0) + sheetNetOfVat(tx.amount, rate);
+      scheduleNet[code] = (scheduleNet[code] || 0) + netOfVat(tx.amount, rate);
+    }
+  }
+  return { gross, net, scheduleNet };
+}
+
+// One row per journal category that crosses into another statement, so the
+// gross-to-net step is stated where it happens rather than only in total.
+export function categoryNetting(results, scenario) {
+  if (!scenario) return null;
+  const pl = results["MnthP&L"];
+  const fr = results["Fixedassets.xlsx!FAreconciliation"];
+  if (!pl && !fr) return null;
+
+  const rate = vatRateFor(scenario);
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const sales = journalTotalsByCode(scenario.sales, rate, "a");
+  const purchases = journalTotalsByCode(scenario.purchases, rate);
+  const rows = [];
+
+  const plRow = (journal, side, code, row, sign = 1) => {
+    if (!pl) return;
+    rows.push({
+      code: `${journal} ${code}`,
+      label: PL_ROW_CAPTIONS[row],
+      gross: side.gross[code] || 0,
+      net: side.net[code] || 0,
+      cell: sign < 0 ? `MnthP&L!B${row} negated` : `MnthP&L!B${row}`,
+      downstream: sign * num(pl[`B${row}`]),
+    });
+  };
+
+  for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) plRow("sales", sales, code, row);
+  plRow("sales", sales, "o", SALES_BAD_DEBT_ROW, -1);
+  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) plRow("purchases", purchases, code, row);
+
+  // Casual workers are purchased under their own code and land on the wages
+  // line together with the payroll's gross pay, so the payroll comes off the
+  // line before the two sides are comparable.
+  if (pl && scenario.payroll) {
+    let payrollGross = 0;
+    for (const entries of Object.values(scenario.payroll)) {
+      for (const entry of entries) payrollGross += entry.grossPay || 0;
+    }
+    rows.push({
+      code: "purchases w",
+      label: "Wages and Salaries, less the payroll's own gross pay",
+      gross: purchases.gross.w || 0,
+      net: purchases.net.w || 0,
+      cell: "MnthP&L!B18 less the payroll gross pay",
+      downstream: num(pl.B18) - payrollGross,
+    });
+  }
+
+  if (fr) {
+    rows.push({
+      code: "purchases fa",
+      label: "Capitalised fixed asset spend",
+      gross: purchases.gross.fa || 0,
+      net: purchases.scheduleNet.fa || 0,
+      cell: "Fixedassets.xlsx!FAreconciliation!E11",
+      downstream: num(fr.E11),
+    });
+    rows.push({
+      code: "sales fs",
+      label: "Fixed asset disposal proceeds",
+      gross: sales.gross.fs || 0,
+      net: sales.scheduleNet.fs || 0,
+      cell: "Fixedassets.xlsx!FAreconciliation!K11",
+      downstream: num(fr.K11),
+    });
+  }
+
+  return buildCategoryNetting(rate, rows);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
@@ -2107,6 +2336,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // charged on, adjustment by adjustment, with nothing left over.
   const bridge = profitBridge(results);
   if (bridge) check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01);
+
+  // Every journal category the report nets, one residue at a time. The
+  // monthly ties above prove each month landed in the right column; these
+  // prove the year's gross figure reaches the statement with the VAT taken
+  // off and nothing else lost on the way.
+  const netting = categoryNetting(results, expected);
+  for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
 
   return checks;
 }

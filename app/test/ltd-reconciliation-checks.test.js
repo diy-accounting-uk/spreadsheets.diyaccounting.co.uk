@@ -27,8 +27,9 @@ import {
   multiFileOptions as ltdOptions,
   checkCompliance as ltdCheckCompliance,
   profitBridge as ltdProfitBridge,
+  categoryNetting as ltdCategoryNetting,
 } from "../products/ltd.js";
-import { PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import { categoryNettingCheckName, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { parse as parseTOML } from "smol-toml";
 
 const SKIP = !hasLibreOffice();
@@ -508,9 +509,12 @@ describeCalc(
       const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net";
       const corrupted = checksWithCorruptedCell("MnthP&L", "B18", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      // B18 also feeds the admin-lines-sum-to-total identity, so that check
-      // fails alongside the payroll-route check being proven here.
-      expect(failureNames(corrupted)).toEqual(["P&L: Admin lines sum = Total", name]);
+      // B18 also feeds the admin-lines-sum-to-total identity and the netting
+      // row for casual-worker purchases, so both fail alongside the
+      // payroll-route check being proven here.
+      const corruptedResults = { ...results, "MnthP&L": { ...results["MnthP&L"], B18: value } };
+      const wagesNetting = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases w");
+      expect(failureNames(corrupted)).toEqual(["P&L: Admin lines sum = Total", name, categoryNettingCheckName(wagesNetting)]);
     });
 
     it("fails the VAT rate read when a Sales month's rate cell is corrupted via JSZip", async () => {
@@ -702,6 +706,62 @@ describeCalc(
       expect(value).toBe(14033.56);
       const corrupted = checksWithCorruptedCell("CT600", "AJ128", value);
       expect(failureNames(corrupted)).toEqual(["CT600: second financial year tax box is blank", "CT600: tax payable = tax chargeable"]);
+    });
+
+    it("nets every journal category the report shows to the statement figure it lands as", () => {
+      const netting = ltdCategoryNetting(results, expected);
+
+      expect(netting.rate).toBeGreaterThan(0);
+      expect(netting.rows.length).toBeGreaterThan(0);
+      for (const row of netting.rows) {
+        expect(row.gross).toBeGreaterThan(0);
+        expect(row.vat).toBeCloseTo(row.gross - row.net, 6);
+        expect(row.residue).toBeCloseTo(0, 6);
+      }
+
+      const capitalised = netting.rows.find((row) => row.code === "purchases fa");
+      expect(capitalised.cell).toBe("Fixedassets.xlsx!FAreconciliation!E11");
+      expect(capitalised.net).toBeCloseTo(results["Fixedassets.xlsx!FAreconciliation"].E11, 6);
+
+      const subcontractors = netting.rows.find((row) => row.code === "purchases c");
+      expect(subcontractors.cell).toBe("MnthP&L!B12");
+      expect(subcontractors.net).toBeCloseTo(results["MnthP&L"].B12, 6);
+    });
+
+    it("names the residue on the capitalised spend, and fails only the checks reading that cell, when the schedule additions drift via JSZip", async () => {
+      const realValue = results["Fixedassets.xlsx!FAreconciliation"].E11;
+      expect(realValue).toBeGreaterThan(0);
+      const drift = 500;
+
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E11", realValue + drift);
+      expect(value).toBe(realValue + drift);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E11", value);
+
+      const corruptedResults = {
+        ...results,
+        "Fixedassets.xlsx!FAreconciliation": { ...results["Fixedassets.xlsx!FAreconciliation"], E11: value },
+      };
+      const nettingRow = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases fa");
+      expect(nettingRow.residue).toBeCloseTo(-drift, 6);
+      expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
+        categoryNettingCheckName(nettingRow),
+      ]);
+    });
+
+    it("names the residue on the subcontractor spend when the management profit and loss line drifts via JSZip", async () => {
+      const realValue = results["MnthP&L"].B12;
+      expect(realValue).toBeGreaterThan(0);
+      const drift = 250;
+
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B12", realValue + drift);
+      expect(value).toBe(realValue + drift);
+      const corrupted = checksWithCorruptedCell("MnthP&L", "B12", value);
+
+      const corruptedResults = { ...results, "MnthP&L": { ...results["MnthP&L"], B12: value } };
+      const nettingRow = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases c");
+      expect(nettingRow.residue).toBeCloseTo(-drift, 6);
+      expect(failureNames(corrupted)).toEqual([categoryNettingCheckName(nettingRow)]);
     });
   },
   900000,
