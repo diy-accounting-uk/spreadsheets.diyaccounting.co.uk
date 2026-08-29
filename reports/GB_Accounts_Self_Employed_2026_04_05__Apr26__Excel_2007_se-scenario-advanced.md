@@ -3,6 +3,10 @@
 Scenario: se-scenario-advanced
 Status: RECONCILES
 
+SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.
+
+Trade: IT consultancy and software development
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
@@ -52,7 +56,7 @@ Status: RECONCILES
 | Total Tax + NI | 49469 | 49468.8644999998 | -0.13550000020040898 | PASS |
 | Tax: Taxable = Profit - Allowance | 132145.391666666 | 132145.391666666 | 0 | PASS |
 | Tax: IT = Basic + Higher | 45317.9566666665 | 45317.9566666665 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 49468.86449999983 | 49468.8644999998 | -2.9103830456733704e-11 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 49468.86449999983 | 49468.8644999998 | -2.9103830456733704e-11 | PASS |
 | SA103S: Turnover = P&L Sales | 339200 | 339200 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 152567.9416666667 | 152567.941666667 | +2.9103830456733704e-10 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 186632.058333333 | 186632.058333333 | 0 | PASS |
@@ -63,6 +67,7 @@ Status: RECONCILES
 | Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 32500 | 32500 | 0 | PASS |
 | Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total | 12500 | 12500 | 0 | PASS |
 | Fixed assets: closing NBV = cost - acc dep c/f (Schedule) | 43662 | 43662 | 0 | PASS |
+| Fixed assets: Schedule total cost = existing assets plus assets bought in the year | 65500 | 65500 | 0 | PASS |
 | P&L: Depreciation (row 34, summed) = Schedule I1 | 11740 | 11739.999999999993 | -7.275957614183426e-12 | PASS |
 | P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) | 172 | 171.99999999999966 | -3.410605131648481e-13 | PASS |
 | Bank.xlsx closing balance (Mar!A2) | 238864 | 238864 | 0 | PASS |
@@ -505,6 +510,71 @@ Status: RECONCILES
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product A (sales a) net reaches Profit & Loss Account!B5 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product B (sales b) net reaches Profit & Loss Account!B6 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product C (sales c) net reaches Profit & Loss Account!B7 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Other Income (sales d) net reaches Profit & Loss Account!B8 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Investment Grants received (sales g) net reaches Profit & Loss Account!B11 with no residue | 0 | 3.637978807091713e-12 | +3.637978807091713e-12 | PASS |
+| Category netting: Bad Debts written off (sales o) net reaches Profit & Loss Account!B29 negated with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sub contractors (purchases c) net reaches Profit & Loss Account!B15 with no residue | 0 | -2.7284841053187847e-12 | -2.7284841053187847e-12 | PASS |
+| Category netting: Other Direct Cost of Sales (purchases o) net reaches Profit & Loss Account!B16 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Premises Rent Rates Power (purchases p) net reaches Profit & Loss Account!B22 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Repairs & Maintenance (purchases m) net reaches Profit & Loss Account!B23 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: General Administrative Expenses (purchases g) net reaches Profit & Loss Account!B24 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Motor Expenses (purchases v) net reaches Profit & Loss Account!B25 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Travel Hotel & Subsistence (purchases h) net reaches Profit & Loss Account!B26 with no residue | 0 | 2.2737367544323206e-13 | +2.2737367544323206e-13 | PASS |
+| Category netting: Advertising & Promotion (purchases a) net reaches Profit & Loss Account!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Legal & Professional Fees (purchases l) net reaches Profit & Loss Account!B28 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Other Expenses (purchases y) net reaches Profit & Loss Account!B32 with no residue | 0 | 6.821210263296962e-12 | +6.821210263296962e-12 | PASS |
+| Category netting: Purchases after stock adjustment, less the year's stock movement (purchases s) net reaches Profit & Loss Account!B14 less the stock movement with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the profit and loss account | Profit & Loss Account!B39 | 176,975.39 |
+| Add depreciation charged in the accounts | Profit & Loss Account!B34 | 11,740 |
+| Less grants, taxed as other business income below | Profit & Loss Account!B11 | -2,083.33 |
+| Less net loss for the year (box 21) | SE Short!O71 | 0 |
+| Less annual investment allowance (box 22) | SE Short!D80 | -32,500 |
+| Less small-balance allowance (box 23) | SE Short!D85 | 0 |
+| Less other capital allowances (box 24) | SE Short!O80 | -11,500 |
+| Add balancing charges (box 25) | SE Short!O85 | 0 |
+| Add goods and services for own use (box 26) | SE Short!D94 | 0 |
+| Add grants as other business income (box 29) | SE Short!O99 | 2,083.33 |
+| Less loss brought forward (box 28) | SE Short!O94 | 0 |
+| **Tax profit the bridge computes** | | **144,715.39** |
+| Tax profit the sheet carries | Income Tax!E5 | 144,715.39 |
+| **Residue** | | **0** |
+
+## Journal category VAT netting
+
+Journal amounts include VAT at 20%.
+
+| Journal category | Gross per the journal | VAT stripped | Net | Where the net lands | Figure there | Residue |
+|------------------|----------------------:|-------------:|----:|---------------------|-------------:|--------:|
+| Sales Product A (sales a) | 373,920 | 62,320 | 311,600 | Profit & Loss Account!B5 | 311,600 | 0 |
+| Sales Product B (sales b) | 16,320 | 2,720 | 13,600 | Profit & Loss Account!B6 | 13,600 | 0 |
+| Sales Product C (sales c) | 12,360 | 2,060 | 10,300 | Profit & Loss Account!B7 | 10,300 | 0 |
+| Other Income (sales d) | 4,440 | 740 | 3,700 | Profit & Loss Account!B8 | 3,700 | 0 |
+| Investment Grants received (sales g) | 2,500 | 416.67 | 2,083.33 | Profit & Loss Account!B11 | 2,083.33 | 0 |
+| Bad Debts written off (sales o) | 360 | 60 | 300 | Profit & Loss Account!B29 negated | 300 | 0 |
+| Sub contractors (purchases c) | 8,000 | 1,333.33 | 6,666.67 | Profit & Loss Account!B15 | 6,666.67 | 0 |
+| Other Direct Cost of Sales (purchases o) | 4,824 | 804 | 4,020 | Profit & Loss Account!B16 | 4,020 | 0 |
+| Premises Rent Rates Power (purchases p) | 15,840 | 2,640 | 13,200 | Profit & Loss Account!B22 | 13,200 | 0 |
+| Repairs & Maintenance (purchases m) | 1,140 | 190 | 950 | Profit & Loss Account!B23 | 950 | 0 |
+| General Administrative Expenses (purchases g) | 3,642 | 607 | 3,035 | Profit & Loss Account!B24 | 3,035 | 0 |
+| Motor Expenses (purchases v) | 7,598.25 | 1,266.38 | 6,331.88 | Profit & Loss Account!B25 | 6,331.88 | 0 |
+| Travel Hotel & Subsistence (purchases h) | 1,860 | 310 | 1,550 | Profit & Loss Account!B26 | 1,550 | 0 |
+| Advertising & Promotion (purchases a) | 4,560 | 760 | 3,800 | Profit & Loss Account!B27 | 3,800 | 0 |
+| Legal & Professional Fees (purchases l) | 8,310 | 1,385 | 6,925 | Profit & Loss Account!B28 | 6,925 | 0 |
+| Other Expenses (purchases y) | 3,878 | 646.33 | 3,231.67 | Profit & Loss Account!B32 | 3,231.67 | 0 |
+| Purchases after stock adjustment, less the year's stock movement (purchases s) | 6,540 | 1,090 | 5,450 | Profit & Loss Account!B14 less the stock movement | 5,450 | 0 |
+| Capitalised fixed asset spend (purchases fa) | 39,000 | 6,500 | 32,500 | Fixedassets.xlsx!FAreconciliation!E11 | 32,500 | 0 |
+| Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
 
 ## Business Details
 
@@ -555,7 +625,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 7,540.2 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 37,777.76 |
 | **Total Income Tax** | 45,317.96 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 2,262 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,888.91 |
 | **Total Tax + NI** | 49,468.86 |
@@ -579,10 +649,15 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses | 6,903.67 |
 | **Total expenses** | 152,567.94 |
 | **Net profit/loss** | 186,632.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 32,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other capital allowances (box 24) | 11,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charges (box 25) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
 | **Taxable profit** | 142,632.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 2,083.33 |
 | VAT threshold note | — |
 | **Net profit for tax calc** | 144,715.39 |
 
@@ -609,6 +684,8 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
+| Sales here are the three product lines only (Profit & Loss Account rows 5 to 7), and expenses are the direct cost lines only (Materials and Other Direct Cost of Sales). |  |
+| Grants, other income and every administrative expense are outside this summary and appear in the profit and loss account and on the SA103S. |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 Sales | 83,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 Sales | 83,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Sales | 85,700 |
@@ -645,6 +722,24 @@ Status: RECONCILES
 | VAT Registration Threshold | 90,000 |
 | VAT Standard Rate | 0.2 |
 
+## Fixed Asset Schedule
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost brought forward (Schedule E57) | 33,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additions in the year (Schedule E110) | 32,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of the assets sold in the year (Schedule W1) | 30,000 |
+| **Cost carried forward, disposals removed** | 35,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation brought forward (Schedule F1) | 10,098 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation charged for the year (Schedule I1) | 11,740 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation on the assets sold (Schedule X1) | 17,328 |
+| **Accumulated depreciation carried forward, disposals removed** | 4,510 |
+| **Net book value at the year end, disposals removed** | 30,990 |
+| | |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sale proceeds of the assets sold, net of VAT (Schedule V1) | 12,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net book value of the assets sold at the date of sale | 12,672 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet | 43,662 |
+
 ## VAT Returns
 
 | | Amount |
@@ -656,18 +751,35 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
 | **VAT due for the year** | 52,317.96 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,980 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 4,081.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 12,898.13 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 20,056.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 8,731 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 11,325.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 17,260 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 3,480.13 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 13,779.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 11,553.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 1,393.83 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 10,159.5 |
+| **How the return periods line up with the accounting year** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 31 May 2025, 30 June 2025, 31 July 2025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 31 August 2025, 30 September 2025, 31 October 2025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 30 November 2025, 31 December 2025, 31 January 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 28 February 2026, 31 March 2026, 30 April 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 31 March 2026, 30 April 2026, 31 May 2026 |
+| No return above covers the accounting year's month ending 30 April 2025. That month sat on the previous return of the same cycle, which is why the quarters below fall short of the year's own VAT lines. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on it | 5,566.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on it | 851.88 |
+| The returns above also cover the periods ending 30 April 2026, 31 May 2026, which fall outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 100 |
+| Q4 and Q5 end one month apart rather than one quarter, so both cover the periods ending 31 March 2026 and 30 April 2026. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. As shipped it is dated a month after the fourth, so filing all of them as they stand would declare those periods twice. |  |
+| **The return forms as the package fills them in** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 1: VAT due on sales | 16,980 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 4: VAT reclaimed on purchases | 4,081.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 5: net VAT due | 12,898.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 1: VAT due on sales | 20,056.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 4: VAT reclaimed on purchases | 8,731 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 5: net VAT due | 11,325.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 1: VAT due on sales | 17,260 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 4: VAT reclaimed on purchases | 3,480.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 5: net VAT due | 13,779.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 1: VAT due on sales | 11,553.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 4: VAT reclaimed on purchases | 1,393.83 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 5: net VAT due | 10,159.5 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 1: VAT due on sales | 6,126.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 4: VAT reclaimed on purchases | 721.08 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 5: net VAT due | 5,405.58 |
 
 ---
 
@@ -960,10 +1072,15 @@ Status: RECONCILES
 | O60 | Other business expenses | 6903.66666666666 | gl-cor:amount (sa103s.otherExpenses) |
 | O64 | **Total expenses** | 152567.941666667 | gl-cor:amount (sa103s.totalExpenses) |
 | D71 | **Net profit/loss** | 186632.058333333 | gl-cor:amount (sa103s.netProfit) |
+| O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 32500 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
+| O80 | Other capital allowances (box 24) | 11500 | tax.capitalAllowances.wda (sa103s) |
+| O85 | Balancing charges (box 25) | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
 | D99 | **Taxable profit** | 142632.058333333 | gl-cor:amount (sa103s.taxableProfit) |
+| O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
+| O99 | Grants as other business income (box 29) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
 | D106 | **Net profit for tax calc** | 144715.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### Wagesinterface
@@ -1543,31 +1660,33 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 |  | 65500 |  |
-| F1 |  | 10098 |  |
-| G1 |  | 22902 |  |
-| I1 |  | 11740 |  |
-| J1 |  | 21838 |  |
-| K1 |  | 43662 |  |
-| Q1 |  | 32500 |  |
-| R1 |  | 3000 |  |
-| S1 |  | 21000 |  |
-| V1 |  | 12500 |  |
-| W1 |  | 30000 |  |
-| X1 |  | 17328 |  |
-| Y1 |  | 8500 |  |
-| Z1 |  | 0 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 65500 |  |
+| F1 | Total accumulated depreciation brought forward | 10098 |  |
+| G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
+| I1 | Total depreciation charged for the year | 11740 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 21838 |  |
+| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 43662 |  |
+| Q1 | Total annual investment allowance claimed | 32500 |  |
+| R1 | Total writing down allowance claimed | 3000 |  |
+| S1 | Total tax written down value carried forward | 21000 |  |
+| V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
+| W1 | Cost of the assets sold in the year | 30000 |  |
+| X1 | Accumulated depreciation on the assets sold in the year | 17328 |  |
+| Y1 | Balancing allowance on the disposals | 8500 |  |
+| Z1 | Balancing charge on the disposals | 0 |  |
+| E57 | Cost of the assets owned at the start of the year | 33000 |  |
+| E110 | Cost of the assets bought during the year | 32500 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E11 |  | 32500 |  |
-| E13 |  | 32500 |  |
-| E15 |  | 0 |  |
-| K11 |  | 12500 |  |
-| K13 |  | 12500 |  |
-| K15 |  | 0 |  |
+| E11 | Additions the schedule lists, net of VAT | 32500 |  |
+| E13 | Fixed asset purchases the purchase journal carries, net of VAT | 32500 |  |
+| E15 | Purchases less schedule additions | 0 |  |
+| K11 | Disposal proceeds the schedule lists, net of VAT | 12500 |  |
+| K13 | Fixed asset sales the sales journal carries, net of VAT | 12500 |  |
+| K15 | Sales less schedule disposals | 0 |  |
 
 ### Payslips.xlsx!Payment
 
