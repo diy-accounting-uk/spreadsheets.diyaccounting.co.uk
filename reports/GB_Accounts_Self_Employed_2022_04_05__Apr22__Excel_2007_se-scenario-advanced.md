@@ -67,6 +67,22 @@ Trade: IT consultancy and software development
 | SA103S: net profit = turnover + other business income - total expenses | 183532.058333333 | 183532.058333333 | 0 | PASS |
 | SA103S: Profit for tax = Income Tax E5 | 121615.391666666 | 121615.391666666 | 0 | PASS |
 | SA103S: Capital allowances (AIA/FYA) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
+| Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
+| Forecast: turnover = P&L turnover | 339200 | 339200 | 0 | PASS |
+| Forecast: investment grants = P&L investment grants | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
+| Forecast: cost of sales = P&L cost of sales | 20136.6666666667 | 20136.6666666667 | 0 | PASS |
+| Forecast: general expenses = P&L administrative expenses | 149271.275 | 149271.275 | 0 | PASS |
+| Forecast: interest received = P&L interest received | 0 | 0 | 0 | PASS |
+| Forecast: profit before tax = P&L profit before tax | 171875.391666666 | 171875.391666666 | 0 | PASS |
+| Forecast: depreciation added back = P&L disposal loss + depreciation | 13912 | 13912 | 0 | PASS |
+| Forecast: capital allowances = the fixed asset schedule | 64000 | 64000 | 0 | PASS |
+| Forecast: taxable profit = profit + depreciation - capital allowances | 121787.391666666 | 121787.391666666 | 0 | PASS |
+| Forecast: personal allowance after taper | 1676.3041666670033 | 1676.30416666687 | -1.3324097380973399e-10 | PASS |
+| Forecast: tax at standard rate | 7540 | 7540 | 0 | PASS |
+| Forecast: tax at higher rate | 32964.4349999996 | 32964.4349999998 | +2.0372681319713593e-10 | PASS |
+| Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
+| Forecast: National Insurance | 5093.5 | 5093.52783333332 | +0.02783333331990434 | PASS |
+| Forecast: tax and NI liability | 45598 | 45597.9628333331 | -0.03716666690161219 | PASS |
 | SA103F box 14 turnover (D55) = the profit and loss account | 339200 | 339200 | 0 | PASS |
 | SA103F box 15 other business income (O55) = the profit and loss account | 0 | 0 | 0 | PASS |
 | SA103F box 16 goods bought for resale (D66) = the profit and loss account | 13470 | 13470 | 0 | PASS |
@@ -447,6 +463,9 @@ Trade: IT consultancy and software development
 | VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 1100 | 1100 | 0 | PASS |
 | VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 920 | 920 | 0 | PASS |
 | VAT Q5: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
+| VAT Q5: box 1/3 output VAT (G9) = scenario sales VAT for the quarter | 1100 | 1100 | 0 | PASS |
+| VAT Q5: box 4 input VAT (G15) = scenario purchases VAT for the quarter | 180 | 180 | 0 | PASS |
+| VAT Q5: box 7 net purchases (G23) = scenario purchases net for the quarter | 900 | 900 | 0 | PASS |
 | Vatinterface D6: Apr sales net = Sales.xlsx Apr | 27833.3333333333 | 27833.3333333333 | 0 | PASS |
 | Vatinterface F6: Apr output VAT = Sales.xlsx Apr | 5566.66666666667 | 5566.66666666667 | 0 | PASS |
 | Vatinterface H6: Apr purchases net = Purchases.xlsx Apr | 4259.375 | 4259.375 | 0 | PASS |
@@ -751,6 +770,28 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 3,663.18 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 1,426.91 |
 | **Total Tax + NI** | 45,491.32 |
+
+## Profit Forecast
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Months of actual trade | 12 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Sales Turnover | 339,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Investment Grants | 2,083.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Cost of Sales | 20,136.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast General Expenses | 149,271.28 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Interest Received | 0 |
+| **Forecast Profit before Tax** | 171,875.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add Depreciation | 13,912 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less Capital Allowances | 64,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax | 121,787.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance | 1,676.3 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance | 120,111.09 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate | 7,540 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate | 32,964.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;National Insurance | 5,093.53 |
+| **Forecast Tax & NI Liability** | 45,597.96 |
 
 ## Self Assessment (SA103S)
 
@@ -1204,6 +1245,31 @@ Journal amounts include VAT at 20%.
 | L34 |  | 1145 |  |
 | M34 |  | 1145 |  |
 | N34 |  | 1145 |  |
+| C9 |  | 27833.3333333333 |  |
+| D9 |  | 27433.3333333333 |  |
+| E9 |  | 29333.3333333333 |  |
+| F9 |  | 28133.3333333333 |  |
+| G9 |  | 27933.3333333333 |  |
+| H9 |  | 28133.3333333333 |  |
+| I9 |  | 29633.3333333333 |  |
+| J9 |  | 29433.3333333333 |  |
+| K9 |  | 27333.3333333333 |  |
+| L9 |  | 29533.3333333333 |  |
+| M9 |  | 28633.3333333333 |  |
+| N9 |  | 25833.3333333333 |  |
+| B38 |  | 0 |  |
+| C38 |  | 0 |  |
+| D38 |  | 0 |  |
+| E38 |  | 0 |  |
+| F38 |  | 0 |  |
+| G38 |  | 0 |  |
+| H38 |  | 0 |  |
+| I38 |  | 0 |  |
+| J38 |  | 0 |  |
+| K38 |  | 0 |  |
+| L38 |  | 0 |  |
+| M38 |  | 0 |  |
+| N38 |  | 0 |  |
 
 ### Income Tax
 
@@ -1223,6 +1289,28 @@ Journal amounts include VAT at 20%.
 | E15 | NI Class 4 (lower band) | 3663.18 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 1426.90783333333 | tax.nationalInsurance.class4UpperRate |
 | E18 | **Total Tax + NI** | 45491.3228333331 | gl-cor:taxAmount (totalTaxNI) |
+
+### Profit Forecast
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C21 | Months of actual trade | 12 | gl-cor:amount (forecast.monthsTraded) |
+| C22 | Forecast Sales Turnover | 339200 | gl-cor:amount (forecast.turnover) |
+| C24 | Forecast Investment Grants | 2083.33333333333 | gl-cor:amount (forecast.grants) |
+| C26 | Forecast Cost of Sales | 20136.6666666667 | gl-cor:amount (forecast.costOfSales) |
+| C30 | Forecast General Expenses | 149271.275 | gl-cor:amount (forecast.expenses) |
+| C33 | Forecast Interest Received | 0 | gl-cor:amount (forecast.interest) |
+| C34 | **Forecast Profit before Tax** | 171875.391666666 | gl-cor:amount (forecast.profit) |
+| C37 | Add Depreciation | 13912 | gl-cor:amount (depreciation) |
+| C38 | Less Capital Allowances | 64000 | tax.capitalAllowances (schedule) |
+| C39 | Profit before Tax | 121787.391666666 | gl-cor:amount (forecast.taxableProfit) |
+| C40 | Personal Allowance | 1676.30416666687 | tax.incomeTax.personalAllowance |
+| C41 | Profit after Allowance | 120111.087499999 | gl-cor:amount (forecast.taxableIncome) |
+| C42 | Tax at standard rate | 7540 | tax.incomeTax.basicRate |
+| C43 | Tax at higher rate | 32964.4349999998 | tax.incomeTax.higherRate |
+| C44 | Tax at additional rate | 0 | tax.incomeTax.additionalRate |
+| C45 | National Insurance | 5093.52783333332 | tax.nationalInsurance.class4 |
+| C46 | **Forecast Tax & NI Liability** | 45597.9628333331 | gl-cor:taxAmount (forecast.totalTaxNI) |
 
 ### SE Short
 

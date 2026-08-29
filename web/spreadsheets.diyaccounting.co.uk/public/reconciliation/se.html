@@ -77,15 +77,15 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 636 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 655 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>The indicators tell the same story as the headline: turnover of 339,200.00 net of VAT is consistent with 424,900.00 invoiced less 15,000.00 of disposals, VAT-registered status is borne out by four non-nil quarters, capital allowances of 64,000.00 sensibly reflect the 63,000.00 of capital spend, tax is charged on a clear taxable profit, and the profit bridge residue is 0.00 with 636 checks passing and no warnings. Only minor items — the unusual 1,762.30 personal allowance and the grants line not flagged in the narrative — are worth a human glance.</p>
+          <p>The indicators tell the same story as the headline: turnover of 339,200.00 is consistent with 424,900.00 gross invoiced less VAT and less the 15,000.00 of disposals, all four VAT quarters carry non-nil boxes for a registered trader, the capital allowances and grants bridge the SA103S net profit to the 121,615.39 charged, and the profit bridge residue is 0.00 with 655 checks passed and no warnings. Only minor notes (the 1,762.30 personal allowance and allowances marginally above the year's capital spend) are worth a glance.</p>
           <ul>
-            <li><strong>Personal allowance 1,762.30</strong> (Income tax indicator): A tapered personal allowance on income of ~121,615 would normally be nil (full taper above 125,140) or a larger partial amount; 1,762.30 is an odd residue worth a glance, though it does not contradict the headline and the deterministic tax-on-profit checks passed. [note]</li>
-            <li><strong>Grants as other business income 2,083.33</strong> (Grants / net profit for the tax calculation indicator): Grants are not mentioned in the headline scenario narrative; the difference between taxable profit 119,532.06 and 121,615.39 is exactly this grants line, which matches documented product behaviour, so this is only a glance-at item. [note]</li>
+            <li><strong>personal allowance of 1,762.30</strong> (Income tax indicator): A personal allowance of 1,762.30 is an unusual figure; on a profit of 121,615.39 the standard allowance would be tapered but this looks like a partial-year or otherwise scaled figure. Worth a glance, but it does not contradict the headline and the tax charge is positive and proportionate. [note]</li>
+            <li><strong>Capital allowances 64,000.00 against 63,000.00 of capital spending</strong> (Self assessment indicator vs headline): Allowances claimed (52,500.00 + 11,500.00) slightly exceed the year's capital spend named in the headline, which is plausible with brought-forward pools but worth a person's glance. [note]</li>
           </ul>
           <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-29. The arithmetic checks below run first and decide the status.</p>
         </div>
@@ -166,6 +166,22 @@
 <tr><td>SA103S: net profit = turnover + other business income - total expenses</td><td>183532.058333333</td><td>183532.058333333</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: Profit for tax = Income Tax E5</td><td>121615.391666666</td><td>121615.391666666</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103S: Capital allowances (AIA/FYA) = Schedule Q1</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: months of actual trade = P&amp;L months with turnover</td><td>12</td><td>12</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: turnover = P&amp;L turnover</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: investment grants = P&amp;L investment grants</td><td>2083.33333333333</td><td>2083.33333333333</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: cost of sales = P&amp;L cost of sales</td><td>20136.6666666667</td><td>20136.6666666667</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: general expenses = P&amp;L administrative expenses</td><td>149271.275</td><td>149271.275</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: interest received = P&amp;L interest received</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: profit before tax = P&amp;L profit before tax</td><td>171875.391666666</td><td>171875.391666666</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: depreciation added back = P&amp;L disposal loss + depreciation</td><td>13912</td><td>13912</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: capital allowances = the fixed asset schedule</td><td>64000</td><td>64000</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: taxable profit = profit + depreciation - capital allowances</td><td>121787.391666666</td><td>121787.391666666</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: personal allowance after taper</td><td>1676.3041666670033</td><td>1676.30416666687</td><td>-1.3324097380973399e-10</td><td>PASS</td></tr>
+<tr><td>Forecast: tax at standard rate</td><td>7540</td><td>7540</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: tax at higher rate</td><td>32964.4349999996</td><td>32964.4349999998</td><td>+2.0372681319713593e-10</td><td>PASS</td></tr>
+<tr><td>Forecast: tax at additional rate</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Forecast: National Insurance</td><td>3692.3</td><td>3692.34783333333</td><td>+0.04783333332989059</td><td>PASS</td></tr>
+<tr><td>Forecast: tax and NI liability</td><td>44197</td><td>44196.7828333331</td><td>-0.21716666690190323</td><td>PASS</td></tr>
 <tr><td>SA103F box 14 turnover (D55) = the profit and loss account</td><td>339200</td><td>339200</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 15 other business income (O55) = the profit and loss account</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>SA103F box 16 goods bought for resale (D66) = the profit and loss account</td><td>13470</td><td>13470</td><td>0</td><td>PASS</td></tr>
@@ -545,6 +561,9 @@
 <tr><td>VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)</td><td>1100</td><td>1100</td><td>0</td><td>PASS</td></tr>
 <tr><td>VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15)</td><td>920</td><td>920</td><td>0</td><td>PASS</td></tr>
 <tr><td>VAT Q5: payment due date (G7) falls after the quarter end (G5)</td><td>1</td><td>1</td><td>0</td><td>PASS</td></tr>
+<tr><td>VAT Q5: box 1/3 output VAT (G9) = scenario sales VAT for the quarter</td><td>1100</td><td>1100</td><td>0</td><td>PASS</td></tr>
+<tr><td>VAT Q5: box 4 input VAT (G15) = scenario purchases VAT for the quarter</td><td>180</td><td>180</td><td>0</td><td>PASS</td></tr>
+<tr><td>VAT Q5: box 7 net purchases (G23) = scenario purchases net for the quarter</td><td>900</td><td>900</td><td>0</td><td>PASS</td></tr>
 <tr><td>Vatinterface D6: Apr sales net = Sales.xlsx Apr</td><td>27833.3333333333</td><td>27833.3333333333</td><td>0</td><td>PASS</td></tr>
 <tr><td>Vatinterface F6: Apr output VAT = Sales.xlsx Apr</td><td>5566.66666666667</td><td>5566.66666666667</td><td>0</td><td>PASS</td></tr>
 <tr><td>Vatinterface H6: Apr purchases net = Purchases.xlsx Apr</td><td>4259.375</td><td>4259.375</td><td>0</td><td>PASS</td></tr>
@@ -1054,42 +1073,42 @@
 </table></div>
 <h5>Jun</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>p</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-03</td><td>Argos</td><td>y</td><td class="num">22.00</td></tr>
-<tr><td>2025-06-05</td><td>Ryman</td><td>y</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-06-10</td><td>Amazon</td><td>y</td><td class="num">36.00</td></tr>
-<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td></tr>
-<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-14</td><td>Toolstation</td><td>y</td><td class="num">30.00</td></tr>
-<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td></tr>
-<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td></tr>
-<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-06-22</td><td>Screwfix</td><td>y</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td></tr>
-<tr><td>2025-06-25</td><td>Wilko</td><td>y</td><td class="num">15.00</td></tr>
-<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td></tr>
-<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td></tr>
-<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">15,600.00</td></tr>
+<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>p</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-03</td><td>Argos</td><td>y</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>Ryman</td><td>y</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-06-10</td><td>Amazon</td><td>y</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Toolstation</td><td>y</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td><td>1,000.00</td></tr>
+<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-06-22</td><td>Screwfix</td><td>y</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>Wilko</td><td>y</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td><td></td></tr>
+<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">15,600.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
@@ -1253,39 +1272,39 @@
 </table></div>
 <h5>Nov</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>p</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-11-03</td><td>Argos</td><td>y</td><td class="num">22.00</td></tr>
-<tr><td>2025-11-05</td><td>Ryman</td><td>y</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td></tr>
-<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-11-10</td><td>Amazon</td><td>y</td><td class="num">36.00</td></tr>
-<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td></tr>
-<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td></tr>
-<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-11-20</td><td>ParcelForce</td><td>g</td><td class="num">240.00</td></tr>
-<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td></tr>
-<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-11-22</td><td>Screwfix</td><td>y</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-25</td><td>Wilko</td><td>y</td><td class="num">15.00</td></tr>
-<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td></tr>
-<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>p</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-11-03</td><td>Argos</td><td>y</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-11-05</td><td>Ryman</td><td>y</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td><td></td></tr>
+<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-11-10</td><td>Amazon</td><td>y</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td><td>600.00</td></tr>
+<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>ParcelForce</td><td>g</td><td class="num">240.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-11-22</td><td>Screwfix</td><td>y</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-25</td><td>Wilko</td><td>y</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td><td></td></tr>
+<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
@@ -1481,7 +1500,7 @@
 <tr><td>2025-05-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,520.00</td><td>in</td></tr>
 <tr><td>2025-05-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
 <tr><td>2025-05-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RP</td><td class="num">1,500.00</td><td>out</td></tr>
+<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RV</td><td class="num">1,500.00</td><td>out</td></tr>
 </tbody>
 </table></div>
 <h5>Jun</h5>
@@ -1526,7 +1545,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RP</td><td class="num">13,808.17</td><td>out</td></tr>
+<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RV</td><td class="num">13,808.17</td><td>out</td></tr>
 <tr><td>2025-08-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2025-08-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2025-08-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,600.00</td><td>out</td></tr>
@@ -1582,7 +1601,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RP</td><td class="num">14,456.50</td><td>out</td></tr>
+<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RV</td><td class="num">14,456.50</td><td>out</td></tr>
 <tr><td>2025-11-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2025-11-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2025-11-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,400.00</td><td>out</td></tr>
@@ -1635,7 +1654,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RP</td><td class="num">10,917.50</td><td>out</td></tr>
+<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RV</td><td class="num">10,917.50</td><td>out</td></tr>
 <tr><td>2026-02-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2026-02-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2026-02-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,900.00</td><td>out</td></tr>
@@ -1842,6 +1861,29 @@
 <tr><td>Total Admin Expenses</td><td class="num">149,271.28</td></tr>
 <tr><td><strong>Operating Profit</strong></td><td class="num">171,875.39</td></tr>
 <tr><td><strong>Profit Before Tax</strong></td><td class="num">171,875.39</td></tr>
+</tbody>
+</table></div>
+<h4>Profit Forecast</h4>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th></th><th class="num">Amount</th></tr></thead>
+<tbody>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Months of actual trade</td><td class="num">12</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Sales Turnover</td><td class="num">339,200</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Investment Grants</td><td class="num">2,083.33</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Cost of Sales</td><td class="num">20,136.67</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast General Expenses</td><td class="num">149,271.28</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Forecast Interest Received</td><td class="num">0</td></tr>
+<tr><td><strong>Forecast Profit before Tax</strong></td><td class="num">171,875.39</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Add Depreciation</td><td class="num">13,912</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Less Capital Allowances</td><td class="num">64,000</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax</td><td class="num">121,787.39</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance</td><td class="num">1,676.3</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance</td><td class="num">120,111.09</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate</td><td class="num">7,540</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate</td><td class="num">32,964.43</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate</td><td class="num">0</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;National Insurance</td><td class="num">3,692.35</td></tr>
+<tr><td><strong>Forecast Tax &amp; NI Liability</strong></td><td class="num">44,196.78</td></tr>
 </tbody>
 </table></div>
 <h4>Payroll Summary</h4>
@@ -2224,6 +2266,31 @@
 <tr><td>L34</td><td></td><td>1145</td><td></td></tr>
 <tr><td>M34</td><td></td><td>1145</td><td></td></tr>
 <tr><td>N34</td><td></td><td>1145</td><td></td></tr>
+<tr><td>C9</td><td></td><td>27833.3333333333</td><td></td></tr>
+<tr><td>D9</td><td></td><td>27433.3333333333</td><td></td></tr>
+<tr><td>E9</td><td></td><td>29333.3333333333</td><td></td></tr>
+<tr><td>F9</td><td></td><td>28133.3333333333</td><td></td></tr>
+<tr><td>G9</td><td></td><td>27933.3333333333</td><td></td></tr>
+<tr><td>H9</td><td></td><td>28133.3333333333</td><td></td></tr>
+<tr><td>I9</td><td></td><td>29633.3333333333</td><td></td></tr>
+<tr><td>J9</td><td></td><td>29433.3333333333</td><td></td></tr>
+<tr><td>K9</td><td></td><td>27333.3333333333</td><td></td></tr>
+<tr><td>L9</td><td></td><td>29533.3333333333</td><td></td></tr>
+<tr><td>M9</td><td></td><td>28633.3333333333</td><td></td></tr>
+<tr><td>N9</td><td></td><td>25833.3333333333</td><td></td></tr>
+<tr><td>B38</td><td></td><td>0</td><td></td></tr>
+<tr><td>C38</td><td></td><td>0</td><td></td></tr>
+<tr><td>D38</td><td></td><td>0</td><td></td></tr>
+<tr><td>E38</td><td></td><td>0</td><td></td></tr>
+<tr><td>F38</td><td></td><td>0</td><td></td></tr>
+<tr><td>G38</td><td></td><td>0</td><td></td></tr>
+<tr><td>H38</td><td></td><td>0</td><td></td></tr>
+<tr><td>I38</td><td></td><td>0</td><td></td></tr>
+<tr><td>J38</td><td></td><td>0</td><td></td></tr>
+<tr><td>K38</td><td></td><td>0</td><td></td></tr>
+<tr><td>L38</td><td></td><td>0</td><td></td></tr>
+<tr><td>M38</td><td></td><td>0</td><td></td></tr>
+<tr><td>N38</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Income Tax</h5>
@@ -2244,6 +2311,29 @@
 <tr><td>E15</td><td>NI Class 4 (lower band)</td><td>2262</td><td>tax.nationalInsurance.class4MainRate</td></tr>
 <tr><td>E16</td><td>NI Class 4 (upper band)</td><td>1426.90783333333</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
 <tr><td>E18</td><td><strong>Total Tax + NI</strong></td><td>44090.1428333331</td><td>gl-cor:taxAmount (totalTaxNI)</td></tr>
+</tbody>
+</table></div>
+<h5>Profit Forecast</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>C21</td><td>Months of actual trade</td><td>12</td><td>gl-cor:amount (forecast.monthsTraded)</td></tr>
+<tr><td>C22</td><td>Forecast Sales Turnover</td><td>339200</td><td>gl-cor:amount (forecast.turnover)</td></tr>
+<tr><td>C24</td><td>Forecast Investment Grants</td><td>2083.33333333333</td><td>gl-cor:amount (forecast.grants)</td></tr>
+<tr><td>C26</td><td>Forecast Cost of Sales</td><td>20136.6666666667</td><td>gl-cor:amount (forecast.costOfSales)</td></tr>
+<tr><td>C30</td><td>Forecast General Expenses</td><td>149271.275</td><td>gl-cor:amount (forecast.expenses)</td></tr>
+<tr><td>C33</td><td>Forecast Interest Received</td><td>0</td><td>gl-cor:amount (forecast.interest)</td></tr>
+<tr><td>C34</td><td><strong>Forecast Profit before Tax</strong></td><td>171875.391666666</td><td>gl-cor:amount (forecast.profit)</td></tr>
+<tr><td>C37</td><td>Add Depreciation</td><td>13912</td><td>gl-cor:amount (depreciation)</td></tr>
+<tr><td>C38</td><td>Less Capital Allowances</td><td>64000</td><td>tax.capitalAllowances (schedule)</td></tr>
+<tr><td>C39</td><td>Profit before Tax</td><td>121787.391666666</td><td>gl-cor:amount (forecast.taxableProfit)</td></tr>
+<tr><td>C40</td><td>Personal Allowance</td><td>1676.30416666687</td><td>tax.incomeTax.personalAllowance</td></tr>
+<tr><td>C41</td><td>Profit after Allowance</td><td>120111.087499999</td><td>gl-cor:amount (forecast.taxableIncome)</td></tr>
+<tr><td>C42</td><td>Tax at standard rate</td><td>7540</td><td>tax.incomeTax.basicRate</td></tr>
+<tr><td>C43</td><td>Tax at higher rate</td><td>32964.4349999998</td><td>tax.incomeTax.higherRate</td></tr>
+<tr><td>C44</td><td>Tax at additional rate</td><td>0</td><td>tax.incomeTax.additionalRate</td></tr>
+<tr><td>C45</td><td>National Insurance</td><td>3692.34783333333</td><td>tax.nationalInsurance.class4</td></tr>
+<tr><td>C46</td><td><strong>Forecast Tax &amp; NI Liability</strong></td><td>44196.7828333331</td><td>gl-cor:taxAmount (forecast.totalTaxNI)</td></tr>
 </tbody>
 </table></div>
 <h5>SE Short</h5>
