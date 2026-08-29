@@ -3,6 +3,8 @@
 Scenario: taxi-scenario-basic
 Status: RECONCILES
 
+Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental.
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |

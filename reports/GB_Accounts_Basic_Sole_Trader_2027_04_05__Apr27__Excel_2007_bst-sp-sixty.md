@@ -3,6 +3,10 @@
 Scenario: bst-sp-sixty
 Status: RECONCILES
 
+Private hire driver adapted for BST package. Motor expenses as actual costs.
+
+Trade: Private hire and taxi services
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |

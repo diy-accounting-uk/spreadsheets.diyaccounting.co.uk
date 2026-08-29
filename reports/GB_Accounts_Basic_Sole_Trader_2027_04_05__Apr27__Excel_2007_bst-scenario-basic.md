@@ -3,6 +3,10 @@
 Scenario: bst-scenario-basic
 Status: RECONCILES
 
+BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll.
+
+Trade: IT consultancy and software development
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |

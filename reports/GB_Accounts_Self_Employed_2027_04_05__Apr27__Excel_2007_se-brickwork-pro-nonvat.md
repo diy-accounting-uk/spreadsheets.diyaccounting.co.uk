@@ -3,6 +3,10 @@
 Scenario: se-brickwork-pro-nonvat
 Status: RECONCILES
 
+Construction sole trader, CIS sub-contractors, one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil.
+
+Trade: Bricklaying, plastering and general building
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
@@ -52,7 +56,7 @@ Status: RECONCILES
 | Total Tax + NI | 0 | 0 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 0 | 0 | 0 | PASS |
 | Tax: IT = Basic + Higher | 0 | 0 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 0 | 0 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 0 | 0 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
 | SA103S: total expenses = cost of sales + admin expenses less depreciation | 59470 | 59470 | 0 | PASS |
 | SA103S: net profit = turnover + other business income - total expenses | 15530 | 15530 | 0 | PASS |
@@ -63,6 +67,7 @@ Status: RECONCILES
 | Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 12000 | 12000 | 0 | PASS |
 | Fixed assets: Schedule disposals (FAreconciliation K11) = scenario fs-coded net total | 0 | 0 | 0 | PASS |
 | Fixed assets: closing NBV = cost - acc dep c/f (Schedule) | 10800 | 10800 | 0 | PASS |
+| Fixed assets: Schedule total cost = existing assets plus assets bought in the year | 12000 | 12000 | 0 | PASS |
 | P&L: Depreciation (row 34, summed) = Schedule I1 | 1200 | 1200 | 0 | PASS |
 | P&L: Loss on disposal (row 33, summed) = Schedule -(V1-W1+X1) | 0 | 0 | 0 | PASS |
 | Bank.xlsx closing balance (Mar!A2) | 4656.699999999997 | 4656.7 | +2.7284841053187847e-12 | PASS |
@@ -490,6 +495,16 @@ Status: RECONCILES
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product A (sales a) net reaches Profit & Loss Account!B5 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sub contractors (purchases c) net reaches Profit & Loss Account!B15 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Repairs & Maintenance (purchases m) net reaches Profit & Loss Account!B23 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: General Administrative Expenses (purchases g) net reaches Profit & Loss Account!B24 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Motor Expenses (purchases v) net reaches Profit & Loss Account!B25 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Advertising & Promotion (purchases a) net reaches Profit & Loss Account!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Legal & Professional Fees (purchases l) net reaches Profit & Loss Account!B28 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Other Expenses (purchases y) net reaches Profit & Loss Account!B32 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Purchases after stock adjustment, less the year's stock movement (purchases s) net reaches Profit & Loss Account!B14 less the stock movement with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
 
@@ -509,6 +524,10 @@ Status: RECONCILES
 | **Tax profit the bridge computes** | | **3,530** |
 | Tax profit the sheet carries | Income Tax!E5 | 3,530 |
 | **Residue** | | **0** |
+
+## Journal category VAT netting
+
+The books charge VAT at 0%. Gross equals net for all 10 journal categories that cross into another statement, and each reaches it at the figure the journal holds.
 
 ## Business Details
 
@@ -559,7 +578,7 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate (20%) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate (40%) | 0 |
 | **Total Income Tax** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
 | **Total Tax + NI** | 0 |
@@ -618,6 +637,8 @@ Status: RECONCILES
 
 | | Amount |
 |---|------:|
+| Sales here are the three product lines only (Profit & Loss Account rows 5 to 7), and expenses are the direct cost lines only (Materials and Other Direct Cost of Sales). |  |
+| Grants, other income and every administrative expense are outside this summary and appear in the profit and loss account and on the SA103S. |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 Sales | 18,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 Sales | 18,600 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 Sales | 18,500 |
@@ -654,6 +675,24 @@ Status: RECONCILES
 | VAT Registration Threshold | 90,000 |
 | VAT Standard Rate | 0.2 |
 
+## Fixed Asset Schedule
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost brought forward (Schedule E57) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additions in the year (Schedule E110) | 12,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cost of the assets sold in the year (Schedule W1) | 0 |
+| **Cost carried forward, disposals removed** | 12,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation brought forward (Schedule F1) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation charged for the year (Schedule I1) | 1,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accumulated depreciation on the assets sold (Schedule X1) | 0 |
+| **Accumulated depreciation carried forward, disposals removed** | 1,200 |
+| **Net book value at the year end, disposals removed** | 10,800 |
+| | |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sale proceeds of the assets sold, net of VAT (Schedule V1) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net book value of the assets sold at the date of sale | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet | 10,800 |
+
 ## VAT Returns
 
 | | Amount |
@@ -665,18 +704,35 @@ Status: RECONCILES
 | &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 52,970 |
 | **VAT due for the year** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 0 |
+| **How the return periods line up with the accounting year** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 31 May 2026, 30 June 2026, 31 July 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 31 August 2026, 30 September 2026, 31 October 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 30 November 2026, 31 December 2026, 31 January 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 28 February 2027, 31 March 2027, 30 April 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 31 March 2027, 30 April 2027, 31 May 2027 |
+| No return above covers the accounting year's month ending 30 April 2026. That month sat on the previous return of the same cycle, which is why the quarters below fall short of the year's own VAT lines. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on it | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on it | 0 |
+| The returns above also cover the periods ending 30 April 2027, 31 May 2027, which fall outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 0 |
+| Q4 and Q5 end one month apart rather than one quarter, so both cover the periods ending 31 March 2027 and 30 April 2027. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. As shipped it is dated a month after the fourth, so filing all of them as they stand would declare those periods twice. |  |
+| **The return forms as the package fills them in** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2026) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2026) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2026) box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2026) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2026) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2026) box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2027) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2027) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2027) box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2027) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2027) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2027) box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2027) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2027) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2027) box 5: net VAT due | 0 |
 
 ---
 
@@ -1557,31 +1613,33 @@ Status: RECONCILES
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 |  | 12000 |  |
-| F1 |  | 0 |  |
-| G1 |  | 0 |  |
-| I1 |  | 1200 |  |
-| J1 |  | 1200 |  |
-| K1 |  | 10800 |  |
-| Q1 |  | 12000 |  |
-| R1 |  | 0 |  |
-| S1 |  | 0 |  |
-| V1 |  | 0 |  |
-| W1 |  | 0 |  |
-| X1 |  | 0 |  |
-| Y1 |  | 0 |  |
-| Z1 |  | 0 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 12000 |  |
+| F1 | Total accumulated depreciation brought forward | 0 |  |
+| G1 | Total net book value brought forward (cost less depreciation brought forward) | 0 |  |
+| I1 | Total depreciation charged for the year | 1200 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 1200 |  |
+| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 10800 |  |
+| Q1 | Total annual investment allowance claimed | 12000 |  |
+| R1 | Total writing down allowance claimed | 0 |  |
+| S1 | Total tax written down value carried forward | 0 |  |
+| V1 | Sale proceeds of the assets sold in the year, net of VAT | 0 |  |
+| W1 | Cost of the assets sold in the year | 0 |  |
+| X1 | Accumulated depreciation on the assets sold in the year | 0 |  |
+| Y1 | Balancing allowance on the disposals | 0 |  |
+| Z1 | Balancing charge on the disposals | 0 |  |
+| E57 | Cost of the assets owned at the start of the year | 0 |  |
+| E110 | Cost of the assets bought during the year | 12000 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E11 |  | 12000 |  |
-| E13 |  | 12000 |  |
-| E15 |  | 0 |  |
-| K11 |  | 0 |  |
-| K13 |  | 0 |  |
-| K15 |  | 0 |  |
+| E11 | Additions the schedule lists, net of VAT | 12000 |  |
+| E13 | Fixed asset purchases the purchase journal carries, net of VAT | 12000 |  |
+| E15 | Purchases less schedule additions | 0 |  |
+| K11 | Disposal proceeds the schedule lists, net of VAT | 0 |  |
+| K13 | Fixed asset sales the sales journal carries, net of VAT | 0 |  |
+| K15 | Sales less schedule disposals | 0 |  |
 
 ### Payslips.xlsx!Payment
 

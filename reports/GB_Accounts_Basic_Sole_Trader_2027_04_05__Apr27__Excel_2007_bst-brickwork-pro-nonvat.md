@@ -3,6 +3,10 @@
 Scenario: bst-brickwork-pro-nonvat
 Status: RECONCILES
 
+Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales.
+
+Trade: Bricklaying, plastering and general building
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |

@@ -3,6 +3,10 @@
 Scenario: taxi-scenario-sp-sixty
 Status: RECONCILES
 
+Private hire driver with varying daily fares, fuel, insurance, repairs, admin, licence, accountant, dashcam, and signage
+
+Trade: Private hire and taxi services
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
