@@ -3,6 +3,10 @@
 Scenario: ltd-scenario-full
 Status: RECONCILES (with warnings)
 
+Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.
+
+Trade: IT consultancy and software development
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
@@ -708,6 +712,81 @@ Status: RECONCILES (with warnings)
 | CT: charge for the year = chargeable profit at the Admin corporation tax rate | 28028.780589506143 | 28028.7805895061 | -4.3655745685100555e-11 | PASS |
 | CT: Tax outstanding = CT less tax deducted at source | 27964.274416666594 | 27964.2744166666 | +7.275957614183426e-12 | PASS |
 | CT: charge for the year against the statutory computation with marginal relief | 35342.772927469094 | 28028.7805895061 | -7313.9923379629945 | **WARNING** |
+| Accounting profit to tax profit bridge closes to zero | 0 | -5.238689482212067e-10 | -5.238689482212067e-10 | PASS |
+| Category netting: Sales Product A (sales a) net reaches MnthP&L!B4 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product B (sales b) net reaches MnthP&L!B5 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sales Product C (sales c) net reaches MnthP&L!B6 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Other Income (sales d) net reaches MnthP&L!B7 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Investment Grants received (sales g) net reaches MnthP&L!B8 with no residue | 0 | 3.637978807091713e-12 | +3.637978807091713e-12 | PASS |
+| Category netting: Bad Debts written off (sales o) net reaches MnthP&L!B34 negated with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Sub contractors (purchases c) net reaches MnthP&L!B12 with no residue | 0 | -2.7284841053187847e-12 | -2.7284841053187847e-12 | PASS |
+| Category netting: Other Direct Cost of Sales (purchases o) net reaches MnthP&L!B13 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Premises Rent & Rates (purchases r) net reaches MnthP&L!B21 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Premises Light & Heating (purchases p) net reaches MnthP&L!B22 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Distribution Transport Costs (purchases t) net reaches MnthP&L!B23 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Equipment Tools & Plant Hire (purchases q) net reaches MnthP&L!B24 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Repairs & Maintenance (purchases m) net reaches MnthP&L!B25 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Consumable Materials (purchases u) net reaches MnthP&L!B26 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Advertising & Promotion (purchases a) net reaches MnthP&L!B27 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Telephone Postage & Stationery (purchases g) net reaches MnthP&L!B28 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Travel & Hotel Expenses (purchases h) net reaches MnthP&L!B29 with no residue | 0 | 2.2737367544323206e-13 | +2.2737367544323206e-13 | PASS |
+| Category netting: Motor Vehicle Expenses (purchases v) net reaches MnthP&L!B30 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Insurance Costs (purchases n) net reaches MnthP&L!B31 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Leasing Charges (purchases f) net reaches MnthP&L!B32 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Legal & Professional Fees (purchases l) net reaches MnthP&L!B33 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Charitable Donations (purchases y) net reaches MnthP&L!B37 with no residue | 0 | -3.979039320256561e-13 | -3.979039320256561e-13 | PASS |
+| Category netting: Goodwill written off (purchases z) net reaches MnthP&L!B38 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Wages and Salaries, less the payroll's own gross pay (purchases w) net reaches MnthP&L!B18 less the payroll gross pay with no residue | 0 | -3.399236447876319e-11 | -3.399236447876319e-11 | PASS |
+| Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
+| Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue | 0 | 0 | 0 | PASS |
+
+## Accounting profit to tax profit bridge
+
+| Line | Cell | Amount |
+|------|------|-------:|
+| Profit before tax per the management profit and loss account | MnthP&L!B45 | 177,215.39 |
+| Less bank interest received, net of tax deducted at source | MnthP&L!B44 | -275 |
+| Add back goodwill written off | CorporationTax!I7 | 2,500 |
+| Add back depreciation charged in the year | CorporationTax!I8 | 11,740 |
+| Less capital allowances | CorporationTax!K20 | -44,000 |
+| Add gross bank interest received | CorporationTax!K24 | 339.51 |
+| Less losses brought forward | CorporationTax!K26 | 0 |
+| **Tax profit the bridge computes** | | **147,519.9** |
+| Tax profit the sheet carries | CorporationTax!K28 | 147,519.9 |
+| **Residue** | | **0** |
+
+## Journal category VAT netting
+
+Journal amounts include VAT at 20%.
+
+| Journal category | Gross per the journal | VAT stripped | Net | Where the net lands | Figure there | Residue |
+|------------------|----------------------:|-------------:|----:|---------------------|-------------:|--------:|
+| Sales Product A (sales a) | 373,920 | 62,320 | 311,600 | MnthP&L!B4 | 311,600 | 0 |
+| Sales Product B (sales b) | 16,320 | 2,720 | 13,600 | MnthP&L!B5 | 13,600 | 0 |
+| Sales Product C (sales c) | 12,360 | 2,060 | 10,300 | MnthP&L!B6 | 10,300 | 0 |
+| Other Income (sales d) | 4,440 | 740 | 3,700 | MnthP&L!B7 | 3,700 | 0 |
+| Investment Grants received (sales g) | 2,500 | 416.67 | 2,083.33 | MnthP&L!B8 | 2,083.33 | 0 |
+| Bad Debts written off (sales o) | 360 | 60 | 300 | MnthP&L!B34 negated | 300 | 0 |
+| Sub contractors (purchases c) | 8,000 | 1,333.33 | 6,666.67 | MnthP&L!B12 | 6,666.67 | 0 |
+| Other Direct Cost of Sales (purchases o) | 3,204 | 534 | 2,670 | MnthP&L!B13 | 2,670 | 0 |
+| Premises Rent & Rates (purchases r) | 14,400 | 2,400 | 12,000 | MnthP&L!B21 | 12,000 | 0 |
+| Premises Light & Heating (purchases p) | 1,440 | 240 | 1,200 | MnthP&L!B22 | 1,200 | 0 |
+| Distribution Transport Costs (purchases t) | 960 | 160 | 800 | MnthP&L!B23 | 800 | 0 |
+| Equipment Tools & Plant Hire (purchases q) | 1,620 | 270 | 1,350 | MnthP&L!B24 | 1,350 | 0 |
+| Repairs & Maintenance (purchases m) | 1,140 | 190 | 950 | MnthP&L!B25 | 950 | 0 |
+| Consumable Materials (purchases u) | 1,578 | 263 | 1,315 | MnthP&L!B26 | 1,315 | 0 |
+| Advertising & Promotion (purchases a) | 4,560 | 760 | 3,800 | MnthP&L!B27 | 3,800 | 0 |
+| Telephone Postage & Stationery (purchases g) | 1,962 | 327 | 1,635 | MnthP&L!B28 | 1,635 | 0 |
+| Travel & Hotel Expenses (purchases h) | 1,860 | 310 | 1,550 | MnthP&L!B29 | 1,550 | 0 |
+| Motor Vehicle Expenses (purchases v) | 7,598.25 | 1,266.38 | 6,331.88 | MnthP&L!B30 | 6,331.88 | 0 |
+| Insurance Costs (purchases n) | 1,800 | 300 | 1,500 | MnthP&L!B31 | 1,500 | 0 |
+| Leasing Charges (purchases f) | 720 | 120 | 600 | MnthP&L!B32 | 600 | 0 |
+| Legal & Professional Fees (purchases l) | 5,310 | 885 | 4,425 | MnthP&L!B33 | 4,425 | 0 |
+| Charitable Donations (purchases y) | 500 | 83.33 | 416.67 | MnthP&L!B37 | 416.67 | 0 |
+| Goodwill written off (purchases z) | 3,000 | 500 | 2,500 | MnthP&L!B38 | 2,500 | 0 |
+| Wages and Salaries, less the payroll's own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the payroll gross pay | 666.67 | 0 |
+| Capitalised fixed asset spend (purchases fa) | 39,000 | 6,500 | 32,500 | Fixedassets.xlsx!FAreconciliation!E11 | 32,500 | 0 |
+| Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
 
 ## Business Details
 
@@ -876,9 +955,9 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Fixtures & Fittings | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Computers | 3,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Motor Vehicles | 30,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Land & Property | -0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Plant & Machinery | -0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Fixtures | -0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Land & Property | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Plant & Machinery | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Fixtures | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Computers | -270 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Motor Vehicles | -9,828 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Stock | 10,000 |
@@ -913,18 +992,32 @@ Status: RECONCILES (with warnings)
 | &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
 | **VAT due for the year** | 52,317.96 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 1: VAT due on sales | 16,920 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 4: VAT reclaimed on purchases | 3,423.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 box 5: net VAT due | 13,496.13 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 1: VAT due on sales | 17,256.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 4: VAT reclaimed on purchases | 3,073.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 box 5: net VAT due | 14,183.42 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 1: VAT due on sales | 19,780 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 4: VAT reclaimed on purchases | 9,895.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 box 5: net VAT due | 9,884.13 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 1: VAT due on sales | 16,860 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 4: VAT reclaimed on purchases | 2,105.71 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 box 5: net VAT due | 14,754.29 |
+| **How the return periods line up with the accounting year** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 31 May 2025, 30 June 2025, 31 July 2025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 31 August 2025, 30 September 2025, 31 October 2025 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 30 November 2025, 31 December 2025, 31 January 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 28 February 2026, 31 March 2026, 30 April 2026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 31 March 2026, 30 April 2026, 31 May 2026 |
+| The returns above also cover the period ending 31 May 2026, which falls outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 40 |
+| Q4 and Q5 end one month apart rather than one quarter, so both cover the periods ending 31 March 2026 and 30 April 2026. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. As shipped it is dated a month after the fourth, so filing all of them as they stand would declare those periods twice. |  |
+| **The return forms as the package fills them in** |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 1: VAT due on sales | 16,920 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 4: VAT reclaimed on purchases | 3,423.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 July 2025) box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 1: VAT due on sales | 17,256.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 4: VAT reclaimed on purchases | 3,073.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 31 October 2025) box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 1: VAT due on sales | 19,780 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 4: VAT reclaimed on purchases | 9,895.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 January 2026) box 5: net VAT due | 9,884.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 1: VAT due on sales | 16,860 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 4: VAT reclaimed on purchases | 2,105.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 30 April 2026) box 5: net VAT due | 14,754.29 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 1: VAT due on sales | 11,553.33 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 4: VAT reclaimed on purchases | 1,393.83 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 May 2026) box 5: net VAT due | 10,159.5 |
 
 ---
 
@@ -2092,21 +2185,21 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 |  | 65500 |  |
-| F1 |  | 10098 |  |
-| G1 |  | 22902 |  |
-| I1 |  | 11740 |  |
-| J1 |  | 21838 |  |
-| K1 |  | 43662 |  |
-| Q1 |  | 32500 |  |
-| R1 |  | 3000 |  |
-| V1 |  | 12500 |  |
-| W1 |  | 30000 |  |
-| X1 |  | 17328 |  |
-| Y1 |  | 8500 |  |
-| Z1 |  | 0 |  |
-| E57 |  | 33000 |  |
-| E110 |  | 32500 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 65500 |  |
+| F1 | Total accumulated depreciation brought forward | 10098 |  |
+| G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
+| I1 | Total depreciation charged for the year | 11740 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 21838 |  |
+| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 43662 |  |
+| Q1 | Total annual investment allowance claimed | 32500 |  |
+| R1 | Total writing down allowance claimed | 3000 |  |
+| V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
+| W1 | Cost of the assets sold in the year | 30000 |  |
+| X1 | Accumulated depreciation on the assets sold in the year | 17328 |  |
+| Y1 | Balancing allowance on the disposals | 8500 |  |
+| Z1 | Balancing charge on the disposals | 0 |  |
+| E57 | Cost of the assets owned at the start of the year | 33000 |  |
+| E110 | Cost of the assets bought during the year | 32500 |  |
 | E11 |  | 0 |  |
 | F11 |  | 0 |  |
 | I11 |  | 0 |  |
@@ -2172,8 +2265,8 @@ Status: RECONCILES (with warnings)
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E11 |  | 32500 |  |
-| K11 |  | 12500 |  |
+| E11 | Additions the schedule lists, net of VAT | 32500 |  |
+| K11 | Disposal proceeds the schedule lists, net of VAT | 12500 |  |
 
 ### Payslips.xlsx!Payment
 

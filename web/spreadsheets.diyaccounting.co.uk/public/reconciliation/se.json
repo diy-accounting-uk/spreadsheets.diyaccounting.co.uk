@@ -6,8 +6,8 @@
   "featuredScenario": "se-scenario-advanced",
   "yearEnd": "2027-04-05",
   "status": "RECONCILES",
-  "runs": 9,
-  "updated": "2026-08-29",
+  "runs": 7,
+  "updated": "2026-08-27",
   "features": {
     "checks": true,
     "sales": true,
