@@ -80,14 +80,15 @@ describeCalc("BST end-to-end: Precision Code basic scenario", () => {
     expect(results["Income Tax"].E5).toBeGreaterThan(0);
   });
 
-  it("Income Tax: personal allowance applied", () => {
-    expect(results["Income Tax"].E6).toBe(taxData.income_tax.personal_allowance);
+  it("Income Tax: the taper leaves this profit no personal allowance", () => {
+    // 226,508 is more than twice the taper threshold above it, so the whole
+    // 12,570 allowance is withdrawn.
+    expect(results["Income Tax"].E6).toBe(0);
   });
 
   it("Income Tax: taxable income = profit - personal allowance", () => {
-    const profit = results["Income Tax"].E5;
-    const pa = taxData.income_tax.personal_allowance;
-    expect(results["Income Tax"].E7).toBe(profit - pa);
+    const tax = results["Income Tax"];
+    expect(tax.E7).toBe(tax.E5 - tax.E6);
   });
 
   it("Income Tax: basic rate tax calculated correctly", () => {
@@ -99,10 +100,33 @@ describeCalc("BST end-to-end: Precision Code basic scenario", () => {
 
   it("Income Tax: total liability = income tax + NI", () => {
     const total = results["Income Tax"].E18;
-    const incomeTax = results["Income Tax"].E10;
+    const incomeTax = results["Income Tax"].E11;
     const ni15 = results["Income Tax"].E15 || 0;
     const ni16 = results["Income Tax"].E16 || 0;
     expect(total).toBeCloseTo(incomeTax + ni15 + ni16, 0);
+  });
+
+  // The statutory charge on this fixture's profit, worked out by hand from the
+  // 2025-26 rates rather than from anything the sheet computes:
+  //   profit                    226,508
+  //   allowance                       0  (12,570 - (226,508 - 100,000) / 2, floored)
+  //   basic      37,700 x 0.20 =  7,540.00
+  //   higher     87,440 x 0.40 = 34,976.00   (125,140 - 37,700)
+  //   additional 101,368 x 0.45 = 45,615.60  (226,508 - 125,140)
+  //   income tax               = 88,131.60
+  //   NI         37,700 x 0.06 =  2,262.00, 176,238 x 0.02 = 3,524.76
+  //   tax and NI               = 93,918.36
+  it("charges the statutory 2025-26 tax on the basic fixture profit", () => {
+    const tax = results["Income Tax"];
+    expect(tax.E5).toBe(226508);
+    expect(tax.E6).toBe(0);
+    expect(tax.E8).toBeCloseTo(7540, 2);
+    expect(tax.E9).toBeCloseTo(34976, 2);
+    expect(tax.E10).toBeCloseTo(45615.6, 2);
+    expect(tax.E11).toBeCloseTo(88131.6, 2);
+    expect(tax.E15).toBeCloseTo(2262, 2);
+    expect(tax.E16).toBeCloseTo(3524.76, 2);
+    expect(tax.E18).toBeCloseTo(93918.36, 2);
   });
 
   // ── Stock assertions ──────────────────────────────────────────────────

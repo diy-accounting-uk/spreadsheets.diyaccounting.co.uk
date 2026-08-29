@@ -151,14 +151,21 @@ export function buildCellEdits(taxData, startYear) {
   }
 
   numericEdits.N4 = it.personal_allowance;
+  numericEdits.N5 = it.personal_allowance_taper_threshold;
   numericEdits.N6 = it.starting_rate;
   numericEdits.N7 = it.basic_rate;
   numericEdits.N8 = it.higher_rate;
+  numericEdits.N9 = it.additional_rate;
   numericEdits.N11 = it.starter_band_end;
   numericEdits.M12 = it.basic_band_end;
   numericEdits.N12 = 0;
   numericEdits.L13 = it.higher_band_start;
   numericEdits.N13 = it.higher_band_start;
+  // K12 and K13 are a shared-formula group (=N7, =N8); writing a value into
+  // K12 would orphan its follower. K14 sits outside the group.
+  numericEdits.K14 = it.additional_rate;
+  numericEdits.L14 = it.higher_band_end + 1;
+  numericEdits.N14 = it.higher_band_end;
 
   numericEdits.L17 = ni.class2_rate;
   numericEdits.L20 = ni.class4_lower_rate;
@@ -288,15 +295,19 @@ export function buildSeCellEdits(taxData, startYear) {
 
   // Income tax — DIFFERENT cell positions from BST
   numericEdits.N4 = it.personal_allowance;
+  numericEdits.N5 = it.personal_allowance_taper_threshold;
   numericEdits.N6 = it.basic_rate; // BST: starting_rate at N6
   numericEdits.N7 = it.higher_rate; // BST: basic_rate at N7
-  // No N8 in SE (BST has higher_rate at N8)
+  numericEdits.N8 = it.additional_rate; // BST: higher_rate at N8
   numericEdits.K11 = it.basic_rate; // Display-only copy of basic rate
   numericEdits.N11 = it.starter_band_end;
   numericEdits.M11 = it.basic_band_end; // BST: M12
-  numericEdits.K12 = 0;
+  numericEdits.K12 = it.higher_rate; // Display-only copy of the higher rate
   numericEdits.L12 = it.higher_band_start; // BST: L13
   numericEdits.N12 = it.higher_band_start; // BST: N13
+  numericEdits.K13 = it.additional_rate; // Display-only copy of the additional rate
+  numericEdits.L13 = it.higher_band_end + 1; // BST: L14
+  numericEdits.N13 = it.higher_band_end; // BST: N14
 
   // NI — L16 not L17 for Class 2
   numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17

@@ -328,6 +328,9 @@ export function extractTaxDataFromBook(book) {
       starter_band_end: 0,
       basic_band_end: it.basicRateLimit || 37700,
       higher_band_start: (it.basicRateLimit || 37700) + 1,
+      higher_band_end: it.higherRateLimit || 125140,
+      additional_rate: it.additionalRate || 0.45,
+      personal_allowance_taper_threshold: it.personalAllowanceTaperThreshold || 100000,
     },
     national_insurance: {
       class2_rate: 0,

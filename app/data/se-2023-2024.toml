@@ -19,6 +19,9 @@ higher_rate = 0.40
 starter_band_end = 0
 basic_band_end = 37700
 higher_band_start = 37701
+higher_band_end = 125140
+additional_rate = 0.45
+personal_allowance_taper_threshold = 100000
 
 [national_insurance]
 class2_rate = 3.45
