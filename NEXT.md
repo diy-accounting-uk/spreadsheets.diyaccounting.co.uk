@@ -9,7 +9,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 | What | Where | Status |
 |---|---|---|
 | Regenerate `SHEET_COVERAGE_GAPS.md` from main (NEXT item below) | worktree `.worktrees/sp-coverage-gaps`, branch `claude/coverage-gaps` | started; lands docs-only on main |
-| Operator's post-merge generate-bst/se/ltd/taxi with commit on main | GitHub Actions runs 33251860271, 33251867352, 33251875006, 33251882733 | running; operator deploys from main after |
+| Operator's deploy from main after the post-merge generate-* refresh | deploy.yml | generate-bst/se/ltd/taxi all green and committed (`9e057458`, `08a44a1a`, `72a6a117`, `79eecc50`); deploy is the operator's next step |
 | Full local unit suite on the merged main | worktree `.worktrees/sp-pages` (removed when it finishes) | running |
 
 Every later PR branch starts from a rebase onto the post-deploy green main.
