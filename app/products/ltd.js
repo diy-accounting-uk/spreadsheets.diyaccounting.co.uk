@@ -1320,6 +1320,10 @@ export function standardReads() {
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
 
+  // Trade creditors' final balance, the row the hire purchase agreements'
+  // amounts financed are moved off at the year end.
+  add("TrialBalance", "EJ28");
+
   // PAYE/NI creditor -- row 34's first-month movement column. Column L
   // holds the fiscal year's first month regardless of year-end (verified
   // against the template: L34 = -(WagesInterface!D4+E4+H4)-(...director
@@ -1872,6 +1876,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // chains land on, so anchoring the published lines to the scenario's own
   // closing figures is the only way a stale opening balance or a year of
   // uncollected sales shows up.
+  // What the banks paid out under one code, less anything they took back in
+  // under it. The debtor and creditor rows below each net their own code off
+  // what the ledgers charged to the account.
+  const netBankPayments = (code) => {
+    let total = 0;
+    for (const transactions of Object.values(expected.bank || {})) {
+      for (const tx of transactions) {
+        if (tx.code !== code) continue;
+        total += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    return total;
+  };
+
   const stock = results.Stock;
   const pubBS = results.PubBalSht;
   const openingStock = expected.stock?.opening ?? expected.opening_stock;
@@ -2428,6 +2446,30 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     }
   }
 
+  // ── The creditor rows the bank codes settle ─────────────────────────────
+  const finalBalances = results.TrialBalance;
+
+  // Trade creditors (row 28) take every purchase invoiced and give back
+  // every payment made under "CR". The year-end journal then moves the hire
+  // purchase agreements' amounts financed off the row: EH28 reads
+  // [1]HPfinance!$E$2 and EH40 its negative, so the assets those agreements
+  // paid for stop being trade creditors and become creditors falling due
+  // after more than one year. Every term here comes from the scenario, so a
+  // reclassification that moved the wrong figure, or moved nothing, shows up
+  // instead of a sheet that only agrees with itself.
+  if (finalBalances && expected.purchases && expected.bank) {
+    let invoiced = 0;
+    for (const transactions of Object.values(expected.purchases)) {
+      for (const tx of transactions) invoiced += tx.amount;
+    }
+    const amountsFinanced = (expected.hp_agreements || []).reduce((total, agreement) => total + agreement.amount_financed, 0);
+    check(
+      "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
+      -num(finalBalances.EJ28),
+      (expected.opening_balance?.trade_creditors || 0) + invoiced - netBankPayments("CR") - amountsFinanced,
+    );
+  }
+
   // The Schedule's new-asset and disposal totals against what the scenario
   // posted to Purchases.xlsx and Sales.xlsx, net of VAT — the same
   // comparison FAreconciliation is built to make, made here because the
@@ -2499,14 +2541,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // to, so a broken cross-file link shows up here rather than passing by
   // construction.
   if (pl && expected.bank) {
-    let bankChargesTotal = 0;
-    for (const transactions of Object.values(expected.bank)) {
-      for (const tx of transactions) {
-        if (tx.code !== "B") continue;
-        bankChargesTotal += tx.direction === "out" ? tx.amount : -tx.amount;
-      }
-    }
-    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), bankChargesTotal);
+    check("P&L: HP interest and charges reach the Bank Charges line (B36)", num(pl.B36), netBankPayments("B"));
   }
 
   // ── Bank: each workbook's closing balance against the scenario's own cash

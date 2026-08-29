@@ -23,6 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
+  HP_AGREEMENT_FIELD,
   LTD_SALES_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
   BST_PURCHASE_CODE_MAP,
@@ -345,6 +346,22 @@ const fullDividendsPaid = fullLines
   .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
 if (book.dividend.declared !== fullDividendsPaid) {
   throw new Error(`The board minuted a dividend of ${book.dividend.declared}, against ${fullDividendsPaid} paid out of the bank`);
+}
+
+// Each hire purchase agreement pays for one purchase, at the purchase's cost
+// net of VAT -- the VAT is the buyer's to settle, not the finance company's.
+// The purchase reaches the books as an ordinary trade creditor and the
+// year-end journal then moves the amount financed onto creditors falling due
+// after more than one year. HPfinance!E2 totals the amounts financed and the
+// trial balance reads it on both rows, so an agreement whose purchase is
+// missing leaves the asset off the schedule and the reclassification with
+// nothing to move.
+const hpFinanced = hpAgreements.reduce((total, agreement) => total + agreement.amount_financed, 0);
+const hpPurchasedNet = fullPurchLines
+  .filter((l) => l[HP_AGREEMENT_FIELD])
+  .reduce((total, l) => total + l.amount / (1 + (l.taxRate || 0)), 0);
+if (hpFinanced !== hpPurchasedNet) {
+  throw new Error(`Hire purchase agreements finance ${hpFinanced}, against ${hpPurchasedNet} of purchases net of VAT bought under them`);
 }
 
 const fullToml = formatScenarioToml(

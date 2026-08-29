@@ -266,10 +266,20 @@ export function bstStaffWagesAsPurchases(lines) {
   );
 }
 
+// A purchase carrying this field was bought under the hire purchase
+// agreement it names. The asset and the agreement only make sense together:
+// the purchase raises the creditor and the agreement's schedule reclassifies
+// it as long term finance. The Basic Sole Trader package has no finance
+// agreement schedule, so such a purchase stays out of that subset.
+export const HP_AGREEMENT_FIELD = "diya-gl:hpAgreement";
+
 export function filterBst(lines) {
   return lines.filter((l) => {
     if (l.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(l.accountMainID);
-    if (l.sourceJournalID === "purchases") return BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    if (l.sourceJournalID === "purchases") {
+      if (l[HP_AGREEMENT_FIELD]) return false;
+      return BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined;
+    }
     return false;
   });
 }

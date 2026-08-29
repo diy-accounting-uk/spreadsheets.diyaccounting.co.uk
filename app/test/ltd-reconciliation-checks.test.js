@@ -164,7 +164,7 @@ describeCalc(
       expect(schedule.F55).toBe(9828);
       expect(schedule.E41).toBe(3000);
       expect(schedule.F41).toBe(270);
-      expect(schedule.E110).toBe(32500);
+      expect(schedule.E110).toBe(52500);
       // The van sold: proceeds, original cost and depreciation to the date
       // of sale all come off the schedule.
       expect(schedule.V1).toBe(12500);
@@ -176,9 +176,9 @@ describeCalc(
     it("publishes those figures in the fixed asset note", () => {
       const notes = results.PubNotes;
       expect(notes.G8).toBe(33000);
-      expect(notes.G9).toBe(32500);
+      expect(notes.G9).toBe(52500);
       expect(notes.G10).toBe(30000);
-      expect(notes.G11).toBe(35500);
+      expect(notes.G11).toBe(55500);
       expect(notes.G14).toBe(10098);
       expect(notes.G20).toBe(notes.G11 - notes.G17);
       expect(results.PubBalSht.F6).toBe(notes.G20);
@@ -439,16 +439,16 @@ describeCalc(
     it("carries the schedule's per-asset capital allowance rows into the tax computation", () => {
       const schedule = results["Fixedassets.xlsx!Schedule"];
       const corporationTax = results.CorporationTax;
-      // The three purchases claim the annual investment allowance in full;
+      // The five purchases claim the annual investment allowance in full;
       // the van brought forward takes a restricted writing down allowance and
       // then a balancing allowance for the shortfall on its sale.
-      expect(schedule.Q1).toBe(32500);
+      expect(schedule.Q1).toBe(52500);
       expect(schedule.R1).toBe(3000);
       expect(schedule.Y1).toBe(8500);
-      expect(corporationTax.I15).toBe(32500);
+      expect(corporationTax.I15).toBe(52500);
       expect(corporationTax.I17).toBe(3000);
       expect(corporationTax.I18).toBe(8500);
-      expect(corporationTax.K20).toBe(44000);
+      expect(corporationTax.K20).toBe(64000);
     });
 
     it("fails the investment allowance tie when the Schedule total is corrupted via JSZip", async () => {
@@ -646,7 +646,7 @@ describeCalc(
       expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
       expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
-      expect(ct.K35).toBeCloseTo(34521.272927, 4);
+      expect(ct.K35).toBeCloseTo(29221.272927, 4);
     });
 
     it("files the gross tax in box 63, the relief in box 64 and the charge in box 65", () => {
@@ -655,8 +655,8 @@ describeCalc(
       expect(ct.I34).toBe(0);
       expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
       expect(ct600.AJ128).toBeCloseTo(0, 6);
-      expect(ct600.AJ131).toBeCloseTo(36104.97446, 4);
-      expect(ct600.Y133).toBeCloseTo(1583.701532, 4);
+      expect(ct600.AJ131).toBeCloseTo(31104.97446, 4);
+      expect(ct600.Y133).toBeCloseTo(1883.701532, 4);
       expect(ct600.Y135).toBeCloseTo(ct.K35, 6);
       expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
       // The period lies in one financial year, so the second row is blank
@@ -1156,6 +1156,19 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("TrialBalance", "D40", value);
       expect(failureNames(corrupted)).toEqual(["Trial Balance opening: creditors due after more than one year"]);
+    });
+
+    // ── The creditor rows the bank codes settle. Liabilities sit negative on
+    // this trial balance, so a positive figure on one of these rows is the
+    // account overdrawn.
+
+    it("fails only the trade creditor tie when TrialBalance EJ28 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ28", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ28", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
+      ]);
     });
   },
   900000,

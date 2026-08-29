@@ -116,11 +116,13 @@ turnover published is 341,283.
 
 | Code | Category | Gross Total |
 |------|----------|------------:|
-| 5900 | Fixed asset purchases | 39,000 |
+| 5900 | Fixed asset purchases | 63,000 |
 
-Fixed assets acquired: Dell laptop (1,800), Ford Transit Custom van (36,000), IKEA office furniture (1,200).
+Fixed assets acquired: Dell laptop (1,800), Ford Transit Custom van (36,000), IKEA office furniture
+(1,200), and the two items the hire purchase agreements below pay for, a test rig (15,600) and a
+bench calibration kit (8,400).
 
-| | **Total Purchases** | **110,992** |
+| | **Total Purchases** | **134,992** |
 |--|---------------------|------------:|
 
 ## Employees (PAYE Payroll)
@@ -164,8 +166,9 @@ Quarterly dividends: Q1 3,000, Q2 3,000, Q3 3,000, Q4 (final) 6,000 = 15,000 tot
 | 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | 14,456.50 |
 | 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | 10,917.50 |
 
-The fourth quarter's VAT of 14,796.50 falls due on 7 May 2026 and so stays a creditor at the
-year end, as does the 28,029 of corporation tax on this year's profit.
+The fourth quarter's VAT of 14,796.50 falls due after the year end and so stays a creditor, and
+so does this year's corporation tax: 29,221.27 charged, less the 64.51 the working sheet credits
+for tax already suffered on the interest received, leaves 29,156.77 owed.
 
 The Innovate UK grant of 2,500 is invoiced to sales account 4004 and its receipt carries bank
 code `RV`, so it credits the VAT creditor rather than settling the debtor. Recoding it to `DR`
@@ -213,7 +216,17 @@ Each agreement's admin charges and interest (2,000 and 1,100) are booked on the 
 the same way every other direct bank charge does. The current account is the one the Self
 Employed subset reads, so the sole trader's profit and loss account carries the same finance
 charge the company's does. Each agreement's amount financed (13,000 and 7,000) is booked on the
-savings account as a creditor repayment (code `CR`).
+same account as a creditor repayment (code `CR`).
+
+Each agreement pays for something. Precision Tooling Supplies invoices the item on the day the
+agreement starts, gross of VAT, and the purchase carries the agreement's reference so the two
+stay tied: 15,600 for the test rig and 8,400 for the calibration kit, 13,000 and 7,000 net of
+VAT, which is what each agreement finances. The VAT is the company's own to settle. The purchase
+is coded `fa`, so it reaches the `Fixedassets.xlsx` Schedule as an addition at cost net of VAT
+and the books as an ordinary trade creditor; the year-end journal then moves the amount financed
+off trade creditors and onto creditors falling due after more than one year, through
+`TrialBalance!EH28` reading `[1]HPfinance!$E$2` and `EH40` its negative. The Basic Sole Trader
+package has no finance agreement schedule, so these two purchases stay out of that subset.
 
 ## CIS Sub-Contractors
 
@@ -232,17 +245,17 @@ savings account as a creditor repayment (code `CR`).
 |-------|------:|----------:|----:|
 | Apr 2025 | 33,400 | 5,111 | 28,289 |
 | May 2025 | 32,920 | 6,375 | 26,545 |
-| Jun 2025 | 35,200 | 9,057 | 26,143 |
+| Jun 2025 | 35,200 | 24,657 | 10,543 |
 | Jul 2025 | 33,760 | 9,059 | 24,701 |
 | Aug 2025 | 36,020 | 4,405 | 31,615 |
-| Sep 2025 | 33,760 | 4,975 | 28,785 |
+| Sep 2025 | 33,760 | 13,375 | 20,385 |
 | Oct 2025 | 50,560 | 43,006 | 7,554 |
 | Nov 2025 | 35,320 | 6,918 | 28,402 |
 | Dec 2025 | 32,800 | 9,452 | 23,348 |
 | Jan 2026 | 35,440 | 4,511 | 30,929 |
 | Feb 2026 | 34,360 | 4,396 | 29,964 |
 | Mar 2026 | 31,360 | 3,726 | 27,634 |
-| **Total** | **424,900** | **110,992** | **313,908** |
+| **Total** | **424,900** | **134,992** | **289,908** |
 
 October is the low month: the 36,000 van purchase lands in it.
 
@@ -250,8 +263,8 @@ October is the low month: the 36,000 van purchase lands in it.
 
 | Account | Entries | Description |
 |---------|--------:|-------------|
-| 1200 -- Current account | 140 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments, hire purchase charges (x2) |
-| 1210 -- Savings account | 6 | Opening balance, transfer in, interest (x2), hire purchase capital repayments (x2) |
+| 1200 -- Current account | 142 | Customer receipts, rent, payroll, PAYE/NI, VAT, CT, dividends, loan repayments, supplier payments, hire purchase charges and capital repayments (x4) |
+| 1210 -- Savings account | 4 | Opening balance, transfer in, interest (x2) |
 | 1220 -- Cash account | 7 | Opening float, top-up, petty cash purchases (x5) |
 | 1230 -- Credit card | 8 | Hotel/travel charges (x3), annual fee, payments from current (x4) |
 
