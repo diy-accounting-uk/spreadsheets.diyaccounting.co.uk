@@ -237,6 +237,11 @@ function ltdIndicators(report, vatRegistered) {
   const nbv = value(report, "Fixed Asset Note", "Net book value");
   const depreciation = value(report, "Fixed Asset Note", "Charge for the year");
   const stock = value(report, "Published Balance Sheet", "Stock at cost");
+  const reportTurnover = value(report, "Directors' Report", "Sales turnover in the year");
+  const reportPriorTurnover = value(report, "Directors' Report", "Sales turnover last year");
+  const reportMargin = value(report, "Directors' Report", "Trading margin");
+  const reportDividend = value(report, "Directors' Report", "Dividend declared");
+  const reportShares = value(report, "Directors' Report", "Ordinary shares issued");
 
   return [
     runLine(report),
@@ -245,6 +250,7 @@ function ltdIndicators(report, vatRegistered) {
     `Trial balance audit accuracy (cell EJ91): ${amount(audit)}.`,
     `Fixed assets: net book value ${amount(nbv)}, depreciation charged for the year ${amount(depreciation)}. Stock at the year end ${amount(stock)}.`,
     `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}, box 63 as filed ${amount(filed)}.`,
+    `Directors' report: turnover ${amount(reportTurnover)} against ${amount(reportPriorTurnover)} last year, trading margin ${amount(reportMargin)}, dividend declared ${amount(reportDividend)} on ${amount(reportShares)} ordinary shares issued.`,
     vatLine(report, vatRegistered),
     bridgeLine(report),
   ];

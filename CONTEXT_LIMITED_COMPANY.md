@@ -181,10 +181,10 @@ MnthP&L <-- TrialBalance (cumulative monthly deltas)                            
   |   C32 = TB!O79 = [2]$AE$1 (Leasing, code f)                                 |
   |   C33 = TB!O80 = [2]$AF$1 (Legal, code l)                                   |
   |   C34 = TB!O81 = -[3]$T$1 (Bad debts from Sales)                            |
-  |   C35-C36 = TB!O82-O83 (Depreciation from bank)                             |
+  |   C35-C36 = TB!O82-O83 (Bank interest paid, bank charges)                    |
   |   C37 = TB!O84 = [2]$AG$1 (Donations, code y)                               |
   |   C38 = TB!O85 = [2]$AH$1 (Goodwill, code z)                               |
-  |   C39-C40 = Depreciation formulas from Fixedassets Schedule                  |
+  |   C39 = loss on disposal, C40 = depreciation, from Fixedassets Schedule      |
   | B41 = Total Admin, B43 = Operating Profit, B45 = PBT                        |
   v                                                                              |
 PubP&L <-- MnthP&L (annual column reformatted for Companies House)              |
@@ -448,8 +448,14 @@ Sales columns: A=date (Excel serial), B=customer, E=code letter, F=gross amount.
 
 From Financialaccounts.xlsx after recalculation:
 
-- **MnthP&L:** B4-B9, B11-B14, B16, B18-B45 (annual P&L totals)
-- **CorporationTax:** K5, K12, K22, K28, K35, K39 (CT calculation chain)
+`standardReads()` derives every hub read from `CELL_MAP` in `app/products/ltd.js`, then adds
+the month columns and the working-sheet rows the checks need:
+
+- **MnthP&L:** B4-B9, B11-B14, B16, B18-B45 (annual totals), and C-N on every row that ties to a Sales or Purchases month total
+- **CorporationTax:** K5, I7, I8, K10, K12, K20, K22, K24, K26, K28, K35, K39, plus I15-I18 (allowance lines) and A33-A35/F33/F34/G33/G34/I33/I34/K37 (the two dated tax rows)
+- **PubP&L, PubBalSht, PubNotes, Report, CT600, Stock, TrialBalance, OpenAccounts, Admin, WagesInterface:** the cells in the tables below
+
+Leaf-file reads come from `multiFileOptions()`: Sales and Purchases month totals, the five VATQtr sheets and Vatinterface, the Fixedassets Schedule and FAreconciliation, Payslips Payment and Admin, the four bank workbooks' closing balances, and Companysecretary's RegisterofMembers, Boardmeeting and Charges&Debentures.
 
 ### Compliance checks
 
@@ -469,59 +475,143 @@ The Ltd product is the primary XBRL consumer — Companies House filing requires
 
 ### Published P&L (PubP&L) — FRS 102 Statutory Accounts
 
+Column F is this year, column B the prior year comparative. The cells below are this year's.
+
 | Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
 |------|-----------|-----------------|---------------------|
-| C5 | Turnover | `gl-cor:amount (pubPL.turnover)` | `frs102:TurnoverRevenue` |
-| C7 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
-| C9 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
-| C11 | Admin Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
-| C13 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
-| C17 | **Profit Before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
-| C19 | Tax on Profit | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
-| C21 | **Profit After Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+| F7 | Sales Turnover | `gl-cor:amount (pubPL.salesTurnover)` | `frs102:TurnoverRevenue` |
+| F8 | Investment Grants received | `gl-cor:amount (pubPL.grants)` | `frs102:OtherOperatingIncome` |
+| F9 | **Sales Turnover** | `gl-cor:amount (pubPL.totalTurnover)` | `frs102:TurnoverRevenue` |
+| F16 | Cost of Sales | `gl-cor:amount (pubPL.cos)` | `frs102:CostOfSales` |
+| F18 | **Gross Profit** | `gl-cor:amount (pubPL.gross)` | `frs102:GrossProfit` |
+| F44 | Administrative Expenses | `gl-cor:amount (pubPL.admin)` | `frs102:AdministrativeExpenses` |
+| F46 | **Operating Profit** | `gl-cor:amount (pubPL.operating)` | `frs102:OperatingProfit` |
+| F48 | Other Income | `gl-cor:amount (pubPL.otherIncome)` | `frs102:OtherOperatingIncome` |
+| F49 | **Profit (Loss) before Tax** | `gl-cor:amount (pubPL.pbt)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+| F50 | Corporation tax | `gl-cor:taxAmount (pubPL.tax)` | `frs102:TaxOnProfitOnOrdinaryActivities` |
+| F51 | **Profit (Loss) after Tax** | `gl-cor:amount (pubPL.pat)` | `frs102:ProfitLossForFinancialYear` |
+| F52 | Dividends | `gl-cor:amount (pubPL.dividends)` | `frs102:DividendsPaid` |
+| F54 | **Retained Profit (Loss) for the year** | `gl-cor:amount (pubPL.retained)` | `frs102:RetainedEarningsAccumulatedLosses` |
+
+D3 carries the year end (`=Admin!B32`) and E5 the period end the directors' report quotes.
+
+The prior-year column has a trap: `OpenAccounts!E48` ("Less Closing Stock") is a formula reading
+`E15`, this year's opening stock, so a book with no prior-year comparatives still publishes a
+negative prior-year cost of sales and a gross profit equal to the opening stock.
 
 ### Published Balance Sheet (PubBalSht) — FRS 102
 
+Columns A and B are the prior year, E and F this year. Column E holds the parts and column F the totals.
+
 | Cell | DIY Label | diya-gl Property | FRS 102 XBRL Concept |
 |------|-----------|-----------------|---------------------|
-| C5 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
-| C9 | Stock | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
-| C10 | Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
-| C11 | Bank & Cash | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
-| C13 | Creditors < 1 year | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
-| C15 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
-| C19 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
-| C22 | Share Capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
-| C23 | Retained Earnings | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
-| C25 | **Shareholders Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
+| F6 | Fixed Assets (NBV) | `gl-cor:amount (pubBS.fixedAssets)` | `frs102:TangibleFixedAssets` |
+| E10 | Stock at cost | `accounts.assets.1100 (pubBS)` | `frs102:Stocks` |
+| E11 | Trade Debtors | `accounts.assets.1300 (pubBS)` | `frs102:Debtors` |
+| E12 | Cash at bank and in hand | `gl-cor:amount (pubBS.bankCash)` | `frs102:CashAtBankAndInHand` |
+| E13 | Current Assets | `gl-cor:amount (pubBS.currentAssets)` | `frs102:CurrentAssets` |
+| E20 | Current Liabilities | `gl-cor:amount (pubBS.creditors)` | `frs102:CreditorsDueWithinOneYear` |
+| F22 | **Net Current Assets** | `gl-cor:amount (pubBS.netCurrent)` | `frs102:NetCurrentAssetsLiabilities` |
+| F26 | **Total assets less current liabilities** | `gl-cor:amount (pubBS.totalAssetsLessCL)` | `frs102:TotalAssetsLessCurrentLiabilities` |
+| E29 | Directors Loan Account | `accounts.liabilities.2500 (pubBS)` | `frs102:CreditorsDueAfterOneYear` |
+| E30 | Creditors due after more than one year | `accounts.liabilities.2600 (pubBS)` | `frs102:CreditorsDueAfterOneYear` |
+| F31 | Other Creditors | `gl-cor:amount (pubBS.otherCred)` | `frs102:CreditorsDueAfterOneYear` |
+| F33 | **Net Assets** | `gl-cor:amount (pubBS.netAssets)` | `frs102:NetAssetsLiabilities` |
+| F36 | Called up share capital | `accounts.capital.3000 (pubBS)` | `frs102:CalledUpShareCapital` |
+| F37 | Retained Profit and Loss account | `accounts.capital.3100 (pubBS)` | `frs102:ProfitAndLossAccount` |
+| F39 | **Shareholders' Funds** | `gl-cor:amount (pubBS.equity)` | `frs102:ShareholdersEquity` |
 
-### Corporation Tax (CT600)
+D2 carries the balance sheet date (`='PubP&L'!D3`).
+
+### Corporation Tax working sheet (CorporationTax)
 
 | Cell | DIY Label | diya-gl Property | CT Computation Concept | CT600 Box |
 |------|-----------|-----------------|----------------------|-----------|
 | K5 | Operating Profit | `gl-cor:amount (ct600.box145)` | `ct-comp:ProfitLossPerAccounts` | 145 |
-| K12 | Add back: Depreciation | `gl-cor:amount (ct600.addBack)` | `ct-comp:AdjustmentsDepreciation` | — |
-| K22 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
-| K28 | **Profit Chargeable** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
+| I7 | Add back: Goodwill | `gl-cor:amount (ct600.addBackGoodwill)` | `ct-comp:AdjustmentsAmortisation` | — |
+| I8 | Add back: Depreciation | `gl-cor:amount (ct600.addBackDepreciation)` | `ct-comp:AdjustmentsDepreciation` | — |
+| K10 | Add back: total | `gl-cor:amount (ct600.addBack)` | `ct-comp:TotalAdjustments` | — |
+| K12 | Operational profit chargeable | `gl-cor:amount (ct600.adjustedProfit)` | `ct-comp:AdjustedProfitForThePeriod` | — |
+| K20 | Less: Capital Allowances | `tax.capitalAllowances (ct600)` | `ct-comp:TotalCapitalAllowances` | — |
+| K22 | Profit after capital allowances | `gl-cor:amount (ct600.afterAllowances)` | `ct-comp:TradingProfits` | 155 |
+| K24 | Add: gross bank interest | `gl-cor:amount (ct600.interest)` | `ct-comp:NonTradeInterest` | 170 |
+| K26 | Less: losses brought forward | `gl-cor:amount (ct600.lossesBf)` | `ct-comp:LossesBroughtForward` | 160 |
+| K28 | **Profit Chargeable to CT** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
 | K35 | **Corporation Tax** | `gl-cor:taxAmount (ct600.box430)` | CT600 `CorporationTax` | 430 |
 | K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box515)` | CT600 `TaxPayable` | 515 |
 
+Rows 33 and 34 are the two dated tax rows the charge is built from: A33/A34 the days each
+covers, F33/F34 the share of the chargeable profit, G33/G34 the rate and I33/I34 the tax. K37
+holds the tax already deducted at source.
+
+### CT600 as filed
+
+| Cell | Box | DIY Label |
+|------|-----|-----------|
+| AK66 | 145 | Turnover |
+| Z70 | 155 | Trading profits |
+| Z72 | 160 | Losses brought forward |
+| AJ74 | 165 | Net trading profits |
+| AJ76 | 170 | Non-trade interest |
+| AJ92 | 235 | Profits before deductions |
+| AJ110 | 315 | Profits chargeable to corporation tax |
+| N126 / AA126 / AJ126 | 44 / 45 / 46 | First financial year: profit, rate, tax |
+| N128 / AA128 / AJ128 | 54 / 55 / 56 | Second financial year: no formula in the shipped template |
+| AJ131 | 63 | Corporation tax chargeable |
+| AJ145 | 525 | Self assessment of tax payable |
+| AJ159 / AJ163 / AJ166 | 595 / 600 / 605 | Tax already paid, repayable, outstanding |
+
 ### Management P&L (MnthP&L) — DPL Taxonomy
+
+Column B is the annual total (`=SUM(C:N)`); C to N are the twelve months in accounting-period order.
 
 | Cell | DIY Label | diya-gl Property | DPL / FRS 102 Concept |
 |------|-----------|-----------------|----------------------|
+| B4-B8 | Product A/B/C sales, other direct income, grants | `accounts.sales.4000`-`4004` | `frs102:TurnoverRevenue` |
 | B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` |
+| B11-B13 | Materials, sub-contractors, other direct costs | `accounts.purchases.5000`-`5002` | `frs102:CostOfSales` |
 | B14 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` |
 | B16 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` |
-| B18 | Directors Wages | `accounts.purchases.5100` | `dpl:WagesAndSalaries` |
-| B19 | Employee Wages | `accounts.purchases.5101` | `dpl:WagesAndSalaries` |
-| B20 | Premises | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
-| B26 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
-| B32 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
-| B35 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
-| B41 | Total Admin | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
+| B18 | PAYE Wages + Non-PAYE Employee | `dpl:WagesAndSalaries (combined)` | `dpl:WagesAndSalaries` |
+| B19 | Directors Non-PAYE (code d) | `accounts.purchases.5100` | `dpl:DirectorsRemuneration` |
+| B20 | Employers National Insurance | `dpl:SocialSecurityCosts` | `dpl:SocialSecurityCosts` |
+| B21 | Premises (code r) | `accounts.purchases.5200` | `dpl:RentRatesAndServicesCosts` |
+| B22 | Light, Heat, Power (code p) | `accounts.purchases.5201` | `dpl:RentRatesAndServicesCosts` |
+| B27 | Advertising (code a) | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` |
+| B33 | Legal & Professional (code l) | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` |
+| B34 | Bad Debts (from Sales) | `accounts.sales.4005` | `dpl:BadDebtsWrittenOff` |
+| B35 | Bank Interest Paid | `accounts.purchases.5701` | `dpl:InterestPayable` |
+| B36 | Bank Charges | `accounts.purchases.5702` | `dpl:BankCharges` |
+| B37 | Charitable Donations (code y) | `accounts.purchases.5801` | `dpl:CharitableDonations` |
+| B38 | Goodwill written off (code z) | `accounts.purchases.5802` | `frs102:AmortisationExpenseIntangibleAssets` |
+| B39 | Loss on disposal of assets | `gl-cor:amount (lossOnDisposal)` | `frs102:GainLossOnDisposalTangibleFixedAssets` |
+| B40 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` |
+| B41 | Total Admin Expenses | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` |
 | B43 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` |
+| B44 | Interest Received | `gl-cor:amount (interestReceived)` | `dpl:InterestReceived` |
 | B45 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
+
+Rows 23 to 32 carry the remaining expense codes in the same pattern: distribution (t), equipment
+hire (q), repairs (m), consumables (u), telephone/postage/stationery (g), travel (h), motor (v),
+insurance (n) and leasing (f).
+
+### Directors' report (Report)
+
+The filed narrative reads its figures from the statements and from Companysecretary.xlsx (`[8]`).
+
+| Cell | Reads | Figure |
+|------|-------|--------|
+| F22 | `PubBalSht!D2` | Year ended |
+| E84 | `OpenAccounts!E8` | Principal activity |
+| E87 / H87 | `'PubP&L'!F9` / `'PubP&L'!B9` | This year's and last year's turnover |
+| D89 / I89 | `F18/F9` / `B18/B9` | This year's and last year's trading margin, blank when there is no turnover |
+| D94 | `[8]Boardmeeting!$E$4` | Dividend declared |
+| I95 | `[8]RegisterofMembers!$G$1` | Ordinary shares issued |
+| A97 / F97 | `[8]RegisterofMembers!$A$3` / `$G$3` | First member and the shares held |
+| A98 / F98 | `[8]RegisterofMembers!$A$4` / `$G$4` | Second member and the shares held |
+
+Nothing in the writer fills `Boardmeeting!E4` or the register's name column, so the report
+files a nil dividend and an unnamed shareholder.
 
 ## CI Pipeline (.github/workflows/generate-ltd.yml)
 
