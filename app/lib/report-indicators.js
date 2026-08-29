@@ -104,6 +104,15 @@ export function checkActual(report, name) {
   return toNumber(row.actual);
 }
 
+// The figure a check measured against, for the checks whose expected column
+// carries something the report states nowhere else. Null when the run made no
+// such check: a scenario with no bank journal pays no dividends, so the
+// report carries no row to read.
+export function optionalCheckExpected(report, name) {
+  const row = report.checks.find((check) => check.check === name);
+  return row ? toNumber(row.expected) : null;
+}
+
 export function value(report, section, label) {
   return toNumber(report.sections.get(section)?.get(label));
 }
@@ -180,6 +189,12 @@ function vatLine(report, vatRegistered) {
         ` (output VAT on it ${amount(outputOnIt)}); that month sat on the previous return of the same cycle.`,
     );
   }
+  // The package ships a fifth return form as well as the four quarters above. It is the
+  // spare a stagger that runs behind the accounting year needs, and it sits on the last
+  // period the book carries, which the fourth return already reaches. Without that here
+  // the fifth form's boxes read as a quarter that went missing from the four.
+  const spare = [...section.keys()].find((label) => label.includes("both cover the period"));
+  if (spare) lines.push(`The fifth return form is a spare: ${spare.slice(0, spare.indexOf(".") + 1)}`);
   return lines.join(" ");
 }
 
@@ -237,6 +252,21 @@ function ltdIndicators(report, vatRegistered) {
   const nbv = value(report, "Fixed Asset Note", "Net book value");
   const depreciation = value(report, "Fixed Asset Note", "Charge for the year");
   const stock = value(report, "Published Balance Sheet", "Stock at cost");
+  const reportTurnover = value(report, "Directors' Report", "Sales turnover in the year");
+  const reportPriorTurnover = value(report, "Directors' Report", "Sales turnover last year");
+  const reportMargin = value(report, "Directors' Report", "Trading margin");
+  const reportDividend = value(report, "Directors' Report", "Dividend declared");
+  const reportShares = value(report, "Directors' Report", "Ordinary shares issued");
+  const openingCash = value(report, "Opening Balance Sheet", "Cash and Bank Balances");
+  const closingCash = value(report, "Published Balance Sheet", "Cash at bank and in hand");
+  const taxOwed =
+    (value(report, "Published Balance Sheet", "Corporation Tax") || 0) +
+    (value(report, "Published Balance Sheet", "Taxation and Social Security") || 0);
+  const dividendsPaid = optionalCheckExpected(report, "Published P&L: dividends published against the dividends the year paid");
+  const openingStock = value(report, "Stock", "Opening Stock");
+  const calculatedStock = value(report, "Stock", "Closing Stock (calculated)");
+  const countedStock = value(report, "Stock", "Closing Stock (physical count)");
+  const lossAdjustment = value(report, "Stock", "Stock loss adjustment");
 
   return [
     runLine(report),
@@ -245,6 +275,9 @@ function ltdIndicators(report, vatRegistered) {
     `Trial balance audit accuracy (cell EJ91): ${amount(audit)}.`,
     `Fixed assets: net book value ${amount(nbv)}, depreciation charged for the year ${amount(depreciation)}. Stock at the year end ${amount(stock)}.`,
     `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}, box 63 as filed ${amount(filed)}.`,
+    `Directors' report: turnover ${amount(reportTurnover)} against ${amount(reportPriorTurnover)} last year, trading margin ${amount(reportMargin)}, dividend declared ${amount(reportDividend)} on ${amount(reportShares)} ordinary shares issued.`,
+    `Cash at bank and in hand ${amount(closingCash)} at the year end against ${amount(openingCash)} at the start: the year made ${amount(pbt)} before tax, paid out ${amount(dividendsPaid)} of dividends from the bank and still owes ${amount(taxOwed)} of tax.`,
+    `Stock: ${amount(openingStock)} at the start, ${amount(calculatedStock)} calculated at the year end against ${amount(countedStock)} counted, a loss adjustment of ${amount(lossAdjustment)}.`,
     vatLine(report, vatRegistered),
     bridgeLine(report),
   ];

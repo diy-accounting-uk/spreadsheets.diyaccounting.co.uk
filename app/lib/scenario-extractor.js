@@ -491,12 +491,31 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
-  // Stock (if applicable)
+  // Stock (if applicable). materials_percent is the share of a product's net
+  // sales value that is direct materials; the Stock sheet needs it to move
+  // any stock at all, because its bought and sold columns are switched off
+  // while it is zero.
   if (expected.opening_stock !== undefined) {
     parts.push("[stock]");
     parts.push(`opening = ${expected.opening_stock}`);
     parts.push(`closing = ${expected.closing_stock}`);
+    if (expected.stock_materials_percent !== undefined) parts.push(`materials_percent = ${expected.stock_materials_percent}`);
     parts.push("");
+  }
+
+  // Charges and debentures registered over the company's assets (Ltd). Each
+  // one secures a creditor falling due after more than one year.
+  if (expected.charges) {
+    for (const charge of expected.charges) {
+      parts.push("[[charges]]");
+      parts.push(`date = ${charge.date}`);
+      parts.push(`asset = "${escapeTomlString(charge.asset)}"`);
+      parts.push(`valuation = ${charge.valuation}`);
+      parts.push(`holder = "${escapeTomlString(charge.holder)}"`);
+      parts.push(`terms = "${escapeTomlString(charge.terms)}"`);
+      parts.push(`board_meeting = ${charge.board_meeting}`);
+      parts.push("");
+    }
   }
 
   // Opening debtors

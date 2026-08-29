@@ -7,9 +7,13 @@ import { readFileSync, existsSync, rmSync } from "fs";
 import { execFileSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import JSZip from "jszip";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import {
   generateSpreadsheet,
   generateAdminDates,
+  fromExcelSerial,
+  VAT_RETURN_END_MONTHS,
   setCellCachedValue,
   toExcelSerial,
   buildCellEdits,
@@ -758,6 +762,117 @@ describe("rewriteVatinterfaceFormulas", () => {
       expect(await monthFormulas(buffer, 3, "H"), `year-end month ${yearEnd}`).toEqual(expected);
     }
   });
+});
+
+// ── VAT return period defaults ──────────────────────────────────────────────
+
+// The five return forms take their default period end from
+// VAT_RETURN_END_MONTHS, counted in months from the first of the book's twelve
+// accounting months -- which is the Vatinterface's own row 6. Every expectation
+// below is measured against that row's generated date rather than against a
+// row number, so a generator that wrote the right rows for the wrong year still
+// fails.
+describe("VAT return period defaults", () => {
+  const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
+  const SE_DIR = resolve(APP_DIR, "templates", "se");
+  const FIRST_ACCOUNTING_MONTH_ROW = 6;
+  const LAST_INTERFACE_ROW = 19;
+
+  function cachedValue(xml, cellRef) {
+    const m = xml.match(new RegExp(`<c r="${cellRef}"[^>]*>(?:<f[^>]*>[\\s\\S]*?</f>)?<v>([^<]*)</v></c>`));
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  function monthsBetween(earlier, later) {
+    return (later.getUTCFullYear() - earlier.getUTCFullYear()) * 12 + (later.getUTCMonth() - earlier.getUTCMonth());
+  }
+
+  // The generated workbook's own view of its VAT cycle: the interface period
+  // dates by row, and for each return form the row its G5 date names.
+  async function readCycle(buffer) {
+    const zip = await JSZip.loadAsync(buffer);
+    const sheetMap = await buildSheetMap(zip);
+    const viXml = await zip.file(sheetMap.get("Vatinterface")).async("string");
+
+    const periodRows = new Map();
+    for (let row = 4; row <= LAST_INTERFACE_ROW; row++) {
+      const serial = cachedValue(viXml, `B${row}`);
+      if (serial !== null) periodRows.set(serial, row);
+    }
+
+    const forms = [];
+    for (let q = 1; q <= 5; q++) {
+      const sheetXml = await zip.file(sheetMap.get(`VATQtr${q}`)).async("string");
+      const end = cachedValue(sheetXml, "G5");
+      const dropdown = [];
+      for (let k = 2; k <= 15; k++) dropdown.push(cachedValue(sheetXml, `K${k}`));
+      forms.push({ name: `Q${q}`, end, row: periodRows.get(end) ?? null, dropdown });
+    }
+    return { firstMonthEnd: fromExcelSerial(cachedValue(viXml, `B${FIRST_ACCOUNTING_MONTH_ROW}`)), forms };
+  }
+
+  function expectCycle(cycle, label) {
+    for (const [index, form] of cycle.forms.entries()) {
+      expect(form.row, `${label} ${form.name}: period end ${form.end} is not one of the Vatinterface periods`).not.toBeNull();
+      expect(form.dropdown, `${label} ${form.name}: period end is not in the K2:K15 dropdown`).toContain(form.end);
+      expect(monthsBetween(cycle.firstMonthEnd, fromExcelSerial(form.end)) + 1, `${label} ${form.name}: months from the book's first month`).toBe(
+        VAT_RETURN_END_MONTHS[index],
+      );
+    }
+
+    const rows = cycle.forms.map((form) => form.row);
+    expect(new Set(rows).size, `${label}: the five forms do not name five different periods`).toBe(5);
+    expect(rows[4], `${label}: Q5 is not on the last period the Vatinterface carries`).toBe(LAST_INTERFACE_ROW);
+
+    const timesDeclared = new Map();
+    for (const row of rows) for (const covered of [row - 2, row - 1, row]) timesDeclared.set(covered, (timesDeclared.get(covered) ?? 0) + 1);
+
+    // Q1-Q4 reach each of the twelve accounting months exactly once.
+    const quarterly = new Set(rows.slice(0, 4).flatMap((row) => [row - 2, row - 1, row]));
+    for (let row = FIRST_ACCOUNTING_MONTH_ROW; row < FIRST_ACCOUNTING_MONTH_ROW + 12; row++) {
+      expect(quarterly.has(row), `${label}: no return of Q1-Q4 reaches the accounting month on row ${row}`).toBe(true);
+    }
+
+    // The spare fifth form shares one period with the fourth, because the
+    // quarter after Q4 has no interface row to total it.
+    const shared = [...timesDeclared.entries()].filter(([, times]) => times > 1).map(([row]) => row);
+    expect(shared, `${label}: periods declared by more than one return`).toEqual([rows[3]]);
+  }
+
+  it("puts the Company returns on the book's own quarters for every year-end month", async () => {
+    const meta = parseTOML(readFileSync(resolve(LTD_DIR, "meta.toml"), "utf8"));
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+    const templateBuffer = readFileSync(resolve(LTD_DIR, "Vatreturns.xlsx"));
+    const fyStart = new Date(taxData.financial_year.start);
+
+    for (let m = 0; m < 12; m++) {
+      const yearEnd = monthEnd(fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12), ((fyStart.getUTCMonth() + m) % 12) + 1);
+      const override = JSON.parse(JSON.stringify(taxData));
+      override.financial_year.end = yearEnd.toISOString().slice(0, 10);
+      const label = `Company year end ${override.financial_year.end}`;
+
+      const cycle = await readCycle(await generateSpreadsheet(templateBuffer, override, meta.sheets.vatreturns));
+      // Twelve accounting months end at the year end, so the first of them is
+      // eleven months earlier.
+      expect(monthsBetween(cycle.firstMonthEnd, yearEnd), `${label}: first accounting month`).toBe(11);
+      expectCycle(cycle, label);
+    }
+  }, 120000);
+
+  it("puts the Self Employed returns on the tax year's own quarters", async () => {
+    const meta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
+    const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const buffer = await generateSpreadsheet(readFileSync(resolve(SE_DIR, "Vat.xlsx")), taxData, meta.sheets.vat);
+    const cycle = await readCycle(buffer);
+
+    // A tax year ends on 5 April, mid-month, and its month tabs still run April
+    // to March, so the books open in the month the year starts in.
+    const yearStart = new Date(taxData.tax_year.start);
+    expect(cycle.firstMonthEnd.toISOString().slice(0, 10)).toBe(
+      monthEnd(yearStart.getUTCFullYear(), yearStart.getUTCMonth() + 1).toISOString().slice(0, 10),
+    );
+    expectCycle(cycle, "Self Employed");
+  }, 60000);
 });
 
 // ── Template and data file existence ────────────────────────────────────────

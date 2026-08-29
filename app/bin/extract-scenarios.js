@@ -319,6 +319,20 @@ const fullToml = formatScenarioToml(
     opening_balance: buildOpeningBalance(fullLines),
     opening_stock: 10000,
     closing_stock: 6000,
+    // Three per cent of the consultancy's net sales is direct materials.
+    // Without it the Stock sheet's bought and sold columns stay switched off
+    // and the calculated stock never leaves the opening figure.
+    stock_materials_percent: 0.03,
+    charges: [
+      {
+        date: "2023-09-01",
+        asset: "Motor vehicles, being the company's delivery van",
+        valuation: 30000,
+        holder: "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA",
+        terms: "Fixed charge securing a five year business loan",
+        board_meeting: "2023-08-25",
+      },
+    ],
     opening_fixed_assets: [
       { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
       { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },

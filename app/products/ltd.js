@@ -16,6 +16,7 @@ import {
   categoryNettingCheckName,
   PROFIT_BRIDGE_CHECK,
   vatCycleRows,
+  vatReturnCoverage,
 } from "../lib/report-generator.js";
 
 export const PRODUCT = {
@@ -97,6 +98,44 @@ function bankLayout(fileName) {
 
 const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f) => [f, bankLayout(f)]));
 
+// ── Payslips.xlsx Admin: the payroll calendar ──────────────────────────────
+// B2 carries the tax year's first day and every date under it is the row
+// above plus one, so the whole calendar hangs off that one cell. Column C is
+// the tax week, D the payroll month, F the week within that month, and A
+// names the month by rotating B2's own month (A = TEXT(DATE(YEAR(B$2),
+// MONTH(B$2)+(D-1), 1), "Mmm")).
+//
+// The calendar the columns follow is the tax calendar: week 1 is the five
+// days from 6 April, every week after it is seven days, and the payroll
+// months take four, four and five weeks a quarter with a sixth week on the
+// last. That fixes the row each month opens on, and the week and date it
+// opens with, from B2 alone.
+const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+const PAYROLL_FIRST_WEEK_DAYS = 5;
+const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
+const PAYSLIPS_CALENDAR_ANCHOR_CELL = "B2";
+
+// The row, tax week and day offset from B2 that each payroll month opens on.
+function payrollMonthStarts() {
+  const starts = [];
+  let weeksBefore = 0;
+  for (let month = 1; month <= 12; month++) {
+    const daysBefore = weeksBefore === 0 ? 0 : PAYROLL_FIRST_WEEK_DAYS + (weeksBefore - 1) * 7;
+    starts.push({ month, row: PAYSLIPS_CALENDAR_FIRST_ROW + daysBefore, daysBefore, week: weeksBefore + 1 });
+    weeksBefore += PAYROLL_WEEKS_PER_MONTH[month - 1];
+  }
+  return starts;
+}
+
+// ── Charges & Debentures register (Companysecretary.xlsx) ──────────────────
+// Row 1 is the header, one charge per row after it: A the date of the
+// transaction, B the assets charged, C the directors' valuation of those
+// assets at the date of charging, D the holder, E the terms and F the date
+// of the board meeting that confirmed it. The sheet carries no formulas at
+// all, so every cell is an entry.
+const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
+const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -107,6 +146,12 @@ const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f
 const STOCK_FINAL_CALCULATED_CELL = "D30";
 const STOCK_FINAL_COUNT_CELL = "AB30";
 const STOCK_FINAL_ADJUSTMENT_CELL = "Z30";
+
+// The share of a product's net sales value that is direct materials. The
+// sheet repeats H4 down its own product A column and reads the same cell for
+// every month, and the materials-bought column stays switched off while H4,
+// N4 and T4 are all zero.
+const STOCK_MATERIALS_PERCENT_CELL = "H4";
 
 // ── OpenAccounts layout ────────────────────────────────────────────────────
 // Row 13 takes fixed assets as original cost (G:K) and accumulated
@@ -412,6 +457,26 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // opening balance sheet's own share capital figure divided by that
   // nominal value.
   const companysecretaryWrites = {};
+  if (scenario.charges) {
+    companysecretaryWrites["Charges&Debentures"] = {};
+    const register = companysecretaryWrites["Charges&Debentures"];
+    scenario.charges.forEach((charge, index) => {
+      const row = CHARGE_REGISTER_ROWS[index];
+      if (row === undefined) return;
+      const date = parseDate(charge.date);
+      register[`${CHARGE_REGISTER_COLUMNS.date}${row}`] = toExcelSerial(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+      register[`${CHARGE_REGISTER_COLUMNS.asset}${row}`] = charge.asset;
+      register[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`] = charge.valuation;
+      register[`${CHARGE_REGISTER_COLUMNS.holder}${row}`] = charge.holder;
+      register[`${CHARGE_REGISTER_COLUMNS.terms}${row}`] = charge.terms;
+      const confirmed = parseDate(charge.board_meeting);
+      register[`${CHARGE_REGISTER_COLUMNS.boardMeeting}${row}`] = toExcelSerial(
+        confirmed.getUTCFullYear(),
+        confirmed.getUTCMonth() + 1,
+        confirmed.getUTCDate(),
+      );
+    });
+  }
   if (scenario.opening_balance?.share_capital !== undefined) {
     const nominalValue = 1;
     companysecretaryWrites.RegisterofMembers = {
@@ -472,8 +537,16 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // becomes the stock loss adjustment in column Z, which is what the trial
   // balance reads as the year's stock movement. Column B holds the month-end
   // dates, so writing the count there moves no stock at all.
+  //
+  // The calculated side needs one more entry. Column F ("Direct Material
+  // BOUGHT") reads the month's materials purchases only while at least one
+  // of the stock percentages H4, N4 or T4 is set, and column L values the
+  // materials sold as that percentage of the month's net sales. With all
+  // three left at zero the sheet buys and sells nothing and the calculated
+  // stock never leaves the opening figure.
   if (scenario.stock && scenario.stock.closing !== undefined) {
     if (!hubWrites.Stock) hubWrites.Stock = {};
+    if (scenario.stock.materials_percent !== undefined) hubWrites.Stock[STOCK_MATERIALS_PERCENT_CELL] = scenario.stock.materials_percent;
     hubWrites.Stock[STOCK_FINAL_COUNT_CELL] = scenario.stock.closing;
   }
 
@@ -822,16 +895,24 @@ export const CELL_MAP = [
   ["PubP&L", "F44", "Administrative Expenses",     "gl-cor:amount (pubPL.admin)",     "Published P&L", 1],
   ["PubP&L", "F46", "**Operating Profit**",        "gl-cor:amount (pubPL.operating)", "Published P&L", 0],
   ["PubP&L", "F49", "**Profit Before Tax**",       "gl-cor:amount (pubPL.pbt)",       "Published P&L", 0],
+  ["PubP&L", "F50", "Corporation tax",             "gl-cor:taxAmount (pubPL.tax)",    "Published P&L", 1],
+  ["PubP&L", "F51", "**Profit after Tax**",        "gl-cor:amount (pubPL.pat)",       "Published P&L", 0],
+  ["PubP&L", "F52", "Dividends",                   "gl-cor:amount (pubPL.dividends)", "Published P&L", 1],
+  ["PubP&L", "F54", "**Retained Profit for the year**", "gl-cor:amount (pubPL.retained)", "Published P&L", 0],
   // ── Published Balance Sheet (columns A/B are last year, E/F this year) ──
   ["PubBalSht", "F6",  "Fixed Assets (NBV)",       "gl-cor:amount (pubBS.fixedAssets)",  "Published Balance Sheet", 0],
   ["PubBalSht", "E10", "Stock at cost",            "accounts.assets.1100 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E11", "Trade Debtors",            "accounts.assets.1300 (pubBS)",       "Published Balance Sheet", 1],
   ["PubBalSht", "E12", "Cash at bank and in hand", "gl-cor:amount (pubBS.bankCash)",     "Published Balance Sheet", 1],
   ["PubBalSht", "E13", "Current Assets",           "gl-cor:amount (pubBS.currentAssets)","Published Balance Sheet", 0],
+  ["PubBalSht", "E16", "Trade Creditors",          "accounts.liabilities.2100 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E17", "Corporation Tax",          "accounts.liabilities.2300 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E18", "Taxation and Social Security", "gl-cor:amount (pubBS.taxAndSocial)", "Published Balance Sheet", 1],
   ["PubBalSht", "E20", "Current Liabilities",      "gl-cor:amount (pubBS.creditors)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F22", "**Net Current Assets**",   "gl-cor:amount (pubBS.netCurrent)",   "Published Balance Sheet", 0],
   ["PubBalSht", "F26", "**Total Assets less CL**", "gl-cor:amount (pubBS.totalAssetsLessCL)","Published Balance Sheet", 0],
   ["PubBalSht", "E29", "Directors Loan",           "accounts.liabilities.2500 (pubBS)",  "Published Balance Sheet", 1],
+  ["PubBalSht", "E30", "Creditors due after more than one year", "accounts.liabilities.2600 (pubBS)", "Published Balance Sheet", 1],
   ["PubBalSht", "F31", "Other Creditors",          "gl-cor:amount (pubBS.otherCred)",    "Published Balance Sheet", 1],
   ["PubBalSht", "F33", "**Net Assets**",           "gl-cor:amount (pubBS.netAssets)",    "Published Balance Sheet", 0],
   ["PubBalSht", "F36", "Called up share capital",  "accounts.capital.3000 (pubBS)",      "Published Balance Sheet", 1],
@@ -848,6 +929,16 @@ export const CELL_MAP = [
   ["PubNotes", "G20", "**Net book value**",            "gl-cor:amount (note1.nbv)",        "Fixed Asset Note", 0],
   ["PubNotes", "D35", "Directors emoluments",          "gl-cor:amount (note2.emoluments)", "Fixed Asset Note", 1],
   ["PubNotes", "D41", "Corporation tax for the year",  "gl-cor:taxAmount (note4.ct)",      "Fixed Asset Note", 1],
+  // ── Directors' report (Report) — the filed narrative's own figures. Every
+  // one is a formula reading somewhere else in the book, so the section
+  // states what the report tells Companies House beside what the accounts
+  // carry. ──
+  ["Report", "E87", "Sales turnover in the year",   "gl-cor:amount (report.turnover)",       "Directors' Report", 1],
+  ["Report", "H87", "Sales turnover last year",     "gl-cor:amount (report.priorTurnover)",  "Directors' Report", 1],
+  ["Report", "D89", "Trading margin",               "gl-cor:percentage (report.margin)",     "Directors' Report", 1],
+  ["Report", "I89", "Trading margin last year",     "gl-cor:percentage (report.priorMargin)","Directors' Report", 1],
+  ["Report", "D94", "Dividend declared",            "gl-cor:amount (report.dividend)",       "Directors' Report", 1],
+  ["Report", "I95", "Ordinary shares issued",       "gl-cor:quantity (report.sharesIssued)", "Directors' Report", 1],
   // ── Stock ──
   ["Stock", "D6",  "Opening Stock",              "accounts.assets.1100 (opening)",      "Stock", 0],
   ["Stock", STOCK_FINAL_COUNT_CELL,      "Closing Stock (physical count)", "accounts.assets.1100 (closing)",           "Stock", 0],
@@ -876,6 +967,7 @@ export const CELL_MAP = [
   ["TrialBalance", "D33", "Opening: Creditor HMRC Vat",                "accounts.liabilities.2200 (opening)","Trial Balance", 1],
   ["TrialBalance", "D35", "Opening: Creditor HMRC Corporation Tax",    "accounts.liabilities.2300 (opening)","Trial Balance", 1],
   ["TrialBalance", "D39", "Opening: Directors Loan Account",           "accounts.liabilities.2500 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D40", "Opening: Creditor Long Term",               "accounts.liabilities.2600 (opening)","Trial Balance", 1],
   ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
@@ -885,6 +977,7 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ40","Final: Creditor Long Term",                 "accounts.liabilities.2600 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
@@ -1090,6 +1183,18 @@ export function standardReads() {
   add("PubP&L", "D3");
   add("PubBalSht", "D2");
 
+  // The directors' report quotes the year end, both years' turnover and
+  // margin, the dividend the board minuted and the share register. F22 is
+  // the only date it takes from the balance sheet rather than the P&L.
+  for (const cell of ["F22", "E87", "H87", "D89", "I89", "D94", "I95", "F97", "F98"]) add("Report", cell);
+
+  // The published P&L's prior-year column (B) and its own period end date,
+  // which the report quotes alongside this year's figures.
+  add("PubP&L", "B9");
+  add("PubP&L", "B18");
+  add("PubP&L", "B54");
+  add("PubP&L", "E5");
+
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
 
@@ -1181,11 +1286,26 @@ export function multiFileOptions(yearEndMonth) {
       },
       "Payslips.xlsx": {
         Payment: paymentCells,
+        Admin: [
+          ...new Set([
+            PAYSLIPS_CALENDAR_ANCHOR_CELL,
+            ...payrollMonthStarts().flatMap(({ row }) => ["A", "B", "C", "D", "F"].map((col) => `${col}${row}`)),
+          ]),
+        ],
       },
       "Companysecretary.xlsx": {
         // F1 is the sheet's own nominal-value formula (=F3), G1 its own
-        // shares-issued total (=SUM(G3:G19)).
-        RegisterofMembers: ["F1", "G1"],
+        // shares-issued total (=SUM(G3:G19)). G3 and G4 are the first two
+        // members' own holdings, which the directors' report quotes a line
+        // each.
+        "RegisterofMembers": ["F1", "G1", "G3", "G4"],
+        // E4 is the dividend the board minuted, which the directors' report
+        // reads across the cross-file link.
+        "Boardmeeting": ["E4"],
+        // A registered charge and the directors' valuation of the asset
+        // charged, which the balance sheet has to carry as a creditor
+        // falling due after more than one year.
+        "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
       },
       ...bankReads,
     },
@@ -1482,7 +1602,11 @@ export function categoryNetting(results, scenario) {
 
 // ── Compliance checks ──────────────────────────────────────────────────────
 
-export function checkCompliance(results, expected, taxData, calculateExpectedTax) {
+// packageYearEnd is the YYYY-MM-DD the package's own directory name carries.
+// The reconciler passes it so the year-end seed can be measured against the
+// package it was generated for rather than against another cell of the same
+// run.
+export function checkCompliance(results, expected, taxData, calculateExpectedTax, packageYearEnd) {
   const checks = [];
 
   function check(name, actual, expectedVal, tolerance = 1) {
@@ -1546,6 +1670,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Trial Balance opening: HMRC VAT creditor", tb.D33 || 0, -(ob.vat_due || 0));
     check("Trial Balance opening: HMRC corporation tax creditor", tb.D35 || 0, -(ob.corporation_tax || 0));
     check("Trial Balance opening: directors loan", tb.D39 || 0, -(ob.directors_loan || 0));
+    check("Trial Balance opening: creditors due after more than one year", tb.D40 || 0, -(ob.long_term_creditors || 0));
     check("Trial Balance opening: share capital", tb.D42 || 0, -(ob.share_capital || 0));
     check("Trial Balance opening: revenue reserve", tb.D43 || 0, -(ob.retained_earnings || 0));
 
@@ -1623,6 +1748,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       (stock[STOCK_FINAL_COUNT_CELL] || 0) - (stock[STOCK_FINAL_CALCULATED_CELL] || 0),
     );
     if (pubBS) check("Published balance sheet: stock = year-end stock", pubBS.E10 || 0, closingStock);
+
+    // What the sheet works the year-end stock out to be, before anyone counts
+    // it: the opening figure, plus the materials bought in the year, less the
+    // materials its stock percentage reckons went out inside the product
+    // sales. Both sides come from the scenario, so a month of materials that
+    // never reached the sheet, or a percentage that never reached H4, shows
+    // up here instead of being absorbed into the count adjustment.
+    const materialsPercent = expected.stock?.materials_percent;
+    if (materialsPercent !== undefined) {
+      const bought = journalTotalsByCode(expected.purchases, rate, "g").net.s || 0;
+      const sold = materialsPercent * (journalTotalsByCode(expected.sales, rate, "a").net.a || 0);
+      check(
+        "Stock: calculated stock = opening + materials bought - materials sold",
+        num(stock[STOCK_FINAL_CALCULATED_CELL]),
+        num(stock.D6) + bought - sold,
+      );
+    }
   }
   if (expected.closing_debtors && pubBS) {
     const total = expected.closing_debtors.reduce((s, d) => s + d.amount, 0);
@@ -1792,6 +1934,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         0,
       );
     }
+
+    // ── The five return forms as one cycle ────────────────────────────────
+    //
+    // Each form's own date decides which three interface rows it declares, so
+    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
+    // quarter apart and covering the twelve accounting months once each, and
+    // the spare fifth on the last period the interface carries.
+    const periods = vatinterfacePeriods(results);
+    const returnForms = [];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = vatQtr(q);
+      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
+    }
+    const coverage = vatReturnCoverage(periods, returnForms);
+    if (coverage.placed.length === 5) {
+      const [q1, q2, q3, q4, q5] = coverage.placed;
+      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
+      for (const [earlier, later] of [
+        [q1, q2],
+        [q2, q3],
+        [q3, q4],
+      ]) {
+        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
+      }
+      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
+      check(
+        "VAT: Q1-Q4 cover every month of the accounting year",
+        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
+        periods.filter((period) => period.inAccountingYear).length,
+        0,
+      );
+      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
+
+      // Five consecutive quarters need fifteen periods and the interface can
+      // total fourteen, so the spare cannot start where the fourth return
+      // ends. The period they share is the workbook's own limit, reported
+      // with the output VAT that would go in twice, and a run is not stopped
+      // for it.
+      checks.push({
+        name: "VAT: periods more than one of the five returns declares",
+        actual: coverage.shared.length,
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.length,
+        severity: "warning",
+      });
+      checks.push({
+        name: "VAT: output VAT declared on more than one of the five returns",
+        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        severity: "warning",
+      });
+    }
   }
 
   // ── Fixed assets: the published note against the asset schedule ──────────
@@ -1869,6 +2066,157 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       (register.F1 || 0) * (register.G1 || 0),
       num(pubBalSht.F36),
     );
+  }
+
+  // ── The directors' report against the statements it quotes ───────────────
+  //
+  // The report is the narrative that goes out with the accounts, and every
+  // figure on it is a formula reading somewhere else in the book (verified
+  // against the template: F22 = PubBalSht!D2, E87 = 'PubP&L'!F9, H87 =
+  // 'PubP&L'!B9, D89 and I89 the two years' gross margins, D94 =
+  // [8]Boardmeeting!$E$4, I95 = [8]RegisterofMembers!$G$1 and F97/F98 its
+  // $G$3/$G$4, where [8] is Companysecretary.xlsx). Nothing else in the book
+  // reads these cells, so a report quoting figures the accounts do not carry
+  // shows up here and nowhere else.
+  const report = results.Report;
+  const publishedPL = results["PubP&L"];
+  if (report && publishedPL) {
+    check("Directors' report: sales turnover = published P&L turnover", num(report.E87), num(publishedPL.F9), 0.01);
+    check("Directors' report: last year's turnover = published P&L prior year column", num(report.H87), num(publishedPL.B9), 0.01);
+
+    // Both margin cells carry the same rule: a year with turnover publishes
+    // gross profit over turnover, a year without publishes a blank. The
+    // fixture has no prior year, so this year's margin is a number and last
+    // year's is the blank the formula puts there.
+    const marginCheck = (name, cell, turnover, grossProfit) => {
+      if (turnover > 0) check(name, num(cell), grossProfit / turnover, 0.000001);
+      else
+        checkText(
+          name,
+          typeof cell === "string" ? cell : String(cell ?? ""),
+          (text) => text.trim() === "",
+          "blank, there being no turnover to divide by",
+        );
+    };
+    marginCheck(
+      "Directors' report: trading margin = published gross profit over turnover",
+      report.D89,
+      num(publishedPL.F9),
+      num(publishedPL.F18),
+    );
+    marginCheck(
+      "Directors' report: last year's trading margin = published prior year gross profit over turnover",
+      report.I89,
+      num(publishedPL.B9),
+      num(publishedPL.B18),
+    );
+
+    // The published P&L reaches turnover from the trial balance's closing
+    // column and the management P&L from its month columns, so tying the two
+    // is what anchors everything the report quotes to the scenario's own
+    // sales.
+    check("Published P&L: turnover = management P&L turnover", num(publishedPL.F9), num(pl.B9), 0.01);
+
+    // The prior year column carries a seed of its own. OpenAccounts!E48
+    // ("Less Closing Stock") is a formula reading E15, this year's opening
+    // stock, so a book with no comparatives typed in still publishes a
+    // negative prior-year cost of sales and the same figure again as last
+    // year's profit. The shipped template does that on its own, so the run
+    // is not stopped for it.
+    checks.push({
+      name: "Published P&L: the prior year column is empty when no comparatives are entered",
+      actual: num(publishedPL.B54),
+      expected: 0,
+      pass: Math.abs(num(publishedPL.B54)) <= 1,
+      diff: num(publishedPL.B54),
+      severity: "warning",
+    });
+  }
+  if (report && pubBalSht) {
+    check("Directors' report: year end = published balance sheet date", num(report.F22), num(pubBalSht.D2), 0);
+  }
+  if (report && register) {
+    check("Directors' report: ordinary shares issued = register of members total", num(report.I95), num(register.G1), 0);
+    check("Directors' report: first member's holding = register of members", num(report.F97), num(register.G3), 0);
+    check("Directors' report: second member's holding = register of members", num(report.F98), num(register.G4), 0);
+  }
+
+  // The dividend the report declares is the figure the board minuted, read
+  // across the link into Companysecretary.xlsx. Nothing in the writer fills
+  // that cell yet, so both sides are nil and the check holds only because the
+  // minute is empty.
+  const boardMeeting = results["Companysecretary.xlsx!Boardmeeting"];
+  if (report && boardMeeting) {
+    check("Directors' report: dividend declared = the board minute", num(report.D94), num(boardMeeting.E4), 0);
+  }
+
+  // The whole dividend cycle stops at the bank. A payment coded DV reaches
+  // the trial balance's dividends creditor, but the published dividend line
+  // reads TrialBalance!EJ48, which no month column feeds, and nothing
+  // declares a dividend on the board minute the directors' report quotes. So
+  // a year that paid dividends publishes none, and the payment sits in the
+  // creditor instead of coming out of retained earnings. That belongs to the
+  // shipped workbook, so the run is not stopped for it and the warning
+  // carries what the year actually paid.
+  if (publishedPL && expected.bank) {
+    let dividendsPaid = 0;
+    for (const transactions of Object.values(expected.bank)) {
+      for (const tx of transactions) {
+        if (tx.code !== "DV") continue;
+        dividendsPaid += tx.direction === "out" ? tx.amount : -tx.amount;
+      }
+    }
+    checks.push({
+      name: "Published P&L: dividends published against the dividends the year paid",
+      actual: num(publishedPL.F52),
+      expected: dividendsPaid,
+      pass: Math.abs(num(publishedPL.F52) - dividendsPaid) <= 1,
+      diff: num(publishedPL.F52) - dividendsPaid,
+      severity: "warning",
+    });
+  }
+
+  // ── The register of charges against the balance sheet ────────────────────
+  //
+  // A charge registered over the company's assets secures a debt, and a debt
+  // secured on an asset is a creditor falling due after more than one year.
+  // PubBalSht E30 reads -TrialBalance!EJ40, the only long-term creditor line
+  // in the book. The register's own valuation column is the ceiling: the
+  // directors valued the charged assets at the date of charging, and a
+  // creditor secured on them cannot exceed that valuation.
+  const charges = results["Companysecretary.xlsx!Charges&Debentures"];
+  if (charges && pubBalSht) {
+    const chargedValue = CHARGE_REGISTER_ROWS.reduce((sum, row) => sum + num(charges[`${CHARGE_REGISTER_COLUMNS.valuation}${row}`]), 0);
+    const longTermCreditors = num(pubBalSht.E30);
+
+    // The creditor itself, against the scenario's own opening balance and
+    // whatever the year drew down or repaid on it (bank code LCR). Without
+    // this the coverage check below could be satisfied by a balance sheet
+    // that carries any secured debt at all rather than this one.
+    if (expected.opening_balance?.long_term_creditors !== undefined) {
+      let drawnDown = 0;
+      for (const transactions of Object.values(expected.bank || {})) {
+        for (const tx of transactions) {
+          if (tx.code !== "LCR") continue;
+          drawnDown += tx.direction === "in" ? tx.amount : -tx.amount;
+        }
+      }
+      check(
+        "Published balance sheet: creditors due after more than one year = the secured loan",
+        longTermCreditors,
+        expected.opening_balance.long_term_creditors + drawnDown,
+      );
+    }
+
+    if (chargedValue > 0) {
+      checks.push({
+        name: "Charges register: the balance sheet carries a creditor falling due after more than one year",
+        actual: longTermCreditors,
+        expected: `more than 0 and no more than the ${chargedValue} the directors valued the charged assets at`,
+        pass: longTermCreditors > 0 && longTermCreditors <= chargedValue,
+        diff: "",
+      });
+    }
   }
 
   // The Schedule's new-asset and disposal totals against what the scenario
@@ -2064,6 +2412,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // populates -- verified against the template, and confirmed against the
   // recalculated file that the row 17-28 side stays 0. So rows 4-15 alone
   // carry the whole month's payroll, directors included.
+  // ── Payslips!Admin: the payroll calendar every payslip dates from ────────
+  //
+  // The calendar is written into the package and nothing reads it back, so a
+  // wrong week or a month that opens on the wrong day would reach a user's
+  // payslips unnoticed. Each payroll month's opening row is compared with the
+  // tax calendar, anchored on the one date the whole sheet cascades from.
+  const payslipsAdmin = results["Payslips.xlsx!Admin"];
+  if (payslipsAdmin) {
+    const yearStart = num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]);
+    const yearStartDate = new Date(Date.UTC(1899, 11, 30) + Math.round(yearStart) * 24 * 60 * 60 * 1000);
+    checkText(
+      "Payslips calendar: the payroll year opens on 6 April",
+      yearStart ? formatSerialDate(yearStart) : "",
+      (text) => text.startsWith("6 April"),
+      "6 April",
+    );
+
+    const starts = payrollMonthStarts();
+    for (const { month, row, daysBefore, week } of starts) {
+      const monthName = SHORT_MONTHS[(yearStartDate.getUTCMonth() + month - 1) % 12];
+      check(
+        `Payslips calendar: payroll month ${month} opens on the first day of tax week ${week}`,
+        num(payslipsAdmin[`B${row}`]),
+        yearStart + daysBefore,
+        0,
+      );
+      check(`Payslips calendar: payroll month ${month} opens tax week ${week}`, num(payslipsAdmin[`C${row}`]), week, 0);
+      checkText(
+        `Payslips calendar: payroll month ${month} is named for the month it opens`,
+        String(payslipsAdmin[`A${row}`] ?? ""),
+        (text) => text === monthName,
+        monthName,
+      );
+    }
+    check(
+      "Payslips calendar: the payroll months are numbered one to twelve in order",
+      starts.reduce((sum, { month, row }) => sum + Math.abs(num(payslipsAdmin[`D${row}`]) - month), 0),
+      0,
+      0,
+    );
+    check(
+      "Payslips calendar: every payroll month opens on its own first week",
+      starts.reduce((sum, { row }) => sum + num(payslipsAdmin[`F${row}`]), 0),
+      starts.length,
+      0,
+    );
+  }
+
   if (expected.payroll) {
     // Same date-shift math cellWrites() uses to place each scenario month's
     // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
@@ -2166,7 +2562,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // F21 is the year-end seed every other date in the package cascades
     // from. Its own anchor row and the three published documents that quote
-    // the year end all have to land on it.
+    // the year end all have to land on it. The seed itself is measured
+    // against the year end the package was generated for, so a book dated to
+    // the wrong year end fails here rather than reading consistent with
+    // itself.
+    if (packageYearEnd) {
+      const [year, month, day] = packageYearEnd.split("-").map(Number);
+      check("Admin: year-end seed = the package's own year end", num(admin.F21), toExcelSerial(year, month, day), 0);
+    }
     check("Admin: year-end seed drives the accounting period anchor", num(admin.B32), num(admin.F21), 0);
     check("Published P&L: year end = Admin year-end seed", num(results["PubP&L"]?.D3), num(admin.F21), 0);
     check("Published balance sheet: date = Admin year-end seed", num(pubBalSht?.D2), num(admin.F21), 0);

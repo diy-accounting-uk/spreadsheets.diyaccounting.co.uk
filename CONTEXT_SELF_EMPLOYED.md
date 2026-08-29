@@ -372,9 +372,12 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 
 **String edits**: B23 (tax year label, e.g. "2025-26"), B24 (next tax year label)
 
-Additionally, the generator writes VAT quarter end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), computed from the accounting year start.
+Additionally, the generator writes VAT return period end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js). A tax year ends on 5 April, mid-month, and its month tabs still run April to March, so the first accounting month is the month the year starts in, not the month after the year end.
 
-The generator also writes payslip calendar data into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
+The generator also writes the payroll calendar into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
+It seeds B2 with the tax year start (6 April) and writes the week number (C), payroll month number (D) and week-in-month (F)
+down rows 2 to 381. Every other date on the sheet cascades from B2 (`B3 = B2+1`), each row's month name in column A is
+`TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")`, and I1 (`=B366`) is the last day of the tax year.
 
 ## Scenario Testing
 

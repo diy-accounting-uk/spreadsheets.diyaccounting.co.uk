@@ -106,23 +106,14 @@ export function categoryNettingLines(netting) {
 // forms:   [{ name, end }] where end is the row the form's own period end
 // date matches, or null when it matches none.
 export function vatCycleRows(periods, forms) {
-  const byRow = new Map(periods.map((period) => [period.row, period]));
-  const coverage = new Map();
-  const rows = [];
-
-  for (const form of forms) {
-    if (form.end === null || !byRow.has(form.end)) continue;
-    const covered = [form.end - 2, form.end - 1, form.end].filter((row) => byRow.has(row));
-    for (const row of covered) coverage.set(row, [...(coverage.get(row) ?? []), form.name]);
-    rows.push({
-      label: `${form.name} covers the periods ending`,
-      value: covered.map((row) => byRow.get(row).endLabel).join(", "),
-      indent: 1,
-    });
-  }
+  const { byRow, coverage, placed, missed, outside, shared } = vatReturnCoverage(periods, forms);
+  const rows = placed.map((form) => ({
+    label: `${form.name} covers the periods ending`,
+    value: form.covers.map((row) => byRow.get(row).endLabel).join(", "),
+    indent: 1,
+  }));
   if (rows.length === 0) return [];
 
-  const missed = periods.filter((period) => period.inAccountingYear && !coverage.has(period.row));
   if (missed.length > 0) {
     const named = missed.map((period) => period.endLabel).join(", ");
     rows.push({
@@ -133,7 +124,6 @@ export function vatCycleRows(periods, forms) {
     rows.push({ label: "Input VAT on it", value: reportAmount(missed.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
   }
 
-  const outside = periods.filter((period) => !period.inAccountingYear && coverage.has(period.row));
   if (outside.length > 0) {
     rows.push({
       label: `The returns above also cover the ${outside.length === 1 ? "period" : "periods"} ending ${outside.map((period) => period.endLabel).join(", ")}, ${outside.length === 1 ? "which falls" : "which fall"} outside the accounting year.`,
@@ -143,16 +133,45 @@ export function vatCycleRows(periods, forms) {
     rows.push({ label: "Input VAT on those", value: reportAmount(outside.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
   }
 
-  const doubled = periods.filter((period) => (coverage.get(period.row) ?? []).length > 1);
-  if (doubled.length > 0) {
-    const forms = [...new Set(doubled.flatMap((period) => coverage.get(period.row)))].join(" and ");
+  if (shared.length > 0) {
+    const names = [...new Set(shared.flatMap((period) => coverage.get(period.row)))].join(" and ");
+    const months = shared.length === 1 ? "period" : "periods";
     rows.push({
-      label: `${forms} end one month apart rather than one quarter, so both cover the ${doubled.length === 1 ? "period" : "periods"} ending ${doubled.map((period) => period.endLabel).join(" and ")}. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. As shipped it is dated a month after the fourth, so filing all of them as they stand would declare ${doubled.length === 1 ? "that period" : "those periods"} twice.`,
+      label: `${names} both cover the ${months} ending ${shared.map((period) => period.endLabel).join(" and ")}. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. The book stops two months after the year end, so there is no row to total the quarter after the fourth return and the spare lands on the last period the book carries instead. Filing all five as they stand would declare ${shared.length === 1 ? "that period" : "those periods"} twice.`,
       value: "",
     });
+    rows.push({ label: `Output VAT on ${shared.length === 1 ? "it" : "those"}`, value: reportAmount(shared.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
+    rows.push({ label: `Input VAT on ${shared.length === 1 ? "it" : "those"}`, value: reportAmount(shared.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
   }
 
   return [{ label: "**How the return periods line up with the accounting year**", value: "" }, ...rows];
+}
+
+// Which interface period each return form covers, and where the forms fall
+// short of a clean cycle. A return covers the period its own end date names
+// and the two before it, which is what the interface's rolling three-row sums
+// total. Shared by the report prose above and by the products' cycle checks,
+// so both read the same coverage.
+export function vatReturnCoverage(periods, forms) {
+  const byRow = new Map(periods.map((period) => [period.row, period]));
+  const coverage = new Map(); // interface row -> the names of the forms covering it
+  const placed = [];
+
+  for (const form of forms) {
+    if (form.end === null || !byRow.has(form.end)) continue;
+    const covers = [form.end - 2, form.end - 1, form.end].filter((row) => byRow.has(row));
+    for (const row of covers) coverage.set(row, [...(coverage.get(row) ?? []), form.name]);
+    placed.push({ name: form.name, row: form.end, covers });
+  }
+
+  return {
+    byRow,
+    coverage,
+    placed,
+    missed: periods.filter((period) => period.inAccountingYear && !coverage.has(period.row)),
+    outside: periods.filter((period) => !period.inAccountingYear && coverage.has(period.row)),
+    shared: periods.filter((period) => (coverage.get(period.row) ?? []).length > 1),
+  };
 }
 
 export function generateReport(packageName, scenarioName, results, checks, productMod, scenario) {
