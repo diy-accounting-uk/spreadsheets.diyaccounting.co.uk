@@ -53,13 +53,17 @@ Moved from the submit repo's backlog (spreadsheets concerns):
   hand-written TOMLs go; the CI sync gate is the proof. T1's per-fixture "no master data"
   list is the specification.
 - [ ] **Fidelity: the (data, report) export contract** — `export` of an Excel package and of
-  the JS engine each yield the tuple (TheData, TheReport); given the same input, both
-  implementations return the same data and the same report. The plan (fidelity-plan track)
-  defines TheReport as the canonical per-product document of every value the checks read or
-  the reports print, the data's canonical form, the formal properties (round-trip/retraction
-  on data; observational equivalence by differential testing on reports) and the tolerance
-  policy (exact for identifiers, dates, text, counts; money at 2 dp, never looser than the
-  Excel check itself). T2 builds it.
+  the JS engine each yield (TheData, TheReport); given the same input, both return the same
+  data and the same report. Formally: the data half is a round-trip property (`export ∘
+  generate = id`, generate a section and export its retraction, lossless up to
+  canonicalisation of line order, field order and number format); the report half is
+  observational equivalence of two implementations by differential testing (Excel the
+  reference, JS under test); the whole is a commuting square, the one property verified,
+  with EQ1/EQ2/EQ3 its edges. Tolerance policy: exact for identifiers, account ids,
+  document references, dates, text, counts; money at 2 dp half-up; the flat 20/120 VAT
+  only where the Excel check already tolerates it; never looser than the check; sums of
+  compared values not compared twice; EQ3 on every package. The plan (fidelity-plan track)
+  defines TheReport's canonical form per product; T2 builds it.
 - [ ] **Fidelity T2: export completeness and the report half** (Opus, after T1) — the
   exporter keeps account identity (SE 5501/5301/5201/5803/5701/5700 today fold into 5300;
   payroll 5100 → 5101), drops no fields, writes a full `book.toml` that passes the book
