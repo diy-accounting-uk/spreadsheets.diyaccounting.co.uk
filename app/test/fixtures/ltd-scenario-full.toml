@@ -5030,6 +5030,13 @@ customer = "Gamma Ltd"
 invoice = "INV-1302"
 amount = 1800
 
+[[vat_straddling_sales]]
+period = "06Y2"
+date = 2026-06-11
+customer = "Beta Systems"
+invoice = "INV-1303"
+amount = 1200
+
 [[vat_straddling_purchases]]
 period = "02Y1"
 date = 2025-02-20
@@ -5057,6 +5064,13 @@ date = 2026-05-19
 supplier = "BT Business"
 invoice = "BT-2605"
 amount = 360
+
+[[vat_straddling_purchases]]
+period = "06Y2"
+date = 2026-06-16
+supplier = "WorkSpace Ltd"
+invoice = "WS-2606"
+amount = 480
 
 [expected]
 total_sales = 341283

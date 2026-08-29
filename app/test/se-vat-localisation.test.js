@@ -64,9 +64,10 @@ function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
-// Dating the spare fifth form on the fourth's own period leaves the five forms
-// naming four periods, takes the fifth off the last period the interface
-// carries, and leaves its own boxes reading the row it used to name.
+// Dating the fifth form on the fourth's own period leaves the five forms
+// naming four periods, breaks the quarterly step into the fifth, takes it off
+// the last period the interface carries, leaves its own boxes reading the row
+// it used to name, and puts the fourth's three periods on two returns at once.
 const SE_FIFTH_ON_FOURTH_FAILURES = [
   "VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G17)",
   "VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17)",
@@ -74,11 +75,15 @@ const SE_FIFTH_ON_FOURTH_FAILURES = [
   "VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT",
   "VAT Q5: payment due date (G7) = Vatinterface final date for payment (C17)",
   "VAT: the five returns end on five different periods",
+  "VAT: Q5 ends a quarter after Q4",
   "VAT: Q5 ends on the last period the Vatinterface carries",
+  "VAT: periods more than one of the five returns declares",
+  "VAT: output VAT declared on more than one of the five returns",
 ];
 
 // Moving the second form one month late breaks the quarterly step on both
-// sides of it and leaves two accounting months no quarterly return reaches.
+// sides of it, leaves two accounting months no quarterly return reaches, and
+// puts two more on both the first and the second return.
 const SE_SECOND_OFF_QUARTER_FAILURES = [
   "VAT Q2: box 1/3 output VAT (G9) = scenario sales VAT for the quarter",
   "VAT Q2: box 4 input VAT (G15) = scenario purchases VAT for the quarter",
@@ -91,6 +96,8 @@ const SE_SECOND_OFF_QUARTER_FAILURES = [
   "VAT: Q2 ends a quarter after Q1",
   "VAT: Q3 ends a quarter after Q2",
   "VAT: Q1-Q4 cover every month of the accounting year",
+  "VAT: periods more than one of the five returns declares",
+  "VAT: output VAT declared on more than one of the five returns",
 ];
 
 describeCalc(
@@ -146,7 +153,8 @@ describeCalc(
 
     it("puts the straddling periods on the rows either side of the year", () => {
       const vatinterface = results["Vat.xlsx!Vatinterface"];
-      // 4800 gross before the year, 3600 then 1800 gross after it, all at 20%.
+      // 4800 gross before the year, then 3600, 1800 and 1200 gross after it,
+      // all at 20%.
       expect(vatinterface.D4).toBeCloseTo(4000, 6);
       expect(vatinterface.F4).toBeCloseTo(800, 6);
       expect(vatinterface.D18).toBeCloseTo(3000, 6);
@@ -157,17 +165,25 @@ describeCalc(
       expect(vatinterface.F19).toBeCloseTo(300, 6);
       expect(vatinterface.H19).toBeCloseTo(300, 6);
       expect(vatinterface.J19).toBeCloseTo(60, 6);
+      // The third period after the year end, on the entry sheets the fifth
+      // quarter needed: 1200 gross sales and 480 gross purchases.
+      expect(vatinterface.D20).toBeCloseTo(1000, 6);
+      expect(vatinterface.F20).toBeCloseTo(200, 6);
+      expect(vatinterface.H20).toBeCloseTo(400, 6);
+      expect(vatinterface.J20).toBeCloseTo(80, 6);
     });
 
-    it("reaches the spare fifth return's boxes without reaching the books", () => {
+    it("reaches the fifth return's boxes without reaching the books", () => {
       const vatinterface = results["Vat.xlsx!Vatinterface"];
       // The fourth return closes the accounting year on the year's own last
-      // three months. The fifth sits on the last period the interface carries,
-      // which reaches both straddling entry sheets after the year end.
+      // three months. The fifth is the quarter after it, on the three
+      // straddling entry sheet pairs past the year end.
       expect(results["Vat.xlsx!VATQtr4"].G9).toBeCloseTo(vatinterface.G17, 6);
       expect(vatinterface.G17).toBeCloseTo(vatinterface.F15 + vatinterface.F16 + vatinterface.F17, 6);
-      expect(results["Vat.xlsx!VATQtr5"].G9).toBeCloseTo(vatinterface.G19, 6);
-      expect(vatinterface.G19).toBeCloseTo(vatinterface.F17 + vatinterface.F18 + vatinterface.F19, 6);
+      expect(results["Vat.xlsx!VATQtr5"].G9).toBeCloseTo(vatinterface.G20, 6);
+      expect(vatinterface.G20).toBeCloseTo(vatinterface.F18 + vatinterface.F19 + vatinterface.F20, 6);
+      expect(results["Vat.xlsx!VATQtr5"].G9).toBeCloseTo(1100, 6);
+      expect(results["Vat.xlsx!VATQtr5"].G15).toBeCloseTo(180, 6);
       expect(results["Profit & Loss Account"].B9).toBeCloseTo(expected.total_sales, 0);
     });
 
@@ -195,15 +211,15 @@ describeCalc(
       const value = await readCorruptedCell(savedDir, "Vat.xlsx", "Vatinterface", "D18", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("Vat.xlsx!Vatinterface", "D18", value);
-      // The straddling row after the year end falls inside the spare fifth
+      // The first straddling row after the year end falls inside the fifth
       // return's window alone, so only that quarter column moves with it.
       expect(failureNames(corrupted)).toEqual([
         "Vatinterface D18: 04Y2 sales net = the straddling sales entered for that period",
-        "Vatinterface E19: quarter sales net = its three period rows",
+        "Vatinterface E20: quarter sales net = its three period rows",
       ]);
     });
 
-    it("fails the cycle when the spare fifth return is dated on the fourth's period", async () => {
+    it("fails the cycle when the fifth return is dated on the fourth's period", async () => {
       const fourthEnd = results["Vat.xlsx!VATQtr4"].G5;
       const value = await readCorruptedCell(savedDir, "Vat.xlsx", "VATQtr5", "G5", fourthEnd);
       expect(value).toBe(fourthEnd);
