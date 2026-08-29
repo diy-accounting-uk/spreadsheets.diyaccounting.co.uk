@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (first runs failed on the fixture line count in diya-gl-loader.test.js, fixed on the branch and re-dispatched). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (bst, ltd, taxi green on the second dispatch after the fixture line-count fix; generate-se re-dispatched after the leap-year calendar fix). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
@@ -55,12 +55,10 @@ Coverage checks still to write:
 - [ ] **Taxi `VitalTax` quarterly checks** — the MTD quarterly re-summing path,
   unasserted; SE's twin is the proven pattern. Test: each quarterly rollup and the G
   annual column equal the P&L's own figures; expected all-pass on taxi-scenario-basic.
-- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — SE's echo landed in wave 1; Ltd's
-  is in the ltd-checks track. Remainder: `generatePayslipsCalendar` (generator.js) lays out
-  a fixed 53 weeks / 380 rows, so `I1 = B366` reads one day short in a tax year spanning a
-  leap February (2027-28). Fix the row count from the year and assert I1 against the year
-  end on a leap-year fixture. Also add an SA103F report indicator (box 30/46 divergence)
-  once the regenerated SE report carries the section `judge-reconciliation.test.js` parses.
+- [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — code-complete on `claude/wave-1`
+  (both echoes; I1 now derives 5 April from the seed after the 2024 leap year failed the
+  generate-se matrix). Remainder: an SA103F report indicator (box 30/46 divergence) once the
+  regenerated SE report carries the section `judge-reconciliation.test.js` parses.
 - [ ] **HPfinance fixture and capital/interest checks (Ltd and SE)** — the sheet that
   decides how much of an HP payment is deductible has no fixture. Depends on the
   #REF! repair below. Test: a fixture agreement (counter-legged, EJ91 stays 0),
