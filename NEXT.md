@@ -11,7 +11,9 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 
 | Track | Items | Status |
 |---|---|---|
-| fidelity-t1 (wave 5) | T1: diya-gl v2 schemas replacing v1 (nothing is live), covering every reconciliation scenario input; `ajv` validator; extractor emits the new sections from the Ltd master; Class 2/4 NI fields | started, worktree `sp-fidelity-t1` |
+| fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | merged into `claude/wave-5` `623833b9`, 126 fast tests, LibreOffice blast radius running, worktree removed |
+| fidelity-t1b (wave 5) | T1b: masters for brickwork-pro (bank journal, opening lines, ledgers, van, members), sp-sixty (dashcam), kestrel (camera), new basic-taxi-driver; all twelve TOMLs extractor-written; sync gate widened | started, worktree `sp-fidelity-t1b` |
+| fidelity-t2 (wave 5) | T2: `report-serializer.js` (TheReport canonical JSON with units), exporter keeps account identity and all fields and writes a full book, `verify-roundtrip.js` scores both halves with the plan's tolerance table | started, worktree `sp-fidelity-t2` |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
 
 ## Open items
@@ -43,11 +45,9 @@ Moved from the submit repo's backlog (spreadsheets concerns):
   Ltd 845 values in scope, 832 without a correct JS source; SE 549/535; the exporter folds
   SE accounts into 5300; nothing validated the schemas). T0 landed on `claude/wave-4`.
   Each remaining track is its own item below, in the plan's order.
-- [ ] **Fidelity T1: schema v2, validator, canonical form, gaps inventory** (Sonnet, in
-  flight) — v2 replaces v1; `diya-gl-schema.js` with the referential rules;
-  `diya-gl-canonical.js` (sorted lines, schema field order, money as 2 dp strings, ISO
-  dates); the Precision Code master filled with the v2 tables; `fixture-master-gaps.json`
-  for T1b.
+- [ ] **Fidelity T1: schema v2, validator, canonical form, gaps inventory** — landed on
+  `claude/wave-5`; closes with wave 5's PR. Remainder: `diya-gl-docs.md` still illustrates
+  the `diya-gl:` extension fields with stale JSON (predates T1; flagged in the doc).
 - [ ] **Fidelity T1b: diya-gl masters for every fixture** (Opus, after T1, with T2) — owns
   the extractor. brickwork-pro gains a bank journal (SE 60/63 rows, Ltd 49/53), `BB` opening
   lines, opening balances, stock, debtor/creditor ledgers, the £12,000 van, Mike Brown's 100
