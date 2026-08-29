@@ -20,7 +20,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage; Fixedassets Admin link cache rolled per package | landed on `claude/wave-1`, 1619 tests, worktree removed | K35 28,028.78 → 35,342.77 statutory on every year end (34,521.27 once the HP interest lands); box 65 = K35 |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | merged, worktree removed | landed on `claude/wave-1` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | landed on `claude/wave-1` `dc3e5e2a`, 1677 tests, worktree removed | K1 43,662 → 30,990 both products; HPfinance!E2 feeds long-term creditors (25,000 → 45,000) |
-| ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | merged into `claude/wave-1` locally, blast radius running | ltd-scenario-full: 839 checks, 0 failures, 2 warnings (both the VAT overlap) |
+| ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | landed on `claude/wave-1`, 433 tests, worktree removed | ltd-scenario-full: 839 checks, 0 failures, 2 warnings (both the VAT overlap) |
 
 ## Open items
 
