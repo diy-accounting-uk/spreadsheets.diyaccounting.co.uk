@@ -73,11 +73,8 @@ Coverage checks still to write:
 Shipped-template surgery (binary xlsx edits plus a regeneration pass each):
 
 - [ ] **SE Income Tax: personal-allowance taper and additional rate** — code-complete on
-  `claude/wave-2`; closes when generate-se refreshes packages and reports. Remainder found
-  on the way: `app/bin/generate.js:92` derives `outDir` from the module-level `packages/`
-  path and `--output-dir` only copies afterwards, so any `--output-dir` run (four in
-  `verify-roundtrip.test.js`) overwrites the committed catalogue. Make `--output-dir`
-  redirect generation.
+  `claude/wave-2` (with the `generate.js --output-dir` redirect fix); closes when
+  generate-se refreshes packages and reports.
 - [ ] **VATQtr5 default stagger** — remainder after wave 1: Q5 now ends on Vatinterface
   row 19, the last period the interface totals, so one period (row 17) is still declared
   twice. A fully consecutive fifth quarter needs Vatinterface row 20, a `S/P 06Y2` entry
