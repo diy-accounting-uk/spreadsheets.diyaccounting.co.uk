@@ -540,21 +540,26 @@ describeCalc(
       expect(corruptedChecks.find((c) => c.name === name).pass).toBe(false);
     });
 
-    it("VAT Q1-Q4 box values tie to the scenario when the package's year end is a year after the fixture's", () => {
+    it("VAT Q1-Q5 box values tie to the scenario when the package's year end is a year after the fixture's", () => {
       // Every SE package but the one matching the fixture's own year runs
-      // this way: the book carries its own quarter dates while cellWrites
+      // this way: the book carries its own period dates while cellWrites
       // copies the scenario's base-year transaction dates straight through.
-      // Advancing only the quarter dates is exactly that package -- the same
-      // book, the same box values, a year later.
+      // Advancing the book's tax year start and its quarter dates is exactly
+      // that package -- the same book, the same box values, a year later.
       const shifted = { ...results };
       for (let q = 1; q <= 5; q++) {
         const key = `Vat.xlsx!VATQtr${q}`;
         const qtr = results[key];
         shifted[key] = { ...qtr, G5: excelSerialPlusOneYear(qtr.G5), G7: excelSerialPlusOneYear(qtr.G7) };
       }
+      shifted.Admin = {
+        ...results.Admin,
+        B4: excelSerialPlusOneYear(results.Admin.B4),
+        B17: excelSerialPlusOneYear(results.Admin.B17),
+      };
 
       const checks = seCheckCompliance(shifted, mergedExpected, null, undefined);
-      for (let q = 1; q <= 4; q++) {
+      for (let q = 1; q <= 5; q++) {
         for (const box of [
           `box 1/3 output VAT (G9) = scenario sales VAT for the quarter`,
           `box 4 input VAT (G15) = scenario purchases VAT for the quarter`,
