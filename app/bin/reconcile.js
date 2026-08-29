@@ -45,6 +45,14 @@ function findXlsx(packageDir) {
   return files.find((f) => f.endsWith(".xlsx"));
 }
 
+// The package directory name carries this run's own year-end date
+// (YYYY-MM-DD). checkCompliance needs it to anchor date checks against the
+// run's actual configuration rather than a value the sheet derives itself.
+export function packageYearEnd(pkgDir) {
+  const match = pkgDir.match(/(\d{4})-(\d{2})-(\d{2})/);
+  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
+}
+
 async function main() {
   console.log("=== reconcile.js ===");
 
@@ -208,7 +216,7 @@ async function main() {
       // closing_creditors, ...) are top-level scenario tables, not [expected] keys,
       // so checks that anchor against fixtures need the whole scenario merged in.
       const mergedScenario = { ...scenario, ...scenario.expected };
-      const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax);
+      const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, packageYearEnd(pkgDir));
       const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod, mergedScenario);
 
       // Report naming: <product>_<scenario>.md
@@ -231,7 +239,9 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

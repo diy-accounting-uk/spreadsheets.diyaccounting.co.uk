@@ -186,9 +186,9 @@ function alignmentsFrom(separatorLine) {
 }
 
 // Parses the committed report markdown by structure: the Status line, ## headings and pipe tables.
-function parseReport(path) {
+export function parseReport(path) {
   const lines = readFileSync(path, "utf8").split("\n");
-  const report = { title: "", scenario: "", status: "", sections: [] };
+  const report = { title: "", scenario: "", status: "", frontMatter: [], sections: [] };
   let section = null;
 
   for (let i = 0; i < lines.length; i++) {
@@ -221,8 +221,9 @@ function parseReport(path) {
       section.blocks.push({ type: "table", head, align, rows });
       continue;
     }
-    if (line.trim() && !line.startsWith("---") && section) {
-      section.blocks.push({ type: "text", text: line.trim() });
+    if (line.trim() && !line.startsWith("---")) {
+      if (section) section.blocks.push({ type: "text", text: line.trim() });
+      else report.frontMatter.push(line.trim());
     }
   }
   return report;
@@ -545,6 +546,12 @@ function renderBlocks(blocks) {
   return blocks.map((block) => (block.type === "table" ? renderTable(block) : `<p>${inlineMarkdown(block.text)}</p>`)).join("\n");
 }
 
+// The scenario description and trade line the report carries ahead of its first
+// heading. Rendered as plain paragraphs above the table of contents.
+export function renderFrontMatter(report) {
+  return report.frontMatter.map((line) => `      <p>${inlineMarkdown(line)}</p>`).join("\n");
+}
+
 function renderReportSections(sections, headingLevel = 4) {
   return sections
     .map((section) => `<h${headingLevel}>${escapeHtml(section.name)}</h${headingLevel}>\n${renderBlocks(section.blocks)}`)
@@ -804,13 +811,18 @@ function renderProductPage(product, built, shots) {
     "      </nav>",
   ].join("\n");
 
+  const frontMatterHtml = renderFrontMatter(report);
+
   const body = [
     '      <nav class="nav-back" aria-label="Breadcrumb"><a href="index.html">&larr; Reconciliation reports</a></nav>',
     `      <h2 class="kb-page-title">${escapeHtml(config.name)} reconciliation</h2>`,
     `      <p class="kb-page-description">${escapeHtml(report.title)}. Every figure below comes from a scenario driven through the shipped workbooks and read back out of the recalculated sheets.</p>`,
+    frontMatterHtml,
     toc,
     ...PAGE_SECTIONS.map((section) => renderSection(section, sectionContent[section.id])),
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   return pageShell({
     title: `${config.name} reconciliation - DIY Accounting Spreadsheets`,
@@ -931,7 +943,9 @@ async function main() {
   buildIndex(args.outDir);
 }
 
-main().catch((error) => {
-  console.error(error.message);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(error.message);
+    process.exit(1);
+  });
+}
