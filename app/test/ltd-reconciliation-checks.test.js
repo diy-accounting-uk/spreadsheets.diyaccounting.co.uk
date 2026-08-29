@@ -99,6 +99,13 @@ function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
+function warningNamed(checks, name) {
+  const found = checks.find((c) => c.name === name);
+  if (!found) throw new Error(`no check named ${name}`);
+  if (found.severity !== "warning") throw new Error(`${name} is not a warning`);
+  return found;
+}
+
 describeCalc(
   "Limited Company: fixed assets, bank, monthly P&L and the filed documents",
   () => {
