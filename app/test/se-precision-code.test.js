@@ -102,8 +102,10 @@ describeCalc(
       expect(results["Income Tax"].E5).toBe(results["SE Short"].D106);
     });
 
-    it("Income Tax: personal allowance applied", () => {
-      expect(results["Income Tax"].E6).toBe(12570);
+    it("Income Tax: the taper leaves this profit no personal allowance", () => {
+      // 144,715.39 is far enough above the 100,000 threshold that the whole
+      // 12,570 allowance is withdrawn.
+      expect(results["Income Tax"].E6).toBe(0);
     });
 
     it("Income Tax: taxable income = profit - allowance", () => {
@@ -112,7 +114,7 @@ describeCalc(
     });
 
     it("Income Tax: total income tax > 0", () => {
-      expect(results["Income Tax"].E10).toBeGreaterThan(0);
+      expect(results["Income Tax"].E11).toBeGreaterThan(0);
     });
 
     it("Income Tax: NI Class 4 > 0", () => {
@@ -125,7 +127,30 @@ describeCalc(
 
     it("Income Tax: total = income tax + NI", () => {
       const tax = results["Income Tax"];
-      expect(tax.E18).toBeCloseTo(tax.E10 + (tax.E15 || 0) + (tax.E16 || 0), 0);
+      expect(tax.E18).toBeCloseTo(tax.E11 + (tax.E15 || 0) + (tax.E16 || 0), 0);
+    });
+
+    // The statutory charge on this fixture's profit, worked out by hand from
+    // the 2025-26 rates rather than from anything the sheet computes:
+    //   profit                  144,715.391666666
+    //   allowance                       0  (12,570 - (144,715.39 - 100,000) / 2, floored)
+    //   basic      37,700.000000 x 0.20 =  7,540.000000
+    //   higher     87,440.000000 x 0.40 = 34,976.000000   (125,140 - 37,700)
+    //   additional 19,575.391667 x 0.45 =  8,808.926250   (144,715.39 - 125,140)
+    //   income tax                      = 51,324.926250
+    //   NI         37,700 x 0.06 = 2,262.00, 94,445.391667 x 0.02 = 1,888.907833
+    //   tax and NI                      = 55,475.834083
+    it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
+      const tax = results["Income Tax"];
+      expect(tax.E5).toBeCloseTo(144715.391666666, 4);
+      expect(tax.E6).toBe(0);
+      expect(tax.E8).toBeCloseTo(7540, 2);
+      expect(tax.E9).toBeCloseTo(34976, 2);
+      expect(tax.E10).toBeCloseTo(8808.92625, 2);
+      expect(tax.E11).toBeCloseTo(51324.92625, 2);
+      expect(tax.E15).toBeCloseTo(2262, 2);
+      expect(tax.E16).toBeCloseTo(1888.907833, 2);
+      expect(tax.E18).toBeCloseTo(55475.834083, 2);
     });
 
     // ── Bank closing balance (6k) ────────────────────────────────────────

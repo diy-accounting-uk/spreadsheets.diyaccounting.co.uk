@@ -170,6 +170,15 @@ describe("buildCellEdits", () => {
     expect(numericEdits.F26).toBe(90000);
   });
 
+  it("writes the allowance taper threshold and the additional rate band", () => {
+    const { numericEdits } = buildCellEdits(taxData, 2025);
+    expect(numericEdits.N5).toBe(100000);
+    expect(numericEdits.N9).toBe(0.45);
+    expect(numericEdits.K14).toBe(0.45);
+    expect(numericEdits.L14).toBe(125141);
+    expect(numericEdits.N14).toBe(125140);
+  });
+
   it("produces string edits for tax year labels", () => {
     const { stringEdits } = buildCellEdits(taxData, 2025);
     expect(stringEdits.B23).toBe("2025-26");
@@ -243,14 +252,24 @@ describe("buildSeCellEdits", () => {
     expect(numericEdits.N6).toBe(0.2);
     // SE puts higher rate at N7 (BST puts basic_rate there)
     expect(numericEdits.N7).toBe(0.4);
-    // SE has no N8 (BST puts higher_rate there)
-    expect(numericEdits.N8).toBeUndefined();
+    // SE puts the additional rate at N8 (BST puts higher_rate there)
+    expect(numericEdits.N8).toBe(0.45);
     // SE basic band end at M11 (BST uses M12)
     expect(numericEdits.M11).toBe(37700);
     expect(numericEdits.M12).toBeUndefined();
     // SE higher band start at L12/N12 (BST uses L13/N13)
     expect(numericEdits.L12).toBe(37701);
     expect(numericEdits.N12).toBe(37701);
+    // SE higher band end at L13/N13 (BST uses L14/N14)
+    expect(numericEdits.L13).toBe(125141);
+    expect(numericEdits.N13).toBe(125140);
+    expect(numericEdits.N14).toBeUndefined();
+  });
+
+  it("writes the allowance taper threshold and the additional rate band", () => {
+    const { numericEdits } = buildSeCellEdits(taxData, 2025);
+    expect(numericEdits.N5).toBe(100000);
+    expect(numericEdits.K13).toBe(0.45);
   });
 
   it("uses L16 for NI Class 2 (not L17)", () => {

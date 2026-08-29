@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// se-admin-echo-checks.test.js — Proves the SE Admin echo checkCompliance
-// additions actually catch a broken workbook: the generator injects the tax
+// se-admin-echo-checks.test.js — Proves the SE Admin echo and Income Tax
+// checks actually catch a broken workbook: the generator injects the tax
 // year's personal allowance, income tax rates and band ends, Class 2/4 NI
 // figures, capital allowance rates, mileage bands and VAT threshold/rate into
 // Financialaccounts.xlsx!Admin (see buildSeCellEdits() in
@@ -81,10 +81,13 @@ function failureNames(checks) {
 
 const ADMIN_ECHO_CHECK_NAMES = [
   "Admin: Personal Allowance = tax data",
+  "Admin: Personal Allowance Taper Threshold = tax data",
   "Admin: Basic Rate = tax data",
   "Admin: Higher Rate = tax data",
+  "Admin: Additional Rate = tax data",
   "Admin: Basic Band End = tax data",
   "Admin: Higher Band Start = tax data",
+  "Admin: Higher Band End = tax data",
   "Admin: NI Class 2 Weekly Rate = tax data",
   "Admin: NI Class 4 Lower Rate = tax data",
   "Admin: NI Class 4 Lower Limit = tax data",
@@ -102,7 +105,7 @@ const ADMIN_ECHO_CHECK_NAMES = [
   "Admin: VAT Standard Rate = tax data",
 ];
 
-describeCalc("SE Admin echo catches a broken workbook", () => {
+describeCalc("SE Admin echo and income tax checks catch a broken workbook", () => {
   let results;
   let checks;
   let taxData;
@@ -149,7 +152,7 @@ describeCalc("SE Admin echo catches a broken workbook", () => {
     expect(results.Admin.N4).toBeGreaterThan(0);
   });
 
-  it("passes all twenty Admin echo checks on the intact book", () => {
+  it("passes every Admin echo check on the intact book", () => {
     for (const name of ADMIN_ECHO_CHECK_NAMES) {
       const check = checks.find((c) => c.name === name);
       expect(check, `missing check: ${name}`).toBeDefined();
@@ -166,10 +169,13 @@ describeCalc("SE Admin echo catches a broken workbook", () => {
 
   it.each([
     ["Admin: Personal Allowance = tax data", "N4", 1],
+    ["Admin: Personal Allowance Taper Threshold = tax data", "N5", 1],
     ["Admin: Basic Rate = tax data", "N6", 0.5],
     ["Admin: Higher Rate = tax data", "N7", 0.5],
+    ["Admin: Additional Rate = tax data", "N8", 0.5],
     ["Admin: Basic Band End = tax data", "M11", 1],
     ["Admin: Higher Band Start = tax data", "N12", 1],
+    ["Admin: Higher Band End = tax data", "N13", 1],
     ["Admin: NI Class 4 Lower Rate = tax data", "L20", 0.5],
     ["Admin: NI Class 4 Lower Limit = tax data", "N20", 1],
     ["Admin: NI Class 4 Upper Rate = tax data", "L23", 0.5],
@@ -193,6 +199,33 @@ describeCalc("SE Admin echo catches a broken workbook", () => {
     const corrupted = checksWithCorruptedCell("Admin", cellRef, value);
     expect(corrupted.find((c) => c.name === checkName).pass).toBe(false);
     expect(failureNames(corrupted)).toEqual([checkName]);
+  });
+
+  // The Income Tax sheet's own taper and third-band rows. The 2025-26 sheet
+  // carries three bands and an allowance that tapers away above 100,000; each
+  // corruption below moves one cached cell and names the exact checks that
+  // must notice.
+  it.each([
+    ["Income Tax!E6 (the tapered allowance)", "E6", 5000, ["Tax: Personal allowance after taper", "Tax: Taxable = Profit - Allowance"]],
+    ["Income Tax!E10 (the additional-rate charge)", "E10", 1, ["Tax at additional rate", "Tax: IT = Basic + Higher + Additional"]],
+    [
+      "Income Tax!E11 (the income tax total)",
+      "E11",
+      1,
+      ["Income Tax", "Tax: IT = Basic + Higher + Additional", "Tax: Total = IT + CIS deduction line + NI"],
+    ],
+    ["Income Tax!C9 (the basic band ceiling)", "C9", 1, ["Tax: sheet splits the basic and higher bands at the basic band end"]],
+    ["Income Tax!C10 (the additional rate threshold)", "C10", 1, ["Tax: sheet splits the higher and additional bands at the higher band end"]],
+    ["Income Tax!D10 (the additional rate)", "D10", 0.9, ["Tax: sheet applies the additional rate above the higher band"]],
+  ])("corrupting %s via JSZip fails exactly the checks that read it", async (_label, cellRef, corruptedValue, expectedFailures) => {
+    for (const name of expectedFailures) {
+      expect(checks.find((c) => c.name === name).pass, `${name} should pass on the intact book`).toBe(true);
+    }
+
+    const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Income Tax", cellRef, corruptedValue);
+    expect(value).toBe(corruptedValue);
+    const corrupted = checksWithCorruptedCell("Income Tax", cellRef, value);
+    expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
   });
 
   // NI Class 2 Weekly Rate is genuinely zero in the 2025-26 tax data (Class 2
