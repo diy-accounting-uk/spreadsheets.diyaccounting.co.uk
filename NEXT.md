@@ -6,9 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. PR #40 (wave 3) is merged; the operator runs generate-* on main with commit, then
-the deploy. Every later PR branch starts from a rebase onto that post-deploy green main, and
-the operator dispatches CI on branches.
+Nothing. PR #40 (wave 3) is merged, refreshed (generate-* commits through `11b249b4`) and
+deployed green from `11b249b4`. The next PR branch starts from that main; the operator
+dispatches CI on branches.
 
 ## Open items
 
