@@ -3,7 +3,8 @@
 
 import { describe, it, expect, beforeAll } from "vitest";
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, existsSync, rmSync } from "fs";
+import { execFileSync } from "child_process";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
@@ -27,9 +28,12 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
+const ROOT = resolve(APP_DIR, "..");
 const BST_DIR = resolve(APP_DIR, "templates", "bst");
 const TAXI_DIR = resolve(APP_DIR, "templates", "taxi");
 const DATA_DIR = resolve(APP_DIR, "data");
+const NODE = process.execPath;
+const GENERATE_JS = resolve(APP_DIR, "bin", "generate.js");
 
 // ── Date helpers ────────────────────────────────────────────────────────────
 
@@ -793,5 +797,46 @@ describe("file structure", () => {
     expect(data.tax_year.label).toBe("2025-26");
     expect(data.income_tax.personal_allowance).toBe(12570);
     expect(data.national_insurance.class4_lower_rate).toBe(0.06);
+  });
+});
+
+// ── generate.js CLI --output-dir ────────────────────────────────────────────
+
+function packagesGitStatus() {
+  return execFileSync("git", ["status", "--short", "packages/"], { cwd: ROOT, encoding: "utf8" });
+}
+
+describe("generate.js --output-dir", () => {
+  it("writes the generated package under the given directory and leaves packages/ untouched", () => {
+    const outDir = resolve(ROOT, "target", "generate-output-dir-test");
+    rmSync(outDir, { recursive: true, force: true });
+
+    const before = packagesGitStatus();
+
+    execFileSync(
+      NODE,
+      [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir", outDir, "--skip-guide"],
+      { cwd: ROOT, encoding: "utf8" },
+    );
+
+    const dirName = "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007";
+    expect(existsSync(resolve(outDir, dirName, "Financialaccountsto050426.xlsx"))).toBe(true);
+
+    // packages/ already ships this exact package (committed catalogue); the
+    // acceptance test is that generating into --output-dir leaves it byte-for-byte
+    // as git already has it, not that the path is absent.
+    expect(packagesGitStatus()).toBe(before);
+
+    rmSync(outDir, { recursive: true, force: true });
+  });
+
+  it("throws rather than silently falling back to packages/ when the flag has no value", () => {
+    expect(() =>
+      execFileSync(NODE, [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir"], {
+        cwd: ROOT,
+        encoding: "utf8",
+        stdio: "pipe",
+      }),
+    ).toThrow();
   });
 });
