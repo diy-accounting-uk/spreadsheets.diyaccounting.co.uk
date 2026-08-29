@@ -6,10 +6,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 4 is complete on `claude/wave-4` at `39f9c3f4`: test.yml and the four skip-commit
-generate-* runs are green; PR open for the operator to merge, refresh and deploy.
-Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto main after wave 4
-merges and deploys). The operator dispatches every workflow on branches.
+Wave 4 merged (PR #42); the operator's generate-* refresh and deploy from main follow.
+Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-deploy main). The operator dispatches every workflow on branches.
 
 | Track | Items | Status |
 |---|---|---|
@@ -24,30 +22,18 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Checks, indicators and docs:
 
-- [ ] **Forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`** — code-complete
-  on `claude/wave-4` (taper, additional band and Class 4 limits on both; checks tied to the
-  P&L and the Schedule). The "formulas in D and E only" claim was wrong: the followers are
-  self-closing shared-formula elements. Closes when the wave-4 regeneration lands.
-- [ ] **Taxi `Draft Tax calculation`: taper and additional rate** — code-complete on
-  `claude/wave-4` (a third band, Admin N5/N8/N13 generator-written, and the
-  `kestrel-executive-cars` fixture at a 144,878 profit that failed the check first). Closes
-  with the same regeneration.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
-- [ ] **SE VAT Q5 scenario window** — code-complete on `claude/wave-4` (the shift comes once
-  from `Admin!B4`; Q5 checked against the straddling entries, 1,100 / 180 / 900). Closes
-  when the wave-4 regeneration lands.
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** — code-complete on `claude/wave-4` (VAT payments `RV`, CIS
-  certificates written, schema validated). Still open: SE's `Purchases.xlsx` AD (its CIS
-  column) is not written from the `cis_deduction` the SE scenario now carries (one write in
-  `se.js` plus a check); the brickwork fixtures carry 4,000 of `cisDeduction` their
-  hand-written TOMLs omit; `ajv` is imported by the schema test as a transitive dependency
-  of eslint and should be declared in `package.json`; the row counters at `ltd.js:853` and
-  `se.js:537` count any key starting with the amount column's letter.
+- [ ] **Ltd fixture remainders** — SE's `Purchases.xlsx` AD (its CIS column) is not written
+  from the `cis_deduction` the SE scenario carries (one write in `se.js` plus a check); the
+  brickwork fixtures carry 4,000 of `cisDeduction` their hand-written TOMLs omit; `ajv` is
+  imported by the v1 schema test as a transitive dependency of eslint (T1 declares it); the
+  row counters at `ltd.js:853` and `se.js:537` count any key starting with the amount
+  column's letter.
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
