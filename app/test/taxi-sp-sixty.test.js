@@ -73,7 +73,7 @@ describeCalc("Taxi Driver end-to-end: SP Sixty Driving scenario", () => {
   });
 
   it("Draft Tax: income tax > 0", () => {
-    expect(results["Draft Tax calculation"].E10).toBeGreaterThan(0);
+    expect(results["Draft Tax calculation"].E11).toBeGreaterThan(0);
   });
 
   it("Draft Tax: total tax + NI > 0", () => {
@@ -82,6 +82,6 @@ describeCalc("Taxi Driver end-to-end: SP Sixty Driving scenario", () => {
 
   it("Draft Tax: total = income tax + NI", () => {
     const tax = results["Draft Tax calculation"];
-    expect(tax.E17).toBeCloseTo(tax.E10 + (tax.E14 || 0) + (tax.E15 || 0), 0);
+    expect(tax.E17).toBeCloseTo(tax.E11 + (tax.E14 || 0) + (tax.E15 || 0), 0);
   });
 });

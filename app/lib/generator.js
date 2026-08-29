@@ -220,11 +220,11 @@ export function buildCellEdits(taxData, startYear) {
 
 // ── Tax data → cell edits (Taxi Admin) ─────────────────────────────────────
 //
-// The Taxi Admin income tax block lists two bands (basic, higher), where BST
-// lists three (starter, basic, higher). Every band row therefore sits one row
-// higher than its BST counterpart, and NI Class 2 is on L16 rather than L17.
-// The Taxi workbook reads Admin N4, N6, N7, N11 and N12 for tax: writing the
-// BST positions here leaves N6 holding the starting rate and N12 holding zero,
+// The Taxi Admin income tax block opens on the basic rate, where BST opens on
+// the starting rate. Every band row therefore sits one row higher than its BST
+// counterpart, and NI Class 2 is on L16 rather than L17. The Taxi workbook
+// reads Admin N4, N5, N6, N7, N8, N11, M11 and N13 for tax: writing the BST
+// positions here leaves N6 holding the starting rate and M11 holding zero,
 // which charges every pound above the personal allowance at the basic rate and
 // never reaches the higher band.
 
@@ -244,16 +244,21 @@ export function buildTaxiCellEdits(taxData, startYear) {
     numericEdits[cell] = toExcelSerial(date);
   }
 
-  // Income tax — two bands, one row above the BST positions
+  // Income tax — one row above the BST positions
   numericEdits.N4 = it.personal_allowance;
+  numericEdits.N5 = it.personal_allowance_taper_threshold;
   numericEdits.N6 = it.basic_rate; // BST: starting_rate at N6
   numericEdits.N7 = it.higher_rate; // BST: basic_rate at N7
+  numericEdits.N8 = it.additional_rate; // BST: higher_rate at N8
   numericEdits.K11 = it.basic_rate; // Display-only copy of the basic rate
   numericEdits.N11 = it.starter_band_end;
   numericEdits.M11 = it.basic_band_end; // BST: M12
   numericEdits.K12 = it.higher_rate; // Display-only copy of the higher rate
   numericEdits.L12 = it.higher_band_start; // BST: L13
   numericEdits.N12 = it.higher_band_start; // BST: N13
+  numericEdits.K13 = it.additional_rate; // Display-only copy of the additional rate
+  numericEdits.L13 = it.higher_band_end + 1; // BST: L14
+  numericEdits.N13 = it.higher_band_end; // BST: N14
 
   // NI — L16 not L17 for Class 2
   numericEdits.L16 = ni.class2_weekly_rate; // BST: class2_rate at L17
