@@ -1415,8 +1415,10 @@ export function categoryNetting(results, scenario) {
 
   const rate = vatRateFor(scenario);
   const num = (v) => (typeof v === "number" ? v : 0);
+  // The same code defaults the writer applies, so an entry that names no code
+  // is measured against the line the sheet actually books it on.
   const sales = journalTotalsByCode(scenario.sales, rate, "a");
-  const purchases = journalTotalsByCode(scenario.purchases, rate);
+  const purchases = journalTotalsByCode(scenario.purchases, rate, "g");
   const rows = [];
 
   const plRow = (journal, side, code, row, sign = 1) => {
