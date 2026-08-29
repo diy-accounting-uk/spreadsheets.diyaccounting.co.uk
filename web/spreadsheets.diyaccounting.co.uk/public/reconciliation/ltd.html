@@ -74,19 +74,19 @@
       <section class="recon-section" id="summary">
         <h3>Summary</h3>
         <ul class="recon-facts">
-          <li><strong>Status:</strong> RECONCILES (with warnings)</li>
+          <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> ltd-scenario-full (Precision Code Ltd - full)</li>
           <li><strong>Year end:</strong> 2027-09-30</li>
-          <li><strong>Checks:</strong> 859 passed, 1 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 860 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 94</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>The indicators tell the same story as the headline: turnover of 341,283.33 is consistent with 424,900.00 invoiced gross less VAT and less 15,000.00 of disposals, the balance sheet balances with a zero trial balance audit cell, tax of 29,221.27 is charged on a positive chargeable profit of 124,419.90 with box 63 less relief reconciling to box 65, all four VAT quarters carry non-zero boxes for a registered business, and the profit bridge residue is 0.00. Only notes: the unusually high 0.94 trading margin, the already-named CIS warning, and a cosmetic -0.00 members' balance.</p>
+          <p>The indicators tell the same story as the headline: 860 deterministic checks passed with no warnings, net assets equal shareholders' funds (148,760.62) with a zero trial balance audit cell, turnover of 341,283.33 is the expected net-of-VAT figure once the 15,000.00 disposals and standard-rate VAT are stripped from 424,900.00 invoiced, all four VAT quarters carry non-nil boxes for a registered business, tax of 29,221.27 is charged on a positive chargeable profit of 124,419.90 with box 63 less relief reconciling to box 65, and the profit bridge residue is zero. Only presentational notes (a high trading margin, a negative-zero members' balance, and the VAT return periods running past the year end).</p>
           <ul>
-            <li><strong>Turnover 341,283.33 against gross profit 322,496.67, trading margin 0.94</strong> (Published profit and loss account / Directors' report): A 94% gross margin implies almost no cost of sales (only 18,786.66) even though the scenario has 134,992.25 of purchases with 63,000.00 capital, i.e. roughly 72,000 of revenue purchases plus payroll. Plausible if most costs sit in administrative expenses, but worth a glance at the cost-of-sales split. [note]</li>
-            <li><strong>CIS: sub-contractor tax withheld reaches the purchase journal (1 warning of 859 checks)</strong> (Deterministic run indicator): Already named by the run; no CIS activity is described in the headline for an IT consultancy, so the sub-contractor withholding is worth a look, but it is a named warning rather than a contradiction. [note]</li>
-            <li><strong>still owes -0.00 to the members</strong> (Cash at bank and in hand indicator): A negative zero on the members' balance is a presentational artefact of rounding, not a real balance; dividends of 15,000.00 declared and 15,000.00 paid reconcile. [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report indicator): A 94% trading margin sits oddly against gross profit 322,496.67 on turnover 341,283.33 (which is ~0.945), so it is arithmetically consistent but a very high headline margin for an IT consultancy carrying payroll costs; worth a glance rather than a fault, since profit before tax 172,179.90 gives a more normal ~50% net margin. [note]</li>
+            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand indicator): A negative-zero directors' loan balance is cosmetic rounding presentation, not a real balance; nothing to fault but it reads untidily. [note]</li>
+            <li><strong>VAT due for the year 48,317.96</strong> (VAT indicator): The four quarters' box 1 less box 4 sums to 48,317.95/96, consistent, but the note that the same returns also cover October to December 2027 means the figure spans months beyond the year end; expected behaviour for this workbook (closing VAT creditor is a timing difference), recorded only so a reader does not tie it to the 38,292.56 tax owed. [note]</li>
           </ul>
           <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-29. The arithmetic checks below run first and decide the status.</p>
         </div>
@@ -96,7 +96,7 @@
 <tbody>
 <tr><td>2027-09-30</td><td>Sep27</td><td>ltd-brickwork-pro-nonvat</td><td>RECONCILES</td></tr>
 <tr><td>2027-09-30</td><td>Sep27</td><td>ltd-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2027-09-30</td><td>Sep27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
+<tr><td>2027-09-30</td><td>Sep27</td><td>ltd-scenario-full</td><td>RECONCILES</td></tr>
 <tr><td>2027-08-31</td><td>Aug27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-07-31</td><td>Jul27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-06-30</td><td>Jun27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
@@ -197,7 +197,7 @@
 <thead><tr><th>Check</th><th>Expected</th><th>Actual</th><th>Diff</th><th>Result</th></tr></thead>
 <tbody>
 <tr><td>Total Sales</td><td>341283</td><td>341283.333333333</td><td>+0.3333333330228925</td><td>PASS</td></tr>
-<tr><td>Trial Balance: audit accuracy (EJ91)</td><td>0</td><td>3.17413650918752e-10</td><td>+3.17413650918752e-10</td><td>PASS</td></tr>
+<tr><td>Trial Balance: audit accuracy (EJ91)</td><td>0</td><td>3.24689608532935e-10</td><td>+3.24689608532935e-10</td><td>PASS</td></tr>
 <tr><td>Opening balance sheet: accuracy check (E37)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: opening balances audit check (D91)</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance opening: fixed asset cost</td><td>33000</td><td>33000</td><td>0</td><td>PASS</td></tr>
@@ -474,10 +474,10 @@
 <tr><td>Trial Balance: dividends creditor = opening plus declared less paid</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements</td><td>45000</td><td>45000</td><td>0</td><td>PASS</td></tr>
 <tr><td>Charges register: the balance sheet carries a creditor falling due after more than one year</td><td>more than 0 and no more than the 50000 the directors valued the charged assets and the hire purchase agreements finance</td><td>45000</td><td></td><td>PASS</td></tr>
-<tr><td>Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed</td><td>12432.25</td><td>12432.25</td><td>0</td><td>PASS</td></tr>
-<tr><td>Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP</td><td>-40682.169999999984</td><td>-40682.17</td><td>-1.4551915228366852e-11</td><td>PASS</td></tr>
-<tr><td>Trial Balance: CIS creditor = the remittances paid under RC</td><td>1600</td><td>1600</td><td>0</td><td>PASS</td></tr>
-<tr><td>CIS: sub-contractor tax withheld reaches the purchase journal</td><td>1600</td><td>0</td><td>-1600</td><td><strong>WARNING</strong></td></tr>
+<tr><td>Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed</td><td>10832.25</td><td>10832.25</td><td>0</td><td>PASS</td></tr>
+<tr><td>Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
+<tr><td>Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV</td><td>9135.789999999979</td><td>9135.78833333336</td><td>-0.0016666666197124869</td><td>PASS</td></tr>
+<tr><td>Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT</td><td>29156.76675462949</td><td>29156.7667546295</td><td>+1.0913936421275139e-11</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule additions = fixed asset purchases net of VAT</td><td>52500</td><td>52500</td><td>0</td><td>PASS</td></tr>
 <tr><td>Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT</td><td>12500</td><td>12500</td><td>0</td><td>PASS</td></tr>
@@ -1364,42 +1364,42 @@
 </table></div>
 <h5>Jun</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-06-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-06-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td></tr>
-<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-14</td><td>Toolstation</td><td>u</td><td class="num">30.00</td></tr>
-<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td></tr>
-<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td></tr>
-<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td></tr>
-<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-06-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td></tr>
-<tr><td>2025-06-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td></tr>
-<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td></tr>
-<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">15,600.00</td></tr>
+<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-03</td><td>Argos</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-06-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Toolstation</td><td>u</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td><td>1,000.00</td></tr>
+<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-06-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td><td></td></tr>
+<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">15,600.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
@@ -1563,39 +1563,39 @@
 </table></div>
 <h5>Nov</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-11-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-11-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td></tr>
-<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-11-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td></tr>
-<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td></tr>
-<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-11-20</td><td>ParcelForce</td><td>t</td><td class="num">240.00</td></tr>
-<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td></tr>
-<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-11-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-11-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td></tr>
-<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-11-03</td><td>Argos</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-11-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td><td></td></tr>
+<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-11-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td><td></td></tr>
+<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td><td>600.00</td></tr>
+<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>ParcelForce</td><td>t</td><td class="num">240.00</td><td></td></tr>
+<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-11-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-11-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td><td></td></tr>
+<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
@@ -1793,7 +1793,7 @@
 <tr><td>2025-05-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,520.00</td><td>in</td></tr>
 <tr><td>2025-05-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
 <tr><td>2025-05-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RP</td><td class="num">1,500.00</td><td>out</td></tr>
+<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RV</td><td class="num">1,500.00</td><td>out</td></tr>
 <tr><td>2025-05-20</td><td>1230</td><td>HSBC</td><td>Credit card annual fee</td><td>B</td><td class="num">35.00</td><td>out</td></tr>
 </tbody>
 </table></div>
@@ -1841,7 +1841,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RP</td><td class="num">13,808.17</td><td>out</td></tr>
+<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RV</td><td class="num">13,808.17</td><td>out</td></tr>
 <tr><td>2025-08-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2025-08-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2025-08-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,600.00</td><td>out</td></tr>
@@ -1900,7 +1900,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RP</td><td class="num">14,456.50</td><td>out</td></tr>
+<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RV</td><td class="num">14,456.50</td><td>out</td></tr>
 <tr><td>2025-11-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2025-11-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2025-11-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,400.00</td><td>out</td></tr>
@@ -1954,7 +1954,7 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
 <tbody>
-<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RP</td><td class="num">10,917.50</td><td>out</td></tr>
+<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RV</td><td class="num">10,917.50</td><td>out</td></tr>
 <tr><td>2026-02-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
 <tr><td>2026-02-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
 <tr><td>2026-02-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,900.00</td><td>out</td></tr>
@@ -2273,9 +2273,9 @@
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors</td><td class="num">7,900</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand</td><td class="num">192,995.43</td></tr>
 <tr><td>Current Assets</td><td class="num">206,895.43</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors</td><td class="num">12,432.25</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors</td><td class="num">10,832.25</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax</td><td class="num">29,156.77</td></tr>
-<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security</td><td class="num">7,535.79</td></tr>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security</td><td class="num">9,135.79</td></tr>
 <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities</td><td class="num">49,124.81</td></tr>
 <tr><td><strong>Net Current Assets</strong></td><td class="num">157,770.62</td></tr>
 <tr><td><strong>Total Assets less CL</strong></td><td class="num">206,760.62</td></tr>
@@ -2893,9 +2893,9 @@
 <tr><td>E11</td><td>Trade Debtors</td><td>7900</td><td>accounts.assets.1300 (pubBS)</td></tr>
 <tr><td>E12</td><td>Cash at bank and in hand</td><td>192995.43</td><td>gl-cor:amount (pubBS.bankCash)</td></tr>
 <tr><td>E13</td><td>Current Assets</td><td>206895.43</td><td>gl-cor:amount (pubBS.currentAssets)</td></tr>
-<tr><td>E16</td><td>Trade Creditors</td><td>12432.25</td><td>accounts.liabilities.2100 (pubBS)</td></tr>
+<tr><td>E16</td><td>Trade Creditors</td><td>10832.25</td><td>accounts.liabilities.2100 (pubBS)</td></tr>
 <tr><td>E17</td><td>Corporation Tax</td><td>29156.7667546295</td><td>accounts.liabilities.2300 (pubBS)</td></tr>
-<tr><td>E18</td><td>Taxation and Social Security</td><td>7535.78833333337</td><td>gl-cor:amount (pubBS.taxAndSocial)</td></tr>
+<tr><td>E18</td><td>Taxation and Social Security</td><td>9135.78833333336</td><td>gl-cor:amount (pubBS.taxAndSocial)</td></tr>
 <tr><td>E20</td><td>Current Liabilities</td><td>49124.8050879629</td><td>gl-cor:amount (pubBS.creditors)</td></tr>
 <tr><td>F22</td><td><strong>Net Current Assets</strong></td><td>157770.624912037</td><td>gl-cor:amount (pubBS.netCurrent)</td></tr>
 <tr><td>F26</td><td><strong>Total Assets less CL</strong></td><td>206760.624912037</td><td>gl-cor:amount (pubBS.totalAssetsLessCL)</td></tr>
@@ -3040,11 +3040,12 @@
 <tr><td>EJ39</td><td>Final: Directors Loan Account</td><td>-13000</td><td>accounts.liabilities.2500 (final)</td></tr>
 <tr><td>EJ40</td><td>Final: Creditor Long Term</td><td>-45000</td><td>accounts.liabilities.2600 (final)</td></tr>
 <tr><td>EJ48</td><td>Final: Dividends declared</td><td>15000</td><td>gl-cor:amount (dividendsDeclared)</td></tr>
-<tr><td>EJ91</td><td><strong>Audit Accuracy Check</strong></td><td>3.17413650918752e-10</td><td>gl-cor:amount (trialBalanceCheck)</td></tr>
+<tr><td>EJ91</td><td><strong>Audit Accuracy Check</strong></td><td>3.24689608532935e-10</td><td>gl-cor:amount (trialBalanceCheck)</td></tr>
 <tr><td>EJ66</td><td></td><td>4166.66666666667</td><td></td></tr>
-<tr><td>EJ28</td><td></td><td>-12432.25</td><td></td></tr>
-<tr><td>EJ32</td><td></td><td>1600</td><td></td></tr>
-<tr><td>EJ34</td><td></td><td>40682.17</td><td></td></tr>
+<tr><td>EJ28</td><td></td><td>-10832.25</td><td></td></tr>
+<tr><td>EJ32</td><td></td><td>0</td><td></td></tr>
+<tr><td>EJ33</td><td></td><td>-9135.78833333336</td><td></td></tr>
+<tr><td>EJ34</td><td></td><td>0</td><td></td></tr>
 <tr><td>EJ35</td><td></td><td>-29156.7667546295</td><td></td></tr>
 <tr><td>EH35</td><td></td><td>64.5061728395062</td><td></td></tr>
 <tr><td>L34</td><td></td><td>-1673.2</td><td></td></tr>

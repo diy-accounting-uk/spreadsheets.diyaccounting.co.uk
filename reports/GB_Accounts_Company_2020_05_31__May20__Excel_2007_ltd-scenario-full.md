@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Company 2020-05-31 (May20) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.
 
@@ -12,7 +12,7 @@ Trade: IT consultancy and software development
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 3.17413650918752e-10 | +3.17413650918752e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 3.24689608532935e-10 | +3.24689608532935e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 33000 | 33000 | 0 | PASS |
@@ -289,10 +289,10 @@ Trade: IT consultancy and software development
 | Trial Balance: dividends creditor = opening plus declared less paid | 0 | 0 | 0 | PASS |
 | Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements | 45000 | 45000 | 0 | PASS |
 | Charges register: the balance sheet carries a creditor falling due after more than one year | more than 0 and no more than the 50000 the directors valued the charged assets and the hire purchase agreements finance | 45000 |  | PASS |
-| Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed | 12432.25 | 12432.25 | 0 | PASS |
-| Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | -40682.169999999984 | -40682.17 | -1.4551915228366852e-11 | PASS |
-| Trial Balance: CIS creditor = the remittances paid under RC | 1600 | 1600 | 0 | PASS |
-| CIS: sub-contractor tax withheld reaches the purchase journal | 1600 | 0 | -1600 | **WARNING** |
+| Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed | 10832.25 | 10832.25 | 0 | PASS |
+| Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | 0 | 0 | 0 | PASS |
+| Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 9135.789999999979 | 9135.78833333336 | -0.0016666666197124869 | PASS |
+| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC | 0 | 0 | 0 | PASS |
 | Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 23575.274416666594 | 23575.2744166666 | +7.275957614183426e-12 | PASS |
 | Fixed assets: Schedule additions = fixed asset purchases net of VAT | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 12500 | 12500 | 0 | PASS |
@@ -1052,9 +1052,9 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 7,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 192,995.43 |
 | Current Assets | 206,895.43 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 12,432.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 10,832.25 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 23,575.27 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 7,535.79 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 9,135.79 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 43,543.31 |
 | **Net Current Assets** | 163,352.12 |
 | **Total Assets less CL** | 212,342.12 |
@@ -1663,9 +1663,9 @@ Journal amounts include VAT at 20%.
 | E11 | Trade Debtors | 7900 | accounts.assets.1300 (pubBS) |
 | E12 | Cash at bank and in hand | 192995.43 | gl-cor:amount (pubBS.bankCash) |
 | E13 | Current Assets | 206895.43 | gl-cor:amount (pubBS.currentAssets) |
-| E16 | Trade Creditors | 12432.25 | accounts.liabilities.2100 (pubBS) |
+| E16 | Trade Creditors | 10832.25 | accounts.liabilities.2100 (pubBS) |
 | E17 | Corporation Tax | 23575.2744166666 | accounts.liabilities.2300 (pubBS) |
-| E18 | Taxation and Social Security | 7535.78833333337 | gl-cor:amount (pubBS.taxAndSocial) |
+| E18 | Taxation and Social Security | 9135.78833333336 | gl-cor:amount (pubBS.taxAndSocial) |
 | E20 | Current Liabilities | 43543.31275 | gl-cor:amount (pubBS.creditors) |
 | F22 | **Net Current Assets** | 163352.11725 | gl-cor:amount (pubBS.netCurrent) |
 | F26 | **Total Assets less CL** | 212342.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
@@ -1806,11 +1806,12 @@ Journal amounts include VAT at 20%.
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
 | EJ48 | Final: Dividends declared | 15000 | gl-cor:amount (dividendsDeclared) |
-| EJ91 | **Audit Accuracy Check** | 3.17413650918752e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ91 | **Audit Accuracy Check** | 3.24689608532935e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
-| EJ28 |  | -12432.25 |  |
-| EJ32 |  | 1600 |  |
-| EJ34 |  | 40682.17 |  |
+| EJ28 |  | -10832.25 |  |
+| EJ32 |  | 0 |  |
+| EJ33 |  | -9135.78833333336 |  |
+| EJ34 |  | 0 |  |
 | EJ35 |  | -23575.2744166666 |  |
 | EH35 |  | 64.5061728395062 |  |
 | L34 |  | -1673.2 |  |
