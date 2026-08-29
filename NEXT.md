@@ -18,7 +18,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | template-design | `PLAN_TEMPLATE_SURGERY.md` | merged, worktree removed | landed on `claude/wave-1` |
 | income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; bst.js CIS sign | `sp-income-tax` off `claude/wave-2` | started |
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
-| salesinvoice (wave 2) | Salesinvoice G6/H6; formula-presence guard over the Salesinvoice sheets | `sp-salesinvoice` off `claude/wave-2` | started |
+| salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | waiting for ltd-checks (shared fixture master data) |
 
 Still to dispatch: ltd-writes (Boardmeeting!E4 from the scenario) after ltd-ct lands.
