@@ -174,6 +174,20 @@ export function vatReturnCoverage(periods, forms) {
   };
 }
 
+export const COMPLIANCE_CHECKS_TITLE = "Compliance Checks";
+
+// The same check table generateReport prints inline, as its own section, so
+// a report generated without a full narrative (report.js's roundtrip mode)
+// still carries the verdicts alongside the values.
+export function complianceChecksLines(checks) {
+  const lines = ["", `## ${COMPLIANCE_CHECKS_TITLE}`, "", "| Check | Expected | Actual | Diff | Result |", "|-------|----------|--------|------|--------|"];
+  for (const c of checks) {
+    const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
+    lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
+  }
+  return lines;
+}
+
 export function generateReport(packageName, scenarioName, results, checks, productMod, scenario) {
   const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
   const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
@@ -186,18 +200,7 @@ export function generateReport(packageName, scenarioName, results, checks, produ
   if (metadata.description) lines.push(``, metadata.description);
   if (scenario?.business?.description) lines.push(``, `Trade: ${scenario.business.description}`);
 
-  lines.push(
-    ``,
-    `## Compliance Checks`,
-    ``,
-    `| Check | Expected | Actual | Diff | Result |`,
-    `|-------|----------|--------|------|--------|`,
-  );
-
-  for (const c of checks) {
-    const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
-    lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);
-  }
+  lines.push(...complianceChecksLines(checks));
 
   // The bridge sits straight under the checks: it is the one section that
   // explains a difference the checks only prove correct.
@@ -265,7 +268,7 @@ export function generateReport(packageName, scenarioName, results, checks, produ
  * Generate individual report files, one per reportSections() section.
  * Returns { "filename.md": content } map.
  */
-export function generateSectionReports(results, productMod, scenario) {
+export function generateSectionReports(results, productMod, scenario, checks) {
   const reports = {};
 
   if (typeof productMod.reportSections !== "function") return reports;
@@ -293,6 +296,10 @@ export function generateSectionReports(results, productMod, scenario) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/-+$/, "") + ".md";
     reports[filename] = lines.join("\n");
+  }
+
+  if (checks && checks.length > 0) {
+    reports["compliance-checks.md"] = [`# ${COMPLIANCE_CHECKS_TITLE}`, ...complianceChecksLines(checks).slice(2), ""].join("\n");
   }
 
   if (typeof productMod.profitBridge === "function") {

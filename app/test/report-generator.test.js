@@ -9,8 +9,10 @@ import {
   buildCategoryNetting,
   categoryNettingCheckName,
   categoryNettingLines,
+  complianceChecksLines,
   vatCycleRows,
   CATEGORY_NETTING_TITLE,
+  COMPLIANCE_CHECKS_TITLE,
   PROFIT_BRIDGE_TITLE,
 } from "../lib/report-generator.js";
 
@@ -173,6 +175,42 @@ describe("generateSectionReports", () => {
   it("returns empty object when product has no reportSections", () => {
     const reports = generateSectionReports(mockResults, {});
     expect(Object.keys(reports)).toHaveLength(0);
+  });
+
+  it("gives the checks their own file when checks are passed", () => {
+    const checks = [
+      { name: "Total Sales", expected: 100, actual: 100, diff: 0, pass: true },
+      { name: "Gross Profit", expected: 50, actual: 45, diff: -5, pass: false, severity: "error" },
+    ];
+    const reports = generateSectionReports(mockResults, mockProductMod, undefined, checks);
+    const content = reports["compliance-checks.md"];
+    expect(content).toBeDefined();
+    expect(content).toContain(`# ${COMPLIANCE_CHECKS_TITLE}`);
+    expect(content).toContain("| Total Sales | 100 | 100 | 0 | PASS |");
+    expect(content).toContain("| Gross Profit | 50 | 45 | -5 | **FAIL** |");
+  });
+
+  it("omits compliance-checks.md when no checks are passed", () => {
+    const reports = generateSectionReports(mockResults, mockProductMod);
+    expect(reports["compliance-checks.md"]).toBeUndefined();
+  });
+
+  it("omits compliance-checks.md when checks is an empty array", () => {
+    const reports = generateSectionReports(mockResults, mockProductMod, undefined, []);
+    expect(reports["compliance-checks.md"]).toBeUndefined();
+  });
+});
+
+describe("complianceChecksLines", () => {
+  it("marks a warning distinctly from a failure", () => {
+    const lines = complianceChecksLines([
+      { name: "A", expected: 1, actual: 1, diff: 0, pass: true },
+      { name: "B", expected: 1, actual: 2, diff: 1, pass: false, severity: "warning" },
+      { name: "C", expected: 1, actual: 3, diff: 2, pass: false },
+    ]);
+    expect(lines.join("\n")).toContain("| A | 1 | 1 | 0 | PASS |");
+    expect(lines.join("\n")).toContain("| B | 1 | 2 | +1 | **WARNING** |");
+    expect(lines.join("\n")).toContain("| C | 1 | 3 | +2 | **FAIL** |");
   });
 });
 
