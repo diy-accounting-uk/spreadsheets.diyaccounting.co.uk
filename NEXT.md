@@ -6,8 +6,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 4 is complete on `claude/wave-4` at `39f9c3f4` (pushed, no PR yet); the operator's
-committed generate-* runs are on it, then the skip-commit proofs and test.yml, then the PR.
+Wave 4 is complete on `claude/wave-4` at `39f9c3f4`: test.yml and the four skip-commit
+generate-* runs are green; PR open for the operator to merge, refresh and deploy.
 Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto main after wave 4
 merges and deploys). The operator dispatches every workflow on branches.
 
