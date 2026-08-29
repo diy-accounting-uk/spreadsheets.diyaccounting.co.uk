@@ -32,10 +32,13 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction) | 1440 | 1440 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 1440 | 1440 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12500 | 12500 | 0 | PASS |
+| Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Additional Rate = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Basic Band End = tax data | 37500 | 37500 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37501 | 37501 | 0 | PASS |
+| Admin: Higher Band End = tax data | 150000 | 150000 | 0 | PASS |
 | Admin: NI Class 2 Weekly Rate = tax data | 3.05 | 3.05 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.09 | 0.09 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 9500 | 9500 | 0 | PASS |
@@ -53,15 +56,31 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | Income Tax | 3140 | 3140 | 0 | PASS |
 | NI Class 4 (lower) | 1683 | 1683 | 0 | PASS |
 | Total Tax + NI | 4823 | 4823 | 0 | PASS |
+| Tax: Personal allowance after taper | 12500 | 12500 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
-| Tax: sheet splits the bands at the higher band start | 37501 | 37501 | 0 | PASS |
+| Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
+| Tax: sheet splits the basic and higher bands at the basic band end | 37500 | 37500 | 0 | PASS |
+| Tax: sheet splits the higher and additional bands at the higher band end | 150000 | 150000 | 0 | PASS |
 | Tax at basic rate | 3140 | 3140 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
+| Tax at additional rate | 0 | 0 | 0 | PASS |
 | Tax: Taxable = Profit - Allowance | 15700 | 15700 | 0 | PASS |
-| Tax: IT = Basic + Higher | 3140 | 3140 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 3140 | 3140 | 0 | PASS |
 | Tax: Total = IT + NI | 4823 | 4823 | 0 | PASS |
 | SA103S: Profit for tax = Draft Tax E5 | 28200 | 28200 | 0 | PASS |
+| Forecast: months of actual trade = P&L months with turnover | 12 | 12 | 0 | PASS |
+| Forecast: turnover = P&L turnover | 36000 | 36000 | 0 | PASS |
+| Forecast: other business income = P&L other business income | 0 | 0 | 0 | PASS |
+| Forecast: cost of sales = P&L cost of sales | 6420 | 6420 | 0 | PASS |
+| Forecast: general expenses = P&L general expenses | 1380 | 1380 | 0 | PASS |
+| Forecast: profit = turnover + other income - cost of sales - expenses | 28200 | 28200 | 0 | PASS |
+| Forecast: personal allowance after taper | 12500 | 12500 | 0 | PASS |
+| Forecast: tax at standard rate | 3140 | 3140 | 0 | PASS |
+| Forecast: tax at higher rate | 0 | 0 | 0 | PASS |
+| Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
+| Forecast: National Insurance | 1683 | 1683 | 0 | PASS |
+| Forecast: tax and NI liability | 4823 | 4823 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
@@ -160,14 +179,36 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,500 |
 | Taxable Income | 15,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,501 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 150,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 3,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 0 |
 | **Total Income Tax** | 3,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 1,683 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
 | **Total Tax + NI** | 4,823 |
+
+## Wages Forecast
+
+| | Amount |
+|---|------:|
+| &nbsp;&nbsp;&nbsp;&nbsp;Months of actual trade | 12 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Sales Turnover | 36,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Investment Grants | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast Cost of Sales | 6,420 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Forecast General Expenses | 1,380 |
+| **Forecast Profit before Tax** | 28,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Profit before Tax | 28,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Personal Allowance | 12,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Profit after Allowance | 15,700 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at standard rate | 3,140 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at higher rate | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at additional rate | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;National Insurance | 1,683 |
+| **Forecast Tax & NI Liability** | 4,823 |
 
 ## Purchase Analysis
 
@@ -191,10 +232,13 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | | Amount |
 |---|------:|
 | Personal Allowance | 12,500 |
+| Personal Allowance Taper Threshold | 100,000 |
 | Basic Rate | 0.2 |
 | Higher Rate | 0.4 |
+| Additional Rate | 0.45 |
 | Basic Band End | 37,500 |
 | Higher Band Start | 37,501 |
+| Higher Band End | 150,000 |
 | NI Class 2 Weekly Rate | 3.05 |
 | NI Class 4 Lower Rate | 0.09 |
 | NI Class 4 Lower Limit | 9,500 |
@@ -282,6 +326,18 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | L22 |  | 620 |  |
 | M22 |  | 0 |  |
 | N22 |  | 0 |  |
+| C24 |  | 0 |  |
+| D24 |  | 0 |  |
+| E24 |  | 0 |  |
+| F24 |  | 0 |  |
+| G24 |  | 0 |  |
+| H24 |  | 0 |  |
+| I24 |  | 0 |  |
+| J24 |  | 0 |  |
+| K24 |  | 0 |  |
+| L24 |  | 0 |  |
+| M24 |  | 0 |  |
+| N24 |  | 0 |  |
 
 ### VitalTax
 
@@ -323,14 +379,36 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | E6 | Less: Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
 | E7 | Taxable Income | 15700 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
-| C9 | Basic band ceiling the sheet applies | 37501 | tax.incomeTax.higherBandStart (applied) |
+| C9 | Basic band ceiling the sheet applies | 37500 | tax.incomeTax.basicBandEnd (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
+| C10 | Additional rate threshold the sheet applies | 150000 | tax.incomeTax.higherBandEnd (applied) |
+| D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E8 | Tax at Basic Rate | 3140 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 3140 | tax.incomeTax (total) |
+| E10 | Tax at Additional Rate | 0 | tax.incomeTax.additionalRate |
+| E11 | **Total Income Tax** | 3140 | tax.incomeTax (total) |
 | E14 | NI Class 4 (lower band) | 1683 | tax.nationalInsurance.class4MainRate |
 | E15 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
 | E17 | **Total Tax + NI** | 4823 | gl-cor:taxAmount (totalTaxNI) |
+
+### Wages Forecast
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C19 | Months of actual trade | 12 | gl-cor:amount (forecast.monthsTraded) |
+| C20 | Forecast Sales Turnover | 36000 | gl-cor:amount (forecast.turnover) |
+| C22 | Forecast Investment Grants | 0 | gl-cor:amount (forecast.otherIncome) |
+| C24 | Forecast Cost of Sales | 6420 | gl-cor:amount (forecast.costOfSales) |
+| C28 | Forecast General Expenses | 1380 | gl-cor:amount (forecast.expenses) |
+| C30 | **Forecast Profit before Tax** | 28200 | gl-cor:amount (forecast.profit) |
+| C34 | Profit before Tax | 28200 | gl-cor:amount (forecast.taxableProfit) |
+| C35 | Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
+| C36 | Profit after Allowance | 15700 | gl-cor:amount (forecast.taxableIncome) |
+| C37 | Tax at standard rate | 3140 | tax.incomeTax.basicRate |
+| C38 | Tax at higher rate | 0 | tax.incomeTax.higherRate |
+| C39 | Tax at additional rate | 0 | tax.incomeTax.additionalRate |
+| C40 | National Insurance | 1683 | tax.nationalInsurance.class4 |
+| C41 | **Forecast Tax & NI Liability** | 4823 | gl-cor:taxAmount (forecast.totalTaxNI) |
 
 ### PurchasesMar
 
@@ -354,10 +432,13 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | N4 | Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
+| N5 | Personal Allowance Taper Threshold | 100000 | tax.incomeTax.personalAllowanceTaperThreshold |
 | N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
+| N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
 | M11 | Basic Band End | 37500 | tax.incomeTax.basicBandEnd |
 | N12 | Higher Band Start | 37501 | tax.incomeTax.higherBandStart |
+| N13 | Higher Band End | 150000 | tax.incomeTax.higherBandEnd |
 | L16 | NI Class 2 Weekly Rate | 3.05 | tax.nationalInsurance.class2WeeklyRate |
 | L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4LowerRate |
 | N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerLimit |
