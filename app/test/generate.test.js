@@ -333,16 +333,19 @@ async function readAdminCells(buffer, adminSheetPath, cellRefs) {
 describe("buildTaxiCellEdits", () => {
   const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
 
-  it("uses the two-band positions the Taxi Admin sheet lists", () => {
+  it("uses the band positions the Taxi Admin sheet lists", () => {
     const { numericEdits } = buildTaxiCellEdits(taxData, 2025);
+    expect(numericEdits.N5).toBe(100000);
     expect(numericEdits.N6).toBe(0.2);
     expect(numericEdits.N7).toBe(0.4);
-    expect(numericEdits.N8).toBeUndefined();
+    expect(numericEdits.N8).toBe(0.45);
     expect(numericEdits.M11).toBe(37700);
     expect(numericEdits.M12).toBeUndefined();
     expect(numericEdits.L12).toBe(37701);
     expect(numericEdits.N12).toBe(37701);
-    expect(numericEdits.N13).toBeUndefined();
+    expect(numericEdits.K13).toBe(0.45);
+    expect(numericEdits.L13).toBe(125141);
+    expect(numericEdits.N13).toBe(125140);
   });
 
   it("uses L16 for NI Class 2 and leaves the depreciation row alone", () => {
@@ -363,15 +366,20 @@ describe("buildTaxiCellEdits", () => {
     const productMeta = parseTOML(readFileSync(resolve(TAXI_DIR, "meta.toml"), "utf8"));
     const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
 
-    // Draft Tax calculation D8 reads Admin!N6, C9 reads Admin!N12 and D9 reads
-    // Admin!N7. Writing the BST positions instead leaves N6 at the starting
-    // rate and N12 at zero, and no income ever reaches the higher band.
-    const admin = await readAdminCells(buffer, productMeta.sheets.admin, ["N4", "N6", "N7", "N11", "N12"]);
+    // Draft Tax calculation E6 reads Admin!N5, D8 reads Admin!N6, C9 reads
+    // Admin!M11, D9 reads Admin!N7, C10 reads Admin!N13 and D10 reads
+    // Admin!N8. Writing the BST positions instead leaves N6 at the starting
+    // rate and M11 at zero, and no income ever reaches the higher band.
+    const admin = await readAdminCells(buffer, productMeta.sheets.admin, ["N4", "N5", "N6", "N7", "N8", "N11", "M11", "N12", "N13"]);
     expect(admin.N4).toBe(12570);
+    expect(admin.N5).toBe(100000);
     expect(admin.N6).toBe(0.2);
     expect(admin.N7).toBe(0.4);
+    expect(admin.N8).toBe(0.45);
     expect(admin.N11).toBe(0);
+    expect(admin.M11).toBe(37700);
     expect(admin.N12).toBe(37701);
+    expect(admin.N13).toBe(125140);
   });
 });
 
@@ -830,9 +838,10 @@ describe("VAT return period defaults", () => {
     for (const [index, form] of cycle.forms.entries()) {
       expect(form.row, `${label} ${form.name}: period end ${form.end} is not one of the Vatinterface periods`).not.toBeNull();
       expect(form.dropdown, `${label} ${form.name}: period end is not in the K2:K16 dropdown`).toContain(form.end);
-      expect(monthsBetween(cycle.firstMonthEnd, fromExcelSerial(form.end)) + 1, `${label} ${form.name}: months from the book's first month`).toBe(
-        VAT_RETURN_END_MONTHS[index],
-      );
+      expect(
+        monthsBetween(cycle.firstMonthEnd, fromExcelSerial(form.end)) + 1,
+        `${label} ${form.name}: months from the book's first month`,
+      ).toBe(VAT_RETURN_END_MONTHS[index]);
     }
 
     const rows = cycle.forms.map((form) => form.row);
@@ -843,7 +852,8 @@ describe("VAT return period defaults", () => {
     }
 
     const timesDeclared = new Map();
-    for (const row of rows) for (const covered of [row - 2, row - 1, row]) timesDeclared.set(covered, (timesDeclared.get(covered) ?? 0) + 1);
+    for (const row of rows)
+      for (const covered of [row - 2, row - 1, row]) timesDeclared.set(covered, (timesDeclared.get(covered) ?? 0) + 1);
 
     // Q1-Q4 reach each of the twelve accounting months exactly once.
     const quarterly = new Set(rows.slice(0, 4).flatMap((row) => [row - 2, row - 1, row]));
@@ -864,7 +874,10 @@ describe("VAT return period defaults", () => {
     const fyStart = new Date(taxData.financial_year.start);
 
     for (let m = 0; m < 12; m++) {
-      const yearEnd = monthEnd(fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12), ((fyStart.getUTCMonth() + m) % 12) + 1);
+      const yearEnd = monthEnd(
+        fyStart.getUTCFullYear() + Math.floor((fyStart.getUTCMonth() + m) / 12),
+        ((fyStart.getUTCMonth() + m) % 12) + 1,
+      );
       const override = JSON.parse(JSON.stringify(taxData));
       override.financial_year.end = yearEnd.toISOString().slice(0, 10);
       const label = `Company year end ${override.financial_year.end}`;
@@ -887,7 +900,9 @@ describe("VAT return period defaults", () => {
     // to March, so the books open in the month the year starts in.
     const yearStart = new Date(taxData.tax_year.start);
     expect(cycle.firstMonthEnd.toISOString().slice(0, 10)).toBe(
-      monthEnd(yearStart.getUTCFullYear(), yearStart.getUTCMonth() + 1).toISOString().slice(0, 10),
+      monthEnd(yearStart.getUTCFullYear(), yearStart.getUTCMonth() + 1)
+        .toISOString()
+        .slice(0, 10),
     );
     expectCycle(cycle, "Self Employed");
   }, 60000);
@@ -946,11 +961,10 @@ describe("generate.js --output-dir", () => {
 
     const before = packagesGitStatus();
 
-    execFileSync(
-      NODE,
-      [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir", outDir, "--skip-guide"],
-      { cwd: ROOT, encoding: "utf8" },
-    );
+    execFileSync(NODE, [GENERATE_JS, "--package", "bst", "--years", "se-2025-2026", "--output-dir", outDir, "--skip-guide"], {
+      cwd: ROOT,
+      encoding: "utf8",
+    });
 
     const dirName = "GB Accounts Basic Sole Trader 2026-04-05 (Apr26) Excel 2007";
     expect(existsSync(resolve(outDir, dirName, "Financialaccountsto050426.xlsx"))).toBe(true);

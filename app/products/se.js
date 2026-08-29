@@ -576,6 +576,7 @@ export function cellWrites(scenario) {
 //   E15=NI Class 4 lower, E16=NI Class 4 upper, E18=Total
 
 export const TAX_SHEET = "Income Tax";
+export const FORECAST_SHEET = "Profit Forecast";
 
 // prettier-ignore
 export const CELL_MAP = [
@@ -625,6 +626,30 @@ export const CELL_MAP = [
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
+  // ── Profit Forecast — the projected year the customer plans against.
+  // The actual half (rows 5 to 17) pulls the P&L's monthly columns; the
+  // forecast half (rows 19 to 34) repeats each month that traded and spreads
+  // the year's total across the months that did not, counting the trading
+  // months in C21. The tax block below it charges the projected profit after
+  // adding depreciation back and taking the schedule's capital allowances
+  // off, and the P&L's own health check charges a twelfth of it a month.
+  [FORECAST_SHEET, "C21", "Months of actual trade",      "gl-cor:amount (forecast.monthsTraded)",   "Profit Forecast", 1],
+  [FORECAST_SHEET, "C22", "Forecast Sales Turnover",     "gl-cor:amount (forecast.turnover)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C24", "Forecast Investment Grants",  "gl-cor:amount (forecast.grants)",         "Profit Forecast", 1],
+  [FORECAST_SHEET, "C26", "Forecast Cost of Sales",      "gl-cor:amount (forecast.costOfSales)",    "Profit Forecast", 1],
+  [FORECAST_SHEET, "C30", "Forecast General Expenses",   "gl-cor:amount (forecast.expenses)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C33", "Forecast Interest Received",  "gl-cor:amount (forecast.interest)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C34", "**Forecast Profit before Tax**", "gl-cor:amount (forecast.profit)",      "Profit Forecast", 0],
+  [FORECAST_SHEET, "C37", "Add Depreciation",            "gl-cor:amount (depreciation)",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C38", "Less Capital Allowances",     "tax.capitalAllowances (schedule)",        "Profit Forecast", 1],
+  [FORECAST_SHEET, "C39", "Profit before Tax",           "gl-cor:amount (forecast.taxableProfit)",  "Profit Forecast", 1],
+  [FORECAST_SHEET, "C40", "Personal Allowance",          "tax.incomeTax.personalAllowance",         "Profit Forecast", 1],
+  [FORECAST_SHEET, "C41", "Profit after Allowance",      "gl-cor:amount (forecast.taxableIncome)",  "Profit Forecast", 1],
+  [FORECAST_SHEET, "C42", "Tax at standard rate",        "tax.incomeTax.basicRate",                 "Profit Forecast", 1],
+  [FORECAST_SHEET, "C43", "Tax at higher rate",          "tax.incomeTax.higherRate",                "Profit Forecast", 1],
+  [FORECAST_SHEET, "C44", "Tax at additional rate",      "tax.incomeTax.additionalRate",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C45", "National Insurance",          "tax.nationalInsurance.class4",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C46", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Profit Forecast", 0],
   // ── SE Short (SA103S) ──
   // ── SE Short (SA103S) — formula cells only ──
   ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
@@ -910,7 +935,18 @@ export function standardReads() {
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
   }
   const plRows = [
-    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34]),
+    ...new Set([
+      ...Object.values(SALES_MONTHLY_TIE_ROWS),
+      SALES_BAD_DEBT_ROW,
+      ...Object.values(PURCHASES_MONTHLY_TIE_ROWS),
+      33,
+      34,
+      // The Profit Forecast repeats the P&L's own monthly turnover (row 9)
+      // and interest received (row 38), so the forecast checks can count the
+      // months that traded and tie the projected year to the actual one.
+      9,
+      38,
+    ]),
   ];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
   for (const row of plRows) {
@@ -1473,6 +1509,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("SA103S: Capital allowances (AIA/FYA) = Schedule Q1", seShort.D80 || 0, expectedAIA);
       }
     }
+
+    // The Profit Forecast prints its own tax and NI liability, and the P&L's
+    // financial health check charges a twelfth of it every month. It runs off
+    // its own chain from the P&L, the fixed asset schedule and Admin, so
+    // nothing above proves any of it.
+    const forecast = results[FORECAST_SHEET];
+    if (forecast) {
+      // The forecast repeats a month that traded and spreads the year's total
+      // across the months that did not, so the projected year only equals the
+      // actual one when every month traded. C21 counts the trading months
+      // against the P&L's own monthly turnover.
+      const monthsTraded = MONTH_COLS.filter((col) => num(pl[`${col}9`]) > 0).length;
+      check("Forecast: months of actual trade = P&L months with turnover", num(forecast.C21), monthsTraded, 0);
+
+      if (monthsTraded === MONTH_COLS.length) {
+        check("Forecast: turnover = P&L turnover", num(forecast.C22), num(pl.B9));
+        check("Forecast: investment grants = P&L investment grants", num(forecast.C24), num(pl.B11));
+        check("Forecast: cost of sales = P&L cost of sales", num(forecast.C26), num(pl.B17));
+        check("Forecast: general expenses = P&L administrative expenses", num(forecast.C30), num(pl.B35));
+        check("Forecast: interest received = P&L interest received", num(forecast.C33), num(pl.B38));
+        check("Forecast: profit before tax = P&L profit before tax", num(forecast.C34), num(pl.B39));
+      }
+
+      // The two adjustments between the accounting profit and the profit tax
+      // is charged on, each against the book it comes from.
+      check("Forecast: depreciation added back = P&L disposal loss + depreciation", num(forecast.C37), num(pl.B33) + num(pl.B34));
+      const schedule = results["Fixedassets.xlsx!Schedule"];
+      if (schedule) {
+        check(
+          "Forecast: capital allowances = the fixed asset schedule",
+          num(forecast.C38),
+          num(schedule.Q1) + num(schedule.R1) + num(schedule.Y1) - num(schedule.Z1),
+        );
+      }
+      check(
+        "Forecast: taxable profit = profit + depreciation - capital allowances",
+        num(forecast.C39),
+        num(forecast.C34) + num(forecast.C37) - num(forecast.C38),
+      );
+
+      const expectedForecastTax = calculateExpectedTax(num(forecast.C39), taxData);
+      check("Forecast: personal allowance after taper", num(forecast.C40), expectedForecastTax.personal_allowance);
+      check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
+      check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
+      check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
+      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
+      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni);
+    }
   }
 
   // ── SE Full (SA103F): the full return against the accounts and against the
@@ -1930,17 +2014,24 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // package was generated for and whatever period a reader picks from the
   // dropdown.
   //
-  // G5 is dated in the package's own year, the scenario's transactions in
-  // the base year cellWrites copies straight through, so the two only line
-  // up on the one package whose year end matches the fixture. Both books
-  // run April to March, so shifting the window by whole accounting years
-  // brings it onto the scenario's dates while leaving the months it covers
-  // -- and so the quarter it tests -- exactly as the generator set them.
+  // G5 is dated on the package's own period, the scenario's transactions on
+  // the period its own book covers, and cellWrites copies those dates
+  // through unchanged. So the window moves onto the scenario by the gap
+  // between the two period frames: the whole months from the package's first
+  // accounting month to the scenario's. Admin B4 is the book's tax year
+  // start, and an SE year starts on 6 April, so the month it falls in is the
+  // first of the twelve month tabs. Every window shifts by that one gap,
+  // wherever it sits, so a quarter reaching past the year end -- or before it
+  // -- is checked on the periods it actually declares.
   const accountingYearOf = (d) => (d.getUTCMonth() >= 3 ? d.getUTCFullYear() : d.getUTCFullYear() - 1);
   const scenarioTransactionYears = [...Object.values(expected.sales || {}), ...Object.values(expected.purchases || {})]
     .flat()
     .map((tx) => accountingYearOf(parseDate(tx.date)));
   const scenarioAccountingYear = scenarioTransactionYears.length ? Math.min(...scenarioTransactionYears) : null;
+  const bookYearStartSerial = num(results.Admin?.B4);
+  const scenarioYearStart = scenarioAccountingYear === null ? null : new Date(Date.UTC(scenarioAccountingYear, 3, 1));
+  const monthShift =
+    scenarioYearStart && bookYearStartSerial ? monthsBetween(excelSerialToUtcDate(bookYearStartSerial), scenarioYearStart) : null;
 
   for (let q = 1; q <= 5; q++) {
     const qtr = results[`Vat.xlsx!VATQtr${q}`];
@@ -1948,8 +2039,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // Box 3 total = box 1 + EU acquisitions (G11, always a static 0 in this
     // template -- no formula, never generator-written), and box 5 = box 3 -
-    // box 4. Both hold regardless of whether the quarter carries fixture
-    // data, so they run for Q5 (the straddling period) too.
+    // box 4.
     check(`VAT Q${q}: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)`, qtr.G13 || 0, (qtr.G9 || 0) + (qtr.G11 || 0));
     check(`VAT Q${q}: box 5 net due (G17) = box 3 (G13) - box 4 (G15)`, qtr.G17 || 0, (qtr.G13 || 0) - (qtr.G15 || 0));
 
@@ -1960,25 +2050,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // rollforward is that it falls after the quarter-end.
     check(`VAT Q${q}: payment due date (G7) falls after the quarter end (G5)`, qtr.G7 > qtr.G5 ? 1 : 0, 1, 0);
 
-    // Q5's window is the quarter after the accounting year, so it holds the
-    // three straddling periods past the year end and none of the year's own
-    // months. The period-frame shift below moves a window onto the scenario's
-    // own year, which only makes sense for a window inside that year, so Q5's
-    // values are anchored on the Vatinterface rows instead (see the block
-    // after this loop). The identities above hold for every quarter.
-    if (q === 5) continue;
+    // The scenario has to name a period before a window can be moved onto it.
+    if (monthShift === null) continue;
 
-    // Quarter window: the 3 calendar months ending at G5's own month. Q1-Q4
-    // step a quarter at a time, so each window is three whole months.
+    // Quarter window: the three calendar months ending at G5's own month,
+    // moved onto the scenario's period frame. Day 0 of the month after is
+    // that month's last day, so the shifted window still ends on a month end
+    // in a leap year.
     const bookEnd = excelSerialToUtcDate(qtr.G5);
-    const bookStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() - 2, 1));
-    // Q1-Q4 cover the twelve accounting months once each, so every window sits
-    // inside the book's own year and its start month dates that year.
-    const yearShift = scenarioAccountingYear === null ? 0 : scenarioAccountingYear - accountingYearOf(bookStart);
-    const qStart = new Date(Date.UTC(bookStart.getUTCFullYear() + yearShift, bookStart.getUTCMonth(), 1));
-    // Day 0 of the next month is this month's last day, so the shifted
-    // window still ends on a month end in a leap year.
-    const qEnd = new Date(Date.UTC(bookEnd.getUTCFullYear() + yearShift, bookEnd.getUTCMonth() + 1, 0));
+    const qStart = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() + monthShift - 2, 1));
+    const qEnd = new Date(Date.UTC(bookEnd.getUTCFullYear(), bookEnd.getUTCMonth() + monthShift + 1, 0));
     const inQuarter = (dateStr) => {
       const d = parseDate(dateStr);
       return d >= qStart && d <= qEnd;
@@ -2001,8 +2082,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         }
       }
     }
-    // A window that runs past the year end picks up the straddling entry
-    // sheets alongside the year's own months.
+    // Periods outside the twelve accounting months are entered on the
+    // straddling sheets rather than a month tab, so a window that reaches
+    // past the year end or before it picks those entries up as well.
     for (const entry of expected.vat_straddling_sales || []) {
       if (inQuarter(entry.date)) outputVat += entry.amount - entry.amount / (1 + rate);
     }
@@ -2275,6 +2357,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 function excelSerialToUtcDate(serial) {
   const epoch = Date.UTC(1899, 11, 30);
   return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
+}
+
+// Whole months from one date's month to another's, ignoring the day of the
+// month. Negative when the second date comes first.
+function monthsBetween(from, to) {
+  return (to.getUTCFullYear() - from.getUTCFullYear()) * 12 + (to.getUTCMonth() - from.getUTCMonth());
 }
 
 // The VAT periods the interface carries, one per row, with the VAT on each

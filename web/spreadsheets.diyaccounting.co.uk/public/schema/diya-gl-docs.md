@@ -546,7 +546,7 @@ metadata needed for the spreadsheet mapping:
 | `diya-gl:sa103sBox`          | SA103S box reference (e.g. 'box10')          | book.toml |
 | `diya-gl:ct600Box`           | CT600 box reference                          | book.toml |
 | `diya-gl:vatBox`             | VAT return box number (1-9)                  | book.toml |
-| `diya-gl:bankCode`           | Bank receipt/payment code (BC/DR/CR/W/RP...) | .jsonl    |
+| `diya-gl:bankCode`           | Bank receipt/payment code (DR/CR/W/RP/RV...) | .jsonl    |
 | `diya-gl:bankAccountID`      | Bank account code from chart of accounts     | .jsonl    |
 | `diya-gl:employeeID`         | Employee identifier (matches employees[])    | .jsonl    |
 | `diya-gl:grossPay`           | Gross pay for payroll period                 | .jsonl    |
@@ -556,6 +556,7 @@ metadata needed for the spreadsheet mapping:
 | `diya-gl:netPay`             | Net pay (gross - tax - employee NI)          | .jsonl    |
 | `diya-gl:cisDeduction`       | CIS deduction amount withheld                | .jsonl    |
 | `diya-gl:cisRate`            | CIS deduction rate (0.20/0.30/0)             | .jsonl    |
+| `diya-gl:hpAgreement`        | Reference of the agreement financing a purchase | .jsonl |
 
 ### 5.7 Directors and Employees (book.toml top-level sections)
 
@@ -610,31 +611,50 @@ Used to populate Payslips.xlsx (Employee sheet, monthly/weekly pay calculations)
 The `diya-gl:bankCode` field identifies the type of bank transaction. Codes map to the
 analysis columns in bank account workbooks (Currentaccount.xlsx, etc.):
 
+A transfer carries the letter of the account on the other side of it, so the same four
+letters serve both directions: BB=current, BS=savings, BC=cash, BD=credit card. A workbook
+never transfers to itself, so its own letter is the one it has no column for. BC on a line
+with no account on the other side is that workbook's opening balance, which the sheet takes
+in A1 rather than as a statement line.
+
 **Receipt codes:**
 
 | Code | Meaning | Column mapping |
 |------|---------|----------------|
-| BC | Opening balance / brought forward | A1 cell |
+| BB BS BC BD | Transfer in from another account | Receipt analysis |
 | DR | Debtor receipt (customer payment) | Receipt analysis |
 | CR | Creditor refund (supplier refund) | Receipt analysis |
-| K  | Capital introduced (shareholder) | Receipt analysis |
-| RV | Revenue (non-sales: interest, grants) | Receipt analysis |
+| K  | Interest received | Receipt analysis |
+| LDR | Long term debtor repaid | Receipt analysis |
+| LCR | Long term creditor drawn down | Receipt analysis |
+| RV | HMRC VAT refunded | Receipt analysis |
+| RC | HMRC CIS refunded | Receipt analysis |
 | DL | Directors loan (director -> company) | Receipt analysis |
-| X  | Transfer between accounts | Receipt analysis |
+| X  | Bank contra item | Receipt analysis |
 
 **Payment codes:**
 
 | Code | Meaning | Column mapping |
 |------|---------|----------------|
+| BB BS BC BD | Transfer out to another account | Payment analysis |
 | CR | Creditor payment (to supplier) | Payment analysis |
 | DR | Debtor refund (to customer) | Payment analysis |
 | W  | Wages (net pay to employees) | Payment analysis |
-| B  | Bank charges and interest | Payment analysis |
-| J  | Journal adjustment | Payment analysis |
-| RP | HMRC payment (PAYE, VAT, CT) | Payment analysis |
-| DL | Directors loan (company -> director) | Payment analysis |
+| B  | Bank charges | Payment analysis |
+| J  | Interest paid | Payment analysis |
+| LDR | Long term debtor advanced | Payment analysis |
+| LCR | Long term creditor repaid | Payment analysis |
+| RP | HMRC PAYE and NI | Payment analysis |
+| RV | HMRC VAT | Payment analysis |
+| RC | HMRC CIS | Payment analysis |
+| RT | HMRC corporation tax | Payment analysis |
 | DV | Dividend payment | Payment analysis |
-| X  | Transfer between accounts | Payment analysis |
+| DL | Directors loan (company -> director) | Payment analysis |
+| X  | Bank contra item | Payment analysis |
+
+The Company workbooks give PAYE, VAT, CIS and corporation tax a column each. Both Self
+Employed workbooks carry one HMRC Payments column between them, so a payment coded `RV`,
+`RC` or `RT` lands in the `RP` column there.
 
 ### 5.9 CIS (Construction Industry Scheme) Fields
 
@@ -718,8 +738,10 @@ Not all fields are used by all products. Each product uses a subset:
 | `diya-gl:employerNI`         |   | ✓ |   | ✓ |
 | `diya-gl:netPay`             |   | ✓ |   | ✓ |
 | **CIS (diya-gl:)** | | | | |
-| `diya-gl:cisDeduction`       |   |   |   | ✓ |
-| `diya-gl:cisRate`            |   |   |   | ✓ |
+| `diya-gl:cisDeduction`       |   | ✓ |   | ✓ |
+| `diya-gl:cisRate`            |   | ✓ |   | ✓ |
+| **Finance (diya-gl:)** | | | | |
+| `diya-gl:hpAgreement`        |   | ✓ |   | ✓ |
 
 ---
 

@@ -107,6 +107,7 @@ describeCalc(
     let taxData;
     let expected;
     let savedDir;
+    let scenario;
 
     // Replays the compliance checks with one result cell replaced by the
     // value read back out of a corrupted copy of the package.
@@ -131,7 +132,7 @@ describeCalc(
         }
       }
 
-      const scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-full.toml"));
+      scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-full.toml"));
       expected = { ...scenario, ...scenario.expected };
 
       savedDir = mkdtempSync(join(tmpdir(), "ltd-reconciliation-checks-"));
@@ -1170,19 +1171,40 @@ describeCalc(
     it("settles each creditor on the row its bank code names", () => {
       const tb = results.TrialBalance;
       // Trade creditors: 2,400 brought forward plus 134,992.25 invoiced, less
-      // 104,960 paid under CR and the 20,000 the two hire purchase agreements
-      // finance, which EH28 moves onto the long-term row.
-      expect(tb.EJ28).toBeCloseTo(-12432.25, 2);
-      // CIS: 1,600 remitted under RC against no certificate on the purchase
-      // journal, so the row reads as a debit of the remittances.
-      expect(tb.EJ32).toBeCloseTo(1600, 2);
-      // PAYE: 20,078.40 deducted by the payroll against 60,760.57 paid under
-      // RP, which still carries the year's VAT as well as the payroll's own
-      // monthly payments.
-      expect(tb.EJ34).toBeCloseTo(40682.17, 2);
+      // 104,960 paid under CR, the 1,600 of CIS the journal's certificates
+      // withheld and the 20,000 the two hire purchase agreements finance,
+      // which EH28 moves onto the long-term row.
+      expect(tb.EJ28).toBeCloseTo(-10832.25, 2);
+      // CIS: 1,600 withheld on the two sub-contractor invoices and all of it
+      // remitted under RC by the year end.
+      expect(tb.EJ32).toBeCloseTo(0, 2);
+      // VAT: 1,500 brought forward, 70,816.67 of output VAT less 22,498.71 of
+      // input, against 40,682.17 paid under RV. What is left is the fourth
+      // quarter, still to pay.
+      expect(tb.EJ33).toBeCloseTo(-9135.79, 2);
+      // PAYE: 20,078.40 deducted by the payroll and the same paid over under
+      // RP, month by month.
+      expect(tb.EJ34).toBeCloseTo(0, 2);
       // Corporation tax: 4,500 brought forward and paid off under RT, leaving
       // this year's charge less the tax credit on interest received.
       expect(tb.EJ35).toBeCloseTo(-29156.77, 2);
+    });
+
+    it("writes each CIS certificate into the purchase journal's own column", () => {
+      const purchases = ltdCellWrites(scenario, 2025, YEAR_END_MONTH)["Purchases.xlsx"];
+      const cisCells = {};
+      for (const [tab, cells] of Object.entries(purchases)) {
+        for (const [ref, value] of Object.entries(cells)) if (/^AK\d+$/.test(ref)) cisCells[tab] = { ref, value };
+      }
+      expect(Object.keys(cisCells).sort()).toEqual(["Jun", "Nov"]);
+      expect(cisCells.Jun.value).toBe(1000);
+      expect(cisCells.Nov.value).toBe(600);
+      // The certificate sits on the same row as the invoice it was withheld
+      // from, so the gross in column F and the tax in AK are one entry.
+      for (const [tab, { ref }] of Object.entries(cisCells)) {
+        const row = ref.slice(2);
+        expect(purchases[tab][`B${row}`]).toBe("BuildTech Solutions");
+      }
     });
 
     it("fails only the trade creditor tie when TrialBalance EJ28 is corrupted via JSZip", async () => {
@@ -1190,20 +1212,31 @@ describeCalc(
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("TrialBalance", "EJ28", value);
       expect(failureNames(corrupted)).toEqual([
-        "Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed",
+        "Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed",
       ]);
     });
 
     it("fails only the CIS creditor tie when TrialBalance EJ32 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ32", 0);
-      expect(value).toBe(0);
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ32", 1600);
+      expect(value).toBe(1600);
       const corrupted = checksWithCorruptedCell("TrialBalance", "EJ32", value);
-      expect(failureNames(corrupted)).toEqual(["Trial Balance: CIS creditor = the remittances paid under RC"]);
+      expect(failureNames(corrupted)).toEqual([
+        "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC",
+      ]);
+    });
+
+    it("fails only the VAT creditor tie when TrialBalance EJ33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("TrialBalance", "EJ33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV",
+      ]);
     });
 
     it("fails only the PAYE creditor tie when TrialBalance EJ34 is corrupted via JSZip", async () => {
-      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ34", 0);
-      expect(value).toBe(0);
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "TrialBalance", "EJ34", 40682.17);
+      expect(value).toBe(40682.17);
       const corrupted = checksWithCorruptedCell("TrialBalance", "EJ34", value);
       expect(failureNames(corrupted)).toEqual(["Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP"]);
     });
@@ -1215,15 +1248,6 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([
         "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
       ]);
-    });
-
-    it("names the CIS the purchase journal never withheld as a warning rather than a failure", () => {
-      const warning = checks.find((c) => c.name === "CIS: sub-contractor tax withheld reaches the purchase journal");
-      expect(warning).toBeDefined();
-      expect(warning.severity).toBe("warning");
-      expect(warning.pass).toBe(false);
-      expect(warning.expected).toBe(1600);
-      expect(failureNames(checks)).not.toContain(warning.name);
     });
   },
   900000,

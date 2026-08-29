@@ -9,7 +9,8 @@
 // quarter column fails on its own row, a VAT box fails on its own box.
 //
 // Also covers the straddling VAT periods, whose entry sheets reach the VAT
-// return without ever touching the books.
+// return without ever touching the books, and the fifth return, whose whole
+// quarter falls past the year end on those sheets.
 //
 // Requires: LibreOffice installed (brew install --cask libreoffice)
 
@@ -64,11 +65,16 @@ function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
-// Dating the fifth form on the fourth's own period leaves the five forms
-// naming four periods, breaks the quarterly step into the fifth, takes it off
-// the last period the interface carries, leaves its own boxes reading the row
-// it used to name, and puts the fourth's three periods on two returns at once.
+// Dating the fifth form on the fourth's own period moves its window back onto
+// the year's own last three months while its boxes still carry the straddling
+// quarter, leaves the five forms naming four periods, breaks the quarterly
+// step into the fifth, takes it off the last period the interface carries,
+// leaves its own boxes reading the row it used to name, and puts the fourth's
+// three periods on two returns at once.
 const SE_FIFTH_ON_FOURTH_FAILURES = [
+  "VAT Q5: box 1/3 output VAT (G9) = scenario sales VAT for the quarter",
+  "VAT Q5: box 4 input VAT (G15) = scenario purchases VAT for the quarter",
+  "VAT Q5: box 7 net purchases (G23) = scenario purchases net for the quarter",
   "VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G17)",
   "VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17)",
   "VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I17)",
@@ -185,6 +191,47 @@ describeCalc(
       expect(results["Vat.xlsx!VATQtr5"].G9).toBeCloseTo(1100, 6);
       expect(results["Vat.xlsx!VATQtr5"].G15).toBeCloseTo(180, 6);
       expect(results["Profit & Loss Account"].B9).toBeCloseTo(expected.total_sales, 0);
+    });
+
+    it("checks the fifth return's boxes against the straddling entries dated in its own window", () => {
+      const checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
+      const boxes = {
+        "VAT Q5: box 1/3 output VAT (G9) = scenario sales VAT for the quarter": 1100,
+        "VAT Q5: box 4 input VAT (G15) = scenario purchases VAT for the quarter": 180,
+        "VAT Q5: box 7 net purchases (G23) = scenario purchases net for the quarter": 900,
+      };
+      // 6600 gross sales and 1080 gross purchases, entered on the three
+      // straddling sheet pairs dated April, May and June after the year end.
+      for (const [name, figure] of Object.entries(boxes)) {
+        const check = checks.find((c) => c.name === name);
+        expect(check, name).toBeDefined();
+        expect(check.expected).toBeCloseTo(figure, 6);
+        expect(check.actual).toBeCloseTo(figure, 6);
+        expect(check.pass).toBe(true);
+      }
+    });
+
+    it("fails the fifth return's own boxes when its output VAT is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Vat.xlsx", "VATQtr5", "G9", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Vat.xlsx!VATQtr5", "G9", value);
+      expect(failureNames(corrupted)).toEqual([
+        "VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)",
+        "VAT Q5: box 1/3 output VAT (G9) = scenario sales VAT for the quarter",
+        "VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G20)",
+      ]);
+    });
+
+    it("fails the last straddling row and the quarter it sums when that row is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Vat.xlsx", "Vatinterface", "F20", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Vat.xlsx!Vatinterface", "F20", value);
+      // The last period the interface carries falls inside the fifth return's
+      // window alone, so only that quarter column moves with it.
+      expect(failureNames(corrupted)).toEqual([
+        "Vatinterface F20: 06Y2 output VAT = the straddling sales entered for that period",
+        "Vatinterface G20: quarter output VAT = its three period rows",
+      ]);
     });
 
     it("fails one month and one side when an interface month cell is corrupted via JSZip", async () => {
