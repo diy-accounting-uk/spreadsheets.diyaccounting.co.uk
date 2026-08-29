@@ -1,0 +1,204 @@
+{
+  "_comment": "Every table or field a reconciliation fixture carries with no diya-gl master data behind it, and every literal extract-scenarios.js states in its own source instead of deriving from a master. Produced by T1 (PLAN_ROUNDTRIP_FIDELITY.md), consumed by T1b, which extends each master and moves the extractor's own literals onto it.",
+  "fixtures": [
+    {
+      "fixture": "app/test/fixtures/bst-brickwork-pro-nonvat.toml",
+      "product": "bst",
+      "master": "examples/brickwork-pro",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "fixed_asset_additions", "note": "1 row, £12,000 Ford Transit van, matches the master's one 5900-coded purchase line" }
+      ],
+      "gaps": [
+        { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account (1100) or opening/closing stock figure" },
+        { "section": "opening_debtors", "fields": ["customer", "invoice", "amount"], "reason": "master has no debtor ledger and no trade debtors account (1300)" },
+        { "section": "closing_debtors", "fields": ["customer", "invoice", "amount"], "reason": "same as opening_debtors" },
+        { "section": "opening_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "master declares trade creditors (2100) in its chart of accounts but carries no opening/closing creditor ledger" },
+        { "section": "closing_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "same as opening_creditors" }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/bst-sp-sixty.toml",
+      "product": "bst",
+      "master": "examples/sp-sixty-driving",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "fixed_asset_additions", "note": "1 row, £200 dashcam and vehicle signage, matches the master's 7000-coded purchase line (Amazon, 'Nextbase dashcam')" }
+      ],
+      "gaps": []
+    },
+    {
+      "fixture": "app/test/fixtures/se-brickwork-pro-nonvat.toml",
+      "product": "se",
+      "master": "examples/brickwork-pro",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "employees", "note": "matches master employees[] (Mike Brown, Tom Davies)" },
+        { "section": "payroll", "note": "master has 24 payroll lines (2 employees x 12 months); field values not cross-checked figure by figure" }
+      ],
+      "gaps": [
+        { "section": "bank", "fields": ["date", "account", "source", "code", "direction", "amount", "description"], "rows": 60, "reason": "master has no bank journal at all: no opening balance, customer receipts, supplier payments, net pay, PAYE or CIS remittance lines" },
+        { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account or opening/closing stock figure" },
+        { "section": "opening_debtors", "fields": ["customer", "invoice", "amount"], "reason": "master has no debtor ledger" },
+        { "section": "closing_debtors", "fields": ["customer", "invoice", "amount"], "reason": "same as opening_debtors" },
+        { "section": "opening_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "master has no creditor ledger" },
+        { "section": "closing_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "same as opening_creditors" },
+        { "section": "business", "fields": ["address", "town", "postcode", "phone"], "reason": "master entityInformation has no organizationAddressLine/Town/Postcode/Telephone" }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/se-brickwork-pro-vat.toml",
+      "product": "se",
+      "master": null,
+      "masterExists": false,
+      "backedSections": [],
+      "gaps": [
+        { "section": "*", "reason": "no VAT-registered BrickWork master exists; every section (sales, purchases, bank, payroll, employees, debtors, creditors, stock, business) is hand-stated. The plan's decision is to derive this fixture from the non-VAT brickwork-pro master by a declared 1.5x-scale-plus-VAT build section, not a second master directory." }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/ltd-brickwork-pro-nonvat.toml",
+      "product": "ltd",
+      "master": "examples/brickwork-pro",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "employees", "note": "matches master employees[]" },
+        { "section": "payroll", "note": "master has 24 payroll lines" }
+      ],
+      "gaps": [
+        { "section": "bank", "fields": ["date", "account", "source", "code", "direction", "amount", "description"], "rows": 49, "reason": "master has no bank journal" },
+        {
+          "section": "opening_balance",
+          "fields": ["current_account", "stock", "trade_debtors", "trade_creditors", "corporation_tax", "share_capital", "retained_earnings"],
+          "reason": "master has no opening balance journal (no documentReference starting OB-), so buildOpeningBalance() finds nothing to reverse-engineer"
+        },
+        { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account or figure" },
+        { "section": "opening_debtors", "fields": ["customer", "invoice", "amount"], "reason": "master has no debtor ledger" },
+        { "section": "closing_debtors", "fields": ["customer", "invoice", "amount"], "reason": "same as opening_debtors" },
+        { "section": "opening_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "master has no creditor ledger" },
+        { "section": "closing_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "same as opening_creditors" },
+        {
+          "section": "members",
+          "fields": ["name", "shares"],
+          "reason": "master declares Mike Brown's 100 shares only on directors[], not on a separate members[] table; derivable the same way precision-code-ltd's fullMembers is, but the table itself does not exist yet"
+        },
+        { "section": "business", "fields": ["address", "town", "postcode", "phone"], "reason": "master entityInformation has no address fields" }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/ltd-brickwork-pro-vat.toml",
+      "product": "ltd",
+      "master": null,
+      "masterExists": false,
+      "backedSections": [],
+      "gaps": [
+        { "section": "*", "reason": "same as se-brickwork-pro-vat: no VAT-registered BrickWork master exists, derive by the declared scale-and-VAT build section instead of a second master" }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/taxi-scenario-kestrel.toml",
+      "product": "taxi",
+      "master": "examples/kestrel-executive-cars",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "sales", "note": "52 weekly settlements, matches the master's 52 sales lines" },
+        { "section": "purchases", "note": "matches the master's 103 purchase lines" }
+      ],
+      "gaps": [
+        {
+          "section": "fixed_asset_additions",
+          "fields": ["date", "description", "reference", "cost"],
+          "reason": "the fixture has no [[fixed_asset_additions]] table at all, but the master books a real £900 in-car camera system (7000-coded, 2025-05-12, 'Nextbase Fleet'). Adding it gives the fixture a capital allowance it has never claimed, moving the reconciled net profit figure -- this is a fixture gain T1b has to reconcile and re-baseline, not a silent addition."
+        }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/taxi-scenario-sp-sixty.toml",
+      "product": "taxi",
+      "master": "examples/sp-sixty-driving",
+      "masterExists": true,
+      "backedSections": [
+        { "section": "sales", "note": "180 daily fares, matches the master's 180 sales lines" },
+        { "section": "purchases", "note": "matches the master's 87 purchase lines" }
+      ],
+      "gaps": [
+        {
+          "section": "fixed_asset_additions",
+          "fields": [],
+          "reason": "the fixture has no [[fixed_asset_additions]] table; the master's £200 dashcam is already captured by the bst-sp-sixty fixture instead. Whether Taxi's own Fixed Assets schedule (vehicles only, per the excel skill) should also claim it is a T1b product-scope decision, not a data gap."
+        }
+      ]
+    },
+    {
+      "fixture": "app/test/fixtures/taxi-scenario-basic.toml",
+      "product": "taxi",
+      "master": null,
+      "masterExists": false,
+      "backedSections": [],
+      "gaps": [
+        {
+          "section": "*",
+          "reason": "no master exists (no examples/basic-taxi-driver/ or equivalent) and the fixture has no [business] table at all -- 180 daily fares totalling 36,000, 21 purchase rows, one £8,000 vehicle (5900-coded 'fixed_asset_additions'), and no entity name, address, UTR or NINO anywhere. The plan creates examples/basic-taxi-driver/ from scratch for this one."
+        }
+      ]
+    }
+  ],
+  "extractorLiterals": [
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "96-100",
+      "name": "openingDebtors",
+      "usedBy": ["bst-scenario-basic", "se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "stated directly (Acme Corp, Beta Systems, Gamma Ltd invoices); not derived from any master line or book table, even though precision-code-ltd is the extractor-driven master"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "109-112",
+      "name": "bstClosingDebtors",
+      "usedBy": ["bst-scenario-basic"],
+      "reason": "stated directly; the BST subset carries no bank journal to settle an invoice against, so nothing is derivable without one"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "114-119",
+      "name": "openingCreditors",
+      "usedBy": ["bst-scenario-basic", "se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "stated directly; no opening creditor journal or ledger exists in the master to derive it from"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "121-126",
+      "name": "closingCreditors",
+      "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "stated directly, for the same reason as openingCreditors; unlike closingDebtors there is no bank-settlement derivation for creditors"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "136-150",
+      "name": "straddlingSales / straddlingPurchases",
+      "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "VAT-straddling entries the VAT workbook's own out-of-year sheets take, entered directly on the scenario TOML. No diya-gl line carries a diya-gl:vatPeriodEnd today (the v2 field this track adds), so there is no master representation to derive them from at either the line or book level"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "158-179",
+      "name": "hpAgreements",
+      "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "the agreement terms (finance company, admin charges, total interest, term) are a literal; only the two purchases the agreements finance exist as real master lines (carrying diya-gl:hpAgreement). The v2 book.toml's own hpAgreements[] table (added directly to the master by this track) is not yet read by the extractor, which still emits the subset's copy from this same literal"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "187-190",
+      "name": "openingFixedAssets (tax_wdv field only)",
+      "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
+      "reason": "cost and accumulated depreciation match the master's own opening balance journal (accounts 0030/0040) exactly, but the written-down tax value each asset carries forward (24000 for the van) has no source anywhere in the master; it is a bare literal the capital allowances working needs and nothing in book.toml states"
+    },
+    {
+      "file": "app/bin/extract-scenarios.js",
+      "lines": "197-206",
+      "name": "chargesRegister",
+      "usedBy": ["ltd-scenario-full"],
+      "reason": "the one registered charge (NatWest fixed charge over the delivery van) is entirely a literal; no line or book field in the master names a charge, a chargeholder or its terms"
+    }
+  ]
+}
