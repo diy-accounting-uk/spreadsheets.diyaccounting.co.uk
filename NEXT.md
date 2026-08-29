@@ -4,6 +4,16 @@ Living handover for this repository. Rules and shape: `../NEXT.md` (DONE or OPEN
 deferred; a bug found fixing item A is A's remainder, not a new item; this file holds ONLY what
 to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` at this root.
 
+## In flight
+
+| What | Where | Status |
+|---|---|---|
+| Regenerate `SHEET_COVERAGE_GAPS.md` from main (NEXT item below) | worktree `.worktrees/sp-coverage-gaps`, branch `claude/coverage-gaps` | started; lands docs-only on main |
+| Operator's post-merge generate-bst/se/ltd/taxi with commit on main | GitHub Actions runs 33251860271, 33251867352, 33251875006, 33251882733 | running; operator deploys from main after |
+| Full local unit suite on the merged main | worktree `.worktrees/sp-pages` (removed when it finishes) | running |
+
+Every later PR branch starts from a rebase onto the post-deploy green main.
+
 ## Open items
 
 Method for every check/fixture/template item below: "Reconciliation-bug method" in
