@@ -2246,10 +2246,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // ── The share register against the members the scenario carries ──────────
   //
   // The report prints a shareholder a line, the name from
-  // [8]RegisterofMembers!$A$n and the holding from $G$n. Tying the register
-  // back to the scenario's own members is what stops a report naming nobody
-  // from reading as correct, because every other cell in these two lines is
-  // measured against the register itself.
+  // [8]RegisterofMembers!$A$n and the holding from $G$n. Both ends go against
+  // the scenario's own members, so a register nobody filled in and a report
+  // naming nobody each fail on their own.
   if (register && expected.members) {
     expected.members.slice(0, REGISTER_MEMBER_ROWS.length).forEach((member, index) => {
       const row = REGISTER_MEMBER_ROWS[index];
