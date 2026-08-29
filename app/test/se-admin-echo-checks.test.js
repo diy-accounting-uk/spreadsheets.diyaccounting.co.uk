@@ -222,7 +222,7 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
   // must notice.
   it.each([
     ["Income Tax!E6 (the tapered allowance)", "E6", 5000, ["Tax: Personal allowance after taper", "Tax: Taxable = Profit - Allowance"]],
-    ["Income Tax!E10 (the additional-rate charge)", "E10", 1, ["Tax at additional rate", "Tax: IT = Basic + Higher + Additional"]],
+    ["Income Tax!E10 (the additional-rate charge)", "E10", 1000, ["Tax at additional rate", "Tax: IT = Basic + Higher + Additional"]],
     [
       "Income Tax!E11 (the income tax total)",
       "E11",
