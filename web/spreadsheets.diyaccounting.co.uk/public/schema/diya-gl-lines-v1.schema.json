@@ -143,8 +143,8 @@
     },
     "diya-gl:bankCode": {
       "type": "string",
-      "enum": ["BC", "DR", "CR", "K", "RV", "DL", "X", "W", "B", "J", "RP", "DV"],
-      "description": "diya-gl: extension — Bank receipt/payment code. Receipt: BC=opening balance, DR=debtor receipt, CR=creditor refund, K=capital introduced, RV=revenue (interest), DL=directors loan in, X=transfer in. Payment: BC=closing adjustment, CR=creditor payment, DR=debtor refund, W=wages, B=bank charges, J=journal, RP=HMRC payment (PAYE/VAT/CT), DL=directors loan out, X=transfer out, DV=dividend."
+      "enum": ["BB", "BS", "BC", "BD", "DR", "CR", "K", "LDR", "LCR", "RV", "RC", "RT", "RP", "W", "B", "J", "DV", "DL", "X"],
+      "description": "diya-gl: extension — Bank receipt/payment code, matching the analysis columns of the bank account workbooks. Transfers between accounts carry the letter of the account on the other side: BB=current, BS=savings, BC=cash, BD=credit card. Receipt only: K=interest received. Payment only: W=net wages, B=bank charges, J=interest paid, DV=dividend, RP=HMRC PAYE, RT=HMRC corporation tax. Either side: DR=trade debtor, CR=trade creditor, LDR=long term debtor, LCR=long term creditor, RV=HMRC VAT, RC=HMRC CIS, DL=directors loan, X=bank contra item. BC on a bank line with no other account on the other side is the workbook's own opening balance."
     },
     "diya-gl:bankAccountID": {
       "type": "string",
@@ -183,6 +183,10 @@
       "type": "number",
       "minimum": 0,
       "description": "diya-gl: extension — CIS deduction amount withheld from sub-contractor payment. Purchases lines with CIS sub-contractors only."
+    },
+    "diya-gl:hpAgreement": {
+      "type": "string",
+      "description": "diya-gl: extension — Reference of the hire purchase agreement that finances this purchase, matching an agreement on the finance schedule. A purchase carrying one reaches the books as an ordinary trade creditor; the year-end journal then moves the amount financed onto creditors falling due after more than one year."
     },
     "diya-gl:cisRate": {
       "type": "number",

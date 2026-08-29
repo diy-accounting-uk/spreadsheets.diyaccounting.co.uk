@@ -160,23 +160,31 @@ Quarterly dividends: Q1 3,000, Q2 3,000, Q3 3,000, Q4 (final) 6,000 = 15,000 tot
 | Date | Payment | Code | Amount |
 |------|---------|------|-------:|
 | 19th of each month | PAYE, employee NI and employer NI for the month | `RP` | 1,673.20 |
-| 7 May 2025 | VAT, the prior year's fourth quarter | `RP` | 1,500 |
+| 7 May 2025 | VAT, the prior year's fourth quarter | `RV` | 1,500 |
 | 19 Jul 2025 | CIS deducted from BuildTech in June | `RC` | 1,000 |
-| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | `RP` | 13,808.17 |
+| 7 Aug 2025 | VAT, quarter to 30 Jun 2025 | `RV` | 13,808.17 |
 | 1 Oct 2025 | Corporation tax for the prior year | `RT` | 4,500 |
-| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | `RP` | 14,456.50 |
+| 7 Nov 2025 | VAT, quarter to 30 Sep 2025 | `RV` | 14,456.50 |
 | 19 Dec 2025 | CIS deducted from BuildTech in November | `RC` | 600 |
-| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | `RP` | 10,917.50 |
+| 7 Feb 2026 | VAT, quarter to 31 Dec 2025 | `RV` | 10,917.50 |
 
-The fourth quarter's VAT of 14,796.50 falls due after the year end and so stays a creditor, and
-so does this year's corporation tax: 29,221.27 charged, less the 64.51 the working sheet credits
-for tax already suffered on the interest received, leaves 29,156.77 owed.
+The books charge VAT at 20/120 on every line of both journals, whatever a line's own tax code
+says, because that is what the shipped Sales and Purchases sheets do. On that basis the year
+raises 70,816.67 of output VAT against 22,498.71 of input, and the four payments above settle
+the prior year's closing 1,500 and three quarters of this year's. What is left is a VAT
+creditor of 9,135.79, the fourth quarter falling due after the year end. The payment amounts
+themselves were set from the lines' own tax codes and so do not match any one quarter the
+sheets compute; the creditor is the year's own arithmetic either way.
+
+This year's corporation tax stays a creditor too: 29,221.27 charged, less the 64.51 the working
+sheet credits for tax already suffered on the interest received, leaves 29,156.77 owed.
 
 The Company bank workbooks analyse PAYE under `RP`, VAT under `RV`, CIS under `RC` and
 corporation tax under `RT` (Currentaccount columns AH, AI, AJ and AK), and the trial balance
-carries a creditor row for each. Corporation tax and the CIS remittances are coded that way
-here. The VAT payments still carry `RP`, so the PAYE creditor carries the year's 40,682.17 of
-VAT as well as the payroll's own deductions; coded `RV` it would come out at nil.
+carries a creditor row for each. Every payment above is coded for the tax it settles, so each
+creditor row carries only its own tax. The PAYE creditor closes at nil: the twelve monthly
+payments clear the payroll's deductions in the month they are deducted. So does the CIS
+creditor: the certificates below withhold 1,600 and the two remittances pay all of it over.
 
 The Self Employed workbooks have one HMRC Payments column between them, analysed under `RP`
 (Bank.xlsx AA, Cash.xlsx W), so `app/products/se.js` writes a payment coded `RV`, `RC` or `RT`
@@ -242,6 +250,12 @@ package has no finance agreement schedule, so these two purchases stay out of th
 |------|----------|------:|--------------------:|---------:|
 | Jun 2025 | BuildTech Solutions | 5,000 | 1,000 | 4,000 |
 | Nov 2025 | BuildTech Solutions | 3,000 | 600 | 2,400 |
+
+Each deduction rides on its own purchase as `diya-gl:cisDeduction` and reaches the CIS
+certificates column of the purchase journal (`Purchases.xlsx` AK for the company, AD for the
+sole trader). The trial balance reads that column twice: it raises the CIS creditor and takes
+the same figure back off trade creditors, so what the company withheld stops being owed to the
+sub-contractor and starts being owed to HMRC.
 
 ## Business Mileage
 

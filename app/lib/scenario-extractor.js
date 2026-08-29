@@ -411,7 +411,15 @@ export function buildPayroll(lines) {
   return payroll;
 }
 
-export function buildGrouped(filteredLines, purchaseCodeMap) {
+// A purchase from a CIS sub-contractor carries the tax the contractor
+// withheld and paid over to HMRC on the sub-contractor's behalf. The Ltd and
+// Self Employed purchase journals each keep a CIS certificates column for it
+// (Purchases.xlsx AK and AD). The Basic Sole Trader package has no such
+// column, so its subset carries no deduction, the same way it carries no
+// hire purchase agreement.
+export const CIS_DEDUCTION_FIELD = "diya-gl:cisDeduction";
+
+export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true } = {}) {
   const sales = {};
   const purchases = {};
   const bank = {};
@@ -433,12 +441,14 @@ export function buildGrouped(filteredLines, purchaseCodeMap) {
       const code = purchaseCodeMap[line.accountMainID];
       if (!code) continue;
       if (!purchases[month]) purchases[month] = [];
-      purchases[month].push({
+      const purchase = {
         date: line.postingDate,
         supplier: line.detailComment,
         code,
         amount: line.amount,
-      });
+      };
+      if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) purchase.cis_deduction = line[CIS_DEDUCTION_FIELD];
+      purchases[month].push(purchase);
     } else if (line.sourceJournalID === "bank") {
       const acctId = line["diya-gl:bankAccountID"];
       if (!bank[acctId]) bank[acctId] = {};
@@ -536,6 +546,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`supplier = "${escapeTomlString(txn.supplier)}"`);
       parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
+      if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
       parts.push("");
     }
   }
