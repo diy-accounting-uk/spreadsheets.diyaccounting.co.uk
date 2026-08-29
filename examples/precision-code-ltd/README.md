@@ -11,14 +11,14 @@ Three directors hold 100 ordinary shares: Carol Smith (MD, 60%), David Brown (NE
 ## Data Files
 
 - **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 6 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 720 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
+- **lines.jsonl** -- 722 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
 | journal | 18 | Opening balance sheet (16 lines) + stock adjustment (2 lines) |
 | sales | 112 | 10+ invoices per month across 7 sales codes and 23 customers |
-| purchases | 393 | 30+ invoices per month across 22 purchase codes |
-| bank | 161 | Current (138), savings (8), cash (7), credit card (8) |
+| purchases | 395 | 30+ invoices per month across 22 purchase codes |
+| bank | 161 | Current (142), savings (4), cash (7), credit card (8) |
 | payroll | 36 | 3 employees x 12 months with PAYE/NI breakdowns |
 
 ## Opening Balance Sheet (1 April 2025)
