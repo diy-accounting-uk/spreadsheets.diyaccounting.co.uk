@@ -356,6 +356,12 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   // Corporation Tax rates (stored as whole-number percentages in the spreadsheet)
   numericEdits.P6 = Math.round(ct.small_profits_rate * 100);
   numericEdits.P7 = Math.round(ct.small_profits_rate * 100);
+  numericEdits.P8 = Math.round(ct.main_rate * 100);
+
+  // Marginal relief: the fraction and the two profit limits it tapers between
+  numericEdits.P9 = ct.marginal_relief_fraction;
+  numericEdits.P12 = ct.small_profits_limit;
+  numericEdits.P13 = ct.main_rate_limit;
 
   // Capital allowances (stored as whole-number percentages)
   numericEdits.G5 = Math.round(ca.annual_investment_allowance * 100);

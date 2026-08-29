@@ -593,30 +593,20 @@ describeCalc(
       expect(results.CT600.M33).toBe(admin.F21);
     });
 
-    it("warns that the charge carries no marginal relief, and says what the statutory figure is", () => {
+    it("charges the main rate less marginal relief on a profit inside the relief band", () => {
       const ct = results.CorporationTax;
       const statutory = calculateCorporationTax(ct.K28, taxData.corporation_tax).corporationTax;
       // The profit sits between the £50,000 and £250,000 limits, so the
-      // statutory computation is the main rate less relief and the sheet's
-      // small profits rate falls short of it.
+      // charge is the main rate on the whole profit less the relief that
+      // tapers it back towards the small profits rate.
       expect(ct.K28).toBeGreaterThan(taxData.corporation_tax.small_profits_limit);
       expect(ct.K28).toBeLessThan(taxData.corporation_tax.main_rate_limit);
+      expect(ct.G33).toBe(25);
+      expect(ct.J33).toBeCloseTo(ct.K28 * 0.25, 6);
+      expect(ct.L33).toBeCloseTo((250000 - ct.K28) * 0.015, 6);
+      expect(ct.K35).toBeCloseTo(statutory, 6);
       expect(statutory).toBeCloseTo(ct.K28 * 0.25 - (250000 - ct.K28) * 0.015, 6);
-
-      const warning = warningNamed(checks, "CT: charge for the year against the statutory computation with marginal relief");
-      expect(warning.pass).toBe(false);
-      expect(warning.expected).toBeCloseTo(statutory, 6);
-      expect(warning.actual).toBeCloseTo(ct.K35, 6);
-      // A warning does not stop the run.
-      expect(failureNames(checks)).not.toContain(warning.name);
-    });
-
-    it("passes that warning for a profit the small profits rate is the right rate for", () => {
-      const smallProfit = { ...results, CorporationTax: { ...results.CorporationTax, K28: 40000, K35: 7600 } };
-      const name = "CT: charge for the year against the statutory computation with marginal relief";
-      const warning = warningNamed(ltdCheckCompliance(smallProfit, expected, taxData, calculateExpectedTax), name);
-      expect(warning.expected).toBe(7600);
-      expect(warning.pass).toBe(true);
+      expect(ct.K35).toBeCloseTo(35342.772927, 4);
     });
 
     it("files the whole charge on the return once the empty second row is worth nothing", () => {
@@ -636,7 +626,7 @@ describeCalc(
       expect(value).toBe(5000);
       const corrupted = checksWithCorruptedCell("CorporationTax", "I34", value);
       expect(failureNames(corrupted)).toEqual([
-        "CT: second tax row tax = its profit at its rate",
+        "CT: second tax row tax = its gross tax less its marginal relief",
         "CT: charge for the year = the two tax rows",
       ]);
     });
@@ -647,7 +637,7 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("CorporationTax", "I33", value);
       expect(failureNames(corrupted)).toEqual([
         "CT600: corporation tax = first tax row tax",
-        "CT: first tax row tax = its profit at its rate",
+        "CT: first tax row tax = its gross tax less its marginal relief",
         "CT: charge for the year = the two tax rows",
       ]);
     });
@@ -658,7 +648,49 @@ describeCalc(
       const corrupted = checksWithCorruptedCell("CorporationTax", "F33", value);
       expect(failureNames(corrupted)).toEqual([
         "CT: first tax row profit = chargeable profit by its share of those days",
-        "CT: first tax row tax = its profit at its rate",
+        "CT: first tax row gross tax = its profit at its rate",
+        "CT: first tax row rate = the rate its share of the profit falls in",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      ]);
+    });
+
+    it("fails the relief and the tax under it when CorporationTax L33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "L33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "L33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: first tax row tax = its gross tax less its marginal relief",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
+      ]);
+    });
+
+    it("fails the gross tax and the tax under it when CorporationTax J33 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "CorporationTax", "J33", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("CorporationTax", "J33", value);
+      expect(failureNames(corrupted)).toEqual([
+        "CT: first tax row gross tax = its profit at its rate",
+        "CT: first tax row tax = its gross tax less its marginal relief",
+      ]);
+    });
+
+    it("fails the rate the profit is charged at when Admin P8 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P8", 19);
+      expect(value).toBe(19);
+      const corrupted = checksWithCorruptedCell("Admin", "P8", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Admin P8: corporation tax main rate",
+        "CT: first tax row rate = the rate its share of the profit falls in",
+      ]);
+    });
+
+    it("fails the relief when Admin P9 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", "P9", 0.03);
+      expect(value).toBe(0.03);
+      const corrupted = checksWithCorruptedCell("Admin", "P9", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Admin P9: marginal relief fraction",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
       ]);
     });
 
@@ -680,6 +712,7 @@ describeCalc(
         "CT: the two tax rows span the accounting period",
         "CT: the two tax rows together span the days the charge is spread over",
         "CT: first tax row profit = chargeable profit by its share of those days",
+        "CT: first tax row marginal relief = its share of the profit against its share of the limits",
       ]);
     });
 

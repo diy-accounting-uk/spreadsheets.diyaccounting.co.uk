@@ -960,6 +960,10 @@ const PL_ROW_CAPTIONS = {
 const ADMIN_TAX_DATA_CELLS = [
   ["P6", "corporation tax small profits rate", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
   ["P7", "corporation tax small profits rate (second year)", (t) => Math.round(t.corporation_tax.small_profits_rate * 100)],
+  ["P8", "corporation tax main rate", (t) => Math.round(t.corporation_tax.main_rate * 100)],
+  ["P9", "marginal relief fraction", (t) => t.corporation_tax.marginal_relief_fraction],
+  ["P12", "marginal relief lower limit", (t) => t.corporation_tax.small_profits_limit],
+  ["P13", "marginal relief upper limit", (t) => t.corporation_tax.main_rate_limit],
   ["G5", "annual investment allowance", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
@@ -1080,7 +1084,28 @@ export function standardReads() {
   // Corporation tax working sheet: the allowance lines, and the two dated
   // tax rows whose day counts, profit shares, rates and tax the charge for
   // the year is built from.
-  for (const cell of ["E5", "H5", "I15", "I16", "I17", "I18", "A33", "A34", "A35", "F33", "F34", "G33", "G34", "I33", "I34", "K37"])
+  for (const cell of [
+    "E5",
+    "H5",
+    "I15",
+    "I16",
+    "I17",
+    "I18",
+    "A33",
+    "A34",
+    "A35",
+    "F33",
+    "F34",
+    "G33",
+    "G34",
+    "J33",
+    "J34",
+    "L33",
+    "L34",
+    "I33",
+    "I34",
+    "K37",
+  ])
     add(TAX_SHEET, cell);
 
   for (const cell of CT600_CELLS) add("CT600", cell);
@@ -2324,37 +2349,43 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("CT: first tax row profit = chargeable profit by its share of those days", num(ct.F33), (profit * num(ct.A33)) / days);
         check("CT: second tax row profit = chargeable profit by its share of those days", num(ct.F34), (profit * num(ct.A34)) / days);
       }
-      check("CT: first tax row tax = its profit at its rate", num(ct.I33), (num(ct.F33) * num(ct.G33)) / 100);
-      check("CT: second tax row tax = its profit at its rate", num(ct.I34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row gross tax = its profit at its rate", num(ct.J33), (num(ct.F33) * num(ct.G33)) / 100);
+      check("CT: second tax row gross tax = its profit at its rate", num(ct.J34), (num(ct.F34) * num(ct.G34)) / 100);
+      check("CT: first tax row tax = its gross tax less its marginal relief", num(ct.I33), num(ct.J33) - num(ct.L33));
+      check("CT: second tax row tax = its gross tax less its marginal relief", num(ct.I34), num(ct.J34) - num(ct.L34));
       check("CT: charge for the year = the two tax rows", num(ct.K35), num(ct.I33) + num(ct.I34));
 
-      // Both rows carry the rate injected into the Admin sheet, so whatever
-      // the year end, the charge is the chargeable profit at that one rate.
+      // Each row's share of the profit is charged at the small profits rate
+      // up to its share of the lower limit and at the main rate above it,
+      // with marginal relief tapering the gap up to the upper limit. Both
+      // limits are shared out over the period the same way the profit is.
       const admin = results.Admin;
-      if (admin) {
-        check("CT: charge for the year = chargeable profit at the Admin corporation tax rate", num(ct.K35), (profit * num(admin.P6)) / 100);
+      if (admin && days > 0) {
+        const lowerLimit = (rowDays) => (num(admin.P12) * rowDays) / days;
+        const upperLimit = (rowDays) => (num(admin.P13) * rowDays) / days;
+        const reliefFor = (rowProfit, rowDays) =>
+          rowProfit > lowerLimit(rowDays) && rowProfit < upperLimit(rowDays) ? (upperLimit(rowDays) - rowProfit) * num(admin.P9) : 0;
+        const rateFor = (rowProfit, rowDays, smallProfitsRate) => (rowProfit <= lowerLimit(rowDays) ? smallProfitsRate : num(admin.P8));
+
+        check("CT: first tax row rate = the rate its share of the profit falls in", num(ct.G33), rateFor(num(ct.F33), num(ct.A33), num(admin.P6)), 0);
+        check("CT: second tax row rate = the rate its share of the profit falls in", num(ct.G34), rateFor(num(ct.F34), num(ct.A34), num(admin.P7)), 0);
+        check("CT: first tax row marginal relief = its share of the profit against its share of the limits", num(ct.L33), reliefFor(num(ct.F33), num(ct.A33)));
+        check("CT: second tax row marginal relief = its share of the profit against its share of the limits", num(ct.L34), reliefFor(num(ct.F34), num(ct.A34)));
+
+        // One tax-year TOML feeds both rows, so a period straddling a rate
+        // change would need two. Every financial year in the data set from
+        // 2020 on carries the same rates as the one after it.
+        check("CT: both financial year rows carry the same small profits rate", num(admin.P6), num(admin.P7), 0);
       }
 
       // Tax outstanding is the charge less any income tax already deducted
       // at source from bank interest received.
       check("CT: Tax outstanding = CT less tax deducted at source", num(ct.K39), num(ct.K35) - num(ct.K37));
 
-      // The charge the period's profit actually bears. The working sheet
-      // holds one rate per row and no relief step, and the CT600's marginal
-      // rate relief boxes, 64 and 65, carry no formula either, so a profit
-      // between the small profits limit and the main rate limit is charged
-      // at the small profits rate rather than at the main rate less relief.
-      // The gap belongs to the shipped workbook, not to the scenario driven
-      // through it, so it is reported and the run is not stopped for it.
+      // The charge the period's profit actually bears, against the statutory
+      // computation worked independently of the sheet.
       const statutory = calculateCorporationTax(profit, taxData.corporation_tax).corporationTax;
-      checks.push({
-        name: "CT: charge for the year against the statutory computation with marginal relief",
-        actual: num(ct.K35),
-        expected: statutory,
-        pass: Math.abs(num(ct.K35) - statutory) <= 1,
-        diff: num(ct.K35) - statutory,
-        severity: "warning",
-      });
+      check("CT: charge for the year = the statutory computation with marginal relief", num(ct.K35), statutory, 1);
     }
   }
 
