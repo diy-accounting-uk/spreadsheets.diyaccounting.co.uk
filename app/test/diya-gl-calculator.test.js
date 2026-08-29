@@ -162,10 +162,18 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Income Tax"].E5).toBe(265508);
   });
 
-  it("E10: Total Income Tax = 93635 (tolerance 1)", () => {
+  // 265,508 of profit loses the whole allowance to the taper, so the charge is
+  // 37,700 at 20%, 87,440 at 40% and 140,368 at 45%.
+  it("E11: Total Income Tax = 105681.60 (tolerance 1)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    expect(Math.abs(results["Income Tax"].E10 - 93635)).toBeLessThanOrEqual(1);
+    expect(Math.abs(results["Income Tax"].E11 - 105681.6)).toBeLessThanOrEqual(1);
+  });
+
+  it("E10: Tax at the additional rate = 63165.60 (tolerance 1)", () => {
+    const { book, lines } = loadDiyaGlData(BST_DATA);
+    results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
+    expect(Math.abs(results["Income Tax"].E10 - 63165.6)).toBeLessThanOrEqual(1);
   });
 
   it("E15: NI Class 4 lower = 2262", () => {
@@ -174,11 +182,11 @@ describe("calculateFromDiyaGl — BST", () => {
     expect(results["Income Tax"].E15).toBeCloseTo(2262, 0);
   });
 
-  it("E18: Total Tax + NI matches Excel (tolerance 1)", () => {
+  it("E18: Total Tax + NI = 112248.36 (tolerance 1)", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenario);
-    // Excel: 100201.96
-    expect(Math.abs(results["Income Tax"].E18 - 100201.96)).toBeLessThanOrEqual(1);
+    // 105,681.60 of income tax plus 2,262.00 and 4,304.76 of Class 4 NI.
+    expect(Math.abs(results["Income Tax"].E18 - 112248.36)).toBeLessThanOrEqual(1);
   });
 
   // ── Business Details ──
@@ -248,12 +256,13 @@ describe("calculateFromDiyaGl — SE", () => {
     expect(results["Income Tax"].E5).toBeCloseTo(results["Profit & Loss Account"].B39, 0);
   });
 
-  it("E10: Total Income Tax is reasonable", () => {
+  it("E11: Total Income Tax is reasonable", () => {
     const { book, lines } = loadDiyaGlData(SE_DATA);
     const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // Excel: ~72189 (after payroll wages reduce taxable profit)
-    expect(results["Income Tax"].E10).toBeGreaterThan(55000);
-    expect(results["Income Tax"].E10).toBeLessThan(85000);
+    // The taper and the additional rate lift the charge well above the
+    // two-band figure this profit used to attract.
+    expect(results["Income Tax"].E11).toBeGreaterThan(70000);
+    expect(results["Income Tax"].E11).toBeLessThan(100000);
   });
 
   it("includes Wagesinterface sheet", () => {
