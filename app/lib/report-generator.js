@@ -16,7 +16,7 @@ export const PROFIT_BRIDGE_CHECK = "Accounting profit to tax profit bridge close
 // difference under a penny is shown rather than rounded into a nil. A negated
 // nil line, and a residue that is float noise, both land on -0, which prints
 // as "-0" and reads as a defect.
-function bridgeAmount(value, fractionDigits = 2) {
+function reportAmount(value, fractionDigits = 2) {
   if (typeof value !== "number") return "—";
   const rounded = Number(value.toFixed(fractionDigits));
   const amount = rounded === 0 ? 0 : rounded;
@@ -27,11 +27,11 @@ export function profitBridgeLines(bridge) {
   if (!bridge) return [];
   const lines = ["", `## ${PROFIT_BRIDGE_TITLE}`, "", "| Line | Cell | Amount |", "|------|------|-------:|"];
   for (const row of bridge.rows) {
-    lines.push(`| ${row.label} | ${row.cell} | ${bridgeAmount(row.value)} |`);
+    lines.push(`| ${row.label} | ${row.cell} | ${reportAmount(row.value)} |`);
   }
-  lines.push(`| **Tax profit the bridge computes** | | **${bridgeAmount(bridge.computed)}** |`);
-  lines.push(`| Tax profit the sheet carries | ${bridge.sheetCell} | ${bridgeAmount(bridge.sheetProfit)} |`);
-  lines.push(`| **Residue** | | **${bridgeAmount(bridge.residue, 4)}** |`);
+  lines.push(`| **Tax profit the bridge computes** | | **${reportAmount(bridge.computed)}** |`);
+  lines.push(`| Tax profit the sheet carries | ${bridge.sheetCell} | ${reportAmount(bridge.sheetProfit)} |`);
+  lines.push(`| **Residue** | | **${reportAmount(bridge.residue, 4)}** |`);
   return lines;
 }
 
@@ -43,7 +43,55 @@ export function buildProfitBridge(rows, sheetCell, sheetProfit) {
   return { rows, computed, sheetCell, sheetProfit, residue: computed - sheetProfit };
 }
 
-export function generateReport(packageName, scenarioName, results, checks, productMod) {
+// ── Journal category netting ───────────────────────────────────────────────
+
+// A journal amount is entered including VAT; the statement it feeds carries
+// it net. Stating that only in total leaves each category's own netting to
+// inference, so a reader cannot tell a correctly netted figure from one
+// copied off a scenario that never had VAT in it. This table does it one
+// category at a time: what the journal holds, what comes off, what is left,
+// where that lands, and what the two differ by.
+export const CATEGORY_NETTING_TITLE = "Journal category VAT netting";
+
+export function categoryNettingCheckName(row) {
+  return `Category netting: ${row.label} (${row.code}) net reaches ${row.cell} with no residue`;
+}
+
+// Products supply { code, label, gross, net, cell, downstream } per category.
+// The VAT stripped and the residue are derived here so every product states
+// them the same way, and a category the scenario never used is dropped rather
+// than printed as a row of zeros.
+export function buildCategoryNetting(rate, rows) {
+  return {
+    rate,
+    rows: rows
+      .filter((row) => row.gross !== 0 || row.downstream !== 0)
+      .map((row) => ({ ...row, vat: row.gross - row.net, residue: row.net - row.downstream })),
+  };
+}
+
+export function categoryNettingLines(netting) {
+  if (!netting || netting.rows.length === 0) return [];
+  const lines = ["", `## ${CATEGORY_NETTING_TITLE}`, ""];
+  if (netting.rate === 0) {
+    lines.push(
+      `The books charge VAT at 0%. Gross equals net for all ${netting.rows.length} journal categories that cross into another statement, and each reaches it at the figure the journal holds.`,
+    );
+    return lines;
+  }
+  lines.push(`Journal amounts include VAT at ${(netting.rate * 100).toLocaleString("en-GB")}%.`);
+  lines.push("");
+  lines.push("| Journal category | Gross per the journal | VAT stripped | Net | Where the net lands | Figure there | Residue |");
+  lines.push("|------------------|----------------------:|-------------:|----:|---------------------|-------------:|--------:|");
+  for (const row of netting.rows) {
+    lines.push(
+      `| ${row.label} (${row.code}) | ${reportAmount(row.gross)} | ${reportAmount(row.vat)} | ${reportAmount(row.net)} | ${row.cell} | ${reportAmount(row.downstream)} | ${reportAmount(row.residue, 4)} |`,
+    );
+  }
+  return lines;
+}
+
+export function generateReport(packageName, scenarioName, results, checks, productMod, scenario) {
   const hasFail = checks.some((c) => !c.pass && c.severity !== "warning");
   const hasWarning = checks.some((c) => !c.pass && c.severity === "warning");
   const status = hasFail ? "ANOMALYDETECTED" : hasWarning ? "RECONCILES (with warnings)" : "RECONCILES";
@@ -68,6 +116,12 @@ export function generateReport(packageName, scenarioName, results, checks, produ
   // explains a difference the checks only prove correct.
   if (typeof productMod.profitBridge === "function") {
     lines.push(...profitBridgeLines(productMod.profitBridge(results)));
+  }
+
+  // Then the netting, which explains the other difference the checks only
+  // prove correct: a journal figure and the statement figure it becomes.
+  if (typeof productMod.categoryNetting === "function") {
+    lines.push(...categoryNettingLines(productMod.categoryNetting(results, scenario)));
   }
 
   // Formatted accounting statements (if product module provides them)
@@ -124,7 +178,7 @@ export function generateReport(packageName, scenarioName, results, checks, produ
  * Generate individual report files, one per reportSections() section.
  * Returns { "filename.md": content } map.
  */
-export function generateSectionReports(results, productMod) {
+export function generateSectionReports(results, productMod, scenario) {
   const reports = {};
 
   if (typeof productMod.reportSections !== "function") return reports;
@@ -158,6 +212,13 @@ export function generateSectionReports(results, productMod) {
     const bridgeLines = profitBridgeLines(productMod.profitBridge(results));
     if (bridgeLines.length > 0) {
       reports["accounting-profit-to-tax-profit-bridge.md"] = [`# ${PROFIT_BRIDGE_TITLE}`, ...bridgeLines.slice(2), ""].join("\n");
+    }
+  }
+
+  if (typeof productMod.categoryNetting === "function") {
+    const nettingLines = categoryNettingLines(productMod.categoryNetting(results, scenario));
+    if (nettingLines.length > 0) {
+      reports["journal-category-vat-netting.md"] = [`# ${CATEGORY_NETTING_TITLE}`, ...nettingLines.slice(2), ""].join("\n");
     }
   }
 

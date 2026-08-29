@@ -8,7 +8,7 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
-import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import { buildCategoryNetting, buildProfitBridge, categoryNettingCheckName, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 
 export const PRODUCT = {
   id: "se",
@@ -662,8 +662,8 @@ export function multiFileOptions() {
   // VAT, G11 EU acquisitions (always a static 0 -- no formula, never
   // generator-written), G13 box 3 total (=G9+G11), G15 box 4 input VAT
   // reclaimed, G17 box 5 net VAT due (=G13-G15), G23 box 7 net purchases
-  // value. Qtr5 is the straddling period at the accounting year end -- SE
-  // reads Qtr1-4 only today.
+  // value. Qtr5 ends a month after Qtr4, for a trader whose stagger runs
+  // past the accounting year end.
   const vatQtrCells = ["G5", "G7", "G9", "G11", "G13", "G15", "G17", "G21", "G23"];
   const vatQtrReads = {};
   for (let q = 1; q <= 5; q++) vatQtrReads[`VATQtr${q}`] = vatQtrCells;
@@ -713,7 +713,10 @@ export function multiFileOptions() {
       },
       "Vat.xlsx": vatQtrReads,
       "Fixedassets.xlsx": {
-        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1"],
+        // E57 and E110 are the schedule's own existing-asset and new-asset
+        // cost subtotals; row 1 adds the two. Reading both lets the report
+        // state the year's asset movement rather than one closing total.
+        Schedule: ["E1", "F1", "G1", "I1", "J1", "K1", "Q1", "R1", "S1", "V1", "W1", "X1", "Y1", "Z1", "E57", "E110"],
         FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
       },
       "Payslips.xlsx": {
@@ -741,6 +744,29 @@ const SALES_MONTHLY_TIE_ROWS = { a: 5, b: 6, c: 7, d: 8, g: 11 };
 const SALES_BAD_DEBT_ROW = 29;
 const PURCHASES_MONTHLY_TIE_ROWS = { c: 15, o: 16, p: 22, m: 23, g: 24, v: 25, h: 26, a: 27, l: 28, y: 32 };
 
+// The P&L's own caption for each tied row, taken from column A of the
+// template. The netting table names a category the way the statement it
+// feeds names it, so a reader can follow the letter to the line.
+const PL_ROW_CAPTIONS = {
+  5: "Sales Product A",
+  6: "Sales Product B",
+  7: "Sales Product C",
+  8: "Other Income",
+  11: "Investment Grants received",
+  14: "Purchases after stock adjustment",
+  15: "Sub contractors",
+  16: "Other Direct Cost of Sales",
+  22: "Premises Rent Rates Power",
+  23: "Repairs & Maintenance",
+  24: "General Administrative Expenses",
+  25: "Motor Expenses",
+  26: "Travel Hotel & Subsistence",
+  27: "Advertising & Promotion",
+  28: "Legal & Professional Fees",
+  29: "Bad Debts written off",
+  32: "Other Expenses",
+};
+
 // Wagesinterface and Payslips!Payment both hold one row per month, Apr at
 // row 4 through Mar at row 15 — verified against the template. SE always
 // runs a 6 April year-end, so this row order matches MONTH_KEYS directly
@@ -758,7 +784,9 @@ export function standardReads() {
   ];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
   for (const row of plRows) {
-    for (const col of MONTH_COLS) {
+    // Column B is the row's own SUM(C:N), the annual figure the netting
+    // table compares a journal category against.
+    for (const col of ["B", ...MONTH_COLS]) {
       const cell = `${col}${row}`;
       if (!reads["Profit & Loss Account"].includes(cell)) reads["Profit & Loss Account"].push(cell);
     }
@@ -790,9 +818,60 @@ export function reportSections(results) {
     sectionMap.get(section).push({ label, value: fmt(val), indent });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
+  const fixedAssets = fixedAssetSection(results);
+  if (fixedAssets) sections.push(fixedAssets);
   const vat = vatSection(results);
   if (vat) sections.push(vat);
   return sections;
+}
+
+// The year's asset movement, laid out the way a fixed asset note lays it out.
+// The package has no such note, so without this the only closing figure in
+// the report is the schedule's own K1 column total -- and that total is
+// cost less accumulated depreciation over every row still on the sheet, an
+// asset sold during the year included. The last two rows state that
+// difference instead of leaving a reader to find it.
+function fixedAssetSection(results) {
+  const schedule = results["Fixedassets.xlsx!Schedule"];
+  if (!schedule) return null;
+
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const costBroughtForward = num(schedule.E57);
+  const additions = num(schedule.E110);
+  const disposalCost = num(schedule.W1);
+  const costCarriedForward = costBroughtForward + additions - disposalCost;
+  const depreciationBroughtForward = num(schedule.F1);
+  const charge = num(schedule.I1);
+  const disposalDepreciation = num(schedule.X1);
+  const depreciationCarriedForward = depreciationBroughtForward + charge - disposalDepreciation;
+  const disposalBookValue = disposalCost - disposalDepreciation;
+
+  return {
+    title: "Fixed Asset Schedule",
+    rows: [
+      { label: "Cost brought forward (Schedule E57)", value: fmt(costBroughtForward), indent: 1 },
+      { label: "Additions in the year (Schedule E110)", value: fmt(additions), indent: 1 },
+      { label: "Cost of the assets sold in the year (Schedule W1)", value: fmt(disposalCost), indent: 1 },
+      { label: "**Cost carried forward, disposals removed**", value: fmt(costCarriedForward), indent: 0 },
+      { label: "Accumulated depreciation brought forward (Schedule F1)", value: fmt(depreciationBroughtForward), indent: 1 },
+      { label: "Depreciation charged for the year (Schedule I1)", value: fmt(charge), indent: 1 },
+      { label: "Accumulated depreciation on the assets sold (Schedule X1)", value: fmt(disposalDepreciation), indent: 1 },
+      { label: "**Accumulated depreciation carried forward, disposals removed**", value: fmt(depreciationCarriedForward), indent: 0 },
+      {
+        label: "**Net book value at the year end, disposals removed**",
+        value: fmt(costCarriedForward - depreciationCarriedForward),
+        indent: 0,
+      },
+      { label: "", value: "" },
+      { label: "Sale proceeds of the assets sold, net of VAT (Schedule V1)", value: fmt(num(schedule.V1)), indent: 1 },
+      { label: "Net book value of the assets sold at the date of sale", value: fmt(disposalBookValue), indent: 1 },
+      {
+        label: "Schedule column total for net book value carried forward (K1), which keeps the assets sold on the sheet",
+        value: fmt(num(schedule.K1)),
+        indent: 1,
+      },
+    ],
+  };
 }
 
 // The VAT the books actually charged, taken from the month tabs and from the
@@ -821,15 +900,64 @@ function vatSection(results) {
     { label: "Purchases net of VAT", value: fmt(purchasesNet), indent: 1 },
     { label: "**VAT due for the year**", value: fmt(salesVat - purchasesVat), indent: 0 },
   ];
-  for (let q = 1; q <= 4; q++) {
+  // The package ships five return forms: four quarters from the VAT start
+  // month and one more ending a month after the fourth, for a trader whose
+  // stagger runs past the accounting year end. Printing four left the fifth
+  // out of the report altogether. Each form carries the period it was filled
+  // in for, so the dates go on the line rather than leaving a reader to work
+  // out why the quarters do not add up to the year.
+  const quarterRows = [];
+  for (let q = 1; q <= 5; q++) {
     const boxes = results[`Vat.xlsx!VATQtr${q}`];
     if (!boxes) continue;
-    rows.push({ label: `Q${q} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
-    rows.push({ label: `Q${q} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
-    rows.push({ label: `Q${q} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+    const period = periodEnding(num(boxes.G5));
+    quarterRows.push({ label: `Q${q}${period} box 1: VAT due on sales`, value: fmt(num(boxes.G9)), indent: 1 });
+    quarterRows.push({ label: `Q${q}${period} box 4: VAT reclaimed on purchases`, value: fmt(num(boxes.G15)), indent: 1 });
+    quarterRows.push({ label: `Q${q}${period} box 5: net VAT due`, value: fmt(num(boxes.G17)), indent: 1 });
+  }
+  if (quarterRows.length > 0) {
+    rows.push({
+      label:
+        "The return periods are the trader's own VAT quarters, and the last one ends a month after the fourth, so the boxes below cover their own periods and do not add up to the year's figures above.",
+      value: "",
+    });
+    rows.push(...quarterRows);
   }
   return { title: "VAT Returns", rows };
 }
+
+// The asset workbook's totals rows carry no caption of their own, so the
+// appendix printed them as bare letters and a reader had to guess which
+// column was cost, which was depreciation and which was the disposals.
+// Every label here is the column's formula read back from the template.
+const FIXED_ASSET_CELL_LABELS = {
+  "Fixedassets.xlsx!Schedule": {
+    E1: "Total cost of every asset on the schedule, assets sold in the year included",
+    F1: "Total accumulated depreciation brought forward",
+    G1: "Total net book value brought forward (cost less depreciation brought forward)",
+    I1: "Total depreciation charged for the year",
+    J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
+    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    Q1: "Total annual investment allowance claimed",
+    R1: "Total writing down allowance claimed",
+    S1: "Total tax written down value carried forward",
+    V1: "Sale proceeds of the assets sold in the year, net of VAT",
+    W1: "Cost of the assets sold in the year",
+    X1: "Accumulated depreciation on the assets sold in the year",
+    Y1: "Balancing allowance on the disposals",
+    Z1: "Balancing charge on the disposals",
+    E57: "Cost of the assets owned at the start of the year",
+    E110: "Cost of the assets bought during the year",
+  },
+  "Fixedassets.xlsx!FAreconciliation": {
+    E11: "Additions the schedule lists, net of VAT",
+    E13: "Fixed asset purchases the purchase journal carries, net of VAT",
+    E15: "Purchases less schedule additions",
+    K11: "Disposal proceeds the schedule lists, net of VAT",
+    K13: "Fixed asset sales the sales journal carries, net of VAT",
+    K15: "Sales less schedule disposals",
+  },
+};
 
 export function cellLabels() {
   const labels = {};
@@ -837,12 +965,17 @@ export function cellLabels() {
     const key = `${sheet}!${cell}`;
     labels[key] = { diyLabel, glMapping };
   }
+  for (const [sheet, cells] of Object.entries(FIXED_ASSET_CELL_LABELS)) {
+    for (const [cell, diyLabel] of Object.entries(cells)) labels[`${sheet}!${cell}`] = { diyLabel, glMapping: "" };
+  }
   return labels;
 }
 
 function fmt(v) {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  if (typeof v === "number") return v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  // A nil that arrived by negation carries a sign bit and prints as "-0",
+  // which reads as a defect in a statement.
+  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
   return String(v);
 }
 
@@ -876,6 +1009,105 @@ export function profitBridge(results) {
   ];
 
   return buildProfitBridge(rows, `${TAX_SHEET}!E5`, num(tax.E5));
+}
+
+// ── Journal category VAT netting ───────────────────────────────────────────
+
+// A journal row takes its own VAT off its own gross and rounds nothing
+// (template: H = G * rate / (100 + rate), I = G - H), and the analysis
+// columns the statements read sum those row figures. Netting an annual
+// total instead leaves pennies behind, so the netting table sums per entry
+// the same way the sheet does.
+function sheetNetOfVat(gross, rate) {
+  return gross - (gross * rate) / (1 + rate);
+}
+
+// Journal totals by code letter: gross as entered, net the way the journal
+// rows net it, and net the way the asset schedule holds it -- the writer
+// puts a cost rounded to the penny on a schedule row, so a category that
+// lands there is compared against the rounded figure.
+function journalTotalsByCode(journal, rate, defaultCode) {
+  const gross = {};
+  const net = {};
+  const scheduleNet = {};
+  for (const transactions of Object.values(journal || {})) {
+    for (const tx of transactions) {
+      const code = tx.code || defaultCode;
+      gross[code] = (gross[code] || 0) + tx.amount;
+      net[code] = (net[code] || 0) + sheetNetOfVat(tx.amount, rate);
+      scheduleNet[code] = (scheduleNet[code] || 0) + netOfVat(tx.amount, rate);
+    }
+  }
+  return { gross, net, scheduleNet };
+}
+
+// One row per journal category that crosses into another statement, so the
+// gross-to-net step is stated where it happens rather than only in total.
+export function categoryNetting(results, scenario) {
+  if (!scenario) return null;
+  const pl = results["Profit & Loss Account"];
+  const fr = results["Fixedassets.xlsx!FAreconciliation"];
+  if (!pl && !fr) return null;
+
+  const rate = vatRateFor(scenario);
+  const num = (v) => (typeof v === "number" ? v : 0);
+  const sales = journalTotalsByCode(scenario.sales, rate, "a");
+  const purchases = journalTotalsByCode(scenario.purchases, rate);
+  const rows = [];
+
+  const plRow = (journal, side, code, row, sign = 1) => {
+    if (!pl) return;
+    rows.push({
+      code: `${journal} ${code}`,
+      label: PL_ROW_CAPTIONS[row],
+      gross: side.gross[code] || 0,
+      net: side.net[code] || 0,
+      cell: sign < 0 ? `Profit & Loss Account!B${row} negated` : `Profit & Loss Account!B${row}`,
+      downstream: sign * num(pl[`B${row}`]),
+    });
+  };
+
+  for (const [code, row] of Object.entries(SALES_MONTHLY_TIE_ROWS)) plRow("sales", sales, code, row);
+  plRow("sales", sales, "o", SALES_BAD_DEBT_ROW, -1);
+  for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) plRow("purchases", purchases, code, row);
+
+  // Stock-coded purchases reach the materials line together with the year's
+  // stock movement, so the movement comes off the line before the two sides
+  // are comparable. Without both counts there is nothing to take off and the
+  // row would be measuring the movement, not the netting.
+  const openingStock = scenario.stock?.opening ?? scenario.opening_stock;
+  const closingStock = scenario.stock?.closing ?? scenario.closing_stock;
+  if (pl && openingStock !== undefined && closingStock !== undefined) {
+    rows.push({
+      code: "purchases s",
+      label: "Purchases after stock adjustment, less the year's stock movement",
+      gross: purchases.gross.s || 0,
+      net: purchases.net.s || 0,
+      cell: "Profit & Loss Account!B14 less the stock movement",
+      downstream: num(pl.B14) - (openingStock - closingStock),
+    });
+  }
+
+  if (fr) {
+    rows.push({
+      code: "purchases fa",
+      label: "Capitalised fixed asset spend",
+      gross: purchases.gross.fa || 0,
+      net: purchases.scheduleNet.fa || 0,
+      cell: "Fixedassets.xlsx!FAreconciliation!E11",
+      downstream: num(fr.E11),
+    });
+    rows.push({
+      code: "sales fs",
+      label: "Fixed asset disposal proceeds",
+      gross: sales.gross.fs || 0,
+      net: sales.scheduleNet.fs || 0,
+      cell: "Fixedassets.xlsx!FAreconciliation!K11",
+      downstream: num(fr.K11),
+    });
+  }
+
+  return buildCategoryNetting(rate, rows);
 }
 
 // ── Compliance checks ──────────────────────────────────────────────────────
@@ -1017,7 +1249,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // IF(E5>E6,E5-E6,0)), and the tax bands below it fall to nil with it.
     check("Tax: Taxable = Profit - Allowance", tax.E7, Math.max(0, (tax.E5 || 0) - (tax.E6 || 0)));
     check("Tax: IT = Basic + Higher", tax.E10, (tax.E8 || 0) + (tax.E9 || 0));
-    check("Tax: Total = IT - CIS + NI", tax.E18, (tax.E10 || 0) - (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
+    // E11 already holds the contractor deductions negated (=-[2]Mar!$X$1) and
+    // the sheet's own total is SUM(E10:E17), so the deduction line is added,
+    // not subtracted. Every fixture so far carries nil CIS, which is why
+    // subtracting it here passed.
+    check("Tax: Total = IT + CIS deduction line + NI", tax.E18, (tax.E10 || 0) + (tax.E11 || 0) + (tax.E15 || 0) + (tax.E16 || 0));
 
     // SA103S cross-check (6g)
     const seShort = results["SE Short"];
@@ -1106,6 +1342,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     //    while E1/F1 include in-year additions. Asserting G1 = E1-F1 would
     //    be checking a false identity, not the workbook's own logic.)
     check("Fixed assets: closing NBV = cost - acc dep c/f (Schedule)", sched.K1 || 0, (sched.E1 || 0) - (sched.J1 || 0));
+
+    // The schedule's cost total against its own two halves, so the Fixed
+    // Asset Schedule section's opening and additions lines are the sheet's
+    // figures rather than a total split by the report.
+    check(
+      "Fixed assets: Schedule total cost = existing assets plus assets bought in the year",
+      sched.E1 || 0,
+      (sched.E57 || 0) + (sched.E110 || 0),
+    );
 
     // 3. P&L depreciation and disposal lines carry the Schedule's own
     //    annual totals across the cross-file link (each month books 1/12
@@ -1510,10 +1755,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const bridge = profitBridge(results);
   if (bridge) check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01);
 
+  // Every journal category the report nets, one residue at a time. The
+  // monthly ties above prove each month landed in the right column; these
+  // prove the year's gross figure reaches the statement with the VAT taken
+  // off and nothing else lost on the way.
+  const netting = categoryNetting(results, expected);
+  for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
+
   return checks;
 }
 
 function excelSerialToUtcDate(serial) {
   const epoch = Date.UTC(1899, 11, 30);
   return new Date(epoch + Math.round(serial) * 24 * 60 * 60 * 1000);
+}
+
+// The " (period ending d Month yyyy)" a VAT return line carries, or nothing
+// at all when the form has no date on it.
+function periodEnding(serial) {
+  if (!serial) return "";
+  const date = excelSerialToUtcDate(serial);
+  return ` (period ending ${date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })})`;
 }

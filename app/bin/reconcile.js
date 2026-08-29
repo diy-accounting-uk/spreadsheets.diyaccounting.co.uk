@@ -207,8 +207,9 @@ async function main() {
       // Product module owns compliance checks. Fixture anchors (opening_debtors,
       // closing_creditors, ...) are top-level scenario tables, not [expected] keys,
       // so checks that anchor against fixtures need the whole scenario merged in.
-      const checks = productMod.checkCompliance({ ...results }, { ...scenario, ...scenario.expected }, taxData, calculateExpectedTax);
-      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod);
+      const mergedScenario = { ...scenario, ...scenario.expected };
+      const checks = productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax);
+      const { content, compliant } = generateReport(pkgDir, scenarioName, results, checks, productMod, mergedScenario);
 
       // Report naming: <product>_<scenario>.md
       const reportFile = `${pkgSlug}_${scenarioName}.md`;
