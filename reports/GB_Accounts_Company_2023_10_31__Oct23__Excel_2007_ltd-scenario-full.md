@@ -12,7 +12,7 @@ Trade: IT consultancy and software development
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 2.79214873444289e-10 | +2.79214873444289e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 3.17413650918752e-10 | +3.17413650918752e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
 | Trial Balance opening: fixed asset cost | 33000 | 33000 | 0 | PASS |
@@ -32,9 +32,9 @@ Trade: IT consultancy and software development
 | Trial Balance opening: revenue reserve | -20702 | -20702 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | -13000 | -13000 | 0 | PASS |
 | P&L: Gross = Turnover - CoS | 322496.66666666634 | 322496.666666666 | -3.4924596548080444e-10 | PASS |
-| P&L: Operating = Gross - Admin | 173840.391666666 | 173840.391666666 | 0 | PASS |
-| P&L: PBT = Operating + Interest | 174115.391666666 | 174115.391666666 | 0 | PASS |
-| P&L: Admin lines sum = Total | 148656.27500000002 | 148656.275 | -2.9103830456733704e-11 | PASS |
+| P&L: Operating = Gross - Admin | 171840.391666666 | 171840.391666666 | 0 | PASS |
+| P&L: PBT = Operating + Interest | 172115.391666666 | 172115.391666666 | 0 | PASS |
+| P&L: Admin lines sum = Total | 150656.27500000002 | 150656.275 | -2.9103830456733704e-11 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
 | Stock: opening carried in from the opening balance sheet | 10000 | 10000 | 0 | PASS |
@@ -42,15 +42,16 @@ Trade: IT consultancy and software development
 | Stock: loss adjustment = count - calculated | -102.00000000002001 | -102.000000000015 | +5.002220859751105e-12 | PASS |
 | Published balance sheet: stock = year-end stock | 6000 | 6000 | 0 | PASS |
 | Stock: calculated stock = opening + materials bought - materials sold | 6102 | 6102.00000000002 | +2.000888343900442e-11 | PASS |
-| Published balance sheet: trade debtors = closing debtors | 10400 | 10400 | 0 | PASS |
+| Published balance sheet: trade debtors = closing debtors | 7900 | 7900 | 0 | PASS |
+| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts | 7900 | 7900 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 70816.6666666667 | 70816.6666666667 | 0 | PASS |
-| VAT: Q1-Q4 box 4 = Purchases VAT | 18498.708333333332 | 18498.70833333333 | -3.637978807091713e-12 | PASS |
-| VAT Q1: box 5 = box 3 - box 4 | 13496.125 | 13496.125 | 0 | PASS |
-| VAT Q2: box 5 = box 3 - box 4 | 14183.4166666667 | 14183.4166666667 | 0 | PASS |
+| VAT: Q1-Q4 box 4 = Purchases VAT | 22498.708333333332 | 22498.70833333333 | -3.637978807091713e-12 | PASS |
+| VAT Q1: box 5 = box 3 - box 4 | 10896.125 | 10896.125 | 0 | PASS |
+| VAT Q2: box 5 = box 3 - box 4 | 12783.4166666667 | 12783.4166666667 | 0 | PASS |
 | VAT Q3: box 5 = box 3 - box 4 | 9884.125 | 9884.12500000001 | +9.094947017729282e-12 | PASS |
 | VAT Q4: box 5 = box 3 - box 4 | 14754.29166666667 | 14754.2916666667 | +3.092281986027956e-11 | PASS |
 | VAT: annual output VAT = the sales journal at the book's rate | 70816.70999999998 | 70816.6666666667 | -0.04333333327667788 | PASS |
-| VAT: annual input VAT = the purchase journal at the book's rate | 18498.670000000002 | 18498.708333333332 | +0.038333333330228925 | PASS |
+| VAT: annual input VAT = the purchase journal at the book's rate | 22498.67000000001 | 22498.708333333332 | +0.03833333332295297 | PASS |
 | Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
@@ -85,8 +86,8 @@ Trade: IT consultancy and software development
 | Vatinterface J7: Dec input VAT = Purchases.xlsx Dec | 1062.5 | 1062.5 | 0 | PASS |
 | Vatinterface D8: Jan sales net = Sales.xlsx Jan | 29333.3333333333 | 29333.3333333333 | 0 | PASS |
 | Vatinterface F8: Jan output VAT = Sales.xlsx Jan | 5866.66666666667 | 5866.66666666667 | 0 | PASS |
-| Vatinterface H8: Jan purchases net = Purchases.xlsx Jan | 7547.5 | 7547.5 | 0 | PASS |
-| Vatinterface J8: Jan input VAT = Purchases.xlsx Jan | 1509.5 | 1509.5 | 0 | PASS |
+| Vatinterface H8: Jan purchases net = Purchases.xlsx Jan | 20547.5 | 20547.5 | 0 | PASS |
+| Vatinterface J8: Jan input VAT = Purchases.xlsx Jan | 4109.5 | 4109.5 | 0 | PASS |
 | Vatinterface D9: Feb sales net = Sales.xlsx Feb | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
 | Vatinterface F9: Feb output VAT = Sales.xlsx Feb | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
 | Vatinterface H9: Feb purchases net = Purchases.xlsx Feb | 7549.375 | 7549.375 | 0 | PASS |
@@ -97,8 +98,8 @@ Trade: IT consultancy and software development
 | Vatinterface J10: Mar input VAT = Purchases.xlsx Mar | 734.208333333333 | 734.208333333333 | 0 | PASS |
 | Vatinterface D11: Apr sales net = Sales.xlsx Apr | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
 | Vatinterface F11: Apr output VAT = Sales.xlsx Apr | 5626.66666666667 | 5626.66666666667 | 0 | PASS |
-| Vatinterface H11: Apr purchases net = Purchases.xlsx Apr | 4145.83333333333 | 4145.83333333333 | 0 | PASS |
-| Vatinterface J11: Apr input VAT = Purchases.xlsx Apr | 829.166666666667 | 829.166666666667 | 0 | PASS |
+| Vatinterface H11: Apr purchases net = Purchases.xlsx Apr | 11145.8333333333 | 11145.8333333333 | 0 | PASS |
+| Vatinterface J11: Apr input VAT = Purchases.xlsx Apr | 2229.16666666667 | 2229.16666666667 | 0 | PASS |
 | Vatinterface D12: May sales net = Sales.xlsx May | 42133.3333333333 | 42133.3333333333 | 0 | PASS |
 | Vatinterface F12: May output VAT = Sales.xlsx May | 8426.66666666667 | 8426.66666666667 | 0 | PASS |
 | Vatinterface H12: May purchases net = Purchases.xlsx May | 35838.125 | 35838.125 | 0 | PASS |
@@ -139,24 +140,28 @@ Trade: IT consultancy and software development
 | Vatinterface F19: 05Y2 output VAT = the straddling sales entered for that period | 300 | 300 | 0 | PASS |
 | Vatinterface H19: 05Y2 purchases net = the straddling purchases entered for that period | 300 | 300 | 0 | PASS |
 | Vatinterface J19: 05Y2 input VAT = the straddling purchases entered for that period | 60 | 60 | 0 | PASS |
+| Vatinterface D20: 06Y2 sales net = the straddling sales entered for that period | 1000 | 1000 | 0 | PASS |
+| Vatinterface F20: 06Y2 output VAT = the straddling sales entered for that period | 200 | 200 | 0 | PASS |
+| Vatinterface H20: 06Y2 purchases net = the straddling purchases entered for that period | 400 | 400 | 0 | PASS |
+| Vatinterface J20: 06Y2 input VAT = the straddling purchases entered for that period | 80 | 80 | 0 | PASS |
 | VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E8: quarter sales net = its three period rows | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
 | Vatinterface G8: quarter output VAT = its three period rows | 16920.000000000007 | 16920 | -7.275957614183426e-12 | PASS |
-| Vatinterface I8: quarter purchases net = its three period rows | 17119.375 | 17119.375 | 0 | PASS |
-| Vatinterface K8: quarter input VAT = its three period rows | 3423.875 | 3423.875 | 0 | PASS |
+| Vatinterface I8: quarter purchases net = its three period rows | 30119.375 | 30119.375 | 0 | PASS |
+| Vatinterface K8: quarter input VAT = its three period rows | 6023.875 | 6023.875 | 0 | PASS |
 | VAT Q1: box 1 (G9) = Vatinterface quarter VAT due (G8) | 16920 | 16920 | 0 | PASS |
-| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 3423.875 | 3423.875 | 0 | PASS |
-| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 17119.375 | 17119.375 | 0 | PASS |
+| VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 6023.875 | 6023.875 | 0 | PASS |
+| VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 30119.375 | 30119.375 | 0 | PASS |
 | VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 84599.9999999999 | 84599.9999999999 | 0 | PASS |
 | VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 44985 | 44985 | 0 | PASS |
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E11: quarter sales net = its three period rows | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | Vatinterface G11: quarter output VAT = its three period rows | 17256.66666666667 | 17256.6666666667 | +2.9103830456733704e-11 | PASS |
-| Vatinterface I11: quarter purchases net = its three period rows | 15366.25 | 15366.25 | 0 | PASS |
-| Vatinterface K11: quarter input VAT = its three period rows | 3073.25 | 3073.25 | 0 | PASS |
+| Vatinterface I11: quarter purchases net = its three period rows | 22366.24999999997 | 22366.25 | +2.9103830456733704e-11 | PASS |
+| Vatinterface K11: quarter input VAT = its three period rows | 4473.250000000004 | 4473.25 | -3.637978807091713e-12 | PASS |
 | VAT Q2: box 1 (G9) = Vatinterface quarter VAT due (G11) | 17256.6666666667 | 17256.6666666667 | 0 | PASS |
-| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 3073.25 | 3073.25 | 0 | PASS |
-| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 15366.25 | 15366.25 | 0 | PASS |
+| VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 4473.25 | 4473.25 | 0 | PASS |
+| VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 22366.25 | 22366.25 | 0 | PASS |
 | VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 86283.3333333333 | 86283.3333333333 | 0 | PASS |
 | VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 45077 | 45077 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
@@ -180,24 +185,25 @@ Trade: IT consultancy and software development
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 84299.9999999999 | 84299.9999999999 | 0 | PASS |
 | VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 45260 | 45260 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
-| Vatinterface E19: quarter sales net = its three period rows | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| Vatinterface G19: quarter output VAT = its three period rows | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| Vatinterface I19: quarter purchases net = its three period rows | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| Vatinterface K19: quarter input VAT = its three period rows | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G19) | 6126.66666666667 | 6126.66666666667 | 0 | PASS |
-| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K19) | 721.083333333333 | 721.083333333333 | 0 | PASS |
-| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I19) | 3605.41666666667 | 3605.41666666667 | 0 | PASS |
-| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 30633.3333333333 | 30633.3333333333 | 0 | PASS |
-| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C19) | 45322 | 45322 | 0 | PASS |
+| Vatinterface E20: quarter sales net = its three period rows | 5500 | 5500 | 0 | PASS |
+| Vatinterface G20: quarter output VAT = its three period rows | 1100 | 1100 | 0 | PASS |
+| Vatinterface I20: quarter purchases net = its three period rows | 900 | 900 | 0 | PASS |
+| Vatinterface K20: quarter input VAT = its three period rows | 180 | 180 | 0 | PASS |
+| VAT Q5: box 1 (G9) = Vatinterface quarter VAT due (G20) | 1100 | 1100 | 0 | PASS |
+| VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K20) | 180 | 180 | 0 | PASS |
+| VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I20) | 900 | 900 | 0 | PASS |
+| VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 5500 | 5500 | 0 | PASS |
+| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 45351 | 45351 | 0 | PASS |
 | VAT: the five returns end on five different periods | 5 | 5 | 0 | PASS |
 | VAT: Q2 ends a quarter after Q1 | 3 | 3 | 0 | PASS |
 | VAT: Q3 ends a quarter after Q2 | 3 | 3 | 0 | PASS |
 | VAT: Q4 ends a quarter after Q3 | 3 | 3 | 0 | PASS |
+| VAT: Q5 ends a quarter after Q4 | 3 | 3 | 0 | PASS |
 | VAT: Q1-Q4 cover every month of the accounting year | 12 | 12 | 0 | PASS |
-| VAT: Q5 ends on the last period the Vatinterface carries | 19 | 19 | 0 | PASS |
-| VAT: periods more than one of the five returns declares | 0 | 1 | +1 | **WARNING** |
-| VAT: output VAT declared on more than one of the five returns | 0 | 5226.66666666667 | +5226.66666666667 | **WARNING** |
-| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 30990 | 30990 | 0 | PASS |
+| VAT: Q5 ends on the last period the Vatinterface carries | 20 | 20 | 0 | PASS |
+| VAT: periods more than one of the five returns declares | 0 | 0 | 0 | PASS |
+| VAT: output VAT declared on more than one of the five returns | 0 | 0 | 0 | PASS |
+| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 48990 | 48990 | 0 | PASS |
 | Fixed asset note (land): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): additions = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
@@ -208,14 +214,14 @@ Trade: IT consultancy and software development
 | Fixed asset note (land): depreciation carried forward | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): net book value = cost less depreciation | 0 | 0 | 0 | PASS |
 | Fixed asset note (plant): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (plant): additions = Schedule | 32500 | 32500 | 0 | PASS |
+| Fixed asset note (plant): additions = Schedule | 52500 | 52500 | 0 | PASS |
 | Fixed asset note (plant): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (plant): cost carried forward | 32500 | 32500 | 0 | PASS |
+| Fixed asset note (plant): cost carried forward | 52500 | 52500 | 0 | PASS |
 | Fixed asset note (plant): depreciation brought forward = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (plant): charge for the year = Schedule | 3250 | 3250 | 0 | PASS |
+| Fixed asset note (plant): charge for the year = Schedule | 5250 | 5250 | 0 | PASS |
 | Fixed asset note (plant): depreciation on disposals = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (plant): depreciation carried forward | 3250 | 3250 | 0 | PASS |
-| Fixed asset note (plant): net book value = cost less depreciation | 29250 | 29250 | 0 | PASS |
+| Fixed asset note (plant): depreciation carried forward | 5250 | 5250 | 0 | PASS |
+| Fixed asset note (plant): net book value = cost less depreciation | 47250 | 47250 | 0 | PASS |
 | Fixed asset note (fixtures): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (fixtures): additions = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (fixtures): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
@@ -244,17 +250,17 @@ Trade: IT consultancy and software development
 | Fixed asset note (motor): depreciation carried forward | 0 | 0 | 0 | PASS |
 | Fixed asset note (motor): net book value = cost less depreciation | 0 | 0 | 0 | PASS |
 | Fixed asset note: total cost brought forward = Schedule existing assets | 33000 | 33000 | 0 | PASS |
-| Fixed asset note: total additions = Schedule new assets | 32500 | 32500 | 0 | PASS |
-| Fixed asset note: total charge for the year = Schedule | 11740 | 11740 | 0 | PASS |
+| Fixed asset note: total additions = Schedule new assets | 52500 | 52500 | 0 | PASS |
+| Fixed asset note: total charge for the year = Schedule | 13740 | 13740 | 0 | PASS |
 | Fixed asset note: total disposals at cost = Schedule | 30000 | 30000 | 0 | PASS |
 | Fixed asset note: total depreciation on disposals = Schedule | 17328 | 17328 | 0 | PASS |
-| Fixed asset note: total net book value = the asset class columns | 30990 | 30990 | 0 | PASS |
+| Fixed asset note: total net book value = the asset class columns | 48990 | 48990 | 0 | PASS |
 | Fixed asset schedule (land): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Land & Property |  | PASS |
 | Fixed asset schedule (plant): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Plant & Machinery |  | PASS |
 | Fixed asset schedule (fixtures): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Fixtures & Fittings |  | PASS |
 | Fixed asset schedule (computer): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Computers |  | PASS |
 | Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Motor Vehicles |  | PASS |
-| Published balance sheet: fixed assets = fixed asset note net book value | 30990 | 30990 | 0 | PASS |
+| Published balance sheet: fixed assets = fixed asset note net book value | 48990 | 48990 | 0 | PASS |
 | RegisterofMembers: nominal value x shares issued = PubBalSht share capital | 100 | 100 | 0 | PASS |
 | Directors' report: sales turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | Directors' report: last year's turnover = published P&L prior year column | 0 | 0 | 0 | PASS |
@@ -283,9 +289,14 @@ Trade: IT consultancy and software development
 | Trial Balance: dividends creditor = opening plus declared less paid | 0 | 0 | 0 | PASS |
 | Published balance sheet: creditors due after more than one year = the secured loan plus hire purchase agreements | 45000 | 45000 | 0 | PASS |
 | Charges register: the balance sheet carries a creditor falling due after more than one year | more than 0 and no more than the 50000 the directors valued the charged assets and the hire purchase agreements finance | 45000 |  | PASS |
-| Fixed assets: Schedule additions = fixed asset purchases net of VAT | 32500 | 32500 | 0 | PASS |
+| Trial Balance: trade creditors = opening plus purchases, less creditor payments and the amounts financed | 12432.25 | 12432.25 | 0 | PASS |
+| Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | -40682.169999999984 | -40682.17 | -1.4551915228366852e-11 | PASS |
+| Trial Balance: CIS creditor = the remittances paid under RC | 1600 | 1600 | 0 | PASS |
+| CIS: sub-contractor tax withheld reaches the purchase journal | 1600 | 0 | -1600 | **WARNING** |
+| Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 29156.76675462949 | 29156.7667546295 | +1.0913936421275139e-11 | PASS |
+| Fixed assets: Schedule additions = fixed asset purchases net of VAT | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 12500 | 12500 | 0 | PASS |
-| P&L: depreciation = fixed asset note charge for the year | 11740 | 11740 | 0 | PASS |
+| P&L: depreciation = fixed asset note charge for the year | 13740 | 13740 | 0 | PASS |
 | P&L: loss on disposal = Schedule cost less depreciation less proceeds | 172 | 172 | 0 | PASS |
 | HP: first agreement monthly payment = the amount financed with charges over its term | 750 | 750 | 0 | PASS |
 | HP: first agreement capital and interest split sums to the monthly payment | 750 | 750 | 0 | PASS |
@@ -293,12 +304,12 @@ Trade: IT consultancy and software development
 | HP: second agreement capital and interest split sums to the monthly payment | 405 | 405 | 0 | PASS |
 | HP: long term creditors = the agreements' amounts financed | 20000 | 20000 | 0 | PASS |
 | P&L: HP interest and charges reach the Bank Charges line (B36) | 3935 | 3935 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 204415.42999999993 | 204415.43 | +5.820766091346741e-11 | PASS |
-| Savingaccount.xlsx: closing balance = opening + receipts - payments | -12825 | -12825 | 0 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 181315.43 | 181315.43 | 0 | PASS |
+| Savingaccount.xlsx: closing balance = opening + receipts - payments | 10275 | 10275 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 480 | 480 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 1025 | 1025 | 0 | PASS |
-| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 204415.42999999993 | 204415.43 | +5.820766091346741e-11 | PASS |
-| Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | -12825 | -12825 | 0 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 181315.43 | 181315.43 | 0 | PASS |
+| Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 10275 | 10275 | 0 | PASS |
 | Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 480 | 480 | 0 | PASS |
 | Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 1025 | 1025 | 0 | PASS |
 | Published balance sheet: cash at bank = Trial Balance bank account aggregate | 192995.43 | 192995.43 | 0 | PASS |
@@ -589,7 +600,7 @@ Trade: IT consultancy and software development
 | P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 30016.6666666667 | 30016.6666666666 | -1.0186340659856796e-10 | PASS |
 | P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 2554.375000000003 | 2554.375 | -3.183231456205249e-12 | PASS |
 | P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales | 28133.3333333333 | 28133.3333333333 | 0 | PASS |
-| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 3945.8333333333303 | 3945.8333333333294 | -9.094947017729282e-13 | PASS |
+| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 3945.8333333332994 | 3945.8333333333294 | +3.001332515850663e-11 | PASS |
 | P&L May turnover = Sales.xlsx May net less bad debts and asset sales | 29633.3333333333 | 29633.3333333333 | 0 | PASS |
 | P&L May expense lines = Purchases.xlsx May net less materials, wages and asset purchases | 5438.125 | 5438.125 | 0 | PASS |
 | P&L Jun turnover = Sales.xlsx Jun net less bad debts and asset sales | 29433.3333333333 | 29433.3333333333 | 0 | PASS |
@@ -782,58 +793,58 @@ Trade: IT consultancy and software development
 | Fixed asset note: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
 | Fixed asset note: depreciation rate, computer equipment | 0.33 | 0.33 | 0 | PASS |
 | Fixed asset note: depreciation rate, motor vehicles | 0.25 | 0.25 | 0 | PASS |
-| Published P&L: operating profit = management P&L operating profit | 173840.391666666 | 173840.391666666 | 0 | PASS |
-| CT: operating profit = published P&L operating profit | 173840.391666666 | 173840.391666666 | 0 | PASS |
-| CT: depreciation add-back = P&L depreciation | 11740 | 11740 | 0 | PASS |
+| Published P&L: operating profit = management P&L operating profit | 171840.391666666 | 171840.391666666 | 0 | PASS |
+| CT: operating profit = published P&L operating profit | 171840.391666666 | 171840.391666666 | 0 | PASS |
+| CT: depreciation add-back = P&L depreciation | 13740 | 13740 | 0 | PASS |
 | CT: goodwill add-back = P&L goodwill written off | 2500 | 2500 | 0 | PASS |
-| CT: add-backs = depreciation + goodwill | 14240 | 14240 | 0 | PASS |
+| CT: add-backs = depreciation + goodwill | 16240 | 16240 | 0 | PASS |
 | CT: profit plus add-backs | 188080.391666666 | 188080.391666666 | 0 | PASS |
-| CT: annual investment allowance = Schedule annual investment allowance | 32500 | 32500 | 0 | PASS |
+| CT: annual investment allowance = Schedule annual investment allowance | 52500 | 52500 | 0 | PASS |
 | CT: writing down allowances = Schedule writing down allowances | 3000 | 3000 | 0 | PASS |
 | CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 8500 | 8500 | 0 | PASS |
-| CT: capital allowances = the allowance lines | 44000 | 44000 | 0 | PASS |
-| CT: profit after capital allowances | 144080.391666666 | 144080.391666666 | 0 | PASS |
-| CT: chargeable profit = profit after allowances + interest - losses brought forward | 144419.8978395055 | 144419.897839506 | +5.238689482212067e-10 | PASS |
-| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 144419.8978395055 | 144419.897839506 | +5.238689482212067e-10 | PASS |
+| CT: capital allowances = the allowance lines | 64000 | 64000 | 0 | PASS |
+| CT: profit after capital allowances | 124080.391666666 | 124080.391666666 | 0 | PASS |
+| CT: chargeable profit = profit after allowances + interest - losses brought forward | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
+| CT: chargeable profit = operating profit + add-backs - capital allowances + interest - losses | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
 | CT600: turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
-| CT600: trading profits = CT profit after capital allowances | 144080.391666666 | 144080.391666666 | 0 | PASS |
+| CT600: trading profits = CT profit after capital allowances | 124080.391666666 | 124080.391666666 | 0 | PASS |
 | CT600: losses brought forward = CT losses brought forward | 0 | 0 | 0 | PASS |
-| CT600: net trading profits = trading profits - losses brought forward | 144080.391666666 | 144080.391666666 | 0 | PASS |
+| CT600: net trading profits = trading profits - losses brought forward | 124080.391666666 | 124080.391666666 | 0 | PASS |
 | CT600: interest received = CT interest received | 339.506172839506 | 339.506172839506 | 0 | PASS |
-| CT600: profits before deductions = trading profits + interest | 144419.8978395055 | 144419.897839506 | +5.238689482212067e-10 | PASS |
-| CT600: profits chargeable = CT chargeable profit | 144419.897839506 | 144419.897839506 | 0 | PASS |
+| CT600: profits before deductions = trading profits + interest | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
+| CT600: profits chargeable = CT chargeable profit | 124419.897839506 | 124419.897839506 | 0 | PASS |
 | CT600: financial year = first tax row financial year | 2022 | 2022 | 0 | PASS |
-| CT600: amount of profit = first tax row profit | 59746.313900727 | 59746.313900727 | 0 | PASS |
+| CT600: amount of profit = first tax row profit | 51472.3412979873 | 51472.3412979873 | 0 | PASS |
 | CT600: tax rate = first tax row rate | 25 | 25 | 0 | PASS |
-| CT600: corporation tax = first tax row gross tax | 14936.5784751818 | 14936.5784751818 | 0 | PASS |
-| CT600: second financial year tax = second tax row gross tax | 21168.3959846947 | 21168.3959846947 | 0 | PASS |
+| CT600: corporation tax = first tax row gross tax | 12868.0853244968 | 12868.0853244968 | 0 | PASS |
+| CT600: second financial year tax = second tax row gross tax | 18236.8891353796 | 18236.8891353796 | 0 | PASS |
 | CT600: second financial year = second tax row financial year | 2023 | 2023 | 0 | PASS |
-| CT600: second financial year profit = second tax row profit | 84673.5839387787 | 84673.5839387787 | 0 | PASS |
+| CT600: second financial year profit = second tax row profit | 72947.5565415185 | 72947.5565415185 | 0 | PASS |
 | CT600: second financial year rate = second tax row rate | 25 | 25 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 36104.974459876496 | 36104.9744598764 | -9.458744898438454e-11 | PASS |
-| CT600: marginal rate relief = the working sheet's relief | 1583.701532407414 | 1583.70153240741 | -4.092726157978177e-12 | PASS |
-| CT600: tax net of marginal relief = the working sheet's charge | 34521.272927469 | 34521.272927469 | 0 | PASS |
-| CT600: corporation tax chargeable = tax net of marginal relief | 34521.272927469 | 34521.272927469 | 0 | PASS |
-| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.90340489357812 | 23.9034048935782 | +8.171241461241152e-14 | PASS |
-| CT600: tax outstanding | 34456.7667546295 | 34456.7667546295 | 0 | PASS |
-| Fixed asset note: corporation tax for the year = CT charge | 34521.272927469 | 34521.272927469 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 31104.9744598764 | 31104.9744598765 | +9.822542779147625e-11 | PASS |
+| CT600: marginal rate relief = the working sheet's relief | 1883.701532407409 | 1883.70153240741 | +9.094947017729282e-13 | PASS |
+| CT600: tax net of marginal relief = the working sheet's charge | 29221.272927469 | 29221.272927469 | 0 | PASS |
+| CT600: corporation tax chargeable = tax net of marginal relief | 29221.272927469 | 29221.272927469 | 0 | PASS |
+| CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 23.486012635344423 | 23.4860126353445 | +7.815970093361102e-14 | PASS |
+| CT600: tax outstanding | 29156.7667546295 | 29156.7667546295 | 0 | PASS |
+| Fixed asset note: corporation tax for the year = CT charge | 29221.272927469 | 29221.272927469 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
-| CT: first tax row profit = chargeable profit by its share of those days | 59746.313900727146 | 59746.313900727 | -1.4551915228366852e-10 | PASS |
-| CT: second tax row profit = chargeable profit by its share of those days | 84673.58393877886 | 84673.5839387787 | -1.6007106751203537e-10 | PASS |
-| CT: first tax row gross tax = its profit at its rate | 14936.578475181748 | 14936.5784751818 | +5.093170329928398e-11 | PASS |
-| CT: second tax row gross tax = its profit at its rate | 21168.395984694675 | 21168.3959846947 | +2.546585164964199e-11 | PASS |
-| CT: first tax row tax = its gross tax less its marginal relief | 14281.403320679006 | 14281.403320679 | -5.4569682106375694e-12 | PASS |
-| CT: second tax row tax = its gross tax less its marginal relief | 20239.86960679008 | 20239.8696067901 | +2.1827872842550278e-11 | PASS |
-| CT: charge for the year = the two tax rows | 34521.2729274691 | 34521.272927469 | -1.0186340659856796e-10 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 51472.34129798741 | 51472.3412979873 | -1.0913936421275139e-10 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 72947.55654151858 | 72947.5565415185 | -8.731149137020111e-11 | PASS |
+| CT: first tax row gross tax = its profit at its rate | 12868.085324496824 | 12868.0853244968 | -2.3646862246096134e-11 | PASS |
+| CT: second tax row gross tax = its profit at its rate | 18236.889135379624 | 18236.8891353796 | -2.546585164964199e-11 | PASS |
+| CT: first tax row tax = its gross tax less its marginal relief | 12088.800580952911 | 12088.8005809529 | -1.0913936421275139e-11 | PASS |
+| CT: second tax row tax = its gross tax less its marginal relief | 17132.47234651608 | 17132.4723465161 | +2.1827872842550278e-11 | PASS |
+| CT: charge for the year = the two tax rows | 29221.272927469 | 29221.272927469 | 0 | PASS |
 | CT: first tax row rate = the rate its share of the profit falls in | 25 | 25 | 0 | PASS |
 | CT: second tax row rate = the rate its share of the profit falls in | 25 | 25 | 0 | PASS |
-| CT: first tax row marginal relief = its share of the profit against its share of the limits | 655.1751545027937 | 655.175154502793 | -6.821210263296962e-13 | PASS |
-| CT: second tax row marginal relief = its share of the profit against its share of the limits | 928.526377904621 | 928.526377904621 | 0 | PASS |
+| CT: first tax row marginal relief = its share of the profit against its share of the limits | 779.2847435438891 | 779.284743543889 | -1.1368683772161603e-13 | PASS |
+| CT: second tax row marginal relief = its share of the profit against its share of the limits | 1104.416788863524 | 1104.41678886352 | -4.092726157978177e-12 | PASS |
 | CT: both financial year rows carry the same small profits rate | 19 | 19 | 0 | PASS |
-| CT: Tax outstanding = CT less tax deducted at source | 34456.76675462949 | 34456.7667546295 | +7.275957614183426e-12 | PASS |
-| CT: charge for the year = the statutory computation with marginal relief | 34521.272927469094 | 34521.272927469 | -9.458744898438454e-11 | PASS |
-| Accounting profit to tax profit bridge closes to zero | 0 | -5.238689482212067e-10 | -5.238689482212067e-10 | PASS |
+| CT: Tax outstanding = CT less tax deducted at source | 29156.766754629494 | 29156.7667546295 | +7.275957614183426e-12 | PASS |
+| CT: charge for the year = the statutory computation with marginal relief | 29221.27292746909 | 29221.272927469 | -9.094947017729282e-11 | PASS |
+| Accounting profit to tax profit bridge closes to zero | 0 | -4.94765117764473e-10 | -4.94765117764473e-10 | PASS |
 | Category netting: Sales Product A (sales a) net reaches MnthP&L!B4 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product B (sales b) net reaches MnthP&L!B5 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product C (sales c) net reaches MnthP&L!B6 with no residue | 0 | 0 | 0 | PASS |
@@ -865,15 +876,15 @@ Trade: IT consultancy and software development
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Profit before tax per the management profit and loss account | MnthP&L!B45 | 174,115.39 |
+| Profit before tax per the management profit and loss account | MnthP&L!B45 | 172,115.39 |
 | Less bank interest received, net of tax deducted at source | MnthP&L!B44 | -275 |
 | Add back goodwill written off | CorporationTax!I7 | 2,500 |
-| Add back depreciation charged in the year | CorporationTax!I8 | 11,740 |
-| Less capital allowances | CorporationTax!K20 | -44,000 |
+| Add back depreciation charged in the year | CorporationTax!I8 | 13,740 |
+| Less capital allowances | CorporationTax!K20 | -64,000 |
 | Add gross bank interest received | CorporationTax!K24 | 339.51 |
 | Less losses brought forward | CorporationTax!K26 | 0 |
-| **Tax profit the bridge computes** | | **144,419.9** |
-| Tax profit the sheet carries | CorporationTax!K28 | 144,419.9 |
+| **Tax profit the bridge computes** | | **124,419.9** |
+| Tax profit the sheet carries | CorporationTax!K28 | 124,419.9 |
 | **Residue** | | **0** |
 
 ## Journal category VAT netting
@@ -906,7 +917,7 @@ Journal amounts include VAT at 20%.
 | Charitable Donations (purchases y) | 500 | 83.33 | 416.67 | MnthP&L!B37 | 416.67 | 0 |
 | Goodwill written off (purchases z) | 3,000 | 500 | 2,500 | MnthP&L!B38 | 2,500 | 0 |
 | Wages and Salaries, less the payroll's own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the payroll gross pay | 666.67 | 0 |
-| Capitalised fixed asset spend (purchases fa) | 39,000 | 6,500 | 32,500 | Fixedassets.xlsx!FAreconciliation!E11 | 32,500 | 0 |
+| Capitalised fixed asset spend (purchases fa) | 63,000 | 10,500 | 52,500 | Fixedassets.xlsx!FAreconciliation!E11 | 52,500 | 0 |
 | Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
 
 ## Business Details
@@ -976,44 +987,44 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Charitable Donations (code y) | 416.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Goodwill written off (code z) | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss on disposal of assets | 172 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 11,740 |
-| Total Admin Expenses | 148,656.28 |
-| **Operating Profit** | 173,840.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation | 13,740 |
+| Total Admin Expenses | 150,656.28 |
+| **Operating Profit** | 171,840.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest Received | 275 |
-| **Profit Before Tax** | 174,115.39 |
+| **Profit Before Tax** | 172,115.39 |
 
 ## Corporation Tax working sheet
 
 | | Amount |
 |---|------:|
-| Operating Profit | 173,840.39 |
+| Operating Profit | 171,840.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add back: Goodwill | 2,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 11,740 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 14,240 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: Depreciation | 13,740 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Add back: total | 16,240 |
 | Operational profit chargeable | 188,080.39 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 44,000 |
-| Profit after capital allowances | 144,080.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Less: Capital Allowances | 64,000 |
+| Profit after capital allowances | 124,080.39 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Add: gross bank interest | 339.51 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: losses brought forward | 0 |
-| **Profit Chargeable to CT** | 144,419.9 |
-| **Corporation Tax** | 34,521.27 |
-| Tax Outstanding | 34,456.77 |
+| **Profit Chargeable to CT** | 124,419.9 |
+| **Corporation Tax** | 29,221.27 |
+| Tax Outstanding | 29,156.77 |
 
 ## CT600 as filed
 
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,022 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 59,746.31 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 51,472.34 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 14,936.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 12,868.09 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,023 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 84,673.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 72,947.56 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 21,168.4 |
-| **Box 63: corporation tax** | 36,104.97 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 1,583.7 |
-| **Box 65: corporation tax net of marginal rate relief** | 34,521.27 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 18,236.89 |
+| **Box 63: corporation tax** | 31,104.97 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 1,883.7 |
+| **Box 65: corporation tax net of marginal rate relief** | 29,221.27 |
 
 ## Published P&L
 
@@ -1024,51 +1035,51 @@ Journal amounts include VAT at 20%.
 | **Total Sales Turnover** | 341,283.33 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales | 18,786.67 |
 | **Gross Profit** | 322,496.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 148,656.28 |
-| **Operating Profit** | 173,840.39 |
-| **Profit Before Tax** | 174,179.9 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 34,521.27 |
-| **Profit after Tax** | 139,658.62 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Administrative Expenses | 150,656.28 |
+| **Operating Profit** | 171,840.39 |
+| **Profit Before Tax** | 172,179.9 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax | 29,221.27 |
+| **Profit after Tax** | 142,958.62 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Dividends | 15,000 |
-| **Retained Profit for the year** | 124,658.62 |
+| **Retained Profit for the year** | 127,958.62 |
 
 ## Published Balance Sheet
 
 | | Amount |
 |---|------:|
-| Fixed Assets (NBV) | 30,990 |
+| Fixed Assets (NBV) | 48,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 6,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 10,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 7,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 192,995.43 |
-| Current Assets | 209,395.43 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | -11,567.75 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 38,956.77 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 9,535.79 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 36,924.81 |
-| **Net Current Assets** | 172,470.62 |
-| **Total Assets less CL** | 203,460.62 |
+| Current Assets | 206,895.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 12,432.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 29,156.77 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 7,535.79 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 49,124.81 |
+| **Net Current Assets** | 157,770.62 |
+| **Total Assets less CL** | 206,760.62 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Creditors due after more than one year | 45,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 58,000 |
-| **Net Assets** | 145,460.62 |
+| **Net Assets** | 148,760.62 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| **Shareholders' Funds** | 145,460.62 |
+| **Shareholders' Funds** | 148,760.62 |
 
 ## Fixed Asset Note
 
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Original cost brought forward | 33,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Additions | 32,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additions | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Disposals | 30,000 |
-| **Original cost carried forward** | 35,500 |
+| **Original cost carried forward** | 55,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Depreciation brought forward | 10,098 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Charge for the year | 11,740 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Charge for the year | 13,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;On disposals | 17,328 |
-| **Depreciation carried forward** | 4,510 |
-| **Net book value** | 30,990 |
+| **Depreciation carried forward** | 6,510 |
+| **Net book value** | 48,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 4,166.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 34,521.27 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 29,221.27 |
 
 ## Directors' Report
 
@@ -1119,8 +1130,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -20,702 |
 | **Opening Balances Audit Check** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 204,415.43 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | -12,825 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,315.43 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 1,025 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 480 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Intra Cash & Bank Transfers | -100 |
@@ -1137,38 +1148,35 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Sales invoiced including VAT | 424,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;VAT charged on sales | 70,816.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Sales net of VAT | 354,083.33 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 110,992.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 18,498.71 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 92,493.54 |
-| **VAT due for the year** | 52,317.96 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases invoiced including VAT | 134,992.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;VAT reclaimed on purchases | 22,498.71 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 112,493.54 |
+| **VAT due for the year** | 48,317.96 |
 | **How the return periods line up with the accounting year** |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 30 November 2022, 31 December 2022, 31 January 2023 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 28 February 2023, 31 March 2023, 30 April 2023 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 31 May 2023, 30 June 2023, 31 July 2023 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 31 August 2023, 30 September 2023, 31 October 2023 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 31 October 2023, 30 November 2023, 31 December 2023 |
-| The returns above also cover the periods ending 30 November 2023, 31 December 2023, which fall outside the accounting year. |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 100 |
-| Q4 and Q5 both cover the period ending 31 October 2023. The last form is a spare, for a business whose quarter stagger puts five returns across the accounting year; each form takes its period from a dropdown of the month ends the book carries. The book stops two months after the year end, so there is no row to total the quarter after the fourth return and the spare lands on the last period the book carries instead. Filing all five as they stand would declare that period twice. |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on it | 5,226.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on it | 621.08 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 30 November 2023, 31 December 2023, 31 January 2024 |
+| The returns above also cover the periods ending 30 November 2023, 31 December 2023, 31 January 2024, which fall outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 1,100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 180 |
 | **The return forms as the package fills them in** |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2023) box 1: VAT due on sales | 16,920 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2023) box 4: VAT reclaimed on purchases | 3,423.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2023) box 5: net VAT due | 13,496.13 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2023) box 4: VAT reclaimed on purchases | 6,023.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2023) box 5: net VAT due | 10,896.13 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2023) box 1: VAT due on sales | 17,256.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2023) box 4: VAT reclaimed on purchases | 3,073.25 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2023) box 5: net VAT due | 14,183.42 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2023) box 4: VAT reclaimed on purchases | 4,473.25 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2023) box 5: net VAT due | 12,783.42 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2023) box 1: VAT due on sales | 19,780 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2023) box 4: VAT reclaimed on purchases | 9,895.88 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2023) box 5: net VAT due | 9,884.13 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2023) box 1: VAT due on sales | 16,860 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2023) box 4: VAT reclaimed on purchases | 2,105.71 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2023) box 5: net VAT due | 14,754.29 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 December 2023) box 1: VAT due on sales | 6,126.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 December 2023) box 4: VAT reclaimed on purchases | 721.08 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 December 2023) box 5: net VAT due | 5,405.58 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2024) box 1: VAT due on sales | 1,100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2024) box 4: VAT reclaimed on purchases | 180 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2024) box 5: net VAT due | 920 |
 
 ---
 
@@ -1237,11 +1245,11 @@ Journal amounts include VAT at 20%.
 | B37 | Charitable Donations (code y) | 416.666666666667 | accounts.purchases.5801 |
 | B38 | Goodwill written off (code z) | 2500 | accounts.purchases.5802 |
 | B39 | Loss on disposal of assets | 172 | gl-cor:amount (lossOnDisposal) |
-| B40 | Depreciation | 11740 | gl-cor:amount (depreciation) |
-| B41 | Total Admin Expenses | 148656.275 | gl-cor:amount (totalAdmin) |
-| B43 | **Operating Profit** | 173840.391666666 | gl-cor:amount (operatingProfit) |
+| B40 | Depreciation | 13740 | gl-cor:amount (depreciation) |
+| B41 | Total Admin Expenses | 150656.275 | gl-cor:amount (totalAdmin) |
+| B43 | **Operating Profit** | 171840.391666666 | gl-cor:amount (operatingProfit) |
 | B44 | Interest Received | 275 | gl-cor:amount (interestReceived) |
-| B45 | **Profit Before Tax** | 174115.391666666 | gl-cor:amount (profitBeforeTax) |
+| B45 | **Profit Before Tax** | 172115.391666666 | gl-cor:amount (profitBeforeTax) |
 | C4 |  | 25333.3333333333 |  |
 | D4 |  | 25633.3333333333 |  |
 | E4 |  | 26533.3333333333 |  |
@@ -1542,38 +1550,38 @@ Journal amounts include VAT at 20%.
 | L39 |  | 14.3333333333333 |  |
 | M39 |  | 14.3333333333333 |  |
 | N39 |  | 14.3333333333333 |  |
-| C40 |  | 978.333333333333 |  |
-| D40 |  | 978.333333333333 |  |
-| E40 |  | 978.333333333333 |  |
-| F40 |  | 978.333333333334 |  |
-| G40 |  | 978.333333333334 |  |
-| H40 |  | 978.333333333333 |  |
-| I40 |  | 978.333333333333 |  |
-| J40 |  | 978.333333333333 |  |
-| K40 |  | 978.333333333334 |  |
-| L40 |  | 978.333333333334 |  |
-| M40 |  | 978.333333333334 |  |
-| N40 |  | 978.333333333334 |  |
+| C40 |  | 1145 |  |
+| D40 |  | 1145 |  |
+| E40 |  | 1145 |  |
+| F40 |  | 1145 |  |
+| G40 |  | 1145 |  |
+| H40 |  | 1145 |  |
+| I40 |  | 1145 |  |
+| J40 |  | 1145 |  |
+| K40 |  | 1145 |  |
+| L40 |  | 1145 |  |
+| M40 |  | 1145 |  |
+| N40 |  | 1145 |  |
 
 ### CorporationTax
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| K5 | Operating Profit | 173840.391666666 | gl-cor:amount (ct600.box145) |
+| K5 | Operating Profit | 171840.391666666 | gl-cor:amount (ct600.box145) |
 | I7 | Add back: Goodwill | 2500 | gl-cor:amount (ct600.addBackGoodwill) |
-| I8 | Add back: Depreciation | 11740 | gl-cor:amount (ct600.addBackDepreciation) |
-| K10 | Add back: total | 14240 | gl-cor:amount (ct600.addBack) |
+| I8 | Add back: Depreciation | 13740 | gl-cor:amount (ct600.addBackDepreciation) |
+| K10 | Add back: total | 16240 | gl-cor:amount (ct600.addBack) |
 | K12 | Operational profit chargeable | 188080.391666666 | gl-cor:amount (ct600.adjustedProfit) |
-| K20 | Less: Capital Allowances | 44000 | tax.capitalAllowances (ct600) |
-| K22 | Profit after capital allowances | 144080.391666666 | gl-cor:amount (ct600.afterAllowances) |
+| K20 | Less: Capital Allowances | 64000 | tax.capitalAllowances (ct600) |
+| K22 | Profit after capital allowances | 124080.391666666 | gl-cor:amount (ct600.afterAllowances) |
 | K24 | Add: gross bank interest | 339.506172839506 | gl-cor:amount (ct600.interest) |
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
-| K28 | **Profit Chargeable to CT** | 144419.897839506 | gl-cor:amount (ct600.box315) |
-| K35 | **Corporation Tax** | 34521.272927469 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 34456.7667546295 | gl-cor:taxAmount (ct600.box515) |
+| K28 | **Profit Chargeable to CT** | 124419.897839506 | gl-cor:amount (ct600.box315) |
+| K35 | **Corporation Tax** | 29221.272927469 | gl-cor:taxAmount (ct600.box430) |
+| K39 | Tax Outstanding | 29156.7667546295 | gl-cor:taxAmount (ct600.box515) |
 | E5 |  | 44866 |  |
 | H5 |  | 45230 |  |
-| I15 |  | 32500 |  |
+| I15 |  | 52500 |  |
 | I16 |  | 0 |  |
 | I17 |  | 3000 |  |
 | I18 |  | 8500 |  |
@@ -1582,16 +1590,16 @@ Journal amounts include VAT at 20%.
 | A35 |  | 365 |  |
 | E33 |  | 2022 |  |
 | E34 |  | 2023 |  |
-| F33 |  | 59746.313900727 |  |
-| F34 |  | 84673.5839387787 |  |
+| F33 |  | 51472.3412979873 |  |
+| F34 |  | 72947.5565415185 |  |
 | G33 |  | 25 |  |
 | G34 |  | 25 |  |
-| J33 |  | 14936.5784751818 |  |
-| J34 |  | 21168.3959846947 |  |
-| L33 |  | 655.175154502793 |  |
-| L34 |  | 928.526377904621 |  |
-| I33 |  | 14281.403320679 |  |
-| I34 |  | 20239.8696067901 |  |
+| J33 |  | 12868.0853244968 |  |
+| J34 |  | 18236.8891353796 |  |
+| L33 |  | 779.284743543889 |  |
+| L34 |  | 1104.41678886352 |  |
+| I33 |  | 12088.8005809529 |  |
+| I34 |  | 17132.4723465161 |  |
 | K37 |  | 64.5061728395062 |  |
 
 ### CT600
@@ -1599,29 +1607,29 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C126 | Box 43: financial year | 2022 | gl-cor:period (ct600.box43) |
-| N126 | Box 44: amount of profit | 59746.313900727 | gl-cor:amount (ct600.box44) |
+| N126 | Box 44: amount of profit | 51472.3412979873 | gl-cor:amount (ct600.box44) |
 | AA126 | Box 45: rate of tax | 25 | gl-cor:rate (ct600.box45) |
-| AJ126 | Box 46: tax | 14936.5784751818 | gl-cor:taxAmount (ct600.box46) |
+| AJ126 | Box 46: tax | 12868.0853244968 | gl-cor:taxAmount (ct600.box46) |
 | C128 | Box 53: financial year | 2023 | gl-cor:period (ct600.box53) |
-| N128 | Box 54: amount of profit | 84673.5839387787 | gl-cor:amount (ct600.box54) |
+| N128 | Box 54: amount of profit | 72947.5565415185 | gl-cor:amount (ct600.box54) |
 | AA128 | Box 55: rate of tax | 25 | gl-cor:rate (ct600.box55) |
-| AJ128 | Box 56: tax | 21168.3959846947 | gl-cor:taxAmount (ct600.box56) |
-| AJ131 | **Box 63: corporation tax** | 36104.9744598764 | gl-cor:taxAmount (ct600.box63) |
-| Y133 | Box 64: marginal rate relief | 1583.70153240741 | gl-cor:taxAmount (ct600.box64) |
-| Y135 | **Box 65: corporation tax net of marginal rate relief** | 34521.272927469 | gl-cor:taxAmount (ct600.box65) |
+| AJ128 | Box 56: tax | 18236.8891353796 | gl-cor:taxAmount (ct600.box56) |
+| AJ131 | **Box 63: corporation tax** | 31104.9744598765 | gl-cor:taxAmount (ct600.box63) |
+| Y133 | Box 64: marginal rate relief | 1883.70153240741 | gl-cor:taxAmount (ct600.box64) |
+| Y135 | **Box 65: corporation tax net of marginal rate relief** | 29221.272927469 | gl-cor:taxAmount (ct600.box65) |
 | B33 |  | 44866 |  |
 | M33 |  | 45230 |  |
-| W137 |  | 23.9034048935782 |  |
+| W137 |  | 23.4860126353445 |  |
 | AK66 |  | 341283.333333333 |  |
-| Z70 |  | 144080.391666666 |  |
-| AJ74 |  | 144080.391666666 |  |
+| Z70 |  | 124080.391666666 |  |
+| AJ74 |  | 124080.391666666 |  |
 | AJ76 |  | 339.506172839506 |  |
-| AJ92 |  | 144419.897839506 |  |
-| AJ110 |  | 144419.897839506 |  |
-| AJ145 |  | 34521.272927469 |  |
+| AJ92 |  | 124419.897839506 |  |
+| AJ110 |  | 124419.897839506 |  |
+| AJ145 |  | 29221.272927469 |  |
 | AJ154 |  | 64.5061728395062 |  |
-| AJ159 |  | 34456.7667546295 |  |
-| AJ166 |  | 34456.7667546295 |  |
+| AJ159 |  | 29156.7667546295 |  |
+| AJ166 |  | 29156.7667546295 |  |
 
 ### PubP&L
 
@@ -1632,13 +1640,13 @@ Journal amounts include VAT at 20%.
 | F9 | **Total Sales Turnover** | 341283.333333333 | gl-cor:amount (pubPL.totalTurnover) |
 | F16 | Cost of Sales | 18786.6666666667 | gl-cor:amount (pubPL.cos) |
 | F18 | **Gross Profit** | 322496.666666666 | gl-cor:amount (pubPL.gross) |
-| F44 | Administrative Expenses | 148656.275 | gl-cor:amount (pubPL.admin) |
-| F46 | **Operating Profit** | 173840.391666666 | gl-cor:amount (pubPL.operating) |
-| F49 | **Profit Before Tax** | 174179.897839506 | gl-cor:amount (pubPL.pbt) |
-| F50 | Corporation tax | 34521.272927469 | gl-cor:taxAmount (pubPL.tax) |
-| F51 | **Profit after Tax** | 139658.624912037 | gl-cor:amount (pubPL.pat) |
+| F44 | Administrative Expenses | 150656.275 | gl-cor:amount (pubPL.admin) |
+| F46 | **Operating Profit** | 171840.391666666 | gl-cor:amount (pubPL.operating) |
+| F49 | **Profit Before Tax** | 172179.897839506 | gl-cor:amount (pubPL.pbt) |
+| F50 | Corporation tax | 29221.272927469 | gl-cor:taxAmount (pubPL.tax) |
+| F51 | **Profit after Tax** | 142958.624912037 | gl-cor:amount (pubPL.pat) |
 | F52 | Dividends | 15000 | gl-cor:amount (pubPL.dividends) |
-| F54 | **Retained Profit for the year** | 124658.624912037 | gl-cor:amount (pubPL.retained) |
+| F54 | **Retained Profit for the year** | 127958.624912037 | gl-cor:amount (pubPL.retained) |
 | D3 |  | 45230 |  |
 | B9 |  | 0 |  |
 | B14 |  | 0 |  |
@@ -1650,23 +1658,23 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| F6 | Fixed Assets (NBV) | 30990 | gl-cor:amount (pubBS.fixedAssets) |
+| F6 | Fixed Assets (NBV) | 48990 | gl-cor:amount (pubBS.fixedAssets) |
 | E10 | Stock at cost | 6000 | accounts.assets.1100 (pubBS) |
-| E11 | Trade Debtors | 10400 | accounts.assets.1300 (pubBS) |
+| E11 | Trade Debtors | 7900 | accounts.assets.1300 (pubBS) |
 | E12 | Cash at bank and in hand | 192995.43 | gl-cor:amount (pubBS.bankCash) |
-| E13 | Current Assets | 209395.43 | gl-cor:amount (pubBS.currentAssets) |
-| E16 | Trade Creditors | -11567.75 | accounts.liabilities.2100 (pubBS) |
-| E17 | Corporation Tax | 38956.7667546295 | accounts.liabilities.2300 (pubBS) |
-| E18 | Taxation and Social Security | 9535.78833333335 | gl-cor:amount (pubBS.taxAndSocial) |
-| E20 | Current Liabilities | 36924.8050879629 | gl-cor:amount (pubBS.creditors) |
-| F22 | **Net Current Assets** | 172470.624912037 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 203460.624912037 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| E13 | Current Assets | 206895.43 | gl-cor:amount (pubBS.currentAssets) |
+| E16 | Trade Creditors | 12432.25 | accounts.liabilities.2100 (pubBS) |
+| E17 | Corporation Tax | 29156.7667546295 | accounts.liabilities.2300 (pubBS) |
+| E18 | Taxation and Social Security | 7535.78833333337 | gl-cor:amount (pubBS.taxAndSocial) |
+| E20 | Current Liabilities | 49124.8050879629 | gl-cor:amount (pubBS.creditors) |
+| F22 | **Net Current Assets** | 157770.624912037 | gl-cor:amount (pubBS.netCurrent) |
+| F26 | **Total Assets less CL** | 206760.624912037 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | E30 | Creditors due after more than one year | 45000 | accounts.liabilities.2600 (pubBS) |
 | F31 | Other Creditors | 58000 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 145460.624912037 | gl-cor:amount (pubBS.netAssets) |
+| F33 | **Net Assets** | 148760.624912037 | gl-cor:amount (pubBS.netAssets) |
 | F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
-| F39 | **Shareholders' Funds** | 145460.624912037 | gl-cor:amount (pubBS.equity) |
+| F39 | **Shareholders' Funds** | 148760.624912037 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 45230 |  |
 
 ### PubNotes
@@ -1674,16 +1682,16 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G8 | Original cost brought forward | 33000 | gl-cor:amount (note1.costBf) |
-| G9 | Additions | 32500 | gl-cor:amount (note1.additions) |
+| G9 | Additions | 52500 | gl-cor:amount (note1.additions) |
 | G10 | Disposals | 30000 | gl-cor:amount (note1.disposals) |
-| G11 | **Original cost carried forward** | 35500 | gl-cor:amount (note1.costCf) |
+| G11 | **Original cost carried forward** | 55500 | gl-cor:amount (note1.costCf) |
 | G14 | Depreciation brought forward | 10098 | gl-cor:amount (note1.depBf) |
-| G15 | Charge for the year | 11740 | gl-cor:amount (note1.charge) |
+| G15 | Charge for the year | 13740 | gl-cor:amount (note1.charge) |
 | G16 | On disposals | 17328 | gl-cor:amount (note1.depDisposals) |
-| G17 | **Depreciation carried forward** | 4510 | gl-cor:amount (note1.depCf) |
-| G20 | **Net book value** | 30990 | gl-cor:amount (note1.nbv) |
+| G17 | **Depreciation carried forward** | 6510 | gl-cor:amount (note1.depCf) |
+| G20 | **Net book value** | 48990 | gl-cor:amount (note1.nbv) |
 | D35 | Directors emoluments | 4166.66666666667 | gl-cor:amount (note2.emoluments) |
-| D41 | Corporation tax for the year | 34521.272927469 | gl-cor:taxAmount (note4.ct) |
+| D41 | Corporation tax for the year | 29221.272927469 | gl-cor:taxAmount (note4.ct) |
 | B8 |  | 0 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
@@ -1694,14 +1702,14 @@ Journal amounts include VAT at 20%.
 | B17 |  | 0 |  |
 | B20 |  | 0 |  |
 | C8 |  | 0 |  |
-| C9 |  | 32500 |  |
+| C9 |  | 52500 |  |
 | C10 |  | 0 |  |
-| C11 |  | 32500 |  |
+| C11 |  | 52500 |  |
 | C14 |  | 0 |  |
-| C15 |  | 3250 |  |
+| C15 |  | 5250 |  |
 | C16 |  | 0 |  |
-| C17 |  | 3250 |  |
-| C20 |  | 29250 |  |
+| C17 |  | 5250 |  |
+| C20 |  | 47250 |  |
 | D8 |  | 0 |  |
 | D9 |  | 0 |  |
 | D10 |  | 0 |  |
@@ -1789,8 +1797,8 @@ Journal amounts include VAT at 20%.
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -20702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
-| EJ22 | Final: Bank Current Account | 204415.43 | accounts.assets.1200 (final) |
-| EJ23 | Final: Bank Savings Account | -12825 | accounts.assets.1210 (final) |
+| EJ22 | Final: Bank Current Account | 181315.43 | accounts.assets.1200 (final) |
+| EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
 | EJ24 | Final: Credit Card Account | 1025 | accounts.assets.1230 (final) |
 | EJ25 | Final: Cash Account | 480 | accounts.assets.1220 (final) |
 | EJ26 | Final: Intra Cash & Bank Transfers | -100 | gl-cor:amount (intraTransfers) |
@@ -1798,8 +1806,13 @@ Journal amounts include VAT at 20%.
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
 | EJ48 | Final: Dividends declared | 15000 | gl-cor:amount (dividendsDeclared) |
-| EJ91 | **Audit Accuracy Check** | 2.79214873444289e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ91 | **Audit Accuracy Check** | 3.17413650918752e-10 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 4166.66666666667 |  |
+| EJ28 |  | -12432.25 |  |
+| EJ32 |  | 1600 |  |
+| EJ34 |  | 40682.17 |  |
+| EJ35 |  | -29156.7667546295 |  |
+| EH35 |  | 64.5061728395062 |  |
 | L34 |  | -1673.2 |  |
 
 ### Admin
@@ -2040,13 +2053,13 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1509.5 |  |
+| G1 |  | 4109.5 |  |
 | G2 |  | 20 |  |
-| H1 |  | 7547.5 |  |
+| H1 |  | 20547.5 |  |
 | O1 |  | 300 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
-| AI1 |  | 0 |  |
+| AI1 |  | 13000 |  |
 
 ### Purchases.xlsx!Feb
 
@@ -2076,13 +2089,13 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 829.166666666667 |  |
+| G1 |  | 2229.16666666667 |  |
 | G2 |  | 20 |  |
-| H1 |  | 4145.83333333333 |  |
+| H1 |  | 11145.8333333333 |  |
 | O1 |  | 200 |  |
 | R1 |  | 0 |  |
 | S1 |  | 0 |  |
-| AI1 |  | 0 |  |
+| AI1 |  | 7000 |  |
 
 ### Purchases.xlsx!May
 
@@ -2164,10 +2177,10 @@ Journal amounts include VAT at 20%.
 | G7 |  | 44985 |  |
 | G9 |  | 16920 |  |
 | G13 |  | 16920 |  |
-| G15 |  | 3423.875 |  |
-| G17 |  | 13496.125 |  |
+| G15 |  | 6023.875 |  |
+| G17 |  | 10896.125 |  |
 | G21 |  | 84599.9999999999 |  |
-| G23 |  | 17119.375 |  |
+| G23 |  | 30119.375 |  |
 
 ### Vatreturns.xlsx!VATQtr2
 
@@ -2177,10 +2190,10 @@ Journal amounts include VAT at 20%.
 | G7 |  | 45077 |  |
 | G9 |  | 17256.6666666667 |  |
 | G13 |  | 17256.6666666667 |  |
-| G15 |  | 3073.25 |  |
-| G17 |  | 14183.4166666667 |  |
+| G15 |  | 4473.25 |  |
+| G17 |  | 12783.4166666667 |  |
 | G21 |  | 86283.3333333333 |  |
-| G23 |  | 15366.25 |  |
+| G23 |  | 22366.25 |  |
 
 ### Vatreturns.xlsx!VATQtr3
 
@@ -2212,14 +2225,14 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 45291 |  |
-| G7 |  | 45322 |  |
-| G9 |  | 6126.66666666667 |  |
-| G13 |  | 6126.66666666667 |  |
-| G15 |  | 721.083333333333 |  |
-| G17 |  | 5405.58333333334 |  |
-| G21 |  | 30633.3333333333 |  |
-| G23 |  | 3605.41666666667 |  |
+| G5 |  | 45322 |  |
+| G7 |  | 45351 |  |
+| G9 |  | 1100 |  |
+| G13 |  | 1100 |  |
+| G15 |  | 180 |  |
+| G17 |  | 920 |  |
+| G21 |  | 5500 |  |
+| G23 |  | 900 |  |
 
 ### Vatreturns.xlsx!Vatinterface
 
@@ -2267,10 +2280,10 @@ Journal amounts include VAT at 20%.
 | E8 |  | 84599.9999999999 |  |
 | F8 |  | 5866.66666666667 |  |
 | G8 |  | 16920 |  |
-| H8 |  | 7547.5 |  |
-| I8 |  | 17119.375 |  |
-| J8 |  | 1509.5 |  |
-| K8 |  | 3423.875 |  |
+| H8 |  | 20547.5 |  |
+| I8 |  | 30119.375 |  |
+| J8 |  | 4109.5 |  |
+| K8 |  | 6023.875 |  |
 | M8 |  | 0 |  |
 | B9 |  | 44985 |  |
 | C9 |  | 45016 |  |
@@ -2279,9 +2292,9 @@ Journal amounts include VAT at 20%.
 | F9 |  | 5626.66666666667 |  |
 | G9 |  | 16980 |  |
 | H9 |  | 7549.375 |  |
-| I9 |  | 20409.375 |  |
+| I9 |  | 33409.375 |  |
 | J9 |  | 1509.875 |  |
-| K9 |  | 4081.875 |  |
+| K9 |  | 6681.875 |  |
 | M9 |  | 0 |  |
 | B10 |  | 45016 |  |
 | C10 |  | 45046 |  |
@@ -2290,9 +2303,9 @@ Journal amounts include VAT at 20%.
 | F10 |  | 6003.33333333333 |  |
 | G10 |  | 17496.6666666667 |  |
 | H10 |  | 3671.04166666667 |  |
-| I10 |  | 18767.9166666667 |  |
+| I10 |  | 31767.9166666667 |  |
 | J10 |  | 734.208333333333 |  |
-| K10 |  | 3753.58333333333 |  |
+| K10 |  | 6353.58333333333 |  |
 | M10 |  | 0 |  |
 | B11 |  | 45046 |  |
 | C11 |  | 45077 |  |
@@ -2300,10 +2313,10 @@ Journal amounts include VAT at 20%.
 | E11 |  | 86283.3333333333 |  |
 | F11 |  | 5626.66666666667 |  |
 | G11 |  | 17256.6666666667 |  |
-| H11 |  | 4145.83333333333 |  |
-| I11 |  | 15366.25 |  |
-| J11 |  | 829.166666666667 |  |
-| K11 |  | 3073.25 |  |
+| H11 |  | 11145.8333333333 |  |
+| I11 |  | 22366.25 |  |
+| J11 |  | 2229.16666666667 |  |
+| K11 |  | 4473.25 |  |
 | M11 |  | 0 |  |
 | B12 |  | 45077 |  |
 | C12 |  | 45107 |  |
@@ -2312,9 +2325,9 @@ Journal amounts include VAT at 20%.
 | F12 |  | 8426.66666666667 |  |
 | G12 |  | 20056.6666666667 |  |
 | H12 |  | 35838.125 |  |
-| I12 |  | 43655 |  |
+| I12 |  | 50655 |  |
 | J12 |  | 7167.625 |  |
-| K12 |  | 8731 |  |
+| K12 |  | 10131 |  |
 | M12 |  | 0 |  |
 | B13 |  | 45107 |  |
 | C13 |  | 45138 |  |
@@ -2323,9 +2336,9 @@ Journal amounts include VAT at 20%.
 | F13 |  | 5886.66666666667 |  |
 | G13 |  | 19940 |  |
 | H13 |  | 5765 |  |
-| I13 |  | 45748.9583333333 |  |
+| I13 |  | 52748.9583333333 |  |
 | J13 |  | 1153 |  |
-| K13 |  | 9149.79166666667 |  |
+| K13 |  | 10549.7916666667 |  |
 | M13 |  | 0 |  |
 | B14 |  | 45138 |  |
 | C14 |  | 45169 |  |
@@ -2393,18 +2406,29 @@ Journal amounts include VAT at 20%.
 | J19 |  | 60 |  |
 | K19 |  | 721.083333333333 |  |
 | M19 |  | 0 |  |
+| B20 |  | 45322 |  |
+| C20 |  | 45351 |  |
+| D20 |  | 1000 |  |
+| E20 |  | 5500 |  |
+| F20 |  | 200 |  |
+| G20 |  | 1100 |  |
+| H20 |  | 400 |  |
+| I20 |  | 900 |  |
+| J20 |  | 80 |  |
+| K20 |  | 180 |  |
+| M20 |  | 0 |  |
 
 ### Fixedassets.xlsx!Schedule
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 | Total cost of every asset on the schedule, assets sold in the year included | 65500 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 85500 |  |
 | F1 | Total accumulated depreciation brought forward | 10098 |  |
 | G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
-| I1 | Total depreciation charged for the year | 11740 |  |
-| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 21838 |  |
-| K1 | Total net book value carried forward, disposals removed | 30990 |  |
-| Q1 | Total annual investment allowance claimed | 32500 |  |
+| I1 | Total depreciation charged for the year | 13740 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
+| K1 | Total net book value carried forward, disposals removed | 48990 |  |
+| Q1 | Total annual investment allowance claimed | 52500 |  |
 | R1 | Total writing down allowance claimed | 3000 |  |
 | V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
 | W1 | Cost of the assets sold in the year | 30000 |  |
@@ -2412,7 +2436,7 @@ Journal amounts include VAT at 20%.
 | Y1 | Balancing allowance on the disposals | 8500 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 33000 |  |
-| E110 | Cost of the assets bought during the year | 32500 |  |
+| E110 | Cost of the assets bought during the year | 52500 |  |
 | E11 |  | 0 |  |
 | F11 |  | 0 |  |
 | I11 |  | 0 |  |
@@ -2430,9 +2454,9 @@ Journal amounts include VAT at 20%.
 | I22 |  | 0 |  |
 | W22 |  | 0 |  |
 | X22 |  | 0 |  |
-| E75 |  | 32500 |  |
+| E75 |  | 52500 |  |
 | F75 |  | 0 |  |
-| I75 |  | 3250 |  |
+| I75 |  | 5250 |  |
 | W75 |  | 0 |  |
 | X75 |  | 0 |  |
 | B22 |  | Existing Plant & Machinery |  |
@@ -2478,7 +2502,7 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E11 | Additions the schedule lists, net of VAT | 32500 |  |
+| E11 | Additions the schedule lists, net of VAT | 52500 |  |
 | K11 | Disposal proceeds the schedule lists, net of VAT | 12500 |  |
 
 ### Fixedassets.xlsx!HPfinance
@@ -2701,15 +2725,15 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 206705.63 |  |
-| A2 |  | 204415.43 |  |
+| A1 |  | 183605.63 |  |
+| A2 |  | 181315.43 |  |
 
 ### Savingaccount.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | -17975 |  |
-| A2 |  | -12825 |  |
+| A1 |  | 5125 |  |
+| A2 |  | 10275 |  |
 
 ### Cashaccount.xlsx!Oct
 
