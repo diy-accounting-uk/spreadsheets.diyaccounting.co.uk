@@ -6,11 +6,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Tracks merge into `claude/wave-1` (PR #39); generate-* run there with skip-commit before merge to main.
+Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, branch `claude/<track>`. Wave 1 is complete on `claude/wave-1` (PR #39): generate-bst/se/ltd/taxi dispatched there with skip-tests and skip-commit (runs 33242626401, 33242627325, 33242628519, 33242629486). Wave 2 tracks merge into `claude/wave-2` (contains wave 1).
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
-| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README; cash and stock notes; F21 year-end anchor | merged into `claude/wave-1` `9ff2476f`, blast radius running | cash 250,544 → 216,095; stock adjustment −4,000 → −102 |
+| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README; cash and stock notes; F21 year-end anchor | landed on `claude/wave-1` `9ff2476f`, 421 tests, worktree removed | cash 250,544 → 216,095; stock adjustment −4,000 → −102 |
 | se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | landed on `claude/wave-1`, 208 tests, worktree removed | 59 SA103F checks, 31 calendar checks |
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
 | vat-stagger | VATQtr5 stagger and dropdown range | landed on `claude/wave-1` `3c85466a`, 219 tests, worktree removed | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
@@ -19,7 +19,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | income-tax (wave 2) | SE and BST income tax taper, additional rate, basic-band split; CIS sign in bst.js and the BST P&L | landed on `claude/wave-2` `50ede53b`, 1541 tests, worktree removed | SE 45,317.96 → 51,324.93; BST 78,035 → 88,131.60, both statutory |
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage | `sp-ltd-ct` off `claude/wave-2` | started |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | `sp-salesinvoice` (now hosts `claude/wave-2`) | landed on `claude/wave-2` `3db4e802`, 1302 tests |
-| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | waiting for ltd-checks (shared fixture master data) |
+| fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | `sp-fixed-assets` off `claude/wave-2` | started |
 
 Still to dispatch: ltd-writes (Boardmeeting!E4 from the scenario) after ltd-ct lands.
 
