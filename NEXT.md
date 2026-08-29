@@ -11,7 +11,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 
 | Track | Items | Status |
 |---|---|---|
-| fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | merged into `claude/wave-5` `623833b9`, 126 fast tests, LibreOffice blast radius running, worktree removed |
+| fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | landed on `claude/wave-5` `623833b9`, 331 tests, worktree removed |
 | fidelity-t1b (wave 5) | T1b: masters for brickwork-pro (bank journal, opening lines, ledgers, van, members), sp-sixty (dashcam), kestrel (camera), new basic-taxi-driver; all twelve TOMLs extractor-written; sync gate widened | started, worktree `sp-fidelity-t1b` |
 | fidelity-t2 (wave 5) | T2: `report-serializer.js` (TheReport canonical JSON with units), exporter keeps account identity and all fields and writes a full book, `verify-roundtrip.js` scores both halves with the plan's tolerance table | started, worktree `sp-fidelity-t2` |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
