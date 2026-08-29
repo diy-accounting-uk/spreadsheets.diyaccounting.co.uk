@@ -20,7 +20,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 | ltd-ct (wave 2) | Ltd Admin L7/N7 period dates; marginal relief; CT600 row 128 and boxes 64/65; expensesform mileage; Fixedassets Admin link cache rolled per package | landed on `claude/wave-1`, 1619 tests, worktree removed | K35 28,028.78 → 35,342.77 statutory on every year end (34,521.27 once the HP interest lands); box 65 = K35 |
 | salesinvoice (wave 2) | Salesinvoice G6/H6 (both shared groups, G6:G66 and G67:G99); formula-presence guard over all templates | merged, worktree removed | landed on `claude/wave-1` `3db4e802`, 1302 tests |
 | fixed-assets (wave 2) | Schedule closing NBV net of disposals; HPfinance #REF!; HP fixture and checks | landed on `claude/wave-1` `dc3e5e2a`, 1677 tests, worktree removed | K1 43,662 → 30,990 both products; HPfinance!E2 feeds long-term creditors (25,000 → 45,000) |
-| ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | `sp-ltd-writes` off `claude/wave-1` | started |
+| ltd-writes (wave 2) | Boardmeeting!E4 dividend cycle; RegisterofMembers!A3; OpenAccounts!E48 prior-year column | merged into `claude/wave-1` locally, blast radius running | ltd-scenario-full: 839 checks, 0 failures, 2 warnings (both the VAT overlap) |
 
 ## Open items
 
@@ -31,14 +31,11 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Coverage checks still to write:
 
-- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the dividend
-  cycle is unwired end to end: bank `DV` payments reach the trial balance's dividends
-  creditor, `PubP&L!F52` reads `TrialBalance!EJ48` which no month column feeds, nothing
-  declares on `Boardmeeting!E4`, and Report D94 reads E4 across a cross-file link. The
-  fixture pays 15,000 and publishes 0 (a warning since wave 1). Test: scenario declares a
-  dividend, E4 carries it, D94 shows it, F52 publishes it, and the creditor nets to the
-  unpaid balance. With it: `RegisterofMembers!A3` (member name) is never written, so the
-  report's shareholder lines publish a holding with no holder.
+- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — code-complete on
+  `claude/wave-1` (the template already wired the cycle; the scenario now declares the
+  dividend, names the members, and the prior-year P&L column is nil on an empty block);
+  closes when generate-ltd refreshes packages and reports. Remainder: `SHEET_COVERAGE_GAPS.md`
+  still says the dividend line is dead; refresh or retire that snapshot.
 - [ ] **`Payslips!Admin` calendar echo (Ltd and SE)** — code-complete on `claude/wave-1`
   (both echoes; I1 now derives 5 April from the seed after the 2024 leap year failed the
   generate-se matrix). Remainder: an SA103F report indicator (box 30/46 divergence) once the
