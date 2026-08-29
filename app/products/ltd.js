@@ -136,6 +136,22 @@ function payrollMonthStarts() {
 const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
 const CHARGE_REGISTER_COLUMNS = { date: "A", asset: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
 
+// ── Register of members and the board minute (Companysecretary.xlsx) ───────
+// The register runs one member a row from row 3: A the full name, C the date
+// the shares were acquired, F the nominal value of each share and G the
+// number held. F1 echoes F3, G1 sums G3:G19, and the directors' report quotes
+// A3/G3 and A4/G4 a line each across the cross-file link.
+//
+// The board minute is a single resolution: F2 the date the meeting was held
+// and E4 the dividend it declared. The trial balance reads E4 twice -- into
+// the dividends creditor (EH31, negated) and into the profit distribution
+// (EH48) -- so one declaration both charges the year's profit and raises the
+// creditor the bank's DV payments settle.
+const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", shares: "G" };
+const SHARE_NOMINAL_VALUE = 1;
+const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -451,11 +467,9 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   }
   if (hubWrites.OpenAccounts) hubWrites.OpenAccounts = inSheetOrder(hubWrites.OpenAccounts);
 
-  // Register of members (Companysecretary.xlsx). Ordinary shares are issued
-  // at their £1 nominal value -- matching the template's own "Fully paid
-  // Ordinary Shares" placeholder row -- so the share count posted is the
-  // opening balance sheet's own share capital figure divided by that
-  // nominal value.
+  // Companysecretary.xlsx: the charges register, the share register and the
+  // board minute. Ordinary shares are issued at their £1 nominal value,
+  // matching the template's own "Fully paid Ordinary Shares" placeholder row.
   const companysecretaryWrites = {};
   if (scenario.charges) {
     companysecretaryWrites["Charges&Debentures"] = {};
@@ -477,11 +491,34 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       );
     });
   }
-  if (scenario.opening_balance?.share_capital !== undefined) {
-    const nominalValue = 1;
-    companysecretaryWrites.RegisterofMembers = {
-      F3: nominalValue,
-      G3: scenario.opening_balance.share_capital / nominalValue,
+  if (scenario.members) {
+    companysecretaryWrites.RegisterofMembers = {};
+    const register = companysecretaryWrites.RegisterofMembers;
+    scenario.members.forEach((member, index) => {
+      const row = REGISTER_MEMBER_ROWS[index];
+      if (row === undefined) return;
+      register[`${REGISTER_MEMBER_COLUMNS.name}${row}`] = member.name;
+      register[`${REGISTER_MEMBER_COLUMNS.nominalValue}${row}`] = SHARE_NOMINAL_VALUE;
+      register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`] = member.shares;
+      if (member.acquired) {
+        const acquired = parseDate(member.acquired);
+        register[`${REGISTER_MEMBER_COLUMNS.acquired}${row}`] = toExcelSerial(
+          acquired.getUTCFullYear(),
+          acquired.getUTCMonth() + 1,
+          acquired.getUTCDate(),
+        );
+      }
+    });
+  }
+
+  // The dividend the board declared, on the minute the directors' report and
+  // the trial balance both read. The meeting sits inside the accounting
+  // period, so its date shifts with the rest of the book.
+  if (scenario.dividend) {
+    const minuted = shiftDate(parseDate(scenario.dividend.board_meeting));
+    companysecretaryWrites.Boardmeeting = {
+      [BOARD_MINUTE_CELLS.date]: toExcelSerial(minuted.getUTCFullYear(), minuted.getUTCMonth() + 1, minuted.getUTCDate()),
+      [BOARD_MINUTE_CELLS.dividendDeclared]: scenario.dividend.declared,
     };
   }
 
@@ -969,6 +1006,7 @@ export const CELL_MAP = [
   ["TrialBalance", "D24", "Opening: Credit Card Account",              "accounts.assets.1230 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D25", "Opening: Cash Account",                     "accounts.assets.1220 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D28", "Opening: Trade Creditors",                  "accounts.liabilities.2100 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D31", "Opening: Dividends Creditor",               "accounts.capital.3200 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D33", "Opening: Creditor HMRC Vat",                "accounts.liabilities.2200 (opening)","Trial Balance", 1],
   ["TrialBalance", "D35", "Opening: Creditor HMRC Corporation Tax",    "accounts.liabilities.2300 (opening)","Trial Balance", 1],
   ["TrialBalance", "D39", "Opening: Directors Loan Account",           "accounts.liabilities.2500 (opening)","Trial Balance", 1],
@@ -981,8 +1019,10 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ24", "Final: Credit Card Account",               "accounts.assets.1230 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
+  ["TrialBalance", "EJ31","Final: Dividends Creditor",                 "accounts.capital.3200 (final)",      "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ40","Final: Creditor Long Term",                 "accounts.liabilities.2600 (final)",  "Trial Balance", 1],
+  ["TrialBalance", "EJ48","Final: Dividends declared",                 "gl-cor:amount (dividendsDeclared)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
@@ -1227,14 +1267,20 @@ export function standardReads() {
   // The directors' report quotes the year end, both years' turnover and
   // margin, the dividend the board minuted and the share register. F22 is
   // the only date it takes from the balance sheet rather than the P&L.
-  for (const cell of ["F22", "E87", "H87", "D89", "I89", "D94", "I95", "F97", "F98"]) add("Report", cell);
+  for (const cell of ["F22", "E87", "H87", "D89", "I89", "D94", "I95", "A97", "F97", "A98", "F98"]) add("Report", cell);
 
   // The published P&L's prior-year column (B) and its own period end date,
-  // which the report quotes alongside this year's figures.
+  // which the report quotes alongside this year's figures. B14 is the prior
+  // year's stock movement, the line OpenAccounts!E48 feeds.
   add("PubP&L", "B9");
+  add("PubP&L", "B14");
   add("PubP&L", "B18");
   add("PubP&L", "B54");
   add("PubP&L", "E5");
+
+  // The prior year block's own closing stock line, the one cell in it the
+  // template fills with a formula rather than leaving for the reader.
+  add("OpenAccounts", "E48");
 
   // Directors wages, which the emoluments note reads.
   add("TrialBalance", "EJ66");
@@ -1339,10 +1385,17 @@ export function multiFileOptions(yearEndMonth) {
         // shares-issued total (=SUM(G3:G19)). G3 and G4 are the first two
         // members' own holdings, which the directors' report quotes a line
         // each.
-        "RegisterofMembers": ["F1", "G1", "G3", "G4"],
-        // E4 is the dividend the board minuted, which the directors' report
-        // reads across the cross-file link.
-        "Boardmeeting": ["E4"],
+        // One member a row: A the name, G the holding. The report prints the
+        // first two, and G1 sums the lot.
+        "RegisterofMembers": [
+          "F1",
+          "G1",
+          ...REGISTER_MEMBER_ROWS.flatMap((row) => [`${REGISTER_MEMBER_COLUMNS.name}${row}`, `${REGISTER_MEMBER_COLUMNS.shares}${row}`]),
+        ],
+        // F2 is the date the board met and E4 the dividend it declared. The
+        // directors' report and the trial balance both read E4 across the
+        // cross-file link.
+        "Boardmeeting": ["F2", "E4"],
         // A registered charge and the directors' valuation of the asset
         // charged, which the balance sheet has to carry as a creditor
         // falling due after more than one year.
@@ -1670,6 +1723,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // A template cell that resolves to blank reads back as the string the
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // The same cell read as wording. An unwritten cell reads back as null and a
+  // formula's blank as " ", and both mean the sheet names nobody.
+  const text = (v) => (v === null || v === undefined ? "" : String(v).trim());
 
   const rate = vatRateFor(expected);
 
@@ -2162,20 +2219,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // sales.
     check("Published P&L: turnover = management P&L turnover", num(publishedPL.F9), num(pl.B9), 0.01);
 
-    // The prior year column carries a seed of its own. OpenAccounts!E48
-    // ("Less Closing Stock") is a formula reading E15, this year's opening
-    // stock, so a book with no comparatives typed in still publishes a
-    // negative prior-year cost of sales and the same figure again as last
-    // year's profit. The shipped template does that on its own, so the run
-    // is not stopped for it.
-    checks.push({
-      name: "Published P&L: the prior year column is empty when no comparatives are entered",
-      actual: num(publishedPL.B54),
-      expected: 0,
-      pass: Math.abs(num(publishedPL.B54)) <= 1,
-      diff: num(publishedPL.B54),
-      severity: "warning",
-    });
+    // The prior year column is the "PREVIOUS YEAR PROFIT & LOSS ACCOUNT"
+    // block on OpenAccounts, rows 43 to 85, which the reader types in. E48
+    // ("Less Closing Stock") is the one cell the template fills for them: it
+    // echoes E15, this year's opening stock, because last year closed on
+    // whatever this year opened with. It only does so once something else in
+    // the block is entered -- otherwise a first-year book publishes a
+    // negative cost of sales the size of its opening stock and the same
+    // figure again as last year's profit.
+    const openAccounts = results.OpenAccounts;
+    if (openAccounts && expected.stock?.opening !== undefined) {
+      check("Published P&L: prior year closing stock while no comparatives are entered", num(openAccounts.E48), 0, 0);
+      check("Published P&L: prior year stock movement while no comparatives are entered", num(publishedPL.B14), 0, 0);
+      check("Published P&L: prior year retained profit while no comparatives are entered", num(publishedPL.B54), 0, 0);
+    }
   }
   if (report && pubBalSht) {
     check("Directors' report: year end = published balance sheet date", num(report.F22), num(pubBalSht.D2), 0);
@@ -2186,24 +2243,67 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Directors' report: second member's holding = register of members", num(report.F98), num(register.G4), 0);
   }
 
-  // The dividend the report declares is the figure the board minuted, read
-  // across the link into Companysecretary.xlsx. Nothing in the writer fills
-  // that cell yet, so both sides are nil and the check holds only because the
-  // minute is empty.
+  // ── The share register against the members the scenario carries ──────────
+  //
+  // The report prints a shareholder a line, the name from
+  // [8]RegisterofMembers!$A$n and the holding from $G$n. Tying the register
+  // back to the scenario's own members is what stops a report naming nobody
+  // from reading as correct, because every other cell in these two lines is
+  // measured against the register itself.
+  if (register && expected.members) {
+    expected.members.slice(0, REGISTER_MEMBER_ROWS.length).forEach((member, index) => {
+      const row = REGISTER_MEMBER_ROWS[index];
+      checkText(
+        `Register of members: row ${row} names ${member.name}`,
+        text(register[`${REGISTER_MEMBER_COLUMNS.name}${row}`]),
+        (name) => name === member.name,
+        member.name,
+      );
+      check(`Register of members: row ${row} holds ${member.name}'s shares`, num(register[`${REGISTER_MEMBER_COLUMNS.shares}${row}`]), member.shares, 0);
+    });
+  }
+  if (report && register) {
+    const namesMember = (name, reported, registered) =>
+      checkText(name, text(reported), (printed) => printed !== "" && printed === text(registered), `the register's "${text(registered)}"`);
+    namesMember("Directors' report: first shareholder named = register of members", report.A97, register.A3);
+    namesMember("Directors' report: second shareholder named = register of members", report.A98, register.A4);
+  }
+
+  // ── The dividend cycle, minute to balance sheet ──────────────────────────
+  //
+  // One board resolution drives the whole cycle. Boardmeeting!E4 carries the
+  // dividend declared; the trial balance reads it into the profit
+  // distribution (EH48) and, negated, into the dividends creditor (EH31);
+  // the published P&L appropriates it at F52 (= EJ48) and the directors'
+  // report quotes it at D94. The bank's DV payments come off the creditor
+  // month by month, so the creditor closes at opening plus declared less
+  // paid -- nil for a year that pays what it declares.
   const boardMeeting = results["Companysecretary.xlsx!Boardmeeting"];
   if (report && boardMeeting) {
     check("Directors' report: dividend declared = the board minute", num(report.D94), num(boardMeeting.E4), 0);
   }
+  if (boardMeeting && expected.dividend) {
+    check("Board minute: dividend declared = the scenario's declaration", num(boardMeeting.E4), expected.dividend.declared, 0);
 
-  // The whole dividend cycle stops at the bank. A payment coded DV reaches
-  // the trial balance's dividends creditor, but the published dividend line
-  // reads TrialBalance!EJ48, which no month column feeds, and nothing
-  // declares a dividend on the board minute the directors' report quotes. So
-  // a year that paid dividends publishes none, and the payment sits in the
-  // creditor instead of coming out of retained earnings. That belongs to the
-  // shipped workbook, so the run is not stopped for it and the warning
-  // carries what the year actually paid.
-  if (publishedPL && expected.bank) {
+    // The minute has to sit inside the year it declares a dividend for. The
+    // scenario's own date shifts with the accounting period, so the period
+    // the book carries is what the date is measured against: Admin!B9 is the
+    // first day and F21 the year end.
+    const minuted = num(boardMeeting.F2);
+    const periodStart = num(results.Admin?.B9);
+    const yearEnd = num(results.Admin?.F21);
+    checks.push({
+      name: "Board minute: the meeting falls inside the accounting period",
+      actual: minuted,
+      expected: `between ${periodStart} and ${yearEnd}`,
+      pass: minuted >= periodStart && minuted <= yearEnd,
+      diff: "",
+    });
+  }
+  if (publishedPL && expected.dividend) {
+    check("Published P&L: dividends appropriated = the dividend the board declared", num(publishedPL.F52), expected.dividend.declared);
+  }
+  if (expected.dividend && expected.bank) {
     let dividendsPaid = 0;
     for (const transactions of Object.values(expected.bank)) {
       for (const tx of transactions) {
@@ -2211,14 +2311,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         dividendsPaid += tx.direction === "out" ? tx.amount : -tx.amount;
       }
     }
-    checks.push({
-      name: "Published P&L: dividends published against the dividends the year paid",
-      actual: num(publishedPL.F52),
-      expected: dividendsPaid,
-      pass: Math.abs(num(publishedPL.F52) - dividendsPaid) <= 1,
-      diff: num(publishedPL.F52) - dividendsPaid,
-      severity: "warning",
-    });
+    // The trial balance carries a creditor as a negative balance, so the
+    // amount still owed to the members is the row negated.
+    const openingOwed = expected.opening_balance?.dividends_due || 0;
+    check(
+      "Trial Balance: dividends creditor = opening plus declared less paid",
+      -num(results.TrialBalance.EJ31),
+      openingOwed + expected.dividend.declared - dividendsPaid,
+    );
   }
 
   // ── The register of charges against the balance sheet ────────────────────

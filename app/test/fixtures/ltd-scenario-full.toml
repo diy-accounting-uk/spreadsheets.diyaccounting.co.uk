@@ -45,6 +45,21 @@ taxCode = "1257L"
 niCategory = "A"
 isDirector = true
 
+[[members]]
+name = "Carol Smith"
+shares = 60
+acquired = 2020-01-01
+
+[[members]]
+name = "David Brown"
+shares = 25
+acquired = 2021-06-15
+
+[[members]]
+name = "Emma Wilson"
+shares = 15
+acquired = 2022-03-01
+
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"
@@ -4824,6 +4839,10 @@ valuation = 30000
 holder = "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA"
 terms = "Fixed charge securing a five year business loan"
 board_meeting = 2023-08-25
+
+[dividend]
+board_meeting = 2026-03-31
+declared = 15000
 
 [[opening_debtors]]
 customer = "Acme Corp"

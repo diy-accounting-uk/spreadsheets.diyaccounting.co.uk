@@ -292,6 +292,31 @@ fullPurchLines.forEach((l) => {
   const c = LTD_PURCHASE_CODE_MAP[l.accountMainID];
   if (c) fullByCode[c] = (fullByCode[c] || 0) + l.amount;
 });
+// The share register and the board minute, both from the master book. The
+// register is the directors who hold shares; the minute is the dividend they
+// declared for the year. Each is tied back to the ledger it has to agree
+// with, so master data that moves without the other moving stops the extract
+// rather than publishing a book that does not add up.
+const NOMINAL_SHARE_VALUE = 1;
+const fullMembers = (book.directors || [])
+  .filter((d) => d.shares)
+  .map((d) => ({ name: d.name, shares: d.shares, acquired: d.appointed.toISOString().slice(0, 10) }));
+const fullOpeningBalance = buildOpeningBalance(fullLines);
+const fullSharesIssued = fullMembers.reduce((total, m) => total + m.shares, 0);
+if (fullSharesIssued * NOMINAL_SHARE_VALUE !== fullOpeningBalance.share_capital) {
+  throw new Error(
+    `Register of members holds ${fullSharesIssued} shares at ${NOMINAL_SHARE_VALUE} each, ` +
+      `against share capital of ${fullOpeningBalance.share_capital} on the opening balance sheet`,
+  );
+}
+
+const fullDividendsPaid = fullLines
+  .filter((l) => l["diya-gl:bankCode"] === "DV")
+  .reduce((total, l) => total + (l.debitCreditCode === "C" ? l.amount : -l.amount), 0);
+if (book.dividend.declared !== fullDividendsPaid) {
+  throw new Error(`The board minuted a dividend of ${book.dividend.declared}, against ${fullDividendsPaid} paid out of the bank`);
+}
+
 const fullToml = formatScenarioToml(
   {
     name: "Precision Code Ltd - full",
@@ -310,13 +335,14 @@ const fullToml = formatScenarioToml(
       vat_number: "123456789",
     },
     employees: book.employees || [],
+    members: fullMembers,
   },
   fullGrouped,
   {
     total_sales: fullTotalSales,
     total_premises_net: Math.round((fullByCode.r || 0) / 1.2),
     total_legal_net: Math.round((fullByCode.l || 0) / 1.2),
-    opening_balance: buildOpeningBalance(fullLines),
+    opening_balance: fullOpeningBalance,
     opening_stock: 10000,
     closing_stock: 6000,
     // Three per cent of the consultancy's net sales is direct materials.
@@ -333,6 +359,10 @@ const fullToml = formatScenarioToml(
         board_meeting: "2023-08-25",
       },
     ],
+    dividend: {
+      board_meeting: book.dividend.boardMeeting.toISOString().slice(0, 10),
+      declared: book.dividend.declared,
+    },
     opening_fixed_assets: [
       { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
       { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },

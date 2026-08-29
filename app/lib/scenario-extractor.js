@@ -424,6 +424,18 @@ export function formatScenarioToml(metadata, grouped, expected) {
     }
   }
 
+  // Register of members (Ltd). One shareholder a row, the holdings adding up
+  // to the share capital on the opening balance sheet.
+  if (metadata.members) {
+    for (const member of metadata.members) {
+      parts.push("[[members]]");
+      parts.push(`name = "${escapeTomlString(member.name)}"`);
+      parts.push(`shares = ${member.shares}`);
+      parts.push(`acquired = ${member.acquired}`);
+      parts.push("");
+    }
+  }
+
   // Sales
   for (const month of MONTH_ORDER) {
     const txns = grouped.sales[month];
@@ -516,6 +528,15 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`board_meeting = ${charge.board_meeting}`);
       parts.push("");
     }
+  }
+
+  // The dividend the board declared for the year (Ltd). The minute carries
+  // the whole year's declaration; the bank pays it in instalments.
+  if (expected.dividend) {
+    parts.push("[dividend]");
+    parts.push(`board_meeting = ${expected.dividend.board_meeting}`);
+    parts.push(`declared = ${expected.dividend.declared}`);
+    parts.push("");
   }
 
   // Opening debtors

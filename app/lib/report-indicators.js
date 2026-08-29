@@ -104,15 +104,6 @@ export function checkActual(report, name) {
   return toNumber(row.actual);
 }
 
-// The figure a check measured against, for the checks whose expected column
-// carries something the report states nowhere else. Null when the run made no
-// such check: a scenario with no bank journal pays no dividends, so the
-// report carries no row to read.
-export function optionalCheckExpected(report, name) {
-  const row = report.checks.find((check) => check.check === name);
-  return row ? toNumber(row.expected) : null;
-}
-
 export function value(report, section, label) {
   return toNumber(report.sections.get(section)?.get(label));
 }
@@ -264,7 +255,13 @@ function ltdIndicators(report, vatRegistered) {
   const taxOwed =
     (value(report, "Published Balance Sheet", "Corporation Tax") || 0) +
     (value(report, "Published Balance Sheet", "Taxation and Social Security") || 0);
-  const dividendsPaid = optionalCheckExpected(report, "Published P&L: dividends published against the dividends the year paid");
+  // The dividend cycle: the board declares, the bank pays and the creditor
+  // carries whatever is left. The trial balance holds a creditor as a
+  // negative balance, so both ends are negated to read as amounts owed.
+  const dividendsDeclared = value(report, "Trial Balance", "Final: Dividends declared");
+  const dividendsOwedAtStart = -(value(report, "Trial Balance", "Opening: Dividends Creditor") || 0);
+  const dividendsOwedAtEnd = -(value(report, "Trial Balance", "Final: Dividends Creditor") || 0);
+  const dividendsPaid = dividendsOwedAtStart + (dividendsDeclared || 0) - dividendsOwedAtEnd;
   const openingStock = value(report, "Stock", "Opening Stock");
   const calculatedStock = value(report, "Stock", "Closing Stock (calculated)");
   const countedStock = value(report, "Stock", "Closing Stock (physical count)");
@@ -279,6 +276,7 @@ function ltdIndicators(report, vatRegistered) {
     `Corporation tax: capital allowances ${amount(allowances)} take the profit chargeable to ${amount(chargeable)}, charge for the year ${amount(charge)}. The return files ${amount(filed)} in box 63 before marginal relief of ${amount(relief)}, leaving ${amount(netOfRelief)} in box 65.`,
     `Directors' report: turnover ${amount(reportTurnover)} against ${amount(reportPriorTurnover)} last year, trading margin ${amount(reportMargin)}, dividend declared ${amount(reportDividend)} on ${amount(reportShares)} ordinary shares issued.`,
     `Cash at bank and in hand ${amount(closingCash)} at the year end against ${amount(openingCash)} at the start: the year made ${amount(pbt)} before tax, paid out ${amount(dividendsPaid)} of dividends from the bank and still owes ${amount(taxOwed)} of tax.`,
+    `Dividends: the board declared ${amount(dividendsDeclared)} and the members were owed ${amount(dividendsOwedAtStart)} at the start of the year and ${amount(dividendsOwedAtEnd)} at the end.`,
     `Stock: ${amount(openingStock)} at the start, ${amount(calculatedStock)} calculated at the year end against ${amount(countedStock)} counted, a loss adjustment of ${amount(lossAdjustment)}.`,
     vatLine(report, vatRegistered),
     bridgeLine(report),
