@@ -9,10 +9,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 | What | Where | Status |
 |---|---|---|
 | vat-q5 (wave 3) | VATQtr5 fully consecutive fifth quarter: Vatinterface row 20, S/P 06Y2 sheets, Admin rows, K2:K16, stagger 15; overlap warning → hard 0 | merged, worktree removed | landed on `claude/wave-3` `f529d5aa`, 1567 tests; both featured scenarios reconcile with 0 warnings from fresh templates; package-anchored guards red until regeneration |
-| fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | merged, worktree removed | landed on `claude/wave-3` `a19160f0`, blast radius running; SE profit 144,715 → 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
+| fixture (wave 3) | HP: SE-visible counter-leg and Schedule additions; Ltd fixture RP/RV codings with SE writer RT/RC codes; ltd test comment | merged, worktree removed | landed on `claude/wave-3` `a19160f0`, 1866 tests; SE profit 144,715 → 121,615 (tax 40,401.24), Ltd CT 29,221.27, NBV 48,990, debtors 7,900 |
 | sa103f (wave 3) | SA103F box 30/46 report indicator and judge expectation; SE test comment | merged, worktree removed | landed on `claude/wave-3` `1a5d1b7b`, 104 tests |
 
-Wave 3 integrates on `claude/wave-3` (from main `038d0f37`, after the operator's generate refresh); it rebases onto the post-deploy green main (deploy 33252551051 at `79eecc50`) before its CI. Every later PR branch starts from a rebase onto the post-deploy green main.
+Wave 3 is complete on `claude/wave-3`, rebased onto the post-deploy green main (deploy 33252551051 at `79eecc50`); PR open. CI sequence: generate-* with commit on the branch to refresh packages, then the four skip-commit proofs and test.yml green. Every later PR branch starts from a rebase onto the post-deploy green main.
 
 ## Open items
 
