@@ -538,7 +538,12 @@ describeCalc(
       const corruptedResults = { ...results, "SE Short": { ...results["SE Short"], O80: corrupted } };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
 
-      expect(failureNames(corruptedChecks)).toEqual([PROFIT_BRIDGE_CHECK]);
+      // The full return totals the same three allowance boxes, so losing one
+      // breaks its box 56 alongside the bridge.
+      expect(failureNames(corruptedChecks)).toEqual([
+        "SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24",
+        PROFIT_BRIDGE_CHECK,
+      ]);
       expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);
     });
 
@@ -599,7 +604,12 @@ describeCalc(
 
       const nettingRow = seCategoryNetting(corruptedResults, mergedExpected).rows.find((row) => row.code === "purchases c");
       expect(nettingRow.residue).toBeCloseTo(-drift, 6);
-      expect(failureNames(corruptedChecks)).toEqual([categoryNettingCheckName(nettingRow)]);
+      // The subcontractor line is box 17 on the full return, so the drift
+      // breaks that box too.
+      expect(failureNames(corruptedChecks)).toEqual([
+        "SA103F box 17 subcontractor payments (D70) = the profit and loss account",
+        categoryNettingCheckName(nettingRow),
+      ]);
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {

@@ -164,36 +164,53 @@ describeCalc("SE Admin echo catches a broken workbook", () => {
     }
   });
 
+  // Three of these cells are quoted on the face of the SA103F as well, so
+  // corrupting one breaks the return's own echo of it alongside the tax-data
+  // check. Those SA103F checks run before the Admin block, so they come
+  // first in the failure list.
   it.each([
-    ["Admin: Personal Allowance = tax data", "N4", 1],
-    ["Admin: Basic Rate = tax data", "N6", 0.5],
-    ["Admin: Higher Rate = tax data", "N7", 0.5],
-    ["Admin: Basic Band End = tax data", "M11", 1],
-    ["Admin: Higher Band Start = tax data", "N12", 1],
-    ["Admin: NI Class 4 Lower Rate = tax data", "L20", 0.5],
-    ["Admin: NI Class 4 Lower Limit = tax data", "N20", 1],
-    ["Admin: NI Class 4 Upper Rate = tax data", "L23", 0.5],
-    ["Admin: NI Class 4 Upper Limit = tax data", "N23", 1],
-    ["Admin: AIA Rate = tax data", "G4", 0.5],
-    ["Admin: WDA Rate = tax data", "G5", 0.5],
-    ["Admin: Motor Vehicle Cost Threshold = tax data", "E8", 1],
-    ["Admin: Motor Vehicle Restriction = tax data", "G8", 1],
-    ["Admin: Mileage Higher Rate Limit = tax data", "F21", 1],
-    ["Admin: Mileage Higher Rate Pence = tax data", "G21", 0.99],
-    ["Admin: Mileage Lower Rate Start = tax data", "F22", 1],
-    ["Admin: Mileage Lower Rate Pence = tax data", "G22", 0.99],
-    ["Admin: VAT Registration Threshold = tax data", "F26", 1],
-    ["Admin: VAT Standard Rate = tax data", "F27", 0.99],
-  ])("%s fails, and only that check fails, when Admin!%s is corrupted via JSZip", async (checkName, cellRef, corruptedValue) => {
-    const intact = checks.find((c) => c.name === checkName);
-    expect(intact.pass).toBe(true);
+    [
+      "Admin: Personal Allowance = tax data",
+      "N4",
+      1,
+      ["SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4)"],
+    ],
+    ["Admin: Basic Rate = tax data", "N6", 0.5, []],
+    ["Admin: Higher Rate = tax data", "N7", 0.5, []],
+    ["Admin: Basic Band End = tax data", "M11", 1, []],
+    ["Admin: Higher Band Start = tax data", "N12", 1, []],
+    ["Admin: NI Class 4 Lower Rate = tax data", "L20", 0.5, []],
+    ["Admin: NI Class 4 Lower Limit = tax data", "N20", 1, []],
+    ["Admin: NI Class 4 Upper Rate = tax data", "L23", 0.5, []],
+    ["Admin: NI Class 4 Upper Limit = tax data", "N23", 1, []],
+    [
+      "Admin: AIA Rate = tax data",
+      "G4",
+      0.5,
+      ["SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4)"],
+    ],
+    ["Admin: WDA Rate = tax data", "G5", 0.5, ["SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)"]],
+    ["Admin: Motor Vehicle Cost Threshold = tax data", "E8", 1, []],
+    ["Admin: Motor Vehicle Restriction = tax data", "G8", 1, []],
+    ["Admin: Mileage Higher Rate Limit = tax data", "F21", 1, []],
+    ["Admin: Mileage Higher Rate Pence = tax data", "G21", 0.99, []],
+    ["Admin: Mileage Lower Rate Start = tax data", "F22", 1, []],
+    ["Admin: Mileage Lower Rate Pence = tax data", "G22", 0.99, []],
+    ["Admin: VAT Registration Threshold = tax data", "F26", 1, []],
+    ["Admin: VAT Standard Rate = tax data", "F27", 0.99, []],
+  ])(
+    "%s fails, with only the checks that read Admin!%s, when it is corrupted via JSZip",
+    async (checkName, cellRef, corruptedValue, alsoFailing) => {
+      const intact = checks.find((c) => c.name === checkName);
+      expect(intact.pass).toBe(true);
 
-    const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", cellRef, corruptedValue);
-    expect(value).toBe(corruptedValue);
-    const corrupted = checksWithCorruptedCell("Admin", cellRef, value);
-    expect(corrupted.find((c) => c.name === checkName).pass).toBe(false);
-    expect(failureNames(corrupted)).toEqual([checkName]);
-  });
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "Admin", cellRef, corruptedValue);
+      expect(value).toBe(corruptedValue);
+      const corrupted = checksWithCorruptedCell("Admin", cellRef, value);
+      expect(corrupted.find((c) => c.name === checkName).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([...alsoFailing, checkName]);
+    },
+  );
 
   // NI Class 2 Weekly Rate is genuinely zero in the 2025-26 tax data (Class 2
   // was abolished for most self-employed traders), so the corruption above
