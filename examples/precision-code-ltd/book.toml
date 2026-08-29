@@ -196,6 +196,9 @@ accountMainDescription = "CIS liability"
 [accounts.liabilities."2500"]
 accountMainDescription = "Directors loan account"
 
+[accounts.liabilities."2600"]
+accountMainDescription = "Long term creditors falling due after more than one year"
+
 [tax.corporationTax]
 smallProfitsRate = 0.19
 smallProfitsLimit = 50000

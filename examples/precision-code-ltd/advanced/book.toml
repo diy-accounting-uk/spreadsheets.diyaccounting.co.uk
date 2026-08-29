@@ -141,6 +141,18 @@ accountType = "bank"
 accountMainDescription = "Cash account"
 accountType = "bank"
 
+[accounts.assets."0010"]
+accountMainDescription = "Plant and machinery"
+
+[accounts.assets."0020"]
+accountMainDescription = "Fixtures and fittings"
+
+[accounts.assets."0030"]
+accountMainDescription = "Computer equipment"
+
+[accounts.assets."0040"]
+accountMainDescription = "Motor vehicles"
+
 [tax.incomeTax]
 personalAllowance = 12570
 basicRate = 0.2

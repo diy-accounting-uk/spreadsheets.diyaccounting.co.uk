@@ -797,6 +797,11 @@ export function seAccountFilter(accounts) {
     sales: { ...accounts.sales },
     purchases: Object.fromEntries(Object.entries(accounts.purchases).filter(([k]) => SE_PURCHASE_CODE_MAP[k] !== undefined)),
     bank: Object.fromEntries(Object.entries(accounts.bank).filter(([k]) => SE_BANK_ACCOUNTS.has(k))),
+    // The SE subset's opening journal carries computer and motor vehicle
+    // fixed asset lines (see filterAdvanced's isOpeningBalanceLine branch),
+    // so the accounts those lines post to have to be declared too, or the
+    // subset's own chart of accounts falls short of its own lines.jsonl.
+    assets: Object.fromEntries(Object.entries(accounts.assets || {}).filter(([k]) => OPENING_FIXED_ASSET_CLASSES[k] !== undefined)),
   };
 }
 
