@@ -576,6 +576,7 @@ export function cellWrites(scenario) {
 //   E15=NI Class 4 lower, E16=NI Class 4 upper, E18=Total
 
 export const TAX_SHEET = "Income Tax";
+export const FORECAST_SHEET = "Profit Forecast";
 
 // prettier-ignore
 export const CELL_MAP = [
@@ -625,6 +626,30 @@ export const CELL_MAP = [
   [TAX_SHEET, "E15", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Income Tax Calculation", 1],
   [TAX_SHEET, "E16", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Income Tax Calculation", 1],
   [TAX_SHEET, "E18", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Income Tax Calculation", 0],
+  // ── Profit Forecast — the projected year the customer plans against.
+  // The actual half (rows 5 to 17) pulls the P&L's monthly columns; the
+  // forecast half (rows 19 to 34) repeats each month that traded and spreads
+  // the year's total across the months that did not, counting the trading
+  // months in C21. The tax block below it charges the projected profit after
+  // adding depreciation back and taking the schedule's capital allowances
+  // off, and the P&L's own health check charges a twelfth of it a month.
+  [FORECAST_SHEET, "C21", "Months of actual trade",      "gl-cor:amount (forecast.monthsTraded)",   "Profit Forecast", 1],
+  [FORECAST_SHEET, "C22", "Forecast Sales Turnover",     "gl-cor:amount (forecast.turnover)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C24", "Forecast Investment Grants",  "gl-cor:amount (forecast.grants)",         "Profit Forecast", 1],
+  [FORECAST_SHEET, "C26", "Forecast Cost of Sales",      "gl-cor:amount (forecast.costOfSales)",    "Profit Forecast", 1],
+  [FORECAST_SHEET, "C30", "Forecast General Expenses",   "gl-cor:amount (forecast.expenses)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C33", "Forecast Interest Received",  "gl-cor:amount (forecast.interest)",       "Profit Forecast", 1],
+  [FORECAST_SHEET, "C34", "**Forecast Profit before Tax**", "gl-cor:amount (forecast.profit)",      "Profit Forecast", 0],
+  [FORECAST_SHEET, "C37", "Add Depreciation",            "gl-cor:amount (depreciation)",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C38", "Less Capital Allowances",     "tax.capitalAllowances (schedule)",        "Profit Forecast", 1],
+  [FORECAST_SHEET, "C39", "Profit before Tax",           "gl-cor:amount (forecast.taxableProfit)",  "Profit Forecast", 1],
+  [FORECAST_SHEET, "C40", "Personal Allowance",          "tax.incomeTax.personalAllowance",         "Profit Forecast", 1],
+  [FORECAST_SHEET, "C41", "Profit after Allowance",      "gl-cor:amount (forecast.taxableIncome)",  "Profit Forecast", 1],
+  [FORECAST_SHEET, "C42", "Tax at standard rate",        "tax.incomeTax.basicRate",                 "Profit Forecast", 1],
+  [FORECAST_SHEET, "C43", "Tax at higher rate",          "tax.incomeTax.higherRate",                "Profit Forecast", 1],
+  [FORECAST_SHEET, "C44", "Tax at additional rate",      "tax.incomeTax.additionalRate",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C45", "National Insurance",          "tax.nationalInsurance.class4",            "Profit Forecast", 1],
+  [FORECAST_SHEET, "C46", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Profit Forecast", 0],
   // ── SE Short (SA103S) ──
   // ── SE Short (SA103S) — formula cells only ──
   ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
@@ -910,7 +935,18 @@ export function standardReads() {
     if (!reads[sheet].includes(cell)) reads[sheet].push(cell);
   }
   const plRows = [
-    ...new Set([...Object.values(SALES_MONTHLY_TIE_ROWS), SALES_BAD_DEBT_ROW, ...Object.values(PURCHASES_MONTHLY_TIE_ROWS), 33, 34]),
+    ...new Set([
+      ...Object.values(SALES_MONTHLY_TIE_ROWS),
+      SALES_BAD_DEBT_ROW,
+      ...Object.values(PURCHASES_MONTHLY_TIE_ROWS),
+      33,
+      34,
+      // The Profit Forecast repeats the P&L's own monthly turnover (row 9)
+      // and interest received (row 38), so the forecast checks can count the
+      // months that traded and tie the projected year to the actual one.
+      9,
+      38,
+    ]),
   ];
   reads["Profit & Loss Account"] = reads["Profit & Loss Account"] || [];
   for (const row of plRows) {
@@ -1472,6 +1508,54 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         const expectedAIA = (sched.Q1 || 0) > 0 ? sched.Q1 : 0;
         check("SA103S: Capital allowances (AIA/FYA) = Schedule Q1", seShort.D80 || 0, expectedAIA);
       }
+    }
+
+    // The Profit Forecast prints its own tax and NI liability, and the P&L's
+    // financial health check charges a twelfth of it every month. It runs off
+    // its own chain from the P&L, the fixed asset schedule and Admin, so
+    // nothing above proves any of it.
+    const forecast = results[FORECAST_SHEET];
+    if (forecast) {
+      // The forecast repeats a month that traded and spreads the year's total
+      // across the months that did not, so the projected year only equals the
+      // actual one when every month traded. C21 counts the trading months
+      // against the P&L's own monthly turnover.
+      const monthsTraded = MONTH_COLS.filter((col) => num(pl[`${col}9`]) > 0).length;
+      check("Forecast: months of actual trade = P&L months with turnover", num(forecast.C21), monthsTraded, 0);
+
+      if (monthsTraded === MONTH_COLS.length) {
+        check("Forecast: turnover = P&L turnover", num(forecast.C22), num(pl.B9));
+        check("Forecast: investment grants = P&L investment grants", num(forecast.C24), num(pl.B11));
+        check("Forecast: cost of sales = P&L cost of sales", num(forecast.C26), num(pl.B17));
+        check("Forecast: general expenses = P&L administrative expenses", num(forecast.C30), num(pl.B35));
+        check("Forecast: interest received = P&L interest received", num(forecast.C33), num(pl.B38));
+        check("Forecast: profit before tax = P&L profit before tax", num(forecast.C34), num(pl.B39));
+      }
+
+      // The two adjustments between the accounting profit and the profit tax
+      // is charged on, each against the book it comes from.
+      check("Forecast: depreciation added back = P&L disposal loss + depreciation", num(forecast.C37), num(pl.B33) + num(pl.B34));
+      const schedule = results["Fixedassets.xlsx!Schedule"];
+      if (schedule) {
+        check(
+          "Forecast: capital allowances = the fixed asset schedule",
+          num(forecast.C38),
+          num(schedule.Q1) + num(schedule.R1) + num(schedule.Y1) - num(schedule.Z1),
+        );
+      }
+      check(
+        "Forecast: taxable profit = profit + depreciation - capital allowances",
+        num(forecast.C39),
+        num(forecast.C34) + num(forecast.C37) - num(forecast.C38),
+      );
+
+      const expectedForecastTax = calculateExpectedTax(num(forecast.C39), taxData);
+      check("Forecast: personal allowance after taper", num(forecast.C40), expectedForecastTax.personal_allowance);
+      check("Forecast: tax at standard rate", num(forecast.C42), expectedForecastTax.income_tax_basic);
+      check("Forecast: tax at higher rate", num(forecast.C43), expectedForecastTax.income_tax_higher);
+      check("Forecast: tax at additional rate", num(forecast.C44), expectedForecastTax.income_tax_additional);
+      check("Forecast: National Insurance", num(forecast.C45), expectedForecastTax.ni_class4_lower + expectedForecastTax.ni_class4_upper);
+      check("Forecast: tax and NI liability", num(forecast.C46), expectedForecastTax.total_tax_and_ni);
     }
   }
 
