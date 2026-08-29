@@ -15,7 +15,7 @@ commit first, since the forecast templates and the taxi fixture change what is g
 |---|---|---|
 | forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` repairs and checks; Taxi `Draft Tax calculation` taper and additional rate with a high-profit taxi fixture | started |
 | se-q5-window | `yearShift` rework so SE's Q5 scenario window is checked like Q1-Q4 | landed on `claude/wave-4`, 1039 tests, worktree removed |
-| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK`; schema brought up to the fixture with a validation test | merged into `claude/wave-4` `1cc9d259`, blast radius running; PAYE and CIS creditors 0, VAT creditor −9,135.79 measured |
+| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK`; schema brought up to the fixture with a validation test | landed on `claude/wave-4` `1cc9d259`, 432 tests; PAYE and CIS creditors 0, VAT creditor −9,135.79 measured |
 | fidelity-design | `PLAN_ROUNDTRIP_FIDELITY.md` rewritten: measured scope gap (JS side far behind the Excel checks; S1 flipped, exporter collapses account identity, schemas unvalidated), tracks T0-T7 | landed on `claude/wave-4` `7b2ccd58`, worktree removed |
 | fidelity-t0 | T0: per-product calculator split, `report.js` passes the scenario and reads `additionalReads`, published checks in the JS report, `verify-roundtrip.js` scorecard | started (runs alone; T1 schema v2 waits for ltd-fixture's v1 fixes; T2-T7 follow per the plan) |
 
