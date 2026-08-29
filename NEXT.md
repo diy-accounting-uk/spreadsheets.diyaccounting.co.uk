@@ -10,7 +10,7 @@ Worktrees under `/Users/antony/projects/diy-accounting-limited/.worktrees/`, bra
 
 | Track | Items | Worktree | Status |
 |---|---|---|---|
-| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README | `sp-ltd-checks` | started |
+| ltd-checks | Report figures; Charges&Debentures link; Payslips!Admin echo (Ltd); CONTEXT cell map; fixture turnover vs README; cash and stock notes; F21 year-end anchor | merged into `claude/wave-1` `9ff2476f`, blast radius running | cash 250,544 → 216,095; stock adjustment −4,000 → −102 |
 | se-checks | SE Full (SA103F) boxes; Payslips!Admin echo (SE) | landed on `claude/wave-1`, 208 tests, worktree removed | 59 SA103F checks, 31 calendar checks |
 | taxi | VitalTax quarterly checks; PurchasesMar!T2 nag | merged, worktree removed | landed on `claude/wave-1` `119549f5`, 1299 tests |
 | vat-stagger | VATQtr5 stagger and dropdown range | landed on `claude/wave-1` `3c85466a`, 219 tests, worktree removed | Q5 now on the last Vatinterface period (overlap 2 → 1, stated as a warning); SE VAT start month fixed; 97 `vat-quarter-dropdown` assertions red against committed packages until CI regenerates |
@@ -40,11 +40,14 @@ Coverage checks still to write:
   margins, year end, dividend, share register; nothing asserted today. Test: Report
   figures equal PubP&L/PubBalSht/RegisterofMembers sources on ltd-scenario-full;
   expected the filed report quotes the books' numbers and the judge reads it coherent.
-- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the Report's
-  dividend line D94 reads it across a cross-file link and is dead in every package.
-  Test: scenario declares a dividend, E4 carries it, Report D94 shows it, and the
-  dividend ties to the P&L appropriation/creditor the books carry. (This is the
-  original coverage plan's parked operator question about the Report sheet.)
+- [ ] **Write `Boardmeeting!E4` (declared dividend) from the scenario** — the dividend
+  cycle is unwired end to end: bank `DV` payments reach the trial balance's dividends
+  creditor, `PubP&L!F52` reads `TrialBalance!EJ48` which no month column feeds, nothing
+  declares on `Boardmeeting!E4`, and Report D94 reads E4 across a cross-file link. The
+  fixture pays 15,000 and publishes 0 (a warning since wave 1). Test: scenario declares a
+  dividend, E4 carries it, D94 shows it, F52 publishes it, and the creditor nets to the
+  unpaid balance. With it: `RegisterofMembers!A3` (member name) is never written, so the
+  report's shareholder lines publish a holding with no holder.
 - [ ] **`Charges&Debentures` to long-term creditors link check (Ltd)** — a registered
   charge implies a long-term creditor; nothing links the register to the balance
   sheet. Test: a fixture charge entry and an assertion the balance sheet's long-term
@@ -120,9 +123,14 @@ Small follow-ups:
 - [ ] **CONTEXT_LIMITED_COMPANY.md cell-map corrections** — the Ltd workstream report
   lists the wrong PubP&L/PubBalSht/MnthP&L/CT rows; ltd.js CELL_MAP is already
   corrected. Docs-only.
-- [ ] **Reconcile the Ltd fixture's turnover with its README** — the fixture publishes
-  ~£341k net against the ~£184k the README's transaction list implies. Decide which
-  is right and align the other.
+- [ ] **Ltd fixture remainders** (turnover/README aligned in wave 1: the fixture was
+  right) — the CT payment (4,500) and CIS remittances are bank-coded `RP` so they land
+  in the PAYE creditor; recoding to `RT`/`RC` throws in the SE writer (`se.js:61` analyses
+  no payment under `RV`/`RT`/`RC`), so the SE writer needs those codes first. The Innovate
+  UK grant receipt is coded `RV` (VAT creditor) instead of `DR`; recoding needs the
+  hand-written `closingDebtors` list in `extract-scenarios.js:94` to derive from the
+  fixture. `OpenAccounts!E48` is `=E15`, so the prior-year P&L column shows −10,000 cost
+  of sales on zero turnover (a warning since wave 1).
 - [ ] **Render report front-matter on the published pages** — build-reconciliation-pages
   ignores text before the first `##` heading, so the new scenario descriptions reach the
   reports but not the pages. One-line parser change.
