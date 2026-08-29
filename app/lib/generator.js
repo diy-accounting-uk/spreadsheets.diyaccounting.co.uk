@@ -24,6 +24,18 @@ function stabilizeDirDates(zip) {
   }
 }
 
+// ── VAT return cycle ────────────────────────────────────────────────────────
+
+// Months from the book's first month to each of the five return forms' default
+// period ends. Q1-Q4 step a quarter at a time, so together they cover the
+// twelve accounting months once each. The fifth form is the spare a business
+// files when its VAT stagger runs behind its accounting year: it takes the
+// last period the Vatinterface carries, two months on from Q4 rather than
+// three, because the quarter one further on has no interface row to total it
+// and no entry in the K2:K15 dropdown to select it. That leaves Q4 and Q5
+// sharing their one overlapping period, which the reconciliation reports.
+export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 14];
+
 // ── Date helpers ────────────────────────────────────────────────────────────
 
 export function lastDayOfMonth(year, month) {
@@ -787,9 +799,9 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
   }
 
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
-  // quarter's default G5, then roll the whole cached date chain — the
-  // externalLink1 Admin cache, the Vatinterface cached values, and each
-  // quarter sheet's K2:K15 dropdown list — to this package's year.
+  // return form's default G5 from VAT_RETURN_END_MONTHS, then roll the whole
+  // cached date chain — the externalLink1 Admin cache, the Vatinterface cached
+  // values, and each form's K2:K15 dropdown list — to this package's year.
   if (sheetsConfig.vatQtr1) {
     if (!sheetsConfig.vatinterface) {
       throw new Error("sheetsConfig has vatQtr sheets but no vatinterface path");
@@ -869,13 +881,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       const sheetPath = sheetsConfig[`vatQtr${q}`];
       if (!sheetPath) continue;
 
-      // Q1-Q4 step a quarter at a time from the book's first month, so they
-      // cover the twelve accounting months once each. The fifth form is the
-      // spare a business files when its VAT stagger runs behind its accounting
-      // year, and it takes the last period the Vatinterface carries: two
-      // months on from Q4, because the quarter one further on has no interface
-      // row to total it and no entry in the K2:K15 dropdown to select it.
-      const monthsFromStart = q <= 4 ? q * 3 : 14;
+      const monthsFromStart = VAT_RETURN_END_MONTHS[q - 1];
       const totalMonth = vatStartMonth + monthsFromStart - 1;
       const qMonth = ((totalMonth - 1) % 12) + 1;
       const qYear = vatStartYear + Math.floor((totalMonth - 1) / 12);

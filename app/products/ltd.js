@@ -16,6 +16,7 @@ import {
   categoryNettingCheckName,
   PROFIT_BRIDGE_CHECK,
   vatCycleRows,
+  vatReturnCoverage,
 } from "../lib/report-generator.js";
 
 export const PRODUCT = {
@@ -1791,6 +1792,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(vatinterface[`C${row}`]),
         0,
       );
+    }
+
+    // ── The five return forms as one cycle ────────────────────────────────
+    //
+    // Each form's own date decides which three interface rows it declares, so
+    // the five together are checked as a cycle: distinct periods, Q1 to Q4 a
+    // quarter apart and covering the twelve accounting months once each, and
+    // the spare fifth on the last period the interface carries.
+    const periods = vatinterfacePeriods(results);
+    const returnForms = [];
+    for (let q = 1; q <= 5; q++) {
+      const qtr = vatQtr(q);
+      if (qtr && typeof qtr.G5 === "number") returnForms.push({ name: `Q${q}`, end: vatinterfaceRowEnding(results, qtr.G5) });
+    }
+    const coverage = vatReturnCoverage(periods, returnForms);
+    if (coverage.placed.length === 5) {
+      const [q1, q2, q3, q4, q5] = coverage.placed;
+      check("VAT: the five returns end on five different periods", new Set(coverage.placed.map((form) => form.row)).size, 5, 0);
+      for (const [earlier, later] of [
+        [q1, q2],
+        [q2, q3],
+        [q3, q4],
+      ]) {
+        check(`VAT: ${later.name} ends a quarter after ${earlier.name}`, later.row - earlier.row, 3, 0);
+      }
+      const quarterlyRows = new Set([q1, q2, q3, q4].flatMap((form) => form.covers));
+      check(
+        "VAT: Q1-Q4 cover every month of the accounting year",
+        periods.filter((period) => period.inAccountingYear && quarterlyRows.has(period.row)).length,
+        periods.filter((period) => period.inAccountingYear).length,
+        0,
+      );
+      check("VAT: Q5 ends on the last period the Vatinterface carries", q5.row, VATINTERFACE_ROWS.last, 0);
+
+      // Five consecutive quarters need fifteen periods and the interface can
+      // total fourteen, so the spare cannot start where the fourth return
+      // ends. The period they share is the workbook's own limit, reported
+      // with the output VAT that would go in twice, and a run is not stopped
+      // for it.
+      checks.push({
+        name: "VAT: periods more than one of the five returns declares",
+        actual: coverage.shared.length,
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.length,
+        severity: "warning",
+      });
+      checks.push({
+        name: "VAT: output VAT declared on more than one of the five returns",
+        actual: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        expected: 0,
+        pass: coverage.shared.length === 0,
+        diff: coverage.shared.reduce((total, period) => total + period.outputVat, 0),
+        severity: "warning",
+      });
     }
   }
 
