@@ -165,7 +165,7 @@ export function reportStatus(content) {
   return line ? line.slice("Status:".length).trim() : "";
 }
 
-// ── Scenario summary ────────────────────────────────────────────────────────
+// ── Scenario headline ───────────────────────────────────────────────────────
 
 const money = new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
