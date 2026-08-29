@@ -6,18 +6,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 4 on `claude/wave-4` from main `418bec4b` (post-deploy green at `11b249b4`). Worktrees
-under `.worktrees/sp-<track>`. Tracks land locally with their blast radius, then the branch
-is pushed and a PR opened; the operator dispatches every workflow on it (generate-* with
-commit first, since the forecast templates and the taxi fixture change what is generated).
-
-| Track | Items | Status |
-|---|---|---|
-| forecast-taxi | SE `Profit Forecast` and Taxi `Wages Forecast` tax blocks; Taxi `Draft Tax calculation` taper and additional rate; `kestrel-executive-cars` fixture | merged into `claude/wave-4` `e7f56450`, blast radius running |
-| se-q5-window | `yearShift` rework so SE's Q5 scenario window is checked like Q1-Q4 | landed on `claude/wave-4`, 1039 tests, worktree removed |
-| ltd-fixture | VAT payments to `RV`; `diya-gl:cisDeduction` into `Purchases!AK`; schema brought up to the fixture with a validation test | landed on `claude/wave-4` `1cc9d259`, 432 tests; PAYE and CIS creditors 0, VAT creditor −9,135.79 measured |
-| fidelity-design | `PLAN_ROUNDTRIP_FIDELITY.md` rewritten: measured scope gap (JS side far behind the Excel checks; S1 flipped, exporter collapses account identity, schemas unvalidated), tracks T0-T7 | landed on `claude/wave-4` `7b2ccd58`, worktree removed |
-| fidelity-t0 | T0: per-product calculators, `report.js` passes the scenario and reads the leaf files, checks published on the JS side, `verify-roundtrip.js` scorecard | merged into `claude/wave-4` `1c785d1d`; Ltd differing 222 → 154, no-JS-value now 1,162 Ltd / 784 SE (the widened read, for T4/T5) |
+Wave 4 is complete on `claude/wave-4` at `39f9c3f4` (pushed, no PR yet): forecast-taxi,
+se-q5-window, ltd-fixture, fidelity-design and fidelity T0 all landed; the merged tree passes
+the 26-file blast radius. The operator's committed generate-* runs are in progress on the
+branch (22:32). Next: the four skip-commit proofs and test.yml green, then the PR. The
+operator dispatches every workflow on the branch.
 
 ## Open items
 
@@ -39,10 +32,9 @@ Checks, indicators and docs:
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
-- [ ] **SE VAT Q5 scenario window** — `yearShift` in `se.js` assumes a quarter window inside
-  the accounting year, so the per-quarter scenario-window checks skip Q5, which now sits
-  wholly after the year end; Q5's boxes are anchored on the Vatinterface rows only. Rework
-  the shift so Q5's window is checked against the scenario like Q1-Q4.
+- [ ] **SE VAT Q5 scenario window** — code-complete on `claude/wave-4` (the shift comes once
+  from `Admin!B4`; Q5 checked against the straddling entries, 1,100 / 180 / 900). Closes
+  when the wave-4 regeneration lands.
 
 Fixture:
 
@@ -56,10 +48,16 @@ Fixture:
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
-- [ ] **Roundtrip fidelity S1-S7 remainder** (was submit B38) — PLAN_ROUNDTRIP_FIDELITY.md
-  predates the coverage waves; S1 was largely fixed by PR #27 and S7 absorbed by the
-  fixed-asset work. Review the plan against the delivered state, re-measure the EQ1
-  diffs, close what is done, and carry only real remainders.
+- [ ] **Roundtrip fidelity: bring the JS engine, exporter, schema and fidelity tests to the
+  Excel checks' scope** — plan of record `PLAN_ROUNDTRIP_FIDELITY.md` (rewritten 2026-08-29
+  with today's measurement: Ltd 845 values in scope, 832 without a correct JS source; SE
+  549/535; the exporter folds SE accounts into 5300; nothing validated the schemas). T0 is
+  landed on `claude/wave-4` (per-product calculators, scenario into the JS report, leaf
+  files read, scorecard `app/bin/verify-roundtrip.js`). Remaining tracks in the plan's
+  order: T1 schema v2 + validator + extractor sections (Sonnet), T2 export completeness
+  (Opus), then T3 BST/Taxi, T4 SE and T5 Ltd calculators with checks mirrored one for one
+  (T3 Sonnet, T4/T5 Opus) and T6 EQ3 saved-vs-recalculated (Haiku) concurrently, T7 CI
+  wiring with the EQ1 budget gate last (Haiku).
 - [ ] **Packages-to-archive migration** (was submit B38; PLAN_PACKAGES_TO_ARCHIVE.md
   at this root) — generated packages move to the diy-accounting-archive repository and
   stop being tracked here, ending the mass-commit pattern. Paused by choice; resume is
