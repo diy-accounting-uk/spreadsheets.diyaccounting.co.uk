@@ -406,7 +406,7 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 
 All other dates in the Admin sheet (B2-B56 monthly dates, VAT quarter dates, etc.) are formula-driven from F21 -- the generator only sets F21.
 
-**VAT quarter dates:** VATQtr1-5 G5 cells are set by the generator to the quarter-end dates computed from the year-end month. Q1=3 months, Q2=6, Q3=9, Q4=12, Q5=13 months from accounting year start.
+**VAT return period dates:** VATQtr1-5 G5 cells are set by the generator to period ends counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js): Q1=3, Q2=6, Q3=9, Q4=12, Q5=14. Q1-Q4 cover the twelve accounting months once each. Q5 is the spare form a business files when its VAT stagger runs behind its accounting year, and it sits on the last period the Vatinterface carries -- the quarter one further on has no interface row to total it and no entry in the K2:K15 dropdown. That leaves Q4 and Q5 sharing one period, which the reconciliation reports as a warning.
 
 **Payslips calendar:** The Payslips Admin sheet B2 = PAYE tax year start (6 April). Columns C/D/F are regenerated with week numbers, month numbers, and week-in-month numbers using the fixed pattern [4,4,5, 4,4,5, 4,4,5, 4,4,6] weeks per month.
 
