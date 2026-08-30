@@ -855,7 +855,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
       const sheet = vatReturnWrites[sheetName];
       const col = STRADDLING_COLUMNS;
-      const entryRow = Object.keys(sheet).filter((k) => k.startsWith(col.amount)).length + 5;
+      // Matching the whole reference rather than its first letter keeps a
+      // write further right out of the count, the same way the journal
+      // writer counts its own rows.
+      const isAmountColumnKey = (key) => new RegExp(`^${col.amount}\\d+$`).test(key);
+      const entryRow = Object.keys(sheet).filter(isAmountColumnKey).length + 5;
       const d = shiftDate(parseDate(entry.date));
       sheet[`${col.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${col.name}${entryRow}`] = entry[nameField];
