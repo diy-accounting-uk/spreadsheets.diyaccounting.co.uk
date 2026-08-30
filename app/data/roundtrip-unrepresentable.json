@@ -2,6 +2,11 @@
   "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the product it applies to and what the sheets do instead. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
   "fields": [
     {
+      "field": "diya-gl:assetID",
+      "products": ["taxi"],
+      "reason": "The Taxi Fixed Assets vehicle block takes a date, a description, a reference and a cost, with no cell for an asset identifier, and the purchase row that buys the asset carries no reference back to the block."
+    },
+    {
       "field": "diya-gl:cisDeduction",
       "products": ["bst", "taxi", "se"],
       "reason": "The BST and Taxi writers do not fill the contractors block, and the SE purchases sheet has no CIS column. Ltd keeps it on the purchases journal's own CIS certificates column."
@@ -80,6 +85,11 @@
       "field": "measurableUnitOfMeasure",
       "products": ["bst", "taxi", "se", "ltd"],
       "reason": "The sheets' quantity columns are headed with the unit they take, so a row states no unit of its own."
+    },
+    {
+      "field": "paymentMethod",
+      "products": ["taxi"],
+      "reason": "The Taxi Sales and Purchases tabs keep no Bank or Cash column: the column the Basic Sole Trader sheets give the payment label is the taxi expense code letter's."
     },
     {
       "field": "taxCode",
