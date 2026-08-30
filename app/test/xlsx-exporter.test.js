@@ -250,12 +250,12 @@ describe("extractBook", () => {
     expect(book.tax.incomeTax.personalAllowance).toBe(12570);
   });
 
-  it("leaves out an Admin rate the book schema declares no field for", async () => {
-    // The BST cell map calls Admin!L17 tax.nationalInsurance.class2Rate; the
-    // schema's own field is class2WeeklyRate, so the book states neither
-    // rather than inventing a field the schema forbids.
+  it("carries the National Insurance rates under the book schema's own names", async () => {
+    // The BST cell map names Admin!L17 and its neighbours the way the book
+    // schema does (class2WeeklyRate, class4MainRate, ...), so the exported
+    // book states them and still validates.
     const { book } = await exportedBook();
-    expect(book.tax.nationalInsurance).toBeUndefined();
+    expect(book.tax.nationalInsurance).toMatchObject({ class2WeeklyRate: 3.45 });
     expect(validateBook(book).valid).toBe(true);
   });
 
