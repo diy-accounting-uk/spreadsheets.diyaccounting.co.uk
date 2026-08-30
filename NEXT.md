@@ -6,7 +6,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 5 is on `claude/wave-5` as PR #43 (16 track merges, merged with main at `4369f879`; the
+Wave 5 is on `claude/wave-5` as PR #43 (16 track merges plus the double-roundtrip, stability-guard
+and refs fixes; conflicts with main's formatting sweep resolved at `edeead12`, mergeable; the
 merged tree passes 3,582 tests and the post-merge checks, sync gate clean). The double-roundtrip failures on its first test.yml
 run (the exporter dropped the fixed-asset register, the VAT flag, the CT reference and the
 entered stock) are fixed at `c5233f6c`, and the operator's generate-* runs on the earlier head failed only because
