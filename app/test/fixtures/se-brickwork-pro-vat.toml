@@ -236,7 +236,7 @@ date = 2025-05-15
 supplier = "JB Plastering"
 code = "c"
 amount = 10800
-cis_deduction = 1200
+cis_deduction = 1800
 
 [[purchases.jun]]
 date = 2025-06-01
@@ -327,7 +327,7 @@ date = 2025-08-15
 supplier = "JB Plastering"
 code = "c"
 amount = 9000
-cis_deduction = 1000
+cis_deduction = 1500
 
 [[purchases.sep]]
 date = 2025-09-01
@@ -412,7 +412,7 @@ date = 2025-11-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 9000
-cis_deduction = 1000
+cis_deduction = 1500
 
 [[purchases.dec]]
 date = 2025-12-01
@@ -497,7 +497,7 @@ date = 2026-02-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 7200
-cis_deduction = 800
+cis_deduction = 1200
 
 [[purchases.mar]]
 date = 2026-03-01
@@ -637,7 +637,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 11358
+amount = 11718
 description = "may invoices settled"
 
 [[bank.jun]]
@@ -691,7 +691,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1200
+amount = 1800
 description = "Construction Industry Scheme deductions for 2025-05"
 
 [[bank.jul]]
@@ -790,7 +790,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 9918
+amount = 10218
 description = "aug invoices settled"
 
 [[bank.sep]]
@@ -835,7 +835,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 24318
+amount = 17118
 description = "sep invoices settled"
 
 [[bank.oct]]
@@ -844,7 +844,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1000
+amount = 1500
 description = "Construction Industry Scheme deductions for 2025-08"
 
 [[bank.oct]]
@@ -943,7 +943,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 9918
+amount = 10218
 description = "nov invoices settled"
 
 [[bank.dec]]
@@ -997,7 +997,7 @@ account = "1200"
 source = "HMRC"
 code = "RP"
 direction = "out"
-amount = 1000
+amount = 1500
 description = "Construction Industry Scheme deductions for 2025-11"
 
 [[bank.jan]]
@@ -1096,7 +1096,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 8478
+amount = 8718
 description = "feb invoices settled"
 
 [[bank.mar]]

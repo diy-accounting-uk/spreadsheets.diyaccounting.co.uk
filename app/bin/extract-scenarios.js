@@ -30,6 +30,7 @@ import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical
 import {
   buildClosingDebtors,
   HP_AGREEMENT_FIELD,
+  CIS_DEDUCTION_FIELD,
   LTD_PURCHASE_CODE_MAP,
   BST_PURCHASE_CODE_MAP,
   SE_PURCHASE_CODE_MAP,
@@ -578,7 +579,6 @@ function brickworkEmployees(employees) {
 const TWIN_TRADE_SCALE = 1.5;
 const TWIN_VAT_RATE = 0.2;
 const TWIN_VAT_NUMBER = "376543219";
-const TWIN_SCALED_BANK_CODES = new Set(["DR", "CR"]);
 const TWIN_SCALED_OPENING_ACCOUNTS = new Set(["1300", "2100"]);
 const TWIN_VAT_ACCOUNT = "2200";
 const TWIN_RETAINED_EARNINGS_ACCOUNT = "3100";
@@ -614,16 +614,67 @@ function twinBankLine(date, amount, comment, reference) {
   };
 }
 
-function registeredTwin(lines) {
-  const scaled = lines.map((line) => {
-    if (line.sourceJournalID === "sales" || line.sourceJournalID === "purchases") {
-      // A capital purchase buys the same asset either way, so only the VAT
-      // is added to it.
-      const scale = line["diya-gl:assetID"] ? 1 : TWIN_TRADE_SCALE;
-      return { ...line, amount: round2(line.amount * scale * (1 + TWIN_VAT_RATE)), taxCode: "S", taxRate: TWIN_VAT_RATE };
-    }
-    if (line.sourceJournalID === "bank" && TWIN_SCALED_BANK_CODES.has(line["diya-gl:bankCode"])) {
+// What the month's purchase invoices come to, and the tax withheld from the
+// sub-contractors among them. A supplier payment settles the first less the
+// second, and the remittance pays the second over.
+function purchasesByMonth(lines) {
+  const invoiced = {};
+  for (const line of lines) {
+    if (line.sourceJournalID !== "purchases") continue;
+    const month = line.postingDate.slice(0, 7);
+    invoiced[month] = round2((invoiced[month] || 0) + line.amount);
+  }
+  return invoiced;
+}
+
+function cisWithheldByMonth(lines) {
+  const withheld = {};
+  for (const line of lines) {
+    if (!line[CIS_DEDUCTION_FIELD]) continue;
+    const month = line.postingDate.slice(0, 7);
+    withheld[month] = round2((withheld[month] || 0) + line[CIS_DEDUCTION_FIELD]);
+  }
+  return withheld;
+}
+
+function monthsBefore(month, count) {
+  const [year, index] = month.split("-").map(Number);
+  const shifted = index - count;
+  return `${year + Math.floor((shifted - 1) / 12)}-${String(((((shifted - 1) % 12) + 12) % 12) + 1).padStart(2, "0")}`;
+}
+
+function registeredTwin(lines, book) {
+  const twinTrade = lines.map((line) => {
+    if (line.sourceJournalID !== "sales" && line.sourceJournalID !== "purchases") return line;
+    // A capital purchase buys the same asset either way, so only the VAT is
+    // added to it. The tax withheld from a sub-contractor is worked out on
+    // the amount net of VAT, so it follows the trade and not the invoice.
+    const scale = line["diya-gl:assetID"] ? 1 : TWIN_TRADE_SCALE;
+    const traded = { ...line, amount: round2(line.amount * scale * (1 + TWIN_VAT_RATE)), taxCode: "S", taxRate: TWIN_VAT_RATE };
+    if (line[CIS_DEDUCTION_FIELD]) traded[CIS_DEDUCTION_FIELD] = round2(line[CIS_DEDUCTION_FIELD] * TWIN_TRADE_SCALE);
+    return traded;
+  });
+
+  const invoiced = purchasesByMonth(twinTrade);
+  const withheld = cisWithheldByMonth(twinTrade);
+  const openingMonth = dateOnly(book.documentInfo.periodCoveredStart).slice(0, 7);
+
+  const scaled = twinTrade.map((line) => {
+    if (line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "DR") {
       return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+    }
+    if (line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "CR") {
+      // The payment in the year's first month settles the creditors brought
+      // forward, which scale with the ledger. Every later one settles the
+      // month before it, net of the tax withheld from the sub-contractors
+      // among those invoices.
+      const month = line.postingDate.slice(0, 7);
+      if (month === openingMonth) return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+      const settles = monthsBefore(month, 1);
+      return { ...line, amount: round2((invoiced[settles] || 0) - (withheld[settles] || 0)) };
+    }
+    if (line.sourceJournalID === "bank" && line["diya-gl:bankCode"] === "RC") {
+      return { ...line, amount: withheld[monthsBefore(line.postingDate.slice(0, 7), 2)] || 0 };
     }
     if (line.sourceJournalID === "journal" && TWIN_SCALED_OPENING_ACCOUNTS.has(line.accountMainID)) {
       return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
@@ -830,7 +881,7 @@ const brickBstDiya = writeSubset(
 // --- Self Employed, both sizes ----------------------------------------------
 
 function writeBrickworkSe(vatRegistered) {
-  const masterLines = vatRegistered ? registeredTwin(brickMasterLines) : brickMasterLines;
+  const masterLines = vatRegistered ? registeredTwin(brickMasterLines, brickBook) : brickMasterLines;
   const lines = filterAdvanced(soleTraderAdaptation(masterLines, brickBook));
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
@@ -894,7 +945,7 @@ const brickSeVatDiya = writeBrickworkSe(true);
 // --- Company, both sizes ----------------------------------------------------
 
 function writeBrickworkLtd(vatRegistered) {
-  const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines) : brickMasterLines);
+  const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines, brickBook) : brickMasterLines);
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
   const byCode = totalsByCode(lines, LTD_PURCHASE_CODE_MAP);
