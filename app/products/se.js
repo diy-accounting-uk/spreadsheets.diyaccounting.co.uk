@@ -163,10 +163,17 @@ export function cellWrites(scenario) {
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
-        // Column D is the day's sales mileage, which no sales scenario field
-        // fills (see roundtrip-unrepresentable.json); E is "Sales Description",
-        // a free column the sheet keeps beside it, unlike the mileage column,
-        // for the same field the purchases sheet already carries at its own E.
+        // Column D is the day's sales mileage (SalesApr!D1 = SUM(D5:D300)).
+        // PurchasesApr!C2 pools it into the running mileage total alongside
+        // that sheet's own D-column entries (=0+D1+[1]Apr!$D$1), and G2
+        // bands the total at the Admin mileage rates and files the claim
+        // under Motor Expenses (F2="v"). Unlike a Purchases mileage-log row,
+        // a sales day's miles sit beside a real sale, so the amount is
+        // written as well -- this is not an either/or the way a bought
+        // purchase and a mileage claim are. E is "Sales Description", a free
+        // column the sheet keeps beside it, for the same field the purchases
+        // sheet already carries at its own E.
+        if (tx.mileage) sheet[`D${row}`] = tx.mileage;
         if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
