@@ -318,14 +318,17 @@ export function standardReads() {
   // The Wages Forecast repeats the P&L's own monthly turnover, other income,
   // cost of sales and expenses, so row 24 joins the three VitalTax needs.
   reads["Profit & Loss Acc"] = reads["Profit & Loss Acc"] || [];
-  for (const row of [5, 12, 22, 24]) {
-    for (const col of MONTH_COLS) {
-      const cell = `${col}${row}`;
-      if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
-    }
+  for (const cell of monthlyProfitAndLossCells()) {
+    if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
   }
 
   return reads;
+}
+
+const MONTHLY_PROFIT_AND_LOSS_ROWS = [5, 12, 22, 24];
+
+function monthlyProfitAndLossCells() {
+  return MONTHLY_PROFIT_AND_LOSS_ROWS.flatMap((row) => MONTH_COLS.map((col) => `${col}${row}`));
 }
 
 export function reportSections(results) {
@@ -343,6 +346,13 @@ export function cellLabels() {
   for (const [sheet, cell, diyLabel, glMapping, , , unit] of CELL_MAP) {
     const key = `${sheet}!${cell}`;
     labels[key] = { diyLabel, glMapping, unit };
+  }
+  // The monthly P&L cells read for the VitalTax and Wages Forecast re-sums
+  // are money too, so the comparator rounds them to the penny rather than
+  // comparing the two engines' float noise exactly.
+  for (const cell of monthlyProfitAndLossCells()) {
+    const key = `Profit & Loss Acc!${cell}`;
+    if (!labels[key]) labels[key] = { diyLabel: "", glMapping: "", unit: "money" };
   }
   return labels;
 }
