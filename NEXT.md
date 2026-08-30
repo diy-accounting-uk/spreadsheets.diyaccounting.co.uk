@@ -12,10 +12,10 @@ integration branch as it lands and pushes in batches.
 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
-| f2 | F2 Excel-side CI `--data` | — | Sonnet | merged `cb459cf2`, noExcelValue 66/700/892 → 0; roundtrip test running |
+| f2 | F2 Excel-side CI `--data` | — | Sonnet | landed `cb459cf2`, noExcelValue 66/700/892 → 0, CI roundtrip jobs green |
 | f8 | F8 6 dp pre-round | — | Sonnet | landed `f5c4d20b`, rounding 5/5, SE differing 2 → 0 |
 | f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
-| f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
+| f7 | F7 roll dependent caches | — | Sonnet | landed, allowlist deleted, stability 0 moved on all four products; also rolls the SE Short cells F10 reads (CI stability fix) |
 | f16 | F16 BST Debtors block | — | Sonnet | landed `bbc48a3b`, calculator-bst 203/203, sp-sixty RECONCILES 59/59 |
 | f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
 | f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
@@ -67,15 +67,6 @@ reconciliation-bug method.
   Ltd `differing` in `app/data/roundtrip-budget.json` (expected 0). Same cap also exists on the
   SE Schedule (`app/templates/se/Fixedassets.xlsx`) and the BST/Taxi Fixed Assets sheets
   (Admin E8/G8) — apply the same removal there in the same PR so the products agree.
-- [ ] **F7: roll the dependent cached values in the generator** (Sonnet) — a package generated
-  without `--data` keeps the template's cached `<v>` on every cell computed from an Admin seed
-  until recalculated: the 84 keys in `app/data/volatile-cells.json` (Payslips calendar `B`
-  chain off `B2`, Vatinterface `C` off Admin, `CorporationTax!A33/A34`, `PubBalSht!D2`,
-  `PubP&L!D3/E5`, `PubNotes!A11`, `SE Full!Q2/V2/G141`, `Profit Forecast!C40`). Extend
-  `rollLtdAdminCachedDates` / `rollLtdAdminCachedRateRows` / `ltdAdminCachedValues`
-  (`app/lib/generator.js:451-525`) and the SE equivalent to write those caches from the seed,
-  then run `verify-stability.js` on a blank package per product: stale count 0, the allowlist
-  empties, and `volatile-cells.json` is deleted or reduced to genuine volatiles.
 
 - [ ] **F13: SE forecast checks on the 2023-24 rates** (Opus) — `reconcile.js --package se
   --scenario advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): "Forecast:
