@@ -31,12 +31,18 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** — SE's `Purchases.xlsx` AD (its CIS column) is not written
-  from the `cis_deduction` the SE scenario carries (one write in `se.js` plus a check); the
-  brickwork fixtures carry 4,000 of `cisDeduction` their hand-written TOMLs omit; `ajv` is
-  imported by the v1 schema test as a transitive dependency of eslint (T1 declares it); the
-  row counters at `ltd.js:853` and `se.js:537` count any key starting with the amount
-  column's letter.
+- [ ] **SE CIS column not written** — the SE scenario carries `cis_deduction` per purchase
+  but nothing in `se.js` writes it into `Purchases.xlsx!AD` (the SE CIS certificates column).
+  One `cellWrites` line plus a check that the SE CIS figure reaches where the sheet takes
+  it. Rides with T4 (owns `se.js`).
+- [ ] **Brickwork CIS deductions in the fixtures** — `examples/brickwork-pro/lines.jsonl`
+  carries 4,000 of `cisDeduction` the hand-written Ltd fixtures never had; with the master
+  now writing the fixtures, the deductions and a matching `RC` remittance come through and
+  the CIS and trade creditors move. Rides with T1b (in flight; told).
+- [ ] **Row counters keyed on a single letter** — `ltd.js:853` and `se.js:537` count rows
+  with `k.startsWith(columns.amount)`, so a column such as `AK` counts as an `A` row (the
+  same bug at `ltd.js:416` bit when `AK` was added; fixed with `/^A\d+$/`). One regex each.
+  Rides with T5 (`ltd.js`) and T4 (`se.js`).
 
 Moved from the submit repo's backlog (spreadsheets concerns):
 
