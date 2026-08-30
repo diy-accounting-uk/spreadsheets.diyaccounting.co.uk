@@ -13,7 +13,7 @@ integration branch as it lands and pushes in batches.
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
 | f2 | F2 Excel-side CI `--data` | — | Sonnet | merged `cb459cf2`, noExcelValue 66/700/892 → 0; roundtrip test running |
-| f8 | F8 6 dp pre-round | `../wt-spreadsheets/f8` | Sonnet | started |
+| f8 | F8 6 dp pre-round | — | Sonnet | landed `f5c4d20b`, rounding 5/5, SE differing 2 → 0 |
 | f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
 | f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
 | f16 | F16 BST Debtors block | — | Sonnet | landed `bbc48a3b`, calculator-bst 203/203, sp-sixty RECONCILES 59/59 |
@@ -48,11 +48,7 @@ reconciliation-bug method.
   plan hold except `noExcelValue = 0`; once F2 lands and F8/F9 take `differing` to 0, set every
   report-half count in `app/data/roundtrip-budget.json` to 0 and add a comparator test that a
   single differing money key fails the budget. Until then the ratchet stands.
-- [ ] **F8: round both sides to a working precision before the penny** (Sonnet) — SE
-  `Income Tax!E9` reads 32,861.2349999998 in Excel and 32,861.235 in JS, so `roundHalfUp()`
-  (`app/bin/verify-roundtrip.js:48`) sends them to different pennies and `E11` inherits it
-  (SE `differing` 2). In `canonicalForUnit()` (`:92`) round `money` to 6 dp first, then half-up
-  to 2; prove the 0.004/0.006 cases still pass/fail; re-seed SE `differing` to 0.
+
 - [ ] **F9: remove the obsolete expensive-car cap from the Ltd Schedule** (Sonnet; operator
   ratified option 1 on 2026-08-30) — `Fixedassets.xlsx!Schedule` row 50's WDA formula
   `IF(O50>[1]Admin!$E$11,[1]Admin!$G$11*(1-M50),O50*R$4/100)*(1-M50)` applies the pre-2009
