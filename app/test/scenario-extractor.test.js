@@ -588,18 +588,13 @@ describe("bstExpectedFigures", () => {
 });
 
 describe("taxiExpectedFigures", () => {
-  const tax = { capitalAllowances: { mainRateWDA: 0.18 } };
   const lines = [
     { sourceJournalID: "sales", accountMainID: "4000", amount: 36000 },
-    { sourceJournalID: "purchases", accountMainID: "5100", amount: 3600 },
-    { sourceJournalID: "purchases", accountMainID: "5400", amount: 1380 },
-    { sourceJournalID: "purchases", accountMainID: "5700", amount: 480 },
-    { sourceJournalID: "purchases", accountMainID: "5900", amount: 900 },
     { sourceJournalID: "purchases", accountMainID: "7000", amount: 8000 },
   ];
 
-  it("allows the main rate writing down allowance on the year's capital spend", () => {
-    expect(taxiExpectedFigures(lines, tax)).toEqual({ total_sales: 36000, gross_profit: 29580, net_profit: 28200 });
+  it("states the takings and leaves the profit to the year's own allowance", () => {
+    expect(taxiExpectedFigures(lines)).toEqual({ total_sales: 36000 });
   });
 });
 

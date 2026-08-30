@@ -1005,7 +1005,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
     },
     grouped,
     {
-      ...taxiExpectedFigures(lines, book.tax),
+      ...taxiExpectedFigures(lines),
       fixed_asset_additions: additions,
     },
   );

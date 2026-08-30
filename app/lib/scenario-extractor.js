@@ -713,34 +713,13 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
   return figures;
 }
 
-// The Taxi Driver profit and loss account's own shape: the vehicle's running
-// costs and the capital allowance are its cost of sales, and everything else
-// is a general expense.
-const TAXI_VEHICLE_CODES = ["d", "h", "r", "t"];
-const TAXI_GENERAL_CODES = ["e", "p", "g", "a", "l", "i", "b", "o"];
-
-/**
- * The figures a Taxi Driver scenario expects its recalculated package to
- * publish. A vehicle earns no Annual Investment Allowance, so the capital
- * allowance is the main rate writing down allowance on the year's capital
- * spend, whether or not the asset is also registered on the Fixed Assets
- * schedule.
- *
- * @param {Array} lines - the taxi subset's lines
- * @param {Object} tax - the book's tax tables
- * @returns {Object} the [expected] figures, in scenario key names
- */
-export function taxiExpectedFigures(lines, tax) {
-  const totalSales = computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales"));
-  const byCode = totalsByCode(lines, TAXI_PURCHASE_CODE_MAP);
-  const total = (codes) => codes.reduce((sum, code) => sum + (byCode[code] || 0), 0);
-  const capitalAllowances = (byCode.f || 0) * tax.capitalAllowances.mainRateWDA;
-  const grossProfit = totalSales - total(TAXI_VEHICLE_CODES) - capitalAllowances;
-  return {
-    total_sales: totalSales,
-    gross_profit: Math.round(grossProfit),
-    net_profit: Math.round(grossProfit - total(TAXI_GENERAL_CODES)),
-  };
+// A Taxi Driver scenario states its takings and nothing else it earns.
+// The package's profit turns on the writing down allowance the year's tax
+// data carries, which is 18% in one year and 14% in the next, and one
+// fixture is reconciled against every year's package, so a profit stated
+// here would be wrong for every year but its own.
+export function taxiExpectedFigures(lines) {
+  return { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
 }
 
 // ============================================================================

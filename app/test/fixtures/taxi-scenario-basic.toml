@@ -868,6 +868,4 @@ cost = 8000
 
 [expected]
 total_sales = 36000
-gross_profit = 29580
-net_profit = 28200
 fixed_asset_cost = 8000

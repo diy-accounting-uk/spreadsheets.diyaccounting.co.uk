@@ -60,10 +60,14 @@ earns it its allowance.
 |------|-------:|
 | Turnover | 36,000 |
 | Less: fuel, road tax and insurance | -4,980 |
-| Less: capital allowance on the vehicle (8,000 claimed, plus 18% of the year's capital spend) | -9,440 |
-| **Gross profit** | **21,580** |
+| Less: writing down allowance on the vehicle (8,000 at 18%) | -1,440 |
+| **Gross profit** | **29,580** |
 | Less: general expenses | -1,380 |
-| **Net profit** | **20,200** |
+| **Net profit** | **28,200** |
+
+A vehicle earns no Annual Investment Allowance, so the allowance is the main
+rate writing down allowance and the profit moves with it: at the 14% rate a
+later year carries, the same book publishes 29,900 and 28,520.
 
 ## Scenario Extract
 

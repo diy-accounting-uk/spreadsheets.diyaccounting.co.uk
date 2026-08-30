@@ -85,6 +85,11 @@ profit below is struck after.
 | Less: general expenses | -71,860 |
 | **Net profit** | **144,878** |
 
+The allowance is a writing down allowance at the year's own main rate, so
+this profit belongs to a 2025-26 package. A later year's 14% rate publishes
+216,774 and 144,914 from the same book, which is why the fixture states the
+turnover and leaves the profit to the package.
+
 ## Expected Tax Calculation
 
 The profit runs past the taper and into the additional rate, so the personal allowance is nil.

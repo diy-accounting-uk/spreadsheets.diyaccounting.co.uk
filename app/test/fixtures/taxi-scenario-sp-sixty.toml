@@ -1264,6 +1264,4 @@ cost = 200
 
 [expected]
 total_sales = 38000
-gross_profit = 33096
-net_profit = 31776
 fixed_asset_cost = 200
