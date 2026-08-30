@@ -55,16 +55,25 @@ const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
 // creditor payment made), so direction cannot be inferred from the code
 // alone -- every entry names its own direction. Cash.xlsx has no "X"
 // analysis column at all; its own transfer code is "BB".
+// reference is a column both workbooks keep beside the receipt or payment
+// block that the writer never used to fill: Bank.xlsx's receipts carry a
+// "Sales Invoice" column at C and its payments an "Enter Purchase Invoice
+// No." column at Q; Cash.xlsx keeps the same pair at C and N. Neither
+// workbook has a second, free-text column beside it -- Bank.xlsx's D
+// ("Deposit Bank Reference") and R ("Cheque number Direct Debit") and
+// Cash.xlsx's O ("Optional cash payment reference") are themselves another
+// reference, not a description -- so a line's comment has nowhere else to
+// go (see roundtrip-unrepresentable.json).
 const BANK_LAYOUTS = {
   "Bank.xlsx": {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "O", source: "P", code: "S", amount: "T" },
+    receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
+    payment: { date: "O", source: "P", reference: "Q", code: "S", amount: "T" },
     receiptCodes: new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]),
     paymentCodes: new Set(["BC", "CR", "DR", "W", "B", "J", "RP", "DL", "X"]),
   },
   "Cash.xlsx": {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "L", source: "M", code: "P", amount: "Q" },
+    receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
+    payment: { date: "L", source: "M", reference: "N", code: "P", amount: "Q" },
     receiptCodes: new Set(["BB", "DR", "CR", "DL"]),
     paymentCodes: new Set(["BB", "CR", "DR", "W", "J", "RP", "DL"]),
   },
@@ -153,6 +162,11 @@ export function cellWrites(scenario) {
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
+        // Column D is the day's sales mileage, which no sales scenario field
+        // fills (see roundtrip-unrepresentable.json); E is "Sales Description",
+        // a free column the sheet keeps beside it, unlike the mileage column,
+        // for the same field the purchases sheet already carries at its own E.
+        if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
@@ -243,6 +257,7 @@ export function cellWrites(scenario) {
         const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
         sheet[`${block.code}${row}`] = code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }
@@ -372,9 +387,11 @@ export function cellWrites(scenario) {
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
         // Column S is a blank spacer in the template (self-closing, no
-        // formula, never summed); column T is the real employer-NI data
-        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
-        // Wagesinterface!H reads. Verified against the template.
+        // formula, never summed) -- the payslip's own reference goes there,
+        // since nothing else on the row reads it; column T is the real
+        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
+        // which Wagesinterface!H reads. Verified against the template.
+        if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }

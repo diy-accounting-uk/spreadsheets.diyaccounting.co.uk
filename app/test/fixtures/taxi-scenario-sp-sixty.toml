@@ -1567,9 +1567,9 @@ account = "5300"
 [[purchases.mar]]
 date = 2026-03-31
 supplier = "Mileage claim"
-description = "March business miles claimed at the approved rate in place of fuel receipts"
+description = "March business miles claimed at the approved rate in place of fuel receipts, banded past the 10,000 miles already claimed on the fare days"
 code = "d"
-amount = 753.3
+amount = 418.5
 mileage = 1674
 account = "5100"
 

@@ -99,6 +99,7 @@ export function cellWrites(scenario, targetStartYear = null) {
 
         const sheetName = `Sales${MONTH_SHEETS[match.monthKey]}`;
         if (!writes[sheetName]) writes[sheetName] = {};
+        if (tx.customer) writes[sheetName][`C${match.row}`] = tx.customer;
         writes[sheetName][`E${match.row}`] = tx.amount;
         // The day's business miles, beside the day's takings. SalesApr!D1 sums
         // the column into PurchasesApr!A1, the running mileage total the P&L's
@@ -120,6 +121,7 @@ export function cellWrites(scenario, targetStartYear = null) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
         sheet[`D${row}`] = tx.code;
         // A mileage-log entry buys nothing: its whole expense is the claim the
         // approved rate makes of the miles. Column E takes them (PurchasesApr!E1

@@ -318,6 +318,7 @@ export function diyaGlToScenario(book, lines, product) {
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
         accountMainID: line.accountMainID,
+        reference: line.documentReference,
       });
     }
     scenario.payroll = payrollByMonth;

@@ -79,19 +79,27 @@ const BANK_TRANSFER_CODES = {
 // month tabs, and the code letters each block has an analysis column for.
 // Cashaccount analyses fewer receipt codes than the three statement books,
 // which shifts its payments block four columns to the left.
+//
+// reference is a column every one of the four workbooks keeps beside its
+// receipts ("Sales Invoice" at C) and payments ("Enter Purchase Invoice No.")
+// that the writer never used to fill. The column beside that one --
+// "Deposit Bank Reference" on receipts, "Cheque number Direct Debit" on
+// Cashaccount's and the statement books' payments -- is itself another
+// reference, not a free-text description, so a line's comment has nowhere
+// else to go (see roundtrip-unrepresentable.json).
 function bankLayout(fileName) {
   const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
   if (fileName === "Cashaccount.xlsx") {
     return {
-      receipt: { date: "A", source: "B", code: "E", amount: "F" },
-      payment: { date: "P", source: "Q", code: "T", amount: "U" },
+      receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
+      payment: { date: "P", source: "Q", reference: "R", code: "T", amount: "U" },
       receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
       paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
     };
   }
   return {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "S", source: "T", code: "W", amount: "X" },
+    receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
+    payment: { date: "S", source: "T", reference: "U", code: "W", amount: "X" },
     receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
     paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
   };
@@ -664,9 +672,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
         // Column S is a blank spacer in the template (self-closing, no
-        // formula, never summed); column T is the real employer-NI data
-        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
-        // WagesInterface!H reads. Verified against the template.
+        // formula, never summed) -- the payslip's own reference goes there,
+        // since nothing else on the row reads it; column T is the real
+        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
+        // which WagesInterface!H reads. Verified against the template.
+        if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
@@ -833,6 +843,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const row = rows[rowKey]++;
         sheet[`${block.date}${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
         sheet[`${block.code}${row}`] = tx.code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }
