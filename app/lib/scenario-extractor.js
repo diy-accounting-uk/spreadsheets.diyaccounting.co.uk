@@ -393,6 +393,80 @@ export function buildClosingDebtors(lines, openingDebtors) {
 }
 
 // ============================================================================
+// VAT-straddling entries
+// ============================================================================
+
+// A line the master carries for a VAT return period outside the accounting
+// year the book covers: real business activity, dated before the book opens
+// or after it closes, that never reaches the accounting year's own journals
+// -- it settles no debtor, moves no trial balance -- but still has to reach
+// the VAT return's own out-of-year entry sheets. `diya-gl:vatPeriodEnd` is
+// what marks a line this way; see the v2 schema's own description of the
+// field.
+export function isStraddlingLine(line) {
+  return line["diya-gl:vatPeriodEnd"] !== undefined;
+}
+
+/**
+ * Split a master's lines into the accounting year's own journals and the
+ * VAT-straddling lines dated either side of it. Every function that builds
+ * the accounting year's figures (filterBst, filterAdvanced, filterFull,
+ * buildClosingDebtors, buildOpeningBalance) has to see only the first list --
+ * a straddling line has no counter-leg in the year's own books, so it has
+ * nothing there to balance against.
+ * @param {Array} lines - parsed lines.jsonl entries
+ * @returns {{yearLines: Array, straddlingLines: Array}}
+ */
+export function splitStraddlingLines(lines) {
+  return { yearLines: lines.filter((l) => !isStraddlingLine(l)), straddlingLines: lines.filter(isStraddlingLine) };
+}
+
+/**
+ * The period label a straddling line's VAT return falls in, matching the
+ * sheet-pair naming Vatreturns.xlsx keeps (S02Y1/P02Y1 and so on): the
+ * return's own month, zero-padded, and Y1 for a period before the accounting
+ * year or Y2 for one after it.
+ * @param {string} vatPeriodEnd - the line's diya-gl:vatPeriodEnd
+ * @param {Date} periodCoveredStart - the book's documentInfo.periodCoveredStart
+ * @param {Date} periodCoveredEnd - the book's documentInfo.periodCoveredEnd
+ * @returns {string} e.g. "02Y1"
+ */
+export function straddlingPeriodLabel(vatPeriodEnd, periodCoveredStart, periodCoveredEnd) {
+  const end = new Date(vatPeriodEnd);
+  const month = String(end.getUTCMonth() + 1).padStart(2, "0");
+  if (end < periodCoveredStart) return `${month}Y1`;
+  if (end > periodCoveredEnd) return `${month}Y2`;
+  throw new Error(
+    `diya-gl:vatPeriodEnd ${vatPeriodEnd} falls inside the accounting period ` +
+      `${periodCoveredStart.toISOString().slice(0, 10)} to ${periodCoveredEnd.toISOString().slice(0, 10)}, not a straddling period`,
+  );
+}
+
+/**
+ * The vat_straddling_sales / vat_straddling_purchases entries a scenario TOML
+ * carries, worked out from the master's own straddling lines rather than
+ * stated as a literal.
+ * @param {Array} straddlingLines - the lines splitStraddlingLines set aside
+ * @param {string} journalType - "sales" or "purchases"
+ * @param {string} nameField - "customer" or "supplier"
+ * @param {Date} periodCoveredStart - the book's documentInfo.periodCoveredStart
+ * @param {Date} periodCoveredEnd - the book's documentInfo.periodCoveredEnd
+ * @returns {Array} {period, date, [nameField], invoice, amount}
+ */
+export function deriveStraddlingEntries(straddlingLines, journalType, nameField, periodCoveredStart, periodCoveredEnd) {
+  return straddlingLines
+    .filter((l) => l.sourceJournalID === journalType)
+    .sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0))
+    .map((line) => ({
+      period: straddlingPeriodLabel(line["diya-gl:vatPeriodEnd"], periodCoveredStart, periodCoveredEnd),
+      date: line.postingDate,
+      [nameField]: line.detailComment,
+      invoice: line.documentReference,
+      amount: line.amount,
+    }));
+}
+
+// ============================================================================
 // Utility functions
 // ============================================================================
 

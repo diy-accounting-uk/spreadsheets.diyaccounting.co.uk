@@ -224,13 +224,6 @@
     },
     {
       "file": "app/bin/extract-scenarios.js",
-      "lines": "136-150",
-      "name": "straddlingSales / straddlingPurchases",
-      "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
-      "reason": "VAT-straddling entries the VAT workbook's own out-of-year sheets take, entered directly on the scenario TOML. No diya-gl line carries a diya-gl:vatPeriodEnd today (the v2 field this track adds), so there is no master representation to derive them from at either the line or book level"
-    },
-    {
-      "file": "app/bin/extract-scenarios.js",
       "lines": "158-179",
       "name": "hpAgreements",
       "usedBy": ["se-scenario-advanced", "ltd-scenario-full"],
