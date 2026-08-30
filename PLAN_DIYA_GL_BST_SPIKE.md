@@ -1,8 +1,19 @@
 # PLAN: diya-gl BST spike — the books in a browser page
 
-A single page on the spreadsheets site where a BST package opens as an editable, functionally
-equivalent view of the books: diya-gl is the working representation, the JS engine recalculates,
-the xlsx is the import/export format. A spike — one product, one page, no server.
+A spike of the BROWSER MECHANISM, not of the BST page. The question under test is whether the
+pipeline's own modules run in a browser end to end: xlsx → diya-gl → recalculate → checks →
+xlsx. BST is the cheapest vehicle — the simplest package that exercises the whole path. Three
+downstream consumers are why the spike is worth running:
+
+- **Submit VAT extract** (`PLAN_VAT_EXPORT_FOR_SUBMIT.md`) — the real product; this spike's
+  import is its front half.
+- **The packaged JS library** that `_developers/PLAN_DIYA_CLOUD.md` assertion 2 requires this
+  repo to output. This spike is that library's first browser consumer, so bugs surface here
+  rather than in Submit.
+- **DIYA Cloud itself** (`_developers/PLAN_DIYA_CLOUD.md`), further off.
+
+The BST page's own users may be few. That is acceptable: the page is a test harness that
+happens to be useful. One product, one page, no server.
 
 ## User assertions (verbatim)
 
@@ -57,10 +68,11 @@ following the existing "Documentation & User Guides" pattern (heading, one-line 
 > the file never leaves your machine.
 > [file picker: .xlsx or .zip] [View in DIYA-GL]
 
-The picker reads the chosen file into a Blob stored in IndexedDB, then navigates to
-`books/bst.html`, which takes the hand-off, imports it and clears the store (a File cannot cross
-a navigation directly). The books page also keeps its own picker, so a direct visit or a
-bookmark works without the panel.
+**Decision: the panel deep-links, it does not pick.** The books page owns the file picker; the
+panel's action is a link to `books/bst.html`, where the picker is the first thing offered. An
+IndexedDB Blob hand-off across the navigation was considered and dropped — it duplicates the
+picker, adds a mechanism that exists only to move a file between two pages of the same site,
+and the deep link loses nothing but one click.
 
 ## The data model
 
@@ -154,6 +166,13 @@ keyboard-editable, WCAG AA contrast on both themes.
 1. **Bundle spike.** esbuild bundle of exporter+loader+calculator+checks; a bare page that loads
    the sp-sixty BST fixture xlsx and logs the book, the computed P&L and the check results.
    *Verify: figures and check verdicts match `reconcile.js --package bst` for the same scenario.*
+
+   **Decision gate.** Phase 1 answers the spike's question. Everything after it is a choice,
+   not a consequence. Continue if the bundle matches `reconcile.js` on the sp-sixty fixture —
+   same figures, same verdicts, no forked module. Stop if matching requires forking a pipeline
+   module or shimming beyond `fs`/`path` resource loading; that would mean the packaged-library
+   route needs design work first, and the finding goes to `_developers/PLAN_DIYA_CLOUD.md`.
+
 2. **Read-only viewer.** Upload (xlsx/zip), the three-level drill, drift annotations.
    *Verify: a freshly generated package shows zero drift; a hand-corrupted cached `<v>` shows
    exactly that cell's drift (the breakability proof, in-browser).*
@@ -163,9 +182,11 @@ keyboard-editable, WCAG AA contrast on both themes.
 4. **Save.** Client-side xlsx and zip generation.
    *Verify: import → export → import yields a deep-equal book (Node vitest over the same bundle
    entry points); an exported workbook run through `reconcile.js` RECONCILES.*
-5. **New/example books, entry-point panel, and the four layouts.** New-book form, example
-   loader, the `download.html` panel and IndexedDB hand-off, the four orientation layouts,
-   Playwright coverage in `test:browser` for all four viewports.
+5. **New/example books, entry-point panel, autosave, and the four layouts.** New-book form,
+   example loader, the `download.html` deep-link panel, IndexedDB autosave of the working book
+   (the in-progress book survives a closed tab and is offered back on return; the save icon
+   remains the only way anything leaves the browser), the four orientation layouts, Playwright
+   coverage in `test:browser` for all four viewports.
 
 **The equivalence test** (Playwright, lands with phase 2 and grows with phase 3): generate a BST
 package populated with a reconciliation scenario's example data, load it into the page, and
@@ -184,33 +205,10 @@ and the check panel staying green.
 Page lands at `web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle
 beside it; the bundle build joins the existing build steps in CI.
 
-## LLM review (phase 6)
-
-The page can ask an LLM to review the accounts. No server of ours: the browser calls Bedrock
-through the metered public endpoint at <https://bedrock-meter.polycode.co.uk/>, which caps the
-spend; the book never goes anywhere else.
-
-- **Compressed format.** A Bedrock-friendly rendering of the book, small enough to review in one
-  request: `documentInfo`/`entityInformation`, the monthly and category summaries the year table
-  already computes, the check results, and the individual lines only where a check flags them or
-  a category is anomalous. Deterministic, versioned, round-trippable back to line edits.
-- **Review turn.** The model reviews and comments on the accounts and proposes fixes in a
-  structured response (a JSON list of proposed fixes, each naming the lines it touches, the
-  diya-gl edit it makes, and its reasoning). The page renders each comment with the proposed
-  fix as a selectable item — the same preview language the helpers use.
-- **Fix turn.** The selected fixes go back in a second request; the reply is a new
-  compressed-format diya-gl carrying the fixes. The page expands it to line edits, shows the
-  diff as pencil annotations, and applies only on accept — through the same edit path as a hand
-  edit, so recalculation, the checks panel and undo all cover it, and a reply that fails schema
-  validation or breaks a passing check is rejected with its reason shown.
-
-`app/bin/judge-reconciliation.js` is the in-repo precedent for prompt shape and rubric tone;
-the review prompt borrows its discipline (comment on what the figures show, never soften a
-check).
-
 ## Out of scope for the spike
 
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
 the saved zip, VAT hand-off to Submit (`PLAN_VAT_EXPORT_FOR_SUBMIT.md` — this spike's import is
-its natural front half), persistence of any kind (the book lives in the page; closing it is
-losing it, and the save icon is the answer).
+its natural front half), LLM review of the accounts (`PLAN_DIYA_GL_LLM_REVIEW.md` — it changes
+the page's trust claim, so it carries its own plan), and saved-account persistence (that is
+DIYA Cloud; the working-book autosave in phase 5 is the whole of what this page keeps).
