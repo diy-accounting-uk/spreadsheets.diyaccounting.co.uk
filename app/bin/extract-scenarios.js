@@ -264,7 +264,11 @@ const chargesRegister = book.charges.map((charge) => ({
 // ============================================================================
 
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
-const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true, carriesMileage: "claims" });
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, {
+  carriesCisDeductions: false,
+  carriesSourceFields: true,
+  carriesMileage: "claims",
+});
 const bstFigures = bstExpectedFigures(bstLines, book.stock);
 const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: false });
 

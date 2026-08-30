@@ -635,7 +635,11 @@ function lineMileage(line) {
   return typeof line.measurableQuantity === "number" ? line.measurableQuantity : undefined;
 }
 
-export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true, carriesSourceFields = false, carriesPaymentLabels = false, carriesMileage = "none" } = {}) {
+export function buildGrouped(
+  filteredLines,
+  purchaseCodeMap,
+  { carriesCisDeductions = true, carriesSourceFields = false, carriesPaymentLabels = false, carriesMileage = "none" } = {},
+) {
   const sales = {};
   const purchases = {};
   const bank = {};

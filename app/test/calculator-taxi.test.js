@@ -187,9 +187,7 @@ describe("Taxi calculator checks are breakable", () => {
     // what charging the journey twice would look like.
     const doubleClaimed = {
       ...anchor,
-      purchases: Object.fromEntries(
-        Object.entries(anchor.purchases).map(([month, txns]) => [month, txns.map(({ mileage, ...tx }) => tx)]),
-      ),
+      purchases: Object.fromEntries(Object.entries(anchor.purchases).map(([month, txns]) => [month, txns.map(({ mileage, ...tx }) => tx)])),
     };
     const after = checkCompliance(calculateTaxiResults(book, lines, taxData, anchor), doubleClaimed, taxData, calculateExpectedTax);
 

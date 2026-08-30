@@ -474,7 +474,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // here from the scenario's own miles and the tax year's rates, so a package
   // that drops the miles on the way in cannot pass.
   const scheduleAllowance = results["Fixed Assets"]
-    ? (results["Fixed Assets"].I1 || 0) + (results["Fixed Assets"].J1 || 0) + (results["Fixed Assets"].P1 || 0) - (results["Fixed Assets"].Q1 || 0)
+    ? (results["Fixed Assets"].I1 || 0) +
+      (results["Fixed Assets"].J1 || 0) +
+      (results["Fixed Assets"].P1 || 0) -
+      (results["Fixed Assets"].Q1 || 0)
     : 0;
   const businessMiles = expected.total_mileage || 0;
   const mileageClaim = taxData ? calculateMileageAllowance(businessMiles, taxData.mileage) : 0;
@@ -482,7 +485,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (taxData && businessMiles && purchases) {
     check("Purchases: business miles carried = the journals' miles", purchases.A1 || 0, businessMiles, 0);
     check("Purchases: mileage claimed = those miles at the tax year's approved rates", purchases.A2 || 0, mileageClaim, 0.01);
-    check("P&L: Mileage Allowance = the claim when it beats running the vehicle", pl.B11 || 0, takesMileageRoute ? Math.ceil(mileageClaim) : 0);
+    check(
+      "P&L: Mileage Allowance = the claim when it beats running the vehicle",
+      pl.B11 || 0,
+      takesMileageRoute ? Math.ceil(mileageClaim) : 0,
+    );
   }
 
   // SA103S cross-check: SE Short is fed entirely from the P&L and, in turn,

@@ -174,7 +174,13 @@ describe("BST mileage route — the JS calculator", () => {
     );
     const mutated = diyaGlToScenario(book, shortByTenMiles, "bst");
     const mutatedMerged = { ...mutated, ...mutated.expected };
-    const after = checkCompliance(calculateBstResults(book, shortByTenMiles, taxData, mutatedMerged), merged, taxData, calculateExpectedTax, "2026-04-05");
+    const after = checkCompliance(
+      calculateBstResults(book, shortByTenMiles, taxData, mutatedMerged),
+      merged,
+      taxData,
+      calculateExpectedTax,
+      "2026-04-05",
+    );
 
     expect(
       after
