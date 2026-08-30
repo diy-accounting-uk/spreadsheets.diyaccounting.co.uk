@@ -4,6 +4,8 @@
 // scenario-extractor.js — Pure functions for extracting test scenario data
 // from Precision Code Ltd master data.
 
+import { totalBusinessMiles } from "./tax/mileage.js";
+
 // ============================================================================
 // Account-to-code mappings
 // ============================================================================
@@ -530,7 +532,11 @@ export function monthlySalesTotals(salesLines) {
 // code to write.
 export function takingsOnlySales(grouped) {
   for (const month of Object.keys(grouped.sales)) {
-    grouped.sales[month] = grouped.sales[month].map((txn) => ({ date: txn.date, amount: txn.amount }));
+    grouped.sales[month] = grouped.sales[month].map((txn) => {
+      const takings = { date: txn.date, amount: txn.amount };
+      if (txn.mileage !== undefined) takings.mileage = txn.mileage;
+      return takings;
+    });
   }
   return grouped;
 }
@@ -610,7 +616,26 @@ function paymentLabel(line) {
   return line.paymentMethod === "cash" ? "Cash" : "Bank";
 }
 
-export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true, carriesSourceFields = false, carriesPaymentLabels = false } = {}) {
+// The business miles a line carries, for the mileage column beside the entry
+// on the Sales and Purchases sheets. A line measured in anything else (hours
+// worked, units bought) has no mileage to put there.
+//
+// Which of them reach a fixture is the `carriesMileage` setting above.
+// "claims" takes the miles on the purchase journal alone -- a mileage-log
+// entry, whose whole expense is the claim the approved rate makes of those
+// miles. "all" adds the miles a sales line carries, which only the Taxi
+// Driver package can take: its P&L weighs the year's mileage claim against
+// the actual running costs and charges one or the other ('Profit & Loss
+// Acc'!C1). The Basic Sole Trader P&L has no such choice -- its mileage
+// allowance simply adds to Motor Expenses (PurchasesApr!P3 = the month's
+// allowance, summed into P1, which P&L!D15 reads) -- so a fare day's miles
+// there would be claimed on top of the fuel that actually paid for them.
+function lineMileage(line) {
+  if (line.measurableUnitOfMeasure !== "miles") return undefined;
+  return typeof line.measurableQuantity === "number" ? line.measurableQuantity : undefined;
+}
+
+export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true, carriesSourceFields = false, carriesPaymentLabels = false, carriesMileage = "none" } = {}) {
   const sales = {};
   const purchases = {};
   const bank = {};
@@ -634,6 +659,8 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
         if (line.lineItemComment) sale.description = line.lineItemComment;
       }
       if (carriesPaymentLabels) sale.payment = paymentLabel(line);
+      const saleMileage = carriesMileage === "all" ? lineMileage(line) : undefined;
+      if (saleMileage !== undefined) sale.mileage = saleMileage;
       sales[month].push(sale);
     } else if (line.sourceJournalID === "purchases") {
       const code = purchaseCodeMap[line.accountMainID];
@@ -652,6 +679,8 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
       }
       if (carriesPaymentLabels) purchase.payment = paymentLabel(line);
       if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) purchase.cis_deduction = line[CIS_DEDUCTION_FIELD];
+      const purchaseMileage = carriesMileage === "none" ? undefined : lineMileage(line);
+      if (purchaseMileage !== undefined) purchase.mileage = purchaseMileage;
       purchases[month].push(purchase);
     } else if (line.sourceJournalID === "bank") {
       const acctId = line["diya-gl:bankAccountID"];
@@ -720,6 +749,13 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
   const netProfit = grossProfit - BST_EXPENSE_CODES.reduce((total, code) => total + (byCode[code] || 0), 0);
 
   const figures = { total_sales: totalSales, gross_profit: Math.round(grossProfit), net_profit: Math.round(netProfit) };
+  // Net profit above already carries each mileage-log entry at the amount it
+  // was claimed for. The package is given the miles instead and prices them
+  // itself, so the figures state the miles too: a check can then work the
+  // allowance out at the tax year it is reconciled against rather than
+  // trusting the rate the book was written at.
+  const businessMiles = totalBusinessMiles(lines.filter((line) => line.sourceJournalID === "purchases"));
+  if (businessMiles) figures.total_mileage = businessMiles;
   if (byCode.p) figures.total_premises = Math.round(byCode.p);
   if (byCode.g) figures.total_gen_admin = Math.round(byCode.g);
   if (byCode.l) figures.total_legal = Math.round(byCode.l);
@@ -736,7 +772,10 @@ export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_
 // fixture is reconciled against every year's package, so a profit stated
 // here would be wrong for every year but its own.
 export function taxiExpectedFigures(lines) {
-  return { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
+  const figures = { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
+  const businessMiles = totalBusinessMiles(lines);
+  if (businessMiles) figures.total_mileage = businessMiles;
+  return figures;
 }
 
 // ============================================================================
@@ -805,6 +844,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
       if (txn.code) parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
+      if (txn.mileage !== undefined) parts.push(`mileage = ${txn.mileage}`);
       if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
@@ -823,6 +863,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
       parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
+      if (txn.mileage !== undefined) parts.push(`mileage = ${txn.mileage}`);
       if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
       if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
@@ -1047,6 +1088,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_premises !== undefined) parts.push(`total_premises = ${expected.total_premises}`);
   if (expected.total_gen_admin !== undefined) parts.push(`total_gen_admin = ${expected.total_gen_admin}`);
   if (expected.total_legal !== undefined) parts.push(`total_legal = ${expected.total_legal}`);
+  if (expected.total_mileage) parts.push(`total_mileage = ${expected.total_mileage}`);
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);

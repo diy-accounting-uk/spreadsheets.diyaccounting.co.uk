@@ -264,7 +264,7 @@ const chargesRegister = book.charges.map((charge) => ({
 // ============================================================================
 
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
-const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true });
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true, carriesMileage: "claims" });
 const bstFigures = bstExpectedFigures(bstLines, book.stock);
 const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: false });
 
@@ -852,7 +852,12 @@ const brickBstToml = formatScenarioToml(
     vat_registered: false,
     business: businessBlock(brickBstEntity),
   },
-  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesPaymentLabels: true, carriesSourceFields: true }),
+  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, {
+    carriesCisDeductions: false,
+    carriesPaymentLabels: true,
+    carriesSourceFields: true,
+    carriesMileage: "claims",
+  }),
   {
     ...brickBstFigures,
     ...brickworkLedgers(false),
@@ -1041,7 +1046,9 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
   const { dir, book, lines } = master;
   assertPurchaseCodesCoverChart(book, TAXI_PURCHASE_CODE_MAP, "TAXI_PURCHASE_CODE_MAP");
 
-  const grouped = takingsOnlySales(buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true }));
+  const grouped = takingsOnlySales(
+    buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true, carriesMileage: "all" }),
+  );
   const additions = fixedAssetAdditions(lines, TAXI_PURCHASE_CODE_MAP, "f");
   const entity = book.entityInformation;
 
@@ -1113,6 +1120,7 @@ const spSixtyBstGrouped = buildGrouped(spSixty.lines, TAXI_BST_PURCHASE_CODE_MAP
   carriesCisDeductions: false,
   carriesPaymentLabels: true,
   carriesSourceFields: true,
+  carriesMileage: "claims",
 });
 const spSixtySalesLines = spSixty.lines.filter((line) => line.sourceJournalID === "sales");
 spSixtyBstGrouped.sales = {};

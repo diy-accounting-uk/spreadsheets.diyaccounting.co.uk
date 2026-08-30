@@ -25,6 +25,7 @@ import {
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
+import { totalBusinessMiles } from "./tax/mileage.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -163,7 +164,11 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
   let filteredLines = filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
-  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true });
+  // Only the two products whose cellWrites fills a mileage column take the
+  // miles, and only the Taxi Driver package takes a sales line's (see the
+  // note on buildGrouped's carriesMileage setting).
+  const carriesMileage = product === "taxi" ? "all" : product === "bst" ? "claims" : "none";
+  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage });
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
@@ -218,6 +223,9 @@ export function diyaGlToScenario(book, lines, product) {
 
   // Build expected values
   const expected = { total_sales: totalSales };
+  const mileageLines = carriesMileage === "all" ? filteredLines : filteredLines.filter((l) => l.sourceJournalID === "purchases");
+  const businessMiles = carriesMileage === "none" ? 0 : totalBusinessMiles(mileageLines);
+  if (businessMiles) expected.total_mileage = businessMiles;
 
   if (product === "bst") {
     const stockPurchases = byCode.s || 0;
