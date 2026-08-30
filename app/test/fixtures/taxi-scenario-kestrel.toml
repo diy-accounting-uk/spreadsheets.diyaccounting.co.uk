@@ -1,28 +1,18 @@
-# Taxi Driver test scenario: Kestrel Executive Cars
-# An executive chauffeur operator whose profit runs past the personal allowance
-# taper and into the additional rate band.
-# Based on the Kestrel Executive Cars example in examples/kestrel-executive-cars/.
-# Used by both unit/e2e tests and the reconciliation task.
-
 [metadata]
 name = "Kestrel Executive Cars"
 description = "Executive chauffeur operator banking weekly settlements, with employed drivers, a leased yard and a profit into the additional rate band"
 product = "taxi"
 tax_regime = "se"
+vat_registered = true
 
 [business]
 name = "Kestrel Executive Cars"
-description = "Executive chauffeur and airport transfer services"
+description = "Executive chauffeur and airport transfer operator"
 address = "8 Kestrel Way"
 town = "Slough"
 postcode = "SL1 4TQ"
 phone = "01753 555 0400"
 utr = "4455667788"
-
-# === SALES ===
-# One weekly settlement banked each Friday, entered on the pre-filled Sales
-# sheets -- amounts go into column E (gross takings).
-# 52 weekly settlements = 269,200 total sales
 
 [[sales.apr]]
 date = 2025-04-11
@@ -36,6 +26,9 @@ amount = 4900
 date = 2025-04-25
 amount = 5600
 
+[[sales.apr]]
+date = 2026-04-03
+amount = 4950
 
 [[sales.may]]
 date = 2025-05-02
@@ -57,7 +50,6 @@ amount = 5300
 date = 2025-05-30
 amount = 5000
 
-
 [[sales.jun]]
 date = 2025-06-06
 amount = 5500
@@ -74,7 +66,6 @@ amount = 5700
 date = 2025-06-27
 amount = 5150
 
-
 [[sales.jul]]
 date = 2025-07-04
 amount = 4950
@@ -90,7 +81,6 @@ amount = 4900
 [[sales.jul]]
 date = 2025-07-25
 amount = 5600
-
 
 [[sales.aug]]
 date = 2025-08-01
@@ -112,7 +102,6 @@ amount = 5300
 date = 2025-08-29
 amount = 5000
 
-
 [[sales.sep]]
 date = 2025-09-05
 amount = 5500
@@ -128,7 +117,6 @@ amount = 5700
 [[sales.sep]]
 date = 2025-09-26
 amount = 5150
-
 
 [[sales.oct]]
 date = 2025-10-03
@@ -150,7 +138,6 @@ amount = 5600
 date = 2025-10-31
 amount = 5100
 
-
 [[sales.nov]]
 date = 2025-11-07
 amount = 5400
@@ -167,7 +154,6 @@ amount = 5300
 date = 2025-11-28
 amount = 5000
 
-
 [[sales.dec]]
 date = 2025-12-05
 amount = 5500
@@ -183,7 +169,6 @@ amount = 5700
 [[sales.dec]]
 date = 2025-12-26
 amount = 5150
-
 
 [[sales.jan]]
 date = 2026-01-02
@@ -205,7 +190,6 @@ amount = 5600
 date = 2026-01-30
 amount = 5100
 
-
 [[sales.feb]]
 date = 2026-02-06
 amount = 5400
@@ -222,7 +206,6 @@ amount = 5300
 date = 2026-02-27
 amount = 5000
 
-
 [[sales.mar]]
 date = 2026-03-06
 amount = 5500
@@ -238,16 +221,6 @@ amount = 5700
 [[sales.mar]]
 date = 2026-03-27
 amount = 5150
-
-
-[[sales.undefined]]
-date = 2026-04-03
-amount = 4950
-
-# === PURCHASES ===
-# Codes: d fuel, r repairs, t road tax and insurance, e employee costs,
-# p premises, g general admin, a advertising, l legal, i interest,
-# b bank charges, o other, f fixed assets.
 
 [[purchases.apr]]
 date = 2025-04-03
@@ -303,7 +276,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.may]]
 date = 2025-05-03
 supplier = "Fleetcard Fuels"
@@ -357,7 +329,6 @@ date = 2025-05-28
 supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
-
 
 [[purchases.jun]]
 date = 2025-06-03
@@ -413,7 +384,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.jul]]
 date = 2025-07-03
 supplier = "Fleetcard Fuels"
@@ -462,7 +432,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.aug]]
 date = 2025-08-03
 supplier = "Fleetcard Fuels"
@@ -510,7 +479,6 @@ date = 2025-08-28
 supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
-
 
 [[purchases.sep]]
 date = 2025-09-03
@@ -566,7 +534,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.oct]]
 date = 2025-10-03
 supplier = "Fleetcard Fuels"
@@ -614,7 +581,6 @@ date = 2025-10-28
 supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
-
 
 [[purchases.nov]]
 date = 2025-11-03
@@ -670,7 +636,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.dec]]
 date = 2025-12-03
 supplier = "Fleetcard Fuels"
@@ -718,7 +683,6 @@ date = 2025-12-28
 supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
-
 
 [[purchases.jan]]
 date = 2026-01-03
@@ -774,7 +738,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "Fleetcard Fuels"
@@ -829,7 +792,6 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "Fleetcard Fuels"
@@ -878,16 +840,14 @@ supplier = "Payroll - drivers"
 code = "e"
 amount = 4600
 
-# === EXPECTED RESULTS ===
-# Turnover 269,200
-# Vehicle costs: fuel 31,400 + repairs 8,300 + road tax and insurance 12,600
-# Camera system 900 claims a writing down allowance of 162
-# Cost of sales 52,462, gross profit 216,738
-# General expenses 71,860: wages 55,200, rent 5,400, admin 3,600,
-# advertising 1,000, legal 2,100, interest 3,120, bank charges 540, other 900
-# Net profit 144,878, which clears the 125,140 additional rate threshold
+[[fixed_asset_additions]]
+date = 2025-05-12
+description = "In-car camera system"
+reference = "NBF-0512"
+cost = 900
 
 [expected]
 total_sales = 269200
 gross_profit = 216738
 net_profit = 144878
+fixed_asset_cost = 900

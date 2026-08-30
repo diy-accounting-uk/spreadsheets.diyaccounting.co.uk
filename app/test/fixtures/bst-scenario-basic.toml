@@ -3,6 +3,7 @@ name = "Precision Code - basic sole trader"
 description = "BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll."
 product = "bst"
 tax_regime = "se"
+vat_registered = false
 
 [business]
 name = "Precision Code Trading"

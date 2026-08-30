@@ -1,28 +1,18 @@
-# Taxi Driver test scenario: SP Sixty Driving
-# A private hire driver working 5 days/week with varying daily fares and realistic expenses.
-# Based on the SP Sixty Driving example in examples/sp-sixty-driving/.
-# Used by both unit/e2e tests and the reconciliation task.
-
 [metadata]
 name = "SP Sixty Driving"
 description = "Private hire driver with varying daily fares, fuel, insurance, repairs, admin, licence, accountant, dashcam, and signage"
 product = "taxi"
 tax_regime = "se"
+vat_registered = false
 
 [business]
 name = "SP Sixty Driving"
-description = "Private hire and taxi services"
+description = "Private hire and taxi driving services"
 address = "42 Oak Lane"
 town = "Leeds"
 postcode = "LS1 5PQ"
 phone = "0113 555 0200"
 utr = "9876543210"
-
-# === SALES ===
-# Daily fares entered on specific dates in the pre-filled Sales sheets.
-# Taxi Sales sheets have pre-filled dates -- amounts go into column E (gross takings).
-# 180 working days x varying amounts = 38,000 total sales
-# 20,000 total business miles
 
 [[sales.apr]]
 date = 2025-04-07
@@ -744,11 +734,6 @@ amount = 234
 date = 2026-03-20
 amount = 236
 
-# === PURCHASES ===
-# Taxi purchases use column D for expense code and column F for amount.
-# Expense codes: d=fuel, h=car hire, r=repairs, t=road tax, e=employee,
-# p=premises, g=general admin, a=advertising, l=legal, i=interest, b=bank, o=other, f=fixed asset
-
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
@@ -1271,14 +1256,14 @@ supplier = "Texaco"
 code = "d"
 amount = 58
 
-# === EXPECTED RESULTS ===
-# 180 working days x varying daily fares = 38,000 total sales
-# 20,000 total business miles
-# Mileage allowance: 10,000 x 0.45 + 10,000 x 0.25 = 7,000
-# Vehicle costs: fuel 2,708 + insurance 1,400 + road tax 180 + repairs 580 = 4,868
-# Mileage (7,000) > vehicle costs (4,868), so mileage is used
-# Non-vehicle expenses: admin 420 + legal 750 + advertising 150 + dashcam 200 = 1,520
-# Net profit: 38,000 - 7,000 - 1,520 = ~29,480
+[[fixed_asset_additions]]
+date = 2025-05-10
+description = "Nextbase dashcam"
+reference = "AMZ-0510"
+cost = 200
 
 [expected]
 total_sales = 38000
+gross_profit = 33096
+net_profit = 31776
+fixed_asset_cost = 200

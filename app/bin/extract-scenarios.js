@@ -2,34 +2,40 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// extract-scenarios.js — Extract test scenario TOML files and diya-gl subsets
-// from the Precision Code Ltd master data.
+// extract-scenarios.js — Write every reconciliation fixture, and the diya-gl
+// subset behind it, from the master books under examples/.
 //
 // Usage:
 //   node app/bin/extract-scenarios.js
 //
-// Reads:  examples/precision-code-ltd/book.toml
-//         examples/precision-code-ltd/lines.jsonl
+// One master a business, one subset a product the business is kept on. A
+// fixture states no figure of its own: the transactions come from the
+// master's journals, the ledgers and registers from its book, and every
+// [expected] figure is worked out here from the two.
 //
-// Writes: examples/precision-code-ltd/bst/book.toml + lines.jsonl
-//         examples/precision-code-ltd/advanced/book.toml + lines.jsonl
-//         examples/precision-code-ltd/full/book.toml + lines.jsonl
-//         app/test/fixtures/bst-scenario-basic.toml
-//         app/test/fixtures/se-scenario-advanced.toml
-//         app/test/fixtures/ltd-scenario-full.toml
+// Reads:  examples/precision-code-ltd/{book.toml,lines.jsonl}
+//         examples/brickwork-pro/{book.toml,lines.jsonl}
+//         examples/sp-sixty-driving/{book.toml,lines.jsonl}
+//         examples/kestrel-executive-cars/{book.toml,lines.jsonl}
+//         examples/basic-taxi-driver/{book.toml,lines.jsonl}
+//
+// Writes: a book.toml and lines.jsonl subset directory under each master,
+//         and the twelve fixtures under app/test/fixtures/.
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import {
   buildClosingDebtors,
   HP_AGREEMENT_FIELD,
-  LTD_SALES_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
   BST_PURCHASE_CODE_MAP,
   SE_PURCHASE_CODE_MAP,
-  MONTH_ORDER,
+  TAXI_PURCHASE_CODE_MAP,
+  TAXI_BST_PURCHASE_CODE_MAP,
+  assertPurchaseCodesCoverChart,
   filterBst,
   bstStaffWagesAsPurchases,
   filterAdvanced,
@@ -37,61 +43,78 @@ import {
   buildGrouped,
   buildPayroll,
   seDrawingsFromDividends,
+  withoutDirectorPayroll,
+  monthlySalesTotals,
+  takingsOnlySales,
+  fixedAssetAdditions,
   buildOpeningBalance,
   toV2OpeningBalances,
   formatScenarioToml,
-  buildSubsetBookToml,
+  buildSubsetBook,
   bstAccountFilter,
   seAccountFilter,
   fullAccountFilter,
-  countGrouped,
-  computeGrossSales,
+  getMonthKey,
+  taxiExpectedFigures,
+  totalsByCode,
+  bstExpectedFigures,
+  computeNetSales,
   computeSpreadsheetNetSales,
 } from "../lib/scenario-extractor.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
-const EXAMPLES_DIR = join(ROOT, "examples", "precision-code-ltd");
 const FIXTURES_DIR = join(ROOT, "app", "test", "fixtures");
 
 // ============================================================================
-// Read master data
+// Masters in, fixtures out
 // ============================================================================
 
-const bookToml = readFileSync(join(EXAMPLES_DIR, "book.toml"), "utf-8");
-const book = parseTOML(bookToml);
-
-const linesRaw = readFileSync(join(EXAMPLES_DIR, "lines.jsonl"), "utf-8");
-const allLines = linesRaw
-  .split("\n")
-  .filter((line) => line.trim().length > 0)
-  .map((line) => JSON.parse(line));
-
-// The one dividend the master book declares for the year. book.dividends is
-// an array (a book could in principle declare more than one), but this
-// scenario only ever has the single board resolution.
-const masterDividend = book.dividends[0];
-
-// ============================================================================
-// Write diya-gl subset (book.toml + lines.jsonl in subdirectory)
-// ============================================================================
-
-function writeDiyaGlSubset(dirName, productEnum, filteredLines, taxSections, accountFilter, v2) {
-  const dir = join(EXAMPLES_DIR, dirName);
-  mkdirSync(dir, { recursive: true });
-
-  const bookContent = buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter, v2);
-  writeFileSync(join(dir, "book.toml"), bookContent);
-
-  const jsonlLines = filteredLines.map((l) => JSON.stringify(l));
-  writeFileSync(join(dir, "lines.jsonl"), jsonlLines.join("\n") + "\n");
-
-  return { bookLines: bookContent.split("\n").length, dataLines: filteredLines.length };
+function readMaster(name) {
+  const dir = join(ROOT, "examples", name);
+  const book = parseTOML(readFileSync(join(dir, "book.toml"), "utf-8"));
+  const lines = readFileSync(join(dir, "lines.jsonl"), "utf-8")
+    .split("\n")
+    .filter((line) => line.trim().length > 0)
+    .map((line) => JSON.parse(line));
+  return { dir, book, lines };
 }
 
-// ============================================================================
-// Shared data
-// ============================================================================
+// One product's slice of a master, written where the master keeps it. The
+// canonical writer owns the field order and the money formatting, so a
+// subset and an export of the same book are text-identical.
+const extracted = [];
+
+function writeSubset(masterDir, subsetName, book, subsetSpec, lines) {
+  const dir = join(masterDir, subsetName);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "book.toml"), canonicalBookToml(buildSubsetBook(book, { subsetName, ...subsetSpec })));
+  writeFileSync(join(dir, "lines.jsonl"), canonicalLinesJsonl(lines));
+  return { dataLines: lines.length };
+}
+
+function writeFixture(name, toml) {
+  writeFileSync(join(FIXTURES_DIR, `${name}.toml`), toml);
+  const rows = (table) => (toml.match(new RegExp(`^\\[\\[${table}[.\\]]`, "gm")) || []).length;
+  extracted.push({ name, sales: rows("sales"), purchases: rows("purchases"), bank: rows("bank"), payroll: rows("payroll") });
+}
+
+// The [business] block every product's Admin sheet takes, from the book's
+// own entity information.
+function businessBlock(entity, extra = {}) {
+  const business = { name: entity.organizationIdentifier, description: extra.description || entity.organizationDescription };
+  if (extra.company_number) business.company_number = extra.company_number;
+  if (entity.organizationAddressLine) business.address = entity.organizationAddressLine;
+  if (entity.organizationTown) business.town = entity.organizationTown;
+  if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
+  if (extra.omitContact !== true) {
+    if (entity.organizationTelephone) business.phone = entity.organizationTelephone;
+    if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
+  }
+  if (extra.vat_number) business.vat_number = extra.vat_number;
+  if (extra.nino) business.nino = extra.nino;
+  return business;
+}
 
 // The debtor and creditor ledgers the master book publishes. Each listing
 // names its counterparty and the invoice still open, timed opening or
@@ -102,6 +125,53 @@ function ledgerListing(entries, nameField, timing) {
     .filter((entry) => entry.timing === timing)
     .map((entry) => ({ [nameField]: entry.counterparty, invoice: entry.invoice, amount: entry.amount }));
 }
+
+const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) / 100;
+
+// ============================================================================
+// Precision Code Ltd — an IT consultancy kept as a company, a self employed
+// trader and a basic sole trader
+// ============================================================================
+
+const { dir: PRECISION_DIR, book, lines: allLines } = readMaster("precision-code-ltd");
+
+// The one dividend the master book declares for the year. book.dividends is
+// an array (a book could in principle declare more than one), but this
+// scenario only ever has the single board resolution.
+const masterDividend = book.dividends[0];
+
+const precisionEntity = book.entityInformation;
+const precisionAddress = {
+  organizationAddressLine: precisionEntity.organizationAddressLine,
+  organizationTown: precisionEntity.organizationTown,
+  organizationPostcode: precisionEntity.organizationPostcode,
+  organizationTelephone: precisionEntity.organizationTelephone,
+};
+
+// The name and trade the company's book reads under when the same year is
+// kept as a sole trader's.
+const PRECISION_SOLE_TRADER = {
+  organizationIdentifier: "Precision Code Trading",
+  organizationDescription: "IT consultancy (sole trader adaptation)",
+};
+
+function precisionSubsetEntity(product, { vatRegistered }) {
+  const entity = {
+    ...PRECISION_SOLE_TRADER,
+    ...precisionAddress,
+    "taxRegistrationNumber": precisionEntity.taxRegistrationNumber,
+    "taxAuthorityIdentifier": "HMRC",
+    "diya-gl:product": product,
+    "diya-gl:vatRegistered": vatRegistered,
+    "diya-gl:basisOfAccounting": "cash",
+  };
+  if (vatRegistered) entity["diya-gl:vatNumber"] = precisionEntity["diya-gl:vatNumber"];
+  return entity;
+}
+
+// ============================================================================
+// Precision Code ledgers, registers and agreements
+// ============================================================================
 
 const openingDebtors = ledgerListing(book.debtors, "customer", "opening");
 const publishedClosingDebtors = ledgerListing(book.debtors, "customer", "closing");
@@ -216,34 +286,15 @@ function openingFixedAssetsV2(prefix) {
 // ============================================================================
 
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
-const bstSalesLines = bstLines.filter((l) => l.sourceJournalID === "sales");
-const bstTotalSales = computeGrossSales(bstSalesLines);
 const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false });
-const bstPurchLines = bstLines.filter((l) => l.sourceJournalID === "purchases");
-const bstByCode = {};
-bstPurchLines.forEach((l) => {
-  const code = BST_PURCHASE_CODE_MAP[l.accountMainID];
-  if (code) bstByCode[code] = (bstByCode[code] || 0) + l.amount;
-});
-const bstStockPurchases = bstByCode.s || 0;
-const bstStockAdj = 10000 - 6000; // opening - closing
-const bstCoS = bstStockPurchases + bstStockAdj;
-const bstDirectCosts = bstByCode.d || 0;
-const bstGrossProfit = bstTotalSales - bstCoS - bstDirectCosts;
-const bstExpenseCodes = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
-const bstTotalExpenses = bstExpenseCodes.reduce((s, c) => s + (bstByCode[c] || 0), 0);
-const bstNetProfit = bstGrossProfit - bstTotalExpenses;
-const bstTotalPremises = Math.round(bstByCode.p || 0);
-const bstTotalGenAdmin = Math.round(bstByCode.g || 0);
-const bstTotalLegal = Math.round(bstByCode.l || 0);
+const bstFigures = bstExpectedFigures(bstLines, book.stock);
+const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: false });
 
 // Purchases coded f capitalise out of the profit and loss account. The Fixed
 // Assets schedule is where they earn their capital allowance, so the same
 // purchases are registered there. A schedule short of the journal strands the
 // spend in neither statement.
-const bstFixedAssetAdditions = bstPurchLines
-  .filter((l) => BST_PURCHASE_CODE_MAP[l.accountMainID] === "f")
-  .map((l) => ({ date: l.postingDate, description: l.lineItemComment, reference: l.documentReference, cost: l.amount }));
+const bstFixedAssetAdditions = fixedAssetAdditions(bstLines, BST_PURCHASE_CODE_MAP, "f");
 
 const bstToml = formatScenarioToml(
   {
@@ -251,26 +302,12 @@ const bstToml = formatScenarioToml(
     description: "BST-scoped extract from Precision Code Ltd master data. Sales + purchases, 14 BST expense codes, no VAT/bank/payroll.",
     product: "bst",
     tax_regime: "se",
-    business: {
-      name: "Precision Code Trading",
-      description: "IT consultancy and software development",
-      address: "123 High Street",
-      town: "Manchester",
-      postcode: "M1 1AA",
-      phone: "0161 555 0100",
-      utr: "1234567890",
-    },
+    vat_registered: false,
+    business: businessBlock(bstEntity, { description: precisionEntity.organizationDescription }),
   },
   bstGrouped,
   {
-    total_sales: bstTotalSales,
-    gross_profit: Math.round(bstGrossProfit),
-    net_profit: Math.round(bstNetProfit),
-    total_premises: bstTotalPremises,
-    total_gen_admin: bstTotalGenAdmin,
-    total_legal: bstTotalLegal,
-    opening_stock: 10000,
-    closing_stock: 6000,
+    ...bstFigures,
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
@@ -294,13 +331,18 @@ const bstV2 = {
   })),
 };
 
-const bstDiya = writeDiyaGlSubset(
+writeFixture("bst-scenario-basic", bstToml);
+const bstDiya = writeSubset(
+  PRECISION_DIR,
   "bst",
-  "BasicSoleTrader",
+  book,
+  {
+    entity: bstEntity,
+    taxSections: ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"],
+    accountFilter: bstAccountFilter,
+    tables: bstV2,
+  },
   bstLines,
-  ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"],
-  bstAccountFilter,
-  bstV2,
 );
 
 // ============================================================================
@@ -326,6 +368,7 @@ const advToml = formatScenarioToml(
     description: "SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.",
     product: "se",
     tax_regime: "se",
+    vat_registered: true,
     business: {
       name: "Precision Code Trading",
       description: "IT consultancy and software development",
@@ -374,13 +417,19 @@ const advV2 = {
   })),
 };
 
-const advDiya = writeDiyaGlSubset(
+writeFixture("se-scenario-advanced", advToml);
+const advDiya = writeSubset(
+  PRECISION_DIR,
   "advanced",
-  "SelfEmployed",
+  book,
+  {
+    entity: precisionSubsetEntity("SelfEmployed", { vatRegistered: true }),
+    taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
+    accountFilter: seAccountFilter,
+    employees: book.employees,
+    tables: advV2,
+  },
   advLines,
-  ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
-  seAccountFilter,
-  advV2,
 );
 
 // ============================================================================
@@ -447,6 +496,7 @@ const fullToml = formatScenarioToml(
     description: "Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.",
     product: "ltd",
     tax_regime: "ltd",
+    vat_registered: true,
     business: {
       name: "Precision Code Ltd",
       description: "IT consultancy and software development",
@@ -524,41 +574,624 @@ const fullV2 = {
   })),
 };
 
-const fullDiya = writeDiyaGlSubset(
+writeFixture("ltd-scenario-full", fullToml);
+const fullDiya = writeSubset(
+  PRECISION_DIR,
   "full",
-  "Company",
+  book,
+  {
+    entity: precisionEntity,
+    taxSections: ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"],
+    accountFilter: fullAccountFilter,
+    directors: book.directors,
+    employees: book.employees,
+    tables: fullV2,
+  },
   fullLines,
-  ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "dividends", "mileage", "incomeTax"],
-  fullAccountFilter,
-  fullV2,
 );
 
 // ============================================================================
-// Write TOML fixtures
+// BrickWork Pro — a builder kept as a company, a self employed trader and a
+// basic sole trader, each in two sizes: the trade the master books, and the
+// registered twin trading half as much again
 // ============================================================================
 
-writeFileSync(join(FIXTURES_DIR, "bst-scenario-basic.toml"), bstToml);
-writeFileSync(join(FIXTURES_DIR, "se-scenario-advanced.toml"), advToml);
-writeFileSync(join(FIXTURES_DIR, "ltd-scenario-full.toml"), fullToml);
+const { dir: BRICKWORK_DIR, book: brickBook, lines: brickMasterLines } = readMaster("brickwork-pro");
+
+for (const [name, map] of [
+  ["LTD_PURCHASE_CODE_MAP", LTD_PURCHASE_CODE_MAP],
+  ["SE_PURCHASE_CODE_MAP", SE_PURCHASE_CODE_MAP],
+  ["BST_PURCHASE_CODE_MAP", BST_PURCHASE_CODE_MAP],
+]) {
+  assertPurchaseCodesCoverChart(brickBook, map, name);
+}
+
+const brickEntity = brickBook.entityInformation;
+const brickAddress = {
+  organizationAddressLine: brickEntity.organizationAddressLine,
+  organizationTown: brickEntity.organizationTown,
+  organizationPostcode: brickEntity.organizationPostcode,
+  organizationTelephone: brickEntity.organizationTelephone,
+};
+
+// The payslip identifiers the two employees carry. A diya-gl book's employee
+// table has no field for a National Insurance number, so the Payslips
+// workbook takes them from here.
+const BRICKWORK_NI_NUMBERS = { EMP001: "AB123456C", EMP002: "CD654321A" };
+
+function brickworkEmployees(employees) {
+  return employees.map((employee) => ({ ...employee, niNumber: BRICKWORK_NI_NUMBERS[employee.employeeID] }));
+}
+
+// ---------------------------------------------------------------------------
+// The registered twin
+// ---------------------------------------------------------------------------
+
+// The same firm trading half as much again, which is what puts it over the
+// registration threshold, with VAT at 20% on top of every trade amount. The
+// van is the same vehicle at the same net cost, so it carries the VAT and not
+// the change in size. Money banked against a scaled invoice scales with it;
+// wages, PAYE and corporation tax do not.
+const TWIN_TRADE_SCALE = 1.5;
+const TWIN_VAT_RATE = 0.2;
+const TWIN_VAT_NUMBER = "376543219";
+const TWIN_SCALED_BANK_CODES = new Set(["DR", "CR"]);
+const TWIN_SCALED_OPENING_ACCOUNTS = new Set(["1300", "2100"]);
+const TWIN_VAT_ACCOUNT = "2200";
+const TWIN_RETAINED_EARNINGS_ACCOUNT = "3100";
+
+// What the twin owes HMRC at the year start, and the three quarterly
+// settlements that fall inside the year. The fourth quarter is still owed at
+// the year end, which is what leaves the VAT return with a closing balance to
+// carry.
+const TWIN_OPENING_VAT_DUE = { date: "2025-04-07", amount: 1000 };
+const TWIN_VAT_SETTLEMENTS = [
+  { date: "2025-08-07", amount: 1900 },
+  { date: "2025-11-07", amount: 1900 },
+  { date: "2026-02-07", amount: 1900 },
+];
+
+const round2 = (value) => Math.round(value * 100) / 100;
+
+function twinBankLine(date, amount, comment, reference) {
+  return {
+    "sourceJournalID": "bank",
+    "postingDate": date,
+    "accountMainID": "1200",
+    amount,
+    "detailComment": "HMRC",
+    "lineItemComment": comment,
+    "documentType": "bank-statement",
+    "documentReference": reference,
+    "taxCode": "OS",
+    "taxRate": 0,
+    "diya-gl:bankCode": "RV",
+    "debitCreditCode": "C",
+    "diya-gl:bankAccountID": "1200",
+  };
+}
+
+function registeredTwin(lines) {
+  const scaled = lines.map((line) => {
+    if (line.sourceJournalID === "sales" || line.sourceJournalID === "purchases") {
+      // A capital purchase buys the same asset either way, so only the VAT
+      // is added to it.
+      const scale = line["diya-gl:assetID"] ? 1 : TWIN_TRADE_SCALE;
+      return { ...line, amount: round2(line.amount * scale * (1 + TWIN_VAT_RATE)), taxCode: "S", taxRate: TWIN_VAT_RATE };
+    }
+    if (line.sourceJournalID === "bank" && TWIN_SCALED_BANK_CODES.has(line["diya-gl:bankCode"])) {
+      return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+    }
+    if (line.sourceJournalID === "journal" && TWIN_SCALED_OPENING_ACCOUNTS.has(line.accountMainID)) {
+      return { ...line, amount: round2(line.amount * TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE)) };
+    }
+    return line;
+  });
+
+  const openingJournal = scaled.filter((line) => line.sourceJournalID === "journal");
+  const vatBroughtForward = {
+    ...openingJournal[0],
+    accountMainID: TWIN_VAT_ACCOUNT,
+    amount: TWIN_OPENING_VAT_DUE.amount,
+    lineItemComment: "VAT outstanding at the year start",
+    debitCreditCode: "C",
+    lineNumber: openingJournal.length + 1,
+  };
+  const withVatDue = [...openingJournal, vatBroughtForward];
+  const sideTotal = (side) =>
+    withVatDue
+      .filter((line) => line.debitCreditCode === side && line.accountMainID !== TWIN_RETAINED_EARNINGS_ACCOUNT)
+      .reduce((total, line) => total + line.amount, 0);
+  const retainedEarnings = round2(sideTotal("D") - sideTotal("C"));
+
+  const twinLines = scaled.map((line) => {
+    if (line.sourceJournalID === "journal" && line.accountMainID === TWIN_RETAINED_EARNINGS_ACCOUNT) {
+      return { ...line, amount: retainedEarnings };
+    }
+    return line;
+  });
+
+  const settlements = [TWIN_OPENING_VAT_DUE, ...TWIN_VAT_SETTLEMENTS].map((settlement, index) =>
+    twinBankLine(
+      settlement.date,
+      settlement.amount,
+      index === 0 ? "VAT outstanding at the year start" : "Quarterly VAT payment",
+      `BNK-RV-${String(index + 1).padStart(3, "0")}`,
+    ),
+  );
+
+  return [...twinLines, vatBroughtForward, ...settlements].sort((a, b) =>
+    a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// The sole trader adaptation
+// ---------------------------------------------------------------------------
+
+// A sole trader is not his own employee and pays no corporation tax, so the
+// director's payslip becomes monthly drawings and the corporation tax
+// payment leaves the bank statement. The Self Employed package analyses every
+// HMRC payment under one code, so the company's VAT and Construction Industry
+// Scheme payments join its PAYE payments there.
+const SOLE_TRADER_OPENING_BANK = 15000;
+const SOLE_TRADER_MONTHLY_DRAWINGS = 1200;
+const SOLE_TRADER_DRAWINGS_DAY = 25;
+const SOLE_TRADER_NINO = "EF112233B";
+
+function soleTraderAdaptation(lines, book) {
+  const staffOnly = withoutDirectorPayroll(lines, book);
+  const netWagesByMonth = {};
+  for (const line of staffOnly.filter((l) => l.sourceJournalID === "payroll")) {
+    const month = line.postingDate.slice(0, 7);
+    netWagesByMonth[month] = round2((netWagesByMonth[month] || 0) + line["diya-gl:netPay"]);
+  }
+
+  const adapted = [];
+  for (const line of staffOnly) {
+    if (line.sourceJournalID === "journal") continue;
+    if (line.sourceJournalID !== "bank") {
+      adapted.push(line);
+      continue;
+    }
+    const code = line["diya-gl:bankCode"];
+    if (code === "RT") continue;
+    if (code === "BC") {
+      adapted.push({ ...line, amount: SOLE_TRADER_OPENING_BANK, lineItemComment: "Bank account opening balance" });
+      continue;
+    }
+    if (code === "RV" || code === "RC") {
+      adapted.push({ ...line, "diya-gl:bankCode": "RP" });
+      continue;
+    }
+    if (code === "W") {
+      adapted.push({ ...line, amount: netWagesByMonth[line.postingDate.slice(0, 7)] });
+      continue;
+    }
+    adapted.push(line);
+  }
+
+  const drawings = Object.keys(netWagesByMonth)
+    .sort()
+    .map((month, index) => ({
+      "sourceJournalID": "bank",
+      "postingDate": `${month}-${SOLE_TRADER_DRAWINGS_DAY}`,
+      "accountMainID": "1200",
+      "amount": SOLE_TRADER_MONTHLY_DRAWINGS,
+      "detailComment": "Proprietor",
+      "lineItemComment": "Drawings",
+      "documentType": "bank-statement",
+      "documentReference": `BNK-DL-${String(index + 1).padStart(3, "0")}`,
+      "taxCode": "OS",
+      "taxRate": 0,
+      "diya-gl:bankCode": "DL",
+      "debitCreditCode": "C",
+      "diya-gl:bankAccountID": "1200",
+    }));
+
+  return [...adapted, ...drawings].sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0));
+}
+
+// ---------------------------------------------------------------------------
+// The five fixtures
+// ---------------------------------------------------------------------------
+
+const BRICKWORK_TWIN_NOTE =
+  "The trade scales 1.5 times against the non-VAT twin of this scenario, but both buy the same van at the same £12,000 net cost, " +
+  "so the £14,400 here is that same asset with VAT on it and net purchases across the pair do not scale by 1.5.";
+const BRICKWORK_PLAIN_NOTE =
+  "The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, " +
+  "so net purchases across the pair do not scale by 1.5.";
+const BRICKWORK_ALLOWANCE_NOTE = "The Employment Allowance covers the employer's National Insurance, so that line is nil.";
+
+function brickworkLedgers(vatRegistered) {
+  const scale = vatRegistered ? TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE) : 1;
+  const scaled = (entries, nameField, timing) =>
+    ledgerListing(entries, nameField, timing).map((entry) => ({ ...entry, amount: round2(entry.amount * scale) }));
+  return {
+    opening_debtors: scaled(brickBook.debtors, "customer", "opening"),
+    closing_debtors: scaled(brickBook.debtors, "customer", "closing"),
+    opening_creditors: scaled(brickBook.creditors, "supplier", "opening"),
+    closing_creditors: scaled(brickBook.creditors, "supplier", "closing"),
+  };
+}
+
+function brickworkLedgerTables(vatRegistered) {
+  const scale = vatRegistered ? TWIN_TRADE_SCALE * (1 + TWIN_VAT_RATE) : 1;
+  const scaled = (entries) => entries.map((entry) => ({ ...entry, amount: round2(entry.amount * scale) }));
+  return { debtors: scaled(brickBook.debtors), creditors: scaled(brickBook.creditors) };
+}
+
+function brickworkEntity(product, { vatRegistered, soleTrader }) {
+  const entity = {
+    "organizationIdentifier": soleTrader ? "BrickWork Pro Trading" : brickEntity.organizationIdentifier,
+    "organizationDescription": brickEntity.organizationDescription,
+    ...brickAddress,
+    "taxRegistrationNumber": brickEntity.taxRegistrationNumber,
+    "taxAuthorityIdentifier": "HMRC",
+    "diya-gl:product": product,
+    "diya-gl:vatRegistered": vatRegistered,
+    "diya-gl:basisOfAccounting": soleTrader ? "cash" : "accrual",
+  };
+  if (soleTrader) entity["diya-gl:nino"] = SOLE_TRADER_NINO;
+  else entity["diya-gl:companyNumber"] = brickEntity["diya-gl:companyNumber"];
+  if (vatRegistered) entity["diya-gl:vatNumber"] = TWIN_VAT_NUMBER;
+  entity["diya-gl:cisRegistered"] = brickEntity["diya-gl:cisRegistered"];
+  return entity;
+}
+
+// --- Basic Sole Trader, the trade the master books ---------------------------
+
+const brickBstLines = filterBst(bstStaffWagesAsPurchases(withoutDirectorPayroll(brickMasterLines, brickBook)));
+const brickBstFigures = bstExpectedFigures(brickBstLines, brickBook.stock);
+const brickBstAdditions = fixedAssetAdditions(brickBstLines, BST_PURCHASE_CODE_MAP, "f");
+const brickBstEntity = brickworkEntity("BasicSoleTrader", { vatRegistered: false, soleTrader: true });
+
+const brickBstToml = formatScenarioToml(
+  {
+    name: "BrickWork Pro BST",
+    description:
+      "Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, the labourer's wage is an employee cost, and there is no bank journal. " +
+      BRICKWORK_PLAIN_NOTE,
+    product: "bst",
+    tax_regime: "se",
+    vat_registered: false,
+    business: businessBlock(brickBstEntity),
+  },
+  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesPaymentLabels: true }),
+  {
+    ...brickBstFigures,
+    ...brickworkLedgers(false),
+    fixed_asset_additions: brickBstAdditions,
+  },
+);
+
+writeFixture("bst-brickwork-pro-nonvat", brickBstToml);
+const brickBstDiya = writeSubset(
+  BRICKWORK_DIR,
+  "bst-nonvat",
+  brickBook,
+  {
+    entity: brickBstEntity,
+    taxSections: ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"],
+    accountFilter: bstAccountFilter,
+    tables: {
+      stock: brickBook.stock,
+      ...brickworkLedgerTables(false),
+      fixedAssets: brickBook.fixedAssets,
+    },
+  },
+  brickBstLines,
+);
+
+// --- Self Employed, both sizes ----------------------------------------------
+
+function writeBrickworkSe(vatRegistered) {
+  const masterLines = vatRegistered ? registeredTwin(brickMasterLines) : brickMasterLines;
+  const lines = filterAdvanced(soleTraderAdaptation(masterLines, brickBook));
+  const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
+  const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
+  const vatDivisor = 1 + (vatRegistered ? TWIN_VAT_RATE : 0);
+  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP);
+  grouped.payroll = buildPayroll(lines);
+  const entity = brickworkEntity("SelfEmployed", { vatRegistered, soleTrader: true });
+  const employees = brickworkEmployees(brickBook.employees.filter((employee) => !employee.isDirector));
+
+  const expected = {
+    total_sales: computeNetSales(salesLines),
+    ...brickworkLedgers(vatRegistered),
+    opening_stock: brickBook.stock.openingValue,
+    closing_stock: brickBook.stock.closingValue,
+  };
+  if (byCode.v) expected.total_motor_net = Math.round(byCode.v / vatDivisor);
+  if (byCode.l) expected.total_legal_net = Math.round(byCode.l / vatDivisor);
+
+  const toml = formatScenarioToml(
+    {
+      name: `BrickWork Pro SE ${vatRegistered ? "VAT" : "non-VAT"}`,
+      description:
+        "Construction sole trader, CIS sub-contractors, one labourer on the payroll. " +
+        (vatRegistered
+          ? `Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. ${BRICKWORK_TWIN_NOTE}`
+          : `Turnover is under the VAT registration threshold. Journal amounts carry no VAT. ${BRICKWORK_PLAIN_NOTE}`) +
+        ` ${BRICKWORK_ALLOWANCE_NOTE}`,
+      product: "se",
+      tax_regime: "se",
+      vat_registered: vatRegistered,
+      business: businessBlock(entity, { vat_number: entity["diya-gl:vatNumber"], nino: SOLE_TRADER_NINO }),
+      employees,
+    },
+    grouped,
+    expected,
+  );
+
+  writeFixture(`se-brickwork-pro-${vatRegistered ? "vat" : "nonvat"}`, toml);
+  return writeSubset(
+    BRICKWORK_DIR,
+    `se-${vatRegistered ? "vat" : "nonvat"}`,
+    brickBook,
+    {
+      entity,
+      taxSections: ["incomeTax", "nationalInsurance", "vat", "capitalAllowances", "mileage"],
+      accountFilter: seAccountFilter,
+      employees,
+      tables: {
+        stock: brickBook.stock,
+        ...brickworkLedgerTables(vatRegistered),
+        fixedAssets: brickBook.fixedAssets,
+      },
+    },
+    lines,
+  );
+}
+
+const brickSeNonVatDiya = writeBrickworkSe(false);
+const brickSeVatDiya = writeBrickworkSe(true);
+
+// --- Company, both sizes ----------------------------------------------------
+
+function writeBrickworkLtd(vatRegistered) {
+  const lines = filterFull(vatRegistered ? registeredTwin(brickMasterLines) : brickMasterLines);
+  const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
+  const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
+  const byCode = totalsByCode(lines, LTD_PURCHASE_CODE_MAP);
+  const vatRate = vatRegistered ? TWIN_VAT_RATE : 0;
+  const vatDivisor = 1 + vatRate;
+  const grouped = buildGrouped(lines, LTD_PURCHASE_CODE_MAP);
+  grouped.payroll = buildPayroll(lines);
+  const openingBalance = buildOpeningBalance(lines);
+  const entity = brickworkEntity("Company", { vatRegistered, soleTrader: false });
+  const employees = brickworkEmployees(brickBook.employees);
+  const members = brickBook.members.map((member) => ({ name: member.name, shares: member.shares }));
+
+  const sharesIssued = members.reduce((total, member) => total + member.shares, 0);
+  if (sharesIssued !== openingBalance.share_capital) {
+    throw new Error(
+      `Register of members holds ${sharesIssued} shares at 1 each, against share capital of ${openingBalance.share_capital} on the opening balance sheet`,
+    );
+  }
+
+  const expected = {
+    total_sales: computeNetSales(salesLines),
+    opening_balance: openingBalance,
+    ...brickworkLedgers(vatRegistered),
+    opening_stock: brickBook.stock.openingValue,
+    closing_stock: brickBook.stock.closingValue,
+    // Nothing in this book's VAT periods falls outside the accounting year,
+    // so the return's boxes are the year's own journals and nothing else.
+    vat_output_total: Math.round(salesLines.reduce((total, line) => total + VAT_ON(line.amount, line.taxRate || 0), 0)),
+    vat_input_total: Math.round(purchaseLines.reduce((total, line) => total + VAT_ON(line.amount, line.taxRate || 0), 0)),
+  };
+  if (byCode.r) expected.total_premises_net = Math.round(byCode.r / vatDivisor);
+  if (byCode.l) expected.total_legal_net = Math.round(byCode.l / vatDivisor);
+
+  const toml = formatScenarioToml(
+    {
+      name: `BrickWork Pro Ltd ${vatRegistered ? "VAT" : "non-VAT"}`,
+      description:
+        "Construction company, CIS sub-contractors, a director and one labourer on the payroll. " +
+        (vatRegistered
+          ? `Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. ${BRICKWORK_TWIN_NOTE}`
+          : `Turnover is under the VAT registration threshold. Journal amounts carry no VAT. ${BRICKWORK_PLAIN_NOTE}`) +
+        ` ${BRICKWORK_ALLOWANCE_NOTE}`,
+      product: "ltd",
+      tax_regime: "ltd",
+      vat_registered: vatRegistered,
+      business: businessBlock(entity, { company_number: entity["diya-gl:companyNumber"], vat_number: entity["diya-gl:vatNumber"] }),
+      employees,
+      members,
+    },
+    grouped,
+    expected,
+  );
+
+  writeFixture(`ltd-brickwork-pro-${vatRegistered ? "vat" : "nonvat"}`, toml);
+  return writeSubset(
+    BRICKWORK_DIR,
+    `ltd-${vatRegistered ? "vat" : "nonvat"}`,
+    brickBook,
+    {
+      entity,
+      taxSections: ["corporationTax", "capitalAllowances", "vat", "nationalInsurance", "mileage", "incomeTax"],
+      accountFilter: fullAccountFilter,
+      directors: brickBook.directors,
+      employees,
+      tables: {
+        openingBalances: toV2OpeningBalances(openingBalance),
+        stock: brickBook.stock,
+        ...brickworkLedgerTables(vatRegistered),
+        fixedAssets: brickBook.fixedAssets,
+        members: brickBook.members,
+      },
+    },
+    lines,
+  );
+}
+
+const brickLtdNonVatDiya = writeBrickworkLtd(false);
+const brickLtdVatDiya = writeBrickworkLtd(true);
+
+// ============================================================================
+// The Taxi Driver books — SP Sixty Driving, Kestrel Executive Cars and the
+// basic owner-driver
+// ============================================================================
+
+const TAXI_TAX_SECTIONS = ["incomeTax", "nationalInsurance", "capitalAllowances", "mileage"];
+
+// A taxi book is all takings and running costs, so the whole master reaches
+// the fixture. The Sales sheet takes the day's gross takings against a
+// pre-filled date, and a purchase coded to the capital column is registered
+// on the Fixed Assets schedule as well, which is where it earns its
+// allowance.
+function writeTaxiScenario(master, { fixtureName, subsetName, name, description }) {
+  const { dir, book, lines } = master;
+  assertPurchaseCodesCoverChart(book, TAXI_PURCHASE_CODE_MAP, "TAXI_PURCHASE_CODE_MAP");
+
+  const grouped = takingsOnlySales(buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false }));
+  const additions = fixedAssetAdditions(lines, TAXI_PURCHASE_CODE_MAP, "f");
+  const entity = book.entityInformation;
+
+  const toml = formatScenarioToml(
+    {
+      name,
+      description,
+      product: "taxi",
+      tax_regime: "se",
+      vat_registered: entity["diya-gl:vatRegistered"],
+      business: businessBlock(entity),
+    },
+    grouped,
+    {
+      ...taxiExpectedFigures(lines, book.tax),
+      fixed_asset_additions: additions,
+    },
+  );
+
+  writeFixture(fixtureName, toml);
+  return writeSubset(
+    dir,
+    subsetName,
+    book,
+    { entity, taxSections: TAXI_TAX_SECTIONS, accountFilter: fullAccountFilter, tables: { fixedAssets: book.fixedAssets } },
+    lines,
+  );
+}
+
+const spSixty = readMaster("sp-sixty-driving");
+const kestrel = readMaster("kestrel-executive-cars");
+const basicTaxi = readMaster("basic-taxi-driver");
+
+const spSixtyTaxiDiya = writeTaxiScenario(spSixty, {
+  fixtureName: "taxi-scenario-sp-sixty",
+  subsetName: "taxi",
+  name: "SP Sixty Driving",
+  description: "Private hire driver with varying daily fares, fuel, insurance, repairs, admin, licence, accountant, dashcam, and signage",
+});
+
+const kestrelDiya = writeTaxiScenario(kestrel, {
+  fixtureName: "taxi-scenario-kestrel",
+  subsetName: "taxi",
+  name: "Kestrel Executive Cars",
+  description:
+    "Executive chauffeur operator banking weekly settlements, with employed drivers, a leased yard and a profit into the additional rate band",
+});
+
+const basicTaxiDiya = writeTaxiScenario(basicTaxi, {
+  fixtureName: "taxi-scenario-basic",
+  subsetName: "taxi",
+  name: "Basic taxi driver",
+  description:
+    "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental.",
+});
+
+// ---------------------------------------------------------------------------
+// SP Sixty Driving on the Basic Sole Trader package
+// ---------------------------------------------------------------------------
+
+// The Basic Sole Trader sales sheet keeps one row a line, which a year of
+// daily fares does not fit, so the takings reach it as the monthly banking
+// the driver actually pays in. The purchase columns are the sole trader's
+// fourteen, not the taxi trade's, so the same accounts read under a chart of
+// their own.
+assertPurchaseCodesCoverChart(spSixty.book, TAXI_BST_PURCHASE_CODE_MAP, "TAXI_BST_PURCHASE_CODE_MAP");
+
+const spSixtyBstGrouped = buildGrouped(spSixty.lines, TAXI_BST_PURCHASE_CODE_MAP, {
+  carriesCisDeductions: false,
+  carriesPaymentLabels: true,
+});
+const spSixtySalesLines = spSixty.lines.filter((line) => line.sourceJournalID === "sales");
+spSixtyBstGrouped.sales = {};
+for (const banking of monthlySalesTotals(spSixtySalesLines)) {
+  const month = getMonthKey(banking.date);
+  spSixtyBstGrouped.sales[month] = [
+    { date: banking.date, customer: spSixtySalesLines[0].detailComment, payment: "Bank", amount: banking.amount },
+  ];
+}
+
+const spSixtyBstEntity = { ...spSixty.book.entityInformation, "diya-gl:product": "BasicSoleTrader" };
+const spSixtyBstAdditions = fixedAssetAdditions(spSixty.lines, TAXI_BST_PURCHASE_CODE_MAP, "f");
+
+const spSixtyBstToml = formatScenarioToml(
+  {
+    name: "SP Sixty Driving BST",
+    description: "Private hire driver adapted for BST package. Motor expenses as actual costs.",
+    product: "bst",
+    tax_regime: "se",
+    vat_registered: false,
+    business: businessBlock(spSixtyBstEntity),
+  },
+  spSixtyBstGrouped,
+  {
+    ...bstExpectedFigures(spSixty.lines, spSixty.book.stock, TAXI_BST_PURCHASE_CODE_MAP),
+    fixed_asset_additions: spSixtyBstAdditions,
+  },
+);
+
+writeFixture("bst-sp-sixty", spSixtyBstToml);
+const spSixtyBstDiya = writeSubset(
+  spSixty.dir,
+  "bst",
+  spSixty.book,
+  {
+    entity: spSixtyBstEntity,
+    taxSections: TAXI_TAX_SECTIONS,
+    accountFilter: fullAccountFilter,
+    tables: { fixedAssets: spSixty.book.fixedAssets },
+  },
+  spSixty.lines,
+);
 
 // ============================================================================
 // Summary
 // ============================================================================
 
-const bstCounts = countGrouped(bstGrouped);
-const advCounts = countGrouped(advGrouped);
-const fullCounts = countGrouped(fullGrouped);
+const subsetLines = [
+  ["precision-code-ltd/bst", bstDiya],
+  ["precision-code-ltd/advanced", advDiya],
+  ["precision-code-ltd/full", fullDiya],
+  ["brickwork-pro/bst-nonvat", brickBstDiya],
+  ["brickwork-pro/se-nonvat", brickSeNonVatDiya],
+  ["brickwork-pro/se-vat", brickSeVatDiya],
+  ["brickwork-pro/ltd-nonvat", brickLtdNonVatDiya],
+  ["brickwork-pro/ltd-vat", brickLtdVatDiya],
+  ["sp-sixty-driving/bst", spSixtyBstDiya],
+  ["sp-sixty-driving/taxi", spSixtyTaxiDiya],
+  ["kestrel-executive-cars/taxi", kestrelDiya],
+  ["basic-taxi-driver/taxi", basicTaxiDiya],
+];
 
-console.log("Extracted scenarios from examples/precision-code-ltd/");
+console.log(`Extracted ${extracted.length} fixtures and ${subsetLines.length} diya-gl subsets`);
 console.log("");
-console.log(`BST basic (bst/):`);
-console.log(`  diya-gl: ${bstDiya.dataLines} lines`);
-console.log(`  TOML: ${bstCounts.s} sales, ${bstCounts.p} purchases, total_sales = ${bstTotalSales}`);
+for (const fixture of extracted) {
+  const journals = [
+    `${fixture.sales} sales`,
+    `${fixture.purchases} purchases`,
+    fixture.bank ? `${fixture.bank} bank` : null,
+    fixture.payroll ? `${fixture.payroll} payroll` : null,
+  ].filter(Boolean);
+  console.log(`  ${fixture.name.padEnd(30)} ${journals.join(", ")}`);
+}
 console.log("");
-console.log(`SE advanced (advanced/):`);
-console.log(`  diya-gl: ${advDiya.dataLines} lines`);
-console.log(`  TOML: ${advCounts.s} sales, ${advCounts.p} purchases, ${advCounts.b} bank, total_sales = ${advTotalSales}`);
-console.log("");
-console.log(`Ltd full (full/):`);
-console.log(`  diya-gl: ${fullDiya.dataLines} lines`);
-console.log(`  TOML: ${fullCounts.s} sales, ${fullCounts.p} purchases, ${fullCounts.b} bank, total_sales = ${fullTotalSales}`);
+for (const [subset, counts] of subsetLines) {
+  console.log(`  ${subset.padEnd(30)} ${counts.dataLines} lines`);
+}

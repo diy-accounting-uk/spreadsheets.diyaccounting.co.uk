@@ -3,6 +3,7 @@ name = "Precision Code Ltd - full"
 description = "Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts."
 product = "ltd"
 tax_regime = "ltd"
+vat_registered = true
 
 [business]
 name = "Precision Code Ltd"

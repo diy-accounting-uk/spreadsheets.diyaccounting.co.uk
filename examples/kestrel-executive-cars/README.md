@@ -65,7 +65,12 @@ Settlements cycle through thirteen amounts between 4,700 and 5,700.
 
 **Other expenses (code o)** -- Yard security gate 500 (Sep) and a waste contract 400 (Feb).
 
-**Fixed assets (code f)** -- In-car camera system 900 (May).
+**Fixed assets (code f)** -- In-car camera system 900 (May). It is on
+`fixedAssets[]` as well, so the fixture registers it on the Fixed Assets
+schedule. That does not change the profit: the Taxi Driver package allows the
+main rate writing down allowance on the year's capital spend whichever way the
+asset is recorded, which is the right treatment for a vehicle and the one the
+profit below is struck after.
 
 **Bank charges (code b)** -- Business account charges, 45 a month.
 
@@ -99,4 +104,6 @@ The profit runs past the taper and into the additional rate, so the personal all
 
 ## Scenario Extract
 
-The taxi scenario TOML fixture (`app/test/fixtures/taxi-scenario-kestrel.toml`) is derived from this master data for use in reconciliation testing. It uses the Taxi Driver product format with `[[sales.month]]` entries containing `date` and `amount` fields, and `[[purchases.month]]` entries containing `date`, `supplier`, `code`, and `amount` fields.
+`node app/bin/extract-scenarios.js` writes the fixture
+(`app/test/fixtures/taxi-scenario-kestrel.toml`) and the diya-gl subset
+(`taxi/`) from this master data. Nothing in either is stated by hand.

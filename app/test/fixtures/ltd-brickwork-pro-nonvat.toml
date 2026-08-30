@@ -15,6 +15,32 @@ postcode = "S1 2AB"
 phone = "0114 555 0100"
 utr = "9876543210"
 
+[[employees]]
+employeeID = "EMP001"
+name = "Mike Brown"
+niNumber = "AB123456C"
+role = "Director"
+grossPay = 1048
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = true
+
+[[employees]]
+employeeID = "EMP002"
+name = "Tom Davies"
+niNumber = "CD654321A"
+role = "Labourer"
+grossPay = 1500
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = false
+
+[[members]]
+name = "Mike Brown"
+shares = 100
+
 [[sales.apr]]
 date = 2025-04-10
 customer = "Acme Developments"
@@ -224,18 +250,19 @@ date = 2025-05-15
 supplier = "JB Plastering"
 code = "c"
 amount = 6000
-
-[[purchases.jun]]
-date = 2025-06-01
-supplier = "Vodafone"
-code = "g"
-amount = 60
+cis_deduction = 1200
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
 code = "a"
 amount = 300
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Vodafone"
+code = "g"
+amount = 60
 
 [[purchases.jun]]
 date = 2025-06-05
@@ -314,6 +341,7 @@ date = 2025-08-15
 supplier = "JB Plastering"
 code = "c"
 amount = 5000
+cis_deduction = 1000
 
 [[purchases.sep]]
 date = 2025-09-01
@@ -398,6 +426,7 @@ date = 2025-11-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 5000
+cis_deduction = 1000
 
 [[purchases.dec]]
 date = 2025-12-01
@@ -482,6 +511,7 @@ date = 2026-02-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 4000
+cis_deduction = 800
 
 [[purchases.mar]]
 date = 2026-03-01
@@ -506,222 +536,6 @@ date = 2026-03-15
 supplier = "Travis Perkins"
 code = "s"
 amount = 450
-
-[[payroll.apr]]
-date = 2025-04-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.apr]]
-date = 2025-04-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.may]]
-date = 2025-05-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.may]]
-date = 2025-05-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.jun]]
-date = 2025-06-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.jun]]
-date = 2025-06-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.jul]]
-date = 2025-07-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.jul]]
-date = 2025-07-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.aug]]
-date = 2025-08-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.aug]]
-date = 2025-08-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.sep]]
-date = 2025-09-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.sep]]
-date = 2025-09-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.oct]]
-date = 2025-10-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.oct]]
-date = 2025-10-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.nov]]
-date = 2025-11-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.nov]]
-date = 2025-11-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.dec]]
-date = 2025-12-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.dec]]
-date = 2025-12-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.jan]]
-date = 2026-01-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.jan]]
-date = 2026-01-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.feb]]
-date = 2026-02-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.feb]]
-date = 2026-02-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
-
-[[payroll.mar]]
-date = 2026-03-28
-name = "Mike Brown"
-grossPay = 1048
-incomeTax = 0
-employeeNI = 0
-employerNI = 0
-netPay = 1048
-
-[[payroll.mar]]
-date = 2026-03-28
-name = "Tom Davies"
-grossPay = 1500
-incomeTax = 90.5
-employeeNI = 36.2
-employerNI = 0
-netPay = 1373.3
 
 [[bank.apr]]
 date = 2025-04-01
@@ -810,7 +624,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 7510
+amount = 6310
 description = "may invoices settled"
 
 [[bank.jun]]
@@ -848,6 +662,15 @@ code = "CR"
 direction = "out"
 amount = 1810
 description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-22
+account = "1200"
+source = "HMRC"
+code = "RC"
+direction = "out"
+amount = 1200
+description = "Construction Industry Scheme deductions for 2025-05"
 
 [[bank.jul]]
 date = 2025-07-22
@@ -918,7 +741,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 6510
+amount = 5510
 description = "aug invoices settled"
 
 [[bank.sep]]
@@ -956,6 +779,15 @@ code = "CR"
 direction = "out"
 amount = 13510
 description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-22
+account = "1200"
+source = "HMRC"
+code = "RC"
+direction = "out"
+amount = 1000
+description = "Construction Industry Scheme deductions for 2025-08"
 
 [[bank.oct]]
 date = 2025-10-22
@@ -1026,7 +858,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 6510
+amount = 5510
 description = "nov invoices settled"
 
 [[bank.dec]]
@@ -1073,6 +905,15 @@ code = "CR"
 direction = "out"
 amount = 1510
 description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-22
+account = "1200"
+source = "HMRC"
+code = "RC"
+direction = "out"
+amount = 1000
+description = "Construction Industry Scheme deductions for 2025-11"
 
 [[bank.jan]]
 date = 2026-01-22
@@ -1143,7 +984,7 @@ account = "1200"
 source = "Trade suppliers and sub-contractors"
 code = "CR"
 direction = "out"
-amount = 5510
+amount = 4710
 description = "feb invoices settled"
 
 [[bank.mar]]
@@ -1163,6 +1004,226 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+
+[[payroll.apr]]
+date = 2025-04-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.apr]]
+date = 2025-04-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.may]]
+date = 2025-05-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jun]]
+date = 2025-06-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jul]]
+date = 2025-07-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.aug]]
+date = 2025-08-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.sep]]
+date = 2025-09-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.oct]]
+date = 2025-10-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.nov]]
+date = 2025-11-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.dec]]
+date = 2025-12-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.jan]]
+date = 2026-01-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.feb]]
+date = 2026-02-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Mike Brown"
+grossPay = 1048
+incomeTax = 0
+employeeNI = 0
+employerNI = 0
+netPay = 1048
+
+[[payroll.mar]]
+date = 2026-03-28
+name = "Tom Davies"
+grossPay = 1500
+incomeTax = 90.5
+employeeNI = 36.2
+employerNI = 0
+netPay = 1373.3
+
+[stock]
+opening = 3000
+closing = 2500
 
 [[opening_debtors]]
 customer = "Acme Developments"
@@ -1224,33 +1285,9 @@ supplier = "Travis Perkins"
 invoice = "TP-2603"
 amount = 450
 
-[[employees]]
-employeeID = "EMP001"
-name = "Mike Brown"
-niNumber = "AB123456C"
-payFrequency = "monthly"
-grossPay = 1048
-isDirector = true
-
-[[employees]]
-employeeID = "EMP002"
-name = "Tom Davies"
-niNumber = "CD654321A"
-payFrequency = "monthly"
-grossPay = 1500
-niCategory = "A"
-
-[[members]]
-name = "Mike Brown"
-shares = 100
-
-[stock]
-opening = 3000
-closing = 2500
-
 [opening_balance]
-current_account = 20000
 stock = 3000
+current_account = 20000
 trade_debtors = 6600
 trade_creditors = 1510
 corporation_tax = 900

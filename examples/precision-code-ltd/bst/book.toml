@@ -10,6 +10,10 @@ entriesComment = "Subset: bst — extracted from Precision Code Ltd master data"
 [entityInformation]
 organizationIdentifier = "Precision Code Trading"
 organizationDescription = "IT consultancy (sole trader adaptation)"
+organizationAddressLine = "123 High Street"
+organizationTown = "Manchester"
+organizationPostcode = "M1 1AA"
+organizationTelephone = "0161 555 0100"
 taxRegistrationNumber = "1234567890"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "BasicSoleTrader"
@@ -128,142 +132,142 @@ accountMainDescription = "Loan interest payable"
 accountMainDescription = "Fixed asset purchases"
 "diya-gl:column" = "AI"
 
-[tax.incomeTax]
-personalAllowance = 12570
-basicRate = 0.2
-basicRateLimit = 37700
-higherRate = 0.4
-higherRateThreshold = 50270
-additionalRate = 0.45
-additionalRateThreshold = 125140
-personalAllowanceTaperThreshold = 100000
-
-[tax.nationalInsurance]
-class1EmployeeMainRate = 0.08
-class1EmployeeUpperRate = 0.02
-class1EmployeePrimaryThreshold = 12570
-class1EmployeeUpperEarningsLimit = 50270
-class1EmployerRate = 0.15
-class1EmployerSecondaryThreshold = 5000
-employmentAllowance = 10500
-class2WeeklyRate = 3.45
-class2SmallProfitsThreshold = 6725
-class4MainRate = 0.06
-class4UpperRate = 0.02
-class4LowerProfits = 12570
-class4UpperProfits = 50270
-
-[tax.capitalAllowances]
-annualInvestmentAllowance = 1000000
-mainRateWDA = 0.18
-specialRateWDA = 0.06
-
-[tax.mileage]
-carFirst10000 = 0.45
-carOver10000 = 0.25
-
 [stock]
-openingValue = 10000
-closingValue = 6000
+openingValue = 10000.00
+closingValue = 6000.00
 
 [[debtors]]
 counterparty = "Acme Corp"
 invoice = "INV-0901"
-amount = 7200
+amount = 7200.00
 timing = "opening"
 
 [[debtors]]
 counterparty = "Beta Systems"
 invoice = "INV-0902"
-amount = 1200
+amount = 1200.00
 timing = "opening"
 
 [[debtors]]
 counterparty = "Gamma Ltd"
 invoice = "INV-0903"
-amount = 2400
+amount = 2400.00
 timing = "opening"
 
 [[debtors]]
 counterparty = "Acme Corp"
 invoice = "INV-1012"
-amount = 6100
+amount = 6100.00
 timing = "closing"
 
 [[debtors]]
 counterparty = "WidgetWorks"
 invoice = "INV-2104"
-amount = 1440
+amount = 1440.00
 timing = "closing"
 
 [[debtors]]
 counterparty = "Zeta Corp"
 invoice = "CN-1801"
-amount = 360
+amount = 360.00
 timing = "closing"
 
 [[creditors]]
 counterparty = "WorkSpace Ltd"
 invoice = "WS-2403"
-amount = 1200
+amount = 1200.00
 timing = "opening"
 
 [[creditors]]
 counterparty = "Smith & Co"
 invoice = "SC-2403"
-amount = 300
+amount = 300.00
 timing = "opening"
 
 [[creditors]]
 counterparty = "TechParts Ltd"
 invoice = "TP-2403"
-amount = 600
+amount = 600.00
 timing = "opening"
 
 [[creditors]]
 counterparty = "Shell"
 invoice = "SH-2403"
-amount = 120
+amount = 120.00
 timing = "opening"
 
 [[creditors]]
 counterparty = "WorkSpace Ltd"
 invoice = "WS-2603"
-amount = 1200
+amount = 1200.00
 timing = "closing"
 
 [[creditors]]
 counterparty = "Smith & Co"
 invoice = "SC-2603"
-amount = 300
+amount = 300.00
 timing = "closing"
 
 [[creditors]]
 counterparty = "BT Business"
 invoice = "BT-2603"
-amount = 60
+amount = 60.00
 timing = "closing"
 
 [[creditors]]
 counterparty = "Shell"
 invoice = "SH-2603"
-amount = 150
+amount = 150.00
 timing = "closing"
 
 [[fixedAssets]]
 assetID = "BST-FA-1"
 description = "New laptop for development"
-cost = 1800
-acquiredDate = 2025-05-15
+cost = 1800.00
+acquiredDate = "2025-05-15"
 
 [[fixedAssets]]
 assetID = "BST-FA-2"
 description = "Office furniture"
-cost = 1200
-acquiredDate = 2025-07-15
+cost = 1200.00
+acquiredDate = "2025-07-15"
 
 [[fixedAssets]]
 assetID = "BST-FA-3"
 description = "Ford Transit Custom van"
-cost = 36000
-acquiredDate = 2025-10-25
+cost = 36000.00
+acquiredDate = "2025-10-25"
+
+[tax.incomeTax]
+personalAllowance = 12570.00
+personalAllowanceTaperThreshold = 100000.00
+basicRate = 0.2000
+basicRateLimit = 37700.00
+higherRate = 0.4000
+higherRateThreshold = 50270.00
+additionalRate = 0.4500
+additionalRateThreshold = 125140.00
+
+[tax.nationalInsurance]
+class2WeeklyRate = 3.45
+class2SmallProfitsThreshold = 6725.00
+class4MainRate = 0.0600
+class4UpperRate = 0.0200
+class4LowerProfits = 12570.00
+class4UpperProfits = 50270.00
+class1EmployeeMainRate = 0.0800
+class1EmployeeUpperRate = 0.0200
+class1EmployeePrimaryThreshold = 12570.00
+class1EmployeeUpperEarningsLimit = 50270.00
+class1EmployerRate = 0.1500
+class1EmployerSecondaryThreshold = 5000.00
+employmentAllowance = 10500.00
+
+[tax.capitalAllowances]
+annualInvestmentAllowance = 1000000.00
+mainRateWDA = 0.1800
+specialRateWDA = 0.0600
+
+[tax.mileage]
+carFirst10000 = 0.45
+carOver10000 = 0.25
