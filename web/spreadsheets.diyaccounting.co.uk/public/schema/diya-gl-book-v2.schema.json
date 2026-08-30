@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v1.schema.json",
-  "title": "DIY Accounting GL-aligned Book Configuration",
-  "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html",
+  "$id": "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json",
+  "title": "DIY Accounting GL-aligned Book Configuration (v2)",
+  "description": "Schema for book.toml after parsing. Field names adapted from XBRL Global Ledger Taxonomy Framework 2015 (gl-cor, gl-bus, gl-taf modules). Validates the output of @iarna/toml or similar TOML parsers. Reference: http://www.xbrl.org/int/gl/2015-03-25/gl-framework-REC-2015-03-25.html. v2 adds the tables a book needs to state opening balances, stock, debtors, creditors, the fixed asset register, hire purchase agreements, dividends, the register of members and registered charges.",
   "type": "object",
   "required": ["documentInfo", "entityInformation", "accounts"],
   "additionalProperties": false,
@@ -61,6 +61,16 @@
         "entriesComment": {
           "type": "string",
           "description": "gl-cor:entriesComment — Free text note about this book"
+        },
+        "diya-gl:vatStaggerGroup": {
+          "type": "integer",
+          "enum": [1, 2, 3],
+          "description": "diya-gl: extension — Which of HMRC's three VAT stagger groups this business's quarters fall on. Group 1 ends Mar/Jun/Sep/Dec, group 2 Apr/Jul/Oct/Jan, group 3 May/Aug/Nov/Feb."
+        },
+        "diya-gl:payrollYearStart": {
+          "type": "string",
+          "format": "date",
+          "description": "diya-gl: extension — The first day of the payroll calendar the Payslips workbook builds, when it differs from periodCoveredStart."
         }
       }
     },
@@ -78,6 +88,22 @@
         "organizationDescription": {
           "type": "string",
           "description": "gl-bus:organizationDescription — Nature of the business"
+        },
+        "organizationAddressLine": {
+          "type": "string",
+          "description": "gl-bus:organizationAddressLine — Registered or trading address, first line"
+        },
+        "organizationTown": {
+          "type": "string",
+          "description": "gl-bus:organizationTown — Registered or trading address town/city"
+        },
+        "organizationPostcode": {
+          "type": "string",
+          "description": "gl-bus:organizationPostcode — Registered or trading address postcode"
+        },
+        "organizationTelephone": {
+          "type": "string",
+          "description": "gl-bus:organizationTelephone — Contact telephone number"
         },
         "taxRegistrationNumber": {
           "type": "string",
@@ -123,6 +149,15 @@
           "type": "boolean",
           "default": false,
           "description": "diya-gl: extension — Whether the business is registered under the Construction Industry Scheme (CIS)"
+        },
+        "diya-gl:companiesHouseName": {
+          "type": "string",
+          "description": "diya-gl: extension — The first director's name as filed at Companies House, for the directors' report and CT600 (Company Accounts only)."
+        },
+        "diya-gl:mileageBasis": {
+          "type": "string",
+          "enum": ["actual", "mileage"],
+          "description": "diya-gl: extension — Whether the Taxi Driver return claims actual vehicle costs or the HMRC mileage allowance. Where absent, the calculator compares both and claims the higher, matching the shipped workbook's own comparison."
         }
       }
     },
@@ -292,6 +327,179 @@
       }
     },
 
+    "openingBalances": {
+      "type": "object",
+      "description": "diya-gl: extension — The trial balance brought forward, reverse-engineered today from an opening journal by buildOpeningBalance(); this table lets a book state it directly. Every figure is positive; the balance sheet applies its own sign.",
+      "additionalProperties": false,
+      "properties": {
+        "fixedAssetCost": { "$ref": "#/$defs/assetClassAmounts" },
+        "fixedAssetDepreciation": { "$ref": "#/$defs/assetClassAmounts" },
+        "stock": { "type": "number", "minimum": 0 },
+        "tradeDebtors": { "type": "number", "minimum": 0 },
+        "tradeCreditors": { "type": "number", "minimum": 0 },
+        "longTermDebtors": { "type": "number", "minimum": 0 },
+        "bankAccounts": {
+          "type": "object",
+          "description": "Opening balance per bank account, keyed by the account code declared in accounts.bank.",
+          "patternProperties": {
+            "^[0-9]{4}$": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "payeDue": { "type": "number" },
+        "vatDue": { "type": "number" },
+        "cisDue": { "type": "number" },
+        "netWagesDue": { "type": "number" },
+        "wageDeductionsDue": { "type": "number" },
+        "corporationTaxDue": { "type": "number" },
+        "dividendsDue": { "type": "number" },
+        "directorsLoan": { "type": "number" },
+        "longTermCreditors": { "type": "number" },
+        "shareCapital": { "type": "number", "minimum": 0 },
+        "retainedEarnings": { "type": "number" },
+        "capitalReserves": { "type": "number" }
+      }
+    },
+
+    "stock": {
+      "type": "object",
+      "description": "diya-gl: extension — Opening and closing stock, and the physical count taken at each. materialsPercent is the share of net sales that is direct materials; the Stock sheet's bought and sold columns stay at zero without it.",
+      "additionalProperties": false,
+      "properties": {
+        "openingValue": { "type": "number", "minimum": 0 },
+        "closingValue": { "type": "number", "minimum": 0 },
+        "openingCount": { "type": "number", "minimum": 0 },
+        "closingCount": { "type": "number", "minimum": 0 },
+        "materialsPercent": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+
+    "debtors": {
+      "type": "array",
+      "description": "diya-gl: extension — Named trade debtors at the opening or closing balance sheet date.",
+      "items": { "$ref": "#/$defs/ledgerListing" }
+    },
+
+    "creditors": {
+      "type": "array",
+      "description": "diya-gl: extension — Named trade creditors at the opening or closing balance sheet date.",
+      "items": { "$ref": "#/$defs/ledgerListing" }
+    },
+
+    "fixedAssets": {
+      "type": "array",
+      "description": "diya-gl: extension — The fixed asset register: one entry per asset held at the opening balance sheet date or bought in the year. A capital allowance's balancing allowance on disposal reads taxWrittenDownValue, not accumulatedDepreciation, because the two schedules run at different rates. class is optional: the Basic Sole Trader and Taxi Driver Fixed Assets sheets carry a flat list with no asset-class blocks, unlike the Self Employed and Company Schedule.",
+      "items": {
+        "type": "object",
+        "required": ["assetID", "cost"],
+        "additionalProperties": false,
+        "properties": {
+          "assetID": {
+            "type": "string",
+            "description": "Identifier matched by diya-gl:assetID on the lines that buy or dispose of this asset."
+          },
+          "class": {
+            "type": "string",
+            "enum": ["landBuildings", "plantMachinery", "fixturesFittings", "computerTechnology", "motorVehicles"],
+            "description": "The Schedule block this asset belongs to (Self Employed and Company only)."
+          },
+          "description": { "type": "string" },
+          "cost": { "type": "number", "minimum": 0 },
+          "accumulatedDepreciation": { "type": "number", "minimum": 0 },
+          "taxWrittenDownValue": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Written down value carried forward on the capital allowances computation, brought forward for an asset already held at the opening balance sheet date."
+          },
+          "acquiredDate": { "type": "string", "format": "date" },
+          "depreciationRate": { "type": "number", "minimum": 0, "maximum": 1 },
+          "disposedDate": { "type": "string", "format": "date" },
+          "disposalProceeds": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+
+    "hpAgreements": {
+      "type": "array",
+      "description": "diya-gl: extension — Hire purchase agreements financing an asset over a fixed term. The HPfinance sheet works out its own monthly payment, capital and interest split from these fields.",
+      "items": {
+        "type": "object",
+        "required": ["agreementID", "amountFinanced", "adminCharges", "totalInterest", "termMonths", "startDate"],
+        "additionalProperties": false,
+        "properties": {
+          "agreementID": {
+            "type": "string",
+            "description": "Identifier matched by diya-gl:hpAgreement on the purchase line the agreement finances."
+          },
+          "description": { "type": "string" },
+          "financeCompany": { "type": "string" },
+          "supplier": { "type": "string" },
+          "amountFinanced": { "type": "number", "minimum": 0 },
+          "adminCharges": { "type": "number", "minimum": 0 },
+          "totalInterest": { "type": "number", "minimum": 0 },
+          "termMonths": { "type": "integer", "minimum": 1 },
+          "startDate": { "type": "string", "format": "date" }
+        }
+      }
+    },
+
+    "dividends": {
+      "type": "array",
+      "description": "diya-gl: extension — Dividends the board declared (Company Accounts only). The directors' report and the trial balance both read the declaration; the bank pays it in one or more instalments.",
+      "items": {
+        "type": "object",
+        "required": ["boardMeetingDate", "amount"],
+        "additionalProperties": false,
+        "properties": {
+          "declaredDate": { "type": "string", "format": "date" },
+          "boardMeetingDate": { "type": "string", "format": "date" },
+          "amount": { "type": "number", "minimum": 0 }
+        }
+      }
+    },
+
+    "members": {
+      "type": "array",
+      "description": "diya-gl: extension — The register of members (Company Accounts only). A member is not always a director; directors[] holds the officers.",
+      "items": {
+        "type": "object",
+        "required": ["memberID", "name", "shares"],
+        "additionalProperties": false,
+        "properties": {
+          "memberID": {
+            "type": "string",
+            "description": "Identifier matched by diya-gl:memberID on the dividend payment lines this member receives."
+          },
+          "name": { "type": "string" },
+          "shares": { "type": "integer", "minimum": 0 },
+          "nominalValue": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Nominal value per share. The shipped register currently prices every holding at a single nominal value set for the whole company, so a per-member figure here is not yet read."
+          },
+          "acquiredDate": { "type": "string", "format": "date" }
+        }
+      }
+    },
+
+    "charges": {
+      "type": "array",
+      "description": "diya-gl: extension — Charges and debentures registered over the company's assets (Company Accounts only). Each secures a creditor falling due after more than one year.",
+      "items": {
+        "type": "object",
+        "required": ["valuation"],
+        "additionalProperties": false,
+        "properties": {
+          "chargeDate": { "type": "string", "format": "date" },
+          "description": { "type": "string", "description": "The charged asset, as it reads on the register (e.g. 'Motor vehicles, being the company's delivery van')." },
+          "valuation": { "type": "number", "minimum": 0 },
+          "holder": { "type": "string" },
+          "terms": { "type": "string" },
+          "boardMeetingDate": { "type": "string", "format": "date" }
+        }
+      }
+    },
+
     "tax": {
       "type": "object",
       "description": "Tax rates and thresholds. Values from HMRC published rates for the period. Used by validate and generate commands. Derived from gl-taf tax concepts.",
@@ -343,7 +551,17 @@
             "reducedRate": { "type": "number", "minimum": 0, "maximum": 1 },
             "registrationThreshold": { "type": "number", "minimum": 0 },
             "flatRateScheme": { "type": "boolean", "default": false },
-            "flatRatePercentage": { "type": "number", "minimum": 0, "maximum": 1 }
+            "flatRatePercentage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "staggerGroup": {
+              "type": "integer",
+              "enum": [1, 2, 3],
+              "description": "Which of HMRC's three VAT stagger groups this business's quarters fall on."
+            },
+            "firstPeriodEnd": {
+              "type": "string",
+              "format": "date",
+              "description": "The end date of the first VAT return period the book's data covers, so the return cycle is data rather than inferred from the sheet's own dates."
+            }
           }
         },
 
@@ -436,6 +654,32 @@
           "maximum": 9,
           "description": "diya-gl: extension — VAT return box number (1-9) this account contributes to"
         }
+      }
+    },
+
+    "assetClassAmounts": {
+      "type": "object",
+      "description": "An amount per fixed asset class.",
+      "additionalProperties": false,
+      "properties": {
+        "landBuildings": { "type": "number", "minimum": 0 },
+        "plantMachinery": { "type": "number", "minimum": 0 },
+        "fixturesFittings": { "type": "number", "minimum": 0 },
+        "computerTechnology": { "type": "number", "minimum": 0 },
+        "motorVehicles": { "type": "number", "minimum": 0 }
+      }
+    },
+
+    "ledgerListing": {
+      "type": "object",
+      "description": "One named debtor or creditor balance.",
+      "required": ["counterparty", "amount", "timing"],
+      "additionalProperties": false,
+      "properties": {
+        "counterparty": { "type": "string" },
+        "invoice": { "type": "string" },
+        "amount": { "type": "number", "minimum": 0 },
+        "timing": { "type": "string", "enum": ["opening", "closing"] }
       }
     }
   }

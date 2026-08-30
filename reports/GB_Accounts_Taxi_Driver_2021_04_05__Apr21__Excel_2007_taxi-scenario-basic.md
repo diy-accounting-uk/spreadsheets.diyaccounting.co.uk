@@ -5,6 +5,8 @@ Status: RECONCILES
 
 Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental.
 
+Trade: Owner-driver private hire and taxi services
+
 ## Compliance Checks
 
 | Check | Expected | Actual | Diff | Result |
@@ -106,11 +108,11 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 
 | | Amount |
 |---|------:|
-| Business Name | Basic taxi driver |
-| Description | Description of business |
-| Address | Taxi Driver |
-| Town | — |
-| Postcode | — |
+| Business Name | Basic Taxi Driver |
+| Description | Owner-driver private hire and taxi services |
+| Address | 17 Station Road |
+| Town | Derby |
+| Postcode | DE1 2GH |
 | UTR | — |
 
 ## Profit & Loss Account
@@ -262,9 +264,11 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C5 | Business Name | Basic taxi driver | entityInformation.organizationIdentifier |
-| C7 | Description | Description of business | entityInformation.organizationDescription |
-| C8 | Address | Taxi Driver | gl-bus:organizationAddress |
+| C5 | Business Name | Basic Taxi Driver | entityInformation.organizationIdentifier |
+| C7 | Description | Owner-driver private hire and taxi services | entityInformation.organizationDescription |
+| C8 | Address | 17 Station Road | entityInformation.organizationAddressLine |
+| C10 | Town | Derby | entityInformation.organizationTown |
+| C12 | Postcode | DE1 2GH | entityInformation.organizationPostcode |
 
 ### Profit & Loss Acc
 
@@ -379,9 +383,9 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | E6 | Less: Personal Allowance | 12500 | tax.incomeTax.personalAllowance |
 | E7 | Taxable Income | 15700 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
-| C9 | Basic band ceiling the sheet applies | 37500 | tax.incomeTax.basicBandEnd (applied) |
+| C9 | Basic band ceiling the sheet applies | 37500 | tax.incomeTax.basicRateLimit (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| C10 | Additional rate threshold the sheet applies | 150000 | tax.incomeTax.higherBandEnd (applied) |
+| C10 | Additional rate threshold the sheet applies | 150000 | tax.incomeTax.higherRateThreshold (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E8 | Tax at Basic Rate | 3140 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
@@ -415,13 +419,13 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | I2 | Vehicle running costs for the year | 4980 | accounts.purchases (vehicleRunningCosts) |
-| T1 | Vehicle purchases capitalised | 8000 | accounts.assets.fixedAssets (purchased) |
+| T1 | Vehicle purchases capitalised | 8000 | fixedAssets (purchased, year total) |
 
 ### Fixed Assets
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D47 | New Asset Cost (Vehicle under £12,000) | 8000 | accounts.assets.fixedAssets (cost) |
+| D47 | New Asset Cost (Vehicle under £12,000) | 8000 | fixedAssets[0].cost |
 | I1 | Total Annual Investment Allowance | 0 | tax.capitalAllowances.aia (schedule) |
 | J1 | Total Writing Down Allowance | 1440 | tax.capitalAllowances.wda (schedule) |
 | P1 | Total Capital Allowance on Disposal | 0 | tax.capitalAllowances.disposals (schedule) |
@@ -436,20 +440,20 @@ Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a v
 | N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
 | N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
-| M11 | Basic Band End | 37500 | tax.incomeTax.basicBandEnd |
-| N12 | Higher Band Start | 37501 | tax.incomeTax.higherBandStart |
-| N13 | Higher Band End | 150000 | tax.incomeTax.higherBandEnd |
+| M11 | Basic Band End | 37500 | tax.incomeTax.basicRateLimit |
+| N12 | Higher Band Start | 37501 | tax.incomeTax.basicRateLimit (+1) |
+| N13 | Higher Band End | 150000 | tax.incomeTax.higherRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 3.05 | tax.nationalInsurance.class2WeeklyRate |
-| L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerLimit |
+| L20 | NI Class 4 Lower Rate | 0.09 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 9500 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50000 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
+| N23 | NI Class 4 Upper Limit | 50000 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
+| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.mainRateWDA |
 | E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
 | G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 85000 | tax.vat.registrationThreshold |

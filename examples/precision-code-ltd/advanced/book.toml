@@ -10,12 +10,49 @@ entriesComment = "Subset: advanced — extracted from Precision Code Ltd master 
 [entityInformation]
 organizationIdentifier = "Precision Code Trading"
 organizationDescription = "IT consultancy (sole trader adaptation)"
+organizationAddressLine = "123 High Street"
+organizationTown = "Manchester"
+organizationPostcode = "M1 1AA"
+organizationTelephone = "0161 555 0100"
 taxRegistrationNumber = "1234567890"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "SelfEmployed"
 "diya-gl:vatRegistered" = true
 "diya-gl:basisOfAccounting" = "cash"
 "diya-gl:vatNumber" = "123456789"
+
+[[employees]]
+employeeID = "EMP001"
+name = "Alice Johnson"
+role = "Senior Developer"
+grossPay = 3500.00
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2024-01-15
+isDirector = false
+
+[[employees]]
+employeeID = "EMP002"
+name = "Bob Williams"
+role = "Support Technician"
+grossPay = 2200.00
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2024-06-01
+isDirector = false
+
+[[employees]]
+employeeID = "EMP003"
+name = "Carol Smith"
+role = "Director"
+grossPay = 1048.00
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+startDate = 2020-01-01
+isDirector = true
 
 [accounts.sales."4000"]
 accountMainDescription = "Product A - Consultancy"
@@ -141,68 +178,176 @@ accountType = "bank"
 accountMainDescription = "Cash account"
 accountType = "bank"
 
+[accounts.assets."0010"]
+accountMainDescription = "Plant and machinery"
+
+[accounts.assets."0020"]
+accountMainDescription = "Fixtures and fittings"
+
+[accounts.assets."0030"]
+accountMainDescription = "Computer equipment"
+
+[accounts.assets."0040"]
+accountMainDescription = "Motor vehicles"
+
+[stock]
+openingValue = 10000.00
+closingValue = 6000.00
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-0901"
+amount = 7200.00
+timing = "opening"
+
+[[debtors]]
+counterparty = "Beta Systems"
+invoice = "INV-0902"
+amount = 1200.00
+timing = "opening"
+
+[[debtors]]
+counterparty = "Gamma Ltd"
+invoice = "INV-0903"
+amount = 2400.00
+timing = "opening"
+
+[[debtors]]
+counterparty = "Acme Corp"
+invoice = "INV-1012"
+amount = 6100.00
+timing = "closing"
+
+[[debtors]]
+counterparty = "WidgetWorks"
+invoice = "INV-2104"
+amount = 1440.00
+timing = "closing"
+
+[[debtors]]
+counterparty = "Zeta Corp"
+invoice = "CN-1801"
+amount = 360.00
+timing = "closing"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2403"
+amount = 1200.00
+timing = "opening"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2403"
+amount = 300.00
+timing = "opening"
+
+[[creditors]]
+counterparty = "TechParts Ltd"
+invoice = "TP-2403"
+amount = 600.00
+timing = "opening"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2403"
+amount = 120.00
+timing = "opening"
+
+[[creditors]]
+counterparty = "WorkSpace Ltd"
+invoice = "WS-2603"
+amount = 1200.00
+timing = "closing"
+
+[[creditors]]
+counterparty = "Smith & Co"
+invoice = "SC-2603"
+amount = 300.00
+timing = "closing"
+
+[[creditors]]
+counterparty = "BT Business"
+invoice = "BT-2603"
+amount = 60.00
+timing = "closing"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2603"
+amount = 150.00
+timing = "closing"
+
+[[fixedAssets]]
+assetID = "LTD-FA-1"
+class = "motorVehicles"
+description = "Van (2.5 years old)"
+cost = 30000.00
+accumulatedDepreciation = 9828.00
+taxWrittenDownValue = 24000.00
+
+[[fixedAssets]]
+assetID = "LTD-FA-2"
+class = "computerTechnology"
+description = "Laptop (0.5 years old)"
+cost = 3000.00
+accumulatedDepreciation = 270.00
+
+[[hpAgreements]]
+agreementID = "HP-2025-01"
+financeCompany = "Close Brothers Asset Finance"
+supplier = "Precision Tooling Supplies"
+amountFinanced = 13000.00
+adminCharges = 200.00
+totalInterest = 1800.00
+termMonths = 20
+startDate = 2025-06-01
+
+[[hpAgreements]]
+agreementID = "HP-2025-02"
+financeCompany = "Close Brothers Asset Finance"
+supplier = "Precision Tooling Supplies"
+amountFinanced = 7000.00
+adminCharges = 100.00
+totalInterest = 1000.00
+termMonths = 20
+startDate = 2025-09-01
+
 [tax.incomeTax]
-personalAllowance = 12570
-basicRate = 0.2
-basicRateLimit = 37700
-higherRate = 0.4
-higherRateThreshold = 50270
-additionalRate = 0.45
-additionalRateThreshold = 125140
-personalAllowanceTaperThreshold = 100000
+personalAllowance = 12570.00
+personalAllowanceTaperThreshold = 100000.00
+basicRate = 0.2000
+basicRateLimit = 37700.00
+higherRate = 0.4000
+higherRateThreshold = 50270.00
+additionalRate = 0.4500
+additionalRateThreshold = 125140.00
 
 [tax.nationalInsurance]
-class1EmployeeMainRate = 0.08
-class1EmployeeUpperRate = 0.02
-class1EmployeePrimaryThreshold = 12570
-class1EmployeeUpperEarningsLimit = 50270
-class1EmployerRate = 0.15
-class1EmployerSecondaryThreshold = 5000
-employmentAllowance = 10500
+class2WeeklyRate = 3.45
+class2SmallProfitsThreshold = 6725.00
+class4MainRate = 0.0600
+class4UpperRate = 0.0200
+class4LowerProfits = 12570.00
+class4UpperProfits = 50270.00
+class1EmployeeMainRate = 0.0800
+class1EmployeeUpperRate = 0.0200
+class1EmployeePrimaryThreshold = 12570.00
+class1EmployeeUpperEarningsLimit = 50270.00
+class1EmployerRate = 0.1500
+class1EmployerSecondaryThreshold = 5000.00
+employmentAllowance = 10500.00
 
 [tax.vat]
-standardRate = 0.2
-reducedRate = 0.05
-registrationThreshold = 90000
+standardRate = 0.2000
+reducedRate = 0.0500
+registrationThreshold = 90000.00
 
 [tax.capitalAllowances]
-annualInvestmentAllowance = 1000000
-mainRateWDA = 0.18
-specialRateWDA = 0.06
+annualInvestmentAllowance = 1000000.00
+mainRateWDA = 0.1800
+specialRateWDA = 0.0600
 
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
-
-[[employees]]
-employeeID = "EMP001"
-name = "Alice Johnson"
-role = "Senior Developer"
-grossPay = 3500
-payFrequency = "monthly"
-taxCode = "1257L"
-niCategory = "A"
-startDate = 2024-01-15
-isDirector = false
-
-[[employees]]
-employeeID = "EMP002"
-name = "Bob Williams"
-role = "Support Technician"
-grossPay = 2200
-payFrequency = "monthly"
-taxCode = "1257L"
-niCategory = "A"
-startDate = 2024-06-01
-isDirector = false
-
-[[employees]]
-employeeID = "EMP003"
-name = "Carol Smith"
-role = "Director"
-grossPay = 1048
-payFrequency = "monthly"
-taxCode = "1257L"
-niCategory = "A"
-startDate = 2020-01-01
-isDirector = true

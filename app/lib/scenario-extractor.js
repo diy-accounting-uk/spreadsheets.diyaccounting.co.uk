@@ -97,6 +97,60 @@ export const SE_PURCHASE_CODE_MAP = {
   5100: "w", // directors wages -> employee wages in SE
 };
 
+// The Taxi Driver masters keep a chart of their own: 5100 is fuel where the
+// builder's chart above has employee wages, and the capital account is 7000
+// rather than 5900. A taxi book's code letters are therefore read off this
+// map, never the ones above -- same account number, different account.
+export const TAXI_PURCHASE_CODE_MAP = {
+  5100: "d", // Fuel
+  5200: "h", // Car hire
+  5300: "r", // Repairs and maintenance
+  5400: "t", // Road tax and insurance
+  5500: "e", // Employee costs
+  5600: "p", // Premises costs
+  5700: "g", // General admin
+  5800: "a", // Advertising
+  5900: "l", // Legal and professional
+  6000: "i", // Interest
+  6100: "b", // Bank charges
+  6200: "o", // Other expenses
+  7000: "f", // Fixed assets
+};
+
+// The same taxi chart read onto the Basic Sole Trader package's 14 codes,
+// which has no fare-trade column: fuel is motor expense, and road tax,
+// insurance and bank charges land in the columns BST does keep.
+export const TAXI_BST_PURCHASE_CODE_MAP = {
+  5100: "m", // Fuel -> Motor
+  5200: "m", // Car hire -> Motor
+  5300: "r", // Repairs
+  5400: "o", // Road tax and insurance -> Other
+  5500: "e", // Employee costs
+  5600: "p", // Premises
+  5700: "g", // General admin
+  5800: "a", // Advertising
+  5900: "l", // Legal
+  6000: "i", // Interest
+  6100: "b", // Bank charges
+  6200: "o", // Other
+  7000: "f", // Fixed assets
+};
+
+/**
+ * Hold a purchase code map to the chart of accounts the book declares, so a
+ * master that adds an account cannot quietly drop that account's spend out
+ * of every fixture it feeds.
+ * @param {Object} book - parsed book.toml
+ * @param {Object} purchaseCodeMap - accountMainID -> code letter
+ * @param {string} mapName - the map's name, for the error message
+ */
+export function assertPurchaseCodesCoverChart(book, purchaseCodeMap, mapName) {
+  const unmapped = Object.keys(book.accounts.purchases || {}).filter((code) => purchaseCodeMap[code] === undefined);
+  if (unmapped.length > 0) {
+    throw new Error(`${mapName} has no code letter for purchase account${unmapped.length > 1 ? "s" : ""} ${unmapped.join(", ")}`);
+  }
+}
+
 // Month mapping: JS month (0-indexed) -> scenario key
 export const MONTH_NAMES = {
   3: "apr",
@@ -207,6 +261,67 @@ export function buildOpeningBalance(lines) {
   if (Object.keys(cost).length > 0) balance.fixed_asset_cost = cost;
   if (Object.keys(depreciation).length > 0) balance.fixed_asset_depreciation = depreciation;
   return balance;
+}
+
+// buildOpeningBalance()'s keys, snake_case and grouped by scenario concept,
+// against the diya-gl book v2 openingBalances field they become. The four
+// bank accounts fold into one bankAccounts table keyed by account code,
+// because that is how a book declares more than one without inventing a
+// name for each.
+const OPENING_BALANCE_V2_SCALARS = {
+  stock: "stock",
+  trade_debtors: "tradeDebtors",
+  trade_creditors: "tradeCreditors",
+  long_term_debtors: "longTermDebtors",
+  long_term_creditors: "longTermCreditors",
+  net_wages_due: "netWagesDue",
+  wage_deductions_due: "wageDeductionsDue",
+  vat_due: "vatDue",
+  corporation_tax: "corporationTaxDue",
+  paye_due: "payeDue",
+  cis_due: "cisDue",
+  directors_loan: "directorsLoan",
+  share_capital: "shareCapital",
+  retained_earnings: "retainedEarnings",
+  dividends_due: "dividendsDue",
+  capital_reserves: "capitalReserves",
+};
+
+const OPENING_BALANCE_V2_BANK_ACCOUNTS = { current_account: "1200", savings_account: "1210", cash: "1220", credit_card: "1230" };
+
+const OPENING_BALANCE_V2_ASSET_CLASSES = {
+  plant_machinery: "plantMachinery",
+  fixtures_fittings: "fixturesFittings",
+  computer_technology: "computerTechnology",
+  motor_vehicles: "motorVehicles",
+  land_buildings: "landBuildings",
+};
+
+function assetClassAmountsV2(amounts) {
+  const out = {};
+  for (const [key, value] of Object.entries(amounts || {})) out[OPENING_BALANCE_V2_ASSET_CLASSES[key]] = value;
+  return out;
+}
+
+/**
+ * Convert buildOpeningBalance()'s snake_case scenario shape into the
+ * diya-gl book v2 openingBalances table.
+ * @param {Object} balance - the object buildOpeningBalance() returns
+ * @returns {Object} openingBalances, in book v2's own field names
+ */
+export function toV2OpeningBalances(balance) {
+  const openingBalances = {};
+  for (const [key, v2key] of Object.entries(OPENING_BALANCE_V2_SCALARS)) {
+    if (balance[key] !== undefined) openingBalances[v2key] = balance[key];
+  }
+  const bankAccounts = {};
+  for (const [key, code] of Object.entries(OPENING_BALANCE_V2_BANK_ACCOUNTS)) {
+    if (balance[key] !== undefined) bankAccounts[code] = balance[key];
+  }
+  if (Object.keys(bankAccounts).length > 0) openingBalances.bankAccounts = bankAccounts;
+  if (balance.fixed_asset_cost) openingBalances.fixedAssetCost = assetClassAmountsV2(balance.fixed_asset_cost);
+  if (balance.fixed_asset_depreciation) openingBalances.fixedAssetDepreciation = assetClassAmountsV2(balance.fixed_asset_depreciation);
+  return openingBalances;
 }
 
 // ============================================================================
@@ -381,6 +496,67 @@ export function seDrawingsFromDividends(lines) {
   );
 }
 
+// A sole trader is not his own employee, so the sole trader adaptation of a
+// company book drops the directors' payroll and pays the proprietor by
+// drawings instead.
+export function withoutDirectorPayroll(lines, book) {
+  const directorIds = new Set((book.employees || []).filter((employee) => employee.isDirector).map((employee) => employee.employeeID));
+  return lines.filter((line) => !(line.sourceJournalID === "payroll" && directorIds.has(line["diya-gl:employeeID"])));
+}
+
+/**
+ * Total a sales journal by calendar month, banked on the day of the month's
+ * last taking. The Basic Sole Trader package has one sales row a line and no
+ * room for a year of daily fares, so a takings book reaches it as a monthly
+ * banking.
+ *
+ * @param {Array} salesLines - the sales journal, in date order
+ * @returns {Array} {date, amount}, one entry a month, oldest first
+ */
+export function monthlySalesTotals(salesLines) {
+  const months = new Map();
+  for (const line of salesLines) {
+    const month = line.postingDate.slice(0, 7);
+    const running = months.get(month) || { date: line.postingDate, amount: 0 };
+    running.date = line.postingDate > running.date ? line.postingDate : running.date;
+    running.amount = Math.round((running.amount + line.amount) * 100) / 100;
+    months.set(month, running);
+  }
+  return [...months.keys()].sort().map((month) => months.get(month));
+}
+
+// A taxi sheet takes the day's gross takings and nothing else: its Sales rows
+// carry a pre-filled date and one amount cell, with no customer or analysis
+// code to write.
+export function takingsOnlySales(grouped) {
+  for (const month of Object.keys(grouped.sales)) {
+    grouped.sales[month] = grouped.sales[month].map((txn) => ({ date: txn.date, amount: txn.amount }));
+  }
+  return grouped;
+}
+
+/**
+ * The in-year capital purchases, as the Fixed Assets schedule takes them.
+ * A purchase coded to the capital column capitalises out of the profit and
+ * loss account; registering the same purchase on the schedule is what earns
+ * it its allowance.
+ *
+ * @param {Array} lines - the filtered lines for one subset
+ * @param {Object} purchaseCodeMap - accountMainID -> code letter
+ * @param {string} capitalCode - the code letter the schedule reads
+ * @returns {Array} {date, description, reference, cost}
+ */
+export function fixedAssetAdditions(lines, purchaseCodeMap, capitalCode) {
+  return lines
+    .filter((line) => line.sourceJournalID === "purchases" && purchaseCodeMap[line.accountMainID] === capitalCode)
+    .map((line) => ({
+      date: line.postingDate,
+      description: line.lineItemComment,
+      reference: line.documentReference,
+      cost: line.amount,
+    }));
+}
+
 /**
  * Group the master book's payroll journal lines into a month-keyed structure
  * matching what se.js/ltd.js cellWrites() expects on scenario.payroll: one
@@ -419,7 +595,22 @@ export function buildPayroll(lines) {
 // hire purchase agreement.
 export const CIS_DEDUCTION_FIELD = "diya-gl:cisDeduction";
 
-export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true } = {}) {
+// carriesSourceFields keeps the fields a transaction sheet has a column for
+// but the fixture TOMLs do not state: the line's own accountMainID, its
+// invoice reference and its description. Several accounts share one code
+// letter, so the letter the analysis columns key on cannot say which account
+// a row came from; a writer that has the account puts it on the sheet and the
+// exporter reads the identity back rather than guessing. Off by default,
+// because the fixture TOMLs carry none of the three.
+// The Basic Sole Trader and Taxi Driver sheets keep a payment column beside
+// each entry, which reads Bank or Cash. Every other way of settling reaches
+// the bank, so only a line settled in cash reads Cash.
+function paymentLabel(line) {
+  if (!line.paymentMethod) return undefined;
+  return line.paymentMethod === "cash" ? "Cash" : "Bank";
+}
+
+export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true, carriesSourceFields = false, carriesPaymentLabels = false } = {}) {
   const sales = {};
   const purchases = {};
   const bank = {};
@@ -431,12 +622,19 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
       const code = LTD_SALES_CODE_MAP[line.accountMainID];
       if (!code) continue;
       if (!sales[month]) sales[month] = [];
-      sales[month].push({
+      const sale = {
         date: line.postingDate,
         customer: line.detailComment,
         code,
         amount: line.amount,
-      });
+      };
+      if (carriesSourceFields) {
+        sale.account = line.accountMainID;
+        if (line.documentReference) sale.reference = line.documentReference;
+        if (line.lineItemComment) sale.description = line.lineItemComment;
+      }
+      if (carriesPaymentLabels) sale.payment = paymentLabel(line);
+      sales[month].push(sale);
     } else if (line.sourceJournalID === "purchases") {
       const code = purchaseCodeMap[line.accountMainID];
       if (!code) continue;
@@ -447,6 +645,12 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
         code,
         amount: line.amount,
       };
+      if (carriesSourceFields) {
+        purchase.account = line.accountMainID;
+        if (line.documentReference) purchase.reference = line.documentReference;
+        if (line.lineItemComment) purchase.description = line.lineItemComment;
+      }
+      if (carriesPaymentLabels) purchase.payment = paymentLabel(line);
       if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) purchase.cis_deduction = line[CIS_DEDUCTION_FIELD];
       purchases[month].push(purchase);
     } else if (line.sourceJournalID === "bank") {
@@ -472,6 +676,70 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
 }
 
 // ============================================================================
+// Expected figures
+// ============================================================================
+
+/**
+ * Total a subset's purchase journal by the code letter each account maps to.
+ * @param {Array} lines - the filtered lines for one subset
+ * @param {Object} purchaseCodeMap - accountMainID -> code letter
+ * @returns {Object} code letter -> total spend
+ */
+export function totalsByCode(lines, purchaseCodeMap) {
+  const totals = {};
+  for (const line of lines) {
+    if (line.sourceJournalID !== "purchases") continue;
+    const code = purchaseCodeMap[line.accountMainID];
+    if (!code) continue;
+    totals[code] = Math.round(((totals[code] || 0) + line.amount) * 100) / 100;
+  }
+  return totals;
+}
+
+// The Basic Sole Trader profit and loss account's expense columns. Stock (s),
+// direct costs (d) and fixed assets (f) are not among them: the first two are
+// cost of sales and the third capitalises out of the account altogether.
+const BST_EXPENSE_CODES = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
+
+/**
+ * The figures a Basic Sole Trader scenario expects its recalculated package
+ * to publish, worked out from the journals and the stock the book declares.
+ * A column the trade never used carries no expectation, because a total the
+ * business does not have is not a figure worth checking.
+ *
+ * @param {Array} lines - the BST subset's lines
+ * @param {Object} stock - the book's stock table, or undefined
+ * @param {Object} purchaseCodeMap - the chart's account-to-code map
+ * @returns {Object} the [expected] figures, in scenario key names
+ */
+export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_CODE_MAP) {
+  const totalSales = computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales"));
+  const byCode = totalsByCode(lines, purchaseCodeMap);
+  const stockAdjustment = stock ? stock.openingValue - stock.closingValue : 0;
+  const grossProfit = totalSales - ((byCode.s || 0) + stockAdjustment) - (byCode.d || 0);
+  const netProfit = grossProfit - BST_EXPENSE_CODES.reduce((total, code) => total + (byCode[code] || 0), 0);
+
+  const figures = { total_sales: totalSales, gross_profit: Math.round(grossProfit), net_profit: Math.round(netProfit) };
+  if (byCode.p) figures.total_premises = Math.round(byCode.p);
+  if (byCode.g) figures.total_gen_admin = Math.round(byCode.g);
+  if (byCode.l) figures.total_legal = Math.round(byCode.l);
+  if (stock) {
+    figures.opening_stock = stock.openingValue;
+    figures.closing_stock = stock.closingValue;
+  }
+  return figures;
+}
+
+// A Taxi Driver scenario states its takings and nothing else it earns.
+// The package's profit turns on the writing down allowance the year's tax
+// data carries, which is 18% in one year and 14% in the next, and one
+// fixture is reconciled against every year's package, so a profit stated
+// here would be wrong for every year but its own.
+export function taxiExpectedFigures(lines) {
+  return { total_sales: computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales")) };
+}
+
+// ============================================================================
 // Format TOML output
 // ============================================================================
 
@@ -483,6 +751,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
   parts.push(`description = "${escapeTomlString(metadata.description)}"`);
   parts.push(`product = "${metadata.product}"`);
   parts.push(`tax_regime = "${metadata.tax_regime}"`);
+  if (metadata.vat_registered !== undefined) parts.push(`vat_registered = ${metadata.vat_registered}`);
   parts.push("");
 
   // Business details
@@ -500,6 +769,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push("[[employees]]");
       parts.push(`employeeID = "${emp.employeeID}"`);
       parts.push(`name = "${escapeTomlString(emp.name)}"`);
+      if (emp.niNumber) parts.push(`niNumber = "${emp.niNumber}"`);
       if (emp.role) parts.push(`role = "${escapeTomlString(emp.role)}"`);
       parts.push(`grossPay = ${emp.grossPay}`);
       parts.push(`payFrequency = "${emp.payFrequency}"`);
@@ -517,7 +787,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push("[[members]]");
       parts.push(`name = "${escapeTomlString(member.name)}"`);
       parts.push(`shares = ${member.shares}`);
-      parts.push(`acquired = ${member.acquired}`);
+      if (member.acquired) parts.push(`acquired = ${member.acquired}`);
       parts.push("");
     }
   }
@@ -529,9 +799,13 @@ export function formatScenarioToml(metadata, grouped, expected) {
     for (const txn of txns) {
       parts.push(`[[sales.${month}]]`);
       parts.push(`date = ${txn.date}`);
-      parts.push(`customer = "${escapeTomlString(txn.customer)}"`);
-      parts.push(`code = "${txn.code}"`);
+      if (txn.customer) parts.push(`customer = "${escapeTomlString(txn.customer)}"`);
+      if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
+      if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+      if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
+      if (txn.code) parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
+      if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
   }
@@ -544,9 +818,13 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`[[purchases.${month}]]`);
       parts.push(`date = ${txn.date}`);
       parts.push(`supplier = "${escapeTomlString(txn.supplier)}"`);
+      if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
+      if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+      if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
       parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
       if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
+      if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
   }
@@ -772,6 +1050,8 @@ export function formatScenarioToml(metadata, grouped, expected) {
   if (expected.total_motor_net !== undefined) parts.push(`total_motor_net = ${expected.total_motor_net}`);
   if (expected.total_legal_net !== undefined) parts.push(`total_legal_net = ${expected.total_legal_net}`);
   if (expected.total_premises_net !== undefined) parts.push(`total_premises_net = ${expected.total_premises_net}`);
+  if (expected.vat_output_total !== undefined) parts.push(`vat_output_total = ${expected.vat_output_total}`);
+  if (expected.vat_input_total !== undefined) parts.push(`vat_input_total = ${expected.vat_input_total}`);
   if (expected.fixed_asset_additions) {
     const totalCost = expected.fixed_asset_additions.reduce((s, a) => s + a.cost, 0);
     parts.push(`fixed_asset_cost = ${totalCost}`);
@@ -797,6 +1077,11 @@ export function seAccountFilter(accounts) {
     sales: { ...accounts.sales },
     purchases: Object.fromEntries(Object.entries(accounts.purchases).filter(([k]) => SE_PURCHASE_CODE_MAP[k] !== undefined)),
     bank: Object.fromEntries(Object.entries(accounts.bank).filter(([k]) => SE_BANK_ACCOUNTS.has(k))),
+    // The SE subset's opening journal carries computer and motor vehicle
+    // fixed asset lines (see filterAdvanced's isOpeningBalanceLine branch),
+    // so the accounts those lines post to have to be declared too, or the
+    // subset's own chart of accounts falls short of its own lines.jsonl.
+    assets: Object.fromEntries(Object.entries(accounts.assets || {}).filter(([k]) => OPENING_FIXED_ASSET_CLASSES[k] !== undefined)),
   };
 }
 
@@ -808,94 +1093,35 @@ export function fullAccountFilter(accounts) {
 // diya-gl subset book.toml builder
 // ============================================================================
 
-export function buildSubsetBookToml(book, dirName, productEnum, taxSections, accountFilter) {
-  const subBook = [];
-  subBook.push("[documentInfo]");
-  subBook.push(`entriesType = "journal"`);
-  subBook.push(`language = "en"`);
-  subBook.push(`creationDate = ${book.documentInfo.creationDate.toISOString().slice(0, 10)}`);
-  subBook.push(`periodCoveredStart = ${book.documentInfo.periodCoveredStart.toISOString().slice(0, 10)}`);
-  subBook.push(`periodCoveredEnd = ${book.documentInfo.periodCoveredEnd.toISOString().slice(0, 10)}`);
-  subBook.push(`defaultCurrency = "GBP"`);
-  subBook.push(`entriesComment = "Subset: ${dirName} — extracted from Precision Code Ltd master data"`);
-  subBook.push("");
-
-  subBook.push("[entityInformation]");
-  if (productEnum === "Company") {
-    subBook.push(`organizationIdentifier = "${book.entityInformation.organizationIdentifier}"`);
-    subBook.push(`organizationDescription = "${book.entityInformation.organizationDescription}"`);
-  } else {
-    subBook.push(`organizationIdentifier = "Precision Code Trading"`);
-    subBook.push(`organizationDescription = "IT consultancy (sole trader adaptation)"`);
+/**
+ * Build one product subset's diya-gl book from the master book: the same
+ * accounting period and chart, narrowed to the accounts and tax sections the
+ * product carries, under the identity the subset trades as.
+ *
+ * The result is a plain book object, which canonicalBookToml renders. Its
+ * field order and its money formatting then come from the published schema
+ * rather than from this module.
+ *
+ * @param {Object} book - the parsed master book.toml
+ * @param {Object} subset - subsetName, entity, taxSections, accountFilter, and the registers the product carries
+ * @returns {Object} a book in the diya-gl v2 shape
+ */
+export function buildSubsetBook(book, { subsetName, entity, taxSections, accountFilter, directors, employees, tables = {} }) {
+  const subsetBook = {
+    documentInfo: {
+      ...book.documentInfo,
+      entriesComment: `Subset: ${subsetName} — extracted from ${book.entityInformation.organizationIdentifier} master data`,
+    },
+    entityInformation: entity,
+    accounts: accountFilter(book.accounts),
+    tax: Object.fromEntries(taxSections.filter((section) => book.tax[section]).map((section) => [section, book.tax[section]])),
+  };
+  if (directors) subsetBook.directors = directors;
+  if (employees) subsetBook.employees = employees;
+  for (const [table, value] of Object.entries(tables)) {
+    if (value !== undefined) subsetBook[table] = value;
   }
-  subBook.push(`taxRegistrationNumber = "${book.entityInformation.taxRegistrationNumber}"`);
-  subBook.push(`taxAuthorityIdentifier = "HMRC"`);
-  subBook.push(`"diya-gl:product" = "${productEnum}"`);
-  const vatReg = productEnum !== "BasicSoleTrader";
-  subBook.push(`"diya-gl:vatRegistered" = ${vatReg}`);
-  subBook.push(`"diya-gl:basisOfAccounting" = "${productEnum === "Company" ? "accrual" : "cash"}"`);
-  if (productEnum === "Company") {
-    subBook.push(`"diya-gl:companyNumber" = "12345678"`);
-    subBook.push(`"diya-gl:vatNumber" = "123456789"`);
-    subBook.push(`"diya-gl:cisRegistered" = true`);
-  } else if (vatReg) {
-    subBook.push(`"diya-gl:vatNumber" = "123456789"`);
-  }
-  subBook.push("");
-
-  // Write accounts from master book, filtered
-  const sections = accountFilter(book.accounts);
-  for (const [sectionName, accounts] of Object.entries(sections)) {
-    for (const [code, def] of Object.entries(accounts)) {
-      subBook.push(`[accounts.${sectionName}."${code}"]`);
-      subBook.push(`accountMainDescription = "${def.accountMainDescription}"`);
-      if (def.accountType) subBook.push(`accountType = "${def.accountType}"`);
-      if (def["diya-gl:column"]) subBook.push(`"diya-gl:column" = "${def["diya-gl:column"]}"`);
-      subBook.push("");
-    }
-  }
-
-  // Tax sections
-  for (const section of taxSections) {
-    if (book.tax[section]) {
-      subBook.push(`[tax.${section}]`);
-      for (const [k, v] of Object.entries(book.tax[section])) {
-        subBook.push(`${k} = ${v}`);
-      }
-      subBook.push("");
-    }
-  }
-
-  // Directors (Company only)
-  if (productEnum === "Company" && book.directors) {
-    for (const dir of book.directors) {
-      subBook.push("[[directors]]");
-      subBook.push(`name = "${dir.name}"`);
-      subBook.push(`role = "${dir.role}"`);
-      if (dir.shares !== undefined) subBook.push(`shares = ${dir.shares}`);
-      subBook.push(`appointed = ${dir.appointed.toISOString().slice(0, 10)}`);
-      subBook.push("");
-    }
-  }
-
-  // Employees (SE + Company)
-  if (productEnum !== "BasicSoleTrader" && book.employees) {
-    for (const emp of book.employees) {
-      subBook.push("[[employees]]");
-      subBook.push(`employeeID = "${emp.employeeID}"`);
-      subBook.push(`name = "${emp.name}"`);
-      subBook.push(`role = "${emp.role}"`);
-      subBook.push(`grossPay = ${emp.grossPay}`);
-      subBook.push(`payFrequency = "${emp.payFrequency}"`);
-      subBook.push(`taxCode = "${emp.taxCode}"`);
-      subBook.push(`niCategory = "${emp.niCategory}"`);
-      subBook.push(`startDate = ${emp.startDate.toISOString().slice(0, 10)}`);
-      subBook.push(`isDirector = ${emp.isDirector}`);
-      subBook.push("");
-    }
-  }
-
-  return subBook.join("\n");
+  return subsetBook;
 }
 
 // ============================================================================

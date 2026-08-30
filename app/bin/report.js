@@ -13,6 +13,13 @@
 //   --mode saved       (default) Read xlsx cell values as-is from XML. No LibreOffice needed.
 //   --mode recalculate Run xls roundtrip first, then read. Requires LibreOffice.
 //   --data <dir>       Compute reports from diya-gl data via JS engine. No Excel needed.
+//
+// Either mode writes report.json beside the markdown: R, the canonical
+// document verify-roundtrip.js scores. --data also writes its own input to
+// data/ in canonical form, so the output directory is a whole (data, report)
+// tuple. Passing --data alongside --source-dir gives the Excel run the same
+// scenario the JS run has, which is what lets it publish compliance verdicts
+// the two sides can be compared on.
 
 import { parse as parseTOML } from "smol-toml";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
@@ -21,7 +28,9 @@ import { fileURLToPath } from "url";
 import { readXlsxCellValues, readMultiFileXlsxCellValues, readMultiFileAdditionalXlsxCellValues, findXlsx } from "../lib/xlsx-reader.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { generateSectionReports } from "../lib/report-generator.js";
+import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
 import { loadDiyaGlData, extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import * as bst from "../products/bst.js";
@@ -73,6 +82,15 @@ function parseArgs(argv) {
   return { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg };
 }
 
+// R, the canonical report document, beside the markdown. Both engines write
+// it through the one serializer, so verify-roundtrip.js joins them on a key
+// rather than on a rendered table row.
+function writeReportJson(outputDir, options) {
+  const document = buildReportDocument(options);
+  writeFileSync(resolve(outputDir, "report.json"), serializeReportDocument(document));
+  console.log(`  Written: report.json (${document.values.length} values)`);
+}
+
 async function main() {
   const { packageName, sourceDir, outputDir, mode, dataDir, offset, years, yearEndArg } = parseArgs(process.argv);
 
@@ -82,7 +100,9 @@ async function main() {
     process.exit(1);
   }
 
-  if (dataDir) {
+  // --data alone computes the report; --data beside --source-dir only lends
+  // the Excel run its scenario, so the workbook stays the source of values.
+  if (dataDir && !sourceDir) {
     console.log(`=== report.js (diya-gl mode) ===`);
     console.log(`Package:    ${packageName}`);
     console.log(`Data:       ${resolve(dataDir)}`);
@@ -131,6 +151,27 @@ async function main() {
       writeFileSync(resolve(resolvedOutputDir, filename), content);
       console.log(`  Written: ${filename}`);
     }
+
+    writeReportJson(resolvedOutputDir, {
+      packageName,
+      engine: "js",
+      results,
+      productMod,
+      scenario: mergedScenario,
+      checks,
+      scenarioName: book.documentInfo?.entriesComment,
+      yearEnd,
+    });
+
+    // The JS engine never lets D out of memory, so the data half of its
+    // tuple is an identity. Writing it here is not evidence: it is the
+    // canonical form of the fixture, which is the side the Excel export
+    // gets measured against.
+    const dataDirOut = resolve(resolvedOutputDir, "data");
+    mkdirSync(dataDirOut, { recursive: true });
+    writeFileSync(resolve(dataDirOut, "book.toml"), canonicalBookToml(book));
+    writeFileSync(resolve(dataDirOut, "lines.jsonl"), canonicalLinesJsonl(lines));
+    console.log(`  Written: data/book.toml, data/lines.jsonl (${lines.length} lines)`);
 
     console.log(`\n${Object.keys(sectionReports).length} report files written to ${resolvedOutputDir}`);
     return;
@@ -200,11 +241,46 @@ async function main() {
   const resolvedOutputDir = resolve(outputDir);
   mkdirSync(resolvedOutputDir, { recursive: true });
 
-  const sectionReports = generateSectionReports(results, productMod);
+  // The Excel read set on its own carries no scenario, so a run given one
+  // publishes the same compliance verdicts the JS run does, against the
+  // sheet's own figures. Without it the report is the values alone.
+  let excelScenario;
+  let excelChecks = [];
+  if (dataDir) {
+    const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
+    const scenario = diyaGlToScenario(book, lines, packageName);
+    excelScenario = { ...scenario, ...scenario.expected };
+    let taxData;
+    if (years) {
+      const taxDataPath = resolve(__dirname, "..", "data", `${years}.toml`);
+      if (!existsSync(taxDataPath)) {
+        console.error(`Tax data file not found: ${taxDataPath}`);
+        process.exit(1);
+      }
+      taxData = parseTOML(readFileSync(taxDataPath, "utf8"));
+    } else {
+      taxData = extractTaxDataFromBook(book);
+    }
+    if (typeof productMod.checkCompliance === "function") {
+      excelChecks = productMod.checkCompliance({ ...results }, excelScenario, taxData, calculateExpectedTax, yearEnd);
+    }
+  }
+
+  const sectionReports = generateSectionReports(results, productMod, excelScenario, excelChecks);
   for (const [filename, content] of Object.entries(sectionReports)) {
     writeFileSync(resolve(resolvedOutputDir, filename), content);
     console.log(`  Written: ${filename}`);
   }
+
+  writeReportJson(resolvedOutputDir, {
+    packageName,
+    engine: "excel",
+    results,
+    productMod,
+    scenario: excelScenario,
+    checks: excelChecks,
+    yearEnd,
+  });
 
   console.log(`\n${Object.keys(sectionReports).length} report files written to ${resolvedOutputDir}`);
 }

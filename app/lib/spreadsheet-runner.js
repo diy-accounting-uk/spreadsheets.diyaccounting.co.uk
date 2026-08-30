@@ -307,17 +307,20 @@ function readCellValue(xml, cellRef, sharedStrings = []) {
   const typeMatch = match[1].match(/\bt="([^"]*)"/);
   const cellType = typeMatch ? typeMatch[1] : null;
 
+  // An inline string keeps its text in <is><t>, with no <v> beside it, so it
+  // is read before the <v> every other kind of cell carries.
+  if (cellType === "inlineStr") {
+    const isMatch = cellContent.match(/<is><t[^>]*>(.*?)<\/t><\/is>/s);
+    if (isMatch) return decodeXmlEntities(isMatch[1]);
+  }
+
   // Extract <v> value
   const vMatch = cellContent.match(/<v>(.*?)<\/v>/s);
   if (!vMatch) return null;
 
   const raw = vMatch[1].trim();
 
-  if (cellType === "inlineStr") {
-    const isMatch = cellContent.match(/<is><t[^>]*>(.*?)<\/t><\/is>/s);
-    if (isMatch) return decodeXmlEntities(isMatch[1]);
-    return decodeXmlEntities(raw);
-  }
+  if (cellType === "inlineStr") return decodeXmlEntities(raw);
 
   if (cellType === "s") {
     // Shared string — resolve index to actual text

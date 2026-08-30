@@ -10,8 +10,8 @@ Three directors hold 100 ordinary shares: Carol Smith (MD, 60%), David Brown (NE
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 6 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v1.schema.json`.
-- **lines.jsonl** -- 722 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v1.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
+- **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 7 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **lines.jsonl** -- 722 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|

@@ -7,6 +7,7 @@
 // Calls shared tools from app/lib/.
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
   buildCategoryNetting,
@@ -151,8 +152,10 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }
@@ -169,8 +172,18 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
+        if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code;
         sheet[`G${row}`] = tx.amount;
+        // AD is the sheet's "CIS Certificates / Tax Paid" column, where a
+        // contractor records the tax it withheld from a subcontractor's
+        // invoice. It sits outside the month's own analysis check total, so
+        // recording it leaves the row's expense analysis where it was.
+        // Written after G and before the account column, because a write can
+        // only run left to right (see the Schedule writer below).
+        if (tx.cis_deduction) sheet[`AD${row}`] = tx.cis_deduction;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }
@@ -363,6 +376,7 @@ export function cellWrites(scenario) {
         // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
         // Wagesinterface!H reads. Verified against the template.
         sheet[`T${row}`] = e.employerNI;
+        if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
     }
   }
@@ -534,7 +548,10 @@ export function cellWrites(scenario) {
       const sheetName = `${sheetPrefix}${entry.period}`;
       if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
       const sheet = vatReturnWrites[sheetName];
-      const entryRow = Object.keys(sheet).filter((k) => k.startsWith(columns.amount)).length + 5;
+      // Matching the whole reference rather than its first letter keeps a
+      // write further right (AD, say) out of the count of rows already there.
+      const amountColumnKey = new RegExp(`^${columns.amount}\\d+$`);
+      const entryRow = Object.keys(sheet).filter((k) => amountColumnKey.test(k)).length + 5;
       const d = parseDate(entry.date);
       sheet[`${columns.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${columns.name}${entryRow}`] = entry[nameField];
@@ -816,7 +833,11 @@ export function multiFileOptions() {
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
     salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
-    purchasesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    // AD1 is the month's CIS certificates total (SUM(AD5:AD300)) and A1 the
+    // sheet's own check total, G1 - H1 - SUM(P1:AB1), which is the closest
+    // this product has to a trial balance: nil means every row's gross has
+    // reached its VAT column and one expense column and nothing else.
+    purchasesMonthReads[tab] = ["A1", "H1", "I1", VAT_RATE_CELL, "AD1"];
   }
 
   // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
@@ -1150,14 +1171,112 @@ const FIXED_ASSET_CELL_LABELS = {
   },
 };
 
-export function cellLabels() {
-  const labels = {};
-  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
-    const key = `${sheet}!${cell}`;
-    labels[key] = { diyLabel, glMapping };
+// ── The unit every read cell is compared in ────────────────────────────────
+//
+// A money value is compared to the penny, a rate to six places, and a date, a
+// count, a name and a verdict exactly. Both engines carry binary floating point
+// and the xls roundtrip re-serialises it, so a money cell has to be rounded
+// before it is compared or a difference far below a penny reads as a defect. A
+// cell with no declared unit is compared exactly, so a unit only ever loosens.
+
+// Admin holds rates, thresholds and dates side by side, so its own cells say
+// which is which. Everything else on that sheet is an amount.
+const ADMIN_RATE_CELLS = new Set([
+  "N6",
+  "N7",
+  "N8",
+  "K11",
+  "K12",
+  "K13",
+  "L20",
+  "L23",
+  "G4",
+  "G5",
+  "G13",
+  "G14",
+  "G15",
+  "G16",
+  "G17",
+  "G21",
+  "G22",
+  "F27",
+]);
+const ADMIN_MILEAGE_BAND_CELLS = new Set(["F21", "F22"]);
+const ADMIN_TAX_YEAR_LABEL_CELLS = new Set(["B23", "B24"]);
+
+function columnOf(cell) {
+  return cell.match(/^[A-Z]+/)[0];
+}
+
+/**
+ * The unit one cell carries, by the sheet it sits on.
+ * @param {string} sheet - a hub sheet name, or "<file>!<sheet>" for a leaf
+ * @param {string} cell
+ * @returns {string}
+ */
+export function unitFor(sheet, cell) {
+  const column = columnOf(cell);
+  if (sheet.startsWith("Sales.xlsx!") || sheet.startsWith("Purchases.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : "money";
+  if (sheet === "Vat.xlsx!Vatinterface") return column === "B" || column === "C" ? "date" : column === "M" ? "rate" : "money";
+  if (sheet.startsWith("Vat.xlsx!VATQtr")) return cell === "G5" || cell === "G7" ? "date" : "money";
+  if (sheet === "Payslips.xlsx!Admin") {
+    if (cell === "N1") return "text";
+    if (column === "A") return "text";
+    if (column === "B" || cell === "I1") return "date";
+    return "count";
   }
+  switch (sheet) {
+    case "Business Details":
+      return "text";
+    case "Admin":
+      if (ADMIN_TAX_YEAR_LABEL_CELLS.has(cell)) return "text";
+      if (column === "B") return "date";
+      if (ADMIN_RATE_CELLS.has(cell)) return "rate";
+      if (ADMIN_MILEAGE_BAND_CELLS.has(cell)) return "count";
+      return "money";
+    case TAX_SHEET:
+      if (cell === "C13") return "date";
+      return column === "D" ? "rate" : "money";
+    case FORECAST_SHEET:
+      return cell === "C21" ? "count" : "money";
+    case "SE Short":
+      if (cell === "A7" || cell === "A32" || cell === "A33") return "text";
+      if (cell === "D8" || cell === "Q2" || cell === "V2") return "date";
+      return "money";
+    case "SE Full":
+      if (cell === "Q2" || cell === "V2") return "date";
+      if (cell === "H136" || cell === "G141") return "rate";
+      return "money";
+    case "Wagesinterface":
+      return column === "B" ? "date" : "money";
+    default:
+      return "money";
+  }
+}
+
+export function cellLabels() {
+  const named = {};
+  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) named[`${sheet}!${cell}`] = { diyLabel, glMapping };
   for (const [sheet, cells] of Object.entries(FIXED_ASSET_CELL_LABELS)) {
-    for (const [cell, diyLabel] of Object.entries(cells)) labels[`${sheet}!${cell}`] = { diyLabel, glMapping: "" };
+    for (const [cell, diyLabel] of Object.entries(cells)) named[`${sheet}!${cell}`] = { diyLabel, glMapping: "" };
+  }
+
+  // Every cell either side reads carries a unit, whether or not the report
+  // prints a caption beside it.
+  const readScope = { ...standardReads() };
+  for (const [file, sheets] of Object.entries(multiFileOptions().additionalReads)) {
+    for (const [sheet, cells] of Object.entries(sheets)) readScope[`${file}!${sheet}`] = cells;
+  }
+
+  const labels = {};
+  for (const [sheet, cells] of Object.entries(readScope)) {
+    for (const cell of cells) {
+      const key = `${sheet}!${cell}`;
+      labels[key] = { diyLabel: "", glMapping: "", ...named[key], unit: unitFor(sheet, cell) };
+    }
+  }
+  for (const [key, entry] of Object.entries(named)) {
+    if (!labels[key]) labels[key] = { ...entry, unit: unitFor(key.slice(0, key.lastIndexOf("!")), key.slice(key.lastIndexOf("!") + 1)) };
   }
   return labels;
 }
@@ -1311,7 +1430,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
 
   // Some of the workbook's own cells hold wording rather than arithmetic.
@@ -1939,6 +2058,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }
+  }
+
+  // ── CIS deducted from subcontractors (Purchases.xlsx column AD) ──────────
+  //
+  // A contractor withholds tax from a subcontractor's invoice and records it
+  // on the certificate column beside that invoice. The column has its own
+  // monthly total and sits outside the sheet's expense analysis, so both
+  // things are asserted: the tax reaches the column it belongs in, and the
+  // month's own check total -- gross less VAT less every expense column,
+  // which is the nearest this product has to a trial balance -- stays nil
+  // with it there. Anchored in the scenario's own entries, so a month whose
+  // certificates never reached the sheet fails on that month alone.
+  if (expected.purchases) {
+    Object.values(MONTH_SHEETS).forEach((tab, i) => {
+      const month = results[`Purchases.xlsx!${tab}`];
+      if (!month) return;
+      const withheld = (expected.purchases[MONTH_KEYS[i]] || []).reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+      check(`Purchases.xlsx ${tab}: CIS tax withheld reaches the certificates column (AD1)`, num(month.AD1), withheld, 0.01);
+      check(`Purchases.xlsx ${tab}: the month's expense analysis balances (A1)`, num(month.A1), 0, 0.01);
+    });
   }
 
   // ── Payroll: Wagesinterface monthly ties (item 4) ──

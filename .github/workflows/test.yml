@@ -142,8 +142,8 @@ jobs:
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
 
-      - name: Verify scenario fixtures in sync with master data
-        run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/
+      - name: Verify scenario fixtures and diya-gl subsets in sync with master data
+        run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/
 
       - name: Run tests
         run: npm test
@@ -175,26 +175,72 @@ jobs:
         run: node app/bin/generate.js --package bst --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/bst --output-dir target/bst-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package bst --source-dir target/bst-pkg --output-dir target/bst-excel-reports
+        run: node app/bin/report.js --package bst --source-dir target/bst-pkg --output-dir target/bst-excel
 
       - name: Compute reports from diya-gl via JS engine
-        run: node app/bin/report.js --package bst --data examples/precision-code-ltd/bst --years se-2025-2026 --output-dir target/bst-diya-gl-reports
+        run: node app/bin/report.js --package bst --data examples/precision-code-ltd/bst --years se-2025-2026 --output-dir target/bst-js
 
       - name: Export diya-gl data from Excel package
-        run: node app/bin/export.js --package bst --source-dir target/bst-pkg --output-dir target/bst-exported-data
+        run: node app/bin/export.js --package bst --source-dir target/bst-pkg --output-dir target/bst-excel/data
 
-      - name: 'Equivalence 1: Excel reports == JS reports (informational)'
-        continue-on-error: true
-        run: diff -r target/bst-excel-reports target/bst-diya-gl-reports
+      - name: 'Roundtrip scorecard (EQ1 and EQ2, budget gate)'
+        run: node app/bin/verify-roundtrip.js --package bst --excel target/bst-excel --js target/bst-js --budget app/data/roundtrip-budget.json
+
+      - name: 'EQ3: stability of the recalculated package'
+        run: node app/bin/verify-stability.js --package bst --source-dir target/bst-pkg --output-dir target/bst-stability
 
       - name: 'Double-roundtrip: re-generate from exported data'
-        run: node app/bin/generate.js --package bst --years se-2025-2026 --year-end 2026-04-05 --data target/bst-exported-data --output-dir target/bst-pkg2 --skip-guide
+        run: node app/bin/generate.js --package bst --years se-2025-2026 --year-end 2026-04-05 --data target/bst-excel/data --output-dir target/bst-pkg2 --skip-guide
 
       - name: 'Double-roundtrip: re-export'
         run: node app/bin/export.js --package bst --source-dir target/bst-pkg2 --output-dir target/bst-exported-data2
 
       - name: 'Double-roundtrip: pass 2 == pass 1 (MUST PASS)'
-        run: diff target/bst-exported-data/lines.jsonl target/bst-exported-data2/lines.jsonl
+        run: diff target/bst-excel/data/lines.jsonl target/bst-exported-data2/lines.jsonl
+
+  roundtrip-taxi:
+    name: 'roundtrip fidelity (Taxi)'
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install LibreOffice Calc
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libreoffice-calc
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+
+      - name: Generate Taxi package from diya-gl data
+        run: node app/bin/generate.js --package taxi --years se-2025-2026 --year-end 2026-04-05 --data examples/sp-sixty-driving/taxi --output-dir target/taxi-pkg --skip-guide
+
+      - name: Extract reports from Excel package
+        run: node app/bin/report.js --package taxi --source-dir target/taxi-pkg --mode recalculate --data examples/sp-sixty-driving/taxi --years se-2025-2026 --year-end 2026-04-05 --output-dir target/taxi-excel
+
+      - name: Compute reports from diya-gl via JS engine
+        run: node app/bin/report.js --package taxi --data examples/sp-sixty-driving/taxi --years se-2025-2026 --output-dir target/taxi-js
+
+      - name: 'Roundtrip scorecard (EQ1 only, budget gate)'
+        run: node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-excel --js target/taxi-js --budget app/data/roundtrip-budget.json
+
+      - name: 'EQ3: stability of the recalculated package'
+        run: node app/bin/verify-stability.js --package taxi --source-dir target/taxi-pkg --output-dir target/taxi-stability
+
+      # app/bin/export.js has no Taxi Driver support yet (xlsx-exporter.js's
+      # periodCovered() finds no postings on this package's own sheets), so
+      # EQ2 and the double-roundtrip, which both depend on it, do not run
+      # here -- unlike the BST, SE and Ltd jobs above and below. This job
+      # gates EQ1 and stability only.
 
   roundtrip-se:
     name: 'roundtrip fidelity (SE)'
@@ -223,26 +269,28 @@ jobs:
         run: node app/bin/generate.js --package se --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/advanced --output-dir target/se-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package se --source-dir target/se-pkg --output-dir target/se-excel-reports
+        run: node app/bin/report.js --package se --source-dir target/se-pkg --output-dir target/se-excel
 
       - name: Compute reports from diya-gl via JS engine
-        run: node app/bin/report.js --package se --data examples/precision-code-ltd/advanced --years se-2025-2026 --output-dir target/se-diya-gl-reports
+        run: node app/bin/report.js --package se --data examples/precision-code-ltd/advanced --years se-2025-2026 --output-dir target/se-js
 
       - name: Export diya-gl data from Excel package
-        run: node app/bin/export.js --package se --source-dir target/se-pkg --output-dir target/se-exported-data
+        run: node app/bin/export.js --package se --source-dir target/se-pkg --output-dir target/se-excel/data
 
-      - name: 'Equivalence 1: Excel reports == JS reports (informational)'
-        continue-on-error: true
-        run: diff -r target/se-excel-reports target/se-diya-gl-reports
+      - name: 'Roundtrip scorecard (EQ1 and EQ2, budget gate)'
+        run: node app/bin/verify-roundtrip.js --package se --excel target/se-excel --js target/se-js --budget app/data/roundtrip-budget.json
+
+      - name: 'EQ3: stability of the recalculated package'
+        run: node app/bin/verify-stability.js --package se --source-dir target/se-pkg --output-dir target/se-stability
 
       - name: 'Double-roundtrip: re-generate from exported data'
-        run: node app/bin/generate.js --package se --years se-2025-2026 --year-end 2026-04-05 --data target/se-exported-data --output-dir target/se-pkg2 --skip-guide
+        run: node app/bin/generate.js --package se --years se-2025-2026 --year-end 2026-04-05 --data target/se-excel/data --output-dir target/se-pkg2 --skip-guide
 
       - name: 'Double-roundtrip: re-export'
         run: node app/bin/export.js --package se --source-dir target/se-pkg2 --output-dir target/se-exported-data2
 
       - name: 'Double-roundtrip: pass 2 == pass 1 (MUST PASS)'
-        run: diff target/se-exported-data/lines.jsonl target/se-exported-data2/lines.jsonl
+        run: diff target/se-excel/data/lines.jsonl target/se-exported-data2/lines.jsonl
 
   roundtrip-ltd:
     name: 'roundtrip fidelity (Ltd)'
@@ -271,26 +319,28 @@ jobs:
         run: node app/bin/generate.js --package ltd --years ltd-2024 --year-end 2025-03-31 --data examples/precision-code-ltd/full --offset '-P1Y' --output-dir target/ltd-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-excel-reports
+        run: node app/bin/report.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-excel
 
       - name: Compute reports from diya-gl via JS engine
-        run: node app/bin/report.js --package ltd --data examples/precision-code-ltd/full --offset '-P1Y' --years ltd-2024 --output-dir target/ltd-diya-gl-reports
+        run: node app/bin/report.js --package ltd --data examples/precision-code-ltd/full --offset '-P1Y' --years ltd-2024 --output-dir target/ltd-js
 
       - name: Export diya-gl data from Excel package
-        run: node app/bin/export.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-exported-data
+        run: node app/bin/export.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-excel/data
 
-      - name: 'Equivalence 1: Excel reports == JS reports (informational)'
-        continue-on-error: true
-        run: diff -r target/ltd-excel-reports target/ltd-diya-gl-reports
+      - name: 'Roundtrip scorecard (EQ1 and EQ2, budget gate)'
+        run: node app/bin/verify-roundtrip.js --package ltd --excel target/ltd-excel --js target/ltd-js --budget app/data/roundtrip-budget.json
+
+      - name: 'EQ3: stability of the recalculated package'
+        run: node app/bin/verify-stability.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-stability
 
       - name: 'Double-roundtrip: re-generate from exported data'
-        run: node app/bin/generate.js --package ltd --years ltd-2024 --year-end 2025-03-31 --data target/ltd-exported-data --output-dir target/ltd-pkg2 --skip-guide
+        run: node app/bin/generate.js --package ltd --years ltd-2024 --year-end 2025-03-31 --data target/ltd-excel/data --output-dir target/ltd-pkg2 --skip-guide
 
       - name: 'Double-roundtrip: re-export'
         run: node app/bin/export.js --package ltd --source-dir target/ltd-pkg2 --output-dir target/ltd-exported-data2
 
       - name: 'Double-roundtrip: pass 2 == pass 1 (MUST PASS)'
-        run: diff target/ltd-exported-data/lines.jsonl target/ltd-exported-data2/lines.jsonl
+        run: diff target/ltd-excel/data/lines.jsonl target/ltd-exported-data2/lines.jsonl
 
   browser-test:
     runs-on: ubuntu-24.04

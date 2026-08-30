@@ -1,28 +1,18 @@
-# Taxi Driver test scenario: SP Sixty Driving
-# A private hire driver working 5 days/week with varying daily fares and realistic expenses.
-# Based on the SP Sixty Driving example in examples/sp-sixty-driving/.
-# Used by both unit/e2e tests and the reconciliation task.
-
 [metadata]
 name = "SP Sixty Driving"
 description = "Private hire driver with varying daily fares, fuel, insurance, repairs, admin, licence, accountant, dashcam, and signage"
 product = "taxi"
 tax_regime = "se"
+vat_registered = false
 
 [business]
 name = "SP Sixty Driving"
-description = "Private hire and taxi services"
+description = "Private hire and taxi driving services"
 address = "42 Oak Lane"
 town = "Leeds"
 postcode = "LS1 5PQ"
 phone = "0113 555 0200"
 utr = "9876543210"
-
-# === SALES ===
-# Daily fares entered on specific dates in the pre-filled Sales sheets.
-# Taxi Sales sheets have pre-filled dates -- amounts go into column E (gross takings).
-# 180 working days x varying amounts = 38,000 total sales
-# 20,000 total business miles
 
 [[sales.apr]]
 date = 2025-04-07
@@ -744,541 +734,709 @@ amount = 234
 date = 2026-03-20
 amount = 236
 
-# === PURCHASES ===
-# Taxi purchases use column D for expense code and column F for amount.
-# Expense codes: d=fuel, h=car hire, r=repairs, t=road tax, e=employee,
-# p=premises, g=general admin, a=advertising, l=legal, i=interest, b=bank, o=other, f=fixed asset
-
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "DVLA"
+description = "Annual road tax"
 code = "t"
 amount = 180
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 52
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Council Licensing"
+description = "Private hire driver licence renewal"
 code = "l"
 amount = 400
+account = "5900"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Admiral Insurance"
+description = "Annual car insurance"
 code = "t"
 amount = 1400
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 55
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-22
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 58
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.apr]]
 date = 2025-04-29
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 60
+account = "5100"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.may]]
 date = 2025-05-06
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 53
+account = "5100"
 
 [[purchases.may]]
 date = 2025-05-10
 supplier = "Amazon"
+reference = "AMZ-0510"
+description = "Nextbase dashcam"
 code = "f"
 amount = 200
+account = "7000"
 
 [[purchases.may]]
 date = 2025-05-13
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 56
+account = "5100"
 
 [[purchases.may]]
 date = 2025-05-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.may]]
 date = 2025-05-20
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 59
+account = "5100"
 
 [[purchases.may]]
 date = 2025-05-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.may]]
 date = 2025-05-27
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 62
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.jun]]
 date = 2025-06-03
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 51
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-10
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 54
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "SignWorks"
+description = "Vehicle door signage"
 code = "a"
 amount = 150
+account = "5800"
 
 [[purchases.jun]]
 date = 2025-06-17
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 57
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-24
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 61
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 55
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 58
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-12
 supplier = "Toyota Service"
+description = "Interim service"
 code = "r"
 amount = 170
+account = "5300"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 52
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.jul]]
 date = 2025-07-22
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 60
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 54
+account = "5100"
 
 [[purchases.aug]]
 date = 2025-08-12
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 57
+account = "5100"
 
 [[purchases.aug]]
 date = 2025-08-19
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 61
+account = "5100"
 
 [[purchases.aug]]
 date = 2025-08-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.aug]]
 date = 2025-08-26
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 53
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.sep]]
 date = 2025-09-02
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 56
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-09
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 59
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-16
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 62
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.sep]]
 date = 2025-09-23
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 51
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-25
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.oct]]
 date = 2025-10-07
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 53
+account = "5100"
 
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 56
+account = "5100"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Kwik Fit"
+description = "MOT test"
 code = "r"
 amount = 55
+account = "5300"
 
 [[purchases.oct]]
 date = 2025-10-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.oct]]
 date = 2025-10-21
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 59
+account = "5100"
 
 [[purchases.oct]]
 date = 2025-10-28
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 55
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.nov]]
 date = 2025-11-04
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 52
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-11
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 58
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-18
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 61
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.nov]]
 date = 2025-11-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.nov]]
 date = 2025-11-25
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 54
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.dec]]
 date = 2025-12-02
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 57
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-09
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 60
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-16
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 53
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.dec]]
 date = 2025-12-23
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 56
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.jan]]
 date = 2026-01-06
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 55
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Toyota Service"
+description = "Full service"
 code = "r"
 amount = 175
+account = "5300"
 
 [[purchases.jan]]
 date = 2026-01-13
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 58
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 52
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.jan]]
 date = 2026-01-25
 supplier = "TaxAssist Accountants"
+description = "Annual accounts preparation"
 code = "l"
 amount = 350
+account = "5900"
 
 [[purchases.jan]]
 date = 2026-01-27
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 60
+account = "5100"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 54
+account = "5100"
 
 [[purchases.feb]]
 date = 2026-02-10
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 57
+account = "5100"
 
 [[purchases.feb]]
 date = 2026-02-17
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 61
+account = "5100"
 
 [[purchases.feb]]
 date = 2026-02-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.feb]]
 date = 2026-02-24
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 53
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Vodafone"
+description = "Mobile phone and data plan"
 code = "g"
 amount = 30
+account = "5700"
 
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 56
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Shell"
+description = "Diesel fuel"
 code = "d"
 amount = 59
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-17
 supplier = "BP"
+description = "Diesel fuel"
 code = "d"
 amount = 55
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-18
 supplier = "NCP Parking"
+description = "Airport pickup parking"
 code = "g"
 amount = 10
+account = "5700"
 
 [[purchases.mar]]
 date = 2026-03-20
 supplier = "Hand Car Wash"
+description = "Monthly car wash"
 code = "r"
 amount = 15
+account = "5300"
 
 [[purchases.mar]]
 date = 2026-03-24
 supplier = "Texaco"
+description = "Diesel fuel"
 code = "d"
 amount = 58
+account = "5100"
 
-# === EXPECTED RESULTS ===
-# 180 working days x varying daily fares = 38,000 total sales
-# 20,000 total business miles
-# Mileage allowance: 10,000 x 0.45 + 10,000 x 0.25 = 7,000
-# Vehicle costs: fuel 2,708 + insurance 1,400 + road tax 180 + repairs 580 = 4,868
-# Mileage (7,000) > vehicle costs (4,868), so mileage is used
-# Non-vehicle expenses: admin 420 + legal 750 + advertising 150 + dashcam 200 = 1,520
-# Net profit: 38,000 - 7,000 - 1,520 = ~29,480
+[[fixed_asset_additions]]
+date = 2025-05-10
+description = "Nextbase dashcam"
+reference = "AMZ-0510"
+cost = 200
 
 [expected]
 total_sales = 38000
+fixed_asset_cost = 200

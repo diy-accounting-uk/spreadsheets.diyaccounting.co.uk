@@ -57,12 +57,15 @@ describeCalc("BST: BrickWork Pro non-VAT scenario", () => {
     expect(results["Profit & Loss Acc"].C7).toBeGreaterThan(0);
   });
 
-  it("Income Tax: profit > 0", () => {
-    expect(results["Income Tax"].E5).toBeGreaterThan(0);
-  });
-
-  it("Income Tax: total tax + NI > 0", () => {
-    expect(results["Income Tax"].E18).toBeGreaterThan(0);
+  // The trade leaves 15,530 of profit and the van's 12,000 Annual Investment
+  // Allowance takes 3,530 of it to tax. That is under the 12,570 personal
+  // allowance and under the Class 4 lower profits limit, so both charges are
+  // nil and the sheet says so.
+  it("charges nothing on a profit the allowances cover", () => {
+    expect(results["Income Tax"].E5).toBeCloseTo(3530, 2);
+    expect(results["Income Tax"].E6).toBeCloseTo(12570, 2);
+    expect(results["Income Tax"].E7).toBe(0);
+    expect(results["Income Tax"].E18).toBe(0);
   });
 
   it("Business Details: name populated", () => {

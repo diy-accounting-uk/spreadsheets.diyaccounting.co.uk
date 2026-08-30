@@ -12,6 +12,7 @@ import {
   SE_PURCHASE_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
   LTD_SALES_CODE_MAP,
+  TAXI_PURCHASE_CODE_MAP,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -21,10 +22,42 @@ import {
   buildGrouped,
   seDrawingsFromDividends,
   buildOpeningBalance,
-  isOpeningBalanceLine,
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
+
+// The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
+// fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
+// for the Basic Sole Trader chart -- drops every taxi purchase account
+// BST_PURCHASE_CODE_MAP has no entry for, interest, bank charges, other
+// expenses and fixed assets among them. This mirrors filterBst() with the
+// taxi chart's own map instead.
+function filterTaxi(lines) {
+  return lines.filter((line) => {
+    if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
+    if (line.sourceJournalID === "purchases") return TAXI_PURCHASE_CODE_MAP[line.accountMainID] !== undefined;
+    return false;
+  });
+}
+
+// The Fixed Assets Schedule's asset-class blocks, keyed by the book's own
+// class enum. land and plant/fixtures only exist on the Ltd Schedule; SE's
+// Schedule carries motor and computer alone and throws on the other three,
+// which is a real limit of that sheet, not a gap in this mapping.
+const ASSET_CLASS_TO_CATEGORY = {
+  landBuildings: "land",
+  plantMachinery: "plant",
+  fixturesFittings: "fixtures",
+  computerTechnology: "computer",
+  motorVehicles: "motor",
+};
+
+// A named debtor or creditor balance, in cellWrites' own field names.
+function ledgerListing(entries, timing, nameField) {
+  return (entries || [])
+    .filter((entry) => entry.timing === timing)
+    .map((entry) => ({ [nameField]: entry.counterparty, invoice: entry.invoice, amount: entry.amount }));
+}
 
 /**
  * Parse an ISO 8601 duration offset like "+P3M", "-P1Y", "+P1Y3M".
@@ -104,14 +137,14 @@ export function loadDiyaGlData(dataDir, offset) {
 
 const PRODUCT_FILTERS = {
   bst: filterBst,
-  taxi: filterBst, // Taxi uses BST-level filtering (sales + purchases only)
+  taxi: filterTaxi,
   se: filterAdvanced,
   ltd: filterFull,
 };
 
 const PURCHASE_CODE_MAPS = {
   bst: BST_PURCHASE_CODE_MAP,
-  taxi: BST_PURCHASE_CODE_MAP,
+  taxi: TAXI_PURCHASE_CODE_MAP,
   se: SE_PURCHASE_CODE_MAP,
   ltd: LTD_PURCHASE_CODE_MAP,
 };
@@ -130,21 +163,32 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
   let filteredLines = filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
-  const grouped = buildGrouped(filteredLines, purchaseCodeMap);
+  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true });
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
   const purchaseLines = filteredLines.filter((l) => l.sourceJournalID === "purchases");
 
+  // Every check that reads scenario.metadata.vat_registered treats an
+  // absent value as VAT-registered, so a book that declares itself
+  // unregistered has to say so explicitly, not by omission.
+  const entity = book.entityInformation || {};
+  const vatRegistered = entity["diya-gl:vatRegistered"] === true;
+
   let totalSales;
   if (product === "bst" || product === "taxi") {
     totalSales = computeGrossSales(salesLines);
   } else {
-    // SE/Ltd: net sales (gross / 1.2) for turnover accounts only
+    // SE/Ltd: net sales for turnover accounts only. The sheet's own analysis
+    // columns strip VAT as a flat gross / 1.2, a business the book declares
+    // unregistered never charged that VAT, so its invoiced total carries no
+    // divisor to strip.
     const TURNOVER_ACCOUNTS =
       product === "ltd" ? new Set(["4000", "4001", "4002", "4003", "4004"]) : new Set(["4000", "4001", "4002", "4003"]);
     const turnoverLines = salesLines.filter((l) => TURNOVER_ACCOUNTS.has(l.accountMainID));
-    totalSales = computeSpreadsheetNetSales(turnoverLines);
+    totalSales = vatRegistered
+      ? computeSpreadsheetNetSales(turnoverLines)
+      : Math.round(turnoverLines.reduce((sum, l) => sum + l.amount, 0));
   }
 
   // Compute expense totals by code
@@ -155,26 +199,30 @@ export function diyaGlToScenario(book, lines, product) {
   });
 
   // Build metadata from book.toml
-  const entity = book.entityInformation || {};
   const metadata = {
     name: entity.organizationIdentifier || "Unknown",
     description: entity.organizationDescription || "",
     product,
     tax_regime: product === "ltd" ? "ltd" : "se",
+    vat_registered: vatRegistered,
   };
 
   const business = {
     name: entity.organizationIdentifier || "",
     description: entity.organizationDescription || "",
   };
+  if (entity.organizationAddressLine) business.address = entity.organizationAddressLine;
+  if (entity.organizationTown) business.town = entity.organizationTown;
+  if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
+  if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
 
   // Build expected values
   const expected = { total_sales: totalSales };
 
   if (product === "bst") {
     const stockPurchases = byCode.s || 0;
-    const openingStock = 10000; // default, overridden by book if present
-    const closingStock = 6000;
+    const openingStock = book.stock?.openingValue ?? 0;
+    const closingStock = book.stock?.closingValue ?? 0;
     const stockAdj = openingStock - closingStock;
     const coS = stockPurchases + stockAdj;
     const directCosts = byCode.d || 0;
@@ -190,10 +238,11 @@ export function diyaGlToScenario(book, lines, product) {
   }
 
   if (product === "se" || product === "ltd") {
-    expected.total_motor_net = Math.round((byCode.v || 0) / 1.2);
-    expected.total_legal_net = Math.round((byCode.l || 0) / 1.2);
+    const vatDivisor = vatRegistered ? 1.2 : 1;
+    expected.total_motor_net = Math.round((byCode.v || 0) / vatDivisor);
+    expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
     if (product === "ltd") {
-      expected.total_premises_net = Math.round((byCode.r || 0) / 1.2);
+      expected.total_premises_net = Math.round((byCode.r || 0) / vatDivisor);
     }
   }
 
@@ -211,6 +260,23 @@ export function diyaGlToScenario(book, lines, product) {
     purchases: grouped.purchases,
     expected,
   };
+
+  // Stock, and the named debtor and creditor ledgers, straight off the
+  // book's own tables -- cellWrites' opening/closing blocks have nowhere
+  // else to read them from, and left unset the sheet keeps its own stale
+  // monthly analysis figures instead (see BST's Debtors & Creditors sheet).
+  if (book.stock) {
+    scenario.stock = { opening: book.stock.openingValue, closing: book.stock.closingValue };
+    if (book.stock.materialsPercent !== undefined) scenario.stock.materials_percent = book.stock.materialsPercent;
+  }
+  if (book.debtors) {
+    scenario.opening_debtors = ledgerListing(book.debtors, "opening", "customer");
+    scenario.closing_debtors = ledgerListing(book.debtors, "closing", "customer");
+  }
+  if (book.creditors) {
+    scenario.opening_creditors = ledgerListing(book.creditors, "opening", "supplier");
+    scenario.closing_creditors = ledgerListing(book.creditors, "closing", "supplier");
+  }
 
   // Bank (SE/Ltd only) — flatten from { account: { month: [txs] } } to { month: [txs] }
   // with tx.account field so cellWrites can route to Bank vs Cash sheets
@@ -255,24 +321,64 @@ export function diyaGlToScenario(book, lines, product) {
     if (Object.keys(openingBalance).length > 0) scenario.opening_balance = openingBalance;
   }
 
-  // SE posts opening fixed assets as individual Schedule rows, so the
-  // opening journal's cost and depreciation lines become per-asset entries.
-  if (product === "se") {
-    const SE_ASSET_CATEGORIES = { "0030": "computer", "0040": "motor" };
-    const assets = [];
-    const lastByCategory = {};
-    for (const line of filteredLines.filter(isOpeningBalanceLine)) {
-      const category = SE_ASSET_CATEGORIES[line.accountMainID];
-      if (!category) continue;
-      if (line.debitCreditCode === "D") {
-        const asset = { category, description: line.lineItemComment || "", cost: line.amount };
-        assets.push(asset);
-        lastByCategory[category] = asset;
-      } else if (lastByCategory[category]) {
-        lastByCategory[category].acc_dep = (lastByCategory[category].acc_dep || 0) + line.amount;
-      }
-    }
-    if (assets.length > 0) scenario.opening_fixed_assets = assets;
+  // Fixed assets held at the opening balance sheet date (Schedule.xlsx,
+  // SE and Ltd both). book.fixedAssets also carries assets bought during
+  // the year, which reach the Schedule through their own "fa"-coded
+  // purchase line instead (see the "New" rows below), so an asset a
+  // purchase line already claims by diya-gl:assetID is excluded here --
+  // counting it in both places would enter it on the Schedule twice.
+  if (product === "se" || product === "ltd") {
+    const purchasedAssetIDs = new Set(purchaseLines.map((l) => l["diya-gl:assetID"]).filter(Boolean));
+    const openingFixedAssets = (book.fixedAssets || [])
+      .filter((asset) => !purchasedAssetIDs.has(asset.assetID))
+      .map((asset) => {
+        const category = ASSET_CLASS_TO_CATEGORY[asset.class];
+        if (!category) {
+          throw new Error(`Fixed asset ${asset.assetID} declares class "${asset.class}", which the Schedule has no category for`);
+        }
+        const opening = { category, description: asset.description, cost: asset.cost, acc_dep: asset.accumulatedDepreciation };
+        if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+        return opening;
+      });
+    if (openingFixedAssets.length > 0) scenario.opening_fixed_assets = openingFixedAssets;
+  }
+
+  // Hire purchase agreements (Fixedassets.xlsx HPfinance sheet, SE and Ltd).
+  if ((product === "se" || product === "ltd") && book.hpAgreements?.length > 0) {
+    scenario.hp_agreements = book.hpAgreements.map((agreement) => ({
+      date: agreement.startDate,
+      finance_company: agreement.financeCompany,
+      reference: agreement.agreementID,
+      amount_financed: agreement.amountFinanced,
+      admin_charges: agreement.adminCharges,
+      total_interest: agreement.totalInterest,
+      months: agreement.termMonths,
+      supplier: agreement.supplier,
+    }));
+  }
+
+  // The charges register, the register of members and the board's dividend
+  // minute (Companysecretary.xlsx, Ltd only).
+  if (product === "ltd" && book.charges?.length > 0) {
+    scenario.charges = book.charges.map((charge) => ({
+      date: charge.chargeDate,
+      asset: charge.description,
+      valuation: charge.valuation,
+      holder: charge.holder,
+      terms: charge.terms,
+      board_meeting: charge.boardMeetingDate,
+    }));
+  }
+  if (product === "ltd" && book.members?.length > 0) {
+    scenario.members = book.members.map((member) => {
+      const entry = { name: member.name, shares: member.shares };
+      if (member.acquiredDate !== undefined) entry.acquired = member.acquiredDate;
+      return entry;
+    });
+  }
+  if (product === "ltd" && book.dividends?.length > 0) {
+    const dividend = book.dividends[0];
+    scenario.dividend = { board_meeting: dividend.boardMeetingDate, declared: dividend.amount };
   }
 
   // A purchase coded f capitalises out of the profit and loss account, and
@@ -333,12 +439,16 @@ export function extractTaxDataFromBook(book) {
       personal_allowance_taper_threshold: it.personalAllowanceTaperThreshold || 100000,
     },
     national_insurance: {
-      class2_rate: 0,
-      class4_lower_rate: ni.class1EmployeeMainRate || 0.06,
-      class4_lower_limit: ni.class1EmployeePrimaryThreshold || 12570,
-      class4_upper_rate: ni.class1EmployeeUpperRate || 0.02,
-      class4_upper_limit: ni.class1EmployeeUpperEarningsLimit || 50270,
-      class2_weekly_rate: 0,
+      // Class 2 and Class 4 are the self-employed rates; a book with no
+      // employees at all (a sole trader with no payroll) declares only
+      // these and none of the class1* employer/employee fields, so the
+      // class1* fields are never a fallback for them.
+      class2_rate: ni.class2WeeklyRate ?? 0,
+      class2_weekly_rate: ni.class2WeeklyRate ?? 0,
+      class4_lower_rate: ni.class4MainRate ?? 0.06,
+      class4_lower_limit: ni.class4LowerProfits ?? 12570,
+      class4_upper_rate: ni.class4UpperRate ?? 0.02,
+      class4_upper_limit: ni.class4UpperProfits ?? 50270,
     },
     capital_allowances: {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,

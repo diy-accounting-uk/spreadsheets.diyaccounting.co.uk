@@ -1,18 +1,18 @@
-# Taxi Driver test scenario: basic taxi driver
-# A taxi driver working 5 days/week with daily fares and standard expenses.
-# The driver owns the vehicle outright, so nothing is coded to car hire or rental.
-# Used by both unit/e2e tests and the reconciliation task.
-
 [metadata]
 name = "Basic taxi driver"
 description = "Owner-driver taxi with steady daily fares, fuel, road tax and insurance, and a vehicle purchase. Owns the vehicle, so no car hire or rental."
 product = "taxi"
 tax_regime = "se"
+vat_registered = false
 
-# === SALES ===
-# Daily fares entered on specific dates in the pre-filled Sales sheets.
-# Taxi Sales sheets have pre-filled dates — amounts go into column E (gross takings).
-# Total annual sales: 36000 (3000/month average)
+[business]
+name = "Basic Taxi Driver"
+description = "Owner-driver private hire and taxi services"
+address = "17 Station Road"
+town = "Derby"
+postcode = "DE1 2GH"
+phone = "01332 555 0300"
+utr = "5566778899"
 
 [[sales.apr]]
 date = 2025-04-07
@@ -734,159 +734,181 @@ amount = 200
 date = 2026-03-20
 amount = 200
 
-# === PURCHASES ===
-# Taxi purchases use column D for expense code and column F for amount.
-# Expense codes: d=fuel, h=car hire, r=repairs, t=road tax, e=employee,
-# p=premises, g=general admin, a=advertising, l=legal, i=interest, b=bank, o=other, f=fixed asset
-
-# Fuel (monthly, 12 × 300 = 3600)
-[[purchases.apr]]
-date = 2025-04-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.may]]
-date = 2025-05-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.jun]]
-date = 2025-06-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.jul]]
-date = 2025-07-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.aug]]
-date = 2025-08-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.sep]]
-date = 2025-09-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.oct]]
-date = 2025-10-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.nov]]
-date = 2025-11-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.dec]]
-date = 2025-12-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.jan]]
-date = 2026-01-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.feb]]
-date = 2026-02-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-[[purchases.mar]]
-date = 2026-03-15
-supplier = "Shell"
-code = "d"
-amount = 300
-
-# Road tax and insurance (annual)
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "DVLA"
+description = "Vehicle excise duty"
 code = "t"
 amount = 180
+account = "5400"
+
+[[purchases.apr]]
+date = 2025-04-08
+supplier = "Council"
+description = "Private hire licence"
+code = "l"
+amount = 400
+account = "5900"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Insurance Co"
+description = "Hire and reward insurance"
 code = "t"
 amount = 1200
+account = "5400"
 
-# General admin (phone, quarterly)
-[[purchases.jul]]
-date = 2025-07-10
-supplier = "Vodafone"
-code = "g"
-amount = 120
-
-[[purchases.oct]]
-date = 2025-10-10
-supplier = "Vodafone"
-code = "g"
-amount = 120
-
-[[purchases.jan]]
-date = 2026-01-10
-supplier = "Vodafone"
-code = "g"
-amount = 120
+[[purchases.apr]]
+date = 2025-04-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-20
 supplier = "Vodafone"
+description = "Mobile telephone"
 code = "g"
 amount = 120
+account = "5700"
 
-# Legal & professional (taxi licence + accountant)
-[[purchases.apr]]
-date = 2025-04-08
-supplier = "Council"
-code = "l"
-amount = 400
+[[purchases.may]]
+date = 2025-05-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Car Dealer"
+reference = "VEH-0601"
+description = "Taxi vehicle"
+code = "f"
+amount = 8000
+account = "7000"
+
+[[purchases.jun]]
+date = 2025-06-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.jul]]
+date = 2025-07-10
+supplier = "Vodafone"
+description = "Mobile telephone"
+code = "g"
+amount = 120
+account = "5700"
+
+[[purchases.jul]]
+date = 2025-07-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.aug]]
+date = 2025-08-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.sep]]
+date = 2025-09-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.oct]]
+date = 2025-10-10
+supplier = "Vodafone"
+description = "Mobile telephone"
+code = "g"
+amount = 120
+account = "5700"
+
+[[purchases.oct]]
+date = 2025-10-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.nov]]
+date = 2025-11-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.dec]]
+date = 2025-12-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
+[[purchases.jan]]
+date = 2026-01-10
+supplier = "Vodafone"
+description = "Mobile telephone"
+code = "g"
+amount = 120
+account = "5700"
+
+[[purchases.jan]]
+date = 2026-01-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "Accountant"
+description = "Accountancy fees"
 code = "l"
 amount = 500
+account = "5900"
 
-# Vehicle purchase (fixed asset)
-[[purchases.jun]]
-date = 2025-06-01
-supplier = "Car Dealer"
-code = "f"
-amount = 8000
+[[purchases.feb]]
+date = 2026-02-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
 
-# The Purchases entry above records the cash payment (code "f" reaches only
-# the Purchases analysis column, which no P&L formula reads). Registering
-# the same vehicle on the Fixed Assets sheet's "Vehicles under £12,000
-# bought after" block is what actually claims a capital allowance -- this
-# is the double entry the legacy template requires, since the two sheets
-# are not linked.
+[[purchases.mar]]
+date = 2026-03-15
+supplier = "Shell"
+description = "Fuel"
+code = "d"
+amount = 300
+account = "5100"
+
 [[fixed_asset_additions]]
 date = 2025-06-01
 description = "Taxi vehicle"
-reference = "Car Dealer"
+reference = "VEH-0601"
 cost = 8000
 
-# === EXPECTED RESULTS ===
-# 180 working days × £200/day = £36,000 total sales
-# Expenses: fuel 3600 + road tax/insurance 1380 + admin 480 + legal 900 = 6360
-# Net profit: 36000 - 6360 = 29640
-
 [expected]
-fixed_asset_cost = 8000
 total_sales = 36000
+fixed_asset_cost = 8000

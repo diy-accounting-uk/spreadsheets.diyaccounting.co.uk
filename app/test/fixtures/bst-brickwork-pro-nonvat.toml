@@ -1,6 +1,6 @@
 [metadata]
 name = "BrickWork Pro BST"
-description = "Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales."
+description = "Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, the labourer's wage is an employee cost, and there is no bank journal. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5."
 product = "bst"
 tax_regime = "se"
 vat_registered = false
@@ -11,498 +11,940 @@ description = "Bricklaying, plastering and general building"
 address = "Unit 5, Industrial Estate"
 town = "Sheffield"
 postcode = "S1 2AB"
+phone = "0114 555 0100"
+utr = "9876543210"
 
 [[sales.apr]]
 date = 2025-04-10
 customer = "Acme Developments"
+reference = "INV-100"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4550
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-20
 customer = "HomeStyle Renovations"
+reference = "INV-200"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1950
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-10
 customer = "Acme Developments"
+reference = "INV-101"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4200
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-20
 customer = "HomeStyle Renovations"
+reference = "INV-201"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-10
 customer = "Acme Developments"
+reference = "INV-102"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4340
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-20
 customer = "HomeStyle Renovations"
+reference = "INV-202"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1860
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-10
 customer = "Acme Developments"
+reference = "INV-103"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4060
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-20
 customer = "HomeStyle Renovations"
+reference = "INV-203"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1740
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-10
 customer = "Acme Developments"
+reference = "INV-104"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4550
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-20
 customer = "HomeStyle Renovations"
+reference = "INV-204"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1950
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-10
 customer = "Acme Developments"
+reference = "INV-105"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4410
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-20
 customer = "HomeStyle Renovations"
+reference = "INV-205"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1890
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-10
 customer = "Acme Developments"
+reference = "INV-106"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4760
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-20
 customer = "HomeStyle Renovations"
+reference = "INV-206"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 2040
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-10
 customer = "Acme Developments"
+reference = "INV-107"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4340
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-20
 customer = "HomeStyle Renovations"
+reference = "INV-207"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1860
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-10
 customer = "Acme Developments"
+reference = "INV-108"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 3850
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-20
 customer = "HomeStyle Renovations"
+reference = "INV-208"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1650
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-10
 customer = "Acme Developments"
+reference = "INV-109"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4200
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-20
 customer = "HomeStyle Renovations"
+reference = "INV-209"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-10
 customer = "Acme Developments"
+reference = "INV-110"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4550
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-20
 customer = "HomeStyle Renovations"
+reference = "INV-210"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 1950
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-10
 customer = "Acme Developments"
+reference = "INV-111"
+description = "Bricklaying work"
 payment = "Bank"
+code = "a"
 amount = 4690
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-20
 customer = "HomeStyle Renovations"
+reference = "INV-211"
+description = "Plastering and rendering"
 payment = "Bank"
+code = "a"
 amount = 2010
+account = "4000"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Vodafone"
+reference = "PUR-600"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Direct Line"
+reference = "PUR-INS-001"
+description = "Public liability insurance"
+payment = "Bank"
 code = "o"
 amount = 1200
+account = "5700"
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Jewson"
+reference = "PUR-300"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "Smith & Co Accountants"
+reference = "PUR-ACC-001"
+description = "Accountancy fees"
+payment = "Bank"
 code = "l"
 amount = 600
+account = "5800"
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Shell"
+reference = "PUR-500"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Travis Perkins"
+reference = "PUR-400"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.apr]]
+date = 2025-04-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-04"
+description = "Apr salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Vodafone"
+reference = "PUR-601"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Jewson"
+reference = "PUR-301"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Shell"
+reference = "PUR-501"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Travis Perkins"
+reference = "PUR-401"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "JB Plastering"
+reference = "CIS-001"
+description = "Plastering subcontract"
+payment = "Bank"
 code = "d"
 amount = 6000
+account = "5001"
 
-[[purchases.jun]]
-date = 2025-06-01
-supplier = "Vodafone"
-code = "g"
-amount = 60
+[[purchases.may]]
+date = 2025-05-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-05"
+description = "May salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
+reference = "PUR-AD-001"
+description = "Online advertising"
+payment = "Bank"
 code = "a"
 amount = 300
+account = "5500"
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Vodafone"
+reference = "PUR-602"
+description = "Phone plan"
+payment = "Bank"
+code = "g"
+amount = 60
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Jewson"
+reference = "PUR-302"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.jun]]
 date = 2025-06-08
 supplier = "Shell"
+reference = "PUR-502"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Travis Perkins"
+reference = "PUR-402"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.jun]]
+date = 2025-06-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-06"
+description = "Jun salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Vodafone"
+reference = "PUR-603"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Jewson"
+reference = "PUR-303"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "Shell"
+reference = "PUR-503"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Travis Perkins"
+reference = "PUR-403"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Screwfix"
+reference = "PUR-REP-001"
+description = "Tool repairs"
+payment = "Bank"
 code = "r"
 amount = 350
+account = "5400"
+
+[[purchases.jul]]
+date = 2025-07-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-07"
+description = "Jul salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Vodafone"
+reference = "PUR-604"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Jewson"
+reference = "PUR-304"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.aug]]
 date = 2025-08-08
 supplier = "Shell"
+reference = "PUR-504"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Travis Perkins"
+reference = "PUR-404"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "JB Plastering"
+reference = "CIS-002"
+description = "Plastering subcontract"
+payment = "Bank"
 code = "d"
 amount = 5000
+account = "5001"
+
+[[purchases.aug]]
+date = 2025-08-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-08"
+description = "Aug salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Vodafone"
+reference = "PUR-605"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Ford Dealer"
+reference = "PUR-FA-001"
+description = "Ford Transit Custom van"
+payment = "Bank"
 code = "f"
 amount = 12000
+account = "5900"
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "Jewson"
+reference = "PUR-305"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Shell"
+reference = "PUR-505"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Travis Perkins"
+reference = "PUR-405"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.sep]]
+date = 2025-09-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-09"
+description = "Sep salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Vodafone"
+reference = "PUR-606"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Jewson"
+reference = "PUR-306"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.oct]]
 date = 2025-10-08
 supplier = "Shell"
+reference = "PUR-506"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Travis Perkins"
+reference = "PUR-406"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.oct]]
+date = 2025-10-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-10"
+description = "Oct salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Vodafone"
+reference = "PUR-607"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Jewson"
+reference = "PUR-307"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.nov]]
 date = 2025-11-08
 supplier = "Shell"
+reference = "PUR-507"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Travis Perkins"
+reference = "PUR-407"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Smith Bricklaying"
+reference = "CIS-003"
+description = "Bricklaying subcontract"
+payment = "Bank"
 code = "d"
 amount = 5000
+account = "5001"
+
+[[purchases.nov]]
+date = 2025-11-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-11"
+description = "Nov salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Vodafone"
+reference = "PUR-608"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Jewson"
+reference = "PUR-308"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.dec]]
 date = 2025-12-08
 supplier = "Shell"
+reference = "PUR-508"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Travis Perkins"
+reference = "PUR-408"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.dec]]
+date = 2025-12-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2025-12"
+description = "Dec salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Vodafone"
+reference = "PUR-609"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Jewson"
+reference = "PUR-309"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Shell"
+reference = "PUR-509"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Travis Perkins"
+reference = "PUR-409"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "CITB"
+reference = "PUR-CITB-001"
+description = "CSCS card renewals"
+payment = "Bank"
 code = "l"
 amount = 400
+account = "5800"
+
+[[purchases.jan]]
+date = 2026-01-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2026-01"
+description = "Jan salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Vodafone"
+reference = "PUR-610"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Jewson"
+reference = "PUR-310"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.feb]]
 date = 2026-02-08
 supplier = "Shell"
+reference = "PUR-510"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Travis Perkins"
+reference = "PUR-410"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Smith Bricklaying"
+reference = "CIS-004"
+description = "Bricklaying subcontract"
+payment = "Bank"
 code = "d"
 amount = 4000
+account = "5001"
+
+[[purchases.feb]]
+date = 2026-02-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2026-02"
+description = "Feb salary"
+code = "e"
+amount = 1500
+account = "5101"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Vodafone"
+reference = "PUR-611"
+description = "Phone plan"
+payment = "Bank"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Jewson"
+reference = "PUR-311"
+description = "Bricks and cement"
+payment = "Bank"
 code = "s"
 amount = 800
+account = "5000"
 
 [[purchases.mar]]
 date = 2026-03-08
 supplier = "Shell"
+reference = "PUR-511"
+description = "Diesel"
+payment = "Bank"
 code = "m"
 amount = 200
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Travis Perkins"
+reference = "PUR-411"
+description = "Sand, gravel, plaster"
+payment = "Bank"
 code = "s"
 amount = 450
+account = "5000"
+
+[[purchases.mar]]
+date = 2026-03-28
+supplier = "Tom Davies"
+reference = "PAY-EMP002-2026-03"
+description = "Mar salary"
+code = "e"
+amount = 1500
+account = "5101"
+
+[stock]
+opening = 3000
+closing = 2500
 
 [[opening_debtors]]
 customer = "Acme Developments"
@@ -564,20 +1006,16 @@ supplier = "Travis Perkins"
 invoice = "TP-2603"
 amount = 450
 
-[stock]
-opening = 3000
-closing = 2500
-
 [[fixed_asset_additions]]
 date = 2025-09-01
-description = "Ford Transit van"
-reference = "Ford Dealer"
+description = "Ford Transit Custom van"
+reference = "PUR-FA-001"
 cost = 12000
 
 [expected]
 total_sales = 75000
+gross_profit = 39500
+net_profit = 15530
 total_gen_admin = 720
 total_legal = 1000
-opening_stock = 3000
-closing_stock = 2500
 fixed_asset_cost = 12000

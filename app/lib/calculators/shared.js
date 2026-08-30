@@ -53,3 +53,79 @@ export function aggregateByCode(lines, codeMap) {
   }
   return byCode;
 }
+
+// ── Calendar helpers ───────────────────────────────────────────────────────
+// The workbooks lay a year out month end by month end, so a calculator needs
+// to walk months and to name a month end from an anchor. Both keep to UTC,
+// which is what every date in a book and a journal carries.
+
+/**
+ * The same day of the month, a whole number of months away.
+ * @param {Date} date
+ * @param {number} months - may be negative
+ * @returns {Date}
+ */
+export function addMonths(date, months) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, date.getUTCDate()));
+}
+
+/**
+ * The last day of the month a whole number of months from the anchor's own
+ * month. Walking from the first of the month keeps a 31st from spilling into
+ * the month after when the target month is shorter.
+ * @param {Date} anchor
+ * @param {number} months - may be negative
+ * @returns {Date}
+ */
+export function endOfMonth(anchor, months) {
+  return new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + months + 1, 0));
+}
+
+// ── Reading a sheet's own cells back ───────────────────────────────────────
+//
+// A workbook cell that resolves to nothing reads back as the single space its
+// formula puts there, and a sheet column a customer never filled in reads back
+// as no cell at all. Both mean nil to the arithmetic below them, so every
+// calculator reads through these rather than trusting a raw value.
+
+// The single space a template formula writes where it has nothing to show. A
+// calculator emits this for such a cell so the report carries an absent value
+// on both sides rather than a nil on one and nothing on the other.
+export const SHEET_BLANK = " ";
+
+/**
+ * A cell's value as arithmetic sees it: a number stays, anything else is nil.
+ * @param {*} value
+ * @returns {number}
+ */
+export function sheetNumber(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/**
+ * Sum a run of cells the way a SUM() over them does, ignoring the blanks and
+ * the text a template's own IF() leaves behind.
+ * @param {Array} values
+ * @returns {number}
+ */
+export function sheetSum(values) {
+  return values.reduce((total, value) => total + sheetNumber(value), 0);
+}
+
+/**
+ * Days from the 1899-12-30 epoch, the serial an Excel date cell holds.
+ * @param {Date} date
+ * @returns {number}
+ */
+export function excelSerial(date) {
+  return Math.round((date.getTime() - Date.UTC(1899, 11, 30)) / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * The UTC date an Excel serial names.
+ * @param {number} serial
+ * @returns {Date}
+ */
+export function dateFromExcelSerial(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + Math.round(serial) * 24 * 60 * 60 * 1000);
+}

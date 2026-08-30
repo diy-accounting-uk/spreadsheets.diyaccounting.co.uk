@@ -86,13 +86,15 @@ async function readWithCorruption(path, reads, corruptions) {
 // book and absent from the other, earning no capital allowance at all.
 describe("a capitalised purchase reaches the asset schedule", () => {
   it("derives the additions from the capitalised purchases when the scenario lists none", () => {
-    const spSixty = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-sp-sixty.toml"));
-    expect(spSixty.fixed_asset_additions).toBeUndefined();
+    const listed = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-sp-sixty.toml"));
+    expect(listed.fixed_asset_additions).toHaveLength(1);
+    const { fixed_asset_additions: _listed, ...unlisted } = listed;
 
-    const derived = fixedAssetAdditions(spSixty, "f");
+    const derived = fixedAssetAdditions(unlisted, "f");
     expect(derived).toHaveLength(1);
     expect(derived[0].cost).toBe(200);
-    expect(taxiCellWrites(spSixty)["Fixed Assets"].D47).toBe(200);
+    expect(derived[0].cost).toBe(listed.fixed_asset_additions[0].cost);
+    expect(taxiCellWrites(unlisted)["Fixed Assets"].D47).toBe(200);
   });
 
   it("takes a scenario at its word when it lists them", () => {

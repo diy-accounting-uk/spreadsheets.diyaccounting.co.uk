@@ -26,7 +26,7 @@ Trade: IT consultancy and software development
 | Closing Stock | 6000 | 6000 | 0 | PASS |
 | Stock: cost of sales = stock purchases + stock movement | 10540 | 10540 | 0 | PASS |
 | Opening Debtors | 10800 | 10800 | 0 | PASS |
-| Closing Debtors | 10400 | 10400 | 0 | PASS |
+| Closing Debtors | 7900 | 7900 | 0 | PASS |
 | Opening Creditors | 2220 | 2220 | 0 | PASS |
 | Closing Creditors | 1710 | 1710 | 0 | PASS |
 | Fixed Assets: schedule total cost = asset additions | 39000 | 39000 | 0 | PASS |
@@ -111,7 +111,6 @@ Trade: IT consultancy and software development
 | | Amount |
 |---|------:|
 | Sales Turnover | 409,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 10,540 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 8,000 |
 | **Gross Profit** | 391,360 |
@@ -177,14 +176,12 @@ Trade: IT consultancy and software development
 
 | | Amount |
 |---|------:|
-| Business name | — |
-| Accounting date | — |
 | Turnover | 409,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 18,540 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 9,458 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | 9,458 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 69,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 15,840 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 1,140 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | 1,140 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9) | — |
 | **Net profit/loss** | 265,508 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
@@ -196,7 +193,6 @@ Trade: IT consultancy and software development
 | **Taxable profit** | 226,508 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29) | 0 |
-| VAT threshold note | — |
 | **Net profit for tax calc** | 226,508 |
 
 ## Stock
@@ -214,9 +210,9 @@ Trade: IT consultancy and software development
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 1 | 7,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 2 | 1,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3 | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | 8,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | 6,100 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | 1,440 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | 360 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | 1,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | 300 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | 600 |
@@ -281,9 +277,9 @@ Trade: IT consultancy and software development
 |------|-----------|-------|-----------------|
 | C5 | Business Name | Precision Code Trading | entityInformation.organizationIdentifier |
 | C7 | Description | IT consultancy and software development | entityInformation.organizationDescription |
-| C8 | Address | 123 High Street | gl-bus:organizationAddress |
-| C10 | Town | Manchester | gl-bus:organizationAddress (town) |
-| C12 | Postcode | M1 1AA | gl-bus:organizationAddress (postcode) |
+| C8 | Address | 123 High Street | entityInformation.organizationAddressLine |
+| C10 | Town | Manchester | entityInformation.organizationTown |
+| C12 | Postcode | M1 1AA | entityInformation.organizationPostcode |
 
 ### Profit & Loss Acc
 
@@ -333,11 +329,11 @@ Trade: IT consultancy and software development
 | E6 | Less: Personal Allowance | 0 | tax.incomeTax.personalAllowance |
 | E7 | Taxable Income | 226508 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
-| C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicBandEnd (applied) |
+| C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicRateLimit (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
 | E8 | Tax at Basic Rate | 7540 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 34976 | tax.incomeTax.higherRate |
-| C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherBandEnd (applied) |
+| C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherRateThreshold (applied) |
 | D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
 | E10 | Tax at Additional Rate | 45615.6 | tax.incomeTax.additionalRate |
 | E11 | **Total Income Tax** | 88131.6 | tax.incomeTax (total) |
@@ -352,10 +348,10 @@ Trade: IT consultancy and software development
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 409900 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 18540 | gl-cor:amount (sa103s.costOfGoods) |
-| D51 | Other direct costs | 9458 | gl-cor:amount (sa103s.otherDirect) |
+| D51 | Motor & travel expenses | 9458 | gl-cor:amount (sa103s.motorAndTravel) |
 | D55 | Employee costs | 69200 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 15840 | gl-cor:amount (sa103s.premises) |
-| D64 | Other expenses | 1140 | gl-cor:amount (sa103s.otherExpenses) |
+| D64 | Repairs & maintenance | 1140 | gl-cor:amount (sa103s.repairs) |
 | D71 | **Net profit/loss** | 265508 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 39000 | tax.capitalAllowances (sa103s) |
@@ -372,40 +368,41 @@ Trade: IT consultancy and software development
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D5 | Opening Stock | 10000 | accounts.assets.1100 (opening) |
-| D7 | Stock at Cost | 10000 | accounts.assets.1100 (atCost) |
-| D30 | Closing Stock | 6000 | accounts.assets.1100 (closing) |
+| D5 | Opening Stock | 10000 | stock.openingValue |
+| D7 | Stock at Cost | 10000 | stock.openingValue (carried) |
+| D30 | Closing Stock | 6000 | stock.closingValue |
 
 ### Debtors & Creditors
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C5 | Opening Debtor 1 | 7200 | accounts.assets.1300 (opening[0]) |
-| C6 | Opening Debtor 2 | 1200 | accounts.assets.1300 (opening[1]) |
-| C7 | Opening Debtor 3 | 2400 | accounts.assets.1300 (opening[2]) |
-| F5 | Closing Debtor 1 | 8000 | accounts.assets.1300 (closing[0]) |
-| F6 | Closing Debtor 2 | 2400 | accounts.assets.1300 (closing[1]) |
-| C12 | Opening Creditor 1 | 1200 | accounts.liabilities.2100 (opening[0]) |
-| C13 | Opening Creditor 2 | 300 | accounts.liabilities.2100 (opening[1]) |
-| C14 | Opening Creditor 3 | 600 | accounts.liabilities.2100 (opening[2]) |
-| C15 | Opening Creditor 4 | 120 | accounts.liabilities.2100 (opening[3]) |
-| F12 | Closing Creditor 1 | 1200 | accounts.liabilities.2100 (closing[0]) |
-| F13 | Closing Creditor 2 | 300 | accounts.liabilities.2100 (closing[1]) |
-| F14 | Closing Creditor 3 | 60 | accounts.liabilities.2100 (closing[2]) |
-| F15 | Closing Creditor 4 | 150 | accounts.liabilities.2100 (closing[3]) |
+| C5 | Opening Debtor 1 | 7200 | debtors[timing=opening][0].amount |
+| C6 | Opening Debtor 2 | 1200 | debtors[timing=opening][1].amount |
+| C7 | Opening Debtor 3 | 2400 | debtors[timing=opening][2].amount |
+| F5 | Closing Debtor 1 | 6100 | debtors[timing=closing][0].amount |
+| F6 | Closing Debtor 2 | 1440 | debtors[timing=closing][1].amount |
+| F7 | Closing Debtor 3 | 360 | debtors[timing=closing][2].amount |
+| C12 | Opening Creditor 1 | 1200 | creditors[timing=opening][0].amount |
+| C13 | Opening Creditor 2 | 300 | creditors[timing=opening][1].amount |
+| C14 | Opening Creditor 3 | 600 | creditors[timing=opening][2].amount |
+| C15 | Opening Creditor 4 | 120 | creditors[timing=opening][3].amount |
+| F12 | Closing Creditor 1 | 1200 | creditors[timing=closing][0].amount |
+| F13 | Closing Creditor 2 | 300 | creditors[timing=closing][1].amount |
+| F14 | Closing Creditor 3 | 60 | creditors[timing=closing][2].amount |
+| F15 | Closing Creditor 4 | 150 | creditors[timing=closing][3].amount |
 
 ### PurchasesMar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| X1 | Purchases capitalised as fixed assets | 39000 | accounts.assets.fixedAssets (purchased) |
+| X1 | Purchases capitalised as fixed assets | 39000 | fixedAssets (purchased, year total) |
 
 ### Fixed Assets
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E67 | New Asset Cost (Plant & Machinery) | 1800 | accounts.assets.fixedAssets (cost) |
-| E1 | Total Original Cost | 39000 | accounts.assets.fixedAssets (totalCost) |
+| E67 | New Asset Cost (Plant & Machinery) | 1800 | fixedAssets[0].cost |
+| E1 | Total Original Cost | 39000 | fixedAssets (totalCost) |
 | K1 | Total First Year Allowance / AIA | 39000 | tax.capitalAllowances.aia (schedule) |
 | L1 | Total Writing Down Allowance | 0 | tax.capitalAllowances.wda (schedule) |
 | M1 | Total Written Down Tax Value | 0 | tax.capitalAllowances.writtenDownValue (schedule) |
@@ -421,20 +418,20 @@ Trade: IT consultancy and software development
 | N7 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N8 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
 | N9 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
-| M12 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
-| N13 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
-| N14 | Higher Band End | 125140 | tax.incomeTax.higherBandEnd |
-| L17 | NI Class 2 Rate | 0 | tax.nationalInsurance.class2Rate |
-| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| M12 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
+| N13 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
+| N14 | Higher Band End | 125140 | tax.incomeTax.higherRateThreshold |
+| L17 | NI Class 2 Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
+| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.mainRateWDA |
 | E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
 | G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |

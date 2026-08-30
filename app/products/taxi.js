@@ -69,6 +69,10 @@ export function cellWrites(scenario, targetStartYear = null) {
     if (biz.address) bd.C8 = biz.address;
     if (biz.town) bd.C10 = biz.town;
     if (biz.postcode) bd.C12 = biz.postcode;
+    // O29 (UTR) is deliberately never written here: 'SE Short'!D94 reads it
+    // back as a number and folds it into the taxable profit chain (box 26),
+    // so a real ten-digit UTR there corrupts the whole tax calculation by
+    // billions. The cell stays blank, matching the template's own default.
   }
 
   if (scenario.sales) {
@@ -151,129 +155,129 @@ export const FORECAST_SHEET = "Wages Forecast";
 // prettier-ignore
 export const CELL_MAP = [
   // ── Business Details ──
-  ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0],
-  ["Business Details", "C7",  "Description",         "entityInformation.organizationDescription", "Business Details", 0],
-  ["Business Details", "C8",  "Address",             "gl-bus:organizationAddress",                "Business Details", 0],
-  ["Business Details", "C10", "Town",                "gl-bus:organizationAddress (town)",         "Business Details", 0],
-  ["Business Details", "C12", "Postcode",            "gl-bus:organizationAddress (postcode)",     "Business Details", 0],
-  ["Business Details", "O29", "UTR",                 "gl-taf:taxRegistrationNumber",              "Business Details", 0],
+  ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0, "text"],
+  ["Business Details", "C7",  "Description",         "entityInformation.organizationDescription", "Business Details", 0, "text"],
+  ["Business Details", "C8",  "Address",             "entityInformation.organizationAddressLine", "Business Details", 0, "text"],
+  ["Business Details", "C10", "Town",                "entityInformation.organizationTown",        "Business Details", 0, "text"],
+  ["Business Details", "C12", "Postcode",            "entityInformation.organizationPostcode",     "Business Details", 0, "text"],
+  ["Business Details", "O29", "UTR",                 "entityInformation.taxRegistrationNumber",   "Business Details", 0, "identifier"],
   // ── Profit & Loss Account (column B) ──
-  ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B7",  "Car Hire / Rental",                "accounts.purchases.5200 (carHire)", "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B8",  "Repairs & Servicing",              "accounts.purchases.5300 (repairs)", "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B9",  "Road Tax & Insurance",             "accounts.purchases.5400 (taxIns)",  "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B10", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B11", "Mileage Allowance",                "tax.mileage (allowance)",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B12", "Cost of Sales (vehicle costs)",    "gl-cor:amount (costOfSales)",       "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B13", "**Gross Profit**",                 "gl-cor:amount (grossProfit)",       "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B14", "Employee Costs",                   "accounts.purchases.5500",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B15", "Premises Costs",                   "accounts.purchases.5600",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B16", "General Admin",                    "accounts.purchases.5700",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B17", "Advertising",                      "accounts.purchases.5800",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B18", "Legal & Professional",             "accounts.purchases.5900",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B19", "Interest & Bank Charges",          "accounts.purchases.6000",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B20", "Bank Charges",                     "accounts.purchases.6100",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B21", "Other Expenses",                   "accounts.purchases.6200",           "Profit & Loss Account", 1],
-  ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0],
-  ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1],
+  ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0, "money"],
+  ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B7",  "Car Hire / Rental",                "accounts.purchases.5200 (carHire)", "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B8",  "Repairs & Servicing",              "accounts.purchases.5300 (repairs)", "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B9",  "Road Tax & Insurance",             "accounts.purchases.5400 (taxIns)",  "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B10", "Capital Allowances",               "tax.capitalAllowances",             "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B11", "Mileage Allowance",                "tax.mileage (allowance)",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B12", "Cost of Sales (vehicle costs)",    "gl-cor:amount (costOfSales)",       "Profit & Loss Account", 0, "money"],
+  ["Profit & Loss Acc", "B13", "**Gross Profit**",                 "gl-cor:amount (grossProfit)",       "Profit & Loss Account", 0, "money"],
+  ["Profit & Loss Acc", "B14", "Employee Costs",                   "accounts.purchases.5500",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B15", "Premises Costs",                   "accounts.purchases.5600",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B16", "General Admin",                    "accounts.purchases.5700",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B17", "Advertising",                      "accounts.purchases.5800",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B18", "Legal & Professional",             "accounts.purchases.5900",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B19", "Interest & Bank Charges",          "accounts.purchases.6000",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B20", "Bank Charges",                     "accounts.purchases.6100",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B21", "Other Expenses",                   "accounts.purchases.6200",           "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0, "money"],
+  ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0, "money"],
+  ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1, "money"],
   // ── VitalTax — quarterly re-sum of P&L monthly columns C:N into its own
   // C:F quarter columns and G annual column (verified against the template:
   // C5=SUM(P&L!C5:E5) through F5=SUM(P&L!L5:N5), G5=SUM(C5:F5); the same
   // pattern feeds row 29's re-sum of the P&L's Cost of Sales and Total
   // Expenses rows) ──
-  ["VitalTax", "C5",  "Q1 Turnover",                         "gl-cor:amount (vitalTax.q1Turnover)",     "Quarterly Summary", 1],
-  ["VitalTax", "D5",  "Q2 Turnover",                         "gl-cor:amount (vitalTax.q2Turnover)",     "Quarterly Summary", 1],
-  ["VitalTax", "E5",  "Q3 Turnover",                         "gl-cor:amount (vitalTax.q3Turnover)",     "Quarterly Summary", 1],
-  ["VitalTax", "F5",  "Q4 Turnover",                         "gl-cor:amount (vitalTax.q4Turnover)",     "Quarterly Summary", 1],
-  ["VitalTax", "G5",  "**Annual Turnover**",                 "gl-cor:amount (vitalTax.annualTurnover)", "Quarterly Summary", 0],
-  ["VitalTax", "C29", "Q1 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q1Expenses)",     "Quarterly Summary", 1],
-  ["VitalTax", "D29", "Q2 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q2Expenses)",     "Quarterly Summary", 1],
-  ["VitalTax", "E29", "Q3 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q3Expenses)",     "Quarterly Summary", 1],
-  ["VitalTax", "F29", "Q4 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q4Expenses)",     "Quarterly Summary", 1],
-  ["VitalTax", "G29", "**Annual Total Allowable Expenses**", "gl-cor:amount (vitalTax.annualExpenses)", "Quarterly Summary", 0],
+  ["VitalTax", "C5",  "Q1 Turnover",                         "gl-cor:amount (vitalTax.q1Turnover)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "D5",  "Q2 Turnover",                         "gl-cor:amount (vitalTax.q2Turnover)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "E5",  "Q3 Turnover",                         "gl-cor:amount (vitalTax.q3Turnover)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "F5",  "Q4 Turnover",                         "gl-cor:amount (vitalTax.q4Turnover)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "G5",  "**Annual Turnover**",                 "gl-cor:amount (vitalTax.annualTurnover)", "Quarterly Summary", 0, "money"],
+  ["VitalTax", "C29", "Q1 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q1Expenses)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "D29", "Q2 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q2Expenses)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "E29", "Q3 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q3Expenses)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "F29", "Q4 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q4Expenses)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "G29", "**Annual Total Allowable Expenses**", "gl-cor:amount (vitalTax.annualExpenses)", "Quarterly Summary", 0, "money"],
   // ── SE Short (SA103S) — formula cells only ──
-  ["SE Short", "D38",  "Turnover",                               "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
-  ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "D71",  "**Net profit/loss**",                    "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0],
-  ["SE Short", "O71",  "Net loss (box 21)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1],
-  ["SE Short", "D80",  "Annual investment allowance (box 22)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "D85",  "Small-balance allowance (box 23)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1],
-  ["SE Short", "O80",  "Other capital allowances (box 24)",      "tax.capitalAllowances.wda (sa103s)",        "Self Assessment (SA103S)", 1],
-  ["SE Short", "O85",  "Balancing charges (box 25)",             "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1],
-  ["SE Short", "D94",  "Goods and services for own use (box 26)","gl-cor:amount (sa103s.ownUse)",             "Self Assessment (SA103S)", 1],
-  ["SE Short", "D99",  "**Net business profit (box 27)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
-  ["SE Short", "O94",  "Loss brought forward (box 28)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
-  ["SE Short", "O99",  "Other business income (box 29)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1],
-  ["SE Short", "D106", "**Net profit for tax calc**",            "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "D38",  "Turnover",                               "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D71",  "**Net profit/loss**",                    "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O71",  "Net loss (box 21)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D80",  "Annual investment allowance (box 22)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D85",  "Small-balance allowance (box 23)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O80",  "Other capital allowances (box 24)",      "tax.capitalAllowances.wda (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O85",  "Balancing charges (box 25)",             "tax.capitalAllowances.balancingCharge (sa103s)", "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D94",  "Goods and services for own use (box 26)","gl-cor:amount (sa103s.ownUse)",             "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D99",  "**Net business profit (box 27)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "O94",  "Loss brought forward (box 28)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "O99",  "Other business income (box 29)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
+  ["SE Short", "D106", "**Net profit for tax calc**",            "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
   // ── Draft Tax Calculation ──
-  [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0],
-  [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Draft Tax Calculation", 0],
-  [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Draft Tax Calculation", 1],
-  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.basicBandEnd (applied)", "Draft Tax Calculation", 1],
-  [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Draft Tax Calculation", 1],
-  [TAX_SHEET, "C10", "Additional rate threshold the sheet applies", "tax.incomeTax.higherBandEnd (applied)", "Draft Tax Calculation", 1],
-  [TAX_SHEET, "D10", "Additional rate the sheet applies", "tax.incomeTax.additionalRate (applied)", "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E10", "Tax at Additional Rate",       "tax.incomeTax.additionalRate",         "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E11", "**Total Income Tax**",         "tax.incomeTax (total)",                "Draft Tax Calculation", 0],
-  [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1],
-  [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1],
-  [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0],
+  [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0, "money"],
+  [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E7",  "Taxable Income",               "gl-cor:amount (taxableIncome)",        "Draft Tax Calculation", 0, "money"],
+  [TAX_SHEET, "D8",  "Basic rate the sheet applies", "tax.incomeTax.basicRate (applied)",    "Draft Tax Calculation", 1, "rate"],
+  [TAX_SHEET, "C9",  "Basic band ceiling the sheet applies", "tax.incomeTax.basicRateLimit (applied)", "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "D9",  "Higher rate the sheet applies", "tax.incomeTax.higherRate (applied)",  "Draft Tax Calculation", 1, "rate"],
+  [TAX_SHEET, "C10", "Additional rate threshold the sheet applies", "tax.incomeTax.higherRateThreshold (applied)", "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "D10", "Additional rate the sheet applies", "tax.incomeTax.additionalRate (applied)", "Draft Tax Calculation", 1, "rate"],
+  [TAX_SHEET, "E8",  "Tax at Basic Rate",            "tax.incomeTax.basicRate",              "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E9",  "Tax at Higher Rate",           "tax.incomeTax.higherRate",             "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E10", "Tax at Additional Rate",       "tax.incomeTax.additionalRate",         "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E11", "**Total Income Tax**",         "tax.incomeTax (total)",                "Draft Tax Calculation", 0, "money"],
+  [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0, "money"],
   // ── Wages Forecast — the projected year the customer plans against.
   // The actual half (rows 5 to 15) pulls the P&L's monthly columns; the
   // forecast half (rows 19 to 30) repeats each month that traded and spreads
   // the year's total across the months that did not, counting the trading
   // months in C19. The tax block below it charges the projected profit. ──
-  [FORECAST_SHEET, "C19", "Months of actual trade",     "gl-cor:amount (forecast.monthsTraded)",  "Wages Forecast", 1],
-  [FORECAST_SHEET, "C20", "Forecast Sales Turnover",    "gl-cor:amount (forecast.turnover)",      "Wages Forecast", 1],
-  [FORECAST_SHEET, "C22", "Forecast Investment Grants", "gl-cor:amount (forecast.otherIncome)",   "Wages Forecast", 1],
-  [FORECAST_SHEET, "C24", "Forecast Cost of Sales",     "gl-cor:amount (forecast.costOfSales)",   "Wages Forecast", 1],
-  [FORECAST_SHEET, "C28", "Forecast General Expenses",  "gl-cor:amount (forecast.expenses)",      "Wages Forecast", 1],
-  [FORECAST_SHEET, "C30", "**Forecast Profit before Tax**", "gl-cor:amount (forecast.profit)",    "Wages Forecast", 0],
-  [FORECAST_SHEET, "C34", "Profit before Tax",          "gl-cor:amount (forecast.taxableProfit)", "Wages Forecast", 1],
-  [FORECAST_SHEET, "C35", "Personal Allowance",         "tax.incomeTax.personalAllowance",        "Wages Forecast", 1],
-  [FORECAST_SHEET, "C36", "Profit after Allowance",     "gl-cor:amount (forecast.taxableIncome)", "Wages Forecast", 1],
-  [FORECAST_SHEET, "C37", "Tax at standard rate",       "tax.incomeTax.basicRate",                "Wages Forecast", 1],
-  [FORECAST_SHEET, "C38", "Tax at higher rate",         "tax.incomeTax.higherRate",               "Wages Forecast", 1],
-  [FORECAST_SHEET, "C39", "Tax at additional rate",     "tax.incomeTax.additionalRate",           "Wages Forecast", 1],
-  [FORECAST_SHEET, "C40", "National Insurance",         "tax.nationalInsurance.class4",           "Wages Forecast", 1],
-  [FORECAST_SHEET, "C41", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Wages Forecast", 0],
+  [FORECAST_SHEET, "C19", "Months of actual trade",     "gl-cor:amount (forecast.monthsTraded)",  "Wages Forecast", 1, "count"],
+  [FORECAST_SHEET, "C20", "Forecast Sales Turnover",    "gl-cor:amount (forecast.turnover)",      "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C22", "Forecast Investment Grants", "gl-cor:amount (forecast.otherIncome)",   "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C24", "Forecast Cost of Sales",     "gl-cor:amount (forecast.costOfSales)",   "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C28", "Forecast General Expenses",  "gl-cor:amount (forecast.expenses)",      "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C30", "**Forecast Profit before Tax**", "gl-cor:amount (forecast.profit)",    "Wages Forecast", 0, "money"],
+  [FORECAST_SHEET, "C34", "Profit before Tax",          "gl-cor:amount (forecast.taxableProfit)", "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C35", "Personal Allowance",         "tax.incomeTax.personalAllowance",        "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C36", "Profit after Allowance",     "gl-cor:amount (forecast.taxableIncome)", "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C37", "Tax at standard rate",       "tax.incomeTax.basicRate",                "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C38", "Tax at higher rate",         "tax.incomeTax.higherRate",               "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C39", "Tax at additional rate",     "tax.incomeTax.additionalRate",           "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C40", "National Insurance",         "tax.nationalInsurance.class4",           "Wages Forecast", 1, "money"],
+  [FORECAST_SHEET, "C41", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Wages Forecast", 0, "money"],
   // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
-  ["PurchasesMar", "I2", "Vehicle running costs for the year",  "accounts.purchases (vehicleRunningCosts)",  "Purchase Analysis", 0],
-  ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "accounts.assets.fixedAssets (purchased)",   "Purchase Analysis", 0],
+  ["PurchasesMar", "I2", "Vehicle running costs for the year",  "accounts.purchases (vehicleRunningCosts)",  "Purchase Analysis", 0, "money"],
+  ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "fixedAssets (purchased, year total)",       "Purchase Analysis", 0, "money"],
   // ── Fixed Assets schedule ──
-  ["Fixed Assets", "D47", "New Asset Cost (Vehicle under £12,000)", "accounts.assets.fixedAssets (cost)",              "Fixed Assets", 1],
-  ["Fixed Assets", "I1",  "Total Annual Investment Allowance",      "tax.capitalAllowances.aia (schedule)",            "Fixed Assets", 0],
-  ["Fixed Assets", "J1",  "Total Writing Down Allowance",           "tax.capitalAllowances.wda (schedule)",            "Fixed Assets", 1],
-  ["Fixed Assets", "P1",  "Total Capital Allowance on Disposal",    "tax.capitalAllowances.disposals (schedule)",      "Fixed Assets", 1],
-  ["Fixed Assets", "Q1",  "Total Balancing Charge",                 "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1],
+  ["Fixed Assets", "D47", "New Asset Cost (Vehicle under £12,000)", "fixedAssets[0].cost",              "Fixed Assets", 1, "money"],
+  ["Fixed Assets", "I1",  "Total Annual Investment Allowance",      "tax.capitalAllowances.aia (schedule)",            "Fixed Assets", 0, "money"],
+  ["Fixed Assets", "J1",  "Total Writing Down Allowance",           "tax.capitalAllowances.wda (schedule)",            "Fixed Assets", 1, "money"],
+  ["Fixed Assets", "P1",  "Total Capital Allowance on Disposal",    "tax.capitalAllowances.disposals (schedule)",      "Fixed Assets", 1, "money"],
+  ["Fixed Assets", "Q1",  "Total Balancing Charge",                 "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1, "money"],
   // ── Admin (generator-injected tax data) ──
-  ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
-  ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
-  ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
-  ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
-  ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
-  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
-  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
-  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.higherBandEnd",             "Admin (Generator Injected)", 0],
-  ["Admin", "L16", "NI Class 2 Weekly Rate",              "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
-  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
-  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
-  ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
-  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
-  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
-  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
-  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0],
-  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0],
-  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
-  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
-  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
-  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.lowerRatePence",              "Admin (Generator Injected)", 0],
-  ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
+  ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicRateLimit",             "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.basicRateLimit (+1)",        "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.higherRateThreshold",        "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "L16", "NI Class 2 Weekly Rate",              "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits","Admin (Generator Injected)", 0, "money"],
+  ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits","Admin (Generator Injected)", 0, "money"],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.annualInvestmentAllowance", "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0, "count"],
+  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0, "count"],
+  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.carOver10000",                "Admin (Generator Injected)", 0, "rate"],
+  ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0, "money"],
 ];
 
 // P&L monthly columns, Apr through Mar (verified against the template:
@@ -325,9 +329,9 @@ export function reportSections(results) {
 
 export function cellLabels() {
   const labels = {};
-  for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
+  for (const [sheet, cell, diyLabel, glMapping, , , unit] of CELL_MAP) {
     const key = `${sheet}!${cell}`;
-    labels[key] = { diyLabel, glMapping };
+    labels[key] = { diyLabel, glMapping, unit };
   }
   return labels;
 }
@@ -378,7 +382,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
 
   const pl = results["Profit & Loss Acc"];

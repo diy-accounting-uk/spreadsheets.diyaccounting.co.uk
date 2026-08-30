@@ -10,6 +10,10 @@ entriesComment = "Complete business activity for Kestrel Executive Cars FY2025/2
 [entityInformation]
 organizationIdentifier = "Kestrel Executive Cars"
 organizationDescription = "Executive chauffeur and airport transfer operator"
+organizationAddressLine = "8 Kestrel Way"
+organizationTown = "Slough"
+organizationPostcode = "SL1 4TQ"
+organizationTelephone = "01753 555 0400"
 taxRegistrationNumber = "4455667788"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "TaxiDriver"
@@ -98,3 +102,9 @@ specialRateWDA = 0.06
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
+
+[[fixedAssets]]
+assetID = "FA-CAMERA-001"
+description = "In-car camera system"
+cost = 900
+acquiredDate = 2025-05-12

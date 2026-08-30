@@ -16,6 +16,8 @@
     "judge:reconciliation": "node app/bin/judge-reconciliation.js",
     "report": "node app/bin/report.js",
     "export": "node app/bin/export.js",
+    "verify:roundtrip": "node app/bin/verify-roundtrip.js",
+    "verify:stability": "node app/bin/verify-stability.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
     "extract-scenarios": "node app/bin/extract-scenarios.js",
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",
@@ -108,6 +110,8 @@
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.33.3",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "stripe": "^22.6.0"
   },
   "overrides": {

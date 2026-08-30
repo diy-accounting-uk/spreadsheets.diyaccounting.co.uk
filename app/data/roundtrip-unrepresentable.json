@@ -1,0 +1,95 @@
+{
+  "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the product it applies to and what the sheets do instead. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
+  "fields": [
+    {
+      "field": "diya-gl:cisDeduction",
+      "products": ["bst", "taxi", "se"],
+      "reason": "The BST and Taxi writers do not fill the contractors block, and the SE purchases sheet has no CIS column. Ltd keeps it on the purchases journal's own CIS certificates column."
+    },
+    {
+      "field": "diya-gl:cisRate",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The contractors columns take the tax withheld as an amount. The rate behind it is not entered."
+    },
+    {
+      "field": "diya-gl:employeeID",
+      "products": ["bst", "se", "ltd"],
+      "reason": "A Payslips payroll row is keyed by the employee's name; the payroll id lives on the Employee sheet's own block and is exported to the book's employees table instead of onto each line."
+    },
+    {
+      "field": "diya-gl:employeeNI",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file templates have no Payslips workbook."
+    },
+    {
+      "field": "diya-gl:employerNI",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file templates have no Payslips workbook."
+    },
+    {
+      "field": "diya-gl:grossPay",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file templates have no Payslips workbook. Wages reach them as a coded purchase, which carries the amount and nothing else about the pay run."
+    },
+    {
+      "field": "diya-gl:hpAgreement",
+      "products": ["se", "ltd"],
+      "reason": "HPfinance.xlsx holds one agreement at a time and the purchase rows that settle it carry no reference back to it."
+    },
+    {
+      "field": "diya-gl:incomeTax",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file templates have no Payslips workbook."
+    },
+    {
+      "field": "diya-gl:netPay",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file templates have no Payslips workbook."
+    },
+    {
+      "field": "documentType",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The sales and purchases sheets take one kind of document each, so no row says which kind it is. The opening journal keeps its own documentType."
+    },
+    {
+      "field": "entryNumber",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "A transaction sheet numbers its rows by position, not by an entry number a row carries, so the export gives each line a fresh number. The number a line went in with is not held."
+    },
+    {
+      "field": "lineItemComment",
+      "products": ["bst", "taxi"],
+      "reason": "The single-file sales and purchases sheets carry a customer or supplier name and an invoice reference, and no description column beside them."
+    },
+    {
+      "field": "lineNumber",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The opening balance sheet is a grid of figures, not a numbered journal, so the export numbers its lines by the order it reads the cells in."
+    },
+    {
+      "field": "measurableDescription",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "No transaction sheet carries a second free-text column beside the quantity."
+    },
+    {
+      "field": "measurableQuantity",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The mileage columns on the BST and SE transaction sheets feed the mileage claim the P&L charges, so a quantity written there changes the accounts rather than being carried by them. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
+    },
+    {
+      "field": "measurableUnitOfMeasure",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The sheets' quantity columns are headed with the unit they take, so a row states no unit of its own."
+    },
+    {
+      "field": "taxCode",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "VAT is a single book-wide rate cell on the first month's Sales tab, not a code a row carries. The exported taxRate restates that book rate."
+    },
+    {
+      "field": "taxRate",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "VAT is one book-wide rate, entered as a percentage on the first Sales month tab, so no row carries a rate of its own. SE and Ltd restate that book rate on every line; the single-file templates have no rate cell at all."
+    }
+  ]
+}
