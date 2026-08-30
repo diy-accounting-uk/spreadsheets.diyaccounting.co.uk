@@ -15,7 +15,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 
 Landed on `claude/wave-5` (local at `52088850`, not pushed): T0, T1, T1b, T2, T3, T4, T5, T6 (with
 rework), the loader track and the plan; every product closes the commuting square on its main
-fixture. The full blast radius is re-running on the merged tree.
+fixture; the merged tree passes the 23-file blast radius (3,582 tests, `packages/` clean).
 
 ## Open items
 
