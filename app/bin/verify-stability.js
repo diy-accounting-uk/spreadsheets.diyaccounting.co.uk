@@ -105,7 +105,7 @@ function compareReports(savedReport, recalcReport) {
 }
 
 /**
- * Generate a report file on the moved cells.
+ * Generate a report file on the moved cells, categorizing by type.
  */
 function formatStabilityReport(packageName, score, volatileSet) {
   const lines = [
@@ -120,26 +120,65 @@ function formatStabilityReport(packageName, score, volatileSet) {
     "",
   ];
 
-  if (score.movedKeys.length > 0) {
-    lines.push("Moved cells:");
-    for (const moved of score.movedKeys) {
-      const volatile = volatileSet.get(moved.key);
-      const status = volatile ? "VOLATILE (expected)" : "UNSTABLE (ERROR)";
-      const reason = volatile ? ` - ${volatile.type}` : "";
-      lines.push(`  ${moved.key}: ${moved.savedValue} → ${moved.recalcValue} [${status}${reason}]`);
+  // Categorize moved cells by their type
+  const byType = {
+    volatile: [],
+    unstable: [],
+    stale: [],
+    unlisted: [],
+  };
+
+  for (const moved of score.movedKeys) {
+    const listed = volatileSet.get(moved.key);
+    if (!listed) {
+      byType.unlisted.push(moved);
+      continue;
     }
+    if (listed.type === "volatile formula") {
+      byType.volatile.push({ ...moved, ...listed });
+    } else if (listed.type === "unstable conversion") {
+      byType.unstable.push({ ...moved, ...listed });
+    } else if (listed.type === "stale cached value") {
+      byType.stale.push({ ...moved, ...listed });
+    }
+  }
+
+  if (byType.volatile.length > 0) {
+    lines.push(`Volatile formulas (${byType.volatile.length} cells) - expected:`);
+    for (const moved of byType.volatile.slice(0, 5)) {
+      lines.push(`  ${moved.key}: ${moved.savedValue} → ${moved.recalcValue}`);
+      lines.push(`    Reason: ${moved.reason}`);
+    }
+    if (byType.volatile.length > 5) lines.push(`  ... and ${byType.volatile.length - 5} more`);
     lines.push("");
   }
 
-  const unlistedMoved = score.movedKeys.filter((m) => !volatileSet.has(m.key));
-  if (unlistedMoved.length > 0) {
-    lines.push(`ERROR: ${unlistedMoved.length} unlisted moved cells detected:`);
-    for (const moved of unlistedMoved) {
-      lines.push(`  - key: ${moved.key}`);
-      lines.push(`    savedValue: ${moved.savedValue}`);
-      lines.push(`    recalcValue: ${moved.recalcValue}`);
-      lines.push(`    type: "TODO: volatile formula or unstable conversion"`);
+  if (byType.unstable.length > 0) {
+    lines.push(`Unstable conversions (${byType.unstable.length} cells) - unexpected but tracked:`);
+    for (const moved of byType.unstable.slice(0, 5)) {
+      lines.push(`  ${moved.key}: ${moved.savedValue} → ${moved.recalcValue}`);
+      lines.push(`    Reason: ${moved.reason}`);
     }
+    if (byType.unstable.length > 5) lines.push(`  ... and ${byType.unstable.length - 5} more`);
+    lines.push("");
+  }
+
+  if (byType.stale.length > 0) {
+    lines.push(`Stale cached values (${byType.stale.length} cells) - generator issue, not stability issue:`);
+    for (const moved of byType.stale.slice(0, 5)) {
+      lines.push(`  ${moved.key}: ${moved.savedValue} → ${moved.recalcValue}`);
+      lines.push(`    Reason: ${moved.reason}`);
+    }
+    if (byType.stale.length > 5) lines.push(`  ... and ${byType.stale.length - 5} more`);
+    lines.push("");
+  }
+
+  if (byType.unlisted.length > 0) {
+    lines.push(`UNLISTED MOVES (${byType.unlisted.length} cells) - ERROR:`);
+    for (const moved of byType.unlisted) {
+      lines.push(`  ${moved.key}: ${moved.savedValue} → ${moved.recalcValue}`);
+    }
+    lines.push("");
   }
 
   return lines.join("\n");
