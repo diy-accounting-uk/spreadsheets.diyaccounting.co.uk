@@ -12,7 +12,7 @@ pushes in batches.
 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
-| f19 | F19 derive straddling VAT entries | — | Sonnet | merged `54cb03ac`, sync gate clean, extractor+loader 104/104; Ltd reconcile running |
+| f19 | F19 derive straddling VAT entries | — | Sonnet | landed `54cb03ac`; full Ltd sweep 90/90 year-ends RECONCILES, 0 anomalies |
 | f20 | F20 Taxi export writer | — | Opus | landed, EQ2 gated in CI, 264 lines return, exporter 35/35, breakability proven |
 | box51 | F9 remainder: SA103F box 51 | — | Opus | landed `86f4dd23`, box 49 carries the WDA, full suite 6377/6377 in-track |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
