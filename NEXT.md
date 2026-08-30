@@ -13,9 +13,9 @@ entered stock) are fixed at `c5233f6c`, and the operator's generate-* runs on th
 the new stability suite called LibreOffice in the generate job (guarded at `f177cb3c`); test.yml is green on `f177cb3c`. On the generate-* runs, se, ltd and taxi pass; bst fails every
 reconcile leg on T7's matrix scorecard (`fieldsDropped 1`: the fixture TOMLs carry no
 `documentReference`, so the reconcile-populated package has an empty reference column and
-the export cannot carry it back); fix in flight (Sonnet, worktree `sp-fidelity-refs`): the
-extractor emits reference/description/account on every transaction, the matrix budget is
-re-seeded from measurement. After the merge, fidelity
+the export cannot carry it back); fixed at `claude/wave-5`'s next head: the extractor now emits
+reference/description/account on every transaction (BST whole-field match 295 → 528/528,
+SE 0 → 395, Ltd 13 → 520 on the reconcile path); generate-bst can be re-run there. After the merge, fidelity
 parks (`PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
 The fidelity items below close with that merge; their remainders are in the plan's "What stays
 open" and are not re-listed here.
