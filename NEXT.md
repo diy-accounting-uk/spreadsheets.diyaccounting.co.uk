@@ -10,8 +10,12 @@ Wave 5 is on `claude/wave-5` as PR #43 (16 track merges, merged with main at `43
 merged tree passes 3,582 tests and the post-merge checks, sync gate clean). The double-roundtrip failures on its first test.yml
 run (the exporter dropped the fixed-asset register, the VAT flag, the CT reference and the
 entered stock) are fixed at `c5233f6c`, and the operator's generate-* runs on the earlier head failed only because
-the new stability suite called LibreOffice in the generate job (guarded at `f177cb3c`); test.yml is green on `f177cb3c` (all four roundtrip jobs, the budget gate and
-stability included); the four generate-* runs on that head are the remaining gate. After the merge, fidelity
+the new stability suite called LibreOffice in the generate job (guarded at `f177cb3c`); test.yml is green on `f177cb3c`. On the generate-* runs, se and taxi pass; bst fails every
+reconcile leg on T7's matrix scorecard (`fieldsDropped 1`: the fixture TOMLs carry no
+`documentReference`, so the reconcile-populated package has an empty reference column and
+the export cannot carry it back); fix in flight (Sonnet, worktree `sp-fidelity-refs`): the
+extractor emits reference/description/account on every transaction, the matrix budget is
+re-seeded from measurement. After the merge, fidelity
 parks (`PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
 The fidelity items below close with that merge; their remainders are in the plan's "What stays
 open" and are not re-listed here.
