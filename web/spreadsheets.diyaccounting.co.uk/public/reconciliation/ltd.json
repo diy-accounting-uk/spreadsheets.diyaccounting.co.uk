@@ -5,7 +5,7 @@
   "catalogue": "GB Accounts Company",
   "featuredScenario": "ltd-scenario-full",
   "yearEnd": "2027-09-30",
-  "status": "RECONCILES (with warnings)",
+  "status": "RECONCILES",
   "runs": 94,
   "updated": "2026-08-29",
   "features": {

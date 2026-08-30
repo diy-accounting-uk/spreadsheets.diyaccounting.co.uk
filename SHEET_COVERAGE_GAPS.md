@@ -116,11 +116,10 @@ Ordered by the money or filing risk sitting on an untouched sheet.
 
 1. **The forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`.** Each prints a
    "TAX & NI LIABILITY" a customer reads and plans against, computed down its own chain from
-   `Admin`. Nothing reads either. Both are also wrong by construction today: the derived rows
-   carry formulas in columns D and E only, so the annual profit each charges tax on is one month
-   of trade for SE and two for Taxi. Both charge two bands off an untapered allowance, while SE's
-   own `Income Tax` sheet applies the taper and the additional rate. Every term the checks
-   need is already read somewhere else in the package.
+   `Admin`. Nothing reads either. Both charge two bands off an untapered allowance, while SE's
+   own `Income Tax` sheet applies the taper and the additional rate, and both charge National
+   Insurance at the main rate on everything above the allowance with no Class 4 limits. Every
+   term the checks need is already read somewhere else in the package.
 2. **`Payslips!Payslips`, both products.** The payslip the employer hands over. Its month tabs
    are asserted and its calendar is asserted, but the `LOOKUP` and `INDIRECT` pair that joins
    them is not. A wrong resolution prints the wrong period's pay with every upstream check green.

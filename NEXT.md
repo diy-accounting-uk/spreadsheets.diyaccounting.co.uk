@@ -6,9 +6,17 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. PR #40 (wave 3) is merged, refreshed (generate-* commits through `11b249b4`) and
-deployed green from `11b249b4`. The next PR branch starts from that main; the operator
-dispatches CI on branches.
+Wave 4 merged (PR #42), refreshed and deployed green from main (deploy 33280314966). Wave 5 rebases onto that main before its CI.
+Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-deploy main). The operator dispatches every workflow on branches.
+
+| Track | Items | Status |
+|---|---|---|
+| fidelity-t7 (wave 5) | T7: budget seeded from a real run (BST/Taxi report half clean; SE 2 differing, Ltd 4 and 4 lost lines; `noExcelValue` = checks the Excel-side command never gets `--data` for), the four `roundtrip-*` jobs a budget gate with stability, per-matrix scorecard in generate-* | merged into `claude/wave-5` `694641c1`, worktree removed |
+| fidelity-final (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md` brought current: what T0-T7 delivered, the measurement, the remainders; then fidelity parks | started (Opus), worktree `sp-fidelity-final` |
+
+Landed on `claude/wave-5` (local at `52088850`, not pushed): T0, T1, T1b, T2, T3, T4, T5, T6 (with
+rework), the loader track and the plan; every product closes the commuting square on its main
+fixture; the merged tree passes the 23-file blast radius (3,582 tests, `packages/` clean).
 
 ## Open items
 
@@ -19,49 +27,93 @@ serially, then the four generate dispatches (skip-commit) green including the li
 
 Checks, indicators and docs:
 
-- [ ] **Forecast tax sheets: SE `Profit Forecast` and Taxi `Wages Forecast`** — each prints a
-  "TAX & NI LIABILITY" nothing reads, and both are wrong by construction: the derived rows
-  carry formulas in columns D and E only (SE charges tax on April alone, Taxi on April and
-  May), and both use a flat allowance and two bands. Template fix: extend the formulas
-  across F:O and apply the taper and additional rate; then checks anchored to
-  `Profit & Loss Account!B33+B34` and `Schedule!Q1+R1+Y1-Z1` (SE) and the P&L (Taxi).
-- [ ] **Taxi `Draft Tax calculation`: taper and additional rate** — `E6` grants the full
-  allowance at any profit and `E10` sums two bands, while `taxi.js:502` compares E10 to
-  `calculateExpectedTax`, which tapers and charges 45%. Dormant only because no taxi
-  fixture crosses £100,000. Test: a high-profit taxi fixture makes the existing check fail,
-  then the template repair (as BST's) makes it pass.
 
 Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
-- [ ] **SE VAT Q5 scenario window** — `yearShift` in `se.js` assumes a quarter window inside
-  the accounting year, so the per-quarter scenario-window checks skip Q5, which now sits
-  wholly after the year end; Q5's boxes are anchored on the Vatinterface rows only. Rework
-  the shift so Q5's window is checked against the scenario like Q1-Q4.
 
 Fixture:
 
-- [ ] **Ltd fixture remainders** — the four VAT payments stay coded `RP`, so the PAYE
-  creditor carries a 40,682.17 debit that recoding to `RV` takes to nil; nothing writes the
-  master data's `diya-gl:cisDeduction` into `Purchases!AK`, so the CIS creditor reads as a
-  1,600 debit (a warning carries the figure) — needs a scenario field and a `cellWrites`
-  change; `web/.../schema/diya-gl-lines-v1.schema.json` omits bank codes `BB`, `RT`, `RC`
-  and the `diya-gl:hpAgreement` field the fixture uses (nothing validates against it).
 
-Moved from the submit repo's backlog (spreadsheets concerns):
+- [ ] **Roundtrip fidelity: bring the JS engine, exporter, schema and fidelity tests to the
+  Excel checks' scope** — plan of record `PLAN_ROUNDTRIP_FIDELITY.md` (measured 2026-08-29:
+  Ltd 845 values in scope, 832 without a correct JS source; SE 549/535; the exporter folds
+  SE accounts into 5300; nothing validated the schemas). T0 landed on `claude/wave-4`.
+  Each remaining track is its own item below, in the plan's order.
+- [ ] **Fidelity T1: schema v2, validator, canonical form, gaps inventory** — landed on
+  `claude/wave-5`; closes with wave 5's PR. Remainder: `diya-gl-docs.md` still illustrates
+  the `diya-gl:` extension fields with stale JSON (predates T1; flagged in the doc).
+- [ ] **Fidelity T1b: diya-gl masters for every fixture** — landed on `claude/wave-5`; closes
+  with wave 5's PR. Remainders: the Precision Code master's VAT straddling entries are still
+  stated in the extractor (deriving them needs journal lines outside the accounting period);
+  the committed 2027 `packages/` are stale against the current taxi template (11-19 taxi
+  checks fail on every taxi fixture there until the next regeneration).
+- [ ] **Fidelity T2: the tuple contract and export completeness** — landed on `claude/wave-5`;
+  closes with wave 5's PR. Remainders: 4 Ltd and 1 SE lines still lost in export (the
+  fixed-asset `cellWrites` layout, S7; a ratchet test holds the count); non-March EQ2 is
+  scored on counts only until the comparator undoes the period-frame date shift;
+  `lineItemComment`/`documentReference` on bank, payroll and SE sales lines have no column
+  (most of the remaining SE 397/696 and Ltd 520/722 whole-field gap); the BST `CELL_MAP`
+  tax names (`class2Rate`, `class4LowerRate`, …) do not match the v2 book schema's
+  (`class2WeeklyRate`, `class4MainRate`, …) — align in T3.
+- [ ] **Fidelity: the (data, report) export contract** — the T2 measurement resets the EQ1
+  baseline (rows reprinting a cell scored once; absent values absent; verdicts in scope):
+  BST 172 Excel / 99 JS / 77 equal / 20 differing / 75 no JS; SE 1561 / 434 / 119 / 311 /
+  1131; Ltd 2124 / 595 / 259 / 321 / 1544. `app/data/roundtrip-unrepresentable.json` (18
+  fields) is the declared exception list. Formal framing and tolerance policy are in the
+  plan.
+- [ ] **Fidelity T3: BST and Taxi calculators** — landed on `claude/wave-5`; closes with wave
+  5's PR. Remainders: sp-sixty's BST Debtors & Creditors block keeps a stale monthly-sales
+  figure when a book declares no ledger at all (8 no-JS values; plan item S2's no-ledger
+  case); mileage is computed but `cellWrites` never writes `measurableQuantity` to the
+  Purchases mileage column, so no package can take the mileage route; `export.js` has no
+  Taxi support, so `roundtrip-taxi` gates EQ1 only.
+- [ ] **Fidelity T4: SE calculator** — landed on `claude/wave-5`; SE closes the square exactly
+  (11 read cells are computed as the blanks the workbook holds, asserted as an exact set).
+  Closes with wave 5's PR. Remainders: `SE Short!A7/D8/A32` in the SE `CELL_MAP` name empty
+  boxes (the return prints at `C8`, `S17`, `A33`); the SE ledger/stock/HP plumbing into the
+  scenario is being landed product-agnostically by the loader track, and its one moved
+  figure (the higher-rate band boundary 32,861.235, 2e-7 apart between engines) needs the
+  comparator's canonicalisation to round both sides before comparing.
+- [ ] **Fidelity T5: Ltd calculator** — landed on `claude/wave-5`; Ltd closes the square exactly
+  (no not-computed list needed). Closes with wave 5's PR. Its `buildVatReturns()` and
+  `straddlingTotals()` are the merge point when T4 lands the shared `tax/vat.js` interface.
+- [ ] **Fidelity T6: EQ3 on every package** — landed on `claude/wave-5` with its rework; closes
+  with wave 5's PR. 84 stale cached values across SE and Ltd (the generator item below), no
+  volatile or unstable cells in any read set. Remainder: two SE section rows and three Ltd
+  CT600 cells appear on one side only (a blank saved value against a computed one) — the
+  same seed-chain cause; the gate checks moved keys, not appear/disappear.
+- [ ] **Taxi `Wages Forecast` check reads the wrong cells** — `taxi.js:149` and `:243` read
+  the forecast tax block as C44 = additional rate and C45 = NI where the sheet puts NI in
+  C44 and nothing in C45, and C40 is read as if it never tapers (T1b reported this against
+  SE; T4 traced it to Taxi). Fails on any taxi fixture with non-zero Class 4 NI.
+- [ ] **BrickWork members lose `acquiredDate` in the extractor** — `extract-scenarios.js`
+  `writeBrickworkLtd` drops each member's `acquiredDate` the master states, where the
+  Precision Code build keeps it; the loader test compares name and shares only until then.
+- [ ] **SE forecast checks fail on the 2023-24 rates** — `reconcile.js --package se --scenario
+  advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): five "Forecast" checks
+  (e.g. "Forecast: personal allowance after taper" expects 1,676, gets 12,570) — the SE
+  forecast taper/NI path against `se-2023-2024.toml`. Found by T7.
+- [ ] **Generator leaves dependent cached values stale** — found by T6: after generation the
+  cached `<v>` of cells computed from the Admin seed dates (Payslips calendar `B` chain,
+  Vatinterface `C` column, `CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`,
+  `PubNotes!A11`, `SE Full!Q2/V2`) still carry the template's year until a recalculation.
+  A closed-workbook link or a reader that trusts the cache sees the wrong date (the class
+  ltd-ct fixed for the Fixedassets Admin link). Fix: roll those caches in the generator the
+  way `rollLtdAdminCachedDates` does, then T6's stale-cache category reads 0.
+- [ ] **Fidelity T7: CI wiring** — landed on `claude/wave-5`; closes with wave 5's PR, after
+  which `PLAN_ROUNDTRIP_FIDELITY.md` is brought current (fidelity-final track, in flight) and
+  fidelity parks until a production use of the JS representation (the VAT export in
+  `PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back. Remainders the budget records: SE 2 and Ltd 4
+  differing values (`Income Tax!E9/E11`; `CorporationTax!I17/I18`, `Schedule!R1/Y1`), 4 Ltd
+  and 1 SE lines lost in export (S7), `noExcelValue` because `report.js --source-dir` in CI is
+  not given `--data` so the Excel side publishes no verdicts (one flag), `bookFieldsMissing`
+  90/124/168, and the reconcile matrix stamping the master's calendar dates unshifted so only
+  `linesLost`/`fieldsDropped` are portable across year-ends.
 
-- [ ] **Roundtrip fidelity S1-S7 remainder** (was submit B38) — PLAN_ROUNDTRIP_FIDELITY.md
-  predates the coverage waves; S1 was largely fixed by PR #27 and S7 absorbed by the
-  fixed-asset work. Review the plan against the delivered state, re-measure the EQ1
-  diffs, close what is done, and carry only real remainders.
-- [ ] **Packages-to-archive migration** (was submit B38; PLAN_PACKAGES_TO_ARCHIVE.md
-  at this root) — generated packages move to the diy-accounting-archive repository and
-  stop being tracked here, ending the mass-commit pattern. Paused by choice; resume is
-  an operator decision.
-- [ ] **Spreadsheets-side VAT export for Submit pairing** (the spreadsheets half of
-  submit B16) — file a VAT return from a DIY spreadsheet without re-keying: the
-  spreadsheets product needs a CSV/digital-link export of the VATQtr boxes that Submit
-  can import. The submit half stays in that repo's backlog. Test: an export whose
-  nine boxes equal the VATQtr sheet's, covered by the reconciliation checks.
+## Plans not tracked here
+
+- `PLAN_PACKAGES_TO_ARCHIVE.md` — generated packages move to the archive repository; paused by the operator, resume when wanted.
+- `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
 
