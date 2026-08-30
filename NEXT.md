@@ -19,7 +19,7 @@ pushes in batches.
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
 | f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
 | guides | F9 remainder: guides teach the dead motor cap | — | Haiku | landed, 5 passages across 3 guides, PDF build green |
-| semileage | F18 remainder: SE Sales mileage writer | `../wt-spreadsheets/semileage` | Sonnet | started |
+| semileage | F18 remainder: SE Sales mileage writer | — | Sonnet | landed `0f90e78a`, feeds the sheet's cross-file claim, 5 new checks proven breakable |
 | f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
 | renumber | SE Full renumbering to the current SA103F | `../wt-spreadsheets/renumber` | Opus | started |
 
@@ -37,10 +37,14 @@ follow the reconciliation-bug method.
   wholesale surgery 2026-08-30) — renumber every box to the current form, rewrite captions,
   delete dead boxes, rework the checks. In flight as the renumber track.
 
-- [ ] **F18 remainder: SE's Sales mileage column has no writer** (Sonnet) — `app/templates/se/Sales.xlsx`
-  column D ("Sales Mileage") is read by nothing and written by nothing, so a day's sales miles are
-  captured for Taxi and BST but never for SE; give `app/products/se.js` the write and the exporter
-  the read, following the Taxi/BST shape, and re-seed SE's data-half counts.
+
+- [ ] **SE Purchases-side mileage route** (Opus) — SE's mileage-log entries are written as ordinary
+  cash motor purchases (amount into Purchases `G`), never as miles into the Purchases `D` column
+  the sheet prices itself; `carriesMileage` is `"none"` for SE and `app/lib/calculators/se.js` has
+  no mileage-claim logic. Making the route real means writing miles instead of amounts, reading
+  them back, and teaching the SE calculator the banded claim (Motor Expenses totals and checks
+  move) — the SE counterpart of F14, and `roundtrip-unrepresentable.json` stops excusing the
+  Purchases side when it lands.
 
 ## Plans not tracked here
 
