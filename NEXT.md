@@ -6,17 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Wave 4 merged (PR #42), refreshed and deployed green from main (deploy 33280314966). Wave 5 rebases onto that main before its CI.
-Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-deploy main). The operator dispatches every workflow on branches.
-
-| Track | Items | Status |
-|---|---|---|
-| fidelity-t7 (wave 5) | T7: budget seeded from a real run (BST/Taxi report half clean; SE 2 differing, Ltd 4 and 4 lost lines; `noExcelValue` = checks the Excel-side command never gets `--data` for), the four `roundtrip-*` jobs a budget gate with stability, per-matrix scorecard in generate-* | merged into `claude/wave-5` `694641c1`, worktree removed |
-| fidelity-final (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md` brought current: what T0-T7 delivered, the measurement, the remainders; then fidelity parks | started (Opus), worktree `sp-fidelity-final` |
-
-Landed on `claude/wave-5` (local at `52088850`, not pushed): T0, T1, T1b, T2, T3, T4, T5, T6 (with
-rework), the loader track and the plan; every product closes the commuting square on its main
-fixture; the merged tree passes the 23-file blast radius (3,582 tests, `packages/` clean).
+Wave 5 is complete on `claude/wave-5` (local, merged with main at `4369f879`): T0-T7, T1b, the
+loader track and the plan brought current at parking. Post-merge checks and the sync gate are
+running; then the branch is pushed and its PR opened for the operator's workflows. After the
+merge, fidelity parks (see `PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
 
 ## Open items
 
@@ -82,10 +75,6 @@ Fixture:
   volatile or unstable cells in any read set. Remainder: two SE section rows and three Ltd
   CT600 cells appear on one side only (a blank saved value against a computed one) — the
   same seed-chain cause; the gate checks moved keys, not appear/disappear.
-- [ ] **Taxi `Wages Forecast` check reads the wrong cells** — `taxi.js:149` and `:243` read
-  the forecast tax block as C44 = additional rate and C45 = NI where the sheet puts NI in
-  C44 and nothing in C45, and C40 is read as if it never tapers (T1b reported this against
-  SE; T4 traced it to Taxi). Fails on any taxi fixture with non-zero Class 4 NI.
 - [ ] **BrickWork members lose `acquiredDate` in the extractor** — `extract-scenarios.js`
   `writeBrickworkLtd` drops each member's `acquiredDate` the master states, where the
   Precision Code build keeps it; the loader test compares name and shares only until then.
