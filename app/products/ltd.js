@@ -855,7 +855,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
       const sheet = vatReturnWrites[sheetName];
       const col = STRADDLING_COLUMNS;
-      const entryRow = Object.keys(sheet).filter((k) => k.startsWith(col.amount)).length + 5;
+      // Matching the whole reference rather than its first letter keeps a
+      // write further right out of the count, the same way the journal
+      // writer counts its own rows.
+      const isAmountColumnKey = (key) => new RegExp(`^${col.amount}\\d+$`).test(key);
+      const entryRow = Object.keys(sheet).filter(isAmountColumnKey).length + 5;
       const d = shiftDate(parseDate(entry.date));
       sheet[`${col.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${col.name}${entryRow}`] = entry[nameField];
@@ -1612,14 +1616,136 @@ const FIXED_ASSET_CELL_LABELS = {
   },
 };
 
+// ── Units ──────────────────────────────────────────────────────────────────
+//
+// Every cell the reconciliation reads declares what kind of figure it holds,
+// so the roundtrip comparator can round money to the penny and a rate to six
+// places and compare everything else exactly. An undeclared unit is compared
+// exactly, so a missing declaration can only tighten the gate, never loosen
+// it. Money is the default because most of the book is money; the rules below
+// name the cells that are not.
+
+// Cells that hold a date, as the Excel serial the workbook stores.
+const DATE_CELLS = {
+  "Admin": ["B9", "B32", "F21", "L6", "L7", "N6", "N7"],
+  "CorporationTax": ["E5", "H5"],
+  "CT600": ["B33", "M33"],
+  "PubP&L": ["D3", "E5"],
+  "PubBalSht": ["D2"],
+  "PubNotes": ["A11"],
+  "Report": ["F22"],
+  "Companysecretary.xlsx!Boardmeeting": ["F2"],
+};
+
+// Cells that hold a rate or a percentage, whichever way the sheet writes it.
+const RATE_CELLS = {
+  Admin: ["P6", "P7", "P8", "P9", "M19", "M21", "G5", "G6", "G7", "G8", "G15", "G16", "G17", "G18", "G19", "O16", "O17"],
+  CorporationTax: ["G33", "G34"],
+  CT600: ["AA126", "W137"],
+  PubNotes: ["B27", "B28", "B29", "B30", "B31"],
+  Report: ["D89", "I89"],
+};
+
+// Cells that hold a whole number of something: days, years, miles, shares, a
+// week number or a flag.
+const COUNT_CELLS = {
+  Admin: ["K6", "K7", "N16", "N17"],
+  CorporationTax: ["A33", "A34", "A35", "E33", "E34"],
+  CT600: ["C126"],
+  Report: ["I95", "F97", "F98"],
+};
+
+// Cells that hold a name, an address or a description.
+const TEXT_CELLS = {
+  OpenAccounts: ["E2", "E5", "E8", "J3", "J4"],
+  Report: ["A97", "A98"],
+};
+
+// Cells that hold a reference somebody else issued.
+const IDENTIFIER_CELLS = {
+  OpenAccounts: ["E3", "E4", "N6", "O3"],
+};
+
+function inUnitMap(map, resultsKey, cell) {
+  return (map[resultsKey] || []).includes(cell);
+}
+
+/**
+ * The unit one read cell carries.
+ * @param {string} resultsKey - a sheet name, or "<file>!<sheet>" for a leaf workbook
+ * @param {string} cell - the A1 reference
+ * @returns {string}
+ */
+export function unitFor(resultsKey, cell) {
+  const column = cell.replace(/\d+$/, "");
+  if (inUnitMap(DATE_CELLS, resultsKey, cell)) return "date";
+  if (inUnitMap(RATE_CELLS, resultsKey, cell)) return "rate";
+  if (inUnitMap(COUNT_CELLS, resultsKey, cell)) return "count";
+  if (inUnitMap(TEXT_CELLS, resultsKey, cell)) return "text";
+  if (inUnitMap(IDENTIFIER_CELLS, resultsKey, cell)) return "identifier";
+
+  if (resultsKey.startsWith("Sales.xlsx!") || resultsKey.startsWith("Purchases.xlsx!")) {
+    return cell === VAT_RATE_CELL ? "rate" : "money";
+  }
+  if (resultsKey === "Vatreturns.xlsx!Vatinterface") {
+    if (column === "B" || column === "C") return "date";
+    if (column === "M") return "count";
+    return "money";
+  }
+  if (/^Vatreturns\.xlsx!VATQtr\d$/.test(resultsKey)) return cell === "G5" || cell === "G7" ? "date" : "money";
+  if (resultsKey === "Fixedassets.xlsx!Schedule") {
+    if (column === "B") return "text";
+    if (column === "H") return "rate";
+    return "money";
+  }
+  if (resultsKey === "Payslips.xlsx!Admin") {
+    if (column === "A") return "text";
+    if (column === "B") return "date";
+    return "count";
+  }
+  if (resultsKey === "Companysecretary.xlsx!RegisterofMembers") {
+    if (column === "A") return "text";
+    if (column === "G") return "count";
+    return "money";
+  }
+  if (resultsKey.startsWith("expensesform.xlsx!")) return "rate";
+  return "money";
+}
+
+// Every cell any Ltd package reads, whatever its year end. The month tab
+// names rotate with the year end, so the twelve possible layouts are unioned
+// rather than one being picked.
+function everyReadCell() {
+  const cells = {};
+  const add = (resultsKey, cell) => {
+    if (!cells[resultsKey]) cells[resultsKey] = new Set();
+    cells[resultsKey].add(cell);
+  };
+  for (const [sheet, sheetCells] of Object.entries(standardReads())) for (const cell of sheetCells) add(sheet, cell);
+  for (let yearEndMonth = 1; yearEndMonth <= 12; yearEndMonth++) {
+    for (const [file, sheets] of Object.entries(multiFileOptions(yearEndMonth).additionalReads)) {
+      for (const [sheet, sheetCells] of Object.entries(sheets)) for (const cell of sheetCells) add(`${file}!${sheet}`, cell);
+    }
+  }
+  return cells;
+}
+
 export function cellLabels() {
   const labels = {};
   for (const [sheet, cell, diyLabel, glMapping] of CELL_MAP) {
     const key = `${sheet}!${cell}`;
-    labels[key] = { diyLabel, glMapping };
+    labels[key] = { diyLabel, glMapping, unit: unitFor(sheet, cell) };
   }
   for (const [sheet, cells] of Object.entries(FIXED_ASSET_CELL_LABELS)) {
-    for (const [cell, diyLabel] of Object.entries(cells)) labels[`${sheet}!${cell}`] = { diyLabel, glMapping: "" };
+    for (const [cell, diyLabel] of Object.entries(cells)) {
+      labels[`${sheet}!${cell}`] = { diyLabel, glMapping: "", unit: unitFor(sheet, cell) };
+    }
+  }
+  for (const [resultsKey, cells] of Object.entries(everyReadCell())) {
+    for (const cell of cells) {
+      const key = `${resultsKey}!${cell}`;
+      if (!labels[key]) labels[key] = { unit: unitFor(resultsKey, cell) };
+    }
   }
   return labels;
 }

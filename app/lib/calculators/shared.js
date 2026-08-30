@@ -53,3 +53,30 @@ export function aggregateByCode(lines, codeMap) {
   }
   return byCode;
 }
+
+// ── Calendar helpers ───────────────────────────────────────────────────────
+// The workbooks lay a year out month end by month end, so a calculator needs
+// to walk months and to name a month end from an anchor. Both keep to UTC,
+// which is what every date in a book and a journal carries.
+
+/**
+ * The same day of the month, a whole number of months away.
+ * @param {Date} date
+ * @param {number} months - may be negative
+ * @returns {Date}
+ */
+export function addMonths(date, months) {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, date.getUTCDate()));
+}
+
+/**
+ * The last day of the month a whole number of months from the anchor's own
+ * month. Walking from the first of the month keeps a 31st from spilling into
+ * the month after when the target month is shorter.
+ * @param {Date} anchor
+ * @param {number} months - may be negative
+ * @returns {Date}
+ */
+export function endOfMonth(anchor, months) {
+  return new Date(Date.UTC(anchor.getUTCFullYear(), anchor.getUTCMonth() + months + 1, 0));
+}
