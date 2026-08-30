@@ -8,8 +8,15 @@ FY 2025-04-01 to 2026-03-31. Director-owner Mike Brown (100% shares) plus one la
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts, tax rates, 1 director, 2 employees
-- **lines.jsonl** -- 106 entries (24 sales, 58 purchases, 24 payroll)
+- **book.toml** -- Business metadata and address, chart of accounts, tax rates, the opening balance sheet, stock, the debtor and creditor ledgers, the van on the fixed asset register, 1 director, 1 member, 2 employees
+- **lines.jsonl** -- 165 entries (24 sales, 58 purchases, 24 payroll, 52 bank, 7 opening journal)
+
+The bank journal is the company's own statement: the balance brought forward,
+a customer receipt and a supplier payment each month, the monthly net wages
+and PAYE, three Construction Industry Scheme remittances and last year's
+corporation tax. The sub-contractors are paid net of the tax withheld from
+them, and February's deduction is still owed at the year end, which is what
+leaves a CIS creditor on the closing balance sheet.
 
 ## Key Figures
 
@@ -37,10 +44,28 @@ registration threshold; its journal amounts then carry VAT at 20% on top.
 | vat-reg | Yes | Over the threshold, journal amounts including VAT at 20%. Output VAT 22,500, input VAT 14,691. |
 
 The van is the same vehicle in both, so it carries the VAT but not the change
-in size.
+in size. There is one master: the registered twin is derived from it by a
+declared build section in `app/bin/extract-scenarios.js`, which scales the
+trade, adds the VAT, holds the capital purchase flat and settles the VAT
+quarterly.
 
 The company runs a director's salary and one labourer's wage through the
 payroll and claims the Employment Allowance, which covers the whole of its
 employer's National Insurance. The sole trader adaptations carry the
 labourer's wage alone -- a sole trader is not his own employee -- so they
 report a larger profit on the same turnover.
+
+## Scenario Extract
+
+`node app/bin/extract-scenarios.js` writes five fixtures and five diya-gl
+subsets from this master data:
+
+| Fixture | Subset | Adaptation |
+|---------|--------|------------|
+| `bst-brickwork-pro-nonvat` | `bst-nonvat/` | Sole trader, no bank journal, the labourer's wage bought in as an employee cost |
+| `se-brickwork-pro-nonvat` | `se-nonvat/` | Sole trader with the bank and the payroll, the director's payslip replaced by monthly drawings |
+| `se-brickwork-pro-vat` | `se-vat/` | The same, registered and trading half as much again |
+| `ltd-brickwork-pro-nonvat` | `ltd-nonvat/` | The company as the master keeps it |
+| `ltd-brickwork-pro-vat` | `ltd-vat/` | The company, registered and trading half as much again |
+
+Nothing in any of them is stated by hand.

@@ -10,6 +10,10 @@ entriesComment = "Complete business activity for BrickWork Pro FY2025/26"
 [entityInformation]
 organizationIdentifier = "BrickWork Pro Ltd"
 organizationDescription = "Bricklaying, plastering and general building"
+organizationAddressLine = "Unit 5, Industrial Estate"
+organizationTown = "Sheffield"
+organizationPostcode = "S1 2AB"
+organizationTelephone = "0114 555 0100"
 taxRegistrationNumber = "9876543210"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "Company"
@@ -77,6 +81,13 @@ accountMainDescription = "Fixed asset purchases"
 accountMainDescription = "Current account"
 accountType = "bank"
 
+# Assets
+[accounts.assets."1100"]
+accountMainDescription = "Stock"
+
+[accounts.assets."1300"]
+accountMainDescription = "Trade debtors"
+
 # Capital
 [accounts.capital."3000"]
 accountMainDescription = "Share capital"
@@ -87,6 +98,9 @@ accountMainDescription = "Retained earnings"
 # Liabilities
 [accounts.liabilities."2100"]
 accountMainDescription = "Trade creditors"
+
+[accounts.liabilities."2200"]
+accountMainDescription = "VAT liability"
 
 [accounts.liabilities."2300"]
 accountMainDescription = "Corporation Tax liability"
@@ -162,3 +176,103 @@ taxCode = "1257L"
 niCategory = "A"
 startDate = 2023-03-15
 isDirector = false
+
+[openingBalances]
+stock = 3000
+tradeDebtors = 6600
+tradeCreditors = 1510
+corporationTaxDue = 900
+shareCapital = 100
+retainedEarnings = 27090
+
+[openingBalances.bankAccounts]
+"1200" = 20000
+
+[stock]
+openingValue = 3000
+closingValue = 2500
+
+[[debtors]]
+counterparty = "Acme Developments"
+invoice = "INV-0310"
+amount = 4620
+timing = "opening"
+
+[[debtors]]
+counterparty = "HomeStyle Renovations"
+invoice = "INV-0320"
+amount = 1980
+timing = "opening"
+
+[[debtors]]
+counterparty = "Acme Developments"
+invoice = "INV-1510"
+amount = 4690
+timing = "closing"
+
+[[debtors]]
+counterparty = "HomeStyle Renovations"
+invoice = "INV-1520"
+amount = 2010
+timing = "closing"
+
+[[creditors]]
+counterparty = "Vodafone"
+invoice = "VF-2503"
+amount = 60
+timing = "opening"
+
+[[creditors]]
+counterparty = "Jewson"
+invoice = "JW-2503"
+amount = 800
+timing = "opening"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2503"
+amount = 200
+timing = "opening"
+
+[[creditors]]
+counterparty = "Travis Perkins"
+invoice = "TP-2503"
+amount = 450
+timing = "opening"
+
+[[creditors]]
+counterparty = "Vodafone"
+invoice = "VF-2603"
+amount = 60
+timing = "closing"
+
+[[creditors]]
+counterparty = "Jewson"
+invoice = "JW-2603"
+amount = 800
+timing = "closing"
+
+[[creditors]]
+counterparty = "Shell"
+invoice = "SH-2603"
+amount = 200
+timing = "closing"
+
+[[creditors]]
+counterparty = "Travis Perkins"
+invoice = "TP-2603"
+amount = 450
+timing = "closing"
+
+[[fixedAssets]]
+assetID = "FA-VAN-001"
+class = "motorVehicles"
+description = "Ford Transit Custom van"
+cost = 12000
+acquiredDate = 2025-09-01
+
+[[members]]
+memberID = "MEM-1"
+name = "Mike Brown"
+shares = 100
+acquiredDate = 2019-06-01
