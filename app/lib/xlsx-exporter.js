@@ -326,9 +326,9 @@ export async function extractTaxiTransactions(xlsxBuffer) {
           sourceJournalID: "sales",
           postingDate: excelSerialToDate(dateVal),
           accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
-          // A day the driver logged miles on but took no fare still carries
-          // its miles into the claim, so the row is a posting with nothing
-          // on it rather than no posting at all.
+          // A day the driver logged miles on but took no fare still counts
+          // its miles towards the claim, so it posts at nil rather than not
+          // at all.
           amount: takings ?? 0,
           entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
         };
