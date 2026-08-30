@@ -17,7 +17,7 @@ pushes in batches.
 | box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
-| f18 | F18 lineItemComment/documentReference home | — | Sonnet | waits for f20, f14rem |
+| f18 | F18 lineItemComment/documentReference home + taxi column C + sp-sixty mileage | `../wt-spreadsheets/f18` | Sonnet | started |
 
 ## Open items
 
