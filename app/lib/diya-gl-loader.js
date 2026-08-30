@@ -424,16 +424,18 @@ export function diyaGlToScenario(book, lines, product) {
  * Extract tax data from book.toml tax section into the format matching app/data/*.toml.
  * Bridges diya-gl field names (camelCase) to tax data field names (snake_case).
  * @param {Object} book - parsed book.toml
- * @returns {Object} tax data in the same format as app/data/se-YYYY-YYYY.toml
+ * @param {string} [product] - 'bst' | 'taxi' | 'se' | 'ltd' (optional; defaults to SE key shape)
+ * @returns {Object} tax data in the same format as app/data/se-YYYY-YYYY.toml or app/data/ltd-YYYY.toml
  */
-export function extractTaxDataFromBook(book) {
+export function extractTaxDataFromBook(book, product) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
   const ca = tax.capitalAllowances || {};
   const mi = tax.mileage || {};
+  const ct = tax.corporationTax || {};
 
-  return {
+  const baseTaxData = {
     income_tax: {
       personal_allowance: it.personalAllowance || 12570,
       starting_rate: 0,
@@ -458,10 +460,6 @@ export function extractTaxDataFromBook(book) {
       class4_upper_rate: ni.class4UpperRate ?? 0.02,
       class4_upper_limit: ni.class4UpperProfits ?? 50270,
     },
-    capital_allowances: {
-      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
-      writing_down_allowance: ca.mainRateWDA || 0.18,
-    },
     mileage: {
       higher_rate_limit: 10000,
       higher_rate_pence: mi.carFirst10000 || 0.45,
@@ -473,4 +471,39 @@ export function extractTaxDataFromBook(book) {
       standard_rate: 0.2,
     },
   };
+
+  // Capital allowances differ by regime: Ltd has main/special rates and full expensing;
+  // SE (and other regimes) use a single writing_down_allowance rate.
+  if (product === "ltd") {
+    baseTaxData.capital_allowances = {
+      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
+      writing_down_allowance_main: ca.mainRateWDA || 0.18,
+      writing_down_allowance_special: ca.specialRateWDA || 0.06,
+      full_expensing_rate: 0, // Defaults to 0; varies by tax year but not available from book.toml
+    };
+    baseTaxData.corporation_tax = {
+      main_rate: ct.mainRate || 0.25,
+      small_profits_rate: ct.smallProfitsRate || 0.19,
+      small_profits_limit: ct.smallProfitsLimit || 50000,
+      main_rate_limit: ct.mainRateThreshold || 250000,
+      marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
+    };
+    // Depreciation rates for Ltd asset classes. Not available from book.toml;
+    // use standard accounting rates. These match app/data/ltd-*.toml values.
+    baseTaxData.depreciation = {
+      land_and_property: 0.0,
+      plant_and_machinery: 0.1,
+      fixtures_and_fittings: 0.2,
+      computer_equipment: 0.33,
+      motor_vehicles: 0.25,
+    };
+  } else {
+    // SE/BST/Taxi use a single writing_down_allowance key
+    baseTaxData.capital_allowances = {
+      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
+      writing_down_allowance: ca.mainRateWDA || 0.18,
+    };
+  }
+
+  return baseTaxData;
 }
