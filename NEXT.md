@@ -6,9 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #45 merged as `740da9ae`. The main-side `test`, `deploy` and four `generate-*` runs are in
-progress; the generate-commit runs refresh the committed reports for the mileage route and the
-new Purchase Analysis rows. Every later PR branch rebases onto that main.
+Nothing. Main is refreshed and deployed through PR #45 (`test` and `deploy` green at `20a18cb9`);
+every later PR branch starts from a rebase onto that main, and the operator dispatches CI on
+branches.
 
 ## Open items
 
