@@ -409,16 +409,19 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 
   const reversePurchase = buildReverseCodeMap(product === "ltd" ? LTD_PURCHASE_CODE_MAP : SE_PURCHASE_CODE_MAP);
   // Ltd: E=code, F=amount; SE: F=code, G=amount. Column C is the invoice
-  // reference on both journals in both products. The description column
-  // differs: Ltd carries one on each journal (D), SE only on purchases (E),
-  // because its sales sheet gives D to the mileage claim instead.
+  // reference on both journals in both products. The description column sits
+  // at D for Ltd's sales and purchases both; SE's own sales sheet gives D to
+  // the day's mileage instead, so SE's sales description sits one column over
+  // at E ("Sales Description"), while its purchases description stays at E
+  // too (Ltd purchases carries no mileage column, so its own description
+  // fits at D like its sales sheet).
   const codeCol = product === "ltd" ? "E" : "F";
   const amountCol = product === "ltd" ? "F" : "G";
   // The book charges VAT at one rate, entered as a percentage on the first
   // Sales month tab. A book that is not registered turns it off there, and
   // every sheet downstream follows that cell, so a hardcoded 20% would put
   // VAT on an unregistered book's every line.
-  const salesDescriptionCol = product === "ltd" ? "D" : null;
+  const salesDescriptionCol = product === "ltd" ? "D" : "E";
   const purchasesDescriptionCol = product === "ltd" ? "D" : "E";
   const cisColumn = product === "ltd" ? "AK" : null;
   const lines = [];
@@ -514,10 +517,15 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 // each file's writer uses. Ltd statement books carry a wider receipts-analysis
 // block than Cashaccount, which shifts their payments block right; the SE
 // bank and cash books each carry their own narrower payments block.
-const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", code: "S", amount: "T" };
-const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", code: "P", amount: "Q" };
-const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", code: "W", amount: "X" };
-const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", code: "T", amount: "U" };
+const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", reference: "Q", comment: "R", code: "S", amount: "T" };
+const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", reference: "N", comment: "O", code: "P", amount: "Q" };
+const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", reference: "U", comment: "V", code: "W", amount: "X" };
+const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", reference: "R", comment: "S", code: "T", amount: "U" };
+// Every bank and cash book keeps its receipts' invoice reference at the same
+// column, C ("Sales Invoice" on the template), and its own reference beside
+// it, D ("Deposit Bank/Cash Reference"), whichever file or product.
+const BANK_RECEIPT_REFERENCE_COLUMN = "C";
+const BANK_RECEIPT_COMMENT_COLUMN = "D";
 const BANK_FILES = {
   se: [
     { file: "Bank.xlsx", accountID: "1200", payment: SE_BANK_PAYMENT_COLS },
@@ -590,7 +598,7 @@ export async function extractBankTransactions(sourceDir, product) {
         const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
         const codeStr = typeof code === "string" ? code : String(code);
 
-        lines.push({
+        const line = {
           "sourceJournalID": "bank",
           "postingDate": excelSerialToDate(dateVal),
           "accountMainID": accountID,
@@ -600,7 +608,12 @@ export async function extractBankTransactions(sourceDir, product) {
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-        });
+        };
+        const reference = textAt(xml, `${BANK_RECEIPT_REFERENCE_COLUMN}${row}`, sharedStrings);
+        if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${BANK_RECEIPT_COMMENT_COLUMN}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
+        lines.push(line);
       }
 
       // Payments: rows 6+, columns per the file's payment layout
@@ -614,7 +627,7 @@ export async function extractBankTransactions(sourceDir, product) {
         const code = readCellValue(xml, `${payment.code}${row}`, sharedStrings) || "";
         const codeStr = typeof code === "string" ? code : String(code);
 
-        lines.push({
+        const line = {
           "sourceJournalID": "bank",
           "postingDate": excelSerialToDate(dateVal),
           "accountMainID": accountID,
@@ -624,7 +637,12 @@ export async function extractBankTransactions(sourceDir, product) {
           "debitCreditCode": "C",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-        });
+        };
+        const reference = textAt(xml, `${payment.reference}${row}`, sharedStrings);
+        if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${payment.comment}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
+        lines.push(line);
       }
     }
   }
@@ -661,7 +679,8 @@ export async function extractPayrollTransactions(sourceDir) {
       const incomeTax = readCellValue(xml, `N${row}`, sharedStrings) || 0;
       const employeeNI = readCellValue(xml, `O${row}`, sharedStrings) || 0;
       const netPay = readCellValue(xml, `R${row}`, sharedStrings) || 0;
-      // Column S is a blank spacer on the payslip block; column T is the
+      // Column S is a blank spacer on the payslip block, unused by any
+      // formula, so the payslip's own reference goes there; column T is the
       // employer-NI entry cell the sheet's own row-56 total sums.
       const employerNI = readCellValue(xml, `T${row}`, sharedStrings) || 0;
 
@@ -673,7 +692,7 @@ export async function extractPayrollTransactions(sourceDir) {
       }
       const postingDate = excelSerialToDate(wageDate);
 
-      lines.push({
+      const line = {
         "sourceJournalID": "payroll",
         postingDate,
         "accountMainID": textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || "5101",
@@ -685,7 +704,10 @@ export async function extractPayrollTransactions(sourceDir) {
         "diya-gl:employerNI": typeof employerNI === "number" ? employerNI : 0,
         "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
         "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-      });
+      };
+      const reference = textAt(xml, `S${row}`, sharedStrings);
+      if (reference) line.documentReference = reference;
+      lines.push(line);
     }
   }
 

@@ -4,7 +4,7 @@
 // scenario-extractor.js — Pure functions for extracting test scenario data
 // from Precision Code Ltd master data.
 
-import { totalBusinessMiles } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -662,6 +662,7 @@ export function buildPayroll(lines) {
       employeeNI: line["diya-gl:employeeNI"],
       employerNI: line["diya-gl:employerNI"],
       netPay: line["diya-gl:netPay"],
+      reference: line.documentReference,
     });
   }
   return payroll;
@@ -775,6 +776,7 @@ export function buildGrouped(
         direction: debitCredit === "D" ? "in" : "out",
         amount: line.amount,
         description: line.lineItemComment || "",
+        reference: line.documentReference,
       });
     }
   }
@@ -821,18 +823,29 @@ const BST_EXPENSE_CODES = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"
  */
 export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_CODE_MAP) {
   const totalSales = computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales"));
-  const byCode = totalsByCode(lines, purchaseCodeMap);
+  const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
+  // A mileage-log entry buys nothing: the package prices it from the whole
+  // year's business miles rather than the amount the book states for the
+  // entry, so this figure is worked out the same way and not from the raw
+  // amount. A master line that feeds more than one package can carry a
+  // different true price in each -- a taxi package sees the fare days' miles
+  // too, and bands the same entry's miles differently -- so trusting the
+  // book's own amount here would tie this figure to whichever package the
+  // line was priced for.
+  const cashPurchaseLines = purchaseLines.filter(
+    (line) => !(line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number"),
+  );
+  const byCode = totalsByCode(cashPurchaseLines, purchaseCodeMap);
+  const businessMiles = totalBusinessMiles(purchaseLines);
+  if (businessMiles) {
+    byCode.m = Math.round(((byCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100;
+  }
+
   const stockAdjustment = stock ? stock.openingValue - stock.closingValue : 0;
   const grossProfit = totalSales - ((byCode.s || 0) + stockAdjustment) - (byCode.d || 0);
   const netProfit = grossProfit - BST_EXPENSE_CODES.reduce((total, code) => total + (byCode[code] || 0), 0);
 
   const figures = { total_sales: totalSales, gross_profit: Math.round(grossProfit), net_profit: Math.round(netProfit) };
-  // Net profit above already carries each mileage-log entry at the amount it
-  // was claimed for. The package is given the miles instead and prices them
-  // itself, so the figures state the miles too: a check can then work the
-  // allowance out at the tax year it is reconciled against rather than
-  // trusting the rate the book was written at.
-  const businessMiles = totalBusinessMiles(lines.filter((line) => line.sourceJournalID === "purchases"));
   if (businessMiles) figures.total_mileage = businessMiles;
   if (byCode.p) figures.total_premises = Math.round(byCode.p);
   if (byCode.g) figures.total_gen_admin = Math.round(byCode.g);
@@ -963,6 +976,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`direction = "${txn.direction}"`);
         parts.push(`amount = ${txn.amount}`);
         if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+        if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
         parts.push("");
       }
     }
@@ -982,6 +996,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`employeeNI = ${e.employeeNI}`);
         parts.push(`employerNI = ${e.employerNI}`);
         parts.push(`netPay = ${e.netPay}`);
+        if (e.reference) parts.push(`reference = "${escapeTomlString(e.reference)}"`);
         parts.push("");
       }
     }

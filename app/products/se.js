@@ -55,16 +55,26 @@ const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
 // creditor payment made), so direction cannot be inferred from the code
 // alone -- every entry names its own direction. Cash.xlsx has no "X"
 // analysis column at all; its own transfer code is "BB".
+// reference and comment are two columns both workbooks keep beside the
+// receipt or payment block that the writer never used to fill. reference is
+// the invoice number column -- Bank.xlsx's receipts carry a "Sales Invoice"
+// column at C and its payments an "Enter Purchase Invoice No." column at Q;
+// Cash.xlsx keeps the same pair at C and N. comment is the column beside it
+// -- Bank.xlsx's D ("Deposit Bank Reference") and R ("Cheque number Direct
+// Debit"), Cash.xlsx's D ("Deposit Cash Reference") and O ("Optional cash
+// payment reference") -- which the sheet keeps for the payer's own reference
+// rather than a description, but is a real, otherwise-empty cell all the
+// same, so a line's own free-text comment goes there.
 const BANK_LAYOUTS = {
   "Bank.xlsx": {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "O", source: "P", code: "S", amount: "T" },
+    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+    payment: { date: "O", source: "P", reference: "Q", comment: "R", code: "S", amount: "T" },
     receiptCodes: new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]),
     paymentCodes: new Set(["BC", "CR", "DR", "W", "B", "J", "RP", "DL", "X"]),
   },
   "Cash.xlsx": {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "L", source: "M", code: "P", amount: "Q" },
+    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+    payment: { date: "L", source: "M", reference: "N", comment: "O", code: "P", amount: "Q" },
     receiptCodes: new Set(["BB", "DR", "CR", "DL"]),
     paymentCodes: new Set(["BB", "CR", "DR", "W", "J", "RP", "DL"]),
   },
@@ -153,6 +163,11 @@ export function cellWrites(scenario) {
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
+        // Column D is the day's sales mileage, which no sales scenario field
+        // fills (see roundtrip-unrepresentable.json); E is "Sales Description",
+        // a free column the sheet keeps beside it, unlike the mileage column,
+        // for the same field the purchases sheet already carries at its own E.
+        if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
@@ -243,6 +258,8 @@ export function cellWrites(scenario) {
         const serial = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
+        if (tx.description) sheet[`${block.comment}${row}`] = tx.description;
         sheet[`${block.code}${row}`] = code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }
@@ -372,9 +389,11 @@ export function cellWrites(scenario) {
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
         // Column S is a blank spacer in the template (self-closing, no
-        // formula, never summed); column T is the real employer-NI data
-        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
-        // Wagesinterface!H reads. Verified against the template.
+        // formula, never summed) -- the payslip's own reference goes there,
+        // since nothing else on the row reads it; column T is the real
+        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
+        // which Wagesinterface!H reads. Verified against the template.
+        if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }

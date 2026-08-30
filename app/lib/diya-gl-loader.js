@@ -25,7 +25,7 @@ import {
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
-import { totalBusinessMiles } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -196,7 +196,7 @@ export function diyaGlToScenario(book, lines, product) {
       : Math.round(turnoverLines.reduce((sum, l) => sum + l.amount, 0));
   }
 
-  // Compute expense totals by code
+  // Compute expense totals by code.
   const byCode = {};
   purchaseLines.forEach((l) => {
     const code = purchaseCodeMap[l.accountMainID];
@@ -228,21 +228,39 @@ export function diyaGlToScenario(book, lines, product) {
   if (businessMiles) expected.total_mileage = businessMiles;
 
   if (product === "bst") {
-    const stockPurchases = byCode.s || 0;
+    // A mileage-log line buys nothing: BST's own package prices it from the
+    // whole year's business miles rather than the amount the book states for
+    // one entry, the same way the recalculated sheet and the JS calculator
+    // both do, so it is left out of this total and priced here instead. A
+    // master line that feeds more than one package can carry a different
+    // true price in each -- a taxi package sees the fare days' miles too, and
+    // bands the same entry's miles differently -- so trusting the book's own
+    // amount here would tie this figure to whichever package the line was
+    // priced for.
+    const bstByCode = {};
+    purchaseLines
+      .filter((l) => !(l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+      .forEach((l) => {
+        const code = purchaseCodeMap[l.accountMainID];
+        if (code) bstByCode[code] = (bstByCode[code] || 0) + l.amount;
+      });
+    if (businessMiles) bstByCode.m = (bstByCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
+
+    const stockPurchases = bstByCode.s || 0;
     const openingStock = book.stock?.openingValue ?? 0;
     const closingStock = book.stock?.closingValue ?? 0;
     const stockAdj = openingStock - closingStock;
     const coS = stockPurchases + stockAdj;
-    const directCosts = byCode.d || 0;
+    const directCosts = bstByCode.d || 0;
     const grossProfit = totalSales - coS - directCosts;
     const expenseCodes = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
-    const totalExpenses = expenseCodes.reduce((s, c) => s + (byCode[c] || 0), 0);
+    const totalExpenses = expenseCodes.reduce((s, c) => s + (bstByCode[c] || 0), 0);
     const netProfit = grossProfit - totalExpenses;
     expected.gross_profit = Math.round(grossProfit);
     expected.net_profit = Math.round(netProfit);
-    expected.total_premises = Math.round(byCode.p || 0);
-    expected.total_gen_admin = Math.round(byCode.g || 0);
-    expected.total_legal = Math.round(byCode.l || 0);
+    expected.total_premises = Math.round(bstByCode.p || 0);
+    expected.total_gen_admin = Math.round(bstByCode.g || 0);
+    expected.total_legal = Math.round(bstByCode.l || 0);
   }
 
   if (product === "se" || product === "ltd") {
@@ -318,6 +336,7 @@ export function diyaGlToScenario(book, lines, product) {
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
         accountMainID: line.accountMainID,
+        reference: line.documentReference,
       });
     }
     scenario.payroll = payrollByMonth;

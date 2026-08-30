@@ -378,10 +378,7 @@ const PRODUCTS = [
     data: "examples/sp-sixty-driving/taxi",
     years: "se-2025-2026",
     yearEnd: "2026-04-05",
-    unreached: 1,
-    // The Purchases tab keeps an invoice reference column in C that the taxi
-    // writer does not fill, so a reference goes in and nothing comes back.
-    dropped: ["documentReference"],
+    unreached: 0,
   },
   { name: "se", data: "examples/precision-code-ltd/advanced", years: "se-2025-2026", yearEnd: "2026-04-05", unreached: 2 },
   { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", unreached: 5 },

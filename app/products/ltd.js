@@ -79,19 +79,29 @@ const BANK_TRANSFER_CODES = {
 // month tabs, and the code letters each block has an analysis column for.
 // Cashaccount analyses fewer receipt codes than the three statement books,
 // which shifts its payments block four columns to the left.
+//
+// reference and comment are two columns every one of the four workbooks
+// keeps beside its receipts and payments that the writer never used to fill.
+// reference is the invoice number column -- "Sales Invoice" on receipts (C),
+// "Enter Purchase Invoice No." on payments. comment is the column beside it
+// -- "Deposit Bank Reference" on receipts (D), "Cheque number Direct Debit"
+// on Cashaccount's and the statement books' payments -- which the sheet
+// keeps for the payer's own reference rather than a description, but is a
+// real, otherwise-empty cell all the same, so a line's own free-text comment
+// goes there.
 function bankLayout(fileName) {
   const transfers = Object.values(BANK_TRANSFER_CODES).filter((c) => c !== BANK_TRANSFER_CODES[fileName]);
   if (fileName === "Cashaccount.xlsx") {
     return {
-      receipt: { date: "A", source: "B", code: "E", amount: "F" },
-      payment: { date: "P", source: "Q", code: "T", amount: "U" },
+      receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+      payment: { date: "P", source: "Q", reference: "R", comment: "S", code: "T", amount: "U" },
       receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "DL"],
       paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL"],
     };
   }
   return {
-    receipt: { date: "A", source: "B", code: "E", amount: "F" },
-    payment: { date: "S", source: "T", code: "W", amount: "X" },
+    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+    payment: { date: "S", source: "T", reference: "U", comment: "V", code: "W", amount: "X" },
     receiptCodes: [...transfers, "DR", "K", "LDR", "LCR", "RV", "RC", "DL", "X"],
     paymentCodes: [...transfers, "CR", "W", "B", "J", "LDR", "LCR", "RP", "RV", "RC", "RT", "DV", "DL", "X"],
   };
@@ -664,9 +674,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         sheet[`O${row}`] = e.employeeNI;
         sheet[`R${row}`] = e.netPay;
         // Column S is a blank spacer in the template (self-closing, no
-        // formula, never summed); column T is the real employer-NI data
-        // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
-        // WagesInterface!H reads. Verified against the template.
+        // formula, never summed) -- the payslip's own reference goes there,
+        // since nothing else on the row reads it; column T is the real
+        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
+        // which WagesInterface!H reads. Verified against the template.
+        if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
@@ -833,6 +845,8 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const row = rows[rowKey]++;
         sheet[`${block.date}${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
+        if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
+        if (tx.description) sheet[`${block.comment}${row}`] = tx.description;
         sheet[`${block.code}${row}`] = tx.code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }
