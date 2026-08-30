@@ -4,6 +4,14 @@
 // mileage.js — the HMRC approved mileage allowance, shared by the Basic
 // Sole Trader and Taxi Driver engines.
 
+// HMRC's approved mileage rate for a car: 45p to the first 10,000 business
+// miles in the tax year, 25p beyond. It has held since 2011/12 and matches
+// every tax year this app's own data files carry (app/data/*.toml). A figure
+// worked out from it ahead of any one tax year's data -- an expected value at
+// fixture-extraction time, say -- does not go stale the way a rate that does
+// change year to year would.
+export const HMRC_CAR_MILEAGE_RATES = { higher_rate_limit: 10000, higher_rate_pence: 0.45, lower_rate_pence: 0.25 };
+
 /**
  * The allowance a year's business miles claim: the first band of miles at
  * the higher rate, the rest at the lower one.

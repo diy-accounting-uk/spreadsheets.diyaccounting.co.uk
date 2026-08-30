@@ -4,7 +4,7 @@
 // scenario-extractor.js — Pure functions for extracting test scenario data
 // from Precision Code Ltd master data.
 
-import { totalBusinessMiles, calculateMileageAllowance } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -809,13 +809,6 @@ export function totalsByCode(lines, purchaseCodeMap) {
 // direct costs (d) and fixed assets (f) are not among them: the first two are
 // cost of sales and the third capitalises out of the account altogether.
 const BST_EXPENSE_CODES = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
-
-// HMRC's approved mileage rate for a car: 45p to the first 10,000 business
-// miles in the tax year, 25p beyond. It has held since 2011/12 and matches
-// every tax year this app's own data files carry (app/data/*.toml), so a
-// figure worked out here at extraction time, ahead of any one tax year's
-// data, does not go stale the way a rate that does change year to year would.
-const HMRC_CAR_MILEAGE_RATES = { higher_rate_limit: 10000, higher_rate_pence: 0.45, lower_rate_pence: 0.25 };
 
 /**
  * The figures a Basic Sole Trader scenario expects its recalculated package
