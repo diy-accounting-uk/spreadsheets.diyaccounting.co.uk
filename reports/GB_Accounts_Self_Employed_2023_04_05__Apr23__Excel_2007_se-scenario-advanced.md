@@ -351,6 +351,30 @@ Trade: IT consultancy and software development
 | P&L mar col N27 = Purchases.xlsx a-coded net | 0 | 0 | 0 | PASS |
 | P&L mar col N28 = Purchases.xlsx l-coded net | 354.17 | 354.166666666667 | -0.003333333332989241 | PASS |
 | P&L mar col N32 = Purchases.xlsx y-coded net | 95.83 | 95.8333333333333 | +0.00333333333330188 | PASS |
+| Purchases.xlsx Apr: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Apr: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx May: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx May: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Jun: CIS tax withheld reaches the certificates column (AD1) | 1000 | 1000 | 0 | PASS |
+| Purchases.xlsx Jun: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Jul: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Jul: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Aug: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Aug: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Sep: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Sep: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Oct: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Oct: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Nov: CIS tax withheld reaches the certificates column (AD1) | 600 | 600 | 0 | PASS |
+| Purchases.xlsx Nov: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Dec: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Dec: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Jan: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Jan: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Feb: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Feb: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Mar: CIS tax withheld reaches the certificates column (AD1) | 0 | 0 | 0 | PASS |
+| Purchases.xlsx Mar: the month's expense analysis balances (A1) | 0 | 0 | 0 | PASS |
 | Wagesinterface apr C4 gross pay | 6748 | 6748 | 0 | PASS |
 | Wagesinterface apr D4 income tax | 800 | 800 | 0 | PASS |
 | Wagesinterface apr E4 employee NI | 296 | 296 | 0 | PASS |
@@ -1633,97 +1657,121 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 851.875 |  |
 | I1 |  | 4259.375 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!May
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 1062.5 |  |
 | I1 |  | 5312.5 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Jun
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 4109.5 |  |
 | I1 |  | 20547.5 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 1000 |  |
 
 ### Purchases.xlsx!Jul
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 1509.875 |  |
 | I1 |  | 7549.375 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Aug
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 734.208333333333 |  |
 | I1 |  | 3671.04166666667 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Sep
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 2229.16666666667 |  |
 | I1 |  | 11145.8333333333 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 7167.625 |  |
 | I1 |  | 35838.125 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Nov
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 1153 |  |
 | I1 |  | 5765 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 600 |  |
 
 ### Purchases.xlsx!Dec
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 1575.25 |  |
 | I1 |  | 7876.25 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Jan
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 751.875 |  |
 | I1 |  | 3759.375 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Feb
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 732.75 |  |
 | I1 |  | 3663.75 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Purchases.xlsx!Mar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 |  | 0 |  |
 | H1 |  | 621.083333333333 |  |
 | I1 |  | 3105.41666666667 |  |
 | H2 |  | 20 |  |
+| AD1 |  | 0 |  |
 
 ### Vat.xlsx!VATQtr1
 
