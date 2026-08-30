@@ -2,8 +2,10 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
 import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../lib/diya-gl-loader.js";
 import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 
@@ -12,6 +14,7 @@ const ROOT = resolve(__dirname, "..", "..");
 const BST_DATA = resolve(ROOT, "examples", "precision-code-ltd", "bst");
 const ADV_DATA = resolve(ROOT, "examples", "precision-code-ltd", "advanced");
 const FULL_DATA = resolve(ROOT, "examples", "precision-code-ltd", "full");
+const BRICKWORK_LTD_NONVAT = resolve(ROOT, "examples", "brickwork-pro", "ltd-nonvat");
 
 describe("loadDiyaGlData", () => {
   it("loads book.toml and lines.jsonl from BST subset", () => {
@@ -94,6 +97,80 @@ describe("diyaGlToScenario — Ltd", () => {
     const scenario = diyaGlToScenario(book, lines, "ltd");
     // From extract-scenarios: Ltd total_sales = 341283
     expect(scenario.expected.total_sales).toBe(341283);
+  });
+});
+
+// The v2 book tables (fixedAssets, hpAgreements, dividends, members, charges,
+// stock, debtors, creditors) and diya-gl:vatRegistered, checked against the
+// same scenario the extractor writes for the same master data. Parsing both
+// sides through smol-toml means a bare TOML date comes back as the same kind
+// of Date object on both sides, so the comparison holds the field, not its
+// text representation.
+describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", () => {
+  const fixturesDir = resolve(ROOT, "app", "test", "fixtures");
+  const fullFixture = parseTOML(readFileSync(resolve(fixturesDir, "ltd-scenario-full.toml"), "utf-8"));
+  const brickFixture = parseTOML(readFileSync(resolve(fixturesDir, "ltd-brickwork-pro-nonvat.toml"), "utf-8"));
+
+  function ltdScenarioFor(dataDir) {
+    const { book, lines } = loadDiyaGlData(dataDir);
+    return diyaGlToScenario(book, lines, "ltd");
+  }
+
+  const fullScenario = ltdScenarioFor(FULL_DATA);
+  const brickScenario = ltdScenarioFor(BRICKWORK_LTD_NONVAT);
+
+  it("declares vat_registered from the book's own diya-gl:vatRegistered flag", () => {
+    expect(fullScenario.metadata.vat_registered).toBe(fullFixture.metadata.vat_registered);
+    expect(fullFixture.metadata.vat_registered).toBe(true);
+    expect(brickScenario.metadata.vat_registered).toBe(brickFixture.metadata.vat_registered);
+    expect(brickFixture.metadata.vat_registered).toBe(false);
+  });
+
+  it.each([
+    ["stock", "full"],
+    ["opening_debtors", "full"],
+    ["closing_debtors", "full"],
+    ["opening_creditors", "full"],
+    ["closing_creditors", "full"],
+    ["opening_fixed_assets", "full"],
+    ["hp_agreements", "full"],
+    ["charges", "full"],
+    ["dividend", "full"],
+    ["stock", "brickwork"],
+    ["opening_debtors", "brickwork"],
+    ["closing_debtors", "brickwork"],
+    ["opening_creditors", "brickwork"],
+    ["closing_creditors", "brickwork"],
+    ["opening_fixed_assets", "brickwork"],
+  ])("%s (%s) equals the extractor-written fixture", (table, which) => {
+    const scenario = which === "full" ? fullScenario : brickScenario;
+    const fixture = which === "full" ? fullFixture : brickFixture;
+    expect(scenario[table]).toEqual(fixture[table]);
+  });
+
+  it("opening_fixed_assets excludes an asset a purchase line already claims", () => {
+    // BrickWork's van is bought within the year (a "fa"-coded purchase line
+    // carries its diya-gl:assetID), so it reaches the Schedule through that
+    // purchase, not through the opening register, and the fixture agrees:
+    // BrickWork Ltd carries no opening_fixed_assets at all.
+    expect(brickScenario.opening_fixed_assets).toBeUndefined();
+    expect(brickFixture.opening_fixed_assets).toBeUndefined();
+  });
+
+  it("members equals the fixture, name and shares always, acquisition date where the fixture keeps it", () => {
+    expect(fullScenario.members).toEqual(fullFixture.members);
+    // The extractor's own BrickWork Ltd build drops each member's acquired
+    // date (app/bin/extract-scenarios.js, writeBrickworkLtd), even though the
+    // master book states one; the loader carries it through regardless, so
+    // only name and shares are common ground between the two here.
+    expect(brickScenario.members.map(({ name, shares }) => ({ name, shares }))).toEqual(brickFixture.members);
+  });
+
+  it("hp_agreements and charges are absent from BrickWork Ltd, which declares neither table", () => {
+    expect(brickScenario.hp_agreements).toBeUndefined();
+    expect(brickFixture.hp_agreements).toBeUndefined();
+    expect(brickScenario.charges).toBeUndefined();
+    expect(brickFixture.charges).toBeUndefined();
   });
 });
 
