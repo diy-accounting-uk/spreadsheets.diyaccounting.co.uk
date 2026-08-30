@@ -6,10 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #45 (`claude/next-fidelity-wave`) carries the whole fidelity wave: F1, F2, F7, F8, F9, F10,
-F12, F13, F14, F16, F17 and the `archive-packages` skill; CI green at `1bdbe5f7`. Awaiting the operator's merge, then the
-main-side `generate-*` refresh so the committed reports pick up the new Purchase Analysis rows
-and the mileage route on every BST/Taxi year end.
+PR #45 merged as `740da9ae`. The main-side `test`, `deploy` and four `generate-*` runs are in
+progress; the generate-commit runs refresh the committed reports for the mileage route and the
+new Purchase Analysis rows. Every later PR branch rebases onto that main.
 
 ## Open items
 
