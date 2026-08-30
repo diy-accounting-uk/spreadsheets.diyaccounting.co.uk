@@ -49,3046 +49,4183 @@ isDirector = true
 [[sales.apr]]
 date = 2025-04-01
 customer = "Beta Systems"
+reference = "INV-1301"
+description = "Software licence renewal"
 code = "b"
 amount = 1200
+account = "4001"
 
 [[sales.apr]]
 date = 2025-04-03
 customer = "FreshField Ltd"
+reference = "INV-2601"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.apr]]
 date = 2025-04-05
 customer = "CloudNine Ltd"
+reference = "INV-1401"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.apr]]
 date = 2025-04-08
 customer = "Cedar Systems"
+reference = "INV-2401"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-10
 customer = "Pinnacle Group"
+reference = "INV-2201"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-15
 customer = "Acme Corp"
+reference = "INV-1001"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-18
 customer = "TechStart Ltd"
+reference = "INV-1101"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-20
 customer = "DataFlow Inc"
+reference = "INV-1201"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.apr]]
 date = 2025-04-28
 customer = "Horizon Analytics"
+reference = "INV-2701"
+description = "Data analytics commission"
 code = "d"
 amount = 840
+account = "4003"
 
 [[sales.may]]
 date = 2025-05-03
 customer = "FreshField Ltd"
+reference = "INV-2602"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.may]]
 date = 2025-05-05
 customer = "CloudNine Ltd"
+reference = "INV-1402"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.may]]
 date = 2025-05-08
 customer = "Cedar Systems"
+reference = "INV-2402"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-10
 customer = "Pinnacle Group"
+reference = "INV-2202"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-12
 customer = "QuickFix IT"
+reference = "INV-2001"
+description = "IT support consultancy"
 code = "a"
 amount = 960
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-15
 customer = "Acme Corp"
+reference = "INV-1002"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-16
 customer = "Summit Training"
+reference = "INV-2801"
+description = "Technical training delivery"
 code = "c"
 amount = 1200
+account = "4002"
 
 [[sales.may]]
 date = 2025-05-18
 customer = "TechStart Ltd"
+reference = "INV-1102"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.may]]
 date = 2025-05-25
 customer = "Oakridge Partners"
+reference = "INV-2501"
+description = "Quarterly consulting engagement"
 code = "a"
 amount = 1200
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-03
 customer = "FreshField Ltd"
+reference = "INV-2603"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.jun]]
 date = 2025-06-05
 customer = "CloudNine Ltd"
+reference = "INV-1403"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.jun]]
 date = 2025-06-08
 customer = "Cedar Systems"
+reference = "INV-2403"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-10
 customer = "Pinnacle Group"
+reference = "INV-2203"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-15
 customer = "Acme Corp"
+reference = "INV-1003"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-18
 customer = "TechStart Ltd"
+reference = "INV-1103"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-20
 customer = "DataFlow Inc"
+reference = "INV-1202"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.jun]]
 date = 2025-06-20
 customer = "Gamma Ltd"
+reference = "INV-1501"
+description = "Advanced DevOps training course"
 code = "c"
 amount = 2400
+account = "4002"
 
 [[sales.jun]]
 date = 2025-06-22
 customer = "WidgetWorks"
+reference = "INV-2101"
+description = "Project consultancy"
 code = "a"
 amount = 1440
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-01
 customer = "Beta Systems"
+reference = "INV-1302"
+description = "Software licence renewal"
 code = "b"
 amount = 1200
+account = "4001"
 
 [[sales.jul]]
 date = 2025-07-03
 customer = "FreshField Ltd"
+reference = "INV-2604"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.jul]]
 date = 2025-07-05
 customer = "CloudNine Ltd"
+reference = "INV-1404"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.jul]]
 date = 2025-07-08
 customer = "Cedar Systems"
+reference = "INV-2404"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-10
 customer = "Pinnacle Group"
+reference = "INV-2204"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-14
 customer = "NorthStar Digital"
+reference = "INV-2301"
+description = "Project delivery"
 code = "a"
 amount = 2160
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-15
 customer = "Acme Corp"
+reference = "INV-1004"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-18
 customer = "TechStart Ltd"
+reference = "INV-1104"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.jul]]
 date = 2025-07-28
 customer = "Horizon Analytics"
+reference = "INV-2702"
+description = "Data analytics commission"
 code = "d"
 amount = 840
+account = "4003"
 
 [[sales.aug]]
 date = 2025-08-01
 customer = "Innovate UK"
+reference = "INV-1701"
+description = "Small business innovation grant"
 code = "g"
 amount = 2500
+account = "4004"
 
 [[sales.aug]]
 date = 2025-08-03
 customer = "FreshField Ltd"
+reference = "INV-2605"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.aug]]
 date = 2025-08-05
 customer = "CloudNine Ltd"
+reference = "INV-1405"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.aug]]
 date = 2025-08-08
 customer = "Cedar Systems"
+reference = "INV-2405"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-10
 customer = "Pinnacle Group"
+reference = "INV-2205"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-12
 customer = "QuickFix IT"
+reference = "INV-2002"
+description = "IT support consultancy"
 code = "a"
 amount = 960
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-15
 customer = "Acme Corp"
+reference = "INV-1005"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-18
 customer = "TechStart Ltd"
+reference = "INV-1105"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-20
 customer = "DataFlow Inc"
+reference = "INV-1203"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.aug]]
 date = 2025-08-25
 customer = "Oakridge Partners"
+reference = "INV-2502"
+description = "Quarterly consulting engagement"
 code = "a"
 amount = 1200
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-03
 customer = "FreshField Ltd"
+reference = "INV-2606"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.sep]]
 date = 2025-09-05
 customer = "CloudNine Ltd"
+reference = "INV-1406"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.sep]]
 date = 2025-09-08
 customer = "Cedar Systems"
+reference = "INV-2406"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-10
 customer = "Pinnacle Group"
+reference = "INV-2206"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-15
 customer = "Acme Corp"
+reference = "INV-1006"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-16
 customer = "Summit Training"
+reference = "INV-2802"
+description = "Technical training delivery"
 code = "c"
 amount = 1200
+account = "4002"
 
 [[sales.sep]]
 date = 2025-09-18
 customer = "TechStart Ltd"
+reference = "INV-1106"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-20
 customer = "StartupHub"
+reference = "INV-1504"
+description = "Agile methodology workshop"
 code = "c"
 amount = 960
+account = "4002"
 
 [[sales.sep]]
 date = 2025-09-22
 customer = "WidgetWorks"
+reference = "INV-2102"
+description = "Project consultancy"
 code = "a"
 amount = 1440
+account = "4000"
 
 [[sales.sep]]
 date = 2025-09-25
 customer = "Epsilon Partners"
+reference = "INV-1601"
+description = "Client referral commission"
 code = "d"
 amount = 600
+account = "4003"
 
 [[sales.oct]]
 date = 2025-10-01
 customer = "Beta Systems"
+reference = "INV-1303"
+description = "Software licence renewal"
 code = "b"
 amount = 1200
+account = "4001"
 
 [[sales.oct]]
 date = 2025-10-03
 customer = "FreshField Ltd"
+reference = "INV-2607"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.oct]]
 date = 2025-10-05
 customer = "CloudNine Ltd"
+reference = "INV-1407"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.oct]]
 date = 2025-10-08
 customer = "Cedar Systems"
+reference = "INV-2407"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-10
 customer = "Private buyer"
+reference = "INV-1901"
+description = "Disposal of company van"
 code = "fs"
 amount = 15000
+account = "4006"
 
 [[sales.oct]]
 date = 2025-10-10
 customer = "Pinnacle Group"
+reference = "INV-2207"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-14
 customer = "NorthStar Digital"
+reference = "INV-2302"
+description = "Project delivery"
 code = "a"
 amount = 2160
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-15
 customer = "Acme Corp"
+reference = "INV-1007"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-18
 customer = "TechStart Ltd"
+reference = "INV-1107"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-20
 customer = "DataFlow Inc"
+reference = "INV-1204"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.oct]]
 date = 2025-10-28
 customer = "Horizon Analytics"
+reference = "INV-2703"
+description = "Data analytics commission"
 code = "d"
 amount = 840
+account = "4003"
 
 [[sales.nov]]
 date = 2025-11-03
 customer = "FreshField Ltd"
+reference = "INV-2608"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.nov]]
 date = 2025-11-05
 customer = "CloudNine Ltd"
+reference = "INV-1408"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.nov]]
 date = 2025-11-08
 customer = "Cedar Systems"
+reference = "INV-2408"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-10
 customer = "Pinnacle Group"
+reference = "INV-2208"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-12
 customer = "QuickFix IT"
+reference = "INV-2003"
+description = "IT support consultancy"
 code = "a"
 amount = 960
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-15
 customer = "Acme Corp"
+reference = "INV-1008"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-18
 customer = "TechStart Ltd"
+reference = "INV-1108"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.nov]]
 date = 2025-11-20
 customer = "Delta PLC"
+reference = "INV-1502"
+description = "Cloud architecture workshop"
 code = "c"
 amount = 3600
+account = "4002"
 
 [[sales.nov]]
 date = 2025-11-25
 customer = "Oakridge Partners"
+reference = "INV-2503"
+description = "Quarterly consulting engagement"
 code = "a"
 amount = 1200
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-03
 customer = "FreshField Ltd"
+reference = "INV-2609"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.dec]]
 date = 2025-12-05
 customer = "CloudNine Ltd"
+reference = "INV-1409"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.dec]]
 date = 2025-12-08
 customer = "Cedar Systems"
+reference = "INV-2409"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-10
 customer = "Pinnacle Group"
+reference = "INV-2209"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-15
 customer = "Acme Corp"
+reference = "INV-1009"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-18
 customer = "TechStart Ltd"
+reference = "INV-1109"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-20
 customer = "DataFlow Inc"
+reference = "INV-1205"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.dec]]
 date = 2025-12-22
 customer = "WidgetWorks"
+reference = "INV-2103"
+description = "Project consultancy"
 code = "a"
 amount = 1440
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-01
 customer = "Beta Systems"
+reference = "INV-1304"
+description = "Software licence renewal"
 code = "b"
 amount = 1200
+account = "4001"
 
 [[sales.jan]]
 date = 2026-01-03
 customer = "FreshField Ltd"
+reference = "INV-2610"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.jan]]
 date = 2026-01-05
 customer = "CloudNine Ltd"
+reference = "INV-1410"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.jan]]
 date = 2026-01-08
 customer = "Cedar Systems"
+reference = "INV-2410"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-10
 customer = "Pinnacle Group"
+reference = "INV-2210"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-14
 customer = "NorthStar Digital"
+reference = "INV-2303"
+description = "Project delivery"
 code = "a"
 amount = 2160
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-15
 customer = "Acme Corp"
+reference = "INV-1010"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-16
 customer = "Summit Training"
+reference = "INV-2803"
+description = "Technical training delivery"
 code = "c"
 amount = 1200
+account = "4002"
 
 [[sales.jan]]
 date = 2026-01-18
 customer = "TechStart Ltd"
+reference = "INV-1110"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.jan]]
 date = 2026-01-25
 customer = "Lambda Corp"
+reference = "INV-1602"
+description = "Client referral commission"
 code = "d"
 amount = 480
+account = "4003"
 
 [[sales.jan]]
 date = 2026-01-28
 customer = "Horizon Analytics"
+reference = "INV-2704"
+description = "Data analytics commission"
 code = "d"
 amount = 840
+account = "4003"
 
 [[sales.feb]]
 date = 2026-02-03
 customer = "FreshField Ltd"
+reference = "INV-2611"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.feb]]
 date = 2026-02-05
 customer = "CloudNine Ltd"
+reference = "INV-1411"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.feb]]
 date = 2026-02-08
 customer = "Cedar Systems"
+reference = "INV-2411"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-10
 customer = "Pinnacle Group"
+reference = "INV-2211"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-15
 customer = "Acme Corp"
+reference = "INV-1011"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-18
 customer = "TechStart Ltd"
+reference = "INV-1111"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-20
 customer = "DataFlow Inc"
+reference = "INV-1206"
+description = "Ad-hoc consultancy project"
 code = "a"
 amount = 1800
+account = "4000"
 
 [[sales.feb]]
 date = 2026-02-20
 customer = "MegaCorp"
+reference = "INV-1503"
+description = "Security awareness training"
 code = "c"
 amount = 1800
+account = "4002"
 
 [[sales.feb]]
 date = 2026-02-25
 customer = "Oakridge Partners"
+reference = "INV-2504"
+description = "Quarterly consulting engagement"
 code = "a"
 amount = 1200
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-03
 customer = "FreshField Ltd"
+reference = "INV-2612"
+description = "Software monitoring licence"
 code = "b"
 amount = 360
+account = "4001"
 
 [[sales.mar]]
 date = 2026-03-05
 customer = "CloudNine Ltd"
+reference = "INV-1412"
+description = "SaaS licence fee"
 code = "b"
 amount = 600
+account = "4001"
 
 [[sales.mar]]
 date = 2026-03-08
 customer = "Cedar Systems"
+reference = "INV-2412"
+description = "Managed services"
 code = "a"
 amount = 480
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-10
 customer = "Pinnacle Group"
+reference = "INV-2212"
+description = "Monthly support contract"
 code = "a"
 amount = 720
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-15
 customer = "Acme Corp"
+reference = "INV-1012"
+description = "IT consultancy services"
 code = "a"
 amount = 25000
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-18
 customer = "TechStart Ltd"
+reference = "INV-1112"
+description = "IT consultancy retainer"
 code = "a"
 amount = 2400
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-22
 customer = "WidgetWorks"
+reference = "INV-2104"
+description = "Project consultancy"
 code = "a"
 amount = 1440
+account = "4000"
 
 [[sales.mar]]
 date = 2026-03-31
 customer = "Zeta Corp"
+reference = "CN-1801"
+description = "Bad debt written off"
 code = "o"
 amount = 360
+account = "4005"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Hiscox"
+description = "Professional indemnity insurance"
 code = "y"
 amount = 1440
+account = "5700"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.apr]]
 date = 2025-04-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.apr]]
 date = 2025-04-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Xerox"
+description = "Printer lease payment"
 code = "g"
 amount = 180
+account = "5701"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "TechParts"
+description = "Hardware components for resale"
 code = "s"
 amount = 600
+account = "5000"
 
 [[purchases.apr]]
 date = 2025-04-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 42
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.apr]]
 date = 2025-04-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.apr]]
 date = 2025-04-20
 supplier = "Office Maintenance Ltd"
+description = "Premises maintenance and repairs"
 code = "m"
 amount = 120
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.apr]]
 date = 2025-04-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.apr]]
 date = 2025-04-25
 supplier = "Mileage claim"
+description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.apr]]
 date = 2025-04-30
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.may]]
 date = 2025-05-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.may]]
 date = 2025-05-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.may]]
 date = 2025-05-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-06
 supplier = "Trainline"
+description = "Advance train ticket"
 code = "h"
 amount = 60
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-08
 supplier = "Hilti"
+description = "Power tool hire"
 code = "o"
 amount = 240
+account = "5301"
 
 [[purchases.may]]
 date = 2025-05-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.may]]
 date = 2025-05-10
 supplier = "Google Ads"
+description = "PPC advertising campaign"
 code = "a"
 amount = 600
+account = "5500"
 
 [[purchases.may]]
 date = 2025-05-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "ComponentsDirect"
+description = "Electronic components"
 code = "s"
 amount = 480
+account = "5000"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Dell"
+reference = "PUR-FA-001"
+description = "New laptop for development"
 code = "fa"
 amount = 1800
+account = "5900"
 
 [[purchases.may]]
 date = 2025-05-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.may]]
 date = 2025-05-20
 supplier = "ParcelForce"
+description = "Equipment delivery"
 code = "g"
 amount = 180
+account = "5300"
 
 [[purchases.may]]
 date = 2025-05-20
 supplier = "CableCo"
+description = "Cabling and connectors"
 code = "s"
 amount = 240
+account = "5000"
 
 [[purchases.may]]
 date = 2025-05-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.may]]
 date = 2025-05-22
 supplier = "Halfords"
+description = "Vehicle maintenance supplies"
 code = "v"
 amount = 48
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.may]]
 date = 2025-05-25
 supplier = "Mileage claim"
+description = "Business mileage to Birmingham"
 code = "v"
 amount = 54
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.may]]
 date = 2025-05-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.jun]]
 date = 2025-06-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.jun]]
 date = 2025-06-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-10
 supplier = "Vistaprint"
+description = "Business cards and flyers"
 code = "g"
 amount = 96
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 30
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "BuildTech Solutions"
+reference = "PUR-CIS-001"
+description = "Sub-contractor network installation"
 code = "c"
 amount = 5000
 cis_deduction = 1000
+account = "5001"
 
 [[purchases.jun]]
 date = 2025-06-18
 supplier = "Premier Inn"
+description = "Hotel for London client meeting"
 code = "h"
 amount = 180
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-18
 supplier = "ElectroParts"
+description = "Specialist electronic components"
 code = "s"
 amount = 360
+account = "5000"
 
 [[purchases.jun]]
 date = 2025-06-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.jun]]
 date = 2025-06-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-25
 supplier = "EnergySupply"
+description = "Quarterly utility bill"
 code = "p"
 amount = 360
+account = "5201"
 
 [[purchases.jun]]
 date = 2025-06-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.jun]]
 date = 2025-06-25
 supplier = "Mileage claim"
+description = "Business mileage to London"
 code = "v"
 amount = 90
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.jun]]
 date = 2025-06-30
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.jun]]
 date = 2025-06-30
 supplier = "Directors loan"
+reference = "PUR-INT-001"
+description = "Directors loan interest"
 code = "l"
 amount = 250
+account = "5803"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Precision Tooling Supplies"
+reference = "PUR-FA-004"
+description = "Test rig bought under HP-2025-01"
 code = "fa"
 amount = 15600
+account = "5900"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "J. Smith Consulting"
+description = "Goodwill amortisation"
 code = "l"
 amount = 3000
+account = "5802"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.jul]]
 date = 2025-07-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.jul]]
 date = 2025-07-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "LinkedIn"
+description = "Sponsored content campaign"
 code = "a"
 amount = 480
+account = "5500"
 
 [[purchases.jul]]
 date = 2025-07-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Xerox"
+description = "Printer lease payment"
 code = "g"
 amount = 180
+account = "5701"
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "TechParts"
+description = "Hardware components for resale"
 code = "s"
 amount = 720
+account = "5000"
 
 [[purchases.jul]]
 date = 2025-07-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-12
 supplier = "ToolHire"
+description = "Equipment hire for installation"
 code = "o"
 amount = 480
+account = "5301"
 
 [[purchases.jul]]
 date = 2025-07-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.jul]]
 date = 2025-07-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "IKEA"
+reference = "PUR-FA-003"
+description = "Office furniture"
 code = "fa"
 amount = 1200
+account = "5900"
 
 [[purchases.jul]]
 date = 2025-07-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 24
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.jul]]
 date = 2025-07-20
 supplier = "DHL"
+description = "International courier"
 code = "g"
 amount = 120
+account = "5300"
 
 [[purchases.jul]]
 date = 2025-07-20
 supplier = "Office Maintenance Ltd"
+description = "Premises maintenance and repairs"
 code = "m"
 amount = 180
+account = "5400"
 
 [[purchases.jul]]
 date = 2025-07-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.jul]]
 date = 2025-07-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.jul]]
 date = 2025-07-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.jul]]
 date = 2025-07-25
 supplier = "Mileage claim"
+description = "Business mileage to Leeds"
 code = "v"
 amount = 20.25
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.jul]]
 date = 2025-07-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.aug]]
 date = 2025-08-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.aug]]
 date = 2025-08-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.aug]]
 date = 2025-08-06
 supplier = "Trainline"
+description = "Advance train ticket"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 48
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "ComponentsDirect"
+description = "Electronic components"
 code = "s"
 amount = 360
+account = "5000"
 
 [[purchases.aug]]
 date = 2025-08-18
 supplier = "PC Repair Shop"
+description = "Laptop screen repair"
 code = "m"
 amount = 240
+account = "5400"
 
 [[purchases.aug]]
 date = 2025-08-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.aug]]
 date = 2025-08-20
 supplier = "Casual worker"
+description = "Temporary labour"
 code = "w"
 amount = 800
+account = "5101"
 
 [[purchases.aug]]
 date = 2025-08-20
 supplier = "CableCo"
+description = "Cabling and connectors"
 code = "s"
 amount = 180
+account = "5000"
 
 [[purchases.aug]]
 date = 2025-08-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.aug]]
 date = 2025-08-25
 supplier = "Mileage claim"
+description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.aug]]
 date = 2025-08-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.sep]]
 date = 2025-09-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.sep]]
 date = 2025-09-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.sep]]
 date = 2025-09-08
 supplier = "Hilti"
+description = "Power tool hire"
 code = "o"
 amount = 360
+account = "5301"
 
 [[purchases.sep]]
 date = 2025-09-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.sep]]
 date = 2025-09-10
 supplier = "Royal Mail"
+description = "Special delivery courier"
 code = "g"
 amount = 96
+account = "5300"
 
 [[purchases.sep]]
 date = 2025-09-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.sep]]
 date = 2025-09-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Jones Solicitors"
+description = "Contract review and legal advice"
 code = "l"
 amount = 960
+account = "5800"
 
 [[purchases.sep]]
 date = 2025-09-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-18
 supplier = "ElectroParts"
+description = "Specialist electronic components"
 code = "s"
 amount = 240
+account = "5000"
 
 [[purchases.sep]]
 date = 2025-09-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.sep]]
 date = 2025-09-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.sep]]
 date = 2025-09-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.sep]]
 date = 2025-09-22
 supplier = "Halfords"
+description = "Vehicle maintenance supplies"
 code = "v"
 amount = 72
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-25
 supplier = "EnergySupply"
+description = "Quarterly utility bill"
 code = "p"
 amount = 300
+account = "5201"
 
 [[purchases.sep]]
 date = 2025-09-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.sep]]
 date = 2025-09-25
 supplier = "Mileage claim"
+description = "Business mileage to Bristol"
 code = "v"
 amount = 72
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.sep]]
 date = 2025-09-30
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.sep]]
 date = 2025-09-30
 supplier = "Directors loan"
+reference = "PUR-INT-002"
+description = "Directors loan interest"
 code = "l"
 amount = 208
+account = "5803"
 
 [[purchases.sep]]
 date = 2025-09-01
 supplier = "Precision Tooling Supplies"
+reference = "PUR-FA-005"
+description = "Bench calibration kit bought under HP-2025-02"
 code = "fa"
 amount = 8400
+account = "5900"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Simply Business"
+description = "Contents insurance renewal"
 code = "y"
 amount = 360
+account = "5700"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.oct]]
 date = 2025-10-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.oct]]
 date = 2025-10-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.oct]]
 date = 2025-10-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Xerox"
+description = "Printer lease payment"
 code = "g"
 amount = 180
+account = "5701"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "TechParts"
+description = "Hardware components for resale"
 code = "s"
 amount = 480
+account = "5000"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Google Ads"
+description = "PPC advertising campaign Q3"
 code = "a"
 amount = 1800
+account = "5500"
 
 [[purchases.oct]]
 date = 2025-10-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "TechExpo"
+description = "Exhibition stand and materials"
 code = "a"
 amount = 1200
+account = "5500"
 
 [[purchases.oct]]
 date = 2025-10-18
 supplier = "Premier Inn"
+description = "Hotel for Birmingham meeting"
 code = "h"
 amount = 120
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.oct]]
 date = 2025-10-20
 supplier = "Office Maintenance Ltd"
+description = "Premises maintenance and repairs"
 code = "m"
 amount = 96
+account = "5400"
 
 [[purchases.oct]]
 date = 2025-10-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.oct]]
 date = 2025-10-25
 supplier = "Mileage claim"
+description = "Business mileage to Sheffield"
 code = "v"
 amount = 42.75
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-25
 supplier = "Ford"
+reference = "PUR-FA-002"
+description = "Ford Transit Custom van"
 code = "fa"
 amount = 36000
+account = "5900"
 
 [[purchases.oct]]
 date = 2025-10-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.oct]]
 date = 2025-10-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.nov]]
 date = 2025-11-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.nov]]
 date = 2025-11-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.nov]]
 date = 2025-11-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-06
 supplier = "Trainline"
+description = "Advance train ticket"
 code = "h"
 amount = 72
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.nov]]
 date = 2025-11-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "ComponentsDirect"
+description = "Electronic components"
 code = "s"
 amount = 540
+account = "5000"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "BuildTech Solutions"
+reference = "PUR-CIS-002"
+description = "Sub-contractor cabling works"
 code = "c"
 amount = 3000
 cis_deduction = 600
+account = "5001"
 
 [[purchases.nov]]
 date = 2025-11-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.nov]]
 date = 2025-11-20
 supplier = "ParcelForce"
+description = "Equipment delivery"
 code = "g"
 amount = 240
+account = "5300"
 
 [[purchases.nov]]
 date = 2025-11-20
 supplier = "CableCo"
+description = "Cabling and connectors"
 code = "s"
 amount = 300
+account = "5000"
 
 [[purchases.nov]]
 date = 2025-11-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.nov]]
 date = 2025-11-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.nov]]
 date = 2025-11-25
 supplier = "Mileage claim"
+description = "Business mileage to London"
 code = "v"
 amount = 81
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.nov]]
 date = 2025-11-30
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.dec]]
 date = 2025-12-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.dec]]
 date = 2025-12-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.dec]]
 date = 2025-12-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.dec]]
 date = 2025-12-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-10
 supplier = "Vistaprint"
+description = "Business cards and flyers"
 code = "g"
 amount = 120
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.dec]]
 date = 2025-12-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Code Club UK"
+description = "Charitable donation"
 code = "y"
 amount = 500
+account = "5801"
 
 [[purchases.dec]]
 date = 2025-12-18
 supplier = "ElectroParts"
+description = "Specialist electronic components"
 code = "s"
 amount = 480
+account = "5000"
 
 [[purchases.dec]]
 date = 2025-12-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.dec]]
 date = 2025-12-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.dec]]
 date = 2025-12-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-25
 supplier = "EnergySupply"
+description = "Quarterly utility bill"
 code = "p"
 amount = 420
+account = "5201"
 
 [[purchases.dec]]
 date = 2025-12-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.dec]]
 date = 2025-12-25
 supplier = "Mileage claim"
+description = "Business mileage to Various"
 code = "v"
 amount = 49.5
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.dec]]
 date = 2025-12-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.dec]]
 date = 2025-12-31
 supplier = "Director"
+description = "Director fees (non-PAYE)"
 code = "w"
 amount = 5000
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-31
 supplier = "Directors loan"
+reference = "PUR-INT-003"
+description = "Directors loan interest"
 code = "l"
 amount = 167
+account = "5803"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.jan]]
 date = 2026-01-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.jan]]
 date = 2026-01-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "LinkedIn"
+description = "Sponsored content campaign"
 code = "a"
 amount = 480
+account = "5500"
 
 [[purchases.jan]]
 date = 2026-01-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.jan]]
 date = 2026-01-08
 supplier = "Hilti"
+description = "Power tool hire"
 code = "o"
 amount = 180
+account = "5301"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Xerox"
+description = "Printer lease payment"
 code = "g"
 amount = 180
+account = "5701"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "TechParts"
+description = "Hardware components for resale"
 code = "s"
 amount = 600
+account = "5000"
 
 [[purchases.jan]]
 date = 2026-01-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.jan]]
 date = 2026-01-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "DHL"
+description = "International courier"
 code = "g"
 amount = 180
+account = "5300"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "Office Maintenance Ltd"
+description = "Premises maintenance and repairs"
 code = "m"
 amount = 144
+account = "5400"
 
 [[purchases.jan]]
 date = 2026-01-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.jan]]
 date = 2026-01-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.jan]]
 date = 2026-01-22
 supplier = "Halfords"
+description = "Vehicle maintenance supplies"
 code = "v"
 amount = 36
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.jan]]
 date = 2026-01-25
 supplier = "Mileage claim"
+description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.jan]]
 date = 2026-01-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.feb]]
 date = 2026-02-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-05
 supplier = "DigitalOcean"
+description = "Cloud VPS hosting"
 code = "o"
 amount = 36
+account = "5002"
 
 [[purchases.feb]]
 date = 2026-02-06
 supplier = "Trainline"
+description = "Advance train ticket"
 code = "h"
 amount = 36
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-12
 supplier = "ToolHire"
+description = "Equipment hire for installation"
 code = "o"
 amount = 360
+account = "5301"
 
 [[purchases.feb]]
 date = 2026-02-14
 supplier = "Toolstation"
+description = "Assorted fixings and parts"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "ComponentsDirect"
+description = "Electronic components"
 code = "s"
 amount = 420
+account = "5000"
 
 [[purchases.feb]]
 date = 2026-02-18
 supplier = "PC Repair Shop"
+description = "Desktop motherboard replacement"
 code = "m"
 amount = 360
+account = "5400"
 
 [[purchases.feb]]
 date = 2026-02-18
 supplier = "Premier Inn"
+description = "Hotel for two-day workshop"
 code = "h"
 amount = 240
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.feb]]
 date = 2026-02-20
 supplier = "CableCo"
+description = "Cabling and connectors"
 code = "s"
 amount = 240
+account = "5000"
 
 [[purchases.feb]]
 date = 2026-02-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.feb]]
 date = 2026-02-25
 supplier = "Mileage claim"
+description = "Business mileage to Nottingham"
 code = "v"
 amount = 31.5
+account = "5601"
 
 [[purchases.feb]]
 date = 2026-02-28
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.feb]]
 date = 2026-02-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "WorkSpace Ltd"
+description = "Monthly office rent"
 code = "p"
 amount = 1200
+account = "5200"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Microsoft"
+description = "Microsoft 365 subscription"
 code = "g"
 amount = 30
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Slack"
+description = "Slack team subscription"
 code = "g"
 amount = 15
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "GitHub"
+description = "GitHub Team subscription"
 code = "o"
 amount = 45
+account = "5002"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Cloudflare"
+description = "CDN and DNS services"
 code = "o"
 amount = 24
+account = "5002"
 
 [[purchases.mar]]
 date = 2026-03-01
 supplier = "Zoom"
+description = "Video conferencing subscription"
 code = "g"
 amount = 18
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "AWS"
+description = "Cloud hosting charges"
 code = "o"
 amount = 180
+account = "5002"
 
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "Argos"
+description = "Miscellaneous office items"
 code = "y"
 amount = 22
+account = "5401"
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "Ryman"
+description = "Stationery supplies"
 code = "y"
 amount = 24
+account = "5401"
 
 [[purchases.mar]]
 date = 2026-03-05
 supplier = "BP"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 180
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-08
 supplier = "National Rail"
+description = "Train ticket client meeting"
 code = "h"
 amount = 48
+account = "5600"
 
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Amazon"
+description = "Office supplies"
 code = "y"
 amount = 36
+account = "5401"
 
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Royal Mail"
+description = "Special delivery courier"
 code = "g"
 amount = 144
+account = "5300"
 
 [[purchases.mar]]
 date = 2026-03-12
 supplier = "NCP"
+description = "Parking charges"
 code = "v"
 amount = 18
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-14
 supplier = "Uber"
+description = "Taxi to client site"
 code = "h"
 amount = 24
+account = "5600"
 
 [[purchases.mar]]
 date = 2026-03-14
 supplier = "Costa Coffee"
+description = "Client meeting refreshments"
 code = "h"
 amount = 12
+account = "5600"
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Shell"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 150
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Royal Mail"
+description = "Postage"
 code = "g"
 amount = 12
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-16
 supplier = "WHSmith"
+description = "Magazines and stationery"
 code = "g"
 amount = 24
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-18
 supplier = "ElectroParts"
+description = "Specialist electronic components"
 code = "s"
 amount = 300
+account = "5000"
 
 [[purchases.mar]]
 date = 2026-03-18
 supplier = "Jet"
+description = "Fuel for company vehicle"
 code = "v"
 amount = 96
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-20
 supplier = "BT Business"
+description = "Telephone line rental"
 code = "g"
 amount = 60
+account = "5501"
 
 [[purchases.mar]]
 date = 2026-03-21
 supplier = "Greggs"
+description = "Working lunch"
 code = "h"
 amount = 8
+account = "5600"
 
 [[purchases.mar]]
 date = 2026-03-22
 supplier = "Screwfix"
+description = "Miscellaneous supplies"
 code = "y"
 amount = 18
+account = "5401"
 
 [[purchases.mar]]
 date = 2026-03-22
 supplier = "Halfords"
+description = "Vehicle maintenance supplies"
 code = "v"
 amount = 60
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-25
 supplier = "EnergySupply"
+description = "Quarterly utility bill"
 code = "p"
 amount = 360
+account = "5201"
 
 [[purchases.mar]]
 date = 2026-03-25
 supplier = "Wilko"
+description = "Cleaning and kitchen supplies"
 code = "y"
 amount = 15
+account = "5401"
 
 [[purchases.mar]]
 date = 2026-03-25
 supplier = "Mileage claim"
+description = "Business mileage to Various"
 code = "v"
 amount = 58.5
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-28
 supplier = "Shell"
+description = "Additional fuel purchase"
 code = "v"
 amount = 120
+account = "5601"
 
 [[purchases.mar]]
 date = 2026-03-31
 supplier = "Smith & Co"
+description = "Monthly accountancy retainer"
 code = "l"
 amount = 300
+account = "5800"
 
 [[purchases.mar]]
 date = 2026-03-31
 supplier = "Directors loan"
+reference = "PUR-INT-004"
+description = "Directors loan interest"
 code = "l"
 amount = 125
+account = "5803"
 
 [[bank.apr]]
 date = 2025-04-01

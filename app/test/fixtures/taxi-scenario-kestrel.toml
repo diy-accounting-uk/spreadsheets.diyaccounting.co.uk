@@ -225,620 +225,827 @@ amount = 5150
 [[purchases.apr]]
 date = 2025-04-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2620
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 680
+account = "5300"
 
 [[purchases.apr]]
 date = 2025-04-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.apr]]
 date = 2025-04-16
 supplier = "City Council Licensing"
+description = "Operator licence renewal"
 code = "l"
 amount = 1200
+account = "5900"
 
 [[purchases.apr]]
 date = 2025-04-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.apr]]
 date = 2025-04-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.apr]]
 date = 2025-04-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.apr]]
 date = 2025-04-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.may]]
 date = 2025-05-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2540
+account = "5100"
 
 [[purchases.may]]
 date = 2025-05-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.may]]
 date = 2025-05-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 720
+account = "5300"
 
 [[purchases.may]]
 date = 2025-05-12
 supplier = "Nextbase Fleet"
+reference = "NBF-0512"
+description = "In-car camera system"
 code = "f"
 amount = 900
+account = "7000"
 
 [[purchases.may]]
 date = 2025-05-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.may]]
 date = 2025-05-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.may]]
 date = 2025-05-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.may]]
 date = 2025-05-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.may]]
 date = 2025-05-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.jun]]
 date = 2025-06-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2680
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.jun]]
 date = 2025-06-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 650
+account = "5300"
 
 [[purchases.jun]]
 date = 2025-06-11
 supplier = "SignWorks"
+description = "Vehicle livery and door signage"
 code = "a"
 amount = 600
+account = "5800"
 
 [[purchases.jun]]
 date = 2025-06-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.jun]]
 date = 2025-06-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.jun]]
 date = 2025-06-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.jun]]
 date = 2025-06-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.jun]]
 date = 2025-06-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.jul]]
 date = 2025-07-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2700
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 700
+account = "5300"
 
 [[purchases.jul]]
 date = 2025-07-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.jul]]
 date = 2025-07-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.jul]]
 date = 2025-07-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.jul]]
 date = 2025-07-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.jul]]
 date = 2025-07-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.aug]]
 date = 2025-08-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2660
+account = "5100"
 
 [[purchases.aug]]
 date = 2025-08-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.aug]]
 date = 2025-08-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 660
+account = "5300"
 
 [[purchases.aug]]
 date = 2025-08-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.aug]]
 date = 2025-08-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.aug]]
 date = 2025-08-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.aug]]
 date = 2025-08-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.aug]]
 date = 2025-08-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.sep]]
 date = 2025-09-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2580
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.sep]]
 date = 2025-09-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 740
+account = "5300"
 
 [[purchases.sep]]
 date = 2025-09-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Kestrel Yard Ltd"
+description = "Yard security gate contribution"
 code = "o"
 amount = 500
+account = "6200"
 
 [[purchases.sep]]
 date = 2025-09-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.sep]]
 date = 2025-09-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.sep]]
 date = 2025-09-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.sep]]
 date = 2025-09-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.oct]]
 date = 2025-10-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2640
+account = "5100"
 
 [[purchases.oct]]
 date = 2025-10-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 690
+account = "5300"
 
 [[purchases.oct]]
 date = 2025-10-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.oct]]
 date = 2025-10-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.oct]]
 date = 2025-10-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.oct]]
 date = 2025-10-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.oct]]
 date = 2025-10-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.nov]]
 date = 2025-11-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2600
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.nov]]
 date = 2025-11-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 710
+account = "5300"
 
 [[purchases.nov]]
 date = 2025-11-13
 supplier = "Airport Media"
+description = "Airport terminal advertising"
 code = "a"
 amount = 400
+account = "5800"
 
 [[purchases.nov]]
 date = 2025-11-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.nov]]
 date = 2025-11-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.nov]]
 date = 2025-11-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.nov]]
 date = 2025-11-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.nov]]
 date = 2025-11-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.dec]]
 date = 2025-12-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2720
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.dec]]
 date = 2025-12-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 670
+account = "5300"
 
 [[purchases.dec]]
 date = 2025-12-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.dec]]
 date = 2025-12-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.dec]]
 date = 2025-12-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.dec]]
 date = 2025-12-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.dec]]
 date = 2025-12-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.jan]]
 date = 2026-01-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2560
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 730
+account = "5300"
 
 [[purchases.jan]]
 date = 2026-01-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.jan]]
 date = 2026-01-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "TaxAssist Accountants"
+description = "Annual accounts preparation"
 code = "l"
 amount = 900
+account = "5900"
 
 [[purchases.jan]]
 date = 2026-01-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.jan]]
 date = 2026-01-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.jan]]
 date = 2026-01-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.feb]]
 date = 2026-02-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2500
+account = "5100"
 
 [[purchases.feb]]
 date = 2026-02-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.feb]]
 date = 2026-02-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 700
+account = "5300"
 
 [[purchases.feb]]
 date = 2026-02-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.feb]]
 date = 2026-02-17
 supplier = "Kestrel Yard Ltd"
+description = "Waste and recycling contract"
 code = "o"
 amount = 400
+account = "6200"
 
 [[purchases.feb]]
 date = 2026-02-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.feb]]
 date = 2026-02-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.feb]]
 date = 2026-02-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.feb]]
 date = 2026-02-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[purchases.mar]]
 date = 2026-03-03
 supplier = "Fleetcard Fuels"
+description = "Monthly fuel card settlement"
 code = "d"
 amount = 2600
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-06
 supplier = "Executive Fleet Insure"
+description = "Fleet insurance instalment"
 code = "t"
 amount = 1050
+account = "5400"
 
 [[purchases.mar]]
 date = 2026-03-10
 supplier = "Marsh Motor Works"
+description = "Servicing, tyres and valeting"
 code = "r"
 amount = 650
+account = "5300"
 
 [[purchases.mar]]
 date = 2026-03-14
 supplier = "Kestrel Yard Ltd"
+description = "Yard and office rent"
 code = "p"
 amount = 450
+account = "5600"
 
 [[purchases.mar]]
 date = 2026-03-18
 supplier = "Autocab Dispatch"
+description = "Dispatch software and mobile plans"
 code = "g"
 amount = 300
+account = "5700"
 
 [[purchases.mar]]
 date = 2026-03-22
 supplier = "Close Brothers Finance"
+description = "Hire purchase interest"
 code = "i"
 amount = 260
+account = "6000"
 
 [[purchases.mar]]
 date = 2026-03-24
 supplier = "NatWest"
+description = "Business account charges"
 code = "b"
 amount = 45
+account = "6100"
 
 [[purchases.mar]]
 date = 2026-03-28
 supplier = "Payroll - drivers"
+description = "Employed drivers wages"
 code = "e"
 amount = 4600
+account = "5500"
 
 [[fixed_asset_additions]]
 date = 2025-05-12

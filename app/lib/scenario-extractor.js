@@ -800,9 +800,12 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`[[sales.${month}]]`);
       parts.push(`date = ${txn.date}`);
       if (txn.customer) parts.push(`customer = "${escapeTomlString(txn.customer)}"`);
+      if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
+      if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
       if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
       if (txn.code) parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
+      if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
   }
@@ -815,10 +818,13 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`[[purchases.${month}]]`);
       parts.push(`date = ${txn.date}`);
       parts.push(`supplier = "${escapeTomlString(txn.supplier)}"`);
+      if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
+      if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
       if (txn.payment) parts.push(`payment = "${escapeTomlString(txn.payment)}"`);
       parts.push(`code = "${txn.code}"`);
       parts.push(`amount = ${txn.amount}`);
       if (txn.cis_deduction !== undefined) parts.push(`cis_deduction = ${txn.cis_deduction}`);
+      if (txn.account) parts.push(`account = "${escapeTomlString(txn.account)}"`);
       parts.push("");
     }
   }

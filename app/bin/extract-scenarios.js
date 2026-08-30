@@ -264,7 +264,7 @@ const chargesRegister = book.charges.map((charge) => ({
 // ============================================================================
 
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
-const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false });
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true });
 const bstFigures = bstExpectedFigures(bstLines, book.stock);
 const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: false });
 
@@ -332,7 +332,7 @@ const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
-const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP);
+const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
 advGrouped.payroll = buildPayroll(advLines);
 const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
 const advByCode = {};
@@ -410,7 +410,7 @@ const fullSalesLines = fullLines.filter((l) => l.sourceJournalID === "sales");
 const LTD_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004"]);
 const fullTurnoverLines = fullSalesLines.filter((l) => LTD_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const fullTotalSales = computeSpreadsheetNetSales(fullTurnoverLines);
-const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP);
+const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP, { carriesSourceFields: true });
 fullGrouped.payroll = buildPayroll(fullLines);
 const fullPurchLines = fullLines.filter((l) => l.sourceJournalID === "purchases");
 const fullByCode = {};
@@ -852,7 +852,7 @@ const brickBstToml = formatScenarioToml(
     vat_registered: false,
     business: businessBlock(brickBstEntity),
   },
-  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesPaymentLabels: true }),
+  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesPaymentLabels: true, carriesSourceFields: true }),
   {
     ...brickBstFigures,
     ...brickworkLedgers(false),
@@ -886,7 +886,7 @@ function writeBrickworkSe(vatRegistered) {
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
   const vatDivisor = 1 + (vatRegistered ? TWIN_VAT_RATE : 0);
-  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP);
+  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
   grouped.payroll = buildPayroll(lines);
   const entity = brickworkEntity("SelfEmployed", { vatRegistered, soleTrader: true });
   const employees = brickworkEmployees(brickBook.employees.filter((employee) => !employee.isDirector));
@@ -951,7 +951,7 @@ function writeBrickworkLtd(vatRegistered) {
   const byCode = totalsByCode(lines, LTD_PURCHASE_CODE_MAP);
   const vatRate = vatRegistered ? TWIN_VAT_RATE : 0;
   const vatDivisor = 1 + vatRate;
-  const grouped = buildGrouped(lines, LTD_PURCHASE_CODE_MAP);
+  const grouped = buildGrouped(lines, LTD_PURCHASE_CODE_MAP, { carriesSourceFields: true });
   grouped.payroll = buildPayroll(lines);
   const openingBalance = buildOpeningBalance(lines);
   const entity = brickworkEntity("Company", { vatRegistered, soleTrader: false });
@@ -1041,7 +1041,7 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
   const { dir, book, lines } = master;
   assertPurchaseCodesCoverChart(book, TAXI_PURCHASE_CODE_MAP, "TAXI_PURCHASE_CODE_MAP");
 
-  const grouped = takingsOnlySales(buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false }));
+  const grouped = takingsOnlySales(buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true }));
   const additions = fixedAssetAdditions(lines, TAXI_PURCHASE_CODE_MAP, "f");
   const entity = book.entityInformation;
 
@@ -1112,6 +1112,7 @@ assertPurchaseCodesCoverChart(spSixty.book, TAXI_BST_PURCHASE_CODE_MAP, "TAXI_BS
 const spSixtyBstGrouped = buildGrouped(spSixty.lines, TAXI_BST_PURCHASE_CODE_MAP, {
   carriesCisDeductions: false,
   carriesPaymentLabels: true,
+  carriesSourceFields: true,
 });
 const spSixtySalesLines = spSixty.lines.filter((line) => line.sourceJournalID === "sales");
 spSixtyBstGrouped.sales = {};
