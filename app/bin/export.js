@@ -7,24 +7,31 @@
 // Usage:
 //   node app/bin/export.js --package bst --source-dir examples/bst-latest --output-dir /tmp/exported
 //   node app/bin/export.js --package se --source-dir examples/se-latest --output-dir /tmp/exported
+//
+// Both files are written through app/lib/diya-gl-canonical.js, the one form
+// D is compared in, so a re-ordered line, a re-ordered field or a formatting
+// difference can never register as a data difference. The exported book is
+// validated against the published v2 schemas before it is written.
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
+import { resolve } from "path";
 import {
   extractBstTransactions,
   extractMultiFileTransactions,
   extractBankTransactions,
   extractPayrollTransactions,
   extractJournalEntries,
-  extractMetadata,
-  extractPeriodStartMonth,
-  periodCovered,
-  normaliseLine,
+  extractBook,
 } from "../lib/xlsx-exporter.js";
+import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
+import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
+import * as bst from "../products/bst.js";
+import * as taxi from "../products/taxi.js";
+import * as se from "../products/se.js";
+import * as ltd from "../products/ltd.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const PRODUCTS = { bst, taxi, se, ltd };
 
 function parseArgs(argv) {
   const args = argv.slice(2);
@@ -49,6 +56,11 @@ async function main() {
   const { packageName, sourceDir, outputDir } = parseArgs(process.argv);
   const resolvedSource = resolve(sourceDir);
   const resolvedOutput = resolve(outputDir);
+  const productMod = PRODUCTS[packageName];
+  if (!productMod) {
+    console.error(`Unknown package: ${packageName}. Available: ${Object.keys(PRODUCTS).join(", ")}`);
+    process.exit(1);
+  }
 
   console.log(`=== export.js ===`);
   console.log(`Package:    ${packageName}`);
@@ -56,7 +68,6 @@ async function main() {
   console.log(`Output:     ${resolvedOutput}`);
 
   let lines;
-  let metadata;
 
   if (packageName === "bst" || packageName === "taxi") {
     const xlsxFile = findXlsx(resolvedSource);
@@ -64,47 +75,37 @@ async function main() {
       console.error(`No xlsx file found in ${resolvedSource}`);
       process.exit(1);
     }
-    const xlsxBuffer = readFileSync(resolve(resolvedSource, xlsxFile));
-    lines = await extractBstTransactions(xlsxBuffer);
-    metadata = await extractMetadata(xlsxBuffer, packageName);
+    lines = await extractBstTransactions(readFileSync(resolve(resolvedSource, xlsxFile)));
   } else {
     lines = await extractMultiFileTransactions(resolvedSource, packageName);
     const bankLines = await extractBankTransactions(resolvedSource, packageName);
     const payrollLines = await extractPayrollTransactions(resolvedSource);
     const journalLines = await extractJournalEntries(resolvedSource, packageName);
     lines = lines.concat(bankLines, payrollLines, journalLines);
-    const hubPath = resolve(resolvedSource, "Financialaccounts.xlsx");
-    metadata = await extractMetadata(readFileSync(hubPath), packageName);
+  }
+
+  const book = await extractBook(resolvedSource, packageName, lines, productMod.CELL_MAP);
+
+  const bookErrors = validateBook(book);
+  if (!bookErrors.valid) {
+    console.error(`The exported book does not conform to the published v2 book schema:`);
+    for (const error of bookErrors.errors) console.error(`  ${error}`);
+    process.exit(1);
+  }
+  const lineErrors = validateLines(lines, book);
+  if (!lineErrors.valid) {
+    console.error(`The exported lines do not conform to the published v2 lines schema:`);
+    for (const error of lineErrors.errors.slice(0, 20)) console.error(`  ${error}`);
+    if (lineErrors.errors.length > 20) console.error(`  ... and ${lineErrors.errors.length - 20} more`);
+    process.exit(1);
   }
 
   mkdirSync(resolvedOutput, { recursive: true });
+  writeFileSync(resolve(resolvedOutput, "lines.jsonl"), canonicalLinesJsonl(lines));
+  writeFileSync(resolve(resolvedOutput, "book.toml"), canonicalBookToml(book));
 
-  // Write lines.jsonl
-  const jsonlContent = lines.map((l) => JSON.stringify(l)).join("\n") + "\n";
-  writeFileSync(resolve(resolvedOutput, "lines.jsonl"), jsonlContent);
   console.log(`  lines.jsonl: ${lines.length} entries`);
-
-  // Write minimal book.toml. The period the lines cover has to be stated: it
-  // is what tells a later generate run whether these dates are already in the
-  // frame of the package it is filling, or need shifting onto it.
-  const period = periodCovered(await extractPeriodStartMonth(resolvedSource, packageName), lines);
-  const bookLines = [
-    "[documentInfo]",
-    'entriesType = "journal"',
-    'language = "en"',
-    `periodCoveredStart = ${period.start}`,
-    `periodCoveredEnd = ${period.end}`,
-    'defaultCurrency = "GBP"',
-    `entriesComment = "Exported from ${packageName} package"`,
-    "",
-    "[entityInformation]",
-    `organizationIdentifier = "${metadata.organizationIdentifier || ""}"`,
-    `organizationDescription = "${metadata.organizationDescription || ""}"`,
-    "",
-  ];
-  writeFileSync(resolve(resolvedOutput, "book.toml"), bookLines.join("\n"));
-  console.log(`  book.toml: metadata written`);
-
+  console.log(`  book.toml: ${Object.keys(book).length} tables`);
   console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }
 

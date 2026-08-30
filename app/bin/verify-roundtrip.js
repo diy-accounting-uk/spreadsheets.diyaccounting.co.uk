@@ -302,9 +302,14 @@ function project(line, fields) {
   return fields.map((field) => (field === "amount" ? roundHalfUp(String(line[field] ?? 0), 2) : String(line[field] ?? ""))).join("|");
 }
 
-function wholeLine(line) {
+// A line on every field the encoding claims to carry. The fields the
+// inventory names are left out of both sides: an entry number the export
+// regenerates, or a quantity no sheet has a column for, would otherwise put
+// every line in the differing column and hide the fields that do survive.
+function wholeLine(line, unrepresentable) {
   return JSON.stringify(
     Object.keys(line)
+      .filter((field) => !unrepresentable.has(field))
       .sort()
       .map((field) => [field, typeof line[field] === "number" ? roundHalfUp(String(line[field]), 4) : line[field]]),
   );
@@ -338,18 +343,33 @@ export function flattenBook(value, prefix = "") {
 }
 
 /**
+ * The fields the checked-in inventory says the Excel encoding has nowhere to
+ * put, for one product. EQ2 counts those apart from the fields the export
+ * simply drops, so a known gap in the encoding never reads as a new loss.
+ * @param {string} product
+ * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
+ * @returns {Set<string>}
+ */
+export function unrepresentableFields(product, inventory) {
+  return new Set((inventory?.fields ?? []).filter((entry) => entry.products.includes(product)).map((entry) => entry.field));
+}
+
+/**
  * Score EQ2 between the fixture (the JS side's data/, which is the original
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
  * @param {string} exportDir
+ * @param {Set<string>} [unrepresentable] - fields the encoding is known to have no home for
  */
-export function scoreDataHalves(fixtureDir, exportDir) {
+export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set()) {
   const fixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
 
   const fixtureFields = new Set(fixtureLines.flatMap((line) => Object.keys(line)));
   const exportedFields = new Set(exportedLines.flatMap((line) => Object.keys(line)));
-  const fieldsDropped = [...fixtureFields].filter((field) => !exportedFields.has(field)).sort();
+  const missingFields = [...fixtureFields].filter((field) => !exportedFields.has(field)).sort();
+  const fieldsDropped = missingFields.filter((field) => !unrepresentable.has(field));
+  const fieldsUnrepresentable = missingFields.filter((field) => unrepresentable.has(field));
 
   const fixtureFlat = flattenBook(parseTOML(readFileSync(resolve(fixtureDir, "book.toml"), "utf8")));
   const exportedFlat = flattenBook(parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8")));
@@ -376,9 +396,13 @@ export function scoreDataHalves(fixtureDir, exportDir) {
       fixtureLines.map((line) => project(line, ACCOUNT_FIELDS)),
       exportedLines.map((line) => project(line, ACCOUNT_FIELDS)),
     ),
-    wholeLineMatches: multisetOverlap(fixtureLines.map(wholeLine), exportedLines.map(wholeLine)),
+    wholeLineMatches: multisetOverlap(
+      fixtureLines.map((line) => wholeLine(line, unrepresentable)),
+      exportedLines.map((line) => wholeLine(line, unrepresentable)),
+    ),
     fieldsDropped,
     fieldsDroppedCount: fieldsDropped.length,
+    fieldsUnrepresentable,
     book: {
       equal: bookEqual,
       differing: bookDiffering.length,
@@ -415,13 +439,14 @@ function formatScorecard(packageName, excelDir, jsDir, score, byKind, data) {
       "",
       "EQ2, the data half, against the original fixture",
       "",
-      "| Fixture lines | Exported lines | Same date, amount, journal | Same, plus accountMainID | Same on every field | Field kinds dropped |",
-      "|--------------:|---------------:|---------------------------:|-------------------------:|--------------------:|--------------------:|",
-      `| ${data.fixtureLines} | ${data.exportedLines} | ${data.coarseMatches} | ${data.accountMatches} | ${data.wholeLineMatches} | ${data.fieldsDroppedCount} |`,
+      "| Fixture lines | Exported lines | Same date, amount, journal | Same, plus accountMainID | Same on every carried field | Field kinds dropped | No home in the encoding |",
+      "|--------------:|---------------:|---------------------------:|-------------------------:|--------------------:|--------------------:|------------------------:|",
+      `| ${data.fixtureLines} | ${data.exportedLines} | ${data.coarseMatches} | ${data.accountMatches} | ${data.wholeLineMatches} | ${data.fieldsDroppedCount} | ${data.fieldsUnrepresentable.length} |`,
       "",
       `book.toml fields: equal ${data.book.equal}, differing ${data.book.differing}, missing ${data.book.missing}, extra ${data.book.extra}`,
     );
     if (data.fieldsDropped.length > 0) lines.push(`Fields the export drops: ${data.fieldsDropped.join(", ")}`);
+    if (data.fieldsUnrepresentable.length > 0) lines.push(`Fields the encoding has no home for: ${data.fieldsUnrepresentable.join(", ")}`);
   }
 
   return lines.join("\n");
@@ -439,13 +464,16 @@ function parseArgs(argv) {
   const jsDir = getArg("--js");
   const budgetPath = getArg("--budget");
   const outPath = getArg("--out");
+  const unrepresentablePath = getArg("--unrepresentable");
 
   if (!packageName || !excelDir || !jsDir) {
-    console.error("Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>]");
+    console.error(
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>]",
+    );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath };
 }
 
 function readReportDocument(dir) {
@@ -458,7 +486,7 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath } = parseArgs(process.argv);
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath } = parseArgs(process.argv);
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -468,7 +496,9 @@ async function main() {
   const excelData = resolve(excelDir, "data");
   const fixtureData = resolve(jsDir, "data");
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
-  const data = hasData ? scoreDataHalves(fixtureData, excelData) : null;
+  const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
+  const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
+  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableFields(packageName, inventory)) : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 

@@ -27,6 +27,7 @@ import {
   scoreReportDocumentsByKind,
   scoreDataHalves,
   flattenBook,
+  unrepresentableFields,
 } from "../bin/verify-roundtrip.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -318,6 +319,22 @@ describe("scoreDataHalves", () => {
     const score = scoreDataHalves(fixture, exported);
     expect(score.fieldsDropped).toEqual(["diya-gl:employeeID", "documentReference", "taxCode"]);
     expect(score.fieldsDroppedCount).toBe(3);
+  });
+
+  it("counts a field the encoding has no home for apart from one the export drops", () => {
+    const inventory = { fields: [{ field: "measurableQuantity", products: ["bst", "ltd"], reason: "no column holds it" }] };
+    const { fixture, exported } = writePair([{ ...LINE, measurableQuantity: 120, taxCode: "S" }], [LINE]);
+    const score = scoreDataHalves(fixture, exported, unrepresentableFields("bst", inventory));
+    expect(score.fieldsDropped).toEqual(["taxCode"]);
+    expect(score.fieldsUnrepresentable).toEqual(["measurableQuantity"]);
+    expect(unrepresentableFields("se", inventory).size).toBe(0);
+  });
+
+  it("matches lines on every field the encoding claims to carry", () => {
+    const inventory = { fields: [{ field: "entryNumber", products: ["bst"], reason: "renumbered on the way out" }] };
+    const { fixture, exported } = writePair([{ ...LINE, entryNumber: "PC-0007" }], [{ ...LINE, entryNumber: "EXP-0001" }]);
+    expect(scoreDataHalves(fixture, exported).wholeLineMatches).toBe(0);
+    expect(scoreDataHalves(fixture, exported, unrepresentableFields("bst", inventory)).wholeLineMatches).toBe(1);
   });
 
   it("matches on the full field set only when every field survives", () => {

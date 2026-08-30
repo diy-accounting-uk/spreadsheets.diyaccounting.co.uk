@@ -8,6 +8,7 @@
 // Year-end month is determined by the tax data file (financial_year.end).
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
@@ -422,8 +423,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const nextRow = Object.keys(sheet).filter(isDateColumnKey).length + 5;
         sheet[`A${nextRow}`] = toExcelSerial(shifted.getUTCFullYear(), shifted.getUTCMonth() + 1, shifted.getUTCDate());
         if (tx[nameField]) sheet[`B${nextRow}`] = tx[nameField];
+        if (tx.reference) sheet[`C${nextRow}`] = tx.reference;
+        if (tx.description) sheet[`D${nextRow}`] = tx.description;
         sheet[`E${nextRow}`] = tx.code || codeDefault;
         sheet[`F${nextRow}`] = tx.amount;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${nextRow}`] = tx.account;
         if (writeExtraColumns) writeExtraColumns(sheet, nextRow, tx);
       }
     }
@@ -657,6 +661,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
         // WagesInterface!H reads. Verified against the template.
         sheet[`T${row}`] = e.employerNI;
+        if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
     }
   }

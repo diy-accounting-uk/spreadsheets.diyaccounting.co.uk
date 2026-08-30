@@ -6,6 +6,7 @@
 // Calls shared tools from app/lib/.
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 
@@ -49,9 +50,11 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
         if (tx.payment) sheet[`D${row}`] = tx.payment;
         sheet[`F${row}`] = tx.amount;
         if (tx.other_income) sheet[`G${row}`] = tx.other_income;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }
@@ -68,9 +71,11 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
         if (tx.payment) sheet[`D${row}`] = tx.payment;
         sheet[`E${row}`] = tx.code;
         sheet[`G${row}`] = tx.amount;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }

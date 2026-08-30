@@ -2,16 +2,89 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "fs";
-import { resolve, dirname } from "path";
+import JSZip from "jszip";
+import { mkdtempSync, writeFileSync, readFileSync, existsSync } from "fs";
+import { tmpdir } from "os";
+import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { buildReverseCodeMap, extractBstTransactions, normaliseLine } from "../lib/xlsx-exporter.js";
+import {
+  ACCOUNT_ID_COLUMN,
+  analysisHeadings,
+  buildReverseCodeMap,
+  extractBstTransactions,
+  extractBook,
+  normaliseLine,
+} from "../lib/xlsx-exporter.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
+import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
+import { CELL_MAP } from "../products/bst.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
 const BST_LATEST = resolve(ROOT, "examples", "bst-latest");
+
+// ── A workbook built cell by cell ──────────────────────────────────────────
+//
+// The exporter reads xlsx XML, so a test can hand it a workbook assembled
+// here rather than one LibreOffice took a minute to produce. Values are
+// written as literals: a number as <v>, a string inline, the same shape
+// spreadsheet-runner's own writer produces.
+
+function cellXml(reference, value) {
+  if (typeof value === "number") return `<c r="${reference}"><v>${value}</v></c>`;
+  const escaped = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return `<c r="${reference}" t="inlineStr"><is><t>${escaped}</t></is></c>`;
+}
+
+function sheetXml(cells) {
+  const byRow = new Map();
+  for (const [reference, value] of Object.entries(cells)) {
+    const row = Number(/\d+$/.exec(reference)[0]);
+    if (!byRow.has(row)) byRow.set(row, []);
+    byRow.get(row).push(cellXml(reference, value));
+  }
+  const rows = [...byRow.entries()].sort((a, b) => a[0] - b[0]).map(([row, xml]) => `<row r="${row}">${xml.join("")}</row>`);
+  return `<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rows.join("")}</sheetData></worksheet>`;
+}
+
+async function buildWorkbook(sheets) {
+  const names = Object.keys(sheets);
+  const zip = new JSZip();
+  zip.file(
+    "xl/workbook.xml",
+    `<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${names
+      .map((name, index) => `<sheet name="${name}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`)
+      .join("")}</sheets></workbook>`,
+  );
+  zip.file(
+    "xl/_rels/workbook.xml.rels",
+    `<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${names
+      .map((_, index) => `<Relationship Id="rId${index + 1}" Type="worksheet" Target="worksheets/sheet${index + 1}.xml"/>`)
+      .join("")}</Relationships>`,
+  );
+  names.forEach((name, index) => zip.file(`xl/worksheets/sheet${index + 1}.xml`, sheetXml(sheets[name])));
+  return zip.generateAsync({ type: "nodebuffer" });
+}
+
+// 2025-04-07 as an Excel serial, the date every row below is posted on.
+const APRIL_SEVENTH = 45754;
+
+// The analysis block a BST purchases tab carries: one code letter a column in
+// row 4, that column's heading in row 2.
+const BST_PURCHASE_ANALYSIS = { J2: "Stock Purchases", K2: "Direct other costs", V2: "Other Expenses", J4: "S", K4: "D", V4: "O" };
+
+function bstSheets({ purchaseRows = {}, salesRows = {} } = {}) {
+  return {
+    "Business Details": { C5: "BrickWork Pro", C7: "Bricklaying", C8: "12 Kiln Lane", C10: "Bakewell", C12: "DE45 1AA" },
+    "Admin": { N7: 0.2, N4: 12570, L17: 3.45 },
+    "SalesApr": { A4: APRIL_SEVENTH, B4: "Beta Systems", F4: 1200, ...salesRows },
+    "PurchasesApr": { ...BST_PURCHASE_ANALYSIS, A5: APRIL_SEVENTH, B5: "Acme Supplies", E5: "o", G5: 240, ...purchaseRows },
+    "PurchasesStock": { D5: 10000, D30: 6000 },
+  };
+}
+
+// ── Code maps ──────────────────────────────────────────────────────────────
 
 describe("buildReverseCodeMap", () => {
   it("inverts BST purchase code map", () => {
@@ -57,24 +130,160 @@ describe("normaliseLine", () => {
   });
 });
 
+// ── Account identity ───────────────────────────────────────────────────────
+
+describe("account identity through the workbook", () => {
+  it("keeps the account a row was written with, not the first its code letter names", async () => {
+    // 5300, 5301 and 5002 all reach BST as the code letter "o". Without the
+    // carrier column each row comes back as whichever account the reverse map
+    // met first, and the three become one.
+    const buffer = await buildWorkbook(
+      bstSheets({
+        purchaseRows: {
+          [`${ACCOUNT_ID_COLUMN}5`]: "5301",
+          A6: APRIL_SEVENTH,
+          B6: "Bell Hire",
+          E6: "o",
+          G6: 90,
+          [`${ACCOUNT_ID_COLUMN}6`]: "5300",
+          A7: APRIL_SEVENTH,
+          B7: "Cove Ltd",
+          E7: "o",
+          G7: 60,
+        },
+      }),
+    );
+    const purchases = (await extractBstTransactions(buffer)).filter((line) => line.sourceJournalID === "purchases");
+    expect(purchases.map((line) => line.accountMainID)).toEqual(["5301", "5300", "5002"]);
+  });
+
+  it("falls back to the code letter for a book filled in by hand", async () => {
+    const buffer = await buildWorkbook(bstSheets());
+    const purchases = (await extractBstTransactions(buffer)).filter((line) => line.sourceJournalID === "purchases");
+    expect(purchases[0].accountMainID).toBe(buildReverseCodeMap(BST_PURCHASE_CODE_MAP).o);
+  });
+
+  it("keeps a sales row's own income account", async () => {
+    const buffer = await buildWorkbook(bstSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}4`]: "4003" } }));
+    const sales = (await extractBstTransactions(buffer)).filter((line) => line.sourceJournalID === "sales");
+    expect(sales[0].accountMainID).toBe("4003");
+  });
+});
+
+describe("fields the sheets carry", () => {
+  it("reads back the invoice reference both journals have a column for", async () => {
+    const buffer = await buildWorkbook(bstSheets({ purchaseRows: { C5: "INV-4471" }, salesRows: { C4: "SI-0012" } }));
+    const lines = await extractBstTransactions(buffer);
+    expect(lines.find((line) => line.sourceJournalID === "sales").documentReference).toBe("SI-0012");
+    expect(lines.find((line) => line.sourceJournalID === "purchases").documentReference).toBe("INV-4471");
+  });
+
+  it("leaves a field the sheet holds nothing for off the line rather than writing it empty", async () => {
+    const buffer = await buildWorkbook(bstSheets());
+    const line = (await extractBstTransactions(buffer))[0];
+    expect(line).not.toHaveProperty("documentReference");
+    expect(Object.values(line).every((value) => value !== null)).toBe(true);
+  });
+});
+
+// ── The chart of accounts ──────────────────────────────────────────────────
+
+describe("analysisHeadings", () => {
+  it("reads each code letter's own column heading off the sheet", () => {
+    const xml = sheetXml({ J2: "Stock Purchases", K3: "Direct Materials", J4: "S", K4: "D", A4: 45754 });
+    expect(analysisHeadings(xml, [])).toEqual({ s: "Stock Purchases", d: "Direct Materials" });
+  });
+
+  it("prefers the more specific heading row where the sheet carries both", () => {
+    const xml = sheetXml({ T2: "Premises ", T3: "Rent & Rates", T4: "R" });
+    expect(analysisHeadings(xml, []).r).toBe("Rent & Rates");
+  });
+});
+
+// ── The exported book ──────────────────────────────────────────────────────
+
+describe("extractBook", () => {
+  async function exportedBook() {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-book-"));
+    const buffer = await buildWorkbook(bstSheets({ purchaseRows: { [`${ACCOUNT_ID_COLUMN}5`]: "5301" } }));
+    writeFileSync(join(dir, "book.xlsx"), buffer);
+    const lines = await extractBstTransactions(buffer);
+    return { book: await extractBook(dir, "bst", lines, CELL_MAP), lines };
+  }
+
+  it("conforms to the published v2 book schema", async () => {
+    const { book } = await exportedBook();
+    const result = validateBook(book);
+    expect(result.errors).toEqual([]);
+    expect(result.valid).toBe(true);
+  });
+
+  it("declares every account the exported lines name", async () => {
+    const { book, lines } = await exportedBook();
+    expect(validateLines(lines, book).errors).toEqual([]);
+    expect(book.accounts.purchases["5301"]).toBeDefined();
+    expect(book.accounts.sales["4000"]).toBeDefined();
+  });
+
+  it("names each account from the sheet's own analysis column heading", async () => {
+    const { book } = await exportedBook();
+    expect(book.accounts.purchases["5301"].accountMainDescription).toBe("Other Expenses");
+  });
+
+  it("carries the company's own details off the sheet it keeps them on", async () => {
+    const { book } = await exportedBook();
+    expect(book.entityInformation).toMatchObject({
+      organizationIdentifier: "BrickWork Pro",
+      organizationDescription: "Bricklaying",
+      organizationAddressLine: "12 Kiln Lane",
+      organizationTown: "Bakewell",
+      organizationPostcode: "DE45 1AA",
+    });
+  });
+
+  it("reads the year's tax data back off the Admin sheet", async () => {
+    const { book } = await exportedBook();
+    expect(book.tax.incomeTax.basicRate).toBe(0.2);
+    expect(book.tax.incomeTax.personalAllowance).toBe(12570);
+  });
+
+  it("leaves out an Admin rate the book schema declares no field for", async () => {
+    // The BST cell map calls Admin!L17 tax.nationalInsurance.class2Rate; the
+    // schema's own field is class2WeeklyRate, so the book states neither
+    // rather than inventing a field the schema forbids.
+    const { book } = await exportedBook();
+    expect(book.tax.nationalInsurance).toBeUndefined();
+    expect(validateBook(book).valid).toBe(true);
+  });
+
+  it("carries the stock the sheet was filled in with", async () => {
+    const { book } = await exportedBook();
+    expect(book.stock).toEqual({ openingValue: 10000, closingValue: 6000 });
+  });
+
+  it("states the accounting period the postings fall in", async () => {
+    const { book } = await exportedBook();
+    expect(book.documentInfo.periodCoveredStart).toBe("2025-04-01");
+    expect(book.documentInfo.periodCoveredEnd).toBe("2026-03-31");
+  });
+});
+
+// ── The shipped example ────────────────────────────────────────────────────
+
 const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;
 
 describe.skipIf(!hasBstLatest)("extractBstTransactions — BST latest example", () => {
   it("extracts sales and purchase lines from populated xlsx", async () => {
-    const xlsxFile = findXlsx(BST_LATEST);
-    const xlsxBuffer = readFileSync(resolve(BST_LATEST, xlsxFile));
+    const xlsxBuffer = readFileSync(resolve(BST_LATEST, findXlsx(BST_LATEST)));
     const lines = await extractBstTransactions(xlsxBuffer);
 
     expect(lines.length).toBeGreaterThan(0);
-    const sales = lines.filter((l) => l.sourceJournalID === "sales");
-    const purchases = lines.filter((l) => l.sourceJournalID === "purchases");
-    expect(sales.length).toBeGreaterThan(0);
-    expect(purchases.length).toBeGreaterThan(0);
+    expect(lines.filter((line) => line.sourceJournalID === "sales").length).toBeGreaterThan(0);
+    expect(lines.filter((line) => line.sourceJournalID === "purchases").length).toBeGreaterThan(0);
   });
 
   it("extracts valid dates and amounts", async () => {
-    const xlsxFile = findXlsx(BST_LATEST);
-    const xlsxBuffer = readFileSync(resolve(BST_LATEST, xlsxFile));
+    const xlsxBuffer = readFileSync(resolve(BST_LATEST, findXlsx(BST_LATEST)));
     const lines = await extractBstTransactions(xlsxBuffer);
 
     for (const line of lines.slice(0, 5)) {
