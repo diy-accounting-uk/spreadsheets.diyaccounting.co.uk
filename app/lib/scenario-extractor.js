@@ -480,7 +480,14 @@ export function buildPayroll(lines) {
 // hire purchase agreement.
 export const CIS_DEDUCTION_FIELD = "diya-gl:cisDeduction";
 
-export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true } = {}) {
+// carriesSourceFields keeps the fields a transaction sheet has a column for
+// but the fixture TOMLs do not state: the line's own accountMainID, its
+// invoice reference and its description. Several accounts share one code
+// letter, so the letter the analysis columns key on cannot say which account
+// a row came from; a writer that has the account puts it on the sheet and the
+// exporter reads the identity back rather than guessing. Off by default,
+// because the fixture TOMLs carry none of the three.
+export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeductions = true, carriesSourceFields = false } = {}) {
   const sales = {};
   const purchases = {};
   const bank = {};
@@ -492,12 +499,18 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
       const code = LTD_SALES_CODE_MAP[line.accountMainID];
       if (!code) continue;
       if (!sales[month]) sales[month] = [];
-      sales[month].push({
+      const sale = {
         date: line.postingDate,
         customer: line.detailComment,
         code,
         amount: line.amount,
-      });
+      };
+      if (carriesSourceFields) {
+        sale.account = line.accountMainID;
+        if (line.documentReference) sale.reference = line.documentReference;
+        if (line.lineItemComment) sale.description = line.lineItemComment;
+      }
+      sales[month].push(sale);
     } else if (line.sourceJournalID === "purchases") {
       const code = purchaseCodeMap[line.accountMainID];
       if (!code) continue;
@@ -508,6 +521,11 @@ export function buildGrouped(filteredLines, purchaseCodeMap, { carriesCisDeducti
         code,
         amount: line.amount,
       };
+      if (carriesSourceFields) {
+        purchase.account = line.accountMainID;
+        if (line.documentReference) purchase.reference = line.documentReference;
+        if (line.lineItemComment) purchase.description = line.lineItemComment;
+      }
       if (carriesCisDeductions && line[CIS_DEDUCTION_FIELD]) purchase.cis_deduction = line[CIS_DEDUCTION_FIELD];
       purchases[month].push(purchase);
     } else if (line.sourceJournalID === "bank") {

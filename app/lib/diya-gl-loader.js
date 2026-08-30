@@ -130,7 +130,7 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
   let filteredLines = filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
-  const grouped = buildGrouped(filteredLines, purchaseCodeMap);
+  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true });
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");

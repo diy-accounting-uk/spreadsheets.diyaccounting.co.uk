@@ -7,6 +7,7 @@
 // Calls shared tools from app/lib/.
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
+import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
   buildCategoryNetting,
@@ -151,8 +152,10 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.customer) sheet[`B${row}`] = tx.customer;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
         sheet[`F${row}`] = tx.code || "a";
         sheet[`G${row}`] = tx.amount;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }
@@ -169,8 +172,11 @@ export function cellWrites(scenario) {
         const d = parseDate(tx.date);
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
+        if (tx.reference) sheet[`C${row}`] = tx.reference;
+        if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code;
         sheet[`G${row}`] = tx.amount;
+        if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
     }
@@ -363,6 +369,7 @@ export function cellWrites(scenario) {
         // entry cell -- its own row56 SUM(T51:T55) feeds T1, which
         // Wagesinterface!H reads. Verified against the template.
         sheet[`T${row}`] = e.employerNI;
+        if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
     }
   }
@@ -1311,7 +1318,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   function check(name, actual, expectedVal, tolerance = 1) {
     const pass = Math.abs(actual - expectedVal) <= tolerance;
-    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal });
+    checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
 
   // Some of the workbook's own cells hold wording rather than arithmetic.
