@@ -105,22 +105,13 @@ function compareReports(savedReport, recalcReport) {
 }
 
 /**
- * Generate a report file on the moved cells, categorizing by type.
+ * Sort a package's moved keys into the categories the volatile-cells
+ * allowlist names, plus a fourth bucket for a move nothing lists.
+ * @param {Array} movedKeys - score.movedKeys from compareReports()
+ * @param {Map} volatileSet - loadVolatileCells() result
+ * @returns {{volatile: Array, unstable: Array, stale: Array, unlisted: Array}}
  */
-function formatStabilityReport(packageName, score, volatileSet) {
-  const lines = [
-    `=== Stability Report: ${packageName} ===`,
-    "",
-    "EQ3 Score",
-    `Keys compared: ${score.equal + score.differing + score.noJsValue + score.noExcelValue}`,
-    `Equal: ${score.equal}`,
-    `Moved: ${score.differing}`,
-    `No saved value: ${score.noJsValue}`,
-    `No recalc value: ${score.noExcelValue}`,
-    "",
-  ];
-
-  // Categorize moved cells by their type
+function categorizeMoved(movedKeys, volatileSet) {
   const byType = {
     volatile: [],
     unstable: [],
@@ -128,7 +119,7 @@ function formatStabilityReport(packageName, score, volatileSet) {
     unlisted: [],
   };
 
-  for (const moved of score.movedKeys) {
+  for (const moved of movedKeys) {
     const listed = volatileSet.get(moved.key);
     if (!listed) {
       byType.unlisted.push(moved);
@@ -142,6 +133,34 @@ function formatStabilityReport(packageName, score, volatileSet) {
       byType.stale.push({ ...moved, ...listed });
     }
   }
+
+  return byType;
+}
+
+/**
+ * A one-line count of every category, in the order the allowlist names them.
+ */
+function categoryCountsLine(byType) {
+  return `volatile formula: ${byType.volatile.length}, unstable conversion: ${byType.unstable.length}, stale cached value: ${byType.stale.length}, unlisted: ${byType.unlisted.length}`;
+}
+
+/**
+ * Generate a report file on the moved cells, categorizing by type.
+ */
+function formatStabilityReport(packageName, score, volatileSet) {
+  const byType = categorizeMoved(score.movedKeys, volatileSet);
+
+  const lines = [
+    `=== Stability Report: ${packageName} ===`,
+    "",
+    "EQ3 Score",
+    `Keys compared: ${score.equal + score.differing + score.noJsValue + score.noExcelValue}`,
+    `Equal: ${score.equal}`,
+    `Moved: ${score.differing} (${categoryCountsLine(byType)})`,
+    `No saved value: ${score.noJsValue}`,
+    `No recalc value: ${score.noExcelValue}`,
+    "",
+  ];
 
   if (byType.volatile.length > 0) {
     lines.push(`Volatile formulas (${byType.volatile.length} cells) - expected:`);
@@ -332,21 +351,21 @@ async function runAllPackages(packagesRoot, outputDir, volatilePath) {
       continue;
     }
 
-    const unlistedCount = score.movedKeys.filter((m) => !volatileSet.has(m.key))
-      .length;
     const volatileSet = loadVolatileCells(volatilePath);
+    const byType = categorizeMoved(score.movedKeys, volatileSet);
     results[packageId] = {
       product: productName,
       yearEnd: pkgInfo.yearEnd,
       equal: score.equal,
       moved: score.differing,
-      unlistedMoved: score.movedKeys.filter((m) => !volatileSet.has(m.key)).length,
+      unlistedMoved: byType.unlisted.length,
       noSavedValue: score.noJsValue,
       noRecalcValue: score.noExcelValue,
+      byType,
     };
 
-    if (unlistedCount > 0) {
-      failed.push(`${packageId} (${unlistedCount} unlisted)`);
+    if (byType.unlisted.length > 0) {
+      failed.push(`${packageId} (${byType.unlisted.length} unlisted)`);
     }
   }
 
@@ -355,7 +374,7 @@ async function runAllPackages(packagesRoot, outputDir, volatilePath) {
   for (const [id, result] of Object.entries(results)) {
     const status = result.unlistedMoved > 0 ? "FAIL" : "OK";
     console.log(
-      `${id.padEnd(6)} (${result.product}): ${status} - Equal: ${result.equal}, Moved: ${result.moved}, Unlisted: ${result.unlistedMoved}`,
+      `${id.padEnd(6)} (${result.product}): ${status} - Equal: ${result.equal}, Moved: ${result.moved} (${categoryCountsLine(result.byType)})`,
     );
   }
 
@@ -419,13 +438,12 @@ async function main() {
 
   if (!score) process.exit(1);
 
-  const unlistedCount = score.movedKeys.filter((m) => !volatileSet.has(m.key))
-    .length;
+  const byType = categorizeMoved(score.movedKeys, volatileSet);
   console.log(
-    `${basename(sourceDir)}: ${score.equal} equal, ${score.differing} moved, ${unlistedCount} unlisted`,
+    `${basename(sourceDir)}: ${score.equal} equal, ${score.differing} moved (${categoryCountsLine(byType)})`,
   );
 
-  process.exit(unlistedCount > 0 ? 1 : 0);
+  process.exit(byType.unlisted.length > 0 ? 1 : 0);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
