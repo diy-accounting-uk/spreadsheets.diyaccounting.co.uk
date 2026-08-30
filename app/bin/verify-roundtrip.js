@@ -488,6 +488,19 @@ function parseArgs(argv) {
   return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath };
 }
 
+/**
+ * The budget entries a result's counts exceed, for one product's counts and
+ * budget entry. Only the keys the entry actually names are gated, so a track
+ * can add a tighter bound without every other track's entry needing to grow
+ * one.
+ * @param {Object} counts - a result's `counts`, as returned alongside `scoreReportDocuments`
+ * @param {Object} entry - one product's entry from `roundtrip-budget.json`
+ * @returns {Array<[string, number]>} the metric name and budget limit for each breach
+ */
+export function budgetBreaches(counts, entry) {
+  return Object.entries(entry).filter(([metric, limit]) => (counts[metric] ?? 0) > limit);
+}
+
 function readReportDocument(dir) {
   const path = resolve(dir, "report.json");
   if (!existsSync(path)) {
@@ -558,7 +571,7 @@ async function main() {
     if (!entry) {
       console.log(`\nNo budget entry for "${packageName}" in ${budgetPath}; skipping the gate.`);
     } else {
-      const breaches = Object.entries(entry).filter(([metric, limit]) => (result.counts[metric] ?? 0) > limit);
+      const breaches = budgetBreaches(result.counts, entry);
       if (breaches.length > 0) {
         console.error(`\nBudget exceeded for "${packageName}":`);
         for (const [metric, limit] of breaches) {
