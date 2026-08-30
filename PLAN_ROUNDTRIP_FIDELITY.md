@@ -363,6 +363,35 @@ stock, debtors, creditors, business details and fixed assets are zero or blank i
 
 ---
 
+## Measurement, 2026-08-30, after T0-T2
+
+The comparator now reads the canonical `report.json` from both engines and scores each
+value once (a section row that reprints a cell is scored through the cell; absent values
+are absent, not dashes; compliance verdicts are in scope on both sides). These counts are
+the baseline from here and do not compare to the table above.
+
+EQ1, report half:
+
+| Product | Excel values | JS values | Equal | Differing | No JS value | No Excel value |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| BST | 172 | 99 | 77 | 20 | 75 | 2 |
+| SE | 1561 | 434 | 119 | 311 | 1131 | 4 |
+| Ltd | 2124 | 595 | 259 | 321 | 1544 | 15 |
+
+EQ2, data half, scored against the original fixture:
+
+| Product | Fixture lines | Exported | Same transaction | Same plus account | Same on every carried field | Fields dropped | No home in the encoding |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| BST | 528 | 528 | 528 | 528 | 528 | 0 | 15 |
+| SE | 696 | 695 | 694 | 694 | 397 | 0 | 7 |
+| Ltd | 722 | 718 | 717 | 717 | 520 | 0 | 6 |
+
+The "no home" fields are declared in `app/data/roundtrip-unrepresentable.json` with reasons.
+What keeps SE and Ltd short of a whole-field match is `lineItemComment` and
+`documentReference` on bank, payroll and SE sales lines, which have no column in those
+blocks; the four Ltd and one SE lines still lost wait on the fixed-asset `cellWrites`
+layout (S7), held by a ratchet test.
+
 ## Scope inventory
 
 What the Excel side covers, and how far the other three paths reach.
