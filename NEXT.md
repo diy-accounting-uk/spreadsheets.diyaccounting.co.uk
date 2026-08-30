@@ -13,7 +13,7 @@ pushes in batches.
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
 | f19 | F19 derive straddling VAT entries | — | Sonnet | merged `54cb03ac`, sync gate clean, extractor+loader 104/104; Ltd reconcile running |
-| f20 | F20 Taxi export writer | `../wt-spreadsheets/f20` | Opus | started |
+| f20 | F20 Taxi export writer | — | Opus | landed, EQ2 gated in CI, 264 lines return, exporter 35/35, breakability proven |
 | box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
@@ -30,19 +30,17 @@ follow the reconciliation-bug method.
 - [ ] **F18: give `lineItemComment` and `documentReference` a declared home** (Sonnet) — the bank,
   payroll and SE sales blocks drop both fields on export (they carry a counterparty and an invoice
   reference, and the sheets have no description column beside them); `diya-gl:bankCode` differs on
-  a further 7 SE lines. They keep SE at 395 whole-field matches of 694 and Ltd at 507 of 701.
-  Either find each block a real cell to carry them (discover from the XML) or declare them in
-  `app/data/roundtrip-unrepresentable.json` with what the sheets do instead, and re-seed the
-  data-half counts.
-- [ ] **F19: derive the straddling VAT entries instead of stating them** (Sonnet) — the extractor
-  states the Precision Code master's straddling VAT entries because the master carries no journal
-  lines outside the accounting period. Extend the master data with the out-of-period legs, derive
-  the entries in `app/bin/extract-scenarios.js`, and re-run the extractor (sync gate).
-- [ ] **F20: give `export.js` a Taxi writer** (Opus) — `xlsx-exporter.js`'s `periodCovered()` finds
-  no postings on the Taxi package's own sheets, so EQ2 and the double-roundtrip never run for Taxi
-  and its `roundtrip-taxi` CI job gates the report half and stability only. Write the Taxi export
-  path (discover the sales/purchases sheet layout from the XML), wire EQ2 and the double-roundtrip
-  into the `roundtrip-taxi` job, and seed its data-half budget from the first real run.
+  a further 7 SE lines. Either find each block a real cell to carry them (discover from the XML) or
+  declare them in `app/data/roundtrip-unrepresentable.json` with what the sheets do instead, and
+  re-seed the data-half counts. Fold in the Taxi gaps the export writer measured: `app/products/taxi.js`
+  never writes `tx.reference` to Purchases column C (the whole of taxi's `fieldsDropped: 1`) nor
+  `tx.customer` to Sales column C (180 of 264 sales lines miss on `detailComment`); write both,
+  re-seed taxi's data-half counts, and retire the ratchet's `dropped: ["documentReference"]`. Also
+  fix the sp-sixty master's March mileage claim (TXN-0264 prices 1,674 miles at 45p = 753.30 where
+  HMRC and the sheet band them at 25p past 10,000 miles = 418.50; extractor re-run, sync gate).
+- [ ] **F21: gate Taxi EQ2 in the generate matrix** (Sonnet) — `generate-taxi.yml`'s matrix still
+  scores only the report half and stability; now the Taxi writer exists, add the export/EQ2 steps
+  and seed a taxi entry in `app/data/roundtrip-matrix-budget.json` from a real matrix run.
 - [ ] **F9 remainder: SE Full box 51 after the cap removal** (Opus) — `app/templates/se/Financialaccounts.xlsx!SE Full!D152` ("Restricted allowances for expensive cars", SA103F box 51) sums `Schedule!R38:R42 + R91:R95`, the WDA the cap removal just un-capped, and box 49 (`D144 = R1 - D152`) is only checked against that identity. Confirm from the current SA103F what box 51 expects now the restriction is gone, then repoint D152/D144 and anchor a check to the fixture.
 
 ## Plans not tracked here
