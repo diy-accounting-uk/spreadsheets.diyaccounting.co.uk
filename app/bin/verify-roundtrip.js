@@ -180,11 +180,13 @@ function isScored(entry, present) {
   return true;
 }
 
-function scoredEntries(document) {
-  const entries = document?.values ?? [];
-  const present = new Set(entries.map((entry) => entry.key));
+// Whether a key is scored is settled across both documents at once. A row
+// whose source one engine carries and the other does not would otherwise be
+// scored on one side only, and land in the "no value" column as though the
+// row itself were missing.
+function scoredEntries(document, present) {
   const scored = new Map();
-  for (const entry of entries) {
+  for (const entry of document?.values ?? []) {
     if (isScored(entry, present)) scored.set(entry.key, entry);
   }
   return scored;
@@ -212,8 +214,9 @@ export function entriesEqual(excelEntry, jsEntry, tolerance) {
  * @param {Object} jsDocument - report.json from the JS side
  */
 export function scoreReportDocuments(excelDocument, jsDocument) {
-  const excel = scoredEntries(excelDocument);
-  const js = scoredEntries(jsDocument);
+  const present = new Set([...(excelDocument?.values ?? []), ...(jsDocument?.values ?? [])].map((entry) => entry.key));
+  const excel = scoredEntries(excelDocument, present);
+  const js = scoredEntries(jsDocument, present);
   const tolerances = toleranceByKey(excelDocument?.values ?? []);
 
   let equal = 0;
