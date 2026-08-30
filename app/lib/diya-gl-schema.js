@@ -104,7 +104,9 @@ export function validateLines(lines, book) {
       errors.push(`${label}: accountMainID "${line.accountMainID}" is not declared in book.toml accounts`);
     }
     if (hpAgreementIDs && line["diya-gl:hpAgreement"] !== undefined && !hpAgreementIDs.has(line["diya-gl:hpAgreement"])) {
-      errors.push(`${label}: diya-gl:hpAgreement "${line["diya-gl:hpAgreement"]}" does not match any hpAgreements[].agreementID in book.toml`);
+      errors.push(
+        `${label}: diya-gl:hpAgreement "${line["diya-gl:hpAgreement"]}" does not match any hpAgreements[].agreementID in book.toml`,
+      );
     }
     if (assetIDs && line["diya-gl:assetID"] !== undefined && !assetIDs.has(line["diya-gl:assetID"])) {
       errors.push(`${label}: diya-gl:assetID "${line["diya-gl:assetID"]}" does not match any fixedAssets[].assetID in book.toml`);

@@ -635,9 +635,10 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seShort.D38 = pl.B9;
   seShort.O38 = pl.B38;
   // Turnover note: conditional message about VAT threshold
-  seShort.A33 = seShort.D38 > admin.F26
-    ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
-    : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
+  seShort.A33 =
+    seShort.D38 > admin.F26
+      ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
+      : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
   seShort.D46 = analysed(pl.B17);
   seShort.O46 = analysed(pl.B28);
   seShort.D51 = analysed(pl.B25 + pl.B26);

@@ -14,7 +14,20 @@ import { aggregateByCode } from "./shared.js";
 // P&L monthly columns, Apr through Mar (matches app/products/taxi.js's own
 // MONTH_COLS, verified against the template: 'Profit & Loss Acc'!C2:N2 read
 // the Admin month-end dates in that order).
-const MONTH_COLS = { apr: "C", may: "D", jun: "E", jul: "F", aug: "G", sep: "H", oct: "I", nov: "J", dec: "K", jan: "L", feb: "M", mar: "N" };
+const MONTH_COLS = {
+  apr: "C",
+  may: "D",
+  jun: "E",
+  jul: "F",
+  aug: "G",
+  sep: "H",
+  oct: "I",
+  nov: "J",
+  dec: "K",
+  jan: "L",
+  feb: "M",
+  mar: "N",
+};
 
 // The Fixed Assets schedule. Every capital addition lands in the "Vehicles
 // under £12,000 bought after" block regardless of what it actually is (see
@@ -202,8 +215,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const seShortNetProfitRaw = totalSales + seShortOtherIncomeBox9 - o64;
   const seShortNetProfit = Math.max(0, seShortNetProfitRaw);
   const seShortNetLoss = Math.max(0, -seShortNetProfitRaw);
-  const seShortD99Raw =
-    seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
+  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
   const seShortD99 = Math.max(0, seShortD99Raw);
   const seShortOtherIncomeBox29 = otherBusinessIncome; // O99 = P&L!B24
   const seShortD106 = Math.max(0, seShortD99 + seShortOtherIncomeBox29 - 0 /* loss brought forward */);
@@ -246,7 +258,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       B23: netProfit,
       B24: otherBusinessIncome,
     },
-    VitalTax: {},
+    "VitalTax": {},
     "SE Short": {
       D38: totalSales,
       // O38 (box 9) is a permanently blank manual entry — left unset.
@@ -283,7 +295,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       E17: totalTaxAndNI,
     },
     "Fixed Assets": {},
-    PurchasesMar: {
+    "PurchasesMar": {
       // The running mileage total the comparison is made on, and the claim
       // banded out of it (verified against the template: PurchasesMar!A1 =
       // E1+SalesMar!$D$1+PurchasesFeb!A1, A2 = U1+PurchasesFeb!A2).
@@ -292,7 +304,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       I2: vehicleRunningCosts,
       T1: Math.round(assetAdditions.reduce((sum, asset) => sum + asset.cost, 0) * 100) / 100,
     },
-    Admin: {
+    "Admin": {
       N4: taxData.income_tax.personal_allowance,
       N5: taxData.income_tax.personal_allowance_taper_threshold,
       N6: taxData.income_tax.basic_rate,

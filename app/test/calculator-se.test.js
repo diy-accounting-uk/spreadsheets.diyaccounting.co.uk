@@ -180,9 +180,10 @@ describe("Self Employed engine: the return boxes against the statutory computati
       it("SE Short prints turnover note at A33", () => {
         const short = results["SE Short"];
         const vatThreshold = TAX_DATA.vat.registration_threshold;
-        const expectedNote = short.D38 > vatThreshold
-          ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${vatThreshold} VAT threshold`
-          : `Business income - if your annual turnover was below £${vatThreshold} VAT threshold`;
+        const expectedNote =
+          short.D38 > vatThreshold
+            ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${vatThreshold} VAT threshold`
+            : `Business income - if your annual turnover was below £${vatThreshold} VAT threshold`;
         expect(short.A33).toBe(expectedNote);
       });
     });

@@ -491,7 +491,10 @@
         "additionalProperties": false,
         "properties": {
           "chargeDate": { "type": "string", "format": "date" },
-          "description": { "type": "string", "description": "The charged asset, as it reads on the register (e.g. 'Motor vehicles, being the company's delivery van')." },
+          "description": {
+            "type": "string",
+            "description": "The charged asset, as it reads on the register (e.g. 'Motor vehicles, being the company's delivery van')."
+          },
           "valuation": { "type": "number", "minimum": 0 },
           "holder": { "type": "string" },
           "terms": { "type": "string" },

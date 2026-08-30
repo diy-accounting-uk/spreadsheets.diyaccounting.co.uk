@@ -98,12 +98,8 @@ describe("diya-gl-docs.md examples", () => {
 
       const valid = validateLineSchema(parsed);
       if (!valid) {
-        const errors = validateLineSchema.errors
-          .map((e) => `  ${e.instancePath || "/"} ${e.message}`)
-          .join("\n");
-        throw new Error(
-          `Example at line ${example.lineNumber} does not validate:\n${errors}\n\nJSON:\n${example.json}`
-        );
+        const errors = validateLineSchema.errors.map((e) => `  ${e.instancePath || "/"} ${e.message}`).join("\n");
+        throw new Error(`Example at line ${example.lineNumber} does not validate:\n${errors}\n\nJSON:\n${example.json}`);
       }
     });
   });

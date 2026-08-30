@@ -965,7 +965,11 @@ function writeBrickworkLtd(vatRegistered) {
   const openingBalance = buildOpeningBalance(lines);
   const entity = brickworkEntity("Company", { vatRegistered, soleTrader: false });
   const employees = brickworkEmployees(brickBook.employees);
-  const members = brickBook.members.map((member) => ({ name: member.name, shares: member.shares, acquired: dateOnly(member.acquiredDate) }));
+  const members = brickBook.members.map((member) => ({
+    name: member.name,
+    shares: member.shares,
+    acquired: dateOnly(member.acquiredDate),
+  }));
 
   const sharesIssued = members.reduce((total, member) => total + member.shares, 0);
   if (sharesIssued !== openingBalance.share_capital) {

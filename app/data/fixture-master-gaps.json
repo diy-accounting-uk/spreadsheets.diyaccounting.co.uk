@@ -10,10 +10,22 @@
         { "section": "fixed_asset_additions", "note": "1 row, £12,000 Ford Transit van, matches the master's one 5900-coded purchase line" }
       ],
       "gaps": [
-        { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account (1100) or opening/closing stock figure" },
-        { "section": "opening_debtors", "fields": ["customer", "invoice", "amount"], "reason": "master has no debtor ledger and no trade debtors account (1300)" },
+        {
+          "section": "stock",
+          "fields": ["opening", "closing"],
+          "reason": "master has no stock account (1100) or opening/closing stock figure"
+        },
+        {
+          "section": "opening_debtors",
+          "fields": ["customer", "invoice", "amount"],
+          "reason": "master has no debtor ledger and no trade debtors account (1300)"
+        },
         { "section": "closing_debtors", "fields": ["customer", "invoice", "amount"], "reason": "same as opening_debtors" },
-        { "section": "opening_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "master declares trade creditors (2100) in its chart of accounts but carries no opening/closing creditor ledger" },
+        {
+          "section": "opening_creditors",
+          "fields": ["supplier", "invoice", "amount"],
+          "reason": "master declares trade creditors (2100) in its chart of accounts but carries no opening/closing creditor ledger"
+        },
         { "section": "closing_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "same as opening_creditors" }
       ]
     },
@@ -23,7 +35,10 @@
       "master": "examples/sp-sixty-driving",
       "masterExists": true,
       "backedSections": [
-        { "section": "fixed_asset_additions", "note": "1 row, £200 dashcam and vehicle signage, matches the master's 7000-coded purchase line (Amazon, 'Nextbase dashcam')" }
+        {
+          "section": "fixed_asset_additions",
+          "note": "1 row, £200 dashcam and vehicle signage, matches the master's 7000-coded purchase line (Amazon, 'Nextbase dashcam')"
+        }
       ],
       "gaps": []
     },
@@ -34,16 +49,28 @@
       "masterExists": true,
       "backedSections": [
         { "section": "employees", "note": "matches master employees[] (Mike Brown, Tom Davies)" },
-        { "section": "payroll", "note": "master has 24 payroll lines (2 employees x 12 months); field values not cross-checked figure by figure" }
+        {
+          "section": "payroll",
+          "note": "master has 24 payroll lines (2 employees x 12 months); field values not cross-checked figure by figure"
+        }
       ],
       "gaps": [
-        { "section": "bank", "fields": ["date", "account", "source", "code", "direction", "amount", "description"], "rows": 60, "reason": "master has no bank journal at all: no opening balance, customer receipts, supplier payments, net pay, PAYE or CIS remittance lines" },
+        {
+          "section": "bank",
+          "fields": ["date", "account", "source", "code", "direction", "amount", "description"],
+          "rows": 60,
+          "reason": "master has no bank journal at all: no opening balance, customer receipts, supplier payments, net pay, PAYE or CIS remittance lines"
+        },
         { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account or opening/closing stock figure" },
         { "section": "opening_debtors", "fields": ["customer", "invoice", "amount"], "reason": "master has no debtor ledger" },
         { "section": "closing_debtors", "fields": ["customer", "invoice", "amount"], "reason": "same as opening_debtors" },
         { "section": "opening_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "master has no creditor ledger" },
         { "section": "closing_creditors", "fields": ["supplier", "invoice", "amount"], "reason": "same as opening_creditors" },
-        { "section": "business", "fields": ["address", "town", "postcode", "phone"], "reason": "master entityInformation has no organizationAddressLine/Town/Postcode/Telephone" }
+        {
+          "section": "business",
+          "fields": ["address", "town", "postcode", "phone"],
+          "reason": "master entityInformation has no organizationAddressLine/Town/Postcode/Telephone"
+        }
       ]
     },
     {
@@ -53,7 +80,10 @@
       "masterExists": false,
       "backedSections": [],
       "gaps": [
-        { "section": "*", "reason": "no VAT-registered BrickWork master exists; every section (sales, purchases, bank, payroll, employees, debtors, creditors, stock, business) is hand-stated. The plan's decision is to derive this fixture from the non-VAT brickwork-pro master by a declared 1.5x-scale-plus-VAT build section, not a second master directory." }
+        {
+          "section": "*",
+          "reason": "no VAT-registered BrickWork master exists; every section (sales, purchases, bank, payroll, employees, debtors, creditors, stock, business) is hand-stated. The plan's decision is to derive this fixture from the non-VAT brickwork-pro master by a declared 1.5x-scale-plus-VAT build section, not a second master directory."
+        }
       ]
     },
     {
@@ -66,10 +96,23 @@
         { "section": "payroll", "note": "master has 24 payroll lines" }
       ],
       "gaps": [
-        { "section": "bank", "fields": ["date", "account", "source", "code", "direction", "amount", "description"], "rows": 49, "reason": "master has no bank journal" },
+        {
+          "section": "bank",
+          "fields": ["date", "account", "source", "code", "direction", "amount", "description"],
+          "rows": 49,
+          "reason": "master has no bank journal"
+        },
         {
           "section": "opening_balance",
-          "fields": ["current_account", "stock", "trade_debtors", "trade_creditors", "corporation_tax", "share_capital", "retained_earnings"],
+          "fields": [
+            "current_account",
+            "stock",
+            "trade_debtors",
+            "trade_creditors",
+            "corporation_tax",
+            "share_capital",
+            "retained_earnings"
+          ],
           "reason": "master has no opening balance journal (no documentReference starting OB-), so buildOpeningBalance() finds nothing to reverse-engineer"
         },
         { "section": "stock", "fields": ["opening", "closing"], "reason": "master has no stock account or figure" },
@@ -82,7 +125,11 @@
           "fields": ["name", "shares"],
           "reason": "master declares Mike Brown's 100 shares only on directors[], not on a separate members[] table; derivable the same way precision-code-ltd's fullMembers is, but the table itself does not exist yet"
         },
-        { "section": "business", "fields": ["address", "town", "postcode", "phone"], "reason": "master entityInformation has no address fields" }
+        {
+          "section": "business",
+          "fields": ["address", "town", "postcode", "phone"],
+          "reason": "master entityInformation has no address fields"
+        }
       ]
     },
     {
@@ -92,7 +139,10 @@
       "masterExists": false,
       "backedSections": [],
       "gaps": [
-        { "section": "*", "reason": "same as se-brickwork-pro-vat: no VAT-registered BrickWork master exists, derive by the declared scale-and-VAT build section instead of a second master" }
+        {
+          "section": "*",
+          "reason": "same as se-brickwork-pro-vat: no VAT-registered BrickWork master exists, derive by the declared scale-and-VAT build section instead of a second master"
+        }
       ]
     },
     {

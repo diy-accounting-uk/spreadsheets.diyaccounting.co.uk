@@ -540,7 +540,7 @@ export function ltdAdminCachedValues(taxData, yearEndSerial) {
 export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
   const rows = ltdAdminFinancialYearRows(yearEndSerial);
   return {
-    CorporationTax: {
+    "CorporationTax": {
       E5: rows.L6, // =Admin!L6
       H5: rows.N7, // =Admin!N7
       E33: rows.K6, // =Admin!K6
@@ -548,7 +548,7 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
       A33: rows.N6 - rows.L6 + 1, // =D33-C33+1, D33=Admin!N6, C33=Admin!L6
       A34: Math.max(0, rows.N7 - rows.L7 + 1), // =MAX(0,D34-C34+1), D34=Admin!N7, C34=Admin!L7
     },
-    CT600: {
+    "CT600": {
       B33: rows.L6, // =Admin!L6
       M33: rows.N7, // =Admin!N7
       C126: rows.K6, // =CorporationTax!E33
@@ -557,9 +557,9 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
       D3: yearEndSerial, // =Admin!B32 (=F21)
       E5: yearEndSerial, // =D3
     },
-    PubBalSht: { D2: yearEndSerial }, // ='PubP&L'!D3
-    PubNotes: { A11: yearEndSerial }, // ='PubP&L'!D3
-    Report: { F22: yearEndSerial }, // =PubBalSht!D2
+    "PubBalSht": { D2: yearEndSerial }, // ='PubP&L'!D3
+    "PubNotes": { A11: yearEndSerial }, // ='PubP&L'!D3
+    "Report": { F22: yearEndSerial }, // =PubBalSht!D2
   };
 }
 

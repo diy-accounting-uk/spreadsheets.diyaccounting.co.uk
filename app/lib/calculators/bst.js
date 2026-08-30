@@ -146,8 +146,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const seShortNetProfitRaw = totalSales + otherBusinessIncomeBox9 - (Math.round(costOfSales) + directCosts + totalExpenses);
   const seShortNetProfit = Math.max(0, Math.round(seShortNetProfitRaw * 100) / 100);
   const seShortNetLoss = Math.max(0, Math.round(-seShortNetProfitRaw * 100) / 100);
-  const seShortD99Raw =
-    seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
+  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
   const seShortD99 = Math.max(0, Math.round(seShortD99Raw * 100) / 100);
   // Other business income received (verified against the template: Profit &
   // Loss Acc!C30 = ROUND(SUM(D30:O30),0), each month reading that month's own
@@ -155,7 +154,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // transaction that reaches that column, so this is nil for every fixture,
   // but the cell is a real, present zero on the sheet rather than a blank).
   const otherIncomeReceived = 0;
-  const seShortD106 = Math.max(0, Math.round((seShortD99 + otherIncomeReceived - 0 /* loss brought forward */) * 100) / 100);
+  const seShortD106 = Math.max(0, Math.round((seShortD99 + otherIncomeReceived - 0) /* loss brought forward */ * 100) / 100);
 
   // Income Tax
   const { personalAllowance, taxableIncome, basicRateTax, higherRateTax, additionalRateTax, totalIncomeTax } = calculateIncomeTax(
@@ -227,7 +226,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
     "Debtors & Creditors": {},
     "Fixed Assets": {},
     "PurchasesMar": {},
-    Admin: {
+    "Admin": {
       N4: taxData.income_tax.personal_allowance,
       N5: taxData.income_tax.personal_allowance_taper_threshold,
       N7: taxData.income_tax.basic_rate,

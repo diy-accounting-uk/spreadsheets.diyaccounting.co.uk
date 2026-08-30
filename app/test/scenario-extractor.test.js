@@ -323,7 +323,11 @@ describe("formatScenarioToml", () => {
 
   it("writes a sale's reference, description and account when the transaction carries them", () => {
     const grouped = {
-      sales: { apr: [{ date: "2025-04-15", customer: "Client", reference: "INV-1", description: "Widgets", code: "a", amount: 500, account: "4000" }] },
+      sales: {
+        apr: [
+          { date: "2025-04-15", customer: "Client", reference: "INV-1", description: "Widgets", code: "a", amount: 500, account: "4000" },
+        ],
+      },
       purchases: {},
       bank: {},
     };
@@ -337,7 +341,17 @@ describe("formatScenarioToml", () => {
     const grouped = {
       sales: {},
       purchases: {
-        may: [{ date: "2025-05-10", supplier: "Supplier X", reference: "PO-2", description: "Materials", code: "s", amount: 500, account: "5000" }],
+        may: [
+          {
+            date: "2025-05-10",
+            supplier: "Supplier X",
+            reference: "PO-2",
+            description: "Materials",
+            code: "s",
+            amount: 500,
+            account: "5000",
+          },
+        ],
       },
       bank: {},
     };

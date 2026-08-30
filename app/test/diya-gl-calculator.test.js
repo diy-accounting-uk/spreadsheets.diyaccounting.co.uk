@@ -296,7 +296,7 @@ describe("calculateFromDiyaGl — SE", () => {
     const vitalTax = seResults().VitalTax;
     expect(vitalTax.G5).toBeCloseTo(335500, 2);
     expect(vitalTax.G5).toBeCloseTo(vitalTax.C5 + vitalTax.D5 + vitalTax.E5 + vitalTax.F5, 6);
-    expect(vitalTax.G7).toBeCloseTo(13470.00, 2);
+    expect(vitalTax.G7).toBeCloseTo(13470.0, 2);
   });
 
   it("the fixed asset schedule claims the year's capital spend as annual investment allowance", () => {
