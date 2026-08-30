@@ -541,7 +541,10 @@ export function cellWrites(scenario) {
       const sheetName = `${sheetPrefix}${entry.period}`;
       if (!vatReturnWrites[sheetName]) vatReturnWrites[sheetName] = {};
       const sheet = vatReturnWrites[sheetName];
-      const entryRow = Object.keys(sheet).filter((k) => k.startsWith(columns.amount)).length + 5;
+      // Matching the whole reference rather than its first letter keeps a
+      // write further right (AD, say) out of the count of rows already there.
+      const amountColumnKey = new RegExp(`^${columns.amount}\\d+$`);
+      const entryRow = Object.keys(sheet).filter((k) => amountColumnKey.test(k)).length + 5;
       const d = parseDate(entry.date);
       sheet[`${columns.date}${entryRow}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       if (entry[nameField]) sheet[`${columns.name}${entryRow}`] = entry[nameField];
