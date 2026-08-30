@@ -8,7 +8,7 @@ The driver works 5 days per week (Monday to Friday) as a private hire driver, wi
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **book.toml** -- Business metadata and address, chart of accounts (1 sales, 13 purchase accounts), tax rates for FY2025/26, and the dashcam on the fixed asset register. Conforms to `diya-gl-book-v2.schema.json`.
 - **lines.jsonl** -- 267 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
@@ -110,4 +110,11 @@ Note: Exact figures depend on spreadsheet formula rounding and the mileage vs ac
 
 ## Scenario Extract
 
-The taxi scenario TOML fixture (`app/test/fixtures/taxi-scenario-sp-sixty.toml`) is derived from this master data for use in reconciliation testing. It uses the Taxi Driver product format with `[[sales.month]]` entries containing `date` and `amount` fields, and `[[purchases.month]]` entries containing `date`, `supplier`, `code`, and `amount` fields.
+`node app/bin/extract-scenarios.js` writes two fixtures and two diya-gl
+subsets from this master data. `taxi-scenario-sp-sixty` is the driver's own
+package: `[[sales.month]]` entries carrying a date and an amount, and
+`[[purchases.month]]` entries carrying a date, a supplier, a code and an
+amount. `bst-sp-sixty` is the same year on the Basic Sole Trader package,
+whose sales sheet has one row a line: the fares reach it as the twelve monthly
+bankings, and the purchase codes are the sole trader's fourteen rather than
+the taxi trade's.

@@ -13,8 +13,19 @@ town = "Sheffield"
 postcode = "S1 2AB"
 phone = "0114 555 0100"
 utr = "9876543210"
-nino = "EF112233B"
 vat_number = "376543219"
+nino = "EF112233B"
+
+[[employees]]
+employeeID = "EMP002"
+name = "Tom Davies"
+niNumber = "CD654321A"
+role = "Labourer"
+grossPay = 1500
+payFrequency = "monthly"
+taxCode = "1257L"
+niCategory = "A"
+isDirector = false
 
 [[sales.apr]]
 date = 2025-04-10
@@ -225,18 +236,19 @@ date = 2025-05-15
 supplier = "JB Plastering"
 code = "c"
 amount = 10800
-
-[[purchases.jun]]
-date = 2025-06-01
-supplier = "Vodafone"
-code = "g"
-amount = 108
+cis_deduction = 1800
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "MyBuilder"
 code = "a"
 amount = 540
+
+[[purchases.jun]]
+date = 2025-06-01
+supplier = "Vodafone"
+code = "g"
+amount = 108
 
 [[purchases.jun]]
 date = 2025-06-05
@@ -315,6 +327,7 @@ date = 2025-08-15
 supplier = "JB Plastering"
 code = "c"
 amount = 9000
+cis_deduction = 1500
 
 [[purchases.sep]]
 date = 2025-09-01
@@ -399,6 +412,7 @@ date = 2025-11-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 9000
+cis_deduction = 1500
 
 [[purchases.dec]]
 date = 2025-12-01
@@ -483,6 +497,7 @@ date = 2026-02-15
 supplier = "Smith Bricklaying"
 code = "c"
 amount = 7200
+cis_deduction = 1200
 
 [[purchases.mar]]
 date = 2026-03-01
@@ -507,6 +522,609 @@ date = 2026-03-15
 supplier = "Travis Perkins"
 code = "s"
 amount = 810
+
+[[bank.apr]]
+date = 2025-04-01
+account = "1200"
+source = "Balance brought forward"
+code = "BC"
+direction = "in"
+amount = 15000
+description = "Bank account opening balance"
+
+[[bank.apr]]
+date = 2025-04-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1000
+description = "VAT outstanding at the year start"
+
+[[bank.apr]]
+date = 2025-04-12
+account = "1200"
+source = "Opening debtors"
+code = "DR"
+direction = "in"
+amount = 11880
+description = "Invoices outstanding at the year start"
+
+[[bank.apr]]
+date = 2025-04-18
+account = "1200"
+source = "Opening creditors"
+code = "CR"
+direction = "out"
+amount = 2718
+description = "Invoices unpaid at the year start"
+
+[[bank.apr]]
+date = 2025-04-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.apr]]
+date = 2025-04-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.may]]
+date = 2025-05-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11700
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 5958
+description = "apr invoices settled"
+
+[[bank.may]]
+date = 2025-05-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for apr"
+
+[[bank.may]]
+date = 2025-05-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.may]]
+date = 2025-05-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.jun]]
+date = 2025-06-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 10800
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 11718
+description = "may invoices settled"
+
+[[bank.jun]]
+date = 2025-06-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for may"
+
+[[bank.jun]]
+date = 2025-06-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.jun]]
+date = 2025-06-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.jul]]
+date = 2025-07-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11160
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 3258
+description = "jun invoices settled"
+
+[[bank.jul]]
+date = 2025-07-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1800
+description = "Construction Industry Scheme deductions for 2025-05"
+
+[[bank.jul]]
+date = 2025-07-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jun"
+
+[[bank.jul]]
+date = 2025-07-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.jul]]
+date = 2025-07-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.aug]]
+date = 2025-08-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1900
+description = "Quarterly VAT payment"
+
+[[bank.aug]]
+date = 2025-08-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 10440
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 3348
+description = "jul invoices settled"
+
+[[bank.aug]]
+date = 2025-08-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jul"
+
+[[bank.aug]]
+date = 2025-08-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.aug]]
+date = 2025-08-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.sep]]
+date = 2025-09-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11700
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 10218
+description = "aug invoices settled"
+
+[[bank.sep]]
+date = 2025-09-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for aug"
+
+[[bank.sep]]
+date = 2025-09-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.sep]]
+date = 2025-09-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.oct]]
+date = 2025-10-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11340
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 17118
+description = "sep invoices settled"
+
+[[bank.oct]]
+date = 2025-10-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1500
+description = "Construction Industry Scheme deductions for 2025-08"
+
+[[bank.oct]]
+date = 2025-10-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for sep"
+
+[[bank.oct]]
+date = 2025-10-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.oct]]
+date = 2025-10-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.nov]]
+date = 2025-11-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1900
+description = "Quarterly VAT payment"
+
+[[bank.nov]]
+date = 2025-11-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 12240
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 2718
+description = "oct invoices settled"
+
+[[bank.nov]]
+date = 2025-11-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for oct"
+
+[[bank.nov]]
+date = 2025-11-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.nov]]
+date = 2025-11-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.dec]]
+date = 2025-12-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11160
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 10218
+description = "nov invoices settled"
+
+[[bank.dec]]
+date = 2025-12-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for nov"
+
+[[bank.dec]]
+date = 2025-12-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.dec]]
+date = 2025-12-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.jan]]
+date = 2026-01-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 9900
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 2718
+description = "dec invoices settled"
+
+[[bank.jan]]
+date = 2026-01-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1500
+description = "Construction Industry Scheme deductions for 2025-11"
+
+[[bank.jan]]
+date = 2026-01-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for dec"
+
+[[bank.jan]]
+date = 2026-01-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.jan]]
+date = 2026-01-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.feb]]
+date = 2026-02-07
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 1900
+description = "Quarterly VAT payment"
+
+[[bank.feb]]
+date = 2026-02-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 10800
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 3438
+description = "jan invoices settled"
+
+[[bank.feb]]
+date = 2026-02-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for jan"
+
+[[bank.feb]]
+date = 2026-02-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.feb]]
+date = 2026-02-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
+
+[[bank.mar]]
+date = 2026-03-12
+account = "1200"
+source = "Acme Developments and HomeStyle Renovations"
+code = "DR"
+direction = "in"
+amount = 11700
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-18
+account = "1200"
+source = "Trade suppliers and sub-contractors"
+code = "CR"
+direction = "out"
+amount = 8718
+description = "feb invoices settled"
+
+[[bank.mar]]
+date = 2026-03-22
+account = "1200"
+source = "HMRC"
+code = "RP"
+direction = "out"
+amount = 126.7
+description = "PAYE and National Insurance for feb"
+
+[[bank.mar]]
+date = 2026-03-25
+account = "1200"
+source = "Proprietor"
+code = "DL"
+direction = "out"
+amount = 1200
+description = "Drawings"
+
+[[bank.mar]]
+date = 2026-03-28
+account = "1200"
+source = "Staff"
+code = "W"
+direction = "out"
+amount = 1373.3
+description = "Net wages"
 
 [[payroll.apr]]
 date = 2025-04-28
@@ -616,572 +1234,9 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 
-[[bank.apr]]
-date = 2025-04-01
-account = "1200"
-source = "Balance brought forward"
-code = "BC"
-direction = "in"
-amount = 15000
-description = "Bank account opening balance"
-
-[[bank.apr]]
-date = 2025-04-12
-account = "1200"
-source = "Opening debtors"
-code = "DR"
-direction = "in"
-amount = 11880
-description = "Invoices outstanding at the year start"
-
-[[bank.apr]]
-date = 2025-04-18
-account = "1200"
-source = "Opening creditors"
-code = "CR"
-direction = "out"
-amount = 2718
-description = "Invoices unpaid at the year start"
-
-[[bank.apr]]
-date = 2025-04-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.apr]]
-date = 2025-04-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.may]]
-date = 2025-05-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11700
-description = "apr invoices settled"
-
-[[bank.may]]
-date = 2025-05-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 5958
-description = "apr invoices settled"
-
-[[bank.may]]
-date = 2025-05-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for apr"
-
-[[bank.may]]
-date = 2025-05-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.may]]
-date = 2025-05-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.jun]]
-date = 2025-06-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 10800
-description = "may invoices settled"
-
-[[bank.jun]]
-date = 2025-06-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 13518
-description = "may invoices settled"
-
-[[bank.jun]]
-date = 2025-06-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for may"
-
-[[bank.jun]]
-date = 2025-06-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.jun]]
-date = 2025-06-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.jul]]
-date = 2025-07-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11160
-description = "jun invoices settled"
-
-[[bank.jul]]
-date = 2025-07-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 3258
-description = "jun invoices settled"
-
-[[bank.jul]]
-date = 2025-07-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for jun"
-
-[[bank.jul]]
-date = 2025-07-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.jul]]
-date = 2025-07-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.aug]]
-date = 2025-08-07
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 1900
-description = "Quarterly VAT payment"
-
-[[bank.aug]]
-date = 2025-08-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 10440
-description = "jul invoices settled"
-
-[[bank.aug]]
-date = 2025-08-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 3348
-description = "jul invoices settled"
-
-[[bank.aug]]
-date = 2025-08-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for jul"
-
-[[bank.aug]]
-date = 2025-08-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.aug]]
-date = 2025-08-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.sep]]
-date = 2025-09-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11700
-description = "aug invoices settled"
-
-[[bank.sep]]
-date = 2025-09-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 11718
-description = "aug invoices settled"
-
-[[bank.sep]]
-date = 2025-09-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for aug"
-
-[[bank.sep]]
-date = 2025-09-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.sep]]
-date = 2025-09-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.oct]]
-date = 2025-10-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11340
-description = "sep invoices settled"
-
-[[bank.oct]]
-date = 2025-10-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 17118
-description = "sep invoices settled"
-
-[[bank.oct]]
-date = 2025-10-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for sep"
-
-[[bank.oct]]
-date = 2025-10-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.oct]]
-date = 2025-10-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.nov]]
-date = 2025-11-07
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 1900
-description = "Quarterly VAT payment"
-
-[[bank.nov]]
-date = 2025-11-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 12240
-description = "oct invoices settled"
-
-[[bank.nov]]
-date = 2025-11-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 2718
-description = "oct invoices settled"
-
-[[bank.nov]]
-date = 2025-11-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for oct"
-
-[[bank.nov]]
-date = 2025-11-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.nov]]
-date = 2025-11-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.dec]]
-date = 2025-12-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11160
-description = "nov invoices settled"
-
-[[bank.dec]]
-date = 2025-12-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 11718
-description = "nov invoices settled"
-
-[[bank.dec]]
-date = 2025-12-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for nov"
-
-[[bank.dec]]
-date = 2025-12-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.dec]]
-date = 2025-12-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.jan]]
-date = 2026-01-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 9900
-description = "dec invoices settled"
-
-[[bank.jan]]
-date = 2026-01-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 2718
-description = "dec invoices settled"
-
-[[bank.jan]]
-date = 2026-01-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for dec"
-
-[[bank.jan]]
-date = 2026-01-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.jan]]
-date = 2026-01-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.feb]]
-date = 2026-02-07
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 1900
-description = "Quarterly VAT payment"
-
-[[bank.feb]]
-date = 2026-02-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 10800
-description = "jan invoices settled"
-
-[[bank.feb]]
-date = 2026-02-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 3438
-description = "jan invoices settled"
-
-[[bank.feb]]
-date = 2026-02-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for jan"
-
-[[bank.feb]]
-date = 2026-02-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.feb]]
-date = 2026-02-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
-
-[[bank.mar]]
-date = 2026-03-12
-account = "1200"
-source = "Acme Developments and HomeStyle Renovations"
-code = "DR"
-direction = "in"
-amount = 11700
-description = "feb invoices settled"
-
-[[bank.mar]]
-date = 2026-03-18
-account = "1200"
-source = "Trade suppliers and sub-contractors"
-code = "CR"
-direction = "out"
-amount = 9918
-description = "feb invoices settled"
-
-[[bank.mar]]
-date = 2026-03-22
-account = "1200"
-source = "HMRC"
-code = "RP"
-direction = "out"
-amount = 126.7
-description = "PAYE and National Insurance for feb"
-
-[[bank.mar]]
-date = 2026-03-25
-account = "1200"
-source = "Proprietor"
-code = "DL"
-direction = "out"
-amount = 1200
-description = "Drawings"
-
-[[bank.mar]]
-date = 2026-03-28
-account = "1200"
-source = "Staff"
-code = "W"
-direction = "out"
-amount = 1373.3
-description = "Net wages"
+[stock]
+opening = 3000
+closing = 2500
 
 [[opening_debtors]]
 customer = "Acme Developments"
@@ -1243,21 +1298,7 @@ supplier = "Travis Perkins"
 invoice = "TP-2603"
 amount = 810
 
-[[employees]]
-employeeID = "EMP002"
-name = "Tom Davies"
-niNumber = "CD654321A"
-payFrequency = "monthly"
-grossPay = 1500
-niCategory = "A"
-
-[stock]
-opening = 3000
-closing = 2500
-
 [expected]
 total_sales = 112500
 total_motor_net = 3600
 total_legal_net = 1500
-opening_stock = 3000
-closing_stock = 2500

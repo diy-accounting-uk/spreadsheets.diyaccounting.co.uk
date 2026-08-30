@@ -8,7 +8,7 @@ The point of this example is the size of the profit. At 144,878 it clears the 10
 
 ## Data Files
 
-- **book.toml** -- Business metadata, chart of accounts (1 sales, 13 purchase accounts), and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
+- **book.toml** -- Business metadata and address, chart of accounts (1 sales, 13 purchase accounts), tax rates for FY2025/26, and the camera system on the fixed asset register. Conforms to `diya-gl-book-v2.schema.json`.
 - **lines.jsonl** -- 155 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
@@ -65,7 +65,12 @@ Settlements cycle through thirteen amounts between 4,700 and 5,700.
 
 **Other expenses (code o)** -- Yard security gate 500 (Sep) and a waste contract 400 (Feb).
 
-**Fixed assets (code f)** -- In-car camera system 900 (May).
+**Fixed assets (code f)** -- In-car camera system 900 (May). It is on
+`fixedAssets[]` as well, so the fixture registers it on the Fixed Assets
+schedule. That does not change the profit: the Taxi Driver package allows the
+main rate writing down allowance on the year's capital spend whichever way the
+asset is recorded, which is the right treatment for a vehicle and the one the
+profit below is struck after.
 
 **Bank charges (code b)** -- Business account charges, 45 a month.
 
@@ -79,6 +84,11 @@ Settlements cycle through thirteen amounts between 4,700 and 5,700.
 | **Gross profit** | **216,738** |
 | Less: general expenses | -71,860 |
 | **Net profit** | **144,878** |
+
+The allowance is a writing down allowance at the year's own main rate, so
+this profit belongs to a 2025-26 package. A later year's 14% rate publishes
+216,774 and 144,914 from the same book, which is why the fixture states the
+turnover and leaves the profit to the package.
 
 ## Expected Tax Calculation
 
@@ -99,4 +109,6 @@ The profit runs past the taper and into the additional rate, so the personal all
 
 ## Scenario Extract
 
-The taxi scenario TOML fixture (`app/test/fixtures/taxi-scenario-kestrel.toml`) is derived from this master data for use in reconciliation testing. It uses the Taxi Driver product format with `[[sales.month]]` entries containing `date` and `amount` fields, and `[[purchases.month]]` entries containing `date`, `supplier`, `code`, and `amount` fields.
+`node app/bin/extract-scenarios.js` writes the fixture
+(`app/test/fixtures/taxi-scenario-kestrel.toml`) and the diya-gl subset
+(`taxi/`) from this master data. Nothing in either is stated by hand.

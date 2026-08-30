@@ -23,6 +23,18 @@ import {
   MONTH_ORDER,
   bstAccountFilter,
   seAccountFilter,
+  fullAccountFilter,
+  TAXI_PURCHASE_CODE_MAP,
+  TAXI_BST_PURCHASE_CODE_MAP,
+  assertPurchaseCodesCoverChart,
+  withoutDirectorPayroll,
+  monthlySalesTotals,
+  takingsOnlySales,
+  fixedAssetAdditions,
+  totalsByCode,
+  bstExpectedFigures,
+  taxiExpectedFigures,
+  buildSubsetBook,
 } from "../lib/scenario-extractor.js";
 
 // ── getMonthKey ────────────────────────────────────────────────────────────
@@ -431,5 +443,198 @@ describe("MONTH_ORDER", () => {
     expect(MONTH_ORDER[0]).toBe("apr");
     expect(MONTH_ORDER[11]).toBe("mar");
     expect(MONTH_ORDER).toHaveLength(12);
+  });
+});
+
+// ── Per-chart purchase code maps ───────────────────────────────────────────
+
+describe("taxi purchase code maps", () => {
+  it("reads 5100 as fuel where the builder's chart reads it as wages", () => {
+    expect(TAXI_PURCHASE_CODE_MAP[5100]).toBe("d");
+    expect(TAXI_BST_PURCHASE_CODE_MAP[5100]).toBe("m");
+    expect(SE_PURCHASE_CODE_MAP[5100]).toBe("w");
+  });
+
+  it("puts the taxi capital account at 7000, not 5900", () => {
+    expect(TAXI_PURCHASE_CODE_MAP[7000]).toBe("f");
+    expect(BST_PURCHASE_CODE_MAP[5900]).toBe("f");
+    expect(TAXI_PURCHASE_CODE_MAP[5900]).toBe("l");
+  });
+});
+
+describe("assertPurchaseCodesCoverChart", () => {
+  const book = { accounts: { purchases: { 5000: {}, 5001: {} } } };
+
+  it("passes when every purchase account has a code", () => {
+    expect(() => assertPurchaseCodesCoverChart(book, BST_PURCHASE_CODE_MAP, "BST_PURCHASE_CODE_MAP")).not.toThrow();
+  });
+
+  it("names the accounts the map has no code for", () => {
+    expect(() => assertPurchaseCodesCoverChart({ accounts: { purchases: { 5000: {}, 8888: {} } } }, BST_PURCHASE_CODE_MAP, "map")).toThrow(
+      /map has no code letter for purchase account 8888/,
+    );
+  });
+});
+
+// ── Sole trader adaptation ─────────────────────────────────────────────────
+
+describe("withoutDirectorPayroll", () => {
+  const book = {
+    employees: [
+      { employeeID: "EMP001", isDirector: true },
+      { employeeID: "EMP002", isDirector: false },
+    ],
+  };
+  const lines = [
+    { "sourceJournalID": "payroll", "diya-gl:employeeID": "EMP001", "amount": 1048 },
+    { "sourceJournalID": "payroll", "diya-gl:employeeID": "EMP002", "amount": 1500 },
+    { sourceJournalID: "purchases", amount: 60 },
+  ];
+
+  it("drops the director's payslips and keeps the staff's", () => {
+    const kept = withoutDirectorPayroll(lines, book);
+    expect(kept.map((line) => line.amount)).toEqual([1500, 60]);
+  });
+});
+
+// ── Takings ────────────────────────────────────────────────────────────────
+
+describe("monthlySalesTotals", () => {
+  const salesLines = [
+    { postingDate: "2025-04-07", amount: 174 },
+    { postingDate: "2025-04-25", amount: 226 },
+    { postingDate: "2025-05-06", amount: 100 },
+  ];
+
+  it("totals each month and dates it on the month's last taking", () => {
+    expect(monthlySalesTotals(salesLines)).toEqual([
+      { date: "2025-04-25", amount: 400 },
+      { date: "2025-05-06", amount: 100 },
+    ]);
+  });
+});
+
+describe("takingsOnlySales", () => {
+  it("leaves a sales row carrying nothing but its date and amount", () => {
+    const grouped = { sales: { apr: [{ date: "2025-04-07", customer: "Daily fares", code: "a", amount: 174 }] } };
+    expect(takingsOnlySales(grouped).sales.apr).toEqual([{ date: "2025-04-07", amount: 174 }]);
+  });
+});
+
+// ── Fixed asset additions ──────────────────────────────────────────────────
+
+describe("fixedAssetAdditions", () => {
+  const lines = [
+    {
+      sourceJournalID: "purchases",
+      accountMainID: "7000",
+      postingDate: "2025-05-10",
+      lineItemComment: "Dashcam",
+      documentReference: "AMZ-1",
+      amount: 200,
+    },
+    {
+      sourceJournalID: "purchases",
+      accountMainID: "5100",
+      postingDate: "2025-05-11",
+      lineItemComment: "Fuel",
+      documentReference: "SH-1",
+      amount: 52,
+    },
+  ];
+
+  it("registers only the purchases coded to the capital column", () => {
+    expect(fixedAssetAdditions(lines, TAXI_PURCHASE_CODE_MAP, "f")).toEqual([
+      { date: "2025-05-10", description: "Dashcam", reference: "AMZ-1", cost: 200 },
+    ]);
+  });
+});
+
+// ── Expected figures ───────────────────────────────────────────────────────
+
+describe("totalsByCode", () => {
+  it("adds a code's purchases and ignores every other journal", () => {
+    const lines = [
+      { sourceJournalID: "purchases", accountMainID: "5000", amount: 800 },
+      { sourceJournalID: "purchases", accountMainID: "5000", amount: 450 },
+      { sourceJournalID: "sales", accountMainID: "4000", amount: 4550 },
+    ];
+    expect(totalsByCode(lines, BST_PURCHASE_CODE_MAP)).toEqual({ s: 1250 });
+  });
+});
+
+describe("bstExpectedFigures", () => {
+  const lines = [
+    { sourceJournalID: "sales", accountMainID: "4000", amount: 75000 },
+    { sourceJournalID: "purchases", accountMainID: "5000", amount: 15000 },
+    { sourceJournalID: "purchases", accountMainID: "5001", amount: 20000 },
+    { sourceJournalID: "purchases", accountMainID: "5501", amount: 720 },
+    { sourceJournalID: "purchases", accountMainID: "5900", amount: 12000 },
+  ];
+
+  it("takes the stock movement into cost of sales and capitalises the code f spend", () => {
+    const figures = bstExpectedFigures(lines, { openingValue: 3000, closingValue: 2500 });
+    expect(figures.gross_profit).toBe(39500);
+    expect(figures.net_profit).toBe(38780);
+    expect(figures.opening_stock).toBe(3000);
+  });
+
+  it("expects nothing of a column the trade never used", () => {
+    const figures = bstExpectedFigures(lines, undefined);
+    expect(figures.total_gen_admin).toBe(720);
+    expect(figures.total_premises).toBeUndefined();
+    expect(figures.opening_stock).toBeUndefined();
+  });
+});
+
+describe("taxiExpectedFigures", () => {
+  const lines = [
+    { sourceJournalID: "sales", accountMainID: "4000", amount: 36000 },
+    { sourceJournalID: "purchases", accountMainID: "7000", amount: 8000 },
+  ];
+
+  it("states the takings and leaves the profit to the year's own allowance", () => {
+    expect(taxiExpectedFigures(lines)).toEqual({ total_sales: 36000 });
+  });
+});
+
+// ── Subset books ───────────────────────────────────────────────────────────
+
+describe("buildSubsetBook", () => {
+  const book = {
+    documentInfo: { entriesComment: "Everything", periodCoveredStart: "2025-04-01" },
+    entityInformation: { organizationIdentifier: "BrickWork Pro Ltd" },
+    accounts: { sales: { 4000: {} }, purchases: { 5000: {}, 9999: {} } },
+    tax: { incomeTax: { basicRate: 0.2 }, corporationTax: { mainRate: 0.25 } },
+    employees: [{ employeeID: "EMP001" }],
+    stock: { openingValue: 3000 },
+  };
+
+  it("narrows the chart and the tax tables to what the product carries", () => {
+    const subset = buildSubsetBook(book, {
+      subsetName: "bst-nonvat",
+      entity: { organizationIdentifier: "BrickWork Pro Trading" },
+      taxSections: ["incomeTax"],
+      accountFilter: bstAccountFilter,
+      tables: { stock: book.stock },
+    });
+    expect(Object.keys(subset.tax)).toEqual(["incomeTax"]);
+    expect(Object.keys(subset.accounts.purchases)).toEqual(["5000"]);
+    expect(subset.entityInformation.organizationIdentifier).toBe("BrickWork Pro Trading");
+    expect(subset.documentInfo.entriesComment).toBe("Subset: bst-nonvat — extracted from BrickWork Pro Ltd master data");
+    expect(subset.stock).toEqual({ openingValue: 3000 });
+    expect(subset.employees).toBeUndefined();
+  });
+
+  it("keeps the period the master book declares", () => {
+    const subset = buildSubsetBook(book, {
+      subsetName: "full",
+      entity: book.entityInformation,
+      taxSections: ["incomeTax", "corporationTax"],
+      accountFilter: fullAccountFilter,
+      employees: book.employees,
+    });
+    expect(subset.documentInfo.periodCoveredStart).toBe("2025-04-01");
+    expect(subset.employees).toHaveLength(1);
   });
 });

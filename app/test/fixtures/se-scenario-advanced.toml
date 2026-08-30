@@ -3,6 +3,7 @@ name = "Precision Code - advanced self employed"
 description = "SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT."
 product = "se"
 tax_regime = "se"
+vat_registered = true
 
 [business]
 name = "Precision Code Trading"

@@ -5,21 +5,21 @@ creationDate = 2026-04-04
 periodCoveredStart = 2025-04-06
 periodCoveredEnd = 2026-04-05
 defaultCurrency = "GBP"
-entriesComment = "Complete business activity for Kestrel Executive Cars FY2025/26"
+entriesComment = "Subset: taxi — extracted from Basic Taxi Driver master data"
 
 [entityInformation]
-organizationIdentifier = "Kestrel Executive Cars"
-organizationDescription = "Executive chauffeur and airport transfer operator"
-organizationAddressLine = "8 Kestrel Way"
-organizationTown = "Slough"
-organizationPostcode = "SL1 4TQ"
-organizationTelephone = "01753 555 0400"
-taxRegistrationNumber = "4455667788"
+organizationIdentifier = "Basic Taxi Driver"
+organizationDescription = "Owner-driver private hire and taxi services"
+organizationAddressLine = "17 Station Road"
+organizationTown = "Derby"
+organizationPostcode = "DE1 2GH"
+organizationTelephone = "01332 555 0300"
+taxRegistrationNumber = "5566778899"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "TaxiDriver"
-"diya-gl:vatRegistered" = true
+"diya-gl:vatRegistered" = false
 "diya-gl:basisOfAccounting" = "cash"
-"diya-gl:nino" = "QQ654321B"
+"diya-gl:nino" = "QQ987654A"
 
 [accounts.sales."4000"]
 accountMainDescription = "Fares income"
@@ -76,35 +76,35 @@ accountMainDescription = "Other expenses"
 accountMainDescription = "Fixed assets"
 "diya-gl:column" = "S"
 
+[[fixedAssets]]
+assetID = "FA-VEHICLE-001"
+description = "Taxi vehicle"
+cost = 8000.00
+acquiredDate = 2025-06-01
+
 [tax.incomeTax]
-personalAllowance = 12570
-basicRate = 0.20
-basicRateLimit = 37700
-higherRate = 0.40
-higherRateThreshold = 50270
-additionalRate = 0.45
-additionalRateThreshold = 125140
-personalAllowanceTaperThreshold = 100000
+personalAllowance = 12570.00
+personalAllowanceTaperThreshold = 100000.00
+basicRate = 0.2000
+basicRateLimit = 37700.00
+higherRate = 0.4000
+higherRateThreshold = 50270.00
+additionalRate = 0.4500
+additionalRateThreshold = 125140.00
 
 [tax.nationalInsurance]
 class2WeeklyRate = 3.45
-class2SmallProfitsThreshold = 6725
-class4MainRate = 0.06
-class4UpperRate = 0.02
-class4LowerProfits = 12570
-class4UpperProfits = 50270
+class2SmallProfitsThreshold = 6725.00
+class4MainRate = 0.0600
+class4UpperRate = 0.0200
+class4LowerProfits = 12570.00
+class4UpperProfits = 50270.00
 
 [tax.capitalAllowances]
-annualInvestmentAllowance = 1000000
-mainRateWDA = 0.18
-specialRateWDA = 0.06
+annualInvestmentAllowance = 1000000.00
+mainRateWDA = 0.1800
+specialRateWDA = 0.0600
 
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
-
-[[fixedAssets]]
-assetID = "FA-CAMERA-001"
-description = "In-car camera system"
-cost = 900
-acquiredDate = 2025-05-12

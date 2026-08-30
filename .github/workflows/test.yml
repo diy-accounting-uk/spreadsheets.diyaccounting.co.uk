@@ -142,8 +142,8 @@ jobs:
         env:
           NPM_CONFIG_FETCH_RETRIES: "3"
 
-      - name: Verify scenario fixtures in sync with master data
-        run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/
+      - name: Verify scenario fixtures and diya-gl subsets in sync with master data
+        run: node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/
 
       - name: Run tests
         run: npm test

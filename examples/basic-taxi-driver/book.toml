@@ -5,21 +5,21 @@ creationDate = 2026-04-04
 periodCoveredStart = 2025-04-06
 periodCoveredEnd = 2026-04-05
 defaultCurrency = "GBP"
-entriesComment = "Complete business activity for Kestrel Executive Cars FY2025/26"
+entriesComment = "Complete business activity for Basic Taxi Driver FY2025/26"
 
 [entityInformation]
-organizationIdentifier = "Kestrel Executive Cars"
-organizationDescription = "Executive chauffeur and airport transfer operator"
-organizationAddressLine = "8 Kestrel Way"
-organizationTown = "Slough"
-organizationPostcode = "SL1 4TQ"
-organizationTelephone = "01753 555 0400"
-taxRegistrationNumber = "4455667788"
+organizationIdentifier = "Basic Taxi Driver"
+organizationDescription = "Owner-driver private hire and taxi services"
+organizationAddressLine = "17 Station Road"
+organizationTown = "Derby"
+organizationPostcode = "DE1 2GH"
+organizationTelephone = "01332 555 0300"
+taxRegistrationNumber = "5566778899"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "TaxiDriver"
-"diya-gl:vatRegistered" = true
+"diya-gl:vatRegistered" = false
 "diya-gl:basisOfAccounting" = "cash"
-"diya-gl:nino" = "QQ654321B"
+"diya-gl:nino" = "QQ987654A"
 
 [accounts.sales."4000"]
 accountMainDescription = "Fares income"
@@ -104,7 +104,7 @@ carFirst10000 = 0.45
 carOver10000 = 0.25
 
 [[fixedAssets]]
-assetID = "FA-CAMERA-001"
-description = "In-car camera system"
-cost = 900
-acquiredDate = 2025-05-12
+assetID = "FA-VEHICLE-001"
+description = "Taxi vehicle"
+cost = 8000
+acquiredDate = 2025-06-01
