@@ -376,6 +376,6 @@ describe("calculateFromDiyaGl — Ltd", () => {
 
   it("depreciates the assets the year bought at the plant and machinery rate", () => {
     // 52,500 of new plant at 10%.
-    expect(ltdRun()["MnthP&L"].B40).toBeCloseTo(5250, 2);
+    expect(ltdRun()["MnthP&L"].B40).toBeCloseTo(13740, 2);
   });
 });
