@@ -637,6 +637,9 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   // S17; A7 and D8 are the blank boxes beside their captions.
   seShort.A7 = SHEET_BLANK;
   seShort.D8 = SHEET_BLANK;
+  // The note the sheet prints sits at A33; A32 is the empty cell beside it that
+  // the report's own map names.
+  seShort.A32 = SHEET_BLANK;
   seShort.A33 =
     pl.B9 > SHORT_RETURN_WARNING_TURNOVER
       ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
@@ -725,8 +728,9 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seFull.O160 = scheduleZ;
   seFull.D169 = goodsForOwnUse;
   seFull.O169 = carry([seFull.O149], () => sheetNumber(seFull.O149) + sheetNumber(seFull.D179));
-  seFull.D174 = carry([seFull.O160], () =>
-    sheetNumber(seFull.O122) + sheetNumber(seFull.O154) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169),
+  seFull.D174 = carry(
+    [seFull.O160],
+    () => sheetNumber(seFull.O122) + sheetNumber(seFull.O154) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169),
   );
   seFull.O174 = carry([seFull.D129, seFull.D174, seFull.O169, seFull.O129], () => {
     const fromNetProfit = seFull.D129 + seFull.D174 - seFull.O169;
@@ -741,9 +745,7 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   });
   seFull.O194 = seFull.O174;
   seFull.O204 = pl.B11;
-  seFull.O199 = carry([seFull.O194], () =>
-    sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward),
-  );
+  seFull.O199 = carry([seFull.O194], () => (sheetNumber(seFull.D179) > 0 ? 0 : Math.min(seFull.O194 + seFull.O204, lossesBroughtForward)));
   seFull.O210 = carry([seFull.O194, seFull.O199], () => seFull.O194 - seFull.O199 + seFull.O204);
   seFull.D219 = carry([seFull.O179], () => seFull.O179);
   seFull.O224 = seFull.D219;
@@ -805,14 +807,10 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   forecast.C37 = pl.B33 + pl.B34;
   forecast.C38 = carry([scheduleQ, scheduleR, scheduleY, scheduleZ], () => scheduleQ + scheduleR + scheduleY - scheduleZ);
   forecast.C39 = carry([forecast.C38], () => forecast.C34 + forecast.C37 - forecast.C38);
-  forecast.C40 = carry([forecast.C39], () =>
-    forecast.C39 <= 0 ? 0 : Math.max(0, admin.N4 - Math.max(0, forecast.C39 - admin.N5) / 2),
-  );
+  forecast.C40 = carry([forecast.C39], () => (forecast.C39 <= 0 ? 0 : Math.max(0, admin.N4 - Math.max(0, forecast.C39 - admin.N5) / 2)));
   forecast.C41 = carry([forecast.C39, forecast.C40], () => (forecast.C39 > forecast.C40 ? forecast.C39 - forecast.C40 : 0));
   forecast.C42 = carry([forecast.C41], () => (forecast.C41 > 0 ? Math.min(forecast.C41, admin.M11) * admin.N6 : 0));
-  forecast.C43 = carry([forecast.C41], () =>
-    forecast.C41 > admin.M11 ? (Math.min(forecast.C41, admin.N13) - admin.M11) * admin.N7 : 0,
-  );
+  forecast.C43 = carry([forecast.C41], () => (forecast.C41 > admin.M11 ? (Math.min(forecast.C41, admin.N13) - admin.M11) * admin.N7 : 0));
   forecast.C44 = carry([forecast.C41], () => (forecast.C41 > admin.N13 ? (forecast.C41 - admin.N13) * admin.N8 : 0));
   forecast.C45 = carry(
     [forecast.C39],
@@ -851,13 +849,13 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     "Profit Forecast": forecast,
     "SE Short": seShort,
     "SE Full": seFull,
-    Wagesinterface: wagesinterface,
-    VitalTax: vitalTax,
-    StockControl: {
+    "Wagesinterface": wagesinterface,
+    "VitalTax": vitalTax,
+    "StockControl": {
       [STOCK_OPENING_COUNT_CELL]: scenario.stock?.opening === undefined ? SHEET_BLANK : scenario.stock.opening,
       [STOCK_CLOSING_COUNT_CELL]: stockClosingCount,
     },
-    Admin: admin,
+    "Admin": admin,
     "Fixedassets.xlsx!Schedule": scheduleCells,
     "Fixedassets.xlsx!FAreconciliation": faReconciliation,
     "Fixedassets.xlsx!HPfinance": buildHpFinance(scenario),

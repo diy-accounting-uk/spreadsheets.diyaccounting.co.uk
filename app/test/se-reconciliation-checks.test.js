@@ -729,9 +729,7 @@ describeCalc(
         [`Purchases.xlsx!${month}`]: { ...results[`Purchases.xlsx!${month}`], AD1: corrupted },
       };
       const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
-      expect(failureNames(corruptedChecks)).toEqual([
-        `Purchases.xlsx ${month}: CIS tax withheld reaches the certificates column (AD1)`,
-      ]);
+      expect(failureNames(corruptedChecks)).toEqual([`Purchases.xlsx ${month}: CIS tax withheld reaches the certificates column (AD1)`]);
     });
 
     it("VAT Q5 (the straddling period) is read and its box identities hold on the intact book", () => {

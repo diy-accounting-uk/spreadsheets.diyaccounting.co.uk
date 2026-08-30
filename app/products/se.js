@@ -1181,7 +1181,26 @@ const FIXED_ASSET_CELL_LABELS = {
 
 // Admin holds rates, thresholds and dates side by side, so its own cells say
 // which is which. Everything else on that sheet is an amount.
-const ADMIN_RATE_CELLS = new Set(["N6", "N7", "N8", "K11", "K12", "K13", "L20", "L23", "G4", "G5", "G13", "G14", "G15", "G16", "G17", "G21", "G22", "F27"]);
+const ADMIN_RATE_CELLS = new Set([
+  "N6",
+  "N7",
+  "N8",
+  "K11",
+  "K12",
+  "K13",
+  "L20",
+  "L23",
+  "G4",
+  "G5",
+  "G13",
+  "G14",
+  "G15",
+  "G16",
+  "G17",
+  "G21",
+  "G22",
+  "F27",
+]);
 const ADMIN_MILEAGE_BAND_CELLS = new Set(["F21", "F22"]);
 const ADMIN_TAX_YEAR_LABEL_CELLS = new Set(["B23", "B24"]);
 

@@ -16,6 +16,7 @@
 // interface row carrying that date.
 
 import { VAT_RETURN_END_MONTHS } from "../generator.js";
+import { SHEET_BLANK } from "../calculators/shared.js";
 
 export { VAT_RETURN_END_MONTHS };
 
@@ -113,7 +114,10 @@ export function buildVatinterface({
   rows[VATINTERFACE_LAST_ROW].C = adminDateSerials[25];
 
   // A quarter column sums its own period row and the two before it. The first
-  // two rows close no quarter, so they carry no quarter columns.
+  // two rows close no quarter, so the sheet leaves their quarter columns empty.
+  for (const row of [VATINTERFACE_FIRST_ROW, VATINTERFACE_FIRST_ROW + 1]) {
+    for (const column of ["E", "G", "I", "K"]) rows[row][column] = SHEET_BLANK;
+  }
   for (let row = VATINTERFACE_FIRST_MONTH_ROW; row <= VATINTERFACE_LAST_ROW; row++) {
     const window = [rows[row - 2], rows[row - 1], rows[row]];
     rows[row].E = window.reduce((total, r) => total + r.D, 0);
