@@ -614,10 +614,6 @@ forecast block itself is sound. `Financialaccounts.xlsx!Profit Forecast!C40` tap
 and `C44` and `C45` are the additional-rate and NI rows the cell map reads. The failure sits in the
 taper and NI path against `se-2023-2024.toml`.
 
-**Mileage is computed and never written.** The Taxi and BST calculators work the mileage claim out
-of `measurableQuantity`, but `cellWrites` never writes that quantity to the Purchases mileage
-column, so no generated package can take the mileage route rather than the actual-cost route.
-
 **`export.js` has no Taxi writer.** `xlsx-exporter.js`'s `periodCovered()` finds no postings on the
 Taxi package's own sheets, so EQ2 and the double-roundtrip do not run for Taxi and its
 `roundtrip-taxi` job gates the report half and stability only.

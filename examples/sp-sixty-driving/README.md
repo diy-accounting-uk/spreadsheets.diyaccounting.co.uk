@@ -9,12 +9,12 @@ The driver works 5 days per week (Monday to Friday) as a private hire driver, wi
 ## Data Files
 
 - **book.toml** -- Business metadata and address, chart of accounts (1 sales, 13 purchase accounts), tax rates for FY2025/26, and the dashcam on the fixed asset register. Conforms to `diya-gl-book-v2.schema.json`.
-- **lines.jsonl** -- 267 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
+- **lines.jsonl** -- 264 transaction entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
 | sales | 180 | Daily fare income with mileage (15 working days x 12 months) |
-| purchases | 87 | Fuel, insurance, road tax, repairs, admin, licence, accountant, signage, dashcam |
+| purchases | 84 | Fuel, insurance, road tax, repairs, admin, licence, accountant, signage, dashcam, and March's mileage claim |
 
 ## Total Sales
 
@@ -41,25 +41,30 @@ Daily fares vary by day of week: Mondays average ~185, Tuesdays ~200, Wednesdays
 | Dec 2025 | 3,165 | 1,666 |
 | Jan 2026 | 3,177 | 1,666 |
 | Feb 2026 | 3,158 | 1,666 |
-| Mar 2026 | 3,178 | 1,674 |
-| **Total** | **38,000** | **20,000** |
+| Mar 2026 | 3,178 | — |
+| **Total** | **38,000** | **18,326** |
+
+March is the mileage-coded month: the driver claimed the month's 1,674 business miles at the approved rate instead of keeping fuel receipts, so the miles sit on that claim in the purchases journal rather than on the fare days. The year's business miles still come to 20,000.
 
 ## Total Purchases by Category
 
 | Code | Category | Entries | Gross Total |
 |------|----------|--------:|------------:|
-| d | Fuel | 48 | 2,708 |
+| d | Fuel | 44 | 2,480 |
+| d | Mileage claim (March) | 1 | 753.30 |
 | t | Road tax and insurance | 2 | 1,580 |
 | l | Legal and professional | 2 | 750 |
 | r | Repairs and maintenance | 15 | 580 |
 | g | General admin | 18 | 420 |
 | f | Fixed assets (dashcam) | 1 | 200 |
 | a | Advertising (car signage) | 1 | 150 |
-| | **Total Purchases** | **87** | **6,388** |
+| | **Total Purchases** | **84** | **6,913.30** |
 
 ### Purchase Details
 
-**Fuel (code d)** -- 4 fill-ups per month at Shell, BP, and Texaco stations. Amounts range from 51 to 62 per fill. Annual total: 2,708.
+**Fuel (code d)** -- 4 fill-ups per month at Shell, BP, and Texaco stations, for the eleven months to February. Amounts range from 51 to 62 per fill. Total: 2,480.
+
+**Mileage claim (code d)** -- March's 1,674 business miles, entered as a `mileage-log` line carrying the miles as a measurable quantity. The package is given the miles, not the amount, and prices them itself at the Admin sheet's approved rate. Claimed at 753.30.
 
 **Road tax and insurance (code t)** -- Annual car insurance 1,400 (Admiral Insurance, direct debit) and road tax 180 (DVLA). Total: 1,580.
 
@@ -77,7 +82,9 @@ Daily fares vary by day of week: Mondays average ~185, Tuesdays ~200, Wednesdays
 
 | Item | Miles |
 |------|------:|
-| Total business miles | 20,000 |
+| Recorded on the fare days | 18,326 |
+| Claimed on March's mileage log | 1,674 |
+| **Total business miles** | **20,000** |
 | First 10,000 at 45p/mile | 4,500 |
 | Remaining 10,000 at 25p/mile | 2,500 |
 | **Mileage allowance** | **7,000** |
@@ -88,33 +95,38 @@ The Taxi Driver product compares actual vehicle running costs against HMRC milea
 
 | Method | Amount |
 |--------|-------:|
-| Actual vehicle costs (fuel 2,708 + insurance 1,400 + road tax 180 + repairs 580) | 4,868 |
+| Actual vehicle costs (fuel 2,480 + insurance 1,400 + road tax 180 + repairs 580) | 4,640 |
 | Mileage allowance (10,000 x 0.45 + 10,000 x 0.25) | 7,000 |
 | **Selected (higher)** | **7,000 (mileage)** |
 
-## Expected Tax Calculation (Approximate)
+## Expected Tax Calculation
+
+The Taxi Driver package, recalculated against the 2025-26 rates:
 
 | Item | Amount |
 |------|-------:|
 | Total sales | 38,000 |
-| Less: mileage allowance (vehicle costs) | -7,000 |
-| Less: non-vehicle expenses (admin 420 + legal 750 + advertising 150 + dashcam 200) | -1,520 |
-| **Net profit** | **~29,480** |
+| Less: mileage allowance (the whole cost of sales) | -7,000 |
+| Less: general expenses (admin 420 + advertising 150 + legal 750) | -1,320 |
+| **Net profit** | **29,680** |
+| Less: capital allowance on the dashcam | -200 |
+| **Profit charged to tax** | **29,480** |
 | Personal allowance | -12,570 |
-| Taxable income | ~16,910 |
-| Income tax at 20% | ~3,382 |
-| NI Class 4 at 6% (on 12,570 to 29,480) | ~1,015 |
-| **Total tax + NI** | **~4,397** |
-
-Note: Exact figures depend on spreadsheet formula rounding and the mileage vs actual cost comparison outcome.
+| Taxable income | 16,910 |
+| Income tax at 20% | 3,382 |
+| NI Class 4 at 6% | 1,014.60 |
+| **Total tax + NI** | **4,396.60** |
 
 ## Scenario Extract
 
 `node app/bin/extract-scenarios.js` writes two fixtures and two diya-gl
 subsets from this master data. `taxi-scenario-sp-sixty` is the driver's own
-package: `[[sales.month]]` entries carrying a date and an amount, and
-`[[purchases.month]]` entries carrying a date, a supplier, a code and an
-amount. `bst-sp-sixty` is the same year on the Basic Sole Trader package,
-whose sales sheet has one row a line: the fares reach it as the twelve monthly
-bankings, and the purchase codes are the sole trader's fourteen rather than
-the taxi trade's.
+package: `[[sales.month]]` entries carrying a date, an amount and the day's
+business miles, and `[[purchases.month]]` entries carrying a date, a supplier,
+a code and either an amount or, on the March mileage log, the miles claimed.
+`bst-sp-sixty` is the same year on the Basic Sole Trader package, whose sales
+sheet has one row a line: the fares reach it as the twelve monthly bankings,
+and the purchase codes are the sole trader's fourteen rather than the taxi
+trade's. That package has no comparison to make between the two ways of
+charging a vehicle -- it adds the mileage claim to Motor Expenses -- so only
+the March mileage log's miles reach it, not the fare days'.
