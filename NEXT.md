@@ -6,9 +6,18 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PR #45 (`test` and `deploy` green at `20a18cb9`);
-every later PR branch starts from a rebase onto that main, and the operator dispatches CI on
-branches.
+Integration branch `claude/next-wave-2` (one PR). Tracks run in `../wt-spreadsheets/<track>` on
+`claude/wt-<track>`; the coordinator merges each into the integration branch as it lands and
+pushes in batches.
+
+| Track | Item | Worktree | Tier | Status |
+|---|---|---|---|---|
+| f19 | F19 derive straddling VAT entries | `../wt-spreadsheets/f19` | Sonnet | started |
+| f20 | F20 Taxi export writer | `../wt-spreadsheets/f20` | Opus | started |
+| box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
+| f14rem | F14 remainder: measurableQuantity entry | `../wt-spreadsheets/f14rem` | Haiku | started |
+| wdakey | F9 remainder: per-regime WDA key | `../wt-spreadsheets/wdakey` | Haiku | started |
+| f18 | F18 lineItemComment/documentReference home | — | Sonnet | waits for f20, f14rem |
 
 ## Open items
 
