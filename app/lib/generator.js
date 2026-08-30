@@ -576,11 +576,18 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
 // ── SE Financialaccounts cross-sheet cached values ──────────────────────────
 //
 // SE Full!G141, Q2 and V2 echo the local Admin sheet's writing-down allowance
-// rate and tax-year start/end dates. Profit Forecast!C40 is
+// rate and tax-year start/end dates; SE Short!Q2 echoes the same Admin!B4
+// date and S17 echoes SE Short!Q2 in turn. Profit Forecast!C40 is
 // IF(C39<=0,0,MAX(0,Admin!N$4-MAX(0,C39-Admin!N$5)/2)); the generator never
 // writes to Profit Forecast, 'Profit & Loss Account' or the Fixedassets
 // external link C39's own formula reads, so C39 keeps the template's shipped
-// 0 and C40 always resolves to the IF's first branch.
+// 0 and C40 always resolves to the IF's first branch. SE Short!A33 is
+// IF(D38>67000,"...exceeds...","...below £"&Admin!F26&" VAT threshold"): D38
+// (turnover) is 'Profit & Loss Account'!B9, untouched by the generator and so
+// always the template's shipped 0, which keeps A33 on the "below" branch;
+// only the VAT threshold Admin!F26 echoes needs rolling. SE Short!C8 reads
+// 'Business Details'!C5, which the generator never writes either, so it
+// keeps the template's shipped blank and needs no roll.
 
 export function seFinancialaccountsDependentCaches(numericEdits) {
   return {
@@ -588,6 +595,11 @@ export function seFinancialaccountsDependentCaches(numericEdits) {
       G141: numericEdits.G5, // =Admin!G5
       Q2: numericEdits.B4, // =Admin!B4
       V2: numericEdits.B17, // =Admin!B17
+    },
+    "SE Short": {
+      Q2: numericEdits.B4, // =Admin!B4
+      S17: numericEdits.B4, // =Q2 (=Admin!B4)
+      A33: `Business income - if your annual turnover was below £${numericEdits.F26} VAT threshold`,
     },
     "Profit Forecast": {
       C40: 0,
