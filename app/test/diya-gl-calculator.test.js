@@ -7,7 +7,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl, aggregateByAccountAndMonth } from "../lib/diya-gl-calculator.js";
-import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
+import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -221,61 +221,66 @@ describe("calculateFromDiyaGl — BST", () => {
 // ── SE Calculator ──────────────────────────────────────────────────────────
 
 describe("calculateFromDiyaGl — SE", () => {
-  it("produces SE results from advanced diya-gl data", () => {
+  // report.js hands the engine the same scenario the package writer gets, so
+  // the two sides start from one set of figures. The numbers below are the
+  // Precision Code advanced book's own: they move when the book moves and
+  // when the arithmetic moves, and nothing else.
+  function seResults() {
     const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
+    const scenario = diyaGlToScenario(book, lines, "se");
+    return calculateFromDiyaGl(book, lines, "se", taxData, scenario);
+  }
+
+  it("produces SE results from advanced diya-gl data", () => {
+    const results = seResults();
     expect(results["Profit & Loss Account"]).toBeDefined();
     expect(results["Income Tax"]).toBeDefined();
   });
 
-  it("B9: Sales Turnover matches Excel (tolerance 1)", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // Excel: 339200
-    expect(Math.abs(results["Profit & Loss Account"].B9 - 339200)).toBeLessThanOrEqual(1);
+  it("B9: sales turnover is the journal's trading lines net of VAT", () => {
+    expect(seResults()["Profit & Loss Account"].B9).toBeCloseTo(339200, 2);
   });
 
-  it("B19: Gross Profit is positive and close to Excel", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // Equipment hire is a direct cost, so it sits above the gross profit line.
-    expect(Math.abs(results["Profit & Loss Account"].B19 - 321919.33)).toBeLessThanOrEqual(1);
+  it("B19: gross profit is turnover plus grants less cost of sales", () => {
+    const pl = seResults()["Profit & Loss Account"];
+    expect(pl.B19).toBeCloseTo(325146.67, 2);
+    expect(pl.B19).toBeCloseTo(pl.B9 + pl.B11 - pl.B17, 6);
   });
 
-  it("B37: Operating Profit is positive and reasonable", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // Excel: ~211893 (includes payroll wages in expenses)
-    expect(results["Profit & Loss Account"].B37).toBeGreaterThan(180000);
-    expect(results["Profit & Loss Account"].B37).toBeLessThan(230000);
+  it("B39: profit before tax is gross profit less the administrative expenses", () => {
+    const pl = seResults()["Profit & Loss Account"];
+    expect(pl.B35).toBeCloseTo(149271.275, 3);
+    expect(pl.B39).toBeCloseTo(175875.39, 2);
   });
 
-  it("E5: Profit from SE matches operating profit", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    expect(results["Income Tax"].E5).toBeCloseTo(results["Profit & Loss Account"].B39, 0);
+  it("E5: the tax sheet charges the full return's taxable profit", () => {
+    const results = seResults();
+    expect(results["Income Tax"].E5).toBeCloseTo(125615.39, 2);
+    expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
-  it("E11: Total Income Tax is reasonable", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    // The taper and the additional rate lift the charge well above the
-    // two-band figure this profit used to attract.
-    expect(results["Income Tax"].E11).toBeGreaterThan(70000);
-    expect(results["Income Tax"].E11).toBeLessThan(100000);
+  it("E11: income tax is charged across the three bands with the allowance tapered away", () => {
+    const tax = seResults()["Income Tax"];
+    expect(tax.E6).toBe(0);
+    expect(tax.E11).toBeCloseTo(42729.93, 2);
+    expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 
-  it("includes Wagesinterface sheet", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    expect(results.Wagesinterface).toBeDefined();
+  it("Wagesinterface carries each month's payroll", () => {
+    const wages = seResults().Wagesinterface;
+    expect(wages.C4).toBeCloseTo(6748, 2);
+    expect(wages.H4).toBeCloseTo(577.2, 2);
   });
 
-  it("includes VitalTax sheet with quarterly data", () => {
-    const { book, lines } = loadDiyaGlData(SE_DATA);
-    const results = calculateFromDiyaGl(book, lines, "se", taxData);
-    expect(results.VitalTax).toBeDefined();
-    expect(results.VitalTax.G5).toBeGreaterThan(0); // Annual sales
+  it("VitalTax quarters the product sales and the direct costs", () => {
+    const vitalTax = seResults().VitalTax;
+    expect(vitalTax.G5).toBeCloseTo(335500, 2);
+    expect(vitalTax.G5).toBeCloseTo(vitalTax.C5 + vitalTax.D5 + vitalTax.E5 + vitalTax.F5, 6);
+    expect(vitalTax.G7).toBeCloseTo(9470, 2);
+  });
+
+  it("the fixed asset schedule claims the year's capital spend as annual investment allowance", () => {
+    expect(seResults()["Fixedassets.xlsx!Schedule"].Q1).toBeCloseTo(52500, 2);
   });
 });
 
