@@ -14,7 +14,7 @@ pushes in batches.
 |---|---|---|---|---|
 | f19 | F19 derive straddling VAT entries | — | Sonnet | merged `54cb03ac`, sync gate clean, extractor+loader 104/104; Ltd reconcile running |
 | f20 | F20 Taxi export writer | — | Opus | landed, EQ2 gated in CI, 264 lines return, exporter 35/35, breakability proven |
-| box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
+| box51 | F9 remainder: SA103F box 51 | — | Opus | landed `86f4dd23`, box 49 carries the WDA, full suite 6377/6377 in-track |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
 | f18 | F18 lineItemComment/documentReference home + taxi column C + sp-sixty mileage | `../wt-spreadsheets/f18` | Sonnet | started |
@@ -38,10 +38,19 @@ follow the reconciliation-bug method.
   re-seed taxi's data-half counts, and retire the ratchet's `dropped: ["documentReference"]`. Also
   fix the sp-sixty master's March mileage claim (TXN-0264 prices 1,674 miles at 45p = 753.30 where
   HMRC and the sheet band them at 25p past 10,000 miles = 418.50; extractor re-run, sync gate).
+- [ ] **F9 remainder: the Ltd/Taxi/BST user guides still teach the £3,000 motor cap** (Haiku) —
+  `app/templates/{ltd,taxi,bst}/*-guide.md` tell customers motor vehicles are restricted to
+  £3,000 p.a.; the cap is gone from the sheets. Rewrite those passages to the plain WDA rule
+  (the SE guide is already clean) and regenerate whatever the guide build derives from them.
+- [ ] **SE Full renumbering against the current SA103F** (operator decision first) — the sheet
+  carries a pre-2013 numbering throughout (its 48 is today's 49; "Annual Allowances at 10%",
+  Agricultural/Industrial Buildings and BPRA boxes no longer exist on the form). Box 49's
+  caption still reads "on cars costing £12,000 or less" and box 51's caption sits above a box
+  that is now always nil. A wholesale renumber is template surgery across the SE Full sheet and
+  its checks — decide whether to do it before dispatching.
 - [ ] **F21: gate Taxi EQ2 in the generate matrix** (Sonnet) — `generate-taxi.yml`'s matrix still
   scores only the report half and stability; now the Taxi writer exists, add the export/EQ2 steps
   and seed a taxi entry in `app/data/roundtrip-matrix-budget.json` from a real matrix run.
-- [ ] **F9 remainder: SE Full box 51 after the cap removal** (Opus) — `app/templates/se/Financialaccounts.xlsx!SE Full!D152` ("Restricted allowances for expensive cars", SA103F box 51) sums `Schedule!R38:R42 + R91:R95`, the WDA the cap removal just un-capped, and box 49 (`D144 = R1 - D152`) is only checked against that identity. Confirm from the current SA103F what box 51 expects now the restriction is gone, then repoint D152/D144 and anchor a check to the fixture.
 
 ## Plans not tracked here
 
