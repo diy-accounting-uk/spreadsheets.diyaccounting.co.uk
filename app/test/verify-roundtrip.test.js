@@ -148,9 +148,15 @@ import { join } from "path";
 
 describe("parseReportFile", () => {
   it("reads a plain label/amount table", () => {
-    const content = ["# Profit & Loss", "", "| | Amount |", "|---|------:|", "| Sales Turnover | 150,000 |", "| Cost of Sales | 50,000 |", ""].join(
-      "\n",
-    );
+    const content = [
+      "# Profit & Loss",
+      "",
+      "| | Amount |",
+      "|---|------:|",
+      "| Sales Turnover | 150,000 |",
+      "| Cost of Sales | 50,000 |",
+      "",
+    ].join("\n");
     expect(parseReportFile("profit-loss.md", content)).toEqual([
       { label: "Sales Turnover", value: "150,000" },
       { label: "Cost of Sales", value: "50,000" },
@@ -243,7 +249,10 @@ describe("readReportTree", () => {
 
   it("keys a repeated label within one file by occurrence", () => {
     dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-test-"));
-    writeFileSync(join(dir, "profit-loss.md"), ["# P&L", "", "| | Amount |", "|---|------:|", "| Total | 10 |", "| Total | 20 |", ""].join("\n"));
+    writeFileSync(
+      join(dir, "profit-loss.md"),
+      ["# P&L", "", "| | Amount |", "|---|------:|", "| Total | 10 |", "| Total | 20 |", ""].join("\n"),
+    );
 
     const values = readReportTree(dir);
     expect(values.get("profit-loss.md # Total # 0")).toBe("10");

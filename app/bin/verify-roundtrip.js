@@ -247,7 +247,9 @@ function parseArgs(argv) {
   const toleranceArg = getArg("--tolerance");
 
   if (!packageName || !excelDir || !jsDir) {
-    console.error("Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--tolerance <n>]");
+    console.error(
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--tolerance <n>]",
+    );
     process.exit(1);
   }
 

@@ -102,29 +102,22 @@ describe.each(Object.entries(TEMPLATES))("%s/Salesinvoice.xlsx Product Details f
 // LibreOffice actually recalculates it. One sample row from each shared
 // group (the si=0/si=2 group at row 6-66, and the si=1/si=3 group at
 // row 67-99), in each product's template.
-describeCalc.each(Object.entries(TEMPLATES))(
-  "%s/Salesinvoice.xlsx Product Details recalculation",
-  (product, templatePath) => {
-    it(
-      "computes the margin in G and the percentage in H for sample rows in both shared groups",
-      async () => {
-        const buffer = readFileSync(templatePath);
-        const results = await runSpreadsheet(
-          buffer,
-          {
-            "Product Details": { C6: 200, F6: 150, C80: 100, F80: 80 },
-          },
-          {
-            "Product Details": ["G6", "H6", "G80", "H80"],
-          },
-        );
-        const productDetails = results["Product Details"];
-        expect(productDetails.G6, "G6 margin (200-150)").toBeCloseTo(50, 6);
-        expect(productDetails.H6, "H6 percentage (50*100/200)").toBeCloseTo(25, 6);
-        expect(productDetails.G80, "G80 margin (100-80)").toBeCloseTo(20, 6);
-        expect(productDetails.H80, "H80 percentage (20*100/100)").toBeCloseTo(20, 6);
+describeCalc.each(Object.entries(TEMPLATES))("%s/Salesinvoice.xlsx Product Details recalculation", (product, templatePath) => {
+  it("computes the margin in G and the percentage in H for sample rows in both shared groups", async () => {
+    const buffer = readFileSync(templatePath);
+    const results = await runSpreadsheet(
+      buffer,
+      {
+        "Product Details": { C6: 200, F6: 150, C80: 100, F80: 80 },
       },
-      60000,
+      {
+        "Product Details": ["G6", "H6", "G80", "H80"],
+      },
     );
-  },
-);
+    const productDetails = results["Product Details"];
+    expect(productDetails.G6, "G6 margin (200-150)").toBeCloseTo(50, 6);
+    expect(productDetails.H6, "H6 percentage (50*100/200)").toBeCloseTo(25, 6);
+    expect(productDetails.G80, "G80 margin (100-80)").toBeCloseTo(20, 6);
+    expect(productDetails.H80, "H80 percentage (20*100/100)").toBeCloseTo(20, 6);
+  }, 60000);
+});

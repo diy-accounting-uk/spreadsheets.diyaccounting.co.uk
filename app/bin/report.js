@@ -145,7 +145,8 @@ async function main() {
   // way a packages/ directory does.
   const yearEnd = yearEndArg || packageYearEnd(basename(resolvedSourceDir));
   const yearEndMonth = yearEnd ? parseInt(yearEnd.split("-")[1], 10) : undefined;
-  const multiOpts = productMod.MULTI_FILE && typeof productMod.multiFileOptions === "function" ? productMod.multiFileOptions(yearEndMonth) : {};
+  const multiOpts =
+    productMod.MULTI_FILE && typeof productMod.multiFileOptions === "function" ? productMod.multiFileOptions(yearEndMonth) : {};
 
   console.log(`=== report.js ===`);
   console.log(`Package:    ${packageName}`);

@@ -7,11 +7,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 Wave 5 is on `claude/wave-5` as PR #43 (16 track merges, merged with main at `4369f879`; the
-merged tree passes 3,582 tests and the post-merge checks, sync gate clean). test.yml on it fails two roundtrip jobs at the
-double-roundtrip step (SE: pass-2 generate finds a disposal with no opening asset; Ltd: the
-second export differs from the first) — a T2/loader seam; fix in flight (Opus, worktree
-`sp-fidelity-rt`). Not a generate-* matter: those jobs run on `examples/`. After the merge,
-fidelity parks (`PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
+merged tree passes 3,582 tests and the post-merge checks, sync gate clean). The operator runs
+the workflows on it; after the merge, fidelity parks (`PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
 The fidelity items below close with that merge; their remainders are in the plan's "What stays
 open" and are not re-listed here.
 
