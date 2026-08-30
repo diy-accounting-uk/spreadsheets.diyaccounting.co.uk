@@ -16,6 +16,8 @@
     "judge:reconciliation": "node app/bin/judge-reconciliation.js",
     "report": "node app/bin/report.js",
     "export": "node app/bin/export.js",
+    "verify:roundtrip": "node app/bin/verify-roundtrip.js",
+    "verify:stability": "node app/bin/verify-stability.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
     "extract-scenarios": "node app/bin/extract-scenarios.js",
     "hmrc-rate-urls": "node scripts/hmrc-rate-urls.cjs",
