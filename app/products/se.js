@@ -176,6 +176,13 @@ export function cellWrites(scenario) {
         if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code;
         sheet[`G${row}`] = tx.amount;
+        // AD is the sheet's "CIS Certificates / Tax Paid" column, where a
+        // contractor records the tax it withheld from a subcontractor's
+        // invoice. It sits outside the month's own analysis check total, so
+        // recording it leaves the row's expense analysis where it was.
+        // Written after G and before the account column, because a write can
+        // only run left to right (see the Schedule writer below).
+        if (tx.cis_deduction) sheet[`AD${row}`] = tx.cis_deduction;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -826,7 +833,11 @@ export function multiFileOptions() {
   const purchasesMonthReads = {};
   for (const tab of Object.values(MONTH_SHEETS)) {
     salesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
-    purchasesMonthReads[tab] = ["H1", "I1", VAT_RATE_CELL];
+    // AD1 is the month's CIS certificates total (SUM(AD5:AD300)) and A1 the
+    // sheet's own check total, G1 - H1 - SUM(P1:AB1), which is the closest
+    // this product has to a trial balance: nil means every row's gross has
+    // reached its VAT column and one expense column and nothing else.
+    purchasesMonthReads[tab] = ["A1", "H1", "I1", VAT_RATE_CELL, "AD1"];
   }
 
   // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
@@ -2028,6 +2039,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }
+  }
+
+  // ── CIS deducted from subcontractors (Purchases.xlsx column AD) ──────────
+  //
+  // A contractor withholds tax from a subcontractor's invoice and records it
+  // on the certificate column beside that invoice. The column has its own
+  // monthly total and sits outside the sheet's expense analysis, so both
+  // things are asserted: the tax reaches the column it belongs in, and the
+  // month's own check total -- gross less VAT less every expense column,
+  // which is the nearest this product has to a trial balance -- stays nil
+  // with it there. Anchored in the scenario's own entries, so a month whose
+  // certificates never reached the sheet fails on that month alone.
+  if (expected.purchases) {
+    Object.values(MONTH_SHEETS).forEach((tab, i) => {
+      const month = results[`Purchases.xlsx!${tab}`];
+      if (!month) return;
+      const withheld = (expected.purchases[MONTH_KEYS[i]] || []).reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+      check(`Purchases.xlsx ${tab}: CIS tax withheld reaches the certificates column (AD1)`, num(month.AD1), withheld, 0.01);
+      check(`Purchases.xlsx ${tab}: the month's expense analysis balances (A1)`, num(month.A1), 0, 0.01);
+    });
   }
 
   // ── Payroll: Wagesinterface monthly ties (item 4) ──

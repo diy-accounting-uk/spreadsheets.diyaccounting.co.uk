@@ -25,7 +25,7 @@ import {
   toExcelSerial,
 } from "../lib/spreadsheet-runner.js";
 import { generateSpreadsheet } from "../lib/generator.js";
-import { loadScenario } from "../lib/scenario-loader.js";
+import { loadScenario, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import {
   cellWrites as seCellWrites,
@@ -689,6 +689,48 @@ describeCalc(
       expect(failureNames(corruptedChecks)).toEqual([
         "SA103F box 17 subcontractor payments (D70) = the profit and loss account",
         categoryNettingCheckName(nettingRow),
+      ]);
+    });
+
+    // ── CIS certificates (Purchases.xlsx column AD) ────────────────────────
+
+    it("the tax withheld from subcontractors reaches the certificates column, month by month", () => {
+      const withheldInTheYear = Object.values(scenario.purchases)
+        .flat()
+        .reduce((total, tx) => total + (tx.cis_deduction || 0), 0);
+      expect(withheldInTheYear).toBeGreaterThan(0);
+
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const certificateChecks = checks.filter((c) => c.name.includes("CIS tax withheld reaches the certificates column"));
+      expect(certificateChecks).toHaveLength(12);
+      expect(certificateChecks.filter((c) => !c.pass)).toEqual([]);
+
+      const onTheSheet = Object.values(MONTH_SHEETS).reduce((total, tab) => total + (results[`Purchases.xlsx!${tab}`]?.AD1 || 0), 0);
+      expect(onTheSheet).toBeCloseTo(withheldInTheYear, 2);
+    });
+
+    it("the certificates column sits outside the month's own expense analysis, which still balances", () => {
+      const checks = seCheckCompliance(results, mergedExpected, null, undefined);
+      const balanceChecks = checks.filter((c) => c.name.includes("the month's expense analysis balances"));
+      expect(balanceChecks).toHaveLength(12);
+      expect(balanceChecks.filter((c) => !c.pass)).toEqual([]);
+      for (const tab of Object.values(MONTH_SHEETS)) expect(results[`Purchases.xlsx!${tab}`].A1).toBeCloseTo(0, 6);
+    });
+
+    it("fails only the certificates check for the month whose cached total is corrupted", async () => {
+      const month = "Jun";
+      const realValue = results[`Purchases.xlsx!${month}`].AD1;
+      expect(realValue).toBeGreaterThan(0);
+
+      const corrupted = await readCorruptedCell(join(saveDir, "Purchases.xlsx"), month, "AD1", realValue + 250);
+      expect(corrupted).toBe(realValue + 250);
+      const corruptedResults = {
+        ...results,
+        [`Purchases.xlsx!${month}`]: { ...results[`Purchases.xlsx!${month}`], AD1: corrupted },
+      };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      expect(failureNames(corruptedChecks)).toEqual([
+        `Purchases.xlsx ${month}: CIS tax withheld reaches the certificates column (AD1)`,
       ]);
     });
 
