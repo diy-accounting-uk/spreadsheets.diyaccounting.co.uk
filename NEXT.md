@@ -6,8 +6,24 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PR #44; every later PR branch starts from a
-rebase onto the post-deploy green main, and the operator dispatches CI on branches.
+Integration branch `claude/next-fidelity-wave` (one PR). Tracks run in
+`../wt-spreadsheets/<track>` on `claude/wt-<track>`; the coordinator merges each into the
+integration branch as it lands and pushes in batches.
+
+| Track | Item | Worktree | Tier | Status |
+|---|---|---|---|---|
+| f2 | F2 Excel-side CI `--data` | `../wt-spreadsheets/f2` | Sonnet | started |
+| f8 | F8 6 dp pre-round | `../wt-spreadsheets/f8` | Sonnet | started |
+| f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
+| f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
+| f16 | F16 BST Debtors block | `../wt-spreadsheets/f16` | Sonnet | started |
+| f10 | F10 SE Short CELL_MAP | `../wt-spreadsheets/f10` | Haiku | started |
+| f12 | F12 BrickWork acquiredDate | `../wt-spreadsheets/f12` | Haiku | started |
+| f17 | F17 diya-gl docs examples | `../wt-spreadsheets/f17` | Haiku | started |
+| f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
+| f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
+| archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | `../wt-spreadsheets/archive` | Opus | started |
+| f1 | F1 exact EQ1 gate | — | Sonnet | waits for f2, f8, f9 |
 
 ## Open items
 
