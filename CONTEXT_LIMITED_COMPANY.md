@@ -401,8 +401,6 @@ The generator writes the following cells into the Financialaccounts.xlsx Admin s
 | P13 | Marginal relief upper limit | `corporation_tax.main_rate_limit` |
 | G5, G7 | Annual investment allowance (whole %) | `capital_allowances.annual_investment_allowance * 100` |
 | G6, G8 | Writing down allowance main (whole %) | `capital_allowances.writing_down_allowance_main * 100` |
-| E11 | Motor vehicle cost threshold | `capital_allowances.motor_vehicle_cost_threshold` |
-| G11 | Motor vehicle restriction | `capital_allowances.motor_vehicle_restriction` |
 | G15-G19 | Depreciation rates (fractions) | `depreciation.*` |
 | N16, O16 | Mileage higher rate limit/pence | `mileage.higher_rate_limit`, `mileage.higher_rate_pence` |
 | N17, O17 | Mileage lower rate start/pence | `mileage.lower_rate_start`, `mileage.lower_rate_pence` |
