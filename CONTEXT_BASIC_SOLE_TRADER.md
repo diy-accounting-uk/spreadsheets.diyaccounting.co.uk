@@ -288,8 +288,6 @@ All dates are stored as Excel serial numbers.
 |------|-----------|---------|
 | G4 | `capital_allowances.annual_investment_allowance` | 1.00 |
 | G5 | `capital_allowances.writing_down_allowance` | 0.18 |
-| E8 | `capital_allowances.motor_vehicle_cost_threshold` | 12000 |
-| G8 | `capital_allowances.motor_vehicle_restriction` | 3000 |
 | G13 | `depreciation.land_and_property` | 0.00 |
 | G14 | `depreciation.plant_and_machinery` | 0.10 |
 | G15 | `depreciation.fixtures_and_fittings` | 0.20 |

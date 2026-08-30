@@ -273,8 +273,6 @@ export const CELL_MAP = [
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits", "Admin (Generator Injected)", 0, "money"],
   ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.annualInvestmentAllowance", "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0, "rate"],
-  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0, "money"],
-  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0, "money"],
   ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0, "count"],
   ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0, "count"],
@@ -519,8 +517,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
     check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
     check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
-    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
-    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
     check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
     check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
     check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);

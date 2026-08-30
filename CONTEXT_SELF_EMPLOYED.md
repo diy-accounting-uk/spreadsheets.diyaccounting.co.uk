@@ -157,7 +157,7 @@ Admin ---------------------------------------------------------------+
   | M11/L12/N12 = band thresholds                                    |
   | L16 = NI Class 2 weekly, L20/N20 = Class 4 lower rate/limit     |
   | L23/N23 = Class 4 upper rate/limit                               |
-  | G4/G5 = AIA/WDA, E8/G8 = motor vehicle cap                      |
+  | G4/G5 = AIA/WDA rates                                           |
   | G13-G17 = depreciation rates                                     |
   | F21-G22 = mileage rates, F26-F27 = VAT threshold/rate            |
   |                                                                   |

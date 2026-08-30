@@ -34,8 +34,6 @@ class2_weekly_rate = 3.45
 [capital_allowances]
 annual_investment_allowance = 1.00
 writing_down_allowance = 0.18
-motor_vehicle_cost_threshold = 12000
-motor_vehicle_restriction = 3000
 
 [depreciation]
 land_and_property = 0.00

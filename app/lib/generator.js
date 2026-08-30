@@ -195,8 +195,6 @@ export function buildCellEdits(taxData, startYear) {
 
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   numericEdits.G13 = dep.land_and_property;
   numericEdits.G14 = dep.plant_and_machinery;
@@ -271,8 +269,6 @@ export function buildTaxiCellEdits(taxData, startYear) {
   // Capital allowances — same as BST
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   // Depreciation — same as BST
   numericEdits.G13 = dep.land_and_property;
@@ -344,8 +340,6 @@ export function buildSeCellEdits(taxData, startYear) {
   // Capital allowances — same as BST
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   // Depreciation — same as BST
   numericEdits.G13 = dep.land_and_property;
@@ -404,10 +398,6 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   numericEdits.G7 = Math.round(ca.annual_investment_allowance * 100);
   numericEdits.G6 = Math.round(ca.writing_down_allowance_main * 100);
   numericEdits.G8 = Math.round(ca.writing_down_allowance_main * 100);
-
-  // Motor vehicle
-  numericEdits.E11 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G11 = ca.motor_vehicle_restriction;
 
   // Depreciation (stored as fractions — same as BST/SE)
   numericEdits.G15 = dep.land_and_property;

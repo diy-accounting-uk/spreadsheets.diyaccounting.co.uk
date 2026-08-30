@@ -223,8 +223,6 @@ export function calculateBstResults(book, lines, taxData, scenario) {
       N23: taxData.national_insurance.class4_upper_limit,
       G4: taxData.capital_allowances.annual_investment_allowance,
       G5: taxData.capital_allowances.writing_down_allowance,
-      E8: taxData.capital_allowances.motor_vehicle_cost_threshold,
-      G8: taxData.capital_allowances.motor_vehicle_restriction,
       F21: taxData.mileage.higher_rate_limit,
       G21: taxData.mileage.higher_rate_pence,
       F22: taxData.mileage.lower_rate_start,

@@ -6,7 +6,7 @@
 //
 // 1. The fixed-asset chain: registering the scenario's vehicle purchase on
 //    the Fixed Assets sheet's "Vehicles under £12,000 bought after" block
-//    claims a Writing Down Allowance (restricted by Admin!G8), which must
+//    claims a Writing Down Allowance at the main rate, which must
 //    reach P&L Capital Allowances (B10). Before this fixture's vehicle was
 //    registered there (it previously only reached a dead Purchases analysis
 //    column), the chain always read zero on both sides and could never
@@ -137,13 +137,12 @@ describeCalc("Taxi fixed-asset chain and Admin echo catch a broken workbook", ()
 
     for (const name of [
       "Fixed Assets: New asset cost recorded",
-      "Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction)",
+      "Fixed Assets: WDA claimed = cost x Admin WDA rate",
       "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances",
       "SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances",
       "P&L: Capital Allowances / Mileage Allowance mutually exclusive",
       "Admin: Personal Allowance = tax data",
       "Admin: WDA Rate = tax data",
-      "Admin: Motor Vehicle Restriction = tax data",
       "Admin: VAT Registration Threshold = tax data",
     ]) {
       const check = checks.find((c) => c.name === name);
@@ -151,8 +150,7 @@ describeCalc("Taxi fixed-asset chain and Admin echo catch a broken workbook", ()
       expect(check.pass, `${name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
     }
 
-    // Nonzero, and restricted below the full 18% (proves the £3,000 cap
-    // formula ran, not just a flat-rate multiply).
+    // Nonzero, proving this isn't a 0 = 0 pass.
     const capCheck = checks.find((c) => c.name === "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances");
     expect(capCheck.actual).toBeGreaterThan(0);
   });
@@ -170,7 +168,7 @@ describeCalc("Taxi fixed-asset chain and Admin echo catch a broken workbook", ()
     const results = await readWithCorruption(populatedPath, reads, [["Fixed Assets", "J1", 1]]);
     const checks = taxiCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
-    expect(checks.find((c) => c.name === "Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction)").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Fixed Assets: WDA claimed = cost x Admin WDA rate").pass).toBe(false);
     expect(checks.find((c) => c.name === "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances").pass).toBe(false);
   });
 
@@ -189,7 +187,7 @@ describeCalc("Taxi fixed-asset chain and Admin echo catch a broken workbook", ()
     const checks = taxiCheckCompliance(results, mergedExpected, taxData, calculateExpectedTax);
 
     expect(checks.find((c) => c.name === "Admin: WDA Rate = tax data").pass).toBe(false);
-    expect(checks.find((c) => c.name === "Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction)").pass).toBe(false);
+    expect(checks.find((c) => c.name === "Fixed Assets: WDA claimed = cost x Admin WDA rate").pass).toBe(false);
   });
 
   it("corrupting the Admin personal allowance cell breaks the Admin echo check", async () => {

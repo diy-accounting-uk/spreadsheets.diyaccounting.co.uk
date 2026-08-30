@@ -157,11 +157,6 @@ const SCHEDULE_DEPRECIATION_ROWS = { land: 11, plant: 12, fixtures: 13, computer
 // matching the writer.
 const SCHEDULE_NEW_ASSET_CLASS = "plant";
 
-// The schedule's own writing-down percentage for assets brought forward. It
-// is a literal on the sheet rather than a figure the generator injects, so it
-// stands apart from the Admin sheet's writing-down rate.
-const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = 20;
-
 // A class totals row states whether the schedule and the opening balance
 // sheet agree about that class. The computer block's warning carries a
 // spelling slip the template has always had, and the reconciliation reads the
@@ -397,7 +392,7 @@ function bankCodeMonths(banks, code, side, tabs) {
 // capped at the net book value it carries; a disposal drops its net book
 // value to nil and pulls its cost and accumulated depreciation into the
 // disposal columns.
-function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePercent) {
+function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePercent, writingDownPercent) {
   const rows = [];
   const usedByClass = {};
   for (const asset of scenario.opening_fixed_assets || []) {
@@ -460,7 +455,7 @@ function buildSchedule(scenario, rate, depreciationRates, investmentAllowancePer
 
     const claimRates = {
       investmentAllowancePercent: row.acquiredInYear ? investmentAllowancePercent : 0,
-      writingDownPercent: SCHEDULE_EXISTING_WRITING_DOWN_PERCENT,
+      writingDownPercent,
     };
     const claim = calculateCapitalAllowances(
       [
@@ -619,9 +614,22 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     motor: taxData.depreciation?.motor_vehicles ?? 0,
   };
   const openingBalance = scenario.opening_balance || {};
-  const scheduleRows = buildSchedule(scenario, rate, depreciationRates, admin.G5);
+  const scheduleRows = buildSchedule(scenario, rate, depreciationRates, admin.G5, admin.G6);
   const blocks = scheduleBlocks(scheduleRows);
-  results["Fixedassets.xlsx!Schedule"] = buildScheduleSheet(blocks, openingBalance, depreciationRates);
+  const scheduleSheet = buildScheduleSheet(blocks, openingBalance, depreciationRates);
+  // The reconciliation checks pin a disposal's WDA and balancing allowance
+  // split against the first existing motor row directly, not just the class
+  // total, so that row's own O/R/S/V/Y cells need a value here too.
+  const firstMotorRow = SCHEDULE_CLASSES.motor.existingRows[0];
+  const motorRow = scheduleRows.find((row) => row.row === firstMotorRow && !row.acquiredInYear);
+  if (motorRow) {
+    scheduleSheet[`O${firstMotorRow}`] = motorRow.taxWrittenDownValue;
+    scheduleSheet[`R${firstMotorRow}`] = motorRow.writingDownAllowance;
+    scheduleSheet[`S${firstMotorRow}`] = motorRow.poolCarriedForward;
+    if (motorRow.disposalProceeds !== undefined) scheduleSheet[`V${firstMotorRow}`] = motorRow.disposalProceeds;
+    if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
+  }
+  results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
   results["Fixedassets.xlsx!FAreconciliation"] = {
     E11: sum(purchasesMonthly("AI")),
     K11: sum(salesMonthly("U")),
@@ -725,8 +733,6 @@ function buildAdmin(taxData, period) {
     G6: Math.round(capitalAllowances.writing_down_allowance_main * 100),
     G7: Math.round(capitalAllowances.annual_investment_allowance * 100),
     G8: Math.round(capitalAllowances.writing_down_allowance_main * 100),
-    E11: capitalAllowances.motor_vehicle_cost_threshold,
-    G11: capitalAllowances.motor_vehicle_restriction,
     G15: depreciation.land_and_property,
     G16: depreciation.plant_and_machinery,
     G17: depreciation.fixtures_and_fittings,
