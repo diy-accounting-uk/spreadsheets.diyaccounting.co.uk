@@ -17,12 +17,12 @@ integration branch as it lands and pushes in batches.
 | f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
 | f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
 | f16 | F16 BST Debtors block | `../wt-spreadsheets/f16` | Sonnet | started |
-| f10 | F10 SE Short CELL_MAP | `../wt-spreadsheets/f10` | Haiku | started |
+| f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
 | f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
 | f17 | F17 diya-gl docs examples | — | Haiku | landed `0ad80afc`, docs-examples 9/9 |
 | f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
-| archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | `../wt-spreadsheets/archive` | Opus | started |
+| archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | — | Opus | landed `c3b97742`, dry run 118/118 fully formed |
 | f1 | F1 exact EQ1 gate | — | Sonnet | waits for f2, f8, f9 |
 
 ## Open items
@@ -80,11 +80,6 @@ reconciliation-bug method.
   (`app/lib/generator.js:451-525`) and the SE equivalent to write those caches from the seed,
   then run `verify-stability.js` on a blank package per product: stale count 0, the allowlist
   empties, and `volatile-cells.json` is deleted or reduced to genuine volatiles.
-- [ ] **F10: name the SE Short cells the return prints** (Haiku) — `app/products/se.js` `CELL_MAP`
-  reads `SE Short!A7`, `D8`, `A32`, which the return leaves blank; the business name, accounting
-  date and turnover note print at `C8`, `S17`, `A33` (verify from the sheet XML). Repoint the
-  three entries, drop them from the blanks set in `app/test/calculator-se.test.js`, and add the
-  three to the SE mirrored tests with the fixture's values.
 
 - [ ] **F13: SE forecast checks on the 2023-24 rates** (Opus) — `reconcile.js --package se
   --scenario advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): "Forecast:
@@ -114,7 +109,7 @@ reconciliation-bug method.
 
 ## Plans not tracked here
 
-- `PLAN_PACKAGES_TO_ARCHIVE.md` — generated packages move to the archive repository; paused by the operator, resume when wanted.
+- `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
