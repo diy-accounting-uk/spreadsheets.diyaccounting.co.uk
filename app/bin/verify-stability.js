@@ -23,12 +23,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { resolve, basename } from "path";
 import { readdirSync } from "fs";
 import { spawn } from "child_process";
-import {
-  roundHalfUp,
-  canonicalForUnit,
-  entriesEqual,
-  scoreReportDocuments,
-} from "./verify-roundtrip.js";
+import { roundHalfUp, canonicalForUnit, entriesEqual, scoreReportDocuments } from "./verify-roundtrip.js";
 
 /**
  * Run a shell command and capture its output.
@@ -206,12 +201,7 @@ function formatStabilityReport(packageName, score, volatileSet) {
 /**
  * Compare stability for a single package directory.
  */
-async function comparePackageStability(
-  packageName,
-  sourceDir,
-  outputDir,
-  volatilePath,
-) {
+async function comparePackageStability(packageName, sourceDir, outputDir, volatilePath) {
   const resolvedSourceDir = resolve(sourceDir);
   const volatileSet = loadVolatileCells(volatilePath);
 
@@ -316,7 +306,7 @@ function productNameToId(productName) {
   const mapping = {
     "Basic Sole Trader": "bst",
     "Self Employed": "se",
-    Company: "ltd",
+    "Company": "ltd",
     "Taxi Driver": "taxi",
   };
   return mapping[productName] || null;
@@ -339,12 +329,7 @@ async function runAllPackages(packagesRoot, outputDir, volatilePath) {
       continue;
     }
 
-    const score = await comparePackageStability(
-      packageId,
-      pkgInfo.path,
-      outputDir,
-      volatilePath,
-    );
+    const score = await comparePackageStability(packageId, pkgInfo.path, outputDir, volatilePath);
 
     if (!score) {
       failed.push(productName);
@@ -408,8 +393,7 @@ function parseArgs(argv) {
 }
 
 async function main() {
-  const { packageName, sourceDir, outputDir, volatilePath, all, packagesRoot } =
-    parseArgs(process.argv);
+  const { packageName, sourceDir, outputDir, volatilePath, all, packagesRoot } = parseArgs(process.argv);
 
   mkdirSync(outputDir, { recursive: true });
 
@@ -419,29 +403,18 @@ async function main() {
   }
 
   if (!packageName || !sourceDir) {
-    console.error(
-      "Usage: verify-stability.js --package <name> --source-dir <dir> [--output-dir <dir>] [--volatile <file>]",
-    );
-    console.error(
-      "   or: verify-stability.js --all <packages-root> [--output-dir <dir>] [--volatile <file>]",
-    );
+    console.error("Usage: verify-stability.js --package <name> --source-dir <dir> [--output-dir <dir>] [--volatile <file>]");
+    console.error("   or: verify-stability.js --all <packages-root> [--output-dir <dir>] [--volatile <file>]");
     process.exit(1);
   }
 
   const volatileSet = loadVolatileCells(volatilePath);
-  const score = await comparePackageStability(
-    packageName,
-    sourceDir,
-    outputDir,
-    volatilePath,
-  );
+  const score = await comparePackageStability(packageName, sourceDir, outputDir, volatilePath);
 
   if (!score) process.exit(1);
 
   const byType = categorizeMoved(score.movedKeys, volatileSet);
-  console.log(
-    `${basename(sourceDir)}: ${score.equal} equal, ${score.differing} moved (${categoryCountsLine(byType)})`,
-  );
+  console.log(`${basename(sourceDir)}: ${score.equal} equal, ${score.differing} moved (${categoryCountsLine(byType)})`);
 
   process.exit(byType.unlisted.length > 0 ? 1 : 0);
 }
