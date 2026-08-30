@@ -431,6 +431,27 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
         "--output-dir",
         fixture,
       ]);
+      // report.js --source-dir alongside --data gives the Excel run the same
+      // scenario the JS run has, which is what lets it publish compliance
+      // verdicts of its own rather than leaving every check/ key unscored.
+      const excelReport = resolve(ROOT, "target", `${label}-rt-excel`);
+      run([
+        "app/bin/report.js",
+        "--package",
+        product.name,
+        "--source-dir",
+        pkg,
+        "--data",
+        product.data,
+        "--years",
+        product.years,
+        "--year-end",
+        product.yearEnd,
+        "--output-dir",
+        excelReport,
+      ]);
+      const excelDocument = JSON.parse(readFileSync(resolve(excelReport, "report.json"), "utf8"));
+      expect(excelDocument.values.some((entry) => entry.key.startsWith("check/"))).toBe(true);
 
       const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
       const score = scoreDataHalves(resolve(fixture, "data"), exported, unrepresentableFields(product.name, inventory));
