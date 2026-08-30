@@ -19,6 +19,9 @@ import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync
 import { resolve } from "path";
 import { parse as parseTOML } from "smol-toml";
 import { compareReports, loadVolatileCells } from "../bin/verify-stability.js";
+import { hasLibreOffice } from "../lib/spreadsheet-runner.js";
+
+const describeCalc = hasLibreOffice() ? describe : describe.skip;
 
 const testOutputDir = resolve(process.cwd(), "target/stability-test");
 const volatilePath = resolve(process.cwd(), "app/data/volatile-cells.json");
@@ -153,7 +156,7 @@ async function comparePackageModes(packageName, packageDir, tempDir) {
 const PRODUCTS = ["bst", "se", "ltd"];
 const stability = {};
 
-describe("Stability (EQ3)", () => {
+describeCalc("Stability (EQ3)", () => {
   beforeAll(async () => {
     mkdirSync(testOutputDir, { recursive: true });
     for (const packageName of PRODUCTS) {
