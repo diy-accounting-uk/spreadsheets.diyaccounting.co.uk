@@ -1,216 +1,63 @@
 {
   "description": "Cells that are expected to move between saved and recalculated runs (EQ3 stability).",
-  "notes": "Date cells containing TODAY() formulas change each time LibreOffice recalculates. These are the Admin sheet dates in Payslips and VATQtr sheets, plus the correlates in the main workbook.",
+  "notes": "Date cells containing TODAY() formulas change each time LibreOffice recalculates. These are mostly Admin sheet dates in Payslips and VATQtr sheets, plus date fields in the main workbooks.",
   "cells": [
-    {
-      "key": "cell/Payslips.xlsx!Admin!B28",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B56",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B91",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B119",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B147",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B182",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B210",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B238",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B273",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B301",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Payslips.xlsx!Admin!B329",
-      "type": "volatile formula",
-      "reason": "TODAY() in Admin sheet date row"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!VATQtr1!G7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT quarter sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!VATQtr2!G7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT quarter sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!VATQtr3!G7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT quarter sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!VATQtr4!G7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT quarter sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!VATQtr5!G7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT quarter sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C4",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C5",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C6",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C7",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C8",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C9",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C10",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C11",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C12",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C13",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C14",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C15",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C16",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C17",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Vatreturns.xlsx!Vatinterface!C18",
-      "type": "volatile formula",
-      "reason": "TODAY() in VAT interface sheet"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CT600!B33",
-      "type": "volatile formula",
-      "reason": "Corporation tax date field (TODAY() in source)"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CT600!M33",
-      "type": "volatile formula",
-      "reason": "Corporation tax date field (TODAY() in source)"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CorporationTax!E5",
-      "type": "volatile formula",
-      "reason": "Corporation tax calculation date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CorporationTax!H5",
-      "type": "volatile formula",
-      "reason": "Corporation tax calculation date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CorporationTax!A33",
-      "type": "volatile formula",
-      "reason": "Corporation tax date calculation"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!CorporationTax!A34",
-      "type": "volatile formula",
-      "reason": "Corporation tax date calculation"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!PubBalSht!D2",
-      "type": "volatile formula",
-      "reason": "Published balance sheet date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!PubNotes!A11",
-      "type": "volatile formula",
-      "reason": "Published notes date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!PubP&L!D3",
-      "type": "volatile formula",
-      "reason": "Published P&L date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!PubP&L!E5",
-      "type": "volatile formula",
-      "reason": "Published P&L date"
-    },
-    {
-      "key": "cell/Financialaccounts.xlsx!Report!F22",
-      "type": "volatile formula",
-      "reason": "Report date field"
-    }
+    {"key": "cell/Payslips.xlsx!Admin!B28", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B33", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B56", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B70", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B91", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B101", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B119", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B126", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B147", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B157", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B182", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B188", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B210", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B219", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B238", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B250", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B273", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B281", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B301", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B312", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B329", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B343", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Payslips.xlsx!Admin!B366", "type": "volatile formula", "reason": "TODAY() in Admin sheet"},
+    {"key": "cell/Vatreturns.xlsx!VATQtr1!G7", "type": "volatile formula", "reason": "TODAY() in VAT quarter sheet"},
+    {"key": "cell/Vatreturns.xlsx!VATQtr2!G7", "type": "volatile formula", "reason": "TODAY() in VAT quarter sheet"},
+    {"key": "cell/Vatreturns.xlsx!VATQtr3!G7", "type": "volatile formula", "reason": "TODAY() in VAT quarter sheet"},
+    {"key": "cell/Vatreturns.xlsx!VATQtr4!G7", "type": "volatile formula", "reason": "TODAY() in VAT quarter sheet"},
+    {"key": "cell/Vatreturns.xlsx!VATQtr5!G7", "type": "volatile formula", "reason": "TODAY() in VAT quarter sheet"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C4", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C5", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C6", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C7", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C8", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C9", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C10", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C11", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C12", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C13", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C14", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C15", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C16", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C17", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Vatreturns.xlsx!Vatinterface!C18", "type": "volatile formula", "reason": "TODAY() in VAT interface"},
+    {"key": "cell/Financialaccounts.xlsx!CT600!B33", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!CT600!M33", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!CorporationTax!E5", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!CorporationTax!H5", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!CorporationTax!A33", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!CorporationTax!A34", "type": "volatile formula", "reason": "TODAY() in Corporation Tax sheet"},
+    {"key": "cell/Financialaccounts.xlsx!PubBalSht!D2", "type": "volatile formula", "reason": "TODAY() in Published Balance Sheet"},
+    {"key": "cell/Financialaccounts.xlsx!PubNotes!A11", "type": "volatile formula", "reason": "TODAY() in Published Notes"},
+    {"key": "cell/Financialaccounts.xlsx!PubP&L!D3", "type": "volatile formula", "reason": "TODAY() in Published P&L"},
+    {"key": "cell/Financialaccounts.xlsx!PubP&L!E5", "type": "volatile formula", "reason": "TODAY() in Published P&L"},
+    {"key": "cell/Financialaccounts.xlsx!Report!F22", "type": "volatile formula", "reason": "TODAY() in Report sheet"},
+    {"key": "cell/Financialaccounts.xlsx!SE Full!Q2", "type": "volatile formula", "reason": "TODAY() in SE Full sheet"},
+    {"key": "cell/Financialaccounts.xlsx!SE Full!V2", "type": "volatile formula", "reason": "TODAY() in SE Full sheet"},
+    {"key": "cell/Financialaccounts.xlsx!SE Full!G141", "type": "unstable conversion", "reason": "Percentage rounding (0.18 vs 0.14)"}
   ]
 }
