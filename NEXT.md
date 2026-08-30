@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 Nothing. PR #43 (wave 5, the roundtrip fidelity programme T0-T7) is merged, refreshed
 (generate-* commits through `f1f1b28a`) and deployed green from main (deploy 33312912993).
-PR #44 (the `ajv` bump) is open against that main. Fidelity is parked: `PLAN_ROUNDTRIP_FIDELITY.md`
+PR #44 (the `ajv` bump) is merged; the operator's refresh and deploy from main follow. Fidelity is parked: `PLAN_ROUNDTRIP_FIDELITY.md`
 holds the state at parking and its remainders, and resumes when a production use of the JS
 representation (`PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back. Every later PR branch starts
 from a rebase onto the post-deploy green main; the operator dispatches CI on branches.
@@ -17,9 +17,6 @@ from a rebase onto the post-deploy green main; the operator dispatches CI on bra
 
 The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
 
-- [ ] **Bump `ajv` to 8.18.0** — PR #44 open (`claude/ajv-8-18`, one version bump, 71 schema/
-  canonical/loader tests green). Operator: run test.yml, merge, refresh, deploy. Closes
-  Dependabot alert #79.
 
 Fidelity remainders promoted from `PLAN_ROUNDTRIP_FIDELITY.md` ("What stays open"). Each names
 its suggested sub-agent tier; all branch from the post-deploy green main and follow the
