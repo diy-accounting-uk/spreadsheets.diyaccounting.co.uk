@@ -121,7 +121,6 @@ describeCalc("BST fixed-asset chain and Admin echo catch a broken workbook", () 
       "Admin: Basic Rate = tax data",
       "Admin: NI Class 4 Lower Rate = tax data",
       "Admin: AIA Rate = tax data",
-      "Admin: Motor Vehicle Restriction = tax data",
       "Admin: VAT Registration Threshold = tax data",
     ]) {
       const check = checks.find((c) => c.name === name);

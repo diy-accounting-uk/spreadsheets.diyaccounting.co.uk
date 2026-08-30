@@ -669,8 +669,8 @@ export const CELL_MAP = [
   [FORECAST_SHEET, "C46", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Profit Forecast", 0],
   // ── SE Short (SA103S) ──
   // ── SE Short (SA103S) — formula cells only ──
-  ["SE Short", "A7",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
-  ["SE Short", "D8",   "Accounting date",                "documentInfo.periodCoveredEnd",             "Self Assessment (SA103S)", 0],
+  ["SE Short", "C8",   "Business name",                  "entityInformation.organizationIdentifier",  "Self Assessment (SA103S)", 0],
+  ["SE Short", "S17",  "Accounting date",                "documentInfo.periodCoveredEnd",             "Self Assessment (SA103S)", 0],
   ["SE Short", "D38",  "Turnover",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0],
   ["SE Short", "O38",  "Other business income",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1],
   // The return sets its expense captions in two columns. Reporting only the
@@ -696,7 +696,7 @@ export const CELL_MAP = [
   ["SE Short", "D99",  "**Taxable profit**",             "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0],
   ["SE Short", "O94",  "Loss brought forward (box 28)",  "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1],
   ["SE Short", "O99",  "Grants as other business income (box 29)", "gl-cor:amount (sa103s.otherBusinessIncome)", "Self Assessment (SA103S)", 1],
-  ["SE Short", "A32",  "VAT threshold note",             "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
+  ["SE Short", "A33",  "Turnover note",                  "gl-cor:detailComment (sa103s.notes)",       "Self Assessment (SA103S)", 0],
   ["SE Short", "D106", "**Net profit for tax calc**",    "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0],
   // ── SE Full (SA103F) ──
   // The full return, live in the same workbook as the short one and fed from
@@ -790,8 +790,6 @@ export const CELL_MAP = [
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
   ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
   ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
-  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0],
-  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0],
   ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
   ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
   ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
@@ -1240,8 +1238,8 @@ export function unitFor(sheet, cell) {
     case FORECAST_SHEET:
       return cell === "C21" ? "count" : "money";
     case "SE Short":
-      if (cell === "A7" || cell === "A32" || cell === "A33") return "text";
-      if (cell === "D8" || cell === "Q2" || cell === "V2") return "date";
+      if (cell === "C8" || cell === "A33") return "text";
+      if (cell === "S17" || cell === "Q2" || cell === "V2") return "date";
       return "money";
     case "SE Full":
       if (cell === "Q2" || cell === "V2") return "date";
@@ -2420,8 +2418,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
     check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
     check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
-    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
-    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
     check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
     check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
     check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);

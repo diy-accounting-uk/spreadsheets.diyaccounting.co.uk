@@ -7,6 +7,10 @@
 // month on its financial health check, so a wrong figure here reaches the
 // customer's drawings plan.
 //
+// The block runs off the Admin sheet's own rates, so it is proven on two
+// years: the 2025-26 rates the current package ships with, and the 2023-24
+// rates behind the 2024-04-05 year end, where Class 4 is still 9% and 2%.
+//
 // Each check runs on a real LibreOffice-recalculated package, then again after
 // corrupting one cell's cached value in a copy of Financialaccounts.xlsx via
 // JSZip. The corrupted run has to fail exactly the checks that read the cell
@@ -42,6 +46,48 @@ const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 const FORECAST_SHEET = "Profit Forecast";
+
+// The taxable profit is the same in both years: the forecast's 171,875.39
+// accounting profit, plus 13,912 of disposal loss and depreciation added back,
+// less 64,000 of capital allowances. So is every income tax figure, because
+// the allowance, the taper threshold and the bands have not moved between
+// them: the allowance is 12,570 less half of the 21,787.39 above the 100,000
+// taper threshold, so 1,676.30; 37,700 at 20% is 7,540; the remaining
+// 82,411.09 at 40% is 32,964.44; nothing reaches the additional rate.
+//
+// Class 4 is what separates the two. On the 2025-26 rates it is 6% between
+// 12,570 and 50,270 (2,262) plus 2% on the 71,517.39 above (1,430.35). On the
+// 2023-24 rates the main rate is still 9%, so the same band gives 3,393.
+const RATE_YEARS = [
+  {
+    label: "2025-26",
+    taxDataFile: "se-2025-2026.toml",
+    forecast: {
+      C39: 121787.391666666,
+      C40: 1676.304166666,
+      C41: 120111.0875,
+      C42: 7540,
+      C43: 32964.435,
+      C44: 0,
+      C45: 3692.347833333,
+      C46: 44196.782833333,
+    },
+  },
+  {
+    label: "2023-24",
+    taxDataFile: "se-2023-2024.toml",
+    forecast: {
+      C39: 121787.391666666,
+      C40: 1676.304166666,
+      C41: 120111.0875,
+      C42: 7540,
+      C43: 32964.435,
+      C44: 0,
+      C45: 4823.347833333,
+      C46: 45327.782833333,
+    },
+  },
+];
 
 function corruptCellValue(xml, cellRef, newValue) {
   const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
@@ -98,122 +144,119 @@ const TAX_BLOCK_CHECKS = [
   "Forecast: tax and NI liability",
 ];
 
-describeCalc("Self Employed profit forecast checks catch a broken workbook", () => {
-  let results;
-  let checks;
-  let taxData;
-  let expected;
-  let saveDir;
+for (const rateYear of RATE_YEARS) {
+  describeCalc(`Self Employed profit forecast checks catch a broken workbook on the ${rateYear.label} rates`, () => {
+    let results;
+    let checks;
+    let taxData;
+    let expected;
+    let saveDir;
 
-  function checksWithCorruptedCell(resultKey, cellRef, value) {
-    const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
-    return seCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
-  }
-
-  beforeAll(async () => {
-    taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
-    const productMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
-
-    const fileBuffers = {};
-    for (const templateFile of productMeta.template.files) {
-      const templateBuffer = readFileSync(resolve(SE_DIR, templateFile));
-      const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
-      const sheetsConfig = productMeta.sheets?.[fileKey];
-      fileBuffers[templateFile] =
-        sheetsConfig && Object.keys(sheetsConfig).length > 0
-          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
-          : templateBuffer;
+    function checksWithCorruptedCell(resultKey, cellRef, value) {
+      const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
+      return seCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
     }
 
-    const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
-    expected = { ...scenario, ...scenario.expected };
+    beforeAll(async () => {
+      taxData = parseTOML(readFileSync(resolve(DATA_DIR, rateYear.taxDataFile), "utf8"));
+      const productMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
 
-    saveDir = mkdtempSync(join(tmpdir(), "se-profit-forecast-"));
-    results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-      ...seOptions(),
-      saveRecalculatedTo: saveDir,
+      const fileBuffers = {};
+      for (const templateFile of productMeta.template.files) {
+        const templateBuffer = readFileSync(resolve(SE_DIR, templateFile));
+        const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
+        const sheetsConfig = productMeta.sheets?.[fileKey];
+        fileBuffers[templateFile] =
+          sheetsConfig && Object.keys(sheetsConfig).length > 0
+            ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+            : templateBuffer;
+      }
+
+      const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
+      expected = { ...scenario, ...scenario.expected };
+
+      saveDir = mkdtempSync(join(tmpdir(), "se-profit-forecast-"));
+      results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
+        ...seOptions(),
+        saveRecalculatedTo: saveDir,
+      });
+      checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
+    }, 600000);
+
+    it("passes every forecast check on the intact book", () => {
+      for (const name of FORECAST_CHECK_NAMES) {
+        const check = checks.find((c) => c.name === name);
+        expect(check, `missing check: ${name}`).toBeDefined();
+        expect(check.pass, `${name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
+      }
     });
-    checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
-  }, 600000);
 
-  it("passes every forecast check on the intact book", () => {
-    for (const name of FORECAST_CHECK_NAMES) {
-      const check = checks.find((c) => c.name === name);
-      expect(check, `missing check: ${name}`).toBeDefined();
-      expect(check.pass, `${name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
-    }
-  });
+    it("projects the whole year when every month traded", () => {
+      const forecast = results[FORECAST_SHEET];
+      const pl = results["Profit & Loss Account"];
+      expect(forecast.C21).toBe(12);
+      expect(forecast.C34).toBeCloseTo(pl.B39, 4);
+    });
 
-  it("projects the whole year when every month traded", () => {
-    const forecast = results[FORECAST_SHEET];
-    const pl = results["Profit & Loss Account"];
-    expect(forecast.C21).toBe(12);
-    expect(forecast.C34).toBeCloseTo(pl.B39, 4);
-  });
+    it("charges the forecast profit the statutory amount", () => {
+      const forecast = results[FORECAST_SHEET];
+      expect(forecast.C39).toBeCloseTo(rateYear.forecast.C39, 4);
+      expect(forecast.C40).toBeCloseTo(rateYear.forecast.C40, 4);
+      expect(forecast.C41).toBeCloseTo(rateYear.forecast.C41, 4);
+      expect(forecast.C42).toBeCloseTo(rateYear.forecast.C42, 2);
+      expect(forecast.C43).toBeCloseTo(rateYear.forecast.C43, 2);
+      expect(forecast.C44).toBe(rateYear.forecast.C44);
+      expect(forecast.C45).toBeCloseTo(rateYear.forecast.C45, 4);
+      expect(forecast.C46).toBeCloseTo(rateYear.forecast.C46, 4);
+    });
 
-  // Hand-computed from the 2025-26 rates on a taxable profit of 121,787.39
-  // (the forecast's 171,875.39 accounting profit, plus 13,912 of disposal
-  // loss and depreciation added back, less 64,000 of capital allowances):
-  // the allowance is 12,570 less half of the 21,787.39 above the 100,000
-  // taper threshold, so 1,676.30; 37,700 at 20% is 7,540; the remaining
-  // 82,411.09 at 40% is 32,964.44; nothing reaches the additional rate.
-  // Class 4 is 6% between 12,570 and 50,270 (2,262) plus 2% on the 71,517.39
-  // above (1,430.35).
-  it("charges the forecast profit the statutory amount", () => {
-    const forecast = results[FORECAST_SHEET];
-    expect(forecast.C39).toBeCloseTo(121787.391666666, 4);
-    expect(forecast.C40).toBeCloseTo(1676.304166666, 4);
-    expect(forecast.C41).toBeCloseTo(120111.0875, 4);
-    expect(forecast.C42).toBeCloseTo(7540, 2);
-    expect(forecast.C43).toBeCloseTo(32964.435, 2);
-    expect(forecast.C44).toBe(0);
-    expect(forecast.C45).toBeCloseTo(3692.347833333, 4);
-    expect(forecast.C46).toBeCloseTo(44196.782833333, 4);
-  });
-
-  it.each([
-    [FORECAST_SHEET, "C21", 1, ["Forecast: months of actual trade = P&L months with turnover"]],
-    [FORECAST_SHEET, "C22", 1, ["Forecast: turnover = P&L turnover"]],
-    [FORECAST_SHEET, "C24", 1, ["Forecast: investment grants = P&L investment grants"]],
-    [FORECAST_SHEET, "C26", 1, ["Forecast: cost of sales = P&L cost of sales"]],
-    [FORECAST_SHEET, "C30", 1, ["Forecast: general expenses = P&L administrative expenses"]],
-    [FORECAST_SHEET, "C33", 5, ["Forecast: interest received = P&L interest received"]],
-    [
-      FORECAST_SHEET,
-      "C34",
-      1,
-      ["Forecast: profit before tax = P&L profit before tax", "Forecast: taxable profit = profit + depreciation - capital allowances"],
-    ],
-    [
-      FORECAST_SHEET,
-      "C37",
-      1,
+    it.each([
+      [FORECAST_SHEET, "C21", 1, ["Forecast: months of actual trade = P&L months with turnover"]],
+      [FORECAST_SHEET, "C22", 1, ["Forecast: turnover = P&L turnover"]],
+      [FORECAST_SHEET, "C24", 1, ["Forecast: investment grants = P&L investment grants"]],
+      [FORECAST_SHEET, "C26", 1, ["Forecast: cost of sales = P&L cost of sales"]],
+      [FORECAST_SHEET, "C30", 1, ["Forecast: general expenses = P&L administrative expenses"]],
+      [FORECAST_SHEET, "C33", 5, ["Forecast: interest received = P&L interest received"]],
       [
-        "Forecast: depreciation added back = P&L disposal loss + depreciation",
-        "Forecast: taxable profit = profit + depreciation - capital allowances",
+        FORECAST_SHEET,
+        "C34",
+        1,
+        ["Forecast: profit before tax = P&L profit before tax", "Forecast: taxable profit = profit + depreciation - capital allowances"],
       ],
-    ],
-    [
-      FORECAST_SHEET,
-      "C38",
-      1,
-      ["Forecast: capital allowances = the fixed asset schedule", "Forecast: taxable profit = profit + depreciation - capital allowances"],
-    ],
-    [FORECAST_SHEET, "C39", 1, ["Forecast: taxable profit = profit + depreciation - capital allowances", ...TAX_BLOCK_CHECKS]],
-    [FORECAST_SHEET, "C40", 5000, ["Forecast: personal allowance after taper"]],
-    [FORECAST_SHEET, "C42", 1, ["Forecast: tax at standard rate"]],
-    [FORECAST_SHEET, "C43", 1, ["Forecast: tax at higher rate"]],
-    [FORECAST_SHEET, "C44", 5, ["Forecast: tax at additional rate"]],
-    [FORECAST_SHEET, "C45", 1, ["Forecast: National Insurance"]],
-    [FORECAST_SHEET, "C46", 1, ["Forecast: tax and NI liability"]],
-  ])("corrupting %s!%s via JSZip fails exactly the checks that read it", async (sheet, cellRef, corruptedValue, expectedFailures) => {
-    for (const name of expectedFailures) {
-      expect(checks.find((c) => c.name === name).pass, `${name} should pass on the intact book`).toBe(true);
-    }
+      [
+        FORECAST_SHEET,
+        "C37",
+        1,
+        [
+          "Forecast: depreciation added back = P&L disposal loss + depreciation",
+          "Forecast: taxable profit = profit + depreciation - capital allowances",
+        ],
+      ],
+      [
+        FORECAST_SHEET,
+        "C38",
+        1,
+        [
+          "Forecast: capital allowances = the fixed asset schedule",
+          "Forecast: taxable profit = profit + depreciation - capital allowances",
+        ],
+      ],
+      [FORECAST_SHEET, "C39", 1, ["Forecast: taxable profit = profit + depreciation - capital allowances", ...TAX_BLOCK_CHECKS]],
+      [FORECAST_SHEET, "C40", 5000, ["Forecast: personal allowance after taper"]],
+      [FORECAST_SHEET, "C42", 1, ["Forecast: tax at standard rate"]],
+      [FORECAST_SHEET, "C43", 1, ["Forecast: tax at higher rate"]],
+      [FORECAST_SHEET, "C44", 5, ["Forecast: tax at additional rate"]],
+      [FORECAST_SHEET, "C45", 1, ["Forecast: National Insurance"]],
+      [FORECAST_SHEET, "C46", 1, ["Forecast: tax and NI liability"]],
+    ])("corrupting %s!%s via JSZip fails exactly the checks that read it", async (sheet, cellRef, corruptedValue, expectedFailures) => {
+      for (const name of expectedFailures) {
+        expect(checks.find((c) => c.name === name).pass, `${name} should pass on the intact book`).toBe(true);
+      }
 
-    const value = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), sheet, cellRef, corruptedValue);
-    expect(value).toBe(corruptedValue);
-    const corrupted = checksWithCorruptedCell(sheet, cellRef, value);
-    expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
+      const value = await readCorruptedCell(join(saveDir, "Financialaccounts.xlsx"), sheet, cellRef, corruptedValue);
+      expect(value).toBe(corruptedValue);
+      const corrupted = checksWithCorruptedCell(sheet, cellRef, value);
+      expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
+    });
   });
-});
+}

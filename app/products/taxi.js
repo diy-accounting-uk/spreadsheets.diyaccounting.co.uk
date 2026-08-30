@@ -9,6 +9,7 @@ import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths, toExcelSerial as dateToSerial } from "../lib/generator.js";
 import { parseDate, MONTH_SHEETS, extractTaxYearStart, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import { calculateMileageAllowance } from "../lib/tax/mileage.js";
 
 export const PRODUCT = {
   id: "taxi",
@@ -99,6 +100,10 @@ export function cellWrites(scenario, targetStartYear = null) {
         const sheetName = `Sales${MONTH_SHEETS[match.monthKey]}`;
         if (!writes[sheetName]) writes[sheetName] = {};
         writes[sheetName][`E${match.row}`] = tx.amount;
+        // The day's business miles, beside the day's takings. SalesApr!D1 sums
+        // the column into PurchasesApr!A1, the running mileage total the P&L's
+        // own vehicle-cost comparison is made on.
+        if (tx.mileage) writes[sheetName][`D${match.row}`] = tx.mileage;
         if (tx.other_income) writes[sheetName][`F${match.row}`] = tx.other_income;
       }
     }
@@ -116,7 +121,13 @@ export function cellWrites(scenario, targetStartYear = null) {
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         sheet[`D${row}`] = tx.code;
-        sheet[`F${row}`] = tx.amount;
+        // A mileage-log entry buys nothing: its whole expense is the claim the
+        // approved rate makes of the miles. Column E takes them (PurchasesApr!E1
+        // = SUM(E5:E199), added to the Sales sheet's own column into the running
+        // total at A1 and priced at U4), so writing the amount in column F as
+        // well would charge the same journey twice.
+        if (tx.mileage) sheet[`E${row}`] = tx.mileage;
+        else sheet[`F${row}`] = tx.amount;
         row++;
       }
     }
@@ -247,6 +258,8 @@ export const CELL_MAP = [
   [FORECAST_SHEET, "C40", "National Insurance",         "tax.nationalInsurance.class4",           "Wages Forecast", 1, "money"],
   [FORECAST_SHEET, "C41", "**Forecast Tax & NI Liability**", "gl-cor:taxAmount (forecast.totalTaxNI)", "Wages Forecast", 0, "money"],
   // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
+  ["PurchasesMar", "A1", "Business miles for the year",          "gl-bus:measurableQuantity (miles)",         "Purchase Analysis", 0, "count"],
+  ["PurchasesMar", "A2", "Mileage claimed for the year",         "tax.mileage (claim)",                       "Purchase Analysis", 0, "money"],
   ["PurchasesMar", "I2", "Vehicle running costs for the year",  "accounts.purchases (vehicleRunningCosts)",  "Purchase Analysis", 0, "money"],
   ["PurchasesMar", "T1", "Vehicle purchases capitalised",       "fixedAssets (purchased, year total)",       "Purchase Analysis", 0, "money"],
   // ── Fixed Assets schedule ──
@@ -271,8 +284,6 @@ export const CELL_MAP = [
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits","Admin (Generator Injected)", 0, "money"],
   ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.annualInvestmentAllowance", "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0, "rate"],
-  ["Admin", "E8",  "Motor Vehicle Cost Threshold",         "tax.capitalAllowances.motorVehicleCostThreshold", "Admin (Generator Injected)", 0, "money"],
-  ["Admin", "G8",  "Motor Vehicle Restriction",            "tax.capitalAllowances.motorVehicleRestriction",   "Admin (Generator Injected)", 0, "money"],
   ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0, "count"],
   ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0, "count"],
@@ -307,14 +318,17 @@ export function standardReads() {
   // The Wages Forecast repeats the P&L's own monthly turnover, other income,
   // cost of sales and expenses, so row 24 joins the three VitalTax needs.
   reads["Profit & Loss Acc"] = reads["Profit & Loss Acc"] || [];
-  for (const row of [5, 12, 22, 24]) {
-    for (const col of MONTH_COLS) {
-      const cell = `${col}${row}`;
-      if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
-    }
+  for (const cell of monthlyProfitAndLossCells()) {
+    if (!reads["Profit & Loss Acc"].includes(cell)) reads["Profit & Loss Acc"].push(cell);
   }
 
   return reads;
+}
+
+const MONTHLY_PROFIT_AND_LOSS_ROWS = [5, 12, 22, 24];
+
+function monthlyProfitAndLossCells() {
+  return MONTHLY_PROFIT_AND_LOSS_ROWS.flatMap((row) => MONTH_COLS.map((col) => `${col}${row}`));
 }
 
 export function reportSections(results) {
@@ -332,6 +346,13 @@ export function cellLabels() {
   for (const [sheet, cell, diyLabel, glMapping, , , unit] of CELL_MAP) {
     const key = `${sheet}!${cell}`;
     labels[key] = { diyLabel, glMapping, unit };
+  }
+  // The monthly P&L cells read for the VitalTax and Wages Forecast re-sums
+  // are money too, so the comparator rounds them to the penny rather than
+  // comparing the two engines' float noise exactly.
+  for (const cell of monthlyProfitAndLossCells()) {
+    const key = `Profit & Loss Acc!${cell}`;
+    if (!labels[key]) labels[key] = { diyLabel: "", glMapping: "", unit: "money" };
   }
   return labels;
 }
@@ -444,11 +465,39 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // here even though every total on its own still adds up.
   const purchases = results.PurchasesMar;
   if (expected.purchases && purchases) {
-    const journalTotal = Object.values(expected.purchases)
+    // A mileage-log entry buys nothing, so it is not among the purchases that
+    // have to reach a money column: the sheet is given its miles and prices
+    // the claim itself, which the mileage checks below cover.
+    const cashPurchases = Object.values(expected.purchases)
       .flat()
-      .reduce((s, tx) => s + tx.amount, 0);
+      .filter((tx) => !tx.mileage);
+    const journalTotal = cashPurchases.reduce((s, tx) => s + tx.amount, 0);
     const accountedFor = (pl.B22 || 0) + (purchases.I2 || 0) + (purchases.T1 || 0);
-    check("Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles", accountedFor, journalTotal);
+    check("Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles", accountedFor, journalTotal);
+  }
+
+  // The mileage route. The workbook prices the year's business miles at the
+  // approved rates and charges that claim in place of the running costs and
+  // capital allowances whenever it comes to more. Both sides are recomputed
+  // here from the scenario's own miles and the tax year's rates, so a package
+  // that drops the miles on the way in cannot pass.
+  const scheduleAllowance = results["Fixed Assets"]
+    ? (results["Fixed Assets"].I1 || 0) +
+      (results["Fixed Assets"].J1 || 0) +
+      (results["Fixed Assets"].P1 || 0) -
+      (results["Fixed Assets"].Q1 || 0)
+    : 0;
+  const businessMiles = expected.total_mileage || 0;
+  const mileageClaim = taxData ? calculateMileageAllowance(businessMiles, taxData.mileage) : 0;
+  const takesMileageRoute = Math.round(mileageClaim) > Math.round((purchases?.I2 || 0) + scheduleAllowance);
+  if (taxData && businessMiles && purchases) {
+    check("Purchases: business miles carried = the journals' miles", purchases.A1 || 0, businessMiles, 0);
+    check("Purchases: mileage claimed = those miles at the tax year's approved rates", purchases.A2 || 0, mileageClaim, 0.01);
+    check(
+      "P&L: Mileage Allowance = the claim when it beats running the vehicle",
+      pl.B11 || 0,
+      takesMileageRoute ? Math.ceil(mileageClaim) : 0,
+    );
   }
 
   // SA103S cross-check: SE Short is fed entirely from the P&L and, in turn,
@@ -469,11 +518,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L Capital Allowances (B10).
-  // Taxi vehicles under £12,000 claim a Writing Down Allowance restricted to
-  // Admin!G8, not the 100% AIA BST's non-vehicle assets get -- the expected
-  // allowance is recomputed independently from the read-back Admin rate and
-  // restriction, so this check also stands in as the Admin-echo check for
-  // those two cells.
+  // Taxi vehicles under £12,000 claim a Writing Down Allowance at the main
+  // rate, not the 100% AIA BST's non-vehicle assets get -- the expected
+  // allowance is recomputed independently from the read-back Admin rate, so
+  // this check also stands in as the Admin-echo check for that cell.
   const expectedAdditions = fixedAssetAdditions(expected, "f");
   if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
@@ -482,15 +530,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     if (results.Admin) {
       const wdaRate = results.Admin.G5;
-      const restriction = results.Admin.G8;
-      const expectedWda = Math.min((fa.D47 || 0) * wdaRate, restriction);
-      check("Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction)", fa.J1 || 0, expectedWda);
+      const expectedWda = (fa.D47 || 0) * wdaRate;
+      check("Fixed Assets: WDA claimed = cost x Admin WDA rate", fa.J1 || 0, expectedWda);
     }
 
+    // The P&L charges the schedule's allowance only on the actual-cost route:
+    // on the mileage route B10 reads IF(C1="mileage allowance",0,...) and the
+    // claim is charged at B11 instead.
     check(
       "Fixed Assets: Schedule capital allowance total = P&L Capital Allowances",
       pl.B10 || 0,
-      (fa.I1 || 0) + (fa.J1 || 0) + (fa.P1 || 0) - (fa.Q1 || 0),
+      takesMileageRoute ? 0 : (fa.I1 || 0) + (fa.J1 || 0) + (fa.P1 || 0) - (fa.Q1 || 0),
     );
   }
 
@@ -519,8 +569,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: NI Class 4 Upper Limit = tax data", admin.N23, ni.class4_upper_limit);
     check("Admin: AIA Rate = tax data", admin.G4, ca.annual_investment_allowance, 0.0001);
     check("Admin: WDA Rate = tax data", admin.G5, ca.writing_down_allowance, 0.0001);
-    check("Admin: Motor Vehicle Cost Threshold = tax data", admin.E8, ca.motor_vehicle_cost_threshold);
-    check("Admin: Motor Vehicle Restriction = tax data", admin.G8, ca.motor_vehicle_restriction);
     check("Admin: Mileage Higher Rate Limit = tax data", admin.F21, mil.higher_rate_limit);
     check("Admin: Mileage Higher Rate Pence = tax data", admin.G21, mil.higher_rate_pence, 0.0001);
     check("Admin: Mileage Lower Rate Start = tax data", admin.F22, mil.lower_rate_start);

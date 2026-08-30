@@ -242,6 +242,13 @@ const SCHEDULE_ASSET_CLASSES = {
   motor: { existingRows: [50, 51, 52, 53, 54], existingTotalRow: 55, newTotalRow: 108, noteColumn: "F", rateCell: "H43" },
 };
 
+// The Schedule's writing-down allowance rate (R4, applied to every asset
+// class's tax written-down value) reads Admin!G6, which the generator sets
+// from this same figure. There is no separate rate or cap for motor
+// vehicles -- the pre-2009 expensive-car restriction that used to route
+// motor assets through Admin!E11/G11 has been removed from the template.
+const SCHEDULE_EXISTING_WRITING_DOWN_PERCENT = (taxData) => taxData.capital_allowances.writing_down_allowance_main;
+
 // Assets bought in the year all land on the New Plant & Machinery rows. A
 // scenario purchase carries a code letter and an amount, not an asset class,
 // so any single block is as faithful as another; the note's per-class rows
@@ -1165,8 +1172,6 @@ const ADMIN_TAX_DATA_CELLS = [
   ["G7", "annual investment allowance (new assets)", (t) => Math.round(t.capital_allowances.annual_investment_allowance * 100)],
   ["G6", "writing down allowance", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
   ["G8", "writing down allowance (new assets)", (t) => Math.round(t.capital_allowances.writing_down_allowance_main * 100)],
-  ["E11", "motor vehicle cost threshold", (t) => t.capital_allowances.motor_vehicle_cost_threshold],
-  ["G11", "motor vehicle allowance restriction", (t) => t.capital_allowances.motor_vehicle_restriction],
   ["G15", "depreciation rate, land and property", (t) => t.depreciation.land_and_property],
   ["G16", "depreciation rate, plant and machinery", (t) => t.depreciation.plant_and_machinery],
   ["G17", "depreciation rate, fixtures and fittings", (t) => t.depreciation.fixtures_and_fittings],
@@ -1416,6 +1421,10 @@ export function multiFileOptions(yearEndMonth) {
     scheduleReads.push(`B${layout.existingTotalRow}`);
     scheduleReads.push(layout.rateCell);
   }
+  // Row 50 is the first "Motor Vehicles - Vans & Lorries" row, where a
+  // scenario's only motor asset lands. O/V/R/S/Y/Z pin the disposal-year
+  // WDA and balancing allowance split against the tax-data rate directly.
+  for (const col of ["O", "V", "R", "S", "Y", "Z"]) scheduleReads.push(`${col}50`);
 
   // Each bank workbook's own reconciliation block on the final month tab:
   // A1 opening balance carried through the year, A2 closing balance.
@@ -2327,6 +2336,33 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       "Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals",
       num(schedule.K1),
       num(schedule.E1) - num(schedule.W1) - (num(schedule.J1) - num(schedule.X1)),
+    );
+  }
+  // Row 50's opening tax value (O50) and disposal proceeds (V50, read via
+  // Y50's own inputs) are values this module wrote from the fixture, not
+  // sheet arithmetic, so recomputing the WDA and balancing allowance from
+  // them independently pins the disposal-year split: WDA claimed in full
+  // even in the year of sale, then the remaining pool measured against the
+  // sale proceeds. A reintroduced cap or threshold on the motor vehicle
+  // formulas would move R50/Y50 away from this figure without moving O50.
+  if (schedule && taxData && num(schedule.O50) > 0) {
+    const openingTaxValue = num(schedule.O50);
+    const proceeds = num(schedule.V50) || 0;
+    const wdaRate = SCHEDULE_EXISTING_WRITING_DOWN_PERCENT(taxData);
+    const expectedWda = openingTaxValue * wdaRate;
+    const expectedPool = openingTaxValue - expectedWda;
+    const expectedBalancingAllowance = expectedPool - proceeds;
+    check("Schedule: motor vehicle WDA = opening tax value x the year's WDA rate, uncapped", num(schedule.R50), expectedWda);
+    check("Schedule: motor vehicle pool after WDA = opening tax value less WDA", num(schedule.S50), expectedPool);
+    check(
+      "Schedule: motor vehicle balancing allowance = pool after WDA less disposal proceeds",
+      num(schedule.Y50),
+      expectedBalancingAllowance,
+    );
+    check(
+      "Schedule: motor vehicle WDA + balancing allowance = opening tax value less disposal proceeds",
+      num(schedule.R50) + num(schedule.Y50),
+      openingTaxValue - proceeds,
     );
   }
   if (schedule && notes) {

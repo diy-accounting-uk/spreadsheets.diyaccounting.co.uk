@@ -85,11 +85,10 @@ const SE_HMRC_PAYMENT_CODE = "RP";
 const COMPANY_TAX_PAYMENT_CODES = new Set(["RV", "RC", "RT"]);
 
 // The Schedule rows each kind of asset lands on, and the Admin depreciation
-// rate the block's own header cell reads. Motor vehicles carry the cost
-// restriction; the other blocks take the writing down allowance straight.
+// rate the block's own header cell reads.
 const EXISTING_ASSET_BLOCKS = {
-  computer: { rows: [30, 31, 32, 33, 34], rateKey: "computer_equipment", motorRestriction: false },
-  motor: { rows: [38, 39, 40, 41, 42], rateKey: "motor_vehicles", motorRestriction: true },
+  computer: { rows: [30, 31, 32, 33, 34], rateKey: "computer_equipment" },
+  motor: { rows: [38, 39, 40, 41, 42], rateKey: "motor_vehicles" },
 };
 const NEW_PLANT_ROW_COUNT = 5;
 
@@ -257,7 +256,7 @@ function payrollMonths(payroll) {
  * That is what the sheet reports for a disposal with no tax value entered, so
  * it is what this reports too.
  */
-function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, motorRestriction, motorRestrictionCap, wdaRate, disposal }) {
+function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, wdaRate, disposal }) {
   const written = cost > 0;
   const isNewAsset = aiaRate !== undefined;
   const row = { E: cost, F: accDep, H: depRate };
@@ -272,7 +271,7 @@ function scheduleRow({ cost, accDep = 0, taxWdv, depRate, aiaRate, motorRestrict
     row.O = taxWdv === undefined ? SHEET_BLANK : taxWdv;
     row.Q = SHEET_BLANK;
     const claimsWritingDown = typeof row.O === "number" && row.O > 0;
-    row.R = claimsWritingDown ? (motorRestriction ? Math.min(row.O * wdaRate, motorRestrictionCap) : row.O * wdaRate) : SHEET_BLANK;
+    row.R = claimsWritingDown ? row.O * wdaRate : SHEET_BLANK;
     row.S = claimsWritingDown ? row.O - row.R : SHEET_BLANK;
   } else {
     row.O = SHEET_BLANK;
@@ -333,7 +332,6 @@ function buildSchedule(scenario, taxData, rate) {
   const depreciation = taxData?.depreciation || {};
   const wdaRate = taxData?.capital_allowances?.writing_down_allowance ?? 0;
   const aiaRate = taxData?.capital_allowances?.annual_investment_allowance ?? 0;
-  const motorRestrictionCap = taxData?.capital_allowances?.motor_vehicle_restriction ?? 0;
 
   const capitalPurchases = [];
   for (const transactions of Object.values(scenario.purchases || {})) {
@@ -365,8 +363,6 @@ function buildSchedule(scenario, taxData, rate) {
           accDep: asset.acc_dep || 0,
           taxWdv: asset.tax_wdv,
           depRate: depreciation[block.rateKey] ?? 0,
-          motorRestriction: block.motorRestriction,
-          motorRestrictionCap,
           wdaRate,
           disposal: disposalByAsset.get(asset),
         }),
@@ -447,8 +443,6 @@ function buildAdmin(taxData, dateSerials) {
   cells.N23 = ni.class4_upper_limit;
   cells.G4 = ca.annual_investment_allowance;
   cells.G5 = ca.writing_down_allowance;
-  cells.E8 = ca.motor_vehicle_cost_threshold;
-  cells.G8 = ca.motor_vehicle_restriction;
   cells.G13 = dep.land_and_property;
   cells.G14 = dep.plant_and_machinery;
   cells.G15 = dep.fixtures_and_fittings;
@@ -631,15 +625,19 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seShort.Q2 = dateSerials[4];
   seShort.V2 = dateSerials[17];
   // The return prints its business name at C8, its accounting date at S17 and
-  // its turnover note at A33. A7, D8 and A32 are the empty boxes beside those
-  // captions, which is what the report's own cell map names.
+  // its turnover note at A33. The left-column equivalents (A7, D8, A32) are the
+  // empty boxes beside the print locations.
   seShort.A7 = SHEET_BLANK;
   seShort.D8 = SHEET_BLANK;
-  // The note the sheet prints sits at A33; A32 is the empty cell beside it that
-  // the report's own map names.
   seShort.A32 = SHEET_BLANK;
+  seShort.C8 = scenario.business?.name || " ";
+  seShort.S17 = seShort.Q2;
   seShort.D38 = pl.B9;
   seShort.O38 = pl.B38;
+  // Turnover note: conditional message about VAT threshold
+  seShort.A33 = seShort.D38 > admin.F26
+    ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
+    : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
   seShort.D46 = analysed(pl.B17);
   seShort.O46 = analysed(pl.B28);
   seShort.D51 = analysed(pl.B25 + pl.B26);

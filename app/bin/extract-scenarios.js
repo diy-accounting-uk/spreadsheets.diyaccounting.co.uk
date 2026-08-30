@@ -264,7 +264,11 @@ const chargesRegister = book.charges.map((charge) => ({
 // ============================================================================
 
 const bstLines = filterBst(bstStaffWagesAsPurchases(allLines));
-const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true });
+const bstGrouped = buildGrouped(bstLines, BST_PURCHASE_CODE_MAP, {
+  carriesCisDeductions: false,
+  carriesSourceFields: true,
+  carriesMileage: "claims",
+});
 const bstFigures = bstExpectedFigures(bstLines, book.stock);
 const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: false });
 
@@ -852,7 +856,12 @@ const brickBstToml = formatScenarioToml(
     vat_registered: false,
     business: businessBlock(brickBstEntity),
   },
-  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesPaymentLabels: true, carriesSourceFields: true }),
+  buildGrouped(brickBstLines, BST_PURCHASE_CODE_MAP, {
+    carriesCisDeductions: false,
+    carriesPaymentLabels: true,
+    carriesSourceFields: true,
+    carriesMileage: "claims",
+  }),
   {
     ...brickBstFigures,
     ...brickworkLedgers(false),
@@ -956,7 +965,7 @@ function writeBrickworkLtd(vatRegistered) {
   const openingBalance = buildOpeningBalance(lines);
   const entity = brickworkEntity("Company", { vatRegistered, soleTrader: false });
   const employees = brickworkEmployees(brickBook.employees);
-  const members = brickBook.members.map((member) => ({ name: member.name, shares: member.shares }));
+  const members = brickBook.members.map((member) => ({ name: member.name, shares: member.shares, acquired: dateOnly(member.acquiredDate) }));
 
   const sharesIssued = members.reduce((total, member) => total + member.shares, 0);
   if (sharesIssued !== openingBalance.share_capital) {
@@ -1041,7 +1050,9 @@ function writeTaxiScenario(master, { fixtureName, subsetName, name, description 
   const { dir, book, lines } = master;
   assertPurchaseCodesCoverChart(book, TAXI_PURCHASE_CODE_MAP, "TAXI_PURCHASE_CODE_MAP");
 
-  const grouped = takingsOnlySales(buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true }));
+  const grouped = takingsOnlySales(
+    buildGrouped(lines, TAXI_PURCHASE_CODE_MAP, { carriesCisDeductions: false, carriesSourceFields: true, carriesMileage: "all" }),
+  );
   const additions = fixedAssetAdditions(lines, TAXI_PURCHASE_CODE_MAP, "f");
   const entity = book.entityInformation;
 
@@ -1113,6 +1124,7 @@ const spSixtyBstGrouped = buildGrouped(spSixty.lines, TAXI_BST_PURCHASE_CODE_MAP
   carriesCisDeductions: false,
   carriesPaymentLabels: true,
   carriesSourceFields: true,
+  carriesMileage: "claims",
 });
 const spSixtySalesLines = spSixty.lines.filter((line) => line.sourceJournalID === "sales");
 spSixtyBstGrouped.sales = {};
@@ -1129,7 +1141,7 @@ const spSixtyBstAdditions = fixedAssetAdditions(spSixty.lines, TAXI_BST_PURCHASE
 const spSixtyBstToml = formatScenarioToml(
   {
     name: "SP Sixty Driving BST",
-    description: "Private hire driver adapted for BST package. Motor expenses as actual costs.",
+    description: "Private hire driver adapted for BST package. Motoring as actual costs, bar the March month claimed on mileage.",
     product: "bst",
     tax_regime: "se",
     vat_registered: false,

@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 679 },
-  { name: "se-brickwork-pro-vat", checkCount: 645 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 645 },
+  { name: "se-scenario-advanced", checkCount: 677 },
+  { name: "se-brickwork-pro-vat", checkCount: 643 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 643 },
 ];
 
 function loadFixture(name) {
@@ -164,6 +164,27 @@ describe("Self Employed engine: the return boxes against the statutory computati
         expect(results["SE Full"].D139).toBeCloseTo(Math.round(capitalSpend * 100) / 100, 2);
         expect(results["SE Short"].D80).toBeCloseTo(results["SE Full"].D139, 6);
       });
+
+      it("SE Short prints business name at C8", () => {
+        const short = results["SE Short"];
+        expect(short.C8).toBe(scenario.business?.name || " ");
+      });
+
+      it("SE Short prints accounting date at S17", () => {
+        const short = results["SE Short"];
+        const full = results["SE Full"];
+        // S17 references Q2 (accounting period end), which also appears in SE Full
+        expect(short.S17).toBe(full.Q2);
+      });
+
+      it("SE Short prints turnover note at A33", () => {
+        const short = results["SE Short"];
+        const vatThreshold = TAX_DATA.vat.registration_threshold;
+        const expectedNote = short.D38 > vatThreshold
+          ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${vatThreshold} VAT threshold`
+          : `Business income - if your annual turnover was below £${vatThreshold} VAT threshold`;
+        expect(short.A33).toBe(expectedNote);
+      });
     });
   }
 });
@@ -244,9 +265,6 @@ describe("Self Employed engine: the read scope", () => {
         "SE Full!D160",
         "SE Full!D179",
         "SE Full!O154",
-        "SE Short!A32",
-        "SE Short!A7",
-        "SE Short!D8",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",
         "Vat.xlsx!Vatinterface!G4",

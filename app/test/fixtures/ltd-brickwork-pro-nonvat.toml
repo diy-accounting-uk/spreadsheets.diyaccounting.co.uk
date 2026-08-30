@@ -40,6 +40,7 @@ isDirector = false
 [[members]]
 name = "Mike Brown"
 shares = 100
+acquired = 2019-06-01
 
 [[sales.apr]]
 date = 2025-04-10

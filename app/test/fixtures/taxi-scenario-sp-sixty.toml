@@ -17,662 +17,827 @@ utr = "9876543210"
 [[sales.apr]]
 date = 2025-04-07
 amount = 174
+mileage = 94
 
 [[sales.apr]]
 date = 2025-04-08
 amount = 198
+mileage = 112
 
 [[sales.apr]]
 date = 2025-04-09
 amount = 221
+mileage = 112
 
 [[sales.apr]]
 date = 2025-04-10
 amount = 213
+mileage = 111
 
 [[sales.apr]]
 date = 2025-04-11
 amount = 246
+mileage = 127
 
 [[sales.apr]]
 date = 2025-04-14
 amount = 173
+mileage = 103
 
 [[sales.apr]]
 date = 2025-04-15
 amount = 201
+mileage = 107
 
 [[sales.apr]]
 date = 2025-04-16
 amount = 224
+mileage = 107
 
 [[sales.apr]]
 date = 2025-04-17
 amount = 216
+mileage = 121
 
 [[sales.apr]]
 date = 2025-04-18
 amount = 249
+mileage = 122
 
 [[sales.apr]]
 date = 2025-04-21
 amount = 176
+mileage = 98
 
 [[sales.apr]]
 date = 2025-04-22
 amount = 204
+mileage = 102
 
 [[sales.apr]]
 date = 2025-04-23
 amount = 196
+mileage = 117
 
 [[sales.apr]]
 date = 2025-04-24
 amount = 219
+mileage = 116
 
 [[sales.apr]]
 date = 2025-04-25
 amount = 252
+mileage = 117
 
 [[sales.may]]
 date = 2025-05-01
 amount = 216
+mileage = 114
 
 [[sales.may]]
 date = 2025-05-02
 amount = 245
+mileage = 114
 
 [[sales.may]]
 date = 2025-05-05
 amount = 172
+mileage = 105
 
 [[sales.may]]
 date = 2025-05-06
 amount = 200
+mileage = 109
 
 [[sales.may]]
 date = 2025-05-07
 amount = 223
+mileage = 109
 
 [[sales.may]]
 date = 2025-05-08
 amount = 215
+mileage = 108
 
 [[sales.may]]
 date = 2025-05-09
 amount = 248
+mileage = 124
 
 [[sales.may]]
 date = 2025-05-12
 amount = 175
+mileage = 100
 
 [[sales.may]]
 date = 2025-05-13
 amount = 203
+mileage = 104
 
 [[sales.may]]
 date = 2025-05-14
 amount = 195
+mileage = 119
 
 [[sales.may]]
 date = 2025-05-15
 amount = 218
+mileage = 118
 
 [[sales.may]]
 date = 2025-05-16
 amount = 251
+mileage = 119
 
 [[sales.may]]
 date = 2025-05-19
 amount = 178
+mileage = 95
 
 [[sales.may]]
 date = 2025-05-20
 amount = 206
+mileage = 114
 
 [[sales.may]]
 date = 2025-05-21
 amount = 198
+mileage = 114
 
 [[sales.jun]]
 date = 2025-06-02
 amount = 188
+mileage = 104
 
 [[sales.jun]]
 date = 2025-06-03
 amount = 212
+mileage = 107
 
 [[sales.jun]]
 date = 2025-06-04
 amount = 204
+mileage = 107
 
 [[sales.jun]]
 date = 2025-06-05
 amount = 227
+mileage = 121
 
 [[sales.jun]]
 date = 2025-06-06
 amount = 229
+mileage = 122
 
 [[sales.jun]]
 date = 2025-06-09
 amount = 187
+mileage = 98
 
 [[sales.jun]]
 date = 2025-06-10
 amount = 215
+mileage = 102
 
 [[sales.jun]]
 date = 2025-06-11
 amount = 207
+mileage = 117
 
 [[sales.jun]]
 date = 2025-06-12
 amount = 230
+mileage = 116
 
 [[sales.jun]]
 date = 2025-06-13
 amount = 232
+mileage = 117
 
 [[sales.jun]]
 date = 2025-06-16
 amount = 190
+mileage = 93
 
 [[sales.jun]]
 date = 2025-06-17
 amount = 187
+mileage = 112
 
 [[sales.jun]]
 date = 2025-06-18
 amount = 210
+mileage = 112
 
 [[sales.jun]]
 date = 2025-06-19
 amount = 233
+mileage = 111
 
 [[sales.jun]]
 date = 2025-06-20
 amount = 235
+mileage = 127
 
 [[sales.jul]]
 date = 2025-07-01
 amount = 210
+mileage = 102
 
 [[sales.jul]]
 date = 2025-07-02
 amount = 198
+mileage = 116
 
 [[sales.jul]]
 date = 2025-07-03
 amount = 221
+mileage = 115
 
 [[sales.jul]]
 date = 2025-07-04
 amount = 254
+mileage = 116
 
 [[sales.jul]]
 date = 2025-07-07
 amount = 181
+mileage = 107
 
 [[sales.jul]]
 date = 2025-07-08
 amount = 209
+mileage = 111
 
 [[sales.jul]]
 date = 2025-07-09
 amount = 201
+mileage = 111
 
 [[sales.jul]]
 date = 2025-07-10
 amount = 224
+mileage = 110
 
 [[sales.jul]]
 date = 2025-07-11
 amount = 226
+mileage = 126
 
 [[sales.jul]]
 date = 2025-07-14
 amount = 184
+mileage = 102
 
 [[sales.jul]]
 date = 2025-07-15
 amount = 212
+mileage = 106
 
 [[sales.jul]]
 date = 2025-07-16
 amount = 204
+mileage = 106
 
 [[sales.jul]]
 date = 2025-07-17
 amount = 227
+mileage = 120
 
 [[sales.jul]]
 date = 2025-07-18
 amount = 229
+mileage = 121
 
 [[sales.jul]]
 date = 2025-07-21
 amount = 187
+mileage = 97
 
 [[sales.aug]]
 date = 2025-08-01
 amount = 257
+mileage = 119
 
 [[sales.aug]]
 date = 2025-08-04
 amount = 180
+mileage = 94
 
 [[sales.aug]]
 date = 2025-08-05
 amount = 208
+mileage = 113
 
 [[sales.aug]]
 date = 2025-08-06
 amount = 200
+mileage = 113
 
 [[sales.aug]]
 date = 2025-08-07
 amount = 223
+mileage = 112
 
 [[sales.aug]]
 date = 2025-08-08
 amount = 225
+mileage = 113
 
 [[sales.aug]]
 date = 2025-08-11
 amount = 183
+mileage = 104
 
 [[sales.aug]]
 date = 2025-08-12
 amount = 211
+mileage = 108
 
 [[sales.aug]]
 date = 2025-08-13
 amount = 203
+mileage = 108
 
 [[sales.aug]]
 date = 2025-08-14
 amount = 226
+mileage = 122
 
 [[sales.aug]]
 date = 2025-08-15
 amount = 228
+mileage = 123
 
 [[sales.aug]]
 date = 2025-08-18
 amount = 186
+mileage = 99
 
 [[sales.aug]]
 date = 2025-08-19
 amount = 214
+mileage = 103
 
 [[sales.aug]]
 date = 2025-08-20
 amount = 206
+mileage = 118
 
 [[sales.aug]]
 date = 2025-08-21
 amount = 229
+mileage = 117
 
 [[sales.sep]]
 date = 2025-09-01
 amount = 178
+mileage = 104
 
 [[sales.sep]]
 date = 2025-09-02
 amount = 202
+mileage = 107
 
 [[sales.sep]]
 date = 2025-09-03
 amount = 225
+mileage = 107
 
 [[sales.sep]]
 date = 2025-09-04
 amount = 217
+mileage = 121
 
 [[sales.sep]]
 date = 2025-09-05
 amount = 250
+mileage = 122
 
 [[sales.sep]]
 date = 2025-09-08
 amount = 177
+mileage = 98
 
 [[sales.sep]]
 date = 2025-09-09
 amount = 205
+mileage = 102
 
 [[sales.sep]]
 date = 2025-09-10
 amount = 197
+mileage = 117
 
 [[sales.sep]]
 date = 2025-09-11
 amount = 220
+mileage = 116
 
 [[sales.sep]]
 date = 2025-09-12
 amount = 253
+mileage = 117
 
 [[sales.sep]]
 date = 2025-09-15
 amount = 180
+mileage = 93
 
 [[sales.sep]]
 date = 2025-09-16
 amount = 208
+mileage = 112
 
 [[sales.sep]]
 date = 2025-09-17
 amount = 200
+mileage = 112
 
 [[sales.sep]]
 date = 2025-09-18
 amount = 223
+mileage = 111
 
 [[sales.sep]]
 date = 2025-09-19
 amount = 225
+mileage = 127
 
 [[sales.oct]]
 date = 2025-10-01
 amount = 210
+mileage = 106
 
 [[sales.oct]]
 date = 2025-10-02
 amount = 229
+mileage = 119
 
 [[sales.oct]]
 date = 2025-10-03
 amount = 231
+mileage = 120
 
 [[sales.oct]]
 date = 2025-10-06
 amount = 189
+mileage = 96
 
 [[sales.oct]]
 date = 2025-10-07
 amount = 186
+mileage = 115
 
 [[sales.oct]]
 date = 2025-10-08
 amount = 209
+mileage = 115
 
 [[sales.oct]]
 date = 2025-10-09
 amount = 232
+mileage = 114
 
 [[sales.oct]]
 date = 2025-10-10
 amount = 234
+mileage = 115
 
 [[sales.oct]]
 date = 2025-10-13
 amount = 192
+mileage = 106
 
 [[sales.oct]]
 date = 2025-10-14
 amount = 189
+mileage = 110
 
 [[sales.oct]]
 date = 2025-10-15
 amount = 212
+mileage = 110
 
 [[sales.oct]]
 date = 2025-10-16
 amount = 235
+mileage = 109
 
 [[sales.oct]]
 date = 2025-10-17
 amount = 237
+mileage = 125
 
 [[sales.oct]]
 date = 2025-10-20
 amount = 195
+mileage = 101
 
 [[sales.oct]]
 date = 2025-10-21
 amount = 192
+mileage = 105
 
 [[sales.nov]]
 date = 2025-11-03
 amount = 192
+mileage = 99
 
 [[sales.nov]]
 date = 2025-11-04
 amount = 185
+mileage = 102
 
 [[sales.nov]]
 date = 2025-11-05
 amount = 208
+mileage = 117
 
 [[sales.nov]]
 date = 2025-11-06
 amount = 231
+mileage = 116
 
 [[sales.nov]]
 date = 2025-11-07
 amount = 233
+mileage = 117
 
 [[sales.nov]]
 date = 2025-11-10
 amount = 191
+mileage = 93
 
 [[sales.nov]]
 date = 2025-11-11
 amount = 188
+mileage = 112
 
 [[sales.nov]]
 date = 2025-11-12
 amount = 211
+mileage = 112
 
 [[sales.nov]]
 date = 2025-11-13
 amount = 234
+mileage = 111
 
 [[sales.nov]]
 date = 2025-11-14
 amount = 236
+mileage = 127
 
 [[sales.nov]]
 date = 2025-11-17
 amount = 194
+mileage = 103
 
 [[sales.nov]]
 date = 2025-11-18
 amount = 191
+mileage = 107
 
 [[sales.nov]]
 date = 2025-11-19
 amount = 214
+mileage = 107
 
 [[sales.nov]]
 date = 2025-11-20
 amount = 206
+mileage = 121
 
 [[sales.nov]]
 date = 2025-11-21
 amount = 239
+mileage = 122
 
 [[sales.dec]]
 date = 2025-12-01
 amount = 199
+mileage = 104
 
 [[sales.dec]]
 date = 2025-12-02
 amount = 192
+mileage = 107
 
 [[sales.dec]]
 date = 2025-12-03
 amount = 215
+mileage = 107
 
 [[sales.dec]]
 date = 2025-12-04
 amount = 207
+mileage = 121
 
 [[sales.dec]]
 date = 2025-12-05
 amount = 240
+mileage = 122
 
 [[sales.dec]]
 date = 2025-12-08
 amount = 198
+mileage = 98
 
 [[sales.dec]]
 date = 2025-12-09
 amount = 195
+mileage = 102
 
 [[sales.dec]]
 date = 2025-12-10
 amount = 218
+mileage = 117
 
 [[sales.dec]]
 date = 2025-12-11
 amount = 210
+mileage = 116
 
 [[sales.dec]]
 date = 2025-12-12
 amount = 243
+mileage = 117
 
 [[sales.dec]]
 date = 2025-12-15
 amount = 170
+mileage = 93
 
 [[sales.dec]]
 date = 2025-12-16
 amount = 198
+mileage = 112
 
 [[sales.dec]]
 date = 2025-12-17
 amount = 221
+mileage = 112
 
 [[sales.dec]]
 date = 2025-12-18
 amount = 213
+mileage = 111
 
 [[sales.dec]]
 date = 2025-12-19
 amount = 246
+mileage = 127
 
 [[sales.jan]]
 date = 2026-01-01
 amount = 210
+mileage = 109
 
 [[sales.jan]]
 date = 2026-01-02
 amount = 239
+mileage = 124
 
 [[sales.jan]]
 date = 2026-01-05
 amount = 197
+mileage = 100
 
 [[sales.jan]]
 date = 2026-01-06
 amount = 194
+mileage = 104
 
 [[sales.jan]]
 date = 2026-01-07
 amount = 217
+mileage = 119
 
 [[sales.jan]]
 date = 2026-01-08
 amount = 209
+mileage = 118
 
 [[sales.jan]]
 date = 2026-01-09
 amount = 242
+mileage = 119
 
 [[sales.jan]]
 date = 2026-01-12
 amount = 200
+mileage = 95
 
 [[sales.jan]]
 date = 2026-01-13
 amount = 197
+mileage = 114
 
 [[sales.jan]]
 date = 2026-01-14
 amount = 220
+mileage = 114
 
 [[sales.jan]]
 date = 2026-01-15
 amount = 212
+mileage = 113
 
 [[sales.jan]]
 date = 2026-01-16
 amount = 245
+mileage = 114
 
 [[sales.jan]]
 date = 2026-01-19
 amount = 172
+mileage = 105
 
 [[sales.jan]]
 date = 2026-01-20
 amount = 200
+mileage = 109
 
 [[sales.jan]]
 date = 2026-01-21
 amount = 223
+mileage = 109
 
 [[sales.feb]]
 date = 2026-02-02
 amount = 182
+mileage = 99
 
 [[sales.feb]]
 date = 2026-02-03
 amount = 206
+mileage = 102
 
 [[sales.feb]]
 date = 2026-02-04
 amount = 198
+mileage = 117
 
 [[sales.feb]]
 date = 2026-02-05
 amount = 221
+mileage = 116
 
 [[sales.feb]]
 date = 2026-02-06
 amount = 254
+mileage = 117
 
 [[sales.feb]]
 date = 2026-02-09
 amount = 181
+mileage = 93
 
 [[sales.feb]]
 date = 2026-02-10
 amount = 209
+mileage = 112
 
 [[sales.feb]]
 date = 2026-02-11
 amount = 201
+mileage = 112
 
 [[sales.feb]]
 date = 2026-02-12
 amount = 224
+mileage = 111
 
 [[sales.feb]]
 date = 2026-02-13
 amount = 226
+mileage = 127
 
 [[sales.feb]]
 date = 2026-02-16
 amount = 184
+mileage = 103
 
 [[sales.feb]]
 date = 2026-02-17
 amount = 212
+mileage = 107
 
 [[sales.feb]]
 date = 2026-02-18
 amount = 204
+mileage = 107
 
 [[sales.feb]]
 date = 2026-02-19
 amount = 227
+mileage = 121
 
 [[sales.feb]]
 date = 2026-02-20
 amount = 229
+mileage = 122
 
 [[sales.mar]]
 date = 2026-03-02
@@ -1384,30 +1549,6 @@ amount = 30
 account = "5700"
 
 [[purchases.mar]]
-date = 2026-03-03
-supplier = "Texaco"
-description = "Diesel fuel"
-code = "d"
-amount = 56
-account = "5100"
-
-[[purchases.mar]]
-date = 2026-03-10
-supplier = "Shell"
-description = "Diesel fuel"
-code = "d"
-amount = 59
-account = "5100"
-
-[[purchases.mar]]
-date = 2026-03-17
-supplier = "BP"
-description = "Diesel fuel"
-code = "d"
-amount = 55
-account = "5100"
-
-[[purchases.mar]]
 date = 2026-03-18
 supplier = "NCP Parking"
 description = "Airport pickup parking"
@@ -1424,11 +1565,12 @@ amount = 15
 account = "5300"
 
 [[purchases.mar]]
-date = 2026-03-24
-supplier = "Texaco"
-description = "Diesel fuel"
+date = 2026-03-31
+supplier = "Mileage claim"
+description = "March business miles claimed at the approved rate in place of fuel receipts"
 code = "d"
-amount = 58
+amount = 753.3
+mileage = 1674
 account = "5100"
 
 [[fixed_asset_additions]]
@@ -1439,4 +1581,5 @@ cost = 200
 
 [expected]
 total_sales = 38000
+total_mileage = 20000
 fixed_asset_cost = 200

@@ -6,6 +6,7 @@
 // formatting, charts, conditional formatting, and XML packaging.
 
 import JSZip from "jszip";
+import { buildSheetMap } from "./spreadsheet-runner.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -194,8 +195,6 @@ export function buildCellEdits(taxData, startYear) {
 
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   numericEdits.G13 = dep.land_and_property;
   numericEdits.G14 = dep.plant_and_machinery;
@@ -270,8 +269,6 @@ export function buildTaxiCellEdits(taxData, startYear) {
   // Capital allowances — same as BST
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   // Depreciation — same as BST
   numericEdits.G13 = dep.land_and_property;
@@ -343,8 +340,6 @@ export function buildSeCellEdits(taxData, startYear) {
   // Capital allowances — same as BST
   numericEdits.G4 = ca.annual_investment_allowance;
   numericEdits.G5 = ca.writing_down_allowance;
-  numericEdits.E8 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G8 = ca.motor_vehicle_restriction;
 
   // Depreciation — same as BST
   numericEdits.G13 = dep.land_and_property;
@@ -403,10 +398,6 @@ export function buildLtdCellEdits(taxData, yearEndSerial) {
   numericEdits.G7 = Math.round(ca.annual_investment_allowance * 100);
   numericEdits.G6 = Math.round(ca.writing_down_allowance_main * 100);
   numericEdits.G8 = Math.round(ca.writing_down_allowance_main * 100);
-
-  // Motor vehicle
-  numericEdits.E11 = ca.motor_vehicle_cost_threshold;
-  numericEdits.G11 = ca.motor_vehicle_restriction;
 
   // Depreciation (stored as fractions — same as BST/SE)
   numericEdits.G15 = dep.land_and_property;
@@ -537,6 +528,90 @@ export function ltdAdminCachedValues(taxData, yearEndSerial) {
   return values;
 }
 
+// ── Ltd Financialaccounts cross-sheet cached values ─────────────────────────
+//
+// Several report sheets in the same Financialaccounts.xlsx workbook cache a
+// formula result that reads the local Admin sheet directly (not across an
+// external link): CorporationTax, CT600, PubP&L, PubBalSht, PubNotes and
+// Report all echo the accounting period Admin!F21 and the two financial-year
+// rows Admin!K6/L6/N6/K7/L7/N7 compute. Grouped by sheet name for
+// rollDependentSheetCaches().
+
+export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
+  const rows = ltdAdminFinancialYearRows(yearEndSerial);
+  return {
+    CorporationTax: {
+      E5: rows.L6, // =Admin!L6
+      H5: rows.N7, // =Admin!N7
+      E33: rows.K6, // =Admin!K6
+      E34: rows.K7, // =Admin!K7
+      A33: rows.N6 - rows.L6 + 1, // =D33-C33+1, D33=Admin!N6, C33=Admin!L6
+      A34: Math.max(0, rows.N7 - rows.L7 + 1), // =MAX(0,D34-C34+1), D34=Admin!N7, C34=Admin!L7
+    },
+    CT600: {
+      B33: rows.L6, // =Admin!L6
+      M33: rows.N7, // =Admin!N7
+      C126: rows.K6, // =CorporationTax!E33
+    },
+    "PubP&L": {
+      D3: yearEndSerial, // =Admin!B32 (=F21)
+      E5: yearEndSerial, // =D3
+    },
+    PubBalSht: { D2: yearEndSerial }, // ='PubP&L'!D3
+    PubNotes: { A11: yearEndSerial }, // ='PubP&L'!D3
+    Report: { F22: yearEndSerial }, // =PubBalSht!D2
+  };
+}
+
+// ── SE Financialaccounts cross-sheet cached values ──────────────────────────
+//
+// SE Full!G141, Q2 and V2 echo the local Admin sheet's writing-down allowance
+// rate and tax-year start/end dates; SE Short!Q2 echoes the same Admin!B4
+// date and S17 echoes SE Short!Q2 in turn. Profit Forecast!C40 is
+// IF(C39<=0,0,MAX(0,Admin!N$4-MAX(0,C39-Admin!N$5)/2)); the generator never
+// writes to Profit Forecast, 'Profit & Loss Account' or the Fixedassets
+// external link C39's own formula reads, so C39 keeps the template's shipped
+// 0 and C40 always resolves to the IF's first branch. SE Short!A33 is
+// IF(D38>67000,"...exceeds...","...below £"&Admin!F26&" VAT threshold"): D38
+// (turnover) is 'Profit & Loss Account'!B9, untouched by the generator and so
+// always the template's shipped 0, which keeps A33 on the "below" branch;
+// only the VAT threshold Admin!F26 echoes needs rolling. SE Short!C8 reads
+// 'Business Details'!C5, which the generator never writes either, so it
+// keeps the template's shipped blank and needs no roll.
+
+export function seFinancialaccountsDependentCaches(numericEdits) {
+  return {
+    "SE Full": {
+      G141: numericEdits.G5, // =Admin!G5
+      Q2: numericEdits.B4, // =Admin!B4
+      V2: numericEdits.B17, // =Admin!B17
+    },
+    "SE Short": {
+      Q2: numericEdits.B4, // =Admin!B4
+      S17: numericEdits.B4, // =Q2 (=Admin!B4)
+      A33: `Business income - if your annual turnover was below £${numericEdits.F26} VAT threshold`,
+    },
+    "Profit Forecast": {
+      C40: 0,
+    },
+  };
+}
+
+// Write a { SheetName: { cellRef: value } } map of cached formula results
+// into their sheets within an already-loaded workbook zip.
+async function rollDependentSheetCaches(zip, sheetMap, editsBySheet) {
+  for (const [sheetName, cellEdits] of Object.entries(editsBySheet)) {
+    const sheetPath = sheetMap.get(sheetName);
+    if (!sheetPath) throw new Error(`Sheet ${sheetName} not found while rolling dependent caches`);
+    let sheetXml = await zip.file(sheetPath).async("string");
+    for (const [cellRef, value] of Object.entries(cellEdits)) {
+      sheetXml = setCellCachedValue(sheetXml, cellRef, value);
+    }
+    const originalDate = zip.file(sheetPath).date;
+    zip.file(sheetPath, sheetXml, { date: originalDate });
+  }
+}
+
 // ── Payslips Admin calendar generation ──────────────────────────────────────
 //
 // Generates the C (week), D (month), F (week-in-month) columns for the
@@ -585,6 +660,36 @@ export function generatePayslipsCalendar(startYear) {
   }
 
   return edits;
+}
+
+// ── Payslips Admin cached date chain ────────────────────────────────────────
+//
+// The Payslips Admin sheet anchors a daily date chain at B2 (the tax year
+// start, a generator-written literal): B3 = B2+1, B4 = B3+1, and so on down
+// to B381, plus I1 = the day before the following year's B2 (the tax year
+// end) and N1 = the "YYYY-YY" label built from I1's year. All of these are
+// formula cells whose cached values still carry the template's own year
+// until rolled to the package's own tax year.
+
+export function rollPayslipsAdminCachedDates(payslipsXml, startYear) {
+  const startSerial = toExcelSerial(utcDate(startYear, 4, 6));
+
+  const rows = new Set();
+  for (const [, rowStr] of payslipsXml.matchAll(/<c r="B(\d+)"/g)) {
+    const row = parseInt(rowStr, 10);
+    if (row >= 3) rows.add(row);
+  }
+  for (const row of rows) {
+    const match = matchCell(payslipsXml, `B${row}`);
+    if (!match || !match.fullMatch.includes("<v>")) continue;
+    payslipsXml = setCellCachedValue(payslipsXml, `B${row}`, startSerial + (row - 2));
+  }
+
+  const endSerial = toExcelSerial(utcDate(startYear + 1, 4, 5));
+  payslipsXml = setCellCachedValue(payslipsXml, "I1", endSerial);
+  payslipsXml = setCellCachedValue(payslipsXml, "N1", `${startYear}-${startYear + 1 - 2000}`);
+
+  return payslipsXml;
 }
 
 // ── Sales date generation (Taxi Driver) ────────────────────────────────────
@@ -836,6 +941,17 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
     const originalDate = zip.file(sheetsConfig.admin).date;
     zip.file(sheetsConfig.admin, adminXml, { date: originalDate });
+
+    // Other report sheets in this same workbook cache a formula result that
+    // reads the local Admin sheet directly; roll those to match.
+    if (sheetsConfig.cellEditFn === "ltd" || sheetsConfig.cellEditFn === "se") {
+      const sheetMap = await buildSheetMap(zip);
+      const editsBySheet =
+        sheetsConfig.cellEditFn === "ltd"
+          ? ltdFinancialaccountsDependentCaches(toExcelSerial(endDate))
+          : seFinancialaccountsDependentCaches(numericEdits);
+      await rollDependentSheetCaches(zip, sheetMap, editsBySheet);
+    }
   }
 
   // Fixedassets reads the Admin sheet's allowance rates and the accounting
@@ -921,6 +1037,10 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     for (const [cellRef, value] of Object.entries(calendarEdits)) {
       payslipsXml = setCellValue(payslipsXml, cellRef, value);
     }
+
+    // Roll the B3:B381 daily date chain and its I1/N1 dependents to this
+    // package's tax year.
+    payslipsXml = rollPayslipsAdminCachedDates(payslipsXml, startYear);
 
     const payslipsDate = zip.file(sheetsConfig.payslipsAdmin).date;
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
@@ -1012,9 +1132,43 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
         throw new Error(`Vatinterface has an unresolved [1]Admin!$B$${rowStr} reference`);
       }
     }
+
+    // Roll the Vatinterface C4:C18 column, which reads the next row's B
+    // column rather than the external link directly: C4's own formula is
+    // "B5", and C5:C18 share that same +1 row offset via a shared formula
+    // anchored at C5 = "B6". Read both anchors from the XML rather than
+    // assuming the offset.
+    const c4Formula = matchCell(viXml, "C4")?.fullMatch.match(/<f[^>]*>B(\d+)<\/f>/);
+    const c5Formula = matchCell(viXml, "C5")?.fullMatch.match(/<f[^>]*>B(\d+)<\/f>/);
+    if (!c4Formula || !c5Formula) {
+      throw new Error("Vatinterface C4/C5 do not have the expected B-column formula");
+    }
+    const cToBOffset = parseInt(c4Formula[1], 10) - 4;
+    if (parseInt(c5Formula[1], 10) - 5 !== cToBOffset) {
+      throw new Error("Vatinterface C4 and C5 formulas do not share the same row offset to column B");
+    }
+    for (let r = 4; r <= 18; r++) {
+      const sourceRef = `B${r + cToBOffset}`;
+      if (viValues[sourceRef] === undefined) {
+        throw new Error(`Vatinterface C${r} resolves to ${sourceRef}, which has no generated value`);
+      }
+      viXml = setCellCachedValue(viXml, `C${r}`, viValues[sourceRef]);
+      viValues[`C${r}`] = viValues[sourceRef];
+    }
+
     if (viXml !== viXmlOriginal) {
       zip.file(viPath, viXml, { date: zip.file(viPath).date, createFolders: false });
     }
+
+    // Vatinterface B4:B20/C4:C20 as (b, c) pairs, ascending by date, for
+    // simulating each quarter's G7 = LOOKUP(G$5, Vatinterface!B:B, C:C).
+    const lookupRows = [];
+    for (let r = 4; r <= 20; r++) {
+      const b = viValues[`B${r}`];
+      const c = viValues[`C${r}`];
+      if (b !== undefined && c !== undefined) lookupRows.push({ b, c });
+    }
+    lookupRows.sort((a, b) => a.b - b.b);
 
     for (let q = 1; q <= 5; q++) {
       const sheetPath = sheetsConfig[`vatQtr${q}`];
@@ -1029,6 +1183,17 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
       let sheetXml = await zip.file(sheetPath).async("string");
       sheetXml = setCellValue(sheetXml, "G5", serial);
+
+      // Roll G7 = LOOKUP(G$5, Vatinterface!B:B, Vatinterface!C:C): the C
+      // value paired with the largest B at or before this quarter's G5.
+      let g7Value;
+      for (const { b, c } of lookupRows) {
+        if (b <= serial) g7Value = c;
+      }
+      if (g7Value === undefined) {
+        throw new Error(`VATQtr${q} G5 serial ${serial} is before every Vatinterface row`);
+      }
+      sheetXml = setCellCachedValue(sheetXml, "G7", g7Value);
 
       // Roll the K2:K16 dropdown source list (cached formula values).
       const kValues = [];

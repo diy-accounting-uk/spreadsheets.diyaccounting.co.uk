@@ -74,7 +74,7 @@
     {
       "field": "measurableQuantity",
       "products": ["bst", "taxi", "se", "ltd"],
-      "reason": "The mileage columns on the BST and SE transaction sheets feed the mileage claim the P&L charges, so a quantity written there changes the accounts rather than being carried by them. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
+      "reason": "The mileage columns on the BST, Taxi and SE transaction sheets take the quantity on the way in and price it: what they hold is a claim the sheet makes of the miles, not the miles themselves, and the export reads the money back rather than the distance. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
     },
     {
       "field": "measurableUnitOfMeasure",

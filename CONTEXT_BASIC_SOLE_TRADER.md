@@ -211,6 +211,12 @@ The expense code in column E of each Purchases sheet drives the analysis columns
 | O | V | Other expenses | C21 |
 | F | W | Fixed assets | C22 |
 
+### Mileage
+
+Column F of each Purchases sheet takes business miles rather than money, alongside column E of the Sales sheets. `PurchasesApr!C1` runs the two together into a mileage total carried month to month, `G4` bands it at the Admin sheet's approved rates, and `P3 = IF(E$4="m",G$4," ")` files the claim under the motor code, so it reaches Motor Expenses at `C15` through that month's `P1`.
+
+This P&L makes no choice between the two ways of charging a vehicle: the claim adds to whatever motoring the trade also paid cash for. A book that claims mileage enters the miles and no amount, and the sheet works the claim out.
+
 ### Sales Columns
 
 | Column | Content | Notes |
@@ -288,8 +294,6 @@ All dates are stored as Excel serial numbers.
 |------|-----------|---------|
 | G4 | `capital_allowances.annual_investment_allowance` | 1.00 |
 | G5 | `capital_allowances.writing_down_allowance` | 0.18 |
-| E8 | `capital_allowances.motor_vehicle_cost_threshold` | 12000 |
-| G8 | `capital_allowances.motor_vehicle_restriction` | 3000 |
 | G13 | `depreciation.land_and_property` | 0.00 |
 | G14 | `depreciation.plant_and_machinery` | 0.10 |
 | G15 | `depreciation.fixtures_and_fittings` | 0.20 |
