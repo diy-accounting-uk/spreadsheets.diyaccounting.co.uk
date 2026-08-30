@@ -169,15 +169,26 @@ export function diyaGlToScenario(book, lines, product) {
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
   const purchaseLines = filteredLines.filter((l) => l.sourceJournalID === "purchases");
 
+  // Every check that reads scenario.metadata.vat_registered treats an
+  // absent value as VAT-registered, so a book that declares itself
+  // unregistered has to say so explicitly, not by omission.
+  const entity = book.entityInformation || {};
+  const vatRegistered = entity["diya-gl:vatRegistered"] === true;
+
   let totalSales;
   if (product === "bst" || product === "taxi") {
     totalSales = computeGrossSales(salesLines);
   } else {
-    // SE/Ltd: net sales (gross / 1.2) for turnover accounts only
+    // SE/Ltd: net sales for turnover accounts only. The sheet's own analysis
+    // columns strip VAT as a flat gross / 1.2, a business the book declares
+    // unregistered never charged that VAT, so its invoiced total carries no
+    // divisor to strip.
     const TURNOVER_ACCOUNTS =
       product === "ltd" ? new Set(["4000", "4001", "4002", "4003", "4004"]) : new Set(["4000", "4001", "4002", "4003"]);
     const turnoverLines = salesLines.filter((l) => TURNOVER_ACCOUNTS.has(l.accountMainID));
-    totalSales = computeSpreadsheetNetSales(turnoverLines);
+    totalSales = vatRegistered
+      ? computeSpreadsheetNetSales(turnoverLines)
+      : Math.round(turnoverLines.reduce((sum, l) => sum + l.amount, 0));
   }
 
   // Compute expense totals by code
@@ -188,16 +199,12 @@ export function diyaGlToScenario(book, lines, product) {
   });
 
   // Build metadata from book.toml
-  const entity = book.entityInformation || {};
   const metadata = {
     name: entity.organizationIdentifier || "Unknown",
     description: entity.organizationDescription || "",
     product,
     tax_regime: product === "ltd" ? "ltd" : "se",
-    // Every check that reads scenario.metadata.vat_registered treats an
-    // absent value as VAT-registered, so a book that declares itself
-    // unregistered has to say so explicitly, not by omission.
-    vat_registered: entity["diya-gl:vatRegistered"] === true,
+    vat_registered: vatRegistered,
   };
 
   const business = {
@@ -231,10 +238,11 @@ export function diyaGlToScenario(book, lines, product) {
   }
 
   if (product === "se" || product === "ltd") {
-    expected.total_motor_net = Math.round((byCode.v || 0) / 1.2);
-    expected.total_legal_net = Math.round((byCode.l || 0) / 1.2);
+    const vatDivisor = vatRegistered ? 1.2 : 1;
+    expected.total_motor_net = Math.round((byCode.v || 0) / vatDivisor);
+    expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
     if (product === "ltd") {
-      expected.total_premises_net = Math.round((byCode.r || 0) / 1.2);
+      expected.total_premises_net = Math.round((byCode.r || 0) / vatDivisor);
     }
   }
 
