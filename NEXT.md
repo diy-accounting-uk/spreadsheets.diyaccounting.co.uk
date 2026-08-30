@@ -16,7 +16,7 @@ pushes in batches.
 | f20 | F20 Taxi export writer | `../wt-spreadsheets/f20` | Opus | started |
 | box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
 | f14rem | F14 remainder: measurableQuantity entry | `../wt-spreadsheets/f14rem` | Haiku | started |
-| wdakey | F9 remainder: per-regime WDA key | `../wt-spreadsheets/wdakey` | Haiku | started |
+| wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
 | f18 | F18 lineItemComment/documentReference home | — | Sonnet | waits for f20, f14rem |
 
 ## Open items
@@ -49,7 +49,7 @@ follow the reconciliation-bug method.
   `app/data/roundtrip-unrepresentable.json` still excuses it for both products. Drop "bst" and
   "taxi" from that entry, re-run the two roundtrip scorecards, and re-seed any data-half count
   that moves. SE and Ltd `cellWrites` still fill no mileage column (`carriesMileage: "none"`).
-- [ ] **F9 remainder: `extractTaxDataFromBook` builds the SE-shaped WDA key for Ltd** (Haiku) — `app/lib/diya-gl-loader.js` fallback emits `capital_allowances.writing_down_allowance`, which Ltd reads as `writing_down_allowance_main`; reachable when `report.js` runs without `--years`. Emit the per-regime key and add a loader test.
+
 
 
 
