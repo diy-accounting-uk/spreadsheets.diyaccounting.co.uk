@@ -728,7 +728,6 @@ export const CELL_MAP = [
   ["SE Full", "O129", "Net loss (box 47)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
   ["SE Full", "D139", "Annual investment allowance (box 48)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
   ["SE Full", "D144", "Writing down allowances (box 49)",      "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "D152", "Restricted allowances for expensive cars (box 51)", "tax.capitalAllowances.restricted (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O139", "Enhanced and other capital allowances (box 54)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O144", "Allowances on sale or cessation (box 55)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
   ["SE Full", "O149", "**Total capital allowances (box 56)**", "tax.capitalAllowances (sa103f)",             "Self Assessment (SA103F)", 0],
@@ -989,11 +988,11 @@ export function standardReads() {
   // are the period the return covers (Q2 = Admin!B4, V2 = Admin!B17) and the
   // two capital allowance rates and the Class 4 threshold it prints in its
   // captions (H136 = Admin!G4, G141 = Admin!G5, J280 = Admin!N4). The empty
-  // ones are boxes 50, 52, 53, 57 and 61, which a customer fills in by hand;
-  // reading them lets the box 56, 60 and 62 totals be checked as the exact
-  // sums the sheet computes rather than sums with terms left out.
+  // ones are boxes 50, 51, 52, 53, 57 and 61, which a customer fills in by
+  // hand; reading them lets the box 56, 60 and 62 totals be checked as the
+  // exact sums the sheet computes rather than sums with terms left out.
   reads["SE Full"] = reads["SE Full"] || [];
-  for (const cell of ["Q2", "V2", "H136", "G141", "J280", "D147", "D156", "D160", "O154", "D179"]) {
+  for (const cell of ["Q2", "V2", "H136", "G141", "J280", "D147", "D152", "D156", "D160", "O154", "D179"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
@@ -1759,11 +1758,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const returnSchedule = results["Fixedassets.xlsx!Schedule"];
     if (returnSchedule) {
       check("SA103F box 48 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
-      check(
-        "SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51",
-        num(seFull.D144),
-        num(returnSchedule.R1) - num(seFull.D152),
-      );
+      check("SA103F box 49 writing down allowances (D144) = Schedule R1", num(seFull.D144), num(returnSchedule.R1));
       check(
         "SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000",
         num(seFull.O139),
@@ -1772,6 +1767,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1", num(seFull.O144), num(returnSchedule.Y1));
       check("SA103F box 58 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
     }
+
+    // Box 49 against the scenario's own assets and the year's own rate,
+    // neither of them read back out of the workbook. Every existing asset
+    // claims the writing down allowance on the tax written-down value it was
+    // brought forward at, whatever it cost, so a car whose allowance is capped
+    // again, or diverted back into box 51, leaves box 49 short of what the
+    // scenario's assets are entitled to.
+    if (taxData?.capital_allowances && expected.opening_fixed_assets) {
+      const openingTaxWdv = expected.opening_fixed_assets.reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
+      check(
+        "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the year's writing down rate",
+        num(seFull.D144),
+        openingTaxWdv * taxData.capital_allowances.writing_down_allowance,
+      );
+    }
+
+    // Box 51 restricted the allowance on a car costing over a threshold. The
+    // restriction is no longer in the tax code and the schedule no longer
+    // computes one, so the box carries nothing and box 49 carries the whole
+    // claim.
+    check("SA103F box 51 restricted car allowances (D152) is nil", num(seFull.D152), 0);
 
     if (sa103s) {
       // Boxes the two returns carry identically.

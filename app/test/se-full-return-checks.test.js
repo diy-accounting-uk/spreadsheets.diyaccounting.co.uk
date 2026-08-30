@@ -45,11 +45,20 @@ const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 // Overwrites a cell's cached <v> content in place, leaving any <f> formula
 // tag untouched -- the way a stale or corrupted cached value would reach a
-// reader that only ever sees the last-saved cell.
+// reader that only ever sees the last-saved cell. A box the return leaves
+// empty holds no cached value to overwrite, so it gets one: the same
+// corruption from the other side, a figure appearing in a box that should
+// carry nothing.
 function corruptCellValue(xml, cellRef, newValue) {
-  const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
-  if (!pattern.test(xml)) throw new Error(`corruptCellValue: cell ${cellRef} not found in sheet XML`);
-  return xml.replace(pattern, (_match, pre, _old, post) => `${pre}${newValue}${post}`);
+  // The empty form is matched first: an empty cell closes itself, so a search
+  // for its cached value runs on past it and lands on the next cell that has
+  // one.
+  const empty = new RegExp(`<c r="${cellRef}"([^>]*?)\\s*/>`, "s");
+  if (empty.test(xml))
+    return xml.replace(empty, (_match, attrs) => `<c r="${cellRef}"${attrs.replace(/\s+t="[^"]*"/, "")}><v>${newValue}</v></c>`);
+  const cached = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
+  if (cached.test(xml)) return xml.replace(cached, (_match, pre, _old, post) => `${pre}${newValue}${post}`);
+  throw new Error(`corruptCellValue: cell ${cellRef} not found in sheet XML`);
 }
 
 // Loads a recalculated package file via JSZip, overwrites one cell's cached
@@ -98,7 +107,7 @@ const SA103F_BOXES_WITH_A_FIGURE = [
   "O122",
   "D129",
   "D139",
-  "D152",
+  "D144",
   "O144",
   "O149",
   "D174",
@@ -238,16 +247,14 @@ const SA103F_CORRUPTIONS = [
     1000,
     [
       "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
-      "SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51",
+      "SA103F box 49 writing down allowances (D144) = Schedule R1",
+      "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the year's writing down rate",
     ],
   ],
   [
     "D152",
     4000,
-    [
-      "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
-      "SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51",
-    ],
+    ["SA103F box 56 total capital allowances (O149) = boxes 48 to 55", "SA103F box 51 restricted car allowances (D152) is nil"],
   ],
   [
     "O139",

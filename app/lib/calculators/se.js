@@ -704,15 +704,18 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seFull.G141 = admin.G5;
   seFull.D139 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
   // Boxes the customer fills in by hand, with no formula to compute them.
+  // Box 51 is one of them now. The restriction it was built for -- a flat cap
+  // on the allowance for a car costing over a threshold -- is no longer in the
+  // tax code, so a car claims the plain writing down allowance in the pool
+  // with everything else and there is nothing left to restrict.
   seFull.D147 = SHEET_BLANK;
+  seFull.D152 = SHEET_BLANK;
   seFull.D156 = SHEET_BLANK;
   seFull.D160 = SHEET_BLANK;
   seFull.O154 = SHEET_BLANK;
   seFull.D179 = SHEET_BLANK;
-  // Box 51 is the motor rows' own restricted claims, and box 49 is whatever the
-  // schedule claims beyond them.
-  seFull.D152 = carry([scheduleR], () => scheduleR);
-  seFull.D144 = carry([scheduleR, seFull.D152], () => scheduleR - sheetNumber(seFull.D152));
+  // Box 49 carries the whole writing down allowance the schedule claims.
+  seFull.D144 = carry([scheduleR], () => scheduleR);
   seFull.O139 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
   seFull.O144 = scheduleY;
   seFull.O149 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O139, seFull.O144], () =>
