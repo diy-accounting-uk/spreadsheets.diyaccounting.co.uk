@@ -6,9 +6,18 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PR #45 (`test` and `deploy` green at `20a18cb9`);
-every later PR branch starts from a rebase onto that main, and the operator dispatches CI on
-branches.
+Integration branch `claude/next-wave-2` (one PR). Tracks run in `../wt-spreadsheets/<track>` on
+`claude/wt-<track>`; the coordinator merges each into the integration branch as it lands and
+pushes in batches.
+
+| Track | Item | Worktree | Tier | Status |
+|---|---|---|---|---|
+| f19 | F19 derive straddling VAT entries | `../wt-spreadsheets/f19` | Sonnet | started |
+| f20 | F20 Taxi export writer | `../wt-spreadsheets/f20` | Opus | started |
+| box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
+| f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
+| wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
+| f18 | F18 lineItemComment/documentReference home | — | Sonnet | waits for f20, f14rem |
 
 ## Open items
 
@@ -35,17 +44,6 @@ follow the reconciliation-bug method.
   path (discover the sales/purchases sheet layout from the XML), wire EQ2 and the double-roundtrip
   into the `roundtrip-taxi` job, and seed its data-half budget from the first real run.
 - [ ] **F9 remainder: SE Full box 51 after the cap removal** (Opus) — `app/templates/se/Financialaccounts.xlsx!SE Full!D152` ("Restricted allowances for expensive cars", SA103F box 51) sums `Schedule!R38:R42 + R91:R95`, the WDA the cap removal just un-capped, and box 49 (`D144 = R1 - D152`) is only checked against that identity. Confirm from the current SA103F what box 51 expects now the restriction is gone, then repoint D152/D144 and anchor a check to the fixture.
-- [ ] **F14 remainder: `measurableQuantity` is now exported for BST and Taxi** (Haiku) — the
-  BST/Taxi exporters emit it since the mileage route landed, but
-  `app/data/roundtrip-unrepresentable.json` still excuses it for both products. Drop "bst" and
-  "taxi" from that entry, re-run the two roundtrip scorecards, and re-seed any data-half count
-  that moves. SE and Ltd `cellWrites` still fill no mileage column (`carriesMileage: "none"`).
-- [ ] **F9 remainder: `extractTaxDataFromBook` builds the SE-shaped WDA key for Ltd** (Haiku) — `app/lib/diya-gl-loader.js` fallback emits `capital_allowances.writing_down_allowance`, which Ltd reads as `writing_down_allowance_main`; reachable when `report.js` runs without `--years`. Emit the per-regime key and add a loader test.
-
-
-
-
-
 
 ## Plans not tracked here
 
