@@ -221,15 +221,7 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
     // Direct xlsx→xlsx doesn't recalculate. Roundtrip through xls forces recalc.
     // Use a unique UserInstallation per invocation to avoid profile lock conflicts.
     const userProfile = `file://${resolve(workDir, "lo_profile")}`;
-    execSync(
-      `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xls --outdir "${workDir}" "${inputPath}"`,
-      { stdio: "pipe", timeout: 30000 },
-    );
-    const xlsPath = resolve(workDir, "input.xls");
-    execSync(
-      `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xlsx --outdir "${workDir}" "${xlsPath}"`,
-      { stdio: "pipe", timeout: 30000 },
-    );
+    xslRoundtrip(soffice, userProfile, workDir, inputPath);
 
     // 3. Read back computed values
     const recalcPath = resolve(workDir, "input.xlsx");
@@ -350,18 +342,30 @@ function hasLibreOffice() {
 
 // ── Helpers for multi-file recalculation ────────────────────────────────────
 
-function xslRoundtrip(soffice, userProfile, workDir, xlsxPath) {
+// LibreOffice exits 0 when it declines to convert -- another instance holding
+// the profile, a crash while loading the document -- and writes nothing. The
+// input is still sitting where the output belongs, so reading it back hands
+// the caller the workbook's shipped cached values as though they had just been
+// computed. Each leg clears its output first and then insists on it, so a run
+// that did not recalculate fails instead of reporting a stale cache.
+export function xslRoundtrip(soffice, userProfile, workDir, xlsxPath) {
   const xlsName = basename(xlsxPath).replace(".xlsx", ".xls");
+  const xlsPath = resolve(workDir, xlsName);
+  rmSync(xlsPath, { force: true });
   execSync(
     `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xls --outdir "${workDir}" "${xlsxPath}"`,
     { stdio: "pipe", timeout: 60000 },
   );
-  const xlsPath = resolve(workDir, xlsName);
-  if (existsSync(xlsPath)) {
-    execSync(
-      `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xlsx --outdir "${workDir}" "${xlsPath}"`,
-      { stdio: "pipe", timeout: 60000 },
-    );
+  if (!existsSync(xlsPath)) {
+    throw new Error(`LibreOffice wrote no ${xlsName}: ${basename(xlsxPath)} was not recalculated`);
+  }
+  rmSync(xlsxPath, { force: true });
+  execSync(
+    `"${soffice}" --headless --norestore --calc -env:UserInstallation="${userProfile}" --convert-to xlsx --outdir "${workDir}" "${xlsPath}"`,
+    { stdio: "pipe", timeout: 60000 },
+  );
+  if (!existsSync(xlsxPath)) {
+    throw new Error(`LibreOffice wrote no ${basename(xlsxPath)} back from ${xlsName}: the workbook was not recalculated`);
   }
 }
 
