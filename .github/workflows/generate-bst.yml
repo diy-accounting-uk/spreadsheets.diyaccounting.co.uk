@@ -211,6 +211,40 @@ jobs:
           echo "$COUNT reports, all RECONCILES"
       # The check above stays authoritative for arithmetic. The judge covers the plausibility
       # call it cannot make, and stays skipped until the operator sets ENABLE_LLM_JUDGE.
+      - name: Locate the recalculated package for the scorecard
+        id: roundtrip
+        run: |
+          POPULATED=$(ls reports/populated/*bst-scenario-basic*.xlsx 2>/dev/null | head -1)
+          if [ -z "$POPULATED" ]; then
+            echo "::warning::No recalculated package for ${{ matrix.year-end }}; skipping the roundtrip scorecard"
+            echo "populated=" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "populated=$(dirname "$POPULATED")" | tee -a "$GITHUB_OUTPUT"
+          # The fixture's transactions carry the master's own fixed calendar
+          # dates whichever year-end package they are stamped into --
+          # cellWrites never shifts them -- so the year the tax data itself
+          # names is the only sensible --years for the JS side.
+          YE="${{ matrix.year-end }}"
+          Y=$((10#${YE:0:4}))
+          echo "years=se-$((Y - 1))-$Y" | tee -a "$GITHUB_OUTPUT"
+      - name: 'Roundtrip scorecard against the recalculated package (EQ2 budget gate, EQ1 informational)'
+        if: ${{ steps.roundtrip.outputs.populated != '' }}
+        run: |
+          node app/bin/report.js --package bst --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/bst-scorecard-excel
+          node app/bin/export.js --package bst --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/bst-scorecard-excel/data
+          node app/bin/report.js --package bst --data examples/precision-code-ltd/bst --years ${{ steps.roundtrip.outputs.years }} --output-dir target/bst-scorecard-js
+          # Only linesLost and fieldsDropped are gated here
+          # (app/data/roundtrip-matrix-budget.json), not differing/noJsValue/
+          # noExcelValue: the report-half comparison is only exact for the one
+          # year-end that happens to equal the master's own period end
+          # (examples/precision-code-ltd/bst/book.toml's periodCoveredEnd);
+          # every other year picks up whatever that year's own tax-rate
+          # tables move. The scorecard still prints in full for visibility.
+          node app/bin/verify-roundtrip.js --package bst --excel target/bst-scorecard-excel --js target/bst-scorecard-js --budget app/data/roundtrip-matrix-budget.json
+      - name: 'EQ3: stability of the recalculated package'
+        if: ${{ steps.roundtrip.outputs.populated != '' }}
+        run: node app/bin/verify-stability.js --package bst --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/bst-scorecard-stability
       - name: Configure AWS role via GitHub OIDC
         if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
         uses: aws-actions/configure-aws-credentials@v6
