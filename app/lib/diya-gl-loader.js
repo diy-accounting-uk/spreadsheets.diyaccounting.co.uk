@@ -12,6 +12,7 @@ import {
   SE_PURCHASE_CODE_MAP,
   LTD_PURCHASE_CODE_MAP,
   LTD_SALES_CODE_MAP,
+  TAXI_PURCHASE_CODE_MAP,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -25,6 +26,20 @@ import {
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
+
+// The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
+// fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
+// for the Basic Sole Trader chart -- drops every taxi purchase account
+// BST_PURCHASE_CODE_MAP has no entry for, interest, bank charges, other
+// expenses and fixed assets among them. This mirrors filterBst() with the
+// taxi chart's own map instead.
+function filterTaxi(lines) {
+  return lines.filter((line) => {
+    if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
+    if (line.sourceJournalID === "purchases") return TAXI_PURCHASE_CODE_MAP[line.accountMainID] !== undefined;
+    return false;
+  });
+}
 
 /**
  * Parse an ISO 8601 duration offset like "+P3M", "-P1Y", "+P1Y3M".
@@ -104,14 +119,14 @@ export function loadDiyaGlData(dataDir, offset) {
 
 const PRODUCT_FILTERS = {
   bst: filterBst,
-  taxi: filterBst, // Taxi uses BST-level filtering (sales + purchases only)
+  taxi: filterTaxi,
   se: filterAdvanced,
   ltd: filterFull,
 };
 
 const PURCHASE_CODE_MAPS = {
   bst: BST_PURCHASE_CODE_MAP,
-  taxi: BST_PURCHASE_CODE_MAP,
+  taxi: TAXI_PURCHASE_CODE_MAP,
   se: SE_PURCHASE_CODE_MAP,
   ltd: LTD_PURCHASE_CODE_MAP,
 };
@@ -167,14 +182,18 @@ export function diyaGlToScenario(book, lines, product) {
     name: entity.organizationIdentifier || "",
     description: entity.organizationDescription || "",
   };
+  if (entity.organizationAddressLine) business.address = entity.organizationAddressLine;
+  if (entity.organizationTown) business.town = entity.organizationTown;
+  if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
+  if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
 
   // Build expected values
   const expected = { total_sales: totalSales };
 
   if (product === "bst") {
     const stockPurchases = byCode.s || 0;
-    const openingStock = 10000; // default, overridden by book if present
-    const closingStock = 6000;
+    const openingStock = book.stock?.openingValue ?? 0;
+    const closingStock = book.stock?.closingValue ?? 0;
     const stockAdj = openingStock - closingStock;
     const coS = stockPurchases + stockAdj;
     const directCosts = byCode.d || 0;
@@ -211,6 +230,22 @@ export function diyaGlToScenario(book, lines, product) {
     purchases: grouped.purchases,
     expected,
   };
+
+  // Stock, and the named debtor and creditor ledgers, straight off the
+  // book's own tables -- cellWrites' opening/closing blocks have nowhere
+  // else to read them from, and left unset the sheet keeps its own stale
+  // monthly analysis figures instead (see BST's Debtors & Creditors sheet).
+  if (book.stock) scenario.stock = { opening: book.stock.openingValue, closing: book.stock.closingValue };
+  const ledgerEntries = (list, timing, nameField) =>
+    (list || []).filter((entry) => entry.timing === timing).map((entry) => ({ [nameField]: entry.counterparty, amount: entry.amount }));
+  if (book.debtors) {
+    scenario.opening_debtors = ledgerEntries(book.debtors, "opening", "customer");
+    scenario.closing_debtors = ledgerEntries(book.debtors, "closing", "customer");
+  }
+  if (book.creditors) {
+    scenario.opening_creditors = ledgerEntries(book.creditors, "opening", "supplier");
+    scenario.closing_creditors = ledgerEntries(book.creditors, "closing", "supplier");
+  }
 
   // Bank (SE/Ltd only) — flatten from { account: { month: [txs] } } to { month: [txs] }
   // with tx.account field so cellWrites can route to Bank vs Cash sheets
