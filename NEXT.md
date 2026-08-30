@@ -21,6 +21,7 @@ pushes in batches.
 | guides | F9 remainder: guides teach the dead motor cap | `../wt-spreadsheets/guides` | Haiku | started |
 | semileage | F18 remainder: SE Sales mileage writer | `../wt-spreadsheets/semileage` | Sonnet | started |
 | f21 | F21 Taxi EQ2 in the generate matrix | `../wt-spreadsheets/f21` | Sonnet | started |
+| renumber | SE Full renumbering to the current SA103F | `../wt-spreadsheets/renumber` | Opus | started |
 
 ## Open items
 
@@ -35,12 +36,10 @@ follow the reconciliation-bug method.
   `app/templates/{ltd,taxi,bst}/*-guide.md` tell customers motor vehicles are restricted to
   £3,000 p.a.; the cap is gone from the sheets. Rewrite those passages to the plain WDA rule
   (the SE guide is already clean) and regenerate whatever the guide build derives from them.
-- [ ] **SE Full renumbering against the current SA103F** (operator decision first) — the sheet
-  carries a pre-2013 numbering throughout (its 48 is today's 49; "Annual Allowances at 10%",
-  Agricultural/Industrial Buildings and BPRA boxes no longer exist on the form). Box 49's
-  caption still reads "on cars costing £12,000 or less" and box 51's caption sits above a box
-  that is now always nil. A wholesale renumber is template surgery across the SE Full sheet and
-  its checks — decide whether to do it before dispatching.
+- [ ] **SE Full renumbering against the current SA103F** (Opus; operator commissioned the
+  wholesale surgery 2026-08-30) — renumber every box to the current form, rewrite captions,
+  delete dead boxes, rework the checks. In flight as the renumber track.
+
 - [ ] **F18 remainder: SE's Sales mileage column has no writer** (Sonnet) — `app/templates/se/Sales.xlsx`
   column D ("Sales Mileage") is read by nothing and written by nothing, so a day's sales miles are
   captured for Taxi and BST but never for SE; give `app/products/se.js` the write and the exporter
