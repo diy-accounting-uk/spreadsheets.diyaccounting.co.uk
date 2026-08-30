@@ -5,12 +5,19 @@
 //
 // Verify that packages are stable across saved/recalculate modes. The only
 // cells allowed to move are those named in app/data/volatile-cells.json,
-// which are volatile formulas (TODAY(), NOW(), etc.) or unstable conversions.
+// which are volatile formulas (TODAY(), NOW(), etc.), unstable conversions,
+// or stale cached values (a cell whose cache the generator never refreshed
+// after writing the seed cell it reads).
+//
+// Generating and recalculating a package is the expensive part of this file,
+// so each product is generated and recalculated exactly once, in beforeAll,
+// and every it() below reads the same precomputed score.
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { spawn } from "child_process";
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync } from "fs";
 import { resolve } from "path";
+import { parse as parseTOML } from "smol-toml";
 import { compareReports, loadVolatileCells } from "../bin/verify-stability.js";
 
 const testOutputDir = resolve(process.cwd(), "target/stability-test");
@@ -43,31 +50,56 @@ function loadJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
+// The tax regime a product's tax data comes from ("se" for bst/taxi/se,
+// "ltd" for ltd), read from the product's own meta.toml rather than
+// hardcoded, so this stays right if a product's regime ever changes.
+function taxRegimeFor(packageName) {
+  const metaPath = resolve(process.cwd(), "app/templates", packageName, "meta.toml");
+  const meta = parseTOML(readFileSync(metaPath, "utf8"));
+  return meta.product.tax_regime;
+}
+
+// The most recent tax-data file for a regime, without its extension, so
+// generate.js's --years can restrict generation to one tax year. Passing no
+// --years at all makes generate.js build every tax year on file, and for Ltd
+// every year-end month within each of those years -- up to 90+ populated
+// 14-file packages when only the latest one is ever read.
+function latestTomlName(regime) {
+  const dataDir = resolve(process.cwd(), "app/data");
+  const files = readdirSync(dataDir)
+    .filter((f) => f.endsWith(".toml") && f.startsWith(`${regime}-`))
+    .sort();
+  const latest = files.at(-1);
+  if (!latest) throw new Error(`No tax-data file found for regime "${regime}" in ${dataDir}`);
+  return latest.replace(/\.toml$/, "");
+}
+
 /**
- * Generate a test package for a product.
+ * Generate a package for a product, restricted to its latest tax year so
+ * Ltd builds one year's worth of year-end months rather than every year on
+ * file.
  */
 async function generateTestPackage(packageName, outputDir) {
+  const years = latestTomlName(taxRegimeFor(packageName));
   const cmd = await runCommand("node", [
     "app/bin/generate.js",
     "--package",
     packageName,
+    "--years",
+    years,
     "--output-dir",
     outputDir,
     "--skip-guide",
   ]);
   if (cmd.code !== 0) {
-    throw new Error(
-      `Failed to generate package: ${cmd.stderr || cmd.stdout}`,
-    );
+    throw new Error(`Failed to generate package: ${cmd.stderr || cmd.stdout}`);
   }
 
-  // Find the latest generated package directory (they're named with dates)
-  const { readdirSync } = await import("fs");
+  // Find the latest generated package directory (they're named with dates).
   const packages = readdirSync(outputDir).filter((f) => f.includes("Accounts"));
   if (packages.length === 0) {
     throw new Error(`No packages generated in ${outputDir}`);
   }
-  // Sort to find the latest (by date)
   const latest = packages.sort().pop();
   return resolve(outputDir, latest);
 }
@@ -81,7 +113,6 @@ async function comparePackageModes(packageName, packageDir, tempDir) {
   mkdirSync(savedDir, { recursive: true });
   mkdirSync(recalcDir, { recursive: true });
 
-  // Saved mode
   let result = await runCommand("node", [
     "app/bin/report.js",
     "--package",
@@ -95,7 +126,6 @@ async function comparePackageModes(packageName, packageDir, tempDir) {
   ]);
   if (result.code !== 0) throw new Error(`report.js --mode saved failed: ${result.stderr}`);
 
-  // Recalculate mode
   result = await runCommand("node", [
     "app/bin/report.js",
     "--package",
@@ -115,10 +145,24 @@ async function comparePackageModes(packageName, packageDir, tempDir) {
   return compareReports(saved, recalc);
 }
 
+// Generate and recalculate each product exactly once and hand every it()
+// below the same score, rather than repeating the LibreOffice roundtrip per
+// assertion. Measured on this tree, restricted to the latest tax year:
+// bst ~14s, se ~82s, ltd ~134s (Ltd's 14-workbook recalculate dominates).
+// The timeout carries generous headroom over that ~230s total.
+const PRODUCTS = ["bst", "se", "ltd"];
+const stability = {};
+
 describe("Stability (EQ3)", () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     mkdirSync(testOutputDir, { recursive: true });
-  });
+    for (const packageName of PRODUCTS) {
+      const genDir = resolve(testOutputDir, `${packageName}-gen`);
+      const pkgDir = await generateTestPackage(packageName, genDir);
+      const score = await comparePackageModes(packageName, pkgDir, resolve(testOutputDir, `${packageName}-compare`));
+      stability[packageName] = score;
+    }
+  }, 600000); // 10 minutes; measured total is ~230s.
 
   afterAll(() => {
     if (existsSync(testOutputDir)) {
@@ -149,79 +193,45 @@ describe("Stability (EQ3)", () => {
   });
 
   describe("single-product stability", () => {
-    it(
-      "BST should be stable (or show only listed volatiles)",
-      async () => {
-        const genDir = resolve(testOutputDir, "bst-gen");
-        const pkgDir = await generateTestPackage("bst", genDir);
+    it("BST should be stable (or show only listed volatiles)", () => {
+      const volatileSet = loadVolatileCells(volatilePath);
+      const unlistedMoved = stability.bst.movedKeys.filter((m) => !volatileSet.has(m.key));
 
-        const score = await comparePackageModes("bst", pkgDir, resolve(testOutputDir, "bst-compare"));
-        const volatileSet = loadVolatileCells(volatilePath);
+      expect(unlistedMoved).toHaveLength(0);
+      expect(stability.bst.equal).toBeGreaterThan(0);
+    });
 
-        const unlistedMoved = score.movedKeys.filter((m) => !volatileSet.has(m.key));
+    it("SE should be stable (or show only listed volatiles)", () => {
+      const volatileSet = loadVolatileCells(volatilePath);
+      const unlistedMoved = stability.se.movedKeys.filter((m) => !volatileSet.has(m.key));
 
-        expect(unlistedMoved).toHaveLength(0);
-        expect(score.equal).toBeGreaterThan(0);
-      },
-      180000, // 3 minutes
-    );
+      expect(unlistedMoved).toHaveLength(0);
+      expect(stability.se.equal).toBeGreaterThan(0);
+    });
 
-    it(
-      "SE should be stable (or show only listed volatiles)",
-      async () => {
-        const genDir = resolve(testOutputDir, "se-gen");
-        const pkgDir = await generateTestPackage("se", genDir);
+    it("Ltd should be stable (or show only listed volatiles)", () => {
+      const volatileSet = loadVolatileCells(volatilePath);
+      const unlistedMoved = stability.ltd.movedKeys.filter((m) => !volatileSet.has(m.key));
 
-        const score = await comparePackageModes("se", pkgDir, resolve(testOutputDir, "se-compare"));
-        const volatileSet = loadVolatileCells(volatilePath);
-
-        const unlistedMoved = score.movedKeys.filter((m) => !volatileSet.has(m.key));
-
-        expect(unlistedMoved).toHaveLength(0);
-        expect(score.equal).toBeGreaterThan(0);
-      },
-      180000, // 3 minutes
-    );
-
-    it(
-      "Ltd should be stable (or show only listed volatiles)",
-      async () => {
-        const genDir = resolve(testOutputDir, "ltd-gen");
-        const pkgDir = await generateTestPackage("ltd", genDir);
-
-        const score = await comparePackageModes("ltd", pkgDir, resolve(testOutputDir, "ltd-compare"));
-        const volatileSet = loadVolatileCells(volatilePath);
-
-        const unlistedMoved = score.movedKeys.filter((m) => !volatileSet.has(m.key));
-
-        expect(unlistedMoved).toHaveLength(0);
-        expect(score.equal).toBeGreaterThan(0);
-      },
-      180000, // 3 minutes
-    );
+      expect(unlistedMoved).toHaveLength(0);
+      expect(stability.ltd.equal).toBeGreaterThan(0);
+    });
   });
 
   describe("scorecard generation", () => {
-    it(
-      "should compare two reports correctly",
-      async () => {
-        const genDir = resolve(testOutputDir, "scorecard-gen");
-        const pkgDir = await generateTestPackage("bst", genDir);
+    it("should compare two reports correctly", () => {
+      const score = stability.bst;
 
-        const score = await comparePackageModes("bst", pkgDir, resolve(testOutputDir, "scorecard-compare"));
+      // All fields should be present
+      expect(score).toHaveProperty("equal");
+      expect(score).toHaveProperty("differing");
+      expect(score).toHaveProperty("noJsValue");
+      expect(score).toHaveProperty("noExcelValue");
+      expect(score).toHaveProperty("movedKeys");
 
-        // All fields should be present
-        expect(score).toHaveProperty("equal");
-        expect(score).toHaveProperty("differing");
-        expect(score).toHaveProperty("noJsValue");
-        expect(score).toHaveProperty("noExcelValue");
-        expect(score).toHaveProperty("movedKeys");
-
-        // For a single run, no values should disappear
-        expect(score.noJsValue).toBe(0);
-        expect(score.noExcelValue).toBe(0);
-      },
-      180000, // 3 minutes
-    );
+      // For a single run, no values should disappear
+      expect(score.noJsValue).toBe(0);
+      expect(score.noExcelValue).toBe(0);
+    });
   });
 });
