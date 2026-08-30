@@ -842,77 +842,62 @@ mileage = 122
 [[sales.mar]]
 date = 2026-03-02
 amount = 197
-mileage = 112
 
 [[sales.mar]]
 date = 2026-03-03
 amount = 213
-mileage = 107
 
 [[sales.mar]]
 date = 2026-03-04
 amount = 205
-mileage = 107
 
 [[sales.mar]]
 date = 2026-03-05
 amount = 228
-mileage = 121
 
 [[sales.mar]]
 date = 2026-03-06
 amount = 230
-mileage = 122
 
 [[sales.mar]]
 date = 2026-03-09
 amount = 188
-mileage = 98
 
 [[sales.mar]]
 date = 2026-03-10
 amount = 185
-mileage = 102
 
 [[sales.mar]]
 date = 2026-03-11
 amount = 208
-mileage = 117
 
 [[sales.mar]]
 date = 2026-03-12
 amount = 231
-mileage = 116
 
 [[sales.mar]]
 date = 2026-03-13
 amount = 233
-mileage = 117
 
 [[sales.mar]]
 date = 2026-03-16
 amount = 191
-mileage = 93
 
 [[sales.mar]]
 date = 2026-03-17
 amount = 188
-mileage = 112
 
 [[sales.mar]]
 date = 2026-03-18
 amount = 211
-mileage = 112
 
 [[sales.mar]]
 date = 2026-03-19
 amount = 234
-mileage = 111
 
 [[sales.mar]]
 date = 2026-03-20
 amount = 236
-mileage = 127
 
 [[purchases.apr]]
 date = 2025-04-01
@@ -1564,30 +1549,6 @@ amount = 30
 account = "5700"
 
 [[purchases.mar]]
-date = 2026-03-03
-supplier = "Texaco"
-description = "Diesel fuel"
-code = "d"
-amount = 56
-account = "5100"
-
-[[purchases.mar]]
-date = 2026-03-10
-supplier = "Shell"
-description = "Diesel fuel"
-code = "d"
-amount = 59
-account = "5100"
-
-[[purchases.mar]]
-date = 2026-03-17
-supplier = "BP"
-description = "Diesel fuel"
-code = "d"
-amount = 55
-account = "5100"
-
-[[purchases.mar]]
 date = 2026-03-18
 supplier = "NCP Parking"
 description = "Airport pickup parking"
@@ -1604,11 +1565,12 @@ amount = 15
 account = "5300"
 
 [[purchases.mar]]
-date = 2026-03-24
-supplier = "Texaco"
-description = "Diesel fuel"
+date = 2026-03-31
+supplier = "Mileage claim"
+description = "March business miles claimed at the approved rate in place of fuel receipts"
 code = "d"
-amount = 58
+amount = 753.3
+mileage = 1674
 account = "5100"
 
 [[fixed_asset_additions]]

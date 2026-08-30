@@ -8,33 +8,13 @@ import { fixedAssetAdditions } from "../scenario-loader.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
+import { calculateMileageAllowance } from "../tax/mileage.js";
 import { aggregateByCode } from "./shared.js";
 
 // P&L monthly columns, Apr through Mar (matches app/products/taxi.js's own
 // MONTH_COLS, verified against the template: 'Profit & Loss Acc'!C2:N2 read
 // the Admin month-end dates in that order).
 const MONTH_COLS = { apr: "C", may: "D", jun: "E", jul: "F", aug: "G", sep: "H", oct: "I", nov: "J", dec: "K", jan: "L", feb: "M", mar: "N" };
-
-/**
- * The HMRC mileage allowance for a year's business miles: the first 10,000
- * at the higher rate, the remainder at the lower rate. A real, tested
- * capability the sheet has no way to exercise today -- see the note beside
- * its one call site below.
- */
-export function calculateMileageAllowance(totalMiles, mileageRates) {
-  const higherBandMiles = Math.min(totalMiles, mileageRates.higher_rate_limit);
-  const lowerBandMiles = Math.max(0, totalMiles - mileageRates.higher_rate_limit);
-  return higherBandMiles * mileageRates.higher_rate_pence + lowerBandMiles * mileageRates.lower_rate_pence;
-}
-
-// Total business miles the year's sales lines carry (verified against the
-// SP Sixty Driving and Basic Taxi Driver masters: measurableQuantity in
-// "miles" sits on each day's fares line, not on any purchase).
-export function totalBusinessMiles(salesLines) {
-  return salesLines
-    .filter((line) => line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number")
-    .reduce((sum, line) => sum + line.measurableQuantity, 0);
-}
 
 // The Fixed Assets schedule. Every capital addition lands in the "Vehicles
 // under £12,000 bought after" block regardless of what it actually is (see
@@ -43,6 +23,14 @@ export function totalBusinessMiles(salesLines) {
 // -- never Annual Investment Allowance (verified against the template:
 // Fixed Assets!J47 = IF(D47>0,MIN(D47*J$4*(1-F47),Admin!G$8*(1-F47))," "),
 // with no AIA formula anywhere on this block).
+// Business miles a line records: the distance a fare day was driven, or the
+// distance a mileage-log entry claims at the approved rate. cellWrites gives
+// the sheet the miles, and on a purchase gives them instead of the amount --
+// a mileage-log entry buys nothing, its whole expense is the claim.
+function carriesBusinessMiles(line) {
+  return line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number";
+}
+
 function calculateFixedAssetSchedule(additions, taxData) {
   const wdaRate = taxData.capital_allowances.writing_down_allowance;
   const restriction = taxData.capital_allowances.motor_vehicle_restriction;
@@ -119,21 +107,16 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const startYear = new Date(book.documentInfo.periodCoveredStart).getUTCFullYear();
   const byDate = buildTaxMonthByDate(startYear);
 
-  const byCode = aggregateByCode(purchaseLines, TAXI_PURCHASE_CODE_MAP);
-  const byCodeAndMonth = aggregateByCodeAndMonth(purchaseLines, TAXI_PURCHASE_CODE_MAP);
+  // A mileage-log entry buys nothing: cellWrites gives the sheet its miles
+  // rather than its amount, so it never reaches a running-cost column.
+  const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
+  const byCode = aggregateByCode(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
+  const byCodeAndMonth = aggregateByCodeAndMonth(cashPurchaseLines, TAXI_PURCHASE_CODE_MAP);
 
   const totalSales = Math.floor(salesLines.reduce((s, l) => s + l.amount, 0));
   const monthlySales = {};
   for (const month of MONTH_ORDER) monthlySales[month] = 0;
   for (const line of salesLines) monthlySales[byDate.get(line.postingDate)] += line.amount;
-
-  // Vehicle running costs: fuel, car hire, repairs and servicing, road tax
-  // and insurance (verified against the template: Profit & Loss Acc!B6:B9,
-  // each ROUNDUP(SUM(...month columns...),0)).
-  const fuel = Math.ceil(byCode.d || 0);
-  const carHire = Math.ceil(byCode.h || 0);
-  const repairsServicing = Math.ceil(byCode.r || 0);
-  const roadTaxInsurance = Math.ceil(byCode.t || 0);
 
   // Capital allowances, from the fixed asset register cellWrites registers
   // (the same additions cellWrites itself derives via fixedAssetAdditions()).
@@ -142,18 +125,55 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const seShortCA = seShortCapitalAllowances(fa);
   const capitalAllowances = fa.I1 + fa.J1 + fa.P1 - fa.Q1;
 
-  // Mileage allowance. calculateMileageAllowance() above is a real,
-  // independently correct capability, tested on its own terms against the
-  // SP Sixty Driving master's 20,000 miles. It has no route to the sheet
-  // today: cellWrites (app/products/taxi.js) never writes a Purchases
-  // sheet's mileage column, which is where the sheet's own C1 comparison
-  // (MILEAGE ALLOWANCE when PurchasesMar!$A$2 exceeds the actual-cost-plus-
-  // capital-allowance total) reads its mileage total from. A generated
-  // package's own B1 is therefore always nil, so this stays nil to match.
-  const mileageAllowance = 0;
+  // Business miles, month by month, on the tabs cellWrites lays the entries
+  // out on: a fare day's miles beside its takings on the week-based Sales tab
+  // its date falls in, a mileage-log purchase's on the plain calendar month.
+  const milesByMonth = {};
+  for (const month of MONTH_ORDER) milesByMonth[month] = 0;
+  for (const line of salesLines) {
+    if (carriesBusinessMiles(line)) milesByMonth[byDate.get(line.postingDate)] += line.measurableQuantity;
+  }
+  for (const line of purchaseLines) {
+    if (carriesBusinessMiles(line)) milesByMonth[getMonthKey(line.postingDate)] += line.measurableQuantity;
+  }
+  const businessMiles = MONTH_ORDER.reduce((sum, month) => sum + milesByMonth[month], 0);
+  const mileageClaim = calculateMileageAllowance(businessMiles, taxData.mileage);
+
+  // Each month's share of that claim, as the sheet bands it off the running
+  // mileage total: the claim to date less the claim the months before it
+  // already made (verified against the template: PurchasesMay!U4 =
+  // IF(A1<Admin!$F$22,(A1-PurchasesApr!A1)*Admin!$G$21, A1*G21-(A1-F21)*(G21-G22)-PurchasesApr!A2)).
+  const monthlyMileageClaim = {};
+  let milesToDate = 0;
+  let claimToDate = 0;
+  for (const month of MONTH_ORDER) {
+    milesToDate += milesByMonth[month];
+    const claim = calculateMileageAllowance(milesToDate, taxData.mileage);
+    monthlyMileageClaim[month] = claim - claimToDate;
+    claimToDate = claim;
+  }
+
+  // The sheet weighs the mileage claim against what the vehicle actually cost
+  // to run and charges one of them, never both (verified against the template:
+  // 'Profit & Loss Acc'!B1 = ROUND(PurchasesMar!$A$2,0), the year's claim;
+  // J1 = ROUND(PurchasesMar!$I$2 + the Fixed Assets allowances,0); C1 =
+  // IF(B1>J1,"MILEAGE ALLOWANCE"," "), which every running-cost line reads as
+  // IF(C1="mileage allowance",0,...) and the mileage line reads the other way).
+  const vehicleRunningCosts = (byCode.d || 0) + (byCode.h || 0) + (byCode.r || 0) + (byCode.t || 0);
+  const takesMileageRoute = Math.round(mileageClaim) > Math.round(vehicleRunningCosts + capitalAllowances);
+
+  // Vehicle running costs: fuel, car hire, repairs and servicing, road tax
+  // and insurance (verified against the template: Profit & Loss Acc!B6:B9,
+  // each ROUNDUP(SUM(...month columns...),0)).
+  const fuel = takesMileageRoute ? 0 : Math.ceil(byCode.d || 0);
+  const carHire = takesMileageRoute ? 0 : Math.ceil(byCode.h || 0);
+  const repairsServicing = takesMileageRoute ? 0 : Math.ceil(byCode.r || 0);
+  const roadTaxInsurance = takesMileageRoute ? 0 : Math.ceil(byCode.t || 0);
+  const capitalAllowancesCharged = takesMileageRoute ? 0 : capitalAllowances;
+  const mileageAllowance = takesMileageRoute ? Math.ceil(mileageClaim) : 0;
 
   const totalVehicleCosts = fuel + carHire + repairsServicing + roadTaxInsurance;
-  const costOfSales = Math.ceil(totalVehicleCosts + capitalAllowances + mileageAllowance);
+  const costOfSales = Math.ceil(totalVehicleCosts + capitalAllowancesCharged + mileageAllowance);
   const grossProfit = Math.floor(totalSales - costOfSales);
 
   // General expenses
@@ -178,7 +198,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   // manual entry with no formula at all and no cached value on the sheet in
   // any fixture, unlike O99 (box 29), which does carry a real formula
   // reading P&L!B24.
-  const o64 = costOfSales + totalGenExpenses - capitalAllowances;
+  const o64 = costOfSales + totalGenExpenses - capitalAllowancesCharged;
   const seShortOtherIncomeBox9 = 0;
   const seShortNetProfitRaw = totalSales + seShortOtherIncomeBox9 - o64;
   const seShortNetProfit = Math.max(0, seShortNetProfitRaw);
@@ -211,7 +231,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       B7: carHire,
       B8: repairsServicing,
       B9: roadTaxInsurance,
-      B10: Math.round(capitalAllowances * 100) / 100,
+      B10: Math.round(capitalAllowancesCharged * 100) / 100,
       B11: mileageAllowance,
       B12: costOfSales,
       B13: grossProfit,
@@ -265,7 +285,12 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     },
     "Fixed Assets": {},
     PurchasesMar: {
-      I2: totalVehicleCosts,
+      // The running mileage total the comparison is made on, and the claim
+      // banded out of it (verified against the template: PurchasesMar!A1 =
+      // E1+SalesMar!$D$1+PurchasesFeb!A1, A2 = U1+PurchasesFeb!A2).
+      A1: businessMiles,
+      A2: Math.round(mileageClaim * 100) / 100,
+      I2: vehicleRunningCosts,
       T1: Math.round(assetAdditions.reduce((sum, asset) => sum + asset.cost, 0) * 100) / 100,
     },
     Admin: {
@@ -308,7 +333,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
 
   // P&L monthly columns (rows 5, 12, 22 and 24 — the four rows VitalTax's
   // quarterly re-sum and the Wages Forecast both read a month at a time).
-  const monthlyCapitalAllowance = capitalAllowances / 12;
+  const monthlyCapitalAllowance = capitalAllowancesCharged / 12;
   for (const month of MONTH_ORDER) {
     const col = MONTH_COLS[month];
     const codes = byCodeAndMonth[month];
@@ -316,7 +341,8 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     const monthGenExpenses =
       (codes.e || 0) + (codes.p || 0) + (codes.g || 0) + (codes.a || 0) + (codes.l || 0) + (codes.i || 0) + (codes.b || 0) + (codes.o || 0);
     results["Profit & Loss Acc"][`${col}5`] = Math.floor(monthlySales[month]);
-    results["Profit & Loss Acc"][`${col}12`] = Math.round((monthVehicleCosts + monthlyCapitalAllowance) * 100) / 100;
+    const monthCostOfSales = takesMileageRoute ? monthlyMileageClaim[month] : monthVehicleCosts + monthlyCapitalAllowance;
+    results["Profit & Loss Acc"][`${col}12`] = Math.round(monthCostOfSales * 100) / 100;
     results["Profit & Loss Acc"][`${col}22`] = Math.ceil(monthGenExpenses);
     results["Profit & Loss Acc"][`${col}24`] = 0; // other business income, no source in the diya-gl pipeline
   }
