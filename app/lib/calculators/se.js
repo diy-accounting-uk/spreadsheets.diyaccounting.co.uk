@@ -631,15 +631,19 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seShort.Q2 = dateSerials[4];
   seShort.V2 = dateSerials[17];
   // The return prints its business name at C8, its accounting date at S17 and
-  // its turnover note at A33. A7, D8 and A32 are the empty boxes beside those
-  // captions, which is what the report's own cell map names.
+  // its turnover note at A33. The left-column equivalents (A7, D8, A32) are the
+  // empty boxes beside the print locations.
   seShort.A7 = SHEET_BLANK;
   seShort.D8 = SHEET_BLANK;
-  // The note the sheet prints sits at A33; A32 is the empty cell beside it that
-  // the report's own map names.
   seShort.A32 = SHEET_BLANK;
+  seShort.C8 = scenario.business?.name || " ";
+  seShort.S17 = seShort.Q2;
   seShort.D38 = pl.B9;
   seShort.O38 = pl.B38;
+  // Turnover note: conditional message about VAT threshold
+  seShort.A33 = seShort.D38 > admin.F26
+    ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
+    : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
   seShort.D46 = analysed(pl.B17);
   seShort.O46 = analysed(pl.B28);
   seShort.D51 = analysed(pl.B25 + pl.B26);
