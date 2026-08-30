@@ -46,6 +46,22 @@ resource loader; the page supplies `fetch`-based loading of the template xlsx an
 keeps `readFileSync`. No fork of the pipeline modules — the bundle imports them as they are, so
 the page can never drift from the engine CI verifies.
 
+## Entry point
+
+The page is reached from `download.html?product=BasicSoleTrader`: a new `download-section` panel
+following the existing "Documentation & User Guides" pattern (heading, one-line description,
+`form-group` controls, one primary action) —
+
+> **View your books in DIYA-GL**
+> Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded;
+> the file never leaves your machine.
+> [file picker: .xlsx or .zip] [View in DIYA-GL]
+
+The picker reads the chosen file into a Blob stored in IndexedDB, then navigates to
+`books/bst.html`, which takes the hand-off, imports it and clears the store (a File cannot cross
+a navigation directly). The books page also keeps its own picker, so a direct visit or a
+bookmark works without the panel.
+
 ## The data model
 
 The diya-gl book is the single source of truth once loaded. Three ways in:
@@ -110,6 +126,17 @@ at a time; the year row of an open month stays pinned so the context never scrol
 - Motion: one orchestrated expand (year row unfolds to month, entries slide under), everything
   else instant; `prefers-reduced-motion` collapses it to a cut.
 
+**Visualisations** — standard accounting views, nothing fancier, drawn as inline SVG from the
+calculated book (never from the as-read layer, so they always agree with the figures shown):
+
+- *Where the costs are*: expense categories as a proportional bar, largest first, the year's
+  figure and share on each segment.
+- *Through the year*: monthly turnover, costs and profit as grouped columns across the twelve
+  months, with a cumulative profit line.
+
+They live in the inspector rail (desktop landscape), the drawer (desktop portrait), and behind a
+"Charts" tab on mobile. Palette from the same six tokens; figures in the same tabular mono.
+
 **Four layouts, designed not just fluid**:
 
 | Viewport | Layout |
@@ -136,8 +163,23 @@ keyboard-editable, WCAG AA contrast on both themes.
 4. **Save.** Client-side xlsx and zip generation.
    *Verify: import → export → import yields a deep-equal book (Node vitest over the same bundle
    entry points); an exported workbook run through `reconcile.js` RECONCILES.*
-5. **New/example books and the four layouts.** New-book form, example loader, the four
-   orientation layouts, Playwright coverage in `test:browser` for all four viewports.
+5. **New/example books, entry-point panel, and the four layouts.** New-book form, example
+   loader, the `download.html` panel and IndexedDB hand-off, the four orientation layouts,
+   Playwright coverage in `test:browser` for all four viewports.
+
+**The equivalence test** (Playwright, lands with phase 2 and grows with phase 3): generate a BST
+package populated with a reconciliation scenario's example data, load it into the page, and
+assert four sources agree value-for-value —
+
+1. the scenario's expected reconciliation data (the fixture's own expectations),
+2. the values `report.js` reads from the populated generated file,
+3. the page's as-read values from that same file,
+4. the page's calculated values.
+
+All four equal (canonicalised as the comparator rounds) and the drift annotations empty. Then
+the edit-outcome cases: adding a purchase of X reduces profit by X and leaves turnover unchanged;
+adding a sale of Y increases both profit and turnover by Y — asserted against the page's figures
+and the check panel staying green.
 
 Page lands at `web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle
 beside it; the bundle build joins the existing build steps in CI.
