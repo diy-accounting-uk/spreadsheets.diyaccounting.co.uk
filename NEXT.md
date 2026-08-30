@@ -20,7 +20,7 @@ integration branch as it lands and pushes in batches.
 | f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
 | f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
 | f17 | F17 diya-gl docs examples | — | Haiku | landed `0ad80afc`, docs-examples 9/9 |
-| f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
+| f13 | F13 SE forecast 2023-24 | — | Opus | landed: premise did not reproduce (679/679 at 2024-04-05); real defect was the runner reading shipped caches when LibreOffice silently did not recalculate, now throws; forecast suite 38/38 on both rates years |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
 | archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | — | Opus | landed `c3b97742`, dry run 118/118 fully formed |
 | f1 | F1 exact EQ1 gate | — | Sonnet | waits for f2, f8, f9 |
@@ -68,15 +68,7 @@ reconciliation-bug method.
   SE Schedule (`app/templates/se/Fixedassets.xlsx`) and the BST/Taxi Fixed Assets sheets
   (Admin E8/G8) — apply the same removal there in the same PR so the products agree.
 
-- [ ] **F13: SE forecast checks on the 2023-24 rates** (Opus) — `reconcile.js --package se
-  --scenario advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): "Forecast:
-  personal allowance after taper" (`app/products/se.js:1672`) expects 1,676 and reads 12,570,
-  with four sibling forecast checks. The sheet's forecast block is right for 2025-26; the
-  difference is the tax-year data (`app/data/se-2023-2024.toml`: taper threshold, higher band
-  end 150,000 → 125,140 at 2023-24, Class 4 limits) reaching `calculateExpectedTax` and the
-  Admin cells the forecast reads. Trace which side has the 2023-24 figures wrong (the TOML,
-  the generator's Admin writes for that year, or the check's expected side), fix it, and add
-  the 2024-04-05 year end to `se-profit-forecast-checks.test.js`.
+
 - [ ] **F14: write the mileage quantity so a package can take the mileage route** (Opus) — the
   BST and Taxi calculators compute the mileage claim from `measurableQuantity`, but
   `cellWrites` never writes it to the Purchases sheet's mileage column, so every generated
