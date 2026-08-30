@@ -12,7 +12,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 | Track | Items | Status |
 |---|---|---|
 | fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | landed on `claude/wave-5` `623833b9`, 331 tests, worktree removed |
-| fidelity-t1b (wave 5) | T1b: masters for brickwork-pro (bank journal, opening lines, ledgers, van, members, CIS), sp-sixty (dashcam), kestrel (camera), new basic-taxi-driver; all twelve TOMLs extractor-written; sync gate widened | started, worktree `sp-fidelity-t1b`, 9 commits |
+| fidelity-t1b (wave 5) | T1b: every fixture extractor-written from master data (BrickWork bank journal, opening journal, ledgers, van, members, CIS; dashcam and camera; new basic-taxi-driver; per-chart purchase-code maps); a van overpayment of 7,200 fixed; taxi fixtures no longer state a profit | merged into `claude/wave-5` `7f381934`, blast radius running, worktree removed |
 | fidelity-t3 (wave 5) | T3: BST and Taxi calculators to every read cell, units, tests mirroring the checks, cell-map tax names aligned to the schema, `roundtrip-taxi` job | started (Sonnet), worktree `sp-fidelity-t3`; merges T1b when it lands |
 | fidelity-t4 (wave 5) | T4: SE calculator (monthly grid, SA103S/F, income tax, VAT interface and returns via `tax/vat.js`, fixed assets, payroll), units, mirrored tests; plus the SE CIS column write and the `se.js:537` row counter | started (Opus), worktree `sp-fidelity-t4`; merges T1b when it lands |
 | fidelity-t5 (wave 5) | T5: Ltd calculator (bank, trial balance, published accounts, CT and CT600, VAT, fixed assets, HP, registers), `tax/capital-allowances.js`, units, mirrored tests; plus the `ltd.js:853` row counter | started (Opus), worktree `sp-fidelity-t5`; merges T1b when it lands |
@@ -35,14 +35,12 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
 Fixture:
 
-- [ ] **SE CIS column not written** — the SE scenario carries `cis_deduction` per purchase
-  but nothing in `se.js` writes it into `Purchases.xlsx!AD` (the SE CIS certificates column).
-  One `cellWrites` line plus a check that the SE CIS figure reaches where the sheet takes
-  it. Rides with T4 (owns `se.js`).
-- [ ] **Brickwork CIS deductions in the fixtures** — `examples/brickwork-pro/lines.jsonl`
-  carries 4,000 of `cisDeduction` the hand-written Ltd fixtures never had; with the master
-  now writing the fixtures, the deductions and a matching `RC` remittance come through and
-  the CIS and trade creditors move. Rides with T1b (in flight; told).
+- [ ] **SE CIS column not written** — the SE scenarios (advanced and both BrickWork twins)
+  carry `cis_deduction` per purchase but nothing in `se.js` writes `Purchases.xlsx!AD`, so
+  the SE report's "Less: CIS Deducted" reads 0. One `cellWrites` line plus a check. Rides
+  with T4. Also with T4: `se.js:1553-1558` reads the Wages Forecast tax block as C44 =
+  additional rate and C45 = NI, but the sheet puts NI in C44 and nothing in C45, and C40
+  never tapers — the SE fixtures fail those checks whenever Class 4 NI is non-zero.
 - [ ] **Row counters keyed on a single letter** — `ltd.js:853` and `se.js:537` count rows
   with `k.startsWith(columns.amount)`, so a column such as `AK` counts as an `A` row (the
   same bug at `ltd.js:416` bit when `AK` was added; fixed with `/^A\d+$/`). One regex each.
@@ -56,13 +54,11 @@ Fixture:
 - [ ] **Fidelity T1: schema v2, validator, canonical form, gaps inventory** — landed on
   `claude/wave-5`; closes with wave 5's PR. Remainder: `diya-gl-docs.md` still illustrates
   the `diya-gl:` extension fields with stale JSON (predates T1; flagged in the doc).
-- [ ] **Fidelity T1b: diya-gl masters for every fixture** (Opus, after T1, with T2) — owns
-  the extractor. brickwork-pro gains a bank journal (SE 60/63 rows, Ltd 49/53), `BB` opening
-  lines, opening balances, stock, debtor/creditor ledgers, the £12,000 van, Mike Brown's 100
-  shares; sp-sixty gains the £200 dashcam as a fixed asset; kestrel the £900 camera (its
-  figures will move); `taxi-scenario-basic` gets a new `examples/basic-taxi-driver/` master.
-  The BrickWork VAT twin is one master with a declared 1.5× build section. All twelve TOMLs
-  extractor-written, hand-written ones deleted, sync gate widened to `examples/`.
+- [ ] **Fidelity T1b: diya-gl masters for every fixture** — landed on `claude/wave-5`; closes
+  with wave 5's PR. Remainders: the Precision Code master's VAT straddling entries are still
+  stated in the extractor (deriving them needs journal lines outside the accounting period);
+  the committed 2027 `packages/` are stale against the current taxi template (11-19 taxi
+  checks fail on every taxi fixture there until the next regeneration).
 - [ ] **Fidelity T2: the tuple contract and export completeness** — landed on `claude/wave-5`;
   closes with wave 5's PR. Remainders: 4 Ltd and 1 SE lines still lost in export (the
   fixed-asset `cellWrites` layout, S7; a ratchet test holds the count); non-March EQ2 is
