@@ -548,29 +548,85 @@ const OA_JOURNAL_MAP = [
 // SE existing (opening) fixed asset rows on the Fixedassets.xlsx Schedule:
 // C=description, E=cost, F=accumulated depreciation. New-asset rows are not
 // exported — they regenerate from the fa-coded purchase transactions.
-const SE_SCHEDULE_EXISTING_ROWS = [
-  { rows: [30, 31, 32, 33, 34], accountMainID: "0030" },
-  { rows: [38, 39, 40, 41, 42], accountMainID: "0040" },
-];
+// The Fixedassets.xlsx Schedule's existing-asset blocks, in the order the
+// sheet lays them out: the rows an asset already held at the opening balance
+// sheet date is entered on, the class the block stands for, and, for SE, the
+// account its opening cost and depreciation post to. C=description, E=cost,
+// F=accumulated depreciation brought forward, O=tax written down value
+// brought forward, U and V=the date and proceeds of an in-year disposal.
+const SCHEDULE_EXISTING_ASSET_ROWS = {
+  se: [
+    { assetClass: "computerTechnology", accountMainID: "0030", rows: [30, 31, 32, 33, 34] },
+    { assetClass: "motorVehicles", accountMainID: "0040", rows: [38, 39, 40, 41, 42] },
+  ],
+  ltd: [
+    { assetClass: "landBuildings", rows: [8, 9, 10] },
+    { assetClass: "plantMachinery", rows: [14, 15, 16, 17, 18, 19, 20, 21] },
+    { assetClass: "fixturesFittings", rows: [25, 26, 27, 28, 29] },
+    { assetClass: "computerTechnology", rows: [33, 34, 35, 36, 37, 38, 39, 40] },
+    { assetClass: "motorVehicles", rows: [50, 51, 52, 53, 54] },
+  ],
+};
+
+const SCHEDULE_ASSET_COLUMNS = { description: "C", cost: "E", accumulatedDepreciation: "F", taxWrittenDownValue: "O" };
+const SCHEDULE_DISPOSAL_COLUMNS = ["U", "V"];
+
+async function scheduleSheet(sourceDir) {
+  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+  return zip ? openSheet(zip, "Schedule") : null;
+}
+
+/**
+ * The fixed asset register the Schedule carries: one entry per existing-asset
+ * row the writer filled in. Assets bought during the year are left out --
+ * they reach the Schedule through their own "fa"-coded purchase line, so
+ * reading their rows back as opening assets would enter each of them twice.
+ * @param {string} sourceDir - the populated package
+ * @param {string} product - se or ltd; the other two keep no asset classes
+ */
+async function fixedAssetRegisterFrom(sourceDir, product) {
+  const blocks = SCHEDULE_EXISTING_ASSET_ROWS[product];
+  if (!blocks) return [];
+  const sheet = await scheduleSheet(sourceDir);
+  if (!sheet) return [];
+  const { xml, sharedStrings } = sheet;
+
+  const assets = [];
+  for (const { assetClass, rows } of blocks) {
+    for (const row of rows) {
+      const cost = numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.cost}${row}`, sharedStrings);
+      if (cost === undefined || cost === 0) continue;
+      const asset = { class: assetClass, cost };
+      assign(asset, "description", textAt(xml, `${SCHEDULE_ASSET_COLUMNS.description}${row}`, sharedStrings));
+      assign(asset, "accumulatedDepreciation", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.accumulatedDepreciation}${row}`, sharedStrings));
+      assign(asset, "taxWrittenDownValue", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.taxWrittenDownValue}${row}`, sharedStrings));
+      const disposed = SCHEDULE_DISPOSAL_COLUMNS.some((column) => numberAt(xml, `${column}${row}`, sharedStrings) !== undefined);
+      assets.push({ asset, disposed });
+    }
+  }
+
+  // A writer pairs an in-year disposal with an asset by declaration order, so
+  // an asset the Schedule shows a disposal against has to be declared ahead
+  // of one it does not; otherwise the next pass works the balancing allowance
+  // out on a different asset. Inside each group the register keeps the
+  // Schedule's own reading order.
+  const ordered = [...assets.filter((entry) => entry.disposed), ...assets.filter((entry) => !entry.disposed)];
+
+  // The Schedule has no cell for an asset's own identifier, so the register
+  // numbers its entries in the order it declares them. Sorting the book's
+  // arrays by id then hands the next pass that same order back.
+  return ordered.map(({ asset }, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
+}
 
 async function extractSeOpeningFixedAssets(sourceDir) {
-  const { readFileSync, existsSync } = await import("fs");
-  const { resolve } = await import("path");
-
-  const faPath = resolve(sourceDir, "Fixedassets.xlsx");
-  if (!existsSync(faPath)) return [];
-
-  const zip = await JSZip.loadAsync(readFileSync(faPath));
-  const sheetMap = await buildSheetMap(zip);
-  const sharedStrings = await loadSharedStrings(zip);
-  const schedulePath = sheetMap.get("Schedule");
-  if (!schedulePath) return [];
-  const xml = await zip.file(schedulePath).async("string");
+  const sheet = await scheduleSheet(sourceDir);
+  if (!sheet) return [];
+  const { xml, sharedStrings } = sheet;
 
   const lines = [];
   let entryNum = 1;
   let lineNum = 1;
-  for (const { rows, accountMainID } of SE_SCHEDULE_EXISTING_ROWS) {
+  for (const { rows, accountMainID } of SCHEDULE_EXISTING_ASSET_ROWS.se) {
     for (const row of rows) {
       const cost = readCellValue(xml, `E${row}`, sharedStrings);
       if (cost === null || typeof cost !== "number" || cost === 0) continue;
@@ -782,7 +838,10 @@ const ENTITY_CELLS = {
     "organizationAddressLine": "J3",
     "organizationTown": "J4",
     "organizationPostcode": "N6",
-    "taxAuthorityIdentifier": "O3",
+    // O3 holds the CT603 tax reference, which the writer takes from the
+    // book's taxRegistrationNumber. taxAuthorityIdentifier names the
+    // authority itself and has no cell on any sheet.
+    "taxRegistrationNumber": "O3",
   },
 };
 
@@ -840,12 +899,16 @@ const OPENING_SCALAR_CELLS = {
   cisDue: "I26",
 };
 
-// Where the closing stock figure and the physical count are entered.
+// Where the stock figures are entered. Every cell named here is one the
+// writer enters a book value in, so the export reads back what went in. The
+// Ltd Stock sheet's D30 is the stock the sheet works out for itself from the
+// year's materials, not a figure anyone enters, so reading it back would
+// hand the next pass a number the book never stated.
 const STOCK_CELLS = {
   bst: { sheet: "PurchasesStock", openingValue: "D5", closingValue: "D30" },
   taxi: null,
-  se: { sheet: "StockControl", openingCount: "AB6", closingCount: "AB30" },
-  ltd: { sheet: "Stock", closingCount: "AB30", closingValue: "D30", materialsPercent: "H4" },
+  se: { sheet: "StockControl", openingValue: "AB6", closingValue: "AB30" },
+  ltd: { sheet: "Stock", closingValue: "AB30", materialsPercent: "H4" },
 };
 
 // The book schema's own name for each product, which is not the short name
@@ -1134,6 +1197,15 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   const salesHeadings = salesSheet ? analysisHeadings(salesSheet.xml, salesSheet.sharedStrings) : {};
   const purchaseHeadings = purchasesSheet ? analysisHeadings(purchasesSheet.xml, purchasesSheet.sharedStrings) : {};
 
+  // The first Sales month tab's rate cell is the one lever that turns VAT on
+  // or off for the whole book, so it is where the export reads the
+  // registration back from. A rate of zero is what the guides tell a business
+  // that is not registered to enter.
+  const vatRateCell = VAT_RATE_CELLS[product];
+  if (vatRateCell && salesSheet) {
+    entityInformation["diya-gl:vatRegistered"] = numberAt(salesSheet.xml, vatRateCell, salesSheet.sharedStrings) > 0;
+  }
+
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? taxFromAdmin(adminSheet.xml, adminSheet.sharedStrings, cellMap) : {};
 
@@ -1174,6 +1246,9 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
 
   const stock = await stockFrom(hubZip, product);
   if (stock) book.stock = stock;
+
+  const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
+  if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
 
   if (product === "ltd") {
     const openingBalances = await openingBalancesFrom(hubZip);

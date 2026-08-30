@@ -13,11 +13,13 @@
 
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync } from "child_process";
+import JSZip from "jszip";
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, mkdirSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
-import { hasLibreOffice } from "../lib/spreadsheet-runner.js";
+import { parse as parseTOML } from "smol-toml";
+import { hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import {
   roundHalfUp,
   canonicalForUnit,
@@ -451,4 +453,72 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       expect(score.accountMatches).toBe(score.coarseMatches);
     });
   }
+});
+
+// ── The fixed asset register across a double roundtrip ─────────────────────
+
+const SE_VAN_ROW = 38;
+const SE_ASSET_COLUMNS = ["C", "E", "F", "O", "U", "V"];
+
+async function scheduleRow(packageDir, row) {
+  const zip = await JSZip.loadAsync(readFileSync(join(packageDir, "Fixedassets.xlsx")));
+  const xml = await zip.file((await buildSheetMap(zip)).get("Schedule")).async("string");
+  const sharedStrings = await loadSharedStrings(zip);
+  return Object.fromEntries(SE_ASSET_COLUMNS.map((column) => [column, readCellValue(xml, `${column}${row}`, sharedStrings)]));
+}
+
+describe.skipIf(!hasLibreOffice())("The fixed asset register across a double roundtrip", () => {
+  const generate = (data, out) =>
+    run([
+      "app/bin/generate.js",
+      "--package",
+      "se",
+      "--years",
+      "se-2025-2026",
+      "--year-end",
+      "2026-04-05",
+      "--data",
+      data,
+      "--output-dir",
+      out,
+      "--skip-guide",
+    ]);
+  const exportData = (source, out) => run(["app/bin/export.js", "--package", "se", "--source-dir", source, "--output-dir", out]);
+
+  it("carries an opening asset and its in-year disposal into the second pass", { timeout: STEP_TIMEOUT_MS }, async () => {
+    const firstPackage = resolve(ROOT, "target", "se-register-pkg1");
+    const firstData = resolve(ROOT, "target", "se-register-data1");
+    const secondPackage = resolve(ROOT, "target", "se-register-pkg2");
+    const secondData = resolve(ROOT, "target", "se-register-data2");
+
+    generate("examples/precision-code-ltd/advanced", firstPackage);
+    exportData(firstPackage, firstData);
+
+    // The register the first export recovers, in the order it declares it:
+    // the van the year disposes of comes first, so the disposal has an asset
+    // to land on when the register is read back.
+    const register = parseTOML(readFileSync(join(firstData, "book.toml"), "utf8")).fixedAssets;
+    expect(register.map((asset) => [asset.class, asset.cost, asset.accumulatedDepreciation, asset.taxWrittenDownValue])).toEqual([
+      ["motorVehicles", 30000, 9828, 24000],
+      ["computerTechnology", 3000, 270, undefined],
+    ]);
+
+    generate(firstData, secondPackage);
+    exportData(secondPackage, secondData);
+
+    // The van's row on the second package's Schedule is the first package's
+    // row: same description, cost, depreciation and tax written down value,
+    // and the same disposal date and proceeds in U and V. Without the
+    // register the second pass has no opening asset to attach the "fs" sale
+    // to and generate throws instead.
+    const firstRow = await scheduleRow(firstPackage, SE_VAN_ROW);
+    expect(firstRow.U).toBeGreaterThan(0);
+    expect(firstRow.V).toBeGreaterThan(0);
+    expect(await scheduleRow(secondPackage, SE_VAN_ROW)).toEqual(firstRow);
+
+    // And the data half is a fixed point: the second pass reads back exactly
+    // what the first one wrote.
+    expect(readFileSync(join(secondData, "lines.jsonl"), "utf8")).toBe(readFileSync(join(firstData, "lines.jsonl"), "utf8"));
+    expect(readFileSync(join(secondData, "book.toml"), "utf8")).toBe(readFileSync(join(firstData, "book.toml"), "utf8"));
+  });
 });
