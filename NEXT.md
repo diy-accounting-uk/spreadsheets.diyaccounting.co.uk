@@ -15,7 +15,8 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 | fidelity-t1b (wave 5) | T1b: every fixture extractor-written from master data (BrickWork bank journal, opening journal, ledgers, van, members, CIS; dashcam and camera; new basic-taxi-driver; per-chart purchase-code maps); a van overpayment of 7,200 fixed; taxi fixtures no longer state a profit | landed on `claude/wave-5` `7f381934`, 319 tests, worktree removed |
 | fidelity-t3 (wave 5) | T3: BST and Taxi calculators to every read cell, units, tests mirroring the checks, cell-map tax names aligned to the schema, `roundtrip-taxi` job | started (Sonnet), worktree `sp-fidelity-t3`; merges T1b when it lands |
 | fidelity-t4 (wave 5) | T4: SE calculator (monthly grid, SA103S/F, income tax, VAT interface and returns via `tax/vat.js`, fixed assets, payroll), units, mirrored tests; plus the SE CIS column write and the `se.js:537` row counter | started (Opus), worktree `sp-fidelity-t4`; merges T1b when it lands |
-| fidelity-t5 (wave 5) | T5: Ltd calculator (bank, trial balance, published accounts, CT and CT600, VAT, fixed assets, HP, registers), `tax/capital-allowances.js`, units, mirrored tests; plus the `ltd.js:853` row counter | started (Opus), worktree `sp-fidelity-t5`; merges T1b when it lands |
+| fidelity-t5 (wave 5) | T5: Ltd calculator computes every read cell (1,280), units for all, 2,373 mirrored check tests, row counter fixed; Ltd square closes exactly (2124/2124 equal, March and June) | merged into `claude/wave-5` `e3ea9a72`, blast radius running, worktree removed |
+| fidelity-loader (wave 5) | `diyaGlToScenario()` maps the v2 book tables (stock, debtors, creditors, fixedAssets, hpAgreements, dividends, members, charges, vatRegistered) into the scenario the writers accept | started (Sonnet), worktree `sp-fidelity-loader` |
 | fidelity-t6 (wave 5) | T6: `verify-stability.js` (EQ3 on every package; `--all` for T7), `volatile-cells.json` with 54 stale cached values reported apart, 1 unstable conversion, 0 volatile | merged into `claude/wave-5` `847f184b`; on the merged tree SE shows 26 unlisted moves and the Ltd test overruns 180 s — rework dispatched (Sonnet, worktree `sp-fidelity-t6b`) |
 | fidelity-t2 (wave 5) | T2: `report-serializer.js`, exporter keeps account identity (column BZ carrier) and every field, full validating `book.toml`, comparator scoring both halves against the original fixture; fixed inline-string reads, employer NI column, the 20% stamp on non-VAT books | landed on `claude/wave-5` `0a874f8c`, 468 tests, worktree removed |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
@@ -79,9 +80,17 @@ Fixture:
   SA103S window goes the way SE's did (exact identities).
 - [ ] **Fidelity T4: SE calculator** (Opus, concurrent with T3/T5) — monthly grid, SA103S/F
   boxes, VAT interface and returns, payroll, fixed-asset schedule; 535 values.
-- [ ] **Fidelity T5: Ltd calculator** (Opus, concurrent) — monthly grid, trial balance,
-  published P&L and balance sheet, CT working sheet and CT600, VAT, fixed assets, HP,
-  dividends, registers; 832 values.
+- [ ] **Fidelity T5: Ltd calculator** — landed on `claude/wave-5`; Ltd closes the square exactly
+  (no not-computed list needed). Closes with wave 5's PR. Its `buildVatReturns()` and
+  `straddlingTotals()` are the merge point when T4 lands the shared `tax/vat.js` interface.
+- [ ] **`diyaGlToScenario()` ignores the v2 book tables** (found by T5; loader track in
+  flight) — `stock`, `debtors`, `creditors`, `fixedAssets`, `hpAgreements`, `dividends`,
+  `members`, `charges` and `entityInformation."diya-gl:vatRegistered"` never reach the
+  scenario, so no opening fixed assets reach the Schedule (`PubBalSht!F6` 68,802 against
+  the note's 45,900; three checks fail on both engines), the share register is empty (the
+  RegisterofMembers check fails on all three Ltd fixtures), and the BrickWork non-VAT twin
+  is treated as VAT registered (turnover stated net of a VAT it never charged). Feeding the
+  tables through makes `PubNotes!G20 == PubBalSht!F6` and keeps `EJ91` nil.
 - [ ] **Fidelity T6: EQ3 on every package** — landed on `claude/wave-5`; closes with wave 5's
   PR. BST 0 moved, SE 38, Ltd 42: 54 stale cached values (the generator item below), 1
   unstable conversion (`SE Full!G141`, 0.18 saved vs 0.14 recalculated), 0 volatile.
