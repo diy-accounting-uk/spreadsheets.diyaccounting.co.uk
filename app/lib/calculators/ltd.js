@@ -616,7 +616,20 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const openingBalance = scenario.opening_balance || {};
   const scheduleRows = buildSchedule(scenario, rate, depreciationRates, admin.G5, admin.G6);
   const blocks = scheduleBlocks(scheduleRows);
-  results["Fixedassets.xlsx!Schedule"] = buildScheduleSheet(blocks, openingBalance, depreciationRates);
+  const scheduleSheet = buildScheduleSheet(blocks, openingBalance, depreciationRates);
+  // The reconciliation checks pin a disposal's WDA and balancing allowance
+  // split against the first existing motor row directly, not just the class
+  // total, so that row's own O/R/S/V/Y cells need a value here too.
+  const firstMotorRow = SCHEDULE_CLASSES.motor.existingRows[0];
+  const motorRow = scheduleRows.find((row) => row.row === firstMotorRow && !row.acquiredInYear);
+  if (motorRow) {
+    scheduleSheet[`O${firstMotorRow}`] = motorRow.taxWrittenDownValue;
+    scheduleSheet[`R${firstMotorRow}`] = motorRow.writingDownAllowance;
+    scheduleSheet[`S${firstMotorRow}`] = motorRow.poolCarriedForward;
+    if (motorRow.disposalProceeds !== undefined) scheduleSheet[`V${firstMotorRow}`] = motorRow.disposalProceeds;
+    if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
+  }
+  results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
   results["Fixedassets.xlsx!FAreconciliation"] = {
     E11: sum(purchasesMonthly("AI")),
     K11: sum(salesMonthly("U")),

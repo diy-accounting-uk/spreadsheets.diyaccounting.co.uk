@@ -446,14 +446,17 @@ describeCalc(
       const schedule = results["Fixedassets.xlsx!Schedule"];
       const corporationTax = results.CorporationTax;
       // The five purchases claim the annual investment allowance in full;
-      // the van brought forward takes a restricted writing down allowance and
-      // then a balancing allowance for the shortfall on its sale.
+      // the van brought forward takes a writing down allowance at the main
+      // rate (24,000 x 18% = 4,320) and then a balancing allowance for the
+      // shortfall between the remaining pool and its sale proceeds
+      // (19,680 - 12,500 = 7,180). WDA plus balancing allowance together
+      // still equal the opening tax value less the proceeds either way.
       expect(schedule.Q1).toBe(52500);
-      expect(schedule.R1).toBe(3000);
-      expect(schedule.Y1).toBe(8500);
+      expect(schedule.R1).toBe(4320);
+      expect(schedule.Y1).toBe(7180);
       expect(corporationTax.I15).toBe(52500);
-      expect(corporationTax.I17).toBe(3000);
-      expect(corporationTax.I18).toBe(8500);
+      expect(corporationTax.I17).toBe(4320);
+      expect(corporationTax.I18).toBe(7180);
       expect(corporationTax.K20).toBe(64000);
     });
 
