@@ -18,6 +18,15 @@ Each item names its suggested sub-agent tier; all branch from the post-deploy gr
 follow the reconciliation-bug method.
 
 
+- [ ] **Fifth VAT quarter-dropdown surface, live (Apr27).** Monika Tesarova
+  (2026-08-26, antony@ inbox) downloaded the Company package for year end April 2027 and
+  the VAT interface cells all point at the April sheet; the operator confirmed and owes
+  her a fixed version. Apr27 is a non-March year end, the same population as the third
+  surface's month-tab remap, so look there first. The 777-test catalogue guard missed it —
+  the fix must extend the guard, not just the workbook. `PLAN_VAT_QUARTER_DROPDOWN.md` is
+  archived claiming all surfaces closed; un-archive or supersede it, and hold the
+  six-donor notification until the affected window is re-established.
+
 - [ ] **F18: give `lineItemComment` and `documentReference` a declared home** (Sonnet) — the bank,
   payroll and SE sales blocks drop both fields on export (they carry a counterparty and an invoice
   reference, and the sheets have no description column beside them); `diya-gl:bankCode` differs on
