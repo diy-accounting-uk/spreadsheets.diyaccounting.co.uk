@@ -33,6 +33,10 @@ import { parse as parseTOML } from "smol-toml";
 // the noise and keeps every real penny. This is canonicalisation, not
 // tolerance: it applies to every money value, the filed boxes included.
 const MONEY_DECIMALS = 2;
+// A working precision a money value passes through before the penny round,
+// finer than any real penny difference but coarse enough to absorb the
+// representation noise a binary float or an xls roundtrip leaves below it.
+const WORKING_DECIMALS = 6;
 // A rate is stored as a fraction, and six places is finer than any rate the
 // tax data declares.
 const RATE_DECIMALS = 6;
@@ -91,7 +95,12 @@ function isDecimal(text) {
  */
 export function canonicalForUnit(value, unit) {
   const text = String(value ?? "").trim();
-  if (unit === "money" && isDecimal(text)) return roundHalfUp(text, MONEY_DECIMALS);
+  // A money value is rounded to a working precision first (finer than the
+  // penny but coarse enough to absorb binary-float noise below it), then to
+  // the penny. Rounding straight to the penny lets the noise itself decide
+  // which way a value on the boundary falls, and the two engines' noise
+  // differs, so the same underlying penny can round two different ways.
+  if (unit === "money" && isDecimal(text)) return roundHalfUp(roundHalfUp(text, WORKING_DECIMALS), MONEY_DECIMALS);
   if (unit === "rate" && isDecimal(text)) return roundHalfUp(text, RATE_DECIMALS);
   return text;
 }
