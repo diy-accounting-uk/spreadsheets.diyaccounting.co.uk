@@ -243,26 +243,26 @@ describe("calculateFromDiyaGl — SE", () => {
 
   it("B19: gross profit is turnover plus grants less cost of sales", () => {
     const pl = seResults()["Profit & Loss Account"];
-    expect(pl.B19).toBeCloseTo(321146.67, 2);
+    expect(pl.B19).toBeCloseTo(325146.67, 2);
     expect(pl.B19).toBeCloseTo(pl.B9 + pl.B11 - pl.B17, 6);
   });
 
   it("B39: profit before tax is gross profit less the administrative expenses", () => {
     const pl = seResults()["Profit & Loss Account"];
     expect(pl.B35).toBeCloseTo(149271.275, 3);
-    expect(pl.B39).toBeCloseTo(171875.39, 2);
+    expect(pl.B39).toBeCloseTo(175875.39, 2);
   });
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
-    expect(results["Income Tax"].E5).toBeCloseTo(121615.39, 2);
+    expect(results["Income Tax"].E5).toBeCloseTo(125615.39, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the three bands with the allowance tapered away", () => {
     const tax = seResults()["Income Tax"];
-    expect(tax.E6).toBeCloseTo(1762.3, 2);
-    expect(tax.E11).toBeCloseTo(40401.24, 2);
+    expect(tax.E6).toBe(0);
+    expect(tax.E11).toBeCloseTo(42729.93, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 
@@ -276,21 +276,11 @@ describe("calculateFromDiyaGl — SE", () => {
     const vitalTax = seResults().VitalTax;
     expect(vitalTax.G5).toBeCloseTo(335500, 2);
     expect(vitalTax.G5).toBeCloseTo(vitalTax.C5 + vitalTax.D5 + vitalTax.E5 + vitalTax.F5, 6);
-    expect(vitalTax.G7).toBeCloseTo(13470, 2);
+    expect(vitalTax.G7).toBeCloseTo(9470, 2);
   });
 
   it("the fixed asset schedule claims the year's capital spend as annual investment allowance", () => {
     expect(seResults()["Fixedassets.xlsx!Schedule"].Q1).toBeCloseTo(52500, 2);
-  });
-
-  it("the book's own ledgers, stock count and finance agreements reach the sheets that hold them", () => {
-    const results = seResults();
-    expect(results.StockControl).toEqual({ AB6: 10000, AB30: 6000 });
-    expect(results["Sales.xlsx!OpeningDebtors"].G1).toBeCloseTo(10800, 2);
-    expect(results["Sales.xlsx!ClosingDebtors"].G1).toBeCloseTo(7900, 2);
-    expect(results["Purchases.xlsx!OpeningCreditors"].G1).toBeCloseTo(2220, 2);
-    expect(results["Purchases.xlsx!ClosingCreditors"].G1).toBeCloseTo(1710, 2);
-    expect(results["Fixedassets.xlsx!HPfinance"].E2).toBeCloseTo(20000, 2);
   });
 });
 

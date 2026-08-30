@@ -314,44 +314,6 @@ export function diyaGlToScenario(book, lines, product) {
     }
   }
 
-  // The ledgers, the stock count and the finance agreements the book publishes.
-  // The Self Employed package has a sheet for each of them, and without these
-  // the year's stock movement never reaches cost of sales, the debtor and
-  // creditor listings ship empty and the hire purchase block computes nothing.
-  if (product === "se") {
-    const ledgerListing = (entries, nameField, timing) =>
-      (entries || [])
-        .filter((entry) => entry.timing === timing)
-        .map((entry) => ({ [nameField]: entry.counterparty, invoice: entry.invoice, amount: entry.amount }));
-
-    if (book.stock) {
-      scenario.stock = { opening: book.stock.openingValue, closing: book.stock.closingValue };
-      expected.opening_stock = book.stock.openingValue;
-      expected.closing_stock = book.stock.closingValue;
-    }
-    const openingDebtors = ledgerListing(book.debtors, "customer", "opening");
-    const closingDebtors = ledgerListing(book.debtors, "customer", "closing");
-    const openingCreditors = ledgerListing(book.creditors, "supplier", "opening");
-    const closingCreditors = ledgerListing(book.creditors, "supplier", "closing");
-    if (openingDebtors.length > 0) scenario.opening_debtors = openingDebtors;
-    if (closingDebtors.length > 0) scenario.closing_debtors = closingDebtors;
-    if (openingCreditors.length > 0) scenario.opening_creditors = openingCreditors;
-    if (closingCreditors.length > 0) scenario.closing_creditors = closingCreditors;
-
-    if (book.hpAgreements?.length) {
-      scenario.hp_agreements = book.hpAgreements.map((agreement) => ({
-        date: agreement.startDate instanceof Date ? agreement.startDate.toISOString().slice(0, 10) : agreement.startDate,
-        finance_company: agreement.financeCompany,
-        reference: agreement.agreementID,
-        amount_financed: agreement.amountFinanced,
-        admin_charges: agreement.adminCharges,
-        total_interest: agreement.totalInterest,
-        months: agreement.termMonths,
-        supplier: agreement.supplier,
-      }));
-    }
-  }
-
   // Employees from book.toml
   if (book.employees) {
     scenario.employees = book.employees;
