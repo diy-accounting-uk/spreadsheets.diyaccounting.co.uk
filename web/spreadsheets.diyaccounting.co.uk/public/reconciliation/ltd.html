@@ -82,11 +82,10 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>The indicators tell the same story as the headline: turnover 341,283.33 is consistent with 424,900.00 invoiced less VAT and 15,000.00 of disposals, net assets equal shareholders' funds at 148,760.62, the trial balance audit cell is 0.00, the profit bridge residue is 0.00, and tax of 29,221.27 is charged on a positive chargeable profit of 124,419.90 with all four VAT quarters non-nil for a registered business. Only presentational notes (high trading margin, a negative-signed zero, the VAT timing difference) — nothing blocking.</p>
+          <p>The indicators tell the same story as the headline: 860 checks pass with no warnings, turnover of 341,283.33 is consistent with 424,900.00 invoiced less VAT and the 15,000.00 disposal, net assets equal shareholders' funds with a zero trial balance audit cell, the VAT-registered scenario carries non-zero boxes in all four quarters, tax of 29,221.27 is charged on a chargeable profit of 124,419.90 after 64,000.00 of allowances, and the profit bridge residue is 0.00. Only minor presentational notes (the 0.94 trading margin and a negative-signed zero members' balance).</p>
           <ul>
-            <li><strong>trading margin 0.94</strong> (Directors' report): Gross profit 322,496.67 on turnover 341,283.33 gives a 0.94 margin, which is high for a consultancy with 3 on the payroll at 6,748.00 gross a period — payroll appears to sit below the gross profit line rather than in cost of sales. Consistent internally, but worth a glance. [note]</li>
-            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand narrative): A negative-signed zero for the members' balance; cosmetic presentation only, dividends declared 15,000.00 equal those paid. [note]</li>
-            <li><strong>VAT due for the year 48,317.96 against closing tax owed 38,292.56</strong> (VAT indicator and cash narrative): Not a contradiction — the fifth return runs past the year end and the VAT creditor is a documented timing difference — but the two figures are worth reading together. [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report indicator): A 0.94 trading margin on turnover of 341,283.33 does not sit naturally with gross profit 322,496.67 / profit before tax 172,179.90 (which implies roughly 0.50 on profit before tax); it looks to be computed off gross profit rather than trading profit. Worth a glance but the arithmetic checks passed and it does not contradict the headline scale. [note]</li>
+            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand indicator): A negative-signed zero on the members' balance is a presentation quirk (dividends declared 15,000.00 fully paid), not a real amount; no impact on the story. [note]</li>
           </ul>
           <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-30. The arithmetic checks below run first and decide the status.</p>
         </div>
@@ -1100,186 +1099,186 @@
 <summary>Sales journal: 112 entries, 424,900.00</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-04-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-04-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-04-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-04-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-04-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-04-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-04-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-04-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-04-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+<tr><td>2025-04-01</td><td>Beta Systems</td><td>4001</td><td>Software licence renewal</td><td>b</td><td class="num">1,200.00</td><td>INV-1301</td></tr>
+<tr><td>2025-04-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2601</td></tr>
+<tr><td>2025-04-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1401</td></tr>
+<tr><td>2025-04-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2401</td></tr>
+<tr><td>2025-04-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2201</td></tr>
+<tr><td>2025-04-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1001</td></tr>
+<tr><td>2025-04-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1101</td></tr>
+<tr><td>2025-04-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1201</td></tr>
+<tr><td>2025-04-28</td><td>Horizon Analytics</td><td>4003</td><td>Data analytics commission</td><td>d</td><td class="num">840.00</td><td>INV-2701</td></tr>
 </tbody>
 </table></div>
 <h5>May</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-05-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-05-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-05-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-05-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-05-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
-<tr><td>2025-05-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-05-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-05-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-05-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-05-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2602</td></tr>
+<tr><td>2025-05-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1402</td></tr>
+<tr><td>2025-05-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2402</td></tr>
+<tr><td>2025-05-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2202</td></tr>
+<tr><td>2025-05-12</td><td>QuickFix IT</td><td>4000</td><td>IT support consultancy</td><td>a</td><td class="num">960.00</td><td>INV-2001</td></tr>
+<tr><td>2025-05-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1002</td></tr>
+<tr><td>2025-05-16</td><td>Summit Training</td><td>4002</td><td>Technical training delivery</td><td>c</td><td class="num">1,200.00</td><td>INV-2801</td></tr>
+<tr><td>2025-05-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1102</td></tr>
+<tr><td>2025-05-25</td><td>Oakridge Partners</td><td>4000</td><td>Quarterly consulting engagement</td><td>a</td><td class="num">1,200.00</td><td>INV-2501</td></tr>
 </tbody>
 </table></div>
 <h5>Jun</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-06-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-06-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-06-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-06-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-06-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-06-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-06-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-06-20</td><td>Gamma Ltd</td><td>c</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-06-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+<tr><td>2025-06-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2603</td></tr>
+<tr><td>2025-06-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1403</td></tr>
+<tr><td>2025-06-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2403</td></tr>
+<tr><td>2025-06-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2203</td></tr>
+<tr><td>2025-06-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1003</td></tr>
+<tr><td>2025-06-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1103</td></tr>
+<tr><td>2025-06-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1202</td></tr>
+<tr><td>2025-06-20</td><td>Gamma Ltd</td><td>4002</td><td>Advanced DevOps training course</td><td>c</td><td class="num">2,400.00</td><td>INV-1501</td></tr>
+<tr><td>2025-06-22</td><td>WidgetWorks</td><td>4000</td><td>Project consultancy</td><td>a</td><td class="num">1,440.00</td><td>INV-2101</td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-07-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-07-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-07-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-07-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-07-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-07-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
-<tr><td>2025-07-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-07-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-07-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+<tr><td>2025-07-01</td><td>Beta Systems</td><td>4001</td><td>Software licence renewal</td><td>b</td><td class="num">1,200.00</td><td>INV-1302</td></tr>
+<tr><td>2025-07-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2604</td></tr>
+<tr><td>2025-07-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1404</td></tr>
+<tr><td>2025-07-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2404</td></tr>
+<tr><td>2025-07-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2204</td></tr>
+<tr><td>2025-07-14</td><td>NorthStar Digital</td><td>4000</td><td>Project delivery</td><td>a</td><td class="num">2,160.00</td><td>INV-2301</td></tr>
+<tr><td>2025-07-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1004</td></tr>
+<tr><td>2025-07-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1104</td></tr>
+<tr><td>2025-07-28</td><td>Horizon Analytics</td><td>4003</td><td>Data analytics commission</td><td>d</td><td class="num">840.00</td><td>INV-2702</td></tr>
 </tbody>
 </table></div>
 <h5>Aug</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-08-01</td><td>Innovate UK</td><td>g</td><td class="num">2,500.00</td></tr>
-<tr><td>2025-08-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-08-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-08-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-08-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-08-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
-<tr><td>2025-08-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-08-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-08-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-08-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-08-01</td><td>Innovate UK</td><td>4004</td><td>Small business innovation grant</td><td>g</td><td class="num">2,500.00</td><td>INV-1701</td></tr>
+<tr><td>2025-08-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2605</td></tr>
+<tr><td>2025-08-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1405</td></tr>
+<tr><td>2025-08-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2405</td></tr>
+<tr><td>2025-08-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2205</td></tr>
+<tr><td>2025-08-12</td><td>QuickFix IT</td><td>4000</td><td>IT support consultancy</td><td>a</td><td class="num">960.00</td><td>INV-2002</td></tr>
+<tr><td>2025-08-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1005</td></tr>
+<tr><td>2025-08-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1105</td></tr>
+<tr><td>2025-08-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1203</td></tr>
+<tr><td>2025-08-25</td><td>Oakridge Partners</td><td>4000</td><td>Quarterly consulting engagement</td><td>a</td><td class="num">1,200.00</td><td>INV-2502</td></tr>
 </tbody>
 </table></div>
 <h5>Sep</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-09-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-09-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-09-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-09-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-09-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-09-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-09-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-09-20</td><td>StartupHub</td><td>c</td><td class="num">960.00</td></tr>
-<tr><td>2025-09-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
-<tr><td>2025-09-25</td><td>Epsilon Partners</td><td>d</td><td class="num">600.00</td></tr>
+<tr><td>2025-09-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2606</td></tr>
+<tr><td>2025-09-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1406</td></tr>
+<tr><td>2025-09-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2406</td></tr>
+<tr><td>2025-09-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2206</td></tr>
+<tr><td>2025-09-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1006</td></tr>
+<tr><td>2025-09-16</td><td>Summit Training</td><td>4002</td><td>Technical training delivery</td><td>c</td><td class="num">1,200.00</td><td>INV-2802</td></tr>
+<tr><td>2025-09-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1106</td></tr>
+<tr><td>2025-09-20</td><td>StartupHub</td><td>4002</td><td>Agile methodology workshop</td><td>c</td><td class="num">960.00</td><td>INV-1504</td></tr>
+<tr><td>2025-09-22</td><td>WidgetWorks</td><td>4000</td><td>Project consultancy</td><td>a</td><td class="num">1,440.00</td><td>INV-2102</td></tr>
+<tr><td>2025-09-25</td><td>Epsilon Partners</td><td>4003</td><td>Client referral commission</td><td>d</td><td class="num">600.00</td><td>INV-1601</td></tr>
 </tbody>
 </table></div>
 <h5>Oct</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-10-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-10-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-10-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-10-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-10-10</td><td>Private buyer</td><td>fs</td><td class="num">15,000.00</td></tr>
-<tr><td>2025-10-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-10-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
-<tr><td>2025-10-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-10-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-10-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-10-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+<tr><td>2025-10-01</td><td>Beta Systems</td><td>4001</td><td>Software licence renewal</td><td>b</td><td class="num">1,200.00</td><td>INV-1303</td></tr>
+<tr><td>2025-10-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2607</td></tr>
+<tr><td>2025-10-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1407</td></tr>
+<tr><td>2025-10-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2407</td></tr>
+<tr><td>2025-10-10</td><td>Private buyer</td><td>4006</td><td>Disposal of company van</td><td>fs</td><td class="num">15,000.00</td><td>INV-1901</td></tr>
+<tr><td>2025-10-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2207</td></tr>
+<tr><td>2025-10-14</td><td>NorthStar Digital</td><td>4000</td><td>Project delivery</td><td>a</td><td class="num">2,160.00</td><td>INV-2302</td></tr>
+<tr><td>2025-10-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1007</td></tr>
+<tr><td>2025-10-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1107</td></tr>
+<tr><td>2025-10-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1204</td></tr>
+<tr><td>2025-10-28</td><td>Horizon Analytics</td><td>4003</td><td>Data analytics commission</td><td>d</td><td class="num">840.00</td><td>INV-2703</td></tr>
 </tbody>
 </table></div>
 <h5>Nov</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-11-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-11-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-11-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-11-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-11-12</td><td>QuickFix IT</td><td>a</td><td class="num">960.00</td></tr>
-<tr><td>2025-11-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-11-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-11-20</td><td>Delta PLC</td><td>c</td><td class="num">3,600.00</td></tr>
-<tr><td>2025-11-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-11-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2608</td></tr>
+<tr><td>2025-11-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1408</td></tr>
+<tr><td>2025-11-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2408</td></tr>
+<tr><td>2025-11-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2208</td></tr>
+<tr><td>2025-11-12</td><td>QuickFix IT</td><td>4000</td><td>IT support consultancy</td><td>a</td><td class="num">960.00</td><td>INV-2003</td></tr>
+<tr><td>2025-11-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1008</td></tr>
+<tr><td>2025-11-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1108</td></tr>
+<tr><td>2025-11-20</td><td>Delta PLC</td><td>4002</td><td>Cloud architecture workshop</td><td>c</td><td class="num">3,600.00</td><td>INV-1502</td></tr>
+<tr><td>2025-11-25</td><td>Oakridge Partners</td><td>4000</td><td>Quarterly consulting engagement</td><td>a</td><td class="num">1,200.00</td><td>INV-2503</td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-12-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2025-12-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2025-12-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-12-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2025-12-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2025-12-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2025-12-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-12-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
+<tr><td>2025-12-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2609</td></tr>
+<tr><td>2025-12-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1409</td></tr>
+<tr><td>2025-12-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2409</td></tr>
+<tr><td>2025-12-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2209</td></tr>
+<tr><td>2025-12-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1009</td></tr>
+<tr><td>2025-12-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1109</td></tr>
+<tr><td>2025-12-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1205</td></tr>
+<tr><td>2025-12-22</td><td>WidgetWorks</td><td>4000</td><td>Project consultancy</td><td>a</td><td class="num">1,440.00</td><td>INV-2103</td></tr>
 </tbody>
 </table></div>
 <h5>Jan</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-01-01</td><td>Beta Systems</td><td>b</td><td class="num">1,200.00</td></tr>
-<tr><td>2026-01-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2026-01-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2026-01-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2026-01-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2026-01-14</td><td>NorthStar Digital</td><td>a</td><td class="num">2,160.00</td></tr>
-<tr><td>2026-01-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2026-01-16</td><td>Summit Training</td><td>c</td><td class="num">1,200.00</td></tr>
-<tr><td>2026-01-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2026-01-25</td><td>Lambda Corp</td><td>d</td><td class="num">480.00</td></tr>
-<tr><td>2026-01-28</td><td>Horizon Analytics</td><td>d</td><td class="num">840.00</td></tr>
+<tr><td>2026-01-01</td><td>Beta Systems</td><td>4001</td><td>Software licence renewal</td><td>b</td><td class="num">1,200.00</td><td>INV-1304</td></tr>
+<tr><td>2026-01-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2610</td></tr>
+<tr><td>2026-01-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1410</td></tr>
+<tr><td>2026-01-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2410</td></tr>
+<tr><td>2026-01-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2210</td></tr>
+<tr><td>2026-01-14</td><td>NorthStar Digital</td><td>4000</td><td>Project delivery</td><td>a</td><td class="num">2,160.00</td><td>INV-2303</td></tr>
+<tr><td>2026-01-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1010</td></tr>
+<tr><td>2026-01-16</td><td>Summit Training</td><td>4002</td><td>Technical training delivery</td><td>c</td><td class="num">1,200.00</td><td>INV-2803</td></tr>
+<tr><td>2026-01-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1110</td></tr>
+<tr><td>2026-01-25</td><td>Lambda Corp</td><td>4003</td><td>Client referral commission</td><td>d</td><td class="num">480.00</td><td>INV-1602</td></tr>
+<tr><td>2026-01-28</td><td>Horizon Analytics</td><td>4003</td><td>Data analytics commission</td><td>d</td><td class="num">840.00</td><td>INV-2704</td></tr>
 </tbody>
 </table></div>
 <h5>Feb</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-02-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2026-02-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2026-02-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2026-02-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2026-02-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2026-02-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2026-02-20</td><td>DataFlow Inc</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2026-02-20</td><td>MegaCorp</td><td>c</td><td class="num">1,800.00</td></tr>
-<tr><td>2026-02-25</td><td>Oakridge Partners</td><td>a</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-02-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2611</td></tr>
+<tr><td>2026-02-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1411</td></tr>
+<tr><td>2026-02-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2411</td></tr>
+<tr><td>2026-02-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2211</td></tr>
+<tr><td>2026-02-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1011</td></tr>
+<tr><td>2026-02-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1111</td></tr>
+<tr><td>2026-02-20</td><td>DataFlow Inc</td><td>4000</td><td>Ad-hoc consultancy project</td><td>a</td><td class="num">1,800.00</td><td>INV-1206</td></tr>
+<tr><td>2026-02-20</td><td>MegaCorp</td><td>4002</td><td>Security awareness training</td><td>c</td><td class="num">1,800.00</td><td>INV-1503</td></tr>
+<tr><td>2026-02-25</td><td>Oakridge Partners</td><td>4000</td><td>Quarterly consulting engagement</td><td>a</td><td class="num">1,200.00</td><td>INV-2504</td></tr>
 </tbody>
 </table></div>
 <h5>Mar</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Customer</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Customer</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-03-03</td><td>FreshField Ltd</td><td>b</td><td class="num">360.00</td></tr>
-<tr><td>2026-03-05</td><td>CloudNine Ltd</td><td>b</td><td class="num">600.00</td></tr>
-<tr><td>2026-03-08</td><td>Cedar Systems</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2026-03-10</td><td>Pinnacle Group</td><td>a</td><td class="num">720.00</td></tr>
-<tr><td>2026-03-15</td><td>Acme Corp</td><td>a</td><td class="num">25,000.00</td></tr>
-<tr><td>2026-03-18</td><td>TechStart Ltd</td><td>a</td><td class="num">2,400.00</td></tr>
-<tr><td>2026-03-22</td><td>WidgetWorks</td><td>a</td><td class="num">1,440.00</td></tr>
-<tr><td>2026-03-31</td><td>Zeta Corp</td><td>o</td><td class="num">360.00</td></tr>
+<tr><td>2026-03-03</td><td>FreshField Ltd</td><td>4001</td><td>Software monitoring licence</td><td>b</td><td class="num">360.00</td><td>INV-2612</td></tr>
+<tr><td>2026-03-05</td><td>CloudNine Ltd</td><td>4001</td><td>SaaS licence fee</td><td>b</td><td class="num">600.00</td><td>INV-1412</td></tr>
+<tr><td>2026-03-08</td><td>Cedar Systems</td><td>4000</td><td>Managed services</td><td>a</td><td class="num">480.00</td><td>INV-2412</td></tr>
+<tr><td>2026-03-10</td><td>Pinnacle Group</td><td>4000</td><td>Monthly support contract</td><td>a</td><td class="num">720.00</td><td>INV-2212</td></tr>
+<tr><td>2026-03-15</td><td>Acme Corp</td><td>4000</td><td>IT consultancy services</td><td>a</td><td class="num">25,000.00</td><td>INV-1012</td></tr>
+<tr><td>2026-03-18</td><td>TechStart Ltd</td><td>4000</td><td>IT consultancy retainer</td><td>a</td><td class="num">2,400.00</td><td>INV-1112</td></tr>
+<tr><td>2026-03-22</td><td>WidgetWorks</td><td>4000</td><td>Project consultancy</td><td>a</td><td class="num">1,440.00</td><td>INV-2104</td></tr>
+<tr><td>2026-03-31</td><td>Zeta Corp</td><td>4005</td><td>Bad debt written off</td><td>o</td><td class="num">360.00</td><td>CN-1801</td></tr>
 </tbody>
 </table></div>
 </details>
@@ -1287,469 +1286,469 @@
 <summary>Purchase journal: 395 entries, 134,992.25</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>2025-04-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-04-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-04-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-04-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-04-01</td><td>Hiscox</td><td>n</td><td class="num">1,440.00</td></tr>
-<tr><td>2025-04-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-04-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-04-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-04-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-04-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-04-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-04-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-04-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-04-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-04-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
-<tr><td>2025-04-10</td><td>TechParts</td><td>s</td><td class="num">600.00</td></tr>
-<tr><td>2025-04-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-04-14</td><td>Toolstation</td><td>u</td><td class="num">42.00</td></tr>
-<tr><td>2025-04-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-04-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-04-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-04-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-04-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-04-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-04-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">120.00</td></tr>
-<tr><td>2025-04-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-04-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-04-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-04-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
-<tr><td>2025-04-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-04-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-04-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-04-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-04-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-04-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-04-01</td><td>Hiscox</td><td>5700</td><td>Professional indemnity insurance</td><td>n</td><td class="num">1,440.00</td></tr>
+<tr><td>2025-04-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-04-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-04-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-04-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-04-10</td><td>Xerox</td><td>5701</td><td>Printer lease payment</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2025-04-10</td><td>TechParts</td><td>5000</td><td>Hardware components for resale</td><td>s</td><td class="num">600.00</td></tr>
+<tr><td>2025-04-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">42.00</td></tr>
+<tr><td>2025-04-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-04-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-04-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-04-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-04-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-04-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-04-20</td><td>Office Maintenance Ltd</td><td>5400</td><td>Premises maintenance and repairs</td><td>m</td><td class="num">120.00</td></tr>
+<tr><td>2025-04-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-04-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-04-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-04-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Manchester</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2025-04-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-04-30</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td></tr>
 </tbody>
 </table></div>
 <h5>May</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-05-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-05-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-05-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-05-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-05-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-05-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-05-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-05-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-05-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-05-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-05-06</td><td>Trainline</td><td>h</td><td class="num">60.00</td></tr>
-<tr><td>2025-05-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-05-08</td><td>Hilti</td><td>q</td><td class="num">240.00</td></tr>
-<tr><td>2025-05-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-05-10</td><td>Google Ads</td><td>a</td><td class="num">600.00</td></tr>
-<tr><td>2025-05-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-05-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-05-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-05-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-05-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-05-15</td><td>ComponentsDirect</td><td>s</td><td class="num">480.00</td></tr>
-<tr><td>2025-05-15</td><td>Dell</td><td>fa</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-05-16</td><td>WHSmith</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-05-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-05-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-05-20</td><td>ParcelForce</td><td>t</td><td class="num">180.00</td></tr>
-<tr><td>2025-05-20</td><td>CableCo</td><td>s</td><td class="num">240.00</td></tr>
-<tr><td>2025-05-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-05-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-05-22</td><td>Halfords</td><td>v</td><td class="num">48.00</td></tr>
-<tr><td>2025-05-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-05-25</td><td>Mileage claim</td><td>v</td><td class="num">54.00</td></tr>
-<tr><td>2025-05-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-05-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-05-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-05-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-05-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-05-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-05-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-05-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-05-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-05-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-05-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-05-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-05-06</td><td>Trainline</td><td>5600</td><td>Advance train ticket</td><td>h</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-05-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-05-08</td><td>Hilti</td><td>5301</td><td>Power tool hire</td><td>q</td><td class="num">240.00</td><td></td></tr>
+<tr><td>2025-05-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-05-10</td><td>Google Ads</td><td>5500</td><td>PPC advertising campaign</td><td>a</td><td class="num">600.00</td><td></td></tr>
+<tr><td>2025-05-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-05-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-05-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-05-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-05-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-05-15</td><td>ComponentsDirect</td><td>5000</td><td>Electronic components</td><td>s</td><td class="num">480.00</td><td></td></tr>
+<tr><td>2025-05-15</td><td>Dell</td><td>5900</td><td>New laptop for development</td><td>fa</td><td class="num">1,800.00</td><td>PUR-FA-001</td></tr>
+<tr><td>2025-05-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-05-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-05-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-05-20</td><td>ParcelForce</td><td>5300</td><td>Equipment delivery</td><td>t</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-05-20</td><td>CableCo</td><td>5000</td><td>Cabling and connectors</td><td>s</td><td class="num">240.00</td><td></td></tr>
+<tr><td>2025-05-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-05-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-05-22</td><td>Halfords</td><td>5601</td><td>Vehicle maintenance supplies</td><td>v</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-05-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-05-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Birmingham</td><td>v</td><td class="num">54.00</td><td></td></tr>
+<tr><td>2025-05-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-05-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Jun</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-06-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
-<tr><td>2025-06-03</td><td>Argos</td><td>u</td><td class="num">22.00</td><td></td></tr>
-<tr><td>2025-06-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-06-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
-<tr><td>2025-06-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td><td></td></tr>
-<tr><td>2025-06-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
-<tr><td>2025-06-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td><td></td></tr>
-<tr><td>2025-06-10</td><td>Vistaprint</td><td>g</td><td class="num">96.00</td><td></td></tr>
-<tr><td>2025-06-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-06-14</td><td>Toolstation</td><td>u</td><td class="num">30.00</td><td></td></tr>
-<tr><td>2025-06-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-06-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
-<tr><td>2025-06-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
-<tr><td>2025-06-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
-<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">5,000.00</td><td>1,000.00</td></tr>
-<tr><td>2025-06-18</td><td>Premier Inn</td><td>h</td><td class="num">180.00</td><td></td></tr>
-<tr><td>2025-06-18</td><td>ElectroParts</td><td>s</td><td class="num">360.00</td><td></td></tr>
-<tr><td>2025-06-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
-<tr><td>2025-06-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
-<tr><td>2025-06-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
-<tr><td>2025-06-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-06-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td><td></td></tr>
-<tr><td>2025-06-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td><td></td></tr>
-<tr><td>2025-06-25</td><td>Mileage claim</td><td>v</td><td class="num">90.00</td><td></td></tr>
-<tr><td>2025-06-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
-<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
-<tr><td>2025-06-30</td><td>Directors loan</td><td>l</td><td class="num">250.00</td><td></td></tr>
-<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">15,600.00</td><td></td></tr>
+<tr><td>2025-06-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td><td></td></tr>
+<tr><td>2025-06-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td><td></td></tr>
+<tr><td>2025-06-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td><td></td></tr>
+<tr><td>2025-06-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td><td></td></tr>
+<tr><td>2025-06-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-06-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-06-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td><td></td></tr>
+<tr><td>2025-06-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td><td></td></tr>
+<tr><td>2025-06-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-06-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td><td></td></tr>
+<tr><td>2025-06-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td><td></td><td></td></tr>
+<tr><td>2025-06-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td><td></td></tr>
+<tr><td>2025-06-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td><td></td></tr>
+<tr><td>2025-06-10</td><td>Vistaprint</td><td>5501</td><td>Business cards and flyers</td><td>g</td><td class="num">96.00</td><td></td><td></td></tr>
+<tr><td>2025-06-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-06-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">30.00</td><td></td><td></td></tr>
+<tr><td>2025-06-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-06-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td><td></td></tr>
+<tr><td>2025-06-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td><td></td></tr>
+<tr><td>2025-06-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td><td></td></tr>
+<tr><td>2025-06-15</td><td>BuildTech Solutions</td><td>5001</td><td>Sub-contractor network installation</td><td>c</td><td class="num">5,000.00</td><td>PUR-CIS-001</td><td>1,000.00</td></tr>
+<tr><td>2025-06-18</td><td>Premier Inn</td><td>5600</td><td>Hotel for London client meeting</td><td>h</td><td class="num">180.00</td><td></td><td></td></tr>
+<tr><td>2025-06-18</td><td>ElectroParts</td><td>5000</td><td>Specialist electronic components</td><td>s</td><td class="num">360.00</td><td></td><td></td></tr>
+<tr><td>2025-06-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td><td></td></tr>
+<tr><td>2025-06-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td><td></td></tr>
+<tr><td>2025-06-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td><td></td></tr>
+<tr><td>2025-06-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-06-25</td><td>EnergySupply</td><td>5201</td><td>Quarterly utility bill</td><td>p</td><td class="num">360.00</td><td></td><td></td></tr>
+<tr><td>2025-06-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td><td></td></tr>
+<tr><td>2025-06-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to London</td><td>v</td><td class="num">90.00</td><td></td><td></td></tr>
+<tr><td>2025-06-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td><td></td></tr>
+<tr><td>2025-06-30</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td><td></td></tr>
+<tr><td>2025-06-30</td><td>Directors loan</td><td>5803</td><td>Directors loan interest</td><td>l</td><td class="num">250.00</td><td>PUR-INT-001</td><td></td></tr>
+<tr><td>2025-06-01</td><td>Precision Tooling Supplies</td><td>5900</td><td>Test rig bought under HP-2025-01</td><td>fa</td><td class="num">15,600.00</td><td>PUR-FA-004</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-07-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-07-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-07-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-07-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-07-01</td><td>J. Smith Consulting</td><td>z</td><td class="num">3,000.00</td></tr>
-<tr><td>2025-07-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-07-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-07-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-07-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-07-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-07-05</td><td>LinkedIn</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2025-07-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-07-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-07-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-07-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
-<tr><td>2025-07-10</td><td>TechParts</td><td>s</td><td class="num">720.00</td></tr>
-<tr><td>2025-07-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-07-12</td><td>ToolHire</td><td>q</td><td class="num">480.00</td></tr>
-<tr><td>2025-07-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-07-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-07-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-07-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-07-15</td><td>IKEA</td><td>fa</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-07-16</td><td>WHSmith</td><td>g</td><td class="num">24.00</td></tr>
-<tr><td>2025-07-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-07-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-07-20</td><td>DHL</td><td>t</td><td class="num">120.00</td></tr>
-<tr><td>2025-07-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">180.00</td></tr>
-<tr><td>2025-07-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-07-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-07-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-07-25</td><td>Mileage claim</td><td>v</td><td class="num">20.25</td></tr>
-<tr><td>2025-07-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-07-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-07-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>J. Smith Consulting</td><td>5802</td><td>Goodwill amortisation</td><td>z</td><td class="num">3,000.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-07-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-07-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-07-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-07-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-07-05</td><td>LinkedIn</td><td>5500</td><td>Sponsored content campaign</td><td>a</td><td class="num">480.00</td><td></td></tr>
+<tr><td>2025-07-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-07-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-07-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-07-10</td><td>Xerox</td><td>5701</td><td>Printer lease payment</td><td>f</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-07-10</td><td>TechParts</td><td>5000</td><td>Hardware components for resale</td><td>s</td><td class="num">720.00</td><td></td></tr>
+<tr><td>2025-07-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-07-12</td><td>ToolHire</td><td>5301</td><td>Equipment hire for installation</td><td>q</td><td class="num">480.00</td><td></td></tr>
+<tr><td>2025-07-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-07-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-07-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-07-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-07-15</td><td>IKEA</td><td>5900</td><td>Office furniture</td><td>fa</td><td class="num">1,200.00</td><td>PUR-FA-003</td></tr>
+<tr><td>2025-07-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-07-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-07-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-07-20</td><td>DHL</td><td>5300</td><td>International courier</td><td>t</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-07-20</td><td>Office Maintenance Ltd</td><td>5400</td><td>Premises maintenance and repairs</td><td>m</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-07-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-07-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-07-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-07-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Leeds</td><td>v</td><td class="num">20.25</td><td></td></tr>
+<tr><td>2025-07-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-07-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Aug</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>2025-08-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-08-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-08-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-08-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-08-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-08-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-08-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-08-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-08-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-08-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-08-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-08-06</td><td>Trainline</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-08-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-08-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-08-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-08-14</td><td>Toolstation</td><td>u</td><td class="num">48.00</td></tr>
-<tr><td>2025-08-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-08-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-08-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-08-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-08-15</td><td>ComponentsDirect</td><td>s</td><td class="num">360.00</td></tr>
-<tr><td>2025-08-18</td><td>PC Repair Shop</td><td>m</td><td class="num">240.00</td></tr>
-<tr><td>2025-08-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-08-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-08-20</td><td>Casual worker</td><td>w</td><td class="num">800.00</td></tr>
-<tr><td>2025-08-20</td><td>CableCo</td><td>s</td><td class="num">180.00</td></tr>
-<tr><td>2025-08-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-08-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-08-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-08-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
-<tr><td>2025-08-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-08-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-08-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2025-08-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2025-08-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2025-08-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2025-08-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2025-08-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2025-08-06</td><td>Trainline</td><td>5600</td><td>Advance train ticket</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2025-08-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">48.00</td></tr>
+<tr><td>2025-08-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2025-08-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2025-08-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2025-08-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2025-08-15</td><td>ComponentsDirect</td><td>5000</td><td>Electronic components</td><td>s</td><td class="num">360.00</td></tr>
+<tr><td>2025-08-18</td><td>PC Repair Shop</td><td>5400</td><td>Laptop screen repair</td><td>m</td><td class="num">240.00</td></tr>
+<tr><td>2025-08-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2025-08-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2025-08-20</td><td>Casual worker</td><td>5101</td><td>Temporary labour</td><td>w</td><td class="num">800.00</td></tr>
+<tr><td>2025-08-20</td><td>CableCo</td><td>5000</td><td>Cabling and connectors</td><td>s</td><td class="num">180.00</td></tr>
+<tr><td>2025-08-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2025-08-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2025-08-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2025-08-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Manchester</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2025-08-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2025-08-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td></tr>
 </tbody>
 </table></div>
 <h5>Sep</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-09-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-09-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-09-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-09-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-09-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-09-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-09-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-09-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-09-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-09-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-09-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-09-08</td><td>Hilti</td><td>q</td><td class="num">360.00</td></tr>
-<tr><td>2025-09-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-09-10</td><td>Royal Mail</td><td>t</td><td class="num">96.00</td></tr>
-<tr><td>2025-09-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-09-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-09-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-09-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-09-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-09-15</td><td>Jones Solicitors</td><td>l</td><td class="num">960.00</td></tr>
-<tr><td>2025-09-16</td><td>WHSmith</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-09-18</td><td>ElectroParts</td><td>s</td><td class="num">240.00</td></tr>
-<tr><td>2025-09-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-09-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-09-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-09-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-09-22</td><td>Halfords</td><td>v</td><td class="num">72.00</td></tr>
-<tr><td>2025-09-25</td><td>EnergySupply</td><td>p</td><td class="num">300.00</td></tr>
-<tr><td>2025-09-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-09-25</td><td>Mileage claim</td><td>v</td><td class="num">72.00</td></tr>
-<tr><td>2025-09-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-09-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2025-09-30</td><td>Directors loan</td><td>l</td><td class="num">208.00</td></tr>
-<tr><td>2025-09-01</td><td>Precision Tooling Supplies</td><td>fa</td><td class="num">8,400.00</td></tr>
+<tr><td>2025-09-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-09-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-09-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-09-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-09-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-09-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-09-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-09-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-09-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-09-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-09-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-09-08</td><td>Hilti</td><td>5301</td><td>Power tool hire</td><td>q</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-09-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-09-10</td><td>Royal Mail</td><td>5300</td><td>Special delivery courier</td><td>t</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-09-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-09-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-09-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-09-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-09-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-09-15</td><td>Jones Solicitors</td><td>5800</td><td>Contract review and legal advice</td><td>l</td><td class="num">960.00</td><td></td></tr>
+<tr><td>2025-09-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-09-18</td><td>ElectroParts</td><td>5000</td><td>Specialist electronic components</td><td>s</td><td class="num">240.00</td><td></td></tr>
+<tr><td>2025-09-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-09-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-09-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-09-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-09-22</td><td>Halfords</td><td>5601</td><td>Vehicle maintenance supplies</td><td>v</td><td class="num">72.00</td><td></td></tr>
+<tr><td>2025-09-25</td><td>EnergySupply</td><td>5201</td><td>Quarterly utility bill</td><td>p</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-09-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-09-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Bristol</td><td>v</td><td class="num">72.00</td><td></td></tr>
+<tr><td>2025-09-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-09-30</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-09-30</td><td>Directors loan</td><td>5803</td><td>Directors loan interest</td><td>l</td><td class="num">208.00</td><td>PUR-INT-002</td></tr>
+<tr><td>2025-09-01</td><td>Precision Tooling Supplies</td><td>5900</td><td>Bench calibration kit bought under HP-2025-02</td><td>fa</td><td class="num">8,400.00</td><td>PUR-FA-005</td></tr>
 </tbody>
 </table></div>
 <h5>Oct</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-10-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-10-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-10-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-10-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-10-01</td><td>Simply Business</td><td>n</td><td class="num">360.00</td></tr>
-<tr><td>2025-10-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-10-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-10-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-10-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-10-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-10-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-10-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-10-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-10-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-10-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
-<tr><td>2025-10-10</td><td>TechParts</td><td>s</td><td class="num">480.00</td></tr>
-<tr><td>2025-10-10</td><td>Google Ads</td><td>a</td><td class="num">1,800.00</td></tr>
-<tr><td>2025-10-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-10-14</td><td>Toolstation</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-10-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-10-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-10-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-10-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-10-15</td><td>TechExpo</td><td>a</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-10-18</td><td>Premier Inn</td><td>h</td><td class="num">120.00</td></tr>
-<tr><td>2025-10-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-10-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-10-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">96.00</td></tr>
-<tr><td>2025-10-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-10-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-10-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-10-25</td><td>Mileage claim</td><td>v</td><td class="num">42.75</td></tr>
-<tr><td>2025-10-25</td><td>Ford</td><td>fa</td><td class="num">36,000.00</td></tr>
-<tr><td>2025-10-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-10-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2025-10-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>Simply Business</td><td>5700</td><td>Contents insurance renewal</td><td>n</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-10-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-10-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-10-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-10-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-10-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-10-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-10-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-10-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-10-10</td><td>Xerox</td><td>5701</td><td>Printer lease payment</td><td>f</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-10-10</td><td>TechParts</td><td>5000</td><td>Hardware components for resale</td><td>s</td><td class="num">480.00</td><td></td></tr>
+<tr><td>2025-10-10</td><td>Google Ads</td><td>5500</td><td>PPC advertising campaign Q3</td><td>a</td><td class="num">1,800.00</td><td></td></tr>
+<tr><td>2025-10-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-10-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-10-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-10-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-10-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-10-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-10-15</td><td>TechExpo</td><td>5500</td><td>Exhibition stand and materials</td><td>a</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-10-18</td><td>Premier Inn</td><td>5600</td><td>Hotel for Birmingham meeting</td><td>h</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-10-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-10-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-10-20</td><td>Office Maintenance Ltd</td><td>5400</td><td>Premises maintenance and repairs</td><td>m</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-10-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-10-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-10-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-10-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Sheffield</td><td>v</td><td class="num">42.75</td><td></td></tr>
+<tr><td>2025-10-25</td><td>Ford</td><td>5900</td><td>Ford Transit Custom van</td><td>fa</td><td class="num">36,000.00</td><td>PUR-FA-002</td></tr>
+<tr><td>2025-10-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-10-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Nov</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th><th>Cis deduction</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th><th>Cis deduction</th></tr></thead>
 <tbody>
-<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
-<tr><td>2025-11-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td><td></td></tr>
-<tr><td>2025-11-01</td><td>Slack</td><td>g</td><td class="num">15.00</td><td></td></tr>
-<tr><td>2025-11-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td><td></td></tr>
-<tr><td>2025-11-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-11-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-11-03</td><td>AWS</td><td>o</td><td class="num">180.00</td><td></td></tr>
-<tr><td>2025-11-03</td><td>Argos</td><td>u</td><td class="num">22.00</td><td></td></tr>
-<tr><td>2025-11-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-11-05</td><td>BP</td><td>v</td><td class="num">180.00</td><td></td></tr>
-<tr><td>2025-11-06</td><td>Trainline</td><td>h</td><td class="num">72.00</td><td></td></tr>
-<tr><td>2025-11-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td><td></td></tr>
-<tr><td>2025-11-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td><td></td></tr>
-<tr><td>2025-11-12</td><td>NCP</td><td>v</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-11-14</td><td>Uber</td><td>h</td><td class="num">24.00</td><td></td></tr>
-<tr><td>2025-11-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td><td></td></tr>
-<tr><td>2025-11-15</td><td>Shell</td><td>v</td><td class="num">150.00</td><td></td></tr>
-<tr><td>2025-11-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td><td></td></tr>
-<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>s</td><td class="num">540.00</td><td></td></tr>
-<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>c</td><td class="num">3,000.00</td><td>600.00</td></tr>
-<tr><td>2025-11-16</td><td>WHSmith</td><td>g</td><td class="num">30.00</td><td></td></tr>
-<tr><td>2025-11-18</td><td>Jet</td><td>v</td><td class="num">96.00</td><td></td></tr>
-<tr><td>2025-11-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td><td></td></tr>
-<tr><td>2025-11-20</td><td>ParcelForce</td><td>t</td><td class="num">240.00</td><td></td></tr>
-<tr><td>2025-11-20</td><td>CableCo</td><td>s</td><td class="num">300.00</td><td></td></tr>
-<tr><td>2025-11-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td><td></td></tr>
-<tr><td>2025-11-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td><td></td></tr>
-<tr><td>2025-11-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td><td></td></tr>
-<tr><td>2025-11-25</td><td>Mileage claim</td><td>v</td><td class="num">81.00</td><td></td></tr>
-<tr><td>2025-11-28</td><td>Shell</td><td>v</td><td class="num">120.00</td><td></td></tr>
-<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-11-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td><td></td></tr>
+<tr><td>2025-11-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td><td></td></tr>
+<tr><td>2025-11-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td><td></td></tr>
+<tr><td>2025-11-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td><td></td></tr>
+<tr><td>2025-11-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-11-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-11-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td><td></td></tr>
+<tr><td>2025-11-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td><td></td></tr>
+<tr><td>2025-11-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-11-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td><td></td></tr>
+<tr><td>2025-11-06</td><td>Trainline</td><td>5600</td><td>Advance train ticket</td><td>h</td><td class="num">72.00</td><td></td><td></td></tr>
+<tr><td>2025-11-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td><td></td></tr>
+<tr><td>2025-11-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td><td></td></tr>
+<tr><td>2025-11-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-11-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td><td></td></tr>
+<tr><td>2025-11-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td><td></td></tr>
+<tr><td>2025-11-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td><td></td></tr>
+<tr><td>2025-11-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td><td></td></tr>
+<tr><td>2025-11-15</td><td>ComponentsDirect</td><td>5000</td><td>Electronic components</td><td>s</td><td class="num">540.00</td><td></td><td></td></tr>
+<tr><td>2025-11-15</td><td>BuildTech Solutions</td><td>5001</td><td>Sub-contractor cabling works</td><td>c</td><td class="num">3,000.00</td><td>PUR-CIS-002</td><td>600.00</td></tr>
+<tr><td>2025-11-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">30.00</td><td></td><td></td></tr>
+<tr><td>2025-11-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td><td></td></tr>
+<tr><td>2025-11-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td><td></td></tr>
+<tr><td>2025-11-20</td><td>ParcelForce</td><td>5300</td><td>Equipment delivery</td><td>t</td><td class="num">240.00</td><td></td><td></td></tr>
+<tr><td>2025-11-20</td><td>CableCo</td><td>5000</td><td>Cabling and connectors</td><td>s</td><td class="num">300.00</td><td></td><td></td></tr>
+<tr><td>2025-11-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td><td></td></tr>
+<tr><td>2025-11-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td><td></td></tr>
+<tr><td>2025-11-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td><td></td></tr>
+<tr><td>2025-11-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to London</td><td>v</td><td class="num">81.00</td><td></td><td></td></tr>
+<tr><td>2025-11-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td><td></td></tr>
+<tr><td>2025-11-30</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-12-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2025-12-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2025-12-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2025-12-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2025-12-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2025-12-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2025-12-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2025-12-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2025-12-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-12-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2025-12-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2025-12-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2025-12-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2025-12-10</td><td>Vistaprint</td><td>g</td><td class="num">120.00</td></tr>
-<tr><td>2025-12-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2025-12-14</td><td>Toolstation</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2025-12-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2025-12-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2025-12-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2025-12-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2025-12-15</td><td>Code Club UK</td><td>y</td><td class="num">500.00</td></tr>
-<tr><td>2025-12-18</td><td>ElectroParts</td><td>s</td><td class="num">480.00</td></tr>
-<tr><td>2025-12-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2025-12-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2025-12-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2025-12-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2025-12-25</td><td>EnergySupply</td><td>p</td><td class="num">420.00</td></tr>
-<tr><td>2025-12-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2025-12-25</td><td>Mileage claim</td><td>v</td><td class="num">49.50</td></tr>
-<tr><td>2025-12-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2025-12-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2025-12-31</td><td>Director</td><td>d</td><td class="num">5,000.00</td></tr>
-<tr><td>2025-12-31</td><td>Directors loan</td><td>l</td><td class="num">167.00</td></tr>
+<tr><td>2025-12-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2025-12-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2025-12-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-12-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2025-12-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-12-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-12-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-12-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2025-12-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-12-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2025-12-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-12-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2025-12-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2025-12-10</td><td>Vistaprint</td><td>5501</td><td>Business cards and flyers</td><td>g</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-12-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-12-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-12-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2025-12-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-12-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2025-12-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2025-12-15</td><td>Code Club UK</td><td>5801</td><td>Charitable donation</td><td>y</td><td class="num">500.00</td><td></td></tr>
+<tr><td>2025-12-18</td><td>ElectroParts</td><td>5000</td><td>Specialist electronic components</td><td>s</td><td class="num">480.00</td><td></td></tr>
+<tr><td>2025-12-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2025-12-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2025-12-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2025-12-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2025-12-25</td><td>EnergySupply</td><td>5201</td><td>Quarterly utility bill</td><td>p</td><td class="num">420.00</td><td></td></tr>
+<tr><td>2025-12-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2025-12-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Various</td><td>v</td><td class="num">49.50</td><td></td></tr>
+<tr><td>2025-12-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2025-12-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2025-12-31</td><td>Director</td><td>5100</td><td>Director fees (non-PAYE)</td><td>d</td><td class="num">5,000.00</td><td></td></tr>
+<tr><td>2025-12-31</td><td>Directors loan</td><td>5803</td><td>Directors loan interest</td><td>l</td><td class="num">167.00</td><td>PUR-INT-003</td></tr>
 </tbody>
 </table></div>
 <h5>Jan</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>2026-01-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2026-01-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2026-01-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2026-01-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2026-01-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2026-01-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2026-01-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2026-01-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2026-01-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2026-01-05</td><td>LinkedIn</td><td>a</td><td class="num">480.00</td></tr>
-<tr><td>2026-01-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2026-01-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2026-01-08</td><td>Hilti</td><td>q</td><td class="num">180.00</td></tr>
-<tr><td>2026-01-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2026-01-10</td><td>Xerox</td><td>f</td><td class="num">180.00</td></tr>
-<tr><td>2026-01-10</td><td>TechParts</td><td>s</td><td class="num">600.00</td></tr>
-<tr><td>2026-01-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2026-01-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2026-01-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2026-01-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2026-01-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2026-01-16</td><td>WHSmith</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2026-01-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2026-01-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2026-01-20</td><td>DHL</td><td>t</td><td class="num">180.00</td></tr>
-<tr><td>2026-01-20</td><td>Office Maintenance Ltd</td><td>m</td><td class="num">144.00</td></tr>
-<tr><td>2026-01-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2026-01-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2026-01-22</td><td>Halfords</td><td>v</td><td class="num">36.00</td></tr>
-<tr><td>2026-01-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2026-01-25</td><td>Mileage claim</td><td>v</td><td class="num">38.25</td></tr>
-<tr><td>2026-01-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2026-01-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2026-01-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-01-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2026-01-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2026-01-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2026-01-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2026-01-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-05</td><td>LinkedIn</td><td>5500</td><td>Sponsored content campaign</td><td>a</td><td class="num">480.00</td></tr>
+<tr><td>2026-01-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2026-01-08</td><td>Hilti</td><td>5301</td><td>Power tool hire</td><td>q</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2026-01-10</td><td>Xerox</td><td>5701</td><td>Printer lease payment</td><td>f</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-10</td><td>TechParts</td><td>5000</td><td>Hardware components for resale</td><td>s</td><td class="num">600.00</td></tr>
+<tr><td>2026-01-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2026-01-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2026-01-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2026-01-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2026-01-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2026-01-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2026-01-20</td><td>DHL</td><td>5300</td><td>International courier</td><td>t</td><td class="num">180.00</td></tr>
+<tr><td>2026-01-20</td><td>Office Maintenance Ltd</td><td>5400</td><td>Premises maintenance and repairs</td><td>m</td><td class="num">144.00</td></tr>
+<tr><td>2026-01-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2026-01-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-01-22</td><td>Halfords</td><td>5601</td><td>Vehicle maintenance supplies</td><td>v</td><td class="num">36.00</td></tr>
+<tr><td>2026-01-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2026-01-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Manchester</td><td>v</td><td class="num">38.25</td></tr>
+<tr><td>2026-01-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2026-01-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td></tr>
 </tbody>
 </table></div>
 <h5>Feb</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th></tr></thead>
 <tbody>
-<tr><td>2026-02-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2026-02-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2026-02-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2026-02-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2026-02-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2026-02-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2026-02-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2026-02-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2026-02-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2026-02-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2026-02-05</td><td>DigitalOcean</td><td>o</td><td class="num">36.00</td></tr>
-<tr><td>2026-02-06</td><td>Trainline</td><td>h</td><td class="num">36.00</td></tr>
-<tr><td>2026-02-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2026-02-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2026-02-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2026-02-12</td><td>ToolHire</td><td>q</td><td class="num">360.00</td></tr>
-<tr><td>2026-02-14</td><td>Toolstation</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2026-02-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2026-02-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2026-02-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2026-02-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2026-02-15</td><td>ComponentsDirect</td><td>s</td><td class="num">420.00</td></tr>
-<tr><td>2026-02-18</td><td>PC Repair Shop</td><td>m</td><td class="num">360.00</td></tr>
-<tr><td>2026-02-18</td><td>Premier Inn</td><td>h</td><td class="num">240.00</td></tr>
-<tr><td>2026-02-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2026-02-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2026-02-20</td><td>CableCo</td><td>s</td><td class="num">240.00</td></tr>
-<tr><td>2026-02-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2026-02-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2026-02-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2026-02-25</td><td>Mileage claim</td><td>v</td><td class="num">31.50</td></tr>
-<tr><td>2026-02-28</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2026-02-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
+<tr><td>2026-02-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td></tr>
+<tr><td>2026-02-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td></tr>
+<tr><td>2026-02-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td></tr>
+<tr><td>2026-02-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td></tr>
+<tr><td>2026-02-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td></tr>
+<tr><td>2026-02-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td></tr>
+<tr><td>2026-02-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td></tr>
+<tr><td>2026-02-05</td><td>DigitalOcean</td><td>5002</td><td>Cloud VPS hosting</td><td>o</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-06</td><td>Trainline</td><td>5600</td><td>Advance train ticket</td><td>h</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td></tr>
+<tr><td>2026-02-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td></tr>
+<tr><td>2026-02-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-12</td><td>ToolHire</td><td>5301</td><td>Equipment hire for installation</td><td>q</td><td class="num">360.00</td></tr>
+<tr><td>2026-02-14</td><td>Toolstation</td><td>5401</td><td>Assorted fixings and parts</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td></tr>
+<tr><td>2026-02-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td></tr>
+<tr><td>2026-02-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td></tr>
+<tr><td>2026-02-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td></tr>
+<tr><td>2026-02-15</td><td>ComponentsDirect</td><td>5000</td><td>Electronic components</td><td>s</td><td class="num">420.00</td></tr>
+<tr><td>2026-02-18</td><td>PC Repair Shop</td><td>5400</td><td>Desktop motherboard replacement</td><td>m</td><td class="num">360.00</td></tr>
+<tr><td>2026-02-18</td><td>Premier Inn</td><td>5600</td><td>Hotel for two-day workshop</td><td>h</td><td class="num">240.00</td></tr>
+<tr><td>2026-02-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td></tr>
+<tr><td>2026-02-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td></tr>
+<tr><td>2026-02-20</td><td>CableCo</td><td>5000</td><td>Cabling and connectors</td><td>s</td><td class="num">240.00</td></tr>
+<tr><td>2026-02-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td></tr>
+<tr><td>2026-02-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td></tr>
+<tr><td>2026-02-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td></tr>
+<tr><td>2026-02-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Nottingham</td><td>v</td><td class="num">31.50</td></tr>
+<tr><td>2026-02-28</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td></tr>
+<tr><td>2026-02-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td></tr>
 </tbody>
 </table></div>
 <h5>Mar</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Supplier</th><th>Code</th><th class="num">Amount</th></tr></thead>
+<thead><tr><th>Date</th><th>Supplier</th><th>Account</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-03-01</td><td>WorkSpace Ltd</td><td>r</td><td class="num">1,200.00</td></tr>
-<tr><td>2026-03-01</td><td>Microsoft</td><td>g</td><td class="num">30.00</td></tr>
-<tr><td>2026-03-01</td><td>Slack</td><td>g</td><td class="num">15.00</td></tr>
-<tr><td>2026-03-01</td><td>GitHub</td><td>o</td><td class="num">45.00</td></tr>
-<tr><td>2026-03-01</td><td>Cloudflare</td><td>o</td><td class="num">24.00</td></tr>
-<tr><td>2026-03-01</td><td>Zoom</td><td>g</td><td class="num">18.00</td></tr>
-<tr><td>2026-03-03</td><td>AWS</td><td>o</td><td class="num">180.00</td></tr>
-<tr><td>2026-03-03</td><td>Argos</td><td>u</td><td class="num">22.00</td></tr>
-<tr><td>2026-03-05</td><td>Ryman</td><td>u</td><td class="num">24.00</td></tr>
-<tr><td>2026-03-05</td><td>BP</td><td>v</td><td class="num">180.00</td></tr>
-<tr><td>2026-03-08</td><td>National Rail</td><td>h</td><td class="num">48.00</td></tr>
-<tr><td>2026-03-10</td><td>Amazon</td><td>u</td><td class="num">36.00</td></tr>
-<tr><td>2026-03-10</td><td>Royal Mail</td><td>t</td><td class="num">144.00</td></tr>
-<tr><td>2026-03-12</td><td>NCP</td><td>v</td><td class="num">18.00</td></tr>
-<tr><td>2026-03-14</td><td>Uber</td><td>h</td><td class="num">24.00</td></tr>
-<tr><td>2026-03-14</td><td>Costa Coffee</td><td>h</td><td class="num">12.00</td></tr>
-<tr><td>2026-03-15</td><td>Shell</td><td>v</td><td class="num">150.00</td></tr>
-<tr><td>2026-03-15</td><td>Royal Mail</td><td>g</td><td class="num">12.00</td></tr>
-<tr><td>2026-03-16</td><td>WHSmith</td><td>g</td><td class="num">24.00</td></tr>
-<tr><td>2026-03-18</td><td>ElectroParts</td><td>s</td><td class="num">300.00</td></tr>
-<tr><td>2026-03-18</td><td>Jet</td><td>v</td><td class="num">96.00</td></tr>
-<tr><td>2026-03-20</td><td>BT Business</td><td>g</td><td class="num">60.00</td></tr>
-<tr><td>2026-03-21</td><td>Greggs</td><td>h</td><td class="num">8.00</td></tr>
-<tr><td>2026-03-22</td><td>Screwfix</td><td>u</td><td class="num">18.00</td></tr>
-<tr><td>2026-03-22</td><td>Halfords</td><td>v</td><td class="num">60.00</td></tr>
-<tr><td>2026-03-25</td><td>EnergySupply</td><td>p</td><td class="num">360.00</td></tr>
-<tr><td>2026-03-25</td><td>Wilko</td><td>u</td><td class="num">15.00</td></tr>
-<tr><td>2026-03-25</td><td>Mileage claim</td><td>v</td><td class="num">58.50</td></tr>
-<tr><td>2026-03-28</td><td>Shell</td><td>v</td><td class="num">120.00</td></tr>
-<tr><td>2026-03-31</td><td>Smith &amp; Co</td><td>l</td><td class="num">300.00</td></tr>
-<tr><td>2026-03-31</td><td>Directors loan</td><td>l</td><td class="num">125.00</td></tr>
+<tr><td>2026-03-01</td><td>WorkSpace Ltd</td><td>5200</td><td>Monthly office rent</td><td>r</td><td class="num">1,200.00</td><td></td></tr>
+<tr><td>2026-03-01</td><td>Microsoft</td><td>5501</td><td>Microsoft 365 subscription</td><td>g</td><td class="num">30.00</td><td></td></tr>
+<tr><td>2026-03-01</td><td>Slack</td><td>5501</td><td>Slack team subscription</td><td>g</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2026-03-01</td><td>GitHub</td><td>5002</td><td>GitHub Team subscription</td><td>o</td><td class="num">45.00</td><td></td></tr>
+<tr><td>2026-03-01</td><td>Cloudflare</td><td>5002</td><td>CDN and DNS services</td><td>o</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2026-03-01</td><td>Zoom</td><td>5501</td><td>Video conferencing subscription</td><td>g</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2026-03-03</td><td>AWS</td><td>5002</td><td>Cloud hosting charges</td><td>o</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2026-03-03</td><td>Argos</td><td>5401</td><td>Miscellaneous office items</td><td>u</td><td class="num">22.00</td><td></td></tr>
+<tr><td>2026-03-05</td><td>Ryman</td><td>5401</td><td>Stationery supplies</td><td>u</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2026-03-05</td><td>BP</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">180.00</td><td></td></tr>
+<tr><td>2026-03-08</td><td>National Rail</td><td>5600</td><td>Train ticket client meeting</td><td>h</td><td class="num">48.00</td><td></td></tr>
+<tr><td>2026-03-10</td><td>Amazon</td><td>5401</td><td>Office supplies</td><td>u</td><td class="num">36.00</td><td></td></tr>
+<tr><td>2026-03-10</td><td>Royal Mail</td><td>5300</td><td>Special delivery courier</td><td>t</td><td class="num">144.00</td><td></td></tr>
+<tr><td>2026-03-12</td><td>NCP</td><td>5601</td><td>Parking charges</td><td>v</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2026-03-14</td><td>Uber</td><td>5600</td><td>Taxi to client site</td><td>h</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2026-03-14</td><td>Costa Coffee</td><td>5600</td><td>Client meeting refreshments</td><td>h</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2026-03-15</td><td>Shell</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">150.00</td><td></td></tr>
+<tr><td>2026-03-15</td><td>Royal Mail</td><td>5501</td><td>Postage</td><td>g</td><td class="num">12.00</td><td></td></tr>
+<tr><td>2026-03-16</td><td>WHSmith</td><td>5501</td><td>Magazines and stationery</td><td>g</td><td class="num">24.00</td><td></td></tr>
+<tr><td>2026-03-18</td><td>ElectroParts</td><td>5000</td><td>Specialist electronic components</td><td>s</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2026-03-18</td><td>Jet</td><td>5601</td><td>Fuel for company vehicle</td><td>v</td><td class="num">96.00</td><td></td></tr>
+<tr><td>2026-03-20</td><td>BT Business</td><td>5501</td><td>Telephone line rental</td><td>g</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2026-03-21</td><td>Greggs</td><td>5600</td><td>Working lunch</td><td>h</td><td class="num">8.00</td><td></td></tr>
+<tr><td>2026-03-22</td><td>Screwfix</td><td>5401</td><td>Miscellaneous supplies</td><td>u</td><td class="num">18.00</td><td></td></tr>
+<tr><td>2026-03-22</td><td>Halfords</td><td>5601</td><td>Vehicle maintenance supplies</td><td>v</td><td class="num">60.00</td><td></td></tr>
+<tr><td>2026-03-25</td><td>EnergySupply</td><td>5201</td><td>Quarterly utility bill</td><td>p</td><td class="num">360.00</td><td></td></tr>
+<tr><td>2026-03-25</td><td>Wilko</td><td>5401</td><td>Cleaning and kitchen supplies</td><td>u</td><td class="num">15.00</td><td></td></tr>
+<tr><td>2026-03-25</td><td>Mileage claim</td><td>5601</td><td>Business mileage to Various</td><td>v</td><td class="num">58.50</td><td></td></tr>
+<tr><td>2026-03-28</td><td>Shell</td><td>5601</td><td>Additional fuel purchase</td><td>v</td><td class="num">120.00</td><td></td></tr>
+<tr><td>2026-03-31</td><td>Smith &amp; Co</td><td>5800</td><td>Monthly accountancy retainer</td><td>l</td><td class="num">300.00</td><td></td></tr>
+<tr><td>2026-03-31</td><td>Directors loan</td><td>5803</td><td>Directors loan interest</td><td>l</td><td class="num">125.00</td><td>PUR-INT-004</td></tr>
 </tbody>
 </table></div>
 </details>
