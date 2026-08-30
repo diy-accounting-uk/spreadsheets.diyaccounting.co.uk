@@ -12,7 +12,7 @@ pushes in batches.
 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
-| f19 | F19 derive straddling VAT entries | `../wt-spreadsheets/f19` | Sonnet | started |
+| f19 | F19 derive straddling VAT entries | — | Sonnet | merged `54cb03ac`, sync gate clean, extractor+loader 104/104; Ltd reconcile running |
 | f20 | F20 Taxi export writer | `../wt-spreadsheets/f20` | Opus | started |
 | box51 | F9 remainder: SA103F box 51 | `../wt-spreadsheets/box51` | Opus | started |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
