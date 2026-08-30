@@ -11,7 +11,8 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 
 | Track | Items | Status |
 |---|---|---|
-| fidelity-t7 (wave 5) | T7: `roundtrip-budget.json` seeded from the tree, the four `roundtrip-*` jobs a budget gate with stability, one scorecard and stability step per generate-* matrix entry | started (Sonnet), worktree `sp-fidelity-t7` |
+| fidelity-t7 (wave 5) | T7: budget seeded from a real run (BST/Taxi report half clean; SE 2 differing, Ltd 4 and 4 lost lines; `noExcelValue` = checks the Excel-side command never gets `--data` for), the four `roundtrip-*` jobs a budget gate with stability, per-matrix scorecard in generate-* | merged into `claude/wave-5` `694641c1`, worktree removed |
+| fidelity-final (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md` brought current: what T0-T7 delivered, the measurement, the remainders; then fidelity parks | started (Opus), worktree `sp-fidelity-final` |
 
 Landed on `claude/wave-5` (local at `52088850`, not pushed): T0, T1, T1b, T2, T3, T4, T5, T6 (with
 rework), the loader track and the plan; every product closes the commuting square on its main
@@ -88,6 +89,10 @@ Fixture:
 - [ ] **BrickWork members lose `acquiredDate` in the extractor** — `extract-scenarios.js`
   `writeBrickworkLtd` drops each member's `acquiredDate` the master states, where the
   Precision Code build keeps it; the loader test compares name and shares only until then.
+- [ ] **SE forecast checks fail on the 2023-24 rates** — `reconcile.js --package se --scenario
+  advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): five "Forecast" checks
+  (e.g. "Forecast: personal allowance after taper" expects 1,676, gets 12,570) — the SE
+  forecast taper/NI path against `se-2023-2024.toml`. Found by T7.
 - [ ] **Generator leaves dependent cached values stale** — found by T6: after generation the
   cached `<v>` of cells computed from the Admin seed dates (Payslips calendar `B` chain,
   Vatinterface `C` column, `CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`,
@@ -95,13 +100,15 @@ Fixture:
   A closed-workbook link or a reader that trusts the cache sees the wrong date (the class
   ltd-ct fixed for the Fixedassets Admin link). Fix: roll those caches in the generator the
   way `rollLtdAdminCachedDates` does, then T6's stale-cache category reads 0.
-- [ ] **Fidelity T7: CI wiring** (Haiku, last) — EQ1 stops being `continue-on-error` and
-  becomes a budget gate against `app/data/roundtrip-budget.json` seeded from the scorecard;
-  one EQ1 step per generate-* matrix year-end. Then `PLAN_ROUNDTRIP_FIDELITY.md` is brought
-  up to date with what T0-T7 delivered, the measurement at that point and the remainders
-  (the ratchet to an exact gate, the not-computed list, S7, non-March EQ2, the unrepresentable
-  fields, the docs), and fidelity parks until a production use of the JS representation
-  (the VAT export in `PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back.
+- [ ] **Fidelity T7: CI wiring** — landed on `claude/wave-5`; closes with wave 5's PR, after
+  which `PLAN_ROUNDTRIP_FIDELITY.md` is brought current (fidelity-final track, in flight) and
+  fidelity parks until a production use of the JS representation (the VAT export in
+  `PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back. Remainders the budget records: SE 2 and Ltd 4
+  differing values (`Income Tax!E9/E11`; `CorporationTax!I17/I18`, `Schedule!R1/Y1`), 4 Ltd
+  and 1 SE lines lost in export (S7), `noExcelValue` because `report.js --source-dir` in CI is
+  not given `--data` so the Excel side publishes no verdicts (one flag), `bookFieldsMissing`
+  90/124/168, and the reconcile matrix stamping the master's calendar dates unshifted so only
+  `linesLost`/`fieldsDropped` are portable across year-ends.
 
 ## Plans not tracked here
 
