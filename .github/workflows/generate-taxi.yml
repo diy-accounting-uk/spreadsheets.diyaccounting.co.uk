@@ -234,12 +234,13 @@ jobs:
           node app/bin/report.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/taxi-scorecard-excel
           node app/bin/report.js --package taxi --data examples/basic-taxi-driver --years ${{ steps.roundtrip.outputs.years }} --output-dir target/taxi-scorecard-js
           node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js
-      # app/bin/export.js has no Taxi Driver support yet, so EQ2 never runs
-      # here, and EQ1 is not gated either: this package's own report labels
-      # are anchored to its own year-end while the fixture's dates never move
-      # off the master's, so EQ1 is only exact for the one year-end that
-      # happens to equal the master's own period end. The scorecard still
-      # prints for visibility; EQ3 stability is this job's only hard gate.
+      # EQ2 is not scored here: app/data/roundtrip-matrix-budget.json carries
+      # no taxi entry, and seeding one takes a run of this matrix. EQ1 is not
+      # gated either: this package's own report labels are anchored to its own
+      # year-end while the fixture's dates never move off the master's, so EQ1
+      # is only exact for the one year-end that happens to equal the master's
+      # own period end. The scorecard still prints for visibility; EQ3
+      # stability is this job's only hard gate.
       - name: 'EQ3: stability of the recalculated package'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: node app/bin/verify-stability.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-stability
