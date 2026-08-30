@@ -538,11 +538,10 @@ and `diya-gl:memberID` names a declared entry.
 Both engines write `R` through `report-serializer.js`. Every scenario-derived input reaches the JS
 side from `book.toml`. Every key carries a declared unit. `noJsValue` and `noExcelValue` are zero
 for all four products, now that every CI job passes `--data` to the Excel-side `report.js` command.
-`app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at the floor a
-real run reaches, zero everywhere except Ltd's `differing`, which stays at 4 for the capital
-allowance split below.
+`app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
+product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 124 for SE and 168 for Ltd, and
+**`book.toml` comes back short.** Missing fields run 90 for BST, 110 for SE and 156 for Ltd, and
 the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
 fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
 which the sheets hold in a form the exporter reads back yet.
@@ -568,41 +567,8 @@ description column beside them. They are what keeps SE at 395 whole-field matche
 genuinely cannot hold are declared in `app/data/roundtrip-unrepresentable.json`, each with the
 product it applies to and what the sheets do instead, and those are counted apart.
 
-**The generator leaves dependent cached values stale.** In a package generated without `--data`,
-the cached `<v>` of every cell computed from an Admin seed still carries the template's own figure
-until something recalculates the workbook. `app/data/volatile-cells.json` names 84 of them with the
-seed cell each traces back to: the Payslips calendar `B` chain, the Vatinterface `C` column,
-`CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`, `PubNotes!A11`, `SE Full!Q2/V2/G141` and
-`Profit Forecast!C40`. A closed-workbook link or a reader that trusts the cache sees the wrong
-figure. A populated package escapes it only because injection recalculates and saves. Rolling those
-caches in the generator, the way `rollLtdAdminCachedDates` already does, takes the stale-cache
-category to zero and the allowlist with it.
-
-Two SE keys also appear on one side only on that blank package, a blank saved value against a
-computed one. The gate checks moved keys, not keys that appear or disappear.
-
-**The Ltd capital allowance split.** `Schedule!R1` (writing down allowance claimed) and `Y1`
-(balancing allowance on disposals) read 3,000 and 8,500 in Excel against 4,800 and 6,700 in JS. The
-11,500 total agrees. `CorporationTax!I17` and `I18` read the same two figures across the cross-file
-link, which is why one disagreement counts four times.
-
-**`SE Short!A7`, `D8` and `A32` name empty boxes.** The SE `CELL_MAP` reads three cells the return
-leaves blank. The return prints those figures at `C8`, `S17` and `A33`. Both engines agree on the
-blanks, so this costs no divergence, but the map names the wrong cells.
-
 **The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
 needs journal lines outside the accounting period, which the master does not carry.
-
-**BrickWork members lose `acquiredDate`.** `writeBrickworkLtd` in `app/bin/extract-scenarios.js`
-drops each member's `acquiredDate` where the Precision Code build keeps it, so the loader test
-compares name and shares only.
-
-**SE forecast checks fail on the 2023-24 rates.** `reconcile.js --package se --scenario advanced
---year-end 2024-04-05` reads ANOMALYDETECTED at 674 of 679. Five "Forecast" checks fail, among them
-"Forecast: personal allowance after taper", which expects 1,676 and gets 12,570. The sheet's
-forecast block itself is sound. `Financialaccounts.xlsx!Profit Forecast!C40` tapers the allowance,
-and `C44` and `C45` are the additional-rate and NI rows the cell map reads. The failure sits in the
-taper and NI path against `se-2023-2024.toml`.
 
 **Mileage is computed and never written.** The Taxi and BST calculators work the mileage claim out
 of `measurableQuantity`, but `cellWrites` never writes that quantity to the Purchases mileage
@@ -612,16 +578,9 @@ column, so no generated package can take the mileage route rather than the actua
 Taxi package's own sheets, so EQ2 and the double-roundtrip do not run for Taxi and its
 `roundtrip-taxi` job gates the report half and stability only.
 
-**The BST no-ledger case.** When a book declares no debtor or creditor ledger at all, as sp-sixty's
-does, the BST `Debtors & Creditors` block keeps the sheet's own monthly-sales figure instead of
-nil.
-
-**`diya-gl-docs.md` illustrates the `diya-gl:` extension fields with stale JSON.** The prose points
-at v2 and the examples predate T1.
-
-One declared list closes the section, so nobody counts it as an open item. Sixteen SE read cells
+One declared list closes the section, so nobody counts it as an open item. Thirteen SE read cells
 are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
-that set exactly: `SE Full!D147`, `D156`, `D160`, `D179`, `O154`, `SE Short!A7`, `D8`, `A32`, and
+that set exactly: `SE Full!D147`, `D156`, `D160`, `D179`, `O154` and
 `Vat.xlsx!Vatinterface!E4/E5/G4/G5/I4/I5/K4/K5`. Both engines carry nothing there, so both
 agree.
 
@@ -635,5 +594,4 @@ so the remaining items above buy nothing until something does.
 The VAT export in [PLAN_VAT_EXPORT_FOR_SUBMIT.md](PLAN_VAT_EXPORT_FOR_SUBMIT.md) is the first
 production use in prospect. When it starts, reread this document's "What roundtrip fidelity means"
 and "How we measure it" first, then `app/bin/verify-roundtrip.js` and `app/lib/report-serializer.js`
-for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the Ltd capital
-allowance split and `book.toml` items above, the two that remain open.
+for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the `book.toml` item above.
