@@ -18,7 +18,7 @@
     "noExcelValue": 700,
     "linesLost": 1,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 124
+    "bookFieldsMissing": 110
   },
   "ltd": {
     "differing": 4,
@@ -26,6 +26,6 @@
     "noExcelValue": 892,
     "linesLost": 4,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 168
+    "bookFieldsMissing": 156
   }
 }
