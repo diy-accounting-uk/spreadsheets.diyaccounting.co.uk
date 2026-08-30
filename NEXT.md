@@ -18,6 +18,9 @@ pushes in batches.
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
 | f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
+| guides | F9 remainder: guides teach the dead motor cap | `../wt-spreadsheets/guides` | Haiku | started |
+| semileage | F18 remainder: SE Sales mileage writer | `../wt-spreadsheets/semileage` | Sonnet | started |
+| f21 | F21 Taxi EQ2 in the generate matrix | `../wt-spreadsheets/f21` | Sonnet | started |
 
 ## Open items
 
