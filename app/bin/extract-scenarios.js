@@ -1141,7 +1141,7 @@ const spSixtyBstAdditions = fixedAssetAdditions(spSixty.lines, TAXI_BST_PURCHASE
 const spSixtyBstToml = formatScenarioToml(
   {
     name: "SP Sixty Driving BST",
-    description: "Private hire driver adapted for BST package. Motor expenses as actual costs.",
+    description: "Private hire driver adapted for BST package. Motoring as actual costs, bar the March month claimed on mileage.",
     product: "bst",
     tax_regime: "se",
     vat_registered: false,
