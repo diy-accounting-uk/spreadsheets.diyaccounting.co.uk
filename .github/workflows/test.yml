@@ -175,7 +175,7 @@ jobs:
         run: node app/bin/generate.js --package bst --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/bst --output-dir target/bst-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package bst --source-dir target/bst-pkg --output-dir target/bst-excel
+        run: node app/bin/report.js --package bst --source-dir target/bst-pkg --data examples/precision-code-ltd/bst --years se-2025-2026 --output-dir target/bst-excel
 
       - name: Compute reports from diya-gl via JS engine
         run: node app/bin/report.js --package bst --data examples/precision-code-ltd/bst --years se-2025-2026 --output-dir target/bst-js
@@ -269,7 +269,7 @@ jobs:
         run: node app/bin/generate.js --package se --years se-2025-2026 --year-end 2026-04-05 --data examples/precision-code-ltd/advanced --output-dir target/se-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package se --source-dir target/se-pkg --output-dir target/se-excel
+        run: node app/bin/report.js --package se --source-dir target/se-pkg --data examples/precision-code-ltd/advanced --years se-2025-2026 --output-dir target/se-excel
 
       - name: Compute reports from diya-gl via JS engine
         run: node app/bin/report.js --package se --data examples/precision-code-ltd/advanced --years se-2025-2026 --output-dir target/se-js
@@ -319,7 +319,7 @@ jobs:
         run: node app/bin/generate.js --package ltd --years ltd-2024 --year-end 2025-03-31 --data examples/precision-code-ltd/full --offset '-P1Y' --output-dir target/ltd-pkg --skip-guide
 
       - name: Extract reports from Excel package
-        run: node app/bin/report.js --package ltd --source-dir target/ltd-pkg --output-dir target/ltd-excel
+        run: node app/bin/report.js --package ltd --source-dir target/ltd-pkg --data examples/precision-code-ltd/full --offset '-P1Y' --years ltd-2024 --year-end 2025-03-31 --output-dir target/ltd-excel
 
       - name: Compute reports from diya-gl via JS engine
         run: node app/bin/report.js --package ltd --data examples/precision-code-ltd/full --offset '-P1Y' --years ltd-2024 --output-dir target/ltd-js
