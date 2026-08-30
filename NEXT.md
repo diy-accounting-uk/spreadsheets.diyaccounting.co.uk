@@ -14,10 +14,10 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 | fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | landed on `claude/wave-5` `623833b9`, 331 tests, worktree removed |
 | fidelity-t1b (wave 5) | T1b: every fixture extractor-written from master data (BrickWork bank journal, opening journal, ledgers, van, members, CIS; dashcam and camera; new basic-taxi-driver; per-chart purchase-code maps); a van overpayment of 7,200 fixed; taxi fixtures no longer state a profit | landed on `claude/wave-5` `7f381934`, 319 tests, worktree removed |
 | fidelity-t3 (wave 5) | T3: BST and Taxi calculators source every read cell, units, one mirrored test per check, schema-aligned cell-map names, `roundtrip-taxi` job; BST 188/188 and Taxi 230/230 equal; five bugs fixed (UTR written into the tax chain, taxi purchases dropped by BST's chart, week grouping, 40p rounding, taxi loader filter) | merged into `claude/wave-5` `123c32e9`, worktree removed; one exporter test to re-anchor |
-| fidelity-t4 (wave 5) | T4: SE calculator (monthly grid, SA103S/F, income tax, VAT interface and returns via `tax/vat.js`, fixed assets, payroll), units, mirrored tests; plus the SE CIS column write and the `se.js:537` row counter | started (Opus), worktree `sp-fidelity-t4`; merges T1b when it lands |
+| fidelity-t4 (wave 5) | T4: SE calculator computes every read cell (884), `tax/vat.js` interface and returns, units, 679/645/645 mirrored checks, CIS column AD written and checked, row counter fixed; SE 1609/1609 equal | merged into `claude/wave-5` `c7225d60`, worktree removed |
 | fidelity-t5 (wave 5) | T5: Ltd calculator computes every read cell (1,280), units for all, 2,373 mirrored check tests, row counter fixed; Ltd square closes exactly (2124/2124 equal, March and June) | merged into `claude/wave-5` `e3ea9a72`, blast radius running, worktree removed |
 | fidelity-loader (wave 5) | `diyaGlToScenario()` maps the v2 book tables (stock, debtors, creditors, fixedAssets, hpAgreements, dividends, members, charges, vatRegistered) into the scenario the writers accept | started (Sonnet), worktree `sp-fidelity-loader` |
-| fidelity-t6 (wave 5) | T6: `verify-stability.js` (EQ3 on every package; `--all` for T7), `volatile-cells.json` with 54 stale cached values reported apart, 1 unstable conversion, 0 volatile | merged into `claude/wave-5` `847f184b`; on the merged tree SE shows 26 unlisted moves and the Ltd test overruns 180 s — rework dispatched (Sonnet, worktree `sp-fidelity-t6b`) |
+| fidelity-t6 (wave 5) | T6 and its rework: `verify-stability.js`, allowlist rebuilt from the XML (84 stale cached values, 0 volatile, 0 unstable), Ltd test scoped to the latest year, `--all` crash fixed | landed on `claude/wave-5` `9aa8b55d`, 7 tests, worktree removed |
 | fidelity-t2 (wave 5) | T2: `report-serializer.js`, exporter keeps account identity (column BZ carrier) and every field, full validating `book.toml`, comparator scoring both halves against the original fixture; fixed inline-string reads, employer NI column, the 20% stamp on non-VAT books | landed on `claude/wave-5` `0a874f8c`, 468 tests, worktree removed |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
 
@@ -36,16 +36,6 @@ Shipped-template surgery (binary xlsx edits plus a regeneration pass):
 
 Fixture:
 
-- [ ] **SE CIS column not written** — the SE scenarios (advanced and both BrickWork twins)
-  carry `cis_deduction` per purchase but nothing in `se.js` writes `Purchases.xlsx!AD`, so
-  the SE report's "Less: CIS Deducted" reads 0. One `cellWrites` line plus a check. Rides
-  with T4. Also with T4: `se.js:1553-1558` reads the Wages Forecast tax block as C44 =
-  additional rate and C45 = NI, but the sheet puts NI in C44 and nothing in C45, and C40
-  never tapers — the SE fixtures fail those checks whenever Class 4 NI is non-zero.
-- [ ] **Row counters keyed on a single letter** — `ltd.js:853` and `se.js:537` count rows
-  with `k.startsWith(columns.amount)`, so a column such as `AK` counts as an `A` row (the
-  same bug at `ltd.js:416` bit when `AK` was added; fixed with `/^A\d+$/`). One regex each.
-  Rides with T5 (`ltd.js`) and T4 (`se.js`).
 
 - [ ] **Roundtrip fidelity: bring the JS engine, exporter, schema and fidelity tests to the
   Excel checks' scope** — plan of record `PLAN_ROUNDTRIP_FIDELITY.md` (measured 2026-08-29:
@@ -80,8 +70,13 @@ Fixture:
   case); mileage is computed but `cellWrites` never writes `measurableQuantity` to the
   Purchases mileage column, so no package can take the mileage route; `export.js` has no
   Taxi support, so `roundtrip-taxi` gates EQ1 only.
-- [ ] **Fidelity T4: SE calculator** (Opus, concurrent with T3/T5) — monthly grid, SA103S/F
-  boxes, VAT interface and returns, payroll, fixed-asset schedule; 535 values.
+- [ ] **Fidelity T4: SE calculator** — landed on `claude/wave-5`; SE closes the square exactly
+  (11 read cells are computed as the blanks the workbook holds, asserted as an exact set).
+  Closes with wave 5's PR. Remainders: `SE Short!A7/D8/A32` in the SE `CELL_MAP` name empty
+  boxes (the return prints at `C8`, `S17`, `A33`); the SE ledger/stock/HP plumbing into the
+  scenario is being landed product-agnostically by the loader track, and its one moved
+  figure (the higher-rate band boundary 32,861.235, 2e-7 apart between engines) needs the
+  comparator's canonicalisation to round both sides before comparing.
 - [ ] **Fidelity T5: Ltd calculator** — landed on `claude/wave-5`; Ltd closes the square exactly
   (no not-computed list needed). Closes with wave 5's PR. Its `buildVatReturns()` and
   `straddlingTotals()` are the merge point when T4 lands the shared `tax/vat.js` interface.
@@ -93,9 +88,15 @@ Fixture:
   RegisterofMembers check fails on all three Ltd fixtures), and the BrickWork non-VAT twin
   is treated as VAT registered (turnover stated net of a VAT it never charged). Feeding the
   tables through makes `PubNotes!G20 == PubBalSht!F6` and keeps `EJ91` nil.
-- [ ] **Fidelity T6: EQ3 on every package** — landed on `claude/wave-5`; closes with wave 5's
-  PR. BST 0 moved, SE 38, Ltd 42: 54 stale cached values (the generator item below), 1
-  unstable conversion (`SE Full!G141`, 0.18 saved vs 0.14 recalculated), 0 volatile.
+- [ ] **Fidelity T6: EQ3 on every package** — landed on `claude/wave-5` with its rework; closes
+  with wave 5's PR. 84 stale cached values across SE and Ltd (the generator item below), no
+  volatile or unstable cells in any read set. Remainder: two SE section rows and three Ltd
+  CT600 cells appear on one side only (a blank saved value against a computed one) — the
+  same seed-chain cause; the gate checks moved keys, not appear/disappear.
+- [ ] **Taxi `Wages Forecast` check reads the wrong cells** — `taxi.js:149` and `:243` read
+  the forecast tax block as C44 = additional rate and C45 = NI where the sheet puts NI in
+  C44 and nothing in C45, and C40 is read as if it never tapers (T1b reported this against
+  SE; T4 traced it to Taxi). Fails on any taxi fixture with non-zero Class 4 NI.
 - [ ] **Generator leaves dependent cached values stale** — found by T6: after generation the
   cached `<v>` of cells computed from the Admin seed dates (Payslips calendar `B` chain,
   Vatinterface `C` column, `CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`,
