@@ -27,11 +27,11 @@ Trade: Owner-driver private hire and taxi services
 | VitalTax: Q4 total allowable expenses = P&L Q4 Cost of Sales + Total Expenses | 1880 | 1880 | 0 | PASS |
 | VitalTax: annual turnover = P&L annual turnover | 36000 | 36000 | 0 | PASS |
 | VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses | 7800 | 7800 | 0 | PASS |
-| Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles | 14360 | 14360 | 0 | PASS |
+| Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles | 14360 | 14360 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 36000 | 36000 | 0 | PASS |
 | SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances | 29640 | 29640 | 0 | PASS |
 | Fixed Assets: New asset cost recorded | 8000 | 8000 | 0 | PASS |
-| Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction) | 1440 | 1440 | 0 | PASS |
+| Fixed Assets: WDA claimed = cost x Admin WDA rate | 1440 | 1440 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 1440 | 1440 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12500 | 12500 | 0 | PASS |
 | Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
@@ -48,8 +48,6 @@ Trade: Owner-driver private hire and taxi services
 | Admin: NI Class 4 Upper Limit = tax data | 50000 | 50000 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.18 | 0.18 | 0 | PASS |
-| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
-| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
@@ -216,6 +214,8 @@ Trade: Owner-driver private hire and taxi services
 
 | | Amount |
 |---|------:|
+| Business miles for the year | 0 |
+| Mileage claimed for the year | 0 |
 | Vehicle running costs for the year | 4,980 |
 | Vehicle purchases capitalised | 8,000 |
 
@@ -248,8 +248,6 @@ Trade: Owner-driver private hire and taxi services
 | NI Class 4 Upper Limit | 50,000 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.18 |
-| Motor Vehicle Cost Threshold | 12,000 |
-| Motor Vehicle Restriction | 3,000 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -418,6 +416,8 @@ Trade: Owner-driver private hire and taxi services
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| A1 | Business miles for the year | 0 | gl-bus:measurableQuantity (miles) |
+| A2 | Mileage claimed for the year | 0 | tax.mileage (claim) |
 | I2 | Vehicle running costs for the year | 4980 | accounts.purchases (vehicleRunningCosts) |
 | T1 | Vehicle purchases capitalised | 8000 | fixedAssets (purchased, year total) |
 
@@ -450,8 +450,6 @@ Trade: Owner-driver private hire and taxi services
 | N23 | NI Class 4 Upper Limit | 50000 | tax.nationalInsurance.class4UpperProfits |
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.mainRateWDA |
-| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
-| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
 | G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
