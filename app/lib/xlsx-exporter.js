@@ -424,6 +424,12 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   const salesDescriptionCol = product === "ltd" ? "D" : "E";
   const purchasesDescriptionCol = product === "ltd" ? "D" : "E";
   const cisColumn = product === "ltd" ? "AK" : null;
+  // SE's Sales sheet gives D to the day's business miles (see the codeCol
+  // comment above). A sales row's miles sit beside a real sale rather than
+  // pricing it the way a Purchases mileage-log row does, so they carry as an
+  // extra measurable quantity rather than replacing the amount. Ltd's Sales
+  // sheet has no such column.
+  const salesMileageCol = product === "se" ? "D" : null;
   const lines = [];
   let entryNum = 1;
 
@@ -465,6 +471,13 @@ export async function extractMultiFileTransactions(sourceDir, product) {
       if (reference) line.documentReference = reference;
       const description = salesDescriptionCol ? textAt(xml, `${salesDescriptionCol}${row}`, salesStrings) : undefined;
       if (description) line.lineItemComment = description;
+      if (salesMileageCol) {
+        const miles = enteredNumber(xml, `${salesMileageCol}${row}`, salesStrings);
+        if (miles !== undefined) {
+          line.measurableQuantity = miles;
+          line.measurableUnitOfMeasure = "miles";
+        }
+      }
       lines.push(line);
     }
   }
