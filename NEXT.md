@@ -9,7 +9,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 Wave 5 is on `claude/wave-5` as PR #43 (16 track merges, merged with main at `4369f879`; the
 merged tree passes 3,582 tests and the post-merge checks, sync gate clean). The double-roundtrip failures on its first test.yml
 run (the exporter dropped the fixed-asset register, the VAT flag, the CT reference and the
-entered stock) are fixed at `c5233f6c`; the push re-runs test.yml. After the merge, fidelity
+entered stock) are fixed at `c5233f6c`, and the operator's generate-* runs on the earlier head failed only because
+the new stability suite called LibreOffice in the generate job (guarded at `f177cb3c`); both
+pushes re-run test.yml, and generate-* can be run again on `f177cb3c`. After the merge, fidelity
 parks (`PLAN_ROUNDTRIP_FIDELITY.md`, "Parked").
 The fidelity items below close with that merge; their remainders are in the plan's "What stays
 open" and are not re-listed here.
