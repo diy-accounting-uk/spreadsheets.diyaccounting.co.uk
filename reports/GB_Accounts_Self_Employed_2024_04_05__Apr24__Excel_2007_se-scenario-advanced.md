@@ -113,7 +113,7 @@ Trade: IT consultancy and software development
 | SA103F box 48 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
 | SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51 | 0 | 0 | 0 | PASS |
 | SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
-| SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1 | 8500 | 8500 | 0 | PASS |
+| SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1 | 7180 | 7180 | 0 | PASS |
 | SA103F box 58 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
 | SA103F box 14 turnover: full return (D55) = short return (D38) | 339200 | 339200 | 0 | PASS |
 | SA103F box 15 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
@@ -631,8 +631,6 @@ Trade: IT consultancy and software development
 | Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.18 | 0.18 | 0 | PASS |
-| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
-| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
@@ -820,8 +818,8 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| Business name | — |
-| Accounting date | — |
+| Business name | Precision Code Trading |
+| Accounting date | 45,022 |
 | Turnover | 339,200 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of sales | 20,136.67 |
@@ -844,7 +842,7 @@ Journal amounts include VAT at 20%.
 | **Taxable profit** | 119,532.06 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Grants as other business income (box 29) | 2,083.33 |
-| VAT threshold note | — |
+| Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold |
 | **Net profit for tax calc** | 121,615.39 |
 
 ## Self Assessment (SA103F)
@@ -874,9 +872,9 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 47) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 48) | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Writing down allowances (box 49) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Restricted allowances for expensive cars (box 51) | 3,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Restricted allowances for expensive cars (box 51) | 4,320 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Enhanced and other capital allowances (box 54) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 55) | 8,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 55) | 7,180 |
 | **Total capital allowances (box 56)** | 64,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 58) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 59) | 0 |
@@ -947,8 +945,6 @@ Journal amounts include VAT at 20%.
 | NI Class 4 Upper Limit | 50,270 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.18 |
-| Motor Vehicle Cost Threshold | 12,000 |
-| Motor Vehicle Restriction | 3,000 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -1339,6 +1335,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| C8 | Business name | Precision Code Trading | entityInformation.organizationIdentifier |
+| S17 | Accounting date | 45022 | documentInfo.periodCoveredEnd |
 | D38 | Turnover | 339200 | gl-cor:amount (sa103s.turnover) |
 | O38 | Other business income | 0 | gl-cor:amount (sa103s.otherIncome) |
 | D46 | Cost of sales | 20136.6666666667 | gl-cor:amount (sa103s.costOfSales) |
@@ -1361,6 +1359,7 @@ Journal amounts include VAT at 20%.
 | D99 | **Taxable profit** | 119532.058333333 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Grants as other business income (box 29) | 2083.33333333333 | gl-cor:amount (sa103s.otherBusinessIncome) |
+| A33 | Turnover note | SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £85000 VAT threshold | gl-cor:detailComment (sa103s.notes) |
 | D106 | **Net profit for tax calc** | 121615.391666666 | gl-cor:amount (sa103s.profitForTax) |
 
 ### SE Full
@@ -1390,9 +1389,9 @@ Journal amounts include VAT at 20%.
 | O129 | Net loss (box 47) | 0 | gl-cor:amount (sa103f.netLoss) |
 | D139 | Annual investment allowance (box 48) | 52500 | tax.capitalAllowances.aia (sa103f) |
 | D144 | Writing down allowances (box 49) | 0 | tax.capitalAllowances.wda (sa103f) |
-| D152 | Restricted allowances for expensive cars (box 51) | 3000 | tax.capitalAllowances.restricted (sa103f) |
+| D152 | Restricted allowances for expensive cars (box 51) | 4320 | tax.capitalAllowances.restricted (sa103f) |
 | O139 | Enhanced and other capital allowances (box 54) | 0 | tax.capitalAllowances.enhanced (sa103f) |
-| O144 | Allowances on sale or cessation (box 55) | 8500 | tax.capitalAllowances.balancingAllowance (sa103f) |
+| O144 | Allowances on sale or cessation (box 55) | 7180 | tax.capitalAllowances.balancingAllowance (sa103f) |
 | O149 | **Total capital allowances (box 56)** | 64000 | tax.capitalAllowances (sa103f) |
 | O160 | Balancing charge (box 58) | 0 | tax.capitalAllowances.balancingCharge (sa103f) |
 | D169 | Goods and services for own use (box 59) | 0 | gl-cor:amount (sa103f.ownUse) |
@@ -1500,8 +1499,6 @@ Journal amounts include VAT at 20%.
 | N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
 | G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
-| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
-| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
 | G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
@@ -2037,12 +2034,12 @@ Journal amounts include VAT at 20%.
 | J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
 | K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 48990 |  |
 | Q1 | Total annual investment allowance claimed | 52500 |  |
-| R1 | Total writing down allowance claimed | 3000 |  |
-| S1 | Total tax written down value carried forward | 21000 |  |
+| R1 | Total writing down allowance claimed | 4320 |  |
+| S1 | Total tax written down value carried forward | 19680 |  |
 | V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
 | W1 | Cost of the assets sold in the year | 30000 |  |
 | X1 | Accumulated depreciation on the assets sold in the year | 17328 |  |
-| Y1 | Balancing allowance on the disposals | 8500 |  |
+| Y1 | Balancing allowance on the disposals | 7180 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 33000 |  |
 | E110 | Cost of the assets bought during the year | 52500 |  |
