@@ -6,12 +6,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. PR #43 (wave 5, the roundtrip fidelity programme T0-T7) is merged, refreshed
-(generate-* commits through `f1f1b28a`) and deployed green from main (deploy 33312912993).
-PR #44 (the `ajv` bump) is merged; the operator's refresh and deploy from main follow. Fidelity is parked: `PLAN_ROUNDTRIP_FIDELITY.md`
-holds the state at parking and its remainders, and resumes when a production use of the JS
-representation (`PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back. Every later PR branch starts
-from a rebase onto the post-deploy green main; the operator dispatches CI on branches.
+Nothing. Main is refreshed and deployed through PR #44; every later PR branch starts from a
+rebase onto the post-deploy green main, and the operator dispatches CI on branches.
 
 ## Open items
 
