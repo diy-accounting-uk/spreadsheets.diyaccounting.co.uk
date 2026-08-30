@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Integration branch `claude/next-fidelity-wave` (one PR). Tracks run in
+Integration branch `claude/next-fidelity-wave`, PR #45; CI green at `aaaf2967`. Tracks run in
 `../wt-spreadsheets/<track>` on `claude/wt-<track>`; the coordinator merges each into the
 integration branch as it lands and pushes in batches.
 
