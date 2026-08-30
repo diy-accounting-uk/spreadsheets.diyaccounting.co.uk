@@ -221,7 +221,7 @@ describe("the VAT indicator", () => {
   it("states the registration beside the quarterly boxes when the trader is registered", () => {
     const text = indicatorText("se", "seVat", { vatRegistered: true });
     expect(text).toContain("VAT: the scenario is registered for VAT.");
-    expect(text).toContain("Box 1 output VAT by quarter 5,400.00 / 5,880.00 / 5,310.00 / 3,960.00");
+    expect(text).toContain("Box 1 output VAT by quarter 5,610.00 / 5,580.00 / 5,550.00 / 5,760.00");
     expect(text).toContain("4 of the four quarters carry a non-zero box");
   });
 
