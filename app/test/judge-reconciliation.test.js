@@ -258,9 +258,9 @@ describe("buildIndicators for the Self Employed", () => {
   it("states the SA103F full return's relation to the short return's figures", () => {
     expect(text).toContain(
       "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not. " +
-        "Total expenses (box 30) 169,407.94 = the short return's total expenses 155,667.94 plus total disallowable expenses (box 45) 13,740.00; " +
-        "net profit (box 46) 169,792.06 = the short return's net profit 183,532.06 less that same 13,740.00; " +
-        "total capital allowances (box 56) 64,000.00 sums the same allowances split across more boxes than the short return uses.",
+        "Total expenses (box 31) 169,407.94 = the short return's total expenses 155,667.94 plus total disallowable expenses (box 46) 13,740.00; " +
+        "net profit (box 47) 169,792.06 = the short return's net profit 183,532.06 less that same 13,740.00; " +
+        "total capital allowances (box 57) 64,000.00 sums the same allowances split across more boxes than the short return uses.",
     );
   });
 

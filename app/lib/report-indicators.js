@@ -221,15 +221,15 @@ function sa103fLine(report) {
   if (!report.sections.has(SA103F)) return null;
   const shortExpenses = requireValue(report, SA103S, "Total expenses");
   const shortNetProfit = requireValue(report, SA103S, "Net profit/loss");
-  const disallowable = requireValue(report, SA103F, "Total disallowable expenses (box 45)");
-  const fullExpenses = requireValue(report, SA103F, "Total expenses (box 30)");
-  const fullNetProfit = requireValue(report, SA103F, "Net profit (box 46)");
-  const capitalAllowances = requireValue(report, SA103F, "Total capital allowances (box 56)");
+  const disallowable = requireValue(report, SA103F, "Total disallowable expenses (box 46)");
+  const fullExpenses = requireValue(report, SA103F, "Total expenses (box 31)");
+  const fullNetProfit = requireValue(report, SA103F, "Net profit (box 47)");
+  const capitalAllowances = requireValue(report, SA103F, "Total capital allowances (box 57)");
   return [
     "Self Assessment (SA103F): the full return adds a disallowable-expenses column the short return has not.",
-    `Total expenses (box 30) ${amount(fullExpenses)} = the short return's total expenses ${amount(shortExpenses)} plus total disallowable expenses (box 45) ${amount(disallowable)};`,
-    `net profit (box 46) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)};`,
-    `total capital allowances (box 56) ${amount(capitalAllowances)} sums the same allowances split across more boxes than the short return uses.`,
+    `Total expenses (box 31) ${amount(fullExpenses)} = the short return's total expenses ${amount(shortExpenses)} plus total disallowable expenses (box 46) ${amount(disallowable)};`,
+    `net profit (box 47) ${amount(fullNetProfit)} = the short return's net profit ${amount(shortNetProfit)} less that same ${amount(disallowable)};`,
+    `total capital allowances (box 57) ${amount(capitalAllowances)} sums the same allowances split across more boxes than the short return uses.`,
   ].join(" ");
 }
 
