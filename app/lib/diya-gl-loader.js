@@ -292,15 +292,31 @@ export function diyaGlToScenario(book, lines, product) {
 
   // SE posts opening fixed assets as individual Schedule rows, so the
   // opening journal's cost and depreciation lines become per-asset entries.
+  // The journal carries no written down tax value, and without one the
+  // schedule cannot work out a disposal's balancing allowance, so that figure
+  // comes off the book's own asset register.
   if (product === "se") {
     const SE_ASSET_CATEGORIES = { "0030": "computer", "0040": "motor" };
+    const SE_REGISTER_CATEGORIES = { motorVehicles: "motor", computerTechnology: "computer" };
+    const taxWrittenDownValues = {};
+    for (const asset of book.fixedAssets || []) {
+      const category = SE_REGISTER_CATEGORIES[asset.class];
+      if (category && asset.taxWrittenDownValue !== undefined) {
+        (taxWrittenDownValues[category] ||= []).push(asset.taxWrittenDownValue);
+      }
+    }
     const assets = [];
     const lastByCategory = {};
+    const nextRegisterEntry = {};
     for (const line of filteredLines.filter(isOpeningBalanceLine)) {
       const category = SE_ASSET_CATEGORIES[line.accountMainID];
       if (!category) continue;
       if (line.debitCreditCode === "D") {
         const asset = { category, description: line.lineItemComment || "", cost: line.amount };
+        const index = nextRegisterEntry[category] || 0;
+        nextRegisterEntry[category] = index + 1;
+        const taxWrittenDownValue = taxWrittenDownValues[category]?.[index];
+        if (taxWrittenDownValue !== undefined) asset.tax_wdv = taxWrittenDownValue;
         assets.push(asset);
         lastByCategory[category] = asset;
       } else if (lastByCategory[category]) {
