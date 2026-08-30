@@ -44,8 +44,6 @@ Fixture:
   same bug at `ltd.js:416` bit when `AK` was added; fixed with `/^A\d+$/`). One regex each.
   Rides with T5 (`ltd.js`) and T4 (`se.js`).
 
-Moved from the submit repo's backlog (spreadsheets concerns):
-
 - [ ] **Roundtrip fidelity: bring the JS engine, exporter, schema and fidelity tests to the
   Excel checks' scope** — plan of record `PLAN_ROUNDTRIP_FIDELITY.md` (measured 2026-08-29:
   Ltd 845 values in scope, 832 without a correct JS source; SE 549/535; the exporter folds
@@ -90,15 +88,11 @@ Moved from the submit repo's backlog (spreadsheets concerns):
 - [ ] **Fidelity T7: CI wiring** (Haiku, last) — EQ1 stops being `continue-on-error` and
   becomes a budget gate against `app/data/roundtrip-budget.json` seeded from the scorecard;
   one EQ1 step per generate-* matrix year-end.
-- [ ] **Packages-to-archive migration** (was submit B38; PLAN_PACKAGES_TO_ARCHIVE.md
-  at this root) — generated packages move to the diy-accounting-archive repository and
-  stop being tracked here, ending the mass-commit pattern. Paused by choice; resume is
-  an operator decision.
-- [ ] **Spreadsheets-side VAT export for Submit pairing** (the spreadsheets half of
-  submit B16) — file a VAT return from a DIY spreadsheet without re-keying: the
-  spreadsheets product needs a CSV/digital-link export of the VATQtr boxes that Submit
-  can import. The submit half stays in that repo's backlog. Test: an export whose
-  nine boxes equal the VATQtr sheet's, covered by the reconciliation checks.
+
+## Plans not tracked here
+
+- `PLAN_PACKAGES_TO_ARCHIVE.md` — generated packages move to the archive repository; paused by the operator, resume when wanted.
+- `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
 
