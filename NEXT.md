@@ -13,7 +13,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 |---|---|---|
 | fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | landed on `claude/wave-5` `623833b9`, 331 tests, worktree removed |
 | fidelity-t1b (wave 5) | T1b: masters for brickwork-pro (bank journal, opening lines, ledgers, van, members), sp-sixty (dashcam), kestrel (camera), new basic-taxi-driver; all twelve TOMLs extractor-written; sync gate widened | started, worktree `sp-fidelity-t1b` |
-| fidelity-t2 (wave 5) | T2: `report-serializer.js` (TheReport canonical JSON with units), exporter keeps account identity and all fields and writes a full book, `verify-roundtrip.js` scores both halves with the plan's tolerance table | started, worktree `sp-fidelity-t2` |
+| fidelity-t2 (wave 5) | T2: `report-serializer.js`, exporter keeps account identity (column BZ carrier) and every field, full validating `book.toml`, comparator scoring both halves against the original fixture; fixed inline-string reads, employer NI column, the 20% stamp on non-VAT books | merged into `claude/wave-5` `0a874f8c`, blast radius running, worktree removed |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
 
 ## Open items
@@ -55,23 +55,20 @@ Moved from the submit repo's backlog (spreadsheets concerns):
   figures will move); `taxi-scenario-basic` gets a new `examples/basic-taxi-driver/` master.
   The BrickWork VAT twin is one master with a declared 1.5× build section. All twelve TOMLs
   extractor-written, hand-written ones deleted, sync gate widened to `examples/`.
-- [ ] **Fidelity: the (data, report) export contract** — `export` of an Excel package and of
-  the JS engine each yield (TheData, TheReport); given the same input, both return the same
-  data and the same report. Formally: the data half is a round-trip property (`export ∘
-  generate = id`, generate a section and export its retraction, lossless up to
-  canonicalisation of line order, field order and number format); the report half is
-  observational equivalence of two implementations by differential testing (Excel the
-  reference, JS under test); the whole is a commuting square, the one property verified,
-  with EQ1/EQ2/EQ3 its edges. Tolerance policy: exact for identifiers, account ids,
-  document references, dates, text, counts; money at 2 dp half-up; the flat 20/120 VAT
-  only where the Excel check already tolerates it; never looser than the check; sums of
-  compared values not compared twice; EQ3 on every package. The plan (fidelity-plan track)
-  defines TheReport's canonical form per product; T2 builds it.
-- [ ] **Fidelity T2: the tuple contract and export completeness** (Opus, with T1b) — owns
-  `report-serializer.js` (TheReport as canonical JSON keyed `cell/…`, `section/…`,
-  `check/…` with units), `xlsx-exporter.js`, `export.js`, `verify-roundtrip.js`; account
-  identity kept (SE 5501/5301/5201/5803/5701/5700 today fold into 5300; payroll 5100 →
-  5101), no dropped fields, full `book.toml`; EQ2 scored against the original fixture.
+- [ ] **Fidelity T2: the tuple contract and export completeness** — landed on `claude/wave-5`;
+  closes with wave 5's PR. Remainders: 4 Ltd and 1 SE lines still lost in export (the
+  fixed-asset `cellWrites` layout, S7; a ratchet test holds the count); non-March EQ2 is
+  scored on counts only until the comparator undoes the period-frame date shift;
+  `lineItemComment`/`documentReference` on bank, payroll and SE sales lines have no column
+  (most of the remaining SE 397/696 and Ltd 520/722 whole-field gap); the BST `CELL_MAP`
+  tax names (`class2Rate`, `class4LowerRate`, …) do not match the v2 book schema's
+  (`class2WeeklyRate`, `class4MainRate`, …) — align in T3.
+- [ ] **Fidelity: the (data, report) export contract** — the T2 measurement resets the EQ1
+  baseline (rows reprinting a cell scored once; absent values absent; verdicts in scope):
+  BST 172 Excel / 99 JS / 77 equal / 20 differing / 75 no JS; SE 1561 / 434 / 119 / 311 /
+  1131; Ltd 2124 / 595 / 259 / 321 / 1544. `app/data/roundtrip-unrepresentable.json` (18
+  fields) is the declared exception list. Formal framing and tolerance policy are in the
+  plan.
 - [ ] **Fidelity T3: BST and Taxi calculators** (Sonnet, after T1b with T4-T6) — JS values
   for every cell the BST/Taxi checks read (111 and 87 without a source), `cellLabels()`
   units, tests mirroring the Excel checks one for one, a taxi roundtrip job. BST's 1%
