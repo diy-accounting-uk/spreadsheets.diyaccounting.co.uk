@@ -37,15 +37,24 @@ reconciliation-bug method.
   (`app/bin/verify-roundtrip.js:48`) sends them to different pennies and `E11` inherits it
   (SE `differing` 2). In `canonicalForUnit()` (`:92`) round `money` to 6 dp first, then half-up
   to 2; prove the 0.004/0.006 cases still pass/fail; re-seed SE `differing` to 0.
-- [ ] **F9: settle the Ltd capital-allowance split** (Opus) — `Schedule!R1` (writing down
-  allowance) and `Y1` (balancing allowance on the disposal) read 3,000 / 8,500 in Excel and
-  4,800 / 6,700 in JS (`app/lib/calculators/ltd.js:463-509`, `app/lib/tax/capital-allowances.js`
-  `assetCapitalAllowance`); the 11,500 total agrees, and `CorporationTax!I17/I18` read the pair
-  across the link (Ltd `differing` 4). Read the Schedule's own formulas for the sold van
-  (columns Q-Z of its row) and the CA rules for a disposal in the year (balancing allowance =
-  tax written-down value less proceeds, WDA on the remaining pool) and decide which side is
-  right; fix the wrong side, add a hand-computed test on `ltd-scenario-full`, and if the sheet
-  is wrong the CT check carries the true figure. Re-seed Ltd `differing`.
+- [ ] **F9: remove the obsolete expensive-car cap from the Ltd Schedule** (Sonnet; operator
+  ratified option 1 on 2026-08-30) — `Fixedassets.xlsx!Schedule` row 50's WDA formula
+  `IF(O50>[1]Admin!$E$11,[1]Admin!$G$11*(1-M50),O50*R$4/100)*(1-M50)` applies the pre-2009
+  expensive-car restriction (`Admin!E11` threshold 12,000, `G11` cap 3,000, written by the
+  generator from `ltd-*.toml` `motor_vehicle_cost_threshold`/`motor_vehicle_restriction`) to
+  every motor vehicle, so the sold van claims 3,000 WDA and an 8,500 balancing allowance
+  where the JS claims 4,800 / 6,700 (total 11,500 both ways; nothing filed changes). Do: drop
+  the `E11/G11` branch from the motor block's WDA formulas (every shared master in the
+  block; byte-preserve the rest), make the block's rate cell `R$4` read Admin's WDA rate
+  (18% in 2025-26) instead of the literal 20 and set the JS `SCHEDULE_EXISTING_WRITING_DOWN_PERCENT`
+  from the same tax data, remove the two `motor_vehicle_*` fields from the `ltd-*.toml`
+  files, the generator's Admin writes (`ltd.js:1168-1169`) and the Admin echo checks, keep the
+  "WDA in the year of disposal, then balance the remainder" convention on both sides, and
+  pin the split with a hand-computed test on `ltd-scenario-full` (24,000 × 18% = 4,320 WDA,
+  pool 19,680, balancing allowance 7,180 against 12,500 proceeds, total 11,500). Then re-seed
+  Ltd `differing` in `app/data/roundtrip-budget.json` (expected 0). Same cap also exists on the
+  SE Schedule (`app/templates/se/Fixedassets.xlsx`) and the BST/Taxi Fixed Assets sheets
+  (Admin E8/G8) — apply the same removal there in the same PR so the products agree.
 - [ ] **F7: roll the dependent cached values in the generator** (Sonnet) — a package generated
   without `--data` keeps the template's cached `<v>` on every cell computed from an Admin seed
   until recalculated: the 84 keys in `app/data/volatile-cells.json` (Payslips calendar `B`
