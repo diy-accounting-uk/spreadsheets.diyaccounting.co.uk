@@ -16,10 +16,9 @@ from a rebase onto the post-deploy green main; the operator dispatches CI on bra
 
 The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
 
-- [ ] **Bump `ajv` to 8.18.0** — Dependabot alert #79 (medium): ReDoS in `ajv` when the `$data`
-  option is used, vulnerable `>= 7.0.0-alpha.0 < 8.18.0`; wave 5 added 8.17.1 as a direct
-  dependency. One `package.json`/lock bump on a branch, via PR; the schema validator does
-  not use `$data`.
+- [ ] **Bump `ajv` to 8.18.0** — PR #44 open (`claude/ajv-8-18`, one version bump, 71 schema/
+  canonical/loader tests green). Operator: run test.yml, merge, refresh, deploy. Closes
+  Dependabot alert #79.
 
 
 ## Plans not tracked here
