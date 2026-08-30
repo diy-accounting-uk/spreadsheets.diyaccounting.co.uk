@@ -211,6 +211,38 @@ jobs:
           echo "$COUNT reports, all RECONCILES"
       # The check above stays authoritative for arithmetic. The judge covers the plausibility
       # call it cannot make, and stays skipped until the operator sets ENABLE_LLM_JUDGE.
+      - name: Locate the recalculated package for the scorecard
+        id: roundtrip
+        run: |
+          POPULATED=$(ls reports/populated/*taxi-scenario-basic*.xlsx 2>/dev/null | head -1)
+          if [ -z "$POPULATED" ]; then
+            echo "::warning::No recalculated package for ${{ matrix.year-end }}; skipping the roundtrip scorecard"
+            echo "populated=" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "populated=$(dirname "$POPULATED")" | tee -a "$GITHUB_OUTPUT"
+          # The fixture's transactions carry the master's own fixed calendar
+          # dates whichever year-end package they are stamped into --
+          # cellWrites never shifts them -- so the year the tax data itself
+          # names is the only sensible --years for the JS side.
+          YE="${{ matrix.year-end }}"
+          Y=$((10#${YE:0:4}))
+          echo "years=se-$((Y - 1))-$Y" | tee -a "$GITHUB_OUTPUT"
+      - name: 'Roundtrip scorecard against the recalculated package (informational)'
+        if: ${{ steps.roundtrip.outputs.populated != '' }}
+        run: |
+          node app/bin/report.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/taxi-scorecard-excel
+          node app/bin/report.js --package taxi --data examples/basic-taxi-driver --years ${{ steps.roundtrip.outputs.years }} --output-dir target/taxi-scorecard-js
+          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js
+      # app/bin/export.js has no Taxi Driver support yet, so EQ2 never runs
+      # here, and EQ1 is not gated either: this package's own report labels
+      # are anchored to its own year-end while the fixture's dates never move
+      # off the master's, so EQ1 is only exact for the one year-end that
+      # happens to equal the master's own period end. The scorecard still
+      # prints for visibility; EQ3 stability is this job's only hard gate.
+      - name: 'EQ3: stability of the recalculated package'
+        if: ${{ steps.roundtrip.outputs.populated != '' }}
+        run: node app/bin/verify-stability.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-stability
       - name: Configure AWS role via GitHub OIDC
         if: ${{ matrix.year-end == needs.generate.outputs.latest && vars.ENABLE_LLM_JUDGE == 'true' }}
         uses: aws-actions/configure-aws-credentials@v6
