@@ -105,11 +105,11 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   it("deducts the capital allowances, netting the van's disposal against its own pool", () => {
     // 52,500 of new plant claims the whole cost. The van brought forward a
     // written down value of 24,000; the year's writing down allowance on it
-    // is 20% (4,800), leaving a pool of 19,200, and its sale for 12,500 net
-    // of VAT settles that pool as a balancing allowance of 6,700 rather than
-    // a charge, because the sale falls short of the pool, not over it.
+    // is the Admin rate, 18% (4,320), leaving a pool of 19,680, and its sale
+    // for 12,500 net of VAT settles that pool as a balancing allowance of
+    // 7,180 rather than a charge, because the sale falls short of the pool.
     expect(ct.I15).toBeCloseTo(52500, 2);
-    expect(ct.I18).toBeCloseTo(6700, 2);
+    expect(ct.I18).toBeCloseTo(7180, 2);
     expect(ct.K20).toBeCloseTo(64000, 2);
     expect(ct.K22).toBeCloseTo(124080.39, 2);
   });
