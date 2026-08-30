@@ -534,18 +534,13 @@ and `diya-gl:memberID` names a declared entry.
 
 ## What stays open
 
-**The gate is a budget.** `app/data/roundtrip-budget.json` fails a job when any count rises. Six
-conditions have to hold before EQ1 becomes an exact gate. Five hold today. Every read cell has a JS
-source or a place on a declared blanks list. Both engines write `R` through
-`report-serializer.js`. Every scenario-derived input reaches the JS side from `book.toml`. Every
-key carries a declared unit. And `noJsValue` is zero for all four products. The sixth condition
-wants `noExcelValue` at zero too, and it is zero for Taxi alone.
-
-**The Excel-side command in CI is not given `--data`.** `report.js --source-dir` can read the
-workbook but not the journal, so it publishes no compliance verdicts and no journal-category
-netting rows, and those become the whole `noExcelValue` column. It also means the Excel side's `R`
-carries no check entries, so `toleranceByKey()` finds no windows and every money key compares at 2
-dp exact. The Taxi job already passes `--data`; the other three need the same flag.
+**EQ1 is an exact gate.** Every read cell has a JS source or a place on a declared blanks list.
+Both engines write `R` through `report-serializer.js`. Every scenario-derived input reaches the JS
+side from `book.toml`. Every key carries a declared unit. `noJsValue` and `noExcelValue` are zero
+for all four products, now that every CI job passes `--data` to the Excel-side `report.js` command.
+`app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at the floor a
+real run reaches, zero everywhere except Ltd's `differing`, which stays at 4 for the capital
+allowance split below.
 
 **`book.toml` comes back short.** Missing fields run 90 for BST, 124 for SE and 168 for Ltd, and
 the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
@@ -585,11 +580,6 @@ category to zero and the allowlist with it.
 
 Two SE keys also appear on one side only on that blank package, a blank saved value against a
 computed one. The gate checks moved keys, not keys that appear or disappear.
-
-**A half-penny boundary the canonicalisation does not absorb.** SE `Income Tax!E9` reads
-32,861.2349999998 in Excel and 32,861.235 in JS, so rounding half-up to 2 dp sends the two figures
-to different pennies. `E11` inherits it. Rounding both sides to a working precision above the penny
-before the final round would close it.
 
 **The Ltd capital allowance split.** `Schedule!R1` (writing down allowance claimed) and `Y1`
 (balancing allowance on disposals) read 3,000 and 8,500 in Excel against 4,800 and 6,700 in JS. The
@@ -645,6 +635,5 @@ so the remaining items above buy nothing until something does.
 The VAT export in [PLAN_VAT_EXPORT_FOR_SUBMIT.md](PLAN_VAT_EXPORT_FOR_SUBMIT.md) is the first
 production use in prospect. When it starts, reread this document's "What roundtrip fidelity means"
 and "How we measure it" first, then `app/bin/verify-roundtrip.js` and `app/lib/report-serializer.js`
-for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the
-`noExcelValue` and `book.toml` items above, which are the two that stand between the present budget
-gate and an exact one.
+for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the Ltd capital
+allowance split and `book.toml` items above, the two that remain open.
