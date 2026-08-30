@@ -20,7 +20,7 @@ pushes in batches.
 | f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
 | guides | F9 remainder: guides teach the dead motor cap | — | Haiku | landed, 5 passages across 3 guides, PDF build green |
 | semileage | F18 remainder: SE Sales mileage writer | `../wt-spreadsheets/semileage` | Sonnet | started |
-| f21 | F21 Taxi EQ2 in the generate matrix | `../wt-spreadsheets/f21` | Sonnet | started |
+| f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
 | renumber | SE Full renumbering to the current SA103F | `../wt-spreadsheets/renumber` | Opus | started |
 
 ## Open items
@@ -41,9 +41,6 @@ follow the reconciliation-bug method.
   column D ("Sales Mileage") is read by nothing and written by nothing, so a day's sales miles are
   captured for Taxi and BST but never for SE; give `app/products/se.js` the write and the exporter
   the read, following the Taxi/BST shape, and re-seed SE's data-half counts.
-- [ ] **F21: gate Taxi EQ2 in the generate matrix** (Sonnet) — `generate-taxi.yml`'s matrix still
-  scores only the report half and stability; now the Taxi writer exists, add the export/EQ2 steps
-  and seed a taxi entry in `app/data/roundtrip-matrix-budget.json` from a real matrix run.
 
 ## Plans not tracked here
 
