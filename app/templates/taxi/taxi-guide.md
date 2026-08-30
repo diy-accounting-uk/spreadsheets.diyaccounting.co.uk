@@ -84,13 +84,12 @@ The **Business Details** sheet captures your business information — name, post
 
 Enter in the green shaded area details of existing vehicles at the start of the financial year require updating on the fixed asset schedule located in the Financial Accounts workbook on the **Fixed Assets** sheet.
 
-The fixed asset schedule requires to be updated with the assets existing at the start of the financial year. There are 3 categories of existing assets to be recorded:
+The fixed asset schedule requires to be updated with the assets existing at the start of the financial year. There are 2 categories of existing assets to be recorded:
 
 - Other Fixed Assets bought before the tax year start
-- Vehicles under 12,000 bought before the tax year start
-- Vehicles over 12,000 bought before the tax year start
+- Vehicles bought before the tax year start
 
-Record only assets purchased prior to the tax year start in the green area. For vehicles record the make and model, registration mark, purchase invoice details, the original purchase cost and the date purchased. If you have more than one vehicle enter each separately and note vehicles costing over 12,000 are treated differently for tax purposes than vehicles costing under 12,000, capital allowances being restricted to a maximum of 3,000 p.a.
+Record only assets purchased prior to the tax year start in the green area. For vehicles record the make and model, registration mark, purchase invoice details, the original purchase cost and the date purchased. If you have more than one vehicle enter each separately.
 
 If the vehicle is also used for personal as well as business purposes then enter the percentage of private use based upon mileage covered in column F. This "private use percentage" has the effect of reducing the level of capital allowances claimed by the percentage entered in column F.
 
@@ -197,7 +196,7 @@ Purchase and sales mileage are calculated, totalled and included as a business e
 
 Vehicle depreciation has not been calculated in the accounting system since it has no effect on the business tax, depreciation is disallowed as an expense. Instead the business receives tax allowances on the cost of assets, vehicles, to set against its profit.
 
-Currently 18% of the cost of the vehicle, restricted to a maximum of 3,000 for vehicles costing over 12,000, can be set off against profits in the year purchased. First Year Allowances are not applicable to cars except vans which being commercial vehicles as are hackney cabs and included in the other assets section and attract the 100% annual investment allowance. The remaining value of vehicles is written off against future years profits at 20% of the book value remaining, again restricted for vehicles costing over 12,000.
+Capital allowances on vehicles are calculated using the writing down allowance method, which applies to subsequent years after purchase. First Year Allowances are not applicable to cars except vans which, being commercial vehicles like hackney cabs, are included in the other assets section and attract the 100% annual investment allowance. The remaining value of vehicles is written off against future years' profits at the rate set in the Admin sheet of the book value remaining.
 
 ![Fixed Assets sheet — existing and new vehicles with automatic capital allowance calculations](screenshots/fixed-assets.png)
 
