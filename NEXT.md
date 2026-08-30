@@ -12,11 +12,11 @@ integration branch as it lands and pushes in batches.
 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
-| f2 | F2 Excel-side CI `--data` | `../wt-spreadsheets/f2` | Sonnet | started |
+| f2 | F2 Excel-side CI `--data` | — | Sonnet | merged `cb459cf2`, noExcelValue 66/700/892 → 0; roundtrip test running |
 | f8 | F8 6 dp pre-round | `../wt-spreadsheets/f8` | Sonnet | started |
 | f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
 | f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
-| f16 | F16 BST Debtors block | `../wt-spreadsheets/f16` | Sonnet | started |
+| f16 | F16 BST Debtors block | — | Sonnet | landed `bbc48a3b`, calculator-bst 203/203, sp-sixty RECONCILES 59/59 |
 | f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
 | f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
 | f17 | F17 diya-gl docs examples | — | Haiku | landed `0ad80afc`, docs-examples 9/9 |
@@ -97,12 +97,7 @@ reconciliation-bug method.
   allocate the write per month alongside the purchase rows (cross-sheet: sales/journal miles
   into the purchases tab), extend the sp-sixty master with a mileage-coded month, and assert
   the P&L mileage line and `Income Tax` reflect it on both engines.
-- [ ] **F16: clear the BST Debtors & Creditors block when a book declares no ledger** (Sonnet) —
-  when `opening_debtors`/`closing_debtors` are absent (sp-sixty), `writeEntryBlock`
-  (`app/products/bst.js:97-108`) leaves the sheet's own monthly-sales figure in the block, so a
-  fictitious debtor is published and the JS reports 8 `noJsValue` cells. Write nil into the
-  block's slots when the scenario carries no ledger, add the sp-sixty case to
-  `calculator-bst.test.js`, and re-seed BST in the budget.
+
 
 
 
