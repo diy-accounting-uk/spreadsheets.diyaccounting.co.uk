@@ -21,7 +21,10 @@ Trade: IT consultancy and software development
 | P&L: Net = Gross - Expenses | 265508 | 265508 | 0 | PASS |
 | P&L: Total Sales = sum of monthly Sales sheets | 409900 | 409900 | 0 | PASS |
 | P&L: Expense lines sum = Total | 125852 | 125852 | 0 | PASS |
-| Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 179392.25 | 179392 | -0.25 | PASS |
+| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 178778 | 178777.75 | -0.25 | PASS |
+| Purchases: business miles carried = the journals' miles | 1365 | 1365 | 0 | PASS |
+| Purchases: mileage claimed = those miles at the tax year's approved rates | 614.25 | 614.25 | 0 | PASS |
+| P&L: Motor Expenses = motoring paid for + the mileage claimed | 7598.25 | 7598 | -0.25 | PASS |
 | Opening Stock | 10000 | 10000 | 0 | PASS |
 | Closing Stock | 6000 | 6000 | 0 | PASS |
 | Stock: cost of sales = stock purchases + stock movement | 10540 | 10540 | 0 | PASS |
@@ -49,8 +52,6 @@ Trade: IT consultancy and software development
 | Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
-| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
-| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
@@ -227,6 +228,8 @@ Trade: IT consultancy and software development
 | | Amount |
 |---|------:|
 | Purchases capitalised as fixed assets | 39,000 |
+| Business miles for the year | 1,365 |
+| Mileage claimed for the year | 614.25 |
 
 ## Fixed Assets
 
@@ -259,8 +262,6 @@ Trade: IT consultancy and software development
 | NI Class 4 Upper Limit | 50,270 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
-| Motor Vehicle Cost Threshold | 12,000 |
-| Motor Vehicle Restriction | 3,000 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -396,6 +397,8 @@ Trade: IT consultancy and software development
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | X1 | Purchases capitalised as fixed assets | 39000 | fixedAssets (purchased, year total) |
+| C1 | Business miles for the year | 1365 | gl-bus:measurableQuantity (miles) |
+| A1 | Mileage claimed for the year | 614.25 | tax.mileage (claim) |
 
 ### Fixed Assets
 
@@ -428,8 +431,6 @@ Trade: IT consultancy and software development
 | N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
-| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
-| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
 | G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
