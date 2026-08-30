@@ -63,32 +63,15 @@ const PURCHASE_ANALYSIS_COLUMNS = {
 const SALES_CIS_COLUMN = "V";
 const PURCHASES_CIS_COLUMN = "AK";
 
-// The management P&L rows a single analysis column feeds, and the column each
-// takes. Sales rows are stated net of the sign the trial balance holds income
-// at, so they read as positive turnover.
-const SALES_PL_ROWS = { 4: "O", 5: "P", 6: "Q", 7: "R", 8: "S" };
+// The management P&L's five turnover rows, and the gap between each and the
+// trial balance income row it reads. The trial balance holds income as a
+// credit, so the P&L negates it back to a positive turnover.
+const SALES_PL_ROWS = [4, 5, 6, 7, 8];
 const SALES_ROW_OFFSET = 49;
 const SALES_BAD_DEBT_ROW = 34;
-const PURCHASE_PL_ROWS = {
-  12: "P",
-  13: "Q",
-  19: "R",
-  21: "T",
-  22: "U",
-  23: "V",
-  24: "W",
-  25: "X",
-  26: "Y",
-  27: "Z",
-  28: "AA",
-  29: "AB",
-  30: "AC",
-  31: "AD",
-  32: "AE",
-  33: "AF",
-  37: "AG",
-  38: "AH",
-};
+
+// The management P&L's expense rows and the trial balance row each reads.
+const EXPENSE_PL_ROWS = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74, 28: 75, 29: 76, 30: 77, 31: 78, 32: 79, 33: 80 };
 
 const BANK_ACCOUNT_FILES = {
   1200: "Currentaccount.xlsx",
@@ -808,13 +791,15 @@ function buildHirePurchase(scenario) {
   agreements.forEach((agreement, index) => {
     const row = HP_AGREEMENT_ROWS[index];
     const months = agreement.months || 0;
-    if (months <= 0) return;
     const financed = agreement.amount_financed || 0;
+    if (months <= 0 || financed <= 0) return;
     const interest = agreement.total_interest || 0;
     const adminCharges = agreement.admin_charges || 0;
-    sheet[`I${row}`] = (financed + interest + adminCharges) / months;
-    sheet[`J${row}`] = financed / months;
+    // The whole monthly payment, the interest inside it, and the capital that
+    // is left: I = (E + F + G) / H, K = G / H, J = I - K.
+    sheet[`I${row}`] = (financed + adminCharges + interest) / months;
     sheet[`K${row}`] = interest / months;
+    sheet[`J${row}`] = sheet[`I${row}`] - sheet[`K${row}`];
   });
   return { sheet, longTermCreditor: sheet.E2 };
 }
@@ -1201,10 +1186,10 @@ function buildMonthlyProfitAndLoss(tb, tabs) {
   // The five turnover lines sit 49 rows above their trial balance rows, and
   // the trial balance holds income as a credit, which is why they come back
   // negated.
-  for (const row of Object.keys(SALES_PL_ROWS)) setRow(row, negated(tb.monthly[Number(row) + SALES_ROW_OFFSET]));
+  for (const row of SALES_PL_ROWS) setRow(row, negated(tb.monthly[row + SALES_ROW_OFFSET]));
   setRow(
     9,
-    tabs.map((_, index) => sum(Object.keys(SALES_PL_ROWS).map((row) => pl[`${MONTH_COLS[index]}${row}`]))),
+    tabs.map((_, index) => sum(SALES_PL_ROWS.map((row) => pl[`${MONTH_COLS[index]}${row}`]))),
   );
 
   pl.B11 = tb.EJ60;
@@ -1216,8 +1201,7 @@ function buildMonthlyProfitAndLoss(tb, tabs) {
   pl.B18 = tb.EJ64 + tb.EJ65;
   pl.B19 = tb.EJ66;
   pl.B20 = tb.EJ67;
-  const expenseRows = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74, 28: 75, 29: 76, 30: 77, 31: 78, 32: 79, 33: 80 };
-  for (const [row, source] of Object.entries(expenseRows)) setRow(row, tb.monthly[source]);
+  for (const [row, source] of Object.entries(EXPENSE_PL_ROWS)) setRow(row, tb.monthly[source]);
   setRow(SALES_BAD_DEBT_ROW, tb.monthly[81]);
   pl.B35 = tb.EJ82;
   pl.B36 = tb.EJ83 + tb.EJ88 + tb.EJ89;
