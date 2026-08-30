@@ -14,7 +14,8 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { calculateTaxiResults, calculateMileageAllowance, totalBusinessMiles } from "../lib/calculators/taxi.js";
+import { calculateTaxiResults } from "../lib/calculators/taxi.js";
+import { calculateMileageAllowance, totalBusinessMiles } from "../lib/tax/mileage.js";
 import { checkCompliance, profitBridge } from "../products/taxi.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 
@@ -73,20 +74,12 @@ describe("Taxi calculator — capital allowances and mileage are mutually exclus
   }
 });
 
-// ── Mileage: a real, tested capability, gated off the P&L today ───────────
-//
-// cellWrites (app/products/taxi.js) never writes measurableQuantity to a
-// Purchases sheet's mileage column, so a generated package's own C1 never
-// reads "MILEAGE ALLOWANCE" and the sheet always takes the actual-cost
-// route. calculateMileageAllowance() and totalBusinessMiles() are correct
-// and tested independently here; the P&L's own B11 stays nil to match what
-// the sheet actually computes until that wiring exists.
+// ── The mileage route ────────────────────────────────────────────────────
 
-describe("Taxi calculator — the mileage claim, computed independently of the sheet", () => {
+describe("Taxi calculator — the mileage claim", () => {
   it("SP Sixty Driving's 20,000 business miles claim 7,000", () => {
-    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
-    const salesLines = lines.filter((l) => l.sourceJournalID === "sales");
-    const miles = totalBusinessMiles(salesLines);
+    const { lines } = loadDiyaGlData(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
+    const miles = totalBusinessMiles(lines);
     expect(miles).toBe(20000);
     expect(calculateMileageAllowance(miles, taxData.mileage)).toBe(10000 * 0.45 + 10000 * 0.25);
   });
@@ -95,10 +88,26 @@ describe("Taxi calculator — the mileage claim, computed independently of the s
     expect(calculateMileageAllowance(4000, taxData.mileage)).toBe(4000 * 0.45);
   });
 
-  it("B11 (mileage allowance) is nil on every fixture, matching the sheet's real behaviour", () => {
-    for (const { dir } of FIXTURES) {
+  it("charges SP Sixty Driving the claim and none of the running costs", () => {
+    const { results } = runFixture(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
+    const pl = results["Profit & Loss Acc"];
+    expect(pl.B11).toBe(7000);
+    expect([pl.B6, pl.B7, pl.B8, pl.B9, pl.B10]).toEqual([0, 0, 0, 0, 0]);
+    expect(pl.B12).toBe(7000);
+  });
+
+  it("carries the year's miles and claim on the last month's purchase sheet", () => {
+    const { results } = runFixture(resolve(ROOT, "examples", "sp-sixty-driving", "taxi"));
+    expect(results.PurchasesMar.A1).toBe(20000);
+    expect(results.PurchasesMar.A2).toBe(7000);
+  });
+
+  it("charges the running costs where they beat the claim", () => {
+    for (const { dir } of FIXTURES.slice(1)) {
       const { results } = runFixture(dir);
-      expect(results["Profit & Loss Acc"].B11).toBe(0);
+      const pl = results["Profit & Loss Acc"];
+      expect(pl.B11).toBe(0);
+      expect(pl.B6 + pl.B7 + pl.B8 + pl.B9).toBeGreaterThan(0);
     }
   });
 });
@@ -127,7 +136,7 @@ describe("Taxi calculator checks are breakable", () => {
     expect(newlyBroken).toContain("Total Sales");
   });
 
-  it("inflating a fuel purchase fails the vehicle running cost check", () => {
+  it("inflating a fuel purchase fails the cash purchase analysis check", () => {
     const { book, lines } = loadDiyaGlData(dir);
     const scenario = diyaGlToScenario(book, lines, "taxi");
     const anchor = { ...scenario, ...scenario.expected };
@@ -139,9 +148,56 @@ describe("Taxi calculator checks are breakable", () => {
     const results = calculateTaxiResults(book, mutatedLines, taxData, anchor);
     const checks = checkCompliance(results, anchor, taxData, calculateExpectedTax);
 
-    expect(checkByName(checks, "Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles").pass).toBe(
-      false,
+    expect(
+      checkByName(checks, "Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles").pass,
+    ).toBe(false);
+  });
+
+  it("dropping a fare day's miles fails the mileage checks and nothing else", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const before = checkCompliance(calculateTaxiResults(book, lines, taxData, anchor), anchor, taxData, calculateExpectedTax);
+
+    const mutatedLines = lines.map((l) =>
+      l.entryNumber === "TXN-0001" ? { ...l, measurableQuantity: undefined, measurableUnitOfMeasure: undefined } : l,
     );
+    const after = checkCompliance(calculateTaxiResults(book, mutatedLines, taxData, anchor), anchor, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken.sort()).toEqual([
+      "P&L: Mileage Allowance = the claim when it beats running the vehicle",
+      "Purchases: business miles carried = the journals' miles",
+      "Purchases: mileage claimed = those miles at the tax year's approved rates",
+    ]);
+  });
+
+  it("claiming a mileage-log entry's amount as well as its miles fails the purchase analysis", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const before = checkCompliance(calculateTaxiResults(book, lines, taxData, anchor), anchor, taxData, calculateExpectedTax);
+
+    // The claim's own amount put back into a running-cost column, which is
+    // what charging the journey twice would look like.
+    const doubleClaimed = {
+      ...anchor,
+      purchases: Object.fromEntries(Object.entries(anchor.purchases).map(([month, txns]) => [month, txns.map(({ mileage, ...tx }) => tx)])),
+    };
+    const after = checkCompliance(calculateTaxiResults(book, lines, taxData, anchor), doubleClaimed, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toContain("Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles");
   });
 
   it("a wrong Admin tax rate fails only the Admin echo and the rate-application checks", () => {

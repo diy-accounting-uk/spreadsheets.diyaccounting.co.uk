@@ -10,6 +10,7 @@ import { BST_PURCHASE_CODE_MAP, BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } f
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
+import { calculateMileageAllowance, scenarioBusinessMiles } from "../tax/mileage.js";
 import { aggregateByCode } from "./shared.js";
 
 const BST_MONTH_COLS = {
@@ -60,6 +61,14 @@ function seShortCapitalAllowances(fa) {
   return { d80, o80, d85, o85, total: -o85 + d80 + d85 + o80 };
 }
 
+// Business miles a line records. On a purchase that makes it a mileage-log
+// entry: it buys nothing, its whole expense is the claim the approved rate
+// makes of the miles, and cellWrites gives the sheet the miles instead of the
+// amount so the sheet can make that claim itself.
+function carriesBusinessMiles(line) {
+  return line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number";
+}
+
 export function calculateBstResults(book, lines, taxData, scenario) {
   // Filter to BST lines only
   const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && BST_SALES_ACCOUNTS.has(String(l.accountMainID)));
@@ -76,8 +85,19 @@ export function calculateBstResults(book, lines, taxData, scenario) {
     monthlySales[month] += line.amount;
   }
 
-  // Purchase expenses by code
-  const byCode = aggregateByCode(purchaseLines, BST_PURCHASE_CODE_MAP);
+  // Purchase expenses by code. A mileage-log entry is left out: it buys
+  // nothing, and cellWrites gives the sheet its miles rather than its amount
+  // so the sheet can price the claim at its own Admin rates.
+  const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
+  const byCode = aggregateByCode(cashPurchaseLines, BST_PURCHASE_CODE_MAP);
+
+  // The mileage claim the sheet makes of those miles. It reaches Motor
+  // Expenses (verified against the template: PurchasesApr!G4 bands the running
+  // mileage total at C1, P3 = IF(E$4="m",G$4," ") files it under the motor
+  // code, and P&L!D15 reads that month's P1) -- alongside any motoring the
+  // trade did pay cash for, because this P&L has no either/or.
+  const businessMiles = scenarioBusinessMiles(scenario);
+  const mileageAllowance = calculateMileageAllowance(businessMiles, taxData.mileage);
 
   // Stock (verified against the template: Profit & Loss Acc!D6:O6 each read
   // PurchasesStock!$D$5-PurchasesStock!$D$7 alongside that month's own
@@ -97,7 +117,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const premises = Math.round(byCode.p || 0);
   const repairs = Math.round(byCode.r || 0);
   const genAdmin = Math.round(byCode.g || 0);
-  const motor = Math.round(byCode.m || 0);
+  const motor = Math.round((byCode.m || 0) + mileageAllowance);
   const travel = Math.round(byCode.t || 0);
   const advertising = Math.round(byCode.a || 0);
   const legal = Math.round(byCode.l || 0);
@@ -327,6 +347,13 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // total (verified against the template: PurchasesMar!X1 =
   // W1+PurchasesFeb!X1, a running sum of every month's code-"f" total).
   results.PurchasesMar.X1 = Math.round(assetAdditions.reduce((sum, asset) => sum + asset.cost, 0) * 100) / 100;
+
+  // The year's mileage, as the last month's sheet carries it: the running
+  // mileage total (verified against the template: PurchasesMar!C1 =
+  // PurchasesFeb!C1+PurchasesMar!F1+SalesMar!$E$1) and the claim made of it
+  // (A1 = G4+PurchasesFeb!A1).
+  results.PurchasesMar.C1 = businessMiles;
+  results.PurchasesMar.A1 = Math.round(mileageAllowance * 100) / 100;
 
   return results;
 }

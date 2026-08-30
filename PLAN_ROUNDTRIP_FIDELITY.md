@@ -570,10 +570,6 @@ product it applies to and what the sheets do instead, and those are counted apar
 **The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
 needs journal lines outside the accounting period, which the master does not carry.
 
-**Mileage is computed and never written.** The Taxi and BST calculators work the mileage claim out
-of `measurableQuantity`, but `cellWrites` never writes that quantity to the Purchases mileage
-column, so no generated package can take the mileage route rather than the actual-cost route.
-
 **`export.js` has no Taxi writer.** `xlsx-exporter.js`'s `periodCovered()` finds no postings on the
 Taxi package's own sheets, so EQ2 and the double-roundtrip do not run for Taxi and its
 `roundtrip-taxi` job gates the report half and stability only.

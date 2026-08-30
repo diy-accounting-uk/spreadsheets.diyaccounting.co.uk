@@ -8,6 +8,7 @@
 import JSZip from "jszip";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
 import { BST_PURCHASE_CODE_MAP, SE_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "./scenario-extractor.js";
+import { calculateMileageAllowance } from "./tax/mileage.js";
 import { findXlsx } from "./xlsx-reader.js";
 import { readFileSync as readSchemaFile } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
@@ -182,8 +183,14 @@ export async function extractBstTransactions(xlsxBuffer) {
     }
   }
 
-  // Purchases: rows 5+, A=date, B=supplier, E=code, G=amount
+  // Purchases: rows 5+, A=date, B=supplier, E=code, F=mileage, G=amount.
+  // A mileage-log row carries miles where a bought purchase carries an
+  // amount: the workbook prices the miles itself, so the export prices them
+  // back the same way, banding each row against the miles the rows before it
+  // already claimed (the running total the sheet keeps at C1 and bands at G4).
   const reversePurchase = buildReverseCodeMap(BST_PURCHASE_CODE_MAP);
+  const mileageRates = await adminMileageRates(sheetMap, zip, sharedStrings);
+  let milesToDate = 0;
   for (let mi = 0; mi < 12; mi++) {
     const sheetName = BST_PURCHASE_SHEETS[mi];
     const sheetPath = sheetMap.get(sheetName);
@@ -192,22 +199,38 @@ export async function extractBstTransactions(xlsxBuffer) {
 
     for (let row = 5; row <= 200; row++) {
       const dateVal = readCellValue(xml, `A${row}`, sharedStrings);
+      if (dateVal === null) break;
       const amount = readCellValue(xml, `G${row}`, sharedStrings);
-      if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `G${row}`)) continue;
+      const miles = readCellValue(xml, `F${row}`, sharedStrings);
+      const claimsMileage = typeof miles === "number" && miles > 0 && !hasCellFormula(xml, `F${row}`);
+      if (!claimsMileage) {
+        if (amount === null || typeof amount !== "number") break;
+        if (hasCellFormula(xml, `G${row}`)) continue;
+      }
 
       const supplier = readCellValue(xml, `B${row}`, sharedStrings) || "";
       const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
 
+      let claimed;
+      if (claimsMileage) {
+        claimed = calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+        milesToDate += miles;
+      }
+
       const line = {
         sourceJournalID: "purchases",
         postingDate: excelSerialToDate(dateVal),
         accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, "5002"),
-        amount,
+        amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
         entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
       };
+      if (claimsMileage) {
+        line.documentType = "mileage-log";
+        line.measurableQuantity = miles;
+        line.measurableUnitOfMeasure = "miles";
+      }
       const reference = textAt(xml, `C${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       lines.push(line);
@@ -215,6 +238,19 @@ export async function extractBstTransactions(xlsxBuffer) {
   }
 
   return lines;
+}
+
+// The approved mileage rates the generator injected into the Admin sheet, in
+// the shape calculateMileageAllowance() takes.
+async function adminMileageRates(sheetMap, zip, sharedStrings) {
+  const adminPath = sheetMap.get("Admin");
+  if (!adminPath) return { higher_rate_limit: 0, higher_rate_pence: 0, lower_rate_pence: 0 };
+  const xml = await zip.file(adminPath).async("string");
+  return {
+    higher_rate_limit: numberAt(xml, "F21", sharedStrings) ?? 0,
+    higher_rate_pence: numberAt(xml, "G21", sharedStrings) ?? 0,
+    lower_rate_pence: numberAt(xml, "G22", sharedStrings) ?? 0,
+  };
 }
 
 /**

@@ -322,7 +322,13 @@ describe("buildIndicators for the Taxi Driver", () => {
       "less 200.00 of capital allowances (Annual investment allowance (box 22) 0.00, " +
         "Small-balance allowance (box 23) 172.00, Other capital allowances (box 24) 28.00)",
     );
-    expect(split).toContain("gives a net business profit of 31,612.00.");
+    expect(split).toContain("gives a net business profit of 29,480.00.");
+  });
+
+  it("says the workbook charged the mileage claim rather than the running costs", () => {
+    const claimed = indicatorText("taxi", "taxiSpSixty");
+    expect(claimed).toContain("the year's mileage claim of 7,000.00 beats the 4,640.00 the vehicle cost to run");
+    expect(claimed).toContain("Business miles for the year 20,000, claimed at the approved rates as 7,000.00.");
   });
 });
 

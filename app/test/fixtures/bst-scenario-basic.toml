@@ -1243,6 +1243,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "m"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.apr]]
@@ -1534,6 +1535,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Birmingham"
 code = "m"
 amount = 54
+mileage = 120
 account = "5601"
 
 [[purchases.may]]
@@ -1809,6 +1811,7 @@ supplier = "Mileage claim"
 description = "Business mileage to London"
 code = "m"
 amount = 90
+mileage = 200
 account = "5601"
 
 [[purchases.jun]]
@@ -2109,6 +2112,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Leeds"
 code = "m"
 amount = 20.25
+mileage = 45
 account = "5601"
 
 [[purchases.jul]]
@@ -2383,6 +2387,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "m"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.aug]]
@@ -2657,6 +2662,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Bristol"
 code = "m"
 amount = 72
+mileage = 160
 account = "5601"
 
 [[purchases.sep]]
@@ -2956,6 +2962,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Sheffield"
 code = "m"
 amount = 42.75
+mileage = 95
 account = "5601"
 
 [[purchases.oct]]
@@ -3232,6 +3239,7 @@ supplier = "Mileage claim"
 description = "Business mileage to London"
 code = "m"
 amount = 81
+mileage = 180
 account = "5601"
 
 [[purchases.nov]]
@@ -3498,6 +3506,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Various"
 code = "m"
 amount = 49.5
+mileage = 110
 account = "5601"
 
 [[purchases.dec]]
@@ -3797,6 +3806,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "m"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.jan]]
@@ -4079,6 +4089,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Nottingham"
 code = "m"
 amount = 31.5
+mileage = 70
 account = "5601"
 
 [[purchases.feb]]
@@ -4337,6 +4348,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Various"
 code = "m"
 amount = 58.5
+mileage = 130
 account = "5601"
 
 [[purchases.mar]]
@@ -4481,4 +4493,5 @@ net_profit = 265508
 total_premises = 15840
 total_gen_admin = 1962
 total_legal = 4560
+total_mileage = 1365
 fixed_asset_cost = 39000

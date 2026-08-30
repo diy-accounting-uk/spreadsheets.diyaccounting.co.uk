@@ -111,7 +111,7 @@ Key differences from BST:
 - Taxi Sales sheets have **pre-filled daily dates** grouped into weekly blocks (BST has blank date columns)
 - Taxi P&L uses **column B** for values (BST uses column C)
 - Taxi Purchases use **column D for expense code** and **column F for amount** (BST uses E for code, G for amount)
-- Taxi Purchases have a **mileage column (E)** for purchase-related mileage
+- Taxi Purchases have a **mileage column (E)** for purchase-related mileage, and Taxi Sales a **mileage column (D)** for the day's business miles
 - Taxi has a **VitalTax** quarterly summary sheet and a **Wages Forecast** sheet
 
 ## Intra-Workbook Data Flow
@@ -342,6 +342,9 @@ The `cellWrites()` function in `app/products/taxi.js` produces writes for:
 **Purchase writes** -- sequential rows starting at 5:
 - Each month's transactions are written sequentially from row 5
 - `A{row}` = date serial, `B{row}` = supplier string, `D{row}` = code letter, `F{row}` = amount
+- A mileage-log entry goes in as `E{row}` = miles and no amount: the sheet prices the claim itself, and entering the amount as well would charge the journey twice
+
+**Mileage** -- `PurchasesApr!A1` adds the Purchases sheet's own column E to `SalesApr!D1` and carries the total month to month; `U4` bands it at the Admin rates and `U1` totals the month's claim. `Profit & Loss Acc!C1` reads "MILEAGE ALLOWANCE" when the year's claim (`PurchasesMar!A2`) beats the running costs plus capital allowances, and the P&L then charges `B11` and zeroes `B6:B10`.
 
 ### Standard Reads
 

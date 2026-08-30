@@ -120,6 +120,22 @@ function amount(number) {
   return number === null ? "not reported" : money.format(number);
 }
 
+function count(number) {
+  return number === null ? "not reported" : number.toLocaleString("en-GB");
+}
+
+// What the vehicle's cost came to and how it was claimed. Both packages price
+// the business miles the entries carry: the Taxi P&L charges either that claim
+// or the running costs, whichever is larger, while the Basic Sole Trader P&L
+// adds the claim to Motor Expenses. Saying which happened stops a nil running
+// cost, or a Motor Expenses line larger than the motoring bought, reading as a
+// figure gone missing.
+function mileageLine(report, { claimed }) {
+  const miles = value(report, "Purchase Analysis", "Business miles for the year");
+  if (!miles) return "No business miles were recorded, so no mileage claim arises.";
+  return `Business miles for the year ${count(miles)}, claimed at the approved rates as ${amount(claimed)}.`;
+}
+
 // ── Indicator lines ─────────────────────────────────────────────────────────
 
 function runLine(report) {
@@ -351,6 +367,7 @@ function bstIndicators(report) {
     runLine(report),
     `Turnover ${amount(turnover)}, gross profit ${amount(gross)}, net profit ${amount(net)}.`,
     `Capital allowances of ${amount(split.total)} claimed against ${amount(capitalised)} of purchases capitalised as fixed assets.`,
+    mileageLine(report, { claimed: value(report, "Purchase Analysis", "Mileage claimed for the year") }),
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",
       fromLabel: "net profit",
@@ -375,10 +392,15 @@ function taxiIndicators(report) {
     additions: ["Balancing charges (box 25)", "Goods and services for own use (box 26)"],
   });
 
+  const vehicleCosts = mileage
+    ? `Vehicle costs: the year's mileage claim of ${amount(mileage)} beats the ${amount(running)} the vehicle cost to run, so the workbook charges the claim and leaves the running costs and the capital allowances at zero.`
+    : `Vehicle costs: running costs ${amount(running)} charged, mileage allowance ${amount(mileage)}. The workbook takes one of the two and leaves the other at zero.`;
+
   return [
     runLine(report),
     `Turnover ${amount(turnover)}, gross profit ${amount(gross)}, net profit ${amount(net)}.`,
-    `Vehicle costs: running costs ${amount(running)} charged, mileage allowance ${amount(mileage)}. The workbook takes one of the two and leaves the other at zero.`,
+    vehicleCosts,
+    mileageLine(report, { claimed: value(report, "Purchase Analysis", "Mileage claimed for the year") }),
     `Capital allowances of ${amount(split.total)} claimed against ${amount(capitalised)} of vehicle purchases capitalised.`,
     selfAssessmentLine(report, split, {
       from: "Net profit/loss",

@@ -167,7 +167,7 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
     const reads = taxiReads();
     const withJournal = { ...scenario, ...scenario.expected };
     const intact = await readWithCorruption(populatedPath, reads, null, null, null);
-    const name = "Purchases: journal total = general expenses + vehicle running costs + capitalised vehicles";
+    const name = "Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles";
     expect(taxiCheckCompliance(intact, withJournal, taxData, calculateExpectedTax).find((c) => c.name === name).pass).toBe(true);
 
     const results = await readWithCorruption(populatedPath, reads, "PurchasesMar", "T1", 0);

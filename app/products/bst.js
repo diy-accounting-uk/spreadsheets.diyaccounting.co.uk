@@ -9,6 +9,7 @@ import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
+import { calculateMileageAllowance } from "../lib/tax/mileage.js";
 
 export const PRODUCT = {
   id: "bst",
@@ -74,7 +75,14 @@ export function cellWrites(scenario) {
         if (tx.reference) sheet[`C${row}`] = tx.reference;
         if (tx.payment) sheet[`D${row}`] = tx.payment;
         sheet[`E${row}`] = tx.code;
-        sheet[`G${row}`] = tx.amount;
+        // A mileage-log entry buys nothing: its whole expense is the claim the
+        // approved rate makes of the miles, and the sheet makes that claim
+        // itself. Column F takes the miles (PurchasesApr!F1 = SUM(F5:F300),
+        // read into the running mileage total at C1, priced at G4 and analysed
+        // into Motor Expenses through P3 = IF(E$4="m",G$4," ")), so writing the
+        // amount in column G as well would charge the same journey twice.
+        if (tx.mileage) sheet[`F${row}`] = tx.mileage;
+        else sheet[`G${row}`] = tx.amount;
         if (tx.account) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = tx.account;
         row++;
       }
@@ -249,6 +257,8 @@ export const CELL_MAP = [
   ["Debtors & Creditors", "F15", "Closing Creditor 4","creditors[timing=closing][3].amount", "Debtors & Creditors", 1, "money"],
   // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
   ["PurchasesMar", "X1", "Purchases capitalised as fixed assets", "fixedAssets (purchased, year total)", "Purchase Analysis", 0, "money"],
+  ["PurchasesMar", "C1", "Business miles for the year",           "gl-bus:measurableQuantity (miles)",   "Purchase Analysis", 0, "count"],
+  ["PurchasesMar", "A1", "Mileage claimed for the year",          "tax.mileage (claim)",                 "Purchase Analysis", 0, "money"],
   // ── Fixed Assets schedule ──
   ["Fixed Assets", "E67",  "New Asset Cost (Plant & Machinery)",     "fixedAssets[0].cost",             "Fixed Assets", 1, "money"],
   ["Fixed Assets", "E1",   "Total Original Cost",                   "fixedAssets (totalCost)",          "Fixed Assets", 0, "money"],
@@ -392,13 +402,37 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // as a shortfall here even though every total on its own still adds up.
   const purchases = results.PurchasesMar;
   if (expected.purchases && purchases && results.PurchasesStock) {
+    // A mileage-log entry buys nothing, so it is not among the purchases that
+    // have to reach a money column: the sheet is given its miles and prices the
+    // claim itself, into Motor Expenses. Both sides leave it out -- the claim
+    // is checked on its own terms below.
     const journalTotal = Object.values(expected.purchases)
       .flat()
+      .filter((tx) => !tx.mileage)
       .reduce((s, tx) => s + tx.amount, 0);
     const stockMovement = (results.PurchasesStock.D5 || 0) - (results.PurchasesStock.D30 || 0);
     const stockPurchases = (pl.C6 || 0) - stockMovement;
-    const accountedFor = (pl.C22 || 0) + (pl.C7 || 0) + stockPurchases + (purchases.X1 || 0);
-    check("Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
+    const accountedFor = (pl.C22 || 0) + (pl.C7 || 0) + stockPurchases + (purchases.X1 || 0) - (purchases.A1 || 0);
+    check("Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets", accountedFor, journalTotal);
+  }
+
+  // The mileage claim. This P&L has no choice to make between the two ways of
+  // charging a vehicle -- the claim simply adds to Motor Expenses beside any
+  // motoring the trade paid cash for (verified against the template:
+  // PurchasesApr!G4 bands the running mileage total at C1, P3 =
+  // IF(E$4="m",G$4," ") files it under the motor code, and P&L!D15 reads that
+  // month's P1). Both sides are recomputed from the scenario's own miles and
+  // the tax year's rates, so a package that drops the miles cannot pass.
+  const businessMiles = expected.total_mileage || 0;
+  if (taxData && businessMiles && purchases) {
+    const mileageClaim = calculateMileageAllowance(businessMiles, taxData.mileage);
+    const cashMotor = Object.values(expected.purchases || {})
+      .flat()
+      .filter((tx) => tx.code === "m" && !tx.mileage)
+      .reduce((s, tx) => s + tx.amount, 0);
+    check("Purchases: business miles carried = the journals' miles", purchases.C1 || 0, businessMiles, 0);
+    check("Purchases: mileage claimed = those miles at the tax year's approved rates", purchases.A1 || 0, mileageClaim, 0.01);
+    check("P&L: Motor Expenses = motoring paid for + the mileage claimed", pl.C15 || 0, cashMotor + mileageClaim);
   }
 
   // Stock. A fixture states it either as its own table or among the totals it
