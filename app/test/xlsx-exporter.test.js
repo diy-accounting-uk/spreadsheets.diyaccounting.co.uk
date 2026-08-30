@@ -191,12 +191,15 @@ describe("fields the sheets carry", () => {
 describe("analysisHeadings", () => {
   it("reads each code letter's own column heading off the sheet", () => {
     const xml = sheetXml({ J2: "Stock Purchases", K3: "Direct Materials", J4: "S", K4: "D", A4: 45754 });
-    expect(analysisHeadings(xml, [])).toEqual({ s: "Stock Purchases", d: "Direct Materials" });
+    expect(analysisHeadings(xml, [])).toEqual({
+      s: { column: "J", heading: "Stock Purchases" },
+      d: { column: "K", heading: "Direct Materials" },
+    });
   });
 
   it("prefers the more specific heading row where the sheet carries both", () => {
     const xml = sheetXml({ T2: "Premises ", T3: "Rent & Rates", T4: "R" });
-    expect(analysisHeadings(xml, []).r).toBe("Rent & Rates");
+    expect(analysisHeadings(xml, []).r).toEqual({ column: "T", heading: "Rent & Rates" });
   });
 });
 
@@ -227,7 +230,7 @@ describe("extractBook", () => {
 
   it("names each account from the sheet's own analysis column heading", async () => {
     const { book } = await exportedBook();
-    expect(book.accounts.purchases["5301"].accountMainDescription).toBe("Other Expenses");
+    expect(book.accounts.purchases["5301"]).toEqual({ "accountMainDescription": "Other Expenses", "diya-gl:column": "V" });
   });
 
   it("carries the company's own details off the sheet it keeps them on", async () => {

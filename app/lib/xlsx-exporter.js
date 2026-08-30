@@ -888,11 +888,11 @@ for (let first = 0; first <= 1; first++) {
 }
 
 /**
- * The name each expense or income code letter carries on a transaction
- * sheet. Row 4 of a month tab holds one code letter per analysis column and
- * rows 2 and 3 hold that column's heading, so the sheet names its own
- * categories and nothing has to be assumed about them.
- * @returns {Object} { code letter in lower case -> the column's heading }
+ * The analysis column each expense or income code letter is totalled in, and
+ * the name that column carries. Row 4 of a month tab holds one code letter
+ * per analysis column and rows 2 and 3 hold that column's heading, so the
+ * sheet names its own categories and nothing has to be assumed about them.
+ * @returns {Object} { code letter in lower case -> { column, heading } }
  */
 export function analysisHeadings(xml, sharedStrings) {
   const headings = {};
@@ -900,7 +900,7 @@ export function analysisHeadings(xml, sharedStrings) {
     const code = readCellValue(xml, `${column}4`, sharedStrings);
     if (typeof code !== "string" || !/^[A-Za-z]{1,2}$/.test(code.trim())) continue;
     const heading = textAt(xml, `${column}3`, sharedStrings) || textAt(xml, `${column}2`, sharedStrings);
-    if (heading) headings[code.trim().toLowerCase()] = heading.replace(/\s+/g, " ");
+    if (heading) headings[code.trim().toLowerCase()] = { column, heading: heading.replace(/\s+/g, " ") };
   }
   return headings;
 }
@@ -915,19 +915,20 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
   const accounts = {};
   for (const code of new Set(lines.map((line) => String(line.accountMainID)))) {
     const section = accountSection(code);
-    const heading =
-      section === "sales"
-        ? salesHeadings[salesCodes[code]]
-        : section === "purchases"
-          ? purchaseHeadings[purchaseCodes[code]]
-          : section === "bank"
-            ? BANK_ACCOUNT_NAMES[code]
-            : OA_JOURNAL_MAP.find((mapping) => mapping.accountMainID === code)?.comment;
+    const analysis =
+      section === "sales" ? salesHeadings[salesCodes[code]] : section === "purchases" ? purchaseHeadings[purchaseCodes[code]] : null;
+    const named =
+      analysis?.heading ??
+      (section === "bank" ? BANK_ACCOUNT_NAMES[code] : OA_JOURNAL_MAP.find((mapping) => mapping.accountMainID === code)?.comment);
     if (!accounts[section]) accounts[section] = {};
     // The schema requires a description on every account. A sheet that names
     // no analysis column for a code says nothing about it, and the code is
     // then all the account has.
-    accounts[section][code] = { accountMainDescription: heading || `Account ${code}` };
+    const account = { accountMainDescription: named || `Account ${code}` };
+    // The column the sheet totals this account in, which is what makes the
+    // account's own place on the transaction sheet part of the book.
+    if (analysis) account["diya-gl:column"] = analysis.column;
+    accounts[section][code] = account;
   }
   return accounts;
 }
