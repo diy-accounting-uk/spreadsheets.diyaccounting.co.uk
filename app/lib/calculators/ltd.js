@@ -649,7 +649,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const payroll = payrollByTab(scenario, tabs);
   results.WagesInterface = buildWagesInterface(payroll, tabs);
   results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
-  results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(period);
+  results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period);
 
   const companySecretary = buildCompanySecretary(scenario);
   Object.assign(results, companySecretary);
@@ -851,8 +851,13 @@ function buildPayslipsPayment(payroll, tabs) {
 // The calendar every payslip dates from. B2 carries the payroll year's first
 // day and every date under it is the row above plus one, so naming the row a
 // month opens on names its date, its tax week and its week within the month.
-function buildPayslipsCalendar(period) {
-  const payrollYearStart = new Date(Date.UTC(period.start.getUTCFullYear(), 3, 6));
+// The payroll year is the tax year the package was generated for, not the
+// accounting period, so a company with a June year end still runs its payroll
+// from the 6 April the rates start on.
+function buildPayslipsCalendar(taxData, period) {
+  const financialYearStart = taxData.financial_year?.start;
+  const payrollYear = financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
+  const payrollYearStart = new Date(Date.UTC(payrollYear, 3, 6));
   const anchor = serialOf(payrollYearStart);
   const sheet = { B2: anchor };
   for (const { month, row, daysBefore, week } of payrollMonthStarts()) {
@@ -1398,31 +1403,42 @@ function corporationTaxReads(sheet) {
   return reads;
 }
 
-// The filed form, box by box, from the working sheet beside it.
+// The filed form, box by box, from the working sheet beside it. A form states
+// a figure only when there is one to state: a box the sheet leaves blank
+// rather than nil is left out here too, and a year that made a loss files
+// nothing in the trading profit and chargeable profit boxes.
 function buildCt600(corporationTax, pl, admin) {
   const sheet = {
     B33: admin.L6,
     M33: admin.N7,
     AK66: pl.B9,
-    Z70: corporationTax.K22,
-    AJ74: corporationTax.K22,
-    AJ76: corporationTax.K24,
-    AJ92: corporationTax.K28,
-    AJ110: corporationTax.K28,
     C126: corporationTax.E33,
     N126: corporationTax.F33,
     AA126: corporationTax.G33,
     AJ126: corporationTax.J33,
     AJ128: corporationTax.J34,
-    AJ145: corporationTax.K35,
-    AJ154: corporationTax.K37,
-    AJ159: corporationTax.K39,
-    AJ166: corporationTax.K39,
   };
+  // The second financial year's row is stated only when the period reaches
+  // into it.
+  if (corporationTax.A34 > 0) {
+    sheet.C128 = corporationTax.E34;
+    sheet.N128 = corporationTax.F34;
+    sheet.AA128 = corporationTax.G34;
+  }
+  if (corporationTax.K22 > 0) sheet.Z70 = corporationTax.K22;
+  if (corporationTax.K26 > 0) sheet.Z72 = corporationTax.K26;
+  if (corporationTax.K24 > 0) sheet.AJ76 = corporationTax.K24;
+  sheet.AJ74 = (sheet.Z70 || 0) - (sheet.Z72 || 0);
+  sheet.AJ92 = sheet.AJ74 > 0 ? sheet.AJ74 + (sheet.AJ76 || 0) : 0;
+  sheet.AJ110 = sheet.AJ92;
   sheet.AJ131 = sheet.AJ126 + sheet.AJ128;
   sheet.Y133 = corporationTax.marginalRelief;
   sheet.Y135 = sheet.AJ131 - sheet.Y133;
-  if (corporationTax.K28 > 0) sheet.W137 = (sheet.Y135 / corporationTax.K28) * 100;
+  sheet.AJ145 = sheet.Y135;
+  sheet.AJ154 = corporationTax.K37 > 0 ? corporationTax.K37 : 0;
+  sheet.AJ159 = sheet.AJ145 > 0 ? sheet.AJ145 - sheet.AJ154 : 0;
+  sheet.AJ166 = sheet.AJ159 > 0 ? sheet.AJ159 : 0;
+  if (sheet.Y135 > 0 && sheet.AJ110 !== 0) sheet.W137 = (sheet.Y135 * 100) / sheet.AJ110;
   return sheet;
 }
 

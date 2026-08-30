@@ -7,7 +7,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl, aggregateByAccountAndMonth } from "../lib/diya-gl-calculator.js";
-import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
+import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -280,67 +280,78 @@ describe("calculateFromDiyaGl — SE", () => {
 });
 
 // ── Ltd Calculator ─────────────────────────────────────────────────────────
+//
+// The whole Ltd check set runs in calculator-ltd.test.js. What belongs here
+// is the entry point: that calculateFromDiyaGl routes "ltd" to the Ltd engine
+// and hands back the cell map every reader downstream expects, with each
+// figure anchored to the fixture rather than to another figure the same run
+// produced.
 
 const ltdTaxData = parseTOML(readFileSync(resolve(APP_DIR, "data", "ltd-2026.toml"), "utf8"));
 
+function ltdRun() {
+  const { book, lines } = loadDiyaGlData(LTD_DATA);
+  const scenario = diyaGlToScenario(book, lines, "ltd");
+  return calculateFromDiyaGl(book, lines, "ltd", ltdTaxData, scenario);
+}
+
 describe("calculateFromDiyaGl — Ltd", () => {
-  it("produces Ltd results from full diya-gl data", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(results["MnthP&L"]).toBeDefined();
-    expect(results.CorporationTax).toBeDefined();
+  it("returns a sheet for every workbook the reconciliation reads", () => {
+    const results = ltdRun();
+    for (const sheet of [
+      "Admin",
+      "OpenAccounts",
+      "TrialBalance",
+      "MnthP&L",
+      "CorporationTax",
+      "CT600",
+      "PubP&L",
+      "PubBalSht",
+      "PubNotes",
+      "Report",
+      "Stock",
+      "WagesInterface",
+      "Sales.xlsx!Apr",
+      "Purchases.xlsx!Apr",
+      "Currentaccount.xlsx!Mar",
+      "Fixedassets.xlsx!Schedule",
+      "Payslips.xlsx!Payment",
+      "Vatreturns.xlsx!Vatinterface",
+      "Vatreturns.xlsx!VATQtr1",
+      "Companysecretary.xlsx!RegisterofMembers",
+      "expensesform.xlsx!Month 01",
+    ]) {
+      expect(Object.keys(results[sheet] ?? {}).length, sheet).toBeGreaterThan(0);
+    }
   });
 
-  it("B9: Sales Turnover matches Excel (tolerance 1)", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    // Excel: 341283.33
-    expect(Math.abs(results["MnthP&L"].B9 - 341283.33)).toBeLessThanOrEqual(1);
+  it("states the sales turnover the journal invoiced, net of VAT", () => {
+    // The five turnover codes invoice 409,540 gross across the year.
+    expect(ltdRun()["MnthP&L"].B9).toBeCloseTo(409540 / 1.2, 2);
   });
 
-  it("B16: Gross Profit close to Excel", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    // Excel: 323539.33
-    expect(Math.abs(results["MnthP&L"].B16 - 323539.33)).toBeLessThanOrEqual(1);
+  it("carries the opening balance sheet into the trial balance's opening column", () => {
+    const trialBalance = ltdRun().TrialBalance;
+    // The opening journal posts 3,000 of computers and 30,000 of vehicles at
+    // cost, against 270 and 9,828 of depreciation.
+    expect(trialBalance.D9).toBe(3000);
+    expect(trialBalance.D10).toBe(30000);
+    expect(trialBalance.D14).toBe(-270);
+    expect(trialBalance.D15).toBe(-9828);
+    expect(trialBalance.D91).toBeCloseTo(0, 6);
   });
 
-  it("B43: Operating Profit close to Excel (tolerance 1)", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    // Excel: 195215 (with payroll and -6600 depreciation credit from fixed assets schedule)
-    // JS: ~188615 (missing -6600 depreciation credit — fixed assets schedule not implemented)
-    expect(Math.abs(results["MnthP&L"].B43 - 195215.08)).toBeLessThanOrEqual(7000);
+  it("closes the whole chart to nil", () => {
+    expect(ltdRun().TrialBalance.EJ91).toBeCloseTo(0, 2);
   });
 
-  it("K5: CT operating profit matches MnthP&L B43", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(results.CorporationTax.K5).toBeCloseTo(results["MnthP&L"].B43, 0);
+  it("charges the payroll's own employer National Insurance to the P&L", () => {
+    // Twelve months at 577.20.
+    expect(ltdRun()["MnthP&L"].B20).toBeCloseTo(6926.4, 2);
   });
 
-  it("K35: Corporation Tax computed (positive)", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(results.CorporationTax.K35).toBeGreaterThan(0);
-  });
-
-  it("includes PubP&L and PubBalSht sheets", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(results["PubP&L"]).toBeDefined();
-    expect(results.PubBalSht).toBeDefined();
-  });
-
-  it("includes Stock sheet", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(results.Stock).toBeDefined();
-  });
-
-  it("TrialBalance audit check is near zero", () => {
-    const { book, lines } = loadDiyaGlData(LTD_DATA);
-    const results = calculateFromDiyaGl(book, lines, "ltd", ltdTaxData);
-    expect(Math.abs(results.TrialBalance.EJ91)).toBeLessThanOrEqual(1);
+  it("depreciates the assets the year bought at the plant and machinery rate", () => {
+    // 52,500 of new plant at 10%.
+    expect(ltdRun()["MnthP&L"].B40).toBeCloseTo(5250, 2);
   });
 });
