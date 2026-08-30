@@ -540,6 +540,55 @@ describeCalc(
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
+
+    // The van's opening tax value is 24,000 and the fixture's 2025-26 tax
+    // data claims WDA at 18%: 4,320 WDA, a 19,680 pool, and a 7,180 balancing
+    // allowance against the 12,500 net disposal proceeds. Corrupting R50 back
+    // to the pre-2009 expensive-car cap's figure (3,000) is what a
+    // reintroduced restriction would produce, and proves these checks would
+    // catch it: the WDA check fails outright, and the WDA-plus-balancing
+    // identity fails alongside it because Y50 is read straight from the
+    // sheet and does not move with the corrupted R50. The pool and
+    // balancing-allowance checks read S50/Y50 directly rather than deriving
+    // them from R50, so neither one moves.
+    it("fails the motor vehicle WDA checks when Schedule!R50 is corrupted via JSZip", async () => {
+      const intactWda = checks.find((c) => c.name === "Schedule: motor vehicle WDA = opening tax value x the year's WDA rate, uncapped");
+      expect(intactWda.pass).toBe(true);
+      expect(intactWda.expected).toBe(4320);
+
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "R50", 3000);
+      expect(value).toBe(3000);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "R50", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Schedule: motor vehicle WDA = opening tax value x the year's WDA rate, uncapped",
+        "Schedule: motor vehicle WDA + balancing allowance = opening tax value less disposal proceeds",
+      ]);
+    });
+
+    it("fails the motor vehicle pool and balancing allowance checks when Schedule!S50/Y50 are corrupted via JSZip", async () => {
+      const intactPool = checks.find((c) => c.name === "Schedule: motor vehicle pool after WDA = opening tax value less WDA");
+      const intactBalancing = checks.find(
+        (c) => c.name === "Schedule: motor vehicle balancing allowance = pool after WDA less disposal proceeds",
+      );
+      expect(intactPool.pass).toBe(true);
+      expect(intactPool.expected).toBe(19680);
+      expect(intactBalancing.pass).toBe(true);
+      expect(intactBalancing.expected).toBe(7180);
+
+      const sValue = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "S50", 20000);
+      expect(sValue).toBe(20000);
+      const corruptedS = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "S50", sValue);
+      expect(failureNames(corruptedS)).toEqual(["Schedule: motor vehicle pool after WDA = opening tax value less WDA"]);
+
+      const yValue = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "Schedule", "Y50", 8000);
+      expect(yValue).toBe(8000);
+      const corruptedY = checksWithCorruptedCell("Fixedassets.xlsx!Schedule", "Y50", yValue);
+      expect(failureNames(corruptedY)).toEqual([
+        "Schedule: motor vehicle balancing allowance = pool after WDA less disposal proceeds",
+        "Schedule: motor vehicle WDA + balancing allowance = opening tax value less disposal proceeds",
+      ]);
+    });
+
     it("fails the total-payable tie when Payslips!Payment I4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Payment", "I4", 0);
       expect(value).toBe(0);
