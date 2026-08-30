@@ -23,7 +23,7 @@ integration branch as it lands and pushes in batches.
 | f13 | F13 SE forecast 2023-24 | — | Opus | landed: premise did not reproduce (679/679 at 2024-04-05); real defect was the runner reading shipped caches when LibreOffice silently did not recalculate, now throws; forecast suite 38/38 on both rates years |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
 | archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | — | Opus | landed `c3b97742`, dry run 118/118 fully formed |
-| f1 | F1 exact EQ1 gate | `../wt-spreadsheets/f1` | Sonnet | started |
+| f1 | F1 exact EQ1 gate | — | Sonnet | landed, every report-half count 0, `budgetBreaches()` tested 7/7 |
 
 ## Open items
 
@@ -44,11 +44,6 @@ reconciliation-bug method.
   the scorecards, and re-seed `noExcelValue` in `app/data/roundtrip-budget.json` to the new
   figure (expected 0). Test: `verify-roundtrip.test.js`'s scorecard case asserts the Excel
   document carries `check/` keys.
-- [ ] **F1: make EQ1 an exact gate** (Sonnet, after F2 and F8/F9) — the six conditions in the
-  plan hold except `noExcelValue = 0`; once F2 lands and F8/F9 take `differing` to 0, set every
-  report-half count in `app/data/roundtrip-budget.json` to 0 and add a comparator test that a
-  single differing money key fails the budget. Until then the ratchet stands.
-
 
 - [ ] **F9 remainder: SE Full box 51 after the cap removal** (Opus) — `app/templates/se/Financialaccounts.xlsx!SE Full!D152` ("Restricted allowances for expensive cars", SA103F box 51) sums `Schedule!R38:R42 + R91:R95`, the WDA the cap removal just un-capped, and box 49 (`D144 = R1 - D152`) is only checked against that identity. Confirm from the current SA103F what box 51 expects now the restriction is gone, then repoint D152/D144 and anchor a check to the fixture.
 - [ ] **F9 remainder: `extractTaxDataFromBook` builds the SE-shaped WDA key for Ltd** (Haiku) — `app/lib/diya-gl-loader.js` fallback emits `capital_allowances.writing_down_allowance`, which Ltd reads as `writing_down_allowance_main`; reachable when `report.js` runs without `--years`. Emit the per-regime key and add a loader test.
