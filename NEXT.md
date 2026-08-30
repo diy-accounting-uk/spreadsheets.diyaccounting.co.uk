@@ -17,7 +17,7 @@ pushes in batches.
 | box51 | F9 remainder: SA103F box 51 | — | Opus | landed `86f4dd23`, box 49 carries the WDA, full suite 6377/6377 in-track |
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
-| f18 | F18 lineItemComment/documentReference home + taxi column C + sp-sixty mileage | `../wt-spreadsheets/f18` | Sonnet | started |
+| f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
 
 ## Open items
 
@@ -27,17 +27,7 @@ Each item names its suggested sub-agent tier; all branch from the post-deploy gr
 follow the reconciliation-bug method.
 
 
-- [ ] **F18: give `lineItemComment` and `documentReference` a declared home** (Sonnet) — the bank,
-  payroll and SE sales blocks drop both fields on export (they carry a counterparty and an invoice
-  reference, and the sheets have no description column beside them); `diya-gl:bankCode` differs on
-  a further 7 SE lines. Either find each block a real cell to carry them (discover from the XML) or
-  declare them in `app/data/roundtrip-unrepresentable.json` with what the sheets do instead, and
-  re-seed the data-half counts. Fold in the Taxi gaps the export writer measured: `app/products/taxi.js`
-  never writes `tx.reference` to Purchases column C (the whole of taxi's `fieldsDropped: 1`) nor
-  `tx.customer` to Sales column C (180 of 264 sales lines miss on `detailComment`); write both,
-  re-seed taxi's data-half counts, and retire the ratchet's `dropped: ["documentReference"]`. Also
-  fix the sp-sixty master's March mileage claim (TXN-0264 prices 1,674 miles at 45p = 753.30 where
-  HMRC and the sheet band them at 25p past 10,000 miles = 418.50; extractor re-run, sync gate).
+
 - [ ] **F9 remainder: the Ltd/Taxi/BST user guides still teach the £3,000 motor cap** (Haiku) —
   `app/templates/{ltd,taxi,bst}/*-guide.md` tell customers motor vehicles are restricted to
   £3,000 p.a.; the cap is gone from the sheets. Rewrite those passages to the plain WDA rule
@@ -48,6 +38,10 @@ follow the reconciliation-bug method.
   caption still reads "on cars costing £12,000 or less" and box 51's caption sits above a box
   that is now always nil. A wholesale renumber is template surgery across the SE Full sheet and
   its checks — decide whether to do it before dispatching.
+- [ ] **F18 remainder: SE's Sales mileage column has no writer** (Sonnet) — `app/templates/se/Sales.xlsx`
+  column D ("Sales Mileage") is read by nothing and written by nothing, so a day's sales miles are
+  captured for Taxi and BST but never for SE; give `app/products/se.js` the write and the exporter
+  the read, following the Taxi/BST shape, and re-seed SE's data-half counts.
 - [ ] **F21: gate Taxi EQ2 in the generate matrix** (Sonnet) — `generate-taxi.yml`'s matrix still
   scores only the report half and stability; now the Taxi writer exists, add the export/EQ2 steps
   and seed a taxi entry in `app/data/roundtrip-matrix-budget.json` from a real matrix run.
