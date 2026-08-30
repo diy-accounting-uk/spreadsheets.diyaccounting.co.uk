@@ -453,8 +453,6 @@ export function extractTaxDataFromBook(book) {
     capital_allowances: {
       annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
       writing_down_allowance: ca.mainRateWDA || 0.18,
-      motor_vehicle_cost_threshold: 12000,
-      motor_vehicle_restriction: 3000,
     },
     mileage: {
       higher_rate_limit: 10000,

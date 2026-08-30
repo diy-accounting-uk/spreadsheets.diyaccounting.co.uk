@@ -117,7 +117,6 @@ describe("Ltd Admin cached rate rows", () => {
     expect(cached.L6).toBe(serial(2025, 1, 1));
     expect(cached.N7).toBe(serial(2025, 12, 31));
     expect(cached.N11).toBe(serial(2025, 12, 31));
-    expect(cached.E11).toBe(taxData.capital_allowances.motor_vehicle_cost_threshold);
     expect(cached.G5).toBe(Math.round(taxData.capital_allowances.annual_investment_allowance * 100));
   });
 

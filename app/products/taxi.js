@@ -467,11 +467,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L Capital Allowances (B10).
-  // Taxi vehicles under £12,000 claim a Writing Down Allowance restricted to
-  // Admin!G8, not the 100% AIA BST's non-vehicle assets get -- the expected
-  // allowance is recomputed independently from the read-back Admin rate and
-  // restriction, so this check also stands in as the Admin-echo check for
-  // those two cells.
+  // Taxi vehicles under £12,000 claim a Writing Down Allowance at the main
+  // rate, not the 100% AIA BST's non-vehicle assets get -- the expected
+  // allowance is recomputed independently from the read-back Admin rate, so
+  // this check also stands in as the Admin-echo check for that cell.
   const expectedAdditions = fixedAssetAdditions(expected, "f");
   if (expectedAdditions.length > 0 && results["Fixed Assets"]) {
     const fa = results["Fixed Assets"];
@@ -480,9 +479,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     if (results.Admin) {
       const wdaRate = results.Admin.G5;
-      const restriction = results.Admin.G8;
-      const expectedWda = Math.min((fa.D47 || 0) * wdaRate, restriction);
-      check("Fixed Assets: WDA claimed = min(cost x Admin WDA rate, Admin restriction)", fa.J1 || 0, expectedWda);
+      const expectedWda = (fa.D47 || 0) * wdaRate;
+      check("Fixed Assets: WDA claimed = cost x Admin WDA rate", fa.J1 || 0, expectedWda);
     }
 
     check(

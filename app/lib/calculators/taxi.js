@@ -39,16 +39,15 @@ export function totalBusinessMiles(salesLines) {
 // The Fixed Assets schedule. Every capital addition lands in the "Vehicles
 // under £12,000 bought after" block regardless of what it actually is (see
 // cellWrites in app/products/taxi.js), and that block only ever claims a
-// Writing Down Allowance at the main rate, restricted to Admin!G8 per asset
-// -- never Annual Investment Allowance (verified against the template:
-// Fixed Assets!J47 = IF(D47>0,MIN(D47*J$4*(1-F47),Admin!G$8*(1-F47))," "),
-// with no AIA formula anywhere on this block).
+// Writing Down Allowance at the main rate -- never Annual Investment
+// Allowance (verified against the template: Fixed Assets!J47 =
+// IF(D47>0,D47*J$4*(1-F47)," "), with no AIA formula anywhere on this
+// block).
 function calculateFixedAssetSchedule(additions, taxData) {
   const wdaRate = taxData.capital_allowances.writing_down_allowance;
-  const restriction = taxData.capital_allowances.motor_vehicle_restriction;
   const schedule = { D47: 0, I1: 0, J1: 0, K1: 0, P1: 0, Q1: 0 };
   additions.forEach((asset, index) => {
-    const wda = Math.min(asset.cost * wdaRate, restriction);
+    const wda = asset.cost * wdaRate;
     schedule.J1 += wda;
     schedule.K1 += asset.cost - wda;
     if (index === 0) schedule.D47 = asset.cost;
@@ -284,8 +283,6 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       N23: taxData.national_insurance.class4_upper_limit,
       G4: taxData.capital_allowances.annual_investment_allowance,
       G5: taxData.capital_allowances.writing_down_allowance,
-      E8: taxData.capital_allowances.motor_vehicle_cost_threshold,
-      G8: taxData.capital_allowances.motor_vehicle_restriction,
       F21: taxData.mileage.higher_rate_limit,
       G21: taxData.mileage.higher_rate_pence,
       F22: taxData.mileage.lower_rate_start,
