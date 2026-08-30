@@ -248,7 +248,7 @@ const SA103F_CORRUPTIONS = [
     [
       "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
       "SA103F box 49 writing down allowances (D144) = Schedule R1",
-      "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the Admin writing down rate",
+      "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the year's writing down rate",
     ],
   ],
   [

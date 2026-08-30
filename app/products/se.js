@@ -1768,18 +1768,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("SA103F box 58 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
     }
 
-    // Box 49 against the scenario's own assets rather than against the
-    // schedule cell it reads. Every existing asset claims the writing down
-    // allowance on the tax written-down value it was brought forward at
-    // (Schedule column O at the Admin rate in R4), whatever it cost, so a car
-    // whose allowance is capped again, or diverted back into box 51, leaves
-    // box 49 short of what the scenario's assets are entitled to.
-    if (results.Admin && expected.opening_fixed_assets) {
+    // Box 49 against the scenario's own assets and the year's own rate,
+    // neither of them read back out of the workbook. Every existing asset
+    // claims the writing down allowance on the tax written-down value it was
+    // brought forward at, whatever it cost, so a car whose allowance is capped
+    // again, or diverted back into box 51, leaves box 49 short of what the
+    // scenario's assets are entitled to.
+    if (taxData?.capital_allowances && expected.opening_fixed_assets) {
       const openingTaxWdv = expected.opening_fixed_assets.reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
       check(
-        "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the Admin writing down rate",
+        "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the year's writing down rate",
         num(seFull.D144),
-        openingTaxWdv * num(results.Admin.G5),
+        openingTaxWdv * taxData.capital_allowances.writing_down_allowance,
       );
     }
 
