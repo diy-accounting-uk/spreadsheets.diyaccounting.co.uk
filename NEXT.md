@@ -16,7 +16,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 | fidelity-t3 (wave 5) | T3: BST and Taxi calculators to every read cell, units, tests mirroring the checks, cell-map tax names aligned to the schema, `roundtrip-taxi` job | started (Sonnet), worktree `sp-fidelity-t3`; merges T1b when it lands |
 | fidelity-t4 (wave 5) | T4: SE calculator (monthly grid, SA103S/F, income tax, VAT interface and returns via `tax/vat.js`, fixed assets, payroll), units, mirrored tests; plus the SE CIS column write and the `se.js:537` row counter | started (Opus), worktree `sp-fidelity-t4`; merges T1b when it lands |
 | fidelity-t5 (wave 5) | T5: Ltd calculator (bank, trial balance, published accounts, CT and CT600, VAT, fixed assets, HP, registers), `tax/capital-allowances.js`, units, mirrored tests; plus the `ltd.js:853` row counter | started (Opus), worktree `sp-fidelity-t5`; merges T1b when it lands |
-| fidelity-t6 (wave 5) | T6: `verify-stability.js` (EQ3 saved vs recalculated on every package), `volatile-cells.json` | started (Haiku), worktree `sp-fidelity-t6` |
+| fidelity-t6 (wave 5) | T6: `verify-stability.js` (EQ3), `volatile-cells.json`; found ~55 cells whose saved cached values differ from a recalculation | returned to the agent: its list called them `TODAY()` (the templates carry none outside 3 Ltd cells); relabel from the XML as volatile / unstable conversion / stale cached value |
 | fidelity-t2 (wave 5) | T2: `report-serializer.js`, exporter keeps account identity (column BZ carrier) and every field, full validating `book.toml`, comparator scoring both halves against the original fixture; fixed inline-string reads, employer NI column, the 20% stamp on non-VAT books | landed on `claude/wave-5` `0a874f8c`, 468 tests, worktree removed |
 | fidelity-plan (wave 5) | `PLAN_ROUNDTRIP_FIDELITY.md`: the commuting square as the one property, tolerance table anchored to the checks, T1b per fixture, the tuple contract, ownership re-cut (T1 gains `diya-gl-canonical.js` and the gaps inventory; T1b owns the extractor; T6 gets `verify-stability.js`) | landed on `claude/wave-5` `bc8c1b50`, worktree removed |
 
@@ -82,9 +82,18 @@ Fixture:
 - [ ] **Fidelity T5: Ltd calculator** (Opus, concurrent) — monthly grid, trial balance,
   published P&L and balance sheet, CT working sheet and CT600, VAT, fixed assets, HP,
   dividends, registers; 832 values.
-- [ ] **Fidelity T6: EQ3 on every package** (Haiku, with T3-T5) — new `verify-stability.js`:
-  the saved package's cell values equal a fresh recalculation, for every package the
-  generate-* matrix produces.
+- [ ] **Fidelity T6: EQ3 on every package** (Haiku, in flight) — `verify-stability.js` compares
+  a package's saved cell values with a fresh recalculation. First run: BST 0 moved, SE 38,
+  Ltd 42 — the payslip calendar, Vatinterface payment dates, CT period rows and published
+  statement dates. Those are stale cached values (the generator writes the seed dates, not
+  the dependents' caches), not volatile formulas; the list is being relabelled.
+- [ ] **Generator leaves dependent cached values stale** — found by T6: after generation the
+  cached `<v>` of cells computed from the Admin seed dates (Payslips calendar `B` chain,
+  Vatinterface `C` column, `CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`,
+  `PubNotes!A11`, `SE Full!Q2/V2`) still carry the template's year until a recalculation.
+  A closed-workbook link or a reader that trusts the cache sees the wrong date (the class
+  ltd-ct fixed for the Fixedassets Admin link). Fix: roll those caches in the generator the
+  way `rollLtdAdminCachedDates` does, then T6's stale-cache category reads 0.
 - [ ] **Fidelity T7: CI wiring** (Haiku, last) — EQ1 stops being `continue-on-error` and
   becomes a budget gate against `app/data/roundtrip-budget.json` seeded from the scorecard;
   one EQ1 step per generate-* matrix year-end. Then `PLAN_ROUNDTRIP_FIDELITY.md` is brought
