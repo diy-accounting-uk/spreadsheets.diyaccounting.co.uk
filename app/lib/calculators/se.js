@@ -105,9 +105,6 @@ const STOCK_CLOSING_COUNT_CELL = "AB30";
 // The two HPfinance rows a scenario's agreements land on.
 const HP_AGREEMENT_ROWS = [8, 10];
 
-// The turnover above which the short return prints its full-return warning.
-const SHORT_RETURN_WARNING_TURNOVER = 67000;
-
 // The turnover below which the short return leaves its expense analysis blank
 // and states one total instead.
 const EXPENSE_ANALYSIS_TURNOVER = 30000;
@@ -633,17 +630,14 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   const seShort = {};
   seShort.Q2 = dateSerials[4];
   seShort.V2 = dateSerials[17];
-  // The name and the accounting date the return prints come off its own C8 and
-  // S17; A7 and D8 are the blank boxes beside their captions.
+  // The return prints its business name at C8, its accounting date at S17 and
+  // its turnover note at A33. A7, D8 and A32 are the empty boxes beside those
+  // captions, which is what the report's own cell map names.
   seShort.A7 = SHEET_BLANK;
   seShort.D8 = SHEET_BLANK;
   // The note the sheet prints sits at A33; A32 is the empty cell beside it that
   // the report's own map names.
   seShort.A32 = SHEET_BLANK;
-  seShort.A33 =
-    pl.B9 > SHORT_RETURN_WARNING_TURNOVER
-      ? `SELF-EMPLOYMENT FULL RETURN REQUIRED AS TURNOVER EXCEEDS £${admin.F26} VAT threshold`
-      : `Business income - if your annual turnover was below £${admin.F26} VAT threshold`;
   seShort.D38 = pl.B9;
   seShort.O38 = pl.B38;
   seShort.D46 = analysed(pl.B17);
