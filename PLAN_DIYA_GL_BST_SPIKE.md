@@ -184,6 +184,30 @@ and the check panel staying green.
 Page lands at `web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle
 beside it; the bundle build joins the existing build steps in CI.
 
+## LLM review (phase 6)
+
+The page can ask an LLM to review the accounts. No server of ours: the browser calls Bedrock
+through the metered public endpoint at <https://bedrock-meter.polycode.co.uk/>, which caps the
+spend; the book never goes anywhere else.
+
+- **Compressed format.** A Bedrock-friendly rendering of the book, small enough to review in one
+  request: `documentInfo`/`entityInformation`, the monthly and category summaries the year table
+  already computes, the check results, and the individual lines only where a check flags them or
+  a category is anomalous. Deterministic, versioned, round-trippable back to line edits.
+- **Review turn.** The model reviews and comments on the accounts and proposes fixes in a
+  structured response (a JSON list of proposed fixes, each naming the lines it touches, the
+  diya-gl edit it makes, and its reasoning). The page renders each comment with the proposed
+  fix as a selectable item — the same preview language the helpers use.
+- **Fix turn.** The selected fixes go back in a second request; the reply is a new
+  compressed-format diya-gl carrying the fixes. The page expands it to line edits, shows the
+  diff as pencil annotations, and applies only on accept — through the same edit path as a hand
+  edit, so recalculation, the checks panel and undo all cover it, and a reply that fails schema
+  validation or breaks a passing check is rejected with its reason shown.
+
+`app/bin/judge-reconciliation.js` is the in-repo precedent for prompt shape and rubric tone;
+the review prompt borrows its discipline (comment on what the figures show, never soften a
+check).
+
 ## Out of scope for the spike
 
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
