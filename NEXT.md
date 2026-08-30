@@ -6,8 +6,24 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PR #44; every later PR branch starts from a
-rebase onto the post-deploy green main, and the operator dispatches CI on branches.
+Integration branch `claude/next-fidelity-wave` (one PR). Tracks run in
+`../wt-spreadsheets/<track>` on `claude/wt-<track>`; the coordinator merges each into the
+integration branch as it lands and pushes in batches.
+
+| Track | Item | Worktree | Tier | Status |
+|---|---|---|---|---|
+| f2 | F2 Excel-side CI `--data` | — | Sonnet | merged `cb459cf2`, noExcelValue 66/700/892 → 0; roundtrip test running |
+| f8 | F8 6 dp pre-round | — | Sonnet | landed `f5c4d20b`, rounding 5/5, SE differing 2 → 0 |
+| f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
+| f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
+| f16 | F16 BST Debtors block | — | Sonnet | landed `bbc48a3b`, calculator-bst 203/203, sp-sixty RECONCILES 59/59 |
+| f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
+| f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
+| f17 | F17 diya-gl docs examples | — | Haiku | landed `0ad80afc`, docs-examples 9/9 |
+| f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
+| f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
+| archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | — | Opus | landed `c3b97742`, dry run 118/118 fully formed |
+| f1 | F1 exact EQ1 gate | — | Sonnet | waits for f2, f8, f9 |
 
 ## Open items
 
@@ -32,11 +48,7 @@ reconciliation-bug method.
   plan hold except `noExcelValue = 0`; once F2 lands and F8/F9 take `differing` to 0, set every
   report-half count in `app/data/roundtrip-budget.json` to 0 and add a comparator test that a
   single differing money key fails the budget. Until then the ratchet stands.
-- [ ] **F8: round both sides to a working precision before the penny** (Sonnet) — SE
-  `Income Tax!E9` reads 32,861.2349999998 in Excel and 32,861.235 in JS, so `roundHalfUp()`
-  (`app/bin/verify-roundtrip.js:48`) sends them to different pennies and `E11` inherits it
-  (SE `differing` 2). In `canonicalForUnit()` (`:92`) round `money` to 6 dp first, then half-up
-  to 2; prove the 0.004/0.006 cases still pass/fail; re-seed SE `differing` to 0.
+
 - [ ] **F9: remove the obsolete expensive-car cap from the Ltd Schedule** (Sonnet; operator
   ratified option 1 on 2026-08-30) — `Fixedassets.xlsx!Schedule` row 50's WDA formula
   `IF(O50>[1]Admin!$E$11,[1]Admin!$G$11*(1-M50),O50*R$4/100)*(1-M50)` applies the pre-2009
@@ -64,15 +76,7 @@ reconciliation-bug method.
   (`app/lib/generator.js:451-525`) and the SE equivalent to write those caches from the seed,
   then run `verify-stability.js` on a blank package per product: stale count 0, the allowlist
   empties, and `volatile-cells.json` is deleted or reduced to genuine volatiles.
-- [ ] **F10: name the SE Short cells the return prints** (Haiku) — `app/products/se.js` `CELL_MAP`
-  reads `SE Short!A7`, `D8`, `A32`, which the return leaves blank; the business name, accounting
-  date and turnover note print at `C8`, `S17`, `A33` (verify from the sheet XML). Repoint the
-  three entries, drop them from the blanks set in `app/test/calculator-se.test.js`, and add the
-  three to the SE mirrored tests with the fixture's values.
-- [ ] **F12: keep BrickWork members' `acquiredDate`** (Haiku) — `writeBrickworkLtd` in
-  `app/bin/extract-scenarios.js` drops `acquiredDate` where the Precision Code build keeps it;
-  emit it, re-run the extractor (sync gate), and widen the loader's deep-equal in
-  `app/test/diya-gl-loader.test.js` from name-and-shares to the whole member.
+
 - [ ] **F13: SE forecast checks on the 2023-24 rates** (Opus) — `reconcile.js --package se
   --scenario advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): "Forecast:
   personal allowance after taper" (`app/products/se.js:1672`) expects 1,676 and reads 12,570,
@@ -89,22 +93,14 @@ reconciliation-bug method.
   allocate the write per month alongside the purchase rows (cross-sheet: sales/journal miles
   into the purchases tab), extend the sp-sixty master with a mileage-coded month, and assert
   the P&L mileage line and `Income Tax` reflect it on both engines.
-- [ ] **F16: clear the BST Debtors & Creditors block when a book declares no ledger** (Sonnet) —
-  when `opening_debtors`/`closing_debtors` are absent (sp-sixty), `writeEntryBlock`
-  (`app/products/bst.js:97-108`) leaves the sheet's own monthly-sales figure in the block, so a
-  fictitious debtor is published and the JS reports 8 `noJsValue` cells. Write nil into the
-  block's slots when the scenario carries no ledger, add the sp-sixty case to
-  `calculator-bst.test.js`, and re-seed BST in the budget.
-- [ ] **F17: refresh the `diya-gl:` examples in `diya-gl-docs.md`** (Haiku) — the prose points at v2
-  but the illustrative JSON predates T1 (`web/spreadsheets.diyaccounting.co.uk/public/schema/
-  diya-gl-docs.md`); regenerate every example from `examples/precision-code-ltd` lines that
-  carry the extension fields and validate each against the v2 schemas in a test.
+
+
 
 
 
 ## Plans not tracked here
 
-- `PLAN_PACKAGES_TO_ARCHIVE.md` — generated packages move to the archive repository; paused by the operator, resume when wanted.
+- `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline

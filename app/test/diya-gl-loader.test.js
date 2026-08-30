@@ -159,11 +159,7 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
 
   it("members equals the fixture, name and shares always, acquisition date where the fixture keeps it", () => {
     expect(fullScenario.members).toEqual(fullFixture.members);
-    // The extractor's own BrickWork Ltd build drops each member's acquired
-    // date (app/bin/extract-scenarios.js, writeBrickworkLtd), even though the
-    // master book states one; the loader carries it through regardless, so
-    // only name and shares are common ground between the two here.
-    expect(brickScenario.members.map(({ name, shares }) => ({ name, shares }))).toEqual(brickFixture.members);
+    expect(brickScenario.members).toEqual(brickFixture.members);
   });
 
   it("hp_agreements and charges are absent from BrickWork Ltd, which declares neither table", () => {

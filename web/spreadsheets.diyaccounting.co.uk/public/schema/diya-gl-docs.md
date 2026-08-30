@@ -680,6 +680,29 @@ The Company workbooks give PAYE, VAT, CIS and corporation tax a column each. Bot
 Employed workbooks carry one HMRC Payments column between them, so a payment coded `RV`,
 `RC` or `RT` lands in the `RP` column there.
 
+**Bank transaction example:**
+
+```json
+{
+  "entryNumber": "TXN-0024",
+  "sourceJournalID": "bank",
+  "postingDate": "2025-04-01",
+  "accountMainID": "1200",
+  "debitCreditCode": "D",
+  "amount": 25000.00,
+  "documentType": "bank-statement",
+  "documentReference": "BNK-0001",
+  "detailComment": "Opening balance",
+  "lineItemComment": "Current account opening balance",
+  "taxCode": "OS",
+  "taxRate": 0.0,
+  "diya-gl:bankCode": "BC",
+  "diya-gl:bankAccountID": "1200"
+}
+```
+
+This receipt (opening balance, `bankCode` BC) credits account 1200 (current account).
+
 ### 5.9 CIS (Construction Industry Scheme) Fields
 
 For businesses registered under CIS, sub-contractor purchase lines include:
@@ -690,6 +713,29 @@ For businesses registered under CIS, sub-contractor purchase lines include:
 The net amount paid to the sub-contractor = `amount - diya-gl:cisDeduction`.
 CIS deductions are paid to HMRC monthly alongside PAYE/NI.
 
+**CIS transaction example:**
+
+```json
+{
+  "entryNumber": "TXN-0164",
+  "sourceJournalID": "purchases",
+  "postingDate": "2025-06-15",
+  "accountMainID": "5001",
+  "amount": 5000.00,
+  "documentType": "invoice",
+  "documentReference": "PUR-CIS-001",
+  "detailComment": "BuildTech Solutions",
+  "lineItemComment": "Sub-contractor network installation",
+  "taxCode": "S",
+  "taxRate": 0.20,
+  "diya-gl:cisDeduction": 1000.00,
+  "diya-gl:cisRate": 0.20
+}
+```
+
+This purchase from a sub-contractor has £1,000 (20%) withheld for CIS, so the net
+payment is £4,000. The full purchase amount of £5,000 posts to the purchase account.
+
 ### 5.10 Payroll Fields
 
 Lines with `sourceJournalID = "payroll"` use additional fields to record the full
@@ -697,23 +743,56 @@ payroll breakdown for each pay period:
 
 ```json
 {
+  "entryNumber": "TXN-0074",
   "sourceJournalID": "payroll",
   "postingDate": "2025-04-30",
   "accountMainID": "5101",
-  "amount": 3500,
-  "diya-gl:employeeID": "EMP001",
-  "diya-gl:grossPay": 3500,
-  "diya-gl:incomeTax": 540,
-  "diya-gl:employeeNI": 254.40,
-  "diya-gl:employerNI": 382.50,
-  "diya-gl:netPay": 2705.60,
+  "amount": 3500.00,
+  "documentType": "payslip",
+  "documentReference": "PAY-EMP001-2025-04",
   "detailComment": "Alice Johnson",
-  "lineItemComment": "April salary"
+  "lineItemComment": "Salary Apr 2025",
+  "taxCode": "OS",
+  "taxRate": 0.0,
+  "diya-gl:employeeID": "EMP001",
+  "diya-gl:grossPay": 3500.00,
+  "diya-gl:incomeTax": 530.00,
+  "diya-gl:employeeNI": 200.00,
+  "diya-gl:employerNI": 382.50,
+  "diya-gl:netPay": 2770.00
 }
 ```
 
 The `amount` field holds the gross pay. Individual deductions are in the `diya-gl:` fields.
 Payroll lines feed into Payslips.xlsx and the WagesInterface sheet in Financialaccounts.xlsx.
+
+### 5.11 Hire Purchase Agreement Fields
+
+Purchase lines that are financed under a hire purchase agreement carry the `diya-gl:hpAgreement`
+field, which names the agreement in `book.toml` `hpAgreements[]`. The asset posts as an ordinary
+purchase to creditors (trade payable) at the time of purchase. At year-end, a journal entry
+moves the outstanding balance to creditors falling due after more than one year.
+
+**Hire purchase transaction example:**
+
+```json
+{
+  "entryNumber": "TXN-0904",
+  "sourceJournalID": "purchases",
+  "postingDate": "2025-06-01",
+  "accountMainID": "5900",
+  "amount": 15600.00,
+  "documentType": "invoice",
+  "documentReference": "PUR-FA-004",
+  "detailComment": "Precision Tooling Supplies",
+  "lineItemComment": "Test rig bought under HP-2025-01",
+  "taxCode": "S",
+  "taxRate": 0.20,
+  "diya-gl:hpAgreement": "HP-2025-01"
+}
+```
+
+This purchase of £15,600 is financed through hire purchase agreement HP-2025-01.
 
 ---
 

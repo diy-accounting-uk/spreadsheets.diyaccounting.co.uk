@@ -2,7 +2,7 @@
   "bst": {
     "differing": 0,
     "noJsValue": 0,
-    "noExcelValue": 66,
+    "noExcelValue": 0,
     "linesLost": 0,
     "fieldsDropped": 0,
     "bookFieldsMissing": 90
@@ -13,9 +13,9 @@
     "noExcelValue": 0
   },
   "se": {
-    "differing": 2,
+    "differing": 0,
     "noJsValue": 0,
-    "noExcelValue": 700,
+    "noExcelValue": 0,
     "linesLost": 1,
     "fieldsDropped": 0,
     "bookFieldsMissing": 110
@@ -23,7 +23,7 @@
   "ltd": {
     "differing": 4,
     "noJsValue": 0,
-    "noExcelValue": 892,
+    "noExcelValue": 0,
     "linesLost": 4,
     "fieldsDropped": 0,
     "bookFieldsMissing": 156
