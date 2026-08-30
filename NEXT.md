@@ -14,8 +14,12 @@ from a rebase onto the post-deploy green main; the operator dispatches CI on bra
 
 ## Open items
 
-None. Parked plans are listed below; the reconciliation-bug method in CLAUDE.md applies to any
-new check, fixture or template item.
+The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
+
+- [ ] **Bump `ajv` to 8.18.0** — Dependabot alert #79 (medium): ReDoS in `ajv` when the `$data`
+  option is used, vulnerable `>= 7.0.0-alpha.0 < 8.18.0`; wave 5 added 8.17.1 as a direct
+  dependency. One `package.json`/lock bump on a branch, via PR; the schema validator does
+  not use `$data`.
 
 
 ## Plans not tracked here
