@@ -140,8 +140,16 @@ export function vatCycleRows(periods, forms) {
       label: `${names} both cover the ${months} ending ${shared.map((period) => period.endLabel).join(" and ")}. The five forms are meant to run one quarter after another, each taking its period from a dropdown of the month ends the book carries, so no period should reach two of them. Filing all five as they stand would declare ${shared.length === 1 ? "that period" : "those periods"} twice.`,
       value: "",
     });
-    rows.push({ label: `Output VAT on ${shared.length === 1 ? "it" : "those"}`, value: reportAmount(shared.reduce((total, p) => total + p.outputVat, 0)), indent: 1 });
-    rows.push({ label: `Input VAT on ${shared.length === 1 ? "it" : "those"}`, value: reportAmount(shared.reduce((total, p) => total + p.inputVat, 0)), indent: 1 });
+    rows.push({
+      label: `Output VAT on ${shared.length === 1 ? "it" : "those"}`,
+      value: reportAmount(shared.reduce((total, p) => total + p.outputVat, 0)),
+      indent: 1,
+    });
+    rows.push({
+      label: `Input VAT on ${shared.length === 1 ? "it" : "those"}`,
+      value: reportAmount(shared.reduce((total, p) => total + p.inputVat, 0)),
+      indent: 1,
+    });
   }
 
   return [{ label: "**How the return periods line up with the accounting year**", value: "" }, ...rows];
@@ -180,7 +188,13 @@ export const COMPLIANCE_CHECKS_TITLE = "Compliance Checks";
 // a report generated without a full narrative (report.js's roundtrip mode)
 // still carries the verdicts alongside the values.
 export function complianceChecksLines(checks) {
-  const lines = ["", `## ${COMPLIANCE_CHECKS_TITLE}`, "", "| Check | Expected | Actual | Diff | Result |", "|-------|----------|--------|------|--------|"];
+  const lines = [
+    "",
+    `## ${COMPLIANCE_CHECKS_TITLE}`,
+    "",
+    "| Check | Expected | Actual | Diff | Result |",
+    "|-------|----------|--------|------|--------|",
+  ];
   for (const c of checks) {
     const result = c.pass ? "PASS" : c.severity === "warning" ? "**WARNING**" : "**FAIL**";
     lines.push(`| ${c.name} | ${c.expected} | ${c.actual} | ${c.diff > 0 ? "+" : ""}${c.diff} | ${result} |`);

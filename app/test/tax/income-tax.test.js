@@ -18,15 +18,7 @@ function taxDataFor(years) {
 const TAX_DATA_2025_26 = taxDataFor("se-2025-2026");
 const RATES_2025_26 = TAX_DATA_2025_26.income_tax;
 
-const ALL_YEARS = [
-  "se-2020-2021",
-  "se-2021-2022",
-  "se-2022-2023",
-  "se-2023-2024",
-  "se-2024-2025",
-  "se-2025-2026",
-  "se-2026-2027",
-];
+const ALL_YEARS = ["se-2020-2021", "se-2021-2022", "se-2022-2023", "se-2023-2024", "se-2024-2025", "se-2025-2026", "se-2026-2027"];
 
 describe("the shipped tax data carries every band the calculation needs", () => {
   it.each(ALL_YEARS)("%s declares the taper threshold, the higher band end and the additional rate", (name) => {

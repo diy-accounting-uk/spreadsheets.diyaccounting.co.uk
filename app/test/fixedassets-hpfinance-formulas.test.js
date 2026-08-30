@@ -39,36 +39,44 @@ async function readHpFinanceXml(templatePath) {
 describe("Fixedassets.xlsx HPfinance: monthly-payment formula shape after the #REF! repair", () => {
   it.each([
     ["SE", resolve(APP_DIR, "templates", "se", "Fixedassets.xlsx"), 8, [10, 12, 14], 22, [24, 26, 28]],
-    ["Ltd", resolve(APP_DIR, "templates", "ltd", "Fixedassets.xlsx"), 8, [10, 12, 14, 16, 18, 20, 22, 24, 26], 34, [
-      36, 38, 40, 42, 44, 46, 48, 50, 52,
-    ]],
-  ])("%s: every agreement row's I/J/K formulas mirror their block's working master", async (_label, templatePath, newMaster, newFollowers, existingMaster, existingFollowers) => {
-    const xml = await readHpFinanceXml(templatePath);
+    [
+      "Ltd",
+      resolve(APP_DIR, "templates", "ltd", "Fixedassets.xlsx"),
+      8,
+      [10, 12, 14, 16, 18, 20, 22, 24, 26],
+      34,
+      [36, 38, 40, 42, 44, 46, 48, 50, 52],
+    ],
+  ])(
+    "%s: every agreement row's I/J/K formulas mirror their block's working master",
+    async (_label, templatePath, newMaster, newFollowers, existingMaster, existingFollowers) => {
+      const xml = await readHpFinanceXml(templatePath);
 
-    expect(xml).not.toContain("#REF!");
+      expect(xml).not.toContain("#REF!");
 
-    for (const col of ["I", "J", "K"]) {
-      const masterFormula = formulaAt(xml, `${col}${newMaster}`);
-      expect(masterFormula, `${col}${newMaster}`).toBeTruthy();
-      const masterShape = normalise(masterFormula, newMaster);
+      for (const col of ["I", "J", "K"]) {
+        const masterFormula = formulaAt(xml, `${col}${newMaster}`);
+        expect(masterFormula, `${col}${newMaster}`).toBeTruthy();
+        const masterShape = normalise(masterFormula, newMaster);
 
-      for (const row of newFollowers) {
-        const formula = formulaAt(xml, `${col}${row}`);
-        expect(formula, `${col}${row}`).toBeTruthy();
-        expect(normalise(formula, row), `${col}${row}`).toBe(masterShape);
+        for (const row of newFollowers) {
+          const formula = formulaAt(xml, `${col}${row}`);
+          expect(formula, `${col}${row}`).toBeTruthy();
+          expect(normalise(formula, row), `${col}${row}`).toBe(masterShape);
+        }
       }
-    }
 
-    for (const col of ["I", "J", "K"]) {
-      const masterFormula = formulaAt(xml, `${col}${existingMaster}`);
-      expect(masterFormula, `${col}${existingMaster}`).toBeTruthy();
-      const masterShape = normalise(masterFormula, existingMaster);
+      for (const col of ["I", "J", "K"]) {
+        const masterFormula = formulaAt(xml, `${col}${existingMaster}`);
+        expect(masterFormula, `${col}${existingMaster}`).toBeTruthy();
+        const masterShape = normalise(masterFormula, existingMaster);
 
-      for (const row of existingFollowers) {
-        const formula = formulaAt(xml, `${col}${row}`);
-        expect(formula, `${col}${row}`).toBeTruthy();
-        expect(normalise(formula, row), `${col}${row}`).toBe(masterShape);
+        for (const row of existingFollowers) {
+          const formula = formulaAt(xml, `${col}${row}`);
+          expect(formula, `${col}${row}`).toBeTruthy();
+          expect(normalise(formula, row), `${col}${row}`).toBe(masterShape);
+        }
       }
-    }
-  });
+    },
+  );
 });

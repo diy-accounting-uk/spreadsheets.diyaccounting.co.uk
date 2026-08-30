@@ -309,9 +309,10 @@ for (const wb of workbooks) {
         if (period && period.value != null) periodRows.set(period.value, row);
       }
       const firstMonth = getCellFormulaAndValue(viXml, `B${FIRST_ACCOUNTING_MONTH_ROW}`);
-      expect(firstMonth && firstMonth.value != null, `${label}: Vatinterface B${FIRST_ACCOUNTING_MONTH_ROW} has no cached period date`).toBe(
-        true,
-      );
+      expect(
+        firstMonth && firstMonth.value != null,
+        `${label}: Vatinterface B${FIRST_ACCOUNTING_MONTH_ROW} has no cached period date`,
+      ).toBe(true);
       const firstMonthEnd = fromExcelSerial(firstMonth.value);
 
       const rows = [];
@@ -340,7 +341,8 @@ for (const wb of workbooks) {
       // which is what the interface's rolling three-row sums total.
       const declaredBy = new Map();
       rows.forEach((row, index) => {
-        for (const period of [row - 2, row - 1, row]) declaredBy.set(period, [...(declaredBy.get(period) ?? []), VATQTR_SHEET_NAMES[index]]);
+        for (const period of [row - 2, row - 1, row])
+          declaredBy.set(period, [...(declaredBy.get(period) ?? []), VATQTR_SHEET_NAMES[index]]);
       });
       for (let row = FIRST_ACCOUNTING_MONTH_ROW; row < FIRST_ACCOUNTING_MONTH_ROW + 12; row++) {
         const quarterly = (declaredBy.get(row) ?? []).filter((name) => name !== "VATQtr5");

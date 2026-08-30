@@ -230,7 +230,12 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
       ["Income Tax", "Tax: IT = Basic + Higher + Additional", "Tax: Total = IT + CIS deduction line + NI"],
     ],
     ["Income Tax!C9 (the basic band ceiling)", "C9", 1, ["Tax: sheet splits the basic and higher bands at the basic band end"]],
-    ["Income Tax!C10 (the additional rate threshold)", "C10", 1, ["Tax: sheet splits the higher and additional bands at the higher band end"]],
+    [
+      "Income Tax!C10 (the additional rate threshold)",
+      "C10",
+      1,
+      ["Tax: sheet splits the higher and additional bands at the higher band end"],
+    ],
     ["Income Tax!D10 (the additional rate)", "D10", 0.9, ["Tax: sheet applies the additional rate above the higher band"]],
   ])("corrupting %s via JSZip fails exactly the checks that read it", async (_label, cellRef, corruptedValue, expectedFailures) => {
     for (const name of expectedFailures) {

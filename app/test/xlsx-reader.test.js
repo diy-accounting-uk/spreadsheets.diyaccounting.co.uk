@@ -67,7 +67,7 @@ describe("findXlsx", () => {
 });
 
 describe.skipIf(!hasSeLatest)("readMultiFileAdditionalXlsxCellValues", () => {
-  it("reads leaf files keyed \"<filename>!<sheetName>\"", async () => {
+  it('reads leaf files keyed "<filename>!<sheetName>"', async () => {
     const results = await readMultiFileAdditionalXlsxCellValues(SE_LATEST, {
       "Bank.xlsx": { Mar: ["A1", "A2"] },
       "Cash.xlsx": { Mar: ["A1", "A2"] },
