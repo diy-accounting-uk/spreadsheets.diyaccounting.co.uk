@@ -1,7 +1,9 @@
 # PLAN: Roundtrip fidelity
 
-Bringing the JS calculation engine, the export path and the diya-gl schema up to the scope the
-Excel reconciliation already covers.
+The JS calculation engine, the export path and the diya-gl schema, brought up to the scope the
+Excel reconciliation covers. The work is done and the programme is parked. This document is its
+record: what the property is, how we measure it, where the measurement stands, and what is left
+open.
 
 ## Context documents
 
@@ -80,8 +82,7 @@ recalculating it. It runs on one package and one report path, so it needs no sec
 ### `R`, the report
 
 `R` is one JSON document per package run. It holds every value the Excel reconciliation checks read
-and every value the published reports print. That set is the scope inventory below: 139 BST, 89
-Taxi, 549 SE and 845 Ltd values today, and it grows as coverage grows.
+and every value the published reports print. That set is the read scope below.
 
 Each entry has a key, a declared unit, and a value.
 
@@ -131,8 +132,9 @@ Rules that make the document canonical:
 - `source` names the cell key a section row reprints. `derivedFrom` names the keys a value is the
   sum of. Either one tells the comparator the entry is not independent evidence.
 
-The markdown reports keep their present shape. `R` is written beside them from the same structures,
-before formatting, so nothing has to be recovered by parsing rendered tables.
+`app/lib/report-serializer.js` owns this form and both engines write through it. The markdown
+reports keep their own shape and are rendered from the same structures, so nothing has to be
+recovered by parsing a table.
 
 ### `D`, the data
 
@@ -147,10 +149,10 @@ before formatting, so nothing has to be recovered by parsing rendered tables.
 - `book.toml` writes its tables in schema order, keys in schema order within each table, and sorts
   every array by its id field.
 
-One module owns this form, `app/lib/diya-gl-canonical.js`. The extractor, the exporter and the
-comparator all write through it, and the comparator normalises both sides again before comparing,
-so a difference in line order, field order or number formatting can never register as a data
-difference.
+One module owns this form, `app/lib/diya-gl-canonical.js`. Its field order comes from the published
+v2 schemas, read at load, so the two cannot drift. The extractor, the exporter and the comparator
+all write through it, and the comparator normalises both sides again before comparing, so a
+difference in line order, field order or number formatting can never register as a data difference.
 
 ## How we measure it
 
@@ -166,8 +168,9 @@ and scores both halves.
   **no JS value**, **no Excel value**. Each is a number that can only fall.
 - **EQ2** joins the two `D` documents as a multiset of canonical lines, plus a field-by-field
   comparison of `book.toml`. It compares the export against the original fixture, not against a
-  second export. The current double-roundtrip test compares pass 2 with pass 1, so anything the
-  first pass loses stays lost and still passes.
+  second export, so a field the first pass loses cannot pass by staying lost.
+
+`app/bin/verify-stability.js` scores EQ3 with the same comparator and the same policy.
 
 ### Where exact equality is right
 
@@ -183,7 +186,7 @@ is a defect and the comparator says so.
 | `count` | journal line counts, share counts, stock counts, employee counts, whole miles | integer | exact |
 | `rate` | tax rates, VAT rates, depreciation rates, percentages | round half-up to 6 dp | exact |
 | `verdict` | compliance check results | `pass` or `fail` | exact |
-| `money` | every amount in the P&L, balance sheet, VAT return, tax computation and payroll | round half-up to 2 dp | exact, except the four rows below |
+| `money` | every amount in the P&L, balance sheet, VAT return, tax computation and payroll | round half-up to 2 dp | exact, except the rows below |
 
 ### Where a tolerance reduces noise without hiding a defect
 
@@ -194,16 +197,17 @@ applies to every money value, the filed boxes included: SA103S, SA103F, CT600, t
 boxes, the trial balance totals and `TrialBalance!EJ91`.
 
 A window left open after that rounding is a tolerance, and a key may carry one only where an Excel
-check reads that same value and already tolerates the same difference. The comparator reads the
-figure from the check rather than restating it, so a comparator tolerance can never be looser than
-the check it stands in for. Four rows qualify today, and this is all of them.
+check reads that same value and already tolerates the same difference. `toleranceByKey()` reads the
+figure from the check in `R` rather than restating it, so a comparator tolerance can never be
+looser than the check it stands in for. Three checks own a window, covering four report values, and
+this is all of them.
 
-| Report value | Tolerance | The check that justifies it |
+| Report value | Window the check carries | The check that owns it |
 | --- | --- | --- |
-| `Residue` in `accounting-profit-to-tax-profit-bridge.md`, all four products | 0.01 | `check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01)` at `bst.js:570`, `taxi.js:606`, `se.js:2345`, `ltd.js:3210` |
-| `Residue`, one per category row, in `journal-category-vat-netting.md`, SE and Ltd | 0.01 | `check(categoryNettingCheckName(row), row.residue, 0, 0.01)` at `se.js:2352`, `ltd.js:3217` |
+| `Residue` in `accounting-profit-to-tax-profit-bridge.md`, all four products | 0.01 | `check(PROFIT_BRIDGE_CHECK, bridge.residue, 0, 0.01)` at `bst.js:581`, `taxi.js:610`, `se.js:2484`, `ltd.js:3341` |
+| `Residue`, one per category row, in `journal-category-vat-netting.md`, SE and Ltd | 0.01 | `check(categoryNettingCheckName(row), row.residue, 0, 0.01)` at `se.js:2491`, `ltd.js:3348` |
 | The `Net` column of the same netting table, SE and Ltd | 0.01 | the same check. This is the flat 20/120 case: the table strips VAT at the book's single rate while the journal carries a rate per line, and the netting check is the one place the difference is already allowed for. |
-| `SA103S: Net profit` in `self-assessment-sa103s.md`, BST | 1% of `Profit & Loss Acc!C24` | `check("SA103S: Net profit close to P&L Net", seShort.D71, pl.C24, pl.C24 * 0.01)` at `bst.js:556` |
+| `SA103S: Net profit` in `self-assessment-sa103s.md`, BST | 0 | `check("SA103S: Net profit close to P&L Net", seShort.D71, pl.C24, 0)` at `bst.js:567`. The check compares exactly, so the comparator does too. |
 
 Two consequences worth stating.
 
@@ -225,10 +229,9 @@ the total, and a disagreement in an addend has already failed. A section row tha
 is the same case with one operand, and carries `source`. The exception is a total whose operands
 are not all in `R`. That total is evidence in its own right and keeps its own key.
 
-**More.** EQ3 runs on no package today. It belongs on every package the `generate-*` matrix
-produces, not on one, because those runs already recalculate and the extra cost is one report read.
-A year end with renamed month tabs and rewritten external links is exactly where a saved value and
-a recalculated value part company.
+**More.** EQ3 runs on every package the four `generate-*` matrices produce, not on one. Those runs
+already recalculate, so the extra cost is one report read each. A year end with renamed month tabs
+and rewritten external links is exactly where a saved value and a recalculated value part company.
 
 ## The four commands
 
@@ -246,742 +249,402 @@ The two `report.js` runs each write `report.json` beside their markdown. `export
 Excel side's `data/`, and `report.js --data` writes the JS side's `data/` by canonicalising its own
 input. Each output directory is then one tuple, and `verify-roundtrip.js` compares a pair of them.
 
-All four run today for BST, SE and Ltd. Taxi has no roundtrip job.
+BST, SE and Ltd run all four. Taxi runs three of them, because `export.js` has no Taxi writer, so
+the Taxi job gates the report half and stability only.
 
-## Measurement, 2026-08-29
+## State at parking, 2026-08-30
 
-Run on `main` at `418bec4b`, macOS LibreOffice, the CI commands above.
+Measured on the merged tree at `694641c1`, macOS LibreOffice, running each product's CI commands
+exactly as `test.yml` runs them.
 
-### EQ1: report equivalence
-
-| Product | Report files both sides | Excel values | JS values | Equal | Differing | No JS value | `diff -r` lines |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| BST | 12 | 250 | 204 | 118 | 85 | 47 | 319 |
-| SE | 10 | 584 | 253 | 37 | 212 | 335 | 839 |
-| Ltd | 13 | 829 | 274 | 50 | 222 | 557 | 1103 |
-
-The April measurement recorded 107 / 203 / 93 `diff -r` lines. Those numbers and today's measure
-different things: the reports have grown a profit bridge, a VAT netting table and a VAT cycle
-section since. The per-value counts above are the baseline from here.
-
-Where the values sit, per report file:
-
-| Product | File | Rows | Equal | Differing | No JS value |
-|---|---|---:|---:|---:|---:|
-| BST | cell-values | 111 | 48 | 16 | 47 |
-| BST | admin-generator-injected | 23 | 1 | 22 | 0 |
-| BST | income-tax-calculation | 17 | 5 | 12 | 0 |
-| BST | self-assessment-sa103s | 22 | 12 | 10 | 0 |
-| BST | debtors-creditors | 15 | 7 | 8 | 0 |
-| BST | fixed-assets | 8 | 1 | 7 | 0 |
-| BST | profit-loss-account | 25 | 19 | 6 | 0 |
-| BST | bridge, purchase-analysis | 16 | 12 | 4 | 0 |
-| BST | business-details, monthly-sales, stock | 23 | 23 | 0 | 0 |
-| SE | cell-values | 411 | 13 | 63 | 335 |
-| SE | self-assessment-sa103f | 41 | 1 | 40 | 0 |
-| SE | admin-generator-injected | 24 | 1 | 23 | 0 |
-| SE | self-assessment-sa103s | 27 | 5 | 22 | 0 |
-| SE | profit-loss-account | 29 | 9 | 20 | 0 |
-| SE | payroll-summary | 15 | 1 | 14 | 0 |
-| SE | income-tax-calculation | 15 | 2 | 13 | 0 |
-| SE | quarterly-summary | 13 | 3 | 10 | 0 |
-| SE | bridge | 15 | 8 | 7 | 0 |
-| SE | business-details | 2 | 2 | 0 | 0 |
-| Ltd | cell-values | 652 | 18 | 77 | 557 |
-| Ltd | profit-loss-account | 39 | 9 | 30 | 0 |
-| Ltd | trial-balance | 36 | 10 | 26 | 0 |
-| Ltd | published-balance-sheet | 18 | 1 | 17 | 0 |
-| Ltd | corporation-tax-working-sheet | 13 | 1 | 12 | 0 |
-| Ltd | published-p-l | 13 | 1 | 12 | 0 |
-| Ltd | fixed-asset-note | 12 | 1 | 11 | 0 |
-| Ltd | opening-balance-sheet | 12 | 2 | 10 | 0 |
-| Ltd | bridge | 11 | 2 | 9 | 0 |
-| Ltd | ct600-as-filed | 12 | 4 | 8 | 0 |
-| Ltd | directors-report, stock, business-details | 22 | 12 | 10 | 0 |
-
-The named sections show "no JS value" as zero because `reportSections()` builds every row from
-`CELL_MAP` and prints an em dash for a missing cell. Those rows land in the differing column. Only
-`cell-values.md` drops empty cells, so it carries the true count of cells the JS never produces.
-
-### EQ2: data equivalence
-
-Compared against the original fixture, not against a second export.
-
-| Product | Fixture lines | Exported lines | Same date, amount, journal | Same, plus `accountMainID` | Field kinds dropped | Pass 2 equals pass 1 |
-|---|---:|---:|---:|---:|---:|---|
-| BST | 528 | 528 | 528 | 396 | 16 | yes, 0 diff lines |
-| SE | 696 | 695 | 694 | 592 | 7 | yes, 0 diff lines |
-| Ltd | 722 | 718 | 701 | 685 | 7 | yes, 0 diff lines |
-
-Not one exported line matches its fixture line on the full field set, in any product. The
-double-roundtrip passes for all three, which is what makes it the wrong measurement: it is stable
-on data the first pass has already changed.
-
-The Ltd figures are measured with the CI job's `--offset '-P1Y'` undone. Without that correction
-every date is a year out and only 16 of 722 lines match anything.
-
-Fields the export drops: `measurableQuantity`, `measurableUnitOfMeasure`, `measurableDescription`,
-`diya-gl:employeeID`, `diya-gl:cisDeduction`, `diya-gl:cisRate`, `diya-gl:hpAgreement` in SE and
-Ltd; BST drops those plus `lineItemComment`, `documentType`, `documentReference`, `taxCode`,
-`taxRate`, `diya-gl:grossPay`, `diya-gl:incomeTax`, `diya-gl:employeeNI`, `diya-gl:employerNI`,
-`diya-gl:netPay`.
-
-Account identity collapses because the exporter reverses a code letter to one representative
-account. SE loses `5501` (68 lines), `5301` (5), `5201` (4), `5803` (4), `5701` (4), `5700` (2),
-`5802`, `5801`, `5101` (1 each), and folds them into `5300`, which goes from 6 lines to 78. Payroll
-splits the same way: `5100` (12 lines) becomes `5101`. Ltd loses `5803` (4) and `5100` (12), and
-the bank opening-balance lines on accounts `1210` and `1220`.
-
-The exported `book.toml` carries seven lines: `documentInfo` and two `entityInformation` fields. It
-has no chart of accounts, no tax rates, no directors, no employees. It fails the published book
-schema, which requires `accounts`. So the operator's stated goal, that
-`examples/precision-code-ltd/full` and the exported directory are equal, is not measured at all
-today for `book.toml` and is measured against the wrong side for `lines.jsonl`.
-
-### EQ3: stability
-
-No command runs it and no job measures it. `report.js` has `--mode saved` and `--mode recalculate`,
-which is the machinery, but nothing compares the two.
-
-### Status of the seven open items
-
-| Item | State | Evidence |
-|---|---|---|
-| S1 cross-file external links | **Changed shape.** LibreOffice now resolves them and the Excel side is right. The JS side is the wrong one: `MnthP&L!B20` employer NI reads 6,926.40 in Excel and 80,976 in JS (the JS sums payroll gross), `B40` depreciation reads 5,250 in Excel and 0 in JS, `CorporationTax!I7`/`I8` add-backs read 2,500 / 5,250 in Excel and 0 in JS. | `target/fid/ltd-valuediff.txt` |
-| S2 BST debtors and creditors | **Open, root cause found.** The Excel values are not template examples. `diyaGlToScenario()` never sets `opening_debtors`, `closing_debtors` or `stock`, so `cellWrites` leaves the blocks unwritten and the sheet keeps its own monthly analysis figures. `Debtors & Creditors!C5` reads 33,400, which is April's sales. | `app/lib/diya-gl-loader.js`, `app/products/bst.js:90-105` |
-| S3 SE `B31` bank charges | **Open.** The JS hardcodes 0 at `diya-gl-calculator.js:442`. The value is derivable from the bank journal's `B`-coded lines, the same way Ltd derives `B36`. | `app/lib/diya-gl-calculator.js:442` |
-| S4 SE SA103S mapping | **Open and wider than recorded.** SA103F is also unmapped: 40 of 41 SA103F rows differ. SA103S: 22 of 27 differ. | EQ1 per-file table |
-| S5 business details template text | **Open.** The root cause is the schema. `entityInformation` has no address, town, postcode or telephone field, so a company address cannot survive a roundtrip whatever the writer does. | the published book schema |
-| S6 Ltd journal lines lost | **Open, 4 lines.** 722 in, 718 out. The fixed asset debit and credit collapse to net book value, the stock adjustment is not stored, and two bank opening balances are lost. | EQ2 table |
-| S7 fixed assets `cellWrites` layout | **Open.** Still blocks S6 and leaves the Ltd fixed asset note at 11 of 12 rows differing. | EQ1 per-file table |
-
-The single largest JS-side defect is smaller than any of these and fixes several at once.
-`app/bin/report.js:99` calls `calculateFromDiyaGl(book, lines, packageName, taxData)` with no fifth
-argument. The calculator's whole `scenario` parameter is therefore always `{}`, so opening balances,
-stock, debtors, creditors, business details and fixed assets are zero or blank in every JS report.
-`diyaGlToScenario()` already builds that object.
-
----
-
-## Measurement, 2026-08-30, after T0-T2
-
-The comparator now reads the canonical `report.json` from both engines and scores each
-value once (a section row that reprints a cell is scored through the cell; absent values
-are absent, not dashes; compliance verdicts are in scope on both sides). These counts are
-the baseline from here and do not compare to the table above.
-
-EQ1, report half:
+### EQ1, the report half
 
 | Product | Excel values | JS values | Equal | Differing | No JS value | No Excel value |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| BST | 172 | 99 | 77 | 20 | 75 | 2 |
-| SE | 1561 | 434 | 119 | 311 | 1131 | 4 |
-| Ltd | 2124 | 595 | 259 | 321 | 1544 | 15 |
+| BST | 122 | 188 | 122 | 0 | 0 | 66 |
+| Taxi | 230 | 230 | 230 | 0 | 0 | 0 |
+| SE | 933 | 1633 | 931 | 2 | 0 | 700 |
+| Ltd | 1277 | 2169 | 1273 | 4 | 0 | 892 |
 
-EQ2, data half, scored against the original fixture:
+Every cell either engine reads has a value on both sides. `noJsValue` is zero for all four
+products, which is the count the whole programme was scored on.
 
-| Product | Fixture lines | Exported | Same transaction | Same plus account | Same on every carried field | Fields dropped | No home in the encoding |
+The `noExcelValue` column is a CI wiring gap. The Excel-side command is `report.js --source-dir`
+with no `--data`, so it reads cells out of the workbook and cannot reach the journal. It therefore
+publishes no compliance verdicts and no journal-category netting rows. BST's 66 are all verdicts. SE's 700 are 659 verdicts and 41 netting rows, Ltd's 892 are 837
+and 55. The Taxi job passes `--data` to the same command and its column is zero, with all 73
+verdicts agreeing between the engines. One flag on the other three commands closes the column.
+
+### EQ2, the data half, against the original fixture
+
+| Product | Fixture lines | Exported | Same transaction | Same plus account | Same on every field | Fields dropped | No home in the encoding |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | BST | 528 | 528 | 528 | 528 | 528 | 0 | 15 |
-| SE | 696 | 695 | 694 | 694 | 397 | 0 | 7 |
-| Ltd | 722 | 718 | 717 | 717 | 520 | 0 | 6 |
+| Taxi | — | — | — | — | — | — | — |
+| SE | 696 | 695 | 694 | 694 | 395 | 0 | 7 |
+| Ltd | 722 | 718 | 701 | 701 | 507 | 0 | 6 |
 
-The "no home" fields are declared in `app/data/roundtrip-unrepresentable.json` with reasons.
-What keeps SE and Ltd short of a whole-field match is `lineItemComment` and
-`documentReference` on bank, payroll and SE sales lines, which have no column in those
-blocks; the four Ltd and one SE lines still lost wait on the fixed-asset `cellWrites`
-layout (S7), held by a ratchet test.
+`book.toml`, field by field:
 
-## Scope inventory
+| Product | Equal | Differing | Missing | Extra |
+| --- | ---: | ---: | ---: | ---: |
+| BST | 27 | 53 | 90 | 1 |
+| SE | 37 | 65 | 124 | 2 |
+| Ltd | 90 | 44 | 168 | 1 |
 
-What the Excel side covers, and how far the other three paths reach.
+`Fields dropped` is zero everywhere. Every field the export leaves out is one
+`app/data/roundtrip-unrepresentable.json` names a reason for, and the ratchet test in
+`app/test/verify-roundtrip.test.js` fails if a new one appears.
 
-### The read scope, measured
+### EQ3, stability of a saved package against its recalculation
 
-| Product | `CELL_MAP` | `standardReads()` cells | `additionalReads` cells | Report sections | Checks in the published report |
-|---|---:|---:|---:|---:|---:|
-| BST | 125 | 125 in 9 sheets | 0 | 10 | 66 |
-| Taxi | 87 | 123 in 8 sheets | 0 | 8 | 54 |
-| SE | 156 | 420 in 9 sheets | 422 in 41 `file!sheet` keys | 10 | 637 |
-| Ltd | 166 | 666 in 12 sheets | 614 in 54 `file!sheet` keys | 12 | 860 |
+| Product | Keys compared | Moved | Stale cached value | Unstable conversion | Volatile formula |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| BST | 122 | 0 | 0 | 0 | 0 |
+| Taxi | 157 | 0 | 0 | 0 | 0 |
+| SE | 933 | 0 | 0 | 0 | 0 |
+| Ltd | 1277 | 0 | 0 | 0 | 0 |
 
-The JS calculator's reach against that scope:
+No key moves on any of the four packages, and none appears on one side only. That is because
+`generate --data` recalculates the package as it injects the fixture and saves the recalculated
+workbooks, so a populated package is already a fixed point.
 
-| Product | JS emits | `standardReads` cells the JS supplies | `additionalReads` cells the JS supplies |
-|---|---:|---:|---:|
-| BST | 65 cells in 6 sheets | 65 / 125 (52%) | n/a |
-| Taxi | 35 cells in 3 sheets | 35 / 123 (28%) | n/a |
-| SE | 80 cells in 7 sheets | 78 / 420 (19%) | 0 / 422 |
-| Ltd | 104 cells in 7 sheets | 89 / 666 (13%) | 0 / 614 |
-
-`report.js` reads `standardReads()` only. It never calls `multiFileOptions()`, so the whole
-`additionalReads` set is outside EQ1 for both SE and Ltd. That is why the roundtrip reports carry
-no VAT Returns section and no Fixed Asset Schedule section, while the published reconciliation
-reports carry both.
+`app/data/volatile-cells.json` allows 84 cells to move, all of them stale cached values the
+generator writes a seed for and never refreshes. Thirty-nine are in the SE read set and forty-five
+in the Ltd read set. They move on a package generated without `--data`, which is the blank package
+a customer downloads. A blank SE package at the 2027 year end scores 917 keys compared, 876 equal,
+39 moved, all 39 on the allowlist, plus 2 keys with no saved value.
 
 ### BST
 
-| Area | Report values | Excel checks | JS computes | `report.js` prints | `export.js` exports inputs | Schema represents inputs | JS test asserts | Gaps |
-|---|---:|---:|---|---|---|---|---|---:|
-| P&L trading and expense lines | 24 | 10 | yes | yes | yes | yes | 9 of 24 | 15 |
-| Monthly sales | 12 | 1 | yes | yes | yes | yes | 2 of 12 | 10 |
-| Income tax and NI | 16 | 16 | partial, no CIS | yes | n/a | rates yes | 5 of 16 | 11 |
-| SA103S boxes | 21 | 4 | approximation, see `diya-gl-calculator.js:176` | yes | n/a | box map in `diya-gl:sa103sBox` | 0 | 21 |
-| Stock | 3 | 3 | needs a scenario it never gets | yes | no | **no** | 1 of 3 | 3 |
-| Debtors and creditors | 14 | 4 | needs a scenario it never gets | yes | no | **no** | 1 of 14 | 14 |
-| Fixed assets and capital allowances | 7 | 4 | returns 0 | yes | additions only | **no register** | 0 | 7 |
-| Purchase analysis | 1 | 1 | no | yes | yes | yes | 0 | 1 |
-| Admin injected rates | 22 | 22 | **no Admin sheet at all** | yes | no | yes | 0 | 22 |
-| Business details | 5 | 0 | name and description only | yes | name and description only | **no address fields** | 1 of 5 | 4 |
-| Profit bridge | 14 | 1 | derived | yes | n/a | n/a | 0 | 3 |
-| **Total** | **139** | **66** | | | | | **19** | **111** |
+Every read cell, every printed row and every derived figure agrees. The export brings all 528
+fixture lines back as the same transaction, on the same account, on every field it carries. Fifteen
+field kinds have no home in the single-file encoding, `roundtrip-unrepresentable.json` names each
+one, and the payroll fields lead that list because the BST template has no Payslips workbook. The
+66 unmatched values are the compliance verdicts the Excel-side command never publishes.
 
 ### Taxi
 
-Taxi has no roundtrip job, no `report --data` run and no calculator test. Every row is a gap.
-
-| Area | Report values | Excel checks | JS computes | Gaps |
-|---|---:|---:|---|---:|
-| P&L vehicle cost block | 6 | 3 | fuel and repairs only, car hire hardcoded 0 | 4 |
-| P&L trading and general expenses | 14 | 6 | yes | 14 |
-| Quarterly summary (VitalTax) | 10 | 10 | no | 10 |
-| SA103S boxes | 13 | 3 | no | 13 |
-| Draft tax calculation | 12 | 11 | partial, two bands only | 12 |
-| Fixed assets | 5 | 3 | returns 0 | 5 |
-| Purchase analysis | 2 | 1 | no | 2 |
-| Admin injected rates | 19 | 19 | no | 19 |
-| Business details | 6 | 0 | partial | 6 |
-| Mileage comparison | 2 | 1 | `mileageAllowance` hardcoded 0 | 2 |
-| **Total** | **89** | **54** | | **87** |
-
-`measurableQuantity` and `measurableUnitOfMeasure` already carry miles in the fixtures. The mileage
-claim is computable; nothing computes it.
+Every one of the 230 values agrees, verdicts included, because the Taxi job is the one that passes
+`--data` to the Excel-side command. The data half goes unmeasured. `app/bin/export.js` has no Taxi
+writer, so EQ2 and the double-roundtrip do not run for this product.
 
 ### SE
 
-| Area | Report values | Excel checks | JS computes | `report.js` prints | `export.js` exports inputs | Schema represents inputs | JS test asserts | Gaps |
-|---|---:|---:|---|---|---|---|---|---:|
-| P&L lines | 28 | 9 | yes, `B31` hardcoded 0 | yes | yes | yes | 3 soft | 20 |
-| Monthly P&L ties | 234 | 192 | **no** | appendix only | yes | yes | 0 | 234 |
-| Income tax and NI | 14 | 11 | yes | yes | n/a | rates yes | 2 soft | 13 |
-| SA103S boxes | 26 | 5 | 12 approximated | yes | n/a | partial | 0 | 22 |
-| SA103F boxes | 40 | 59 | **none** | yes | n/a | **no** | 0 | 40 |
-| Payroll (Wagesinterface) | 14 | 48 | emits zeros | yes | gross, tax, NI | yes | 1 soft | 14 |
-| Payslips payment and calendar | 81 | 67 | **no** | **no** | no | **no** | 0 | 81 |
-| Quarterly summary (VitalTax) | 10 | 2 | approximated | yes | yes | yes | 1 soft | 10 |
-| Admin injected rates | 23 | 23 | **no Admin sheet** | yes | no | yes | 0 | 23 |
-| Fixed asset schedule | 12 | 6 | **no** | **no** | no | **no register** | 0 | 12 |
-| HP finance | 7 | 5 | **no** | **no** | `hpAgreement` tag only | **no** | 0 | 7 |
-| VAT returns and interface | 32 | 154 | **no** | **no** | net and VAT per line | rate and code yes, straddling no | 0 | 32 |
-| Stock counts | 2 | 2 | needs a scenario it never gets | **no** | no | **no** | 0 | 2 |
-| Debtors and creditors | 4 | 4 | **no** | **no** | no | **no** | 0 | 4 |
-| Bank and cash closing | 2 | 2 | **no** | **no** | yes | yes | 0 | 2 |
-| Business details | 1 | 0 | yes | yes | yes | yes | 0 | 0 |
-| Category netting | 19 | 19 | **no** | **no** | n/a | n/a | 0 | 19 |
-| **Total** | **549** | **637** | | | | | **7 soft** | **535** |
+Two values differ, both on the same figure. `Income Tax!E9` is the higher-rate band charge and
+`E11` the income tax it feeds. Excel carries 32,861.2349999998 and the JS carries 32,861.235, which
+is the same number arrived at by two routes that land either side of a half-penny boundary. Rounding
+half-up to 2 dp sends one to 32,861.23 and the other to 32,861.24, so the canonicalisation that
+absorbs sub-penny noise everywhere else does not absorb this one. `E11` inherits it.
+
+One of the 696 fixture lines does not come back: the stock adjustment, which the SE workbooks store
+as a count and a value rather than as a journal line. Of the 694 that match as the same
+transaction, 395 match on every field they carry. Three fields account for the rest.
+`lineItemComment` differs on 299 lines and `documentReference` on 183, neither of which has a
+column on the bank, payroll or sales blocks. `diya-gl:bankCode` differs on 7.
 
 ### Ltd
 
-| Area | Report values | Excel checks | JS computes | `report.js` prints | `export.js` exports inputs | Schema represents inputs | JS test asserts | Gaps |
-|---|---:|---:|---|---|---|---|---|---:|
-| P&L lines | 38 | 9 | yes, `B20`, `B35`, `B39`, `B40` wrong or zero | yes | yes | yes | 3 soft | 30 |
-| Monthly P&L ties | 325 | 300 | **no** | appendix only | yes | yes | 0 | 325 |
-| Opening balance sheet | 11 | 17 | needs a scenario it never gets | yes | opening journal only | **no opening balance section** | 0 | 11 |
-| Trial balance | 35 | 12 | opening column only | yes | partial | **no** | 1 soft | 26 |
-| Corporation tax working sheet | 12 | 30 | 6 of 12, no capital allowances | yes | n/a | rates yes | 2 soft | 12 |
-| CT600 boxes | 11 | 20 | **none** | yes | n/a | `diya-gl:ct600Box` unused | 0 | 11 |
-| Published P&L | 12 | 6 | 5 of 12 | yes | n/a | n/a | 1 soft | 12 |
-| Published balance sheet | 17 | 6 | 3 of 17 | yes | n/a | **no** | 1 soft | 17 |
-| Fixed asset note and schedule | 85 | 67 | **no** | note only | **no** | **no register** | 0 | 85 |
-| Directors' report and share register | 13 | 18 | **no** | report only | **no** | `directors[]` has shares, no register | 0 | 13 |
-| Dividends and board minute | 4 | 5 | **no** | **no** | **no** | **no** | 0 | 4 |
-| Charges register | 1 | 1 | **no** | **no** | **no** | **no** | 0 | 1 |
-| HP finance | 7 | 5 | **no** | **no** | `hpAgreement` tag only | **no** | 0 | 7 |
-| VAT returns and interface | 30 | 159 | **no** | **no** | net and VAT per line | rate and code yes, straddling no | 0 | 30 |
-| Payroll (WagesInterface, Payslips) | 144 | 123 | gross pay only | interface only | gross, tax, NI | yes | 0 | 144 |
-| Stock | 4 | 4 | needs a scenario it never gets | yes | **no** | **no** | 1 soft | 4 |
-| Creditors and bank closing | 16 | 16 | directors loan only | trial balance only | yes | yes | 0 | 15 |
-| Admin injected rates and dates | 32 | 31 | **no Admin sheet** | **no** | no | rates yes, dates no | 0 | 32 |
-| Expenses form mileage | 12 | 12 | **no** | **no** | miles per line | rate yes | 0 | 12 |
-| Business details | 9 | 0 | 3 of 9 | yes | 2 of 9 | **no address fields** | 0 | 6 |
-| Category netting | 26 | 26 | **no** | **no** | n/a | n/a | 0 | 26 |
-| Profit bridge | 11 | 1 | derived | yes | n/a | n/a | 0 | 9 |
-| **Total** | **845** | **860** | | | | | **9 soft** | **832** |
+Four values differ, and they are two figures read twice. `Fixedassets.xlsx!Schedule!R1` is the total
+writing down allowance claimed and `Y1` the balancing allowance on disposals.
+`CorporationTax!I17` and `I18` read those two across the cross-file link. Excel splits 11,500
+between them as 3,000 and 8,500; the JS splits the same 11,500 as 4,800 and 6,700. The total
+capital allowance agrees and the split does not.
 
-### Gap counts
+Four of the 722 fixture lines do not come back at all: the fixed asset debit and credit, which the
+export collapses to net book value, and two bank opening balances. Twenty-one do not come back as
+the same transaction, and they are one block: the eighteen lines of the opening journal and the
+three bank opening balances, all on the first day of the period. The opening balance sheet is a
+grid of figures rather than a numbered journal, so the export re-derives them from the grid instead
+of replaying the fixture's own lines. Of the 701 that do match, 507 match on every field;
+`documentReference` and `lineItemComment` each differ on 194.
 
-| Product | Report values in scope | Values with no correct JS source | Excel checks with no JS unit-test mirror |
-|---|---:|---:|---:|
-| BST | 139 | 111 | 47 of 66 |
-| Taxi | 89 | 87 | 54 of 54 |
-| SE | 549 | 535 | 630 of 637 |
-| Ltd | 845 | 832 | 851 of 860 |
-| **Total** | **1,622** | **1,565** | **1,582 of 1,617** |
+## What each track delivered
 
-The 35 JS assertions that exist are in `app/test/diya-gl-calculator.test.js`. Twenty of them, all
-BST, are anchored to fixture figures and can fail. The other fifteen compare a JS value with
-another JS value ("K5 matches MnthP&L B43") or assert a range ("is positive and reasonable"). A
-check that compares a value with itself cannot fail, so it does not exist.
+**T0. Calculator split, scenario pass-through, wider read.** Split `diya-gl-calculator.js` into
+`app/lib/calculators/{bst,taxi,se,ltd}.js` behind the existing `calculateFromDiyaGl` signature.
+Made `report.js --data` pass a scenario into the calculator and publish compliance checks, and made
+`report.js --source-dir` merge `additionalReads` into the read set. Added the first version of
+`app/bin/verify-roundtrip.js`, scoring EQ1 by parsing the rendered markdown. Before it, the
+calculator's `scenario` parameter was always `{}`, so opening balances, stock, debtors, creditors,
+business details and fixed assets were zero or blank in every JS report.
 
-The test also hardcodes a `bstScenario` literal with stock, debtors and creditors, duplicating what
-`extract-scenarios.js` derives. Fixture figures belong in one place.
+**T1. Schema v2, the validator, the canonical form.** Published
+`diya-gl-{lines,book}-v2.schema.json` and deleted the two v1 files, repointing every reader. Added
+`ajv` and `ajv-formats` as direct dependencies so draft 2020-12 can be compiled. Built
+`app/lib/diya-gl-schema.js` as the one validator, carrying the two referential rules JSON Schema
+cannot state. Built `app/lib/diya-gl-canonical.js`, whose field order the schemas supply. Filled
+the Precision Code master with the v2 tables and made `extractTaxDataFromBook()` read the Class 2
+and Class 4 rates instead of substituting Class 1. Left `app/data/fixture-master-gaps.json` for
+T1b. Before it nothing validated the schemas at all, and the fixtures broke them in four ways.
 
----
+**T1b. Fixture masters.** Made all twelve reconciliation fixtures derive from diya-gl master data,
+where nine had been hand-written. Gave the BrickWork master a bank journal, opening balances,
+ledgers, a fixed asset register and a members register, and derived the VAT twin from the non-VAT
+trade in a build section rather than keeping two masters. Registered SP Sixty's dashcam and
+Kestrel's camera. Added the Basic Taxi Driver master, which the `taxi-scenario-basic` fixture had
+never had. Widened the CI sync gate to cover `examples/` as well as `app/test/fixtures/`, so
+re-running the extractor must leave the tree clean.
 
-## Schema gaps
+**T2. The tuple contract and export completeness.** Built `app/lib/report-serializer.js`, so both
+engines write `R` through one module. Moved `verify-roundtrip.js` off parsing markdown onto
+`report.json` and the declared units, added the unit-keyed comparison policy and the data half, and
+settled which keys are scored across both documents at once. Carried `accountMainID` through the
+workbook on each account's own analysis column, so account identity survives the export where it
+used to collapse to one representative account per code letter. Made `export.js` write a full
+`book.toml` instead of seven lines. Declared the fields the Excel encoding cannot hold in
+`app/data/roundtrip-unrepresentable.json`, 18 of them, and anchored the end-to-end tuple test to
+the fixture as a ratchet.
 
-### What the fixtures already break
+**T3. BST and Taxi calculators.** Gave both calculators a source for every cell their
+reconciliation reads: the Admin sheet from the tax data, capital allowances from the fixed asset
+register through `app/lib/tax/capital-allowances.js`, the SA103S box map read out of the template
+XML, the Taxi mileage claim, the actual-versus-mileage comparison, the VitalTax quarterly grid and
+the tax sheet. Declared a unit for every key both `cellLabels()` maps name. Mirrored the Excel
+checks one for one in `app/test/calculator-{bst,taxi}.test.js`. Added the `roundtrip-taxi` job.
+Took the hardcoded stock and ledger guesses out of the loader.
 
-Nothing validates the published schemas. `ajv` is present only as a transitive dependency, at a
-version that cannot read draft 2020-12. Running a conformance check by hand finds:
+**T4. SE calculator.** Computed every cell the SE reconciliation reads: the monthly P&L grid, all
+40 SA103F boxes, SA103S, the payroll interface and calendar, the fixed asset schedule, HP finance,
+stock counts, ledgers, bank and cash closing balances, and the category netting rows. Grew
+`app/lib/tax/vat.js` from a quarterly aggregator into the full Vatinterface and return forms,
+including the straddling periods. Recorded CIS deductions on the purchase journal. Carried a
+workbook's empty cells as the blanks they are rather than as nil, and asserted that set exactly.
+Declared a unit for every read cell.
 
-| File | Violation |
-|---|---|
-| `examples/precision-code-ltd/{full,advanced}/lines.jsonl` | `diya-gl:hpAgreement` on 2 lines. The schema sets `additionalProperties: false`, so the field is forbidden. |
-| same | `diya-gl:bankCode` values `BB`, `RC`, `RT` on 4 lines. The enum lists 12 codes and none of these. |
-| `examples/precision-code-ltd/book.toml` | a `[dividend]` table with `boardMeeting` and `declared`. The schema sets `additionalProperties: false` at the top level. |
-| every exported `book.toml` | no `accounts` table, which the schema requires. |
+**T5. Ltd calculator.** Computed every cell the Ltd reconciliation reads: the monthly P&L grid, the
+fixed asset schedule and note, the whole CT working sheet with marginal relief and day
+apportionment, the CT600 boxes, the published P&L and balance sheet, both trial balance columns,
+the directors' report, share register, dividends, charges and HP, the VAT interface and the Admin
+sheet. Added `app/lib/tax/corporation-tax.js` and `app/lib/tax/capital-allowances.js`. Split a hire
+purchase payment the way the sheet splits it. Mirrored every Ltd check in
+`app/test/calculator-ltd.test.js`.
 
-### What the writers need and the schema cannot express
+**T6. EQ3 on every package.** Added `app/bin/verify-stability.js`, which reads a package saved and
+recalculated and compares the two `R` documents with the same comparator and the same policy. Its
+rework rebuilt `app/data/volatile-cells.json` from this tree after T1b changed the fixtures: all 84
+entries are stale cached values, each carrying the cell's formula and the seed cell it traces back
+to. No cell any product reads carries a volatile `TODAY`/`NOW`/`RAND` formula. The rework also
+scoped the Ltd test to the latest tax year, which had been generating 90-odd populated packages to
+read one.
 
-| Concept | Who needs it | Where it lives today |
-|---|---|---|
-| Opening balances (fixed asset cost and depreciation by class, stock, trade debtors, trade creditors, four bank accounts, PAYE, VAT, CIS, corporation tax, directors loan, long-term creditors, share capital, retained earnings, dividends due) | Ltd `OpenAccounts`, `TrialBalance` column D, 17 checks | reverse-engineered from an opening journal by `buildOpeningBalance()` |
-| Opening and closing stock, and the physical count | BST, SE, Ltd, 9 checks | a hardcoded 10,000 / 6,000 in `diya-gl-loader.js:187` |
-| Debtor and creditor ledgers with counterparty names | BST 14 cells, SE 4 checks, Ltd published balance sheet | scenario TOML only |
-| Fixed asset register: class, description, cost, accumulated depreciation, acquisition date, disposal date, proceeds, depreciation rate | BST, Taxi, SE, Ltd, 67 Ltd checks and 12 SE | partly derived from code `f` purchases, partly from the opening journal |
-| HP agreements: amount financed, admin charges, total interest, term in months | SE 5 checks, Ltd 5 | a `diya-gl:hpAgreement` string the schema forbids |
-| Dividends: declaration date, board meeting date, amount | Ltd 5 checks | a `[dividend]` table the schema forbids |
-| Members register: name and shareholding | Ltd 7 checks | `directors[].shares`, which is not the same list |
-| Charges and debentures: valuation per charge | Ltd 1 check | nothing |
-| VAT straddling entries: amounts belonging to a period outside the accounting year | SE 20 checks, Ltd 20 | scenario TOML only |
-| VAT return periods and stagger | SE and Ltd VAT cycle, 9 checks each | derived from the sheet's own dates |
-| Registered office address, town, postcode, telephone, first director's name | BST 5 cells, Ltd 9 | nothing, which is the whole of S5 |
-| Class 2 and Class 4 NI rates | every sole-trader tax check | the schema has the fields; the fixtures do not set them, and `extractTaxDataFromBook()` substitutes Class 1 rates |
-| Accounting period start month for the payroll calendar | SE 31 checks, Ltd 39 | `documentInfo.periodCoveredStart` |
-| Stock materials percentage | Ltd stock calculation check | scenario TOML only |
-| Mileage claim basis (actual cost or mileage allowance) | Taxi | nothing |
+**T7. CI wiring.** Turned the four `roundtrip-*` jobs into a budget gate on
+`app/data/roundtrip-budget.json`, seeded from a real run, and added the stability step to each.
+Added a scorecard and a stability step to every entry of the four `generate-*` matrices, reusing
+the package in `reports/populated/` rather than generating a second one. The matrix gate reads
+`app/data/roundtrip-matrix-budget.json` and holds `linesLost` and `fieldsDropped` only.
 
-### Decision: `v2` replaces `v1`
+**The loader track.** Made `app/lib/diya-gl-loader.js` carry the v2 book's own registers into the
+scenario both writers read: opening balances, stock, ledgers, fixed assets, HP agreements and
+members. Stopped stripping VAT from a book that never charged it. That is what let the Ltd fixed
+asset and register-of-members checks assert a pass, and it pinned the Ltd depreciation to the
+register rather than to a derivation.
 
-Nothing consuming `v1` is live. The only readers are in this repository: the example READMEs, the
-schema docs page, and `app/test/diya-gl-schema.test.js`. So there is no second reader to keep
-serving, and serving two schemas would mean maintaining two.
+## The read scope, measured
 
-Publish `diya-gl-lines-v2.schema.json` and `diya-gl-book-v2.schema.json`, point every reader at
-them, and delete the two `v1` files. `diya-gl-docs.md` documents `v2` only.
+What each product's `R` carries, measured on the packages above.
 
-Three of the changes are not additive, which is why the version number moves rather than the
-existing schema being amended in place:
+| Product | `CELL_MAP` | Cells read | Report rows | Checks | Values in `R` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| BST | 121 | 120 | 133 | 66 | 319 |
+| Taxi | 107 | 153 | 119 | 73 | 345 |
+| SE | 173 | 891 | 320 | 659 | 1870 |
+| Ltd | 166 | 1233 | 330 | 837 | 2400 |
 
-1. `amount` currently has `minimum: 0` and `debitCreditCode` is optional. A journal line's sign is
-   therefore ambiguous, and the Ltd calculator already works around it at
-   `diya-gl-calculator.js:694`. `v2` makes `debitCreditCode` required on `journal` lines.
-2. `accountMainID` is a free string. The book's chart of accounts is the authority, so `v2` binds
-   the line to it and the export path can stop guessing an account from a code letter.
-3. `book.toml` gains `openingBalances`, `fixedAssets`, `hpAgreements`, `dividends`, `members`,
-   `charges` and `stock` as top-level tables. `entityInformation` gains address fields.
+BST and Taxi are single-file products, so every cell key names a sheet and a cell. Every SE and Ltd
+cell key names a file as well, because `report.js --source-dir` merges `multiFileOptions()`'s
+`additionalReads` into the read set. That is what puts the VAT returns and the fixed asset schedule
+in the roundtrip reports.
 
-### `v2` additions, field by field
+## The diya-gl v2 schema
 
-**`diya-gl-lines-v2.schema.json`**
+### Decision: v2 replaced v1
 
-- `diya-gl:hpAgreement` (string): the `hpAgreements[]` id this line settles.
-- `diya-gl:bankCode`: add `BB` (opening balance brought forward), `RC` (CIS remittance), `RT`
-  (corporation tax remittance), `LCR` (long-term creditor receipt). Move the code descriptions into
-  `oneOf` branches so a reader can tell a receipt code from a payment code.
+Nothing consumed v1 outside this repository, so there was no second reader to keep serving and
+serving two schemas would have meant maintaining two.
+`web/spreadsheets.diyaccounting.co.uk/public/schema/` publishes
+`diya-gl-lines-v2.schema.json` and `diya-gl-book-v2.schema.json`, and `diya-gl-docs.md` documents
+v2 only.
+
+Three of the changes are not additive, which is why the version number moved rather than the
+existing schema being amended in place.
+
+1. `amount` is always positive and `debitCreditCode` was optional, so a journal line's sign was
+   ambiguous. v2 requires `debitCreditCode` on a `journal` line, through an `if`/`then` on
+   `sourceJournalID`.
+2. `accountMainID` binds to the book's chart of accounts, so the export path stops guessing an
+   account from a code letter. JSON Schema cannot state that rule, so the validator carries it.
+3. `book.toml` gained `openingBalances`, `stock`, `debtors`, `creditors`, `fixedAssets`,
+   `hpAgreements`, `dividends`, `members` and `charges` as top-level tables, and
+   `entityInformation` gained address fields.
+
+Both schemas set `additionalProperties: false`. `book.toml` requires `documentInfo`,
+`entityInformation` and `accounts`; a line requires `postingDate`, `amount`, `accountMainID` and
+`sourceJournalID`.
+
+### v2, field by field
+
+**`diya-gl-lines-v2.schema.json`** carries the gl-cor fields plus these `diya-gl:` extensions.
+The last three are the ones v2 introduced, and they are what tie a line to a register the book
+declares.
+
+- `diya-gl:bankCode`: nineteen codes matching the analysis columns of the bank workbooks, including
+  `BB` (opening balance brought forward), `RC` (CIS remittance), `RT` (corporation tax remittance)
+  and `LCR` (long-term creditor receipt).
+- `diya-gl:bankAccountID`, `diya-gl:employeeID`, `diya-gl:grossPay`, `diya-gl:incomeTax`,
+  `diya-gl:employeeNI`, `diya-gl:employerNI`, `diya-gl:netPay`, `diya-gl:cisDeduction`,
+  `diya-gl:cisRate`, `diya-gl:hpAgreement`.
 - `diya-gl:vatPeriodEnd` (date): the VAT period the line is declared on, when that differs from the
   period `postingDate` falls in. This is what makes a straddling entry representable.
 - `diya-gl:assetID` (string): the `fixedAssets[]` id a capital purchase or disposal moves.
 - `diya-gl:memberID` (string): the `members[]` id a dividend line pays.
-- `debitCreditCode`: required when `sourceJournalID` is `journal`.
-- `accountMainID`: keep as a string, and add a note that it must name an account the book declares.
-  Enforcement belongs in the validator, not in JSON Schema.
-
-**`diya-gl-book-v2.schema.json`**
-
-- `entityInformation`: add `organizationAddressLine`, `organizationTown`, `organizationPostcode`,
-  `organizationTelephone`, `diya-gl:companiesHouseName`.
-- `documentInfo`: add `diya-gl:vatStaggerGroup` (integer 1 to 3) and `diya-gl:payrollYearStart`
-  (date).
-- `openingBalances` (object): `fixedAssetCost` and `fixedAssetDepreciation`, each keyed by asset
-  class (`landBuildings`, `plantMachinery`, `fixturesFittings`, `computerTechnology`,
-  `motorVehicles`); then `stock`, `tradeDebtors`, `tradeCreditors`, `bankAccounts` keyed by account
-  code, `payeDue`, `vatDue`, `cisDue`, `corporationTaxDue`, `dividendsDue`, `directorsLoan`,
-  `longTermCreditors`, `shareCapital`, `retainedEarnings`.
-- `stock` (object): `openingValue`, `closingValue`, `openingCount`, `closingCount`,
-  `materialsPercent`.
-- `debtors` and `creditors` (arrays): `{ counterparty, amount, timing: "opening" | "closing" }`.
-- `fixedAssets` (array): `{ assetID, class, description, cost, accumulatedDepreciation,
-  acquiredDate, depreciationRate, disposedDate, disposalProceeds }`.
-- `hpAgreements` (array): `{ agreementID, description, amountFinanced, adminCharges, totalInterest,
-  termMonths, startDate }`.
-- `dividends` (array): `{ declaredDate, boardMeetingDate, amount }`.
-- `members` (array): `{ memberID, name, shares, nominalValue }`. Keep `directors[]` for the
-  officers; a member is not always a director.
-- `charges` (array): `{ description, valuation, createdDate }`.
-- `tax.nationalInsurance`: keep the Class 2 and Class 4 fields already declared, and make the
-  fixtures set them. `extractTaxDataFromBook()` must read them and stop substituting Class 1 rates.
-- `tax.vat`: add `staggerGroup` and `firstPeriodEnd` so the return cycle is data, not inference.
-- `tax.mileage`: already present; Taxi needs `basis: "actual" | "mileage"` on
-  `entityInformation`.
-
-`app/lib/diya-gl-schema.js` becomes the one validator: draft 2020-12, plus the two rules JSON
-Schema cannot state, that every `accountMainID` names a declared account and that every
-`diya-gl:hpAgreement` / `assetID` / `memberID` names a declared entry.
-
----
-
-## Implementation tracks
-
-Eight tracks. File ownership is exclusive within a track so they can share a working tree. Where
-two tracks have to touch one file, the ordering below says which lands first.
-
-### T0. Calculator split, scenario pass-through, wider read
-
-Landed. It leaves the files the rest of this plan builds on: `app/lib/calculators/{bst,taxi,se,ltd}.js`
-behind the existing `calculateFromDiyaGl` signature, `report.js --data` passing a scenario and
-publishing compliance checks, `report.js --source-dir` merging `additionalReads` into the read set,
-and `app/bin/verify-roundtrip.js` scoring EQ1.
-
-`verify-roundtrip.js` scores today by parsing the rendered markdown. T2 moves it onto `report.json`
-and the declared units, and adds the data half.
-
-### T1. Schema v2, the validator, and the canonical form
-
-**Owns**: `web/spreadsheets.diyaccounting.co.uk/public/schema/diya-gl-{lines,book}-v2.schema.json`,
-the two `v1` files it deletes, `web/.../schema/diya-gl-docs.md`, `app/lib/diya-gl-schema.js`,
-`app/lib/diya-gl-canonical.js`, `app/test/diya-gl-schema.test.js`, the master data at
-`examples/precision-code-ltd/{book.toml,lines.jsonl}`, and the `Conforms to` lines in the
-`examples/*/README.md` files.
-
-Runs first and alone. T1b and T2 both need the book shape and the canonical writer.
-
-1. Write the two schemas as set out above. Delete `diya-gl-lines-v1.schema.json` and
-   `diya-gl-book-v1.schema.json` and repoint every reader.
-2. Add `ajv` at a draft 2020-12 version as a direct dependency, with `ajv-formats`.
-3. `app/lib/diya-gl-schema.js` exports `validateBook()` and `validateLines()`, including the two
-   referential rules JSON Schema cannot state.
-4. `app/lib/diya-gl-canonical.js` exports `canonicalBookToml(book)` and `canonicalLinesJsonl(lines)`,
-   writing the form defined under "`D`, the data". Its field order comes from the schemas, read at
-   load, so the two cannot drift.
-5. `app/test/diya-gl-schema.test.js` validates every `examples/*/book.toml` and `lines.jsonl`, and
-   proves each new rule breakable by mutating one field in a copy and asserting the exact error.
-6. Fill the Precision Code master with the new `v2` tables: `openingBalances`, `stock`, `debtors`,
-   `creditors`, `fixedAssets`, `hpAgreements`, `dividends`, `members`, `charges`, the
-   `entityInformation` address fields, and the Class 2 and Class 4 NI rates. Make
-   `extractTaxDataFromBook()` read those rates and stop substituting Class 1.
-7. Produce the **sections with no master data** list: every table an extracted fixture carries that
-   no master states, and every literal `extract-scenarios.js` holds in its own source rather than
-   deriving. `openingDebtors`, `bstClosingDebtors` and `openingCreditors` at
-   `extract-scenarios.js:88-110` are already on it. Check the list in as
-   `app/data/fixture-master-gaps.json`. T1b consumes it.
-
-**Blast radius**: `npx vitest run app/test/diya-gl-schema.test.js app/test/scenario-extractor.test.js`.
-
-**Tier**: Sonnet. The field list is settled above.
-
-### T1b. Fixture masters
-
-**Owns**: `app/bin/extract-scenarios.js`, `app/lib/scenario-extractor.js`, the masters at
-`examples/{brickwork-pro,sp-sixty-driving,kestrel-executive-cars}/` and one new taxi master, every
-generated subset directory under `examples/*/`, all twelve files under `app/test/fixtures/`, and
-the fixture sync step in `.github/workflows/test.yml`.
-
-Depends on T1. Runs concurrently with T2.
-
-#### Decision: every reconciliation fixture derives from diya-gl master data
-
-Today three of the twelve fixtures come from a master and nine are hand-written. A hand-written
-fixture states its own answers, so it can hold a figure no double entry supports, and its
-`[expected]` block can drift from the transactions above it without anything noticing. It also
-means a schema field the fixtures need has no writer exercising it.
-
-After this track the extractor writes all twelve at their existing paths, from a master per
-business, and nothing under `app/test/fixtures/` is hand-maintained. The CI sync gate is the proof:
-re-running the extractor must leave the tree clean.
-
-#### What each master must gain
-
-| Master | Fixtures it emits | What it must gain |
-| --- | --- | --- |
-| `examples/precision-code-ltd/` | `bst-scenario-basic`, `se-scenario-advanced`, `ltd-scenario-full` | The `v2` tables and the address fields, which T1 lands. T1b moves the debtor and creditor literals out of `extract-scenarios.js` and derives them from the master's own ledger. |
-| `examples/brickwork-pro/` | `bst-brickwork-pro-nonvat`, `se-brickwork-pro-{vat,nonvat}`, `ltd-brickwork-pro-{vat,nonvat}` | A bank journal. The SE fixtures carry 60 and 63 bank rows and the Ltd 49 and 53, and the master has none: customer receipts, supplier payments, net pay, PAYE and CIS remittances, and VAT remittances in the twin. Opening-balance journal lines coded `BB`, so `buildOpeningBalance()` can produce the Ltd `[opening_balance]` table. `openingBalances` and `stock` tables. Debtor and creditor ledgers with counterparty names: 2 opening and 2 closing debtors, 4 opening and 4 closing creditors. `fixedAssets[]` for the £12,000 van and for the BST addition. `members[]` for Mike Brown's 100 shares, beside the existing `directors[]`. Address, town, postcode and telephone on `entityInformation`. |
-| `examples/sp-sixty-driving/` | `bst-sp-sixty`, `taxi-scenario-sp-sixty` | `fixedAssets[]` for the £200 dashcam the master already books to account 7000, which the BST fixture states by hand as its only `fixed_asset_additions` row. Address fields. Neither fixture needs a bank or payroll journal, so the master needs neither. |
-| `examples/kestrel-executive-cars/` | `taxi-scenario-kestrel` | `fixedAssets[]` for the £900 in-car camera the master books to account 7000 and the hand-written fixture drops. Extracting it gives the fixture a capital allowance it has never had, so the reconciled figures move. Address fields. |
-| new taxi master | `taxi-scenario-basic` | The whole master. The fixture has none, and no `[business]` block either. Create `examples/basic-taxi-driver/` with the 180 daily fares totalling 36,000, the 21 purchase rows, the £8,000 vehicle at account 7000, and a full `entityInformation` including the address, which gives the fixture business details for the first time. |
-
-#### The VAT twin
-
-The BrickWork VAT and non-VAT fixtures are the same firm trading half as much again, with VAT at
-20% on top, and buying the same van at the same £12,000 net cost. That relation is asserted in both
-fixtures' own descriptions and in the master's README.
-
-Keep one BrickWork master, the non-VAT trade as it stands, and derive the twin in a declared build
-section that scales the trade by 1.5, adds VAT at 20%, and holds the capital purchase flat. Two
-master directories would let the twins drift apart silently, and the relation between them is
-exactly what the pair of fixtures exists to test. The build section sits beside
-`bstStaffWagesAsPurchases()` and `seDrawingsFromDividends()`, which already derive one fixture's
-shape from another's data.
-
-#### Steps
-
-1. Read T1's `app/data/fixture-master-gaps.json`.
-2. Extend each master as the table above sets out.
-3. Add the build sections: BrickWork's five, SP Sixty's two, Kestrel's one, the new taxi master's
-   one. Each writes its subset directory and its fixture TOML through
-   `app/lib/diya-gl-canonical.js`, and derives every `[expected]` key rather than stating it.
-4. Every added transaction carries its counter-leg, so `TrialBalance!EJ91` stays 0 for both Ltd
-   fixtures. Assert it.
-5. Widen the sync gate to cover the generated examples as well:
-   `node app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/`.
-6. Reconcile each of the twelve and compare the figures with the committed reports. Every figure
-   that moves is either a fixture gain, which the commit message names, or a regression, which the
-   commit fixes.
-
-**Blast radius**: `npx vitest run app/test/scenario-extractor.test.js app/test/diya-gl-schema.test.js`,
-then the sync gate, then `npx vitest run --fileParallelism=false` over the per-fixture test files
-in `app/test/{bst,se,ltd,taxi}-*.test.js`.
-
-**Tier**: Opus. Writing a bank journal that settles a ledger, remits PAYE, CIS and VAT, and leaves
-the trial balance at zero is accounting design.
-
-### T2. The tuple contract and export completeness
-
-**Owns**: `app/lib/xlsx-exporter.js`, `app/bin/export.js`, `app/lib/report-serializer.js`,
-`app/bin/verify-roundtrip.js`, `app/test/xlsx-exporter.test.js`,
-`app/test/verify-roundtrip.test.js`, and the `report.json` call site in `app/bin/report.js`.
-
-Depends on T1 for the book shape and the canonical writer. Runs concurrently with T1b.
-
-**The report half**
-
-1. `app/lib/report-serializer.js` builds `R` from the structures `reportSections()`,
-   `checkCompliance()` and the cell read map already produce, before any formatting. Keys and
-   canonical form as defined above. `report.js` writes it as `report.json` in both `--source-dir`
-   and `--data` mode, beside the markdown.
-2. Each value carries its declared `unit`. A cell key takes it from the product's `cellLabels()`
-   entry, which T3 to T5 fill in for their own products. Anything still undeclared is compared
-   exactly, so the gate never loosens by omission.
-3. A section row that reprints a cell names that cell in `source`, and a value that is the sum of
-   other keys names them in `derivedFrom`, so the comparator scores each figure once.
-
-**The data half**
-
-4. `export.js` writes `book.toml` and `lines.jsonl` through `app/lib/diya-gl-canonical.js`.
-   `report.js --data` writes its own input the same way into `data/`, so both tuple directories
-   have the same layout and EQ2 compares the export against the original fixture.
-5. Carry `accountMainID` through the workbook so identity survives. The sheets hold a code letter,
-   not an account, so the account has to travel somewhere the sheet already has room for: the
-   detail or reference column, or a hidden column the writer owns. Discover the layout from the
-   template XML before choosing.
-6. Restore the dropped fields. `lineItemComment`, `documentType`, `documentReference`, `taxCode`
-   and `taxRate` are all present in the BST sheets and are simply not read. `measurableQuantity`
-   and the payroll fields need a home.
-7. Write a full `book.toml`: chart of accounts from `Admin` and the journal headers, tax rates from
-   `Admin`, employees from `Payslips`, directors and members from `Companysecretary`, opening
-   balances from `OpenAccounts` and `TrialBalance` column D, fixed assets from `Fixedassets`, HP
-   from `HPfinance`, dividends from `Boardmeeting`, charges from `Charges&Debentures`, stock from
-   `Stock` or `StockControl`.
-8. Recover the 4 lost Ltd lines and the 1 lost SE line, which S7 unblocks.
-9. Name what the Excel encoding genuinely cannot hold in `app/data/roundtrip-unrepresentable.json`,
-   one entry per field with the reason. EQ2 counts those separately from losses.
-
-**The comparator**
-
-10. `verify-roundtrip.js` reads `report.json` instead of parsing markdown and applies the unit-keyed
-    policy: money at 2 dp exact, and a window only on the four rows named above, each read from the
-    check that owns it rather than restated as a number. It refuses a tolerance wider than that
-    check allows.
-11. It scores the data half too: a multiset join of canonical lines and a field comparison of
-    `book.toml`, against the original fixture.
-12. Tests assert the exported line count and the per-account population against the fixture, not
-    against a second export.
-
-**Blast radius**: `npx vitest run --fileParallelism=false app/test/xlsx-exporter.test.js app/test/verify-roundtrip.test.js`.
-
-**Tier**: Opus. Reverse mapping with template discovery and real ambiguity.
-
-### T3. BST and Taxi calculators
-
-**Owns**: `app/lib/calculators/bst.js`, `app/lib/calculators/taxi.js`, the `cellLabels()` maps in
-`app/products/bst.js` and `app/products/taxi.js`, `app/test/calculator-bst.test.js`,
-`app/test/calculator-taxi.test.js`.
-
-Depends on T1b, so its assertions anchor to the final fixture figures. Runs concurrently with T4,
-T5 and T6.
-
-1. Emit the `Admin` sheet from the tax data. 22 BST and 19 Taxi values, no arithmetic.
-2. Implement capital allowances from the fixed asset register: AIA, WDA, the motor restriction, and
-   balancing charges, using `app/lib/tax/capital-allowances.js`. `FA!E1`, `K1`, `L1`, `M1`, `Q1`,
-   `R1` and `P&L!C26`.
-3. Replace the SA103S approximation at `diya-gl-calculator.js:176` with the box map the sheet's own
-   formulas define. Read them out of the template XML.
-4. Taxi: the mileage claim from `measurableQuantity`, the actual-versus-mileage comparison, the
-   VitalTax quarterly grid, and the two-band tax sheet.
-5. Declare a `unit` for every key the two products' `cellLabels()` maps name.
-6. Tests mirror the Excel checks one for one, anchored to the same fixture figures. 66 BST
-   assertions and 54 Taxi, each named for the behaviour and each proved breakable.
-7. Add a `roundtrip-taxi` job for `examples/sp-sixty-driving`.
-
-**Blast radius**: `npx vitest run --fileParallelism=false app/test/calculator-bst.test.js app/test/calculator-taxi.test.js`
-plus the four commands for both products.
-
-**Tier**: Sonnet.
-
-### T4. SE calculator
-
-**Owns**: `app/lib/calculators/se.js`, `app/lib/tax/vat.js`, the `cellLabels()` map in
-`app/products/se.js`, `app/test/calculator-se.test.js`.
-
-Depends on T1b. Runs concurrently with T3, T5 and T6.
-
-1. The monthly P&L grid: 18 rows across 13 columns, matching the 192 monthly tie checks.
-2. SA103F: all 40 boxes and the 7 form-arithmetic totals.
-3. SA103S: replace the approximation, and assert the 19 full-versus-short counterparts.
-4. VAT: the Vatinterface month rows, the five quarter forms, the straddling periods, and the cycle
-   coverage. `app/lib/tax/vat.js` grows from a quarterly aggregator into the full interface.
-5. Payroll: Wagesinterface gross, PAYE, employee NI and employer NI, Payslips payment rows, and the
-   payroll calendar.
-6. The fixed asset schedule, HP finance, stock counts, debtors and creditors, and bank and cash
-   closing balances, from the `v2` book.
-7. `B31` from the bank journal's `B`-coded lines, closing S3.
-8. Category netting rows, 19 of them.
-9. Declare a `unit` for every key `cellLabels()` names.
-10. Tests mirror all 637 Excel checks.
-
-**Blast radius**: `npx vitest run --fileParallelism=false app/test/calculator-se.test.js` plus the
-four commands for SE.
-
-**Tier**: Opus.
-
-### T5. Ltd calculator
-
-**Owns**: `app/lib/calculators/ltd.js`, `app/lib/tax/corporation-tax.js`,
-`app/lib/tax/capital-allowances.js`, the `cellLabels()` map in `app/products/ltd.js`,
-`app/test/calculator-ltd.test.js`.
-
-Depends on T1b. Runs concurrently with T3, T4 and T6.
-
-1. Fix the three wrong P&L lines first: `B20` employer NI (currently payroll gross), `B40`
-   depreciation (currently 0), and the goodwill line, which reads 3,000 against Excel's 2,500.
-2. The monthly P&L grid: 25 rows across 13 columns, 300 checks.
-3. The fixed asset schedule and note: 5 classes, 9 rows each, plus 6 totals and the NBV identity.
-4. Capital allowances feeding `CorporationTax!K20`, then the whole CT working sheet including the
-   two financial-year rows, marginal relief and the day apportionment.
-5. CT600: all 11 boxes plus the 19 derived cells.
-6. The published balance sheet: 17 rows, from opening balances plus movements.
-7. Trial balance: the closing `EJ` column as well as the opening `D` column.
-8. Directors' report, share register, dividends, charges, HP.
-9. VAT, as T4, against the Ltd interface.
-10. The `Admin` sheet, 32 values including the dates.
-11. Declare a `unit` for every key `cellLabels()` names.
-12. Tests mirror all 860 Excel checks.
-
-**Blast radius**: `npx vitest run --fileParallelism=false app/test/calculator-ltd.test.js` plus the
-four commands for Ltd at a March and a non-March year end.
-
-**Tier**: Opus. The largest single body of work here.
-
-### T6. EQ3 on every package
-
-**Owns**: `app/bin/verify-stability.js`, `app/test/verify-stability.test.js`.
-
-A separate binary rather than a mode flag, so it shares no file with T2. Depends on T2 for
-`report.json`. Runs concurrently with T3 to T5.
-
-1. `verify-stability.js` reads a package twice, saved and recalculated, and compares the two `R`
-   documents with the same comparator and the same tolerance policy.
-2. Any key that moves is either a volatile formula or an unstable conversion. Name each one in
-   `app/data/volatile-cells.json` with which of the two it is.
-3. Run it on every package the `generate-*` matrix produces, not one. Those runs already
-   recalculate, so it costs one report read each.
-
-**Tier**: Haiku.
-
-### T7. CI wiring
-
-**Owns**: `.github/workflows/test.yml` outside the fixture sync step, `.github/workflows/generate-*.yml`,
-`app/data/roundtrip-budget.json`.
-
-Lands after T1b, which owns the sync step in the same workflow file. Every other track edits only
-its own product's entry in the budget file.
-
-**Tier**: Haiku.
-
-### Concurrency
-
-```
-T1  ────►
-      T1b ──────►
-      T2  ──────────►            (needs T1)
-              T3 ─┐
-              T4 ─┼── concurrent (need T1b; T6 needs T2)
-              T5 ─┤
-              T6 ─┘
-                        T7 ────►
-```
-
-T1 alone, then T1b and T2 together, then T3 to T6 together, then T7.
-
----
-
-## CI shape
-
-### What EQ1 and EQ2 become
-
-A budget gate, not `continue-on-error`, and not `diff -r`.
-
-```yaml
-- name: 'Roundtrip scorecard'
-  run: node app/bin/verify-roundtrip.js --package ltd
-         --excel target/ltd-excel --js target/ltd-js
-         --budget app/data/roundtrip-budget.json
-```
-
-Each tuple directory holds `report.json` and `data/`, so one command scores both halves.
-`app/data/roundtrip-budget.json` holds one entry per product with today's counts:
-
-```json
-{
-  "bst": { "differing": 85, "noJsValue": 47, "linesLost": 0, "fieldsDropped": 16 },
-  "se": { "differing": 212, "noJsValue": 335, "linesLost": 1, "fieldsDropped": 7 },
-  "ltd": { "differing": 222, "noJsValue": 557, "linesLost": 4, "fieldsDropped": 7 }
-}
-```
-
-The job fails when any count rises. Each track lands a budget cut in the same commit as its fix.
-The gate is live from the first commit, so no change can make the divergence worse while the tracks
-run.
-
-### How the roundtrip jobs relate to `generate-*`
-
-They answer different questions and both are worth keeping.
-
-The `roundtrip-*` jobs in `test.yml` run on every push, against `examples/`, at one year end each.
-They are the fast gate: a JS change that breaks equivalence fails the PR.
-
-The four `generate-*` workflows run the reconciliation matrix over every year end and publish the
-reports. They already recalculate every package. Add one scorecard step and one stability step per
-matrix entry, reusing the package in `reports/populated/` rather than generating a second one. That
-catches drift specific to a year end, which the single year end in `test.yml` cannot see: the
-non-March tab renames, the external link sheet-name rewrites, and the VAT stagger.
-
-Add a fourth `roundtrip-taxi` job in T3.
-
-### What has to be true before EQ1 is an exact gate
-
-1. Every cell in `standardReads()` and `additionalReads` has either a JS source or a place on a
-   declared not-computed list, and the list is checked in.
-2. The `noJsValue` and `noExcelValue` counts are both zero.
-3. Both sides write `R` through `report-serializer.js`, so one canonical form serves both and
-   neither side formats a value on its way into the comparison.
-4. Every scenario-derived input reaches the JS side from `book.toml`, not from a scenario TOML that
-   only the Excel path reads.
-5. Every key carries a declared unit, and the tolerance policy is applied by unit rather than by
-   inspecting the text.
-6. The compliance-check verdicts agree, as well as the values.
-
-Where the Excel is the wrong side, the check asserts the sheet's behaviour as it stands and carries
-the true figure in a warning. That is the same rule the reconciliation checks already follow. It is
-never a reason to soften the gate.
+
+**`diya-gl-book-v2.schema.json`** gained:
+
+- `entityInformation`: `organizationAddressLine`, `organizationTown`, `organizationPostcode`,
+  `organizationTelephone`, `diya-gl:companiesHouseName`, `diya-gl:mileageBasis`.
+- `documentInfo`: `diya-gl:vatStaggerGroup` (1 to 3) and `diya-gl:payrollYearStart`.
+- `openingBalances`: `fixedAssetCost` and `fixedAssetDepreciation`, each keyed by asset class
+  (`landBuildings`, `plantMachinery`, `fixturesFittings`, `computerTechnology`, `motorVehicles`);
+  then `stock`, `tradeDebtors`, `tradeCreditors`, `longTermDebtors`, `bankAccounts` keyed by
+  account code, `payeDue`, `vatDue`, `cisDue`, `netWagesDue`, `wageDeductionsDue`,
+  `corporationTaxDue`, `dividendsDue`, `directorsLoan`, `longTermCreditors`, `shareCapital`,
+  `retainedEarnings`, `capitalReserves`.
+- `stock`: `openingValue`, `closingValue`, `openingCount`, `closingCount`, `materialsPercent`.
+- `debtors` and `creditors`: arrays of `{ counterparty, invoice, amount, timing }`, where `timing`
+  is `opening` or `closing`.
+- `fixedAssets`: `{ assetID, class, description, cost, accumulatedDepreciation,
+  taxWrittenDownValue, acquiredDate, depreciationRate, disposedDate, disposalProceeds }`.
+- `hpAgreements`: `{ agreementID, description, financeCompany, supplier, amountFinanced,
+  adminCharges, totalInterest, termMonths, startDate }`.
+- `dividends`: `{ declaredDate, boardMeetingDate, amount }`.
+- `members`: `{ memberID, name, shares, nominalValue, acquiredDate }`. `directors[]` stays for the
+  officers, because a member is not always a director.
+- `charges`: `{ chargeDate, description, valuation, holder, terms, boardMeetingDate }`.
+- `tax.vat`: `staggerGroup` and `firstPeriodEnd`, so the return cycle is data rather than
+  inference.
+
+`tax.nationalInsurance` already declared the Class 2 and Class 4 fields. What T1 changed is that
+the fixtures set them and `extractTaxDataFromBook()` reads them, instead of substituting Class 1
+rates in their place.
+
+`app/lib/diya-gl-schema.js` compiles both with ajv and adds the two rules JSON Schema cannot state:
+every `accountMainID` names a declared account, and every `diya-gl:hpAgreement`, `diya-gl:assetID`
+and `diya-gl:memberID` names a declared entry.
+
+## What stays open
+
+**The gate is a budget.** `app/data/roundtrip-budget.json` fails a job when any count rises. Six
+conditions have to hold before EQ1 becomes an exact gate. Five hold today. Every read cell has a JS
+source or a place on a declared blanks list. Both engines write `R` through
+`report-serializer.js`. Every scenario-derived input reaches the JS side from `book.toml`. Every
+key carries a declared unit. And `noJsValue` is zero for all four products. The sixth condition
+wants `noExcelValue` at zero too, and it is zero for Taxi alone.
+
+**The Excel-side command in CI is not given `--data`.** `report.js --source-dir` can read the
+workbook but not the journal, so it publishes no compliance verdicts and no journal-category
+netting rows, and those become the whole `noExcelValue` column. It also means the Excel side's `R`
+carries no check entries, so `toleranceByKey()` finds no windows and every money key compares at 2
+dp exact. The Taxi job already passes `--data`; the other three need the same flag.
+
+**`book.toml` comes back short.** Missing fields run 90 for BST, 124 for SE and 168 for Ltd, and
+the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
+fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
+which the sheets hold in a form the exporter reads back yet.
+
+**S7, the fixed-asset `cellWrites` layout.** Four Ltd lines and one SE line do not survive the
+export. The Ltd fixed asset debit and credit collapse to net book value and two bank opening
+balances are lost; SE loses its stock adjustment. `app/data/roundtrip-budget.json` holds
+`linesLost` at 4 for Ltd and 1 for SE, and the ratchet in `app/test/verify-roundtrip.test.js` holds
+its own run's count at 5 and 2. Both can fall and neither can rise.
+
+**Non-March EQ2 is scored on counts only.** `generate` shifts every posting date onto the package's
+own accounting period, so for a non-March year end the exported dates sit a month or two from the
+fixture's by design. Anchoring the comparison needs that shift undone first and the comparator does
+not do it, so the `ltd-may` ratchet case skips the transaction-level assertions. The same shape
+appears in the `generate-*` matrices: the fixture's transactions carry the master's own calendar
+dates into every year-end directory, so only `linesLost` and `fieldsDropped` are portable across
+year ends, and `app/data/roundtrip-matrix-budget.json` gates those two alone.
+
+**Two fields are dropped without a declared home.** `lineItemComment` and `documentReference` on
+the bank, payroll and SE sales blocks, which carry a counterparty and an invoice reference and no
+description column beside them. They are what keeps SE at 395 whole-field matches of 694 and Ltd at
+507 of 701. `diya-gl:bankCode` differs on a further 7 SE lines. The 18 fields the encoding
+genuinely cannot hold are declared in `app/data/roundtrip-unrepresentable.json`, each with the
+product it applies to and what the sheets do instead, and those are counted apart.
+
+**The generator leaves dependent cached values stale.** In a package generated without `--data`,
+the cached `<v>` of every cell computed from an Admin seed still carries the template's own figure
+until something recalculates the workbook. `app/data/volatile-cells.json` names 84 of them with the
+seed cell each traces back to: the Payslips calendar `B` chain, the Vatinterface `C` column,
+`CorporationTax!A33/A34`, `PubBalSht!D2`, `PubP&L!D3/E5`, `PubNotes!A11`, `SE Full!Q2/V2/G141` and
+`Profit Forecast!C40`. A closed-workbook link or a reader that trusts the cache sees the wrong
+figure. A populated package escapes it only because injection recalculates and saves. Rolling those
+caches in the generator, the way `rollLtdAdminCachedDates` already does, takes the stale-cache
+category to zero and the allowlist with it.
+
+Two SE keys also appear on one side only on that blank package, a blank saved value against a
+computed one. The gate checks moved keys, not keys that appear or disappear.
+
+**A half-penny boundary the canonicalisation does not absorb.** SE `Income Tax!E9` reads
+32,861.2349999998 in Excel and 32,861.235 in JS, so rounding half-up to 2 dp sends the two figures
+to different pennies. `E11` inherits it. Rounding both sides to a working precision above the penny
+before the final round would close it.
+
+**The Ltd capital allowance split.** `Schedule!R1` (writing down allowance claimed) and `Y1`
+(balancing allowance on disposals) read 3,000 and 8,500 in Excel against 4,800 and 6,700 in JS. The
+11,500 total agrees. `CorporationTax!I17` and `I18` read the same two figures across the cross-file
+link, which is why one disagreement counts four times.
+
+**`SE Short!A7`, `D8` and `A32` name empty boxes.** The SE `CELL_MAP` reads three cells the return
+leaves blank. The return prints those figures at `C8`, `S17` and `A33`. Both engines agree on the
+blanks, so this costs no divergence, but the map names the wrong cells.
+
+**The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
+needs journal lines outside the accounting period, which the master does not carry.
+
+**BrickWork members lose `acquiredDate`.** `writeBrickworkLtd` in `app/bin/extract-scenarios.js`
+drops each member's `acquiredDate` where the Precision Code build keeps it, so the loader test
+compares name and shares only.
+
+**SE forecast checks fail on the 2023-24 rates.** `reconcile.js --package se --scenario advanced
+--year-end 2024-04-05` reads ANOMALYDETECTED at 674 of 679. Five "Forecast" checks fail, among them
+"Forecast: personal allowance after taper", which expects 1,676 and gets 12,570. The sheet's
+forecast block itself is sound. `Financialaccounts.xlsx!Profit Forecast!C40` tapers the allowance,
+and `C44` and `C45` are the additional-rate and NI rows the cell map reads. The failure sits in the
+taper and NI path against `se-2023-2024.toml`.
+
+**Mileage is computed and never written.** The Taxi and BST calculators work the mileage claim out
+of `measurableQuantity`, but `cellWrites` never writes that quantity to the Purchases mileage
+column, so no generated package can take the mileage route rather than the actual-cost route.
+
+**`export.js` has no Taxi writer.** `xlsx-exporter.js`'s `periodCovered()` finds no postings on the
+Taxi package's own sheets, so EQ2 and the double-roundtrip do not run for Taxi and its
+`roundtrip-taxi` job gates the report half and stability only.
+
+**The BST no-ledger case.** When a book declares no debtor or creditor ledger at all, as sp-sixty's
+does, the BST `Debtors & Creditors` block keeps the sheet's own monthly-sales figure instead of
+nil.
+
+**`diya-gl-docs.md` illustrates the `diya-gl:` extension fields with stale JSON.** The prose points
+at v2 and the examples predate T1.
+
+One declared list closes the section, so nobody counts it as an open item. Sixteen SE read cells
+are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
+that set exactly: `SE Full!D147`, `D156`, `D160`, `D179`, `O154`, `SE Short!A7`, `D8`, `A32`, and
+`Vat.xlsx!Vatinterface!E4/E5/G4/G5/I4/I5/K4/K5`. Both engines carry nothing there, so both
+agree.
+
+## Parked
+
+Fidelity stops here by the operator's decision. The square commutes on every product's main
+fixture, the four `roundtrip-*` jobs gate it on every push, and the four `generate-*` matrices
+score it and stability on every year end. Nothing consumes the JS representation in production yet,
+so the remaining items above buy nothing until something does.
+
+The VAT export in [PLAN_VAT_EXPORT_FOR_SUBMIT.md](PLAN_VAT_EXPORT_FOR_SUBMIT.md) is the first
+production use in prospect. When it starts, reread this document's "What roundtrip fidelity means"
+and "How we measure it" first, then `app/bin/verify-roundtrip.js` and `app/lib/report-serializer.js`
+for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the
+`noExcelValue` and `book.toml` items above, which are the two that stand between the present budget
+gate and an exact one.
