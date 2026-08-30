@@ -13,7 +13,7 @@ Wave 5 integrates on `claude/wave-5` (from wave 4's head; rebases onto the post-
 |---|---|---|
 | fidelity-t1 (wave 5) | T1: v2 schemas replacing v1, `ajv` 8 validator with referential rules, `diya-gl-canonical.js`, the Precision Code master filled with the v2 tables, `fixture-master-gaps.json`; fixed two master-data bugs and the Class 4 rate in the tax loader | landed on `claude/wave-5` `623833b9`, 331 tests, worktree removed |
 | fidelity-t1b (wave 5) | T1b: every fixture extractor-written from master data (BrickWork bank journal, opening journal, ledgers, van, members, CIS; dashcam and camera; new basic-taxi-driver; per-chart purchase-code maps); a van overpayment of 7,200 fixed; taxi fixtures no longer state a profit | landed on `claude/wave-5` `7f381934`, 319 tests, worktree removed |
-| fidelity-t3 (wave 5) | T3: BST and Taxi calculators to every read cell, units, tests mirroring the checks, cell-map tax names aligned to the schema, `roundtrip-taxi` job | started (Sonnet), worktree `sp-fidelity-t3`; merges T1b when it lands |
+| fidelity-t3 (wave 5) | T3: BST and Taxi calculators source every read cell, units, one mirrored test per check, schema-aligned cell-map names, `roundtrip-taxi` job; BST 188/188 and Taxi 230/230 equal; five bugs fixed (UTR written into the tax chain, taxi purchases dropped by BST's chart, week grouping, 40p rounding, taxi loader filter) | merged into `claude/wave-5` `123c32e9`, worktree removed; one exporter test to re-anchor |
 | fidelity-t4 (wave 5) | T4: SE calculator (monthly grid, SA103S/F, income tax, VAT interface and returns via `tax/vat.js`, fixed assets, payroll), units, mirrored tests; plus the SE CIS column write and the `se.js:537` row counter | started (Opus), worktree `sp-fidelity-t4`; merges T1b when it lands |
 | fidelity-t5 (wave 5) | T5: Ltd calculator computes every read cell (1,280), units for all, 2,373 mirrored check tests, row counter fixed; Ltd square closes exactly (2124/2124 equal, March and June) | merged into `claude/wave-5` `e3ea9a72`, blast radius running, worktree removed |
 | fidelity-loader (wave 5) | `diyaGlToScenario()` maps the v2 book tables (stock, debtors, creditors, fixedAssets, hpAgreements, dividends, members, charges, vatRegistered) into the scenario the writers accept | started (Sonnet), worktree `sp-fidelity-loader` |
@@ -74,10 +74,12 @@ Fixture:
   1131; Ltd 2124 / 595 / 259 / 321 / 1544. `app/data/roundtrip-unrepresentable.json` (18
   fields) is the declared exception list. Formal framing and tolerance policy are in the
   plan.
-- [ ] **Fidelity T3: BST and Taxi calculators** (Sonnet, after T1b with T4-T6) — JS values
-  for every cell the BST/Taxi checks read (111 and 87 without a source), `cellLabels()`
-  units, tests mirroring the Excel checks one for one, a taxi roundtrip job. BST's 1%
-  SA103S window goes the way SE's did (exact identities).
+- [ ] **Fidelity T3: BST and Taxi calculators** — landed on `claude/wave-5`; closes with wave
+  5's PR. Remainders: sp-sixty's BST Debtors & Creditors block keeps a stale monthly-sales
+  figure when a book declares no ledger at all (8 no-JS values; plan item S2's no-ledger
+  case); mileage is computed but `cellWrites` never writes `measurableQuantity` to the
+  Purchases mileage column, so no package can take the mileage route; `export.js` has no
+  Taxi support, so `roundtrip-taxi` gates EQ1 only.
 - [ ] **Fidelity T4: SE calculator** (Opus, concurrent with T3/T5) — monthly grid, SA103S/F
   boxes, VAT interface and returns, payroll, fixed-asset schedule; 535 values.
 - [ ] **Fidelity T5: Ltd calculator** — landed on `claude/wave-5`; Ltd closes the square exactly
