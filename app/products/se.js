@@ -55,25 +55,26 @@ const BANK_ACCOUNT_FILES = { 1200: "Bank.xlsx", 1220: "Cash.xlsx" };
 // creditor payment made), so direction cannot be inferred from the code
 // alone -- every entry names its own direction. Cash.xlsx has no "X"
 // analysis column at all; its own transfer code is "BB".
-// reference is a column both workbooks keep beside the receipt or payment
-// block that the writer never used to fill: Bank.xlsx's receipts carry a
-// "Sales Invoice" column at C and its payments an "Enter Purchase Invoice
-// No." column at Q; Cash.xlsx keeps the same pair at C and N. Neither
-// workbook has a second, free-text column beside it -- Bank.xlsx's D
-// ("Deposit Bank Reference") and R ("Cheque number Direct Debit") and
-// Cash.xlsx's O ("Optional cash payment reference") are themselves another
-// reference, not a description -- so a line's comment has nowhere else to
-// go (see roundtrip-unrepresentable.json).
+// reference and comment are two columns both workbooks keep beside the
+// receipt or payment block that the writer never used to fill. reference is
+// the invoice number column -- Bank.xlsx's receipts carry a "Sales Invoice"
+// column at C and its payments an "Enter Purchase Invoice No." column at Q;
+// Cash.xlsx keeps the same pair at C and N. comment is the column beside it
+// -- Bank.xlsx's D ("Deposit Bank Reference") and R ("Cheque number Direct
+// Debit"), Cash.xlsx's D ("Deposit Cash Reference") and O ("Optional cash
+// payment reference") -- which the sheet keeps for the payer's own reference
+// rather than a description, but is a real, otherwise-empty cell all the
+// same, so a line's own free-text comment goes there.
 const BANK_LAYOUTS = {
   "Bank.xlsx": {
-    receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
-    payment: { date: "O", source: "P", reference: "Q", code: "S", amount: "T" },
+    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+    payment: { date: "O", source: "P", reference: "Q", comment: "R", code: "S", amount: "T" },
     receiptCodes: new Set(["BC", "DR", "CR", "K", "RV", "DL", "X"]),
     paymentCodes: new Set(["BC", "CR", "DR", "W", "B", "J", "RP", "DL", "X"]),
   },
   "Cash.xlsx": {
-    receipt: { date: "A", source: "B", reference: "C", code: "E", amount: "F" },
-    payment: { date: "L", source: "M", reference: "N", code: "P", amount: "Q" },
+    receipt: { date: "A", source: "B", reference: "C", comment: "D", code: "E", amount: "F" },
+    payment: { date: "L", source: "M", reference: "N", comment: "O", code: "P", amount: "Q" },
     receiptCodes: new Set(["BB", "DR", "CR", "DL"]),
     paymentCodes: new Set(["BB", "CR", "DR", "W", "J", "RP", "DL"]),
   },
@@ -258,6 +259,7 @@ export function cellWrites(scenario) {
         sheet[`${block.date}${row}`] = serial;
         if (tx.source) sheet[`${block.source}${row}`] = tx.source;
         if (tx.reference) sheet[`${block.reference}${row}`] = tx.reference;
+        if (tx.description) sheet[`${block.comment}${row}`] = tx.description;
         sheet[`${block.code}${row}`] = code;
         sheet[`${block.amount}${row}`] = tx.amount;
       }

@@ -517,13 +517,15 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 // each file's writer uses. Ltd statement books carry a wider receipts-analysis
 // block than Cashaccount, which shifts their payments block right; the SE
 // bank and cash books each carry their own narrower payments block.
-const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", reference: "Q", code: "S", amount: "T" };
-const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", reference: "N", code: "P", amount: "Q" };
-const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", reference: "U", code: "W", amount: "X" };
-const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", reference: "R", code: "T", amount: "U" };
+const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", reference: "Q", comment: "R", code: "S", amount: "T" };
+const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", reference: "N", comment: "O", code: "P", amount: "Q" };
+const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", reference: "U", comment: "V", code: "W", amount: "X" };
+const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", reference: "R", comment: "S", code: "T", amount: "U" };
 // Every bank and cash book keeps its receipts' invoice reference at the same
-// column, C ("Sales Invoice" on the template), whichever file or product.
+// column, C ("Sales Invoice" on the template), and its own reference beside
+// it, D ("Deposit Bank/Cash Reference"), whichever file or product.
 const BANK_RECEIPT_REFERENCE_COLUMN = "C";
+const BANK_RECEIPT_COMMENT_COLUMN = "D";
 const BANK_FILES = {
   se: [
     { file: "Bank.xlsx", accountID: "1200", payment: SE_BANK_PAYMENT_COLS },
@@ -609,6 +611,8 @@ export async function extractBankTransactions(sourceDir, product) {
         };
         const reference = textAt(xml, `${BANK_RECEIPT_REFERENCE_COLUMN}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${BANK_RECEIPT_COMMENT_COLUMN}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
         lines.push(line);
       }
 
@@ -636,6 +640,8 @@ export async function extractBankTransactions(sourceDir, product) {
         };
         const reference = textAt(xml, `${payment.reference}${row}`, sharedStrings);
         if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${payment.comment}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
         lines.push(line);
       }
     }
