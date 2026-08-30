@@ -50,11 +50,14 @@ const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 // corruption from the other side, a figure appearing in a box that should
 // carry nothing.
 function corruptCellValue(xml, cellRef, newValue) {
-  const cached = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
-  if (cached.test(xml)) return xml.replace(cached, (_match, pre, _old, post) => `${pre}${newValue}${post}`);
+  // The empty form is matched first: an empty cell closes itself, so a search
+  // for its cached value runs on past it and lands on the next cell that has
+  // one.
   const empty = new RegExp(`<c r="${cellRef}"([^>]*?)\\s*/>`, "s");
   if (empty.test(xml))
     return xml.replace(empty, (_match, attrs) => `<c r="${cellRef}"${attrs.replace(/\s+t="[^"]*"/, "")}><v>${newValue}</v></c>`);
+  const cached = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
+  if (cached.test(xml)) return xml.replace(cached, (_match, pre, _old, post) => `${pre}${newValue}${post}`);
   throw new Error(`corruptCellValue: cell ${cellRef} not found in sheet XML`);
 }
 
@@ -251,10 +254,7 @@ const SA103F_CORRUPTIONS = [
   [
     "D152",
     4000,
-    [
-      "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
-      "SA103F box 51 restricted car allowances (D152) is nil",
-    ],
+    ["SA103F box 56 total capital allowances (O149) = boxes 48 to 55", "SA103F box 51 restricted car allowances (D152) is nil"],
   ],
   [
     "O139",
