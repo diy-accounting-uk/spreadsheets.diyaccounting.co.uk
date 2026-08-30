@@ -325,7 +325,7 @@ one, and the payroll fields lead that list because the BST template has no Paysl
 
 ### Taxi
 
-Every one of the 230 values agrees, verdicts included, because the Taxi job is the one that passes
+Every one of the 231 values agrees, verdicts included, because the Taxi job is the one that passes
 `--data` to the Excel-side command. All 264 fixture lines come back and 263 come back as the same
 transaction on the same account. The one that does not is the March mileage claim: the master
 prices 1,674 miles at 45p where the sheet has already claimed 18,326 miles, so the sheet bands them
