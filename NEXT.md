@@ -18,7 +18,7 @@ pushes in batches.
 | f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
 | wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
 | f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
-| guides | F9 remainder: guides teach the dead motor cap | `../wt-spreadsheets/guides` | Haiku | started |
+| guides | F9 remainder: guides teach the dead motor cap | — | Haiku | landed, 5 passages across 3 guides, PDF build green |
 | semileage | F18 remainder: SE Sales mileage writer | `../wt-spreadsheets/semileage` | Sonnet | started |
 | f21 | F21 Taxi EQ2 in the generate matrix | `../wt-spreadsheets/f21` | Sonnet | started |
 | renumber | SE Full renumbering to the current SA103F | `../wt-spreadsheets/renumber` | Opus | started |
@@ -32,10 +32,7 @@ follow the reconciliation-bug method.
 
 
 
-- [ ] **F9 remainder: the Ltd/Taxi/BST user guides still teach the £3,000 motor cap** (Haiku) —
-  `app/templates/{ltd,taxi,bst}/*-guide.md` tell customers motor vehicles are restricted to
-  £3,000 p.a.; the cap is gone from the sheets. Rewrite those passages to the plain WDA rule
-  (the SE guide is already clean) and regenerate whatever the guide build derives from them.
+
 - [ ] **SE Full renumbering against the current SA103F** (Opus; operator commissioned the
   wholesale surgery 2026-08-30) — renumber every box to the current form, rewrite captions,
   delete dead boxes, rework the checks. In flight as the renumber track.
