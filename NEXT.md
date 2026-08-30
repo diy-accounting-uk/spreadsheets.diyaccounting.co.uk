@@ -14,7 +14,7 @@ integration branch as it lands and pushes in batches.
 |---|---|---|---|---|
 | f2 | F2 Excel-side CI `--data` | — | Sonnet | landed `cb459cf2`, noExcelValue 66/700/892 → 0, CI roundtrip jobs green |
 | f8 | F8 6 dp pre-round | — | Sonnet | landed `f5c4d20b`, rounding 5/5, SE differing 2 → 0 |
-| f9 | F9 expensive-car cap removal | `../wt-spreadsheets/f9` | Sonnet | started |
+| f9 | F9 expensive-car cap removal | — | Sonnet | landed `322eb2d7`, four products, Ltd differing 4 → 0, featured scenarios RECONCILE |
 | f7 | F7 roll dependent caches | — | Sonnet | landed, allowlist deleted, stability 0 moved on all four products; also rolls the SE Short cells F10 reads (CI stability fix) |
 | f16 | F16 BST Debtors block | — | Sonnet | landed `bbc48a3b`, calculator-bst 203/203, sp-sixty RECONCILES 59/59 |
 | f10 | F10 SE Short CELL_MAP | — | Haiku | landed `18dc83b3`, SE calculator+precision 68/68 |
@@ -23,7 +23,7 @@ integration branch as it lands and pushes in batches.
 | f13 | F13 SE forecast 2023-24 | — | Opus | landed: premise did not reproduce (679/679 at 2024-04-05); real defect was the runner reading shipped caches when LibreOffice silently did not recalculate, now throws; forecast suite 38/38 on both rates years |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
 | archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | — | Opus | landed `c3b97742`, dry run 118/118 fully formed |
-| f1 | F1 exact EQ1 gate | — | Sonnet | waits for f2, f8, f9 |
+| f1 | F1 exact EQ1 gate | `../wt-spreadsheets/f1` | Sonnet | started |
 
 ## Open items
 
@@ -49,26 +49,9 @@ reconciliation-bug method.
   report-half count in `app/data/roundtrip-budget.json` to 0 and add a comparator test that a
   single differing money key fails the budget. Until then the ratchet stands.
 
-- [ ] **F9: remove the obsolete expensive-car cap from the Ltd Schedule** (Sonnet; operator
-  ratified option 1 on 2026-08-30) — `Fixedassets.xlsx!Schedule` row 50's WDA formula
-  `IF(O50>[1]Admin!$E$11,[1]Admin!$G$11*(1-M50),O50*R$4/100)*(1-M50)` applies the pre-2009
-  expensive-car restriction (`Admin!E11` threshold 12,000, `G11` cap 3,000, written by the
-  generator from `ltd-*.toml` `motor_vehicle_cost_threshold`/`motor_vehicle_restriction`) to
-  every motor vehicle, so the sold van claims 3,000 WDA and an 8,500 balancing allowance
-  where the JS claims 4,800 / 6,700 (total 11,500 both ways; nothing filed changes). Do: drop
-  the `E11/G11` branch from the motor block's WDA formulas (every shared master in the
-  block; byte-preserve the rest), make the block's rate cell `R$4` read Admin's WDA rate
-  (18% in 2025-26) instead of the literal 20 and set the JS `SCHEDULE_EXISTING_WRITING_DOWN_PERCENT`
-  from the same tax data, remove the two `motor_vehicle_*` fields from the `ltd-*.toml`
-  files, the generator's Admin writes (`ltd.js:1168-1169`) and the Admin echo checks, keep the
-  "WDA in the year of disposal, then balance the remainder" convention on both sides, and
-  pin the split with a hand-computed test on `ltd-scenario-full` (24,000 × 18% = 4,320 WDA,
-  pool 19,680, balancing allowance 7,180 against 12,500 proceeds, total 11,500). Then re-seed
-  Ltd `differing` in `app/data/roundtrip-budget.json` (expected 0). Same cap also exists on the
-  SE Schedule (`app/templates/se/Fixedassets.xlsx`) and the BST/Taxi Fixed Assets sheets
-  (Admin E8/G8) — apply the same removal there in the same PR so the products agree.
 
-
+- [ ] **F9 remainder: SE Full box 51 after the cap removal** (Opus) — `app/templates/se/Financialaccounts.xlsx!SE Full!D152` ("Restricted allowances for expensive cars", SA103F box 51) sums `Schedule!R38:R42 + R91:R95`, the WDA the cap removal just un-capped, and box 49 (`D144 = R1 - D152`) is only checked against that identity. Confirm from the current SA103F what box 51 expects now the restriction is gone, then repoint D152/D144 and anchor a check to the fixture.
+- [ ] **F9 remainder: `extractTaxDataFromBook` builds the SE-shaped WDA key for Ltd** (Haiku) — `app/lib/diya-gl-loader.js` fallback emits `capital_allowances.writing_down_allowance`, which Ltd reads as `writing_down_allowance_main`; reachable when `report.js` runs without `--years`. Emit the per-regime key and add a loader test.
 - [ ] **F14: write the mileage quantity so a package can take the mileage route** (Opus) — the
   BST and Taxi calculators compute the mileage claim from `measurableQuantity`, but
   `cellWrites` never writes it to the Purchases sheet's mileage column, so every generated
