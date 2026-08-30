@@ -18,7 +18,7 @@ integration branch as it lands and pushes in batches.
 | f7 | F7 roll dependent caches | `../wt-spreadsheets/f7` | Sonnet | started |
 | f16 | F16 BST Debtors block | `../wt-spreadsheets/f16` | Sonnet | started |
 | f10 | F10 SE Short CELL_MAP | `../wt-spreadsheets/f10` | Haiku | started |
-| f12 | F12 BrickWork acquiredDate | `../wt-spreadsheets/f12` | Haiku | started |
+| f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
 | f17 | F17 diya-gl docs examples | `../wt-spreadsheets/f17` | Haiku | started |
 | f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
@@ -85,10 +85,7 @@ reconciliation-bug method.
   date and turnover note print at `C8`, `S17`, `A33` (verify from the sheet XML). Repoint the
   three entries, drop them from the blanks set in `app/test/calculator-se.test.js`, and add the
   three to the SE mirrored tests with the fixture's values.
-- [ ] **F12: keep BrickWork members' `acquiredDate`** (Haiku) — `writeBrickworkLtd` in
-  `app/bin/extract-scenarios.js` drops `acquiredDate` where the Precision Code build keeps it;
-  emit it, re-run the extractor (sync gate), and widen the loader's deep-equal in
-  `app/test/diya-gl-loader.test.js` from name-and-shares to the whole member.
+
 - [ ] **F13: SE forecast checks on the 2023-24 rates** (Opus) — `reconcile.js --package se
   --scenario advanced --year-end 2024-04-05` reads ANOMALYDETECTED (674/679): "Forecast:
   personal allowance after taper" (`app/products/se.js:1672`) expects 1,676 and reads 12,570,
