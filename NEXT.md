@@ -87,7 +87,11 @@ Fixture:
   generate-* matrix produces.
 - [ ] **Fidelity T7: CI wiring** (Haiku, last) — EQ1 stops being `continue-on-error` and
   becomes a budget gate against `app/data/roundtrip-budget.json` seeded from the scorecard;
-  one EQ1 step per generate-* matrix year-end.
+  one EQ1 step per generate-* matrix year-end. Then `PLAN_ROUNDTRIP_FIDELITY.md` is brought
+  up to date with what T0-T7 delivered, the measurement at that point and the remainders
+  (the ratchet to an exact gate, the not-computed list, S7, non-March EQ2, the unrepresentable
+  fields, the docs), and fidelity parks until a production use of the JS representation
+  (the VAT export in `PLAN_VAT_EXPORT_FOR_SUBMIT.md`) pulls it back.
 
 ## Plans not tracked here
 
