@@ -39,25 +39,6 @@ function runFixture({ dataDir, years, offset }) {
   return { book, lines, taxData, scenario, merged, results, checks, yearEnd };
 }
 
-// Checks the fixture cannot satisfy, because the scenario the loader builds
-// carries nothing for the sheet the check reads. The Excel package built from
-// the same data fails them the same way, so the verdicts still agree engine
-// to engine; asserting them as they stand is what keeps that agreement
-// visible instead of hiding it behind a skipped test.
-//
-// diyaGlToScenario() writes no members for a company, so the share register
-// stays empty while the balance sheet carries the share capital the opening
-// journal posted. It writes no opening fixed assets either, so the Fixed
-// Assets schedule opens empty while the opening balance sheet carries the
-// cost and depreciation brought forward, which the schedule's own class
-// headings and the published fixed asset note both report.
-const REGISTER_OF_MEMBERS_GAP = "RegisterofMembers: nominal value x shares issued = PubBalSht share capital";
-const OPENING_FIXED_ASSETS_GAP = [
-  "Fixed asset schedule (computer): opening cost and depreciation agree with the opening balance sheet",
-  "Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet",
-  "Published balance sheet: fixed assets = fixed asset note net book value",
-];
-
 const FIXTURES = [
   // The Precision Code year the roundtrip job runs, at the March year end and
   // the tax year the package is generated for.
@@ -66,14 +47,14 @@ const FIXTURES = [
     dataDir: "examples/precision-code-ltd/full",
     years: "ltd-2024",
     offset: "-P1Y",
-    knownGaps: [REGISTER_OF_MEMBERS_GAP, ...OPENING_FIXED_ASSETS_GAP],
+    knownGaps: [],
   },
-  { name: "ltd-brickwork-pro-vat", dataDir: "examples/brickwork-pro/ltd-vat", years: "ltd-2026", knownGaps: [REGISTER_OF_MEMBERS_GAP] },
+  { name: "ltd-brickwork-pro-vat", dataDir: "examples/brickwork-pro/ltd-vat", years: "ltd-2026", knownGaps: [] },
   {
     name: "ltd-brickwork-pro-nonvat",
     dataDir: "examples/brickwork-pro/ltd-nonvat",
     years: "ltd-2026",
-    knownGaps: [REGISTER_OF_MEMBERS_GAP],
+    knownGaps: [],
   },
 ];
 
@@ -111,23 +92,26 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   const pl = run.results["MnthP&L"];
 
   it("charges the year on the operating profit plus the non-deductible add-backs", () => {
-    expect(pl.B43).toBeCloseTo(195652.39, 2);
-    expect(ct.K5).toBeCloseTo(195652.39, 2);
-    // Goodwill written off 2,500 and depreciation 5,250.
+    expect(pl.B43).toBeCloseTo(171840.39, 2);
+    expect(ct.K5).toBeCloseTo(171840.39, 2);
+    // Goodwill written off 2,500 and depreciation 13,740, the schedule's
+    // charge on the van and the laptop brought forward plus the new plant.
     expect(ct.I7).toBeCloseTo(2500, 2);
-    expect(ct.I8).toBeCloseTo(5250, 2);
-    expect(ct.K10).toBeCloseTo(7750, 2);
-    expect(ct.K12).toBeCloseTo(203402.39, 2);
+    expect(ct.I8).toBeCloseTo(13740, 2);
+    expect(ct.K10).toBeCloseTo(16240, 2);
+    expect(ct.K12).toBeCloseTo(188080.39, 2);
   });
 
-  it("deducts the capital allowances net of the balancing charge on the disposal", () => {
-    // 52,500 of new plant claims the whole cost, and the asset sold for
-    // 12,500 net of VAT throws off a balancing charge of the same amount
-    // because its own pool was already fully relieved.
+  it("deducts the capital allowances, netting the van's disposal against its own pool", () => {
+    // 52,500 of new plant claims the whole cost. The van brought forward a
+    // written down value of 24,000; the year's writing down allowance on it
+    // is 20% (4,800), leaving a pool of 19,200, and its sale for 12,500 net
+    // of VAT settles that pool as a balancing allowance of 6,700 rather than
+    // a charge, because the sale falls short of the pool, not over it.
     expect(ct.I15).toBeCloseTo(52500, 2);
-    expect(ct.I18).toBeCloseTo(-12500, 2);
-    expect(ct.K20).toBeCloseTo(40000, 2);
-    expect(ct.K22).toBeCloseTo(163402.39, 2);
+    expect(ct.I18).toBeCloseTo(6700, 2);
+    expect(ct.K20).toBeCloseTo(64000, 2);
+    expect(ct.K22).toBeCloseTo(124080.39, 2);
   });
 
   it("charges the gross bank interest and credits the tax deducted at source", () => {
@@ -138,10 +122,10 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
   });
 
   it("reaches the chargeable profit the CT600 files", () => {
-    expect(ct.K28).toBeCloseTo(163741.9, 2);
-    expect(ct600.AJ92).toBeCloseTo(163741.9, 2);
-    expect(ct600.AJ110).toBeCloseTo(163741.9, 2);
-    expect(ct600.N126).toBeCloseTo(163741.9, 2);
+    expect(ct.K28).toBeCloseTo(124419.9, 2);
+    expect(ct600.AJ92).toBeCloseTo(124419.9, 2);
+    expect(ct600.AJ110).toBeCloseTo(124419.9, 2);
+    expect(ct600.N126).toBeCloseTo(124419.9, 2);
   });
 
   it("charges one financial year at the main rate less marginal relief", () => {
@@ -149,11 +133,11 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct.A34).toBe(0);
     expect(ct.E33).toBe(2024);
     expect(ct.G33).toBe(25);
-    // 163,741.90 at 25% is 40,935.47; relief is (250,000 - 163,741.90) x 3/200.
-    expect(ct.J33).toBeCloseTo(40935.47, 2);
-    expect(ct.L33).toBeCloseTo(1293.87, 2);
-    expect(ct.K35).toBeCloseTo(39641.6, 2);
-    expect(ct.K39).toBeCloseTo(39577.1, 2);
+    // 124,419.90 at 25% is 31,104.97; relief is (250,000 - 124,419.90) x 3/200.
+    expect(ct.J33).toBeCloseTo(31104.97, 2);
+    expect(ct.L33).toBeCloseTo(1883.7, 2);
+    expect(ct.K35).toBeCloseTo(29221.27, 2);
+    expect(ct.K39).toBeCloseTo(29156.77, 2);
   });
 
   it("files the same charge on the CT600 boxes", () => {
@@ -162,23 +146,23 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(ct600.AJ126).toBeCloseTo(ct.J33, 6);
     expect(ct600.AJ131).toBeCloseTo(ct.J33 + ct.J34, 6);
     expect(ct600.Y133).toBeCloseTo(ct.L33 + ct.L34, 6);
-    expect(ct600.Y135).toBeCloseTo(39641.6, 2);
+    expect(ct600.Y135).toBeCloseTo(29221.27, 2);
     expect(ct600.AJ145).toBeCloseTo(ct.K35, 6);
     expect(ct600.AJ154).toBeCloseTo(ct.K37, 6);
-    expect(ct600.AJ159).toBeCloseTo(39577.1, 2);
-    expect(ct600.AJ166).toBeCloseTo(39577.1, 2);
+    expect(ct600.AJ159).toBeCloseTo(29156.77, 2);
+    expect(ct600.AJ166).toBeCloseTo(29156.77, 2);
     expect(ct600.AK66).toBeCloseTo(341283.33, 2);
     // The effective rate the form states: the charge over the profit.
-    expect(ct600.W137).toBeCloseTo(24.21, 2);
+    expect(ct600.W137).toBeCloseTo(23.49, 2);
   });
 
   it("publishes the statutory accounts the working sheet feeds", () => {
     const pubPl = run.results["PubP&L"];
     const balanceSheet = run.results.PubBalSht;
     expect(pubPl.F9).toBeCloseTo(341283.33, 2);
-    expect(pubPl.F50).toBeCloseTo(39641.6, 2);
-    expect(pubPl.F54).toBeCloseTo(156350.29, 2);
-    expect(balanceSheet.F6).toBeCloseTo(68802, 2);
+    expect(pubPl.F50).toBeCloseTo(29221.27, 2);
+    expect(pubPl.F54).toBeCloseTo(127958.62, 2);
+    expect(balanceSheet.F6).toBeCloseTo(48990, 2);
     expect(balanceSheet.F33).toBeCloseTo(balanceSheet.F39, 6);
   });
 });
