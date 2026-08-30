@@ -19,7 +19,7 @@ integration branch as it lands and pushes in batches.
 | f16 | F16 BST Debtors block | `../wt-spreadsheets/f16` | Sonnet | started |
 | f10 | F10 SE Short CELL_MAP | `../wt-spreadsheets/f10` | Haiku | started |
 | f12 | F12 BrickWork acquiredDate | — | Haiku | landed `53304cdf`, loader 32/32 |
-| f17 | F17 diya-gl docs examples | `../wt-spreadsheets/f17` | Haiku | started |
+| f17 | F17 diya-gl docs examples | — | Haiku | landed `0ad80afc`, docs-examples 9/9 |
 | f13 | F13 SE forecast 2023-24 | `../wt-spreadsheets/f13` | Opus | started |
 | f14 | F14 mileage quantity | `../wt-spreadsheets/f14` | Opus | started |
 | archive | `PLAN_PACKAGES_TO_ARCHIVE.md` review, archive-cut skill | `../wt-spreadsheets/archive` | Opus | started |
@@ -108,10 +108,7 @@ reconciliation-bug method.
   fictitious debtor is published and the JS reports 8 `noJsValue` cells. Write nil into the
   block's slots when the scenario carries no ledger, add the sp-sixty case to
   `calculator-bst.test.js`, and re-seed BST in the budget.
-- [ ] **F17: refresh the `diya-gl:` examples in `diya-gl-docs.md`** (Haiku) — the prose points at v2
-  but the illustrative JSON predates T1 (`web/spreadsheets.diyaccounting.co.uk/public/schema/
-  diya-gl-docs.md`); regenerate every example from `examples/precision-code-ltd` lines that
-  carry the extension fields and validate each against the v2 schemas in a test.
+
 
 
 
