@@ -204,6 +204,10 @@ Trade: IT consultancy and software development
 | VAT: periods more than one of the five returns declares | 0 | 0 | 0 | PASS |
 | VAT: output VAT declared on more than one of the five returns | 0 | 0 | 0 | PASS |
 | Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 48990 | 48990 | 0 | PASS |
+| Schedule: motor vehicle WDA = opening tax value x the year's WDA rate, uncapped | 4320 | 4320 | 0 | PASS |
+| Schedule: motor vehicle pool after WDA = opening tax value less WDA | 19680 | 19680 | 0 | PASS |
+| Schedule: motor vehicle balancing allowance = pool after WDA less disposal proceeds | 7180 | 7180 | 0 | PASS |
+| Schedule: motor vehicle WDA + balancing allowance = opening tax value less disposal proceeds | 11500 | 11500 | 0 | PASS |
 | Fixed asset note (land): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): additions = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
@@ -749,8 +753,6 @@ Trade: IT consultancy and software development
 | Admin G7: annual investment allowance (new assets) | 100 | 100 | 0 | PASS |
 | Admin G6: writing down allowance | 18 | 18 | 0 | PASS |
 | Admin G8: writing down allowance (new assets) | 18 | 18 | 0 | PASS |
-| Admin E11: motor vehicle cost threshold | 12000 | 12000 | 0 | PASS |
-| Admin G11: motor vehicle allowance restriction | 3000 | 3000 | 0 | PASS |
 | Admin G15: depreciation rate, land and property | 0 | 0 | 0 | PASS |
 | Admin G16: depreciation rate, plant and machinery | 0.1 | 0.1 | 0 | PASS |
 | Admin G17: depreciation rate, fixtures and fittings | 0.2 | 0.2 | 0 | PASS |
@@ -800,8 +802,8 @@ Trade: IT consultancy and software development
 | CT: add-backs = depreciation + goodwill | 16240 | 16240 | 0 | PASS |
 | CT: profit plus add-backs | 188080.391666666 | 188080.391666666 | 0 | PASS |
 | CT: annual investment allowance = Schedule annual investment allowance | 52500 | 52500 | 0 | PASS |
-| CT: writing down allowances = Schedule writing down allowances | 3000 | 3000 | 0 | PASS |
-| CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 8500 | 8500 | 0 | PASS |
+| CT: writing down allowances = Schedule writing down allowances | 4320 | 4320 | 0 | PASS |
+| CT: balancing allowance on disposals = Schedule balancing allowance less balancing charge | 7180 | 7180 | 0 | PASS |
 | CT: capital allowances = the allowance lines | 64000 | 64000 | 0 | PASS |
 | CT: profit after capital allowances | 124080.391666666 | 124080.391666666 | 0 | PASS |
 | CT: chargeable profit = profit after allowances + interest - losses brought forward | 124419.8978395055 | 124419.897839506 | +4.94765117764473e-10 | PASS |
@@ -1583,8 +1585,8 @@ Journal amounts include VAT at 20%.
 | H5 |  | 44500 |  |
 | I15 |  | 52500 |  |
 | I16 |  | 0 |  |
-| I17 |  | 3000 |  |
-| I18 |  | 8500 |  |
+| I17 |  | 4320 |  |
+| I18 |  | 7180 |  |
 | A33 |  | 151 |  |
 | A34 |  | 214 |  |
 | A35 |  | 365 |  |
@@ -1830,8 +1832,6 @@ Journal amounts include VAT at 20%.
 | G7 |  | 100 |  |
 | G6 |  | 18 |  |
 | G8 |  | 18 |  |
-| E11 |  | 12000 |  |
-| G11 |  | 3000 |  |
 | G15 |  | 0 |  |
 | G16 |  | 0.1 |  |
 | G17 |  | 0.2 |  |
@@ -2430,11 +2430,11 @@ Journal amounts include VAT at 20%.
 | J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
 | K1 | Total net book value carried forward, disposals removed | 48990 |  |
 | Q1 | Total annual investment allowance claimed | 52500 |  |
-| R1 | Total writing down allowance claimed | 3000 |  |
+| R1 | Total writing down allowance claimed | 4320 |  |
 | V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
 | W1 | Cost of the assets sold in the year | 30000 |  |
 | X1 | Accumulated depreciation on the assets sold in the year | 17328 |  |
-| Y1 | Balancing allowance on the disposals | 8500 |  |
+| Y1 | Balancing allowance on the disposals | 7180 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
 | E57 | Cost of the assets owned at the start of the year | 33000 |  |
 | E110 | Cost of the assets bought during the year | 52500 |  |
@@ -2498,6 +2498,11 @@ Journal amounts include VAT at 20%.
 | X108 |  | 0 |  |
 | B55 |  | Existing Motor Vehicles |  |
 | H43 |  | 0.25 |  |
+| O50 |  | 24000 |  |
+| V50 |  | 12500 |  |
+| R50 |  | 4320 |  |
+| S50 |  | 19680 |  |
+| Y50 |  | 7180 |  |
 
 ### Fixedassets.xlsx!FAreconciliation
 
