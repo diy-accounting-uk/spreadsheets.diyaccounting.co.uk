@@ -228,19 +228,22 @@ jobs:
           YE="${{ matrix.year-end }}"
           Y=$((10#${YE:0:4}))
           echo "years=se-$((Y - 1))-$Y" | tee -a "$GITHUB_OUTPUT"
-      - name: 'Roundtrip scorecard against the recalculated package (informational)'
+      - name: 'Roundtrip scorecard against the recalculated package (EQ2 budget gate, EQ1 informational)'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: |
           node app/bin/report.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/taxi-scorecard-excel
+          node app/bin/export.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-excel/data
           node app/bin/report.js --package taxi --data examples/basic-taxi-driver --years ${{ steps.roundtrip.outputs.years }} --output-dir target/taxi-scorecard-js
-          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js
-      # EQ2 is not scored here: app/data/roundtrip-matrix-budget.json carries
-      # no taxi entry, and seeding one takes a run of this matrix. EQ1 is not
-      # gated either: this package's own report labels are anchored to its own
-      # year-end while the fixture's dates never move off the master's, so EQ1
-      # is only exact for the one year-end that happens to equal the master's
-      # own period end. The scorecard still prints for visibility; EQ3
-      # stability is this job's only hard gate.
+          # Only linesLost and fieldsDropped are gated here
+          # (app/data/roundtrip-matrix-budget.json), not differing/noJsValue/
+          # noExcelValue: this package's own report labels are anchored to its
+          # own year-end while the fixture's dates never move off the
+          # master's, so EQ1 is only exact for the one year-end that happens
+          # to equal the master's own period end
+          # (examples/basic-taxi-driver/book.toml's periodCoveredEnd); every
+          # other year picks up whatever that year's own tax-rate tables move.
+          # The scorecard still prints in full for visibility.
+          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js --budget app/data/roundtrip-matrix-budget.json
       - name: 'EQ3: stability of the recalculated package'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: node app/bin/verify-stability.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-stability
