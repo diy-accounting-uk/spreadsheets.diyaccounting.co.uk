@@ -128,6 +128,32 @@ describe("BST calculator checks are breakable", () => {
     expect(checkByName(checks, "Fixed Assets: schedule total cost = asset additions").pass).toBe(false);
   });
 
+  // sp-sixty-driving/bst declares no debtors or creditors at all, so the
+  // "no ledger declared" check should pass on its own results. This proves
+  // it breakable the way the Excel-side defect actually surfaced: a stray
+  // number in a slot the book never asked for, not a mutated GL line, since
+  // the leak lived in cellWrites' writeEntryBlock() and has no journal-line
+  // equivalent for the JS calculator to reproduce.
+  it("a leaked figure in an undeclared debtor slot fails the no-ledger check, and nothing else", () => {
+    const spSixtyDir = FIXTURES.find((f) => f.name === "sp-sixty-driving/bst").dir;
+    const { book, lines } = loadDiyaGlData(spSixtyDir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateBstResults(book, lines, taxData, merged);
+
+    const before = checkCompliance(results, merged, taxData, calculateExpectedTax);
+    expect(checkByName(before, "Debtors & Creditors: no ledger declared leaves the block empty").pass).toBe(true);
+
+    const leaked = { ...results, "Debtors & Creditors": { ...results["Debtors & Creditors"], C5: 3162 } };
+    const after = checkCompliance(leaked, merged, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const brokenAfter = after.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = brokenAfter.filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Debtors & Creditors: no ledger declared leaves the block empty"]);
+  });
+
   it("a wrong Admin tax rate fails the Admin echo check and nothing about the P&L totals", () => {
     const { book, lines } = loadDiyaGlData(dir);
     const scenario = diyaGlToScenario(book, lines, "bst");

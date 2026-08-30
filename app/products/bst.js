@@ -92,13 +92,16 @@ export function cellWrites(scenario) {
   // slot left unwritten keeps a monthly figure that is neither a debtor nor a
   // creditor. Each block is filled to the end for that reason: what the report
   // shows under these labels is then the scenario's entries and nothing else.
+  // A book that declares no ledger at all (entries undefined, not just empty)
+  // still owns every slot in its block -- leaving it unwritten would publish
+  // whatever monthly sales or purchases figure the template's own formula
+  // already carries there as a fictitious debtor or creditor.
   function writeEntryBlock(entries, nameColumn, amountColumn, firstRow, slots, nameField) {
-    if (!entries) return;
     if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
     const sheet = writes["Debtors & Creditors"];
     for (let i = 0; i < slots; i++) {
       const row = firstRow + i;
-      const entry = entries[i];
+      const entry = entries?.[i];
       sheet[`${nameColumn}${row}`] = entry ? entry[nameField] : "";
       sheet[`${amountColumn}${row}`] = entry ? entry.amount : "";
     }
@@ -449,6 +452,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (expected.closing_creditors && results["Debtors & Creditors"]) {
     const dc = results["Debtors & Creditors"];
     checkEntryBlock("Closing Creditors", expected.closing_creditors, [dc.F12, dc.F13, dc.F14, dc.F15]);
+  }
+
+  // A book that declares no ledger at all still owns every slot in the
+  // block: an unwritten slot inherits the sheet's own monthly sales-not-yet-
+  // received or purchases-still-to-be-paid formula, which reads as a debtor
+  // or creditor nobody declared.
+  const hasLedger = expected.opening_debtors || expected.closing_debtors || expected.opening_creditors || expected.closing_creditors;
+  if (!hasLedger && results["Debtors & Creditors"]) {
+    const dc = results["Debtors & Creditors"];
+    const slots = ["C5", "C6", "C7", "F5", "F6", "F7", "C12", "C13", "C14", "C15", "F12", "F13", "F14", "F15"];
+    const leaked = slots.filter((cell) => typeof dc[cell] === "number" && dc[cell] !== 0).length;
+    check("Debtors & Creditors: no ledger declared leaves the block empty", leaked, 0, 0);
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L capital allowances ->
