@@ -568,13 +568,13 @@ appears in the `generate-*` matrices: the fixture's transactions carry the maste
 dates into every year-end directory, so only `linesLost` and `fieldsDropped` are portable across
 year ends, and `app/data/roundtrip-matrix-budget.json` gates those two alone.
 
-**Two fields are dropped without a declared home.** `lineItemComment` and `documentReference` on
-the bank, payroll and SE sales blocks, which carry a counterparty and an invoice reference and no
-description column beside them, and `documentReference` again on the Taxi purchases block, which
-does keep a column for it. They are what keeps SE at 395 whole-field matches of 694 and Ltd at
-507 of 701. `diya-gl:bankCode` differs on a further 7 SE lines. The 18 fields the encoding
-genuinely cannot hold are declared in `app/data/roundtrip-unrepresentable.json`, each with the
-product it applies to and what the sheets do instead, and those are counted apart.
+**Payroll `lineItemComment` has no cell to carry it.** The other blocks now have homes: SE sales
+description in column E, the bank books' reference and comment columns, the payslip reference in
+column S, Taxi's two column Cs. The payslip row has no second spare column (swept A-AG), so its
+comment stays a visible whole-line shortfall rather than a declared unrepresentable — declaring
+it would blank the field out of the blocks that now match. `diya-gl:bankCode` differs on 7 SE
+lines because SE's bank book keeps one combined HMRC payments column where Ltd splits four ways —
+a shipped-template limitation, stated in `paymentCodeFor()`.
 
 **The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
 needs journal lines outside the accounting period, which the master does not carry.
