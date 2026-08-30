@@ -19,8 +19,6 @@ annual_investment_allowance = 1.00
 writing_down_allowance_main = 0.18
 writing_down_allowance_special = 0.06
 full_expensing_rate = 0
-motor_vehicle_cost_threshold = 12000
-motor_vehicle_restriction = 3000
 
 [depreciation]
 land_and_property = 0.00
