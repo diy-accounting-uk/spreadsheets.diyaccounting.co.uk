@@ -737,128 +737,171 @@ amount = 200
 [[purchases.apr]]
 date = 2025-04-06
 supplier = "DVLA"
+description = "Vehicle excise duty"
 code = "t"
 amount = 180
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-08
 supplier = "Council"
+description = "Private hire licence"
 code = "l"
 amount = 400
+account = "5900"
 
 [[purchases.apr]]
 date = 2025-04-10
 supplier = "Insurance Co"
+description = "Hire and reward insurance"
 code = "t"
 amount = 1200
+account = "5400"
 
 [[purchases.apr]]
 date = 2025-04-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.apr]]
 date = 2025-04-20
 supplier = "Vodafone"
+description = "Mobile telephone"
 code = "g"
 amount = 120
+account = "5700"
 
 [[purchases.may]]
 date = 2025-05-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.jun]]
 date = 2025-06-01
 supplier = "Car Dealer"
+reference = "VEH-0601"
+description = "Taxi vehicle"
 code = "f"
 amount = 8000
+account = "7000"
 
 [[purchases.jun]]
 date = 2025-06-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.jul]]
 date = 2025-07-10
 supplier = "Vodafone"
+description = "Mobile telephone"
 code = "g"
 amount = 120
+account = "5700"
 
 [[purchases.jul]]
 date = 2025-07-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.aug]]
 date = 2025-08-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.sep]]
 date = 2025-09-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.oct]]
 date = 2025-10-10
 supplier = "Vodafone"
+description = "Mobile telephone"
 code = "g"
 amount = 120
+account = "5700"
 
 [[purchases.oct]]
 date = 2025-10-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.nov]]
 date = 2025-11-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.dec]]
 date = 2025-12-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-10
 supplier = "Vodafone"
+description = "Mobile telephone"
 code = "g"
 amount = 120
+account = "5700"
 
 [[purchases.jan]]
 date = 2026-01-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.jan]]
 date = 2026-01-20
 supplier = "Accountant"
+description = "Accountancy fees"
 code = "l"
 amount = 500
+account = "5900"
 
 [[purchases.feb]]
 date = 2026-02-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[purchases.mar]]
 date = 2026-03-15
 supplier = "Shell"
+description = "Fuel"
 code = "d"
 amount = 300
+account = "5100"
 
 [[fixed_asset_additions]]
 date = 2025-06-01

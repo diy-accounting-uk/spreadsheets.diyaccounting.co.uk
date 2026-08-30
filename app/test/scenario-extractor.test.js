@@ -195,6 +195,54 @@ describe("buildGrouped", () => {
     expect(purchases.may[0].code).toBe("s");
   });
 
+  it("leaves account, reference and description off a sale or purchase when carriesSourceFields is off", () => {
+    const lines = [
+      {
+        sourceJournalID: "sales",
+        accountMainID: 4000,
+        postingDate: "2025-04-15",
+        detailComment: "Client A",
+        documentReference: "INV-1",
+        lineItemComment: "Widgets",
+        amount: 1000,
+      },
+    ];
+    const { sales } = buildGrouped(lines, BST_PURCHASE_CODE_MAP);
+    expect(sales.apr[0].account).toBeUndefined();
+    expect(sales.apr[0].reference).toBeUndefined();
+    expect(sales.apr[0].description).toBeUndefined();
+  });
+
+  it("carries account, reference and description onto a sale and a purchase when carriesSourceFields is on", () => {
+    const lines = [
+      {
+        sourceJournalID: "sales",
+        accountMainID: 4000,
+        postingDate: "2025-04-15",
+        detailComment: "Client A",
+        documentReference: "INV-1",
+        lineItemComment: "Widgets",
+        amount: 1000,
+      },
+      {
+        sourceJournalID: "purchases",
+        accountMainID: 5000,
+        postingDate: "2025-05-10",
+        detailComment: "Supplier X",
+        documentReference: "PO-2",
+        lineItemComment: "Materials",
+        amount: 500,
+      },
+    ];
+    const { sales, purchases } = buildGrouped(lines, BST_PURCHASE_CODE_MAP, { carriesSourceFields: true });
+    expect(sales.apr[0].account).toBe(4000);
+    expect(sales.apr[0].reference).toBe("INV-1");
+    expect(sales.apr[0].description).toBe("Widgets");
+    expect(purchases.may[0].account).toBe(5000);
+    expect(purchases.may[0].reference).toBe("PO-2");
+    expect(purchases.may[0].description).toBe("Materials");
+  });
+
   it("groups bank transactions by account and month", () => {
     const lines = [
       {
@@ -271,6 +319,32 @@ describe("formatScenarioToml", () => {
     expect(toml).toContain("[[sales.apr]]");
     expect(toml).toContain("date = 2025-04-15");
     expect(toml).toContain('customer = "Client"');
+  });
+
+  it("writes a sale's reference, description and account when the transaction carries them", () => {
+    const grouped = {
+      sales: { apr: [{ date: "2025-04-15", customer: "Client", reference: "INV-1", description: "Widgets", code: "a", amount: 500, account: "4000" }] },
+      purchases: {},
+      bank: {},
+    };
+    const toml = formatScenarioToml(minimalMetadata, grouped, minimalExpected);
+    expect(toml).toContain('reference = "INV-1"');
+    expect(toml).toContain('description = "Widgets"');
+    expect(toml).toContain('account = "4000"');
+  });
+
+  it("writes a purchase's reference, description and account when the transaction carries them", () => {
+    const grouped = {
+      sales: {},
+      purchases: {
+        may: [{ date: "2025-05-10", supplier: "Supplier X", reference: "PO-2", description: "Materials", code: "s", amount: 500, account: "5000" }],
+      },
+      bank: {},
+    };
+    const toml = formatScenarioToml(minimalMetadata, grouped, minimalExpected);
+    expect(toml).toContain('reference = "PO-2"');
+    expect(toml).toContain('description = "Materials"');
+    expect(toml).toContain('account = "5000"');
   });
 
   it("includes stock section when opening_stock is set", () => {
