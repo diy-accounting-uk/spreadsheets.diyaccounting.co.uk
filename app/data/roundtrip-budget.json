@@ -10,7 +10,10 @@
   "taxi": {
     "differing": 0,
     "noJsValue": 0,
-    "noExcelValue": 0
+    "noExcelValue": 0,
+    "linesLost": 0,
+    "fieldsDropped": 1,
+    "bookFieldsMissing": 26
   },
   "se": {
     "differing": 0,

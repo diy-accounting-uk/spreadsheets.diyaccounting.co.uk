@@ -249,8 +249,7 @@ The two `report.js` runs each write `report.json` beside their markdown. `export
 Excel side's `data/`, and `report.js --data` writes the JS side's `data/` by canonicalising its own
 input. Each output directory is then one tuple, and `verify-roundtrip.js` compares a pair of them.
 
-BST, SE and Ltd run all four. Taxi runs three of them, because `export.js` has no Taxi writer, so
-the Taxi job gates the report half and stability only.
+All four products run all four commands.
 
 ## State at parking, 2026-08-30
 
@@ -280,7 +279,7 @@ verdicts agreeing between the engines. One flag on the other three commands clos
 | Product | Fixture lines | Exported | Same transaction | Same plus account | Same on every field | Fields dropped | No home in the encoding |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | BST | 528 | 528 | 528 | 528 | 528 | 0 | 15 |
-| Taxi | — | — | — | — | — | — | — |
+| Taxi | 264 | 264 | 263 | 263 | 82 | 1 | 6 |
 | SE | 696 | 695 | 694 | 694 | 395 | 0 | 7 |
 | Ltd | 722 | 718 | 701 | 701 | 507 | 0 | 6 |
 
@@ -289,10 +288,11 @@ verdicts agreeing between the engines. One flag on the other three commands clos
 | Product | Equal | Differing | Missing | Extra |
 | --- | ---: | ---: | ---: | ---: |
 | BST | 27 | 53 | 90 | 1 |
+| Taxi | 30 | 13 | 26 | 1 |
 | SE | 37 | 65 | 124 | 2 |
 | Ltd | 90 | 44 | 168 | 1 |
 
-`Fields dropped` is zero everywhere. Every field the export leaves out is one
+`Fields dropped` is zero but for Taxi's one. Every other field the export leaves out is one
 `app/data/roundtrip-unrepresentable.json` names a reason for, and the ratchet test in
 `app/test/verify-roundtrip.test.js` fails if a new one appears.
 
@@ -326,8 +326,16 @@ one, and the payroll fields lead that list because the BST template has no Paysl
 ### Taxi
 
 Every one of the 230 values agrees, verdicts included, because the Taxi job is the one that passes
-`--data` to the Excel-side command. The data half goes unmeasured. `app/bin/export.js` has no Taxi
-writer, so EQ2 and the double-roundtrip do not run for this product.
+`--data` to the Excel-side command. All 264 fixture lines come back and 263 come back as the same
+transaction on the same account. The one that does not is the March mileage claim: the master
+prices 1,674 miles at 45p where the sheet has already claimed 18,326 miles, so the sheet bands them
+at 25p and the export reads back 418.50 against the fixture's 753.30.
+
+Eighty-two lines match on every field they carry, and the taxi writer is what holds the rest back.
+Its Sales rows leave the customer column empty and its Purchases rows leave the reference column
+empty, though both sheets keep a column for them, so 180 sales lines lose `Daily fares` and one
+purchase loses its invoice number. `documentReference` is the one field the export drops with no
+reason declared for it.
 
 ### SE
 
@@ -541,7 +549,7 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 110 for SE and 156 for Ltd, and
+**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 110 for SE and 156 for Ltd, and
 the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
 fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
 which the sheets hold in a form the exporter reads back yet.
@@ -562,17 +570,14 @@ year ends, and `app/data/roundtrip-matrix-budget.json` gates those two alone.
 
 **Two fields are dropped without a declared home.** `lineItemComment` and `documentReference` on
 the bank, payroll and SE sales blocks, which carry a counterparty and an invoice reference and no
-description column beside them. They are what keeps SE at 395 whole-field matches of 694 and Ltd at
+description column beside them, and `documentReference` again on the Taxi purchases block, which
+does keep a column for it. They are what keeps SE at 395 whole-field matches of 694 and Ltd at
 507 of 701. `diya-gl:bankCode` differs on a further 7 SE lines. The 18 fields the encoding
 genuinely cannot hold are declared in `app/data/roundtrip-unrepresentable.json`, each with the
 product it applies to and what the sheets do instead, and those are counted apart.
 
 **The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
 needs journal lines outside the accounting period, which the master does not carry.
-
-**`export.js` has no Taxi writer.** `xlsx-exporter.js`'s `periodCovered()` finds no postings on the
-Taxi package's own sheets, so EQ2 and the double-roundtrip do not run for Taxi and its
-`roundtrip-taxi` job gates the report half and stability only.
 
 One declared list closes the section, so nobody counts it as an open item. Thirteen SE read cells
 are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts

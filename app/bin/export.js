@@ -17,6 +17,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
 import {
   extractBstTransactions,
+  extractTaxiTransactions,
   extractMultiFileTransactions,
   extractBankTransactions,
   extractPayrollTransactions,
@@ -75,7 +76,8 @@ async function main() {
       console.error(`No xlsx file found in ${resolvedSource}`);
       process.exit(1);
     }
-    lines = await extractBstTransactions(readFileSync(resolve(resolvedSource, xlsxFile)));
+    const workbook = readFileSync(resolve(resolvedSource, xlsxFile));
+    lines = packageName === "taxi" ? await extractTaxiTransactions(workbook) : await extractBstTransactions(workbook);
   } else {
     lines = await extractMultiFileTransactions(resolvedSource, packageName);
     const bankLines = await extractBankTransactions(resolvedSource, packageName);

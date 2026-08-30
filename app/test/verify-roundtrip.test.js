@@ -365,12 +365,24 @@ describe("scoreDataHalves", () => {
 // ── The whole tuple, end to end ────────────────────────────────────────────
 
 // unreached is how many fixture lines the export does not bring back as the
-// same transaction today: SE loses its stock adjustment, and Ltd collapses
-// the fixed asset debit and credit to net book value and drops two bank
-// opening balances. The assertions below are a ratchet, so the count can
-// fall and the number here comes down with it, and nothing can raise it.
+// same transaction today: Taxi reprices its mileage claim at the rates the
+// sheet bands it by, SE loses its stock adjustment, and Ltd collapses the
+// fixed asset debit and credit to net book value and drops two bank opening
+// balances. dropped names the fields the export leaves out with no reason
+// declared for them. The assertions below are a ratchet, so both can fall and
+// the numbers here come down with them, and nothing can raise them.
 const PRODUCTS = [
   { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05", unreached: 0 },
+  {
+    name: "taxi",
+    data: "examples/sp-sixty-driving/taxi",
+    years: "se-2025-2026",
+    yearEnd: "2026-04-05",
+    unreached: 1,
+    // The Purchases tab keeps an invoice reference column in C that the taxi
+    // writer does not fill, so a reference goes in and nothing comes back.
+    dropped: ["documentReference"],
+  },
   { name: "se", data: "examples/precision-code-ltd/advanced", years: "se-2025-2026", yearEnd: "2026-04-05", unreached: 2 },
   { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", unreached: 5 },
   {
@@ -460,8 +472,8 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       // known not to reach.
       expect(score.exportedLines).toBeGreaterThanOrEqual(score.fixtureLines - product.unreached);
       // Nothing is silently dropped: every field the export leaves out is
-      // one the inventory already names a reason for.
-      expect(score.fieldsDropped).toEqual([]);
+      // one the inventory names a reason for, or one this run already counts.
+      expect(score.fieldsDropped).toEqual(product.dropped ?? []);
 
       if (product.dateFrameShifted) return;
 

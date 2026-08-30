@@ -2,6 +2,11 @@
   "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the product it applies to and what the sheets do instead. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
   "fields": [
     {
+      "field": "diya-gl:assetID",
+      "products": ["taxi"],
+      "reason": "The Taxi Fixed Assets vehicle block takes a date, a description, a reference and a cost, with no cell for an asset identifier, and the purchase row that buys the asset carries no reference back to the block."
+    },
+    {
       "field": "diya-gl:cisDeduction",
       "products": ["bst", "taxi", "se"],
       "reason": "The BST and Taxi writers do not fill the contractors block, and the SE purchases sheet has no CIS column. Ltd keeps it on the purchases journal's own CIS certificates column."
@@ -73,13 +78,18 @@
     },
     {
       "field": "measurableQuantity",
-      "products": ["taxi", "se", "ltd"],
-      "reason": "The mileage columns on the Taxi and SE transaction sheets take the quantity on the way in and price it: what they hold is a claim the sheet makes of the miles, not the miles themselves, and the export reads the money back rather than the distance. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
+      "products": ["se", "ltd"],
+      "reason": "The SE purchases sheet's mileage column takes the quantity on the way in and prices it: what it holds is a claim the sheet makes of the miles, not the miles themselves, and the export reads the money back rather than the distance. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
     },
     {
       "field": "measurableUnitOfMeasure",
-      "products": ["taxi", "se", "ltd"],
-      "reason": "The sheets' quantity columns are headed with the unit they take, so a row states no unit of its own. The BST exporter reads the mileage column back."
+      "products": ["se", "ltd"],
+      "reason": "The sheets' quantity columns are headed with the unit they take, so a row states no unit of its own. The BST and Taxi exporters read the mileage column back."
+    },
+    {
+      "field": "paymentMethod",
+      "products": ["taxi"],
+      "reason": "The Taxi Sales and Purchases tabs keep no Bank or Cash column: the column the Basic Sole Trader sheets give the payment label is the taxi expense code letter's."
     },
     {
       "field": "taxCode",
