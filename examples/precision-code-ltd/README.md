@@ -11,15 +11,21 @@ Three directors hold 100 ordinary shares: Carol Smith (MD, 60%), David Brown (NE
 ## Data Files
 
 - **book.toml** -- Business metadata, chart of accounts (7 sales, 22 purchase, 4 bank, 3 capital, 6 asset, 7 liability accounts), directors, employees, and tax rates for FY2025/26. Conforms to `diya-gl-book-v2.schema.json`.
-- **lines.jsonl** -- 722 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
+- **lines.jsonl** -- 732 journal entries in JSON Lines format. Conforms to `diya-gl-lines-v2.schema.json`. This file is the master data. `scripts/generate-precision-code-data.cjs` seeded it and has not kept pace with later edits, so read the JSONL, not the script.
 
 | Journal | Entries | Description |
 |---------|--------:|-------------|
 | journal | 18 | Opening balance sheet (16 lines) + stock adjustment (2 lines) |
-| sales | 112 | 10+ invoices per month across 7 sales codes and 23 customers |
-| purchases | 395 | 30+ invoices per month across 22 purchase codes |
+| sales | 117 | 10+ invoices per month across 7 sales codes and 23 customers, plus 5 dated in the VAT periods either side of the year (`diya-gl:vatPeriodEnd`) |
+| purchases | 400 | 30+ invoices per month across 22 purchase codes, plus 5 dated in the VAT periods either side of the year (`diya-gl:vatPeriodEnd`) |
 | bank | 161 | Current (142), savings (4), cash (7), credit card (8) |
 | payroll | 36 | 3 employees x 12 months with PAYE/NI breakdowns |
+
+The ten VAT-straddling lines are real invoices dated before the year opens (Feb/Mar 2025) or
+after it closes (Apr/May/Jun 2026): activity the business had, but outside the period this book
+covers. Each carries `diya-gl:vatPeriodEnd`, so the extractor sets them aside from the accounting
+year's own sales and purchases and instead reports them on the VAT return's own out-of-year entry
+sheets (`Vatreturns.xlsx` S02Y1/P02Y1 and so on) -- they move a VAT box and nothing else.
 
 ## Opening Balance Sheet (1 April 2025)
 

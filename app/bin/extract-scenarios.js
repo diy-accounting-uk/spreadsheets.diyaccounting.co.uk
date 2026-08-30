@@ -61,6 +61,8 @@ import {
   bstExpectedFigures,
   computeNetSales,
   computeSpreadsheetNetSales,
+  splitStraddlingLines,
+  deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -136,7 +138,12 @@ const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) 
 // trader and a basic sole trader
 // ============================================================================
 
-const { dir: PRECISION_DIR, book, lines: allLines } = readMaster("precision-code-ltd");
+const { dir: PRECISION_DIR, book, lines: precisionLines } = readMaster("precision-code-ltd");
+
+// The straddling lines carry diya-gl:vatPeriodEnd, dated before the book
+// opens or after it closes; every function below that builds the accounting
+// year's own figures has to see only the year's own lines.
+const { yearLines: allLines, straddlingLines } = splitStraddlingLines(precisionLines);
 
 // The one dividend the master book declares for the year. book.dividends is
 // an array (a book could in principle declare more than one), but this
@@ -193,29 +200,15 @@ if (workedOut !== published) {
   throw new Error(`The bank journal leaves ${workedOut} owing, against a published closing debtor ledger of ${published}`);
 }
 
-// Sales and purchases in the VAT periods either side of the accounting year.
-// The VAT workbook keeps a pair of entry sheets per straddling period and the
-// figures reach the VAT return without ever touching the books, so these are
-// the only transactions in the fixture that move a VAT box and leave the
-// trial balance where it was. Gross amounts are multiples of six so the
-// standard-rate split is exact to the penny. Dates sit in the April-March
-// frame the month keys describe, two months before the year on 02Y1 and 03Y1
-// and three months after it on 04Y2, 05Y2 and 06Y2.
-const straddlingSales = [
-  { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
-  { period: "03Y1", date: "2025-03-18", customer: "Beta Systems", invoice: "INV-0802", amount: 2400 },
-  { period: "04Y2", date: "2026-04-10", customer: "Acme Corp", invoice: "INV-1301", amount: 3600 },
-  { period: "05Y2", date: "2026-05-12", customer: "Gamma Ltd", invoice: "INV-1302", amount: 1800 },
-  { period: "06Y2", date: "2026-06-11", customer: "Beta Systems", invoice: "INV-1303", amount: 1200 },
-];
-
-const straddlingPurchases = [
-  { period: "02Y1", date: "2025-02-20", supplier: "TechParts Ltd", invoice: "TP-2402", amount: 720 },
-  { period: "03Y1", date: "2025-03-24", supplier: "WorkSpace Ltd", invoice: "WS-2402", amount: 1200 },
-  { period: "04Y2", date: "2026-04-15", supplier: "Shell", invoice: "SH-2604", amount: 240 },
-  { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
-  { period: "06Y2", date: "2026-06-16", supplier: "WorkSpace Ltd", invoice: "WS-2606", amount: 480 },
-];
+// Sales and purchases in the VAT periods either side of the accounting year,
+// derived from the master's own straddling lines (sales/purchases lines
+// carrying diya-gl:vatPeriodEnd). The VAT workbook keeps a pair of entry
+// sheets per straddling period and the figures reach the VAT return without
+// ever touching the books, so these are the only transactions in the fixture
+// that move a VAT box and leave the trial balance where it was.
+const { periodCoveredStart, periodCoveredEnd } = book.documentInfo;
+const straddlingSales = deriveStraddlingEntries(straddlingLines, "sales", "customer", periodCoveredStart, periodCoveredEnd);
+const straddlingPurchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", periodCoveredStart, periodCoveredEnd);
 
 // The hire purchase agreements the master book declares, in the scenario's
 // own field names. Each one finances one purchase; the HPfinance sheet works
