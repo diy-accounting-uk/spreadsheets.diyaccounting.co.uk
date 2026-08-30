@@ -279,7 +279,7 @@ amount = 150.00
 timing = "closing"
 
 [[fixedAssets]]
-assetID = "SE-FA-1"
+assetID = "LTD-FA-1"
 class = "motorVehicles"
 description = "Van (2.5 years old)"
 cost = 30000.00
@@ -287,7 +287,7 @@ accumulatedDepreciation = 9828.00
 taxWrittenDownValue = 24000.00
 
 [[fixedAssets]]
-assetID = "SE-FA-2"
+assetID = "LTD-FA-2"
 class = "computerTechnology"
 description = "Laptop (0.5 years old)"
 cost = 3000.00
@@ -301,7 +301,7 @@ amountFinanced = 13000.00
 adminCharges = 200.00
 totalInterest = 1800.00
 termMonths = 20
-startDate = "2025-06-01"
+startDate = 2025-06-01
 
 [[hpAgreements]]
 agreementID = "HP-2025-02"
@@ -311,7 +311,7 @@ amountFinanced = 7000.00
 adminCharges = 100.00
 totalInterest = 1000.00
 termMonths = 20
-startDate = "2025-09-01"
+startDate = 2025-09-01
 
 [tax.incomeTax]
 personalAllowance = 12570.00

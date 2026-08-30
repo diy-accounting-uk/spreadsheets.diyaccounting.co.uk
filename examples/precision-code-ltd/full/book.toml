@@ -390,7 +390,7 @@ amountFinanced = 13000.00
 adminCharges = 200.00
 totalInterest = 1800.00
 termMonths = 20
-startDate = "2025-06-01"
+startDate = 2025-06-01
 
 [[hpAgreements]]
 agreementID = "HP-2025-02"
@@ -400,37 +400,37 @@ amountFinanced = 7000.00
 adminCharges = 100.00
 totalInterest = 1000.00
 termMonths = 20
-startDate = "2025-09-01"
+startDate = 2025-09-01
 
 [[dividends]]
-boardMeetingDate = "2026-03-31"
+boardMeetingDate = 2026-03-31
 amount = 15000.00
 
 [[members]]
 memberID = "MEM-1"
 name = "Carol Smith"
 shares = 60
-acquiredDate = "2020-01-01"
+acquiredDate = 2020-01-01
 
 [[members]]
 memberID = "MEM-2"
 name = "David Brown"
 shares = 25
-acquiredDate = "2021-06-15"
+acquiredDate = 2021-06-15
 
 [[members]]
 memberID = "MEM-3"
 name = "Emma Wilson"
 shares = 15
-acquiredDate = "2022-03-01"
+acquiredDate = 2022-03-01
 
 [[charges]]
-chargeDate = "2023-09-01"
+chargeDate = 2023-09-01
 description = "Motor vehicles, being the company's delivery van"
 valuation = 30000.00
 holder = "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA"
 terms = "Fixed charge securing a five year business loan"
-boardMeetingDate = "2023-08-25"
+boardMeetingDate = 2023-08-25
 
 [tax.incomeTax]
 personalAllowance = 12570.00

@@ -126,6 +126,8 @@ function ledgerListing(entries, nameField, timing) {
     .map((entry) => ({ [nameField]: entry.counterparty, invoice: entry.invoice, amount: entry.amount }));
 }
 
+const dateOnly = (value) => (value instanceof Date ? value.toISOString().slice(0, 10) : value);
+
 const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) / 100;
 
 // ============================================================================
@@ -214,72 +216,47 @@ const straddlingPurchases = [
   { period: "06Y2", date: "2026-06-16", supplier: "WorkSpace Ltd", invoice: "WS-2606", amount: 480 },
 ];
 
-// Hire purchase agreements financing equipment (SE, Ltd). The first lands
-// on the HPfinance sheet's working master row (8); the second lands on the
-// first row the #REF! repair fixes (10). Figures are chosen so the monthly
-// payment, capital and interest split all come out exact to the penny:
-//   agreement 1: (13000 + 200 + 1800) / 20 = 750.00, interest 1800/20 = 90.00
-//   agreement 2: (7000 + 100 + 1000) / 20 = 405.00, interest 1000/20 = 50.00
-const hpAgreements = [
-  {
-    date: "2025-06-01",
-    finance_company: "Close Brothers Asset Finance",
-    reference: "HP-2025-01",
-    amount_financed: 13000,
-    admin_charges: 200,
-    total_interest: 1800,
-    months: 20,
-    supplier: "Precision Tooling Supplies",
-  },
-  {
-    date: "2025-09-01",
-    finance_company: "Close Brothers Asset Finance",
-    reference: "HP-2025-02",
-    amount_financed: 7000,
-    admin_charges: 100,
-    total_interest: 1000,
-    months: 20,
-    supplier: "Precision Tooling Supplies",
-  },
-];
+// The hire purchase agreements the master book declares, in the scenario's
+// own field names. Each one finances one purchase; the HPfinance sheet works
+// the monthly payment and the capital and interest split out for itself.
+const hpAgreements = book.hpAgreements.map((agreement) => ({
+  date: dateOnly(agreement.startDate),
+  finance_company: agreement.financeCompany,
+  reference: agreement.agreementID,
+  amount_financed: agreement.amountFinanced,
+  admin_charges: agreement.adminCharges,
+  total_interest: agreement.totalInterest,
+  months: agreement.termMonths,
+  supplier: agreement.supplier,
+}));
 
-// The two fixed assets the SE and Ltd scenarios both carry at the opening
-// balance sheet date: a van and a laptop, each part-depreciated. tax_wdv is
-// the written down value the capital allowances working brings forward,
-// which is not the same figure as the accounting depreciation and has no
-// source in the master data -- there is only ever the one asset a class, so
-// it is stated directly rather than derived.
-const openingFixedAssets = [
-  { category: "motor", description: "Van (2.5 years old)", cost: 30000, acc_dep: 9828, tax_wdv: 24000 },
-  { category: "computer", description: "Laptop (0.5 years old)", cost: 3000, acc_dep: 270 },
-];
+// The fixed assets the book holds at the opening balance sheet date, on the
+// Schedule's own terms. tax_wdv is the written down value the capital
+// allowances working brings forward, which is not the accounting
+// depreciation and is the register's own figure.
+const OPENING_ASSET_CATEGORIES = { motorVehicles: "motor", computerTechnology: "computer" };
 
-const OPENING_ASSET_CLASSES = { motor: "motorVehicles", computer: "computerTechnology" };
-
-// The one charge registered over the Ltd scenario's assets: a fixed charge
-// securing the business loan the opening balance sheet's long_term_creditors
-// figure carries.
-const chargesRegister = [
-  {
-    date: "2023-09-01",
-    asset: "Motor vehicles, being the company's delivery van",
-    valuation: 30000,
-    holder: "NatWest Bank plc, 250 Bishopsgate, London EC2M 4AA",
-    terms: "Fixed charge securing a five year business loan",
-    board_meeting: "2023-08-25",
-  },
-];
-
-function openingFixedAssetsV2(prefix) {
-  return openingFixedAssets.map((asset, index) => ({
-    assetID: `${prefix}-FA-${index + 1}`,
-    class: OPENING_ASSET_CLASSES[asset.category],
+const openingFixedAssets = book.fixedAssets.map((asset) => {
+  const opening = {
+    category: OPENING_ASSET_CATEGORIES[asset.class],
     description: asset.description,
     cost: asset.cost,
-    accumulatedDepreciation: asset.acc_dep,
-    taxWrittenDownValue: asset.tax_wdv,
-  }));
-}
+    acc_dep: asset.accumulatedDepreciation,
+  };
+  if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
+  return opening;
+});
+
+// The charges registered over the company's assets, from the book's own
+// register. Each one secures a creditor falling due after more than one year.
+const chargesRegister = book.charges.map((charge) => ({
+  date: dateOnly(charge.chargeDate),
+  asset: charge.description,
+  valuation: charge.valuation,
+  holder: charge.holder,
+  terms: charge.terms,
+  board_meeting: dateOnly(charge.boardMeetingDate),
+}));
 
 // ============================================================================
 // Extract BST (basic)
@@ -404,17 +381,8 @@ const advV2 = {
   stock: { openingValue: 10000, closingValue: 6000 },
   debtors: book.debtors,
   creditors: book.creditors,
-  fixedAssets: openingFixedAssetsV2("SE"),
-  hpAgreements: hpAgreements.map((agreement) => ({
-    agreementID: agreement.reference,
-    financeCompany: agreement.finance_company,
-    supplier: agreement.supplier,
-    amountFinanced: agreement.amount_financed,
-    adminCharges: agreement.admin_charges,
-    totalInterest: agreement.total_interest,
-    termMonths: agreement.months,
-    startDate: agreement.date,
-  })),
+  fixedAssets: book.fixedAssets,
+  hpAgreements: book.hpAgreements,
 };
 
 writeFixture("se-scenario-advanced", advToml);
@@ -455,9 +423,7 @@ fullPurchLines.forEach((l) => {
 // with, so master data that moves without the other moving stops the extract
 // rather than publishing a book that does not add up.
 const NOMINAL_SHARE_VALUE = 1;
-const fullMembers = (book.directors || [])
-  .filter((d) => d.shares)
-  .map((d) => ({ name: d.name, shares: d.shares, acquired: d.appointed.toISOString().slice(0, 10) }));
+const fullMembers = book.members.map((member) => ({ name: member.name, shares: member.shares, acquired: dateOnly(member.acquiredDate) }));
 const fullOpeningBalance = buildOpeningBalance(fullLines);
 const fullSharesIssued = fullMembers.reduce((total, m) => total + m.shares, 0);
 if (fullSharesIssued * NOMINAL_SHARE_VALUE !== fullOpeningBalance.share_capital) {
@@ -539,39 +505,16 @@ const fullToml = formatScenarioToml(
   },
 );
 
-const fullMembersV2 = fullMembers.map((member, index) => ({
-  memberID: `MEM-${index + 1}`,
-  name: member.name,
-  shares: member.shares,
-  acquiredDate: member.acquired,
-}));
-
 const fullV2 = {
   openingBalances: toV2OpeningBalances(fullOpeningBalance),
   stock: { openingValue: 10000, closingValue: 6000, materialsPercent: 0.03 },
   debtors: book.debtors,
   creditors: book.creditors,
-  fixedAssets: openingFixedAssetsV2("LTD"),
-  hpAgreements: hpAgreements.map((agreement) => ({
-    agreementID: agreement.reference,
-    financeCompany: agreement.finance_company,
-    supplier: agreement.supplier,
-    amountFinanced: agreement.amount_financed,
-    adminCharges: agreement.admin_charges,
-    totalInterest: agreement.total_interest,
-    termMonths: agreement.months,
-    startDate: agreement.date,
-  })),
-  dividends: [{ boardMeetingDate: masterDividend.boardMeetingDate.toISOString().slice(0, 10), amount: masterDividend.amount }],
-  members: fullMembersV2,
-  charges: chargesRegister.map((charge) => ({
-    chargeDate: charge.date,
-    description: charge.asset,
-    valuation: charge.valuation,
-    holder: charge.holder,
-    terms: charge.terms,
-    boardMeetingDate: charge.board_meeting,
-  })),
+  fixedAssets: book.fixedAssets,
+  hpAgreements: book.hpAgreements,
+  dividends: book.dividends,
+  members: book.members,
+  charges: book.charges,
 };
 
 writeFixture("ltd-scenario-full", fullToml);
