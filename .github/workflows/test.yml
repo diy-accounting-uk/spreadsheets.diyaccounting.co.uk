@@ -196,6 +196,52 @@ jobs:
       - name: 'Double-roundtrip: pass 2 == pass 1 (MUST PASS)'
         run: diff target/bst-exported-data/lines.jsonl target/bst-exported-data2/lines.jsonl
 
+  roundtrip-taxi:
+    name: 'roundtrip fidelity (Taxi)'
+    runs-on: ubuntu-24.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install LibreOffice Calc
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libreoffice-calc
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Node dependencies
+        run: timeout 120 npm ci --prefer-offline || { sleep 30; timeout 180 npm ci; }
+        timeout-minutes: 6
+        env:
+          NPM_CONFIG_FETCH_RETRIES: "3"
+
+      - name: Generate Taxi package from diya-gl data
+        run: node app/bin/generate.js --package taxi --years se-2025-2026 --year-end 2026-04-05 --data examples/sp-sixty-driving/taxi --output-dir target/taxi-pkg --skip-guide
+
+      - name: Extract reports from Excel package
+        run: node app/bin/report.js --package taxi --source-dir target/taxi-pkg --mode recalculate --data examples/sp-sixty-driving/taxi --years se-2025-2026 --year-end 2026-04-05 --output-dir target/taxi-excel-reports
+
+      - name: Compute reports from diya-gl via JS engine
+        run: node app/bin/report.js --package taxi --data examples/sp-sixty-driving/taxi --years se-2025-2026 --output-dir target/taxi-diya-gl-reports
+
+      - name: 'EQ1: Excel report == JS report (MUST PASS)'
+        run: |
+          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-excel-reports --js target/taxi-diya-gl-reports --out target/taxi-verify.json
+          node -e "
+            const r = require('./target/taxi-verify.json').counts;
+            const broken = ['differing', 'noJsValue', 'noExcelValue'].filter((k) => (r[k] || 0) > 0);
+            if (broken.length > 0) { console.error('Non-zero counts:', broken.map((k) => k + '=' + r[k]).join(', ')); process.exit(1); }
+          "
+
+      # app/bin/export.js has no Taxi Driver support yet (xlsx-exporter.js's
+      # periodCovered() finds no postings on this package's own sheets), so
+      # EQ2 and the double-roundtrip pass, which both depend on it, do not
+      # run here yet -- unlike the BST, SE and Ltd jobs above and below.
+
   roundtrip-se:
     name: 'roundtrip fidelity (SE)'
     runs-on: ubuntu-24.04
