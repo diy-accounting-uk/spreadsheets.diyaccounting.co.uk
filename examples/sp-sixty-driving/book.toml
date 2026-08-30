@@ -10,6 +10,10 @@ entriesComment = "Complete business activity for SP Sixty Driving FY2025/26"
 [entityInformation]
 organizationIdentifier = "SP Sixty Driving"
 organizationDescription = "Private hire and taxi driving services"
+organizationAddressLine = "42 Oak Lane"
+organizationTown = "Leeds"
+organizationPostcode = "LS1 5PQ"
+organizationTelephone = "0113 555 0200"
 taxRegistrationNumber = "9876543210"
 taxAuthorityIdentifier = "HMRC"
 "diya-gl:product" = "TaxiDriver"
@@ -98,3 +102,9 @@ specialRateWDA = 0.06
 [tax.mileage]
 carFirst10000 = 0.45
 carOver10000 = 0.25
+
+[[fixedAssets]]
+assetID = "FA-DASHCAM-001"
+description = "Nextbase dashcam"
+cost = 200
+acquiredDate = 2025-05-10
