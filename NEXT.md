@@ -81,6 +81,36 @@ follow the reconciliation-bug method.
   so a sold asset contributes nothing; the wrong label prints in every SE reconciliation report.
   Bring it to Ltd's corrected wording: "Total net book value carried forward, disposals removed".
 
+- [ ] **C1: cover the Payslips print sheet's period join** (Sonnet) — `Payslips.xlsx!Payslips`
+  (both products) is the payslip the employer hands over; its month tabs and calendar are
+  asserted, but the `LOOKUP`/`INDIRECT` pair that joins them is read by nothing, so a wrong
+  resolution prints the wrong period's pay with every upstream check green. Discover the join
+  from the sheet XML, add the printed cells to `additionalReads`, and check them against the
+  scenario's payroll data for a chosen period (anchored to the fixture, never to the month tabs
+  the join reads — a wrong join agreeing with the wrong month must fail). Prove breakable by
+  corrupting the join's cached result.
+- [ ] **C2: the Salesinvoice VAT rate is a hard-coded 20** (Sonnet) — the five
+  `Salesinvoice.xlsx` sheets (both products) compute a customer-facing invoice total and VAT
+  with "VAT Rate" hard-coded 20 on every row, no tie to the tax year; the workbook has no
+  external link so a wrong figure never reaches the books, but it reaches the customer's
+  customer. Have the generator write the tax year's standard rate into the rate cells (follow
+  `buildSeCellEdits`' shape; discover the cells from the XML), read the invoice total/VAT cells
+  back, and check them against a hand-computed figure on the fixture. Prove breakable.
+- [ ] **C3: the Ltd statutory registers are write-only** (Sonnet) — `Directors&Secretary` and
+  `DirectorsInterests` in the Ltd package carry no formula and no route to the accounts; a
+  missing entry is a Companies House problem, not arithmetic. The scenario data already carries
+  the members (name, shares, `acquired`): have `cellWrites` populate the registers from it,
+  read the entries back, and check them against the fixture so an empty register fails. Verify
+  the sheet layout from the XML first.
+- [ ] **C4: the BST and Taxi Home pages are unchecked navigation** (Haiku) — no figure, no
+  money risk; the one thing that can rot is the hyperlinks. Add a template-level test that
+  walks `Home`'s hyperlink relationships in both workbooks and asserts every target sheet
+  exists (the BST Home hyperlink has broken before — see the fixed-hyperlink note in
+  `CONTEXT_BASIC_SOLE_TRADER.md`).
+- [ ] **C5: regenerate `REPORT_SHEET_COVERAGE_GAPS.md` once C1-C4 land** (Haiku) — re-run the
+  report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
+  the date and repo-state line, and delete the closed gaps; the count should fall from
+  313/16 untouched toward the residue the report says is deliberate.
 - [ ] **Cut the LLM judge's Bedrock spend** (Sonnet) — `app/bin/judge-reconciliation.js` runs
   `anthropic.claude-opus-5` per product from the four `generate-*` workflows and from
   `deploy.yml` (every web/infra push plus the daily cron), re-judging unchanged digests. Do,
