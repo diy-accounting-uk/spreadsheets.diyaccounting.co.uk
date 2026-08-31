@@ -554,12 +554,6 @@ the budget holds each at that number. The largest blocks are the debtor and cred
 fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
 which the sheets hold in a form the exporter reads back yet.
 
-**S7, the fixed-asset `cellWrites` layout.** Four Ltd lines and one SE line do not survive the
-export. The Ltd fixed asset debit and credit collapse to net book value and two bank opening
-balances are lost; SE loses its stock adjustment. `app/data/roundtrip-budget.json` holds
-`linesLost` at 4 for Ltd and 1 for SE, and the ratchet in `app/test/verify-roundtrip.test.js` holds
-its own run's count at 5 and 2. Both can fall and neither can rise.
-
 **Non-March EQ2 is scored on counts only.** `generate` shifts every posting date onto the package's
 own accounting period, so for a non-March year end the exported dates sit a month or two from the
 fixture's by design. Anchoring the comparison needs that shift undone first and the comparator does

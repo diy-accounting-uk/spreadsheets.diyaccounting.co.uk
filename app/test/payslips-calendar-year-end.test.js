@@ -6,12 +6,33 @@
 // of the next year whether or not the year spans a leap February, so it is
 // derived from B2 rather than read from a fixed row.
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import JSZip from "jszip";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { resolve, join } from "node:path";
+import { tmpdir } from "node:os";
+import { parse as parseTOML } from "smol-toml";
+import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
+import { generateSpreadsheet } from "../lib/generator.js";
+import { loadScenario } from "../lib/scenario-loader.js";
+import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import {
+  cellWrites as seCellWrites,
+  standardReads as seReads,
+  multiFileOptions as seOptions,
+  checkCompliance as seCheckCompliance,
+} from "../products/se.js";
+import {
+  cellWrites as ltdCellWrites,
+  standardReads as ltdReads,
+  multiFileOptions as ltdOptions,
+  checkCompliance as ltdCheckCompliance,
+} from "../products/ltd.js";
 
 const ROOT = resolve(import.meta.dirname, "../..");
+const APP_DIR = resolve(ROOT, "app");
+const DATA_DIR = resolve(APP_DIR, "data");
+const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 describe.each(["se", "ltd"])("%s Payslips Admin calendar year end", (product) => {
   it("I1 derives 5 April of the next year from the B2 seed", async () => {
@@ -20,5 +41,240 @@ describe.each(["se", "ltd"])("%s Payslips Admin calendar year end", (product) =>
     const cell = xml.match(/<c r="I1"[^>]*><f>([^<]*)<\/f>/);
     expect(cell).not.toBeNull();
     expect(cell[1]).toBe("DATE(YEAR(B2)+1,MONTH(B2),DAY(B2))-1");
+  });
+});
+
+// Payslips.xlsx Jul (sheet5.xml) and Aug (sheet6.xml) shipped with 35 dead
+// #REF! cells -- Jul!F11:F15 and Jul!T41 (5 cells and 1 style mismatch),
+// Aug!H11:M15 with K on rows 12-15 (29 cells) -- invisible on every
+// recalculated package because nothing read either tab directly and the
+// guard condition each broken formula sits behind (a weekly pay frequency,
+// or a carried-over weekly cycle) is never true for any fixture. This
+// proves the fix at the template level (no #REF! left anywhere in a
+// generated, recalculated package) and that the new checks reading these
+// tabs directly are real: each one fails on its own when the cell it reads
+// is corrupted, and nothing else moves.
+//
+// Requires: LibreOffice installed (brew install --cask libreoffice)
+
+const SKIP = !hasLibreOffice();
+const describeCalc = SKIP ? describe.skip : describe;
+
+// Overwrites a cell's cached <v> content in place, leaving any <f> formula
+// tag untouched -- the way a stale or corrupted cached value would reach a
+// reader that only ever sees the last-saved cell.
+function corruptCellValue(xml, cellRef, newValue) {
+  const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v[^>]*>)([^<]*)(</v>)`, "s");
+  if (!pattern.test(xml)) throw new Error(`corruptCellValue: cell ${cellRef} not found in sheet XML`);
+  return xml.replace(pattern, (_match, pre, _old, post) => `${pre}${newValue}${post}`);
+}
+
+// Loads a recalculated package file via JSZip, overwrites one cell's cached
+// value, round-trips the archive and reads the cell back -- a real mutation
+// of a copy of the workbook, not a string edit on the in-memory results.
+async function readCorruptedCell(savedDir, fileName, sheetName, cellRef, newValue) {
+  const zip = await JSZip.loadAsync(readFileSync(resolve(savedDir, fileName)));
+  const sheetMap = await buildSheetMap(zip);
+  const sheetPath = sheetMap.get(sheetName);
+  if (!sheetPath) throw new Error(`readCorruptedCell: sheet ${sheetName} not found in ${fileName}`);
+  const xml = await zip.file(sheetPath).async("string");
+  zip.file(sheetPath, corruptCellValue(xml, cellRef, newValue));
+
+  const corruptedBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  const reloadedZip = await JSZip.loadAsync(corruptedBuffer);
+  const sharedStrings = await loadSharedStrings(reloadedZip);
+  const reloadedXml = await reloadedZip.file(sheetPath).async("string");
+  return readCellValue(reloadedXml, cellRef, sharedStrings);
+}
+
+function failureNames(checks) {
+  return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
+}
+
+// Scans the named tabs of a recalculated package file for a literal
+// "#REF!" left in a formula. Scoped to the tabs this track owns (Jul/Aug)
+// rather than the whole workbook: the Payslips print sheet (sheet14.xml)
+// carries its own, unrelated #REF!s in every one of these fixtures
+// (confirmed unchanged by this fix, on the pre-fix template too), so a
+// whole-workbook scan would fail on a defect this track never touched.
+async function findRefErrors(savedDir, fileName, sheetNames) {
+  const zip = await JSZip.loadAsync(readFileSync(resolve(savedDir, fileName)));
+  const sheetMap = await buildSheetMap(zip);
+  const found = [];
+  for (const sheetName of sheetNames) {
+    const path = sheetMap.get(sheetName);
+    if (!path) throw new Error(`findRefErrors: sheet ${sheetName} not found in ${fileName}`);
+    const content = await zip.file(path).async("string");
+    if (content.includes("#REF!")) found.push(sheetName);
+  }
+  return found;
+}
+
+describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own payroll data", () => {
+  const SE_DIR = resolve(APP_DIR, "templates", "se");
+  let results;
+  let checks;
+  let taxData;
+  let expected;
+  let savedDir;
+
+  function checksWithCorruptedCell(resultKey, cellRef, value) {
+    const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
+    return seCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
+  }
+
+  beforeAll(async () => {
+    taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const productMeta = parseTOML(readFileSync(resolve(SE_DIR, "meta.toml"), "utf8"));
+
+    const fileBuffers = {};
+    for (const templateFile of productMeta.template.files) {
+      const templateBuffer = readFileSync(resolve(SE_DIR, templateFile));
+      const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
+      const sheetsConfig = productMeta.sheets?.[fileKey];
+      fileBuffers[templateFile] =
+        sheetsConfig && Object.keys(sheetsConfig).length > 0
+          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+          : templateBuffer;
+    }
+
+    const scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
+    expected = { ...scenario, ...scenario.expected };
+
+    savedDir = mkdtempSync(join(tmpdir(), "se-payslips-jul-aug-"));
+    results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
+      ...seOptions(),
+      saveRecalculatedTo: savedDir,
+    });
+    checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
+  }, 300000);
+
+  afterAll(() => {
+    if (savedDir) rmSync(savedDir, { recursive: true, force: true });
+  });
+
+  it("leaves no #REF! in the recalculated Payslips.xlsx Jul/Aug tabs", async () => {
+    expect(await findRefErrors(savedDir, "Payslips.xlsx", ["Jul", "Aug"])).toEqual([]);
+  });
+
+  it("reads Jul and Aug at all -- a prerequisite every check below depends on", () => {
+    expect(results["Payslips.xlsx!Jul"]).toBeDefined();
+    expect(results["Payslips.xlsx!Aug"]).toBeDefined();
+  });
+
+  it("passes every Payslips Jul/Aug check on the intact book", () => {
+    const payslipsChecks = checks.filter((c) => c.name.startsWith("Payslips!Jul") || c.name.startsWith("Payslips!Aug"));
+    expect(payslipsChecks.length).toBeGreaterThan(0);
+    for (const c of payslipsChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+  });
+
+  it("July and August carry different payroll references for the same employees -- the fixture this coverage depends on", () => {
+    const jul = results["Payslips.xlsx!Jul"];
+    const aug = results["Payslips.xlsx!Aug"];
+    expect(jul.S51).not.toBe(aug.S51);
+    expect(jul.M51).toBe(aug.M51); // gross pay repeats -- the totals alone cannot tell the months apart
+  });
+
+  it("corrupting Payslips.xlsx!Jul!F12 via JSZip fails only the July employee-line check", async () => {
+    const name = "Payslips!Jul F12 weekly employee line (every employee here pays monthly)";
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Jul", "F12", "Zzz");
+    expect(value).toBe("Zzz");
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Jul", "F12", value))).toEqual([name]);
+  });
+
+  it("corrupting Payslips.xlsx!Aug!H13 via JSZip fails only the August brought-forward check", async () => {
+    const name = "Payslips!Aug H13 brought forward from Jul (no weekly cycle carried over)";
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Aug", "H13", 999);
+    expect(value).toBe(999);
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Aug", "H13", value))).toEqual([name]);
+  });
+});
+
+describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own payroll data", () => {
+  const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
+  const YEAR_END_MONTH = 3; // March -- the template's own tab names, so "Jul"/"Aug" mean calendar Jul/Aug
+  let results;
+  let checks;
+  let taxData;
+  let expected;
+  let savedDir;
+
+  function checksWithCorruptedCell(resultKey, cellRef, value) {
+    const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
+    return ltdCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
+  }
+
+  beforeAll(async () => {
+    taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2025.toml"), "utf8"));
+    const productMeta = parseTOML(readFileSync(resolve(LTD_DIR, "meta.toml"), "utf8"));
+
+    const fileBuffers = {};
+    for (const templateFile of productMeta.template.files) {
+      const templateBuffer = readFileSync(resolve(LTD_DIR, templateFile));
+      const fileKey = templateFile.replace(".xlsx", "").replace(".docx", "").toLowerCase();
+      const sheetsConfig = productMeta.sheets?.[fileKey];
+      fileBuffers[templateFile] =
+        sheetsConfig && Object.keys(sheetsConfig).length > 0
+          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+          : templateBuffer;
+    }
+
+    const scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-scenario-full.toml"));
+    expected = { ...scenario, ...scenario.expected };
+
+    savedDir = mkdtempSync(join(tmpdir(), "ltd-payslips-jul-aug-"));
+    results = await runMultiFileSpreadsheet(
+      fileBuffers,
+      ltdCellWrites(scenario, 2025, YEAR_END_MONTH),
+      ltdReads(),
+      "Financialaccounts.xlsx",
+      { ...ltdOptions(YEAR_END_MONTH), saveRecalculatedTo: savedDir },
+    );
+    checks = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax);
+  }, 900000);
+
+  afterAll(() => {
+    if (savedDir) rmSync(savedDir, { recursive: true, force: true });
+  });
+
+  it("leaves no #REF! in the recalculated Payslips.xlsx Jul/Aug tabs", async () => {
+    expect(await findRefErrors(savedDir, "Payslips.xlsx", ["Jul", "Aug"])).toEqual([]);
+  });
+
+  it("reads Jul and Aug at all -- a prerequisite every check below depends on", () => {
+    expect(results["Payslips.xlsx!Jul"]).toBeDefined();
+    expect(results["Payslips.xlsx!Aug"]).toBeDefined();
+  });
+
+  it("passes every Payslips Jul/Aug check on the intact book", () => {
+    const payslipsChecks = checks.filter((c) => c.name.startsWith("Payslips!Jul") || c.name.startsWith("Payslips!Aug"));
+    expect(payslipsChecks.length).toBeGreaterThan(0);
+    for (const c of payslipsChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+  });
+
+  it("corrupting Payslips.xlsx!Jul!F12 via JSZip fails only the July employee-line check", async () => {
+    const name = "Payslips!Jul F12 weekly employee line (every employee here pays monthly)";
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Jul", "F12", "Zzz");
+    expect(value).toBe("Zzz");
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Jul", "F12", value))).toEqual([name]);
+  });
+
+  it("corrupting Payslips.xlsx!Aug!H13 via JSZip fails only the August brought-forward check", async () => {
+    const name = "Payslips!Aug H13 brought forward (no weekly cycle carried over)";
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Aug", "H13", 999);
+    expect(value).toBe(999);
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Aug", "H13", value))).toEqual([name]);
   });
 });

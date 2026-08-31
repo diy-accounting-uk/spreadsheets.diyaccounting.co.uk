@@ -102,6 +102,12 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
     "Payslips.xlsx",
   ]);
 
+  // Workbooks with no month tabs of their own that still address the
+  // ledgers' month tabs by name across a link: the hub reads every month's
+  // totals, and the asset workbook's reconciliation reads the two ledgers'
+  // annual fixed asset rows off their final month tab.
+  const LINK_RENAME_FILES = new Set(["Financialaccounts.xlsx", "Fixedassets.xlsx"]);
+
   if (productMeta.template.files) {
     for (const templateFile of productMeta.template.files) {
       let buffer = readFileSync(resolve(productDir, templateFile));
@@ -121,7 +127,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
         buffer = await rewriteVatinterfaceFormulas(buffer, yearEndMonth, "xl/worksheets/sheet6.xml");
       }
 
-      if (yearEndMonth && fileKey === "financialaccounts") {
+      if (yearEndMonth && LINK_RENAME_FILES.has(templateFile)) {
         buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
       }
 

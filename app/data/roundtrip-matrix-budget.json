@@ -12,15 +12,15 @@
     "accountUnmatched": 0
   },
   "se": {
-    "linesLost": 1,
+    "linesLost": 0,
     "fieldsDropped": 0,
-    "coarseUnmatched": 2,
+    "coarseUnmatched": 0,
     "accountUnmatched": 0
   },
   "ltd": {
-    "linesLost": 4,
+    "linesLost": 0,
     "fieldsDropped": 0,
-    "coarseUnmatched": 5,
+    "coarseUnmatched": 0,
     "accountUnmatched": 0
   }
 }
