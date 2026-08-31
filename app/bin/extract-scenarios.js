@@ -229,7 +229,7 @@ const hpAgreements = book.hpAgreements.map((agreement) => ({
 // Schedule's own terms. tax_wdv is the written down value the capital
 // allowances working brings forward, which is not the accounting
 // depreciation and is the register's own figure.
-const OPENING_ASSET_CATEGORIES = { motorVehicles: "motor", computerTechnology: "computer" };
+const OPENING_ASSET_CATEGORIES = { motorVehicles: "motor", computerTechnology: "computer", landBuildings: "land" };
 
 const openingFixedAssets = book.fixedAssets.map((asset) => {
   const opening = {
@@ -241,6 +241,12 @@ const openingFixedAssets = book.fixedAssets.map((asset) => {
   if (asset.taxWrittenDownValue !== undefined) opening.tax_wdv = asset.taxWrittenDownValue;
   return opening;
 });
+
+// SE's Schedule has no land block (se.js EXISTING_ASSET_ROWS only carries
+// motor and computer), the same restriction filterAdvanced already applies
+// to the rest of the opening journal (only accounts 0030/0040 pass). Ltd's
+// Schedule and OpenAccounts both take land, so the full set stands there.
+const seOpeningFixedAssets = openingFixedAssets.filter((asset) => asset.category !== "land");
 
 // The charges registered over the company's assets, from the book's own
 // register. Each one secures a creditor falling due after more than one year.
@@ -376,7 +382,7 @@ const advToml = formatScenarioToml(
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
-    opening_fixed_assets: openingFixedAssets,
+    opening_fixed_assets: seOpeningFixedAssets,
     opening_debtors: openingDebtors,
     closing_debtors: closingDebtors,
     opening_creditors: openingCreditors,
@@ -391,7 +397,10 @@ const advV2 = {
   stock: { openingValue: 10000, closingValue: 6000 },
   debtors: book.debtors,
   creditors: book.creditors,
-  fixedAssets: book.fixedAssets,
+  // Same restriction as seOpeningFixedAssets above: SE's Schedule has no
+  // land block, so a land & buildings asset the master book holds is a Ltd
+  // fact, not one this subset can carry.
+  fixedAssets: book.fixedAssets.filter((asset) => asset.class !== "landBuildings"),
   hpAgreements: book.hpAgreements,
 };
 

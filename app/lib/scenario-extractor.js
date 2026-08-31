@@ -190,6 +190,7 @@ const OPENING_BALANCE_DOCUMENT_PREFIX = "OB-";
 // balance sheet. Cost and accumulated depreciation post to the same account
 // and are told apart by the debit/credit code.
 export const OPENING_FIXED_ASSET_CLASSES = {
+  "0000": "land_buildings",
   "0010": "plant_machinery",
   "0020": "fixtures_fittings",
   "0030": "computer_technology",

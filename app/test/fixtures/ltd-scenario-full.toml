@@ -6366,16 +6366,18 @@ trade_creditors = 2400
 vat_due = 1500
 corporation_tax = 4500
 share_capital = 100
-retained_earnings = 20702
+retained_earnings = 180702
 long_term_creditors = 25000
 
 [opening_balance.fixed_asset_cost]
 motor_vehicles = 30000
 computer_technology = 3000
+land_buildings = 200000
 
 [opening_balance.fixed_asset_depreciation]
 motor_vehicles = 9828
 computer_technology = 270
+land_buildings = 40000
 
 [[opening_fixed_assets]]
 category = "motor"
@@ -6391,6 +6393,12 @@ category = "computer"
 description = "Laptop (0.5 years old)"
 cost = 3000
 acc_dep = 270
+
+[[opening_fixed_assets]]
+category = "land"
+description = "Office premises"
+cost = 200000
+acc_dep = 40000
 
 [[vat_straddling_sales]]
 period = "02Y1"
