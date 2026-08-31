@@ -10,6 +10,17 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import {
+  monthlyPayrollBlockRow,
+  PAYROLL_WEEKS_PER_MONTH,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_ENTRY_COLUMNS,
+  payslipsMonthEntryRows,
+  payslipsWagesPaidCell,
+} from "../lib/payslips-layout.js";
 import { calculateCorporationTax } from "../lib/tax/corporation-tax.js";
 import {
   buildCategoryNetting,
@@ -121,7 +132,6 @@ const BANK_LAYOUTS = Object.fromEntries(Object.values(BANK_ACCOUNT_FILES).map((f
 // months take four, four and five weeks a quarter with a sixth week on the
 // last. That fixes the row each month opens on, and the week and date it
 // opens with, from B2 alone.
-const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
 const PAYROLL_FIRST_WEEK_DAYS = 5;
 const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
 const PAYSLIPS_CALENDAR_ANCHOR_CELL = "B2";
@@ -137,26 +147,6 @@ function payrollMonthStarts() {
   }
   return starts;
 }
-
-// ── Payslips.xlsx month tabs and the printed payslip ───────────────────────
-// A month tab stacks one ten-row block per tax week from row 8, then the
-// monthly block below them, so where the monthly block starts follows the
-// weeks that month holds. The layout belongs to the sheet, so it is indexed
-// by the month's place in the package's year, whatever the year end. Block
-// row + 1 carries the date wages were paid and the period number; the five
-// employee lines run from block row + 3.
-const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex];
-const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
-
-// The Payslips sheet is the page an employer prints and hands over. F3 picks
-// weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
-// a month tab name and a block start row, and every printed figure is an
-// INDIRECT through them. Nothing downstream reads the page, so the
-// reconciliation asks it for a period other than the sheet's own default (1)
-// -- a join stuck on the default then prints the wrong period and fails.
-const PAYSLIP_PRINT_SHEET = "Payslips";
-const PAYSLIP_PRINT_CELLS = { frequency: "F3", period: "F4", tab: "H3", blockRow: "H4" };
-const PAYSLIP_PRINT_PERIOD = 2;
 
 // Payslips.xlsx's template positions 3 and 4 (sheet5.xml/sheet6.xml,
 // originally named Jul/Aug -- getMonthTabNames(3)[3] and [4]) shipped with
@@ -181,12 +171,11 @@ const PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS = PAYSLIPS_WEEKLY_ROWS.flatMap((row) =>
 });
 
 // The cells Payslips.xlsx cellWrites populates for a month's payroll, one
-// employee a row down the month's own monthly block: F name, M gross pay, N
-// income tax, O employee NI, R net pay, S reference, T employer NI. The row
-// above the first of them holds the wages-paid date the block is dated from.
+// employee a row down the month's own monthly block, plus the wages-paid date
+// the block is dated from.
 const payslipsMonthEntryCells = (monthIndex) => [
-  `M${monthlyPayrollBlockRow(monthIndex) + 1}`,
-  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => ["F", "M", "N", "O", "R", "S", "T"].map((col) => `${col}${row}`)),
+  payslipsWagesPaidCell(monthIndex),
+  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => Object.values(PAYSLIPS_ENTRY_COLUMNS).map((col) => `${col}${row}`)),
 ];
 
 // ── Charges & Debentures register (Companysecretary.xlsx) ──────────────────
@@ -1670,8 +1659,14 @@ export function multiFileOptions(yearEndMonth) {
         // above), plus the rows the fixture actually populates, so a break
         // in either area is caught on its own month instead of only
         // through the Payment/Admin aggregates.
-        [tabNames[3]]: [...PAYSLIPS_JUL_DEAD_CELLS, ...payslipsMonthEntryCells(3)],
-        [tabNames[4]]: [...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS, ...payslipsMonthEntryCells(4)],
+        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]: [
+          ...PAYSLIPS_JUL_DEAD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+        ],
+        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]: [
+          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+        ],
       },
       "Companysecretary.xlsx": {
         // One member a row: A the name, G the holding. F1 is the sheet's own
@@ -3869,8 +3864,18 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         expectedVat,
         0.01,
       );
-      check("Salesinvoice: net total = the invoice's one line", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]), expectedNet, 0.01);
-      check("Salesinvoice: VAT total = the line's own VAT", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]), expectedVat, 0.01);
+      check(
+        "Salesinvoice: net total = the invoice's one line",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]),
+        expectedNet,
+        0.01,
+      );
+      check(
+        "Salesinvoice: VAT total = the line's own VAT",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]),
+        expectedVat,
+        0.01,
+      );
       check(
         "Salesinvoice: amount payable = net plus VAT",
         num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal]),

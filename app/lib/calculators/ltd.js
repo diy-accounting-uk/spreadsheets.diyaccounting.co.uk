@@ -26,6 +26,7 @@
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
+import { PAYROLL_WEEKS_PER_MONTH } from "../payslips-layout.js";
 import { addMonths, endOfMonth } from "./shared.js";
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -179,9 +180,8 @@ const VATINTERFACE_FIRST_ADMIN_ROW = 6;
 const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // The payroll calendar: tax week 1 is the five days from 6 April, every week
-// after it is seven days, and the payroll months take four, four and five
-// weeks a quarter with a sixth on the last.
-const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+// after it is seven days, and the payroll months take the weeks the shared
+// layout names.
 const PAYROLL_FIRST_WEEK_DAYS = 5;
 const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
 

@@ -15,6 +15,7 @@ import {
   LTD_SALES_CODE_MAP,
 } from "./scenario-extractor.js";
 import { calculateMileageAllowance } from "./tax/mileage.js";
+import { PAYSLIPS_ENTRY_COLUMNS, payslipsMonthEntryRows, payslipsWagesPaidCell } from "./payslips-layout.js";
 import { findXlsx } from "./xlsx-reader.js";
 import { readFileSync as readSchemaFile } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
@@ -714,7 +715,12 @@ export async function extractBankTransactions(sourceDir, product, period) {
 
 /**
  * Extract payroll transactions from Payslips.xlsx monthly tabs.
- * Monthly payroll rows 51-55: F=name, M=gross, N=tax, O=empNI, R=net, S=erNI
+ *
+ * A month tab's monthly block sits below one ten-row block per tax week, so
+ * the rows move with the weeks that month holds. The rows come from the same
+ * layout module the writers fill the block through, keyed by the tab's place
+ * in the package's year -- reading fixed rows instead loses every 5- and
+ * 6-week month outright.
  */
 export async function extractPayrollTransactions(sourceDir) {
   const { readFileSync, existsSync } = await import("fs");
@@ -729,28 +735,32 @@ export async function extractPayrollTransactions(sourceDir) {
   const lines = [];
   let entryNum = 1;
 
-  for (const sheetName of monthSheetsInPeriodOrder(sheetMap)) {
+  const columns = PAYSLIPS_ENTRY_COLUMNS;
+  const monthSheets = monthSheetsInPeriodOrder(sheetMap);
+  for (const [monthIndex, sheetName] of monthSheets.entries()) {
     const sheetPath = sheetMap.get(sheetName);
     const xml = await zip.file(sheetPath).async("string");
+    const wagesPaidCell = payslipsWagesPaidCell(monthIndex);
 
-    for (let row = 51; row <= 55; row++) {
-      const grossPay = readCellValue(xml, `M${row}`, sharedStrings);
+    for (const row of payslipsMonthEntryRows(monthIndex)) {
+      const grossPay = readCellValue(xml, `${columns.grossPay}${row}`, sharedStrings);
       if (grossPay === null || typeof grossPay !== "number" || grossPay === 0) continue;
 
-      const name = readCellValue(xml, `F${row}`, sharedStrings) || "";
-      const incomeTax = readCellValue(xml, `N${row}`, sharedStrings) || 0;
-      const employeeNI = readCellValue(xml, `O${row}`, sharedStrings) || 0;
-      const netPay = readCellValue(xml, `R${row}`, sharedStrings) || 0;
+      const name = readCellValue(xml, `${columns.name}${row}`, sharedStrings) || "";
+      const incomeTax = readCellValue(xml, `${columns.incomeTax}${row}`, sharedStrings) || 0;
+      const employeeNI = readCellValue(xml, `${columns.employeeNI}${row}`, sharedStrings) || 0;
+      const netPay = readCellValue(xml, `${columns.netPay}${row}`, sharedStrings) || 0;
       // Column S is a blank spacer on the payslip block, unused by any
       // formula, so the payslip's own reference goes there; column T is the
-      // employer-NI entry cell the sheet's own row-56 total sums.
-      const employerNI = readCellValue(xml, `T${row}`, sharedStrings) || 0;
+      // employer-NI entry cell the block's own total row sums.
+      const employerNI = readCellValue(xml, `${columns.employerNI}${row}`, sharedStrings) || 0;
 
-      // M49 holds the date the wages were paid. It is the only date the tab
-      // carries, so a payroll row without it has no posting date to export.
-      const wageDate = readCellValue(xml, "M49", sharedStrings);
+      // The row above the block's first employee line holds the date the
+      // wages were paid. It is the only date the tab carries, so a payroll
+      // row without it has no posting date to export.
+      const wageDate = readCellValue(xml, wagesPaidCell, sharedStrings);
       if (typeof wageDate !== "number" || wageDate <= 1) {
-        throw new Error(`Payslips.xlsx ${sheetName} row ${row} has pay but no wages-paid date in M49`);
+        throw new Error(`Payslips.xlsx ${sheetName} row ${row} has pay but no wages-paid date in ${wagesPaidCell}`);
       }
       const postingDate = excelSerialToDate(wageDate);
 
@@ -767,7 +777,7 @@ export async function extractPayrollTransactions(sourceDir) {
         "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
         "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
       };
-      const reference = textAt(xml, `S${row}`, sharedStrings);
+      const reference = textAt(xml, `${columns.reference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
       lines.push(line);
     }
