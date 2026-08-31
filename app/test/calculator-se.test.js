@@ -41,22 +41,10 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 772 },
-  { name: "se-brickwork-pro-vat", checkCount: 706 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 706 },
+  { name: "se-scenario-advanced", checkCount: 773 },
+  { name: "se-brickwork-pro-vat", checkCount: 707 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 702 },
 ];
-
-// The checks the shipped workbook cannot pass, whichever engine computes it.
-// The invoice page's whole line is gated on Invoice Template!N27, the cell
-// that says an invoice has been raised, and nothing the writer fills sets it,
-// so the line and all three totals come out nil. The recalculated workbook
-// fails these four the same way, which is what makes the two sides equal.
-const SHEET_LIMITATION_GAPS = new Set([
-  "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
-  "Salesinvoice: net total = the invoice's one line",
-  "Salesinvoice: VAT total = the line's own VAT",
-  "Salesinvoice: amount payable = net plus VAT",
-]);
 
 function loadFixture(name) {
   const scenario = loadScenario(resolve(FIXTURES_DIR, `${name}.toml`));
@@ -65,7 +53,7 @@ function loadFixture(name) {
 }
 
 function failures(checks) {
-  return checks.filter((check) => !check.pass && check.severity !== "warning" && !SHEET_LIMITATION_GAPS.has(check.name));
+  return checks.filter((check) => !check.pass && check.severity !== "warning");
 }
 
 function describeFailure(check) {
@@ -332,11 +320,6 @@ describe("Self Employed engine: the read scope", () => {
         "Payslips.xlsx!Payslips!I16",
         "Payslips.xlsx!Payslips!M16",
         "Payslips.xlsx!Payslips!M18",
-        // The invoice line, gated on the cell that says an invoice has been
-        // raised, which nothing the writer fills sets.
-        "Salesinvoice.xlsx!Invoice Template!J38",
-        "Salesinvoice.xlsx!Invoice Template!L38",
-        "Salesinvoice.xlsx!Invoice Template!P38",
       ].sort(),
     );
   });

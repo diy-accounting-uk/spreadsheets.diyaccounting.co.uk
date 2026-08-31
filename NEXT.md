@@ -34,13 +34,18 @@ lands:
   cause of the failed first attempt was unescaped `<>` corrupting the sheet XML; the fix
   uses the sheet's own rate idiom, 194/194 with breakability). The failed Haiku attempt is
   discarded.
-- EQ1 track (Opus) — E1: started; also owns the trio's exportedLines failures (12 payroll
-  lines short in every product run — the exporter's fixed-row payslip reads diverged from
-  the landed layout-derived writes) and calculator-se's read-scope failure
-- CI-fallout track (Sonnet) — the other 23 failures from PR #48's CI run 33425871047:
-  started. B2's land fixture rippled into hand-computed expectations (calculator-ltd,
-  opening-balance, FA note, NBV, loader count, brickwork sets) and B3's carriage check
-  joined corruption flip-sets; the two EQ3 stability failures get root-caused, not parked.
+- EQ1 track (Opus) — E1: merged to `claude/next-batch-wave-1` (ltd CI chain fully clean:
+  0 differing / 0 noJsValue / 0 linesLost, 724/724; shared payslips-layout module; 3327
+  tests green in its tree). SE budget one-char fix and prettier landed as coordinator
+  pipeline fixes.
+- CI-fallout track (Sonnet): merged to `claude/next-batch-wave-1` (land ripple re-derived
+  by hand across six test files, carriage checks gated on VAT registration like their
+  writes, stability failures root-caused onto the listed-volatiles mechanism; 2696 tests
+  green in its tree).
+- print track (Opus) — R1 + P1: started. R1 first: the featured Ltd reconciliation is
+  ANOMALYDETECTED 949/955 in the reconcile-populated package (FAreconciliation E13/K13
+  link caches read 0; three print-page INDIRECTs read #REF!) — must print RECONCILES.
+  Then P1 opens the print-page gate with source-derived start dates.
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -51,10 +56,12 @@ lands:
 Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
 once the wave's tracks are in and the full suite is green.
 
-Queued: P1 dispatches (Opus) the moment the EQ1 and CI-fallout tracks both land — its
-start-date fixture change re-ripples the expectations CI-fallout is re-deriving, and its
-month-tab changes sit in the payslip export region EQ1 is reworking. B4 follows P1 (both
-touch the exporter).
+- calc track (Sonnet): merged to `claude/next-batch-wave-1` (the calculators now mirror
+  cellWrites' VAT gate with real invoice figures; 3377/3377 in its tree, both CI chains
+  within budget; 3183/3183 calculator tests re-verified on the branch). The full suite's
+  other 20 failed files were soffice-contention hook timeouts — clean re-run at close.
+
+Queued: B4 dispatches after the print track lands (both touch the exporter).
 
 ## Open items
 
@@ -63,24 +70,13 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
-- [ ] **P1: the payslip print page prints no figures — no fixture carries a start date**
-  (Opus) — surfaced by C1: every printed field is gated on the employee's line showing a pay
-  number, and a month tab only assigns one to an employee whose starting date is on
-  `Payslips!Employee` (`F24 = " "` compares greater than any month number, so the gate is
-  always shut); a warning-severity check currently carries the gross the page would print.
-  Opening the gate is source-derived fixture work (start dates in the master data plus
-  re-extract) and is asymmetric: SE is ripple-free; Ltd's directors block goes live (`B53`
-  resolves "D", `M2` stops being 0, `WagesInterface!C4` splits), so the four per-month
-  WagesInterface checks need an employees/directors split. TrialBalance sums both blocks, so
-  P&L and CT are unaffected.
-- [ ] **E1: the batch's new reads have no JS-engine values — the EQ1 gate fails** (Sonnet) —
-  surfaced by B1+B2's track running `test.yml`'s `roundtrip-ltd` steps locally: the budget
-  gate fails with `differing: 2` and `noJsValue: 182` on keys from `Companysecretary.xlsx`,
-  `Payslips.xlsx`, `FAreconciliation` and the two Schedule additions/disposals checks —
-  exactly the reads T1, C1, C2 and C3 added to `additionalReads` without teaching the JS
-  engine to emit them. Per the fidelity plan, every read cell needs a JS source or a place
-  on a declared blanks list. Reproduction on the branch tip in progress; must be fixed
-  before PR #48 leaves draft (CI runs this gate).
+- [ ] **B5: `diyaGlToScenario` never maps the VAT number, so the invoice checks never fire
+  on diya-gl paths** (Sonnet) — surfaced by the calc track: `app/lib/diya-gl-loader.js`
+  drops `diya-gl:vatNumber` for both products, so `scenario.business.vat_number` is absent
+  on every diya-gl-sourced run (the calculator FIXTURES, the CI generate/report/export
+  chain) and the Salesinvoice write-and-check gate stays shut there; only the hand-written
+  TOML fixtures exercise it. Map the field, then confirm the CI chains still hold budget
+  with the gate now firing (the calculators' gate replication should follow automatically).
 - [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
   the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
   `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
