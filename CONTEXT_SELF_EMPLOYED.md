@@ -23,9 +23,8 @@ SE packages always have a 6 April year-end (following the UK tax year). During g
 ```
 +---------------------------------------------------------------------------+
 | Financialaccounts.xlsx (HUB)                                              |
-| ~180 visible sheets (10 core + ~170 HMRC/quarterly report sheets)         |
+| 10 sheets                                                                 |
 |                                                                           |
-| Core sheets:                                                              |
 | +------------------+ +--------------------+ +-------------------+         |
 | | Business Details | | SE Short           | | SE Full           |         |
 | | (user info)      | | (summary return)   | | (detailed return) |         |
@@ -45,16 +44,11 @@ SE packages always have a 6 April year-end (following the UK tax year). During g
 | +----------------------------------------------------------------+       |
 | | Admin (sheet10.xml)                                             |       |
 | | B2-B22 = dates (month-ends, tax year dates)                    |       |
-| | G4-G8 = capital allowances, G13-G17 = depreciation rates       |       |
+| | G4-G5 = capital allowances (AIA/WDA rates)                     |       |
 | | N4-N12 = income tax rates/bands, L16-N23 = NI rates/limits     |       |
 | | F21-G22 = mileage rates, F26-F27 = VAT threshold/rate          |       |
 | | B23-B24 = tax year labels (strings)                             |       |
 | +----------------------------------------------------------------+       |
-|                                                                           |
-| Annual_ and Q1_-Q4_ sheets (~170 sheets):                                |
-|   Annual_IncomeTurnover, Annual_ExpenseAdminCosts, ...                    |
-|   Q1_IncomeTurnover, Q1_ExpenseAdminCosts, ...                            |
-|   (HMRC Self Assessment box-mapping sheets for quarterly/annual returns)  |
 +---------------------------------------------------------------------------+
          | 6 outbound external links
          |
@@ -198,8 +192,7 @@ Income Tax                                                            |
   |                                                                   |
   v                                                                   |
 SE Short / SE Full                                                    |
-  | Self Assessment return summaries                                  |
-  | Annual_ and Q1_-Q4_ sheets for HMRC box mapping                  +
+  | Self Assessment return summaries (SA103S / SA103F box mapping)   +
 ```
 
 ### Wagesinterface (Financialaccounts.xlsx)
@@ -226,7 +219,7 @@ Quarterly P&L summary (columns C-F = Q1-Q4, G = annual total):
 |-----|---------|----------------|
 | 5 | Quarterly sales | `SUM('Profit & Loss Account'!C5:E7)` for Q1 |
 | 6 | Quarterly other income | Grants + other income by quarter |
-| 7 | Quarterly expenses | Cost of sales + admin expenses by quarter |
+| 7 | Quarterly direct costs | Materials + Other Direct Cost of Sales only (rows 14, 16) by quarter -- admin expenses are excluded |
 
 ### Vat.xlsx (separate file, reads FROM hub)
 
@@ -234,13 +227,15 @@ Not in the main external link chain — Vat.xlsx reads from `[1]Financialaccount
 
 | Cell | Content | Source |
 |------|---------|--------|
-| G5 | Quarter-end date | Data entry (injected by generator), picked from the `K2:K16` dropdown |
-| G7 | Box 1: VAT on sales | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!C:C)` |
-| G9 | Box 3: Total output VAT | Lookup from Vatinterface G column |
-| G13 | Box 3: Total (G9 + G11) | Formula |
-| G15 | Box 4: VAT reclaimed | Lookup from Vatinterface K column |
+| G5 | VAT period end date | Data entry (injected by generator), picked from the `K2:K16` dropdown |
+| G7 | Payment due date | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!C:C)` |
+| G9 | Box 1: VAT due on sales | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!G:G)` |
+| G11 | Box 2: VAT due on EU acquisitions | Static 0, no formula, never generator-written |
+| G13 | Box 3: Total VAT due | `G9 + G11` |
+| G15 | Box 4: VAT reclaimed on purchases | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!K:K)` |
 | G17 | Box 5: Net VAT due | `G13 - G15` |
-| G23 | Box 6: Net sales value | Lookup from Vatinterface I column |
+| G21 | Box 6: Total value of sales excluding VAT | Lookup from Vatinterface, flat-rate aware |
+| G23 | Box 7: Total value of purchases excluding VAT | `LOOKUP(G5, Vatinterface!B:B, Vatinterface!I:I)` |
 
 Requires post-hub recalculation (Vat.xlsx external links reference the hub which must be recalculated first).
 
@@ -291,7 +286,10 @@ The key challenge: LibreOffice `--convert-to` does not resolve external links be
 5. REFRESH AND RECALCULATE THE LEAVES THAT READ BACK: Fixedassets reads
    the tax rates from the hub and the fixed asset totals from
    Purchases.xlsx and Sales.xlsx, so it recalculates after them. The hub
-   then gets one more refresh and roundtrip to carry what changed.
+   then gets one more refresh and roundtrip to carry what changed. This
+   leaf/hub pair repeats (up to MAX_SETTLE_ROUNDS = 4 rounds), skipping a
+   workbook whose external-link cache signature has not moved since its
+   last recalculation, until a round recalculates no leaf.
 
 6. REFRESH AND RECALCULATE Vat.xlsx last, once every workbook it quotes
    is final
@@ -363,7 +361,7 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 | L23 | Class 4 upper rate (0.02) | `national_insurance.class4_upper_rate` |
 | N23 | Class 4 upper limit (50270) | `national_insurance.class4_upper_limit` |
 
-**Capital Allowances**: G4 (AIA), G5 (WDA), E8 (motor cost threshold), G8 (motor restriction)
+**Capital Allowances**: G4 (AIA), G5 (WDA). The expensive-car cap that used to live at E8/G8 is retired -- the generator no longer writes there and nothing reads those cells.
 
 **Depreciation**: G13 (land), G14 (plant), G15 (fixtures), G16 (computer), G17 (motor)
 
@@ -375,34 +373,36 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 
 Additionally, the generator writes VAT return period end dates into **Vat.xlsx** sheets VATQtr1-VATQtr5 (cell G5 each), counted in months from the book's first accounting month (`VAT_RETURN_END_MONTHS` in generator.js: 3, 6, 9, 12, 15). Each form is a quarter on from the one before it, so the five run consecutively and Q5 covers the three periods past the year end. A tax year ends on 5 April, mid-month, and its month tabs still run April to March, so the first accounting month is the month the year starts in, not the month after the year end.
 
-The Admin B-column date list ends at B20, the last period the Vatinterface carries. Its payment due date falls a month later, so the generator writes that one on **B25** (`seVatPaymentDueDate` in generator.js) and Vat.xlsx reads it as `[1]Admin!$B$25`.
+The last VAT quarter's payment falls later than any of the Admin B2-B22 dates the generator otherwise writes (B21/B22 are the Self Assessment filing deadline and payment-on-account, not VAT-related), so the generator writes it to its own cell, **B25** (`seVatPaymentDueDate` in generator.js), and Vat.xlsx reads it as `[1]Admin!$B$25`.
 
 The generator also writes the payroll calendar into **Payslips.xlsx** Admin sheet (mapped to `xl/worksheets/sheet16.xml`).
 It seeds B2 with the tax year start (6 April) and writes the week number (C), payroll month number (D) and week-in-month (F)
 down rows 2 to 381. Every other date on the sheet cascades from B2 (`B3 = B2+1`), each row's month name in column A is
-`TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")`, and I1 (`=B366`) is the last day of the tax year.
+`TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D-1),1),"Mmm")`, and I1 (`=DATE(YEAR(B2)+1,MONTH(B2),DAY(B2))-1`) is the last day of the tax year, with N1 building the "YYYY-YY" label off I1's year.
 
 ## Scenario Testing
 
-One test scenario exercises the SE product, generated from Precision Code Ltd example data.
+Three fixtures exercise the SE product. The advanced scenario gates every CI reconciliation matrix job; the two brickwork scenarios run once, against the latest year-end only, as a non-blocking `reconcile-extra` check.
 
 ### Advanced Scenario (`app/test/fixtures/se-scenario-advanced.toml`)
 
-**Precision Code Ltd (SE extract)** -- a self-employed IT consultant with comprehensive activity. Generated by `scripts/extract-scenarios.cjs` from the master data in `examples/precision-code-ltd/`.
+**Precision Code Ltd (SE extract)** -- a self-employed IT consultant with comprehensive activity. Generated by `app/bin/extract-scenarios.js` (`npm run extract-scenarios`) from the master data in `examples/precision-code-ltd/`.
 
-**Sales**: 169,200 gross annual across codes a (Product A), b (Product B), c (Product C), d (Other Income), g (Grants), o (Other). 112 sales entries across 12 months. VAT-registered, so net/gross/VAT split applies.
+**Sales**: codes a (Product A), b (Product B), c (Product C), d (Other Income), g (Grants), o (Other), plus an `fs` fixed-asset disposal. 112 sales entries across 12 months. VAT-registered, so net/gross/VAT split applies.
 
-**Purchases**: exercises all SE purchase categories -- s (materials), c (sub-contractors), o (other direct), w (wages), p (light/heating), r (premises), m (repairs), g (admin), v (motor), h (travel), a (advertising), l (legal), y (donations), fa (fixed assets), and more. 393 purchase entries across 12 months.
+**Purchases**: exercises the SE purchase categories -- s (materials), c (sub-contractors), o (other direct), w (wages), p (premises, a combined rent/light/heat column), m (repairs), g (general admin), v (motor), h (travel), a (advertising), l (legal), y (other expenses), fa (fixed assets). 395 purchase entries across 12 months. There is no separate "r" code -- premises costs are all "p".
 
 **Bank writes**: Bank.xlsx (current account activity -- receipts from debtors, payments to creditors, wages, PAYE, loan repayments) and Cash.xlsx (petty cash entries). Opening/closing debtors populated on Sales.xlsx OpeningDebtors/ClosingDebtors sheets. Opening/closing creditors on Purchases.xlsx OpeningCreditors/ClosingCreditors sheets.
 
-**Expected values**: `total_sales = 169200` (net turnover after VAT). Reconciliation report includes formatted financial statements + cell appendix with DIY labels and diya-gl mappings.
+**Expected values**: `total_sales = 339200` (net turnover after VAT, excluding the fixed-asset disposal). Reconciliation report includes formatted financial statements + cell appendix with DIY labels and diya-gl mappings, and runs 683 compliance checks (see below).
 
-The old `se-scenario-basic.toml` and `se-scenario-extended.toml` have been removed. SE now runs a single scenario (advanced) with realistic data volumes.
+### Brickwork Pro Scenarios (`app/test/fixtures/se-brickwork-pro-{nonvat,vat}.toml`)
+
+A construction sole trader with CIS sub-contractors and one payrolled labourer, as a matched non-VAT/VAT pair: the VAT twin scales the trade 1.5x but both buy the same van at the same net cost, so net purchases don't scale by 1.5 across the pair. The Employment Allowance covers the employer's NI, so that line is nil in both. Run in CI's `reconcile-extra` job against the latest generated year-end only; a failure there is a warning, not a build failure.
 
 ### CELL_MAP Pattern
 
-`app/products/se.js` uses the CELL_MAP pattern -- a single array defining sheet, cell, DIY label, diya-gl property, report section, and indent level. The functions `standardReads()`, `reportSections()`, and `cellLabels()` all derive from CELL_MAP. This pattern drives both E2E tests and reconciliation reports. Report sections covered: P&L, Income Tax, SA103S (SE Short), Fixed Assets, Stock, Debtors & Creditors.
+`app/products/se.js` uses the CELL_MAP pattern -- a single array defining sheet, cell, DIY label, diya-gl property, report section, and indent level. The functions `standardReads()`, `reportSections()`, and `cellLabels()` all derive from CELL_MAP. This pattern drives both E2E tests and reconciliation reports. Report sections: Business Details, Profit & Loss Account, Income Tax Calculation, Profit Forecast, Self Assessment (SA103S), Self Assessment (SA103F), Payroll Summary, Quarterly Summary, Admin (Generator Injected), plus the computed Fixed Asset Schedule and VAT Returns sections. Stock and Debtors/Creditors are read and checked but do not get their own named report section -- their figures sit in the reconciliation report's cell appendix.
 
 ### Cell Writes Structure
 
@@ -447,7 +447,7 @@ After recalculation, values are read from **Financialaccounts.xlsx**:
 
 ### Compliance Checks
 
-The `checkCompliance()` function in `se.js` validates (tolerance of 1 for all checks):
+The `checkCompliance()` function in `se.js` runs 683 checks on the advanced scenario's reconciliation report (money amounts to a tolerance of 1; rates and dates tighter, some exact). A representative subset:
 
 | Check | Actual Cell | Expected Source |
 |-------|------------|-----------------|
@@ -459,7 +459,9 @@ The `checkCompliance()` function in `se.js` validates (tolerance of 1 for all ch
 | Total Tax + NI | Income Tax E18 | Calculated sum of IT + NI |
 | Forecast: tax and NI liability | Profit Forecast C46 | Calculated from the forecast's own taxable profit (C39) |
 
-Tax checks use a shared `calculateExpectedTax()` callback (defined in `reconcile.js`) that independently computes expected income tax and NI Class 4 from the profit figure and tax data rates, providing a cross-check against the spreadsheet formulas.
+The rest cover per-month VAT rate consistency, the mileage pooling/pricing chain, P&L internal consistency (Gross = Turnover + Grants − CoS, etc.), the VitalTax cross-check against the P&L, the SA103F Q2/V2 period-echo checks, Admin rate-injection checks, and the VAT return coverage/period checks.
+
+Tax checks use a shared `calculateExpectedTax()` callback (defined in `app/lib/tax/income-tax.js`, passed in by `app/bin/reconcile.js`) that independently computes expected income tax and NI Class 4 from the profit figure and tax data rates, providing a cross-check against the spreadsheet formulas.
 
 ## Filing Taxonomy Mapping
 
@@ -467,52 +469,121 @@ Maps SE cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S/SA103F f
 
 ### Profit & Loss Account
 
+Boxes verified by tracing the SE Short's own D46-O64 formulas back to the P&L rows they read (see below) -- several P&L admin-expense lines feed one combined SA103S box rather than one box each.
+
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
-| B5 | Product A — Consultancy | `accounts.sales.4000` | `dpl:TurnoverGrossOperatingRevenue` | — |
-| B6 | Product B — Software | `accounts.sales.4001` | `dpl:TurnoverGrossOperatingRevenue` | — |
-| B7 | Product C — Training | `accounts.sales.4002` | `dpl:TurnoverGrossOperatingRevenue` | — |
-| B8 | Other Income | `accounts.sales.4003` | `dpl:OtherOperatingIncome` | — |
-| B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| B11 | Grants Received | `accounts.sales.4004` | `dpl:GovernmentGrantIncome` | — |
-| B14 | Materials / Stock | `accounts.purchases.5000` | `dpl:RawMaterialsConsumables` | Box 11 |
-| B15 | Sub-Contractors | `accounts.purchases.5001` | `dpl:OtherEmploymentCosts` | Box 12 |
-| B16 | Other Direct Costs | `accounts.purchases.5002` | `dpl:OtherCosts` (CoS dimension) | Box 13 |
-| B17 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | — |
-| B19 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
-| B21 | Wages & Salaries | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 16 |
-| B22 | Light, Heat, Power | `accounts.purchases.5201` | `dpl:UtilitiesCosts` | Box 17 |
-| B23 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 18 |
-| B24 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 20 |
-| B25 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 19 |
-| B26 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 19 |
-| B27 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 20 |
-| B28 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 21 |
-| B29 | Bad Debts | `accounts.sales.4005` | `dpl:BadDebts` | Box 22 |
-| B30 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` | Box 23 |
-| B31 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 24 |
-| B32 | Charitable Donations | `accounts.purchases.5801` | `dpl:CharitableDonations` | — |
-| B33 | Goodwill Amortisation | `accounts.purchases.5802` | `frs102:AmortisationOfIntangibleAssets` | — |
-| B34 | Loss on Disposal | `gl-cor:amount (lossOnDisposal)` | `frs102:LossOnDisposalOfTangibleFixedAssets` | — |
-| B35 | Total Admin Expenses | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` | Box 25 |
-| B37 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` | Box 27 |
-| B39 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
+| B5 | Product A — Consultancy | `accounts.sales.4000` | `dpl:TurnoverGrossOperatingRevenue` | — (rolls into B9) |
+| B6 | Product B — Software | `accounts.sales.4001` | `dpl:TurnoverGrossOperatingRevenue` | — (rolls into B9) |
+| B7 | Product C — Training | `accounts.sales.4002` | `dpl:TurnoverGrossOperatingRevenue` | — (rolls into B9) |
+| B8 | Other Income | `accounts.sales.4003` | `dpl:OtherOperatingIncome` | — (rolls into B9) |
+| B9 | **Sales Turnover** | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 8 |
+| B11 | Grants Received | `accounts.sales.4004` | `dpl:GovernmentGrantIncome` | Box 29 |
+| B14 | Materials / Stock | `accounts.purchases.5000` | `dpl:RawMaterialsConsumables` | — (rolls into B17) |
+| B15 | Sub-Contractors | `accounts.purchases.5001` | `dpl:OtherEmploymentCosts` | — (rolls into B17) |
+| B16 | Other Direct Costs | `accounts.purchases.5002` | `dpl:OtherCosts` (CoS dimension) | — (rolls into B17) |
+| B17 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | Box 10 |
+| B19 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | — |
+| B21 | Wages & Salaries | `accounts.purchases.5101` | `dpl:WagesAndSalaries` | Box 12 |
+| B22 | Light, Heat, Power | `accounts.purchases.5201` | `dpl:UtilitiesCosts` | Box 13 |
+| B23 | Repairs & Maintenance | `accounts.purchases.5400` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 14 |
+| B24 | General Admin | `accounts.purchases.5501` | `dpl:OtherOperationalAndAdministrationCosts` | Box 17 |
+| B25 | Motor Expenses | `accounts.purchases.5601` | `dpl:Vehicles` | Box 11 (combined with B26) |
+| B26 | Travel & Subsistence | `accounts.purchases.5600` | `dpl:TravelAndSubsistenceCosts` | Box 11 (combined with B25) |
+| B27 | Advertising | `accounts.purchases.5500` | `dpl:AdvertisingPromotionsAndMarketingCosts` | Box 18 (combined with B29, B32, B33) |
+| B28 | Legal & Professional | `accounts.purchases.5800` | `dpl:AuditAndAccountancyTaxServices` | Box 15 |
+| B29 | Bad Debts | `accounts.sales.4005` | `dpl:BadDebts` | Box 18 (combined with B27, B32, B33) |
+| B30 | Bank Interest Paid | `accounts.purchases.5701` | `dpl:InterestPayable` | Box 16 (combined with B31) |
+| B31 | HP Interest, Lease, Bank Charges | `accounts.purchases.5702` | `dpl:BankCharges` | Box 16 (combined with B30) |
+| B32 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 18 (combined with B27, B29, B33) |
+| B33 | Loss (Profit) on Disposal of Assets | `gl-cor:amount (lossOnDisposal)` | `frs102:LossOnDisposalOfTangibleFixedAssets` | Box 18 (combined with B27, B29, B32) |
+| B34 | Depreciation | `gl-cor:amount (depreciation)` | `frs102:DepreciationOfTangibleFixedAssets` | — (disallowed; subtracted back out of Box 19) |
+| B35 | Total Admin Expenses | `gl-cor:amount (totalAdmin)` | `frs102:AdministrativeExpenses` | Box 19 (O64 = B17 + B35 − B34) |
+| B37 | **Operating Profit** | `gl-cor:amount (operatingProfit)` | `frs102:OperatingProfit` | — |
+| B39 | **Profit Before Tax** | `gl-cor:amount (profitBeforeTax)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | — |
+
+Note: SE Short's own net profit (D71, box 20) is not a direct reference to `'Profit & Loss Account'!B39` -- it is recomputed from the SE Short's own boxes (`D38+O38-O64`). Nothing cross-checks the two figures against each other; they only agree because the same source data feeds both routes.
 
 ### SE Short (SA103S)
 
+Box numbers verified against the template's own box-number cells (column A/L) and the D/O-column formulas beside them.
+
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
-| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| D46 | Cost of sales | `gl-cor:amount (sa103s.costOfSales)` | `frs102:CostOfSales` | Box 11 |
-| D51 | Other direct costs | `gl-cor:amount (sa103s.otherDirect)` | `dpl:OtherCosts` | Box 13 |
-| D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | `dpl:WagesAndSalaries` | Box 16 |
-| D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | `dpl:RentRatesAndServicesCosts` | Box 17 |
-| D64 | Other expenses | `gl-cor:amount (sa103s.otherExpenses)` | `dpl:OtherCosts` | Box 24 |
-| D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 28 |
-| D85 | AIA / WDA | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:AnnualInvestmentAllowance` | Box 28 |
-| D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
-| D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
+| C8 | Business name | `entityInformation.organizationIdentifier` | — | — (reads `'Business Details'!C5`) |
+| S17 | Accounting date | `documentInfo.periodCoveredEnd` | — | — (echoes `Admin!B4`) |
+| D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 8 |
+| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `dpl:OtherOperatingIncome` | Box 9 |
+| D46 | Cost of sales | `gl-cor:amount (sa103s.costOfSales)` | `frs102:CostOfSales` | Box 10 |
+| D51 | Car, van and travel | `gl-cor:amount (sa103s.travel)` | `dpl:TravelAndSubsistenceCosts` | Box 11 |
+| D55 | Employee costs | `gl-cor:amount (sa103s.employeeCosts)` | `dpl:WagesAndSalaries` | Box 12 |
+| D60 | Premises costs | `gl-cor:amount (sa103s.premises)` | `dpl:RentRatesAndServicesCosts` | Box 13 |
+| D64 | Repairs and renewals | `gl-cor:amount (sa103s.repairs)` | `dpl:OtherRepairsAndMaintenanceCosts` | Box 14 |
+| O46 | Accountancy, legal and professional | `gl-cor:amount (sa103s.legal)` | `dpl:AuditAndAccountancyTaxServices` | Box 15 |
+| O51 | Interest and bank charges | `gl-cor:amount (sa103s.interest)` | `dpl:InterestPayable` | Box 16 |
+| O55 | Phone, stationery and office costs | `gl-cor:amount (sa103s.office)` | `dpl:OtherOperationalAndAdministrationCosts` | Box 17 |
+| O60 | Other business expenses | `gl-cor:amount (sa103s.otherExpenses)` | `dpl:OtherCosts` | Box 18 |
+| O64 | **Total expenses** | `gl-cor:amount (sa103s.totalExpenses)` | `frs102:AdministrativeExpenses` | Box 19 |
+| D71 | **Net profit/loss** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 20 |
+| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 21 |
+| D80 | Annual Investment Allowance | `tax.capitalAllowances (sa103s)` | `ct-comp:AnnualInvestmentAllowance` | Box 22 |
+| D85 | Allowance of small balance of unrelieved expenditure | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
+| O80 | Other capital allowances | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
+| O85 | Total balancing charges | `tax.capitalAllowances.balancingCharge (sa103s)` | `ct-comp:BalancingCharge` | Box 25 |
+| D94 | Goods and services for own use | `gl-cor:amount (sa103s.otherAdjust)` | `dpl:OtherOperatingIncome` | Box 26 |
+| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | `frs102:LossesCarriedForward` | Box 28 |
+| D99 | **Net business profit for tax purposes** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 27 |
+| O99 | Other business income (not in boxes 8/9) | `gl-cor:amount (sa103s.otherBusinessIncome)` | `dpl:OtherOperatingIncome` | Box 29 |
+| A33 | Turnover note | `gl-cor:detailComment (sa103s.notes)` | — | — (explanatory text, echoes `Admin!F26`) |
+| D106 | **Total taxable profits** | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | Box 30 |
+
+### SE Full (SA103F)
+
+The full return, live in the same workbook as the short one, fed from the same P&L and Fixed Asset Schedule. Box numbers are the sheet's own (columns A/L beside each value); several spot-checked directly against the template (boxes 49, 50, 55, 56 all confirmed).
+
+| Cell | DIY Label (box number) | diya-gl Property |
+|------|------------------------|-------------------|
+| D55 | Turnover (box 15) | `gl-cor:amount (sa103f.turnover)` |
+| O55 | Other business income (box 16) | `gl-cor:amount (sa103f.otherIncome)` |
+| D66 | Goods bought for resale (box 17) | `gl-cor:amount (sa103f.costOfGoods)` |
+| D70 | Subcontractor payments (box 18) | `gl-cor:amount (sa103f.subcontractors)` |
+| D74 | Wages, salaries and staff costs (box 19) | `gl-cor:amount (sa103f.staffCosts)` |
+| D78 | Car, van and travel expenses (box 20) | `gl-cor:amount (sa103f.travel)` |
+| D82 | Rent, rates, power and insurance (box 21) | `gl-cor:amount (sa103f.premises)` |
+| D86 | Repairs and maintenance (box 22) | `gl-cor:amount (sa103f.repairs)` |
+| D90 | Phone, stationery and office costs (box 23) | `gl-cor:amount (sa103f.office)` |
+| D94 | Advertising and entertainment (box 24) | `gl-cor:amount (sa103f.advertising)` |
+| D98 | Interest on bank and other loans (box 25) | `gl-cor:amount (sa103f.interest)` |
+| D102 | Bank, credit card and finance charges (box 26) | `gl-cor:amount (sa103f.bankCharges)` |
+| D106 | Irrecoverable debts written off (box 27) | `gl-cor:amount (sa103f.badDebts)` |
+| D110 | Accountancy, legal and professional fees (box 28) | `gl-cor:amount (sa103f.legal)` |
+| D114 | Depreciation and loss on sale of assets (box 29) | `gl-cor:amount (sa103f.depreciation)` |
+| D118 | Other business expenses (box 30) | `gl-cor:amount (sa103f.otherExpenses)` |
+| D122 | **Total expenses (box 31)** | `gl-cor:amount (sa103f.totalExpenses)` |
+| O114 | Disallowable depreciation (box 44) | `gl-cor:amount (sa103f.disallowableDepreciation)` |
+| O122 | **Total disallowable expenses (box 46)** | `gl-cor:amount (sa103f.totalDisallowable)` |
+| D129 | **Net profit (box 47)** | `gl-cor:amount (sa103f.netProfit)` |
+| O129 | Net loss (box 48) | `gl-cor:amount (sa103f.netLoss)` |
+| D139 | Annual investment allowance (box 49) | `tax.capitalAllowances.aia (sa103f)` |
+| D144 | Capital allowances at 18% (box 50) | `tax.capitalAllowances.wda (sa103f)` |
+| O144 | 100% and other enhanced capital allowances (box 55) | `tax.capitalAllowances.enhanced (sa103f)` |
+| O149 | Allowances on sale or cessation (box 56) | `tax.capitalAllowances.balancingAllowance (sa103f)` |
+| O154 | **Total capital allowances (box 57)** | `tax.capitalAllowances (sa103f)` |
+| O160 | Balancing charge (box 59) | `tax.capitalAllowances.balancingCharge (sa103f)` |
+| D169 | Goods and services for own use (box 60) | `gl-cor:amount (sa103f.ownUse)` |
+| D174 | **Total additions to net profit (box 61)** | `gl-cor:amount (sa103f.totalAdditions)` |
+| O169 | **Total deductions from net profit (box 63)** | `gl-cor:amount (sa103f.totalDeductions)` |
+| O174 | **Net business profit for tax purposes (box 64)** | `gl-cor:amount (sa103f.taxableProfit)` |
+| O179 | Net business loss for tax purposes (box 65) | `gl-cor:amount (sa103f.taxableLoss)` |
+| O194 | **Adjusted profit (box 73)** | `gl-cor:amount (sa103f.adjustedProfit)` |
+| O199 | Loss brought forward set against this year (box 74) | `gl-cor:amount (sa103f.lossBroughtForward)` |
+| O204 | Other business income not in boxes 15, 16 or 60 (box 75) | `gl-cor:amount (sa103f.otherBusinessIncome)` |
+| O210 | **Total taxable profits from this business (box 76)** | `gl-cor:amount (sa103f.profitForTax)` |
+| D219 | Adjusted loss (box 77) | `gl-cor:amount (sa103f.adjustedLoss)` |
+| O224 | Total loss to carry forward (box 80) | `gl-cor:amount (sa103f.lossCarriedForward)` |
+| D231 | Contractor deductions taken off (box 81) | `diya-gl:cisDeduction (sa103f)` |
+
+`SE Full!G1` derives its filing-deadline text from `Admin!B21` (`"...by 31st January " & TEXT(Admin!B21,"yyyy")`), not from a fixed date -- the year rolls with whichever tax year the package is generated for.
 
 ### Income Tax
 
@@ -534,22 +605,23 @@ Maps SE cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S/SA103F f
 
 ### Triggers
 
-- **Schedule**: daily at 04:17 UTC
-- **Push**: any branch (except `gh_pages`), when SE-related files change (`app/data/se-*`, `app/templates/se/**`, `app/products/se.js`, the workflow itself)
-- **workflow_call / workflow_dispatch**: with skip flags for each job
+- **Schedule and push are both disabled** (commented out since 2026-05-07): this workflow self-commits 50-300 generated Excel files per run, and running that on every push plus a daily schedule produced a volume of bot-authored mass-file-change commits that risked GitHub's account-takeover/abuse heuristics.
+- **workflow_call / workflow_dispatch**: the only active triggers, each with skip flags per job (skip-tests, skip-generation, skip-reconciliation, skip-commit)
 
 ### Job Structure
 
 ```
-params -----> test -----> generate -----> reconcile (matrix) -----> commit
-  |             |            |                 |                       |
-  | Normalise   | npm test   | Build packages  | Per year-end         | Push to
-  | skip flags  | (vitest)   | + Payslip 05    | reconciliation       | branch
-  |             |            | + matrix calc   | advanced scenario    |
-  |             |            |                 |                      |
+params -> test -> generate -> reconcile (matrix) -> reconcile-extra -> commit
+  |         |         |             |                      |              |
+  | Skip    | npm     | Build       | Per year-end:        | brickwork    | Push to
+  | flags   | test    | packages    | reconcile, roundtrip | -pro-{non   | branch
+  |         |         | + Payslip05 | scorecard (EQ1/EQ2), | vat,vat} vs |
+  |         |         | + matrix    | EQ3 stability, judge | latest      |
+  |         |         |             | (latest only),       | package,    |
+  |         |         |             | reconciliation page  | non-blocking|
 ```
 
-**params**: Normalises skip flags (skip-tests, skip-generation, skip-reconciliation, skip-commit). Defaults all to `false` when empty.
+**params**: Normalises skip flags. Defaults all to `false` when empty.
 
 **test**: Runs `npm test` (vitest unit tests). Skippable.
 
@@ -559,32 +631,32 @@ params -----> test -----> generate -----> reconcile (matrix) -----> commit
 3. Runs `npm run generate -- --package se`
 4. **Creates Payslip 05 packages**: for each SE package directory, copies `Payslips.xlsx` and `Payslip User Guide.pdf` into a parallel `GB Accounts Payslip 05 ...` directory
 5. Runs `npm test` again (post-generation validation)
-6. **Computes reconciliation matrix**: extracts all year-end dates from generated package directory names, outputs as JSON array (no cap -- all generated year-ends are reconciled)
-7. Identifies the latest year-end for the examples copy
-8. Uploads `se-packages` artifact
+6. **Computes reconciliation matrix**: extracts all year-end dates from generated package directory names, outputs as JSON array (no cap -- all generated year-ends are reconciled) and the latest one separately
+7. Uploads `se-packages` artifact
 
-**reconcile** (matrix strategy, fail-fast: false):
-- One job per year-end date from the matrix
-- Installs LibreOffice (`libreoffice-calc`)
+**reconcile** (matrix strategy, fail-fast: false, one job per year-end):
+- Installs LibreOffice and poppler-utils
 - Downloads the `se-packages` artifact
-- Runs one scenario for the year-end:
-  ```
-  npm run reconciliation -- --package se --scenario advanced --year-end <year-end>
-  ```
-- For the latest year-end only: copies the advanced scenario populated files to `examples/se-latest`
-- Checks all reconciliation reports for `ANOMALYDETECTED` status; fails the job if any anomaly found
+- Runs `npm run reconciliation -- --package se --scenario advanced --year-end <year-end>`
+- Fails the job if there are no reports, or any report's `Status:` line reads `ANOMALYDETECTED`
+- **Roundtrip scorecard** (EQ2 budget-gated, EQ1 informational): builds an Excel-side and a JS-side scorecard from the recalculated package and compares them via `app/bin/verify-roundtrip.js` against `app/data/roundtrip-matrix-budget.json` -- only `linesLost`/`fieldsDropped` gate the job; the report-figure comparison is exact only for the one year-end matching the master data's own period end, so it prints for visibility without gating on other year-ends
+- **EQ3 stability check**: `app/bin/verify-stability.js` on the recalculated package
+- For the latest year-end only, and only when the `ENABLE_LLM_JUDGE` repository variable is set: authenticates via GitHub OIDC and runs `npm run judge:reconciliation -- --package se`
+- For the latest year-end only: copies the advanced scenario's populated files to `examples/se-latest`, builds the reconciliation page (`npm run build:reconciliation-pages`) and uploads it as the `se-reconciliation-page` artifact
 - Uploads `se-reports-<year-end>` artifact (and `se-examples` for the latest)
 
+**reconcile-extra** (runs once, after `reconcile` succeeds): reconciles the two brickwork-pro scenarios against the latest year-end's package only. A failure or anomaly here is a warning, not a build failure -- these are non-gating coverage scenarios.
+
 **commit**:
-1. Downloads all artifacts (packages, reports, examples)
-2. Stages `packages/`, `reports/`, `examples/`
+1. Downloads all artifacts (packages, reports, examples, the reconciliation page)
+2. Stages `packages/`, `reports/`, `examples/`, `web/spreadsheets.diyaccounting.co.uk/public/reconciliation/`
 3. Commits with message "Generate Self Employed packages from app/data and app/templates"
 4. `git pull --rebase && git push`
-5. **Retry mechanism**: if the push fails (concurrent pushes from other workflows), waits with incremental delays (5s, 10s, 15s, 20s, 25s, 30s) then retries `git pull --rebase && git push`
+5. **Retry mechanism**: if the push fails (concurrent pushes from other workflows), waits ~30s then retries `git pull --rebase && git push`
 
 ### Matrix Computation
 
-Unlike Ltd (which caps at 15 most recent year-ends), SE reconciles **all** generated year-ends. The matrix is extracted from package directory names:
+SE reconciles **all** generated year-ends (Ltd instead reconciles three representative year-ends -- latest March/June/February -- by default, with a `reconcile-all` flag to cover every one). The matrix is extracted from package directory names:
 ```bash
 ls -d packages/GB\ Accounts\ Self\ Employed*/ | sed 's|.*/GB Accounts Self Employed \([0-9-]*\).*|\1|'
 ```
@@ -592,9 +664,9 @@ ls -d packages/GB\ Accounts\ Self\ Employed*/ | sed 's|.*/GB Accounts Self Emplo
 ### How examples/se-latest Is Populated
 
 During the reconcile job for the latest year-end only:
-1. The extended scenario is run, producing populated xlsx files in `reports/populated/`
+1. The advanced scenario is run, producing populated xlsx files in `reports/populated/`
 2. The populated directory is copied to `examples/se-latest`
-3. After checking reports, `reports/populated/` is deleted
+3. `reports/populated/` is deleted before the reports artifact is uploaded
 4. The `se-examples` artifact is uploaded and later committed
 
 ## Techniques Reference
