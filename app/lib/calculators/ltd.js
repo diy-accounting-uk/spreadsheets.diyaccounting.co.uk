@@ -26,6 +26,19 @@
 import { toExcelSerial } from "../spreadsheet-runner.js";
 import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporation-tax.js";
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
+import {
+  monthlyPayrollBlockRow,
+  PAYROLL_WEEKS_PER_MONTH,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_MONTHLY_HEADING,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_ENTRY_COLUMNS,
+  PAYSLIPS_ZERO_FILLED_COLUMNS,
+  payslipsMonthEntryRows,
+  payslipsWagesPaidCell,
+} from "../payslips-layout.js";
 import { addMonths, endOfMonth } from "./shared.js";
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -179,13 +192,18 @@ const VATINTERFACE_FIRST_ADMIN_ROW = 6;
 const STRADDLING_PERIOD_ROWS = { "02Y1": 4, "03Y1": 5, "04Y2": 18, "05Y2": 19, "06Y2": 20 };
 
 // The payroll calendar: tax week 1 is the five days from 6 April, every week
-// after it is seven days, and the payroll months take four, four and five
-// weeks a quarter with a sixth on the last.
-const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+// after it is seven days, and the payroll months take the weeks the shared
+// layout names.
 const PAYROLL_FIRST_WEEK_DAYS = 5;
 const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
 
 const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+// The register of directors and secretary keeps the first director on row 2
+// and the company secretary on row 3, so a second director starts at row 4.
+// The register of directors' interests runs a director a row from row 2.
+const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
+const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const SHARE_NOMINAL_VALUE = 1;
 const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
 const HP_AGREEMENT_ROWS = [8, 10];
@@ -528,17 +546,29 @@ function scheduleBlocks(rows) {
 
 // ── Payroll ────────────────────────────────────────────────────────────────
 
-function payrollByTab(scenario, tabs) {
-  const buckets = Object.fromEntries(tabs.map((tab) => [tab, { grossPay: 0, incomeTax: 0, employeeNI: 0, employerNI: 0 }]));
+// One month tab's payslip entries, in the order the writer fills the block.
+function payrollEntriesByTab(scenario, tabs) {
+  const buckets = Object.fromEntries(tabs.map((tab) => [tab, []]));
   for (const [monthKey, entries] of Object.entries(scenario.payroll || {})) {
-    const bucket = buckets[SHORT_MONTHS.find((month) => month.toLowerCase() === monthKey)];
-    if (!bucket) continue;
-    for (const entry of entries) {
-      bucket.grossPay += entry.grossPay || 0;
-      bucket.incomeTax += entry.incomeTax || 0;
-      bucket.employeeNI += entry.employeeNI || 0;
-      bucket.employerNI += entry.employerNI || 0;
-    }
+    const tab = SHORT_MONTHS.find((month) => month.toLowerCase() === monthKey);
+    if (tab === undefined || buckets[tab] === undefined) continue;
+    buckets[tab].push(...entries);
+  }
+  return buckets;
+}
+
+function payrollByTab(entriesByTab) {
+  const buckets = {};
+  for (const [tab, entries] of Object.entries(entriesByTab)) {
+    buckets[tab] = entries.reduce(
+      (sums, entry) => ({
+        grossPay: sums.grossPay + (entry.grossPay || 0),
+        incomeTax: sums.incomeTax + (entry.incomeTax || 0),
+        employeeNI: sums.employeeNI + (entry.employeeNI || 0),
+        employerNI: sums.employerNI + (entry.employerNI || 0),
+      }),
+      { grossPay: 0, incomeTax: 0, employeeNI: 0, employerNI: 0 },
+    );
   }
   return buckets;
 }
@@ -630,17 +660,42 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
   }
   results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
+  // The workbook's own tie-out between the schedule and the two ledgers. E11
+  // re-sums the schedule's New-asset cost totals (E6:E10 = Schedule E64, E75,
+  // E83, E94, E108) and K11 the disposal proceeds on both halves of each
+  // class (K6:K10 = Schedule V11+V64 and so on down). E13 and K13 read the
+  // ledgers' own annual fixed asset totals across a leaf-to-leaf link
+  // ([2]Mar!AI2 and [3]Mar!U2), and E15/K15 are the differences the sheet
+  // prints. Each side has to come off its own source: deriving both from the
+  // ledger leaves the difference nil whatever the schedule holds.
+  const purchasesFixedAssetTotal = sum(purchasesMonthly("AI"));
+  const salesFixedAssetTotal = sum(salesMonthly("U"));
   results["Fixedassets.xlsx!FAreconciliation"] = {
-    E11: sum(purchasesMonthly("AI")),
-    K11: sum(salesMonthly("U")),
+    E11: blocks.allNew.E,
+    E13: purchasesFixedAssetTotal,
+    E15: purchasesFixedAssetTotal - blocks.allNew.E,
+    K11: blocks.whole.V,
+    K13: salesFixedAssetTotal,
+    K15: salesFixedAssetTotal - blocks.whole.V,
   };
   const hp = buildHirePurchase(scenario);
   results["Fixedassets.xlsx!HPfinance"] = hp.sheet;
 
-  const payroll = payrollByTab(scenario, tabs);
+  const payrollEntries = payrollEntriesByTab(scenario, tabs);
+  const payroll = payrollByTab(payrollEntries);
   results.WagesInterface = buildWagesInterface(payroll, tabs);
   results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
   results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period);
+  for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
+    const monthTab = buildPayslipsMonthTab(monthIndex, payrollEntries[tabs[monthIndex]] || []);
+    addPayslipsWeeklyRemnants(monthTab, monthIndex);
+    results[`Payslips.xlsx!${tabs[monthIndex]}`] = monthTab;
+  }
+  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(
+    PAYSLIP_PRINT_PERIOD,
+    tabs,
+    payrollEntries[tabs[PAYSLIP_PRINT_PERIOD - 1]] || [],
+  );
 
   const companySecretary = buildCompanySecretary(scenario);
   Object.assign(results, companySecretary);
@@ -698,6 +753,8 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
 
   const mileageRate = taxData.mileage?.higher_rate_pence ?? 0;
   for (const sheet of EXPENSES_FORM_MONTHS) results[`expensesform.xlsx!${sheet}`] = { C30: mileageRate };
+
+  Object.assign(results, buildSalesInvoice(taxData));
 
   return results;
 }
@@ -839,6 +896,77 @@ function buildPayslipsPayment(payroll, tabs) {
   return sheet;
 }
 
+// The rows a month tab's weekly blocks keep for an employee paid weekly, and
+// the row the last of them totals into. Every fixture pays monthly, so the
+// weekly gate never reads true and these resolve to the sheet's own
+// not-carried-forward branch: nil where the template holds a figure, blank
+// where it holds text.
+const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
+const PAYSLIPS_WEEKLY_PERIOD_TOTAL_CELL = "T41";
+// The columns the following month's block brings a part-finished weekly cycle
+// forward in. K starts a row lower than the rest, and M -- the payslip total
+// -- brings its blank forward rather than a nil, so neither engine carries it.
+const PAYSLIPS_BROUGHT_FORWARD_COLUMNS = ["H", "I", "J", "L"];
+const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
+
+// One month tab's monthly payroll block: an employee a row from block row +
+// 3, with the wages-paid date above them. A row the scenario has no employee
+// for keeps the three columns the template ships as a literal zero and stays
+// blank in the other four, which is what the workbook itself carries there.
+function buildPayslipsMonthTab(monthIndex, entries) {
+  const sheet = {};
+  const columns = PAYSLIPS_ENTRY_COLUMNS;
+  payslipsMonthEntryRows(monthIndex).forEach((row, index) => {
+    const entry = entries[index];
+    if (!entry) {
+      for (const column of PAYSLIPS_ZERO_FILLED_COLUMNS) sheet[`${column}${row}`] = 0;
+      return;
+    }
+    if (entry.name) sheet[`${columns.name}${row}`] = entry.name;
+    sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
+    sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
+    sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
+    sheet[`${columns.netPay}${row}`] = entry.netPay || 0;
+    sheet[`${columns.employerNI}${row}`] = entry.employerNI || 0;
+    if (entry.reference) sheet[`${columns.reference}${row}`] = entry.reference;
+  });
+  if (entries.length > 0) sheet[payslipsWagesPaidCell(monthIndex)] = serialOf(parseDate(entries[0].date));
+  return sheet;
+}
+
+// Template position 3 keeps its weekly employee lines and its period total;
+// position 4 keeps the cells that would bring an unfinished weekly cycle in
+// from the month before it.
+function addPayslipsWeeklyRemnants(sheet, monthIndex) {
+  if (monthIndex === PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]) {
+    sheet[PAYSLIPS_WEEKLY_PERIOD_TOTAL_CELL] = 0;
+    return;
+  }
+  if (monthIndex !== PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]) return;
+  for (const row of PAYSLIPS_WEEKLY_ROWS) {
+    for (const column of PAYSLIPS_BROUGHT_FORWARD_COLUMNS) sheet[`${column}${row}`] = 0;
+    if (row >= PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.firstRow) sheet[`${PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.column}${row}`] = 0;
+  }
+}
+
+// The page the employer prints. H3 and H4 are the join -- the tab the chosen
+// period lands on and the row its block starts at -- and I9, I10 and L7 the
+// heading it prints above the figures. Every figure below the heading is
+// gated on the employee's line carrying a pay number, which a month tab only
+// gives an employee whose starting date is on the Employee sheet; no scenario
+// carries starting dates, so the page prints its heading and nothing else.
+function buildPayslipsPrintPage(period, tabs, entries) {
+  const monthIndex = period - 1;
+  const sheet = {
+    [PAYSLIP_PRINT_CELLS.tab]: tabs[monthIndex],
+    [PAYSLIP_PRINT_CELLS.blockRow]: monthlyPayrollBlockRow(monthIndex),
+    [PAYSLIP_PRINT_CELLS.heading]: PAYSLIP_PRINT_MONTHLY_HEADING,
+    [PAYSLIP_PRINT_CELLS.periodNumber]: period,
+  };
+  if (entries.length > 0) sheet[PAYSLIP_PRINT_CELLS.periodEnd] = serialOf(parseDate(entries[0].date));
+  return sheet;
+}
+
 // The calendar every payslip dates from. B2 carries the payroll year's first
 // day and every date under it is the row above plus one, so naming the row a
 // month opens on names its date, its tax week and its week within the month.
@@ -899,10 +1027,57 @@ function buildCompanySecretary(scenario) {
     charges[`C${row}`] = charge.valuation;
   });
 
+  // The register of directors and secretary, and the register of directors'
+  // interests. The directors are the scenario's own employees marked
+  // isDirector, the officer address is the business's own, and a director's
+  // interest is dated from the day the register of members says they acquired
+  // their shares. Row 2 already carries the template's "Director" capacity
+  // text; a second director has to state its own, which nothing reads back.
+  const officers = {};
+  const interests = {};
+  const directors = (scenario.employees || []).filter((employee) => employee.isDirector);
+  const business = scenario.business || {};
+  const officerAddress = [business.address, business.town, business.postcode].filter(Boolean).join(", ") || undefined;
+  directors.forEach((director, index) => {
+    const officerRow = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+    if (officerRow !== undefined) {
+      officers[`A${officerRow}`] = director.name;
+      if (officerAddress) officers[`B${officerRow}`] = officerAddress;
+    }
+    const interestRow = DIRECTORS_INTERESTS_ROWS[index];
+    if (interestRow === undefined) return;
+    interests[`A${interestRow}`] = director.name;
+    if (officerAddress) interests[`B${interestRow}`] = officerAddress;
+    const holding = members.find((member) => member.name === director.name);
+    if (holding?.acquired) interests[`C${interestRow}`] = serialOf(parseDate(holding.acquired));
+  });
+
   return {
     "Companysecretary.xlsx!RegisterofMembers": register,
     "Companysecretary.xlsx!Boardmeeting": boardMeeting,
     "Companysecretary.xlsx!Charges&Debentures": charges,
+    "Companysecretary.xlsx!Directors&Secretary": officers,
+    "Companysecretary.xlsx!DirectorsInterests": interests,
+  };
+}
+
+// ── The customer-facing invoice ────────────────────────────────────────────
+
+// Salesinvoice.xlsx links to nothing else in the book. The generator writes
+// the tax year's standard rate down Product Details column D, and the invoice
+// page looks its one sample line up from there.
+//
+// The page's whole line is gated on Invoice Template!N27, the cell that says
+// an invoice has been raised. Nothing the writer fills sets it, so C38
+// resolves to a blank, the unit price and quantity beside it follow, and the
+// line's VAT and all three totals come out nil. The sheet carries those nils,
+// so this engine carries them too and the invoice checks read the same
+// verdict on both sides.
+function buildSalesInvoice(taxData) {
+  const standardRatePercent = Math.round((taxData?.vat?.standard_rate ?? 0) * 100);
+  return {
+    "Salesinvoice.xlsx!Product Details": { D2: standardRatePercent },
+    "Salesinvoice.xlsx!Invoice Template": { V38: 0, P58: 0, P62: 0, P64: 0 },
   };
 }
 

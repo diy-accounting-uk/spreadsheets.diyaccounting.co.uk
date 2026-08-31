@@ -10,6 +10,16 @@ import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
+  monthlyPayrollBlockRow,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_ENTRY_COLUMNS,
+  payslipsMonthEntryRows,
+  payslipsWagesPaidCell,
+} from "../lib/payslips-layout.js";
+import {
   buildCategoryNetting,
   buildProfitBridge,
   categoryNettingCheckName,
@@ -1001,8 +1011,14 @@ export function multiFileOptions() {
         // fixture actually populates, so a break in either area is caught
         // on its own month instead of only through the Payment/Admin
         // aggregates.
-        Jul: [...PAYSLIPS_JUL_DEAD_CELLS, ...payslipsMonthEntryCells(3)],
-        Aug: [...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS, ...payslipsMonthEntryCells(4)],
+        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]]: [
+          ...PAYSLIPS_JUL_DEAD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+        ],
+        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]]: [
+          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+        ],
       },
       // The customer-facing invoice: the VAT rate the generator wrote into
       // the sample product row, and the one sample line's net, VAT and gross
@@ -1093,13 +1109,11 @@ const PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS = PAYSLIPS_WEEKLY_ROWS.flatMap((row) =>
 });
 
 // The cells Payslips.xlsx cellWrites populates for a month's payroll, one
-// employee a row down the month's own monthly block: F name, M gross pay, N
-// income tax, O employee NI, R net pay, S reference, T employer NI. The row
-// above the first of them holds the wages-paid date the block is dated from.
-const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
+// employee a row down the month's own monthly block, plus the wages-paid date
+// the block is dated from.
 const payslipsMonthEntryCells = (monthIndex) => [
-  `M${monthlyPayrollBlockRow(monthIndex) + 1}`,
-  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => ["F", "M", "N", "O", "R", "S", "T"].map((col) => `${col}${row}`)),
+  payslipsWagesPaidCell(monthIndex),
+  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => Object.values(PAYSLIPS_ENTRY_COLUMNS).map((col) => `${col}${row}`)),
 ];
 
 // Payslips.xlsx!Admin holds a day-by-day payroll calendar: column A the
@@ -1110,25 +1124,6 @@ const payslipsMonthEntryCells = (monthIndex) => [
 // the last row on the sheet. Nothing about a check depends on which month a
 // sampled row falls in: each one reads the month number off the sheet itself.
 const PAYROLL_CALENDAR_SAMPLE_ROWS = [2, 33, 64, 95, 126, 157, 188, 219, 250, 281, 312, 343, 366, 381];
-
-// ── Payslips.xlsx month tabs and the printed payslip ───────────────────────
-// A month tab stacks one ten-row block per tax week from row 8, then the
-// monthly block below them, so where the monthly block starts follows the
-// weeks that month holds -- four, four and five a quarter, with a sixth on
-// the last. Block row + 1 carries the date wages were paid and the period
-// number; the five employee lines run from block row + 3.
-const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
-const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex];
-
-// The Payslips sheet is the page an employer prints and hands over. F3 picks
-// weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
-// a month tab name and a block start row, and every printed figure is an
-// INDIRECT through them. Nothing downstream reads the page, so the
-// reconciliation asks it for a period other than the sheet's own default (1)
-// -- a join stuck on the default then prints the wrong period and fails.
-const PAYSLIP_PRINT_SHEET = "Payslips";
-const PAYSLIP_PRINT_CELLS = { frequency: "F3", period: "F4", tab: "H3", blockRow: "H4" };
-const PAYSLIP_PRINT_PERIOD = 2;
 
 // The month names the payroll calendar's own formula produces
 // (TEXT(DATE(...),"Mmm") on the tax year start plus the month number).
@@ -1683,6 +1678,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // A template cell that resolves to blank reads back as the string the
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // The same cell as text. The sheet's blank is a space and an engine that
+  // computes the cell holds nothing there, so both sides have to reach a
+  // blank comparison as "".
+  const blank = (v) => String(v ?? "").trim();
 
   // The approved rates the generator injected into the Admin sheet, which is
   // what the Purchases sheets band their running mileage total by. The rates
@@ -2517,12 +2517,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // blank regardless of what the row's own date-comparison branch (the
     // one the #REF! sat in) resolves to, and T41 -- the period's own
     // employer-NI total -- stays nil alongside it. The sheet's own blank is
-    // a single space (" "); readCellValue trims every string read, so a
-    // blank cell reaches this check as "".
+    // a single space (" ") and the JS engine holds nothing there at all, so
+    // both reach this check as "" once trimmed.
     const jul = results["Payslips.xlsx!Jul"];
     if (jul) {
       for (const row of PAYSLIPS_WEEKLY_ROWS) {
-        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, jul[`F${row}`], "");
+        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, blank(jul[`F${row}`]), "");
       }
       check("Payslips!Jul T41 period total (no weekly employer NI to bring forward)", num(jul.T41), 0, 0);
     }
@@ -2542,7 +2542,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           check(`Payslips!Aug ${col}${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`${col}${row}`]), 0, 0);
         }
         if (row >= 12) check(`Payslips!Aug K${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`K${row}`]), 0, 0);
-        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, aug[`M${row}`], "");
+        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, blank(aug[`M${row}`]), "");
       }
     }
   }
@@ -2946,7 +2946,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         expectedLineVat,
         0.01,
       );
-      check("Salesinvoice: net total = the invoice's one line", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]), expectedNet, 0.01);
+      check(
+        "Salesinvoice: net total = the invoice's one line",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]),
+        expectedNet,
+        0.01,
+      );
       check(
         "Salesinvoice: carriage charge lands on the invoice",
         num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.carriageNet]),

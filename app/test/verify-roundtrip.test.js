@@ -562,7 +562,7 @@ const PRODUCTS = [
     yearEnd: "2026-04-05",
     wholeLineMatches: 683,
   },
-  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", wholeLineMatches: 716 },
+  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", wholeLineMatches: 718 },
   {
     // A non-March year end exercises the tab-rename and formula-rewrite path
     // (getMonthTabSequence, renameMonthTabs, renameExternalLinkSheetNames,
@@ -576,7 +576,7 @@ const PRODUCTS = [
     data: "examples/precision-code-ltd/full",
     years: "ltd-2025",
     yearEnd: "2025-05-31",
-    wholeLineMatches: 716,
+    wholeLineMatches: 718,
   },
 ];
 
