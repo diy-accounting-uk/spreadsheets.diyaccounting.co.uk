@@ -10,11 +10,14 @@ Coordinator batch dispatched 2026-08-31, worktree-isolated sub-agents, merged he
 lands:
 
 - FA track (Opus) — T1 + T4: started
-- divider track (Haiku) — T3: merged to local main (98ac8a93, 1282 guard tests green);
-  pushes with the next batch after the full suite
+- divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
+  tests green)
 - judge track (Sonnet) — J1–J5: started
-- hyperlink track (Haiku) — C4: merged to local main (08ef2978 + the Taxi Home link fix
-  1ac84f8d its test caught; 8/8 and taxi-only 14/14 green); pushes with the next batch
+- hyperlink track (Haiku) — C4: merged to `claude/next-batch-wave-1` (08ef2978 + the Taxi
+  Home link fix 1ac84f8d its test caught; 8/8 and taxi-only 14/14 green)
+
+Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
+once the wave's tracks are in and the full suite is green.
 
 Queued behind these to avoid product-module collisions: T2 and F22 after T1 lands (disjoint
 regions of `app/products/*.js`), F23 after F22, C1+C2+C3 after T2, F24 after F23, C5 after
