@@ -325,6 +325,21 @@ export function shiftPostingDate(text, monthOffset) {
     .slice(0, 10);
 }
 
+/**
+ * A YYYY-MM-DD posting date moved by a whole number of days. Taxi's writer
+ * translates every date by the exact day gap between the fixture's 6 April
+ * and the package's (app/products/taxi.js), so its frame shift is day-based
+ * where Ltd's is month-based; month arithmetic drifts across unequal month
+ * lengths and leap days.
+ * @param {string} text
+ * @param {number} dayOffset
+ * @returns {string}
+ */
+export function shiftPostingDateByDays(text, dayOffset) {
+  const [year, month, day] = String(text).split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + dayOffset)).toISOString().slice(0, 10);
+}
+
 // ── EQ2: the data half ─────────────────────────────────────────────────────
 
 function readJsonl(path) {
@@ -514,14 +529,21 @@ export function flattenBook(value, prefix = "") {
  *   to move the fixture's own postingDate forward by before comparing, for a
  *   package whose year end put the export's dates through the same shift.
  *   0 (the default) compares postingDate as the fixture wrote it.
+ * @param {number} [dateShiftDays] - a day-based frame offset for a writer
+ *   that translates dates by exact days (Taxi) rather than by month
+ *   positions (Ltd). Applied instead of a month shift; the two never
+ *   combine.
  */
-export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0) {
+export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0, dateShiftDays = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
-  const fixtureLines = dateShiftMonths
-    ? rawFixtureLines.map((line) =>
-        line.postingDate === undefined ? line : { ...line, postingDate: shiftPostingDate(line.postingDate, dateShiftMonths) },
-      )
+  const shiftDate = dateShiftMonths
+    ? (d) => shiftPostingDate(d, dateShiftMonths)
+    : dateShiftDays
+      ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+      : null;
+  const fixtureLines = shiftDate
+    ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
     : rawFixtureLines;
 
   const observedBlocks = new Set(
@@ -638,15 +660,16 @@ function parseArgs(argv) {
   const outPath = getArg("--out");
   const unrepresentablePath = getArg("--unrepresentable");
   const dateShiftMonths = Number(getArg("--date-shift-months") ?? 0);
+  const dateShiftDays = Number(getArg("--date-shift-days") ?? 0);
 
   if (!packageName || !excelDir || !jsDir) {
     console.error(
-      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>]",
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>] [--date-shift-days <n>]",
     );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays };
 }
 
 /**
@@ -672,7 +695,9 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths } = parseArgs(process.argv);
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays } = parseArgs(
+    process.argv,
+  );
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -684,7 +709,9 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths) : null;
+  const data = hasData
+    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths, dateShiftDays)
+    : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 
