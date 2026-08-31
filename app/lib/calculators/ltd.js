@@ -630,9 +630,23 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
   }
   results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
+  // The workbook's own tie-out between the schedule and the two ledgers. E11
+  // re-sums the schedule's New-asset cost totals (E6:E10 = Schedule E64, E75,
+  // E83, E94, E108) and K11 the disposal proceeds on both halves of each
+  // class (K6:K10 = Schedule V11+V64 and so on down). E13 and K13 read the
+  // ledgers' own annual fixed asset totals across a leaf-to-leaf link
+  // ([2]Mar!AI2 and [3]Mar!U2), and E15/K15 are the differences the sheet
+  // prints. Each side has to come off its own source: deriving both from the
+  // ledger leaves the difference nil whatever the schedule holds.
+  const purchasesFixedAssetTotal = sum(purchasesMonthly("AI"));
+  const salesFixedAssetTotal = sum(salesMonthly("U"));
   results["Fixedassets.xlsx!FAreconciliation"] = {
-    E11: sum(purchasesMonthly("AI")),
-    K11: sum(salesMonthly("U")),
+    E11: blocks.allNew.E,
+    E13: purchasesFixedAssetTotal,
+    E15: purchasesFixedAssetTotal - blocks.allNew.E,
+    K11: blocks.whole.V,
+    K13: salesFixedAssetTotal,
+    K15: salesFixedAssetTotal - blocks.whole.V,
   };
   const hp = buildHirePurchase(scenario);
   results["Fixedassets.xlsx!HPfinance"] = hp.sheet;
