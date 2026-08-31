@@ -6,9 +6,17 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PRs #46 and #47; the six documentation
-re-alignment tracks (template-surgery plan, four CONTEXT docs, the sheet-coverage report)
-are merged to main as docs-only commits.
+Coordinator batch dispatched 2026-08-31, worktree-isolated sub-agents, merged here as each
+lands:
+
+- FA track (Opus) — T1 + T4: started
+- divider track (Haiku) — T3: started
+- judge track (Sonnet) — J1–J5: started
+- hyperlink track (Haiku) — C4: started
+
+Queued behind these to avoid product-module collisions: T2 and F22 after T1 lands (disjoint
+regions of `app/products/*.js`), F23 after F22, C1+C2+C3 after T2, F24 after F23, C5 after
+C1–C4.
 
 ## Open items
 
