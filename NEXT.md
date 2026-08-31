@@ -23,7 +23,7 @@ pushes in batches.
 | f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
 | renumber | SE Full renumbering to the current SA103F | — | Opus | landed, whole sheet on the current form, SE 678/678 + stability 0 moved |
 | sepurch | SE purchases-side mileage route | `../wt-spreadsheets/sepurch` | Opus | started |
-| g1 | SE Full G1 deadline from the year, not a literal | `../wt-spreadsheets/g1` | Sonnet | started |
+| g1 | SE Full G1 deadline from the year, not a literal | — | Sonnet | landed `bcd9cc6d`, formula + cache roll, both year ends verified |
 
 ## Open items
 
@@ -45,9 +45,7 @@ follow the reconciliation-bug method.
   move) — the SE counterpart of F14, and `roundtrip-unrepresentable.json` stops excusing the
   Purchases side when it lands.
 
-- [ ] **SE Full G1 prints a hardcoded filing deadline** (Sonnet; in flight as the g1 track) —
-  `SE Full!G1` says "by 31st January 2027" whatever year the package is generated for; derive it
-  from the year end (a formula or a generator write from the Admin dates) and check it per year.
+
 
 ## Plans not tracked here
 
