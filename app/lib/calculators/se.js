@@ -282,6 +282,20 @@ const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
 const PAYSLIPS_WEEKLY_PERIOD_TOTAL_CELL = "T41";
 const PAYSLIPS_BROUGHT_FORWARD_COLUMNS = ["H", "I", "J", "L"];
 const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
+// The weekly employee line each row of position 3 keeps, and the payslip
+// total position 4 would bring forward: text cells, so the sheet's own
+// unfilled branch leaves a blank rather than a nil.
+const PAYSLIPS_WEEKLY_TEXT_COLUMN = { 3: PAYSLIPS_ENTRY_COLUMNS.name, 4: PAYSLIPS_ENTRY_COLUMNS.grossPay };
+// The four columns of a monthly block row the template ships empty, against
+// the three it ships as a literal zero.
+const PAYSLIPS_BLANK_COLUMNS = [
+  PAYSLIPS_ENTRY_COLUMNS.name,
+  PAYSLIPS_ENTRY_COLUMNS.grossPay,
+  PAYSLIPS_ENTRY_COLUMNS.netPay,
+  PAYSLIPS_ENTRY_COLUMNS.reference,
+];
+// The printed page's figures, all gated on a pay number no scenario gives.
+const PAYSLIP_PRINT_BLANK_CELLS = ["M8", "G14", "H14", "I14", "M14", "G16", "H16", "I16", "M16", "M18"];
 
 // One month tab's monthly payroll block: an employee a row from block row +
 // 3, with the wages-paid date above them. A row the scenario has no employee
@@ -294,15 +308,16 @@ function buildPayslipsMonthTab(monthIndex, entries) {
     const entry = entries[index];
     if (!entry) {
       for (const column of PAYSLIPS_ZERO_FILLED_COLUMNS) sheet[`${column}${row}`] = 0;
+      for (const column of PAYSLIPS_BLANK_COLUMNS) sheet[`${column}${row}`] = SHEET_BLANK;
       return;
     }
-    if (entry.name) sheet[`${columns.name}${row}`] = entry.name;
+    sheet[`${columns.name}${row}`] = entry.name || SHEET_BLANK;
     sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
     sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
     sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
     sheet[`${columns.netPay}${row}`] = entry.netPay || 0;
     sheet[`${columns.employerNI}${row}`] = entry.employerNI || 0;
-    if (entry.reference) sheet[`${columns.reference}${row}`] = entry.reference;
+    sheet[`${columns.reference}${row}`] = entry.reference || SHEET_BLANK;
   });
   if (entries.length > 0) sheet[payslipsWagesPaidCell(monthIndex)] = excelSerial(new Date(entries[0].date));
 
@@ -316,6 +331,8 @@ function buildPayslipsMonthTab(monthIndex, entries) {
       if (row >= PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.firstRow) sheet[`${PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.column}${row}`] = 0;
     }
   }
+  const weeklyTextColumn = PAYSLIPS_WEEKLY_TEXT_COLUMN[monthIndex];
+  if (weeklyTextColumn) for (const row of PAYSLIPS_WEEKLY_ROWS) sheet[`${weeklyTextColumn}${row}`] = SHEET_BLANK;
   return sheet;
 }
 
@@ -334,6 +351,7 @@ function buildPayslipsPrintPage(period, entries) {
     [PAYSLIP_PRINT_CELLS.periodNumber]: period,
   };
   if (entries.length > 0) sheet[PAYSLIP_PRINT_CELLS.periodEnd] = excelSerial(new Date(entries[0].date));
+  for (const cell of PAYSLIP_PRINT_BLANK_CELLS) sheet[cell] = SHEET_BLANK;
   return sheet;
 }
 
@@ -985,7 +1003,15 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     // those nils, so this engine carries them too and the invoice checks read
     // the same verdict on both sides.
     "Salesinvoice.xlsx!Product Details": { D2: Math.round((taxData?.vat?.standard_rate ?? 0) * 100) },
-    "Salesinvoice.xlsx!Invoice Template": { V38: 0, P58: 0, P62: 0, P64: 0 },
+    "Salesinvoice.xlsx!Invoice Template": {
+      J38: SHEET_BLANK,
+      L38: SHEET_BLANK,
+      P38: SHEET_BLANK,
+      V38: 0,
+      P58: 0,
+      P62: 0,
+      P64: 0,
+    },
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
     [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(
