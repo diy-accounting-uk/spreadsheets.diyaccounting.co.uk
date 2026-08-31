@@ -221,6 +221,7 @@ export function diyaGlToScenario(book, lines, product) {
   if (entity.organizationTown) business.town = entity.organizationTown;
   if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
   if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
+  if (entity["diya-gl:vatNumber"]) business.vat_number = entity["diya-gl:vatNumber"];
 
   // Build expected values
   const expected = { total_sales: totalSales };

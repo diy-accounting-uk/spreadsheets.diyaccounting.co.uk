@@ -129,6 +129,16 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
     expect(brickFixture.metadata.vat_registered).toBe(false);
   });
 
+  it("maps the book's diya-gl:vatNumber onto business.vat_number, matching the extractor's own fixture", () => {
+    expect(fullScenario.business.vat_number).toBe(fullFixture.business.vat_number);
+    expect(fullFixture.business.vat_number).toBe("123456789");
+  });
+
+  it("leaves business.vat_number unset for a book that declares no VAT number", () => {
+    expect(brickScenario.business.vat_number).toBeUndefined();
+    expect(brickFixture.business.vat_number).toBeUndefined();
+  });
+
   it.each([
     ["stock", "full"],
     ["opening_debtors", "full"],
