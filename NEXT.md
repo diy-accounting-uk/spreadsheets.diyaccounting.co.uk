@@ -6,11 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PR #47 (`claude/next-wave-2`) carries the whole second fidelity wave — eleven tracks across
-three dispatches, CI green at `e8c68240`, the full Ltd matrix 90/90 RECONCILES. Awaiting the
-operator's merge, then the four `generate-*` dispatches (reports, judge verdicts and guide PDFs
-regenerate) and the deploy. `claude/ga4-consent-banner` (another session) edits NEXT.md from
-pre-wave main and will conflict here when it lands.
+PRs #47 (the second fidelity wave) and #46 (GA4 consent banner + the VAT-dropdown escalation
+tracking) are merged; the four `generate-*` runs plus `test` and `deploy` are in progress on
+main. When they finish, the committed reports, judge verdicts and guide PDFs match the merged
+code.
 
 ## Open items
 
@@ -18,6 +17,15 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
+
+- [ ] **Fifth VAT quarter-dropdown surface, live (Apr27).** Monika Tesarova
+  (2026-08-26, antony@ inbox) downloaded the Company package for year end April 2027 and
+  the VAT interface cells all point at the April sheet; the operator confirmed and owes
+  her a fixed version. Apr27 is a non-March year end, the same population as the third
+  surface's month-tab remap, so look there first. The 777-test catalogue guard missed it —
+  the fix must extend the guard, not just the workbook. `PLAN_VAT_QUARTER_DROPDOWN.md` is
+  archived claiming all surfaces closed; un-archive or supersede it, and hold the
+  six-donor notification until the affected window is re-established.
 
 
 
