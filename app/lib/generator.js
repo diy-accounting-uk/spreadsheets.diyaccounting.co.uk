@@ -35,6 +35,13 @@ function stabilizeDirDates(zip) {
 // and it lands on the last of the twenty periods the Vatinterface carries.
 export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 15];
 
+// Salesinvoice.xlsx Product Details: one row a product, column D the VAT
+// Rate the row's invoice lines charge (verified against the XML: dimension
+// A1:H99, row 1 the header, D2:D99 every product row).
+const SALESINVOICE_PRODUCT_DETAILS_VAT_RATE_COLUMN = "D";
+const SALESINVOICE_PRODUCT_DETAILS_FIRST_ROW = 2;
+const SALESINVOICE_PRODUCT_DETAILS_LAST_ROW = 99;
+
 // ── Date helpers ────────────────────────────────────────────────────────────
 
 export function lastDayOfMonth(year, month) {
@@ -1059,6 +1066,23 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     monthXml = setCellValue(monthXml, "C30", taxData.mileage.higher_rate_pence);
     const monthDate = zip.file(sheetsConfig.mileageMonth).date;
     zip.file(sheetsConfig.mileageMonth, monthXml, { date: monthDate });
+  }
+
+  // Sales invoice VAT rate (Salesinvoice.xlsx Product Details, SE and Ltd
+  // only, when sheetsConfig.productDetails is present). The template hard-
+  // codes every product row's "VAT Rate" column at a literal 20, with no tie
+  // to the tax year the invoice is raised in (discovered from the XML:
+  // Product Details!D2:D99, header D1 the shared string "VAT Rate"). This
+  // workbook has no external link into the rest of the book, so the wrong
+  // figure never reached the accounts -- it reached the customer's customer.
+  if (sheetsConfig.productDetails) {
+    let productDetailsXml = await zip.file(sheetsConfig.productDetails).async("string");
+    const vatRatePercent = Math.round(taxData.vat.standard_rate * 100);
+    for (let row = SALESINVOICE_PRODUCT_DETAILS_FIRST_ROW; row <= SALESINVOICE_PRODUCT_DETAILS_LAST_ROW; row++) {
+      productDetailsXml = setCellValue(productDetailsXml, `${SALESINVOICE_PRODUCT_DETAILS_VAT_RATE_COLUMN}${row}`, vatRatePercent);
+    }
+    const productDetailsDate = zip.file(sheetsConfig.productDetails).date;
+    zip.file(sheetsConfig.productDetails, productDetailsXml, { date: productDetailsDate });
   }
 
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each

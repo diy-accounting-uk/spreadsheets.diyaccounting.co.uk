@@ -195,6 +195,49 @@ const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", s
 const SHARE_NOMINAL_VALUE = 1;
 const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
+// ── Register of directors and directors' interests (Companysecretary.xlsx) ─
+// Directors&Secretary carries one officer a row: A the full name, B the
+// address, C the date of appointment, D the capacity, E the board meeting
+// that confirmed it, F the date of resignation. Row 2 ships the template's
+// own "Director" capacity in D2 and row 3 its "Company Secretary" capacity in
+// D3 -- the sheet's own two officer placeholders (verified against the XML:
+// shared strings "Director"/"Company Secretary", "Incorporation
+// registration" already filling E2/E3). A second director beyond row 2 takes
+// the rows after the secretary's, writing its own capacity explicitly, since
+// only rows 2 and 3 carry the template's own capacity text.
+//
+// DirectorsInterests runs one row a director from row 2, the template's own
+// single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
+// director's own shareholding was registered -- the same "acquired" date
+// their row carries on RegisterofMembers, when they hold shares at all.
+const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
+const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
+const DIRECTOR_SECRETARY_SECRETARY_ROW = 3;
+const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
+const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
+
+// ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
+// The customer-facing invoice template has no external link into the rest of
+// the book, so its own VAT rate is proved directly: the generator now writes
+// the tax year's standard rate into Product Details!D2:D99 (generator.js),
+// and this checks one sample invoice line, anchored to the fixture's own
+// first sale, computes the right net, VAT and gross from it. Row 2 of
+// Product Details already ships the template's own placeholder product code
+// (A2 = 1001); this only sets its selling price. Business Details!B11 is the
+// VAT registration number the invoice template itself gates its per-row VAT
+// lookup on (verified against the XML: Invoice Template!N38 reads
+// 'Product Details'!D:D only when O8, which reads 'Business Details'!B11, is
+// not blank) -- an unregistered business is left untouched, the same as the
+// template's own guidance for it.
+const SALESINVOICE_VAT_REG_CELL = "B11";
+const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
+const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", productCode1: "F", quantity1: "G" };
+const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", vatTotal: "P62", grossTotal: "P64" };
+const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -582,6 +625,48 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     });
   }
 
+  // Register of directors and secretary, and directors' interests: the
+  // directors are the scenario's own employees marked isDirector -- the same
+  // set OpenAccounts!E5/E6 already print by name. A missing entry here is a
+  // Companies House problem, not an arithmetic one, so this only ever writes
+  // what the scenario actually names.
+  const directors = (scenario.employees || []).filter((e) => e.isDirector);
+  if (directors.length > 0) {
+    const biz = scenario.business || {};
+    const officerAddress = [biz.address, biz.town, biz.postcode].filter(Boolean).join(", ") || undefined;
+
+    companysecretaryWrites["Directors&Secretary"] = {};
+    const officers = companysecretaryWrites["Directors&Secretary"];
+    directors.forEach((director, index) => {
+      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      if (row === undefined) return;
+      officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`] = director.name;
+      if (officerAddress) officers[`${DIRECTOR_SECRETARY_COLUMNS.address}${row}`] = officerAddress;
+      // Rows 2 and 3 already carry the template's own "Director"/"Company
+      // Secretary" capacity text; a second director beyond row 2 has to say
+      // so itself.
+      if (row !== DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW) officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = "Director";
+    });
+
+    companysecretaryWrites.DirectorsInterests = {};
+    const interests = companysecretaryWrites.DirectorsInterests;
+    directors.forEach((director, index) => {
+      const row = DIRECTORS_INTERESTS_ROWS[index];
+      if (row === undefined) return;
+      interests[`${DIRECTORS_INTERESTS_COLUMNS.name}${row}`] = director.name;
+      if (officerAddress) interests[`${DIRECTORS_INTERESTS_COLUMNS.address}${row}`] = officerAddress;
+      const holding = (scenario.members || []).find((member) => member.name === director.name);
+      if (holding?.acquired) {
+        const acquired = parseDate(holding.acquired);
+        interests[`${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`] = toExcelSerial(
+          acquired.getUTCFullYear(),
+          acquired.getUTCMonth() + 1,
+          acquired.getUTCDate(),
+        );
+      }
+    });
+  }
+
   // The dividend the board declared, on the minute the directors' report and
   // the trial balance both read. The meeting sits inside the accounting
   // period, so its date shifts with the rest of the book.
@@ -924,6 +1009,24 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (scenario.vat_straddling_sales) writeStraddlingPeriod(scenario.vat_straddling_sales, "S", "customer");
   if (scenario.vat_straddling_purchases) writeStraddlingPeriod(scenario.vat_straddling_purchases, "P", "supplier");
 
+  // Salesinvoice.xlsx: one sample invoice line for a VAT-registered business,
+  // anchored to the fixture's own first sale so the customer-facing invoice
+  // total and VAT can be checked against a real figure (see checkCompliance).
+  const salesinvoiceWrites = {};
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
+    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Invoice Database"] = {
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.productCode1}2`]: SALESINVOICE_SAMPLE_PRODUCT_CODE,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.quantity1}2`]: 1,
+    };
+    salesinvoiceWrites["Product Details"] = {
+      [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.price}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]: firstInvoiceSale.amount,
+    };
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
@@ -936,6 +1039,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   if (Object.keys(companysecretaryWrites).length > 0) result["Companysecretary.xlsx"] = companysecretaryWrites;
+  if (Object.keys(salesinvoiceWrites).length > 0) result["Salesinvoice.xlsx"] = salesinvoiceWrites;
   return result;
 }
 
@@ -1538,11 +1642,42 @@ export function multiFileOptions(yearEndMonth) {
         // charged, which the balance sheet has to carry as a creditor
         // falling due after more than one year.
         "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
+        // One officer a row: A the name, B the address. Rows 2 and 3 are the
+        // template's own director and secretary slots; the rest are a second
+        // director's, if the scenario names one.
+        "Directors&Secretary": [
+          DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW,
+          DIRECTOR_SECRETARY_SECRETARY_ROW,
+          ...DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS,
+        ].flatMap((row) => [`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`]),
+        // One director a row: A the name, B the address, C the date their own
+        // shareholding was registered.
+        "DirectorsInterests": DIRECTORS_INTERESTS_ROWS.flatMap((row) => [
+          `${DIRECTORS_INTERESTS_COLUMNS.name}${row}`,
+          `${DIRECTORS_INTERESTS_COLUMNS.address}${row}`,
+          `${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`,
+        ]),
       },
       // The expenses claim form's mileage rate. Month 01 holds the literal
       // the generator writes and the other eleven chain from it, so reading
       // all twelve proves the write and the chain that carries it.
       "expensesform.xlsx": Object.fromEntries(EXPENSES_FORM_MONTHS.map((sheet) => [sheet, ["C30"]])),
+      // The customer-facing invoice: the VAT rate the generator wrote into
+      // the sample product row, and the one sample line's net, VAT and gross
+      // (verified against the XML: P58 = SUM(P38:P57), P62 =
+      // IF(P58<>0,SUM(V38:V57)+P60*0.2,0), P64 = SUM(P58:Q62)).
+      "Salesinvoice.xlsx": {
+        "Product Details": [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`],
+        "Invoice Template": [
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal,
+          SALESINVOICE_LINE1_CELLS.unitPrice,
+          SALESINVOICE_LINE1_CELLS.quantity,
+          SALESINVOICE_LINE1_CELLS.lineNet,
+          SALESINVOICE_LINE1_CELLS.lineVat,
+        ],
+      },
       ...bankReads,
     },
   };
@@ -2602,6 +2737,50 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     printsMember("Directors' report: second shareholder named", report.A98, expected.members[1]);
   }
 
+  // ── The register of directors and secretary, and directors' interests ────
+  //
+  // Neither sheet carries a formula or a route to the accounts -- a missing
+  // entry is a Companies House problem, not an arithmetic one -- so this
+  // checks the entries land against the scenario's own directors, the same
+  // set OpenAccounts and the Report already print by name. An empty register
+  // fails here and nowhere else.
+  const officers = results["Companysecretary.xlsx!Directors&Secretary"];
+  const interests = results["Companysecretary.xlsx!DirectorsInterests"];
+  const expectedDirectors = (expected.employees || []).filter((e) => e.isDirector);
+  if (officers && expectedDirectors.length > 0) {
+    expectedDirectors.forEach((director, index) => {
+      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      if (row === undefined) return;
+      checkText(
+        `Directors&Secretary: row ${row} names ${director.name}`,
+        text(officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`]),
+        (name) => name === director.name,
+        director.name,
+      );
+    });
+  }
+  if (interests && expectedDirectors.length > 0) {
+    expectedDirectors.slice(0, DIRECTORS_INTERESTS_ROWS.length).forEach((director, index) => {
+      const row = DIRECTORS_INTERESTS_ROWS[index];
+      checkText(
+        `DirectorsInterests: row ${row} names ${director.name}`,
+        text(interests[`${DIRECTORS_INTERESTS_COLUMNS.name}${row}`]),
+        (name) => name === director.name,
+        director.name,
+      );
+      const holding = (expected.members || []).find((member) => member.name === director.name);
+      if (holding?.acquired) {
+        const acquired = parseDate(holding.acquired);
+        check(
+          `DirectorsInterests: row ${row} registers ${director.name}'s shareholding on the date the register of members carries`,
+          num(interests[`${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`]),
+          toExcelSerial(acquired.getUTCFullYear(), acquired.getUTCMonth() + 1, acquired.getUTCDate()),
+          0,
+        );
+      }
+    });
+  }
+
   // ── The dividend cycle, minute to balance sheet ──────────────────────────
   //
   // One board resolution drives the whole cycle. Boardmeeting!E4 carries the
@@ -3552,6 +3731,46 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // off and nothing else lost on the way.
   const netting = categoryNetting(results, expected);
   for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
+
+  // ── The customer-facing invoice against the tax year's own VAT rate ──────
+  //
+  // Salesinvoice.xlsx carries no external link to the rest of the book, so a
+  // wrong figure here never reaches the accounts -- it reaches the
+  // customer's customer. The generator writes the tax year's standard rate
+  // into Product Details!D2:D99 (generator.js); this checks the rate landed
+  // and that the one sample invoice line computes its net, VAT and gross
+  // correctly from it, both hand-computed from the fixture's own first sale.
+  const invoiceProductDetails = results["Salesinvoice.xlsx!Product Details"];
+  const invoiceTemplate = results["Salesinvoice.xlsx!Invoice Template"];
+  if (invoiceProductDetails && invoiceTemplate && taxData) {
+    const standardRatePercent = Math.round(taxData.vat.standard_rate * 100);
+    check(
+      "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+      num(invoiceProductDetails[`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]),
+      standardRatePercent,
+      0,
+    );
+
+    const firstInvoiceSale = Object.values(expected.sales || {}).flat()[0];
+    if (firstInvoiceSale) {
+      const expectedNet = firstInvoiceSale.amount;
+      const expectedVat = (expectedNet * standardRatePercent) / 100;
+      check(
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        num(invoiceTemplate[SALESINVOICE_LINE1_CELLS.lineVat]),
+        expectedVat,
+        0.01,
+      );
+      check("Salesinvoice: net total = the invoice's one line", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]), expectedNet, 0.01);
+      check("Salesinvoice: VAT total = the line's own VAT", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]), expectedVat, 0.01);
+      check(
+        "Salesinvoice: amount payable = net plus VAT",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal]),
+        expectedNet + expectedVat,
+        0.01,
+      );
+    }
+  }
 
   return checks;
 }
