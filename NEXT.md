@@ -17,6 +17,27 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
+- [ ] **Cut the LLM judge's Bedrock spend** (Sonnet) — `app/bin/judge-reconciliation.js` runs
+  `anthropic.claude-opus-5` per product from the four `generate-*` workflows and from
+  `deploy.yml` (every web/infra push plus the daily cron), re-judging unchanged digests. Do,
+  in order of effect:
+  1. Memoize by content: hash digest + rubric + model id into `judge-verdict-<product>.json`
+     and skip the Bedrock call when the committed verdict's hash matches. This also ends the
+     double-judging (generate judges fresh reports, the next deploy re-judges the identical
+     committed ones) with no workflow conditions.
+  2. Cap output: `MAX_TOKENS` 16000 → ~2000 and instruct terse one-line-per-concern output;
+     output tokens cost ~5× input.
+  3. Deduplicate the Ltd digest: 94 near-identical year-end runs collapse to the featured
+     run's full indicators plus one delta line per other run (a diverging run still appears
+     in full).
+  4. Model cascade: Sonnet judges by default; a pass stands; a fail or unparseable answer
+     escalates the same digest to Opus for confirmation before anything blocks. The rubric is
+     never softened.
+  5. Prompt caching: the system preamble + rubric are identical across the four products'
+     calls — mark them as a cached prefix for the cached-token discount.
+  Extend the judge's existing tests (`app/test/judge-reconciliation.test.js`) to cover the
+  memoization skip, the cascade's escalation path, and the Ltd delta digest.
+
 
 
 
