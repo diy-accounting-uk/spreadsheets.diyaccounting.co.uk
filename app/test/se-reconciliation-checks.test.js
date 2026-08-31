@@ -753,19 +753,23 @@ describeCalc(
       const invoice = results["Salesinvoice.xlsx!Invoice Template"];
       expect(productDetails.D2).toBe(20);
       // The scenario's first sale (Beta Systems, Apr, 1200) is the sample
-      // invoice's one line, quantity 1.
+      // invoice's one line, quantity 1, plus a sample carriage charge of
+      // 37.5 taxed at the same standard rate: carriage VAT 7.5, VAT total
+      // 240 + 7.5 = 247.5, gross 1200 + 37.5 + 247.5 = 1485.
       expect(invoice.P58).toBe(1200);
       expect(invoice.V38).toBeCloseTo(240, 6);
-      expect(invoice.P62).toBeCloseTo(240, 6);
-      expect(invoice.P64).toBeCloseTo(1440, 6);
+      expect(invoice.P60).toBeCloseTo(37.5, 6);
+      expect(invoice.P62).toBeCloseTo(247.5, 6);
+      expect(invoice.P64).toBeCloseTo(1485, 6);
 
       const checks = seCheckCompliance(results, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
       const names = [
         "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
         "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
         "Salesinvoice: net total = the invoice's one line",
-        "Salesinvoice: VAT total = the line's own VAT",
-        "Salesinvoice: amount payable = net plus VAT",
+        "Salesinvoice: carriage charge lands on the invoice",
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        "Salesinvoice: amount payable = net plus carriage plus VAT",
       ];
       for (const name of names) {
         const check = checks.find((c) => c.name === name);
@@ -784,8 +788,15 @@ describeCalc(
         0,
       ],
       ["Salesinvoice: net total = the invoice's one line", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P58", 0],
-      ["Salesinvoice: VAT total = the line's own VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P62", 0],
-      ["Salesinvoice: amount payable = net plus VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P64", 0],
+      ["Salesinvoice: carriage charge lands on the invoice", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P60", 0],
+      [
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        "Salesinvoice.xlsx!Invoice Template",
+        "Invoice Template",
+        "P62",
+        0,
+      ],
+      ["Salesinvoice: amount payable = net plus carriage plus VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P64", 0],
     ])("fails only %s when %s is corrupted via JSZip", async (checkName, resultKey, sheetName, cellRef, newValue) => {
       const corrupted = await readCorruptedCell(join(saveDir, "Salesinvoice.xlsx"), sheetName, cellRef, newValue);
       const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: corrupted } };

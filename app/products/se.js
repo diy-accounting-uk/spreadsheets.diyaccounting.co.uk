@@ -127,13 +127,19 @@ export function vatRateFor(scenario) {
 // lookup on (verified against the XML: Invoice Template!N38 reads
 // 'Product Details'!D:D only when O8, which reads 'Business Details'!B11, is
 // not blank) -- an unregistered business is left untouched, the same as the
-// template's own guidance for it.
+// template's own guidance for it. The invoice also carries a carriage charge
+// (Invoice Database!E, the "Carriage Charge" column), which the template
+// taxes separately from the product lines in Invoice Template!P62. That term
+// used to read a literal 0.2; it now reads 'Product Details'!$D$2, the same
+// cell every row of D2:D99 carries the tax year's rate into, so carriage is
+// taxed at the written rate like every other line.
 const SALESINVOICE_VAT_REG_CELL = "B11";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
 const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
-const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", productCode1: "F", quantity1: "G" };
-const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", vatTotal: "P62", grossTotal: "P64" };
+const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
 const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
 
 function netOfVat(gross, rate = VAT_RATE) {
@@ -640,6 +646,7 @@ export function cellWrites(scenario) {
     salesinvoiceWrites["Invoice Database"] = {
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.carriage}2`]: SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.productCode1}2`]: SALESINVOICE_SAMPLE_PRODUCT_CODE,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.quantity1}2`]: 1,
     };
@@ -1000,11 +1007,13 @@ export function multiFileOptions() {
       // The customer-facing invoice: the VAT rate the generator wrote into
       // the sample product row, and the one sample line's net, VAT and gross
       // (verified against the XML: P58 = SUM(P38:P57), P62 =
-      // IF(P58<>0,SUM(V38:V57)+P60*0.2,0), P64 = SUM(P58:Q62)).
+      // IF(P58<>0,SUM(V38:V57)+P60*'Product Details'!$D$2/100,0), P64 =
+      // SUM(P58:Q62)).
       "Salesinvoice.xlsx": {
         "Product Details": [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`],
         "Invoice Template": [
           SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.carriageNet,
           SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal,
           SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal,
           SALESINVOICE_LINE1_CELLS.unitPrice,
@@ -2911,8 +2920,9 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // wrong figure here never reaches the accounts -- it reaches the
   // customer's customer. The generator writes the tax year's standard rate
   // into Product Details!D2:D99 (generator.js); this checks the rate landed
-  // and that the one sample invoice line computes its net, VAT and gross
-  // correctly from it, both hand-computed from the fixture's own first sale.
+  // and that the one sample invoice line, plus the invoice's carriage
+  // charge, both compute their VAT correctly from it, hand-computed from the
+  // fixture's own first sale and the sample carriage charge.
   const invoiceProductDetails = results["Salesinvoice.xlsx!Product Details"];
   const invoiceTemplate = results["Salesinvoice.xlsx!Invoice Template"];
   if (invoiceProductDetails && invoiceTemplate && taxData) {
@@ -2927,19 +2937,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const firstInvoiceSale = Object.values(expected.sales || {}).flat()[0];
     if (firstInvoiceSale) {
       const expectedNet = firstInvoiceSale.amount;
-      const expectedVat = (expectedNet * standardRatePercent) / 100;
+      const expectedLineVat = (expectedNet * standardRatePercent) / 100;
+      const expectedCarriageVat = (SALESINVOICE_SAMPLE_CARRIAGE_CHARGE * standardRatePercent) / 100;
+      const expectedVatTotal = expectedLineVat + expectedCarriageVat;
       check(
         "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
         num(invoiceTemplate[SALESINVOICE_LINE1_CELLS.lineVat]),
-        expectedVat,
+        expectedLineVat,
         0.01,
       );
       check("Salesinvoice: net total = the invoice's one line", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]), expectedNet, 0.01);
-      check("Salesinvoice: VAT total = the line's own VAT", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]), expectedVat, 0.01);
       check(
-        "Salesinvoice: amount payable = net plus VAT",
+        "Salesinvoice: carriage charge lands on the invoice",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.carriageNet]),
+        SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
+        0.01,
+      );
+      check(
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]),
+        expectedVatTotal,
+        0.01,
+      );
+      check(
+        "Salesinvoice: amount payable = net plus carriage plus VAT",
         num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal]),
-        expectedNet + expectedVat,
+        expectedNet + SALESINVOICE_SAMPLE_CARRIAGE_CHARGE + expectedVatTotal,
         0.01,
       );
     }
