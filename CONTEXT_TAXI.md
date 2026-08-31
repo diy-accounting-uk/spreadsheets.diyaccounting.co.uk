@@ -67,12 +67,14 @@ The output filename follows a special convention: `Financialaccountsyearto050426
 │ === RESULTS SHEETS =====================================================│
 │ ┌──────────────┐                                                        │
 │ │ Fixed Assets │ Capital allowances: existing + new vehicles            │
-│ │              │ Columns: cost, WDV, FYA, WDA, balancing adjustments   │
+│ │              │ Columns: cost, WDV, AIA, WDA, balancing adjustments   │
 │ │              │ 3 categories: other FA, vehicles <12k, vehicles >12k  │
+│ │              │ (under/over-£12k are template labels only -- same     │
+│ │              │  plain-WDA formula, no expensive-car cap)             │
 │ └──────┬───────┘                                                        │
 │        │                                                                │
 │ ┌──────┴───────┐                                                        │
-│ │Profit & Loss │ Fully automated (protected)                            │
+│ │Profit & Loss │ Fully automated                                        │
 │ │ Acc          │ B-column values (not C like BST)                       │
 │ │              │ Vehicle cost vs mileage comparison at top              │
 │ │              │ B5=turnover, B13=gross profit, B23=net profit          │
@@ -95,7 +97,7 @@ The output filename follows a special convention: `Financialaccountsyearto050426
 │ └──────────────┘                                                        │
 │                                                                         │
 │ ┌──────────────┐                                                        │
-│ │ SE Short     │ Self-employment tax return (password protected)        │
+│ │ SE Short     │ Self-employment tax return                             │
 │ │ (sheet3)     │ All boxes auto-populated from other sheets             │
 │ └──────────────┘                                                        │
 │                                                                         │
@@ -107,11 +109,11 @@ The output filename follows a special convention: `Financialaccountsyearto050426
 ```
 
 Key differences from BST:
-- Taxi has **33 sheets** vs BST's fewer sheets
+- Taxi and BST both have **33 sheets**, but different front-matter ones: BST has "Income Tax", "PurchasesStock" and "Debtors & Creditors" where Taxi has "Draft Tax calculation", "VitalTax" and "Wages Forecast"
 - Taxi Sales sheets have **pre-filled daily dates** grouped into weekly blocks (BST has blank date columns)
 - Taxi P&L uses **column B** for values (BST uses column C)
 - Taxi Purchases use **column D for expense code** and **column F for amount** (BST uses E for code, G for amount)
-- Taxi Purchases have a **mileage column (E)** for purchase-related mileage, and Taxi Sales a **mileage column (D)** for the day's business miles
+- Both products carry mileage on Purchases (Taxi: column E, BST: column F); only Taxi also carries it on Sales (**column D**, the day's business miles) -- BST's Sales sheet has no mileage column
 - Taxi has a **VitalTax** quarterly summary sheet and a **Wages Forecast** sheet
 
 ## Intra-Workbook Data Flow
@@ -119,10 +121,11 @@ Key differences from BST:
 ```
 Admin (sheet33)
   │ B2-B22: tax year dates (month-ends, year start/end)
-  │ N4: personal allowance
-  │ N6-N8: income tax rates (starting/basic/higher)
-  │ N11-N13: tax band thresholds
-  │ L17,L20,L23: NI rates
+  │ N4-N5: personal allowance, taper threshold
+  │ N6-N8: income tax rates (basic/higher/additional -- Taxi's block has
+  │ no starting-rate row, unlike BST's)
+  │ M11,N12,N13: tax band thresholds (basic end, higher start, higher end)
+  │ L16,L20,L23: NI rates (Class 2 weekly, Class 4 lower, Class 4 upper)
   │ N20,N23: NI thresholds
   │ G4-G5: capital allowance rates (AIA, WDA)
   │ G13-G17: depreciation rates
@@ -162,7 +165,7 @@ PurchasesApr..PurchasesMar (12 sheets)
   ▼
 Fixed Assets
   │ User enters: vehicle details, purchase cost, sale proceeds
-  │ Formula: FYA, WDA, balancing charge/allowance
+  │ Formula: AIA, WDA, balancing charge/allowance
   │ WDA at the main pool rate, no cap
   │ Output: capital allowance total flows to P&L
   │
@@ -210,7 +213,6 @@ Draft Tax calculation (E-column)
 SE Short (sheet3)
   │ Self-employment tax return — all boxes auto-populated
   │ Box references match HMRC paper/online return
-  │ Password protected (copyright)
   │
   ▼
 VitalTax
@@ -227,12 +229,12 @@ VitalTax
 | Sales other income | G | F |
 | Purchases code | E | D |
 | Purchases amount | G | F |
-| Purchases mileage | (none) | E |
+| Purchases mileage | F | E |
 | Tax sheet values | E (Income Tax sheet) | E (Draft Tax calculation sheet) |
 
 ## Tax Data Injection
 
-The generator calls `buildCellEdits()` (same function as BST) to inject tax rates into the Admin sheet (sheet33). The cell mapping is:
+The generator calls `buildTaxiCellEdits()` (Taxi's own variant, distinct from BST's `buildCellEdits()`) to inject tax rates into the Admin sheet (sheet33). The cell mapping is:
 
 ### Admin Sheet Dates (B-column)
 
@@ -252,17 +254,15 @@ Generated by `generateAdminDates(startYear)`:
 | Cell | Tax Data Source | Description |
 |------|----------------|-------------|
 | N4 | `income_tax.personal_allowance` | Personal allowance (12570) |
-| N6 | `income_tax.starting_rate` | Starting rate (0.00) |
-| N7 | `income_tax.basic_rate` | Basic rate (0.20) |
-| N8 | `income_tax.higher_rate` | Higher rate (0.40) |
-| N11 | `income_tax.starter_band_end` | Starter band end (0) |
-| M12 | `income_tax.basic_band_end` | Basic band end (37700) |
-| L13, N13 | `income_tax.higher_band_start` | Higher band start (37701) |
-| L17 | `national_insurance.class2_rate` | NI Class 2 rate |
-| L20 | `national_insurance.class4_lower_rate` | NI Class 4 lower rate (0.06) |
 | N5 | `income_tax.personal_allowance_taper_threshold` | Taper threshold (100000) |
+| N6 | `income_tax.basic_rate` | Basic rate (0.20) |
+| N7 | `income_tax.higher_rate` | Higher rate (0.40) |
 | N8 | `income_tax.additional_rate` | Additional rate (0.45) |
+| M11 | `income_tax.basic_band_end` | Basic band end (37700) |
+| N12 | `income_tax.higher_band_start` | Higher band start (37701) |
 | N13 | `income_tax.higher_band_end` | Higher band end (125140) |
+| L16 | `national_insurance.class2_weekly_rate` | NI Class 2 weekly rate |
+| L20 | `national_insurance.class4_lower_rate` | NI Class 4 lower rate (0.06) |
 | N20 | `national_insurance.class4_lower_limit` | NI Class 4 lower limit (12570) |
 | L23 | `national_insurance.class4_upper_rate` | NI Class 4 upper rate (0.02) |
 | N23 | `national_insurance.class4_upper_limit` | NI Class 4 upper limit (50270) |
@@ -287,7 +287,7 @@ Generated by `generateAdminDates(startYear)`:
 | B23 | `tax_year.label` | Tax year label string ("2025-26") |
 | B24 | `tax_year.next_label` | Next year label string ("2026-27") |
 
-Note: Taxi uses `buildCellEdits()` (the BST variant), NOT `buildSeCellEdits()` (the SE variant). The BST and Taxi Admin sheets share the same cell layout for income tax bands and NI. The SE Admin sheet has different cell positions (e.g. NI Class 2 at L16 vs L17).
+Note: Taxi uses its own `buildTaxiCellEdits()` (in `generator.js`), not BST's `buildCellEdits()` or SE's `buildSeCellEdits()`. The Taxi Admin income tax block has no starting-rate row (BST opens on it), so every band cell sits one row higher than its BST counterpart, and NI Class 2 sits at L16 -- the same position SE uses, not BST's L17.
 
 ## Sales Sheet Generation
 
@@ -309,17 +309,21 @@ The Sales sheet XML paths are mapped in `meta.toml` under `[sheets.sales]` (e.g.
 
 ## Scenario Testing
 
-There is one existing scenario for Taxi (`app/test/fixtures/taxi-scenario-basic.toml`), and a new SP Sixty Driving example scenario is being created in `examples/sp-sixty-driving/`.
+Three fixtures under `app/test/fixtures/`, each extracted from a diya-gl master under `examples/` via `node app/bin/extract-scenarios.js`:
 
-### SP Sixty Driving (new, in progress)
+- **`taxi-scenario-basic.toml`** (from `examples/basic-taxi-driver`) -- steady daily fares, no mileage claimed. Used by the `generate-taxi.yml` reconciliation job (`--scenario basic`).
+- **`taxi-scenario-sp-sixty.toml`** (from `examples/sp-sixty-driving/taxi`) -- SP Sixty Driving, a private-hire driver who claims mileage on both the fare days and a March mileage-log purchase. Used by `app/test/taxi-sp-sixty.test.js` and the `roundtrip-taxi` job in `.github/workflows/test.yml`.
+- **`taxi-scenario-kestrel.toml`** (from `examples/kestrel-executive-cars/taxi`) -- Kestrel Executive Cars, a VAT-registered chauffeur operator whose profit reaches the additional rate band, exercising the higher/additional bands the other two scenarios never touch. Used by `taxi-income-tax-checks.test.js`, `taxi-wages-forecast-checks.test.js` and `calculator-taxi.test.js`.
 
-A new example scenario based on a taxi driver business profile. Being created in `examples/sp-sixty-driving/` with diya-gl format (book.toml + lines.jsonl). Will produce `taxi-scenario-sp-sixty.toml` as a scenario fixture for reconciliation.
+### SP Sixty Driving mileage route
+
+38,000 total sales; 20,000 business miles for the year (18,326 recorded on Sales sheet fare days, 1,674 on March's purchase mileage log). The approved rate bands the whole year at 45p for the first 10,000 miles and 25p for the rest: a 7,000 mileage allowance, which beats the 4,640 actual vehicle running costs (fuel 2,480 + road tax/insurance 1,580 + repairs 580), so the P&L takes the mileage route -- B11 charges 7,000 and B6:B10 are zeroed. Net profit: 38,000 - 7,000 - 1,320 (general expenses) = 29,680 (B23).
 
 ### Basic Scenario Design
 
 A taxi driver working 5 days/week (Mon-Fri) with steady daily fares:
 - **Sales**: 180 working days at 200/day = 36,000 total (15 days/month, 3000/month)
-- **April sales**: Mix of amounts (200, 220, 180, 210, 190) totalling 3,000
+- **April sales**: irregular daily amounts (200-220 range) across the month's 15 days, totalling 3,000
 - **Other months**: Uniform 200/day, 15 days/month = 3,000/month
 
 Purchases:
@@ -336,59 +340,47 @@ The `cellWrites()` function in `app/products/taxi.js` produces writes for:
 **Sales writes** -- date-based row lookup:
 - Builds a `dateRowMap` using `generateTaxYearWeeks` + `groupWeeksIntoMonths`
 - Each transaction date is converted to an Excel serial, mapped to a sheet name and row
-- Writes go to `E{row}` (fares) and optionally `F{row}` (other income)
+- Writes go to `E{row}` (fares), optionally `C{row}` (customer), `D{row}` (the day's business miles) and `F{row}` (other income)
 - Supports date translation for different tax years via `targetStartYear`
 
 **Purchase writes** -- sequential rows starting at 5:
 - Each month's transactions are written sequentially from row 5
-- `A{row}` = date serial, `B{row}` = supplier string, `D{row}` = code letter, `F{row}` = amount
+- `A{row}` = date serial, `B{row}` = supplier string, `C{row}` = reference, `D{row}` = code letter, `F{row}` = amount
 - A mileage-log entry goes in as `E{row}` = miles and no amount: the sheet prices the claim itself, and entering the amount as well would charge the journey twice
 
 **Mileage** -- `PurchasesApr!A1` adds the Purchases sheet's own column E to `SalesApr!D1` and carries the total month to month; `U4` bands it at the Admin rates and `U1` totals the month's claim. `Profit & Loss Acc!C1` reads "MILEAGE ALLOWANCE" when the year's claim (`PurchasesMar!A2`) beats the running costs plus capital allowances, and the P&L then charges `B11` and zeroes `B6:B10`.
 
 ### Standard Reads
 
-From `standardReads()`:
+`standardReads()` builds itself from `CELL_MAP` (plus, for the Profit & Loss Acc, every monthly column C:N on rows 5, 12, 22 and 24 that the VitalTax and Wages Forecast re-sum checks need):
 
-**Profit & Loss Acc**: B5-B24 (20 cells covering sales, vehicle costs, gross profit, expenses, net profit)
-
-**Draft Tax calculation**: E5, E6, E7, C9, D8, C10, D10, E8, E9, E10, E11, E14, E15, E17 (profit, allowances, the rates and band edges the sheet applies, tax bands, NI, total)
-
-**Wages Forecast**: C19, C20, C22, C24, C28, C30, C34, C35, C36, C37, C38, C39, C40, C41 (months traded, the projected year, allowance, tax bands, NI, total)
+- **Business Details**: the 6 entered fields (name, description, address, town, postcode, UTR)
+- **Profit & Loss Acc**: B5-B24 (20 cells covering sales, vehicle costs, gross profit, expenses, net profit)
+- **VitalTax**: C5:G5 and C29:G29 (quarterly and annual turnover/expenses)
+- **SE Short**: the SA103S box cells (D38, O38, D71, O71, D80, D85, O80, O85, D94, D99, O94, O99, D106)
+- **Fixed Assets**: D47, I1, J1, P1, Q1
+- **PurchasesMar**: A1, A2, I2, T1 (the year's business miles, mileage claim, vehicle running costs, and capitalised vehicle purchases)
+- **Admin**: the 20 injected tax-rate cells (see Tax Data Injection above)
+- **Draft Tax calculation**: E5, E6, E7, C9, D8, C10, D10, E8, E9, E10, E11, E14, E15, E17 (profit, allowances, the rates and band edges the sheet applies, tax bands, NI, total)
+- **Wages Forecast**: C19, C20, C22, C24, C28, C30, C34, C35, C36, C37, C38, C39, C40, C41 (months traded, the projected year, allowance, tax bands, NI, total)
 
 ### Compliance Checks
 
-The `checkCompliance()` function verifies:
+`checkCompliance()` in `app/products/taxi.js` runs far more than the scenario's own expected figures (Total Sales at B5, Gross Profit at B13, Net Profit at B23, Gen Admin at B16, Legal & Professional at B18, all +/-1). It also asserts, independently of the scenario data:
 
-| Check | P&L Cell | Expected (basic scenario) | Tolerance |
-|-------|----------|---------------------------|-----------|
-| Total Sales | B5 | 36,000 | +/-1 |
-| Gross Profit | B13 | (computed from sales - vehicle costs) | +/-1 |
-| Net Profit | B23 | (computed) | +/-1 |
-| Gen Admin | B16 | (computed from admin expenses) | +/-1 |
-| Legal & Professional | B18 | (computed from legal expenses) | +/-1 |
-
-Tax checks (when taxData is provided):
-
-| Check | Tax Cell | Method | Tolerance |
-|-------|----------|--------|-----------|
-| Income Tax | E11 | `calculateExpectedTax(profit, taxData).income_tax` | +/-1 |
-| NI Class 4 (lower) | E14 | `calculateExpectedTax(profit, taxData).ni_class4_lower` | +/-1 |
-| Total Tax + NI | E17 | `calculateExpectedTax(profit, taxData).total_tax_and_ni` | +/-1 |
-
-The `calculateExpectedTax()` function (in `reconcile.js`) independently computes tax from first principles using the tax data rates, then compares against the spreadsheet's formula-driven result.
+- **P&L internal consistency**: Cost of Sales = the six vehicle-cost lines (B6:B11), Gross Profit = Turnover - Cost of Sales, Total General Expenses = the sum of its own lines, Net = Gross - General Expenses, and capital allowances/mileage allowance (B10 x B11 = 0) are mutually exclusive
+- **The purchase journal closure**: every coded cash purchase reaches either the P&L's general expenses, the Purchases sheets' vehicle running-cost total (`PurchasesMar!I2`), or the capitalised-vehicle total (`PurchasesMar!T1`) -- nothing is dropped
+- **The mileage route**: the year's business miles land on `PurchasesMar!A1`, the claim at `A2` matches those miles banded at the tax year's approved rates, and the P&L charges the claim at B11 (zeroing B6:B10) exactly when it beats the running costs plus capital allowances
+- **VitalTax's quarterly re-sum**: each quarter and the annual total tie to the P&L's own monthly turnover, Cost of Sales and Total Expenses
+- **The SA103S cross-check**: SE Short's turnover and pre-capital-allowance net profit tie back to the P&L
+- **The fixed-asset chain**: the recorded asset cost, the WDA the schedule claims (cost x the Admin WDA rate), and the P&L's Capital Allowances line (zero on the mileage route) all tie together
+- **The Admin echo**: every tax rate, band and threshold `buildTaxiCellEdits()` injects reads back unchanged from the Admin sheet
+- **The tax and NI chain**: `calculateExpectedTax()` (in `app/lib/tax/income-tax.js`) independently recomputes income tax and NI from the tax data's rates and bands -- including the personal allowance taper and the rate/band-edge cells the sheet itself applies (D8:D10, C9:C10), not just the totals -- and the Wages Forecast repeats the same chain against its own projected profit
+- **The profit bridge**: the whole walk from the P&L's net profit to the Draft Tax calculation's taxable profit, adjustment by adjustment, closes on zero residue
 
 ### E2E Tests
 
-`app/test/taxi-e2e.test.js` runs 7 test assertions:
-1. P&L total sales = 36,000 (B5)
-2. SalesApr monthly total = 3,000 (E1)
-3. SalesMay monthly total = 3,000
-4. SalesJun monthly total = 3,000
-5. All other months = 3,000 each
-6. Draft Tax net profit > 0 (E5)
-7. Draft Tax income tax > 0 (E11)
-8. Draft Tax total tax + NI > 0 (E17)
+`app/test/taxi-sp-sixty.test.js` runs the SP Sixty Driving fixture end to end -- P&L totals and internal consistency, the Draft Tax chain, and the mileage route (the year's business miles reach `PurchasesMar!A1`, the claim is banded at the approved rates, and it beats the actual running costs so it is what the P&L charges). It also reruns the same fixture with every mileage figure stripped out to prove the workbook falls back to the actual-cost route and charges more tax when there are no miles to compare against.
 
 Requires LibreOffice; skipped if not installed.
 
@@ -422,6 +414,28 @@ Maps Taxi cells to diya-gl properties, XBRL / FRS 102 accounting concepts, and S
 
 Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicle running costs (capital allowances at B10, mileage at B11, netted into the B12 total) vs mileage allowance. The selected option feeds into Gross Profit (B13).
 
+### SE Short (SA103S)
+
+| Cell | DIY Label | SA103S Box |
+|------|-----------|-----------|
+| D38 | Turnover | -- |
+| O38 | Other business income | Box 9 |
+| D71 | **Net profit/loss** (pre-capital-allowance) | -- |
+| O71 | Net loss | Box 21 |
+| D80 | Annual investment allowance | Box 22 |
+| D85 | Small-balance allowance | Box 23 |
+| O80 | Other capital allowances | Box 24 |
+| O85 | Balancing charges | Box 25 |
+| D94 | Goods and services for own use | Box 26 |
+| D99 | **Net business profit** | Box 27 |
+| O94 | Loss brought forward | Box 28 |
+| O99 | Other business income | Box 29 |
+| D106 | **Net profit for tax calc** | -- |
+
+Box numbers above are as annotated in `app/products/taxi.js`'s `CELL_MAP`; D38, D71 and D106 carry no box annotation there.
+
+D71 is HMRC's pre-capital-allowance figure: turnover minus total expenses with capital allowances subtracted back out. The P&L's own net profit (B23) folds capital allowances into cost of sales instead, so the two agree only when B10 is zero -- otherwise they differ by exactly B10.
+
 ### Draft Tax Calculation
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept |
@@ -441,11 +455,11 @@ Note: The Taxi P&L automatically selects the more tax-efficient of actual vehicl
 
 ### Triggers
 
-- **Schedule**: Daily at 03:47 UTC
-- **Push**: Any branch (except `gh_pages`) when taxi-relevant files change:
-  - `app/data/se-*`, `app/templates/taxi/**`, `app/templates/meta.toml`, `app/products/taxi.js`, the workflow itself
+- **Schedule and push are disabled** (commented out since 2026-05-07): this workflow self-commits 50-300 generated Excel files per run, and the daily schedule plus push triggers produced a volume of bot-authored mass-file-change commits that risked GitHub's account-takeover/abuse heuristics.
 - **workflow_call**: Reusable workflow with skip flags
 - **workflow_dispatch**: Manual with skip flags
+
+Runs only via `workflow_dispatch` or as a `workflow_call` from another workflow until generated artefacts move out of git.
 
 Concurrency group `taxi-packages-${{ github.ref }}` with cancel-in-progress.
 
@@ -490,24 +504,34 @@ Runs one job per year-end date from the matrix. `fail-fast: false` so one failur
 
 Steps:
 1. Checkout + npm ci
-2. Install LibreOffice (`libreoffice-calc`)
+2. Install LibreOffice (`libreoffice-calc`) and `poppler-utils`
 3. Download `taxi-packages` artifact
-4. `npm run reconciliation -- --package taxi --scenario basic --year-end ${{ matrix.year-end }}`
-5. If this is the latest year-end: copy the populated xlsx to `examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx`
-6. Remove `reports/populated/` (large files, not needed in artifacts)
-7. Check reconciliation: count report files, verify none contain `ANOMALYDETECTED`
-8. Upload reports artifact (per year-end) and examples artifact (latest only)
+4. If this is the latest year-end: copy `reports/*.md` aside for the reconciliation page build
+5. `npm run reconciliation -- --package taxi --scenario basic --year-end ${{ matrix.year-end }}`
+6. Check reconciliation: count report files, verify none contain `ANOMALYDETECTED`
+7. **Roundtrip scorecard** (if a recalculated package exists): `report.js` (Excel side) + `export.js` + `report.js` (JS side against `examples/basic-taxi-driver`, dates fixed to the year the tax data itself names) + `verify-roundtrip.js` against `app/data/roundtrip-matrix-budget.json` -- an EQ2 (fieldsDropped/linesLost) budget gate; EQ1 (differing/noJsValue/noExcelValue) is informational only here, since the fixture's dates never move off the master's own period end
+8. **EQ3**: `verify-stability.js` on the recalculated package
+9. If this is the latest year-end and `vars.ENABLE_LLM_JUDGE == 'true'`: assume the AWS OIDC role and run `npm run judge:reconciliation -- --package taxi`
+10. If this is the latest year-end: copy the populated xlsx to `examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx`, and build the reconciliation page (`npm run build:reconciliation-pages`) for upload
+11. Remove `reports/populated/` (large files, not needed in artifacts)
+12. Upload reports artifact (per year-end), examples artifact and reconciliation-page artifact (latest only)
+
+The arithmetic check in step 6 stays authoritative; the LLM judge covers plausibility it cannot assess and stays skipped until the operator sets `ENABLE_LLM_JUDGE`.
 
 #### 5. commit
 
 Conditional on reconcile success/skipped and `skip-commit != 'true'`. Steps:
 1. Checkout with `fetch-depth: 0`
-2. Download all artifacts: packages, reports (merged from multiple matrix jobs), examples
-3. `git rm` screenshots/populated dirs, `git add packages/ reports/ examples/`
+2. Download all artifacts: packages, reports (merged from multiple matrix jobs), examples, reconciliation page (continue-on-error)
+3. `git rm` screenshots/populated dirs, `git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/`
 4. Commit with message: "Generate Taxi Driver packages from app/data and app/templates"
 5. `git pull --rebase && git push`
 
-**Retry mechanism**: The push step uses `continue-on-error: true`. If it fails (e.g. concurrent pushes from other product workflows), a retry step waits with incremental delays (5-30 seconds total) then does `git pull --rebase && git push`.
+**Retry mechanism**: The push step uses `continue-on-error: true`. If it fails (e.g. concurrent pushes from other product workflows), a retry step sleeps 30 seconds total then does `git pull --rebase && git push`.
+
+### roundtrip-taxi (`.github/workflows/test.yml`)
+
+A separate fidelity job, run as part of `test.yml`'s per-product matrix, not `generate-taxi.yml`. Generates a Taxi package from `examples/sp-sixty-driving/taxi` diya-gl data, extracts it back two ways (`report.js --mode recalculate` off the Excel, `report.js` off the JS engine), exports it (`export.js`), and runs the roundtrip scorecard (EQ1 and EQ2, budget-gated on `app/data/roundtrip-budget.json`) and EQ3 stability. It then does a **double roundtrip**: regenerates a second package from the first export's data, re-exports it, and diffs the two `lines.jsonl` outputs -- a hard `diff` that must pass, proving the export is a fixed point of generate-then-export.
 
 ### Matrix Computation
 
