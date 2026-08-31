@@ -15,6 +15,7 @@ import {
   extractTaxiTransactions,
   extractBankTransactions,
   extractJournalEntries,
+  extractPayrollTransactions,
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
@@ -603,5 +604,92 @@ describe("extractTaxiTransactions — the exported book", () => {
     const { book } = await exportedTaxiBook(taxiSheets({ purchaseRows: { A6: TAXI_FIRST_DAY + 2, B6: "Amazon", D6: "f", F6: 200 } }));
     expect(book.accounts.purchases["7000"]).toEqual({ "accountMainDescription": "Fixed Assets Motor Vehicles", "diya-gl:column": "S" });
     expect(book.accounts.assets).toBeUndefined();
+  });
+});
+
+// ── The payslip block a month tab puts under its weekly blocks ─────────────
+//
+// A month tab stacks one ten-row block per tax week from row 8, then the
+// monthly payroll block below them, so the block starts at row 48 in a
+// four-week month, 58 in a five-week one and 68 in the six-week last month.
+// The exporter has to follow the month's own layout: a fixed-row read brings
+// back the four-week months and silently loses the rest.
+
+const PAYSLIP_MONTH_TABS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+// One employee's line on a month's block, plus the wages-paid date above it.
+function payslipBlock(blockRow, { paidOn, name, grossPay, incomeTax, employeeNI, netPay, employerNI, reference }) {
+  return {
+    [`M${blockRow + 1}`]: paidOn,
+    [`F${blockRow + 3}`]: name,
+    [`M${blockRow + 3}`]: grossPay,
+    [`N${blockRow + 3}`]: incomeTax,
+    [`O${blockRow + 3}`]: employeeNI,
+    [`R${blockRow + 3}`]: netPay,
+    [`S${blockRow + 3}`]: reference,
+    [`T${blockRow + 3}`]: employerNI,
+  };
+}
+
+async function exportedPayroll(blocksByTab) {
+  const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-payslips-"));
+  const sheets = { Employee: {} };
+  for (const tab of PAYSLIP_MONTH_TABS) sheets[tab] = blocksByTab[tab] || {};
+  writeFileSync(join(dir, "Payslips.xlsx"), await buildWorkbook(sheets));
+  return extractPayrollTransactions(dir);
+}
+
+describe("extractPayrollTransactions — the month's own block row", () => {
+  const employee = {
+    name: "Alice Johnson",
+    grossPay: 3500,
+    incomeTax: 530,
+    employeeNI: 200,
+    netPay: 2770,
+    employerNI: 382.5,
+    reference: "PAY-EMP001",
+  };
+
+  it("reads a four-week month's block from row 48", async () => {
+    const lines = await exportedPayroll({ Apr: payslipBlock(48, { paidOn: 45777, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({
+      "sourceJournalID": "payroll",
+      "postingDate": "2025-04-30",
+      "amount": 3500,
+      "detailComment": "Alice Johnson",
+      "documentReference": "PAY-EMP001",
+      "diya-gl:employerNI": 382.5,
+      "diya-gl:netPay": 2770,
+    });
+  });
+
+  it("reads a five-week month's block from row 58, where a fixed-row read finds nothing", async () => {
+    const lines = await exportedPayroll({ Jun: payslipBlock(58, { paidOn: 45838, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ postingDate: "2025-06-30", amount: 3500, detailComment: "Alice Johnson" });
+  });
+
+  it("reads the six-week last month's block from row 68", async () => {
+    const lines = await exportedPayroll({ Mar: payslipBlock(68, { paidOn: 46112, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ postingDate: "2026-03-31", amount: 3500 });
+  });
+
+  it("brings every month back whatever the weeks each one holds", async () => {
+    const blocksByTab = {};
+    // 4, 4 and 5 weeks a quarter, with a sixth on the last month.
+    const weeks = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+    PAYSLIP_MONTH_TABS.forEach((tab, index) => {
+      blocksByTab[tab] = payslipBlock(8 + 10 * weeks[index], { paidOn: 45777 + index * 30, ...employee, reference: `PAY-${tab}` });
+    });
+    const lines = await exportedPayroll(blocksByTab);
+    expect(lines).toHaveLength(12);
+    expect(lines.map((line) => line.documentReference)).toEqual(PAYSLIP_MONTH_TABS.map((tab) => `PAY-${tab}`));
+  });
+
+  it("takes no line from a block row the sheet holds no pay on", async () => {
+    const lines = await exportedPayroll({ Jun: { M59: 45838, N61: 0, O61: 0, T61: 0 } });
+    expect(lines).toEqual([]);
   });
 });
