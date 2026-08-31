@@ -11,7 +11,10 @@ lands:
 
 - FA track (Opus) — T1 + T4: merged to `claude/next-batch-wave-1` (includes the generate.js
   link-rename fix the track surfaced; June package reconciles 866/866)
-- payslip track (Sonnet) — T2: started
+- payslip track (Sonnet) — T2: merged to `claude/next-batch-wave-1` (35 cells per workbook
+  repaired, coverage checks anchored on payment references, 13 + 197 tests green)
+- print-sheet track (Opus) — C1: started
+- writes track (Sonnet) — C2 + C3: started
 - roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
   products, ratchets retired, RECONCILES 859/859 and 683/683)
 - comparator track (Sonnet) — F23: started
@@ -35,33 +38,16 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
-- [ ] **T2: the July and August payslips carry `#REF!`** (Sonnet) — `Payslips.xlsx`, identical in
-  SE and Ltd; `Jul` = sheet5.xml, `Aug` = sheet6.xml; 35 broken cells per workbook, shipped
-  unnoticed because `additionalReads` asks Payslips for `Payment` and `Admin` only. `Jul`
-  `F11:F15` lost the pay-date reference: the working `Jun` shape is
-  `IF(E11=" "," ",IF(Employee!F$24>E$9," ",IF(Employee!F$26<E$9," ",Employee!D$15)))` and Jul has
-  `#REF!` where `E$9` belongs (5 replacements). `Jul!T41` holds a formula where every other month
-  carries a literal `<v>0</v>` — match the neighbours' style, no formula. `Aug`: 29 cells, rows
-  11-15, columns H/I/J/L/M plus K on rows 12-15, each a brought-forward read that lost its row —
-  the pattern from Jul and Sep is `<same column>41` of the previous month (e.g.
-  `Aug!H11 =IF(T$9="Y",Jul!H41,0)`; `M` carries it inside the longer expression). Walk cells for
-  the column-aware Aug fix; assert exactly 5 and 29 replacements and zero remaining `#REF!` in
-  both workbooks. Then close the coverage hole: add the two month sheets to `additionalReads` in
-  both product modules for the rows the fixture populates, check July and August against the
-  SCENARIO'S payroll data (never a neighbouring month — two identically wrong months pass), and
-  extend `app/test/payslips-calendar-year-end.test.js` to generate a package and read Jul/Aug
-  back. Breakability: corrupt `Jul!F12` → only the July employee-line check flips; `Aug!H13` →
-  only the August brought-forward check; no Payment/Admin check moves. Blast radius:
-  payslips-calendar-year-end + se/ltd precision, then the full ladder. Runs AFTER T1 (both edit
-  the product modules).
-
-- [ ] **C1: cover the Payslips print sheet's period join** (Sonnet) — `Payslips.xlsx!Payslips`
+- [ ] **C1: cover the Payslips print sheet's period join** (Opus) — `Payslips.xlsx!Payslips`
   (both products) is the payslip the employer hands over; its month tabs and calendar are
   asserted, but the `LOOKUP`/`INDIRECT` pair that joins them is read by nothing, so a wrong
-  resolution prints the wrong period's pay with every upstream check green. Discover the join
-  from the sheet XML, add the printed cells to `additionalReads`, and check them against the
-  scenario's payroll data for a chosen period (anchored to the fixture, never to the month tabs
-  the join reads — a wrong join agreeing with the wrong month must fail). Prove breakable by
+  resolution prints the wrong period's pay with every upstream check green. T2's track found
+  the sheet is worse than uncovered: after a full generate-and-recalculate pass the print
+  sheet (sheet14.xml in both products) carries 65 `#REF!` errors, pre-existing and identical
+  before T2's fix. Diagnose and repair those first, then discover the join from the sheet
+  XML, add the printed cells to `additionalReads`, and check them against the scenario's
+  payroll data for a chosen period (anchored to the fixture, never to the month tabs the
+  join reads — a wrong join agreeing with the wrong month must fail). Prove breakable by
   corrupting the join's cached result.
 - [ ] **C2: the Salesinvoice VAT rate is a hard-coded 20** (Sonnet) — the five
   `Salesinvoice.xlsx` sheets (both products) compute a customer-facing invoice total and VAT
