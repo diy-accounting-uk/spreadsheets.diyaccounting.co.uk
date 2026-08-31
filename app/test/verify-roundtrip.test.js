@@ -526,8 +526,98 @@ describe("scoreDataHalves with a block-scoped declaration", () => {
     const inventory = { fields: [{ field: "lineItemComment", blocks: [{ product: "se", block: "payslip" }], reason: "typo'd block" }] };
     const { fixture, exported } = writePair([SALES_LINE], [SALES_LINE]);
     expect(() => scoreDataHalves(fixture, exported, unrepresentableScope("se", inventory))).toThrow(
-      /no line in this run carries sourceJournalID "payslip"/,
+      /no line in this run scopes to "payslip"/,
     );
+  });
+});
+
+// ── The bank-opening-balance scope ──────────────────────────────────────────
+
+// A bank block's opening-balance line shares its sourceJournalID ("bank")
+// with the ordinary receipt/payment rows around it, which do carry their own
+// lineItemComment and documentReference. A block scope of plain "bank" would
+// blank those fields off every row in the block; the opening-balance line
+// needs a scope of its own (lineScopeBlock's "bank-opening-balance", keyed
+// off detailComment === "Opening balance") so a declaration can name it
+// without touching the rest of the block.
+describe("scoreDataHalves with the bank-opening-balance scope", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  function writePair(fixtureLines, exportLines) {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-bank-ob-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    writeFileSync(join(fixture, "lines.jsonl"), fixtureLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(exported, "lines.jsonl"), exportLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(fixture, "book.toml"), "");
+    writeFileSync(join(exported, "book.toml"), "");
+    return { fixture, exported };
+  }
+
+  const ORDINARY_BANK_LINE = {
+    sourceJournalID: "bank",
+    postingDate: "2025-06-12",
+    accountMainID: "1200",
+    amount: 1200,
+    detailComment: "WorkSpace Ltd",
+    lineItemComment: "Office rent payment",
+    documentReference: "BNK-CR-007",
+  };
+  const OPENING_BALANCE_LINE = {
+    sourceJournalID: "bank",
+    postingDate: "2025-04-01",
+    accountMainID: "1200",
+    amount: 25000,
+    detailComment: "Opening balance",
+    lineItemComment: "Current account opening balance",
+    documentReference: "BNK-0001",
+  };
+  const INVENTORY = {
+    fields: [
+      { field: "lineItemComment", blocks: [{ product: "ltd", block: "bank-opening-balance" }], reason: "no comment cell beside A1" },
+      { field: "documentReference", blocks: [{ product: "ltd", block: "bank-opening-balance" }], reason: "no reference cell beside A1" },
+    ],
+  };
+
+  it("excuses the opening-balance line's absent fields without touching an ordinary row sharing its sourceJournalID", () => {
+    const { fixture, exported } = writePair(
+      [ORDINARY_BANK_LINE, OPENING_BALANCE_LINE],
+      [ORDINARY_BANK_LINE, { ...OPENING_BALANCE_LINE, lineItemComment: undefined, documentReference: undefined }],
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", INVENTORY));
+    // The ordinary row matches on its own merits (its export carries the
+    // same comment and reference); the opening-balance row matches because
+    // the declaration excuses their absence. Neither row owes the other its
+    // result.
+    expect(score.wholeLineMatches).toBe(2);
+  });
+
+  it("still fails an ordinary bank row whose comment genuinely differs, so the opening-balance scope has not silenced the block", () => {
+    const { fixture, exported } = writePair(
+      [ORDINARY_BANK_LINE, OPENING_BALANCE_LINE],
+      [
+        { ...ORDINARY_BANK_LINE, lineItemComment: "Wrong description" },
+        { ...OPENING_BALANCE_LINE, lineItemComment: undefined, documentReference: undefined },
+      ],
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", INVENTORY));
+    expect(score.wholeLineMatches).toBe(1);
+  });
+
+  it("still catches an opening-balance line whose other fields are corrupted, proving the declaration blanks only the two named fields", () => {
+    const { fixture, exported } = writePair(
+      [ORDINARY_BANK_LINE, OPENING_BALANCE_LINE],
+      [ORDINARY_BANK_LINE, { ...OPENING_BALANCE_LINE, lineItemComment: undefined, documentReference: undefined, amount: 30000 }],
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", INVENTORY));
+    expect(score.wholeLineMatches).toBe(1);
   });
 });
 
@@ -539,14 +629,27 @@ describe("scoreDataHalves with a block-scoped declaration", () => {
 // sheet gained a column, or an inventory entry gained a block), a fall means
 // some line lost a field the inventory does not yet excuse.
 //
-// se and ltd fall short of their own fixtureLines count: the bank and
-// journal opening-balance lines carry a lineItemComment (e.g. "Current
-// account opening balance") that xlsx-exporter.js never writes for those two
-// blocks (app/lib/xlsx-exporter.js:636-648, :972-1023), unlike the ordinary
-// bank receipt/payment rows and the sales/purchases rows, which do. That gap
-// is not a payslip-block field with no declared home; the payslip block is
-// this track's whole charter. It is a pre-existing, out-of-charter gap the
-// numbers below hold steady rather than paper over.
+// se and ltd still fall short of their own fixtureLines count, on two
+// unrelated, pre-existing gaps neither of which the bank-opening-balance
+// scope above touches:
+//
+// - Four of the Ltd OA_JOURNAL_MAP and SE opening-fixed-asset journal lines
+//   carry a lineItemComment the export does not lose but does not match
+//   either: the sheet gives each account (or, for SE, each asset) one
+//   generic label ("Trade debtors", "Long term creditors") or its own
+//   free-text description ("Van (2.5 years old)"), while the fixture states
+//   a fuller, scenario-specific description ("Trade debtors (Acme 7200 +
+//   Beta 1200 + Gamma 2400)", "Bank loan secured on the motor vehicle").
+//   That is a wording mismatch on a field the sheet does carry, not an
+//   absent field the inventory can excuse without also hiding a real defect
+//   on the account-level lines that already match correctly.
+// - Seven of the SE ordinary bank payment rows post the generic "RP" code
+//   letter where the fixture expects the specific settlement code ("RV" for
+//   a VAT payment, "RC" for a CIS remittance, "RT" for Corporation Tax) on
+//   diya-gl:bankCode -- a payment-code mapping gap, unrelated to opening
+//   balances or lineItemComment.
+//
+// Both are held steady here rather than papered over.
 const PRODUCTS = [
   { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05", wholeLineMatches: 528 },
   {
@@ -561,9 +664,9 @@ const PRODUCTS = [
     data: "examples/precision-code-ltd/advanced",
     years: "se-2025-2026",
     yearEnd: "2026-04-05",
-    wholeLineMatches: 683,
+    wholeLineMatches: 685,
   },
-  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", wholeLineMatches: 718 },
+  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", wholeLineMatches: 721 },
   {
     // A non-March year end exercises the tab-rename and formula-rewrite path
     // (getMonthTabSequence, renameMonthTabs, renameExternalLinkSheetNames,
@@ -577,7 +680,7 @@ const PRODUCTS = [
     data: "examples/precision-code-ltd/full",
     years: "ltd-2025",
     yearEnd: "2025-05-31",
-    wholeLineMatches: 718,
+    wholeLineMatches: 721,
   },
 ];
 
