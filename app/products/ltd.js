@@ -146,6 +146,7 @@ function payrollMonthStarts() {
 // row + 1 carries the date wages were paid and the period number; the five
 // employee lines run from block row + 3.
 const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex];
+const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
 
 // The Payslips sheet is the page an employer prints and hands over. F3 picks
 // weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
@@ -156,6 +157,37 @@ const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[
 const PAYSLIP_PRINT_SHEET = "Payslips";
 const PAYSLIP_PRINT_CELLS = { frequency: "F3", period: "F4", tab: "H3", blockRow: "H4" };
 const PAYSLIP_PRINT_PERIOD = 2;
+
+// Payslips.xlsx's template positions 3 and 4 (sheet5.xml/sheet6.xml,
+// originally named Jul/Aug -- getMonthTabNames(3)[3] and [4]) shipped with
+// 35 dead #REF! cells: the weekly-block pay-date pull at rows 11-15
+// (Employee!F$24/F$26 compared against E$9) and the period total at T41 on
+// position 3, and the brought-forward reads at rows 11-15 (H/I/J/L/M, K on
+// rows 12-15) on position 4. additionalReads never read either tab
+// directly -- only the Payment/Admin aggregates -- so none of it ever
+// surfaced. Every fixture's employees pay monthly, so the weekly-block gate
+// (Employee!D$28 etc = "m") and the carry-forward gate (position 4's T$9 =
+// "Y") are never true: both blocks always resolve to their blank/nil branch
+// regardless of what the broken formula pointed at, which is exactly why
+// the #REF!s shipped unnoticed. The renamed tab name shifts with the
+// package's year-end, but the row/column layout at these template
+// positions does not.
+const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
+const PAYSLIPS_JUL_DEAD_CELLS = [...PAYSLIPS_WEEKLY_ROWS.map((row) => `F${row}`), "T41"];
+const PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS = PAYSLIPS_WEEKLY_ROWS.flatMap((row) => {
+  const cells = ["H", "I", "J", "L", "M"].map((col) => `${col}${row}`);
+  if (row >= 12) cells.push(`K${row}`);
+  return cells;
+});
+
+// The cells Payslips.xlsx cellWrites populates for a month's payroll, one
+// employee a row down the month's own monthly block: F name, M gross pay, N
+// income tax, O employee NI, R net pay, S reference, T employer NI. The row
+// above the first of them holds the wages-paid date the block is dated from.
+const payslipsMonthEntryCells = (monthIndex) => [
+  `M${monthlyPayrollBlockRow(monthIndex) + 1}`,
+  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => ["F", "M", "N", "O", "R", "S", "T"].map((col) => `${col}${row}`)),
+];
 
 // ── Charges & Debentures register (Companysecretary.xlsx) ──────────────────
 // Row 1 is the header, one charge per row after it: A the date of the
@@ -1490,7 +1522,10 @@ export function multiFileOptions(yearEndMonth) {
       "Vatreturns.xlsx": vatQtrReads,
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
-        FAreconciliation: ["E11", "K11"],
+        // The sheet's own tie-out: E11/K11 re-sum the Schedule's rows,
+        // E13/K13 read the ledgers' annual fixed asset totals across the
+        // two leaf-to-leaf links, E15/K15 are the difference it prints.
+        FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
         // E2 is the long-term-creditors total for the "New Hire Purchase
         // Agreements" block (SUM(E8:E26)); I/J/K on rows 8 and 10 are the
         // two scenario agreements' own monthly payment, capital and
@@ -1525,6 +1560,14 @@ export function multiFileOptions(yearEndMonth) {
             ...payrollMonthStarts().flatMap(({ row }) => ["A", "B", "C", "D", "F"].map((col) => `${col}${row}`)),
           ]),
         ],
+        // Template positions 3 and 4 (originally Jul/Aug) read directly
+        // under whatever name this year-end renamed them to (see
+        // PAYSLIPS_JUL_DEAD_CELLS and PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS
+        // above), plus the rows the fixture actually populates, so a break
+        // in either area is caught on its own month instead of only
+        // through the Payment/Admin aggregates.
+        [tabNames[3]]: [...PAYSLIPS_JUL_DEAD_CELLS, ...payslipsMonthEntryCells(3)],
+        [tabNames[4]]: [...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS, ...payslipsMonthEntryCells(4)],
       },
       "Companysecretary.xlsx": {
         // One member a row: A the name, G the holding. F1 is the sheet's own
@@ -1684,7 +1727,11 @@ const FIXED_ASSET_CELL_LABELS = {
   },
   "Fixedassets.xlsx!FAreconciliation": {
     E11: "Additions the schedule lists, net of VAT",
+    E13: "Fixed asset purchases the purchase journal carries, net of VAT",
+    E15: "Purchases less schedule additions",
     K11: "Disposal proceeds the schedule lists, net of VAT",
+    K13: "Fixed asset sales the sales journal carries, net of VAT",
+    K15: "Sales less schedule disposals",
   },
 };
 
@@ -2820,11 +2867,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
-  // The Schedule's new-asset and disposal totals against what the scenario
-  // posted to Purchases.xlsx and Sales.xlsx, net of VAT — the same
-  // comparison FAreconciliation is built to make, made here because the
-  // sheet's own cross-file cells (E13/K13) are #REF! in the template.
+  // FAreconciliation is the workbook's own tie-out between the asset
+  // schedule and the two ledgers. E11/K11 re-sum the Schedule's New-asset
+  // and disposal rows; E13/K13 read the annual fixed asset totals straight
+  // out of Purchases.xlsx and Sales.xlsx across a leaf-to-leaf link.
+  // Comparing the two sides is the comparison the sheet was built to make.
   const faReconciliation = results["Fixedassets.xlsx!FAreconciliation"];
+  if (faReconciliation) {
+    check("Fixed assets: Schedule additions = Purchases.xlsx fixed asset total", num(faReconciliation.E11), num(faReconciliation.E13));
+    check("Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total", num(faReconciliation.K11), num(faReconciliation.K13));
+  }
+
+  // The scenario's own "fa"/"fs"-coded net totals then anchor the schedule
+  // side to what a customer actually typed in, so a schedule and a ledger
+  // that agree on the wrong figure still fails.
   if (faReconciliation && expected.purchases) {
     let assetGross = 0;
     for (const transactions of Object.values(expected.purchases)) {
@@ -2842,6 +2898,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(faReconciliation.K11),
       netOfVat(disposalGross, rate),
     );
+  }
+
+  // Row 15 is the verdict the sheet prints for the reader: the difference
+  // between the ledger and the schedule, which B15/G15 turn into the
+  // "reconcile" sentence. With both sides anchored above, nil here is the
+  // sheet agreeing with the book rather than with itself.
+  if (faReconciliation && expected.purchases) {
+    check("Fixed assets: the purchases reconciliation reads nil", num(faReconciliation.E15), 0);
+  }
+  if (faReconciliation && expected.sales) {
+    check("Fixed assets: the sales reconciliation reads nil", num(faReconciliation.K15), 0);
   }
 
   // The P&L depreciation and disposal lines carry the Schedule's annual
@@ -3198,6 +3265,103 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           severity: "warning",
           diff: "",
         });
+      }
+    }
+
+    // ── Payslips template positions 3/4 (Jul/Aug): direct reads against the
+    // scenario's own payroll entries for that month ──
+    //
+    // Payment/Admin never read a month tab directly (see
+    // PAYSLIPS_JUL_DEAD_CELLS above), so nothing distinguished one month's
+    // payroll figures from another's. A fixture that repeats the same
+    // employees' gross pay, tax and NI every month would pass a check
+    // anchored only on those numbers with two months' data swapped; the
+    // reference column and the wages-paid date both embed the month, so
+    // anchoring on them catches a neighbouring-month mix-up the totals
+    // cannot.
+    const checkMonthPayrollEntries = (monthIndex, entries) => {
+      const tab = fiscalTabs[monthIndex];
+      const month = results[`Payslips.xlsx!${tab}`];
+      if (!month) return;
+      const entryRows = payslipsMonthEntryRows(monthIndex);
+      entries.slice(0, 5).forEach((e, idx) => {
+        const row = entryRows[idx];
+        if (e.name) checkText(`Payslips!${tab} F${row} employee name`, text(month[`F${row}`]), (v) => v === e.name, e.name);
+        check(`Payslips!${tab} M${row} gross pay`, num(month[`M${row}`]), e.grossPay || 0);
+        check(`Payslips!${tab} N${row} income tax`, num(month[`N${row}`]), e.incomeTax || 0);
+        check(`Payslips!${tab} O${row} employee NI`, num(month[`O${row}`]), e.employeeNI || 0);
+        check(`Payslips!${tab} R${row} net pay`, num(month[`R${row}`]), e.netPay || 0);
+        check(`Payslips!${tab} T${row} employer NI`, num(month[`T${row}`]), e.employerNI || 0);
+        if (e.reference) checkText(`Payslips!${tab} S${row} reference`, text(month[`S${row}`]), (v) => v === e.reference, e.reference);
+      });
+      if (entries.length > 0) {
+        const d = shiftMonths(parseDate(entries[0].date), monthOffset);
+        const dateCell = `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
+        check(
+          `Payslips!${tab} ${dateCell} wages paid date`,
+          num(month[dateCell]),
+          toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()),
+          0,
+        );
+      }
+    };
+    checkMonthPayrollEntries(3, payrollByTab[fiscalTabs[3]] || []);
+    checkMonthPayrollEntries(4, payrollByTab[fiscalTabs[4]] || []);
+
+    // ── Payslips template position 3 (Jul): the weekly-block employee-line
+    // pull (rows 11-15) and the period-4 total (T41), the exact cells fixed
+    // at rows 11-15's F column and T41 ──
+    //
+    // Every fixture's employees pay monthly, so each row's own
+    // IF(Employee!D$28="m",...) weekly gate never reads true: F11:F15 stay
+    // blank regardless of what the row's own date-comparison branch (the
+    // one the #REF! sat in) resolves to, and T41 -- the period's own
+    // employer-NI total -- stays nil alongside it.
+    // The sheet's own blank is a single space (" "); the text() helper
+    // above trims every string it reads, so a blank cell reaches this
+    // check as "".
+    const julPosition = results[`Payslips.xlsx!${fiscalTabs[3]}`];
+    if (julPosition) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        checkText(
+          `Payslips!${fiscalTabs[3]} F${row} weekly employee line (every employee here pays monthly)`,
+          text(julPosition[`F${row}`]),
+          (v) => v === "",
+          "",
+        );
+      }
+      check(`Payslips!${fiscalTabs[3]} T41 period total (no weekly employer NI to bring forward)`, num(julPosition.T41), 0, 0);
+    }
+
+    // ── Payslips template position 4 (Aug): the brought-forward reads at
+    // rows 11-15 (H/I/J/L/M, plus K on rows 12-15), the 29 cells fixed at
+    // Aug!H11:M15 ──
+    //
+    // T$9 (the flag that carries an unfinished weekly pay cycle into the
+    // next month) is never set by any scenario, so every one of these
+    // cells resolves to its "not carried forward" branch -- 0, or blank for
+    // the M-column payslip total -- regardless of what the previous
+    // month's row 41 itself holds.
+    const augPosition = results[`Payslips.xlsx!${fiscalTabs[4]}`];
+    if (augPosition) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        for (const col of ["H", "I", "J", "L"]) {
+          check(
+            `Payslips!${fiscalTabs[4]} ${col}${row} brought forward (no weekly cycle carried over)`,
+            num(augPosition[`${col}${row}`]),
+            0,
+            0,
+          );
+        }
+        if (row >= 12) {
+          check(`Payslips!${fiscalTabs[4]} K${row} brought forward (no weekly cycle carried over)`, num(augPosition[`K${row}`]), 0, 0);
+        }
+        checkText(
+          `Payslips!${fiscalTabs[4]} M${row} brought forward (no weekly cycle carried over)`,
+          text(augPosition[`M${row}`]),
+          (v) => v === "",
+          "",
+        );
       }
     }
 

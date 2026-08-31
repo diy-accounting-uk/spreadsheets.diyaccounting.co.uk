@@ -949,6 +949,13 @@ export function multiFileOptions() {
         // year label the payslips print, and the name, date and month number
         // on each sampled row.
         Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
+        // Jul and Aug read directly (see PAYSLIPS_JUL_DEAD_CELLS and
+        // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the
+        // fixture actually populates, so a break in either area is caught
+        // on its own month instead of only through the Payment/Admin
+        // aggregates.
+        Jul: [...PAYSLIPS_JUL_DEAD_CELLS, ...payslipsMonthEntryCells(3)],
+        Aug: [...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS, ...payslipsMonthEntryCells(4)],
       },
     },
   };
@@ -1000,6 +1007,35 @@ const PL_ROW_CAPTIONS = {
 // runs a 6 April year-end, so this row order matches MONTH_KEYS directly
 // with no year-end shift (unlike Ltd, which has to remap via fiscalTabs).
 const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+// Payslips.xlsx Jul (sheet5.xml) and Aug (sheet6.xml) shipped with 35 dead
+// #REF! cells: Jul!F11:F15 lost the weekly-block pay-date reference
+// (Employee!F$24/F$26 compared against E$9), Jul!T41 carried a stray
+// formula where every other month has a literal 0, and Aug!H11:M15 (K only
+// on rows 12-15) lost the previous month's row-41 brought-forward
+// reference. additionalReads never read either tab directly -- only the
+// Payment/Admin aggregates -- so none of it ever surfaced. Every fixture's
+// employees pay monthly, so the weekly-block gate (Employee!D$28 etc = "m")
+// and the carry-forward gate (Aug!T$9 = "Y") are never true: both blocks
+// always resolve to their blank/nil branch regardless of what the broken
+// formula pointed at, which is exactly why the #REF!s shipped unnoticed.
+const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
+const PAYSLIPS_JUL_DEAD_CELLS = [...PAYSLIPS_WEEKLY_ROWS.map((row) => `F${row}`), "T41"];
+const PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS = PAYSLIPS_WEEKLY_ROWS.flatMap((row) => {
+  const cells = ["H", "I", "J", "L", "M"].map((col) => `${col}${row}`);
+  if (row >= 12) cells.push(`K${row}`);
+  return cells;
+});
+
+// The cells Payslips.xlsx cellWrites populates for a month's payroll, one
+// employee a row down the month's own monthly block: F name, M gross pay, N
+// income tax, O employee NI, R net pay, S reference, T employer NI. The row
+// above the first of them holds the wages-paid date the block is dated from.
+const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
+const payslipsMonthEntryCells = (monthIndex) => [
+  `M${monthlyPayrollBlockRow(monthIndex) + 1}`,
+  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => ["F", "M", "N", "O", "R", "S", "T"].map((col) => `${col}${row}`)),
+];
 
 // Payslips.xlsx!Admin holds a day-by-day payroll calendar: column A the
 // payroll month's name, B the date, C the week number, D the payroll month
@@ -1235,7 +1271,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     S1: "Total tax written down value carried forward",
@@ -2365,6 +2401,84 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         pl.B21 || 0,
         wCodeNet + totalGross + totalEmployerNI,
       );
+    }
+
+    // ── Payslips Jul/Aug: direct reads against the scenario's own payroll
+    // entries for that month ──
+    //
+    // Payment/Admin never read a month tab directly (see
+    // PAYSLIPS_JUL_DEAD_CELLS above), so nothing distinguished one month's
+    // payroll figures from another's. This fixture repeats the same three
+    // employees' gross pay, tax and NI every month, so a check anchored only
+    // on those numbers would pass with July and August's data swapped; the
+    // reference column and the wages-paid date both embed the month, so
+    // anchoring on them catches a neighbouring-month mix-up the totals
+    // cannot.
+    const checkMonthPayrollEntries = (monthIndex, entries) => {
+      const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
+      const month = results[`Payslips.xlsx!${tab}`];
+      if (!month) return;
+      const entryRows = payslipsMonthEntryRows(monthIndex);
+      entries.slice(0, 5).forEach((e, idx) => {
+        const row = entryRows[idx];
+        if (e.name) checkText(`Payslips!${tab} F${row} employee name`, month[`F${row}`], e.name);
+        check(`Payslips!${tab} M${row} gross pay`, num(month[`M${row}`]), e.grossPay || 0);
+        check(`Payslips!${tab} N${row} income tax`, num(month[`N${row}`]), e.incomeTax || 0);
+        check(`Payslips!${tab} O${row} employee NI`, num(month[`O${row}`]), e.employeeNI || 0);
+        check(`Payslips!${tab} R${row} net pay`, num(month[`R${row}`]), e.netPay || 0);
+        check(`Payslips!${tab} T${row} employer NI`, num(month[`T${row}`]), e.employerNI || 0);
+        if (e.reference) checkText(`Payslips!${tab} S${row} reference`, month[`S${row}`], e.reference);
+      });
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        const dateCell = `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
+        check(
+          `Payslips!${tab} ${dateCell} wages paid date`,
+          num(month[dateCell]),
+          toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()),
+          0,
+        );
+      }
+    };
+    checkMonthPayrollEntries(3, expected.payroll.jul || []);
+    checkMonthPayrollEntries(4, expected.payroll.aug || []);
+
+    // ── Payslips Jul: the weekly-block employee-line pull (rows 11-15) and
+    // the period-4 total (T41), the exact cells fixed at Jul!F11:F15 and
+    // Jul!T41 ──
+    //
+    // Every fixture's employees pay monthly, so each row's own
+    // IF(Employee!D$28="m",...) weekly gate never reads true: F11:F15 stay
+    // blank regardless of what the row's own date-comparison branch (the
+    // one the #REF! sat in) resolves to, and T41 -- the period's own
+    // employer-NI total -- stays nil alongside it. The sheet's own blank is
+    // a single space (" "); readCellValue trims every string read, so a
+    // blank cell reaches this check as "".
+    const jul = results["Payslips.xlsx!Jul"];
+    if (jul) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, jul[`F${row}`], "");
+      }
+      check("Payslips!Jul T41 period total (no weekly employer NI to bring forward)", num(jul.T41), 0, 0);
+    }
+
+    // ── Payslips Aug: the brought-forward reads at rows 11-15 (H/I/J/L/M,
+    // plus K on rows 12-15), the 29 cells fixed at Aug!H11:M15 ──
+    //
+    // T$9 (the flag that carries an unfinished weekly pay cycle into the
+    // next month) is never set by any scenario, so every one of these
+    // cells resolves to its "not carried forward" branch -- 0, or blank for
+    // the M-column payslip total -- regardless of what Jul!<col>41 itself
+    // holds.
+    const aug = results["Payslips.xlsx!Aug"];
+    if (aug) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        for (const col of ["H", "I", "J", "L"]) {
+          check(`Payslips!Aug ${col}${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`${col}${row}`]), 0, 0);
+        }
+        if (row >= 12) check(`Payslips!Aug K${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`K${row}`]), 0, 0);
+        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, aug[`M${row}`], "");
+      }
     }
   }
 
