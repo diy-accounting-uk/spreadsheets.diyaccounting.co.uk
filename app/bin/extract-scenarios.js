@@ -64,6 +64,7 @@ import {
   splitStraddlingLines,
   deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -329,7 +330,7 @@ const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
-const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
+const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
 advGrouped.payroll = buildPayroll(advLines);
 const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
 const advByCode = {};
@@ -337,6 +338,16 @@ advPurchLines.forEach((l) => {
   const c = SE_PURCHASE_CODE_MAP[l.accountMainID];
   if (c) advByCode[c] = (advByCode[c] || 0) + l.amount;
 });
+// A mileage-log line buys nothing: the Purchases sheet prices the year's
+// business miles itself and files the claim under Motor Expenses with no VAT
+// on it, so the motoring total leaves the line's own amount out and takes the
+// claim instead. Trusting the amount the master states would tie the figure
+// to whichever package that line was priced for.
+const advBusinessMiles = totalBusinessMiles(advPurchLines);
+const advCashMotor = advPurchLines
+  .filter((l) => !(l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+  .filter((l) => SE_PURCHASE_CODE_MAP[l.accountMainID] === "v")
+  .reduce((sum, l) => sum + l.amount, 0);
 const advToml = formatScenarioToml(
   {
     name: "Precision Code - advanced self employed",
@@ -360,7 +371,8 @@ const advToml = formatScenarioToml(
   advGrouped,
   {
     total_sales: advTotalSales,
-    total_motor_net: Math.round((advByCode.v || 0) / 1.2),
+    total_mileage: advBusinessMiles,
+    total_motor_net: Math.round(advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)),
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
@@ -888,7 +900,7 @@ function writeBrickworkSe(vatRegistered) {
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
   const vatDivisor = 1 + (vatRegistered ? TWIN_VAT_RATE : 0);
-  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
+  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
   grouped.payroll = buildPayroll(lines);
   const entity = brickworkEntity("SelfEmployed", { vatRegistered, soleTrader: true });
   const employees = brickworkEmployees(brickBook.employees.filter((employee) => !employee.isDirector));

@@ -18,6 +18,7 @@ import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
 import { standardReads, multiFileOptions } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
+import { calculateMileageAllowance } from "../tax/mileage.js";
 import {
   buildVatinterface,
   splitVat,
@@ -143,6 +144,10 @@ function roundedNetOfVat(gross, rate) {
 function journalMonth(transactions, rate, analysisColumns, defaultCode) {
   const totals = { gross: 0, vat: 0, net: 0, byCode: {}, cis: 0 };
   for (const tx of transactions || []) {
+    // A mileage-log row states miles where a bought purchase states an
+    // amount, and the sheet prices those miles itself. Its own figure never
+    // reaches a cell, so it is left out here and the claim added below.
+    if (tx.mileage) continue;
     const { vat, net } = splitVat(tx.amount, rate);
     totals.gross += tx.amount;
     totals.vat += vat;
@@ -156,6 +161,36 @@ function journalMonth(transactions, rate, analysisColumns, defaultCode) {
 
 function journalMonths(journal, rate, analysisColumns, defaultCode) {
   return MONTH_KEYS.map((month) => journalMonth(journal?.[month], rate, analysisColumns, defaultCode));
+}
+
+// The business miles one month's transactions carry.
+function monthMiles(transactions) {
+  return (transactions || []).reduce((miles, tx) => miles + (typeof tx.mileage === "number" ? tx.mileage : 0), 0);
+}
+
+/**
+ * The mileage cells row 2 of each Purchases month tab holds: C2 the running
+ * business miles, which pools the month's own D column with the Sales month's
+ * D1 (C2 = <the month before>!C2 + D1 + [1]<month>!$D$1); G2 the claim that
+ * month adds, banded at the Admin rates; and A2 the claim to date
+ * (A2 = G2 + <the month before>!A2).
+ *
+ * I2 = G2 puts the claim in the month's net column, W2 = IF(F2="v",I2," ")
+ * files it under Motor Expenses, and G1/I1 carry it into the month's own
+ * totals, so the claim reaches the profit and loss account with no VAT
+ * stripped off it.
+ */
+function mileageMonths(scenario, mileageRates) {
+  let milesToDate = 0;
+  let claimedToDate = 0;
+  return MONTH_KEYS.map((month) => {
+    const miles = monthMiles(scenario.sales?.[month]) + monthMiles(scenario.purchases?.[month]);
+    milesToDate += miles;
+    const claimToDate = mileageRates ? calculateMileageAllowance(milesToDate, mileageRates) : 0;
+    const claim = claimToDate - claimedToDate;
+    claimedToDate = claimToDate;
+    return { miles: milesToDate, claim, claimToDate };
+  });
 }
 
 // The year's net total for one code, as the last month tab's own running cell
@@ -491,6 +526,14 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
 
   const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a");
   const purchasesMonths = journalMonths(scenario.purchases, rate, PURCHASES_ANALYSIS_COLUMNS);
+  const mileage = mileageMonths(scenario, taxData?.mileage);
+  purchasesMonths.forEach((month, index) => {
+    const claim = mileage[index].claim;
+    if (!claim) return;
+    month.gross += claim;
+    month.net += claim;
+    month.byCode.v = (month.byCode.v || 0) + claim;
+  });
   const bank = bankBook(scenario.bank, "Bank.xlsx");
   const cash = bankBook(scenario.bank, "Cash.xlsx");
   const payroll = payrollMonths(scenario.payroll);
@@ -872,6 +915,9 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
       I1: purchases.net,
       H2: rate * 100,
       AD1: purchases.cis,
+      C2: mileage[index].miles,
+      G2: mileage[index].claim,
+      A2: mileage[index].claimToDate,
       // The month's own check total. Every analysed column is accounted for, so
       // the sheet balances whatever the CIS column carries beside it.
       A1: purchases.gross - purchases.vat - sheetSum(Object.values(purchases.byCode)),

@@ -400,6 +400,18 @@ async function adminMileageRates(sheetMap, zip, sharedStrings) {
   };
 }
 
+// The same rates for a multi-file package, where the Admin sheet sits in
+// Financialaccounts.xlsx -- the workbook the Purchases mileage formulas reach
+// through their own external link ([2]Admin!$F$21 and the rest).
+async function seAdminMileageRates(sourceDir) {
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Financialaccounts.xlsx")));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+  return adminMileageRates(sheetMap, zip, sharedStrings);
+}
+
 /**
  * Extract transaction lines from a multi-file SE/Ltd product.
  */
@@ -430,6 +442,16 @@ export async function extractMultiFileTransactions(sourceDir, product) {
   // extra measurable quantity rather than replacing the amount. Ltd's Sales
   // sheet has no such column.
   const salesMileageCol = product === "se" ? "D" : null;
+  // SE's Purchases sheet keeps its own mileage column at D. A mileage-log row
+  // there carries miles where a bought purchase carries an amount, because the
+  // sheet prices the miles itself: C2 pools the month's own D column with the
+  // Sales month's D1, G2 bands the running total at the Admin rates and I2
+  // files the claim under Motor Expenses. The export prices such a row back
+  // the same way, banding it against every mile claimed ahead of it.
+  const purchasesMileageCol = product === "se" ? "D" : null;
+  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(sourceDir) : null;
+  const salesMilesByMonth = new Map();
+  let milesToDate = 0;
   const lines = [];
   let entryNum = 1;
 
@@ -476,6 +498,7 @@ export async function extractMultiFileTransactions(sourceDir, product) {
         if (miles !== undefined) {
           line.measurableQuantity = miles;
           line.measurableUnitOfMeasure = "miles";
+          salesMilesByMonth.set(sheetName, (salesMilesByMonth.get(sheetName) || 0) + miles);
         }
       }
       lines.push(line);
@@ -492,25 +515,46 @@ export async function extractMultiFileTransactions(sourceDir, product) {
     const sheetPath = purchasesSheetMap.get(sheetName);
     const xml = await purchasesZip.file(sheetPath).async("string");
 
+    // The month's own C2 pools the Sales sheet's miles with the Purchases
+    // ones before it bands anything, so the sales side of the month counts
+    // towards the claim ahead of every mileage-log row on this tab.
+    milesToDate += salesMilesByMonth.get(sheetName) || 0;
+
     for (let row = 5; row <= 300; row++) {
       const dateVal = readCellValue(xml, `A${row}`, purchasesStrings);
+      if (dateVal === null) break;
+      const miles = purchasesMileageCol ? enteredNumber(xml, `${purchasesMileageCol}${row}`, purchasesStrings) : undefined;
+      const claimsMileage = miles !== undefined && miles > 0;
       const amount = readCellValue(xml, `${amountCol}${row}`, purchasesStrings);
-      if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
+      if (!claimsMileage) {
+        if (amount === null || typeof amount !== "number") break;
+        if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
+      }
 
       const supplier = readCellValue(xml, `B${row}`, purchasesStrings) || "";
       const code = readCellValue(xml, `${codeCol}${row}`, purchasesStrings) || "";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
 
+      let claimed;
+      if (claimsMileage) {
+        claimed = calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+        milesToDate += miles;
+      }
+
       const line = {
         sourceJournalID: "purchases",
         postingDate: excelSerialToDate(dateVal),
         accountMainID: accountAt(xml, row, purchasesStrings, reversePurchase, codeStr, "5002"),
-        amount,
+        amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
         entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
         taxRate,
       };
+      if (claimsMileage) {
+        line.documentType = "mileage-log";
+        line.measurableQuantity = miles;
+        line.measurableUnitOfMeasure = "miles";
+      }
       const reference = textAt(xml, `C${row}`, purchasesStrings);
       if (reference) line.documentReference = reference;
       const description = textAt(xml, `${purchasesDescriptionCol}${row}`, purchasesStrings);

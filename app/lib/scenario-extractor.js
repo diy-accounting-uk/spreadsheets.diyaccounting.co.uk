@@ -701,10 +701,12 @@ function paymentLabel(line) {
 // miles. "all" adds the miles a sales line carries, which only the Taxi
 // Driver package can take: its P&L weighs the year's mileage claim against
 // the actual running costs and charges one or the other ('Profit & Loss
-// Acc'!C1). The Basic Sole Trader P&L has no such choice -- its mileage
-// allowance simply adds to Motor Expenses (PurchasesApr!P3 = the month's
-// allowance, summed into P1, which P&L!D15 reads) -- so a fare day's miles
-// there would be claimed on top of the fuel that actually paid for them.
+// Acc'!C1). The Basic Sole Trader and Self Employed P&Ls make no such
+// choice -- their mileage allowance simply adds to Motor Expenses (BST:
+// PurchasesApr!P3 = the month's allowance, summed into P1, which P&L!D15
+// reads; SE: PurchasesApr!W2 = IF(F2="v",I2," "), summed into W1, which
+// P&L!C25 reads) -- so a sales day's miles there would be claimed on top of
+// the fuel that actually paid for them.
 function lineMileage(line) {
   if (line.measurableUnitOfMeasure !== "miles") return undefined;
   return typeof line.measurableQuantity === "number" ? line.measurableQuantity : undefined;

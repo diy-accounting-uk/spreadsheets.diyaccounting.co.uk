@@ -17,6 +17,7 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
+import { calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
 export const PRODUCT = {
   id: "se",
@@ -195,9 +196,17 @@ export function cellWrites(scenario) {
         sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
+        // A mileage-log entry buys nothing: its whole expense is the claim the
+        // approved rates make of the miles, and the sheet makes that claim
+        // itself. Column D takes them (PurchasesApr!D1 = SUM(D5:D300), pooled
+        // with the Sales sheet's own mileage total into the running total at
+        // C2, banded at the Admin rates in G2 and filed under Motor Expenses
+        // through W2 = IF(F2="v",I2," ")), so writing the amount in column G
+        // as well would charge the same journey twice.
+        if (tx.mileage) sheet[`D${row}`] = tx.mileage;
         if (tx.description) sheet[`E${row}`] = tx.description;
         sheet[`F${row}`] = tx.code;
-        sheet[`G${row}`] = tx.amount;
+        if (!tx.mileage) sheet[`G${row}`] = tx.amount;
         // AD is the sheet's "CIS Certificates / Tax Paid" column, where a
         // contractor records the tax it withheld from a subcontractor's
         // invoice. It sits outside the month's own analysis check total, so
@@ -860,7 +869,10 @@ export function multiFileOptions() {
     // sheet's own check total, G1 - H1 - SUM(P1:AB1), which is the closest
     // this product has to a trial balance: nil means every row's gross has
     // reached its VAT column and one expense column and nothing else.
-    purchasesMonthReads[tab] = ["A1", "H1", "I1", VAT_RATE_CELL, "AD1"];
+    // Row 2 is the sheet's own mileage claim: C2 the business miles to date,
+    // pooling this tab's own column D with the Sales month's D1; G2 the claim
+    // the month adds, banded at the Admin rates; A2 the claim to date.
+    purchasesMonthReads[tab] = ["A1", "A2", "C2", "G2", "H1", "I1", VAT_RATE_CELL, "AD1"];
   }
 
   // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
@@ -1239,7 +1251,10 @@ function columnOf(cell) {
  */
 export function unitFor(sheet, cell) {
   const column = columnOf(cell);
-  if (sheet.startsWith("Sales.xlsx!") || sheet.startsWith("Purchases.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : "money";
+  // C2 on a Purchases month tab is the business miles claimed to date, the
+  // one figure on either journal that is a distance rather than a sum.
+  if (sheet.startsWith("Purchases.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : cell === "C2" ? "count" : "money";
+  if (sheet.startsWith("Sales.xlsx!")) return cell === VAT_RATE_CELL ? "rate" : "money";
   if (sheet === "Vat.xlsx!Vatinterface") return column === "B" || column === "C" ? "date" : column === "M" ? "rate" : "money";
   if (sheet.startsWith("Vat.xlsx!VATQtr")) return cell === "G5" || cell === "G7" ? "date" : "money";
   if (sheet === "Payslips.xlsx!Admin") {
@@ -1365,6 +1380,10 @@ function journalTotalsByCode(journal, rate, defaultCode) {
   const scheduleNet = {};
   for (const transactions of Object.values(journal || {})) {
     for (const tx of transactions) {
+      // A mileage-log row's own figure never reaches a cell: the sheet prices
+      // the miles itself and the claim it makes is added to the motoring
+      // category by the caller, with no VAT to strip off it.
+      if (tx.mileage) continue;
       const code = tx.code || defaultCode;
       gross[code] = (gross[code] || 0) + tx.amount;
       net[code] = (net[code] || 0) + sheetNetOfVat(tx.amount, rate);
@@ -1372,6 +1391,43 @@ function journalTotalsByCode(journal, rate, defaultCode) {
     }
   }
   return { gross, net, scheduleNet };
+}
+
+// The business miles a journal's own rows carry, which is what the Purchases
+// month tabs pool into their running mileage total.
+function journalMiles(journal) {
+  let miles = 0;
+  for (const transactions of Object.values(journal || {})) {
+    for (const tx of transactions) if (typeof tx.mileage === "number") miles += tx.mileage;
+  }
+  return miles;
+}
+
+function monthMiles(transactions) {
+  return (transactions || []).reduce((miles, tx) => miles + (typeof tx.mileage === "number" ? tx.mileage : 0), 0);
+}
+
+/**
+ * The mileage claim each month adds, keyed by scenario month. The Purchases
+ * month tab pools its own column D with the Sales month's D1 into C2 and
+ * bands the running total in G2, so a month's claim is what that banding adds
+ * over every mile claimed in the months ahead of it, sales miles included.
+ *
+ * @param {Object} scenario - a loaded scenario (or a merged scenario/expected)
+ * @param {Object} mileageRates - the tax year's [mileage] table
+ * @returns {Object} scenario month key -> the claim that month adds
+ */
+function mileageClaimsByMonth(scenario, mileageRates) {
+  const claims = {};
+  let milesToDate = 0;
+  for (const month of MONTH_KEYS) {
+    const miles = monthMiles(scenario.sales?.[month]) + monthMiles(scenario.purchases?.[month]);
+    if (!miles) continue;
+    claims[month] =
+      calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+    milesToDate += miles;
+  }
+  return claims;
 }
 
 // One row per journal category that crosses into another statement, so the
@@ -1389,6 +1445,15 @@ export function categoryNetting(results, scenario) {
   const num = (v) => (typeof v === "number" ? v : 0);
   const sales = journalTotalsByCode(scenario.sales, rate, "a");
   const purchases = journalTotalsByCode(scenario.purchases, rate);
+  // The year's mileage claim lands on the motoring category whole, so it
+  // stands on both sides of that row: nothing was stripped on the way to
+  // Motor Expenses because there was no VAT on it to strip.
+  const businessMiles = journalMiles(scenario.sales) + journalMiles(scenario.purchases);
+  if (businessMiles) {
+    const claim = calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
+    purchases.gross.v = (purchases.gross.v || 0) + claim;
+    purchases.net.v = (purchases.net.v || 0) + claim;
+  }
   const rows = [];
 
   const plRow = (journal, side, code, row, sign = 1) => {
@@ -1468,6 +1533,13 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
 
+  // The approved rates the generator injected into the Admin sheet, which is
+  // what the Purchases sheets band their running mileage total by. The rates
+  // have held since 2011/12, so a book checked without a tax year's data
+  // still has them.
+  const mileageRates = taxData?.mileage || HMRC_CAR_MILEAGE_RATES;
+  const monthlyMileageClaims = mileageClaimsByMonth(expected, mileageRates);
+
   // The rate cell itself, month by month on both journals. A non-registered
   // scenario writes 0 into April's Sales tab and nothing else; every other
   // month has to arrive at the same rate down the template's own chain of
@@ -1529,6 +1601,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // Expense line totals (6f)
   if (expected.total_motor_net) check("Motor Expenses", pl.B25 || 0, expected.total_motor_net);
   if (expected.total_legal_net) check("Legal & Professional", pl.B28 || 0, expected.total_legal_net);
+
+  // The mileage route. A mileage-log entry buys nothing: it states the miles
+  // and the sheet prices them. Each Purchases month tab pools its own column
+  // D with the Sales month's D1 into the running total at C2, bands that
+  // total at the Admin rates in G2 and carries the claim to date at A2, and
+  // W2 = IF(F2="v",I2," ") files the claim under Motor Expenses. This P&L
+  // makes no choice between the claim and the running costs the way the taxi
+  // one does -- the claim simply adds to the motoring the business paid cash
+  // for.
+  const businessMiles = expected.total_mileage || 0;
+  const yearEndPurchases = results[`Purchases.xlsx!${MONTH_SHEETS.mar}`];
+  if (businessMiles && yearEndPurchases) {
+    const mileageClaim = calculateMileageAllowance(businessMiles, mileageRates);
+    check("Purchases: business miles pooled for the year", num(yearEndPurchases.C2), businessMiles, 0);
+    check("Purchases: mileage claimed = those miles at the tax year's approved rates", num(yearEndPurchases.A2), mileageClaim, 0.01);
+    let cashMotorNet = 0;
+    for (const transactions of Object.values(expected.purchases || {})) {
+      for (const tx of transactions) if (tx.code === "v" && !tx.mileage) cashMotorNet += netOfVat(tx.amount, rate);
+    }
+    check("P&L: Motor Expenses = motoring paid for + the mileage claimed", num(pl.B25), cashMotorNet + mileageClaim);
+  }
 
   // Stock check
   // Stock. The counts at the two ends of the year, read back from the sheet
@@ -2069,10 +2162,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const monthTx = expected.purchases[MONTH_KEYS[i]] || [];
       const col = MONTH_COLS[i];
       const byCode = {};
-      for (const tx of monthTx) byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
+      // A mileage-log row states miles, not money, so its own figure reaches
+      // no analysis column. The month's claim reaches the motoring one
+      // instead, through W2 = IF(F2="v",I2," ").
+      for (const tx of monthTx) {
+        if (tx.mileage) continue;
+        byCode[tx.code] = (byCode[tx.code] || 0) + tx.amount;
+      }
 
       for (const [code, row] of Object.entries(PURCHASES_MONTHLY_TIE_ROWS)) {
-        const net = netOfVat(byCode[code] || 0, rate);
+        const net = netOfVat(byCode[code] || 0, rate) + (code === "v" ? monthlyMileageClaims[MONTH_KEYS[i]] || 0 : 0);
         check(`P&L ${MONTH_KEYS[i]} col ${col}${row} = Purchases.xlsx ${code}-coded net`, pl[`${col}${row}`] || 0, net);
       }
     }
@@ -2231,12 +2330,19 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       }
     }
     if (expected.purchases) {
-      for (const txs of Object.values(expected.purchases)) {
+      for (const [month, txs] of Object.entries(expected.purchases)) {
         for (const tx of txs) {
           if (!inQuarter(tx.date)) continue;
+          // The mileage claim reaches box 7 through the month's own net total
+          // (Vatinterface H = Purchases!I1, and I1 sums I2 with the rows) and
+          // carries no input VAT, so the row's own figure is left out and the
+          // month's claim added once for the whole month.
+          if (tx.mileage) continue;
           inputVat += tx.amount - tx.amount / (1 + rate);
           purchasesNet += tx.amount / (1 + rate);
         }
+        const claim = monthlyMileageClaims[month];
+        if (claim && txs.length > 0 && inQuarter(txs[0].date)) purchasesNet += claim;
       }
     }
     // Periods outside the twelve accounting months are entered on the

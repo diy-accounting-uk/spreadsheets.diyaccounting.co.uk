@@ -78,13 +78,13 @@
     },
     {
       "field": "measurableQuantity",
-      "products": ["se", "ltd"],
-      "reason": "The SE Purchases sheet's mileage column takes the quantity on the way in and prices it: what it holds is a claim the sheet makes of the miles, not the miles themselves, and the export reads the money back rather than the distance. The Sales sheet's own mileage column carries the distance itself and the export reads it back. Ltd keeps mileage on expensesform.xlsx, which the journal does not post to."
+      "products": ["ltd"],
+      "reason": "Ltd keeps mileage on expensesform.xlsx, which the journal does not post to, and no other column on a Ltd sheet takes a quantity. The SE sales and purchases sheets both carry a mileage column and the export reads the distance back off each of them."
     },
     {
       "field": "measurableUnitOfMeasure",
-      "products": ["se", "ltd"],
-      "reason": "The sheets' quantity columns are headed with the unit they take, so a row states no unit of its own -- except SE's Sales mileage column, whose export states \"miles\" itself. The BST, Taxi and SE Sales exporters read a mileage column back; SE's own Purchases mileage column still does not."
+      "products": ["ltd"],
+      "reason": "A Ltd sheet's quantity columns are headed with the unit they take, so a row states no unit of its own. The BST, Taxi and SE exporters all read a mileage column back and state \"miles\" on the line themselves."
     },
     {
       "field": "paymentMethod",
