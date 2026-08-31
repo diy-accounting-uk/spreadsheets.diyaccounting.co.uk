@@ -21,7 +21,9 @@ pushes in batches.
 | guides | F9 remainder: guides teach the dead motor cap | — | Haiku | landed, 5 passages across 3 guides, PDF build green |
 | semileage | F18 remainder: SE Sales mileage writer | — | Sonnet | landed `0f90e78a`, feeds the sheet's cross-file claim, 5 new checks proven breakable |
 | f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
-| renumber | SE Full renumbering to the current SA103F | `../wt-spreadsheets/renumber` | Opus | started |
+| renumber | SE Full renumbering to the current SA103F | — | Opus | landed, whole sheet on the current form, SE 678/678 + stability 0 moved |
+| sepurch | SE purchases-side mileage route | `../wt-spreadsheets/sepurch` | Opus | started |
+| g1 | SE Full G1 deadline from the year, not a literal | `../wt-spreadsheets/g1` | Sonnet | started |
 
 ## Open items
 
@@ -33,18 +35,19 @@ follow the reconciliation-bug method.
 
 
 
-- [ ] **SE Full renumbering against the current SA103F** (Opus; operator commissioned the
-  wholesale surgery 2026-08-30) — renumber every box to the current form, rewrite captions,
-  delete dead boxes, rework the checks. In flight as the renumber track.
 
 
-- [ ] **SE Purchases-side mileage route** (Opus) — SE's mileage-log entries are written as ordinary
+- [ ] **SE purchases-side mileage route** (Opus; in flight as the sepurch track) — SE's mileage-log entries are written as ordinary
   cash motor purchases (amount into Purchases `G`), never as miles into the Purchases `D` column
   the sheet prices itself; `carriesMileage` is `"none"` for SE and `app/lib/calculators/se.js` has
   no mileage-claim logic. Making the route real means writing miles instead of amounts, reading
   them back, and teaching the SE calculator the banded claim (Motor Expenses totals and checks
   move) — the SE counterpart of F14, and `roundtrip-unrepresentable.json` stops excusing the
   Purchases side when it lands.
+
+- [ ] **SE Full G1 prints a hardcoded filing deadline** (Sonnet; in flight as the g1 track) —
+  `SE Full!G1` says "by 31st January 2027" whatever year the package is generated for; derive it
+  from the year end (a formula or a generator write from the Admin dates) and check it per year.
 
 ## Plans not tracked here
 
