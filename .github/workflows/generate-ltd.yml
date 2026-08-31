@@ -270,21 +270,32 @@ jobs:
           FYSTART=$Y
           if [ "$M" -le 3 ]; then FYSTART=$((Y - 1)); fi
           echo "years=ltd-$FYSTART" | tee -a "$GITHUB_OUTPUT"
+          # cellWrites shifts every posting date forward from the fixture's
+          # own declared period start (examples/precision-code-ltd/full/
+          # book.toml's periodCoveredStart, April) to this year end's month,
+          # clamping at each month's own end (app/products/ltd.js). The
+          # comparator needs the same offset to score EQ2's transactions in
+          # that shifted frame rather than on counts alone.
+          DATE_SHIFT_MONTHS=$(( (M % 12 - 3 + 12) % 12 ))
+          echo "date-shift-months=$DATE_SHIFT_MONTHS" | tee -a "$GITHUB_OUTPUT"
       - name: 'Roundtrip scorecard against the recalculated package (EQ2 budget gate, EQ1 informational)'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: |
           node app/bin/report.js --package ltd --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/ltd-scorecard-excel
           node app/bin/export.js --package ltd --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/ltd-scorecard-excel/data
           node app/bin/report.js --package ltd --data examples/precision-code-ltd/full --years ${{ steps.roundtrip.outputs.years }} --output-dir target/ltd-scorecard-js
-          # Only linesLost and fieldsDropped are gated here
-          # (app/data/roundtrip-matrix-budget.json), not differing/noJsValue/
-          # noExcelValue: this package's own VAT-quarter and CT600 labels are
+          # linesLost, fieldsDropped, coarseUnmatched and accountUnmatched are
+          # gated here (app/data/roundtrip-matrix-budget.json) at every year
+          # end in the matrix, with --date-shift-months putting the fixture's
+          # transactions through the same period-frame shift the export's own
+          # dates carry. differing/noJsValue/noExcelValue stay informational
+          # only: this package's own VAT-quarter and CT600 labels are
           # anchored to its own year-end, while the fixture's dates never move
           # off the master's, so the report-half comparison is only exact for
           # the one year-end that happens to equal the master's own period end
           # (examples/precision-code-ltd/full/book.toml's periodCoveredEnd).
           # The scorecard still prints in full for visibility.
-          node app/bin/verify-roundtrip.js --package ltd --excel target/ltd-scorecard-excel --js target/ltd-scorecard-js --budget app/data/roundtrip-matrix-budget.json
+          node app/bin/verify-roundtrip.js --package ltd --excel target/ltd-scorecard-excel --js target/ltd-scorecard-js --budget app/data/roundtrip-matrix-budget.json --date-shift-months "${{ steps.roundtrip.outputs.date-shift-months }}"
       - name: 'EQ3: stability of the recalculated package'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: node app/bin/verify-stability.js --package ltd --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/ltd-scorecard-stability

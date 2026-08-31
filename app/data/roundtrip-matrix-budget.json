@@ -1,18 +1,26 @@
 {
   "bst": {
     "linesLost": 0,
-    "fieldsDropped": 0
+    "fieldsDropped": 0,
+    "coarseUnmatched": 0,
+    "accountUnmatched": 0
   },
   "taxi": {
     "linesLost": 0,
-    "fieldsDropped": 0
+    "fieldsDropped": 0,
+    "coarseUnmatched": 0,
+    "accountUnmatched": 0
   },
   "se": {
     "linesLost": 0,
-    "fieldsDropped": 0
+    "fieldsDropped": 0,
+    "coarseUnmatched": 0,
+    "accountUnmatched": 0
   },
   "ltd": {
     "linesLost": 0,
-    "fieldsDropped": 0
+    "fieldsDropped": 0,
+    "coarseUnmatched": 0,
+    "accountUnmatched": 0
   }
 }
