@@ -16,7 +16,8 @@ lands:
 - print-sheet track (Opus) — C1: merged to `claude/next-batch-wave-1` (151 error cells
   resolved via ADDRESS-form INDIRECT, join checked against the fixture, two write-map bugs
   fixed; 27 + 213 + 94 green in its tree; branch-side re-run in flight)
-- coverage-report track (Haiku) — C5: started
+- coverage-report track (Haiku) — C5: merged to `claude/next-batch-wave-1` (313/313 sheets
+  touched, the 16 gaps closed by C1-C4)
 - writes track (Sonnet) — C2 + C3: merged to `claude/next-batch-wave-1` (249/249 on the
   merged state in its worktree; branch-side check re-run in flight)
 - roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
@@ -62,10 +63,6 @@ follow the reconciliation-bug method.
   independent of the rate C2 now writes into `Product Details`. Template formula surgery:
   point the term at the written rate cell, extend C2's checks with a non-zero carriage case,
   prove breakable.
-- [ ] **C5: regenerate `REPORT_SPREADSHEET_TEST_COVERAGE.md` once C1-C4 land** (Haiku) — re-run the
-  report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
-  the date and repo-state line, and delete the closed gaps; the count should fall from
-  313/16 untouched toward the residue the report says is deliberate.
 - [ ] **B1: twelve payroll lines come back on the wrong account on the reconcile-populated
   route** (Sonnet) — surfaced by F22's matrix scorecard: £1048/month, account 5100, comes back
   on a different account in the reconcile-populated runs only (`accountMatches` 710 vs
