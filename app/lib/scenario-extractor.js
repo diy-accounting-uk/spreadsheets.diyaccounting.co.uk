@@ -480,6 +480,12 @@ export function escapeTomlString(str) {
   return str.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
+// A TOML local date, which is what a book.toml date parses back to. A Date
+// reaches here at UTC midnight, so the ISO day is the day the book wrote.
+export function tomlLocalDate(value) {
+  return value instanceof Date ? value.toISOString().slice(0, 10) : value;
+}
+
 export function computeNetSales(salesLines) {
   let netTotal = 0;
   for (const line of salesLines) {
@@ -918,6 +924,10 @@ export function formatScenarioToml(metadata, grouped, expected) {
       parts.push(`payFrequency = "${emp.payFrequency}"`);
       if (emp.taxCode) parts.push(`taxCode = "${emp.taxCode}"`);
       if (emp.niCategory) parts.push(`niCategory = "${emp.niCategory}"`);
+      // The day the employee joined. The Payslips Employee sheet turns it
+      // into the payroll month they first appear in, and every printed figure
+      // on a month tab is gated on that month having arrived.
+      if (emp.startDate) parts.push(`startDate = ${tomlLocalDate(emp.startDate)}`);
       parts.push(`isDirector = ${emp.isDirector}`);
       parts.push("");
     }

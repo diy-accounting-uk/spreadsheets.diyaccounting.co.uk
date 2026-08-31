@@ -30,9 +30,13 @@ import {
   monthlyPayrollBlockRow,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
+  PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
+  PAYSLIP_PRINT_PERIOD_CELLS,
   PAYSLIP_PRINT_SHEET,
   PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_TO_DATE_CELLS,
   PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
   PAYSLIPS_ENTRY_COLUMNS,
   PAYSLIPS_ZERO_FILLED_COLUMNS,
@@ -85,6 +89,11 @@ const SALES_BAD_DEBT_ROW = 34;
 
 // The management P&L's expense rows and the trial balance row each reads.
 const EXPENSE_PL_ROWS = { 21: 68, 22: 69, 23: 70, 24: 71, 25: 72, 26: 73, 27: 74, 28: 75, 29: 76, 30: 77, 31: 78, 32: 79, 33: 80 };
+
+// WagesInterface holds a month a row in two blocks, employees above
+// directors, twelve rows each.
+const WAGES_INTERFACE_EMPLOYEE_FIRST_ROW = 4;
+const WAGES_INTERFACE_DIRECTOR_FIRST_ROW = 17;
 
 const BANK_ACCOUNT_FILES = {
   1200: "Currentaccount.xlsx",
@@ -557,9 +566,14 @@ function payrollEntriesByTab(scenario, tabs) {
   return buckets;
 }
 
-function payrollByTab(entriesByTab) {
+// A month tab gives an employee their line by position, so the first entry in
+// a month's block belongs to the first employee on the Employee sheet. `keep`
+// picks the positions a bucket counts, which is how the employees' and
+// directors' halves of the month are told apart.
+function payrollByTab(entriesByTab, keep = () => true) {
   const buckets = {};
-  for (const [tab, entries] of Object.entries(entriesByTab)) {
+  for (const [tab, allEntries] of Object.entries(entriesByTab)) {
+    const entries = allEntries.filter((entry, index) => keep(index));
     buckets[tab] = entries.reduce(
       (sums, entry) => ({
         grossPay: sums.grossPay + (entry.grossPay || 0),
@@ -682,8 +696,11 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   results["Fixedassets.xlsx!HPfinance"] = hp.sheet;
 
   const payrollEntries = payrollEntriesByTab(scenario, tabs);
+  const isDirectorsLine = (index) => Boolean((scenario.employees || [])[index]?.isDirector);
   const payroll = payrollByTab(payrollEntries);
-  results.WagesInterface = buildWagesInterface(payroll, tabs);
+  const employeePayroll = payrollByTab(payrollEntries, (index) => !isDirectorsLine(index));
+  const directorPayroll = payrollByTab(payrollEntries, isDirectorsLine);
+  results.WagesInterface = buildWagesInterface(employeePayroll, directorPayroll, tabs);
   results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
   results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period);
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
@@ -691,11 +708,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     addPayslipsWeeklyRemnants(monthTab, monthIndex);
     results[`Payslips.xlsx!${tabs[monthIndex]}`] = monthTab;
   }
-  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(
-    PAYSLIP_PRINT_PERIOD,
-    tabs,
-    payrollEntries[tabs[PAYSLIP_PRINT_PERIOD - 1]] || [],
-  );
+  results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
 
   const companySecretary = buildCompanySecretary(scenario);
   Object.assign(results, companySecretary);
@@ -713,6 +726,8 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     purchasesMonthly,
     banks,
     payroll,
+    employeePayroll,
+    directorPayroll,
     blocks,
     stock,
     tabs,
@@ -869,15 +884,22 @@ function buildHirePurchase(scenario) {
 
 // ── Payroll sheets ─────────────────────────────────────────────────────────
 
-function buildWagesInterface(payroll, tabs) {
+// One month a row in each of two blocks, employees from row 4 and directors
+// from row 17. The sheet works the employees' side out as the month's whole
+// payroll less the month tab's own directors sub-total, so what reaches the
+// P&L's two wages lines depends on which lines belong to a director.
+function buildWagesInterface(employeePayroll, directorPayroll, tabs) {
   const sheet = {};
-  tabs.forEach((tab, index) => {
-    const row = 4 + index;
-    sheet[`C${row}`] = payroll[tab].grossPay;
-    sheet[`D${row}`] = payroll[tab].incomeTax;
-    sheet[`E${row}`] = payroll[tab].employeeNI;
-    sheet[`H${row}`] = payroll[tab].employerNI;
-  });
+  const block = (firstRow, payroll) =>
+    tabs.forEach((tab, index) => {
+      const row = firstRow + index;
+      sheet[`C${row}`] = payroll[tab].grossPay;
+      sheet[`D${row}`] = payroll[tab].incomeTax;
+      sheet[`E${row}`] = payroll[tab].employeeNI;
+      sheet[`H${row}`] = payroll[tab].employerNI;
+    });
+  block(WAGES_INTERFACE_EMPLOYEE_FIRST_ROW, employeePayroll);
+  block(WAGES_INTERFACE_DIRECTOR_FIRST_ROW, directorPayroll);
   return sheet;
 }
 
@@ -951,11 +973,12 @@ function addPayslipsWeeklyRemnants(sheet, monthIndex) {
 
 // The page the employer prints. H3 and H4 are the join -- the tab the chosen
 // period lands on and the row its block starts at -- and I9, I10 and L7 the
-// heading it prints above the figures. Every figure below the heading is
-// gated on the employee's line carrying a pay number, which a month tab only
-// gives an employee whose starting date is on the Employee sheet; no scenario
-// carries starting dates, so the page prints its heading and nothing else.
-function buildPayslipsPrintPage(period, tabs, entries) {
+// heading it prints above the figures. Everything below the heading is the
+// first employee's own line on that month tab, gated on M8, the payroll
+// number their Employee-sheet block gives them once their starting date has
+// arrived. The year-to-date row runs from the payroll year's first month, so
+// it adds that employee's line over every month up to the one printed.
+function buildPayslipsPrintPage(period, tabs, entriesByTab) {
   const monthIndex = period - 1;
   const sheet = {
     [PAYSLIP_PRINT_CELLS.tab]: tabs[monthIndex],
@@ -963,7 +986,19 @@ function buildPayslipsPrintPage(period, tabs, entries) {
     [PAYSLIP_PRINT_CELLS.heading]: PAYSLIP_PRINT_MONTHLY_HEADING,
     [PAYSLIP_PRINT_CELLS.periodNumber]: period,
   };
-  if (entries.length > 0) sheet[PAYSLIP_PRINT_CELLS.periodEnd] = serialOf(parseDate(entries[0].date));
+  const entries = entriesByTab[tabs[monthIndex]] || [];
+  if (entries.length === 0) return sheet;
+
+  const entry = entries[0];
+  sheet[PAYSLIP_PRINT_CELLS.periodEnd] = serialOf(parseDate(entry.date));
+  sheet.M8 = PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER;
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_PERIOD_CELLS)) sheet[cell] = entry[field] || 0;
+
+  const toDate = tabs.slice(0, period).flatMap((tab) => (entriesByTab[tab] || []).slice(0, 1));
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
+    sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
+  }
+  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
   return sheet;
 }
 
@@ -1181,7 +1216,21 @@ function buildOpenAccounts(book, scenario, openingBalance) {
 // its total, because the management P&L reads the months and the published
 // statements read the year.
 function buildTrialBalance(input) {
-  const { openingBalance, salesMonthly, purchasesMonthly, banks, payroll, blocks, stock, tabs, hp, dividendDeclared, shareIssue } = input;
+  const {
+    openingBalance,
+    salesMonthly,
+    purchasesMonthly,
+    banks,
+    payroll,
+    employeePayroll,
+    directorPayroll,
+    blocks,
+    stock,
+    tabs,
+    hp,
+    dividendDeclared,
+    shareIssue,
+  } = input;
   const openingCost = openingBalance.fixed_asset_cost || {};
   const openingDepreciation = openingBalance.fixed_asset_depreciation || {};
   const receipts = (code) => bankCodeMonths(banks, code, "receipt", tabs);
@@ -1240,9 +1289,12 @@ function buildTrialBalance(input) {
   monthly[60] = added(purchasesMonthly("O"), negated(stock.movements));
   monthly[61] = purchasesMonthly("P");
   monthly[62] = purchasesMonthly("Q");
-  monthly[64] = tabs.map((tab) => payroll[tab].grossPay);
+  monthly[64] = tabs.map((tab) => employeePayroll[tab].grossPay);
   monthly[65] = purchasesMonthly("S");
-  monthly[66] = purchasesMonthly("R");
+  monthly[66] = added(
+    purchasesMonthly("R"),
+    tabs.map((tab) => directorPayroll[tab].grossPay),
+  );
   monthly[67] = tabs.map((tab) => payroll[tab].employerNI);
   for (const [row, column] of Object.entries({
     68: "T",

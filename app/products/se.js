@@ -15,8 +15,12 @@ import {
   PAYSLIP_PRINT_PERIOD,
   PAYSLIP_PRINT_SHEET,
   PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_EMPLOYEE_BASE_ROWS,
+  PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
   PAYSLIPS_ENTRY_COLUMNS,
+  payrollYearStart,
   payslipsMonthEntryRows,
+  payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
 import {
@@ -182,7 +186,9 @@ const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", descr
 const STOCK_OPENING_COUNT_CELL = "AB6";
 const STOCK_CLOSING_COUNT_CELL = "AB30";
 
-export function cellWrites(scenario) {
+// targetStartYear is the year the package's tax year opens in, which for a
+// 5 April year end is the year before the one its directory names.
+export function cellWrites(scenario, targetStartYear) {
   const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
@@ -394,7 +400,8 @@ export function cellWrites(scenario) {
   const payslipsWrites = {};
   if (scenario.employees) {
     // Employee blocks start at rows 13, 39, 65, 91, 117 (26-row intervals)
-    const EMP_BASE_ROWS = [13, 39, 65, 91, 117];
+    const EMP_BASE_ROWS = PAYSLIPS_EMPLOYEE_BASE_ROWS;
+    const payrollStart = targetStartYear ? payrollYearStart(targetStartYear) : null;
     payslipsWrites.Employee = {};
     const emp = payslipsWrites.Employee;
 
@@ -414,7 +421,17 @@ export function cellWrites(scenario) {
         emp[`D${base + 3}`] = parts.slice(0, -1).join(" "); // forename(s)
       }
       if (e.niNumber) emp[`M${base + 2}`] = e.niNumber;
-      if (e.startDate) emp[`D${base + 11}`] = e.startDate;
+      // The date the employee joined, read against the payroll year this
+      // package's calendar runs on. Without it the employee's line on every
+      // month tab stays blank and the printed payslip prints no figures.
+      if (e.startDate && payrollStart) {
+        const onSheet = payslipsStartDate(parseDate(e.startDate), payrollStart);
+        emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
+          onSheet.getUTCFullYear(),
+          onSheet.getUTCMonth() + 1,
+          onSheet.getUTCDate(),
+        );
+      }
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
       // The payroll number, not the scenario's own employee id. The printed
       // payslip adds this cell to its block's start row to find the
@@ -2433,14 +2450,38 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           0,
         );
         // Every figure below the heading is gated on the employee's line
-        // carrying a pay number, and a month tab only gives one to an
-        // employee whose starting date is on Payslips!Employee. No scenario
-        // carries starting dates, so the page prints its heading and leaves
-        // the figures blank.
+        // carrying a pay number, which a month tab gives only to an employee
+        // whose starting date has arrived. M8 is that gate read straight off
+        // the page: it holds the payroll number the Employee sheet gave the
+        // first employee, and the whole page goes blank the moment it does
+        // not.
+        const printedEmployee = printedEntries[0];
+        check("Payslips print: the page's join to the employee's line carries their payroll number", num(printed.M8), 1, 0);
+        check("Payslips print: gross pay is the pay the scenario recorded", num(printed.G14), printedEmployee.grossPay || 0);
+        check("Payslips print: income tax is the tax the scenario recorded", num(printed.H14), printedEmployee.incomeTax || 0);
+        check("Payslips print: national insurance is the employee NI the scenario recorded", num(printed.I14), printedEmployee.employeeNI || 0);
+        check("Payslips print: net pay is the net pay the scenario recorded", num(printed.M14), printedEmployee.netPay || 0);
+
+        // The year-to-date row runs from the payroll year's first month to
+        // this one, so it is the scenario's own entries for that employee
+        // over the months printed so far -- the first entry of each month up
+        // to and including the one on the page.
+        const toDate = MONTH_KEYS.slice(0, PAYSLIP_PRINT_PERIOD).flatMap((key) => (expected.payroll[key] || []).slice(0, 1));
+        const toDateSum = (field) => toDate.reduce((total, entry) => total + (entry[field] || 0), 0);
+        check("Payslips print: gross pay to date is every month printed so far", num(printed.G16), toDateSum("grossPay"));
+        check("Payslips print: income tax to date is every month printed so far", num(printed.H16), toDateSum("incomeTax"));
+        check("Payslips print: national insurance to date is every month printed so far", num(printed.I16), toDateSum("employeeNI"));
+        check("Payslips print: net pay to date is every month printed so far", num(printed.M16), toDateSum("netPay"));
+
+        // The payment date the page prints reads the block's own header row
+        // in column R, where the template holds nothing -- the date the wages
+        // were paid sits a row below in column M, which is where I9 above
+        // finds it. The page therefore prints no payment date at all.
+        check("Payslips print: the payment date reads a cell the block leaves empty", num(printed.M18), 0, 0);
         checks.push({
-          name: "Payslips print: the first employee's line carries the pay the scenario recorded",
-          actual: String(printed.G14 ?? "").trim() || "blank",
-          expected: printedEntries[0].grossPay,
+          name: "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
+          actual: num(printed.M18),
+          expected: toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
           pass: false,
           severity: "warning",
           diff: "",

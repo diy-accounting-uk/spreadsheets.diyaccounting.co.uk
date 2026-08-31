@@ -31,9 +31,13 @@ import {
 import {
   monthlyPayrollBlockRow,
   PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
+  PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
   PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_PERIOD_CELLS,
   PAYSLIP_PRINT_SHEET,
+  PAYSLIP_PRINT_TO_DATE_CELLS,
   PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
   PAYSLIPS_ENTRY_COLUMNS,
   PAYSLIPS_ZERO_FILLED_COLUMNS,
@@ -339,10 +343,12 @@ function buildPayslipsMonthTab(monthIndex, entries) {
 // The page the employer prints. H3 and H4 are the join -- the tab the chosen
 // period lands on and the row its block starts at -- and I9, I10 and L7 the
 // heading above the figures. Every figure below the heading is gated on the
-// employee's line carrying a pay number, which a month tab only gives an
-// employee whose starting date is on the Employee sheet; no scenario carries
-// starting dates, so the page prints its heading and nothing else.
-function buildPayslipsPrintPage(period, entries) {
+// employee's line carrying a pay number, which a month tab gives an employee
+// once their starting date has arrived. M8 is that number, and the
+// year-to-date row adds the same employee's line over every month up to the
+// one printed. A month with no payroll leaves the page blank below the
+// heading, which is the sheet's own gated branch.
+function buildPayslipsPrintPage(period, payroll) {
   const monthIndex = period - 1;
   const sheet = {
     [PAYSLIP_PRINT_CELLS.tab]: MONTH_SHEETS[MONTH_KEYS[monthIndex]],
@@ -350,8 +356,22 @@ function buildPayslipsPrintPage(period, entries) {
     [PAYSLIP_PRINT_CELLS.heading]: PAYSLIP_PRINT_MONTHLY_HEADING,
     [PAYSLIP_PRINT_CELLS.periodNumber]: period,
   };
-  if (entries.length > 0) sheet[PAYSLIP_PRINT_CELLS.periodEnd] = excelSerial(new Date(entries[0].date));
-  for (const cell of PAYSLIP_PRINT_BLANK_CELLS) sheet[cell] = SHEET_BLANK;
+  const entries = payroll[MONTH_KEYS[monthIndex]] || [];
+  if (entries.length === 0) {
+    for (const cell of PAYSLIP_PRINT_BLANK_CELLS) sheet[cell] = SHEET_BLANK;
+    return sheet;
+  }
+
+  const entry = entries[0];
+  sheet[PAYSLIP_PRINT_CELLS.periodEnd] = excelSerial(new Date(entry.date));
+  sheet.M8 = PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER;
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_PERIOD_CELLS)) sheet[cell] = entry[field] || 0;
+
+  const toDate = MONTH_KEYS.slice(0, period).flatMap((key) => (payroll[key] || []).slice(0, 1));
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
+    sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
+  }
+  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
   return sheet;
 }
 
@@ -1014,10 +1034,7 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     },
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
-    [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(
-      PAYSLIP_PRINT_PERIOD,
-      scenario.payroll?.[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]] || [],
-    ),
+    [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, scenario.payroll || {}),
     "Bank.xlsx!Mar": { A1: bank[11].opening, A2: bank[11].closing },
     "Cash.xlsx!Mar": { A1: cash[11].opening, A2: cash[11].closing },
     "Sales.xlsx!OpeningDebtors": { G1: ledgerTotal(scenario.opening_debtors) },

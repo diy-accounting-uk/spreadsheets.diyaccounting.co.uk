@@ -70,6 +70,35 @@ export const PAYSLIPS_ZERO_FILLED_COLUMNS = [
 // the other.
 export const PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES = [3, 4];
 
+// The Employee sheet keeps one employee per 26-row block, and the start date
+// sits eleven rows down each block. The month tab reads it back as a payroll
+// month number and prints nothing for an employee whose month has not
+// arrived, so the whole printed page hangs off this one cell.
+export const PAYSLIPS_EMPLOYEE_BASE_ROWS = [13, 39, 65, 91, 117];
+export const PAYSLIPS_EMPLOYEE_START_DATE_OFFSET = 11;
+
+/**
+ * The first day of the payroll year the package's Payslips calendar runs on.
+ * The workbook follows the tax year rather than the accounting period, so a
+ * company with a June year end still dates its payslips from 6 April.
+ * @param {number} financialYear - the year the package's tax data opens in
+ * @returns {Date}
+ */
+export const payrollYearStart = (financialYear) => new Date(Date.UTC(financialYear, 3, 6));
+
+/**
+ * The start date to put on the Employee sheet for an employee who joined on
+ * `started`. The sheet finds an employee's first payroll month by looking the
+ * date up on its own calendar, which opens on 6 April, so a date from an
+ * earlier year has no month to find. The sheet's own caption tells the
+ * employer to enter the payroll year's first day for anyone already on the
+ * books, and that is what someone joining earlier gets here.
+ * @param {Date} started
+ * @param {Date} yearStart - payrollYearStart() for this package
+ * @returns {Date}
+ */
+export const payslipsStartDate = (started, yearStart) => (started < yearStart ? yearStart : started);
+
 // The Payslips sheet is the page an employer prints and hands over. F3 picks
 // weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
 // a month tab name and a block start row, and every printed figure is an
@@ -85,6 +114,23 @@ export const PAYSLIP_PRINT_CELLS = {
   periodNumber: "I10",
 };
 export const PAYSLIP_PRINT_MONTHLY_HEADING = "MONTHLY PAYROLL";
+
+// The payroll number the writer gives the first employee, which is the number
+// the page's own join adds to the block row to reach their line. The page
+// prints the first employee's payslip, so this is the gate every figure below
+// the heading passes through.
+export const PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER = 1;
+
+// The printed figures for the period, and the same four accumulated from the
+// payroll year's first month, each keyed by the payslip field it carries.
+export const PAYSLIP_PRINT_PERIOD_CELLS = { G14: "grossPay", H14: "incomeTax", I14: "employeeNI", M14: "netPay" };
+export const PAYSLIP_PRINT_TO_DATE_CELLS = { G16: "grossPay", H16: "incomeTax", I16: "employeeNI", M16: "netPay" };
+
+// The page's payment date reads column R of the block's own header row, where
+// the template holds nothing; the date the wages were paid sits a row below
+// in column M, which is where the period-end cell finds it. So the page
+// prints a nil there whatever the month held.
+export const PAYSLIP_PRINT_EMPTY_PAYMENT_DATE = 0;
 
 // Nothing downstream reads the printed page, so the reconciliation asks it
 // for a period other than the sheet's own default of 1 -- a join stuck on the
