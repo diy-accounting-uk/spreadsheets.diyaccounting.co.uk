@@ -51,8 +51,10 @@ lands:
 Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
 once the wave's tracks are in and the full suite is green.
 
-Queued behind these to avoid product-module collisions: F23 after F22, C1+C2+C3 after T2,
-F24 after F23, C5 after C1–C4.
+Queued: P1 dispatches (Opus) the moment the EQ1 and CI-fallout tracks both land — its
+start-date fixture change re-ripples the expectations CI-fallout is re-deriving, and its
+month-tab changes sit in the payslip export region EQ1 is reworking. B4 follows P1 (both
+touch the exporter).
 
 ## Open items
 
