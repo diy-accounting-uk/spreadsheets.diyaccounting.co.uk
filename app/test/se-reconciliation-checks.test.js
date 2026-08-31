@@ -741,6 +741,57 @@ describeCalc(
       expect(checks.find((c) => c.name === "VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)").pass).toBe(true);
       expect(checks.find((c) => c.name === "VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15)").pass).toBe(true);
     });
+
+    // ── Customer-facing invoice: VAT rate and the sample line's arithmetic ──
+    // Salesinvoice.xlsx carries no external link into the rest of the book,
+    // so a wrong figure here never reaches the accounts -- it reaches the
+    // customer's customer. taxDataForFixedAssets stands in for the tax-year
+    // data reconcile.js hands checkCompliance in production.
+
+    it("writes the tax year's standard rate into the sample product row and computes the line correctly", () => {
+      const productDetails = results["Salesinvoice.xlsx!Product Details"];
+      const invoice = results["Salesinvoice.xlsx!Invoice Template"];
+      expect(productDetails.D2).toBe(20);
+      // The scenario's first sale (Beta Systems, Apr, 1200) is the sample
+      // invoice's one line, quantity 1.
+      expect(invoice.P58).toBe(1200);
+      expect(invoice.V38).toBeCloseTo(240, 6);
+      expect(invoice.P62).toBeCloseTo(240, 6);
+      expect(invoice.P64).toBeCloseTo(1440, 6);
+
+      const checks = seCheckCompliance(results, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      const names = [
+        "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        "Salesinvoice: net total = the invoice's one line",
+        "Salesinvoice: VAT total = the line's own VAT",
+        "Salesinvoice: amount payable = net plus VAT",
+      ];
+      for (const name of names) {
+        const check = checks.find((c) => c.name === name);
+        expect(check, name).toBeDefined();
+        expect(check.pass, name).toBe(true);
+      }
+    });
+
+    it.each([
+      ["Salesinvoice Product Details: VAT Rate = the tax year's standard rate", "Salesinvoice.xlsx!Product Details", "Product Details", "D2", 17.5],
+      [
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        "Salesinvoice.xlsx!Invoice Template",
+        "Invoice Template",
+        "V38",
+        0,
+      ],
+      ["Salesinvoice: net total = the invoice's one line", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P58", 0],
+      ["Salesinvoice: VAT total = the line's own VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P62", 0],
+      ["Salesinvoice: amount payable = net plus VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P64", 0],
+    ])("fails only %s when %s is corrupted via JSZip", async (checkName, resultKey, sheetName, cellRef, newValue) => {
+      const corrupted = await readCorruptedCell(join(saveDir, "Salesinvoice.xlsx"), sheetName, cellRef, newValue);
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      expect(failureNames(corruptedChecks)).toEqual([checkName]);
+    });
   },
   300000,
 );

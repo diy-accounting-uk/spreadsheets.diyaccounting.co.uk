@@ -185,6 +185,27 @@ const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
 
+// ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
+// The customer-facing invoice template has no external link into the rest of
+// the book, so its own VAT rate is proved directly: the generator now writes
+// the tax year's standard rate into Product Details!D2:D99 (generator.js),
+// and this checks one sample invoice line, anchored to the fixture's own
+// first sale, computes the right net, VAT and gross from it. Row 2 of
+// Product Details already ships the template's own placeholder product code
+// (A2 = 1001); this only sets its selling price. Business Details!B11 is the
+// VAT registration number the invoice template itself gates its per-row VAT
+// lookup on (verified against the XML: Invoice Template!N38 reads
+// 'Product Details'!D:D only when O8, which reads 'Business Details'!B11, is
+// not blank) -- an unregistered business is left untouched, the same as the
+// template's own guidance for it.
+const SALESINVOICE_VAT_REG_CELL = "B11";
+const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
+const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", productCode1: "F", quantity1: "G" };
+const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", vatTotal: "P62", grossTotal: "P64" };
+const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -956,6 +977,24 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (scenario.vat_straddling_sales) writeStraddlingPeriod(scenario.vat_straddling_sales, "S", "customer");
   if (scenario.vat_straddling_purchases) writeStraddlingPeriod(scenario.vat_straddling_purchases, "P", "supplier");
 
+  // Salesinvoice.xlsx: one sample invoice line for a VAT-registered business,
+  // anchored to the fixture's own first sale so the customer-facing invoice
+  // total and VAT can be checked against a real figure (see checkCompliance).
+  const salesinvoiceWrites = {};
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
+    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Invoice Database"] = {
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.productCode1}2`]: SALESINVOICE_SAMPLE_PRODUCT_CODE,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.quantity1}2`]: 1,
+    };
+    salesinvoiceWrites["Product Details"] = {
+      [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.price}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]: firstInvoiceSale.amount,
+    };
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
@@ -968,6 +1007,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
   if (Object.keys(companysecretaryWrites).length > 0) result["Companysecretary.xlsx"] = companysecretaryWrites;
+  if (Object.keys(salesinvoiceWrites).length > 0) result["Salesinvoice.xlsx"] = salesinvoiceWrites;
   return result;
 }
 
@@ -1579,6 +1619,22 @@ export function multiFileOptions(yearEndMonth) {
       // the generator writes and the other eleven chain from it, so reading
       // all twelve proves the write and the chain that carries it.
       "expensesform.xlsx": Object.fromEntries(EXPENSES_FORM_MONTHS.map((sheet) => [sheet, ["C30"]])),
+      // The customer-facing invoice: the VAT rate the generator wrote into
+      // the sample product row, and the one sample line's net, VAT and gross
+      // (verified against the XML: P58 = SUM(P38:P57), P62 =
+      // IF(P58<>0,SUM(V38:V57)+P60*0.2,0), P64 = SUM(P58:Q62)).
+      "Salesinvoice.xlsx": {
+        "Product Details": [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`],
+        "Invoice Template": [
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal,
+          SALESINVOICE_LINE1_CELLS.unitPrice,
+          SALESINVOICE_LINE1_CELLS.quantity,
+          SALESINVOICE_LINE1_CELLS.lineNet,
+          SALESINVOICE_LINE1_CELLS.lineVat,
+        ],
+      },
       ...bankReads,
     },
   };
@@ -3519,6 +3575,46 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // off and nothing else lost on the way.
   const netting = categoryNetting(results, expected);
   for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
+
+  // ── The customer-facing invoice against the tax year's own VAT rate ──────
+  //
+  // Salesinvoice.xlsx carries no external link to the rest of the book, so a
+  // wrong figure here never reaches the accounts -- it reaches the
+  // customer's customer. The generator writes the tax year's standard rate
+  // into Product Details!D2:D99 (generator.js); this checks the rate landed
+  // and that the one sample invoice line computes its net, VAT and gross
+  // correctly from it, both hand-computed from the fixture's own first sale.
+  const invoiceProductDetails = results["Salesinvoice.xlsx!Product Details"];
+  const invoiceTemplate = results["Salesinvoice.xlsx!Invoice Template"];
+  if (invoiceProductDetails && invoiceTemplate && taxData) {
+    const standardRatePercent = Math.round(taxData.vat.standard_rate * 100);
+    check(
+      "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+      num(invoiceProductDetails[`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]),
+      standardRatePercent,
+      0,
+    );
+
+    const firstInvoiceSale = Object.values(expected.sales || {}).flat()[0];
+    if (firstInvoiceSale) {
+      const expectedNet = firstInvoiceSale.amount;
+      const expectedVat = (expectedNet * standardRatePercent) / 100;
+      check(
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        num(invoiceTemplate[SALESINVOICE_LINE1_CELLS.lineVat]),
+        expectedVat,
+        0.01,
+      );
+      check("Salesinvoice: net total = the invoice's one line", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]), expectedNet, 0.01);
+      check("Salesinvoice: VAT total = the line's own VAT", num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]), expectedVat, 0.01);
+      check(
+        "Salesinvoice: amount payable = net plus VAT",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal]),
+        expectedNet + expectedVat,
+        0.01,
+      );
+    }
+  }
 
   return checks;
 }

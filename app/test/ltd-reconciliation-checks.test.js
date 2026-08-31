@@ -1335,6 +1335,55 @@ describeCalc(
         "DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries",
       ]);
     });
+
+    // ── Customer-facing invoice: VAT rate and the sample line's arithmetic ──
+
+    it("writes the tax year's standard rate into the sample product row and computes the line correctly", () => {
+      const productDetails = results["Salesinvoice.xlsx!Product Details"];
+      const invoice = results["Salesinvoice.xlsx!Invoice Template"];
+      expect(productDetails.D2).toBe(20);
+      // The scenario's first sale (Beta Systems, Apr, 1200) is the sample
+      // invoice's one line, quantity 1.
+      expect(invoice.P58).toBe(1200);
+      expect(invoice.V38).toBeCloseTo(240, 6);
+      expect(invoice.P62).toBeCloseTo(240, 6);
+      expect(invoice.P64).toBeCloseTo(1440, 6);
+    });
+
+    it("fails the VAT rate check when Salesinvoice Product Details D2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Product Details", "D2", 17.5);
+      expect(value).toBe(17.5);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Product Details", "D2", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice Product Details: VAT Rate = the tax year's standard rate"]);
+    });
+
+    it("fails only the line VAT check when Salesinvoice Invoice Template V38 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "V38", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "V38", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: line VAT = price x quantity x the tax year's standard rate"]);
+    });
+
+    it("fails only the net total check when Salesinvoice Invoice Template P58 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P58", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P58", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: net total = the invoice's one line"]);
+    });
+
+    it("fails only the VAT total check when Salesinvoice Invoice Template P62 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P62", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P62", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: VAT total = the line's own VAT"]);
+    });
+
+    it("fails only the amount payable check when Salesinvoice Invoice Template P64 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P64", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P64", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: amount payable = net plus VAT"]);
+    });
   },
   900000,
 );
