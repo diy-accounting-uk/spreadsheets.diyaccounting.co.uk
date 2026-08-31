@@ -6,24 +6,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Integration branch `claude/next-wave-2` (one PR). Tracks run in `../wt-spreadsheets/<track>` on
-`claude/wt-<track>`; the coordinator merges each into the integration branch as it lands and
-pushes in batches.
-
-| Track | Item | Worktree | Tier | Status |
-|---|---|---|---|---|
-| f19 | F19 derive straddling VAT entries | — | Sonnet | landed `54cb03ac`; full Ltd sweep 90/90 year-ends RECONCILES, 0 anomalies |
-| f20 | F20 Taxi export writer | — | Opus | landed, EQ2 gated in CI, 264 lines return, exporter 35/35, breakability proven |
-| box51 | F9 remainder: SA103F box 51 | — | Opus | landed `86f4dd23`, box 49 carries the WDA, full suite 6377/6377 in-track |
-| f14rem | F14 remainder: measurableQuantity entry | — | Haiku | landed, BST scorecard within budget, verify-roundtrip 35/35 |
-| wdakey | F9 remainder: per-regime WDA key | — | Haiku | landed `2f13b8d8`, loader 35/35, no-years smoke clean |
-| f18 | F18 field homes + taxi column C + sp-sixty mileage | — | Sonnet | landed: whole-line matches Taxi 82→264, SE 395→647, Ltd 507→665; calculators 3039/3039 on the merge |
-| guides | F9 remainder: guides teach the dead motor cap | — | Haiku | landed, 5 passages across 3 guides, PDF build green |
-| semileage | F18 remainder: SE Sales mileage writer | — | Sonnet | landed `0f90e78a`, feeds the sheet's cross-file claim, 5 new checks proven breakable |
-| f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
-| renumber | SE Full renumbering to the current SA103F | — | Opus | landed, whole sheet on the current form, SE 678/678 + stability 0 moved |
-| sepurch | SE purchases-side mileage route | — | Opus | landed, RECONCILES 681/681 ×7 year ends in-track, no-home fields 7 → 5 |
-| g1 | SE Full G1 deadline from the year, not a literal | — | Sonnet | landed `bcd9cc6d`, formula + cache roll, both year ends verified |
+PR #47 (`claude/next-wave-2`) carries the whole second fidelity wave — eleven tracks across
+three dispatches, CI green at `e8c68240`, the full Ltd matrix 90/90 RECONCILES. Awaiting the
+operator's merge, then the four `generate-*` dispatches (reports, judge verdicts and guide PDFs
+regenerate) and the deploy. `claude/ga4-consent-banner` (another session) edits NEXT.md from
+pre-wave main and will conflict here when it lands.
 
 ## Open items
 
