@@ -6,14 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-| Track | Item | Worktree | Tier | Status |
-|---|---|---|---|---|
-| surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | — | Opus | landed: all four designed tracks already superseded; plan rewritten to the three live defects, 1221 → 319 lines |
-| ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | — | Sonnet | landed: the P&L diagram was internally wrong (rows shifted, wrong codes, wrong SA103S boxes); scenario and CI sections refreshed |
-| ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | — | Sonnet | landed: five correction sets (MnthP&L wiring, cache rolls, three fixtures, checks table, monthly CI) |
-| ctxse | `CONTEXT_SELF_EMPLOYED.md` re-align | `../wt-spreadsheets/ctxse` | Sonnet | started |
-| ctxtaxi | `CONTEXT_TAXI.md` re-align | — | Sonnet | landed: Admin layout was BST's, CI triggers/jobs stale, dead test file cited; all corrected from the XML |
-| coverage | regenerate `SHEET_COVERAGE_GAPS.md` → `REPORT_SHEET_COVERAGE_GAPS.md` | — | Sonnet | landed: 313 sheets / 16 untouched (was 309/18); Taxi Wages Forecast and SE Profit Forecast closed |
+Nothing. Main is refreshed and deployed through PRs #46 and #47; the six documentation
+re-alignment tracks (template-surgery plan, four CONTEXT docs, the sheet-coverage report)
+are merged to main as docs-only commits.
 
 ## Open items
 
