@@ -105,6 +105,10 @@ const EXISTING_ASSET_BLOCKS = {
 };
 const NEW_PLANT_ROW_COUNT = 5;
 
+// The sample carriage charge cellWrites puts on the invoice's Invoice
+// Database!E2 for a VAT-registered scenario (app/products/se.js).
+const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
+
 // The Payslips calendar rows the reconciliation samples, and the month names
 // the sheet's own TEXT(DATE(...)) formula produces.
 const PAYROLL_CALENDAR_SAMPLE_ROWS = [2, 33, 64, 95, 126, 157, 188, 219, 250, 281, 312, 343, 366, 381];
@@ -529,6 +533,58 @@ function buildHpFinance(scenario) {
     cells.E2 += agreement.amount_financed;
   });
   return cells;
+}
+
+// Salesinvoice.xlsx links to nothing else in the book. The generator writes
+// the tax year's standard rate down Product Details column D, and the
+// invoice page looks its one sample line up from there.
+//
+// cellWrites only raises the sample invoice line for a VAT-registered
+// business with a first sale to anchor it on (rate > 0, a VAT number, and a
+// sale) -- the same condition checkCompliance's carriage checks gate on
+// (app/products/se.js). A recalculated package proves the two states: with
+// the line raised, Invoice Template!N27 through P64 resolve to real figures
+// off the sample line and its carriage charge; without it, N27 stays blank
+// and every cell downstream of it follows -- P58, P62 and P64 land on their
+// formulas' own zero branch, while C38, J38, L38, P38 and the carriage cell
+// P60 land on their formulas' own blank-string branch. This mirrors both
+// states rather than assuming one.
+function buildSalesInvoice(scenario, rate, taxData) {
+  const standardRatePercent = Math.round((taxData?.vat?.standard_rate ?? 0) * 100);
+  const productDetails = { D2: standardRatePercent };
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (!(rate > 0 && scenario.business?.vat_number && firstInvoiceSale)) {
+    return {
+      "Salesinvoice.xlsx!Product Details": productDetails,
+      "Salesinvoice.xlsx!Invoice Template": {
+        J38: SHEET_BLANK,
+        L38: SHEET_BLANK,
+        P38: SHEET_BLANK,
+        V38: 0,
+        P58: 0,
+        P60: SHEET_BLANK,
+        P62: 0,
+        P64: 0,
+      },
+    };
+  }
+  const lineNet = firstInvoiceSale.amount;
+  const lineVat = (lineNet * standardRatePercent) / 100;
+  const carriageVat = (SALESINVOICE_SAMPLE_CARRIAGE_CHARGE * standardRatePercent) / 100;
+  const vatTotal = lineVat + carriageVat;
+  return {
+    "Salesinvoice.xlsx!Product Details": productDetails,
+    "Salesinvoice.xlsx!Invoice Template": {
+      J38: lineNet,
+      L38: 1,
+      P38: lineNet,
+      V38: lineVat,
+      P58: lineNet,
+      P60: SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
+      P62: vatTotal,
+      P64: lineNet + SALESINVOICE_SAMPLE_CARRIAGE_CHARGE + vatTotal,
+    },
+  };
 }
 
 // ── The Admin sheet ────────────────────────────────────────────────────────
@@ -992,26 +1048,7 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     "Fixedassets.xlsx!Schedule": scheduleCells,
     "Fixedassets.xlsx!FAreconciliation": faReconciliation,
     "Fixedassets.xlsx!HPfinance": buildHpFinance(scenario),
-    // Salesinvoice.xlsx links to nothing else in the book. The generator
-    // writes the tax year's standard rate down Product Details column D, and
-    // the invoice page looks its one sample line up from there.
-    //
-    // The page's whole line is gated on Invoice Template!N27, the cell that
-    // says an invoice has been raised. Nothing the writer fills sets it, so
-    // C38 resolves to a blank, the unit price and quantity beside it follow,
-    // and the line's VAT and all three totals come out nil. The sheet carries
-    // those nils, so this engine carries them too and the invoice checks read
-    // the same verdict on both sides.
-    "Salesinvoice.xlsx!Product Details": { D2: Math.round((taxData?.vat?.standard_rate ?? 0) * 100) },
-    "Salesinvoice.xlsx!Invoice Template": {
-      J38: SHEET_BLANK,
-      L38: SHEET_BLANK,
-      P38: SHEET_BLANK,
-      V38: 0,
-      P58: 0,
-      P62: 0,
-      P64: 0,
-    },
+    ...buildSalesInvoice(scenario, rate, taxData),
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
     [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(
