@@ -32,6 +32,7 @@ import {
   unrepresentableScope,
   periodFrameOffset,
   shiftPostingDate,
+  shiftPostingDateByDays,
 } from "../bin/verify-roundtrip.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -290,6 +291,22 @@ describe("shiftPostingDate", () => {
   it("clamps a day the shifted month lacks to that month's own last day", () => {
     expect(shiftPostingDate("2025-03-31", 1)).toBe("2025-04-30");
     expect(shiftPostingDate("2025-01-31", 1)).toBe("2025-02-28");
+  });
+});
+
+describe("shiftPostingDateByDays", () => {
+  it("moves a date forward by a positive day count", () => {
+    expect(shiftPostingDateByDays("2025-04-06", 30)).toBe("2025-05-06");
+  });
+
+  it("moves a date backward by a negative day count", () => {
+    expect(shiftPostingDateByDays("2025-04-06", -1096)).toBe("2022-04-06");
+  });
+
+  it("crosses a leap-year February correctly", () => {
+    expect(shiftPostingDateByDays("2025-04-06", -365)).toBe("2024-04-06");
+    expect(shiftPostingDateByDays("2024-02-28", 1)).toBe("2024-02-29");
+    expect(shiftPostingDateByDays("2024-02-29", 1)).toBe("2024-03-01");
   });
 });
 
