@@ -1423,8 +1423,7 @@ function mileageClaimsByMonth(scenario, mileageRates) {
   for (const month of MONTH_KEYS) {
     const miles = monthMiles(scenario.sales?.[month]) + monthMiles(scenario.purchases?.[month]);
     if (!miles) continue;
-    claims[month] =
-      calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+    claims[month] = calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
     milesToDate += miles;
   }
   return claims;

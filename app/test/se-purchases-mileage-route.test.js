@@ -113,7 +113,9 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
       const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
       const sheetsConfig = productMeta.sheets?.[fileKey];
       fileBuffers[templateFile] =
-        sheetsConfig && Object.keys(sheetsConfig).length > 0 ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig) : templateBuffer;
+        sheetsConfig && Object.keys(sheetsConfig).length > 0
+          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+          : templateBuffer;
     }
 
     scenario = loadScenario(FIXTURE);
@@ -274,7 +276,12 @@ describe("SE purchases mileage route — the JS calculator", () => {
         : l,
     );
     const mutated = diyaGlToScenario(book, shortByTenMiles, "se");
-    const after = seCheckCompliance(calculateSeResults(book, shortByTenMiles, taxData, { ...mutated, ...mutated.expected }), merged, taxData, calculateExpectedTax);
+    const after = seCheckCompliance(
+      calculateSeResults(book, shortByTenMiles, taxData, { ...mutated, ...mutated.expected }),
+      merged,
+      taxData,
+      calculateExpectedTax,
+    );
     for (const name of MILEAGE_CHECKS) {
       expect(after.find((c) => c.name === name).pass).toBe(false);
     }

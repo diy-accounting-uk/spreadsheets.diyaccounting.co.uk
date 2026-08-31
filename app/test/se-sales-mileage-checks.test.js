@@ -49,7 +49,9 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
       const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
       const sheetsConfig = productMeta.sheets?.[fileKey];
       fileBuffers[templateFile] =
-        sheetsConfig && Object.keys(sheetsConfig).length > 0 ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig) : templateBuffer;
+        sheetsConfig && Object.keys(sheetsConfig).length > 0
+          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+          : templateBuffer;
     }
 
     // Two April sales: one carries the day's business miles beside a real
