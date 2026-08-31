@@ -1186,7 +1186,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     S1: "Total tax written down value carried forward",
