@@ -42,10 +42,14 @@ lands:
   by hand across six test files, carriage checks gated on VAT registration like their
   writes, stability failures root-caused onto the listed-volatiles mechanism; 2696 tests
   green in its tree).
-- print track (Opus) — R1 + P1: started. R1 first: the featured Ltd reconciliation is
-  ANOMALYDETECTED 949/955 in the reconcile-populated package (FAreconciliation E13/K13
-  link caches read 0; three print-page INDIRECTs read #REF!) — must print RECONCILES.
-  Then P1 opens the print-page gate with source-derived start dates.
+- print track (Opus) — R1 + P1: merged to `claude/next-batch-wave-1`. R1 needed no source
+  change — the committed packages are stale derived artifacts; a regenerated package
+  RECONCILES (residue closes with the post-merge generate-commit refresh). P1: gate open
+  via start dates, ten printed-figure checks per product, the WagesInterface
+  employees/directors split, a twelve-suite harness fix, and the M49 volatiles fixed at
+  source (EQ3 0 moved). RECONCILES 1015/1016 and 782/783 (the one warning is T5).
+- exporter-comments track (Sonnet) — B4: started
+- loader track (Sonnet) — B5: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -61,7 +65,7 @@ once the wave's tracks are in and the full suite is green.
   within budget; 3183/3183 calculator tests re-verified on the branch). The full suite's
   other 20 failed files were soffice-contention hook timeouts — clean re-run at close.
 
-Queued: B4 dispatches after the print track lands (both touch the exporter).
+After B4 and B5 land: the clean full-suite re-run, then PR #48 leaves draft.
 
 ## Open items
 
@@ -70,6 +74,14 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
+- [ ] **T5: the printed payslip's payment date reads an empty header cell** (Haiku) —
+  surfaced by P1: `Payslips!M18` ("Payment date") in both products reads
+  `INDIRECT(ADDRESS($H$4,18,...))` — column R of the month block's header row, which the
+  template leaves empty — while the wages-paid date actually sits one row below (the cell
+  `I9` correctly reads). The check currently asserts the behaviour as it stands (`M18 = 0`)
+  with a warning carrying the true date (`app/products/ltd.js:3541`, `se.js:2487`).
+  Template surgery: point M18's column/row at the paid-date cell, flip the warning into a
+  real check, prove breakable.
 - [ ] **B5: `diyaGlToScenario` never maps the VAT number, so the invoice checks never fire
   on diya-gl paths** (Sonnet) — surfaced by the calc track: `app/lib/diya-gl-loader.js`
   drops `diya-gl:vatNumber` for both products, so `scenario.business.vat_number` is absent
