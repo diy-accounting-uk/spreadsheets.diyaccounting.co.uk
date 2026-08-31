@@ -22,3 +22,21 @@ describe.each(["se", "ltd"])("%s Payslips Admin calendar year end", (product) =>
     expect(cell[1]).toBe("DATE(YEAR(B2)+1,MONTH(B2),DAY(B2))-1");
   });
 });
+
+// The printed payslip pulls every figure off the month tab H3 names, at the
+// row H4 works out. Spelling that reference as H3 & "!C" & H4 assumes the "!"
+// sheet separator of Excel's own grammar: LibreOffice reads a name built that
+// way as #REF! and prints a page of errors. ADDRESS emits whichever separator
+// the engine reading the file uses, so the same formula resolves in both.
+describe.each(["se", "ltd"])("%s Payslips print sheet period join", (product) => {
+  it("names the month tab through ADDRESS rather than a hard-coded sheet separator", async () => {
+    const zip = await JSZip.loadAsync(readFileSync(resolve(ROOT, `app/templates/${product}/Payslips.xlsx`)));
+    const xml = await zip.file("xl/worksheets/sheet14.xml").async("string");
+    const formulas = [...xml.matchAll(/<f[^>]*>([^<]*INDIRECT[^<]*)<\/f>/g)].map((m) => m[1]);
+    expect(formulas).toHaveLength(104);
+    for (const formula of formulas) {
+      expect(formula).toMatch(/INDIRECT\(ADDRESS\([^)]*,\$H\$3\)\)/);
+      expect(formula).not.toContain('&amp; "!');
+    }
+  });
+});
