@@ -1608,6 +1608,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 993 |  |
 | I1 |  | 4965 |  |
 | H2 |  | 20 |  |
@@ -1618,6 +1621,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 2253 |  |
 | I1 |  | 11265 |  |
 | H2 |  | 20 |  |
@@ -1628,6 +1634,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 543 |  |
 | I1 |  | 2715 |  |
 | H2 |  | 20 |  |
@@ -1638,6 +1647,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 558 |  |
 | I1 |  | 2790 |  |
 | H2 |  | 20 |  |
@@ -1648,6 +1660,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 1953 |  |
 | I1 |  | 9765 |  |
 | H2 |  | 20 |  |
@@ -1658,6 +1673,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 2853 |  |
 | I1 |  | 14265 |  |
 | H2 |  | 20 |  |
@@ -1668,6 +1686,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 453 |  |
 | I1 |  | 2265 |  |
 | H2 |  | 20 |  |
@@ -1678,6 +1699,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 1953 |  |
 | I1 |  | 9765 |  |
 | H2 |  | 20 |  |
@@ -1688,6 +1712,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 453 |  |
 | I1 |  | 2265 |  |
 | H2 |  | 20 |  |
@@ -1698,6 +1725,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 573 |  |
 | I1 |  | 2865 |  |
 | H2 |  | 20 |  |
@@ -1708,6 +1738,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 1653 |  |
 | I1 |  | 8265 |  |
 | H2 |  | 20 |  |
@@ -1718,6 +1751,9 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 453 |  |
 | I1 |  | 2265 |  |
 | H2 |  | 20 |  |
