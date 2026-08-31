@@ -27,7 +27,9 @@ lands:
 - schema track (Sonnet) — F24: merged to `claude/next-batch-wave-1` (per-block inventory
   with loud stale-name failure, payroll comment declared, ratchets re-seeded, 57/57 in its
   tree; branch-side trio re-run in flight as the first F24+C1 combination)
-- exporter-accounts track (Sonnet) — B1 + B2: started
+- exporter-accounts track (Sonnet) — B1 + B2: merged to `claude/next-batch-wave-1`
+  (payroll accountMatches 722/722 under the zero gate; land & buildings survives both legs,
+  Ltd RECONCILES 950/950)
 - invoice-carriage track — B3: first attempt (Haiku) failed verification (P62 vanished
   from the recalculated sheet, no breakability, carriage check dropped); not merged.
   Sonnet retry started with the failure as evidence.
@@ -67,17 +69,14 @@ follow the reconciliation-bug method.
   independent of the rate C2 now writes into `Product Details`. Template formula surgery:
   point the term at the written rate cell, extend C2's checks with a non-zero carriage case,
   prove breakable.
-- [ ] **B1: twelve payroll lines come back on the wrong account on the reconcile-populated
-  route** (Sonnet) — surfaced by F22's matrix scorecard: £1048/month, account 5100, comes back
-  on a different account in the reconcile-populated runs only (`accountMatches` 710 vs
-  `coarseMatches` 722 for Ltd, 684 vs 696 for SE); the generate route matches 722/722. The
-  matrix job gates neither figure, so nothing fails today. Find where the reconcile-populated
-  path loses the account and gate `accountMatches` once it holds.
-- [ ] **B2: an opening land & buildings asset would lose both legs symmetrically** (Sonnet) —
-  `OA_JOURNAL_MAP` (`app/lib/xlsx-exporter.js`) has no ledger account for land & buildings
-  (`G13`/`M13`), and `OPENING_FIXED_ASSET_CLASSES` (`app/lib/scenario-extractor.js`) omits it
-  the same way, so no fixture can exercise the gap from either side. Add the class to both
-  maps and a fixture line that proves the legs survive.
+- [ ] **E1: the batch's new reads have no JS-engine values — the EQ1 gate fails** (Sonnet) —
+  surfaced by B1+B2's track running `test.yml`'s `roundtrip-ltd` steps locally: the budget
+  gate fails with `differing: 2` and `noJsValue: 182` on keys from `Companysecretary.xlsx`,
+  `Payslips.xlsx`, `FAreconciliation` and the two Schedule additions/disposals checks —
+  exactly the reads T1, C1, C2 and C3 added to `additionalReads` without teaching the JS
+  engine to emit them. Per the fidelity plan, every read cell needs a JS source or a place
+  on a declared blanks list. Reproduction on the branch tip in progress; must be fixed
+  before PR #48 leaves draft (CI runs this gate).
 - [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
   the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
   `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
