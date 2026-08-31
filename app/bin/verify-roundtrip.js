@@ -280,6 +280,49 @@ export function scoreReportDocumentsByKind(excelDocument, jsDocument) {
   return byKind;
 }
 
+// ── The period-frame shift ─────────────────────────────────────────────────
+
+// generate.js moves every posting date onto the package's own accounting
+// period (app/products/ltd.js, cellWrites/shiftMonths): forward by the
+// whole-month gap between the scenario's declared period start and the
+// package's, clamping a day the shifted month lacks to that month's own last
+// day. Reversing that on the export is lossy at a clamped date -- the exact
+// origin day cannot be recovered -- so this comparator puts the fixture
+// through the identical forward shift instead. Clamping then falls the same
+// way on both sides and the comparison after it is exact.
+function shiftMonths(date, monthOffset) {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + monthOffset;
+  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(date.getUTCDate(), lastDayOfShiftedMonth)));
+}
+
+/**
+ * The whole-month offset generate.js shifts every posting date by, from a
+ * scenario's own declared period start month to a package's year-end month.
+ * Mirrors the monthOffset arithmetic in app/products/ltd.js's cellWrites.
+ * @param {number} periodStartMonth - 1-indexed month documentInfo.periodCoveredStart falls in
+ * @param {number} yearEndMonth - 1-indexed month the package's own year end falls in
+ * @returns {number} 0-11
+ */
+export function periodFrameOffset(periodStartMonth, yearEndMonth) {
+  const targetStartMonth = yearEndMonth % 12;
+  const sourceStartMonth = periodStartMonth - 1;
+  return (targetStartMonth - sourceStartMonth + 12) % 12;
+}
+
+/**
+ * A YYYY-MM-DD posting date moved forward by a period-frame offset, in the
+ * same form scoreDataHalves reads lines.jsonl in.
+ * @param {string} text
+ * @param {number} monthOffset
+ * @returns {string}
+ */
+export function shiftPostingDate(text, monthOffset) {
+  const [year, month, day] = String(text).split("-").map(Number);
+  return shiftMonths(new Date(Date.UTC(year, month - 1, day)), monthOffset).toISOString().slice(0, 10);
+}
+
 // ── EQ2: the data half ─────────────────────────────────────────────────────
 
 function readJsonl(path) {
@@ -372,10 +415,19 @@ export function unrepresentableFields(product, inventory) {
  * @param {string} fixtureDir
  * @param {string} exportDir
  * @param {Set<string>} [unrepresentable] - fields the encoding is known to have no home for
+ * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
+ *   to move the fixture's own postingDate forward by before comparing, for a
+ *   package whose year end put the export's dates through the same shift.
+ *   0 (the default) compares postingDate as the fixture wrote it.
  */
-export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set()) {
-  const fixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
+export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set(), dateShiftMonths = 0) {
+  const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
+  const fixtureLines = dateShiftMonths
+    ? rawFixtureLines.map((line) =>
+        line.postingDate === undefined ? line : { ...line, postingDate: shiftPostingDate(line.postingDate, dateShiftMonths) },
+      )
+    : rawFixtureLines;
 
   const fixtureFields = new Set(fixtureLines.flatMap((line) => Object.keys(line)));
   const exportedFields = new Set(exportedLines.flatMap((line) => Object.keys(line)));
@@ -477,15 +529,16 @@ function parseArgs(argv) {
   const budgetPath = getArg("--budget");
   const outPath = getArg("--out");
   const unrepresentablePath = getArg("--unrepresentable");
+  const dateShiftMonths = Number(getArg("--date-shift-months") ?? 0);
 
   if (!packageName || !excelDir || !jsDir) {
     console.error(
-      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>]",
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>]",
     );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths };
 }
 
 /**
@@ -511,7 +564,7 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath } = parseArgs(process.argv);
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths } = parseArgs(process.argv);
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -523,7 +576,9 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableFields(packageName, inventory)) : null;
+  const data = hasData
+    ? scoreDataHalves(fixtureData, excelData, unrepresentableFields(packageName, inventory), dateShiftMonths)
+    : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 
@@ -536,7 +591,21 @@ async function main() {
       differing: score.differing,
       noJsValue: score.noJsValue,
       noExcelValue: score.noExcelValue,
-      ...(data ? { linesLost: data.linesLost, fieldsDropped: data.fieldsDroppedCount, bookFieldsMissing: data.book.missing } : {}),
+      ...(data
+        ? {
+            linesLost: data.linesLost,
+            fieldsDropped: data.fieldsDroppedCount,
+            bookFieldsMissing: data.book.missing,
+            // A fixture line the export does not bring back as at least the
+            // same transaction (coarseUnmatched), or brings back as the same
+            // transaction but posted to a different account (accountUnmatched).
+            // With --date-shift-months set, these score in the shifted frame,
+            // so a non-March year end is judged on the transactions
+            // themselves rather than on counts alone.
+            coarseUnmatched: Math.max(0, data.fixtureLines - data.coarseMatches),
+            accountUnmatched: Math.max(0, data.coarseMatches - data.accountMatches),
+          }
+        : {}),
     },
     byKind: Object.fromEntries(
       [...byKind].map(([kind, kindScore]) => [
