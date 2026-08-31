@@ -1609,7 +1609,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // makes no choice between the claim and the running costs the way the taxi
   // one does -- the claim simply adds to the motoring the business paid cash
   // for.
-  const businessMiles = expected.total_mileage || 0;
+  // The miles the journals carry, on both sides, because that is what the
+  // sheet pools -- not the scenario's declared mileage total, which counts
+  // the purchase journal alone.
+  const businessMiles = journalMiles(expected.sales) + journalMiles(expected.purchases);
   const yearEndPurchases = results[`Purchases.xlsx!${MONTH_SHEETS.mar}`];
   if (businessMiles && yearEndPurchases) {
     const mileageClaim = calculateMileageAllowance(businessMiles, mileageRates);
