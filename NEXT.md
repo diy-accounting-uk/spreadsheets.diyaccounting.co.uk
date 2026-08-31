@@ -67,12 +67,6 @@ follow the reconciliation-bug method.
   resolves "D", `M2` stops being 0, `WagesInterface!C4` splits), so the four per-month
   WagesInterface checks need an employees/directors split. TrialBalance sums both blocks, so
   P&L and CT are unaffected.
-- [ ] **B3: the invoice carriage VAT is a hardcoded `*0.2` in the template formula** (Haiku) —
-  surfaced by C2: `Invoice Template!P62` in both products' `Salesinvoice.xlsx` reads
-  `IF(P58<>0,SUM(V38:V57)+P60*0.2,0)` — the carriage charge (`P60`) is taxed at a literal 0.2
-  independent of the rate C2 now writes into `Product Details`. Template formula surgery:
-  point the term at the written rate cell, extend C2's checks with a non-zero carriage case,
-  prove breakable.
 - [ ] **E1: the batch's new reads have no JS-engine values — the EQ1 gate fails** (Sonnet) —
   surfaced by B1+B2's track running `test.yml`'s `roundtrip-ltd` steps locally: the budget
   gate fails with `differing: 2` and `noJsValue: 182` on keys from `Companysecretary.xlsx`,
