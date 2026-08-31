@@ -110,7 +110,7 @@
   },
   "dependencies": {
     "@anthropic-ai/bedrock-sdk": "^0.33.3",
-    "ajv": "^8.18.0",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "stripe": "^22.6.0"
   },
