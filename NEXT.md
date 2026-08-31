@@ -17,14 +17,6 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
-- [ ] **Reconciliation judge flags the ltd VAT run.** The deploy for PR #46's merge
-  commit failed at the "judge reconciliation reports" step with a genuine finding, then
-  the later green deploy (`2c560c9c`) routed past it, so it stands unaddressed: box 63's
-  corporation tax charge is roughly half the working sheet's figure, and capital
-  allowances don't match headline capital spend. Follow the reconciliation-bug method;
-  check overlap with the fifth-surface population below before treating it as separate.
-  Suggested tier: Opus.
-
 
 
 
