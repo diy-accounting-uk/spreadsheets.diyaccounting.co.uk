@@ -60,6 +60,16 @@ function findRowInDateMap(dateRowMap, serial) {
 export function cellWrites(scenario, targetStartYear = null) {
   const writes = {};
 
+  // Every date this product writes (Sales, Purchases, Fixed Assets) is
+  // translated by the same whole-tax-year offset, so a package generated
+  // for a different year end still carries the fixture's dates onto its
+  // own year rather than leaking the scenario's original dates verbatim.
+  const scenarioStartYear = extractTaxYearStart(scenario);
+  const startYear = targetStartYear || scenarioStartYear;
+  const scenarioEpoch = Date.UTC(scenarioStartYear, 3, 6);
+  const targetEpoch = Date.UTC(startYear, 3, 6);
+  const dayOffsetMs = targetEpoch - scenarioEpoch;
+
   // Business Details
   if (scenario.business || scenario.metadata) {
     writes["Business Details"] = {};
@@ -77,13 +87,7 @@ export function cellWrites(scenario, targetStartYear = null) {
   }
 
   if (scenario.sales) {
-    const scenarioStartYear = extractTaxYearStart(scenario);
-    const startYear = targetStartYear || scenarioStartYear;
     const dateRowMap = buildDateRowMap(startYear);
-
-    const scenarioEpoch = Date.UTC(scenarioStartYear, 3, 6);
-    const targetEpoch = Date.UTC(startYear, 3, 6);
-    const dayOffsetMs = targetEpoch - scenarioEpoch;
 
     for (const [, transactions] of Object.entries(scenario.sales)) {
       for (const tx of transactions) {
@@ -119,7 +123,8 @@ export function cellWrites(scenario, targetStartYear = null) {
       let row = 5;
       for (const tx of transactions) {
         const d = parseDate(tx.date);
-        sheet[`A${row}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        const targetDate = new Date(d.getTime() + dayOffsetMs);
+        sheet[`A${row}`] = toExcelSerial(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1, targetDate.getUTCDate());
         if (tx.supplier) sheet[`B${row}`] = tx.supplier;
         if (tx.reference) sheet[`C${row}`] = tx.reference;
         sheet[`D${row}`] = tx.code;
