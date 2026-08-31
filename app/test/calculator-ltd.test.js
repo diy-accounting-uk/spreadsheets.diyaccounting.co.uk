@@ -49,13 +49,6 @@ const SHEET_LIMITATION_GAPS = [
   // dates, so the page prints its heading and leaves the figures blank on
   // both engines.
   "Payslips print: the first employee's line carries the pay the scenario recorded",
-  // The invoice page's whole line is gated on Invoice Template!N27, which
-  // nothing the writer fills sets, so the line and all three totals come
-  // out nil. The recalculated workbook fails these four the same way.
-  "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
-  "Salesinvoice: net total = the invoice's one line",
-  "Salesinvoice: VAT total = the line's own VAT",
-  "Salesinvoice: amount payable = net plus VAT",
 ];
 
 const FIXTURES = [
