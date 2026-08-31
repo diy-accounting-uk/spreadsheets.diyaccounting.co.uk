@@ -19,19 +19,25 @@
 //   node app/bin/judge-reconciliation.js --package se --reports /tmp/page-reports
 //   node app/bin/judge-reconciliation.js --package ltd --dry-run
 //
-// Reads:  reports/*.md, app/test/fixtures/<scenario>.toml, app/data/judge-rubric.md
+// Reads:  reports/*.md, app/test/fixtures/<scenario>.toml, app/data/judge-rubric.md, and any
+//         already-committed reports/judge-verdict-<product>.json (to skip an unchanged digest).
 // Writes: reports/judge-verdict-<product>.json
 //
 // Exit codes: 0 for a pass verdict, 1 for a fail verdict and 1 when the model cannot be
 // reached or its answer cannot be parsed after one retry.
+//
+// Sonnet judges every digest by default; a fail or an unparseable answer escalates the same
+// digest to Opus for confirmation before anything blocks. A digest, rubric and model whose hash
+// matches an already-committed verdict skips the Bedrock call entirely.
 //
 // What this needs in AWS:
 //   1. The workflow role (SPREADSHEETS_ACTIONS_ROLE_ARN, assumed by OIDC) allows
 //      bedrock:InvokeModel and bedrock:InvokeModelWithResponseStream on
 //      arn:aws:bedrock:*::foundation-model/anthropic.* and the account's anthropic
 //      inference profiles.
-//   2. The model agreement for anthropic.claude-opus-5 is accepted in us-east-1. Model
-//      access is granted per account and region.
+//   2. The model agreements for anthropic.claude-sonnet-5 and anthropic.claude-opus-5 (the
+//      escalation model) are both accepted in us-east-1. Model access is granted per account
+//      and region.
 //   3. The ENABLE_LLM_JUDGE repository variable is set to "true". Until it is, every judge
 //      step and job is skipped and nothing calls Bedrock.
 
