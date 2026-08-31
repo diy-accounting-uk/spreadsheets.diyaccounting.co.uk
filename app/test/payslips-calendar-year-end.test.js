@@ -44,6 +44,24 @@ describe.each(["se", "ltd"])("%s Payslips Admin calendar year end", (product) =>
   });
 });
 
+// The printed payslip pulls every figure off the month tab H3 names, at the
+// row H4 works out. Spelling that reference as H3 & "!C" & H4 assumes the "!"
+// sheet separator of Excel's own grammar: LibreOffice reads a name built that
+// way as #REF! and prints a page of errors. ADDRESS emits whichever separator
+// the engine reading the file uses, so the same formula resolves in both.
+describe.each(["se", "ltd"])("%s Payslips print sheet period join", (product) => {
+  it("names the month tab through ADDRESS rather than a hard-coded sheet separator", async () => {
+    const zip = await JSZip.loadAsync(readFileSync(resolve(ROOT, `app/templates/${product}/Payslips.xlsx`)));
+    const xml = await zip.file("xl/worksheets/sheet14.xml").async("string");
+    const formulas = [...xml.matchAll(/<f[^>]*>([^<]*INDIRECT[^<]*)<\/f>/g)].map((m) => m[1]);
+    expect(formulas).toHaveLength(104);
+    for (const formula of formulas) {
+      expect(formula).toMatch(/INDIRECT\(ADDRESS\([^)]*,\$H\$3\)\)/);
+      expect(formula).not.toContain('&amp; "!');
+    }
+  });
+});
+
 // Payslips.xlsx Jul (sheet5.xml) and Aug (sheet6.xml) shipped with 35 dead
 // #REF! cells -- Jul!F11:F15 and Jul!T41 (5 cells and 1 style mismatch),
 // Aug!H11:M15 with K on rows 12-15 (29 cells) -- invisible on every
@@ -91,19 +109,13 @@ function failureNames(checks) {
   return checks.filter((c) => !c.pass && c.severity !== "warning").map((c) => c.name);
 }
 
-// Scans the named tabs of a recalculated package file for a literal
-// "#REF!" left in a formula. Scoped to the tabs this track owns (Jul/Aug)
-// rather than the whole workbook: the Payslips print sheet (sheet14.xml)
-// carries its own, unrelated #REF!s in every one of these fixtures
-// (confirmed unchanged by this fix, on the pre-fix template too), so a
-// whole-workbook scan would fail on a defect this track never touched.
-async function findRefErrors(savedDir, fileName, sheetNames) {
+// Scans every sheet of a recalculated package file for a literal "#REF!",
+// naming the sheets that hold one.
+async function findRefErrors(savedDir, fileName) {
   const zip = await JSZip.loadAsync(readFileSync(resolve(savedDir, fileName)));
   const sheetMap = await buildSheetMap(zip);
   const found = [];
-  for (const sheetName of sheetNames) {
-    const path = sheetMap.get(sheetName);
-    if (!path) throw new Error(`findRefErrors: sheet ${sheetName} not found in ${fileName}`);
+  for (const [sheetName, path] of sheetMap) {
     const content = await zip.file(path).async("string");
     if (content.includes("#REF!")) found.push(sheetName);
   }
@@ -153,13 +165,47 @@ describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own pa
     if (savedDir) rmSync(savedDir, { recursive: true, force: true });
   });
 
-  it("leaves no #REF! in the recalculated Payslips.xlsx Jul/Aug tabs", async () => {
-    expect(await findRefErrors(savedDir, "Payslips.xlsx", ["Jul", "Aug"])).toEqual([]);
+  it("leaves no #REF! anywhere in the recalculated Payslips.xlsx", async () => {
+    expect(await findRefErrors(savedDir, "Payslips.xlsx")).toEqual([]);
   });
 
   it("reads Jul and Aug at all -- a prerequisite every check below depends on", () => {
     expect(results["Payslips.xlsx!Jul"]).toBeDefined();
     expect(results["Payslips.xlsx!Aug"]).toBeDefined();
+  });
+
+  // The Payslips sheet is the page an employer prints and hands over. It
+  // joins itself to a month tab through H3 (the tab's name) and H4 (the row
+  // its block starts on), and every printed field is an INDIRECT through
+  // that pair. Nothing downstream reads the page, so a join landing on the
+  // wrong period would print one month's pay under another month's heading
+  // with every other check on the book still green.
+  it("the printed payslip joins to the month tab and block for the period it was asked for", () => {
+    const printed = results["Payslips.xlsx!Payslips"];
+    expect(printed.H3).toBe("May");
+    expect(printed.L7).toBe("MONTHLY PAYROLL");
+    expect(printed.I10).toBe(2);
+    expect(printed.H4).toBe(48);
+  });
+
+  it("passes every printed-payslip check on the intact book", () => {
+    const printChecks = checks.filter((c) => c.name.startsWith("Payslips print:") && c.severity !== "warning");
+    expect(printChecks).toHaveLength(4);
+    for (const c of printChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+  });
+
+  it.each([
+    ["H3", "Apr", "Payslips print: the page reads the May tab"],
+    ["L7", "WEEKLY PAYROLL", "Payslips print: the block the page reads is a monthly payroll"],
+    ["I10", 1, "Payslips print: the period printed is payroll month 2"],
+    ["I9", 40000, "Payslips print: the period ends the day the scenario paid that month's wages"],
+  ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Payslips", cellRef, newValue);
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Payslips", cellRef, value))).toEqual([name]);
   });
 
   it("passes every Payslips Jul/Aug check on the intact book", () => {
@@ -243,13 +289,47 @@ describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own p
     if (savedDir) rmSync(savedDir, { recursive: true, force: true });
   });
 
-  it("leaves no #REF! in the recalculated Payslips.xlsx Jul/Aug tabs", async () => {
-    expect(await findRefErrors(savedDir, "Payslips.xlsx", ["Jul", "Aug"])).toEqual([]);
+  it("leaves no #REF! anywhere in the recalculated Payslips.xlsx", async () => {
+    expect(await findRefErrors(savedDir, "Payslips.xlsx")).toEqual([]);
   });
 
   it("reads Jul and Aug at all -- a prerequisite every check below depends on", () => {
     expect(results["Payslips.xlsx!Jul"]).toBeDefined();
     expect(results["Payslips.xlsx!Aug"]).toBeDefined();
+  });
+
+  // The Payslips sheet is the page an employer prints and hands over. It
+  // joins itself to a month tab through H3 (the tab's name) and H4 (the row
+  // its block starts on), and every printed field is an INDIRECT through
+  // that pair. Nothing downstream reads the page, so a join landing on the
+  // wrong period would print one month's pay under another month's heading
+  // with every other check on the book still green.
+  it("the printed payslip joins to the month tab and block for the period it was asked for", () => {
+    const printed = results["Payslips.xlsx!Payslips"];
+    expect(printed.H3).toBe("May");
+    expect(printed.L7).toBe("MONTHLY PAYROLL");
+    expect(printed.I10).toBe(2);
+    expect(printed.H4).toBe(48);
+  });
+
+  it("passes every printed-payslip check on the intact book", () => {
+    const printChecks = checks.filter((c) => c.name.startsWith("Payslips print:") && c.severity !== "warning");
+    expect(printChecks).toHaveLength(4);
+    for (const c of printChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+  });
+
+  it.each([
+    ["H3", "Apr", "Payslips print: the page reads the May tab"],
+    ["L7", "WEEKLY PAYROLL", "Payslips print: the block the page reads is a monthly payroll"],
+    ["I10", 1, "Payslips print: the period printed is payroll month 2"],
+    ["I9", 40000, "Payslips print: the period ends the day the scenario paid that month's wages"],
+  ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Payslips", cellRef, newValue);
+    expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Payslips", cellRef, value))).toEqual([name]);
   });
 
   it("passes every Payslips Jul/Aug check on the intact book", () => {
