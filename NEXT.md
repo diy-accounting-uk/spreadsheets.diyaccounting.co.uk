@@ -9,7 +9,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
 | surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | — | Opus | landed: all four designed tracks already superseded; plan rewritten to the three live defects, 1221 → 319 lines |
-| ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | `../wt-spreadsheets/ctxbst` | Sonnet | started |
+| ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | — | Sonnet | landed: the P&L diagram was internally wrong (rows shifted, wrong codes, wrong SA103S boxes); scenario and CI sections refreshed |
 | ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | — | Sonnet | landed: five correction sets (MnthP&L wiring, cache rolls, three fixtures, checks table, monthly CI) |
 | ctxse | `CONTEXT_SELF_EMPLOYED.md` re-align | `../wt-spreadsheets/ctxse` | Sonnet | started |
 | ctxtaxi | `CONTEXT_TAXI.md` re-align | — | Sonnet | landed: Admin layout was BST's, CI triggers/jobs stale, dead test file cited; all corrected from the XML |
