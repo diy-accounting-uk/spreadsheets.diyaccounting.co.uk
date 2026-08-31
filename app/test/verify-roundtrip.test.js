@@ -379,6 +379,15 @@ describe("scoreDataHalves", () => {
     expect(scoreDataHalves(fixture, exported, new Set(), 1).coarseMatches).toBe(0);
   });
 
+  it("leaves an opening-balance journal line at the date it was written on both sides", () => {
+    const openingLine = { ...LINE, sourceJournalID: "journal", documentReference: "OB-001" };
+    const { fixture, exported } = writePair([openingLine], [openingLine]);
+    // Every ordinary line moves with the shift, but this one already matches
+    // the export at its own date, so shifting it would break a match that
+    // holds without one.
+    expect(scoreDataHalves(fixture, exported, new Set(), 2).coarseMatches).toBe(1);
+  });
+
   it("compares book.toml field by field, naming what is missing", () => {
     const fixtureBook = [
       "[documentInfo]",

@@ -323,6 +323,10 @@ export function shiftPostingDate(text, monthOffset) {
   return shiftMonths(new Date(Date.UTC(year, month - 1, day)), monthOffset).toISOString().slice(0, 10);
 }
 
+// The documentReference both the Ltd fixture and xlsx-exporter.js's
+// OA_JOURNAL_MAP extraction use for the opening-balance journal.
+const OPENING_BALANCE_DOCUMENT_REFERENCE = "OB-001";
+
 // ── EQ2: the data half ─────────────────────────────────────────────────────
 
 function readJsonl(path) {
@@ -424,9 +428,18 @@ export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
   const fixtureLines = dateShiftMonths
-    ? rawFixtureLines.map((line) =>
-        line.postingDate === undefined ? line : { ...line, postingDate: shiftPostingDate(line.postingDate, dateShiftMonths) },
-      )
+    ? rawFixtureLines.map((line) => {
+        // The Ltd export's opening-balance journal (OA_JOURNAL_MAP in
+        // xlsx-exporter.js) carries a balance forward from before the
+        // period, so it writes a fixed literal postingDate under this same
+        // documentReference whatever year end the package settles on,
+        // rather than a date the period-frame shift moved. The fixture uses
+        // the same documentReference for its own opening balances, so this
+        // line stays out of the shift and compares at the date it was
+        // written on both sides.
+        if (line.postingDate === undefined || line.documentReference === OPENING_BALANCE_DOCUMENT_REFERENCE) return line;
+        return { ...line, postingDate: shiftPostingDate(line.postingDate, dateShiftMonths) };
+      })
     : rawFixtureLines;
 
   const fixtureFields = new Set(fixtureLines.flatMap((line) => Object.keys(line)));
