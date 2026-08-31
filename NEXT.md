@@ -13,7 +13,8 @@ lands:
 - divider track (Haiku) — T3: merged to local main (98ac8a93, 1282 guard tests green);
   pushes with the next batch after the full suite
 - judge track (Sonnet) — J1–J5: started
-- hyperlink track (Haiku) — C4: started
+- hyperlink track (Haiku) — C4: merged to local main (08ef2978 + the Taxi Home link fix
+  1ac84f8d its test caught; 8/8 and taxi-only 14/14 green); pushes with the next batch
 
 Queued behind these to avoid product-module collisions: T2 and F22 after T1 lands (disjoint
 regions of `app/products/*.js`), F23 after F22, C1+C2+C3 after T2, F24 after F23, C5 after
@@ -99,11 +100,6 @@ follow the reconciliation-bug method.
   the members (name, shares, `acquired`): have `cellWrites` populate the registers from it,
   read the entries back, and check them against the fixture so an empty register fails. Verify
   the sheet layout from the XML first.
-- [ ] **C4: the BST and Taxi Home pages are unchecked navigation** (Haiku) — no figure, no
-  money risk; the one thing that can rot is the hyperlinks. Add a template-level test that
-  walks `Home`'s hyperlink relationships in both workbooks and asserts every target sheet
-  exists (the BST Home hyperlink has broken before — see the fixed-hyperlink note in
-  `CONTEXT_BASIC_SOLE_TRADER.md`).
 - [ ] **C5: regenerate `REPORT_SHEET_COVERAGE_GAPS.md` once C1-C4 land** (Haiku) — re-run the
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
