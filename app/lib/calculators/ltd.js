@@ -630,9 +630,18 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     if (motorRow.disposed) scheduleSheet[`Y${firstMotorRow}`] = motorRow.balancingAllowance;
   }
   results["Fixedassets.xlsx!Schedule"] = scheduleSheet;
+  // FAreconciliation!E11/K11 sum the Schedule's own new-asset and disposal
+  // rows (E11 = SUM(E6:E10), each reading a class's Schedule!<newTotalRow>;
+  // K11 = SUM(K6:K10), each reading a class's Schedule!V<row> disposal
+  // proceeds) — the Schedule side of the tie-out. E13/K13 are the template's
+  // leaf-to-leaf links to Purchases.xlsx/Sales.xlsx's last month tab
+  // ([2]Mar!$AI$2, [3]Mar!$U$2), the ledger side, which the JS engine has no
+  // cross-file link for and instead sums the AI/U columns across every month.
   results["Fixedassets.xlsx!FAreconciliation"] = {
-    E11: sum(purchasesMonthly("AI")),
-    K11: sum(salesMonthly("U")),
+    E11: blocks.allNew.E,
+    E13: sum(purchasesMonthly("AI")),
+    K11: blocks.whole.V,
+    K13: sum(salesMonthly("U")),
   };
   const hp = buildHirePurchase(scenario);
   results["Fixedassets.xlsx!HPfinance"] = hp.sheet;
