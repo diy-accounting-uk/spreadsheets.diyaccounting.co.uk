@@ -49,9 +49,7 @@ follow the reconciliation-bug method.
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
-  browser page; specified, not started.
-- `PLAN_DIYA_GL_LLM_REVIEW.md` — LLM review of a loaded book, opt-in, metered in-page; starts
-  after the BST spike's phase 5.
+  browser page, with the opt-in LLM review as its post-phase-5 extension; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
 - `PLAN_TEMPLATE_SURGERY.md` — eight shipped-template repairs in four dispatch-ready tracks
   (income-tax taper/additional rate, Ltd CT/CT600 + Ltd mileage, fixed-asset book values and HP

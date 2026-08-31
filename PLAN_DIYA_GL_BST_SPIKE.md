@@ -13,7 +13,8 @@ downstream consumers are why the spike is worth running:
 - **DIYA Cloud itself** (`_developers/PLAN_DIYA_CLOUD.md`), further off.
 
 The BST page's own users may be few. That is acceptable: the page is a test harness that
-happens to be useful. One product, one page, no server.
+happens to be useful. One product, one page, no server — until the LLM review (the last
+section), whose model call is the one deliberate exception.
 
 ## User assertions (verbatim)
 
@@ -209,6 +210,63 @@ beside it; the bundle build joins the existing build steps in CI.
 
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
 the saved zip, VAT hand-off to Submit (`PLAN_VAT_EXPORT_FOR_SUBMIT.md` — this spike's import is
-its natural front half), LLM review of the accounts (`PLAN_DIYA_GL_LLM_REVIEW.md` — it changes
-the page's trust claim, so it carries its own plan), and saved-account persistence (that is
-DIYA Cloud; the working-book autosave in phase 5 is the whole of what this page keeps).
+its natural front half), and saved-account persistence (that is DIYA Cloud; the working-book
+autosave in phase 5 is the whole of what this page keeps). The LLM review below is in this plan
+but outside the spike: it starts only after phase 5 lands and the decision gate held.
+
+## LLM review (after phase 5)
+
+The page asks an LLM to review the loaded accounts, comment, and propose fixes the user can
+select and apply. Explicitly opt-in, because it changes the page's trust claim.
+
+> feed in another idea [...] for a LLM review, we can find a compressed bedrock friendly format
+> and send a request and use [bedrock-meter] to cap the spend on a public endpoint. The AI
+> should review and comment on the accounts and propose fixes using a multi-turn and structure
+> format so that the proposed fixes can be selected and the request submitted the yields a new
+> compressed format diya-gl with the fixed.
+
+> [bedrock-meter] is a LIBRARY used in the page, not a hosted endpoint the browser calls.
+
+**The two things this changes, recorded first.**
+
+*The trust claim.* The books page promises "Nothing is uploaded; the file never leaves your
+machine." Any model call breaks that. So: the review is explicit opt-in per book, never a
+default; the copy on the review control says plainly what is sent, to which model, and under
+whose key; and the no-upload promise gains its qualifier only when the review ships, not
+before.
+
+*Untrusted input reaches a model that proposes changes to tax figures.* An uploaded workbook is
+attacker-controllable content — cell text, names and comments all flow into the compressed
+format and from there into the prompt. Prompt injection is a first-class risk: a crafted
+workbook could try to steer the model into proposing fixes that misstate tax. The guards below
+are load-bearing for exactly this reason — a proposed fix is treated as hostile until it
+validates, previews, and leaves the passing checks passing.
+
+**Metering.** The bedrock-meter library is bundled into the page. It wraps each Bedrock
+request, counts the tokens spent, keeps the running total, and refuses further requests once
+the configured cap is reached — enforced in-page, with the spend state shown beside the review
+control so running out is never a surprise.
+
+**The flow.**
+
+- *Compressed format.* A Bedrock-friendly rendering of the book, small enough to review in one
+  request: `documentInfo`/`entityInformation`, the monthly and category summaries the year
+  table already computes, the check results, and individual lines only where a check flags
+  them or a category is anomalous. Deterministic, versioned, round-trippable back to line
+  edits.
+- *Review turn.* The model reviews and comments and proposes fixes in a structured response —
+  a JSON list, each entry naming the lines it touches, the diya-gl edit it makes, and its
+  reasoning. The page renders each comment with its fix as a selectable item, in the same
+  preview language the page's own helpers use.
+- *Fix turn.* The selected fixes go back in a second request; the reply is a new
+  compressed-format diya-gl carrying them. The page expands it to line edits, shows the diff
+  as pencil annotations, and applies only on accept — through the same edit path as a hand
+  edit, so recalculation, the checks panel and undo all cover it.
+- *The guards (load-bearing).* A reply that fails schema validation is rejected with its
+  reason shown. A fix that would take a passing check to failing is rejected the same way.
+  Nothing applies without the user accepting the previewed diff.
+
+`app/bin/judge-reconciliation.js` is the in-repo precedent for prompt shape and rubric tone;
+the review prompt borrows its discipline (comment on what the figures show, never soften a
+check). First step when this starts: the compressed format and its round-trip test in Node —
+no page work and no model call until the format is proven on the reconciliation scenarios.
