@@ -23,6 +23,8 @@ import {
   extractPayrollTransactions,
   extractJournalEntries,
   extractBook,
+  extractPeriodStartMonth,
+  periodCovered,
 } from "../lib/xlsx-exporter.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
@@ -80,9 +82,14 @@ async function main() {
     lines = packageName === "taxi" ? await extractTaxiTransactions(workbook) : await extractBstTransactions(workbook);
   } else {
     lines = await extractMultiFileTransactions(resolvedSource, packageName);
-    const bankLines = await extractBankTransactions(resolvedSource, packageName);
+    // An opening balance and a year-end adjustment are dated by the period
+    // they sit at the edges of, and no cell beside either one carries a date.
+    // The sales and purchases journals fix that period on their own, so it is
+    // settled before the sheets that need it are read.
+    const period = periodCovered(await extractPeriodStartMonth(resolvedSource, packageName), lines);
+    const bankLines = await extractBankTransactions(resolvedSource, packageName, period);
     const payrollLines = await extractPayrollTransactions(resolvedSource);
-    const journalLines = await extractJournalEntries(resolvedSource, packageName);
+    const journalLines = await extractJournalEntries(resolvedSource, packageName, period);
     lines = lines.concat(bankLines, payrollLines, journalLines);
   }
 

@@ -364,24 +364,19 @@ describe("scoreDataHalves", () => {
 
 // ── The whole tuple, end to end ────────────────────────────────────────────
 
-// unreached is how many fixture lines the export does not bring back as the
-// same transaction today: Taxi reprices its mileage claim at the rates the
-// sheet bands it by, SE loses its stock adjustment, and Ltd collapses the
-// fixed asset debit and credit to net book value and drops two bank opening
-// balances. dropped names the fields the export leaves out with no reason
-// declared for them. The assertions below are a ratchet, so both can fall and
-// the numbers here come down with them, and nothing can raise them.
+// Every fixture line comes back as the same transaction, posted to the same
+// account. dropped names the fields the export leaves out with no reason
+// declared for them.
 const PRODUCTS = [
-  { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05", unreached: 0 },
+  { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05" },
   {
     name: "taxi",
     data: "examples/sp-sixty-driving/taxi",
     years: "se-2025-2026",
     yearEnd: "2026-04-05",
-    unreached: 0,
   },
-  { name: "se", data: "examples/precision-code-ltd/advanced", years: "se-2025-2026", yearEnd: "2026-04-05", unreached: 2 },
-  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", unreached: 5 },
+  { name: "se", data: "examples/precision-code-ltd/advanced", years: "se-2025-2026", yearEnd: "2026-04-05" },
+  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31" },
   {
     // A non-March year end exercises the tab-rename and formula-rewrite path
     // (getMonthTabSequence, renameMonthTabs, renameExternalLinkSheetNames,
@@ -392,7 +387,6 @@ const PRODUCTS = [
     data: "examples/precision-code-ltd/full",
     years: "ltd-2025",
     yearEnd: "2025-05-31",
-    unreached: 5,
     // generate shifts every posting date onto the package's own accounting
     // period, so for a May year end the exported dates sit a month or two
     // from the fixture's by design. Anchoring the comparison to the fixture
@@ -465,18 +459,17 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
       const score = scoreDataHalves(resolve(fixture, "data"), exported, unrepresentableFields(product.name, inventory));
 
-      // Every line the fixture carries comes back, bar the ones this run is
-      // known not to reach.
-      expect(score.exportedLines).toBeGreaterThanOrEqual(score.fixtureLines - product.unreached);
+      // Every line the fixture carries comes back.
+      expect(score.exportedLines).toBeGreaterThanOrEqual(score.fixtureLines);
       // Nothing is silently dropped: every field the export leaves out is
-      // one the inventory names a reason for, or one this run already counts.
+      // one the inventory names a reason for.
       expect(score.fieldsDropped).toEqual(product.dropped ?? []);
 
       if (product.dateFrameShifted) return;
 
       // A fixture line reaches the export as at least the same transaction:
       // same date, same amount, same journal.
-      expect(score.coarseMatches).toBeGreaterThanOrEqual(score.fixtureLines - product.unreached);
+      expect(score.coarseMatches).toBeGreaterThanOrEqual(score.fixtureLines);
       // And wherever the transaction survives, so does the account it was
       // posted to. Several accounts share one code letter, so this is the
       // claim the carrier column exists to make.
