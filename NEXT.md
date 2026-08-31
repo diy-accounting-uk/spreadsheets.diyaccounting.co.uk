@@ -12,7 +12,9 @@ lands:
 - FA track (Opus) — T1 + T4: merged to `claude/next-batch-wave-1` (includes the generate.js
   link-rename fix the track surfaced; June package reconciles 866/866)
 - payslip track (Sonnet) — T2: started
-- roundtrip track (Opus) — F22: started
+- roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
+  products, ratchets retired, RECONCILES 859/859 and 683/683)
+- comparator track (Sonnet) — F23: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -78,13 +80,17 @@ follow the reconciliation-bug method.
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
   313/16 untouched toward the residue the report says is deliberate.
-- [ ] **F22: the fixed-asset `cellWrites` layout loses five lines on export (S7)** (Opus) —
-  Ltd's fixed-asset debit and credit legs collapse to net book value, two Ltd bank opening
-  balances are lost, and SE loses its stock adjustment; `app/data/roundtrip-budget.json` holds
-  `linesLost` at 4 for Ltd and 1 for SE, and `app/test/verify-roundtrip.test.js`'s ratchet holds
-  its own run's count at 5 and 2. Redesign the FA/opening-balance write layout so the legs
-  survive export (generator write shapes + the exporter's read-back), then take `linesLost` to 0
-  for both products and retire the ratchets. The plan's most self-contained remaining defect.
+- [ ] **B1: twelve payroll lines come back on the wrong account on the reconcile-populated
+  route** (Sonnet) — surfaced by F22's matrix scorecard: £1048/month, account 5100, comes back
+  on a different account in the reconcile-populated runs only (`accountMatches` 710 vs
+  `coarseMatches` 722 for Ltd, 684 vs 696 for SE); the generate route matches 722/722. The
+  matrix job gates neither figure, so nothing fails today. Find where the reconcile-populated
+  path loses the account and gate `accountMatches` once it holds.
+- [ ] **B2: an opening land & buildings asset would lose both legs symmetrically** (Sonnet) —
+  `OA_JOURNAL_MAP` (`app/lib/xlsx-exporter.js`) has no ledger account for land & buildings
+  (`G13`/`M13`), and `OPENING_FIXED_ASSET_CLASSES` (`app/lib/scenario-extractor.js`) omits it
+  the same way, so no fixture can exercise the gap from either side. Add the class to both
+  maps and a fixture line that proves the legs survive.
 - [ ] **F23: non-March EQ2 is scored on counts only** (Sonnet) — `generate` shifts every posting
   date onto the package's own accounting period, so a non-March export's dates sit a month or
   two from the fixture's by design; the comparator doesn't undo the shift, the `ltd-may` ratchet
