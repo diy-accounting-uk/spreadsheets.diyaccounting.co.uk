@@ -285,23 +285,25 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual(["Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total"]);
     });
 
-    it("fails both additions checks when the schedule's own additions total is corrupted via JSZip", async () => {
+    it("fails every check reading the schedule's own additions total when it is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E11", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E11", value);
       expect(failureNames(corrupted)).toEqual([
         "Fixed assets: Schedule additions = Purchases.xlsx fixed asset total",
         "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
+        "Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue",
       ]);
     });
 
-    it("fails both disposals checks when the schedule's own disposals total is corrupted via JSZip", async () => {
+    it("fails every check reading the schedule's own disposals total when it is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K11", 0);
       expect(value).toBe(0);
       const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K11", value);
       expect(failureNames(corrupted)).toEqual([
         "Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total",
         "Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT",
+        "Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue",
       ]);
     });
 
@@ -1005,6 +1007,7 @@ describeCalc(
       const nettingRow = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases fa");
       expect(nettingRow.residue).toBeCloseTo(-drift, 6);
       expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule additions = Purchases.xlsx fixed asset total",
         "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
         categoryNettingCheckName(nettingRow),
       ]);
