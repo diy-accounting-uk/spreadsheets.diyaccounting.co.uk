@@ -376,9 +376,10 @@ function wholeLine(line, unrepresentable) {
 
 // An inventory entry names its reach with exactly one of "products" (every
 // block of a product) or "blocks" (only the named product/block pairs, block
-// being a line's own sourceJournalID). Mixing the two on one entry would let
-// a product-wide and a block-scoped declaration be read as either, so it is
-// rejected outright rather than guessed at.
+// being a line's own scope key from lineScopeBlock() below -- ordinarily its
+// sourceJournalID, narrowed for the one case that needs it). Mixing the two
+// on one entry would let a product-wide and a block-scoped declaration be
+// read as either, so it is rejected outright rather than guessed at.
 function validateInventoryEntry(entry, index) {
   const where = `roundtrip-unrepresentable.json fields[${index}]${entry?.field ? ` ("${entry.field}")` : ""}`;
   if (typeof entry?.field !== "string" || entry.field.length === 0) throw new Error(`${where} has no field name`);
@@ -407,11 +408,11 @@ const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new M
  * The fields the checked-in inventory says the Excel encoding has nowhere to
  * put, for one product, split into the fields no block of that product can
  * carry (`productWide`) and the fields only a specific block cannot carry
- * (`byBlock`, keyed by a line's own sourceJournalID). A line's own
- * applicable set is `productWide` plus whatever `byBlock` names for that
- * line's block, so a block-scoped declaration blanks only the block it
- * names -- a block that still carries the field (e.g. sales keeping its own
- * description column) keeps being compared on it.
+ * (`byBlock`, keyed by a line's own scope key from lineScopeBlock()). A
+ * line's own applicable set is `productWide` plus whatever `byBlock` names
+ * for that line's scope, so a block-scoped declaration blanks only the
+ * block it names -- a block that still carries the field (e.g. sales
+ * keeping its own description column) keeps being compared on it.
  * @param {string} product
  * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
  * @returns {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }}
@@ -435,12 +436,28 @@ export function unrepresentableScope(product, inventory) {
   return { product, productWide, byBlock };
 }
 
+// A line's scope key for the unrepresentable-field inventory: ordinarily its
+// own sourceJournalID, except a bank block opening-balance line. That line
+// shares its sourceJournalID with the ordinary receipt and payment rows
+// around it, which do carry a lineItemComment and a documentReference of
+// their own -- so a declaration scoped to plain "bank" would blank those
+// fields off every ordinary row too. The opening-balance line is unambiguous
+// (detailComment is "Opening balance" nowhere else in a bank block), so it
+// gets a scope of its own that a declaration can name without touching the
+// rest of the block.
+const BANK_OPENING_BALANCE_BLOCK = "bank-opening-balance";
+
+function lineScopeBlock(line) {
+  if (line.sourceJournalID === "bank" && line.detailComment === "Opening balance") return BANK_OPENING_BALANCE_BLOCK;
+  return line.sourceJournalID;
+}
+
 // The fields a given line's own block leaves unrepresentable: the
 // product-wide set plus whatever the block-scoped map names for that line's
-// sourceJournalID. A line with no matching block entry gets the product-wide
-// set alone, unchanged from before block scoping existed.
+// scope key. A line with no matching block entry gets the product-wide set
+// alone, unchanged from before block scoping existed.
 function unrepresentableForLine(scope, line) {
-  const blockFields = scope.byBlock.get(line.sourceJournalID);
+  const blockFields = scope.byBlock.get(lineScopeBlock(line));
   if (!blockFields) return scope.productWide;
   return new Set([...scope.productWide, ...blockFields]);
 }
@@ -490,9 +507,9 @@ export function flattenBook(value, prefix = "") {
  * @param {string} exportDir
  * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }} [scope] -
  *   the fields the encoding has no home for, from unrepresentableScope(). A
- *   block-scoped declaration whose block matches no line's sourceJournalID
- *   in this run is a stale or mistyped block name, not silence, so it
- *   throws rather than quietly declaring nothing.
+ *   block-scoped declaration whose block matches no line's scope key
+ *   (lineScopeBlock()) in this run is a stale or mistyped block name, not
+ *   silence, so it throws rather than quietly declaring nothing.
  * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
  *   to move the fixture's own postingDate forward by before comparing, for a
  *   package whose year end put the export's dates through the same shift.
@@ -508,13 +525,13 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
     : rawFixtureLines;
 
   const observedBlocks = new Set(
-    [...fixtureLines, ...exportedLines].map((line) => line.sourceJournalID).filter((block) => block !== undefined),
+    [...fixtureLines, ...exportedLines].map((line) => lineScopeBlock(line)).filter((block) => block !== undefined),
   );
   for (const block of scope.byBlock.keys()) {
     if (!observedBlocks.has(block)) {
       throw new Error(
         `roundtrip-unrepresentable.json declares a block-scoped field for ${scope.product ?? "this product"}'s "${block}" block, ` +
-          `but no line in this run carries sourceJournalID "${block}" -- the declaration matches nothing`,
+          `but no line in this run scopes to "${block}" -- the declaration matches nothing`,
       );
     }
   }

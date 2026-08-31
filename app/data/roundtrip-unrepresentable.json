@@ -1,5 +1,5 @@
 {
-  "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the reach it applies to and what the sheets do instead. An entry names its reach with exactly one of \"products\" (every block of that product) or \"blocks\" (only the named product/block pairs, block being a line's own sourceJournalID); a field can carry several entries, e.g. one product-wide and one block-scoped for a different product, as long as no single entry mixes the two. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
+  "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the reach it applies to and what the sheets do instead. An entry names its reach with exactly one of \"products\" (every block of that product) or \"blocks\" (only the named product/block pairs, block being a line's own scope key from verify-roundtrip.js's lineScopeBlock() -- ordinarily its sourceJournalID, except a bank block opening-balance line, which scopes to \"bank-opening-balance\" so a declaration can name it without blanking the ordinary bank rows sharing its sourceJournalID); a field can carry several entries, e.g. one product-wide and one block-scoped for a different product, as long as no single entry mixes the two. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
   "fields": [
     {
       "field": "diya-gl:assetID",
@@ -52,6 +52,14 @@
       "reason": "The single-file templates have no Payslips workbook."
     },
     {
+      "field": "documentReference",
+      "blocks": [
+        { "product": "se", "block": "bank-opening-balance" },
+        { "product": "ltd", "block": "bank-opening-balance" }
+      ],
+      "reason": "The bank account's opening balance is a bare amount in A1 with no reference cell beside it (the same finding as its missing date: nothing on the tab ties a reference to that figure). An ordinary receipt or payment row keeps its own reference column, so this leaves those rows matching."
+    },
+    {
       "field": "documentType",
       "products": ["bst", "taxi", "se", "ltd"],
       "reason": "The sales and purchases sheets take one kind of document each, so no row says which kind it is. The opening journal keeps its own documentType."
@@ -73,6 +81,14 @@
         { "product": "ltd", "block": "payroll" }
       ],
       "reason": "The Payslips payroll row carries the employee name as detailComment and the pay figures beside it; the payslip block has no spare column left for a free-text line comment. Sales and purchases keep their own description column, so this leaves those blocks matching."
+    },
+    {
+      "field": "lineItemComment",
+      "blocks": [
+        { "product": "se", "block": "bank-opening-balance" },
+        { "product": "ltd", "block": "bank-opening-balance" }
+      ],
+      "reason": "The bank account's opening balance is a bare amount in A1; the only text anywhere near it is the tab's own row caption (\"< Opening Bank Balance\", shared string, identical on every account's tab), not a per-line comment. An ordinary receipt or payment row keeps its own comment column, so this leaves those rows matching."
     },
     {
       "field": "lineNumber",
