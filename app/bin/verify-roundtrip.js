@@ -370,6 +370,90 @@ function wholeLine(line, unrepresentable) {
   );
 }
 
+// ── The unrepresentable-field inventory ────────────────────────────────────
+
+// An inventory entry names its reach with exactly one of "products" (every
+// block of a product) or "blocks" (only the named product/block pairs, block
+// being a line's own sourceJournalID). Mixing the two on one entry would let
+// a product-wide and a block-scoped declaration be read as either, so it is
+// rejected outright rather than guessed at.
+function validateInventoryEntry(entry, index) {
+  const where = `roundtrip-unrepresentable.json fields[${index}]${entry?.field ? ` ("${entry.field}")` : ""}`;
+  if (typeof entry?.field !== "string" || entry.field.length === 0) throw new Error(`${where} has no field name`);
+  const hasProducts = Object.prototype.hasOwnProperty.call(entry, "products");
+  const hasBlocks = Object.prototype.hasOwnProperty.call(entry, "blocks");
+  if (hasProducts === hasBlocks) throw new Error(`${where} must declare exactly one of "products" or "blocks", never both or neither`);
+  if (hasProducts) {
+    if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
+      throw new Error(`${where} has a malformed "products" list`);
+    }
+  } else {
+    if (!Array.isArray(entry.blocks) || entry.blocks.length === 0) throw new Error(`${where} has a malformed "blocks" list`);
+    for (const scope of entry.blocks) {
+      if (!scope || typeof scope.product !== "string" || !scope.product || typeof scope.block !== "string" || !scope.block) {
+        throw new Error(`${where} has a malformed block scope; each entry needs a "product" and a "block"`);
+      }
+    }
+  }
+}
+
+// A scope with no declarations, for a call site that has no inventory file
+// or is scoring a product the inventory names nothing for.
+const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map() };
+
+/**
+ * The fields the checked-in inventory says the Excel encoding has nowhere to
+ * put, for one product, split into the fields no block of that product can
+ * carry (`productWide`) and the fields only a specific block cannot carry
+ * (`byBlock`, keyed by a line's own sourceJournalID). A line's own
+ * applicable set is `productWide` plus whatever `byBlock` names for that
+ * line's block, so a block-scoped declaration blanks only the block it
+ * names -- a block that still carries the field (e.g. sales keeping its own
+ * description column) keeps being compared on it.
+ * @param {string} product
+ * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
+ * @returns {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }}
+ */
+export function unrepresentableScope(product, inventory) {
+  const productWide = new Set();
+  const byBlock = new Map();
+  const fields = inventory?.fields ?? [];
+  fields.forEach((entry, index) => validateInventoryEntry(entry, index));
+  for (const entry of fields) {
+    if (entry.products) {
+      if (entry.products.includes(product)) productWide.add(entry.field);
+      continue;
+    }
+    for (const scope of entry.blocks) {
+      if (scope.product !== product) continue;
+      if (!byBlock.has(scope.block)) byBlock.set(scope.block, new Set());
+      byBlock.get(scope.block).add(entry.field);
+    }
+  }
+  return { product, productWide, byBlock };
+}
+
+// The fields a given line's own block leaves unrepresentable: the
+// product-wide set plus whatever the block-scoped map names for that line's
+// sourceJournalID. A line with no matching block entry gets the product-wide
+// set alone, unchanged from before block scoping existed.
+function unrepresentableForLine(scope, line) {
+  const blockFields = scope.byBlock.get(line.sourceJournalID);
+  if (!blockFields) return scope.productWide;
+  return new Set([...scope.productWide, ...blockFields]);
+}
+
+// Every field name any entry in the scope declares, product-wide or
+// block-scoped, for the coarse "does the export carry this field kind at
+// all" axis below -- that axis does not distinguish blocks, so a field
+// dropped from one block but carried by another is "no home" there and
+// "dropped" nowhere.
+function allDeclaredFields(scope) {
+  const all = new Set(scope.productWide);
+  for (const fields of scope.byBlock.values()) for (const field of fields) all.add(field);
+  return all;
+}
+
 /**
  * Flatten a parsed book.toml to dotted paths, so two books can be compared
  * field by field rather than as two blobs of text.
@@ -398,29 +482,21 @@ export function flattenBook(value, prefix = "") {
 }
 
 /**
- * The fields the checked-in inventory says the Excel encoding has nowhere to
- * put, for one product. EQ2 counts those apart from the fields the export
- * simply drops, so a known gap in the encoding never reads as a new loss.
- * @param {string} product
- * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
- * @returns {Set<string>}
- */
-export function unrepresentableFields(product, inventory) {
-  return new Set((inventory?.fields ?? []).filter((entry) => entry.products.includes(product)).map((entry) => entry.field));
-}
-
-/**
  * Score EQ2 between the fixture (the JS side's data/, which is the original
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
  * @param {string} exportDir
- * @param {Set<string>} [unrepresentable] - fields the encoding is known to have no home for
+ * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }} [scope] -
+ *   the fields the encoding has no home for, from unrepresentableScope(). A
+ *   block-scoped declaration whose block matches no line's sourceJournalID
+ *   in this run is a stale or mistyped block name, not silence, so it
+ *   throws rather than quietly declaring nothing.
  * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
  *   to move the fixture's own postingDate forward by before comparing, for a
  *   package whose year end put the export's dates through the same shift.
  *   0 (the default) compares postingDate as the fixture wrote it.
  */
-export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set(), dateShiftMonths = 0) {
+export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0) {
   const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
   const fixtureLines = dateShiftMonths
@@ -429,6 +505,19 @@ export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set
       )
     : rawFixtureLines;
 
+  const observedBlocks = new Set(
+    [...fixtureLines, ...exportedLines].map((line) => line.sourceJournalID).filter((block) => block !== undefined),
+  );
+  for (const block of scope.byBlock.keys()) {
+    if (!observedBlocks.has(block)) {
+      throw new Error(
+        `roundtrip-unrepresentable.json declares a block-scoped field for ${scope.product ?? "this product"}'s "${block}" block, ` +
+          `but no line in this run carries sourceJournalID "${block}" -- the declaration matches nothing`,
+      );
+    }
+  }
+
+  const unrepresentable = allDeclaredFields(scope);
   const fixtureFields = new Set(fixtureLines.flatMap((line) => Object.keys(line)));
   const exportedFields = new Set(exportedLines.flatMap((line) => Object.keys(line)));
   const missingFields = [...fixtureFields].filter((field) => !exportedFields.has(field)).sort();
@@ -461,8 +550,8 @@ export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set
       exportedLines.map((line) => project(line, ACCOUNT_FIELDS)),
     ),
     wholeLineMatches: multisetOverlap(
-      fixtureLines.map((line) => wholeLine(line, unrepresentable)),
-      exportedLines.map((line) => wholeLine(line, unrepresentable)),
+      fixtureLines.map((line) => wholeLine(line, unrepresentableForLine(scope, line))),
+      exportedLines.map((line) => wholeLine(line, unrepresentableForLine(scope, line))),
     ),
     fieldsDropped,
     fieldsDroppedCount: fieldsDropped.length,
@@ -577,7 +666,7 @@ async function main() {
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
   const data = hasData
-    ? scoreDataHalves(fixtureData, excelData, unrepresentableFields(packageName, inventory), dateShiftMonths)
+    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths)
     : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
