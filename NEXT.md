@@ -24,14 +24,11 @@ follow the reconciliation-bug method.
   allowances don't match headline capital spend. Follow the reconciliation-bug method;
   check overlap with the fifth-surface population below before treating it as separate.
   Suggested tier: Opus.
-- [ ] **Fifth VAT quarter-dropdown surface, live (Apr27).** Monika Tesarova
-  (2026-08-26, antony@ inbox) downloaded the Company package for year end April 2027 and
-  the VAT interface cells all point at the April sheet; the operator confirmed and owes
-  her a fixed version. Apr27 is a non-March year end, the same population as the third
-  surface's month-tab remap, so look there first. The 777-test catalogue guard missed it —
-  the fix must extend the guard, not just the workbook. `PLAN_VAT_QUARTER_DROPDOWN.md` is
-  archived claiming all surfaces closed; un-archive or supersede it, and hold the
-  six-donor notification until the affected window is re-established.
+- [ ] **Reply to Monika Tesarova; the six-donor decision** (operator) — her Apr27 Company VAT
+  report (2026-08-26, antony@ inbox) was fixed and republished the next day (`c8ef489f`, guard
+  test included; verified against the live package 2026-08-31). What remains is telling her the
+  fixed package is live, and the six-donor notification decision recorded as the one remainder
+  in `_developers/archive/PLAN_VAT_QUARTER_DROPDOWN.md`.
 
 
 
