@@ -300,6 +300,11 @@ const SA103F_CORRUPTIONS = [
   ["V2", 47117, ["SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)"]],
   ["G141", 1000.18, ["SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)"]],
   ["J280", 13570, ["SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20)"]],
+  [
+    "G1",
+    "COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 1900",
+    ["SA103F: the online filing deadline banner (G1) names 31 January the year after the tax year ends"],
+  ],
 ];
 
 describeCalc("SA103F checks catch a broken full return", () => {

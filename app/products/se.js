@@ -1011,22 +1011,24 @@ export function standardReads() {
 
   // SE Full cells the return quotes without them being boxes of their own,
   // plus the boxes it prints with no formula behind them. The quoted cells
-  // are the period the return covers (Q2 = Admin!B4, V2 = Admin!B17) and the
-  // writing down rate and Class 4 threshold it prints in its captions
-  // (G141 = Admin!G5, J280 = Admin!N20). The empty ones are boxes 51, 52,
-  // 52.1, 53, 54 and 62, which a customer fills in by hand; reading them lets
-  // the box 57 and 63 totals be checked as the exact sums the sheet computes
-  // rather than sums with terms left out.
+  // are the online filing deadline banner (G1, "...by 31st January "&TEXT
+  // (Admin!B21,"yyyy")), the period the return covers (Q2 = Admin!B4, V2 =
+  // Admin!B17) and the writing down rate and Class 4 threshold it prints in
+  // its captions (G141 = Admin!G5, J280 = Admin!N20). The empty ones are
+  // boxes 51, 52, 52.1, 53, 54 and 62, which a customer fills in by hand;
+  // reading them lets the box 57 and 63 totals be checked as the exact sums
+  // the sheet computes rather than sums with terms left out.
   reads["SE Full"] = reads["SE Full"] || [];
-  for (const cell of ["Q2", "V2", "G141", "J280", "D147", "D152", "D156", "D160", "O139", "D179"]) {
+  for (const cell of ["G1", "Q2", "V2", "G141", "J280", "D147", "D152", "D156", "D160", "O139", "D179"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
-  // The Admin sheet's tax year start and end. Everything else the Admin echo
-  // checks compares is a rate or a threshold already in CELL_MAP; these two
-  // are dates, and they anchor the SA103F period and the payroll calendar.
+  // The Admin sheet's tax year start, end and filing deadline. Everything
+  // else the Admin echo checks compares is a rate or a threshold already in
+  // CELL_MAP; these are dates, and they anchor the SA103F period, the online
+  // filing deadline banner and the payroll calendar.
   reads.Admin = reads.Admin || [];
-  for (const cell of ["B4", "B17"]) if (!reads.Admin.includes(cell)) reads.Admin.push(cell);
+  for (const cell of ["B4", "B17", "B21"]) if (!reads.Admin.includes(cell)) reads.Admin.push(cell);
 
   reads.Wagesinterface = reads.Wagesinterface || [];
   for (let i = 0; i < WAGES_MONTH_ROWS.length; i++) {
@@ -1882,6 +1884,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(results.Admin.N20),
       );
     }
+
+    // The online filing deadline printed at the top of the return (G1) is
+    // always 31 January the year after the tax year ends, whatever year the
+    // package was generated for -- a check anchored on the tax year end
+    // rather than on the sheet's own Admin!B21 echo, so a wrong date on both
+    // sides of that link would still be caught.
+    if (taxData?.tax_year?.end) {
+      const deadlineYear = new Date(taxData.tax_year.end).getUTCFullYear() + 1;
+      checkText(
+        "SA103F: the online filing deadline banner (G1) names 31 January the year after the tax year ends",
+        seFull.G1,
+        `COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January ${deadlineYear}`,
+      );
+    }
   }
 
   // ── Fixed assets (Fixedassets.xlsx Schedule vs Purchases/Sales, and P&L) ──
@@ -2444,6 +2460,15 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Admin: Mileage Lower Rate Pence = tax data", admin.G22, mil.lower_rate_pence, 0.0001);
     check("Admin: VAT Registration Threshold = tax data", admin.F26, taxData.vat.registration_threshold);
     check("Admin: VAT Standard Rate = tax data", admin.F27, taxData.vat.standard_rate, 0.0001);
+    if (taxData.tax_year?.end) {
+      const deadlineYear = new Date(taxData.tax_year.end).getUTCFullYear() + 1;
+      check(
+        "Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends",
+        admin.B21,
+        toExcelSerial(deadlineYear, 1, 31),
+        0,
+      );
+    }
   }
 
   // Payslips calendar echo: Payslips.xlsx's own Admin sheet carries a
