@@ -9,6 +9,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
 | surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | `../wt-spreadsheets/surgery` | Opus | started |
+| ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | `../wt-spreadsheets/ctxbst` | Sonnet | started |
+| ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | `../wt-spreadsheets/ctxltd` | Sonnet | started |
+| ctxse | `CONTEXT_SELF_EMPLOYED.md` re-align | `../wt-spreadsheets/ctxse` | Sonnet | started |
+| ctxtaxi | `CONTEXT_TAXI.md` re-align | `../wt-spreadsheets/ctxtaxi` | Sonnet | started |
+| coverage | regenerate `SHEET_COVERAGE_GAPS.md` → `REPORT_SHEET_COVERAGE_GAPS.md` | `../wt-spreadsheets/coverage` | Sonnet | started |
 
 ## Open items
 
