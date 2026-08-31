@@ -423,10 +423,19 @@ The `cellWrites()` function in `se.js` returns writes for multiple files (Sales.
 ```
 
 Sheet names are month abbreviations ("Apr", "May", etc.), not prefixed. Columns:
-- **Sales**: A=date (Excel serial), B=customer (string), F=code letter, G=gross amount
-- **Purchases**: A=date (Excel serial), B=supplier (string), F=code letter, G=gross amount
+- **Sales**: A=date (Excel serial), B=customer (string), C=invoice reference, D=the day's business miles, E=description, F=code letter, G=gross amount
+- **Purchases**: A=date (Excel serial), B=supplier (string), C=invoice reference, D=business miles, E=description, F=code letter, G=gross amount, AD=CIS tax withheld
 
 Rows start at 5 within each month sheet.
+
+Both journals keep a mileage column at D, and the sheet prices those miles
+itself. Each Purchases month tab pools its own D column with the Sales month's
+own total (`C2 = <the month before>!C2 + D1 + [1]<month>!$D$1`), bands the
+running total at the Admin approved rates (`G2`), and files the claim under
+Motor Expenses (`I2 = G2`, `W2 = IF(F2="v",I2," ")`) with no VAT taken off it.
+A mileage-log purchase therefore carries its miles in D and no amount in G --
+writing both would charge the journey twice. A sales day's miles sit beside a
+real sale, so that row keeps its amount.
 
 ### Standard Reads
 
