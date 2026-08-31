@@ -6,9 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. Main is refreshed and deployed through PRs #46 and #47 (deploy green at `2c560c9c`,
-all four generate-commit refreshes in); every later PR branch starts from a rebase onto that
-main, and the operator dispatches CI on branches.
+| Track | Item | Worktree | Tier | Status |
+|---|---|---|---|---|
+| surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | `../wt-spreadsheets/surgery` | Opus | started |
 
 ## Open items
 
