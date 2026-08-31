@@ -736,7 +736,7 @@ describe("buildSubsetBook", () => {
 describe("isStraddlingLine / splitStraddlingLines", () => {
   it("sets aside only the lines carrying diya-gl:vatPeriodEnd", () => {
     const inYear = { sourceJournalID: "sales", postingDate: "2025-04-01", amount: 100 };
-    const straddling = { sourceJournalID: "sales", postingDate: "2025-02-14", amount: 200, "diya-gl:vatPeriodEnd": "2025-02-28" };
+    const straddling = { "sourceJournalID": "sales", "postingDate": "2025-02-14", "amount": 200, "diya-gl:vatPeriodEnd": "2025-02-28" };
     expect(isStraddlingLine(inYear)).toBe(false);
     expect(isStraddlingLine(straddling)).toBe(true);
     expect(splitStraddlingLines([inYear, straddling])).toEqual({ yearLines: [inYear], straddlingLines: [straddling] });
@@ -767,19 +767,19 @@ describe("deriveStraddlingEntries", () => {
   const periodCoveredEnd = new Date("2026-03-31");
   const straddlingLines = [
     {
-      sourceJournalID: "sales",
-      postingDate: "2025-02-14",
-      detailComment: "Acme Corp",
-      documentReference: "INV-0801",
-      amount: 4800,
+      "sourceJournalID": "sales",
+      "postingDate": "2025-02-14",
+      "detailComment": "Acme Corp",
+      "documentReference": "INV-0801",
+      "amount": 4800,
       "diya-gl:vatPeriodEnd": "2025-02-28",
     },
     {
-      sourceJournalID: "purchases",
-      postingDate: "2025-02-20",
-      detailComment: "TechParts Ltd",
-      documentReference: "TP-2402",
-      amount: 720,
+      "sourceJournalID": "purchases",
+      "postingDate": "2025-02-20",
+      "detailComment": "TechParts Ltd",
+      "documentReference": "TP-2402",
+      "amount": 720,
       "diya-gl:vatPeriodEnd": "2025-02-28",
     },
   ];
