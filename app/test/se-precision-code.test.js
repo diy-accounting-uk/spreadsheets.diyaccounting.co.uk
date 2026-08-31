@@ -26,6 +26,10 @@ const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 describeCalc(
   "Self Employed end-to-end: Precision Code advanced scenario",
   () => {
@@ -53,7 +57,7 @@ describeCalc(
 
       // Load scenario and build cell writes
       scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
-      const writes = seCellWrites(scenario);
+      const writes = seCellWrites(scenario, seTaxYearStart(taxData));
       const reads = seReads();
 
       results = await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", seOptions());

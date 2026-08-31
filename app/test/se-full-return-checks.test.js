@@ -43,6 +43,10 @@ const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 // Overwrites a cell's cached <v> content in place, leaving any <f> formula
 // tag untouched -- the way a stale or corrupted cached value would reach a
 // reader that only ever sees the last-saved cell. A box the return leaves
@@ -338,10 +342,16 @@ describeCalc("SA103F checks catch a broken full return", () => {
     expected = { ...scenario, ...scenario.expected };
 
     savedDir = mkdtempSync(join(tmpdir(), "se-full-return-checks-"));
-    results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-      ...seOptions(),
-      saveRecalculatedTo: savedDir,
-    });
+    results = await runMultiFileSpreadsheet(
+      fileBuffers,
+      seCellWrites(scenario, seTaxYearStart(taxData)),
+      seReads(),
+      "Financialaccounts.xlsx",
+      {
+        ...seOptions(),
+        saveRecalculatedTo: savedDir,
+      },
+    );
     checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
   }, 300000);
 

@@ -40,6 +40,10 @@ const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 function corruptCellValue(xml, cellRef, newValue) {
   const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v>)([^<]*)(</v>)`, "s");
   if (!pattern.test(xml)) throw new Error(`corruptCellValue: cell ${cellRef} not found in sheet XML`);
@@ -138,10 +142,16 @@ describeCalc(
       expected = { ...scenario, ...scenario.expected };
 
       savedDir = mkdtempSync(join(tmpdir(), "se-vat-localisation-"));
-      results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-        ...seOptions(),
-        saveRecalculatedTo: savedDir,
-      });
+      results = await runMultiFileSpreadsheet(
+        fileBuffers,
+        seCellWrites(scenario, seTaxYearStart(taxData)),
+        seReads(),
+        "Financialaccounts.xlsx",
+        {
+          ...seOptions(),
+          saveRecalculatedTo: savedDir,
+        },
+      );
     }, 900000);
 
     afterAll(() => {

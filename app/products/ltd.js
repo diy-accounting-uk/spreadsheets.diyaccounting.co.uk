@@ -20,6 +20,7 @@ import {
   PAYSLIPS_EMPLOYEE_BASE_ROWS,
   PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
   PAYSLIPS_ENTRY_COLUMNS,
+  payrollRecordOpened,
   payrollYearStart,
   payslipsMonthEntryRows,
   payslipsStartDate,
@@ -515,6 +516,7 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // before it; every other year end belongs to the one that opened this
   // April, which is the same rule that picks the package's tax data.
   const payrollStart = targetStartYear ? payrollYearStart(yem <= 3 ? targetStartYear : targetStartYear + 1) : null;
+  const payrollOpened = payrollRecordOpened(scenario.payroll, parseDate);
 
   // The twelve tabs are the twelve months, whatever the year end, so a shifted
   // date's month names its tab.
@@ -793,7 +795,8 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       // package's calendar runs on. Without it the employee's line on every
       // month tab stays blank and the printed payslip prints no figures.
       if (e.startDate && payrollStart) {
-        const onSheet = payslipsStartDate(shiftDate(parseDate(e.startDate)), payrollStart);
+        const joined = parseDate(e.startDate);
+        const onSheet = payslipsStartDate(joined, payrollOpened, shiftDate(joined), payrollStart);
         emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
           onSheet.getUTCFullYear(),
           onSheet.getUTCMonth() + 1,
@@ -1135,7 +1138,7 @@ export const CELL_MAP = [
   ["MnthP&L", "B16", "**Gross Profit**",           "gl-cor:amount (grossProfit)",    "Profit & Loss Account", 0],
   // B18-B40: Actual mapping from TrialBalance D64-D89 → MnthP&L C18-C40
   ["MnthP&L", "B18", "PAYE Wages + Non-PAYE Employee", "dpl:WagesAndSalaries (combined)", "Profit & Loss Account", 1],
-  ["MnthP&L", "B19", "Directors Non-PAYE (code d)",  "accounts.purchases.5100",        "Profit & Loss Account", 1],
+  ["MnthP&L", "B19", "Directors Wages + Non-PAYE (code d)", "accounts.purchases.5100",   "Profit & Loss Account", 1],
   ["MnthP&L", "B20", "Employers National Insurance", "dpl:SocialSecurityCosts",        "Profit & Loss Account", 1],
   ["MnthP&L", "B21", "Premises (code r)",            "accounts.purchases.5200",        "Profit & Loss Account", 1],
   ["MnthP&L", "B22", "Light, Heat, Power (code p)",  "accounts.purchases.5201",        "Profit & Loss Account", 1],
@@ -3512,7 +3515,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("Payslips print: the page's join to the employee's line carries their payroll number", num(printed.M8), 1, 0);
         check("Payslips print: gross pay is the pay the scenario recorded", num(printed.G14), printedEmployee.grossPay || 0);
         check("Payslips print: income tax is the tax the scenario recorded", num(printed.H14), printedEmployee.incomeTax || 0);
-        check("Payslips print: national insurance is the employee NI the scenario recorded", num(printed.I14), printedEmployee.employeeNI || 0);
+        check(
+          "Payslips print: national insurance is the employee NI the scenario recorded",
+          num(printed.I14),
+          printedEmployee.employeeNI || 0,
+        );
         check("Payslips print: net pay is the net pay the scenario recorded", num(printed.M14), printedEmployee.netPay || 0);
 
         // The year-to-date row runs from the payroll year's first month to

@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 773 },
-  { name: "se-brickwork-pro-vat", checkCount: 707 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 702 },
+  { name: "se-scenario-advanced", checkCount: 783 },
+  { name: "se-brickwork-pro-vat", checkCount: 717 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 712 },
 ];
 
 function loadFixture(name) {
@@ -307,19 +307,6 @@ describe("Self Employed engine: the read scope", () => {
         "Payslips.xlsx!Aug!M13",
         "Payslips.xlsx!Aug!M14",
         "Payslips.xlsx!Aug!M15",
-        // The printed page's figures, gated on a pay number a month tab
-        // gives only an employee whose starting date is on the Employee
-        // sheet, which no scenario carries.
-        "Payslips.xlsx!Payslips!M8",
-        "Payslips.xlsx!Payslips!G14",
-        "Payslips.xlsx!Payslips!H14",
-        "Payslips.xlsx!Payslips!I14",
-        "Payslips.xlsx!Payslips!M14",
-        "Payslips.xlsx!Payslips!G16",
-        "Payslips.xlsx!Payslips!H16",
-        "Payslips.xlsx!Payslips!I16",
-        "Payslips.xlsx!Payslips!M16",
-        "Payslips.xlsx!Payslips!M18",
       ].sort(),
     );
   });

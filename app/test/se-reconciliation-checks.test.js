@@ -45,6 +45,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 // Overwrites a cell's cached <v> content in place, leaving any <f> formula
@@ -113,7 +116,7 @@ describeCalc(
       }
 
       scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
-      const writes = seCellWrites(scenario);
+      const writes = seCellWrites(scenario, seTaxYearStart(taxData));
       const reads = seReads();
 
       // reconcile.js currently calls checkCompliance(results, scenario.expected, ...),

@@ -87,17 +87,41 @@ export const PAYSLIPS_EMPLOYEE_START_DATE_OFFSET = 11;
 export const payrollYearStart = (financialYear) => new Date(Date.UTC(financialYear, 3, 6));
 
 /**
- * The start date to put on the Employee sheet for an employee who joined on
- * `started`. The sheet finds an employee's first payroll month by looking the
- * date up on its own calendar, which opens on 6 April, so a date from an
- * earlier year has no month to find. The sheet's own caption tells the
- * employer to enter the payroll year's first day for anyone already on the
- * books, and that is what someone joining earlier gets here.
- * @param {Date} started
+ * The start date to put on the Employee sheet. The sheet finds an employee's
+ * first payroll month by looking the date up on its own calendar, and the
+ * calendar only covers the payroll year, so a date outside it has no month to
+ * find. Anyone who was already being paid when the book's payroll record
+ * opens gets the payroll year's first day, which is what the sheet's own
+ * caption tells the employer to enter for an existing employee; anyone who
+ * joined after that keeps their own day, and still never a day before the
+ * calendar opens.
+ * @param {Date} joined - the day the employee started, in the book's own frame
+ * @param {Date} booksOpened - the earliest payroll the book records, or null
+ * @param {Date} onSheet - `joined` shifted into the package's frame
  * @param {Date} yearStart - payrollYearStart() for this package
  * @returns {Date}
  */
-export const payslipsStartDate = (started, yearStart) => (started < yearStart ? yearStart : started);
+export const payslipsStartDate = (joined, booksOpened, onSheet, yearStart) =>
+  (booksOpened && joined < booksOpened) || onSheet < yearStart ? yearStart : onSheet;
+
+/**
+ * The earliest day the scenario's payroll records a payslip on, which is when
+ * the book's own payroll record opens.
+ * @param {Object} payroll - scenario.payroll, month key to entries
+ * @param {(value: string) => Date} parse
+ * @returns {Date|null}
+ */
+export function payrollRecordOpened(payroll, parse) {
+  let earliest = null;
+  for (const entries of Object.values(payroll || {})) {
+    for (const entry of entries) {
+      if (!entry.date) continue;
+      const day = parse(entry.date);
+      if (!earliest || day < earliest) earliest = day;
+    }
+  }
+  return earliest;
+}
 
 // The Payslips sheet is the page an employer prints and hands over. F3 picks
 // weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into

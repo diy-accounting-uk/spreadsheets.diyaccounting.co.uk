@@ -18,6 +18,7 @@ import {
   PAYSLIPS_EMPLOYEE_BASE_ROWS,
   PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
   PAYSLIPS_ENTRY_COLUMNS,
+  payrollRecordOpened,
   payrollYearStart,
   payslipsMonthEntryRows,
   payslipsStartDate,
@@ -402,6 +403,7 @@ export function cellWrites(scenario, targetStartYear) {
     // Employee blocks start at rows 13, 39, 65, 91, 117 (26-row intervals)
     const EMP_BASE_ROWS = PAYSLIPS_EMPLOYEE_BASE_ROWS;
     const payrollStart = targetStartYear ? payrollYearStart(targetStartYear) : null;
+    const payrollOpened = payrollRecordOpened(scenario.payroll, parseDate);
     payslipsWrites.Employee = {};
     const emp = payslipsWrites.Employee;
 
@@ -425,7 +427,8 @@ export function cellWrites(scenario, targetStartYear) {
       // package's calendar runs on. Without it the employee's line on every
       // month tab stays blank and the printed payslip prints no figures.
       if (e.startDate && payrollStart) {
-        const onSheet = payslipsStartDate(parseDate(e.startDate), payrollStart);
+        const joined = parseDate(e.startDate);
+        const onSheet = payslipsStartDate(joined, payrollOpened, joined, payrollStart);
         emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
           onSheet.getUTCFullYear(),
           onSheet.getUTCMonth() + 1,
@@ -2459,7 +2462,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("Payslips print: the page's join to the employee's line carries their payroll number", num(printed.M8), 1, 0);
         check("Payslips print: gross pay is the pay the scenario recorded", num(printed.G14), printedEmployee.grossPay || 0);
         check("Payslips print: income tax is the tax the scenario recorded", num(printed.H14), printedEmployee.incomeTax || 0);
-        check("Payslips print: national insurance is the employee NI the scenario recorded", num(printed.I14), printedEmployee.employeeNI || 0);
+        check(
+          "Payslips print: national insurance is the employee NI the scenario recorded",
+          num(printed.I14),
+          printedEmployee.employeeNI || 0,
+        );
         check("Payslips print: net pay is the net pay the scenario recorded", num(printed.M14), printedEmployee.netPay || 0);
 
         // The year-to-date row runs from the payroll year's first month to

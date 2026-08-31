@@ -32,6 +32,9 @@ import {
 const ROOT = resolve(import.meta.dirname, "../..");
 const APP_DIR = resolve(ROOT, "app");
 const DATA_DIR = resolve(APP_DIR, "data");
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 describe.each(["se", "ltd"])("%s Payslips Admin calendar year end", (product) => {
@@ -154,10 +157,16 @@ describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own pa
     expected = { ...scenario, ...scenario.expected };
 
     savedDir = mkdtempSync(join(tmpdir(), "se-payslips-jul-aug-"));
-    results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-      ...seOptions(),
-      saveRecalculatedTo: savedDir,
-    });
+    results = await runMultiFileSpreadsheet(
+      fileBuffers,
+      seCellWrites(scenario, seTaxYearStart(taxData)),
+      seReads(),
+      "Financialaccounts.xlsx",
+      {
+        ...seOptions(),
+        saveRecalculatedTo: savedDir,
+      },
+    );
     checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
   }, 300000);
 
@@ -190,7 +199,7 @@ describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own pa
 
   it("passes every printed-payslip check on the intact book", () => {
     const printChecks = checks.filter((c) => c.name.startsWith("Payslips print:") && c.severity !== "warning");
-    expect(printChecks).toHaveLength(4);
+    expect(printChecks).toHaveLength(14);
     for (const c of printChecks) {
       expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
     }
@@ -201,6 +210,16 @@ describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own pa
     ["L7", "WEEKLY PAYROLL", "Payslips print: the block the page reads is a monthly payroll"],
     ["I10", 1, "Payslips print: the period printed is payroll month 2"],
     ["I9", 40000, "Payslips print: the period ends the day the scenario paid that month's wages"],
+    ["M8", 2, "Payslips print: the page's join to the employee's line carries their payroll number"],
+    ["G14", 1, "Payslips print: gross pay is the pay the scenario recorded"],
+    ["H14", 1, "Payslips print: income tax is the tax the scenario recorded"],
+    ["I14", 1, "Payslips print: national insurance is the employee NI the scenario recorded"],
+    ["M14", 1, "Payslips print: net pay is the net pay the scenario recorded"],
+    ["G16", 1, "Payslips print: gross pay to date is every month printed so far"],
+    ["H16", 1, "Payslips print: income tax to date is every month printed so far"],
+    ["I16", 1, "Payslips print: national insurance to date is every month printed so far"],
+    ["M16", 1, "Payslips print: net pay to date is every month printed so far"],
+    ["M18", 1, "Payslips print: the payment date reads a cell the block leaves empty"],
   ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
     expect(checks.find((c) => c.name === name)?.pass).toBe(true);
 
@@ -314,7 +333,7 @@ describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own p
 
   it("passes every printed-payslip check on the intact book", () => {
     const printChecks = checks.filter((c) => c.name.startsWith("Payslips print:") && c.severity !== "warning");
-    expect(printChecks).toHaveLength(4);
+    expect(printChecks).toHaveLength(14);
     for (const c of printChecks) {
       expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
     }
@@ -325,6 +344,16 @@ describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own p
     ["L7", "WEEKLY PAYROLL", "Payslips print: the block the page reads is a monthly payroll"],
     ["I10", 1, "Payslips print: the period printed is payroll month 2"],
     ["I9", 40000, "Payslips print: the period ends the day the scenario paid that month's wages"],
+    ["M8", 2, "Payslips print: the page's join to the employee's line carries their payroll number"],
+    ["G14", 1, "Payslips print: gross pay is the pay the scenario recorded"],
+    ["H14", 1, "Payslips print: income tax is the tax the scenario recorded"],
+    ["I14", 1, "Payslips print: national insurance is the employee NI the scenario recorded"],
+    ["M14", 1, "Payslips print: net pay is the net pay the scenario recorded"],
+    ["G16", 1, "Payslips print: gross pay to date is every month printed so far"],
+    ["H16", 1, "Payslips print: income tax to date is every month printed so far"],
+    ["I16", 1, "Payslips print: national insurance to date is every month printed so far"],
+    ["M16", 1, "Payslips print: net pay to date is every month printed so far"],
+    ["M18", 1, "Payslips print: the payment date reads a cell the block leaves empty"],
   ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
     expect(checks.find((c) => c.name === name)?.pass).toBe(true);
 

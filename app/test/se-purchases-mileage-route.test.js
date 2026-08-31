@@ -45,6 +45,10 @@ const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURE = resolve(APP_DIR, "test", "fixtures", "se-scenario-advanced.toml");
 const BOOK_DIR = resolve(ROOT, "examples", "precision-code-ltd", "advanced");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
 
 // Precision Code's twelve mileage-log entries, and the April one on its own.
@@ -122,10 +126,16 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
     merged = { ...scenario, ...scenario.expected };
     saveDir = mkdtempSync(join(tmpdir(), "se-purchases-mileage-"));
     workDirs.push(saveDir);
-    results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-      ...seOptions(),
-      saveRecalculatedTo: saveDir,
-    });
+    results = await runMultiFileSpreadsheet(
+      fileBuffers,
+      seCellWrites(scenario, seTaxYearStart(taxData)),
+      seReads(),
+      "Financialaccounts.xlsx",
+      {
+        ...seOptions(),
+        saveRecalculatedTo: saveDir,
+      },
+    );
   }, 600000);
 
   afterAll(() => {
@@ -133,7 +143,7 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
   });
 
   it("the writer put the miles in column D and left the amount cell empty", () => {
-    const april = seCellWrites(scenario)["Purchases.xlsx"].Apr;
+    const april = seCellWrites(scenario, seTaxYearStart(taxData))["Purchases.xlsx"].Apr;
     const mileageCells = Object.keys(april).filter((cell) => /^D\d+$/.test(cell));
     expect(mileageCells).toHaveLength(1);
     const mileageRow = mileageCells[0].slice(1);
@@ -227,7 +237,9 @@ describeExcel("SE purchases mileage route — the recalculated workbook", () => 
     const zip = await JSZip.loadAsync(readFileSync(join(saveDir, "Purchases.xlsx")));
     const sheetPath = (await buildSheetMap(zip)).get("Apr");
     const originalDate = zip.file(sheetPath).date;
-    const milesCell = Object.keys(seCellWrites(scenario)["Purchases.xlsx"].Apr).find((cell) => /^D\d+$/.test(cell));
+    const milesCell = Object.keys(seCellWrites(scenario, seTaxYearStart(taxData))["Purchases.xlsx"].Apr).find((cell) =>
+      /^D\d+$/.test(cell),
+    );
     zip.file(sheetPath, setCellValue(await zip.file(sheetPath).async("string"), milesCell, 999), { date: originalDate });
     writeFileSync(join(corruptedDir, "Purchases.xlsx"), await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
 
