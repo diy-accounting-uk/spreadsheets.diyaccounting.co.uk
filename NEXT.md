@@ -9,7 +9,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 Coordinator batch dispatched 2026-08-31, worktree-isolated sub-agents, merged here as each
 lands:
 
-- FA track (Opus) — T1 + T4: started
+- FA track (Opus) — T1 + T4: merged to `claude/next-batch-wave-1` (includes the generate.js
+  link-rename fix the track surfaced; June package reconciles 866/866)
+- payslip track (Sonnet) — T2: started
+- roundtrip track (Opus) — F22: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -20,9 +23,8 @@ lands:
 Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
 once the wave's tracks are in and the full suite is green.
 
-Queued behind these to avoid product-module collisions: T2 and F22 after T1 lands (disjoint
-regions of `app/products/*.js`), F23 after F22, C1+C2+C3 after T2, F24 after F23, C5 after
-C1–C4.
+Queued behind these to avoid product-module collisions: F23 after F22, C1+C2+C3 after T2,
+F24 after F23, C5 after C1–C4.
 
 ## Open items
 
@@ -31,32 +33,6 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
-- [ ] **T1: the Ltd fixed asset reconciliation reads `#REF!`** (Opus) — `FAreconciliation`
-  (sheet2) in `app/templates/ltd/Fixedassets.xlsx` ships six error cells in every Ltd package:
-  `E13`/`K13` are `t="e"` `#REF!`, dragging `E15`, `K15`, `B15`, `G15` with them, because the
-  workbook has one external link (`Financialaccounts.xlsx`) and the ledger reads have nothing to
-  point at. SE's working shape: `E13 =[2]Mar!$AB$2`, `K13 =[3]Mar!$V$2`, `E15=E13-E11`, `B15/G15`
-  print the reconcile sentence. The Ltd source cells (discovered from the ledgers; Ltd sums twelve
-  `Mar` row-1 totals where SE runs cumulative — do NOT copy SE's references): fixed asset
-  purchases `Purchases.xlsx!Mar!$AI$2` (column AI, code FA), fixed asset sales
-  `Sales.xlsx!Mar!$U$2` (column U, code FS). Repair: add externalLink2/3 XML + rels +
-  `[Content_Types]` overrides + workbook rels + `externalReferences`, following SE's plumbing;
-  write `E13 =[2]Mar!$AI$2`, `K13 =[3]Mar!$U$2`; strip `t="e"` and cached `#REF!` from the four
-  dependents (`E15`/`K15` plain numeric, `B15`/`G15` `t="str"` with the sentence cached). Never
-  renumber link 1: `meta.toml`'s `adminExternalLink` and `rollLtdAdminCachedDates` (which throws
-  unless externalLink1 targets `Financialaccounts.xlsx`) depend on it — prove the guard still
-  throws on a mis-target. In `app/products/ltd.js` widen `additionalReads` FAreconciliation to
-  `["E11","E13","E15","K11","K13","K15"]`, add checks "Schedule additions = Purchases.xlsx fixed
-  asset total" (E11 vs E13) and "Schedule disposals = Sales.xlsx fixed asset sales total" (K11 vs
-  K13), keep the scenario-anchored checks, drop the now-false workaround comment, and add
-  E15/K15 = 0 reconcile checks only after both sides are anchored. Breakability via
-  `ltd-reconciliation-checks.test.js`'s corrupt-and-recheck: E13 flips exactly the additions +
-  reconcile checks, K13 the disposals pair, E11 the two additions checks. Assert no `#REF!`
-  anywhere in a GENERATED `Fixedassets.xlsx` read from the zip (the link cache is the trap:
-  `refreshExternalLinkCaches` covers the test path, so a green suite proves nothing about the
-  shipped file), and check `externalLinkSignature` in `spreadsheet-runner.js` still refreshes with
-  three links. Blast radius: generate, ltd/se precision, ltd-reconciliation-checks,
-  ltd-trial-balance-audit, se-reconciliation-checks, then the full ladder.
 - [ ] **T2: the July and August payslips carry `#REF!`** (Sonnet) — `Payslips.xlsx`, identical in
   SE and Ltd; `Jul` = sheet5.xml, `Aug` = sheet6.xml; 35 broken cells per workbook, shipped
   unnoticed because `additionalReads` asks Payslips for `Payment` and `Admin` only. `Jul`
@@ -76,12 +52,6 @@ follow the reconciliation-bug method.
   only the August brought-forward check; no Payment/Admin check moves. Blast radius:
   payslips-calendar-year-end + se/ltd precision, then the full ladder. Runs AFTER T1 (both edit
   the product modules).
-- [ ] **T4: the SE fixed-asset `K1` label contradicts its formula** (Haiku; folds into T1's
-  dispatch since both edit `app/products/se.js`) — `FIXED_ASSET_CELL_LABELS` in `se.js` says
-  "Total net book value carried forward (E1 less J1), assets sold in the year still included",
-  but the Schedule's `K` column reads `IF(E<r>>0,IF(V<r>>0,0,E<r>-J<r>)," ")` in both products,
-  so a sold asset contributes nothing; the wrong label prints in every SE reconciliation report.
-  Bring it to Ltd's corrected wording: "Total net book value carried forward, disposals removed".
 
 - [ ] **C1: cover the Payslips print sheet's period join** (Sonnet) — `Payslips.xlsx!Payslips`
   (both products) is the payslip the employer hands over; its month tabs and calendar are
