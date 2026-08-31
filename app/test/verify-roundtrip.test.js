@@ -29,7 +29,7 @@ import {
   scoreReportDocumentsByKind,
   scoreDataHalves,
   flattenBook,
-  unrepresentableFields,
+  unrepresentableScope,
   periodFrameOffset,
   shiftPostingDate,
 } from "../bin/verify-roundtrip.js";
@@ -350,17 +350,19 @@ describe("scoreDataHalves", () => {
   it("counts a field the encoding has no home for apart from one the export drops", () => {
     const inventory = { fields: [{ field: "measurableQuantity", products: ["bst", "ltd"], reason: "no column holds it" }] };
     const { fixture, exported } = writePair([{ ...LINE, measurableQuantity: 120, taxCode: "S" }], [LINE]);
-    const score = scoreDataHalves(fixture, exported, unrepresentableFields("bst", inventory));
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory));
     expect(score.fieldsDropped).toEqual(["taxCode"]);
     expect(score.fieldsUnrepresentable).toEqual(["measurableQuantity"]);
-    expect(unrepresentableFields("se", inventory).size).toBe(0);
+    const seScope = unrepresentableScope("se", inventory);
+    expect(seScope.productWide.size).toBe(0);
+    expect(seScope.byBlock.size).toBe(0);
   });
 
   it("matches lines on every field the encoding claims to carry", () => {
     const inventory = { fields: [{ field: "entryNumber", products: ["bst"], reason: "renumbered on the way out" }] };
     const { fixture, exported } = writePair([{ ...LINE, entryNumber: "PC-0007" }], [{ ...LINE, entryNumber: "EXP-0001" }]);
     expect(scoreDataHalves(fixture, exported).wholeLineMatches).toBe(0);
-    expect(scoreDataHalves(fixture, exported, unrepresentableFields("bst", inventory)).wholeLineMatches).toBe(1);
+    expect(scoreDataHalves(fixture, exported, unrepresentableScope("bst", inventory)).wholeLineMatches).toBe(1);
   });
 
   it("matches on the full field set only when every field survives", () => {
@@ -370,13 +372,14 @@ describe("scoreDataHalves", () => {
 
   it("matches a coarse and account line only once the fixture is shifted into the export's frame", () => {
     const { fixture, exported } = writePair([LINE], [{ ...LINE, postingDate: "2025-06-01" }]);
+    const noScope = unrepresentableScope("test", null);
     expect(scoreDataHalves(fixture, exported).coarseMatches).toBe(0);
-    const shifted = scoreDataHalves(fixture, exported, new Set(), 2);
+    const shifted = scoreDataHalves(fixture, exported, noScope, 2);
     expect(shifted.coarseMatches).toBe(1);
     expect(shifted.accountMatches).toBe(1);
     // The wrong offset stays unmatched, so the shift is doing the work and
     // not just widening the comparison generally.
-    expect(scoreDataHalves(fixture, exported, new Set(), 1).coarseMatches).toBe(0);
+    expect(scoreDataHalves(fixture, exported, noScope, 1).coarseMatches).toBe(0);
   });
 
   it("compares book.toml field by field, naming what is missing", () => {
@@ -397,21 +400,169 @@ describe("scoreDataHalves", () => {
   });
 });
 
+// ── The per-block inventory scope ───────────────────────────────────────────
+
+describe("unrepresentableScope", () => {
+  it("splits a field's declarations into the product-wide set and the block-scoped map", () => {
+    const inventory = {
+      fields: [
+        { field: "taxCode", products: ["bst"], reason: "no rate column" },
+        {
+          field: "lineItemComment",
+          blocks: [
+            { product: "se", block: "payroll" },
+            { product: "ltd", block: "payroll" },
+          ],
+          reason: "no spare column on the payslip block",
+        },
+      ],
+    };
+    const bst = unrepresentableScope("bst", inventory);
+    expect(bst.productWide).toEqual(new Set(["taxCode"]));
+    expect(bst.byBlock.size).toBe(0);
+
+    const se = unrepresentableScope("se", inventory);
+    expect(se.productWide.size).toBe(0);
+    expect(se.byBlock.get("payroll")).toEqual(new Set(["lineItemComment"]));
+    expect(se.byBlock.has("sales")).toBe(false);
+  });
+
+  it("rejects an entry naming both products and blocks, so the two declaration kinds can never be confused", () => {
+    const inventory = {
+      fields: [{ field: "x", products: ["bst"], blocks: [{ product: "se", block: "payroll" }], reason: "r" }],
+    };
+    expect(() => unrepresentableScope("bst", inventory)).toThrow(/exactly one of "products" or "blocks"/);
+  });
+
+  it("rejects an entry naming neither products nor blocks", () => {
+    expect(() => unrepresentableScope("bst", { fields: [{ field: "x", reason: "r" }] })).toThrow(
+      /exactly one of "products" or "blocks"/,
+    );
+  });
+
+  it("rejects a block scope missing its product or block name", () => {
+    expect(() => unrepresentableScope("se", { fields: [{ field: "x", blocks: [{ product: "se" }], reason: "r" }] })).toThrow(
+      /malformed block scope/,
+    );
+  });
+
+  it("rejects an entry with no field name", () => {
+    expect(() => unrepresentableScope("se", { fields: [{ products: ["se"], reason: "r" }] })).toThrow(/no field name/);
+  });
+});
+
+describe("scoreDataHalves with a block-scoped declaration", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  function writePair(fixtureLines, exportLines) {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-block-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    writeFileSync(join(fixture, "lines.jsonl"), fixtureLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(exported, "lines.jsonl"), exportLines.map((line) => JSON.stringify(line)).join("\n") + "\n");
+    writeFileSync(join(fixture, "book.toml"), "");
+    writeFileSync(join(exported, "book.toml"), "");
+    return { fixture, exported };
+  }
+
+  const SALES_LINE = {
+    sourceJournalID: "sales",
+    postingDate: "2025-04-01",
+    accountMainID: "4000",
+    amount: 500,
+    detailComment: "Acme",
+    lineItemComment: "Widgets",
+  };
+  const PAYROLL_LINE = {
+    sourceJournalID: "payroll",
+    postingDate: "2025-04-28",
+    accountMainID: "5101",
+    amount: 1500,
+    detailComment: "Tom Davies",
+    lineItemComment: "Apr salary",
+  };
+  const INVENTORY = {
+    fields: [
+      { field: "lineItemComment", blocks: [{ product: "se", block: "payroll" }], reason: "the payslip block has no comment column" },
+    ],
+  };
+
+  it("excuses a declared field's absence only in the block it names", () => {
+    const { fixture, exported } = writePair([SALES_LINE, PAYROLL_LINE], [SALES_LINE, { ...PAYROLL_LINE, lineItemComment: undefined }]);
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("se", INVENTORY));
+    // Sales matches on its own merits (its export carries the same
+    // comment); payroll matches because the declaration excuses its
+    // absence. Neither block owes the other its result.
+    expect(score.wholeLineMatches).toBe(2);
+  });
+
+  it("still fails a sales line whose comment genuinely differs, so the payroll scope has not silenced that block", () => {
+    const { fixture, exported } = writePair(
+      [SALES_LINE, PAYROLL_LINE],
+      [{ ...SALES_LINE, lineItemComment: "Wrong description" }, { ...PAYROLL_LINE, lineItemComment: undefined }],
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("se", INVENTORY));
+    expect(score.wholeLineMatches).toBe(1);
+  });
+
+  it("still catches a payroll line whose other fields are corrupted, proving the declaration blanks only the comment", () => {
+    const { fixture, exported } = writePair(
+      [SALES_LINE, PAYROLL_LINE],
+      [SALES_LINE, { ...PAYROLL_LINE, lineItemComment: undefined, amount: 1600 }],
+    );
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("se", INVENTORY));
+    expect(score.wholeLineMatches).toBe(1);
+  });
+
+  it("throws when a declared block matches no line in the run, instead of silently declaring nothing", () => {
+    const inventory = { fields: [{ field: "lineItemComment", blocks: [{ product: "se", block: "payslip" }], reason: "typo'd block" }] };
+    const { fixture, exported } = writePair([SALES_LINE], [SALES_LINE]);
+    expect(() => scoreDataHalves(fixture, exported, unrepresentableScope("se", inventory))).toThrow(
+      /no line in this run carries sourceJournalID "payslip"/,
+    );
+  });
+});
+
 // ── The whole tuple, end to end ────────────────────────────────────────────
 
 // Every fixture line comes back as the same transaction, posted to the same
 // account. dropped names the fields the export leaves out with no reason
-// declared for them.
+// declared for them. wholeLineMatches is a ratchet: a rise is welcome (a
+// sheet gained a column, or an inventory entry gained a block), a fall means
+// some line lost a field the inventory does not yet excuse.
+//
+// se and ltd fall short of their own fixtureLines count: the bank and
+// journal opening-balance lines carry a lineItemComment (e.g. "Current
+// account opening balance") that xlsx-exporter.js never writes for those two
+// blocks (app/lib/xlsx-exporter.js:636-648, :972-1023), unlike the ordinary
+// bank receipt/payment rows and the sales/purchases rows, which do. That gap
+// is not a payslip-block field with no declared home; the payslip block is
+// this track's whole charter. It is a pre-existing, out-of-charter gap the
+// numbers below hold steady rather than paper over.
 const PRODUCTS = [
-  { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05" },
+  { name: "bst", data: "examples/precision-code-ltd/bst", years: "se-2025-2026", yearEnd: "2026-04-05", wholeLineMatches: 528 },
   {
     name: "taxi",
     data: "examples/sp-sixty-driving/taxi",
     years: "se-2025-2026",
     yearEnd: "2026-04-05",
+    wholeLineMatches: 264,
   },
-  { name: "se", data: "examples/precision-code-ltd/advanced", years: "se-2025-2026", yearEnd: "2026-04-05" },
-  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31" },
+  {
+    name: "se",
+    data: "examples/precision-code-ltd/advanced",
+    years: "se-2025-2026",
+    yearEnd: "2026-04-05",
+    wholeLineMatches: 683,
+  },
+  { name: "ltd", data: "examples/precision-code-ltd/full", years: "ltd-2025", yearEnd: "2026-03-31", wholeLineMatches: 716 },
   {
     // A non-March year end exercises the tab-rename and formula-rewrite path
     // (getMonthTabSequence, renameMonthTabs, renameExternalLinkSheetNames,
@@ -425,6 +576,7 @@ const PRODUCTS = [
     data: "examples/precision-code-ltd/full",
     years: "ltd-2025",
     yearEnd: "2025-05-31",
+    wholeLineMatches: 716,
   },
 ];
 
@@ -505,7 +657,7 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       const score = scoreDataHalves(
         resolve(fixture, "data"),
         exported,
-        unrepresentableFields(product.name, inventory),
+        unrepresentableScope(product.name, inventory),
         product.dateShiftMonths ?? 0,
       );
 
@@ -523,6 +675,11 @@ describe.skipIf(!hasLibreOffice())("Export tuple against the original fixture", 
       // posted to. Several accounts share one code letter, so this is the
       // claim the carrier column exists to make.
       expect(score.accountMatches).toBe(score.coarseMatches);
+
+      // The ratchet: a fixture line matches the export on every field the
+      // inventory does not excuse. A rise is welcome; a fall means some
+      // block lost a field the inventory has not caught up with.
+      expect(score.wholeLineMatches).toBe(product.wholeLineMatches);
     });
   }
 });
