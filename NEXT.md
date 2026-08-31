@@ -55,10 +55,11 @@ lands:
 - taxi-dates track (Sonnet) — T6: merged to `claude/next-batch-wave-1` (purchases dates
   now translate like sales; 2023 and 2026 both RECONCILE with zero-unmatched scorecards;
   BST confirmed consistent with no translation on either side; 293 + 60 tests green)
-- ltd non-March reconcile failures (run 33446208332): every non-March year-end fails 8
-  checks on a FRESH package while both March year-ends pass — the local mirror of CI's
-  generate-then-reconcile sequence is running to name the eight; fix track dispatches on
-  that evidence.
+- print-frame track (Opus): started on the ltd non-March failures (run 33446208332) —
+  8 print-page checks fail on a fresh non-March package: the page resolves the May tab as
+  period 11 where Aug/period 2 is expected, i.e. the write/lookup side and the check side
+  resolve "payroll month 2" in different frames (April-anchored vs the package's own).
+  March passes both years, so one side misses the tab reorientation.
 - loader track (Sonnet) — B5: merged to `claude/next-batch-wave-1` (one-line mapping,
   gate proven firing, both CI chains within budget, 3604 tests green in its tree)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
