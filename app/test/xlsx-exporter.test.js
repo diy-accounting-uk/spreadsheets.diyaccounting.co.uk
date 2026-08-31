@@ -13,6 +13,8 @@ import {
   buildReverseCodeMap,
   extractBstTransactions,
   extractTaxiTransactions,
+  extractBankTransactions,
+  extractJournalEntries,
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
@@ -274,6 +276,101 @@ describe("extractBook", () => {
     const { book } = await exportedBook();
     expect(book.documentInfo.periodCoveredStart).toBe("2025-04-01");
     expect(book.documentInfo.periodCoveredEnd).toBe("2026-03-31");
+  });
+});
+
+// ── The figures the sheets carry undated ───────────────────────────────────
+//
+// An opening balance and a year-end stock count are entered as bare amounts,
+// with no date cell beside either one. Both are dated by the period the
+// package covers, so a workbook that banks nothing in its first month, or
+// banks late, still brings its opening balance back on the day it was
+// brought forward.
+
+const LTD_PERIOD = { start: "2025-04-01", end: "2026-03-31" };
+// 2025-04-22 as an Excel serial: a receipt three weeks into the first month.
+const APRIL_TWENTY_SECOND = 45769;
+
+async function writePackage(workbooks) {
+  const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-period-"));
+  for (const [name, sheets] of Object.entries(workbooks)) {
+    writeFileSync(join(dir, name), await buildWorkbook(sheets));
+  }
+  return dir;
+}
+
+describe("extractBankTransactions — the opening balance in A1", () => {
+  it("dates the balance by the period, not by the first row the account banks", async () => {
+    const dir = await writePackage({
+      "Currentaccount.xlsx": {
+        Apr: { A1: 25000, A6: APRIL_TWENTY_SECOND, B6: "Acme Corp", E6: "DR", F6: 8000 },
+        May: { A1: { formula: "Apr!A1+Apr!F1", value: 33000 } },
+      },
+    });
+    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+
+    const opening = lines.filter((line) => line["diya-gl:bankCode"] === "BC");
+    expect(opening).toHaveLength(1);
+    expect(opening[0]).toMatchObject({ postingDate: "2025-04-01", accountMainID: "1200", amount: 25000, debitCreditCode: "D" });
+    expect(lines.find((line) => line["diya-gl:bankCode"] === "DR").postingDate).toBe("2025-04-22");
+  });
+
+  it("brings back the balance of an account that banks nothing in the period's first month", async () => {
+    const dir = await writePackage({
+      "Savingaccount.xlsx": { Apr: { A1: 5000 }, May: { A1: { formula: "Apr!A1", value: 5000 } } },
+      "Cashaccount.xlsx": { Apr: { A1: 500 }, May: { A1: { formula: "Apr!A1", value: 500 } } },
+    });
+    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.amount, line.postingDate])).toEqual([
+      ["1210", 5000, "2025-04-01"],
+      ["1220", 500, "2025-04-01"],
+    ]);
+  });
+
+  it("takes no balance from a tab that only carries the one before it forward", async () => {
+    const dir = await writePackage({
+      "Creditcardaccount.xlsx": { Apr: {}, May: { A1: { formula: "Apr!A1", value: 500 } } },
+    });
+    expect(await extractBankTransactions(dir, "ltd", LTD_PERIOD)).toEqual([]);
+  });
+});
+
+describe("extractJournalEntries — the Ltd stock movement", () => {
+  const openAccounts = { E15: 10000, E33: 100 };
+
+  it("posts the fall from the opening figure to the year-end count against cost of sales", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 6000 } },
+    });
+    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+
+    expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount, line.postingDate])).toEqual([
+      ["1100", "C", 4000, "2026-03-31"],
+      ["5000", "D", 4000, "2026-03-31"],
+    ]);
+  });
+
+  it("turns the pair round when the year ends holding more stock than it opened with", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 14000 } },
+    });
+    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+
+    expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
+      ["1100", "D", 4000],
+      ["5000", "C", 4000],
+    ]);
+  });
+
+  it("posts nothing where the count matches the opening figure", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 10000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.some((line) => line.documentReference === "JNL-001")).toBe(false);
+    expect(lines.map((line) => line.postingDate)).toEqual(["2025-04-01", "2025-04-01"]);
   });
 });
 
