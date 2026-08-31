@@ -49,7 +49,9 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
       const fileKey = templateFile.replace(".xlsx", "").toLowerCase();
       const sheetsConfig = productMeta.sheets?.[fileKey];
       fileBuffers[templateFile] =
-        sheetsConfig && Object.keys(sheetsConfig).length > 0 ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig) : templateBuffer;
+        sheetsConfig && Object.keys(sheetsConfig).length > 0
+          ? await generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
+          : templateBuffer;
     }
 
     // Two April sales: one carries the day's business miles beside a real
@@ -126,7 +128,10 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
     const corruptedDir = mkdtempSync(join(tmpdir(), "se-sales-mileage-corrupt-"));
     workDirs.push(corruptedDir);
     mkdirSync(corruptedDir, { recursive: true });
-    cpSync(join(savedDir, "Purchases.xlsx"), join(corruptedDir, "Purchases.xlsx"));
+    // The whole recalculated package: the export reads the approved mileage
+    // rates off Financialaccounts.xlsx to price a Purchases mileage-log row,
+    // so a directory holding only the two journals is not one it can read.
+    cpSync(savedDir, corruptedDir, { recursive: true });
 
     const zip = await JSZip.loadAsync(readFileSync(join(savedDir, "Sales.xlsx")));
     const sheetPath = "xl/worksheets/sheet2.xml"; // Apr, verified against xl/workbook.xml

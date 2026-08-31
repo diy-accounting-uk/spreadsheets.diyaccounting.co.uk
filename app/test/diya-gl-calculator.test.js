@@ -269,20 +269,20 @@ describe("calculateFromDiyaGl — SE", () => {
 
   it("B39: profit before tax is gross profit less the administrative expenses", () => {
     const pl = seResults()["Profit & Loss Account"];
-    expect(pl.B35).toBeCloseTo(149271.275, 3);
-    expect(pl.B39).toBeCloseTo(171875.39, 2);
+    expect(pl.B35).toBeCloseTo(149373.65, 3);
+    expect(pl.B39).toBeCloseTo(171773.02, 2);
   });
 
   it("E5: the tax sheet charges the full return's taxable profit", () => {
     const results = seResults();
-    expect(results["Income Tax"].E5).toBeCloseTo(121615.39, 2);
+    expect(results["Income Tax"].E5).toBeCloseTo(121513.02, 2);
     expect(results["Income Tax"].E5).toBe(results["SE Full"].O210);
   });
 
   it("E11: income tax is charged across the bands with the allowance tapered", () => {
     const tax = seResults()["Income Tax"];
-    expect(tax.E6).toBeCloseTo(1762.3, 2);
-    expect(tax.E11).toBeCloseTo(40401.24, 2);
+    expect(tax.E6).toBeCloseTo(1813.49, 2);
+    expect(tax.E11).toBeCloseTo(40339.81, 2);
     expect(tax.E11).toBeCloseTo(tax.E8 + tax.E9 + tax.E10, 6);
   });
 

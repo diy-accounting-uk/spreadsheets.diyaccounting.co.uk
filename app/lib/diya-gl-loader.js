@@ -164,10 +164,11 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
   let filteredLines = filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
-  // Only the two products whose cellWrites fills a mileage column take the
-  // miles, and only the Taxi Driver package takes a sales line's (see the
-  // note on buildGrouped's carriesMileage setting).
-  const carriesMileage = product === "taxi" ? "all" : product === "bst" ? "claims" : "none";
+  // Every product whose cellWrites fills a mileage column takes the miles,
+  // and only the Taxi Driver package takes a sales line's (see the note on
+  // buildGrouped's carriesMileage setting). Ltd keeps mileage on
+  // expensesform.xlsx, which its journal writer does not post to.
+  const carriesMileage = product === "taxi" ? "all" : product === "ltd" ? "none" : "claims";
   const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage });
 
   // Compute expected values
@@ -265,7 +266,19 @@ export function diyaGlToScenario(book, lines, product) {
 
   if (product === "se" || product === "ltd") {
     const vatDivisor = vatRegistered ? 1.2 : 1;
-    expected.total_motor_net = Math.round((byCode.v || 0) / vatDivisor);
+    // A mileage-log line buys nothing. The Self Employed Purchases sheet
+    // prices the year's business miles itself (C2 pools them, G2 bands them
+    // at the Admin rates) and files the claim under Motor Expenses with no
+    // VAT to strip, so the line's own amount is left out of the motoring
+    // total and the claim goes in instead -- the same swap the Basic Sole
+    // Trader figures make above. Ltd's journal writer fills no mileage
+    // column, so its motoring total is the cash it spent and nothing else.
+    const cashMotor = purchaseLines
+      .filter((l) => !(product === "se" && l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+      .filter((l) => purchaseCodeMap[l.accountMainID] === "v")
+      .reduce((sum, l) => sum + l.amount, 0);
+    const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES) : 0;
+    expected.total_motor_net = Math.round(cashMotor / vatDivisor + mileageClaim);
     expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
     if (product === "ltd") {
       expected.total_premises_net = Math.round((byCode.r || 0) / vatDivisor);

@@ -1595,6 +1595,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 3310 |  |
 | H2 |  | 0 |  |
@@ -1605,6 +1608,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 7510 |  |
 | H2 |  | 0 |  |
@@ -1615,6 +1621,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1810 |  |
 | H2 |  | 0 |  |
@@ -1625,6 +1634,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1860 |  |
 | H2 |  | 0 |  |
@@ -1635,6 +1647,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 6510 |  |
 | H2 |  | 0 |  |
@@ -1645,6 +1660,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 13510 |  |
 | H2 |  | 0 |  |
@@ -1655,6 +1673,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1510 |  |
 | H2 |  | 0 |  |
@@ -1665,6 +1686,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 6510 |  |
 | H2 |  | 0 |  |
@@ -1675,6 +1699,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1510 |  |
 | H2 |  | 0 |  |
@@ -1685,6 +1712,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1910 |  |
 | H2 |  | 0 |  |
@@ -1695,6 +1725,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 5510 |  |
 | H2 |  | 0 |  |
@@ -1705,6 +1738,9 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
+| A2 |  | 0 |  |
+| C2 |  | 0 |  |
+| G2 |  | 0 |  |
 | H1 |  | 0 |  |
 | I1 |  | 1510 |  |
 | H2 |  | 0 |  |
