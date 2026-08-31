@@ -331,7 +331,7 @@ const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
 const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
-advGrouped.payroll = buildPayroll(advLines);
+advGrouped.payroll = buildPayroll(advLines, { carriesSourceFields: true });
 const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
 const advByCode = {};
 advPurchLines.forEach((l) => {
@@ -420,7 +420,7 @@ const LTD_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003", "4004"]);
 const fullTurnoverLines = fullSalesLines.filter((l) => LTD_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const fullTotalSales = computeSpreadsheetNetSales(fullTurnoverLines);
 const fullGrouped = buildGrouped(fullLines, LTD_PURCHASE_CODE_MAP, { carriesSourceFields: true });
-fullGrouped.payroll = buildPayroll(fullLines);
+fullGrouped.payroll = buildPayroll(fullLines, { carriesSourceFields: true });
 const fullPurchLines = fullLines.filter((l) => l.sourceJournalID === "purchases");
 const fullByCode = {};
 fullPurchLines.forEach((l) => {
@@ -901,7 +901,7 @@ function writeBrickworkSe(vatRegistered) {
   const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
   const vatDivisor = 1 + (vatRegistered ? TWIN_VAT_RATE : 0);
   const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
-  grouped.payroll = buildPayroll(lines);
+  grouped.payroll = buildPayroll(lines, { carriesSourceFields: true });
   const entity = brickworkEntity("SelfEmployed", { vatRegistered, soleTrader: true });
   const employees = brickworkEmployees(brickBook.employees.filter((employee) => !employee.isDirector));
 
@@ -966,7 +966,7 @@ function writeBrickworkLtd(vatRegistered) {
   const vatRate = vatRegistered ? TWIN_VAT_RATE : 0;
   const vatDivisor = 1 + vatRate;
   const grouped = buildGrouped(lines, LTD_PURCHASE_CODE_MAP, { carriesSourceFields: true });
-  grouped.payroll = buildPayroll(lines);
+  grouped.payroll = buildPayroll(lines, { carriesSourceFields: true });
   const openingBalance = buildOpeningBalance(lines);
   const entity = brickworkEntity("Company", { vatRegistered, soleTrader: false });
   const employees = brickworkEmployees(brickBook.employees);
