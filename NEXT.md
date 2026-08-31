@@ -10,7 +10,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 |---|---|---|---|---|
 | surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | — | Opus | landed: all four designed tracks already superseded; plan rewritten to the three live defects, 1221 → 319 lines |
 | ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | `../wt-spreadsheets/ctxbst` | Sonnet | started |
-| ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | `../wt-spreadsheets/ctxltd` | Sonnet | started |
+| ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | — | Sonnet | landed: five correction sets (MnthP&L wiring, cache rolls, three fixtures, checks table, monthly CI) |
 | ctxse | `CONTEXT_SELF_EMPLOYED.md` re-align | `../wt-spreadsheets/ctxse` | Sonnet | started |
 | ctxtaxi | `CONTEXT_TAXI.md` re-align | `../wt-spreadsheets/ctxtaxi` | Sonnet | started |
 | coverage | regenerate `SHEET_COVERAGE_GAPS.md` → `REPORT_SHEET_COVERAGE_GAPS.md` | — | Sonnet | landed: 313 sheets / 16 untouched (was 309/18); Taxi Wages Forecast and SE Profit Forecast closed |
