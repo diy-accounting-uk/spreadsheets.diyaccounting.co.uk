@@ -49,7 +49,8 @@ lands:
   employees/directors split, a twelve-suite harness fix, and the M49 volatiles fixed at
   source (EQ3 0 moved). RECONCILES 1015/1016 and 782/783 (the one warning is T5).
 - exporter-comments track (Sonnet) — B4: started
-- loader track (Sonnet) — B5: started
+- loader track (Sonnet) — B5: merged to `claude/next-batch-wave-1` (one-line mapping,
+  gate proven firing, both CI chains within budget, 3604 tests green in its tree)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -82,13 +83,6 @@ follow the reconciliation-bug method.
   with a warning carrying the true date (`app/products/ltd.js:3541`, `se.js:2487`).
   Template surgery: point M18's column/row at the paid-date cell, flip the warning into a
   real check, prove breakable.
-- [ ] **B5: `diyaGlToScenario` never maps the VAT number, so the invoice checks never fire
-  on diya-gl paths** (Sonnet) — surfaced by the calc track: `app/lib/diya-gl-loader.js`
-  drops `diya-gl:vatNumber` for both products, so `scenario.business.vat_number` is absent
-  on every diya-gl-sourced run (the calculator FIXTURES, the CI generate/report/export
-  chain) and the Salesinvoice write-and-check gate stays shut there; only the hand-written
-  TOML fixtures exercise it. Map the field, then confirm the CI chains still hold budget
-  with the gate now firing (the calculators' gate replication should follow automatically).
 - [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
   the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
   `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
