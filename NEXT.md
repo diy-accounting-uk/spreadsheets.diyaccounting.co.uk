@@ -17,6 +17,70 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
+- [ ] **T1: the Ltd fixed asset reconciliation reads `#REF!`** (Opus) — `FAreconciliation`
+  (sheet2) in `app/templates/ltd/Fixedassets.xlsx` ships six error cells in every Ltd package:
+  `E13`/`K13` are `t="e"` `#REF!`, dragging `E15`, `K15`, `B15`, `G15` with them, because the
+  workbook has one external link (`Financialaccounts.xlsx`) and the ledger reads have nothing to
+  point at. SE's working shape: `E13 =[2]Mar!$AB$2`, `K13 =[3]Mar!$V$2`, `E15=E13-E11`, `B15/G15`
+  print the reconcile sentence. The Ltd source cells (discovered from the ledgers; Ltd sums twelve
+  `Mar` row-1 totals where SE runs cumulative — do NOT copy SE's references): fixed asset
+  purchases `Purchases.xlsx!Mar!$AI$2` (column AI, code FA), fixed asset sales
+  `Sales.xlsx!Mar!$U$2` (column U, code FS). Repair: add externalLink2/3 XML + rels +
+  `[Content_Types]` overrides + workbook rels + `externalReferences`, following SE's plumbing;
+  write `E13 =[2]Mar!$AI$2`, `K13 =[3]Mar!$U$2`; strip `t="e"` and cached `#REF!` from the four
+  dependents (`E15`/`K15` plain numeric, `B15`/`G15` `t="str"` with the sentence cached). Never
+  renumber link 1: `meta.toml`'s `adminExternalLink` and `rollLtdAdminCachedDates` (which throws
+  unless externalLink1 targets `Financialaccounts.xlsx`) depend on it — prove the guard still
+  throws on a mis-target. In `app/products/ltd.js` widen `additionalReads` FAreconciliation to
+  `["E11","E13","E15","K11","K13","K15"]`, add checks "Schedule additions = Purchases.xlsx fixed
+  asset total" (E11 vs E13) and "Schedule disposals = Sales.xlsx fixed asset sales total" (K11 vs
+  K13), keep the scenario-anchored checks, drop the now-false workaround comment, and add
+  E15/K15 = 0 reconcile checks only after both sides are anchored. Breakability via
+  `ltd-reconciliation-checks.test.js`'s corrupt-and-recheck: E13 flips exactly the additions +
+  reconcile checks, K13 the disposals pair, E11 the two additions checks. Assert no `#REF!`
+  anywhere in a GENERATED `Fixedassets.xlsx` read from the zip (the link cache is the trap:
+  `refreshExternalLinkCaches` covers the test path, so a green suite proves nothing about the
+  shipped file), and check `externalLinkSignature` in `spreadsheet-runner.js` still refreshes with
+  three links. Blast radius: generate, ltd/se precision, ltd-reconciliation-checks,
+  ltd-trial-balance-audit, se-reconciliation-checks, then the full ladder.
+- [ ] **T2: the July and August payslips carry `#REF!`** (Sonnet) — `Payslips.xlsx`, identical in
+  SE and Ltd; `Jul` = sheet5.xml, `Aug` = sheet6.xml; 35 broken cells per workbook, shipped
+  unnoticed because `additionalReads` asks Payslips for `Payment` and `Admin` only. `Jul`
+  `F11:F15` lost the pay-date reference: the working `Jun` shape is
+  `IF(E11=" "," ",IF(Employee!F$24>E$9," ",IF(Employee!F$26<E$9," ",Employee!D$15)))` and Jul has
+  `#REF!` where `E$9` belongs (5 replacements). `Jul!T41` holds a formula where every other month
+  carries a literal `<v>0</v>` — match the neighbours' style, no formula. `Aug`: 29 cells, rows
+  11-15, columns H/I/J/L/M plus K on rows 12-15, each a brought-forward read that lost its row —
+  the pattern from Jul and Sep is `<same column>41` of the previous month (e.g.
+  `Aug!H11 =IF(T$9="Y",Jul!H41,0)`; `M` carries it inside the longer expression). Walk cells for
+  the column-aware Aug fix; assert exactly 5 and 29 replacements and zero remaining `#REF!` in
+  both workbooks. Then close the coverage hole: add the two month sheets to `additionalReads` in
+  both product modules for the rows the fixture populates, check July and August against the
+  SCENARIO'S payroll data (never a neighbouring month — two identically wrong months pass), and
+  extend `app/test/payslips-calendar-year-end.test.js` to generate a package and read Jul/Aug
+  back. Breakability: corrupt `Jul!F12` → only the July employee-line check flips; `Aug!H13` →
+  only the August brought-forward check; no Payment/Admin check moves. Blast radius:
+  payslips-calendar-year-end + se/ltd precision, then the full ladder. Runs AFTER T1 (both edit
+  the product modules).
+- [ ] **T3: divider-row leftovers** (Haiku) — twelve stray cells, one shape, no downstream
+  reader: `H201` on `P02Y1/P03Y1/P04Y2/P05Y2/P06Y2` in `app/templates/se/Vat.xlsx`, `G201` on the
+  same five sheets in `app/templates/ltd/Vatreturns.xlsx`, and `G201` on
+  `OpeningCreditors`/`ClosingCreditors` in `app/templates/ltd/Purchases.xlsx`. Each is a copy of
+  the VAT-extraction formula with its rate reference lost (`IF(G201<>0,G201*#REF!/(100+#REF!)," ")`,
+  Ltd reads column F). On the VAT sheets row 201 is the "Entries below this row are not included
+  in Row 1 Totals" divider; on the creditors sheets it sits past the last data row (shared groups
+  end at `G197`, rows 198-200 are plain formulas). Repair: remove the formula, keep the styled
+  empty cell (`<c r="H201" s="90"/>` shape); assert 12 removals and zero remaining `#REF!` in the
+  three workbooks. No new checks — `app/test/formula-presence-guard.test.js`'s template sweep is
+  the standing evidence; confirm it stays green and row 201 doesn't read as a gap in a shared
+  group. Parallel with either other track (no JS).
+- [ ] **T4: the SE fixed-asset `K1` label contradicts its formula** (Haiku; folds into T1's
+  dispatch since both edit `app/products/se.js`) — `FIXED_ASSET_CELL_LABELS` in `se.js` says
+  "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+  but the Schedule's `K` column reads `IF(E<r>>0,IF(V<r>>0,0,E<r>-J<r>)," ")` in both products,
+  so a sold asset contributes nothing; the wrong label prints in every SE reconciliation report.
+  Bring it to Ltd's corrected wording: "Total net book value carried forward, disposals removed".
+
 - [ ] **Cut the LLM judge's Bedrock spend** (Sonnet) — `app/bin/judge-reconciliation.js` runs
   `anthropic.claude-opus-5` per product from the four `generate-*` workflows and from
   `deploy.yml` (every web/infra push plus the daily cron), re-judging unchanged digests. Do,
@@ -51,9 +115,6 @@ follow the reconciliation-bug method.
 - `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
   browser page, with the opt-in LLM review as its post-phase-5 extension; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
-- `PLAN_TEMPLATE_SURGERY.md` — re-aligned 2026-08-31: the original four tracks all landed; the
-  plan now holds the three verified live defects (Ltd FAreconciliation `#REF!`s, Payslips
-  Jul/Aug cells, divider-row leftovers) plus the SE `K1` label remainder.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
