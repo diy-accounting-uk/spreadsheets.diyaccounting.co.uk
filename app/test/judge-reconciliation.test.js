@@ -810,7 +810,11 @@ describe("loadExistingVerdict", () => {
 });
 
 describe("judgeAndRecord", () => {
-  const prompt = { system: "system text", user: "user text", runs: [{ file: "a.md", scenario: "s", yearEnd: "2027-03-31", status: "RECONCILES" }] };
+  const prompt = {
+    system: "system text",
+    user: "user text",
+    runs: [{ file: "a.md", scenario: "s", yearEnd: "2027-03-31", status: "RECONCILES" }],
+  };
 
   function args() {
     const dir = mkdtempSync(join(tmpdir(), "judge-verdict-out-"));

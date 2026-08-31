@@ -320,7 +320,9 @@ export function periodFrameOffset(periodStartMonth, yearEndMonth) {
  */
 export function shiftPostingDate(text, monthOffset) {
   const [year, month, day] = String(text).split("-").map(Number);
-  return shiftMonths(new Date(Date.UTC(year, month - 1, day)), monthOffset).toISOString().slice(0, 10);
+  return shiftMonths(new Date(Date.UTC(year, month - 1, day)), monthOffset)
+    .toISOString()
+    .slice(0, 10);
 }
 
 // ── EQ2: the data half ─────────────────────────────────────────────────────
@@ -665,9 +667,7 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData
-    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths)
-    : null;
+  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths) : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 

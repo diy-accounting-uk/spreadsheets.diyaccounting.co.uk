@@ -435,9 +435,7 @@ describe("unrepresentableScope", () => {
   });
 
   it("rejects an entry naming neither products nor blocks", () => {
-    expect(() => unrepresentableScope("bst", { fields: [{ field: "x", reason: "r" }] })).toThrow(
-      /exactly one of "products" or "blocks"/,
-    );
+    expect(() => unrepresentableScope("bst", { fields: [{ field: "x", reason: "r" }] })).toThrow(/exactly one of "products" or "blocks"/);
   });
 
   it("rejects a block scope missing its product or block name", () => {
@@ -506,7 +504,10 @@ describe("scoreDataHalves with a block-scoped declaration", () => {
   it("still fails a sales line whose comment genuinely differs, so the payroll scope has not silenced that block", () => {
     const { fixture, exported } = writePair(
       [SALES_LINE, PAYROLL_LINE],
-      [{ ...SALES_LINE, lineItemComment: "Wrong description" }, { ...PAYROLL_LINE, lineItemComment: undefined }],
+      [
+        { ...SALES_LINE, lineItemComment: "Wrong description" },
+        { ...PAYROLL_LINE, lineItemComment: undefined },
+      ],
     );
     const score = scoreDataHalves(fixture, exported, unrepresentableScope("se", INVENTORY));
     expect(score.wholeLineMatches).toBe(1);

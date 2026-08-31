@@ -165,10 +165,7 @@ describe("Home sheet hyperlinks", () => {
         for (const link of internalLinks) {
           const targetSheet = parseSheetNameFromTarget(link.target);
           expect(targetSheet).not.toBeNull();
-          expect(allSheetNames).toContain(
-            targetSheet,
-            `Hyperlink at ${link.ref} points to non-existent sheet: ${link.target}`
-          );
+          expect(allSheetNames).toContain(targetSheet, `Hyperlink at ${link.ref} points to non-existent sheet: ${link.target}`);
         }
       });
 
@@ -176,10 +173,7 @@ describe("Home sheet hyperlinks", () => {
         for (const link of hyperlinks) {
           if (link.type === "internal") {
             // Must match pattern: '#'SheetName'!A1' (BST) or ''SheetName'!A1' (Taxi)
-            expect(link.target).toMatch(
-              /^#?'[^']*'![A-Z]+\d+$/,
-              `Malformed internal target: ${link.target}`
-            );
+            expect(link.target).toMatch(/^#?'[^']*'![A-Z]+\d+$/, `Malformed internal target: ${link.target}`);
           } else if (link.type === "external") {
             // External URLs (not validated in this test)
             expect(link.target).toContain("://");
@@ -232,16 +226,10 @@ describe("Home sheet hyperlinks — breakability", () => {
         }
 
         // Corrupt the hyperlink: change the target sheet name to a non-existent one
-        const corruptedTarget = linkToCorrupt.target.replace(
-          `'${targetSheet}'!`,
-          "'NonExistentSheet'!"
-        );
+        const corruptedTarget = linkToCorrupt.target.replace(`'${targetSheet}'!`, "'NonExistentSheet'!");
         // Simple string replacement - find the target in the formula and replace it
         const escapedTarget = linkToCorrupt.target.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const corruptedHomeXml = homeXml.replace(
-          new RegExp(escapedTarget, "g"),
-          corruptedTarget
-        );
+        const corruptedHomeXml = homeXml.replace(new RegExp(escapedTarget, "g"), corruptedTarget);
 
         corruptedZip.file(homeSheetPath, corruptedHomeXml, {
           date: originalZip.file(homeSheetPath).date,
@@ -253,19 +241,14 @@ describe("Home sheet hyperlinks — breakability", () => {
         let corruptedHyperlinks = extractHyperlinks(corruptedHomeXmlRead);
 
         // Find the corrupted link
-        const corruptedLink = corruptedHyperlinks.find(
-          (h) => h.ref === linkToCorrupt.ref && h.target.includes("NonExistentSheet")
-        );
+        const corruptedLink = corruptedHyperlinks.find((h) => h.ref === linkToCorrupt.ref && h.target.includes("NonExistentSheet"));
         expect(corruptedLink).toBeDefined();
 
         // Now the test should fail: the corrupted hyperlink points to a sheet that doesn't exist
         const allSheetNames = Array.from(corruptedSheetMap.keys());
         const corruptedLinkTargetSheet = parseSheetNameFromTarget(corruptedLink.target);
 
-        expect(allSheetNames).not.toContain(
-          corruptedLinkTargetSheet,
-          "Breakability test setup failed: corrupted sheet should not exist"
-        );
+        expect(allSheetNames).not.toContain(corruptedLinkTargetSheet, "Breakability test setup failed: corrupted sheet should not exist");
       });
     });
   }

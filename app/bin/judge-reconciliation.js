@@ -485,7 +485,9 @@ export function parseArgs(argv) {
 // different generate-* job) can skip the Bedrock call. Keying on the model id keeps a Sonnet
 // pass and an Opus escalation from being read as the same verdict (see judgeAndRecord).
 export function computeDigestHash(prompt, model) {
-  return createHash("sha256").update(JSON.stringify({ system: prompt.system, user: prompt.user, model })).digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify({ system: prompt.system, user: prompt.user, model }))
+    .digest("hex");
 }
 
 export function loadExistingVerdict(outPath, readFile = readFileSync) {

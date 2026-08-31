@@ -779,7 +779,13 @@ describeCalc(
     });
 
     it.each([
-      ["Salesinvoice Product Details: VAT Rate = the tax year's standard rate", "Salesinvoice.xlsx!Product Details", "Product Details", "D2", 17.5],
+      [
+        "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+        "Salesinvoice.xlsx!Product Details",
+        "Product Details",
+        "D2",
+        17.5,
+      ],
       [
         "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
         "Salesinvoice.xlsx!Invoice Template",
