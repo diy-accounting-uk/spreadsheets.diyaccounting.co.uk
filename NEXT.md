@@ -18,7 +18,9 @@ lands:
   merged state in its worktree; branch-side check re-run in flight)
 - roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
   products, ratchets retired, RECONCILES 859/859 and 683/683)
-- comparator track (Sonnet) — F23: started
+- comparator track (Sonnet) — F23: merged to `claude/next-batch-wave-1` (matrix budgets at
+  zero allowances for all four products, 48/48 in its tree; branch-side trio re-run in flight)
+- schema track (Sonnet) — F24: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
@@ -71,14 +73,6 @@ follow the reconciliation-bug method.
   (`G13`/`M13`), and `OPENING_FIXED_ASSET_CLASSES` (`app/lib/scenario-extractor.js`) omits it
   the same way, so no fixture can exercise the gap from either side. Add the class to both
   maps and a fixture line that proves the legs survive.
-- [ ] **F23: non-March EQ2 is scored on counts only** (Sonnet) — `generate` shifts every posting
-  date onto the package's own accounting period, so a non-March export's dates sit a month or
-  two from the fixture's by design; the comparator doesn't undo the shift, the `ltd-may` ratchet
-  case skips transaction-level assertions, and `roundtrip-matrix-budget.json` gates only
-  `linesLost`/`fieldsDropped`. Teach the comparator to reverse the period-frame shift (the rule
-  is documented in the runner conventions: dates shift by the gap between the book's declared
-  period and the package's, with end-of-month clamping), then assert transactions in `ltd-may`
-  and widen the generate matrices' gates. Unlocks real EQ2 across all year-ends.
 - [ ] **F24: payroll `lineItemComment` has no declared home** (Sonnet) — the payslip row has no
   spare column (swept A-AG), so the field is a visible whole-line shortfall rather than a
   declared unrepresentable: declaring it today would blank the field out of the blocks that now
