@@ -21,6 +21,8 @@ lands:
 - comparator track (Sonnet) — F23: merged to `claude/next-batch-wave-1` (matrix budgets at
   zero allowances for all four products, 48/48 in its tree; branch-side trio re-run in flight)
 - schema track (Sonnet) — F24: started
+- exporter-accounts track (Sonnet) — B1 + B2: started
+- invoice-carriage track (Haiku) — B3: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
