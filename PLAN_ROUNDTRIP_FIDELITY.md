@@ -10,7 +10,7 @@ open.
 - [CONTEXT_BASIC_SOLE_TRADER.md](CONTEXT_BASIC_SOLE_TRADER.md), [CONTEXT_TAXI.md](CONTEXT_TAXI.md),
   [CONTEXT_SELF_EMPLOYED.md](CONTEXT_SELF_EMPLOYED.md), [CONTEXT_LIMITED_COMPANY.md](CONTEXT_LIMITED_COMPANY.md)
   hold the per-product sheet maps and CI pipelines.
-- [REPORT_SHEET_COVERAGE_GAPS.md](REPORT_SHEET_COVERAGE_GAPS.md) lists the template sheets no check touches.
+- [REPORT_SPREADSHEET_TEST_COVERAGE.md](REPORT_SPREADSHEET_TEST_COVERAGE.md) lists the template sheets no check touches.
 - [CLAUDE.md](CLAUDE.md) holds the reconciliation-bug method every change here follows.
 
 ## What roundtrip fidelity means

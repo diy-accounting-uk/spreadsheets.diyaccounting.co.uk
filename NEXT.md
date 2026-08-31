@@ -58,7 +58,7 @@ follow the reconciliation-bug method.
   independent of the rate C2 now writes into `Product Details`. Template formula surgery:
   point the term at the written rate cell, extend C2's checks with a non-zero carriage case,
   prove breakable.
-- [ ] **C5: regenerate `REPORT_SHEET_COVERAGE_GAPS.md` once C1-C4 land** (Haiku) — re-run the
+- [ ] **C5: regenerate `REPORT_SPREADSHEET_TEST_COVERAGE.md` once C1-C4 land** (Haiku) — re-run the
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
   313/16 untouched toward the residue the report says is deliberate.
