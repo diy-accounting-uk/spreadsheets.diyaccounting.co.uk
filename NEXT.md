@@ -10,7 +10,8 @@ Coordinator batch dispatched 2026-08-31, worktree-isolated sub-agents, merged he
 lands:
 
 - FA track (Opus) — T1 + T4: started
-- divider track (Haiku) — T3: started
+- divider track (Haiku) — T3: merged to local main (98ac8a93, 1282 guard tests green);
+  pushes with the next batch after the full suite
 - judge track (Sonnet) — J1–J5: started
 - hyperlink track (Haiku) — C4: started
 
@@ -70,18 +71,6 @@ follow the reconciliation-bug method.
   only the August brought-forward check; no Payment/Admin check moves. Blast radius:
   payslips-calendar-year-end + se/ltd precision, then the full ladder. Runs AFTER T1 (both edit
   the product modules).
-- [ ] **T3: divider-row leftovers** (Haiku) — twelve stray cells, one shape, no downstream
-  reader: `H201` on `P02Y1/P03Y1/P04Y2/P05Y2/P06Y2` in `app/templates/se/Vat.xlsx`, `G201` on the
-  same five sheets in `app/templates/ltd/Vatreturns.xlsx`, and `G201` on
-  `OpeningCreditors`/`ClosingCreditors` in `app/templates/ltd/Purchases.xlsx`. Each is a copy of
-  the VAT-extraction formula with its rate reference lost (`IF(G201<>0,G201*#REF!/(100+#REF!)," ")`,
-  Ltd reads column F). On the VAT sheets row 201 is the "Entries below this row are not included
-  in Row 1 Totals" divider; on the creditors sheets it sits past the last data row (shared groups
-  end at `G197`, rows 198-200 are plain formulas). Repair: remove the formula, keep the styled
-  empty cell (`<c r="H201" s="90"/>` shape); assert 12 removals and zero remaining `#REF!` in the
-  three workbooks. No new checks — `app/test/formula-presence-guard.test.js`'s template sweep is
-  the standing evidence; confirm it stays green and row 201 doesn't read as a gap in a shared
-  group. Parallel with either other track (no JS).
 - [ ] **T4: the SE fixed-asset `K1` label contradicts its formula** (Haiku; folds into T1's
   dispatch since both edit `app/products/se.js`) — `FIXED_ASSET_CELL_LABELS` in `se.js` says
   "Total net book value carried forward (E1 less J1), assets sold in the year still included",
