@@ -1,0 +1,36 @@
+{
+  "description": "Cells that are expected to move between saved and recalculated runs (EQ3 stability).",
+  "notes": "Two categories on this tree: stale cached values (a stable formula whose cached result the generator never refreshed after writing the seed cell it ultimately depends on) and volatile formulas (Excel's own ca=\"1\" always-recalculate flag, here on the print sheet's INDIRECT(ADDRESS(...)) reads). F7 (2026-08-30) rolled the Payslips.xlsx Admin sheet's own daily date chain (B3:B381, seeded at B2) so packages generated without --data carry fresh cached values there, but it did not reach cross-sheet consumers of that chain -- a plain =Admin!B<n> formula on a month tab, or the print sheet's dynamic INDIRECT/ADDRESS lookup into it -- so those cells' own caches still move on recalculation.",
+  "cells": [
+    {
+      "key": "cell/Payslips.xlsx!Jan!M49",
+      "type": "stale cached value",
+      "reason": "Formula =Admin!B302, a cross-sheet read into the Admin daily chain seeded at Admin!B2. F7 rolled Admin!B302's own cache to match the generated tax year, but Jan!M49 carries an independent cached copy of the same value that the roll does not reach."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Feb!M49",
+      "type": "stale cached value",
+      "reason": "Formula =Admin!B330, the same cross-sheet chain read as Jan!M49, one month further into the calendar."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Jul!M49",
+      "type": "stale cached value",
+      "reason": "Formula =Admin!B118, the same cross-sheet chain read as Jan!M49, at the row the SE year end puts July on."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Aug!M49",
+      "type": "stale cached value",
+      "reason": "Formula =Admin!B149, the same cross-sheet chain read as Jul!M49, one month further into the calendar."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Payslips!I9",
+      "type": "volatile formula",
+      "reason": "Formula INDIRECT(ADDRESS($H$4+1,13,1,TRUE,$H$3)), marked ca=\"1\" (Excel's always-recalculate flag). It resolves dynamically into a month tab's own date column, itself part of the Admin daily chain seeded at Admin!B2, so its cached value is only as fresh as the last full recalculation."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Payslips!I10",
+      "type": "volatile formula",
+      "reason": "Formula INDIRECT(ADDRESS($H$4+1,5,1,TRUE,$H$3)), marked ca=\"1\", the same dynamic always-recalculate lookup as I9 into a different column."
+    }
+  ]
+}

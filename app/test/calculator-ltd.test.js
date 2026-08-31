@@ -181,6 +181,11 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(pubPl.F9).toBeCloseTo(341283.33, 2);
     expect(pubPl.F50).toBeCloseTo(29221.27, 2);
     expect(pubPl.F54).toBeCloseTo(127958.62, 2);
+    // The land & buildings asset (cost 200,000, depreciation 40,000 brought
+    // forward) sits in opening_fixed_assets rather than the year's additions
+    // or disposals, and its class depreciates at 0% (ltd-2024.toml), so it
+    // carries its whole net book value, 160,000, into this figure with no
+    // in-year movement: 48,990 + 160,000 = 208,990.
     expect(balanceSheet.F6).toBeCloseTo(208990, 2);
     expect(balanceSheet.F33).toBeCloseTo(balanceSheet.F39, 6);
   });
