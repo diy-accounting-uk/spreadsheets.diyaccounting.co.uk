@@ -30,6 +30,10 @@ const APP_DIR = resolve(__dirname, "..");
 const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
+
+// The year the financial year a package was built for opens in, which is the
+// payroll year the Employee sheet's start dates are read against.
+const ltdFinancialYearStart = (taxData) => new Date(taxData.financial_year.start).getUTCFullYear();
 const CHECK_NAME = "Trial Balance: audit accuracy (EJ91)";
 
 describeCalc(
@@ -62,7 +66,7 @@ describeCalc(
       // recalculated trial balance is a genuinely balanced book to test
       // "passes when intact" against.
       scenario = loadScenario(resolve(FIXTURES_DIR, "ltd-brickwork-pro-nonvat.toml"));
-      const writes = ltdCellWrites(scenario);
+      const writes = ltdCellWrites(scenario, ltdFinancialYearStart(taxData));
       const reads = ltdReads();
 
       savedDir = mkdtempSync(join(tmpdir(), "ltd-trial-balance-audit-"));

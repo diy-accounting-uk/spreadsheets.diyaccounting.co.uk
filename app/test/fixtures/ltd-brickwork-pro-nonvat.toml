@@ -24,6 +24,7 @@ grossPay = 1048
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2019-06-01
 isDirector = true
 
 [[employees]]
@@ -35,6 +36,7 @@ grossPay = 1500
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2023-03-15
 isDirector = false
 
 [[members]]

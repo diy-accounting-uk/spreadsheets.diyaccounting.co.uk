@@ -43,12 +43,12 @@ function runFixture({ dataDir, years, offset }) {
 // Both sides reach the same verdict on each, so the roundtrip scores them
 // equal; they are gaps in the templates, not in this engine.
 const SHEET_LIMITATION_GAPS = [
-  // The printed payslip's figures are gated on the employee's line
-  // carrying a pay number, which a month tab gives only an employee whose
-  // starting date is on Payslips!Employee. No scenario carries starting
-  // dates, so the page prints its heading and leaves the figures blank on
-  // both engines.
-  "Payslips print: the first employee's line carries the pay the scenario recorded",
+  // The printed payslip's payment date reads column R of the block's own
+  // header row, where the template holds nothing. The date the wages were
+  // paid sits a row below in column M, which is where the period-end cell
+  // finds it, so both engines print a nil here and this warning carries the
+  // date the page would have shown.
+  "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
 ];
 
 const FIXTURES = [
@@ -263,7 +263,15 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
       flippedBy((results) => {
         results.WagesInterface.H4 += 50;
       }),
-    ).toEqual(["WagesInterface Apr H4 employer NI"]);
+    ).toEqual(["WagesInterface employees Apr H4 employer NI"]);
+  });
+
+  it("names the directors' own payroll tie and the wages line it feeds when the directors block moves", () => {
+    expect(
+      flippedBy((results) => {
+        results.WagesInterface.C17 += 50;
+      }),
+    ).toEqual(["WagesInterface directors Apr C17 gross pay"]);
   });
 
   it("names the VAT chain when a quarter's output box moves", () => {

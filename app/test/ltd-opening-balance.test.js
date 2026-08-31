@@ -36,6 +36,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const LTD_DIR = resolve(APP_DIR, "templates", "ltd");
 const DATA_DIR = resolve(APP_DIR, "data");
+// The year the financial year a package was built for opens in, which is the
+// payroll year the Employee sheet's start dates are read against.
+const ltdFinancialYearStart = (taxData) => new Date(taxData.financial_year.start).getUTCFullYear();
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 const ACCURACY_CHECK = "Opening balance sheet: accuracy check (E37)";
@@ -72,10 +75,16 @@ describeCalc(
       expected = { ...scenario, ...scenario.expected };
 
       savedDir = mkdtempSync(join(tmpdir(), "ltd-opening-balance-"));
-      results = await runMultiFileSpreadsheet(fileBuffers, ltdCellWrites(scenario), ltdReads(), "Financialaccounts.xlsx", {
-        ...ltdMultiFileOptions(3),
-        saveRecalculatedTo: savedDir,
-      });
+      results = await runMultiFileSpreadsheet(
+        fileBuffers,
+        ltdCellWrites(scenario, ltdFinancialYearStart(taxData)),
+        ltdReads(),
+        "Financialaccounts.xlsx",
+        {
+          ...ltdMultiFileOptions(3),
+          saveRecalculatedTo: savedDir,
+        },
+      );
       checks = ltdCheckCompliance(results, expected, taxData, calculateExpectedTax);
     }, 300000);
 

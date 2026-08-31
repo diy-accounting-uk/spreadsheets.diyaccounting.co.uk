@@ -703,6 +703,27 @@ export function rollPayslipsAdminCachedDates(payslipsXml, startYear) {
   return payslipsXml;
 }
 
+// The daily chain's last row. Rolling stops here because a reference past it
+// reads a cell the chain never reaches.
+const PAYSLIPS_ADMIN_CHAIN_LAST_ROW = 381;
+
+// Every sheet in the Payslips workbook reads dates back off the Admin chain
+// -- the month tabs their wages-paid and period dates, the Payment schedule
+// its due dates, the Employee sheet its calendar column. Each of those cells
+// keeps its own cached copy, which rolling the Admin sheet alone does not
+// reach, so they would still print the template's year until the workbook was
+// recalculated.
+export function rollPayslipsAdminDateReads(sheetXml, startYear) {
+  const startSerial = toExcelSerial(utcDate(startYear, 4, 6));
+  let xml = sheetXml;
+  for (const [, cellRef, rowStr] of [...xml.matchAll(/<c\s+r="([A-Z]+\d+)"[^>]*><f>Admin!\$?B\$?(\d+)<\/f><v>[^<]*<\/v><\/c>/g)]) {
+    const row = parseInt(rowStr, 10);
+    if (row < 2 || row > PAYSLIPS_ADMIN_CHAIN_LAST_ROW) continue;
+    xml = setCellCachedValue(xml, cellRef, startSerial + (row - 2));
+  }
+  return xml;
+}
+
 // ── Sales date generation (Taxi Driver) ────────────────────────────────────
 
 // Generate all weeks of the tax year as arrays of Date objects.
@@ -1055,6 +1076,15 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
     const payslipsDate = zip.file(sheetsConfig.payslipsAdmin).date;
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
+
+    // Roll the cached copies the workbook's other sheets keep of the same
+    // chain, so a package that is never recalculated still shows its own
+    // year's dates on the month tabs and the PAYE payment schedule.
+    for (const file of zip.file(/^xl\/worksheets\/sheet\d+\.xml$/)) {
+      if (file.name === sheetsConfig.payslipsAdmin) continue;
+      const rolled = rollPayslipsAdminDateReads(await file.async("string"), startYear);
+      zip.file(file.name, rolled, { date: file.date });
+    }
   }
 
   // Expenses claim form (Ltd only — when sheetsConfig.mileageMonth is

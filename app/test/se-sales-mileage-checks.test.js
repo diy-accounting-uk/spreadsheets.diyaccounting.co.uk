@@ -31,6 +31,10 @@ const APP_DIR = resolve(__dirname, "..");
 const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 const SALES_MILEAGE = 40;
 
 describeCalc("Self Employed: Sales sheet mileage column", () => {
@@ -67,7 +71,7 @@ describeCalc("Self Employed: Sales sheet mileage column", () => {
       },
     };
 
-    const writes = seCellWrites(scenario);
+    const writes = seCellWrites(scenario, seTaxYearStart(taxData));
     const options = seOptions();
     const additionalReads = {
       ...options.additionalReads,

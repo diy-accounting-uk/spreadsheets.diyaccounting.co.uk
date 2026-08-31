@@ -540,17 +540,28 @@ describeCalc(
     // ── Payroll: WagesInterface, the PAYE/NI creditor, Payslips!Payment,
     // and the P&L wages route (item 4) ──
 
-    it("WagesInterface Apr gross pay and employer NI carry the payroll fixture's own totals", () => {
+    it("WagesInterface Apr splits the payroll fixture's own totals between employees and directors", () => {
       const wi = results.WagesInterface;
-      expect(wi.C4).toBe(6748); // Alice 3500 + Bob 2200 + Carol 1048
-      expect(wi.H4).toBeCloseTo(577.2, 5); // 382.5 + 187.5 + 7.2
+      expect(wi.C4).toBe(5700); // Alice 3500 + Bob 2200
+      expect(wi.H4).toBeCloseTo(570, 5); // 382.5 + 187.5
+      expect(wi.C17).toBe(1048); // Carol, the director
+      expect(wi.H17).toBeCloseTo(7.2, 5);
     });
 
     it("fails the gross pay tie when WagesInterface C4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "C4", 0);
       expect(value).toBe(0);
-      const name = "WagesInterface Apr C4 gross pay";
+      const name = "WagesInterface employees Apr C4 gross pay";
       const corrupted = checksWithCorruptedCell("WagesInterface", "C4", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the directors' gross pay tie when WagesInterface C17 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "C17", 0);
+      expect(value).toBe(0);
+      const name = "WagesInterface directors Apr C17 gross pay";
+      const corrupted = checksWithCorruptedCell("WagesInterface", "C17", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
@@ -567,7 +578,7 @@ describeCalc(
     it("fails the employer NI tie when WagesInterface H4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "H4", 0);
       expect(value).toBe(0);
-      const name = "WagesInterface Apr H4 employer NI";
+      const name = "WagesInterface employees Apr H4 employer NI";
       const corrupted = checksWithCorruptedCell("WagesInterface", "H4", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
@@ -672,7 +683,7 @@ describeCalc(
     it("fails the P&L PAYE-wages route when MnthP&L B18 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B18", 0);
       expect(value).toBe(0);
-      const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net";
+      const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = employees' gross pay + Purchases w-coded net";
       const corrupted = checksWithCorruptedCell("MnthP&L", "B18", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       // B18 also feeds the admin-lines-sum-to-total identity and the netting
