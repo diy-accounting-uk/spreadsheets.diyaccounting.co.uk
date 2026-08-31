@@ -8,7 +8,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 | Track | Item | Worktree | Tier | Status |
 |---|---|---|---|---|
-| surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | `../wt-spreadsheets/surgery` | Opus | started |
+| surgery | `PLAN_TEMPLATE_SURGERY.md` currency review and purge | — | Opus | landed: all four designed tracks already superseded; plan rewritten to the three live defects, 1221 → 319 lines |
 | ctxbst | `CONTEXT_BASIC_SOLE_TRADER.md` re-align | `../wt-spreadsheets/ctxbst` | Sonnet | started |
 | ctxltd | `CONTEXT_LIMITED_COMPANY.md` re-align | `../wt-spreadsheets/ctxltd` | Sonnet | started |
 | ctxse | `CONTEXT_SELF_EMPLOYED.md` re-align | `../wt-spreadsheets/ctxse` | Sonnet | started |
@@ -56,10 +56,9 @@ follow the reconciliation-bug method.
 - `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
   browser page, with the opt-in LLM review as its post-phase-5 extension; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
-- `PLAN_TEMPLATE_SURGERY.md` — eight shipped-template repairs in four dispatch-ready tracks
-  (income-tax taper/additional rate, Ltd CT/CT600 + Ltd mileage, fixed-asset book values and HP
-  rows, Salesinvoice G6); written before the fidelity waves, so each track needs a currency pass
-  against the tree at dispatch.
+- `PLAN_TEMPLATE_SURGERY.md` — re-aligned 2026-08-31: the original four tracks all landed; the
+  plan now holds the three verified live defects (Ltd FAreconciliation `#REF!`s, Payslips
+  Jul/Aug cells, divider-row leftovers) plus the SE `K1` label remainder.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
