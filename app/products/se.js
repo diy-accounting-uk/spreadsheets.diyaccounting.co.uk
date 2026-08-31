@@ -2333,20 +2333,25 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       }
     }
     if (expected.purchases) {
-      for (const [month, txs] of Object.entries(expected.purchases)) {
+      for (const txs of Object.values(expected.purchases)) {
         for (const tx of txs) {
           if (!inQuarter(tx.date)) continue;
-          // The mileage claim reaches box 7 through the month's own net total
-          // (Vatinterface H = Purchases!I1, and I1 sums I2 with the rows) and
-          // carries no input VAT, so the row's own figure is left out and the
-          // month's claim added once for the whole month.
+          // A mileage-log row states miles, not money. Its own figure reaches
+          // no cell, and the claim the sheet makes of those miles is added
+          // below, once for the month.
           if (tx.mileage) continue;
           inputVat += tx.amount - tx.amount / (1 + rate);
           purchasesNet += tx.amount / (1 + rate);
         }
-        const claim = monthlyMileageClaims[month];
-        if (claim && txs.length > 0 && inQuarter(txs[0].date)) purchasesNet += claim;
       }
+    }
+    // The month's mileage claim reaches box 7 through that month's own net
+    // total (Vatinterface H = Purchases!I1, and I1 sums I2 with the rows) and
+    // carries no input VAT. A quarter window spans whole months, so any row of
+    // the month settles which quarter its claim falls in.
+    for (const [month, claim] of Object.entries(monthlyMileageClaims)) {
+      const rows = expected.purchases?.[month] || expected.sales?.[month] || [];
+      if (rows.length > 0 && inQuarter(rows[0].date)) purchasesNet += claim;
     }
     // Periods outside the twelve accounting months are entered on the
     // straddling sheets rather than a month tab, so a window that reaches
