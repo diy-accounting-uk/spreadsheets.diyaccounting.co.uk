@@ -13,7 +13,10 @@ lands:
   link-rename fix the track surfaced; June package reconciles 866/866)
 - payslip track (Sonnet) — T2: merged to `claude/next-batch-wave-1` (35 cells per workbook
   repaired, coverage checks anchored on payment references, 13 + 197 tests green)
-- print-sheet track (Opus) — C1: started
+- print-sheet track (Opus) — C1: merged to `claude/next-batch-wave-1` (151 error cells
+  resolved via ADDRESS-form INDIRECT, join checked against the fixture, two write-map bugs
+  fixed; 27 + 213 + 94 green in its tree; branch-side re-run in flight)
+- coverage-report track (Haiku) — C5: started
 - writes track (Sonnet) — C2 + C3: merged to `claude/next-batch-wave-1` (249/249 on the
   merged state in its worktree; branch-side check re-run in flight)
 - roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
@@ -43,17 +46,16 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
-- [ ] **C1: cover the Payslips print sheet's period join** (Opus) — `Payslips.xlsx!Payslips`
-  (both products) is the payslip the employer hands over; its month tabs and calendar are
-  asserted, but the `LOOKUP`/`INDIRECT` pair that joins them is read by nothing, so a wrong
-  resolution prints the wrong period's pay with every upstream check green. T2's track found
-  the sheet is worse than uncovered: after a full generate-and-recalculate pass the print
-  sheet (sheet14.xml in both products) carries 65 `#REF!` errors, pre-existing and identical
-  before T2's fix. Diagnose and repair those first, then discover the join from the sheet
-  XML, add the printed cells to `additionalReads`, and check them against the scenario's
-  payroll data for a chosen period (anchored to the fixture, never to the month tabs the
-  join reads — a wrong join agreeing with the wrong month must fail). Prove breakable by
-  corrupting the join's cached result.
+- [ ] **P1: the payslip print page prints no figures — no fixture carries a start date**
+  (Opus) — surfaced by C1: every printed field is gated on the employee's line showing a pay
+  number, and a month tab only assigns one to an employee whose starting date is on
+  `Payslips!Employee` (`F24 = " "` compares greater than any month number, so the gate is
+  always shut); a warning-severity check currently carries the gross the page would print.
+  Opening the gate is source-derived fixture work (start dates in the master data plus
+  re-extract) and is asymmetric: SE is ripple-free; Ltd's directors block goes live (`B53`
+  resolves "D", `M2` stops being 0, `WagesInterface!C4` splits), so the four per-month
+  WagesInterface checks need an employees/directors split. TrialBalance sums both blocks, so
+  P&L and CT are unaffected.
 - [ ] **B3: the invoice carriage VAT is a hardcoded `*0.2` in the template formula** (Haiku) —
   surfaced by C2: `Invoice Template!P62` in both products' `Salesinvoice.xlsx` reads
   `IF(P58<>0,SUM(V38:V57)+P60*0.2,0)` — the carriage charge (`P60`) is taxed at a literal 0.2
