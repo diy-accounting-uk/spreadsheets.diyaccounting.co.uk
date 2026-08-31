@@ -601,8 +601,12 @@ const BANK_FILES = {
  * Receipts: rows 6+, A=date, B=source, E=code, F=amount
  * Payments: rows 6+, columns per BANK_FILES[product] payment layout
  * Opening balance: A1 (code "BC")
+ *
+ * @param {string} sourceDir - the populated package
+ * @param {string} product - se or ltd
+ * @param {{start: string, end: string}} period - the accounting period the package covers
  */
-export async function extractBankTransactions(sourceDir, product) {
+export async function extractBankTransactions(sourceDir, product, period) {
   const { readFileSync, existsSync } = await import("fs");
   const { resolve } = await import("path");
 
@@ -623,25 +627,26 @@ export async function extractBankTransactions(sourceDir, product) {
       const sheetPath = sheetMap.get(sheetName);
       const xml = await zip.file(sheetPath).async("string");
 
-      // Opening balance in A1 (can appear in any sheet — cellWrites places it in the month of the BC date)
-      // Skip if A1 is a formula (carry-forward from template, not injected data)
+      // The account's opening balance is a bare amount in A1 with no date
+      // cell beside it, entered once and carried forward by formula on every
+      // tab after it -- so the first tab holding a figure of its own holds
+      // the balance, and it is dated the first day of the period. Borrowing
+      // the date of a statement row instead loses the balance of an account
+      // that banks nothing that month, and misdates one that banks late.
       const obVal = readCellValue(xml, "A1", sharedStrings);
       if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted && !hasCellFormula(xml, "A1")) {
-        const firstDate = readCellValue(xml, "A6", sharedStrings);
-        if (firstDate !== null && typeof firstDate === "number" && firstDate > 1) {
-          lines.push({
-            "sourceJournalID": "bank",
-            "postingDate": excelSerialToDate(firstDate),
-            "accountMainID": accountID,
-            "amount": obVal,
-            "detailComment": "Opening balance",
-            "diya-gl:bankCode": "BC",
-            "debitCreditCode": "D",
-            "diya-gl:bankAccountID": accountID,
-            "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-          });
-          obEmitted = true;
-        }
+        lines.push({
+          "sourceJournalID": "bank",
+          "postingDate": period.start,
+          "accountMainID": accountID,
+          "amount": obVal,
+          "detailComment": "Opening balance",
+          "diya-gl:bankCode": "BC",
+          "debitCreditCode": "D",
+          "diya-gl:bankAccountID": accountID,
+          "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
+        });
+        obEmitted = true;
       }
 
       // Receipts: rows 6+, A=date, B=source, E=code, F=amount
@@ -880,7 +885,7 @@ async function fixedAssetRegisterFrom(sourceDir, product) {
   return ordered.map(({ asset }, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
 }
 
-async function extractSeOpeningFixedAssets(sourceDir) {
+async function extractSeOpeningFixedAssets(sourceDir, period) {
   const sheet = await scheduleSheet(sourceDir);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -896,7 +901,7 @@ async function extractSeOpeningFixedAssets(sourceDir) {
       const accDep = readCellValue(xml, `F${row}`, sharedStrings);
       const base = {
         sourceJournalID: "journal",
-        postingDate: "2025-04-01", // Opening balance date — normalised on double-roundtrip
+        postingDate: period.start,
         accountMainID,
         detailComment: "Opening balances",
         documentType: "journal",
@@ -928,11 +933,16 @@ async function extractSeOpeningFixedAssets(sourceDir) {
 }
 
 /**
- * Extract journal entries (opening balances): Ltd from the OpenAccounts
- * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows.
+ * Extract journal entries: the opening balances -- Ltd from the OpenAccounts
+ * sheet, SE from the Fixedassets.xlsx Schedule's existing-asset rows -- and,
+ * for Ltd, the year's stock movement.
+ *
+ * @param {string} sourceDir - the populated package
+ * @param {string} product - se or ltd; the other two keep no journal
+ * @param {{start: string, end: string}} period - the accounting period the package covers
  */
-export async function extractJournalEntries(sourceDir, product) {
-  if (product === "se") return extractSeOpeningFixedAssets(sourceDir);
+export async function extractJournalEntries(sourceDir, product, period) {
+  if (product === "se") return extractSeOpeningFixedAssets(sourceDir, period);
   if (product !== "ltd") return [];
 
   const { readFileSync, existsSync } = await import("fs");
@@ -960,7 +970,7 @@ export async function extractJournalEntries(sourceDir, product) {
     const flip = { D: "C", C: "D" };
     lines.push({
       sourceJournalID: "journal",
-      postingDate: "2025-04-01", // Opening balance date — will be normalised on double-roundtrip
+      postingDate: period.start,
       accountMainID: mapping.accountMainID,
       amount: Math.abs(val),
       detailComment: "Opening balances",
@@ -975,7 +985,64 @@ export async function extractJournalEntries(sourceDir, product) {
     });
   }
 
+  for (const line of await stockMovementJournal(zip, xml, sharedStrings, period)) {
+    lines.push({ ...line, lineNumber: lineNum++, entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}` });
+  }
+
   return lines;
+}
+
+// The two sides the year's stock movement posts to: the stock the balance
+// sheet carries, and the cost of sales it is charged against.
+const STOCK_MOVEMENT_ACCOUNTS = { stock: "1100", costOfSales: "5000" };
+
+/**
+ * The year's stock movement, as the pair of journal lines a general ledger
+ * records it in.
+ *
+ * A Ltd package states stock twice and never as a posting: the opening figure
+ * on the opening balance sheet, and the count at the year end on the Stock
+ * sheet. The difference between them is what the trial balance charges to
+ * cost of sales, so the movement is in the package -- it just has no journal
+ * to come back on until this one gives it one.
+ *
+ * @param {Object} hubZip - the Financialaccounts.xlsx archive
+ * @param {string} openAccountsXml - the OpenAccounts sheet, already read
+ * @param {Object} sharedStrings - that workbook's shared string table
+ * @param {{start: string, end: string}} period - the accounting period the package covers
+ */
+async function stockMovementJournal(hubZip, openAccountsXml, sharedStrings, period) {
+  const opening = numberAt(openAccountsXml, OPENING_SCALAR_CELLS.stock, sharedStrings);
+  const stockSheet = await openSheet(hubZip, STOCK_CELLS.ltd.sheet);
+  const closing = stockSheet ? numberAt(stockSheet.xml, STOCK_CELLS.ltd.closingValue, stockSheet.sharedStrings) : undefined;
+  if (opening === undefined || closing === undefined || opening === closing) return [];
+
+  const movement = opening - closing;
+  const stockFell = movement > 0;
+  const base = {
+    sourceJournalID: "journal",
+    postingDate: period.end,
+    amount: Math.abs(movement),
+    documentType: "journal",
+    documentReference: "JNL-001",
+    detailComment: "Stock adjustment",
+    taxCode: "OS",
+    taxRate: 0,
+  };
+  return [
+    {
+      ...base,
+      accountMainID: STOCK_MOVEMENT_ACCOUNTS.stock,
+      debitCreditCode: stockFell ? "C" : "D",
+      lineItemComment: `Stock ${stockFell ? "reduction" : "increase"} (${opening} opening - ${closing} closing)`,
+    },
+    {
+      ...base,
+      accountMainID: STOCK_MOVEMENT_ACCOUNTS.costOfSales,
+      debitCreditCode: stockFell ? "D" : "C",
+      lineItemComment: "Cost of goods sold stock adjustment",
+    },
+  ];
 }
 
 /**
