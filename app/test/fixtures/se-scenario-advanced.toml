@@ -1284,6 +1284,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.apr]]
@@ -1557,6 +1558,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Birmingham"
 code = "v"
 amount = 54
+mileage = 120
 account = "5601"
 
 [[purchases.may]]
@@ -1815,6 +1817,7 @@ supplier = "Mileage claim"
 description = "Business mileage to London"
 code = "v"
 amount = 90
+mileage = 200
 account = "5601"
 
 [[purchases.jun]]
@@ -2106,6 +2109,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Leeds"
 code = "v"
 amount = 20.25
+mileage = 45
 account = "5601"
 
 [[purchases.jul]]
@@ -2362,6 +2366,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.aug]]
@@ -2618,6 +2623,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Bristol"
 code = "v"
 amount = 72
+mileage = 160
 account = "5601"
 
 [[purchases.sep]]
@@ -2908,6 +2914,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Sheffield"
 code = "v"
 amount = 42.75
+mileage = 95
 account = "5601"
 
 [[purchases.oct]]
@@ -3167,6 +3174,7 @@ supplier = "Mileage claim"
 description = "Business mileage to London"
 code = "v"
 amount = 81
+mileage = 180
 account = "5601"
 
 [[purchases.nov]]
@@ -3415,6 +3423,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Various"
 code = "v"
 amount = 49.5
+mileage = 110
 account = "5601"
 
 [[purchases.dec]]
@@ -3696,6 +3705,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Manchester"
 code = "v"
 amount = 38.25
+mileage = 85
 account = "5601"
 
 [[purchases.jan]]
@@ -3960,6 +3970,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Nottingham"
 code = "v"
 amount = 31.5
+mileage = 70
 account = "5601"
 
 [[purchases.feb]]
@@ -4200,6 +4211,7 @@ supplier = "Mileage claim"
 description = "Business mileage to Various"
 code = "v"
 amount = 58.5
+mileage = 130
 account = "5601"
 
 [[purchases.mar]]
@@ -4235,6 +4247,7 @@ code = "BC"
 direction = "in"
 amount = 25000
 description = "Current account opening balance"
+reference = "BNK-0001"
 
 [[bank.apr]]
 date = 2025-04-01
@@ -4244,6 +4257,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-001"
 
 [[bank.apr]]
 date = 2025-04-01
@@ -4253,6 +4267,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-001"
 
 [[bank.apr]]
 date = 2025-04-05
@@ -4262,6 +4277,7 @@ code = "CR"
 direction = "out"
 amount = 2200
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-001"
 
 [[bank.apr]]
 date = 2025-04-10
@@ -4271,6 +4287,7 @@ code = "DR"
 direction = "in"
 amount = 7200
 description = "Opening debtor receipt"
+reference = "BNK-DR-037"
 
 [[bank.apr]]
 date = 2025-04-15
@@ -4280,6 +4297,7 @@ code = "DR"
 direction = "in"
 amount = 1200
 description = "Opening debtor receipt"
+reference = "BNK-DR-038"
 
 [[bank.apr]]
 date = 2025-04-19
@@ -4289,6 +4307,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-001"
 
 [[bank.apr]]
 date = 2025-04-20
@@ -4298,6 +4317,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-001"
 
 [[bank.apr]]
 date = 2025-04-25
@@ -4307,6 +4327,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-013"
 
 [[bank.apr]]
 date = 2025-04-25
@@ -4316,6 +4337,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Opening debtor receipt"
+reference = "BNK-DR-039"
 
 [[bank.apr]]
 date = 2025-04-28
@@ -4325,6 +4347,7 @@ code = "DR"
 direction = "in"
 amount = 23000
 description = "Aggregate customer receipts"
+reference = "BNK-DR-025"
 
 [[bank.apr]]
 date = 2025-04-28
@@ -4334,6 +4357,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-001"
 
 [[bank.apr]]
 date = 2025-04-30
@@ -4343,6 +4367,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-013"
 
 [[bank.apr]]
 date = 2025-04-30
@@ -4352,6 +4377,7 @@ code = "X"
 direction = "out"
 amount = 500
 description = "Pay credit card balance"
+reference = "BNK-X-CC-001"
 
 [[bank.may]]
 date = 2025-05-01
@@ -4361,6 +4387,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-002"
 
 [[bank.may]]
 date = 2025-05-01
@@ -4370,6 +4397,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-002"
 
 [[bank.may]]
 date = 2025-05-05
@@ -4379,6 +4407,7 @@ code = "CR"
 direction = "out"
 amount = 2800
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-002"
 
 [[bank.may]]
 date = 2025-05-19
@@ -4388,6 +4417,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-002"
 
 [[bank.may]]
 date = 2025-05-20
@@ -4397,6 +4427,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-002"
 
 [[bank.may]]
 date = 2025-05-25
@@ -4406,6 +4437,7 @@ code = "B"
 direction = "out"
 amount = 25
 description = "Bank charges"
+reference = "BNK-B-001"
 
 [[bank.may]]
 date = 2025-05-25
@@ -4415,6 +4447,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-014"
 
 [[bank.may]]
 date = 2025-05-28
@@ -4424,6 +4457,7 @@ code = "DR"
 direction = "in"
 amount = 22520
 description = "Aggregate customer receipts"
+reference = "BNK-DR-026"
 
 [[bank.may]]
 date = 2025-05-28
@@ -4433,6 +4467,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-002"
 
 [[bank.may]]
 date = 2025-05-31
@@ -4442,6 +4477,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-014"
 
 [[bank.may]]
 date = 2025-05-07
@@ -4451,6 +4487,7 @@ code = "RV"
 direction = "out"
 amount = 1500
 description = "VAT payment, prior year fourth quarter"
+reference = "BNK-RV-VAT-000"
 
 [[bank.jun]]
 date = 2025-06-01
@@ -4460,6 +4497,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-003"
 
 [[bank.jun]]
 date = 2025-06-01
@@ -4469,6 +4507,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-003"
 
 [[bank.jun]]
 date = 2025-06-05
@@ -4478,6 +4517,7 @@ code = "CR"
 direction = "out"
 amount = 2500
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-003"
 
 [[bank.jun]]
 date = 2025-06-19
@@ -4487,6 +4527,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-003"
 
 [[bank.jun]]
 date = 2025-06-20
@@ -4496,6 +4537,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-003"
 
 [[bank.jun]]
 date = 2025-06-25
@@ -4505,6 +4547,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-015"
 
 [[bank.jun]]
 date = 2025-06-28
@@ -4514,6 +4557,7 @@ code = "DR"
 direction = "in"
 amount = 24800
 description = "Aggregate customer receipts"
+reference = "BNK-DR-027"
 
 [[bank.jun]]
 date = 2025-06-28
@@ -4523,6 +4567,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-003"
 
 [[bank.jun]]
 date = 2025-06-30
@@ -4532,6 +4577,7 @@ code = "B"
 direction = "out"
 amount = 250
 description = "Quarterly loan interest payment"
+reference = "BNK-B-INT-001"
 
 [[bank.jun]]
 date = 2025-06-30
@@ -4541,6 +4587,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-015"
 
 [[bank.jun]]
 date = 2025-06-01
@@ -4550,6 +4597,7 @@ code = "B"
 direction = "out"
 amount = 2000
 description = "HP-2025-01 admin charges and interest"
+reference = "BNK-HP-INT-001"
 
 [[bank.jun]]
 date = 2025-06-01
@@ -4559,6 +4607,7 @@ code = "CR"
 direction = "out"
 amount = 13000
 description = "HP-2025-01 capital repayment"
+reference = "BNK-HP-CAP-001"
 
 [[bank.jul]]
 date = 2025-07-01
@@ -4568,6 +4617,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-004"
 
 [[bank.jul]]
 date = 2025-07-01
@@ -4577,6 +4627,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-004"
 
 [[bank.jul]]
 date = 2025-07-05
@@ -4586,6 +4637,7 @@ code = "CR"
 direction = "out"
 amount = 2300
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-004"
 
 [[bank.jul]]
 date = 2025-07-15
@@ -4595,6 +4647,7 @@ code = "DL"
 direction = "out"
 amount = 3000
 description = "Quarterly drawings payment"
+reference = "BNK-DV-001"
 
 [[bank.jul]]
 date = 2025-07-19
@@ -4604,6 +4657,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-004"
 
 [[bank.jul]]
 date = 2025-07-19
@@ -4613,6 +4667,7 @@ code = "RC"
 direction = "out"
 amount = 1000
 description = "CIS deduction remittance"
+reference = "BNK-RC-CIS-001"
 
 [[bank.jul]]
 date = 2025-07-20
@@ -4622,6 +4677,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-004"
 
 [[bank.jul]]
 date = 2025-07-25
@@ -4631,6 +4687,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-016"
 
 [[bank.jul]]
 date = 2025-07-28
@@ -4640,6 +4697,7 @@ code = "DR"
 direction = "in"
 amount = 23360
 description = "Aggregate customer receipts"
+reference = "BNK-DR-028"
 
 [[bank.jul]]
 date = 2025-07-28
@@ -4649,6 +4707,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-004"
 
 [[bank.jul]]
 date = 2025-07-31
@@ -4658,6 +4717,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-016"
 
 [[bank.jul]]
 date = 2025-07-31
@@ -4667,6 +4727,7 @@ code = "X"
 direction = "out"
 amount = 300
 description = "Pay credit card balance"
+reference = "BNK-X-CC-002"
 
 [[bank.aug]]
 date = 2025-08-07
@@ -4676,6 +4737,7 @@ code = "RV"
 direction = "out"
 amount = 13808.17
 description = "VAT payment Q1 Apr-Jun"
+reference = "BNK-RV-VAT-001"
 
 [[bank.aug]]
 date = 2025-08-01
@@ -4685,6 +4747,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-005"
 
 [[bank.aug]]
 date = 2025-08-01
@@ -4694,6 +4757,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-005"
 
 [[bank.aug]]
 date = 2025-08-05
@@ -4703,6 +4767,7 @@ code = "CR"
 direction = "out"
 amount = 2600
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-005"
 
 [[bank.aug]]
 date = 2025-08-05
@@ -4712,6 +4777,7 @@ code = "DR"
 direction = "in"
 amount = 2500
 description = "Grant received"
+reference = "BNK-RV-001"
 
 [[bank.aug]]
 date = 2025-08-19
@@ -4721,6 +4787,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-005"
 
 [[bank.aug]]
 date = 2025-08-20
@@ -4730,6 +4797,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-005"
 
 [[bank.aug]]
 date = 2025-08-25
@@ -4739,6 +4807,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-017"
 
 [[bank.aug]]
 date = 2025-08-28
@@ -4748,6 +4817,7 @@ code = "DR"
 direction = "in"
 amount = 25620
 description = "Aggregate customer receipts"
+reference = "BNK-DR-029"
 
 [[bank.aug]]
 date = 2025-08-28
@@ -4757,6 +4827,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-005"
 
 [[bank.aug]]
 date = 2025-08-31
@@ -4766,6 +4837,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-017"
 
 [[bank.sep]]
 date = 2025-09-01
@@ -4775,6 +4847,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-006"
 
 [[bank.sep]]
 date = 2025-09-01
@@ -4784,6 +4857,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-006"
 
 [[bank.sep]]
 date = 2025-09-05
@@ -4793,6 +4867,7 @@ code = "CR"
 direction = "out"
 amount = 2100
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-006"
 
 [[bank.sep]]
 date = 2025-09-19
@@ -4802,6 +4877,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-006"
 
 [[bank.sep]]
 date = 2025-09-20
@@ -4811,6 +4887,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-006"
 
 [[bank.sep]]
 date = 2025-09-25
@@ -4820,6 +4897,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-018"
 
 [[bank.sep]]
 date = 2025-09-28
@@ -4829,6 +4907,7 @@ code = "DR"
 direction = "in"
 amount = 23360
 description = "Aggregate customer receipts"
+reference = "BNK-DR-030"
 
 [[bank.sep]]
 date = 2025-09-28
@@ -4838,6 +4917,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-006"
 
 [[bank.sep]]
 date = 2025-09-30
@@ -4847,6 +4927,7 @@ code = "B"
 direction = "out"
 amount = 208
 description = "Quarterly loan interest payment"
+reference = "BNK-B-INT-002"
 
 [[bank.sep]]
 date = 2025-09-30
@@ -4856,6 +4937,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-018"
 
 [[bank.sep]]
 date = 2025-09-01
@@ -4865,6 +4947,7 @@ code = "B"
 direction = "out"
 amount = 1100
 description = "HP-2025-02 admin charges and interest"
+reference = "BNK-HP-INT-002"
 
 [[bank.sep]]
 date = 2025-09-01
@@ -4874,6 +4957,7 @@ code = "CR"
 direction = "out"
 amount = 7000
 description = "HP-2025-02 capital repayment"
+reference = "BNK-HP-CAP-002"
 
 [[bank.oct]]
 date = 2025-10-01
@@ -4883,6 +4967,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-007"
 
 [[bank.oct]]
 date = 2025-10-01
@@ -4892,6 +4977,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-007"
 
 [[bank.oct]]
 date = 2025-10-01
@@ -4901,6 +4987,7 @@ code = "RT"
 direction = "out"
 amount = 4500
 description = "Corporation Tax prior year"
+reference = "BNK-RT-CT-001"
 
 [[bank.oct]]
 date = 2025-10-05
@@ -4910,6 +4997,7 @@ code = "CR"
 direction = "out"
 amount = 3000
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-007"
 
 [[bank.oct]]
 date = 2025-10-15
@@ -4919,6 +5007,7 @@ code = "DR"
 direction = "in"
 amount = 15000
 description = "Van sale proceeds"
+reference = "BNK-DR-040"
 
 [[bank.oct]]
 date = 2025-10-15
@@ -4928,6 +5017,7 @@ code = "DL"
 direction = "out"
 amount = 3000
 description = "Quarterly drawings payment"
+reference = "BNK-DV-002"
 
 [[bank.oct]]
 date = 2025-10-19
@@ -4937,6 +5027,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-007"
 
 [[bank.oct]]
 date = 2025-10-20
@@ -4946,6 +5037,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-007"
 
 [[bank.oct]]
 date = 2025-10-25
@@ -4955,6 +5047,7 @@ code = "CR"
 direction = "out"
 amount = 36000
 description = "Ford Transit Custom purchase"
+reference = "BNK-CR-FA-001"
 
 [[bank.oct]]
 date = 2025-10-25
@@ -4964,6 +5057,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-019"
 
 [[bank.oct]]
 date = 2025-10-28
@@ -4973,6 +5067,7 @@ code = "DR"
 direction = "in"
 amount = 25160
 description = "Aggregate customer receipts"
+reference = "BNK-DR-031"
 
 [[bank.oct]]
 date = 2025-10-28
@@ -4982,6 +5077,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-007"
 
 [[bank.oct]]
 date = 2025-10-31
@@ -4991,6 +5087,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-019"
 
 [[bank.oct]]
 date = 2025-10-31
@@ -5000,6 +5097,7 @@ code = "X"
 direction = "out"
 amount = 500
 description = "Pay credit card balance"
+reference = "BNK-X-CC-003"
 
 [[bank.nov]]
 date = 2025-11-07
@@ -5009,6 +5107,7 @@ code = "RV"
 direction = "out"
 amount = 14456.5
 description = "VAT payment Q2 Jul-Sep"
+reference = "BNK-RV-VAT-002"
 
 [[bank.nov]]
 date = 2025-11-01
@@ -5018,6 +5117,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-008"
 
 [[bank.nov]]
 date = 2025-11-01
@@ -5027,6 +5127,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-008"
 
 [[bank.nov]]
 date = 2025-11-05
@@ -5036,6 +5137,7 @@ code = "CR"
 direction = "out"
 amount = 2400
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-008"
 
 [[bank.nov]]
 date = 2025-11-19
@@ -5045,6 +5147,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-008"
 
 [[bank.nov]]
 date = 2025-11-20
@@ -5054,6 +5157,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-008"
 
 [[bank.nov]]
 date = 2025-11-25
@@ -5063,6 +5167,7 @@ code = "B"
 direction = "out"
 amount = 25
 description = "Bank charges"
+reference = "BNK-B-002"
 
 [[bank.nov]]
 date = 2025-11-25
@@ -5072,6 +5177,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-020"
 
 [[bank.nov]]
 date = 2025-11-28
@@ -5081,6 +5187,7 @@ code = "DR"
 direction = "in"
 amount = 24920
 description = "Aggregate customer receipts"
+reference = "BNK-DR-032"
 
 [[bank.nov]]
 date = 2025-11-28
@@ -5090,6 +5197,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-008"
 
 [[bank.nov]]
 date = 2025-11-30
@@ -5099,6 +5207,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-020"
 
 [[bank.dec]]
 date = 2025-12-01
@@ -5108,6 +5217,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-009"
 
 [[bank.dec]]
 date = 2025-12-01
@@ -5117,6 +5227,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-009"
 
 [[bank.dec]]
 date = 2025-12-05
@@ -5126,6 +5237,7 @@ code = "CR"
 direction = "out"
 amount = 2700
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-009"
 
 [[bank.dec]]
 date = 2025-12-19
@@ -5135,6 +5247,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-009"
 
 [[bank.dec]]
 date = 2025-12-19
@@ -5144,6 +5257,7 @@ code = "RC"
 direction = "out"
 amount = 600
 description = "CIS deduction remittance"
+reference = "BNK-RC-CIS-002"
 
 [[bank.dec]]
 date = 2025-12-20
@@ -5153,6 +5267,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-009"
 
 [[bank.dec]]
 date = 2025-12-25
@@ -5162,6 +5277,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-021"
 
 [[bank.dec]]
 date = 2025-12-28
@@ -5171,6 +5287,7 @@ code = "DR"
 direction = "in"
 amount = 22400
 description = "Aggregate customer receipts"
+reference = "BNK-DR-033"
 
 [[bank.dec]]
 date = 2025-12-28
@@ -5180,6 +5297,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-009"
 
 [[bank.dec]]
 date = 2025-12-31
@@ -5189,6 +5307,7 @@ code = "B"
 direction = "out"
 amount = 167
 description = "Quarterly loan interest payment"
+reference = "BNK-B-INT-003"
 
 [[bank.dec]]
 date = 2025-12-31
@@ -5198,6 +5317,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-021"
 
 [[bank.jan]]
 date = 2026-01-01
@@ -5207,6 +5327,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-010"
 
 [[bank.jan]]
 date = 2026-01-01
@@ -5216,6 +5337,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-010"
 
 [[bank.jan]]
 date = 2026-01-05
@@ -5225,6 +5347,7 @@ code = "CR"
 direction = "out"
 amount = 2500
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-010"
 
 [[bank.jan]]
 date = 2026-01-15
@@ -5234,6 +5357,7 @@ code = "DL"
 direction = "in"
 amount = 5000
 description = "Directors loan advance"
+reference = "BNK-DL-IN-001"
 
 [[bank.jan]]
 date = 2026-01-15
@@ -5243,6 +5367,7 @@ code = "DL"
 direction = "out"
 amount = 3000
 description = "Quarterly drawings payment"
+reference = "BNK-DV-003"
 
 [[bank.jan]]
 date = 2026-01-19
@@ -5252,6 +5377,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-010"
 
 [[bank.jan]]
 date = 2026-01-20
@@ -5261,6 +5387,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-010"
 
 [[bank.jan]]
 date = 2026-01-25
@@ -5270,6 +5397,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-022"
 
 [[bank.jan]]
 date = 2026-01-28
@@ -5279,6 +5407,7 @@ code = "DR"
 direction = "in"
 amount = 25040
 description = "Aggregate customer receipts"
+reference = "BNK-DR-034"
 
 [[bank.jan]]
 date = 2026-01-28
@@ -5288,6 +5417,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-010"
 
 [[bank.jan]]
 date = 2026-01-31
@@ -5297,6 +5427,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-022"
 
 [[bank.jan]]
 date = 2026-01-31
@@ -5306,6 +5437,7 @@ code = "X"
 direction = "out"
 amount = 300
 description = "Pay credit card balance"
+reference = "BNK-X-CC-004"
 
 [[bank.feb]]
 date = 2026-02-07
@@ -5315,6 +5447,7 @@ code = "RV"
 direction = "out"
 amount = 10917.5
 description = "VAT payment Q3 Oct-Dec"
+reference = "BNK-RV-VAT-003"
 
 [[bank.feb]]
 date = 2026-02-01
@@ -5324,6 +5457,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-011"
 
 [[bank.feb]]
 date = 2026-02-01
@@ -5333,6 +5467,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-011"
 
 [[bank.feb]]
 date = 2026-02-05
@@ -5342,6 +5477,7 @@ code = "CR"
 direction = "out"
 amount = 2900
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-011"
 
 [[bank.feb]]
 date = 2026-02-19
@@ -5351,6 +5487,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-011"
 
 [[bank.feb]]
 date = 2026-02-20
@@ -5360,6 +5497,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-011"
 
 [[bank.feb]]
 date = 2026-02-25
@@ -5369,6 +5507,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-023"
 
 [[bank.feb]]
 date = 2026-02-28
@@ -5378,6 +5517,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-023"
 
 [[bank.feb]]
 date = 2026-02-28
@@ -5387,6 +5527,7 @@ code = "DR"
 direction = "in"
 amount = 23960
 description = "Aggregate customer receipts"
+reference = "BNK-DR-035"
 
 [[bank.feb]]
 date = 2026-02-28
@@ -5396,6 +5537,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-011"
 
 [[bank.mar]]
 date = 2026-03-01
@@ -5405,6 +5547,7 @@ code = "CR"
 direction = "out"
 amount = 1200
 description = "Office rent payment"
+reference = "BNK-CR-012"
 
 [[bank.mar]]
 date = 2026-03-01
@@ -5414,6 +5557,7 @@ code = "DL"
 direction = "out"
 amount = 1000
 description = "Directors loan repayment"
+reference = "BNK-DL-012"
 
 [[bank.mar]]
 date = 2026-03-05
@@ -5423,6 +5567,7 @@ code = "CR"
 direction = "out"
 amount = 2300
 description = "Aggregate supplier payments"
+reference = "BNK-CR-MISC-012"
 
 [[bank.mar]]
 date = 2026-03-15
@@ -5432,6 +5577,7 @@ code = "X"
 direction = "out"
 amount = 5000
 description = "Transfer to savings account"
+reference = "BNK-X-001"
 
 [[bank.mar]]
 date = 2026-03-19
@@ -5441,6 +5587,7 @@ code = "RP"
 direction = "out"
 amount = 1673.2
 description = "Monthly PAYE/NI payment"
+reference = "BNK-RP-012"
 
 [[bank.mar]]
 date = 2026-03-20
@@ -5450,6 +5597,7 @@ code = "DR"
 direction = "in"
 amount = 8000
 description = "Customer receipt"
+reference = "BNK-DR-012"
 
 [[bank.mar]]
 date = 2026-03-25
@@ -5459,6 +5607,7 @@ code = "DR"
 direction = "in"
 amount = 2400
 description = "Customer receipt"
+reference = "BNK-DR-024"
 
 [[bank.mar]]
 date = 2026-03-28
@@ -5468,6 +5617,7 @@ code = "DR"
 direction = "in"
 amount = 10560
 description = "Aggregate customer receipts"
+reference = "BNK-DR-036"
 
 [[bank.mar]]
 date = 2026-03-28
@@ -5477,6 +5627,7 @@ code = "W"
 direction = "out"
 amount = 5652
 description = "Monthly net wages (all staff)"
+reference = "BNK-W-012"
 
 [[bank.mar]]
 date = 2026-03-31
@@ -5486,6 +5637,7 @@ code = "B"
 direction = "out"
 amount = 125
 description = "Quarterly loan interest payment"
+reference = "BNK-B-INT-004"
 
 [[bank.mar]]
 date = 2026-03-31
@@ -5495,6 +5647,7 @@ code = "CR"
 direction = "out"
 amount = 300
 description = "Accountancy fee payment"
+reference = "BNK-CR-024"
 
 [[bank.mar]]
 date = 2026-03-31
@@ -5504,6 +5657,7 @@ code = "DL"
 direction = "out"
 amount = 6000
 description = "Quarterly drawings payment"
+reference = "BNK-DV-004"
 
 [[bank.apr]]
 date = 2025-04-01
@@ -5513,6 +5667,7 @@ code = "BC"
 direction = "in"
 amount = 500
 description = "Cash float opening balance"
+reference = "BNK-CASH-001"
 
 [[bank.apr]]
 date = 2025-04-10
@@ -5522,6 +5677,7 @@ code = "CR"
 direction = "out"
 amount = 15
 description = "Milk and tea"
+reference = "BNK-CASH-003"
 
 [[bank.jun]]
 date = 2025-06-10
@@ -5531,6 +5687,7 @@ code = "BB"
 direction = "in"
 amount = 100
 description = "Cash float replenishment"
+reference = "BNK-CASH-002"
 
 [[bank.jun]]
 date = 2025-06-10
@@ -5540,6 +5697,7 @@ code = "CR"
 direction = "out"
 amount = 25
 description = "Envelopes and stamps"
+reference = "BNK-CASH-004"
 
 [[bank.sep]]
 date = 2025-09-05
@@ -5549,6 +5707,7 @@ code = "CR"
 direction = "out"
 amount = 18
 description = "Kitchen supplies"
+reference = "BNK-CASH-005"
 
 [[bank.dec]]
 date = 2025-12-10
@@ -5558,6 +5717,7 @@ code = "CR"
 direction = "out"
 amount = 50
 description = "Christmas team refreshments"
+reference = "BNK-CASH-006"
 
 [[bank.mar]]
 date = 2026-03-20
@@ -5567,6 +5727,7 @@ code = "CR"
 direction = "out"
 amount = 12
 description = "Newspapers for reception"
+reference = "BNK-CASH-007"
 
 [[payroll.apr]]
 date = 2025-04-30
@@ -5576,6 +5737,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-04"
 
 [[payroll.apr]]
 date = 2025-04-30
@@ -5585,6 +5747,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-04"
 
 [[payroll.apr]]
 date = 2025-04-30
@@ -5594,6 +5757,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-04"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5603,6 +5767,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-05"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5612,6 +5777,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-05"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5621,6 +5787,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-05"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5630,6 +5797,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-06"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5639,6 +5807,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-06"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5648,6 +5817,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-06"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5657,6 +5827,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-07"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5666,6 +5837,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-07"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5675,6 +5847,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-07"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5684,6 +5857,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-08"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5693,6 +5867,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-08"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5702,6 +5877,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-08"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5711,6 +5887,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-09"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5720,6 +5897,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-09"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5729,6 +5907,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-09"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5738,6 +5917,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-10"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5747,6 +5927,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-10"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5756,6 +5937,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-10"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5765,6 +5947,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-11"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5774,6 +5957,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-11"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5783,6 +5967,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-11"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5792,6 +5977,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2025-12"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5801,6 +5987,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2025-12"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5810,6 +5997,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2025-12"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -5819,6 +6007,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2026-01"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -5828,6 +6017,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2026-01"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -5837,6 +6027,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2026-01"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -5846,6 +6037,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2026-02"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -5855,6 +6047,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2026-02"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -5864,6 +6057,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2026-02"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -5873,6 +6067,7 @@ incomeTax = 530
 employeeNI = 200
 employerNI = 382.5
 netPay = 2770
+reference = "PAY-EMP001-2026-03"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -5882,6 +6077,7 @@ incomeTax = 270
 employeeNI = 96
 employerNI = 187.5
 netPay = 1834
+reference = "PAY-EMP002-2026-03"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -5891,6 +6087,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 7.2
 netPay = 1048
+reference = "PAY-EMP003-2026-03"
 
 [stock]
 opening = 10000
@@ -6073,5 +6270,6 @@ amount = 480
 
 [expected]
 total_sales = 339200
-total_motor_net = 6332
+total_mileage = 1365
+total_motor_net = 6434
 total_legal_net = 6925

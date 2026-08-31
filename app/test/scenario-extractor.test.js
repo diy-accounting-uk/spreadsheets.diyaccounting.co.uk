@@ -35,6 +35,10 @@ import {
   bstExpectedFigures,
   taxiExpectedFigures,
   buildSubsetBook,
+  isStraddlingLine,
+  splitStraddlingLines,
+  straddlingPeriodLabel,
+  deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
 
 // ── getMonthKey ────────────────────────────────────────────────────────────
@@ -724,5 +728,82 @@ describe("buildSubsetBook", () => {
     });
     expect(subset.documentInfo.periodCoveredStart).toBe("2025-04-01");
     expect(subset.employees).toHaveLength(1);
+  });
+});
+
+// ── VAT-straddling entries ─────────────────────────────────────────────────
+
+describe("isStraddlingLine / splitStraddlingLines", () => {
+  it("sets aside only the lines carrying diya-gl:vatPeriodEnd", () => {
+    const inYear = { sourceJournalID: "sales", postingDate: "2025-04-01", amount: 100 };
+    const straddling = { "sourceJournalID": "sales", "postingDate": "2025-02-14", "amount": 200, "diya-gl:vatPeriodEnd": "2025-02-28" };
+    expect(isStraddlingLine(inYear)).toBe(false);
+    expect(isStraddlingLine(straddling)).toBe(true);
+    expect(splitStraddlingLines([inYear, straddling])).toEqual({ yearLines: [inYear], straddlingLines: [straddling] });
+  });
+});
+
+describe("straddlingPeriodLabel", () => {
+  const periodCoveredStart = new Date("2025-04-01");
+  const periodCoveredEnd = new Date("2026-03-31");
+
+  it("names a period before the accounting year Y1", () => {
+    expect(straddlingPeriodLabel("2025-02-28", periodCoveredStart, periodCoveredEnd)).toBe("02Y1");
+    expect(straddlingPeriodLabel("2025-03-31", periodCoveredStart, periodCoveredEnd)).toBe("03Y1");
+  });
+
+  it("names a period after the accounting year Y2", () => {
+    expect(straddlingPeriodLabel("2026-04-30", periodCoveredStart, periodCoveredEnd)).toBe("04Y2");
+    expect(straddlingPeriodLabel("2026-06-30", periodCoveredStart, periodCoveredEnd)).toBe("06Y2");
+  });
+
+  it("refuses a period the accounting year itself already covers", () => {
+    expect(() => straddlingPeriodLabel("2025-06-30", periodCoveredStart, periodCoveredEnd)).toThrow(/falls inside the accounting period/);
+  });
+});
+
+describe("deriveStraddlingEntries", () => {
+  const periodCoveredStart = new Date("2025-04-01");
+  const periodCoveredEnd = new Date("2026-03-31");
+  const straddlingLines = [
+    {
+      "sourceJournalID": "sales",
+      "postingDate": "2025-02-14",
+      "detailComment": "Acme Corp",
+      "documentReference": "INV-0801",
+      "amount": 4800,
+      "diya-gl:vatPeriodEnd": "2025-02-28",
+    },
+    {
+      "sourceJournalID": "purchases",
+      "postingDate": "2025-02-20",
+      "detailComment": "TechParts Ltd",
+      "documentReference": "TP-2402",
+      "amount": 720,
+      "diya-gl:vatPeriodEnd": "2025-02-28",
+    },
+  ];
+
+  it("derives one scenario entry per straddling line, filtered by journal", () => {
+    expect(deriveStraddlingEntries(straddlingLines, "sales", "customer", periodCoveredStart, periodCoveredEnd)).toEqual([
+      { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
+    ]);
+    expect(deriveStraddlingEntries(straddlingLines, "purchases", "supplier", periodCoveredStart, periodCoveredEnd)).toEqual([
+      { period: "02Y1", date: "2025-02-20", supplier: "TechParts Ltd", invoice: "TP-2402", amount: 720 },
+    ]);
+  });
+
+  // Proves the derivation actually reads the master line rather than
+  // reproducing a hardcoded figure: perturbing one out-of-period leg has to
+  // move the one entry it derives, and leave every other entry untouched.
+  it("moves the derived entry when the master line it comes from changes, and nothing else", () => {
+    const perturbed = straddlingLines.map((line) => (line.documentReference === "INV-0801" ? { ...line, amount: 6000 } : line));
+    const before = deriveStraddlingEntries(straddlingLines, "sales", "customer", periodCoveredStart, periodCoveredEnd);
+    const after = deriveStraddlingEntries(perturbed, "sales", "customer", periodCoveredStart, periodCoveredEnd);
+    expect(after[0].amount).toBe(6000);
+    expect(before[0].amount).toBe(4800);
+    const beforePurchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", periodCoveredStart, periodCoveredEnd);
+    const afterPurchases = deriveStraddlingEntries(perturbed, "purchases", "supplier", periodCoveredStart, periodCoveredEnd);
+    expect(afterPurchases).toEqual(beforePurchases);
   });
 });

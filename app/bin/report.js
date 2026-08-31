@@ -121,7 +121,7 @@ async function main() {
       taxData = parseTOML(readFileSync(taxDataPath, "utf8"));
       console.log(`Tax data:   ${years}.toml`);
     } else {
-      taxData = extractTaxDataFromBook(book);
+      taxData = extractTaxDataFromBook(book, packageName);
       console.log(`Tax data:   extracted from book.toml (use --years for precise rates)`);
     }
 
@@ -259,7 +259,7 @@ async function main() {
       }
       taxData = parseTOML(readFileSync(taxDataPath, "utf8"));
     } else {
-      taxData = extractTaxDataFromBook(book);
+      taxData = extractTaxDataFromBook(book, packageName);
     }
     if (typeof productMod.checkCompliance === "function") {
       excelChecks = productMod.checkCompliance({ ...results }, excelScenario, taxData, calculateExpectedTax, yearEnd);

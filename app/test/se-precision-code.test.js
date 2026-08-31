@@ -103,9 +103,9 @@ describeCalc(
     });
 
     it("Income Tax: the taper withdraws half the profit over the threshold from the allowance", () => {
-      // 121,615.39 is 21,615.39 over the 100,000 threshold, so 10,807.70 of
-      // the 12,570 allowance goes and 1,762.30 of it survives.
-      expect(results["Income Tax"].E6).toBeCloseTo(1762.3041666, 4);
+      // 121,513.02 is 21,513.02 over the 100,000 threshold, so 10,756.51 of
+      // the 12,570 allowance goes and 1,813.49 of it survives.
+      expect(results["Income Tax"].E6).toBeCloseTo(1813.4916666, 4);
     });
 
     it("Income Tax: taxable income = profit - allowance", () => {
@@ -132,27 +132,27 @@ describeCalc(
 
     // The statutory charge on this fixture's profit, worked out by hand from
     // the 2025-26 rates rather than from anything the sheet computes:
-    //   profit                  121,615.391666666
-    //   allowance   1,762.304167       (12,570 - (121,615.39 - 100,000) / 2)
-    //   taxable   119,853.087500
+    //   profit                  121,513.016666666
+    //   allowance   1,813.491667       (12,570 - (121,513.02 - 100,000) / 2)
+    //   taxable   119,699.525000
     //   basic      37,700.000000 x 0.20 =  7,540.000000
-    //   higher     82,153.087500 x 0.40 = 32,861.235000   (119,853.09 - 37,700)
+    //   higher     81,999.525000 x 0.40 = 32,799.810000   (119,699.53 - 37,700)
     //   additional                    0                   (under 125,140)
-    //   income tax                      = 40,401.235000
-    //   NI         37,700 x 0.06 = 2,262.00, 71,345.391667 x 0.02 = 1,426.907833
-    //   tax and NI                      = 44,090.142833
+    //   income tax                      = 40,339.810000
+    //   NI         37,700 x 0.06 = 2,262.00, 71,243.016667 x 0.02 = 1,424.860333
+    //   tax and NI                      = 44,026.670333
     it("charges the statutory 2025-26 tax on the advanced fixture profit", () => {
       const tax = results["Income Tax"];
-      expect(tax.E5).toBeCloseTo(121615.391666666, 4);
-      expect(tax.E6).toBeCloseTo(1762.3041666, 4);
-      expect(tax.E7).toBeCloseTo(119853.0875, 4);
+      expect(tax.E5).toBeCloseTo(121513.016666666, 4);
+      expect(tax.E6).toBeCloseTo(1813.4916666, 4);
+      expect(tax.E7).toBeCloseTo(119699.525, 4);
       expect(tax.E8).toBeCloseTo(7540, 2);
-      expect(tax.E9).toBeCloseTo(32861.235, 2);
+      expect(tax.E9).toBeCloseTo(32799.81, 2);
       expect(tax.E10).toBeCloseTo(0, 2);
-      expect(tax.E11).toBeCloseTo(40401.235, 2);
+      expect(tax.E11).toBeCloseTo(40339.81, 2);
       expect(tax.E15).toBeCloseTo(2262, 2);
-      expect(tax.E16).toBeCloseTo(1426.907833, 2);
-      expect(tax.E18).toBeCloseTo(44090.142833, 2);
+      expect(tax.E16).toBeCloseTo(1424.860333, 2);
+      expect(tax.E18).toBeCloseTo(44026.670333, 2);
     });
 
     // The two hire purchase agreements charge 2,000 and 1,100 of admin fees

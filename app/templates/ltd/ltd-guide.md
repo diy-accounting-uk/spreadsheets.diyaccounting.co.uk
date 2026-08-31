@@ -268,7 +268,7 @@ Enter purchases on the Purchases spreadsheet with code **FA**, then also enter o
 
 ### Capital Allowances
 
-Annual Investment Allowance, writing down allowances, and balancing charges are automatically calculated. Motor vehicles are restricted to a writing down allowance of £3,000 p.a.
+Annual Investment Allowance, writing down allowances, and balancing charges are automatically calculated. Motor vehicles attract writing down allowances at the rate set in the Admin sheet.
 
 ## VAT Returns
 

@@ -4,7 +4,7 @@
 // scenario-extractor.js — Pure functions for extracting test scenario data
 // from Precision Code Ltd master data.
 
-import { totalBusinessMiles } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 
 // ============================================================================
 // Account-to-code mappings
@@ -393,6 +393,80 @@ export function buildClosingDebtors(lines, openingDebtors) {
 }
 
 // ============================================================================
+// VAT-straddling entries
+// ============================================================================
+
+// A line the master carries for a VAT return period outside the accounting
+// year the book covers: real business activity, dated before the book opens
+// or after it closes, that never reaches the accounting year's own journals
+// -- it settles no debtor, moves no trial balance -- but still has to reach
+// the VAT return's own out-of-year entry sheets. `diya-gl:vatPeriodEnd` is
+// what marks a line this way; see the v2 schema's own description of the
+// field.
+export function isStraddlingLine(line) {
+  return line["diya-gl:vatPeriodEnd"] !== undefined;
+}
+
+/**
+ * Split a master's lines into the accounting year's own journals and the
+ * VAT-straddling lines dated either side of it. Every function that builds
+ * the accounting year's figures (filterBst, filterAdvanced, filterFull,
+ * buildClosingDebtors, buildOpeningBalance) has to see only the first list --
+ * a straddling line has no counter-leg in the year's own books, so it has
+ * nothing there to balance against.
+ * @param {Array} lines - parsed lines.jsonl entries
+ * @returns {{yearLines: Array, straddlingLines: Array}}
+ */
+export function splitStraddlingLines(lines) {
+  return { yearLines: lines.filter((l) => !isStraddlingLine(l)), straddlingLines: lines.filter(isStraddlingLine) };
+}
+
+/**
+ * The period label a straddling line's VAT return falls in, matching the
+ * sheet-pair naming Vatreturns.xlsx keeps (S02Y1/P02Y1 and so on): the
+ * return's own month, zero-padded, and Y1 for a period before the accounting
+ * year or Y2 for one after it.
+ * @param {string} vatPeriodEnd - the line's diya-gl:vatPeriodEnd
+ * @param {Date} periodCoveredStart - the book's documentInfo.periodCoveredStart
+ * @param {Date} periodCoveredEnd - the book's documentInfo.periodCoveredEnd
+ * @returns {string} e.g. "02Y1"
+ */
+export function straddlingPeriodLabel(vatPeriodEnd, periodCoveredStart, periodCoveredEnd) {
+  const end = new Date(vatPeriodEnd);
+  const month = String(end.getUTCMonth() + 1).padStart(2, "0");
+  if (end < periodCoveredStart) return `${month}Y1`;
+  if (end > periodCoveredEnd) return `${month}Y2`;
+  throw new Error(
+    `diya-gl:vatPeriodEnd ${vatPeriodEnd} falls inside the accounting period ` +
+      `${periodCoveredStart.toISOString().slice(0, 10)} to ${periodCoveredEnd.toISOString().slice(0, 10)}, not a straddling period`,
+  );
+}
+
+/**
+ * The vat_straddling_sales / vat_straddling_purchases entries a scenario TOML
+ * carries, worked out from the master's own straddling lines rather than
+ * stated as a literal.
+ * @param {Array} straddlingLines - the lines splitStraddlingLines set aside
+ * @param {string} journalType - "sales" or "purchases"
+ * @param {string} nameField - "customer" or "supplier"
+ * @param {Date} periodCoveredStart - the book's documentInfo.periodCoveredStart
+ * @param {Date} periodCoveredEnd - the book's documentInfo.periodCoveredEnd
+ * @returns {Array} {period, date, [nameField], invoice, amount}
+ */
+export function deriveStraddlingEntries(straddlingLines, journalType, nameField, periodCoveredStart, periodCoveredEnd) {
+  return straddlingLines
+    .filter((l) => l.sourceJournalID === journalType)
+    .sort((a, b) => (a.postingDate < b.postingDate ? -1 : a.postingDate > b.postingDate ? 1 : 0))
+    .map((line) => ({
+      period: straddlingPeriodLabel(line["diya-gl:vatPeriodEnd"], periodCoveredStart, periodCoveredEnd),
+      date: line.postingDate,
+      [nameField]: line.detailComment,
+      invoice: line.documentReference,
+      amount: line.amount,
+    }));
+}
+
+// ============================================================================
 // Utility functions
 // ============================================================================
 
@@ -588,6 +662,7 @@ export function buildPayroll(lines) {
       employeeNI: line["diya-gl:employeeNI"],
       employerNI: line["diya-gl:employerNI"],
       netPay: line["diya-gl:netPay"],
+      reference: line.documentReference,
     });
   }
   return payroll;
@@ -626,10 +701,12 @@ function paymentLabel(line) {
 // miles. "all" adds the miles a sales line carries, which only the Taxi
 // Driver package can take: its P&L weighs the year's mileage claim against
 // the actual running costs and charges one or the other ('Profit & Loss
-// Acc'!C1). The Basic Sole Trader P&L has no such choice -- its mileage
-// allowance simply adds to Motor Expenses (PurchasesApr!P3 = the month's
-// allowance, summed into P1, which P&L!D15 reads) -- so a fare day's miles
-// there would be claimed on top of the fuel that actually paid for them.
+// Acc'!C1). The Basic Sole Trader and Self Employed P&Ls make no such
+// choice -- their mileage allowance simply adds to Motor Expenses (BST:
+// PurchasesApr!P3 = the month's allowance, summed into P1, which P&L!D15
+// reads; SE: PurchasesApr!W2 = IF(F2="v",I2," "), summed into W1, which
+// P&L!C25 reads) -- so a sales day's miles there would be claimed on top of
+// the fuel that actually paid for them.
 function lineMileage(line) {
   if (line.measurableUnitOfMeasure !== "miles") return undefined;
   return typeof line.measurableQuantity === "number" ? line.measurableQuantity : undefined;
@@ -701,6 +778,7 @@ export function buildGrouped(
         direction: debitCredit === "D" ? "in" : "out",
         amount: line.amount,
         description: line.lineItemComment || "",
+        reference: line.documentReference,
       });
     }
   }
@@ -747,18 +825,29 @@ const BST_EXPENSE_CODES = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"
  */
 export function bstExpectedFigures(lines, stock, purchaseCodeMap = BST_PURCHASE_CODE_MAP) {
   const totalSales = computeGrossSales(lines.filter((line) => line.sourceJournalID === "sales"));
-  const byCode = totalsByCode(lines, purchaseCodeMap);
+  const purchaseLines = lines.filter((line) => line.sourceJournalID === "purchases");
+  // A mileage-log entry buys nothing: the package prices it from the whole
+  // year's business miles rather than the amount the book states for the
+  // entry, so this figure is worked out the same way and not from the raw
+  // amount. A master line that feeds more than one package can carry a
+  // different true price in each -- a taxi package sees the fare days' miles
+  // too, and bands the same entry's miles differently -- so trusting the
+  // book's own amount here would tie this figure to whichever package the
+  // line was priced for.
+  const cashPurchaseLines = purchaseLines.filter(
+    (line) => !(line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number"),
+  );
+  const byCode = totalsByCode(cashPurchaseLines, purchaseCodeMap);
+  const businessMiles = totalBusinessMiles(purchaseLines);
+  if (businessMiles) {
+    byCode.m = Math.round(((byCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES)) * 100) / 100;
+  }
+
   const stockAdjustment = stock ? stock.openingValue - stock.closingValue : 0;
   const grossProfit = totalSales - ((byCode.s || 0) + stockAdjustment) - (byCode.d || 0);
   const netProfit = grossProfit - BST_EXPENSE_CODES.reduce((total, code) => total + (byCode[code] || 0), 0);
 
   const figures = { total_sales: totalSales, gross_profit: Math.round(grossProfit), net_profit: Math.round(netProfit) };
-  // Net profit above already carries each mileage-log entry at the amount it
-  // was claimed for. The package is given the miles instead and prices them
-  // itself, so the figures state the miles too: a check can then work the
-  // allowance out at the tax year it is reconciled against rather than
-  // trusting the rate the book was written at.
-  const businessMiles = totalBusinessMiles(lines.filter((line) => line.sourceJournalID === "purchases"));
   if (businessMiles) figures.total_mileage = businessMiles;
   if (byCode.p) figures.total_premises = Math.round(byCode.p);
   if (byCode.g) figures.total_gen_admin = Math.round(byCode.g);
@@ -889,6 +978,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`direction = "${txn.direction}"`);
         parts.push(`amount = ${txn.amount}`);
         if (txn.description) parts.push(`description = "${escapeTomlString(txn.description)}"`);
+        if (txn.reference) parts.push(`reference = "${escapeTomlString(txn.reference)}"`);
         parts.push("");
       }
     }
@@ -908,6 +998,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`employeeNI = ${e.employeeNI}`);
         parts.push(`employerNI = ${e.employerNI}`);
         parts.push(`netPay = ${e.netPay}`);
+        if (e.reference) parts.push(`reference = "${escapeTomlString(e.reference)}"`);
         parts.push("");
       }
     }

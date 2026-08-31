@@ -12,6 +12,7 @@ import {
   analysisHeadings,
   buildReverseCodeMap,
   extractBstTransactions,
+  extractTaxiTransactions,
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
@@ -19,6 +20,7 @@ import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
+import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -32,6 +34,10 @@ const BST_LATEST = resolve(ROOT, "examples", "bst-latest");
 // spreadsheet-runner's own writer produces.
 
 function cellXml(reference, value) {
+  // A cell the sheet works out for itself, carrying its formula and the
+  // result cached beside it, which is what the exporter has to tell apart
+  // from a figure somebody entered.
+  if (value && typeof value === "object") return `<c r="${reference}"><f>${value.formula}</f><v>${value.value}</v></c>`;
   if (typeof value === "number") return `<c r="${reference}"><v>${value}</v></c>`;
   const escaped = String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return `<c r="${reference}" t="inlineStr"><is><t>${escaped}</t></is></c>`;
@@ -294,5 +300,188 @@ describe.skipIf(!hasBstLatest)("extractBstTransactions — BST latest example", 
       expect(typeof line.amount).toBe("number");
       expect(line.amount).toBeGreaterThan(0);
     }
+  });
+});
+
+// ── Taxi Driver transactions ───────────────────────────────────────────────
+
+// 2025-04-06, the first day of the tax year the Taxi Sales tabs are laid out
+// against, and the day the week below opens on.
+const TAXI_FIRST_DAY = 45753;
+
+// The approved mileage rates the generator injects into the Taxi Admin sheet:
+// the first ten thousand business miles at 45p, the rest at 25p.
+const TAXI_MILEAGE_RATES = { F21: 10000, G21: 0.45, F22: 10000, G22: 0.25 };
+
+// The analysis block a Taxi purchases tab carries: one code letter a column
+// in row 4, that column's heading in row 2 or 3.
+const TAXI_PURCHASE_ANALYSIS = { G3: "Fuel & Oil Expenses", S2: "Fixed Assets Motor Vehicles", G4: "D", S4: "F" };
+
+// One week of a Taxi Sales tab: two days of trade, then the rental and
+// other-income rows the week is summed with, then the subtotal row. The
+// subtotal's date cells carry a formula the sheet works out, which is what
+// stops it reading as a third day.
+function taxiSheets({ salesRows = {}, purchaseRows = {} } = {}) {
+  const carried = { formula: "SUM(E5:E8)", value: TAXI_FIRST_DAY };
+  return {
+    "Business Details": { C5: "SP Sixty Driving", C7: "Private hire and taxi driving services" },
+    "Admin": { ...TAXI_MILEAGE_RATES },
+    "SalesApr": {
+      A5: TAXI_FIRST_DAY,
+      B5: TAXI_FIRST_DAY,
+      D5: 94,
+      E5: 174,
+      A6: TAXI_FIRST_DAY + 1,
+      B6: TAXI_FIRST_DAY + 1,
+      D6: 112,
+      E6: 198,
+      A7: TAXI_FIRST_DAY + 1,
+      B7: "Rental due",
+      E7: 300,
+      A8: TAXI_FIRST_DAY + 1,
+      B8: "Any other income",
+      E8: 50,
+      A9: carried,
+      B9: carried,
+      E9: { formula: "SUM(E5:E8)", value: 722 },
+      ...salesRows,
+    },
+    "PurchasesApr": {
+      ...TAXI_PURCHASE_ANALYSIS,
+      A5: TAXI_FIRST_DAY,
+      B5: "Shell",
+      D5: "d",
+      F5: 52,
+      ...purchaseRows,
+    },
+  };
+}
+
+const taxiJournal = async (sheets, journal) =>
+  (await extractTaxiTransactions(await buildWorkbook(sheets))).filter((line) => line.sourceJournalID === journal);
+
+describe("extractTaxiTransactions — the Sales week", () => {
+  it("takes a day's takings and the miles driven to earn them", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    expect(sales.map((line) => [line.postingDate, line.amount, line.measurableQuantity, line.measurableUnitOfMeasure])).toEqual([
+      ["2025-04-06", 174, 94, "miles"],
+      ["2025-04-07", 198, 112, "miles"],
+    ]);
+  });
+
+  it("leaves the rental, other-income and subtotal rows to the week's own arithmetic", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    expect(sales.map((line) => line.amount)).not.toContain(300);
+    expect(sales.map((line) => line.amount)).not.toContain(50);
+    expect(sales.map((line) => line.amount)).not.toContain(722);
+  });
+
+  it("counts a day driven with no fare as a posting carrying its miles", async () => {
+    const sheets = taxiSheets();
+    delete sheets.SalesApr.E6;
+    const sales = await taxiJournal(sheets, "sales");
+    expect(sales[1]).toMatchObject({ amount: 0, measurableQuantity: 112 });
+  });
+
+  it("posts the day to the one income account the taxi chart keeps", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    expect(sales.every((line) => line.accountMainID === "4000")).toBe(true);
+  });
+
+  it("keeps a row's own income account where the sheet carries one", async () => {
+    const sales = await taxiJournal(taxiSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}5`]: "4001" } }), "sales");
+    expect(sales[0].accountMainID).toBe("4001");
+  });
+});
+
+describe("extractTaxiTransactions — the Purchases block", () => {
+  it("reads the date, supplier, code letter and amount off the row", async () => {
+    const purchases = await taxiJournal(taxiSheets(), "purchases");
+    expect(purchases).toEqual([
+      {
+        sourceJournalID: "purchases",
+        postingDate: "2025-04-06",
+        accountMainID: "5100",
+        amount: 52,
+        detailComment: "Shell",
+        entryNumber: "EXP-0003",
+      },
+    ]);
+  });
+
+  it("reads back the invoice reference the purchases tab has a column for", async () => {
+    const purchases = await taxiJournal(taxiSheets({ purchaseRows: { C5: "AMZ-0510" } }), "purchases");
+    expect(purchases[0].documentReference).toBe("AMZ-0510");
+  });
+
+  it("falls to other expenses for a code letter the chart does not name", async () => {
+    const purchases = await taxiJournal(taxiSheets({ purchaseRows: { D5: "z" } }), "purchases");
+    expect(purchases[0].accountMainID).toBe("6200");
+  });
+
+  it("prices a mileage claim against every mile claimed ahead of it, the Sales tab's included", async () => {
+    // 206 miles come off the Sales tab first, so 9,900 more cross the
+    // higher-rate limit at 10,000: 9,794 at 45p and 106 at 25p. Priced on
+    // the purchase journal alone the same row would claim 9,900 at 45p.
+    const purchases = await taxiJournal(
+      taxiSheets({ purchaseRows: { A6: TAXI_FIRST_DAY + 2, B6: "Mileage claim", D6: "d", E6: 9900 } }),
+      "purchases",
+    );
+    expect(purchases[1]).toMatchObject({
+      amount: 4433.8,
+      documentType: "mileage-log",
+      measurableQuantity: 9900,
+      measurableUnitOfMeasure: "miles",
+    });
+  });
+
+  it("claims a later mileage row wholly at the lower rate once the limit is passed", async () => {
+    const purchases = await taxiJournal(
+      taxiSheets({
+        purchaseRows: {
+          A6: TAXI_FIRST_DAY + 2,
+          B6: "Mileage claim",
+          D6: "d",
+          E6: 9900,
+          A7: TAXI_FIRST_DAY + 3,
+          B7: "Mileage claim",
+          D7: "d",
+          E7: 100,
+        },
+      }),
+      "purchases",
+    );
+    expect(purchases[2].amount).toBe(25);
+  });
+
+  it("leaves the sheet's own analysis total out of the journal", async () => {
+    // The analysis columns restate a row's amount under its code letter, and
+    // a mileage claim is priced in a column of its own. Neither is an entry.
+    const purchases = await taxiJournal(taxiSheets({ purchaseRows: { F5: { formula: 'IF(D5="d",F5," ")', value: 52 } } }), "purchases");
+    expect(purchases).toEqual([]);
+  });
+});
+
+describe("extractTaxiTransactions — the exported book", () => {
+  async function exportedTaxiBook(sheets = taxiSheets()) {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-taxi-"));
+    const buffer = await buildWorkbook(sheets);
+    writeFileSync(join(dir, "book.xlsx"), buffer);
+    const lines = await extractTaxiTransactions(buffer);
+    return { book: await extractBook(dir, "taxi", lines, TAXI_CELL_MAP), lines };
+  }
+
+  it("conforms to the published v2 book schema and declares every account its lines name", async () => {
+    const { book, lines } = await exportedTaxiBook();
+    expect(validateBook(book).errors).toEqual([]);
+    expect(validateLines(lines, book).errors).toEqual([]);
+  });
+
+  it("keeps the taxi chart's fixed assets among the purchases, not the assets", async () => {
+    // The taxi chart codes fixed assets to 7000, which is outside the range
+    // the other three products' purchase accounts sit in.
+    const { book } = await exportedTaxiBook(taxiSheets({ purchaseRows: { A6: TAXI_FIRST_DAY + 2, B6: "Amazon", D6: "f", F6: 200 } }));
+    expect(book.accounts.purchases["7000"]).toEqual({ "accountMainDescription": "Fixed Assets Motor Vehicles", "diya-gl:column": "S" });
+    expect(book.accounts.assets).toBeUndefined();
   });
 });

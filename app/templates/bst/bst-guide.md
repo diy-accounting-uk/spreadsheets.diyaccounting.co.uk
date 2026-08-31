@@ -257,7 +257,7 @@ Enter F in the expense code column of the purchases worksheet. Column X — Fixe
 Enter new acquisitions in the additions section of the schedule which is shaded in green.
 
 - **Column A** — Enter date the asset was purchased
-- **Column B** — Enter the asset description by copying the description already entered on the purchases worksheet. Vehicles should show the make and model number, engine capacity, registration number and date first registered to correctly identify the item. Note vehicles costing under £12,000 are included as general items in the first section. Vehicles costing over £12,000 go in the section below as capital allowances are restricted on these vehicles to £3,000 p.a.
+- **Column B** — Enter the asset description by copying the description already entered on the purchases worksheet. Vehicles should show the make and model number, engine capacity, registration number and date first registered to correctly identify the item.
 - **Column C** — Enter the purchase invoice number, obtained from the monthly purchase worksheet
 - **Column D** — Enter purchase cost of asset
 - **Column E** — Enter the asset location to enable physical tracking of the item. This is optional

@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 677 },
-  { name: "se-brickwork-pro-vat", checkCount: 643 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 643 },
+  { name: "se-scenario-advanced", checkCount: 683 },
+  { name: "se-brickwork-pro-vat", checkCount: 645 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 645 },
 ];
 
 function loadFixture(name) {
@@ -107,29 +107,29 @@ describe("Self Employed engine: the return boxes against the statutory computati
         rate = vatRateFor(scenario);
       });
 
-      it("SA103F box 14 turnover is the sales journal's trading lines net of VAT", () => {
+      it("SA103F box 15 turnover is the sales journal's trading lines net of VAT", () => {
         const traded = fixtureNet(scenario.sales, ["a", "b", "c", "d"], rate);
         expect(results["SE Full"].D55).toBeCloseTo(traded, 6);
       });
 
-      it("SA103F box 30 total expenses is the sum of boxes 16 to 29", () => {
+      it("SA103F box 31 total expenses is the sum of boxes 17 to 30", () => {
         const full = results["SE Full"];
         const expenseBoxes = ["D66", "D70", "D74", "D78", "D82", "D86", "D90", "D94", "D98", "D102", "D106", "D110", "D114", "D118"];
         const summed = expenseBoxes.reduce((total, box) => total + full[box], 0);
         expect(full.D122).toBeCloseTo(summed, 6);
       });
 
-      it("SA103F box 46 net profit is turnover plus other business income less total expenses", () => {
+      it("SA103F box 47 net profit is turnover plus other business income less total expenses", () => {
         const full = results["SE Full"];
         expect(full.D129 - full.O129).toBeCloseTo(full.D55 + full.O55 - full.D122, 6);
       });
 
-      it("SA103F box 63 taxable profit is the net profit with the disallowables added and the allowances taken off", () => {
+      it("SA103F box 64 taxable profit is the net profit with the disallowables added and the allowances taken off", () => {
         const full = results["SE Full"];
         expect(full.O174 - full.O179).toBeCloseTo(full.D129 - full.O129 + full.D174 - full.O169, 6);
       });
 
-      it("SA103F box 75 total taxable profits is the adjusted profit less losses brought forward plus other income", () => {
+      it("SA103F box 76 total taxable profits is the adjusted profit less losses brought forward plus other income", () => {
         const full = results["SE Full"];
         expect(full.O210).toBeCloseTo(full.O194 - full.O199 + full.O204, 6);
       });
@@ -202,7 +202,7 @@ describe("Self Employed engine: the checks are breakable", () => {
       failing: [
         "P&L: Admin lines sum = Total",
         "P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI",
-        "SA103F box 18 wages, salaries and staff costs (D74) = the profit and loss account",
+        "SA103F box 19 wages, salaries and staff costs (D74) = the profit and loss account",
       ],
     },
     {
@@ -262,10 +262,11 @@ describe("Self Employed engine: the read scope", () => {
     expect(blanks.sort()).toEqual(
       [
         "SE Full!D147",
+        "SE Full!D152",
         "SE Full!D156",
         "SE Full!D160",
         "SE Full!D179",
-        "SE Full!O154",
+        "SE Full!O139",
         "Vat.xlsx!Vatinterface!E4",
         "Vat.xlsx!Vatinterface!E5",
         "Vat.xlsx!Vatinterface!G4",

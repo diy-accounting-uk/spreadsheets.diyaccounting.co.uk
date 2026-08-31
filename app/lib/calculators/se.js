@@ -18,6 +18,7 @@ import { MONTH_SHEETS, extractTaxYearStart } from "../scenario-loader.js";
 import { standardReads, multiFileOptions } from "../../products/se.js";
 import { generateAdminDates, seVatPaymentDueDate, generatePayslipsCalendar } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
+import { calculateMileageAllowance } from "../tax/mileage.js";
 import {
   buildVatinterface,
   splitVat,
@@ -143,6 +144,10 @@ function roundedNetOfVat(gross, rate) {
 function journalMonth(transactions, rate, analysisColumns, defaultCode) {
   const totals = { gross: 0, vat: 0, net: 0, byCode: {}, cis: 0 };
   for (const tx of transactions || []) {
+    // A mileage-log row states miles where a bought purchase states an
+    // amount, and the sheet prices those miles itself. Its own figure never
+    // reaches a cell, so it is left out here and the claim added below.
+    if (tx.mileage) continue;
     const { vat, net } = splitVat(tx.amount, rate);
     totals.gross += tx.amount;
     totals.vat += vat;
@@ -156,6 +161,36 @@ function journalMonth(transactions, rate, analysisColumns, defaultCode) {
 
 function journalMonths(journal, rate, analysisColumns, defaultCode) {
   return MONTH_KEYS.map((month) => journalMonth(journal?.[month], rate, analysisColumns, defaultCode));
+}
+
+// The business miles one month's transactions carry.
+function monthMiles(transactions) {
+  return (transactions || []).reduce((miles, tx) => miles + (typeof tx.mileage === "number" ? tx.mileage : 0), 0);
+}
+
+/**
+ * The mileage cells row 2 of each Purchases month tab holds: C2 the running
+ * business miles, which pools the month's own D column with the Sales month's
+ * D1 (C2 = <the month before>!C2 + D1 + [1]<month>!$D$1); G2 the claim that
+ * month adds, banded at the Admin rates; and A2 the claim to date
+ * (A2 = G2 + <the month before>!A2).
+ *
+ * I2 = G2 puts the claim in the month's net column, W2 = IF(F2="v",I2," ")
+ * files it under Motor Expenses, and G1/I1 carry it into the month's own
+ * totals, so the claim reaches the profit and loss account with no VAT
+ * stripped off it.
+ */
+function mileageMonths(scenario, mileageRates) {
+  let milesToDate = 0;
+  let claimedToDate = 0;
+  return MONTH_KEYS.map((month) => {
+    const miles = monthMiles(scenario.sales?.[month]) + monthMiles(scenario.purchases?.[month]);
+    milesToDate += miles;
+    const claimToDate = mileageRates ? calculateMileageAllowance(milesToDate, mileageRates) : 0;
+    const claim = claimToDate - claimedToDate;
+    claimedToDate = claimToDate;
+    return { miles: milesToDate, claim, claimToDate };
+  });
 }
 
 // The year's net total for one code, as the last month tab's own running cell
@@ -491,6 +526,14 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
 
   const salesMonths = journalMonths(scenario.sales, rate, SALES_ANALYSIS_COLUMNS, "a");
   const purchasesMonths = journalMonths(scenario.purchases, rate, PURCHASES_ANALYSIS_COLUMNS);
+  const mileage = mileageMonths(scenario, taxData?.mileage);
+  purchasesMonths.forEach((month, index) => {
+    const claim = mileage[index].claim;
+    if (!claim) return;
+    month.gross += claim;
+    month.net += claim;
+    month.byCode.v = (month.byCode.v || 0) + claim;
+  });
   const bank = bankBook(scenario.bank, "Bank.xlsx");
   const cash = bankBook(scenario.bank, "Cash.xlsx");
   const payroll = payrollMonths(scenario.payroll);
@@ -676,6 +719,10 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seShort.O124 = contractorDeductions;
 
   const seFull = {};
+  // ="COPY DETAILS TO HMRC FORM ... by 31st January "&TEXT(Admin!B21,"yyyy")
+  seFull.G1 =
+    `COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January ` +
+    dateFromExcelSerial(admin.B21).getUTCFullYear();
   seFull.Q2 = dateSerials[4];
   seFull.V2 = dateSerials[17];
   seFull.D55 = pl.B9;
@@ -700,31 +747,30 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   const fullNetProfit = seFull.D55 + seFull.O55 - seFull.D122;
   seFull.D129 = fullNetProfit >= 0 ? fullNetProfit : 0;
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
-  seFull.H136 = admin.G4;
   seFull.G141 = admin.G5;
   seFull.D139 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
-  // Boxes the customer fills in by hand, with no formula to compute them.
+  // Boxes the customer fills in by hand, with no formula to compute them. The
+  // schedule keeps one main pool at the 18% writing down rate, so the special
+  // rate pool (box 51), the zero-emission and structures-and-buildings claims
+  // (boxes 52, 52.1 and 53) and the electric charge-point claim (box 54) have
+  // nothing feeding them.
   seFull.D147 = SHEET_BLANK;
+  seFull.D152 = SHEET_BLANK;
   seFull.D156 = SHEET_BLANK;
   seFull.D160 = SHEET_BLANK;
-  seFull.O154 = SHEET_BLANK;
+  seFull.O139 = SHEET_BLANK;
   seFull.D179 = SHEET_BLANK;
-  // Box 51 is the motor rows' own restricted claims, and box 49 is whatever the
-  // schedule claims beyond them.
-  seFull.D152 = carry([scheduleR], () => scheduleR);
-  seFull.D144 = carry([scheduleR, seFull.D152], () => scheduleR - sheetNumber(seFull.D152));
-  seFull.O139 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
-  seFull.O144 = scheduleY;
-  seFull.O149 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O139, seFull.O144], () =>
-    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144]),
+  // Box 50 carries the whole writing down allowance the schedule claims.
+  seFull.D144 = carry([scheduleR], () => scheduleR);
+  seFull.O144 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
+  seFull.O149 = scheduleY;
+  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O144, seFull.O149], () =>
+    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
   );
   seFull.O160 = scheduleZ;
   seFull.D169 = goodsForOwnUse;
-  seFull.O169 = carry([seFull.O149], () => sheetNumber(seFull.O149) + sheetNumber(seFull.D179));
-  seFull.D174 = carry(
-    [seFull.O160],
-    () => sheetNumber(seFull.O122) + sheetNumber(seFull.O154) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169),
-  );
+  seFull.O169 = carry([seFull.O154], () => sheetNumber(seFull.O154) + sheetNumber(seFull.D179));
+  seFull.D174 = carry([seFull.O160], () => sheetNumber(seFull.O122) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169));
   seFull.O174 = carry([seFull.D129, seFull.D174, seFull.O169, seFull.O129], () => {
     const fromNetProfit = seFull.D129 + seFull.D174 - seFull.O169;
     return fromNetProfit > 0 ? fromNetProfit : Math.max(0, -seFull.O129 + seFull.D174 - seFull.O169);
@@ -743,7 +789,7 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seFull.D219 = carry([seFull.O179], () => seFull.O179);
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
-  seFull.J280 = admin.N4;
+  seFull.J280 = admin.N20;
 
   // ── Income tax ──
   // The sheet charges tax on the full return's own taxable profit, not on the
@@ -873,6 +919,9 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
       I1: purchases.net,
       H2: rate * 100,
       AD1: purchases.cis,
+      C2: mileage[index].miles,
+      G2: mileage[index].claim,
+      A2: mileage[index].claimToDate,
       // The month's own check total. Every analysed column is accounted for, so
       // the sheet balances whatever the CIS column carries beside it.
       A1: purchases.gross - purchases.vat - sheetSum(Object.values(purchases.byCode)),

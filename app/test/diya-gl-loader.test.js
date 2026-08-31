@@ -171,7 +171,7 @@ describe("diyaGlToScenario — v2 tables match the extractor's own fixtures", ()
 });
 
 describe("extractTaxDataFromBook", () => {
-  it("converts book.toml tax fields to app/data format", () => {
+  it("converts book.toml tax fields to app/data format (SE shape)", () => {
     const { book } = loadDiyaGlData(BST_DATA);
     const taxData = extractTaxDataFromBook(book);
     expect(taxData.income_tax.personal_allowance).toBe(12570);
@@ -185,5 +185,29 @@ describe("extractTaxDataFromBook", () => {
     const taxData = extractTaxDataFromBook(book);
     expect(taxData.national_insurance).toBeDefined();
     expect(taxData.national_insurance.class4_lower_limit).toBeDefined();
+  });
+
+  it("emits SE capital_allowances shape with single writing_down_allowance key", () => {
+    const { book } = loadDiyaGlData(BST_DATA);
+    const taxData = extractTaxDataFromBook(book, "se");
+    expect(taxData.capital_allowances.writing_down_allowance).toBeDefined();
+    expect(taxData.capital_allowances.writing_down_allowance_main).toBeUndefined();
+    expect(taxData.capital_allowances.writing_down_allowance_special).toBeUndefined();
+    expect(taxData.capital_allowances.full_expensing_rate).toBeUndefined();
+  });
+
+  it("emits Ltd capital_allowances shape with main/special WDA and full_expensing_rate", () => {
+    const { book } = loadDiyaGlData(FULL_DATA);
+    const taxData = extractTaxDataFromBook(book, "ltd");
+    expect(taxData.capital_allowances.writing_down_allowance_main).toBe(0.18);
+    expect(taxData.capital_allowances.writing_down_allowance_special).toBe(0.06);
+    expect(taxData.capital_allowances.full_expensing_rate).toBe(0);
+    expect(taxData.capital_allowances.writing_down_allowance).toBeUndefined();
+  });
+
+  it("defaults full_expensing_rate to 0 when extracting from book.toml", () => {
+    const { book } = loadDiyaGlData(FULL_DATA);
+    const taxData = extractTaxDataFromBook(book, "ltd");
+    expect(taxData.capital_allowances.full_expensing_rate).toBe(0);
   });
 });

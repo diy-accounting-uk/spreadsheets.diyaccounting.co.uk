@@ -793,6 +793,7 @@ code = "BC"
 direction = "in"
 amount = 20000
 description = "Current account opening balance"
+reference = "BNK-BC-001"
 
 [[bank.apr]]
 date = 2025-04-07
@@ -802,6 +803,7 @@ code = "RV"
 direction = "out"
 amount = 1000
 description = "VAT outstanding at the year start"
+reference = "BNK-RV-001"
 
 [[bank.apr]]
 date = 2025-04-12
@@ -811,6 +813,7 @@ code = "DR"
 direction = "in"
 amount = 11880
 description = "Invoices outstanding at the year start"
+reference = "BNK-DR-001"
 
 [[bank.apr]]
 date = 2025-04-18
@@ -820,6 +823,7 @@ code = "CR"
 direction = "out"
 amount = 2718
 description = "Invoices unpaid at the year start"
+reference = "BNK-CR-001"
 
 [[bank.apr]]
 date = 2025-04-28
@@ -829,6 +833,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-001"
 
 [[bank.may]]
 date = 2025-05-12
@@ -838,6 +843,7 @@ code = "DR"
 direction = "in"
 amount = 11700
 description = "apr invoices settled"
+reference = "BNK-DR-002"
 
 [[bank.may]]
 date = 2025-05-18
@@ -847,6 +853,7 @@ code = "CR"
 direction = "out"
 amount = 5958
 description = "apr invoices settled"
+reference = "BNK-CR-002"
 
 [[bank.may]]
 date = 2025-05-22
@@ -856,6 +863,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for apr"
+reference = "BNK-RP-001"
 
 [[bank.may]]
 date = 2025-05-28
@@ -865,6 +873,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-002"
 
 [[bank.jun]]
 date = 2025-06-12
@@ -874,6 +883,7 @@ code = "DR"
 direction = "in"
 amount = 10800
 description = "may invoices settled"
+reference = "BNK-DR-003"
 
 [[bank.jun]]
 date = 2025-06-18
@@ -883,6 +893,7 @@ code = "CR"
 direction = "out"
 amount = 11718
 description = "may invoices settled"
+reference = "BNK-CR-003"
 
 [[bank.jun]]
 date = 2025-06-22
@@ -892,6 +903,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for may"
+reference = "BNK-RP-002"
 
 [[bank.jun]]
 date = 2025-06-28
@@ -901,6 +913,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-003"
 
 [[bank.jul]]
 date = 2025-07-12
@@ -910,6 +923,7 @@ code = "DR"
 direction = "in"
 amount = 11160
 description = "jun invoices settled"
+reference = "BNK-DR-004"
 
 [[bank.jul]]
 date = 2025-07-18
@@ -919,6 +933,7 @@ code = "CR"
 direction = "out"
 amount = 3258
 description = "jun invoices settled"
+reference = "BNK-CR-004"
 
 [[bank.jul]]
 date = 2025-07-22
@@ -928,6 +943,7 @@ code = "RC"
 direction = "out"
 amount = 1800
 description = "Construction Industry Scheme deductions for 2025-05"
+reference = "BNK-RC-001"
 
 [[bank.jul]]
 date = 2025-07-22
@@ -937,6 +953,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for jun"
+reference = "BNK-RP-003"
 
 [[bank.jul]]
 date = 2025-07-28
@@ -946,6 +963,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-004"
 
 [[bank.aug]]
 date = 2025-08-07
@@ -955,6 +973,7 @@ code = "RV"
 direction = "out"
 amount = 1900
 description = "Quarterly VAT payment"
+reference = "BNK-RV-002"
 
 [[bank.aug]]
 date = 2025-08-12
@@ -964,6 +983,7 @@ code = "DR"
 direction = "in"
 amount = 10440
 description = "jul invoices settled"
+reference = "BNK-DR-005"
 
 [[bank.aug]]
 date = 2025-08-18
@@ -973,6 +993,7 @@ code = "CR"
 direction = "out"
 amount = 3348
 description = "jul invoices settled"
+reference = "BNK-CR-005"
 
 [[bank.aug]]
 date = 2025-08-22
@@ -982,6 +1003,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for jul"
+reference = "BNK-RP-004"
 
 [[bank.aug]]
 date = 2025-08-28
@@ -991,6 +1013,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-005"
 
 [[bank.sep]]
 date = 2025-09-12
@@ -1000,6 +1023,7 @@ code = "DR"
 direction = "in"
 amount = 11700
 description = "aug invoices settled"
+reference = "BNK-DR-006"
 
 [[bank.sep]]
 date = 2025-09-18
@@ -1009,6 +1033,7 @@ code = "CR"
 direction = "out"
 amount = 10218
 description = "aug invoices settled"
+reference = "BNK-CR-006"
 
 [[bank.sep]]
 date = 2025-09-22
@@ -1018,6 +1043,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for aug"
+reference = "BNK-RP-005"
 
 [[bank.sep]]
 date = 2025-09-28
@@ -1027,6 +1053,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-006"
 
 [[bank.oct]]
 date = 2025-10-12
@@ -1036,6 +1063,7 @@ code = "DR"
 direction = "in"
 amount = 11340
 description = "sep invoices settled"
+reference = "BNK-DR-007"
 
 [[bank.oct]]
 date = 2025-10-18
@@ -1045,6 +1073,7 @@ code = "CR"
 direction = "out"
 amount = 17118
 description = "sep invoices settled"
+reference = "BNK-CR-007"
 
 [[bank.oct]]
 date = 2025-10-22
@@ -1054,6 +1083,7 @@ code = "RC"
 direction = "out"
 amount = 1500
 description = "Construction Industry Scheme deductions for 2025-08"
+reference = "BNK-RC-002"
 
 [[bank.oct]]
 date = 2025-10-22
@@ -1063,6 +1093,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for sep"
+reference = "BNK-RP-006"
 
 [[bank.oct]]
 date = 2025-10-28
@@ -1072,6 +1103,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-007"
 
 [[bank.nov]]
 date = 2025-11-07
@@ -1081,6 +1113,7 @@ code = "RV"
 direction = "out"
 amount = 1900
 description = "Quarterly VAT payment"
+reference = "BNK-RV-003"
 
 [[bank.nov]]
 date = 2025-11-12
@@ -1090,6 +1123,7 @@ code = "DR"
 direction = "in"
 amount = 12240
 description = "oct invoices settled"
+reference = "BNK-DR-008"
 
 [[bank.nov]]
 date = 2025-11-18
@@ -1099,6 +1133,7 @@ code = "CR"
 direction = "out"
 amount = 2718
 description = "oct invoices settled"
+reference = "BNK-CR-008"
 
 [[bank.nov]]
 date = 2025-11-22
@@ -1108,6 +1143,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for oct"
+reference = "BNK-RP-007"
 
 [[bank.nov]]
 date = 2025-11-28
@@ -1117,6 +1153,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-008"
 
 [[bank.dec]]
 date = 2025-12-12
@@ -1126,6 +1163,7 @@ code = "DR"
 direction = "in"
 amount = 11160
 description = "nov invoices settled"
+reference = "BNK-DR-009"
 
 [[bank.dec]]
 date = 2025-12-18
@@ -1135,6 +1173,7 @@ code = "CR"
 direction = "out"
 amount = 10218
 description = "nov invoices settled"
+reference = "BNK-CR-009"
 
 [[bank.dec]]
 date = 2025-12-22
@@ -1144,6 +1183,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for nov"
+reference = "BNK-RP-008"
 
 [[bank.dec]]
 date = 2025-12-28
@@ -1153,6 +1193,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-009"
 
 [[bank.jan]]
 date = 2026-01-01
@@ -1162,6 +1203,7 @@ code = "RT"
 direction = "out"
 amount = 900
 description = "Corporation tax on last year's profit"
+reference = "BNK-RT-001"
 
 [[bank.jan]]
 date = 2026-01-12
@@ -1171,6 +1213,7 @@ code = "DR"
 direction = "in"
 amount = 9900
 description = "dec invoices settled"
+reference = "BNK-DR-010"
 
 [[bank.jan]]
 date = 2026-01-18
@@ -1180,6 +1223,7 @@ code = "CR"
 direction = "out"
 amount = 2718
 description = "dec invoices settled"
+reference = "BNK-CR-010"
 
 [[bank.jan]]
 date = 2026-01-22
@@ -1189,6 +1233,7 @@ code = "RC"
 direction = "out"
 amount = 1500
 description = "Construction Industry Scheme deductions for 2025-11"
+reference = "BNK-RC-003"
 
 [[bank.jan]]
 date = 2026-01-22
@@ -1198,6 +1243,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for dec"
+reference = "BNK-RP-009"
 
 [[bank.jan]]
 date = 2026-01-28
@@ -1207,6 +1253,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-010"
 
 [[bank.feb]]
 date = 2026-02-07
@@ -1216,6 +1263,7 @@ code = "RV"
 direction = "out"
 amount = 1900
 description = "Quarterly VAT payment"
+reference = "BNK-RV-004"
 
 [[bank.feb]]
 date = 2026-02-12
@@ -1225,6 +1273,7 @@ code = "DR"
 direction = "in"
 amount = 10800
 description = "jan invoices settled"
+reference = "BNK-DR-011"
 
 [[bank.feb]]
 date = 2026-02-18
@@ -1234,6 +1283,7 @@ code = "CR"
 direction = "out"
 amount = 3438
 description = "jan invoices settled"
+reference = "BNK-CR-011"
 
 [[bank.feb]]
 date = 2026-02-22
@@ -1243,6 +1293,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for jan"
+reference = "BNK-RP-010"
 
 [[bank.feb]]
 date = 2026-02-28
@@ -1252,6 +1303,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-011"
 
 [[bank.mar]]
 date = 2026-03-12
@@ -1261,6 +1313,7 @@ code = "DR"
 direction = "in"
 amount = 11700
 description = "feb invoices settled"
+reference = "BNK-DR-012"
 
 [[bank.mar]]
 date = 2026-03-18
@@ -1270,6 +1323,7 @@ code = "CR"
 direction = "out"
 amount = 8718
 description = "feb invoices settled"
+reference = "BNK-CR-012"
 
 [[bank.mar]]
 date = 2026-03-22
@@ -1279,6 +1333,7 @@ code = "RP"
 direction = "out"
 amount = 126.7
 description = "PAYE and National Insurance for feb"
+reference = "BNK-RP-011"
 
 [[bank.mar]]
 date = 2026-03-28
@@ -1288,6 +1343,7 @@ code = "W"
 direction = "out"
 amount = 2421.3
 description = "Net wages"
+reference = "BNK-W-012"
 
 [[payroll.apr]]
 date = 2025-04-28
@@ -1297,6 +1353,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-04"
 
 [[payroll.apr]]
 date = 2025-04-28
@@ -1306,6 +1363,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-04"
 
 [[payroll.may]]
 date = 2025-05-28
@@ -1315,6 +1373,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-05"
 
 [[payroll.may]]
 date = 2025-05-28
@@ -1324,6 +1383,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-05"
 
 [[payroll.jun]]
 date = 2025-06-28
@@ -1333,6 +1393,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-06"
 
 [[payroll.jun]]
 date = 2025-06-28
@@ -1342,6 +1403,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-06"
 
 [[payroll.jul]]
 date = 2025-07-28
@@ -1351,6 +1413,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-07"
 
 [[payroll.jul]]
 date = 2025-07-28
@@ -1360,6 +1423,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-07"
 
 [[payroll.aug]]
 date = 2025-08-28
@@ -1369,6 +1433,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-08"
 
 [[payroll.aug]]
 date = 2025-08-28
@@ -1378,6 +1443,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-08"
 
 [[payroll.sep]]
 date = 2025-09-28
@@ -1387,6 +1453,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-09"
 
 [[payroll.sep]]
 date = 2025-09-28
@@ -1396,6 +1463,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-09"
 
 [[payroll.oct]]
 date = 2025-10-28
@@ -1405,6 +1473,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-10"
 
 [[payroll.oct]]
 date = 2025-10-28
@@ -1414,6 +1483,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-10"
 
 [[payroll.nov]]
 date = 2025-11-28
@@ -1423,6 +1493,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-11"
 
 [[payroll.nov]]
 date = 2025-11-28
@@ -1432,6 +1503,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-11"
 
 [[payroll.dec]]
 date = 2025-12-28
@@ -1441,6 +1513,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2025-12"
 
 [[payroll.dec]]
 date = 2025-12-28
@@ -1450,6 +1523,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2025-12"
 
 [[payroll.jan]]
 date = 2026-01-28
@@ -1459,6 +1533,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2026-01"
 
 [[payroll.jan]]
 date = 2026-01-28
@@ -1468,6 +1543,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2026-01"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -1477,6 +1553,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2026-02"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -1486,6 +1563,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2026-02"
 
 [[payroll.mar]]
 date = 2026-03-28
@@ -1495,6 +1573,7 @@ incomeTax = 0
 employeeNI = 0
 employerNI = 0
 netPay = 1048
+reference = "PAY-EMP001-2026-03"
 
 [[payroll.mar]]
 date = 2026-03-28
@@ -1504,6 +1583,7 @@ incomeTax = 90.5
 employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
+reference = "PAY-EMP002-2026-03"
 
 [stock]
 opening = 3000

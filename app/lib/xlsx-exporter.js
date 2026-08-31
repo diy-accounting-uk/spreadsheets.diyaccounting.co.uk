@@ -7,7 +7,13 @@
 
 import JSZip from "jszip";
 import { buildSheetMap, readCellValue, loadSharedStrings } from "./spreadsheet-runner.js";
-import { BST_PURCHASE_CODE_MAP, SE_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "./scenario-extractor.js";
+import {
+  BST_PURCHASE_CODE_MAP,
+  TAXI_PURCHASE_CODE_MAP,
+  SE_PURCHASE_CODE_MAP,
+  LTD_PURCHASE_CODE_MAP,
+  LTD_SALES_CODE_MAP,
+} from "./scenario-extractor.js";
 import { calculateMileageAllowance } from "./tax/mileage.js";
 import { findXlsx } from "./xlsx-reader.js";
 import { readFileSync as readSchemaFile } from "fs";
@@ -240,6 +246,147 @@ export async function extractBstTransactions(xlsxBuffer) {
   return lines;
 }
 
+// The Taxi Driver Sales tabs are laid out a week at a time: a row per day,
+// then a rental row and an other-income row, then the week's subtotal. Only
+// the day rows carry a day's trade, and a day row is the one holding the date
+// in both A and B -- the two named rows caption column B and the subtotal row
+// carries no date at all. C names the customer, D takes the day's business
+// miles and E the gross takings.
+const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E" };
+
+// A Taxi Driver Purchases tab, read off its own row 2 and 3 headings: A the
+// purchase date, B the supplier, C the invoice reference, D the expense code
+// letter the analysis columns key on, E the miles a mileage-log entry claims
+// and F what a bought purchase cost. Entries run from row 5 to row 199, where
+// the sheet's own column sums stop.
+const TAXI_PURCHASE_COLUMNS = { date: "A", supplier: "B", reference: "C", code: "D", mileage: "E", amount: "F" };
+const TAXI_PURCHASE_LAST_ROW = 199;
+
+// The account a taxi purchase falls to when its row carries a code letter the
+// chart does not name. Other expenses is the column the sheet itself keeps
+// for a cost with no home of its own.
+const TAXI_OTHER_EXPENSES_ACCOUNT = "6200";
+
+// The Taxi Driver chart has one sales account, and the Sales tabs carry no
+// analysis code to say otherwise.
+const TAXI_SALES_ACCOUNT = "4000";
+
+// The rows a sheet holds, in the order it holds them. A Taxi Sales tab
+// interleaves trade with captions and subtotals, so it is read row by row
+// rather than run to the first gap.
+function rowNumbers(xml) {
+  return [...xml.matchAll(/<row r="(\d+)"/g)].map((match) => Number(match[1]));
+}
+
+// A cell's number, where the sheet holds one there and did not compute it.
+// A formula result is the sheet's own arithmetic, never an entry someone made.
+function enteredNumber(xml, cellRef, sharedStrings) {
+  const value = readCellValue(xml, cellRef, sharedStrings);
+  if (typeof value !== "number" || hasCellFormula(xml, cellRef)) return undefined;
+  return value;
+}
+
+/**
+ * Extract transaction lines from a single-file Taxi Driver product.
+ *
+ * Business miles reach the package on two columns -- a fare day's miles on
+ * the Sales tab and a mileage-log entry's on the Purchases tab -- and the
+ * workbook pools them into one running total a month at a time
+ * (PurchasesApr!A1 = E1 + SalesApr!D1, each later month adding the month
+ * before it). It prices that total at the approved rates in U4 and claims the
+ * step each month adds. The export prices a mileage-log row back the same
+ * way, banding it against every mile claimed ahead of it, so a row that
+ * crosses the higher-rate limit is claimed at the two rates either side of it
+ * exactly as the sheet claims it.
+ */
+export async function extractTaxiTransactions(xlsxBuffer) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+  const mileageRates = await adminMileageRates(sheetMap, zip, sharedStrings);
+  const reversePurchase = buildReverseCodeMap(TAXI_PURCHASE_CODE_MAP);
+  const lines = [];
+  let entryNum = 1;
+  let milesToDate = 0;
+
+  for (const month of MONTH_SHEETS) {
+    const salesPath = sheetMap.get(`Sales${month}`);
+    if (salesPath) {
+      const xml = await zip.file(salesPath).async("string");
+      for (const row of rowNumbers(xml)) {
+        const dateVal = enteredNumber(xml, `A${row}`, sharedStrings);
+        const day = enteredNumber(xml, `B${row}`, sharedStrings);
+        if (dateVal === undefined || day === undefined) continue;
+
+        const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+        const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
+        if (takings === undefined && miles === undefined) continue;
+
+        const line = {
+          sourceJournalID: "sales",
+          postingDate: excelSerialToDate(dateVal),
+          accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
+          // A day the driver logged miles on but took no fare still counts
+          // its miles towards the claim, so it posts at nil rather than not
+          // at all.
+          amount: takings ?? 0,
+          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+        };
+        const customer = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
+        if (customer) line.detailComment = customer;
+        if (miles !== undefined) {
+          line.measurableQuantity = miles;
+          line.measurableUnitOfMeasure = "miles";
+          milesToDate += miles;
+        }
+        lines.push(line);
+      }
+    }
+
+    const purchasesPath = sheetMap.get(`Purchases${month}`);
+    if (!purchasesPath) continue;
+    const xml = await zip.file(purchasesPath).async("string");
+    for (let row = 5; row <= TAXI_PURCHASE_LAST_ROW; row++) {
+      const dateVal = enteredNumber(xml, `${TAXI_PURCHASE_COLUMNS.date}${row}`, sharedStrings);
+      if (dateVal === undefined) break;
+
+      const miles = enteredNumber(xml, `${TAXI_PURCHASE_COLUMNS.mileage}${row}`, sharedStrings);
+      const amount = enteredNumber(xml, `${TAXI_PURCHASE_COLUMNS.amount}${row}`, sharedStrings);
+      const claimsMileage = miles !== undefined && miles > 0;
+      if (!claimsMileage && amount === undefined) break;
+
+      const code = readCellValue(xml, `${TAXI_PURCHASE_COLUMNS.code}${row}`, sharedStrings) || "";
+      const codeStr = String(code).toLowerCase().trim();
+
+      let claimed;
+      if (claimsMileage) {
+        claimed = calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+        milesToDate += miles;
+      }
+
+      const line = {
+        sourceJournalID: "purchases",
+        postingDate: excelSerialToDate(dateVal),
+        accountMainID: accountAt(xml, row, sharedStrings, reversePurchase, codeStr, TAXI_OTHER_EXPENSES_ACCOUNT),
+        amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
+        entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+      };
+      const supplier = textAt(xml, `${TAXI_PURCHASE_COLUMNS.supplier}${row}`, sharedStrings);
+      if (supplier) line.detailComment = supplier;
+      if (claimsMileage) {
+        line.documentType = "mileage-log";
+        line.measurableQuantity = miles;
+        line.measurableUnitOfMeasure = "miles";
+      }
+      const reference = textAt(xml, `${TAXI_PURCHASE_COLUMNS.reference}${row}`, sharedStrings);
+      if (reference) line.documentReference = reference;
+      lines.push(line);
+    }
+  }
+
+  return lines;
+}
+
 // The approved mileage rates the generator injected into the Admin sheet, in
 // the shape calculateMileageAllowance() takes.
 async function adminMileageRates(sheetMap, zip, sharedStrings) {
@@ -253,6 +400,18 @@ async function adminMileageRates(sheetMap, zip, sharedStrings) {
   };
 }
 
+// The same rates for a multi-file package, where the Admin sheet sits in
+// Financialaccounts.xlsx -- the workbook the Purchases mileage formulas reach
+// through their own external link ([2]Admin!$F$21 and the rest).
+async function seAdminMileageRates(sourceDir) {
+  const { readFileSync } = await import("fs");
+  const { resolve } = await import("path");
+  const zip = await JSZip.loadAsync(readFileSync(resolve(sourceDir, "Financialaccounts.xlsx")));
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+  return adminMileageRates(sheetMap, zip, sharedStrings);
+}
+
 /**
  * Extract transaction lines from a multi-file SE/Ltd product.
  */
@@ -262,18 +421,37 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 
   const reversePurchase = buildReverseCodeMap(product === "ltd" ? LTD_PURCHASE_CODE_MAP : SE_PURCHASE_CODE_MAP);
   // Ltd: E=code, F=amount; SE: F=code, G=amount. Column C is the invoice
-  // reference on both journals in both products. The description column
-  // differs: Ltd carries one on each journal (D), SE only on purchases (E),
-  // because its sales sheet gives D to the mileage claim instead.
+  // reference on both journals in both products. The description column sits
+  // at D for Ltd's sales and purchases both; SE's own sales sheet gives D to
+  // the day's mileage instead, so SE's sales description sits one column over
+  // at E ("Sales Description"), while its purchases description stays at E
+  // too (Ltd purchases carries no mileage column, so its own description
+  // fits at D like its sales sheet).
   const codeCol = product === "ltd" ? "E" : "F";
   const amountCol = product === "ltd" ? "F" : "G";
   // The book charges VAT at one rate, entered as a percentage on the first
   // Sales month tab. A book that is not registered turns it off there, and
   // every sheet downstream follows that cell, so a hardcoded 20% would put
   // VAT on an unregistered book's every line.
-  const salesDescriptionCol = product === "ltd" ? "D" : null;
+  const salesDescriptionCol = product === "ltd" ? "D" : "E";
   const purchasesDescriptionCol = product === "ltd" ? "D" : "E";
   const cisColumn = product === "ltd" ? "AK" : null;
+  // SE's Sales sheet gives D to the day's business miles (see the codeCol
+  // comment above). A sales row's miles sit beside a real sale rather than
+  // pricing it the way a Purchases mileage-log row does, so they carry as an
+  // extra measurable quantity rather than replacing the amount. Ltd's Sales
+  // sheet has no such column.
+  const salesMileageCol = product === "se" ? "D" : null;
+  // SE's Purchases sheet keeps its own mileage column at D. A mileage-log row
+  // there carries miles where a bought purchase carries an amount, because the
+  // sheet prices the miles itself: C2 pools the month's own D column with the
+  // Sales month's D1, G2 bands the running total at the Admin rates and I2
+  // files the claim under Motor Expenses. The export prices such a row back
+  // the same way, banding it against every mile claimed ahead of it.
+  const purchasesMileageCol = product === "se" ? "D" : null;
+  const mileageRates = purchasesMileageCol ? await seAdminMileageRates(sourceDir) : null;
+  const salesMilesByMonth = new Map();
+  let milesToDate = 0;
   const lines = [];
   let entryNum = 1;
 
@@ -315,6 +493,14 @@ export async function extractMultiFileTransactions(sourceDir, product) {
       if (reference) line.documentReference = reference;
       const description = salesDescriptionCol ? textAt(xml, `${salesDescriptionCol}${row}`, salesStrings) : undefined;
       if (description) line.lineItemComment = description;
+      if (salesMileageCol) {
+        const miles = enteredNumber(xml, `${salesMileageCol}${row}`, salesStrings);
+        if (miles !== undefined) {
+          line.measurableQuantity = miles;
+          line.measurableUnitOfMeasure = "miles";
+          salesMilesByMonth.set(sheetName, (salesMilesByMonth.get(sheetName) || 0) + miles);
+        }
+      }
       lines.push(line);
     }
   }
@@ -329,25 +515,46 @@ export async function extractMultiFileTransactions(sourceDir, product) {
     const sheetPath = purchasesSheetMap.get(sheetName);
     const xml = await purchasesZip.file(sheetPath).async("string");
 
+    // The month's own C2 pools the Sales sheet's miles with the Purchases
+    // ones before it bands anything, so the sales side of the month counts
+    // towards the claim ahead of every mileage-log row on this tab.
+    milesToDate += salesMilesByMonth.get(sheetName) || 0;
+
     for (let row = 5; row <= 300; row++) {
       const dateVal = readCellValue(xml, `A${row}`, purchasesStrings);
+      if (dateVal === null) break;
+      const miles = purchasesMileageCol ? enteredNumber(xml, `${purchasesMileageCol}${row}`, purchasesStrings) : undefined;
+      const claimsMileage = miles !== undefined && miles > 0;
       const amount = readCellValue(xml, `${amountCol}${row}`, purchasesStrings);
-      if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
+      if (!claimsMileage) {
+        if (amount === null || typeof amount !== "number") break;
+        if (hasCellFormula(xml, `${amountCol}${row}`)) continue;
+      }
 
       const supplier = readCellValue(xml, `B${row}`, purchasesStrings) || "";
       const code = readCellValue(xml, `${codeCol}${row}`, purchasesStrings) || "";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
 
+      let claimed;
+      if (claimsMileage) {
+        claimed = calculateMileageAllowance(milesToDate + miles, mileageRates) - calculateMileageAllowance(milesToDate, mileageRates);
+        milesToDate += miles;
+      }
+
       const line = {
         sourceJournalID: "purchases",
         postingDate: excelSerialToDate(dateVal),
         accountMainID: accountAt(xml, row, purchasesStrings, reversePurchase, codeStr, "5002"),
-        amount,
+        amount: claimsMileage ? Math.round(claimed * 100) / 100 : amount,
         detailComment: typeof supplier === "string" ? supplier : "",
         entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
         taxRate,
       };
+      if (claimsMileage) {
+        line.documentType = "mileage-log";
+        line.measurableQuantity = miles;
+        line.measurableUnitOfMeasure = "miles";
+      }
       const reference = textAt(xml, `C${row}`, purchasesStrings);
       if (reference) line.documentReference = reference;
       const description = textAt(xml, `${purchasesDescriptionCol}${row}`, purchasesStrings);
@@ -367,10 +574,15 @@ export async function extractMultiFileTransactions(sourceDir, product) {
 // each file's writer uses. Ltd statement books carry a wider receipts-analysis
 // block than Cashaccount, which shifts their payments block right; the SE
 // bank and cash books each carry their own narrower payments block.
-const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", code: "S", amount: "T" };
-const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", code: "P", amount: "Q" };
-const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", code: "W", amount: "X" };
-const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", code: "T", amount: "U" };
+const SE_BANK_PAYMENT_COLS = { date: "O", supplier: "P", reference: "Q", comment: "R", code: "S", amount: "T" };
+const SE_CASH_PAYMENT_COLS = { date: "L", supplier: "M", reference: "N", comment: "O", code: "P", amount: "Q" };
+const LTD_STATEMENT_PAYMENT_COLS = { date: "S", supplier: "T", reference: "U", comment: "V", code: "W", amount: "X" };
+const LTD_CASH_PAYMENT_COLS = { date: "P", supplier: "Q", reference: "R", comment: "S", code: "T", amount: "U" };
+// Every bank and cash book keeps its receipts' invoice reference at the same
+// column, C ("Sales Invoice" on the template), and its own reference beside
+// it, D ("Deposit Bank/Cash Reference"), whichever file or product.
+const BANK_RECEIPT_REFERENCE_COLUMN = "C";
+const BANK_RECEIPT_COMMENT_COLUMN = "D";
 const BANK_FILES = {
   se: [
     { file: "Bank.xlsx", accountID: "1200", payment: SE_BANK_PAYMENT_COLS },
@@ -443,7 +655,7 @@ export async function extractBankTransactions(sourceDir, product) {
         const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
         const codeStr = typeof code === "string" ? code : String(code);
 
-        lines.push({
+        const line = {
           "sourceJournalID": "bank",
           "postingDate": excelSerialToDate(dateVal),
           "accountMainID": accountID,
@@ -453,7 +665,12 @@ export async function extractBankTransactions(sourceDir, product) {
           "debitCreditCode": "D",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-        });
+        };
+        const reference = textAt(xml, `${BANK_RECEIPT_REFERENCE_COLUMN}${row}`, sharedStrings);
+        if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${BANK_RECEIPT_COMMENT_COLUMN}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
+        lines.push(line);
       }
 
       // Payments: rows 6+, columns per the file's payment layout
@@ -467,7 +684,7 @@ export async function extractBankTransactions(sourceDir, product) {
         const code = readCellValue(xml, `${payment.code}${row}`, sharedStrings) || "";
         const codeStr = typeof code === "string" ? code : String(code);
 
-        lines.push({
+        const line = {
           "sourceJournalID": "bank",
           "postingDate": excelSerialToDate(dateVal),
           "accountMainID": accountID,
@@ -477,7 +694,12 @@ export async function extractBankTransactions(sourceDir, product) {
           "debitCreditCode": "C",
           "diya-gl:bankAccountID": accountID,
           "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-        });
+        };
+        const reference = textAt(xml, `${payment.reference}${row}`, sharedStrings);
+        if (reference) line.documentReference = reference;
+        const comment = textAt(xml, `${payment.comment}${row}`, sharedStrings);
+        if (comment) line.lineItemComment = comment;
+        lines.push(line);
       }
     }
   }
@@ -514,7 +736,8 @@ export async function extractPayrollTransactions(sourceDir) {
       const incomeTax = readCellValue(xml, `N${row}`, sharedStrings) || 0;
       const employeeNI = readCellValue(xml, `O${row}`, sharedStrings) || 0;
       const netPay = readCellValue(xml, `R${row}`, sharedStrings) || 0;
-      // Column S is a blank spacer on the payslip block; column T is the
+      // Column S is a blank spacer on the payslip block, unused by any
+      // formula, so the payslip's own reference goes there; column T is the
       // employer-NI entry cell the sheet's own row-56 total sums.
       const employerNI = readCellValue(xml, `T${row}`, sharedStrings) || 0;
 
@@ -526,7 +749,7 @@ export async function extractPayrollTransactions(sourceDir) {
       }
       const postingDate = excelSerialToDate(wageDate);
 
-      lines.push({
+      const line = {
         "sourceJournalID": "payroll",
         postingDate,
         "accountMainID": textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || "5101",
@@ -538,7 +761,10 @@ export async function extractPayrollTransactions(sourceDir) {
         "diya-gl:employerNI": typeof employerNI === "number" ? employerNI : 0,
         "diya-gl:netPay": typeof netPay === "number" ? netPay : 0,
         "entryNumber": `EXP-${String(entryNum++).padStart(4, "0")}`,
-      });
+      };
+      const reference = textAt(xml, `S${row}`, sharedStrings);
+      if (reference) line.documentReference = reference;
+      lines.push(line);
     }
   }
 
@@ -1009,11 +1235,21 @@ const BANK_ACCOUNT_NAMES = { 1200: "Current account", 1210: "Savings account", 1
 
 function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
   const salesCodes = LTD_SALES_CODE_MAP;
-  const purchaseCodes = product === "ltd" ? LTD_PURCHASE_CODE_MAP : product === "se" ? SE_PURCHASE_CODE_MAP : BST_PURCHASE_CODE_MAP;
+  const purchaseCodes =
+    product === "ltd"
+      ? LTD_PURCHASE_CODE_MAP
+      : product === "se"
+        ? SE_PURCHASE_CODE_MAP
+        : product === "taxi"
+          ? TAXI_PURCHASE_CODE_MAP
+          : BST_PURCHASE_CODE_MAP;
 
   const accounts = {};
   for (const code of new Set(lines.map((line) => String(line.accountMainID)))) {
-    const section = accountSection(code);
+    // The chart a product codes its purchases from says which accounts are
+    // purchases, whatever range they sit in: the Taxi Driver chart keeps its
+    // fixed assets at 7000 where the other three keep them at 5900.
+    const section = purchaseCodes[code] ? "purchases" : accountSection(code);
     const analysis =
       section === "sales" ? salesHeadings[salesCodes[code]] : section === "purchases" ? purchaseHeadings[purchaseCodes[code]] : null;
     const named =

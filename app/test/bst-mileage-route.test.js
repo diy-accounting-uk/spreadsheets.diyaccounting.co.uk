@@ -38,11 +38,21 @@ const taxData = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.to
 const CLAIM_MILES = 1674;
 const CLAIM = CLAIM_MILES * taxData.mileage.higher_rate_pence;
 
-// The scenario with every mileage-log entry stripped back to the amount it
-// was claimed for: the actual-cost route, for comparison.
+// The scenario with every mileage-log entry stripped back to a plain cash
+// amount: the actual-cost route, for comparison. Priced at CLAIM, the same
+// approved-rate figure the mileage route itself claims for these miles in
+// this package's own isolated view of the year -- not the entry's own
+// diya-gl amount, which prices the same miles at whatever rate the package
+// the master line was written for would band them at. SP Sixty Driving's
+// master states this claim at the rate its taxi package bands it, given the
+// fare days' miles it alone carries; BST never sees those, so its own
+// approved-rate price for the same 1,674 miles is CLAIM, not the master's.
 function withoutMiles(scenario) {
   const purchases = Object.fromEntries(
-    Object.entries(scenario.purchases).map(([month, txns]) => [month, txns.map(({ mileage, ...tx }) => tx)]),
+    Object.entries(scenario.purchases).map(([month, txns]) => [
+      month,
+      txns.map(({ mileage, ...tx }) => (mileage ? { ...tx, amount: CLAIM } : tx)),
+    ]),
   );
   return { ...scenario, purchases };
 }

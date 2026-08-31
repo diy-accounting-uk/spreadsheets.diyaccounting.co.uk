@@ -44,27 +44,27 @@ Daily fares vary by day of week: Mondays average ~185, Tuesdays ~200, Wednesdays
 | Mar 2026 | 3,178 | — |
 | **Total** | **38,000** | **18,326** |
 
-March is the mileage-coded month: the driver claimed the month's 1,674 business miles at the approved rate instead of keeping fuel receipts, so the miles sit on that claim in the purchases journal rather than on the fare days. The year's business miles still come to 20,000.
+March is the mileage-coded month: the driver claimed the month's 1,674 business miles at the approved rate instead of keeping fuel receipts, so the miles sit on that claim in the purchases journal rather than on the fare days. The year's business miles still come to 20,000. By March, 18,326 of those miles are already recorded on the fare days, so the approved rate bands the month's own 1,674 past the 10,000-mile threshold, at 25p rather than 45p.
 
 ## Total Purchases by Category
 
 | Code | Category | Entries | Gross Total |
 |------|----------|--------:|------------:|
 | d | Fuel | 44 | 2,480 |
-| d | Mileage claim (March) | 1 | 753.30 |
+| d | Mileage claim (March) | 1 | 418.50 |
 | t | Road tax and insurance | 2 | 1,580 |
 | l | Legal and professional | 2 | 750 |
 | r | Repairs and maintenance | 15 | 580 |
 | g | General admin | 18 | 420 |
 | f | Fixed assets (dashcam) | 1 | 200 |
 | a | Advertising (car signage) | 1 | 150 |
-| | **Total Purchases** | **84** | **6,913.30** |
+| | **Total Purchases** | **84** | **6,578.50** |
 
 ### Purchase Details
 
 **Fuel (code d)** -- 4 fill-ups per month at Shell, BP, and Texaco stations, for the eleven months to February. Amounts range from 51 to 62 per fill. Total: 2,480.
 
-**Mileage claim (code d)** -- March's 1,674 business miles, entered as a `mileage-log` line carrying the miles as a measurable quantity. The package is given the miles, not the amount, and prices them itself at the Admin sheet's approved rate. Claimed at 753.30.
+**Mileage claim (code d)** -- March's 1,674 business miles, entered as a `mileage-log` line carrying the miles as a measurable quantity. The package is given the miles, not the amount, and prices them itself at the Admin sheet's approved rate, banding this month's miles against the 18,326 already recorded on the fare days. Claimed at 418.50 (1,674 miles at 25p, past the 10,000-mile threshold).
 
 **Road tax and insurance (code t)** -- Annual car insurance 1,400 (Admiral Insurance, direct debit) and road tax 180 (DVLA). Total: 1,580.
 

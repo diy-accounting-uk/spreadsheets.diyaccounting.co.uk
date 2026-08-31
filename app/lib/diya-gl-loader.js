@@ -25,7 +25,7 @@ import {
   computeGrossSales,
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
-import { totalBusinessMiles } from "./tax/mileage.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -164,10 +164,11 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
   let filteredLines = filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
-  // Only the two products whose cellWrites fills a mileage column take the
-  // miles, and only the Taxi Driver package takes a sales line's (see the
-  // note on buildGrouped's carriesMileage setting).
-  const carriesMileage = product === "taxi" ? "all" : product === "bst" ? "claims" : "none";
+  // Every product whose cellWrites fills a mileage column takes the miles,
+  // and only the Taxi Driver package takes a sales line's (see the note on
+  // buildGrouped's carriesMileage setting). Ltd keeps mileage on
+  // expensesform.xlsx, which its journal writer does not post to.
+  const carriesMileage = product === "taxi" ? "all" : product === "ltd" ? "none" : "claims";
   const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage });
 
   // Compute expected values
@@ -196,7 +197,7 @@ export function diyaGlToScenario(book, lines, product) {
       : Math.round(turnoverLines.reduce((sum, l) => sum + l.amount, 0));
   }
 
-  // Compute expense totals by code
+  // Compute expense totals by code.
   const byCode = {};
   purchaseLines.forEach((l) => {
     const code = purchaseCodeMap[l.accountMainID];
@@ -228,26 +229,56 @@ export function diyaGlToScenario(book, lines, product) {
   if (businessMiles) expected.total_mileage = businessMiles;
 
   if (product === "bst") {
-    const stockPurchases = byCode.s || 0;
+    // A mileage-log line buys nothing: BST's own package prices it from the
+    // whole year's business miles rather than the amount the book states for
+    // one entry, the same way the recalculated sheet and the JS calculator
+    // both do, so it is left out of this total and priced here instead. A
+    // master line that feeds more than one package can carry a different
+    // true price in each -- a taxi package sees the fare days' miles too, and
+    // bands the same entry's miles differently -- so trusting the book's own
+    // amount here would tie this figure to whichever package the line was
+    // priced for.
+    const bstByCode = {};
+    purchaseLines
+      .filter((l) => !(l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+      .forEach((l) => {
+        const code = purchaseCodeMap[l.accountMainID];
+        if (code) bstByCode[code] = (bstByCode[code] || 0) + l.amount;
+      });
+    if (businessMiles) bstByCode.m = (bstByCode.m || 0) + calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES);
+
+    const stockPurchases = bstByCode.s || 0;
     const openingStock = book.stock?.openingValue ?? 0;
     const closingStock = book.stock?.closingValue ?? 0;
     const stockAdj = openingStock - closingStock;
     const coS = stockPurchases + stockAdj;
-    const directCosts = byCode.d || 0;
+    const directCosts = bstByCode.d || 0;
     const grossProfit = totalSales - coS - directCosts;
     const expenseCodes = ["e", "p", "r", "g", "m", "t", "a", "l", "b", "i", "o"];
-    const totalExpenses = expenseCodes.reduce((s, c) => s + (byCode[c] || 0), 0);
+    const totalExpenses = expenseCodes.reduce((s, c) => s + (bstByCode[c] || 0), 0);
     const netProfit = grossProfit - totalExpenses;
     expected.gross_profit = Math.round(grossProfit);
     expected.net_profit = Math.round(netProfit);
-    expected.total_premises = Math.round(byCode.p || 0);
-    expected.total_gen_admin = Math.round(byCode.g || 0);
-    expected.total_legal = Math.round(byCode.l || 0);
+    expected.total_premises = Math.round(bstByCode.p || 0);
+    expected.total_gen_admin = Math.round(bstByCode.g || 0);
+    expected.total_legal = Math.round(bstByCode.l || 0);
   }
 
   if (product === "se" || product === "ltd") {
     const vatDivisor = vatRegistered ? 1.2 : 1;
-    expected.total_motor_net = Math.round((byCode.v || 0) / vatDivisor);
+    // A mileage-log line buys nothing. The Self Employed Purchases sheet
+    // prices the year's business miles itself (C2 pools them, G2 bands them
+    // at the Admin rates) and files the claim under Motor Expenses with no
+    // VAT to strip, so the line's own amount is left out of the motoring
+    // total and the claim goes in instead -- the same swap the Basic Sole
+    // Trader figures make above. Ltd's journal writer fills no mileage
+    // column, so its motoring total is the cash it spent and nothing else.
+    const cashMotor = purchaseLines
+      .filter((l) => !(product === "se" && l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+      .filter((l) => purchaseCodeMap[l.accountMainID] === "v")
+      .reduce((sum, l) => sum + l.amount, 0);
+    const mileageClaim = product === "se" ? calculateMileageAllowance(businessMiles, HMRC_CAR_MILEAGE_RATES) : 0;
+    expected.total_motor_net = Math.round(cashMotor / vatDivisor + mileageClaim);
     expected.total_legal_net = Math.round((byCode.l || 0) / vatDivisor);
     if (product === "ltd") {
       expected.total_premises_net = Math.round((byCode.r || 0) / vatDivisor);
@@ -318,6 +349,7 @@ export function diyaGlToScenario(book, lines, product) {
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
         accountMainID: line.accountMainID,
+        reference: line.documentReference,
       });
     }
     scenario.payroll = payrollByMonth;
@@ -424,16 +456,18 @@ export function diyaGlToScenario(book, lines, product) {
  * Extract tax data from book.toml tax section into the format matching app/data/*.toml.
  * Bridges diya-gl field names (camelCase) to tax data field names (snake_case).
  * @param {Object} book - parsed book.toml
- * @returns {Object} tax data in the same format as app/data/se-YYYY-YYYY.toml
+ * @param {string} [product] - 'bst' | 'taxi' | 'se' | 'ltd' (optional; defaults to SE key shape)
+ * @returns {Object} tax data in the same format as app/data/se-YYYY-YYYY.toml or app/data/ltd-YYYY.toml
  */
-export function extractTaxDataFromBook(book) {
+export function extractTaxDataFromBook(book, product) {
   const tax = book.tax || {};
   const it = tax.incomeTax || {};
   const ni = tax.nationalInsurance || {};
   const ca = tax.capitalAllowances || {};
   const mi = tax.mileage || {};
+  const ct = tax.corporationTax || {};
 
-  return {
+  const baseTaxData = {
     income_tax: {
       personal_allowance: it.personalAllowance || 12570,
       starting_rate: 0,
@@ -458,10 +492,6 @@ export function extractTaxDataFromBook(book) {
       class4_upper_rate: ni.class4UpperRate ?? 0.02,
       class4_upper_limit: ni.class4UpperProfits ?? 50270,
     },
-    capital_allowances: {
-      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
-      writing_down_allowance: ca.mainRateWDA || 0.18,
-    },
     mileage: {
       higher_rate_limit: 10000,
       higher_rate_pence: mi.carFirst10000 || 0.45,
@@ -473,4 +503,39 @@ export function extractTaxDataFromBook(book) {
       standard_rate: 0.2,
     },
   };
+
+  // Capital allowances differ by regime: Ltd has main/special rates and full expensing;
+  // SE (and other regimes) use a single writing_down_allowance rate.
+  if (product === "ltd") {
+    baseTaxData.capital_allowances = {
+      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
+      writing_down_allowance_main: ca.mainRateWDA || 0.18,
+      writing_down_allowance_special: ca.specialRateWDA || 0.06,
+      full_expensing_rate: 0, // Defaults to 0; varies by tax year but not available from book.toml
+    };
+    baseTaxData.corporation_tax = {
+      main_rate: ct.mainRate || 0.25,
+      small_profits_rate: ct.smallProfitsRate || 0.19,
+      small_profits_limit: ct.smallProfitsLimit || 50000,
+      main_rate_limit: ct.mainRateThreshold || 250000,
+      marginal_relief_fraction: 0.015, // Not available from book.toml; use standard value
+    };
+    // Depreciation rates for Ltd asset classes. Not available from book.toml;
+    // use standard accounting rates. These match app/data/ltd-*.toml values.
+    baseTaxData.depreciation = {
+      land_and_property: 0.0,
+      plant_and_machinery: 0.1,
+      fixtures_and_fittings: 0.2,
+      computer_equipment: 0.33,
+      motor_vehicles: 0.25,
+    };
+  } else {
+    // SE/BST/Taxi use a single writing_down_allowance key
+    baseTaxData.capital_allowances = {
+      annual_investment_allowance: ca.annualInvestmentAllowance ? ca.annualInvestmentAllowance / 1000000 : 1.0,
+      writing_down_allowance: ca.mainRateWDA || 0.18,
+    };
+  }
+
+  return baseTaxData;
 }

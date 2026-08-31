@@ -61,7 +61,10 @@ import {
   bstExpectedFigures,
   computeNetSales,
   computeSpreadsheetNetSales,
+  splitStraddlingLines,
+  deriveStraddlingEntries,
 } from "../lib/scenario-extractor.js";
+import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "../lib/tax/mileage.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -136,7 +139,12 @@ const VAT_ON = (gross, rate) => Math.round(((gross * rate) / (1 + rate)) * 100) 
 // trader and a basic sole trader
 // ============================================================================
 
-const { dir: PRECISION_DIR, book, lines: allLines } = readMaster("precision-code-ltd");
+const { dir: PRECISION_DIR, book, lines: precisionLines } = readMaster("precision-code-ltd");
+
+// The straddling lines carry diya-gl:vatPeriodEnd, dated before the book
+// opens or after it closes; every function below that builds the accounting
+// year's own figures has to see only the year's own lines.
+const { yearLines: allLines, straddlingLines } = splitStraddlingLines(precisionLines);
 
 // The one dividend the master book declares for the year. book.dividends is
 // an array (a book could in principle declare more than one), but this
@@ -193,29 +201,15 @@ if (workedOut !== published) {
   throw new Error(`The bank journal leaves ${workedOut} owing, against a published closing debtor ledger of ${published}`);
 }
 
-// Sales and purchases in the VAT periods either side of the accounting year.
-// The VAT workbook keeps a pair of entry sheets per straddling period and the
-// figures reach the VAT return without ever touching the books, so these are
-// the only transactions in the fixture that move a VAT box and leave the
-// trial balance where it was. Gross amounts are multiples of six so the
-// standard-rate split is exact to the penny. Dates sit in the April-March
-// frame the month keys describe, two months before the year on 02Y1 and 03Y1
-// and three months after it on 04Y2, 05Y2 and 06Y2.
-const straddlingSales = [
-  { period: "02Y1", date: "2025-02-14", customer: "Acme Corp", invoice: "INV-0801", amount: 4800 },
-  { period: "03Y1", date: "2025-03-18", customer: "Beta Systems", invoice: "INV-0802", amount: 2400 },
-  { period: "04Y2", date: "2026-04-10", customer: "Acme Corp", invoice: "INV-1301", amount: 3600 },
-  { period: "05Y2", date: "2026-05-12", customer: "Gamma Ltd", invoice: "INV-1302", amount: 1800 },
-  { period: "06Y2", date: "2026-06-11", customer: "Beta Systems", invoice: "INV-1303", amount: 1200 },
-];
-
-const straddlingPurchases = [
-  { period: "02Y1", date: "2025-02-20", supplier: "TechParts Ltd", invoice: "TP-2402", amount: 720 },
-  { period: "03Y1", date: "2025-03-24", supplier: "WorkSpace Ltd", invoice: "WS-2402", amount: 1200 },
-  { period: "04Y2", date: "2026-04-15", supplier: "Shell", invoice: "SH-2604", amount: 240 },
-  { period: "05Y2", date: "2026-05-19", supplier: "BT Business", invoice: "BT-2605", amount: 360 },
-  { period: "06Y2", date: "2026-06-16", supplier: "WorkSpace Ltd", invoice: "WS-2606", amount: 480 },
-];
+// Sales and purchases in the VAT periods either side of the accounting year,
+// derived from the master's own straddling lines (sales/purchases lines
+// carrying diya-gl:vatPeriodEnd). The VAT workbook keeps a pair of entry
+// sheets per straddling period and the figures reach the VAT return without
+// ever touching the books, so these are the only transactions in the fixture
+// that move a VAT box and leave the trial balance where it was.
+const { periodCoveredStart, periodCoveredEnd } = book.documentInfo;
+const straddlingSales = deriveStraddlingEntries(straddlingLines, "sales", "customer", periodCoveredStart, periodCoveredEnd);
+const straddlingPurchases = deriveStraddlingEntries(straddlingLines, "purchases", "supplier", periodCoveredStart, periodCoveredEnd);
 
 // The hire purchase agreements the master book declares, in the scenario's
 // own field names. Each one finances one purchase; the HPfinance sheet works
@@ -336,7 +330,7 @@ const advSalesLines = advLines.filter((l) => l.sourceJournalID === "sales");
 const SE_TURNOVER_ACCOUNTS = new Set(["4000", "4001", "4002", "4003"]);
 const advTurnoverLines = advSalesLines.filter((l) => SE_TURNOVER_ACCOUNTS.has(l.accountMainID));
 const advTotalSales = computeSpreadsheetNetSales(advTurnoverLines);
-const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
+const advGrouped = buildGrouped(advLines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
 advGrouped.payroll = buildPayroll(advLines);
 const advPurchLines = advLines.filter((l) => l.sourceJournalID === "purchases");
 const advByCode = {};
@@ -344,6 +338,16 @@ advPurchLines.forEach((l) => {
   const c = SE_PURCHASE_CODE_MAP[l.accountMainID];
   if (c) advByCode[c] = (advByCode[c] || 0) + l.amount;
 });
+// A mileage-log line buys nothing: the Purchases sheet prices the year's
+// business miles itself and files the claim under Motor Expenses with no VAT
+// on it, so the motoring total leaves the line's own amount out and takes the
+// claim instead. Trusting the amount the master states would tie the figure
+// to whichever package that line was priced for.
+const advBusinessMiles = totalBusinessMiles(advPurchLines);
+const advCashMotor = advPurchLines
+  .filter((l) => !(l.measurableUnitOfMeasure === "miles" && typeof l.measurableQuantity === "number"))
+  .filter((l) => SE_PURCHASE_CODE_MAP[l.accountMainID] === "v")
+  .reduce((sum, l) => sum + l.amount, 0);
 const advToml = formatScenarioToml(
   {
     name: "Precision Code - advanced self employed",
@@ -367,7 +371,8 @@ const advToml = formatScenarioToml(
   advGrouped,
   {
     total_sales: advTotalSales,
-    total_motor_net: Math.round((advByCode.v || 0) / 1.2),
+    total_mileage: advBusinessMiles,
+    total_motor_net: Math.round(advCashMotor / 1.2 + calculateMileageAllowance(advBusinessMiles, HMRC_CAR_MILEAGE_RATES)),
     total_legal_net: Math.round((advByCode.l || 0) / 1.2),
     opening_stock: 10000,
     closing_stock: 6000,
@@ -895,7 +900,7 @@ function writeBrickworkSe(vatRegistered) {
   const salesLines = lines.filter((line) => line.sourceJournalID === "sales");
   const byCode = totalsByCode(lines, SE_PURCHASE_CODE_MAP);
   const vatDivisor = 1 + (vatRegistered ? TWIN_VAT_RATE : 0);
-  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true });
+  const grouped = buildGrouped(lines, SE_PURCHASE_CODE_MAP, { carriesSourceFields: true, carriesMileage: "claims" });
   grouped.payroll = buildPayroll(lines);
   const entity = brickworkEntity("SelfEmployed", { vatRegistered, soleTrader: true });
   const employees = brickworkEmployees(brickBook.employees.filter((employee) => !employee.isDirector));

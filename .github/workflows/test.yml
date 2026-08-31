@@ -230,17 +230,23 @@ jobs:
       - name: Compute reports from diya-gl via JS engine
         run: node app/bin/report.js --package taxi --data examples/sp-sixty-driving/taxi --years se-2025-2026 --output-dir target/taxi-js
 
-      - name: 'Roundtrip scorecard (EQ1 only, budget gate)'
+      - name: Export diya-gl data from Excel package
+        run: node app/bin/export.js --package taxi --source-dir target/taxi-pkg --output-dir target/taxi-excel/data
+
+      - name: 'Roundtrip scorecard (EQ1 and EQ2, budget gate)'
         run: node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-excel --js target/taxi-js --budget app/data/roundtrip-budget.json
 
       - name: 'EQ3: stability of the recalculated package'
         run: node app/bin/verify-stability.js --package taxi --source-dir target/taxi-pkg --output-dir target/taxi-stability
 
-      # app/bin/export.js has no Taxi Driver support yet (xlsx-exporter.js's
-      # periodCovered() finds no postings on this package's own sheets), so
-      # EQ2 and the double-roundtrip, which both depend on it, do not run
-      # here -- unlike the BST, SE and Ltd jobs above and below. This job
-      # gates EQ1 and stability only.
+      - name: 'Double-roundtrip: re-generate from exported data'
+        run: node app/bin/generate.js --package taxi --years se-2025-2026 --year-end 2026-04-05 --data target/taxi-excel/data --output-dir target/taxi-pkg2 --skip-guide
+
+      - name: 'Double-roundtrip: re-export'
+        run: node app/bin/export.js --package taxi --source-dir target/taxi-pkg2 --output-dir target/taxi-exported-data2
+
+      - name: 'Double-roundtrip: pass 2 == pass 1 (MUST PASS)'
+        run: diff target/taxi-excel/data/lines.jsonl target/taxi-exported-data2/lines.jsonl
 
   roundtrip-se:
     name: 'roundtrip fidelity (SE)'
