@@ -111,26 +111,28 @@ follow the reconciliation-bug method.
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
   313/16 untouched toward the residue the report says is deliberate.
-- [ ] **Cut the LLM judge's Bedrock spend** (Sonnet) — `app/bin/judge-reconciliation.js` runs
-  `anthropic.claude-opus-5` per product from the four `generate-*` workflows and from
-  `deploy.yml` (every web/infra push plus the daily cron), re-judging unchanged digests. Do,
-  in order of effect:
-  1. Memoize by content: hash digest + rubric + model id into `judge-verdict-<product>.json`
-     and skip the Bedrock call when the committed verdict's hash matches. This also ends the
-     double-judging (generate judges fresh reports, the next deploy re-judges the identical
-     committed ones) with no workflow conditions.
-  2. Cap output: `MAX_TOKENS` 16000 → ~2000 and instruct terse one-line-per-concern output;
-     output tokens cost ~5× input.
-  3. Deduplicate the Ltd digest: 94 near-identical year-end runs collapse to the featured
-     run's full indicators plus one delta line per other run (a diverging run still appears
-     in full).
-  4. Model cascade: Sonnet judges by default; a pass stands; a fail or unparseable answer
-     escalates the same digest to Opus for confirmation before anything blocks. The rubric is
-     never softened.
-  5. Prompt caching: the system preamble + rubric are identical across the four products'
-     calls — mark them as a cached prefix for the cached-token discount.
-  Extend the judge's existing tests (`app/test/judge-reconciliation.test.js`) to cover the
-  memoization skip, the cascade's escalation path, and the Ltd delta digest.
+- [ ] **J1: memoize the judge by content** (Sonnet) — `app/bin/judge-reconciliation.js` re-judges
+  unchanged digests from `deploy.yml` (every web/infra push plus the daily cron) and the four
+  `generate-*` workflows. Hash digest + rubric + model id into `judge-verdict-<product>.json`
+  and skip the Bedrock call when the committed verdict's hash matches. This also ends the
+  double-judging (generate judges fresh reports; the next deploy re-judges the identical
+  committed ones) with no workflow conditions. Biggest saving, zero quality change. Test: the
+  memoization skip path in `app/test/judge-reconciliation.test.js`.
+- [ ] **J2: cap the judge's output** (Haiku) — `MAX_TOKENS` 16000 → ~2000 in
+  `judge-reconciliation.js`, and instruct terse one-line-per-concern output in the prompt;
+  output tokens cost ~5× input. Test: the verdict still parses on the existing fixtures.
+- [ ] **J3: deduplicate the Ltd digest** (Sonnet) — the Ltd digest folds ~94 near-identical
+  year-end runs into one prompt. Collapse to the featured run's full indicators plus one delta
+  line per other run; a run whose indicators diverge from the featured one still appears in
+  full. Test: the delta digest in `judge-reconciliation.test.js`, including a diverging-run
+  case that appears unabridged.
+- [ ] **J4: judge on Sonnet, escalate to Opus** (Sonnet; after J1 so the hash keys the model) —
+  Sonnet judges by default; a pass stands; a fail or unparseable answer escalates the same
+  digest to Opus for confirmation before anything blocks. The rubric is never softened. Test:
+  the escalation path with a stubbed client.
+- [ ] **J5: cache the shared prompt prefix** (Haiku) — the system preamble + rubric are
+  identical across the four products' calls; mark them as a cached prefix (Bedrock prompt
+  caching) for the cached-token discount on every call after the first.
 
 
 
