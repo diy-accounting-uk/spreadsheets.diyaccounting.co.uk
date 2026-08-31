@@ -703,8 +703,9 @@ export function rollPayslipsAdminCachedDates(payslipsXml, startYear) {
   return payslipsXml;
 }
 
-// The daily chain's last row. Rolling stops here because a reference past it
-// reads a cell the chain never reaches.
+// The daily chain's first and last rows. Rolling stops at the last because a
+// reference past it reads a cell the chain never reaches.
+const PAYSLIPS_ADMIN_FIRST_CALENDAR_ROW = 2;
 const PAYSLIPS_ADMIN_CHAIN_LAST_ROW = 381;
 
 // Every sheet in the Payslips workbook reads dates back off the Admin chain
@@ -1331,6 +1332,66 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
 
   const origDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", wbXml, { date: origDate });
+
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// ── Payslips Admin month-sheet column (Ltd Company all year-end months) ─────
+//
+// Payslips Admin column A is headed "Month Sheet": for each day of the tax
+// calendar it names the month tab that day's payroll belongs on, and the
+// printed payslip joins through it -- H3 is LOOKUP(F4, Admin!D, Admin!A),
+// month number to tab name. The column builds the name from the calendar's
+// own 6 April anchor, so it names Apr, May, Jun ..., which is the tab order
+// only the March template ships. Rename the tabs for another year end and the
+// column still hands month 1 to "Apr", so the page reads whichever tab now
+// carries that name -- a different month of the year, printed under its own
+// period number, with nothing else on the sheet disagreeing.
+//
+// The tabs themselves are the frame everything else follows: each carries its
+// place in the package's own year in E, its block starts on the row that place
+// gives it, and the writers fill it by that place. So the name column is what
+// moves.
+export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth, adminSheetPath) {
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) {
+    return xlsxBuffer;
+  }
+
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let adminXml = await zip.file(adminSheetPath).async("string");
+
+  // The column's month name is the calendar anchor's month plus the payroll
+  // month's distance from it, so the whole column moves by the distance from
+  // the template's first tab to this package's.
+  const monthShift = (yearEndMonth - 3 + 12) % 12;
+  const monthSheetFormula = /TEXT\(DATE\(YEAR\(B\$2\),MONTH\(B\$2\)\+\(D(\d+)-1\),1\),"Mmm"\)/g;
+  let formulasMoved = 0;
+  adminXml = adminXml.replace(monthSheetFormula, (_, row) => {
+    formulasMoved++;
+    return `TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D${row}-1)+${monthShift},1),"Mmm")`;
+  });
+  if (formulasMoved === 0) {
+    throw new Error(`No Payslips Admin month-sheet formulas found in ${adminSheetPath}`);
+  }
+
+  // The cached names each of those cells carries, so a package that is never
+  // recalculated still joins to the right tab.
+  for (let row = PAYSLIPS_ADMIN_FIRST_CALENDAR_ROW; row <= PAYSLIPS_ADMIN_CHAIN_LAST_ROW; row++) {
+    const monthCell = matchCell(adminXml, `D${row}`);
+    if (!monthCell) throw new Error(`Payslips Admin D${row} not found in ${adminSheetPath}`);
+    const monthNumber = parseInt((monthCell.fullMatch.match(/<v>([^<]*)<\/v>/) || [])[1], 10);
+    if (!(monthNumber >= 1 && monthNumber <= 12)) {
+      throw new Error(`Payslips Admin D${row} holds ${monthNumber}, not a payroll month number`);
+    }
+    adminXml = setCellCachedValue(adminXml, `A${row}`, targetTabs[monthNumber - 1]);
+  }
+
+  const origDate = zip.file(adminSheetPath).date;
+  zip.file(adminSheetPath, adminXml, { date: origDate });
 
   stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });

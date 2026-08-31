@@ -3359,7 +3359,6 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const payslipsAdmin = results["Payslips.xlsx!Admin"];
   if (payslipsAdmin) {
     const yearStart = num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]);
-    const yearStartDate = new Date(Date.UTC(1899, 11, 30) + Math.round(yearStart) * 24 * 60 * 60 * 1000);
     checkText(
       "Payslips calendar: the payroll year opens on 6 April",
       yearStart ? formatSerialDate(yearStart) : "",
@@ -3367,9 +3366,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       "6 April",
     );
 
+    // Column A is headed "Month Sheet" and is the printed payslip's join to a
+    // month tab, so it names this package's own tabs in order rather than the
+    // calendar months its dates fall in. On a March year end the two read the
+    // same, which is why a June package printed a different month's payslip
+    // with every figure on it self-consistent.
     const starts = payrollMonthStarts();
     for (const { month, row, daysBefore, week } of starts) {
-      const monthName = SHORT_MONTHS[(yearStartDate.getUTCMonth() + month - 1) % 12];
+      const tabName = fiscalTabs[month - 1];
       check(
         `Payslips calendar: payroll month ${month} opens on the first day of tax week ${week}`,
         num(payslipsAdmin[`B${row}`]),
@@ -3378,10 +3382,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
       check(`Payslips calendar: payroll month ${month} opens tax week ${week}`, num(payslipsAdmin[`C${row}`]), week, 0);
       checkText(
-        `Payslips calendar: payroll month ${month} is named for the month it opens`,
+        `Payslips calendar: payroll month ${month} names the ${tabName} tab`,
         String(payslipsAdmin[`A${row}`] ?? ""),
-        (text) => text === monthName,
-        monthName,
+        (text) => text === tabName,
+        tabName,
       );
     }
     check(
