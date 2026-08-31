@@ -2934,8 +2934,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       0,
     );
 
+    // cellWrites only puts the sample invoice line and carriage charge on the
+    // sheet for a VAT-registered business (rate > 0 and a VAT number) --
+    // otherwise Salesinvoice.xlsx keeps its blank template state, and these
+    // five figures would have nothing to compare against.
     const firstInvoiceSale = Object.values(expected.sales || {}).flat()[0];
-    if (firstInvoiceSale) {
+    if (rate > 0 && expected.business?.vat_number && firstInvoiceSale) {
       const expectedNet = firstInvoiceSale.amount;
       const expectedLineVat = (expectedNet * standardRatePercent) / 100;
       const expectedCarriageVat = (SALESINVOICE_SAMPLE_CARRIAGE_CHARGE * standardRatePercent) / 100;
