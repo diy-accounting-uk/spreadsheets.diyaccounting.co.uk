@@ -163,6 +163,28 @@ const REGISTER_MEMBER_COLUMNS = { name: "A", acquired: "C", nominalValue: "F", s
 const SHARE_NOMINAL_VALUE = 1;
 const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
+// ── Register of directors and directors' interests (Companysecretary.xlsx) ─
+// Directors&Secretary carries one officer a row: A the full name, B the
+// address, C the date of appointment, D the capacity, E the board meeting
+// that confirmed it, F the date of resignation. Row 2 ships the template's
+// own "Director" capacity in D2 and row 3 its "Company Secretary" capacity in
+// D3 -- the sheet's own two officer placeholders (verified against the XML:
+// shared strings "Director"/"Company Secretary", "Incorporation
+// registration" already filling E2/E3). A second director beyond row 2 takes
+// the rows after the secretary's, writing its own capacity explicitly, since
+// only rows 2 and 3 carry the template's own capacity text.
+//
+// DirectorsInterests runs one row a director from row 2, the template's own
+// single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
+// director's own shareholding was registered -- the same "acquired" date
+// their row carries on RegisterofMembers, when they hold shares at all.
+const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
+const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
+const DIRECTOR_SECRETARY_SECRETARY_ROW = 3;
+const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
+const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
+
 // ── Stock sheet layout ─────────────────────────────────────────────────────
 // The Stock sheet runs a row per month end from row 8 to row 30 in steps of
 // two, under an opening row 6 fed from the opening balance sheet. Column D
@@ -542,6 +564,48 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
       if (member.acquired) {
         const acquired = parseDate(member.acquired);
         register[`${REGISTER_MEMBER_COLUMNS.acquired}${row}`] = toExcelSerial(
+          acquired.getUTCFullYear(),
+          acquired.getUTCMonth() + 1,
+          acquired.getUTCDate(),
+        );
+      }
+    });
+  }
+
+  // Register of directors and secretary, and directors' interests: the
+  // directors are the scenario's own employees marked isDirector -- the same
+  // set OpenAccounts!E5/E6 already print by name. A missing entry here is a
+  // Companies House problem, not an arithmetic one, so this only ever writes
+  // what the scenario actually names.
+  const directors = (scenario.employees || []).filter((e) => e.isDirector);
+  if (directors.length > 0) {
+    const biz = scenario.business || {};
+    const officerAddress = [biz.address, biz.town, biz.postcode].filter(Boolean).join(", ") || undefined;
+
+    companysecretaryWrites["Directors&Secretary"] = {};
+    const officers = companysecretaryWrites["Directors&Secretary"];
+    directors.forEach((director, index) => {
+      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      if (row === undefined) return;
+      officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`] = director.name;
+      if (officerAddress) officers[`${DIRECTOR_SECRETARY_COLUMNS.address}${row}`] = officerAddress;
+      // Rows 2 and 3 already carry the template's own "Director"/"Company
+      // Secretary" capacity text; a second director beyond row 2 has to say
+      // so itself.
+      if (row !== DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW) officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = "Director";
+    });
+
+    companysecretaryWrites.DirectorsInterests = {};
+    const interests = companysecretaryWrites.DirectorsInterests;
+    directors.forEach((director, index) => {
+      const row = DIRECTORS_INTERESTS_ROWS[index];
+      if (row === undefined) return;
+      interests[`${DIRECTORS_INTERESTS_COLUMNS.name}${row}`] = director.name;
+      if (officerAddress) interests[`${DIRECTORS_INTERESTS_COLUMNS.address}${row}`] = officerAddress;
+      const holding = (scenario.members || []).find((member) => member.name === director.name);
+      if (holding?.acquired) {
+        const acquired = parseDate(holding.acquired);
+        interests[`${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`] = toExcelSerial(
           acquired.getUTCFullYear(),
           acquired.getUTCMonth() + 1,
           acquired.getUTCDate(),
@@ -1495,6 +1559,21 @@ export function multiFileOptions(yearEndMonth) {
         // charged, which the balance sheet has to carry as a creditor
         // falling due after more than one year.
         "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
+        // One officer a row: A the name, B the address. Rows 2 and 3 are the
+        // template's own director and secretary slots; the rest are a second
+        // director's, if the scenario names one.
+        "Directors&Secretary": [
+          DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW,
+          DIRECTOR_SECRETARY_SECRETARY_ROW,
+          ...DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS,
+        ].flatMap((row) => [`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`]),
+        // One director a row: A the name, B the address, C the date their own
+        // shareholding was registered.
+        "DirectorsInterests": DIRECTORS_INTERESTS_ROWS.flatMap((row) => [
+          `${DIRECTORS_INTERESTS_COLUMNS.name}${row}`,
+          `${DIRECTORS_INTERESTS_COLUMNS.address}${row}`,
+          `${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`,
+        ]),
       },
       // The expenses claim form's mileage rate. Month 01 holds the literal
       // the generator writes and the other eleven chain from it, so reading
@@ -2553,6 +2632,50 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       checkText(name, text(printed), (line) => line === (member?.name || ""), member ? member.name : "blank, there being no second member");
     printsMember("Directors' report: first shareholder named", report.A97, expected.members[0]);
     printsMember("Directors' report: second shareholder named", report.A98, expected.members[1]);
+  }
+
+  // ── The register of directors and secretary, and directors' interests ────
+  //
+  // Neither sheet carries a formula or a route to the accounts -- a missing
+  // entry is a Companies House problem, not an arithmetic one -- so this
+  // checks the entries land against the scenario's own directors, the same
+  // set OpenAccounts and the Report already print by name. An empty register
+  // fails here and nowhere else.
+  const officers = results["Companysecretary.xlsx!Directors&Secretary"];
+  const interests = results["Companysecretary.xlsx!DirectorsInterests"];
+  const expectedDirectors = (expected.employees || []).filter((e) => e.isDirector);
+  if (officers && expectedDirectors.length > 0) {
+    expectedDirectors.forEach((director, index) => {
+      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      if (row === undefined) return;
+      checkText(
+        `Directors&Secretary: row ${row} names ${director.name}`,
+        text(officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`]),
+        (name) => name === director.name,
+        director.name,
+      );
+    });
+  }
+  if (interests && expectedDirectors.length > 0) {
+    expectedDirectors.slice(0, DIRECTORS_INTERESTS_ROWS.length).forEach((director, index) => {
+      const row = DIRECTORS_INTERESTS_ROWS[index];
+      checkText(
+        `DirectorsInterests: row ${row} names ${director.name}`,
+        text(interests[`${DIRECTORS_INTERESTS_COLUMNS.name}${row}`]),
+        (name) => name === director.name,
+        director.name,
+      );
+      const holding = (expected.members || []).find((member) => member.name === director.name);
+      if (holding?.acquired) {
+        const acquired = parseDate(holding.acquired);
+        check(
+          `DirectorsInterests: row ${row} registers ${director.name}'s shareholding on the date the register of members carries`,
+          num(interests[`${DIRECTORS_INTERESTS_COLUMNS.registered}${row}`]),
+          toExcelSerial(acquired.getUTCFullYear(), acquired.getUTCMonth() + 1, acquired.getUTCDate()),
+          0,
+        );
+      }
+    });
   }
 
   // ── The dividend cycle, minute to balance sheet ──────────────────────────

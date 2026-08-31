@@ -1301,6 +1301,40 @@ describeCalc(
         "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
       ]);
     });
+
+    // ── Register of directors and secretary, and directors' interests ───────
+
+    it("registers the director and their interest", () => {
+      const officers = results["Companysecretary.xlsx!Directors&Secretary"];
+      const interests = results["Companysecretary.xlsx!DirectorsInterests"];
+      expect(officers.A2).toBe("Carol Smith");
+      expect(interests.A2).toBe("Carol Smith");
+      // Carol Smith's own row on RegisterofMembers carries "acquired" 2020-01-01.
+      expect(interests.C2).toBe(43831);
+    });
+
+    it("fails the officer row when Directors&Secretary A2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "Directors&Secretary", "A2", 0);
+      expect(value).not.toBe("Carol Smith");
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!Directors&Secretary", "A2", value);
+      expect(failureNames(corrupted)).toEqual(["Directors&Secretary: row 2 names Carol Smith"]);
+    });
+
+    it("fails the interest row when DirectorsInterests A2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "DirectorsInterests", "A2", 0);
+      expect(value).not.toBe("Carol Smith");
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!DirectorsInterests", "A2", value);
+      expect(failureNames(corrupted)).toEqual(["DirectorsInterests: row 2 names Carol Smith"]);
+    });
+
+    it("fails the interest date when DirectorsInterests C2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "DirectorsInterests", "C2", 40000);
+      expect(value).toBe(40000);
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!DirectorsInterests", "C2", value);
+      expect(failureNames(corrupted)).toEqual([
+        "DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries",
+      ]);
+    });
   },
   900000,
 );
