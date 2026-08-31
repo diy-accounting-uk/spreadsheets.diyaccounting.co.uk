@@ -14,7 +14,8 @@ lands:
 - payslip track (Sonnet) — T2: merged to `claude/next-batch-wave-1` (35 cells per workbook
   repaired, coverage checks anchored on payment references, 13 + 197 tests green)
 - print-sheet track (Opus) — C1: started
-- writes track (Sonnet) — C2 + C3: started
+- writes track (Sonnet) — C2 + C3: merged to `claude/next-batch-wave-1` (249/249 on the
+  merged state in its worktree; branch-side check re-run in flight)
 - roundtrip track (Opus) — F22: merged to `claude/next-batch-wave-1` (linesLost 0 both
   products, ratchets retired, RECONCILES 859/859 and 683/683)
 - comparator track (Sonnet) — F23: started
@@ -49,19 +50,12 @@ follow the reconciliation-bug method.
   payroll data for a chosen period (anchored to the fixture, never to the month tabs the
   join reads — a wrong join agreeing with the wrong month must fail). Prove breakable by
   corrupting the join's cached result.
-- [ ] **C2: the Salesinvoice VAT rate is a hard-coded 20** (Sonnet) — the five
-  `Salesinvoice.xlsx` sheets (both products) compute a customer-facing invoice total and VAT
-  with "VAT Rate" hard-coded 20 on every row, no tie to the tax year; the workbook has no
-  external link so a wrong figure never reaches the books, but it reaches the customer's
-  customer. Have the generator write the tax year's standard rate into the rate cells (follow
-  `buildSeCellEdits`' shape; discover the cells from the XML), read the invoice total/VAT cells
-  back, and check them against a hand-computed figure on the fixture. Prove breakable.
-- [ ] **C3: the Ltd statutory registers are write-only** (Sonnet) — `Directors&Secretary` and
-  `DirectorsInterests` in the Ltd package carry no formula and no route to the accounts; a
-  missing entry is a Companies House problem, not arithmetic. The scenario data already carries
-  the members (name, shares, `acquired`): have `cellWrites` populate the registers from it,
-  read the entries back, and check them against the fixture so an empty register fails. Verify
-  the sheet layout from the XML first.
+- [ ] **B3: the invoice carriage VAT is a hardcoded `*0.2` in the template formula** (Haiku) —
+  surfaced by C2: `Invoice Template!P62` in both products' `Salesinvoice.xlsx` reads
+  `IF(P58<>0,SUM(V38:V57)+P60*0.2,0)` — the carriage charge (`P60`) is taxed at a literal 0.2
+  independent of the rate C2 now writes into `Product Details`. Template formula surgery:
+  point the term at the written rate cell, extend C2's checks with a non-zero carriage case,
+  prove breakable.
 - [ ] **C5: regenerate `REPORT_SHEET_COVERAGE_GAPS.md` once C1-C4 land** (Haiku) — re-run the
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
