@@ -24,12 +24,6 @@ follow the reconciliation-bug method.
   allowances don't match headline capital spend. Follow the reconciliation-bug method;
   check overlap with the fifth-surface population below before treating it as separate.
   Suggested tier: Opus.
-- [ ] **Reply to Monika Tesarova; the six-donor decision** (operator) — her Apr27 Company VAT
-  report (2026-08-26, antony@ inbox) was fixed and republished the next day (`c8ef489f`, guard
-  test included; verified against the live package 2026-08-31). What remains is telling her the
-  fixed package is live, and the six-donor notification decision recorded as the one remainder
-  in `_developers/archive/PLAN_VAT_QUARTER_DROPDOWN.md`.
-
 
 
 
