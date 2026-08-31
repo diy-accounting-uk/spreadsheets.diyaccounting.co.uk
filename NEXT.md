@@ -12,7 +12,8 @@ lands:
 - FA track (Opus) — T1 + T4: started
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
-- judge track (Sonnet) — J1–J5: started
+- judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
+  tests 108/108 green)
 - hyperlink track (Haiku) — C4: merged to `claude/next-batch-wave-1` (08ef2978 + the Taxi
   Home link fix 1ac84f8d its test caught; 8/8 and taxi-only 14/14 green)
 
@@ -130,28 +131,6 @@ follow the reconciliation-bug method.
   every other block matching; re-seed the whole-line ratchets. The per-block widening was
   deliberately deferred once as riskier-than-scope, so prove the schema change with its own
   tests.
-- [ ] **J1: memoize the judge by content** (Sonnet) — `app/bin/judge-reconciliation.js` re-judges
-  unchanged digests from `deploy.yml` (every web/infra push plus the daily cron) and the four
-  `generate-*` workflows. Hash digest + rubric + model id into `judge-verdict-<product>.json`
-  and skip the Bedrock call when the committed verdict's hash matches. This also ends the
-  double-judging (generate judges fresh reports; the next deploy re-judges the identical
-  committed ones) with no workflow conditions. Biggest saving, zero quality change. Test: the
-  memoization skip path in `app/test/judge-reconciliation.test.js`.
-- [ ] **J2: cap the judge's output** (Haiku) — `MAX_TOKENS` 16000 → ~2000 in
-  `judge-reconciliation.js`, and instruct terse one-line-per-concern output in the prompt;
-  output tokens cost ~5× input. Test: the verdict still parses on the existing fixtures.
-- [ ] **J3: deduplicate the Ltd digest** (Sonnet) — the Ltd digest folds ~94 near-identical
-  year-end runs into one prompt. Collapse to the featured run's full indicators plus one delta
-  line per other run; a run whose indicators diverge from the featured one still appears in
-  full. Test: the delta digest in `judge-reconciliation.test.js`, including a diverging-run
-  case that appears unabridged.
-- [ ] **J4: judge on Sonnet, escalate to Opus** (Sonnet; after J1 so the hash keys the model) —
-  Sonnet judges by default; a pass stands; a fail or unparseable answer escalates the same
-  digest to Opus for confirmation before anything blocks. The rubric is never softened. Test:
-  the escalation path with a stubbed client.
-- [ ] **J5: cache the shared prompt prefix** (Haiku) — the system preamble + rubric are
-  identical across the four products' calls; mark them as a cached prefix (Bedrock prompt
-  caching) for the cached-token discount on every call after the first.
 
 
 
