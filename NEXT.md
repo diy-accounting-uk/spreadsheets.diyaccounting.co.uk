@@ -56,8 +56,13 @@ lands:
 Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
 once the wave's tracks are in and the full suite is green.
 
-Queued: B4 dispatches after the print track lands (both touch the exporter). The full
-suite is running on the branch tip alongside the print track.
+- calc track (Sonnet): started — the full suite's 13 real failures (calculator-se 10,
+  calculator-ltd 3): the EQ1 track's calculator expectations predate the carriage rename
+  (+1 check) and the VAT-registration gating (−4 or 5 for non-VAT scenarios), and the
+  calculators don't emit the carriage cell yet. The suite's other 20 failed files were
+  soffice-contention hook timeouts (everything skipped, 300-900s) — clean re-run at close.
+
+Queued: B4 dispatches after the print track lands (both touch the exporter).
 
 ## Open items
 
