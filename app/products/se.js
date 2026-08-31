@@ -379,25 +379,30 @@ export function cellWrites(scenario) {
       if (e.niNumber) emp[`M${base + 2}`] = e.niNumber;
       if (e.startDate) emp[`D${base + 11}`] = e.startDate;
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
-      if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
+      // The payroll number, not the scenario's own employee id. The printed
+      // payslip adds this cell to its block's start row to find the
+      // employee's line on the month tab, so a name in it takes the whole
+      // page's arithmetic with it.
+      emp[`D${base + 16}`] = i + 1;
       emp[`D${base + 17}`] = e.isDirector ? "D" : e.niCategory || "A";
     }
   }
 
-  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  // Payslips.xlsx monthly payroll data, on the month tab's own monthly block.
   if (scenario.payroll) {
     for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
       const sheetName = MONTH_SHEETS[monthKey];
       if (!sheetName) continue;
       if (!payslipsWrites[sheetName]) payslipsWrites[sheetName] = {};
       const sheet = payslipsWrites[sheetName];
+      const blockRow = monthlyPayrollBlockRow(MONTH_KEYS.indexOf(monthKey));
       // Write wages paid date from first entry
       if (entries.length > 0) {
         const d = parseDate(entries[0].date);
-        sheet.M49 = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        sheet[`M${blockRow + 1}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       }
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
-        const row = 51 + i;
+        const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
         sheet[`M${row}`] = e.grossPay;
@@ -407,13 +412,18 @@ export function cellWrites(scenario) {
         // Column S is a blank spacer in the template (self-closing, no
         // formula, never summed) -- the payslip's own reference goes there,
         // since nothing else on the row reads it; column T is the real
-        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
-        // which Wagesinterface!H reads. Verified against the template.
+        // employer-NI data entry cell -- the block's own total row sums it
+        // into T1, which Wagesinterface!H reads. Verified against the
+        // template.
         if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
     }
+    payslipsWrites[PAYSLIP_PRINT_SHEET] = {
+      [PAYSLIP_PRINT_CELLS.frequency]: "M",
+      [PAYSLIP_PRINT_CELLS.period]: PAYSLIP_PRINT_PERIOD,
+    };
   }
 
   // Fixedassets.xlsx Schedule sheet -- verified against the template:
@@ -914,6 +924,26 @@ export function multiFileOptions() {
       },
       "Payslips.xlsx": {
         Payment: Object.values(paymentCells).flat(),
+        // The printed payslip. H3/H4 are the join itself; L7, I9 and I10 are
+        // the block heading it lands on, and the rest is the first
+        // employee's line and its year-to-date row.
+        [PAYSLIP_PRINT_SHEET]: [
+          PAYSLIP_PRINT_CELLS.tab,
+          PAYSLIP_PRINT_CELLS.blockRow,
+          "L7",
+          "I9",
+          "I10",
+          "M8",
+          "G14",
+          "H14",
+          "I14",
+          "M14",
+          "G16",
+          "H16",
+          "I16",
+          "M16",
+          "M18",
+        ],
         // The payroll calendar the generator writes for the package's tax
         // year: B2 its seed date, I1 (=B366) the year it runs to, N1 the tax
         // year label the payslips print, and the name, date and month number
@@ -979,6 +1009,25 @@ const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 // the last row on the sheet. Nothing about a check depends on which month a
 // sampled row falls in: each one reads the month number off the sheet itself.
 const PAYROLL_CALENDAR_SAMPLE_ROWS = [2, 33, 64, 95, 126, 157, 188, 219, 250, 281, 312, 343, 366, 381];
+
+// ── Payslips.xlsx month tabs and the printed payslip ───────────────────────
+// A month tab stacks one ten-row block per tax week from row 8, then the
+// monthly block below them, so where the monthly block starts follows the
+// weeks that month holds -- four, four and five a quarter, with a sixth on
+// the last. Block row + 1 carries the date wages were paid and the period
+// number; the five employee lines run from block row + 3.
+const PAYROLL_WEEKS_PER_MONTH = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex];
+
+// The Payslips sheet is the page an employer prints and hands over. F3 picks
+// weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
+// a month tab name and a block start row, and every printed figure is an
+// INDIRECT through them. Nothing downstream reads the page, so the
+// reconciliation asks it for a period other than the sheet's own default (1)
+// -- a join stuck on the default then prints the wrong period and fails.
+const PAYSLIP_PRINT_SHEET = "Payslips";
+const PAYSLIP_PRINT_CELLS = { frequency: "F3", period: "F4", tab: "H3", blockRow: "H4" };
+const PAYSLIP_PRINT_PERIOD = 2;
 
 // The month names the payroll calendar's own formula produces
 // (TEXT(DATE(...),"Mmm") on the tax year start plus the month number).
@@ -2255,6 +2304,47 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Payslips!Payment ${MONTH_KEYS[i]} D${row} NI due`, payment[`D${row}`] || 0, niDue);
       check(`Payslips!Payment ${MONTH_KEYS[i]} E${row} income tax due`, payment[`E${row}`] || 0, sums.incomeTax);
       check(`Payslips!Payment ${MONTH_KEYS[i]} I${row} total amount payable`, payment[`I${row}`] || 0, niDue + sums.incomeTax);
+    }
+
+    // ── Payslips!Payslips: the page the employer prints and hands over ─────
+    //
+    // The page joins itself to a month tab -- H3 names the tab, H4 the row
+    // its block starts on -- and every printed figure is an INDIRECT through
+    // that pair. Nothing downstream reads the page, so a join landing on the
+    // wrong period prints one month's pay under another month's heading with
+    // every other check here still green. cellWrites asks for a period other
+    // than the sheet's own default, and the heading is measured against the
+    // scenario's own entries for that period rather than against the tab the
+    // join chose.
+    const printed = results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`];
+    if (printed) {
+      const printedTab = MONTH_SHEETS[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]];
+      const printedEntries = expected.payroll[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]] || [];
+      checkText(`Payslips print: the page reads the ${printedTab} tab`, String(printed[PAYSLIP_PRINT_CELLS.tab] ?? "").trim(), printedTab);
+      checkText("Payslips print: the block the page reads is a monthly payroll", String(printed.L7 ?? "").trim(), "MONTHLY PAYROLL");
+      check(`Payslips print: the period printed is payroll month ${PAYSLIP_PRINT_PERIOD}`, num(printed.I10), PAYSLIP_PRINT_PERIOD, 0);
+      if (printedEntries.length > 0) {
+        const paidOn = parseDate(printedEntries[0].date);
+        check(
+          "Payslips print: the period ends the day the scenario paid that month's wages",
+          num(printed.I9),
+          toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          0,
+        );
+        // Every figure below the heading is gated on the employee's line
+        // carrying a pay number, and a month tab only gives one to an
+        // employee whose starting date is on Payslips!Employee. No scenario
+        // carries starting dates, so the page prints its heading and leaves
+        // the figures blank.
+        checks.push({
+          name: "Payslips print: the first employee's line carries the pay the scenario recorded",
+          actual: String(printed.G14 ?? "").trim() || "blank",
+          expected: printedEntries[0].grossPay,
+          pass: false,
+          severity: "warning",
+          diff: "",
+        });
+      }
     }
 
     // P&L route: Wages & Salaries (row 21) = Purchases.xlsx "w"-coded net
