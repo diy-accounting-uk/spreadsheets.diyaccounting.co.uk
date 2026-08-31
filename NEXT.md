@@ -32,6 +32,10 @@ follow the reconciliation-bug method.
 - `PLAN_DIYA_GL_LLM_REVIEW.md` — LLM review of a loaded book, opt-in, metered in-page; starts
   after the BST spike's phase 5.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; run when the operator wants it.
+- `PLAN_TEMPLATE_SURGERY.md` — eight shipped-template repairs in four dispatch-ready tracks
+  (income-tax taper/additional rate, Ltd CT/CT600 + Ltd mileage, fixed-asset book values and HP
+  rows, Salesinvoice G6); written before the fidelity waves, so each track needs a currency pass
+  against the tree at dispatch.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
