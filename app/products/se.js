@@ -1670,6 +1670,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
 
+  // The same cell as text. The sheet's blank is a space and an engine that
+  // computes the cell holds nothing there, so both sides have to reach a
+  // blank comparison as "".
+  const blank = (v) => String(v ?? "").trim();
+
   // The approved rates the generator injected into the Admin sheet, which is
   // what the Purchases sheets band their running mileage total by. The rates
   // have held since 2011/12, so a book checked without a tax year's data
@@ -2503,12 +2508,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // blank regardless of what the row's own date-comparison branch (the
     // one the #REF! sat in) resolves to, and T41 -- the period's own
     // employer-NI total -- stays nil alongside it. The sheet's own blank is
-    // a single space (" "); readCellValue trims every string read, so a
-    // blank cell reaches this check as "".
+    // a single space (" ") and the JS engine holds nothing there at all, so
+    // both reach this check as "" once trimmed.
     const jul = results["Payslips.xlsx!Jul"];
     if (jul) {
       for (const row of PAYSLIPS_WEEKLY_ROWS) {
-        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, jul[`F${row}`], "");
+        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, blank(jul[`F${row}`]), "");
       }
       check("Payslips!Jul T41 period total (no weekly employer NI to bring forward)", num(jul.T41), 0, 0);
     }
@@ -2528,7 +2533,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
           check(`Payslips!Aug ${col}${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`${col}${row}`]), 0, 0);
         }
         if (row >= 12) check(`Payslips!Aug K${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`K${row}`]), 0, 0);
-        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, aug[`M${row}`], "");
+        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, blank(aug[`M${row}`]), "");
       }
     }
   }
