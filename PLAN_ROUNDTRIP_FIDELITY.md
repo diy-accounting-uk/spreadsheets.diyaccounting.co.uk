@@ -576,9 +576,6 @@ it would blank the field out of the blocks that now match. `diya-gl:bankCode` di
 lines because SE's bank book keeps one combined HMRC payments column where Ltd splits four ways —
 a shipped-template limitation, stated in `paymentCodeFor()`.
 
-**The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
-needs journal lines outside the accounting period, which the master does not carry.
-
 One declared list closes the section, so nobody counts it as an open item. Fourteen SE read cells
 are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
 that set exactly: `SE Full!D147`, `D152`, `D156`, `D160`, `D179`, `O139` and
