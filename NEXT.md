@@ -30,9 +30,13 @@ lands:
 - exporter-accounts track (Sonnet) — B1 + B2: merged to `claude/next-batch-wave-1`
   (payroll accountMatches 722/722 under the zero gate; land & buildings survives both legs,
   Ltd RECONCILES 950/950)
-- invoice-carriage track — B3: first attempt (Haiku) failed verification (P62 vanished
-  from the recalculated sheet, no breakability, carriage check dropped); not merged.
-  Sonnet retry started with the failure as evidence.
+- invoice-carriage track — B3: Sonnet retry merged to `claude/next-batch-wave-1` (root
+  cause of the failed first attempt was unescaped `<>` corrupting the sheet XML; the fix
+  uses the sheet's own rate idiom, 194/194 with breakability). The failed Haiku attempt is
+  discarded.
+- EQ1 track (Opus) — E1: started; also owns the trio's exportedLines failures (12 payroll
+  lines short in every product run — the exporter's fixed-row payslip reads diverged from
+  the landed layout-derived writes)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
