@@ -22,7 +22,7 @@ pushes in batches.
 | semileage | F18 remainder: SE Sales mileage writer | — | Sonnet | landed `0f90e78a`, feeds the sheet's cross-file claim, 5 new checks proven breakable |
 | f21 | F21 Taxi EQ2 in the generate matrix | — | Sonnet | landed, matrix budget seeded 0/0 from two year-end runs |
 | renumber | SE Full renumbering to the current SA103F | — | Opus | landed, whole sheet on the current form, SE 678/678 + stability 0 moved |
-| sepurch | SE purchases-side mileage route | `../wt-spreadsheets/sepurch` | Opus | started |
+| sepurch | SE purchases-side mileage route | — | Opus | landed, RECONCILES 681/681 ×7 year ends in-track, no-home fields 7 → 5 |
 | g1 | SE Full G1 deadline from the year, not a literal | — | Sonnet | landed `bcd9cc6d`, formula + cache roll, both year ends verified |
 
 ## Open items
@@ -37,13 +37,7 @@ follow the reconciliation-bug method.
 
 
 
-- [ ] **SE purchases-side mileage route** (Opus; in flight as the sepurch track) — SE's mileage-log entries are written as ordinary
-  cash motor purchases (amount into Purchases `G`), never as miles into the Purchases `D` column
-  the sheet prices itself; `carriesMileage` is `"none"` for SE and `app/lib/calculators/se.js` has
-  no mileage-claim logic. Making the route real means writing miles instead of amounts, reading
-  them back, and teaching the SE calculator the banded claim (Motor Expenses totals and checks
-  move) — the SE counterpart of F14, and `roundtrip-unrepresentable.json` stops excusing the
-  Purchases side when it lands.
+
 
 
 
