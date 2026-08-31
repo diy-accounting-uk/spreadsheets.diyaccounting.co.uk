@@ -37,7 +37,6 @@
       .recon-verdict-meta { font-size: 0.85em; color: #555; margin-bottom: 0; }
     </style>
     <script src="../lib/analytics.js"></script>
-    <script src="../lib/consent-banner.js"></script>
   </head>
   <body>
     <a href="#mainContent" class="skip-link">Skip to main content</a>
@@ -83,13 +82,12 @@
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>The indicators tell the same story as the headline: 862 deterministic checks passed with no warnings, net assets equal shareholders' funds, the trial balance audit cell is zero, the profit bridge residue is zero, tax is charged on a positive chargeable profit with box 63 less relief reconciling to box 65, and all four VAT quarters carry non-nil boxes for a registered business. Only cosmetic notes (a high but consistent trading margin and a negative-zero members' balance) are recorded.</p>
+          <p>The indicators tell the same story as the headline: turnover 341,283.33 net of VAT and the 15,000.00 disposals sits at the scenario's scale, the balance sheet and trial balance audit cell reconcile to zero, all four VAT quarters carry non-zero boxes for a registered business, tax of 29,221.27 is charged on a chargeable profit of 124,419.90 after 64,000.00 of allowances, and the profit bridge residue is 0.00. Only two cosmetic notes: the very high 0.94 trading margin and a negative-signed zero on the members' balance.</p>
           <ul>
-            <li><strong>Turnover 341,283.33 against sales invoiced 424,900.00 including 15,000.00 disposals</strong> (Turnover indicator / headline scale): Gross sales of 424,900.00 less 15,000.00 disposals is 409,900.00 gross; net of standard-rate VAT that is roughly 341,583, consistent with turnover of 341,283.33. Scale agrees, noted only because the small residual difference (about 300) would be worth a glance. [note]</li>
-            <li><strong>Trading margin 0.94 (directors' report)</strong> (Directors' report indicator): A 94% trading margin is high for consultancy; it appears to be gross profit 322,496.67 over turnover 341,283.33, so it is internally consistent for a labour-light services business, but worth a human glance. [note]</li>
-            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand indicator): A negative-zero presentation of the members' balance is a cosmetic rounding artefact, not a real balance. [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report): A 94% trading margin follows from gross profit 322,496.67 on turnover 341,283.33 (a consultancy with little cost of sales), so it is arithmetically consistent, but it is an unusual headline ratio worth a human glance. [note]</li>
+            <li><strong>owes -0.00 to the members</strong> (Cash at bank and in hand indicator): A negative-signed zero on the members' balance is cosmetic only (dividends declared 15,000.00 equal dividends paid), but the sign presentation could confuse a reader. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-30. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-08-31. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -1760,235 +1758,235 @@
 <summary>Bank and cash entries: 161 entries, 747,454.57</summary>
 <h5>Apr</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-04-01</td><td>1200</td><td>Opening balance</td><td>Current account opening balance</td><td>BC</td><td class="num">25,000.00</td><td>in</td></tr>
-<tr><td>2025-04-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-04-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-04-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,200.00</td><td>out</td></tr>
-<tr><td>2025-04-10</td><td>1200</td><td>Acme Corp</td><td>Opening debtor receipt</td><td>DR</td><td class="num">7,200.00</td><td>in</td></tr>
-<tr><td>2025-04-15</td><td>1200</td><td>Beta Systems</td><td>Opening debtor receipt</td><td>DR</td><td class="num">1,200.00</td><td>in</td></tr>
-<tr><td>2025-04-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-04-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-04-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-04-25</td><td>1200</td><td>Gamma Ltd</td><td>Opening debtor receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-04-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,000.00</td><td>in</td></tr>
-<tr><td>2025-04-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-04-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-04-30</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td><td>out</td></tr>
-<tr><td>2025-04-01</td><td>1210</td><td>Opening balance</td><td>Savings account opening balance</td><td>BC</td><td class="num">5,000.00</td><td>in</td></tr>
-<tr><td>2025-04-01</td><td>1220</td><td>Opening balance</td><td>Cash float opening balance</td><td>BC</td><td class="num">500.00</td><td>in</td></tr>
-<tr><td>2025-04-10</td><td>1220</td><td>Corner shop</td><td>Milk and tea</td><td>CR</td><td class="num">15.00</td><td>out</td></tr>
-<tr><td>2025-04-30</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">500.00</td><td>in</td></tr>
+<tr><td>2025-04-01</td><td>1200</td><td>Opening balance</td><td>Current account opening balance</td><td>BC</td><td class="num">25,000.00</td><td>in</td><td>BNK-0001</td></tr>
+<tr><td>2025-04-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-001</td></tr>
+<tr><td>2025-04-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-001</td></tr>
+<tr><td>2025-04-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,200.00</td><td>out</td><td>BNK-CR-MISC-001</td></tr>
+<tr><td>2025-04-10</td><td>1200</td><td>Acme Corp</td><td>Opening debtor receipt</td><td>DR</td><td class="num">7,200.00</td><td>in</td><td>BNK-DR-037</td></tr>
+<tr><td>2025-04-15</td><td>1200</td><td>Beta Systems</td><td>Opening debtor receipt</td><td>DR</td><td class="num">1,200.00</td><td>in</td><td>BNK-DR-038</td></tr>
+<tr><td>2025-04-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-001</td></tr>
+<tr><td>2025-04-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-001</td></tr>
+<tr><td>2025-04-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-013</td></tr>
+<tr><td>2025-04-25</td><td>1200</td><td>Gamma Ltd</td><td>Opening debtor receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-039</td></tr>
+<tr><td>2025-04-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,000.00</td><td>in</td><td>BNK-DR-025</td></tr>
+<tr><td>2025-04-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-001</td></tr>
+<tr><td>2025-04-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-013</td></tr>
+<tr><td>2025-04-30</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td><td>out</td><td>BNK-X-CC-001</td></tr>
+<tr><td>2025-04-01</td><td>1210</td><td>Opening balance</td><td>Savings account opening balance</td><td>BC</td><td class="num">5,000.00</td><td>in</td><td>BNK-SAV-001</td></tr>
+<tr><td>2025-04-01</td><td>1220</td><td>Opening balance</td><td>Cash float opening balance</td><td>BC</td><td class="num">500.00</td><td>in</td><td>BNK-CASH-001</td></tr>
+<tr><td>2025-04-10</td><td>1220</td><td>Corner shop</td><td>Milk and tea</td><td>CR</td><td class="num">15.00</td><td>out</td><td>BNK-CASH-003</td></tr>
+<tr><td>2025-04-30</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">500.00</td><td>in</td><td>BNK-CC-005</td></tr>
 </tbody>
 </table></div>
 <h5>May</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-05-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-05-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-05-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,800.00</td><td>out</td></tr>
-<tr><td>2025-05-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-05-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-05-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td><td>out</td></tr>
-<tr><td>2025-05-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-05-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,520.00</td><td>in</td></tr>
-<tr><td>2025-05-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-05-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RV</td><td class="num">1,500.00</td><td>out</td></tr>
-<tr><td>2025-05-20</td><td>1230</td><td>HSBC</td><td>Credit card annual fee</td><td>B</td><td class="num">35.00</td><td>out</td></tr>
+<tr><td>2025-05-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-002</td></tr>
+<tr><td>2025-05-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-002</td></tr>
+<tr><td>2025-05-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,800.00</td><td>out</td><td>BNK-CR-MISC-002</td></tr>
+<tr><td>2025-05-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-002</td></tr>
+<tr><td>2025-05-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-002</td></tr>
+<tr><td>2025-05-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td><td>out</td><td>BNK-B-001</td></tr>
+<tr><td>2025-05-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-014</td></tr>
+<tr><td>2025-05-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,520.00</td><td>in</td><td>BNK-DR-026</td></tr>
+<tr><td>2025-05-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-002</td></tr>
+<tr><td>2025-05-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-014</td></tr>
+<tr><td>2025-05-07</td><td>1200</td><td>HMRC</td><td>VAT payment, prior year fourth quarter</td><td>RV</td><td class="num">1,500.00</td><td>out</td><td>BNK-RV-VAT-000</td></tr>
+<tr><td>2025-05-20</td><td>1230</td><td>HSBC</td><td>Credit card annual fee</td><td>B</td><td class="num">35.00</td><td>out</td><td>BNK-CC-004</td></tr>
 </tbody>
 </table></div>
 <h5>Jun</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-06-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-06-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-06-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td></tr>
-<tr><td>2025-06-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-06-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-06-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-06-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">24,800.00</td><td>in</td></tr>
-<tr><td>2025-06-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-06-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">250.00</td><td>out</td></tr>
-<tr><td>2025-06-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-06-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-01 admin charges and interest</td><td>B</td><td class="num">2,000.00</td><td>out</td></tr>
-<tr><td>2025-06-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-01 capital repayment</td><td>CR</td><td class="num">13,000.00</td><td>out</td></tr>
-<tr><td>2025-06-10</td><td>1220</td><td>Cash top-up</td><td>Cash float replenishment</td><td>BB</td><td class="num">100.00</td><td>in</td></tr>
-<tr><td>2025-06-10</td><td>1220</td><td>WH Smith</td><td>Envelopes and stamps</td><td>CR</td><td class="num">25.00</td><td>out</td></tr>
-<tr><td>2025-06-18</td><td>1230</td><td>Premier Inn</td><td>Hotel on credit card</td><td>CR</td><td class="num">180.00</td><td>out</td></tr>
+<tr><td>2025-06-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-003</td></tr>
+<tr><td>2025-06-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-003</td></tr>
+<tr><td>2025-06-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td><td>BNK-CR-MISC-003</td></tr>
+<tr><td>2025-06-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-003</td></tr>
+<tr><td>2025-06-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-003</td></tr>
+<tr><td>2025-06-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-015</td></tr>
+<tr><td>2025-06-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">24,800.00</td><td>in</td><td>BNK-DR-027</td></tr>
+<tr><td>2025-06-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-003</td></tr>
+<tr><td>2025-06-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">250.00</td><td>out</td><td>BNK-B-INT-001</td></tr>
+<tr><td>2025-06-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-015</td></tr>
+<tr><td>2025-06-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-01 admin charges and interest</td><td>B</td><td class="num">2,000.00</td><td>out</td><td>BNK-HP-INT-001</td></tr>
+<tr><td>2025-06-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-01 capital repayment</td><td>CR</td><td class="num">13,000.00</td><td>out</td><td>BNK-HP-CAP-001</td></tr>
+<tr><td>2025-06-10</td><td>1220</td><td>Cash top-up</td><td>Cash float replenishment</td><td>BB</td><td class="num">100.00</td><td>in</td><td>BNK-CASH-002</td></tr>
+<tr><td>2025-06-10</td><td>1220</td><td>WH Smith</td><td>Envelopes and stamps</td><td>CR</td><td class="num">25.00</td><td>out</td><td>BNK-CASH-004</td></tr>
+<tr><td>2025-06-18</td><td>1230</td><td>Premier Inn</td><td>Hotel on credit card</td><td>CR</td><td class="num">180.00</td><td>out</td><td>BNK-CC-001</td></tr>
 </tbody>
 </table></div>
 <h5>Jul</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-07-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-07-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-07-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td><td>out</td></tr>
-<tr><td>2025-07-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td></tr>
-<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RC</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-07-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-07-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-07-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,360.00</td><td>in</td></tr>
-<tr><td>2025-07-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-07-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-07-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-07-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">300.00</td><td>in</td></tr>
+<tr><td>2025-07-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-004</td></tr>
+<tr><td>2025-07-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-004</td></tr>
+<tr><td>2025-07-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td><td>out</td><td>BNK-CR-MISC-004</td></tr>
+<tr><td>2025-07-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td><td>BNK-DV-001</td></tr>
+<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-004</td></tr>
+<tr><td>2025-07-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RC</td><td class="num">1,000.00</td><td>out</td><td>BNK-RC-CIS-001</td></tr>
+<tr><td>2025-07-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-004</td></tr>
+<tr><td>2025-07-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-016</td></tr>
+<tr><td>2025-07-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,360.00</td><td>in</td><td>BNK-DR-028</td></tr>
+<tr><td>2025-07-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-004</td></tr>
+<tr><td>2025-07-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-016</td></tr>
+<tr><td>2025-07-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td><td>out</td><td>BNK-X-CC-002</td></tr>
+<tr><td>2025-07-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">300.00</td><td>in</td><td>BNK-CC-006</td></tr>
 </tbody>
 </table></div>
 <h5>Aug</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RV</td><td class="num">13,808.17</td><td>out</td></tr>
-<tr><td>2025-08-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-08-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-08-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,600.00</td><td>out</td></tr>
-<tr><td>2025-08-05</td><td>1200</td><td>Innovate UK</td><td>Grant received</td><td>DR</td><td class="num">2,500.00</td><td>in</td></tr>
-<tr><td>2025-08-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-08-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-08-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-08-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,620.00</td><td>in</td></tr>
-<tr><td>2025-08-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-08-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
+<tr><td>2025-08-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q1 Apr-Jun</td><td>RV</td><td class="num">13,808.17</td><td>out</td><td>BNK-RV-VAT-001</td></tr>
+<tr><td>2025-08-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-005</td></tr>
+<tr><td>2025-08-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-005</td></tr>
+<tr><td>2025-08-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,600.00</td><td>out</td><td>BNK-CR-MISC-005</td></tr>
+<tr><td>2025-08-05</td><td>1200</td><td>Innovate UK</td><td>Grant received</td><td>DR</td><td class="num">2,500.00</td><td>in</td><td>BNK-RV-001</td></tr>
+<tr><td>2025-08-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-005</td></tr>
+<tr><td>2025-08-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-005</td></tr>
+<tr><td>2025-08-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-017</td></tr>
+<tr><td>2025-08-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,620.00</td><td>in</td><td>BNK-DR-029</td></tr>
+<tr><td>2025-08-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-005</td></tr>
+<tr><td>2025-08-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-017</td></tr>
 </tbody>
 </table></div>
 <h5>Sep</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-09-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-09-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-09-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,100.00</td><td>out</td></tr>
-<tr><td>2025-09-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-09-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-09-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-09-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,360.00</td><td>in</td></tr>
-<tr><td>2025-09-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-09-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">208.00</td><td>out</td></tr>
-<tr><td>2025-09-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-09-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-02 admin charges and interest</td><td>B</td><td class="num">1,100.00</td><td>out</td></tr>
-<tr><td>2025-09-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-02 capital repayment</td><td>CR</td><td class="num">7,000.00</td><td>out</td></tr>
-<tr><td>2025-09-30</td><td>1210</td><td>HSBC Savings</td><td>Savings interest</td><td>K</td><td class="num">125.00</td><td>in</td></tr>
-<tr><td>2025-09-05</td><td>1220</td><td>Corner shop</td><td>Kitchen supplies</td><td>CR</td><td class="num">18.00</td><td>out</td></tr>
+<tr><td>2025-09-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-006</td></tr>
+<tr><td>2025-09-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-006</td></tr>
+<tr><td>2025-09-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,100.00</td><td>out</td><td>BNK-CR-MISC-006</td></tr>
+<tr><td>2025-09-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-006</td></tr>
+<tr><td>2025-09-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-006</td></tr>
+<tr><td>2025-09-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-018</td></tr>
+<tr><td>2025-09-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,360.00</td><td>in</td><td>BNK-DR-030</td></tr>
+<tr><td>2025-09-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-006</td></tr>
+<tr><td>2025-09-30</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">208.00</td><td>out</td><td>BNK-B-INT-002</td></tr>
+<tr><td>2025-09-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-018</td></tr>
+<tr><td>2025-09-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-02 admin charges and interest</td><td>B</td><td class="num">1,100.00</td><td>out</td><td>BNK-HP-INT-002</td></tr>
+<tr><td>2025-09-01</td><td>1200</td><td>Close Brothers Asset Finance</td><td>HP-2025-02 capital repayment</td><td>CR</td><td class="num">7,000.00</td><td>out</td><td>BNK-HP-CAP-002</td></tr>
+<tr><td>2025-09-30</td><td>1210</td><td>HSBC Savings</td><td>Savings interest</td><td>K</td><td class="num">125.00</td><td>in</td><td>BNK-SAV-003</td></tr>
+<tr><td>2025-09-05</td><td>1220</td><td>Corner shop</td><td>Kitchen supplies</td><td>CR</td><td class="num">18.00</td><td>out</td><td>BNK-CASH-005</td></tr>
 </tbody>
 </table></div>
 <h5>Oct</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-10-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-10-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-10-01</td><td>1200</td><td>HMRC</td><td>Corporation Tax prior year</td><td>RT</td><td class="num">4,500.00</td><td>out</td></tr>
-<tr><td>2025-10-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">3,000.00</td><td>out</td></tr>
-<tr><td>2025-10-15</td><td>1200</td><td>Private buyer</td><td>Van sale proceeds</td><td>DR</td><td class="num">15,000.00</td><td>in</td></tr>
-<tr><td>2025-10-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td></tr>
-<tr><td>2025-10-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-10-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-10-25</td><td>1200</td><td>Ford</td><td>Ford Transit Custom purchase</td><td>CR</td><td class="num">36,000.00</td><td>out</td></tr>
-<tr><td>2025-10-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-10-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,160.00</td><td>in</td></tr>
-<tr><td>2025-10-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-10-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-10-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td><td>out</td></tr>
-<tr><td>2025-10-18</td><td>1230</td><td>Trainline</td><td>Train ticket on credit card</td><td>CR</td><td class="num">120.00</td><td>out</td></tr>
-<tr><td>2025-10-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">500.00</td><td>in</td></tr>
+<tr><td>2025-10-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-007</td></tr>
+<tr><td>2025-10-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-007</td></tr>
+<tr><td>2025-10-01</td><td>1200</td><td>HMRC</td><td>Corporation Tax prior year</td><td>RT</td><td class="num">4,500.00</td><td>out</td><td>BNK-RT-CT-001</td></tr>
+<tr><td>2025-10-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">3,000.00</td><td>out</td><td>BNK-CR-MISC-007</td></tr>
+<tr><td>2025-10-15</td><td>1200</td><td>Private buyer</td><td>Van sale proceeds</td><td>DR</td><td class="num">15,000.00</td><td>in</td><td>BNK-DR-040</td></tr>
+<tr><td>2025-10-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td><td>BNK-DV-002</td></tr>
+<tr><td>2025-10-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-007</td></tr>
+<tr><td>2025-10-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-007</td></tr>
+<tr><td>2025-10-25</td><td>1200</td><td>Ford</td><td>Ford Transit Custom purchase</td><td>CR</td><td class="num">36,000.00</td><td>out</td><td>BNK-CR-FA-001</td></tr>
+<tr><td>2025-10-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-019</td></tr>
+<tr><td>2025-10-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,160.00</td><td>in</td><td>BNK-DR-031</td></tr>
+<tr><td>2025-10-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-007</td></tr>
+<tr><td>2025-10-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-019</td></tr>
+<tr><td>2025-10-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">500.00</td><td>out</td><td>BNK-X-CC-003</td></tr>
+<tr><td>2025-10-18</td><td>1230</td><td>Trainline</td><td>Train ticket on credit card</td><td>CR</td><td class="num">120.00</td><td>out</td><td>BNK-CC-002</td></tr>
+<tr><td>2025-10-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">500.00</td><td>in</td><td>BNK-CC-007</td></tr>
 </tbody>
 </table></div>
 <h5>Nov</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RV</td><td class="num">14,456.50</td><td>out</td></tr>
-<tr><td>2025-11-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-11-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-11-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,400.00</td><td>out</td></tr>
-<tr><td>2025-11-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-11-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-11-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td><td>out</td></tr>
-<tr><td>2025-11-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-11-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">24,920.00</td><td>in</td></tr>
-<tr><td>2025-11-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-11-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
+<tr><td>2025-11-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q2 Jul-Sep</td><td>RV</td><td class="num">14,456.50</td><td>out</td><td>BNK-RV-VAT-002</td></tr>
+<tr><td>2025-11-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-008</td></tr>
+<tr><td>2025-11-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-008</td></tr>
+<tr><td>2025-11-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,400.00</td><td>out</td><td>BNK-CR-MISC-008</td></tr>
+<tr><td>2025-11-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-008</td></tr>
+<tr><td>2025-11-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-008</td></tr>
+<tr><td>2025-11-25</td><td>1200</td><td>HSBC</td><td>Bank charges</td><td>B</td><td class="num">25.00</td><td>out</td><td>BNK-B-002</td></tr>
+<tr><td>2025-11-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-020</td></tr>
+<tr><td>2025-11-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">24,920.00</td><td>in</td><td>BNK-DR-032</td></tr>
+<tr><td>2025-11-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-008</td></tr>
+<tr><td>2025-11-30</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-020</td></tr>
 </tbody>
 </table></div>
 <h5>Dec</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2025-12-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2025-12-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2025-12-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,700.00</td><td>out</td></tr>
-<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RC</td><td class="num">600.00</td><td>out</td></tr>
-<tr><td>2025-12-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2025-12-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2025-12-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,400.00</td><td>in</td></tr>
-<tr><td>2025-12-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2025-12-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">167.00</td><td>out</td></tr>
-<tr><td>2025-12-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2025-12-10</td><td>1220</td><td>Various</td><td>Christmas team refreshments</td><td>CR</td><td class="num">50.00</td><td>out</td></tr>
+<tr><td>2025-12-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-009</td></tr>
+<tr><td>2025-12-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-009</td></tr>
+<tr><td>2025-12-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,700.00</td><td>out</td><td>BNK-CR-MISC-009</td></tr>
+<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-009</td></tr>
+<tr><td>2025-12-19</td><td>1200</td><td>HMRC</td><td>CIS deduction remittance</td><td>RC</td><td class="num">600.00</td><td>out</td><td>BNK-RC-CIS-002</td></tr>
+<tr><td>2025-12-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-009</td></tr>
+<tr><td>2025-12-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-021</td></tr>
+<tr><td>2025-12-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">22,400.00</td><td>in</td><td>BNK-DR-033</td></tr>
+<tr><td>2025-12-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-009</td></tr>
+<tr><td>2025-12-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">167.00</td><td>out</td><td>BNK-B-INT-003</td></tr>
+<tr><td>2025-12-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-021</td></tr>
+<tr><td>2025-12-10</td><td>1220</td><td>Various</td><td>Christmas team refreshments</td><td>CR</td><td class="num">50.00</td><td>out</td><td>BNK-CASH-006</td></tr>
 </tbody>
 </table></div>
 <h5>Jan</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-01-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2026-01-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2026-01-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td></tr>
-<tr><td>2026-01-15</td><td>1200</td><td>Director loan</td><td>Directors loan advance</td><td>DL</td><td class="num">5,000.00</td><td>in</td></tr>
-<tr><td>2026-01-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td></tr>
-<tr><td>2026-01-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2026-01-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2026-01-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2026-01-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,040.00</td><td>in</td></tr>
-<tr><td>2026-01-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2026-01-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2026-01-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2026-01-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">300.00</td><td>in</td></tr>
+<tr><td>2026-01-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-010</td></tr>
+<tr><td>2026-01-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-010</td></tr>
+<tr><td>2026-01-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,500.00</td><td>out</td><td>BNK-CR-MISC-010</td></tr>
+<tr><td>2026-01-15</td><td>1200</td><td>Director loan</td><td>Directors loan advance</td><td>DL</td><td class="num">5,000.00</td><td>in</td><td>BNK-DL-IN-001</td></tr>
+<tr><td>2026-01-15</td><td>1200</td><td>Dividend</td><td>Quarterly dividend payment</td><td>DV</td><td class="num">3,000.00</td><td>out</td><td>BNK-DV-003</td></tr>
+<tr><td>2026-01-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-010</td></tr>
+<tr><td>2026-01-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-010</td></tr>
+<tr><td>2026-01-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-022</td></tr>
+<tr><td>2026-01-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">25,040.00</td><td>in</td><td>BNK-DR-034</td></tr>
+<tr><td>2026-01-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-010</td></tr>
+<tr><td>2026-01-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-022</td></tr>
+<tr><td>2026-01-31</td><td>1200</td><td>Credit card payment</td><td>Pay credit card balance</td><td>X</td><td class="num">300.00</td><td>out</td><td>BNK-X-CC-004</td></tr>
+<tr><td>2026-01-31</td><td>1230</td><td>Payment from current</td><td>Credit card payment received</td><td>X</td><td class="num">300.00</td><td>in</td><td>BNK-CC-008</td></tr>
 </tbody>
 </table></div>
 <h5>Feb</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RV</td><td class="num">10,917.50</td><td>out</td></tr>
-<tr><td>2026-02-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2026-02-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2026-02-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,900.00</td><td>out</td></tr>
-<tr><td>2026-02-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2026-02-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2026-02-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2026-02-28</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2026-02-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,960.00</td><td>in</td></tr>
-<tr><td>2026-02-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2026-02-18</td><td>1230</td><td>Premier Inn</td><td>Hotel on credit card</td><td>CR</td><td class="num">240.00</td><td>out</td></tr>
+<tr><td>2026-02-07</td><td>1200</td><td>HMRC</td><td>VAT payment Q3 Oct-Dec</td><td>RV</td><td class="num">10,917.50</td><td>out</td><td>BNK-RV-VAT-003</td></tr>
+<tr><td>2026-02-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-011</td></tr>
+<tr><td>2026-02-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-011</td></tr>
+<tr><td>2026-02-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,900.00</td><td>out</td><td>BNK-CR-MISC-011</td></tr>
+<tr><td>2026-02-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-011</td></tr>
+<tr><td>2026-02-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-011</td></tr>
+<tr><td>2026-02-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-023</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-023</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">23,960.00</td><td>in</td><td>BNK-DR-035</td></tr>
+<tr><td>2026-02-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-011</td></tr>
+<tr><td>2026-02-18</td><td>1230</td><td>Premier Inn</td><td>Hotel on credit card</td><td>CR</td><td class="num">240.00</td><td>out</td><td>BNK-CC-003</td></tr>
 </tbody>
 </table></div>
 <h5>Mar</h5>
 <div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th></tr></thead>
+<thead><tr><th>Date</th><th>Account</th><th>Source</th><th>Description</th><th>Code</th><th class="num">Amount</th><th>Direction</th><th>Reference</th></tr></thead>
 <tbody>
-<tr><td>2026-03-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td></tr>
-<tr><td>2026-03-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td></tr>
-<tr><td>2026-03-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td><td>out</td></tr>
-<tr><td>2026-03-15</td><td>1200</td><td>Internal transfer</td><td>Transfer to savings account</td><td>X</td><td class="num">5,000.00</td><td>out</td></tr>
-<tr><td>2026-03-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td></tr>
-<tr><td>2026-03-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td></tr>
-<tr><td>2026-03-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td></tr>
-<tr><td>2026-03-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">10,560.00</td><td>in</td></tr>
-<tr><td>2026-03-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td></tr>
-<tr><td>2026-03-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">125.00</td><td>out</td></tr>
-<tr><td>2026-03-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td></tr>
-<tr><td>2026-03-31</td><td>1200</td><td>Dividend</td><td>Final dividend payment</td><td>DV</td><td class="num">6,000.00</td><td>out</td></tr>
-<tr><td>2026-03-15</td><td>1210</td><td>Internal transfer</td><td>Transfer from current account</td><td>X</td><td class="num">5,000.00</td><td>in</td></tr>
-<tr><td>2026-03-31</td><td>1210</td><td>HSBC Savings</td><td>Savings interest</td><td>K</td><td class="num">150.00</td><td>in</td></tr>
-<tr><td>2026-03-20</td><td>1220</td><td>Newsagent</td><td>Newspapers for reception</td><td>CR</td><td class="num">12.00</td><td>out</td></tr>
+<tr><td>2026-03-01</td><td>1200</td><td>WorkSpace Ltd</td><td>Office rent payment</td><td>CR</td><td class="num">1,200.00</td><td>out</td><td>BNK-CR-012</td></tr>
+<tr><td>2026-03-01</td><td>1200</td><td>Director</td><td>Directors loan repayment</td><td>DL</td><td class="num">1,000.00</td><td>out</td><td>BNK-DL-012</td></tr>
+<tr><td>2026-03-05</td><td>1200</td><td>Various suppliers</td><td>Aggregate supplier payments</td><td>CR</td><td class="num">2,300.00</td><td>out</td><td>BNK-CR-MISC-012</td></tr>
+<tr><td>2026-03-15</td><td>1200</td><td>Internal transfer</td><td>Transfer to savings account</td><td>X</td><td class="num">5,000.00</td><td>out</td><td>BNK-X-001</td></tr>
+<tr><td>2026-03-19</td><td>1200</td><td>HMRC</td><td>Monthly PAYE/NI payment</td><td>RP</td><td class="num">1,673.20</td><td>out</td><td>BNK-RP-012</td></tr>
+<tr><td>2026-03-20</td><td>1200</td><td>Acme Corp</td><td>Customer receipt</td><td>DR</td><td class="num">8,000.00</td><td>in</td><td>BNK-DR-012</td></tr>
+<tr><td>2026-03-25</td><td>1200</td><td>TechStart Ltd</td><td>Customer receipt</td><td>DR</td><td class="num">2,400.00</td><td>in</td><td>BNK-DR-024</td></tr>
+<tr><td>2026-03-28</td><td>1200</td><td>Various customers</td><td>Aggregate customer receipts</td><td>DR</td><td class="num">10,560.00</td><td>in</td><td>BNK-DR-036</td></tr>
+<tr><td>2026-03-28</td><td>1200</td><td>Payroll</td><td>Monthly net wages (all staff)</td><td>W</td><td class="num">5,652.00</td><td>out</td><td>BNK-W-012</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Directors loan interest</td><td>Quarterly loan interest payment</td><td>B</td><td class="num">125.00</td><td>out</td><td>BNK-B-INT-004</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Smith &amp; Co</td><td>Accountancy fee payment</td><td>CR</td><td class="num">300.00</td><td>out</td><td>BNK-CR-024</td></tr>
+<tr><td>2026-03-31</td><td>1200</td><td>Dividend</td><td>Final dividend payment</td><td>DV</td><td class="num">6,000.00</td><td>out</td><td>BNK-DV-004</td></tr>
+<tr><td>2026-03-15</td><td>1210</td><td>Internal transfer</td><td>Transfer from current account</td><td>X</td><td class="num">5,000.00</td><td>in</td><td>BNK-SAV-002</td></tr>
+<tr><td>2026-03-31</td><td>1210</td><td>HSBC Savings</td><td>Savings interest</td><td>K</td><td class="num">150.00</td><td>in</td><td>BNK-SAV-004</td></tr>
+<tr><td>2026-03-20</td><td>1220</td><td>Newsagent</td><td>Newspapers for reception</td><td>CR</td><td class="num">12.00</td><td>out</td><td>BNK-CASH-007</td></tr>
 </tbody>
 </table></div>
 </details>
