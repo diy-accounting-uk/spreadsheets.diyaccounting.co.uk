@@ -190,6 +190,7 @@ const OPENING_BALANCE_DOCUMENT_PREFIX = "OB-";
 // balance sheet. Cost and accumulated depreciation post to the same account
 // and are told apart by the debit/credit code.
 export const OPENING_FIXED_ASSET_CLASSES = {
+  "0000": "land_buildings",
   "0010": "plant_machinery",
   "0020": "fixtures_fittings",
   "0030": "computer_technology",
@@ -645,16 +646,24 @@ export function fixedAssetAdditions(lines, purchaseCodeMap, capitalCode) {
  * pay). Each payroll line already IS one employee's one month, so no
  * grouping arithmetic is needed beyond bucketing by month.
  *
+ * carriesSourceFields mirrors buildGrouped's option of the same name: it puts
+ * the line's own accountMainID on each entry, which cellWrites() writes to
+ * the Payslips ACCOUNT_ID_COLUMN so a payroll row posted to a non-default
+ * account (a director paid outside PAYE, say) keeps that account on export
+ * instead of falling back to the sheet's default payroll account.
+ *
  * @param {Array} lines - parsed lines.jsonl entries (any journal)
+ * @param {Object} [options]
+ * @param {boolean} [options.carriesSourceFields] - carry each line's own accountMainID
  * @returns {Object} { apr: [...], may: [...], ... }, {} when none present
  */
-export function buildPayroll(lines) {
+export function buildPayroll(lines, { carriesSourceFields = false } = {}) {
   const payroll = {};
   for (const line of lines) {
     if (line.sourceJournalID !== "payroll") continue;
     const month = getMonthKey(line.postingDate);
     if (!payroll[month]) payroll[month] = [];
-    payroll[month].push({
+    const entry = {
       date: line.postingDate,
       name: line.detailComment,
       grossPay: line["diya-gl:grossPay"],
@@ -663,7 +672,9 @@ export function buildPayroll(lines) {
       employerNI: line["diya-gl:employerNI"],
       netPay: line["diya-gl:netPay"],
       reference: line.documentReference,
-    });
+    };
+    if (carriesSourceFields) entry.accountMainID = line.accountMainID;
+    payroll[month].push(entry);
   }
   return payroll;
 }
@@ -999,6 +1010,7 @@ export function formatScenarioToml(metadata, grouped, expected) {
         parts.push(`employerNI = ${e.employerNI}`);
         parts.push(`netPay = ${e.netPay}`);
         if (e.reference) parts.push(`reference = "${escapeTomlString(e.reference)}"`);
+        if (e.accountMainID) parts.push(`accountMainID = "${escapeTomlString(e.accountMainID)}"`);
         parts.push("");
       }
     }

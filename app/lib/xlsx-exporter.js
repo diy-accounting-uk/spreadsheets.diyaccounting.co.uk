@@ -780,12 +780,13 @@ export async function extractPayrollTransactions(sourceDir) {
 // cellWrites uses: fixed assets as separate cost (row 13, G-K) and
 // accumulated depreciation (row 13, M-Q) per class, bank across G18-J18,
 // tax creditors across G26-I26, everything else a single figure in column E.
-// Land & buildings has no ledger account, so its columns are not exported.
 const OA_JOURNAL_MAP = [
   { cell: "G18", accountMainID: "1200", dc: "D", comment: "Current account opening balance" },
   { cell: "H18", accountMainID: "1210", dc: "D", comment: "Savings account opening balance" },
   { cell: "I18", accountMainID: "1230", dc: "D", comment: "Credit card account opening balance" },
   { cell: "J18", accountMainID: "1220", dc: "D", comment: "Cash account opening balance" },
+  { cell: "G13", accountMainID: "0000", dc: "D", comment: "Land and buildings cost" },
+  { cell: "M13", accountMainID: "0000", dc: "C", comment: "Land and buildings accumulated depreciation" },
   { cell: "H13", accountMainID: "0010", dc: "D", comment: "Plant and machinery cost" },
   { cell: "N13", accountMainID: "0010", dc: "C", comment: "Plant and machinery accumulated depreciation" },
   { cell: "I13", accountMainID: "0020", dc: "D", comment: "Fixtures and fittings cost" },

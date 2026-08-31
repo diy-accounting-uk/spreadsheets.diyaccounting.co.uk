@@ -374,6 +374,29 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
   });
 });
 
+describe("extractJournalEntries — the Ltd opening balance sheet's land and buildings", () => {
+  it("carries both the cost and the accumulated depreciation leg", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000, M13: 40000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
+      ["0000", "D", 200000],
+      ["0000", "C", 40000],
+    ]);
+  });
+
+  it("drops the accumulated depreciation leg alone when the account holds nothing but cost", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([["0000", "D", 200000]]);
+  });
+});
+
 // ── The shipped example ────────────────────────────────────────────────────
 
 const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;

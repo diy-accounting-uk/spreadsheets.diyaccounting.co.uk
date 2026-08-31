@@ -170,6 +170,9 @@ accountMainDescription = "Stock"
 [accounts.assets."1300"]
 accountMainDescription = "Trade debtors"
 
+[accounts.assets."0000"]
+accountMainDescription = "Land and buildings"
+
 [accounts.assets."0010"]
 accountMainDescription = "Plant and machinery"
 
@@ -445,6 +448,13 @@ class = "computerTechnology"
 description = "Laptop (0.5 years old)"
 cost = 3000
 accumulatedDepreciation = 270
+
+[[fixedAssets]]
+assetID = "LTD-FA-3"
+class = "landBuildings"
+description = "Office premises"
+cost = 200000
+accumulatedDepreciation = 40000
 
 [[hpAgreements]]
 agreementID = "HP-2025-01"
