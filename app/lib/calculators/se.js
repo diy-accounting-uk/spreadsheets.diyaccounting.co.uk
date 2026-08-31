@@ -676,6 +676,10 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seShort.O124 = contractorDeductions;
 
   const seFull = {};
+  // ="COPY DETAILS TO HMRC FORM ... by 31st January "&TEXT(Admin!B21,"yyyy")
+  seFull.G1 =
+    `COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January ` +
+    dateFromExcelSerial(admin.B21).getUTCFullYear();
   seFull.Q2 = dateSerials[4];
   seFull.V2 = dateSerials[17];
   seFull.D55 = pl.B9;

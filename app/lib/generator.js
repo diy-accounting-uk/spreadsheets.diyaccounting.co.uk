@@ -565,9 +565,12 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
 
 // ── SE Financialaccounts cross-sheet cached values ──────────────────────────
 //
-// SE Full!G141, Q2 and V2 echo the local Admin sheet's writing-down allowance
-// rate and tax-year start/end dates; SE Short!Q2 echoes the same Admin!B4
-// date and S17 echoes SE Short!Q2 in turn. Profit Forecast!C40 is
+// SE Full!G1 is "...by 31st January "&TEXT(Admin!B21,"yyyy") — B21 is always
+// 31 January of the second calendar year after the tax year's start, so only
+// the year needs rolling. G141, Q2 and V2 echo the local Admin sheet's
+// writing-down allowance rate and tax-year start/end dates; SE Short!Q2
+// echoes the same Admin!B4 date and S17 echoes SE Short!Q2 in turn.
+// Profit Forecast!C40 is
 // IF(C39<=0,0,MAX(0,Admin!N$4-MAX(0,C39-Admin!N$5)/2)); the generator never
 // writes to Profit Forecast, 'Profit & Loss Account' or the Fixedassets
 // external link C39's own formula reads, so C39 keeps the template's shipped
@@ -582,6 +585,7 @@ export function ltdFinancialaccountsDependentCaches(yearEndSerial) {
 export function seFinancialaccountsDependentCaches(numericEdits) {
   return {
     "SE Full": {
+      G1: `COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January ${fromExcelSerial(numericEdits.B21).getUTCFullYear()}`,
       G141: numericEdits.G5, // =Admin!G5
       Q2: numericEdits.B4, // =Admin!B4
       V2: numericEdits.B17, // =Admin!B17
