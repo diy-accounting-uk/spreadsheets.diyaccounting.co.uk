@@ -6,10 +6,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-PRs #47 (the second fidelity wave) and #46 (GA4 consent banner + the VAT-dropdown escalation
-tracking) are merged; the four `generate-*` runs plus `test` and `deploy` are in progress on
-main. When they finish, the committed reports, judge verdicts and guide PDFs match the merged
-code.
+Nothing. Main is refreshed and deployed through PRs #46 and #47 (deploy green at `2c560c9c`,
+all four generate-commit refreshes in); every later PR branch starts from a rebase onto that
+main, and the operator dispatches CI on branches.
 
 ## Open items
 
