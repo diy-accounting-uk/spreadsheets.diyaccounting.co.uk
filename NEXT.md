@@ -129,12 +129,11 @@ follow the reconciliation-bug method.
 - [ ] **F24: payroll `lineItemComment` has no declared home** (Sonnet) — the payslip row has no
   spare column (swept A-AG), so the field is a visible whole-line shortfall rather than a
   declared unrepresentable: declaring it today would blank the field out of the blocks that now
-  match, because `roundtrip-unrepresentable.json` is per-product, not per-block. Default route:
-  widen the inventory schema to per-block granularity and declare payroll's comment, keeping
-  every other block matching; re-seed the whole-line ratchets. (The alternative — template
-  surgery to add a column — is an Opus track; only on the operator's say-so.) The per-block
-  widening was deliberately deferred once as riskier-than-scope, so prove the schema change with
-  its own tests.
+  match, because `roundtrip-unrepresentable.json` is per-product, not per-block. Widen the
+  inventory schema to per-block granularity and declare payroll's comment, keeping
+  every other block matching; re-seed the whole-line ratchets. The per-block widening was
+  deliberately deferred once as riskier-than-scope, so prove the schema change with its own
+  tests.
 - [ ] **J1: memoize the judge by content** (Sonnet) — `app/bin/judge-reconciliation.js` re-judges
   unchanged digests from `deploy.yml` (every web/infra push plus the daily cron) and the four
   `generate-*` workflows. Hash digest + rubric + model id into `judge-verdict-<product>.json`
