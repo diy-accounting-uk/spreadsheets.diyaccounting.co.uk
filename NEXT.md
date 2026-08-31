@@ -36,7 +36,11 @@ lands:
   discarded.
 - EQ1 track (Opus) — E1: started; also owns the trio's exportedLines failures (12 payroll
   lines short in every product run — the exporter's fixed-row payslip reads diverged from
-  the landed layout-derived writes)
+  the landed layout-derived writes) and calculator-se's read-scope failure
+- CI-fallout track (Sonnet) — the other 23 failures from PR #48's CI run 33425871047:
+  started. B2's land fixture rippled into hand-computed expectations (calculator-ltd,
+  opening-balance, FA note, NBV, loader count, brickwork sets) and B3's carriage check
+  joined corruption flip-sets; the two EQ3 stability failures get root-caused, not parked.
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
   tests green)
 - judge track (Sonnet) — J1–J5: merged to `claude/next-batch-wave-1` (8722d901, judge
