@@ -146,6 +146,7 @@ Trade: IT consultancy and software development
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 44291 | 44291 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.18 | 0.18 | 0 | PASS |
 | SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20) | 9500 | 9500 | 0 | PASS |
+| SA103F: the online filing deadline banner (G1) names 31 January the year after the tax year ends | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2022 | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2022 |  | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 52500 | 52500 | 0 | PASS |
@@ -641,6 +642,7 @@ Trade: IT consultancy and software development
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 85000 | 85000 | 0 | PASS |
 | Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends | 44592 | 44592 | 0 | PASS |
 | Payslips calendar: the payroll year starts on the accounts tax year start (B2 = Admin B4) | 43927 | 43927 | 0 | PASS |
 | Payslips calendar: the year the calendar runs to (I1) = the accounts tax year end (Admin B17) | 44291 | 44291 | 0 | PASS |
 | Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for | 2020-21 | 2020-21 |  | PASS |
@@ -1408,6 +1410,7 @@ Journal amounts include VAT at 20%.
 | D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
 | O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
+| G1 |  | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2022 |  |
 | Q2 |  | 43927 |  |
 | V2 |  | 44291 |  |
 | G141 |  | 0.18 |  |
@@ -1508,6 +1511,7 @@ Journal amounts include VAT at 20%.
 | F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 | B4 |  | 43927 |  |
 | B17 |  | 44291 |  |
+| B21 |  | 44592 |  |
 
 ### StockControl
 
