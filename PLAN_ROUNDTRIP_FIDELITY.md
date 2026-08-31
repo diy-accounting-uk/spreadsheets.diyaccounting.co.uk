@@ -549,32 +549,22 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 110 for SE and 156 for Ltd, and
+**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 111 for SE and 156 for Ltd, and
 the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
 fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
-which the sheets hold in a form the exporter reads back yet.
+which the sheets hold in a form the exporter reads back yet. (SE's 111 includes the land &
+buildings account its book declares but no SE line posts to — the same structural absence as
+0010 and 0020.)
 
-**Non-March EQ2 is scored on counts only.** `generate` shifts every posting date onto the package's
-own accounting period, so for a non-March year end the exported dates sit a month or two from the
-fixture's by design. Anchoring the comparison needs that shift undone first and the comparator does
-not do it, so the `ltd-may` ratchet case skips the transaction-level assertions. The same shape
-appears in the `generate-*` matrices: the fixture's transactions carry the master's own calendar
-dates into every year-end directory, so only `linesLost` and `fieldsDropped` are portable across
-year ends, and `app/data/roundtrip-matrix-budget.json` gates those two alone.
+**Two shipped-template limitations are declared, not open.** The payslip row has no spare column
+for `lineItemComment` (swept A-AG); the field is declared unrepresentable for the payroll block
+alone in `app/data/roundtrip-unrepresentable.json`, whose per-block schema blanks it nowhere
+else. `diya-gl:bankCode` differs on 7 SE lines because SE's bank book keeps one combined HMRC
+payments column where Ltd splits four ways — stated in `paymentCodeFor()`.
 
-**Payroll `lineItemComment` has no cell to carry it.** The other blocks now have homes: SE sales
-description in column E, the bank books' reference and comment columns, the payslip reference in
-column S, Taxi's two column Cs. The payslip row has no second spare column (swept A-AG), so its
-comment stays a visible whole-line shortfall rather than a declared unrepresentable — declaring
-it would blank the field out of the blocks that now match. `diya-gl:bankCode` differs on 7 SE
-lines because SE's bank book keeps one combined HMRC payments column where Ltd splits four ways —
-a shipped-template limitation, stated in `paymentCodeFor()`.
-
-One declared list closes the section, so nobody counts it as an open item. Fourteen SE read cells
-are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
-that set exactly: `SE Full!D147`, `D152`, `D156`, `D160`, `D179`, `O139` and
-`Vat.xlsx!Vatinterface!E4/E5/G4/G5/I4/I5/K4/K5`. Both engines carry nothing there, so both
-agree.
+The cells both engines compute as the blanks the workbook itself holds are asserted as an exact
+list in `app/test/calculator-se.test.js`; that assertion, not this document, is the authority
+for the set.
 
 ## Parked
 
