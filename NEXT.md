@@ -56,11 +56,10 @@ lands:
 Wave 1 collects on the `claude/next-batch-wave-1` branch and goes back to main as a PR
 once the wave's tracks are in and the full suite is green.
 
-- calc track (Sonnet): started — the full suite's 13 real failures (calculator-se 10,
-  calculator-ltd 3): the EQ1 track's calculator expectations predate the carriage rename
-  (+1 check) and the VAT-registration gating (−4 or 5 for non-VAT scenarios), and the
-  calculators don't emit the carriage cell yet. The suite's other 20 failed files were
-  soffice-contention hook timeouts (everything skipped, 300-900s) — clean re-run at close.
+- calc track (Sonnet): merged to `claude/next-batch-wave-1` (the calculators now mirror
+  cellWrites' VAT gate with real invoice figures; 3377/3377 in its tree, both CI chains
+  within budget; 3183/3183 calculator tests re-verified on the branch). The full suite's
+  other 20 failed files were soffice-contention hook timeouts — clean re-run at close.
 
 Queued: B4 dispatches after the print track lands (both touch the exporter).
 
@@ -71,6 +70,13 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
+- [ ] **B5: `diyaGlToScenario` never maps the VAT number, so the invoice checks never fire
+  on diya-gl paths** (Sonnet) — surfaced by the calc track: `app/lib/diya-gl-loader.js`
+  drops `diya-gl:vatNumber` for both products, so `scenario.business.vat_number` is absent
+  on every diya-gl-sourced run (the calculator FIXTURES, the CI generate/report/export
+  chain) and the Salesinvoice write-and-check gate stays shut there; only the hand-written
+  TOML fixtures exercise it. Map the field, then confirm the CI chains still hold budget
+  with the gate now firing (the calculators' gate replication should follow automatically).
 - [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
   the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
   `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
