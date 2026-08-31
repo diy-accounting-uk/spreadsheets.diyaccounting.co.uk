@@ -26,7 +26,10 @@ describe("loadDiyaGlData", () => {
   it("loads full dataset", () => {
     const { book, lines } = loadDiyaGlData(FULL_DATA);
     expect(book.entityInformation.organizationIdentifier).toBe("Precision Code Ltd");
-    expect(lines.length).toBe(722);
+    // The land & buildings opening asset's two OB- journal lines (the asset
+    // and its offsetting retained earnings entry) add to the 722 lines the
+    // rest of the book carries.
+    expect(lines.length).toBe(724);
   });
 });
 

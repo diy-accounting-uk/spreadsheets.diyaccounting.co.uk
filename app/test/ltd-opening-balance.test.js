@@ -89,7 +89,12 @@ describeCalc(
 
     it("splits fixed assets into cost and accumulated depreciation, netting to book value", () => {
       const oa = results.OpenAccounts;
-      expect(oa.E13).toBe(22902);
+      // E13 sums every class: the van and laptop (22,902 net) plus the land
+      // & buildings opening asset (200,000 cost less 40,000 depreciation,
+      // 160,000 net): 22,902 + 160,000 = 182,902. D9/D10 (computer/motor
+      // cost) and D14/D15 (their depreciation) are unaffected — land posts
+      // to its own schedule rows (6 and 11).
+      expect(oa.E13).toBe(182902);
       expect(results.TrialBalance.D9 + results.TrialBalance.D10).toBe(33000);
       expect(results.TrialBalance.D14 + results.TrialBalance.D15).toBe(-10098);
     });
@@ -107,7 +112,10 @@ describeCalc(
       expect(tb.D19).toBe(10000);
       expect(tb.D20).toBe(10800);
       expect(tb.D42).toBe(-100);
-      expect(tb.D43).toBe(-20702);
+      // Retained earnings, the opening journal's balancing figure against the
+      // land & buildings asset (OB-001, lines.jsonl): 20,702 + 160,000 net
+      // asset value = 180,702.
+      expect(tb.D43).toBe(-180702);
     });
 
     it("posts the secured bank loan as a creditor falling due after more than one year", () => {

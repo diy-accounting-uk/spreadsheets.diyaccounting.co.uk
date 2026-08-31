@@ -133,11 +133,16 @@ describeCalc(
     // book value instead of carrying its cost and depreciation forever.
     it("Schedule: closing NBV nets the van sold in the year off cost and depreciation", () => {
       const sched = results["Fixedassets.xlsx!Schedule"];
-      expect(sched.E1).toBe(85500);
-      expect(sched.J1).toBe(23838);
+      // The land & buildings opening asset (cost 200,000, depreciation
+      // 40,000, 0% depreciation rate) adds its whole cost and brought-forward
+      // depreciation to the schedule with no in-year movement: it neither
+      // buys, sells, nor charges anything this year, so only E1, J1 and K1
+      // move by its cost, its depreciation and its net book value.
+      expect(sched.E1).toBe(285500);
+      expect(sched.J1).toBe(63838);
       expect(sched.W1).toBe(30000);
       expect(sched.X1).toBe(17328);
-      expect(sched.K1).toBe(48990);
+      expect(sched.K1).toBe(208990);
     });
 
     // ── Published Balance Sheet assertions ─────────────────────────────────

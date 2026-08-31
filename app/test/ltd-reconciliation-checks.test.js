@@ -176,11 +176,17 @@ describeCalc(
 
     it("publishes those figures in the fixed asset note", () => {
       const notes = results.PubNotes;
-      expect(notes.G8).toBe(33000);
+      // Existing assets at the year start: the van (30,000) and the laptop
+      // (3,000), plus the land & buildings opening asset (200,000).
+      expect(notes.G8).toBe(233000);
       expect(notes.G9).toBe(52500);
       expect(notes.G10).toBe(30000);
-      expect(notes.G11).toBe(55500);
-      expect(notes.G14).toBe(10098);
+      // Closing cost: existing (233,000) plus additions (52,500) less
+      // disposals at cost (30,000) = 255,500.
+      expect(notes.G11).toBe(255500);
+      // Depreciation brought forward: the van (9,828) and the laptop (270),
+      // plus the land & buildings opening asset's 40,000.
+      expect(notes.G14).toBe(50098);
       expect(notes.G20).toBe(notes.G11 - notes.G17);
       expect(results.PubBalSht.F6).toBe(notes.G20);
     });
