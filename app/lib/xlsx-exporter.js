@@ -627,13 +627,12 @@ export async function extractBankTransactions(sourceDir, product, period) {
       const sheetPath = sheetMap.get(sheetName);
       const xml = await zip.file(sheetPath).async("string");
 
-      // The account's opening balance sits in A1, a bare amount with no date
-      // cell anywhere beside it: the workbook takes it once, on the period's
-      // own first tab, and every later tab carries it forward as a formula
-      // instead. So the balance is dated the first day of the period rather
-      // than borrowed from a statement row -- an account whose first month
-      // banks nothing has no row to borrow from, and one that banks late
-      // borrows a date the balance was never brought forward on.
+      // The account's opening balance is a bare amount in A1 with no date
+      // cell beside it, entered once and carried forward by formula on every
+      // tab after it -- so the first tab holding a figure of its own holds
+      // the balance, and it is dated the first day of the period. Borrowing
+      // the date of a statement row instead loses the balance of an account
+      // that banks nothing that month, and misdates one that banks late.
       const obVal = readCellValue(xml, "A1", sharedStrings);
       if (obVal !== null && typeof obVal === "number" && obVal !== 0 && !obEmitted && !hasCellFormula(xml, "A1")) {
         lines.push({
