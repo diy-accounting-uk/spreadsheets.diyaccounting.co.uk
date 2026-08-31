@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2021-04-05 (Apr21) Excel 2007
 
 Scenario: se-scenario-advanced
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.
 
@@ -83,66 +83,66 @@ Trade: IT consultancy and software development
 | Forecast: tax at additional rate | 0 | 0 | 0 | PASS |
 | Forecast: National Insurance | 5080.7 | 5080.74783333333 | +0.04783333333034534 | PASS |
 | Forecast: tax and NI liability | 45653 | 45653.1828333331 | +0.18283333309955196 | PASS |
-| SA103F box 14 turnover (D55) = the profit and loss account | 339200 | 339200 | 0 | PASS |
-| SA103F box 15 other business income (O55) = the profit and loss account | 0 | 0 | 0 | PASS |
-| SA103F box 16 goods bought for resale (D66) = the profit and loss account | 13470 | 13470 | 0 | PASS |
-| SA103F box 17 subcontractor payments (D70) = the profit and loss account | 6666.66666666667 | 6666.66666666667 | 0 | PASS |
-| SA103F box 18 wages, salaries and staff costs (D74) = the profit and loss account | 92735.7333333333 | 92735.7333333333 | 0 | PASS |
-| SA103F box 19 car, van and travel expenses (D78) = the profit and loss account | 7881.875 | 7881.875 | 0 | PASS |
-| SA103F box 20 rent, rates, power and insurance (D82) = the profit and loss account | 13200 | 13200 | 0 | PASS |
-| SA103F box 21 repairs and renewals (D86) = the profit and loss account | 950 | 950 | 0 | PASS |
-| SA103F box 22 telephone, stationery and office costs (D90) = the profit and loss account | 3035 | 3035 | 0 | PASS |
-| SA103F box 23 advertising and entertainment (D94) = the profit and loss account | 3800 | 3800 | 0 | PASS |
-| SA103F box 24 interest on bank and other loans (D98) = the profit and loss account | 0 | 0 | 0 | PASS |
-| SA103F box 25 bank, credit card and finance charges (D102) = the profit and loss account | 3900 | 3900 | 0 | PASS |
-| SA103F box 26 irrecoverable debts written off (D106) = the profit and loss account | -300 | -300 | 0 | PASS |
-| SA103F box 27 accountancy, legal and professional fees (D110) = the profit and loss account | 6925 | 6925 | 0 | PASS |
-| SA103F box 28 depreciation and loss on sale of assets (D114) = the profit and loss account | 13912 | 13912 | 0 | PASS |
-| SA103F box 29 other business expenses (D118) = the profit and loss account | 3231.66666666666 | 3231.66666666666 | 0 | PASS |
-| SA103F box 30 total expenses (D122) = the profit and loss account | 169407.9416666667 | 169407.941666667 | +2.9103830456733704e-10 | PASS |
-| SA103F box 43 disallowable depreciation (O114) = the profit and loss account | 13740 | 13740 | 0 | PASS |
-| SA103F box 45 total disallowable expenses (O122) = the profit and loss account | 13740 | 13740 | 0 | PASS |
-| SA103F box 74 other business income (O204) = the profit and loss account | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
-| SA103F box 56 total capital allowances (O149) = boxes 48 to 55 | 64000 | 64000 | 0 | PASS |
-| SA103F box 46 net profit (D129) = boxes 14 and 15 less box 30 | 169792.058333333 | 169792.058333333 | 0 | PASS |
-| SA103F box 60 total additions to net profit (D174) = boxes 45, 57, 58 and 59 | 13740 | 13740 | 0 | PASS |
-| SA103F box 62 total deductions from net profit (O169) = boxes 56 and 61 | 64000 | 64000 | 0 | PASS |
-| SA103F box 63 net business profit for tax purposes (O174) = box 46 or box 47, plus box 60, less box 62 | 119532.058333333 | 119532.058333333 | 0 | PASS |
-| SA103F box 72 adjusted profit (O194) = box 63 | 119532.058333333 | 119532.058333333 | 0 | PASS |
-| SA103F box 75 total taxable profits (O210) = box 72 less box 73 plus box 74 | 121615.39166666633 | 121615.391666666 | -3.346940502524376e-10 | PASS |
-| SA103F box 48 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
-| SA103F box 49 writing down allowances (D144) = Schedule R1 less the restricted car allowances in box 51 | 0 | 0 | 0 | PASS |
-| SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
-| SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1 | 7180 | 7180 | 0 | PASS |
-| SA103F box 58 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
-| SA103F box 14 turnover: full return (D55) = short return (D38) | 339200 | 339200 | 0 | PASS |
-| SA103F box 15 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
-| SA103F box 18 wages, salaries and staff costs: full return (D74) = short return (D55) | 92735.7333333333 | 92735.7333333333 | 0 | PASS |
-| SA103F box 19 car, van and travel expenses: full return (D78) = short return (D51) | 7881.875 | 7881.875 | 0 | PASS |
-| SA103F box 20 rent, rates, power and insurance: full return (D82) = short return (D60) | 13200 | 13200 | 0 | PASS |
-| SA103F box 21 repairs and renewals: full return (D86) = short return (D64) | 950 | 950 | 0 | PASS |
-| SA103F box 22 telephone, stationery and office costs: full return (D90) = short return (O55) | 3035 | 3035 | 0 | PASS |
-| SA103F box 27 accountancy, legal and professional fees: full return (D110) = short return (O46) | 6925 | 6925 | 0 | PASS |
-| SA103F box 47 net loss: full return (O129) = short return (O71) | 0 | 0 | 0 | PASS |
-| SA103F box 48 annual investment allowance: full return (D139) = short return (D80) | 52500 | 52500 | 0 | PASS |
-| SA103F box 54 enhanced and other capital allowances: full return (O139) = short return (D85) | 0 | 0 | 0 | PASS |
-| SA103F box 58 balancing charge: full return (O160) = short return (O85) | 0 | 0 | 0 | PASS |
-| SA103F box 59 goods and services for own use: full return (D169) = short return (D94) | 0 | 0 | 0 | PASS |
-| SA103F box 63 net business profit for tax purposes: full return (O174) = short return (D99) | 119532.058333333 | 119532.058333333 | 0 | PASS |
-| SA103F box 64 net business loss for tax purposes: full return (O179) = short return (O106) | 0 | 0 | 0 | PASS |
-| SA103F box 73 loss brought forward set against this year: full return (O199) = short return (O94) | 0 | 0 | 0 | PASS |
-| SA103F box 74 other business income: full return (O204) = short return (O99) | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
-| SA103F box 75 total taxable profits: full return (O210) = short return (D106) | 121615.391666666 | 121615.391666666 | 0 | PASS |
-| SA103F box 80 contractor deductions taken off: full return (D231) = short return (O124) | 0 | 0 | 0 | PASS |
-| SA103F box 30 total expenses (D122) = the short return's total expenses with box 45 disallowable depreciation added back | 169407.941666667 | 169407.941666667 | 0 | PASS |
-| SA103F box 46 net profit (D129) = the short return's net profit less box 45 disallowable depreciation | 169792.058333333 | 169792.058333333 | 0 | PASS |
-| SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24 | 64000 | 64000 | 0 | PASS |
+| SA103F box 15 turnover (D55) = the profit and loss account | 339200 | 339200 | 0 | PASS |
+| SA103F box 16 other business income (O55) = the profit and loss account | 0 | 0 | 0 | PASS |
+| SA103F box 17 goods bought for resale (D66) = the profit and loss account | 13470 | 13470 | 0 | PASS |
+| SA103F box 18 subcontractor payments (D70) = the profit and loss account | 6666.66666666667 | 6666.66666666667 | 0 | PASS |
+| SA103F box 19 wages, salaries and staff costs (D74) = the profit and loss account | 92735.7333333333 | 92735.7333333333 | 0 | PASS |
+| SA103F box 20 car, van and travel expenses (D78) = the profit and loss account | 7881.875 | 7881.875 | 0 | PASS |
+| SA103F box 21 rent, rates, power and insurance (D82) = the profit and loss account | 13200 | 13200 | 0 | PASS |
+| SA103F box 22 repairs and maintenance (D86) = the profit and loss account | 950 | 950 | 0 | PASS |
+| SA103F box 23 phone, stationery and office costs (D90) = the profit and loss account | 3035 | 3035 | 0 | PASS |
+| SA103F box 24 advertising and entertainment (D94) = the profit and loss account | 3800 | 3800 | 0 | PASS |
+| SA103F box 25 interest on bank and other loans (D98) = the profit and loss account | 0 | 0 | 0 | PASS |
+| SA103F box 26 bank, credit card and finance charges (D102) = the profit and loss account | 3900 | 3900 | 0 | PASS |
+| SA103F box 27 irrecoverable debts written off (D106) = the profit and loss account | -300 | -300 | 0 | PASS |
+| SA103F box 28 accountancy, legal and professional fees (D110) = the profit and loss account | 6925 | 6925 | 0 | PASS |
+| SA103F box 29 depreciation and loss on sale of assets (D114) = the profit and loss account | 13912 | 13912 | 0 | PASS |
+| SA103F box 30 other business expenses (D118) = the profit and loss account | 3231.66666666666 | 3231.66666666666 | 0 | PASS |
+| SA103F box 31 total expenses (D122) = the profit and loss account | 169407.9416666667 | 169407.941666667 | +2.9103830456733704e-10 | PASS |
+| SA103F box 44 disallowable depreciation (O114) = the profit and loss account | 13740 | 13740 | 0 | PASS |
+| SA103F box 46 total disallowable expenses (O122) = the profit and loss account | 13740 | 13740 | 0 | PASS |
+| SA103F box 75 other business income (O204) = the profit and loss account | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = boxes 49 to 56 | 64000 | 64000 | 0 | PASS |
+| SA103F box 47 net profit (D129) = boxes 15 and 16 less box 31 | 169792.058333333 | 169792.058333333 | 0 | PASS |
+| SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60 | 13740 | 13740 | 0 | PASS |
+| SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62 | 64000 | 64000 | 0 | PASS |
+| SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63 | 119532.058333333 | 119532.058333333 | 0 | PASS |
+| SA103F box 73 adjusted profit (O194) = box 64 | 119532.058333333 | 119532.058333333 | 0 | PASS |
+| SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75 | 121615.39166666633 | 121615.391666666 | -3.346940502524376e-10 | PASS |
+| SA103F box 49 annual investment allowance (D139) = Schedule Q1 | 52500 | 52500 | 0 | PASS |
+| SA103F box 50 capital allowances at 18% (D144) = Schedule R1 | 4320 | 4320 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000 | 0 | 0 | 0 | PASS |
+| SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1 | 7180 | 7180 | 0 | PASS |
+| SA103F box 59 balancing charge (O160) = Schedule Z1 | 0 | 0 | 0 | PASS |
+| SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate | 4320 | 4320 | 0 | PASS |
+| SA103F box 51 capital allowances at 6% (D147) is nil | 0 | 0 | 0 | PASS |
+| SA103F box 15 turnover: full return (D55) = short return (D38) | 339200 | 339200 | 0 | PASS |
+| SA103F box 16 other business income: full return (O55) = short return (O38) | 0 | 0 | 0 | PASS |
+| SA103F box 19 wages, salaries and staff costs: full return (D74) = short return (D55) | 92735.7333333333 | 92735.7333333333 | 0 | PASS |
+| SA103F box 20 car, van and travel expenses: full return (D78) = short return (D51) | 7881.875 | 7881.875 | 0 | PASS |
+| SA103F box 21 rent, rates, power and insurance: full return (D82) = short return (D60) | 13200 | 13200 | 0 | PASS |
+| SA103F box 22 repairs and maintenance: full return (D86) = short return (D64) | 950 | 950 | 0 | PASS |
+| SA103F box 23 phone, stationery and office costs: full return (D90) = short return (O55) | 3035 | 3035 | 0 | PASS |
+| SA103F box 28 accountancy, legal and professional fees: full return (D110) = short return (O46) | 6925 | 6925 | 0 | PASS |
+| SA103F box 48 net loss: full return (O129) = short return (O71) | 0 | 0 | 0 | PASS |
+| SA103F box 49 annual investment allowance: full return (D139) = short return (D80) | 52500 | 52500 | 0 | PASS |
+| SA103F box 55 100% and other enhanced capital allowances: full return (O144) = short return (D85) | 0 | 0 | 0 | PASS |
+| SA103F box 59 balancing charge: full return (O160) = short return (O85) | 0 | 0 | 0 | PASS |
+| SA103F box 60 goods and services for own use: full return (D169) = short return (D94) | 0 | 0 | 0 | PASS |
+| SA103F box 64 net business profit for tax purposes: full return (O174) = short return (D99) | 119532.058333333 | 119532.058333333 | 0 | PASS |
+| SA103F box 65 net business loss for tax purposes: full return (O179) = short return (O106) | 0 | 0 | 0 | PASS |
+| SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94) | 0 | 0 | 0 | PASS |
+| SA103F box 75 other business income: full return (O204) = short return (O99) | 2083.33333333333 | 2083.33333333333 | 0 | PASS |
+| SA103F box 76 total taxable profits: full return (O210) = short return (D106) | 121615.391666666 | 121615.391666666 | 0 | PASS |
+| SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124) | 0 | 0 | 0 | PASS |
+| SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back | 169407.941666667 | 169407.941666667 | 0 | PASS |
+| SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation | 169792.058333333 | 169792.058333333 | 0 | PASS |
+| SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24 | 64000 | 64000 | 0 | PASS |
 | SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4) | 43927 | 43927 | 0 | PASS |
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 44291 | 44291 | 0 | PASS |
-| SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4) | 1 | 1 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.18 | 0.18 | 0 | PASS |
-| SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4) | 12500 | 12500 | 0 | PASS |
-| SA103F: the Class 4 threshold the return prints against the Class 4 lower limit | 9500 | 12500 | +3000 | **WARNING** |
+| SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20) | 9500 | 9500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 52500 | 52500 | 0 | PASS |
@@ -850,46 +850,45 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| Turnover (box 14) | 339,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 15) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Goods bought for resale (box 16) | 13,470 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Subcontractor payments (box 17) | 6,666.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Wages, salaries and staff costs (box 18) | 92,735.73 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel expenses (box 19) | 7,881.88 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Rent, rates, power and insurance (box 20) | 13,200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and renewals (box 21) | 950 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Telephone, stationery and office costs (box 22) | 3,035 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Advertising and entertainment (box 23) | 3,800 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Interest on bank and other loans (box 24) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Bank, credit card and finance charges (box 25) | 3,900 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Irrecoverable debts written off (box 26) | -300 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional fees (box 27) | 6,925 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation and loss on sale of assets (box 28) | 13,912 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses (box 29) | 3,231.67 |
-| **Total expenses (box 30)** | 169,407.94 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Disallowable depreciation (box 43) | 13,740 |
-| **Total disallowable expenses (box 45)** | 13,740 |
-| **Net profit (box 46)** | 169,792.06 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 47) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 48) | 52,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Writing down allowances (box 49) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Restricted allowances for expensive cars (box 51) | 4,320 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Enhanced and other capital allowances (box 54) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 55) | 7,180 |
-| **Total capital allowances (box 56)** | 64,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 58) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 59) | 0 |
-| **Total additions to net profit (box 60)** | 13,740 |
-| **Total deductions from net profit (box 62)** | 64,000 |
-| **Net business profit for tax purposes (box 63)** | 119,532.06 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 64) | 0 |
-| **Adjusted profit (box 72)** | 119,532.06 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 73) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 14, 15 or 59 (box 74) | 2,083.33 |
-| **Total taxable profits from this business (box 75)** | 121,615.39 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 76) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 79) | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 80) | 0 |
+| Turnover (box 15) | 339,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 16) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Goods bought for resale (box 17) | 13,470 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Subcontractor payments (box 18) | 6,666.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Wages, salaries and staff costs (box 19) | 92,735.73 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Car, van and travel expenses (box 20) | 7,881.88 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Rent, rates, power and insurance (box 21) | 13,200 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs and maintenance (box 22) | 950 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Phone, stationery and office costs (box 23) | 3,035 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Advertising and entertainment (box 24) | 3,800 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Interest on bank and other loans (box 25) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Bank, credit card and finance charges (box 26) | 3,900 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Irrecoverable debts written off (box 27) | -300 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Accountancy, legal and professional fees (box 28) | 6,925 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation and loss on sale of assets (box 29) | 13,912 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business expenses (box 30) | 3,231.67 |
+| **Total expenses (box 31)** | 169,407.94 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Disallowable depreciation (box 44) | 13,740 |
+| **Total disallowable expenses (box 46)** | 13,740 |
+| **Net profit (box 47)** | 169,792.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 48) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Annual investment allowance (box 49) | 52,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances at 18% (box 50) | 4,320 |
+| &nbsp;&nbsp;&nbsp;&nbsp;100% and other enhanced capital allowances (box 55) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Allowances on sale or cessation (box 56) | 7,180 |
+| **Total capital allowances (box 57)** | 64,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Balancing charge (box 59) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Goods and services for own use (box 60) | 0 |
+| **Total additions to net profit (box 61)** | 13,740 |
+| **Total deductions from net profit (box 63)** | 64,000 |
+| **Net business profit for tax purposes (box 64)** | 119,532.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Net business loss for tax purposes (box 65) | 0 |
+| **Adjusted profit (box 73)** | 119,532.06 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward set against this year (box 74) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Other business income not in boxes 15, 16 or 60 (box 75) | 2,083.33 |
+| **Total taxable profits from this business (box 76)** | 121,615.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Adjusted loss (box 77) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Total loss to carry forward (box 80) | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Contractor deductions taken off (box 81) | 0 |
 
 ## Payroll Summary
 
@@ -1367,51 +1366,49 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D55 | Turnover (box 14) | 339200 | gl-cor:amount (sa103f.turnover) |
-| O55 | Other business income (box 15) | 0 | gl-cor:amount (sa103f.otherIncome) |
-| D66 | Goods bought for resale (box 16) | 13470 | gl-cor:amount (sa103f.costOfGoods) |
-| D70 | Subcontractor payments (box 17) | 6666.66666666667 | gl-cor:amount (sa103f.subcontractors) |
-| D74 | Wages, salaries and staff costs (box 18) | 92735.7333333333 | gl-cor:amount (sa103f.staffCosts) |
-| D78 | Car, van and travel expenses (box 19) | 7881.875 | gl-cor:amount (sa103f.travel) |
-| D82 | Rent, rates, power and insurance (box 20) | 13200 | gl-cor:amount (sa103f.premises) |
-| D86 | Repairs and renewals (box 21) | 950 | gl-cor:amount (sa103f.repairs) |
-| D90 | Telephone, stationery and office costs (box 22) | 3035 | gl-cor:amount (sa103f.office) |
-| D94 | Advertising and entertainment (box 23) | 3800 | gl-cor:amount (sa103f.advertising) |
-| D98 | Interest on bank and other loans (box 24) | 0 | gl-cor:amount (sa103f.interest) |
-| D102 | Bank, credit card and finance charges (box 25) | 3900 | gl-cor:amount (sa103f.bankCharges) |
-| D106 | Irrecoverable debts written off (box 26) | -300 | gl-cor:amount (sa103f.badDebts) |
-| D110 | Accountancy, legal and professional fees (box 27) | 6925 | gl-cor:amount (sa103f.legal) |
-| D114 | Depreciation and loss on sale of assets (box 28) | 13912 | gl-cor:amount (sa103f.depreciation) |
-| D118 | Other business expenses (box 29) | 3231.66666666666 | gl-cor:amount (sa103f.otherExpenses) |
-| D122 | **Total expenses (box 30)** | 169407.941666667 | gl-cor:amount (sa103f.totalExpenses) |
-| O114 | Disallowable depreciation (box 43) | 13740 | gl-cor:amount (sa103f.disallowableDepreciation) |
-| O122 | **Total disallowable expenses (box 45)** | 13740 | gl-cor:amount (sa103f.totalDisallowable) |
-| D129 | **Net profit (box 46)** | 169792.058333333 | gl-cor:amount (sa103f.netProfit) |
-| O129 | Net loss (box 47) | 0 | gl-cor:amount (sa103f.netLoss) |
-| D139 | Annual investment allowance (box 48) | 52500 | tax.capitalAllowances.aia (sa103f) |
-| D144 | Writing down allowances (box 49) | 0 | tax.capitalAllowances.wda (sa103f) |
-| D152 | Restricted allowances for expensive cars (box 51) | 4320 | tax.capitalAllowances.restricted (sa103f) |
-| O139 | Enhanced and other capital allowances (box 54) | 0 | tax.capitalAllowances.enhanced (sa103f) |
-| O144 | Allowances on sale or cessation (box 55) | 7180 | tax.capitalAllowances.balancingAllowance (sa103f) |
-| O149 | **Total capital allowances (box 56)** | 64000 | tax.capitalAllowances (sa103f) |
-| O160 | Balancing charge (box 58) | 0 | tax.capitalAllowances.balancingCharge (sa103f) |
-| D169 | Goods and services for own use (box 59) | 0 | gl-cor:amount (sa103f.ownUse) |
-| D174 | **Total additions to net profit (box 60)** | 13740 | gl-cor:amount (sa103f.totalAdditions) |
-| O169 | **Total deductions from net profit (box 62)** | 64000 | gl-cor:amount (sa103f.totalDeductions) |
-| O174 | **Net business profit for tax purposes (box 63)** | 119532.058333333 | gl-cor:amount (sa103f.taxableProfit) |
-| O179 | Net business loss for tax purposes (box 64) | 0 | gl-cor:amount (sa103f.taxableLoss) |
-| O194 | **Adjusted profit (box 72)** | 119532.058333333 | gl-cor:amount (sa103f.adjustedProfit) |
-| O199 | Loss brought forward set against this year (box 73) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
-| O204 | Other business income not in boxes 14, 15 or 59 (box 74) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
-| O210 | **Total taxable profits from this business (box 75)** | 121615.391666666 | gl-cor:amount (sa103f.profitForTax) |
-| D219 | Adjusted loss (box 76) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
-| O224 | Total loss to carry forward (box 79) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
-| D231 | Contractor deductions taken off (box 80) | 0 | diya-gl:cisDeduction (sa103f) |
+| D55 | Turnover (box 15) | 339200 | gl-cor:amount (sa103f.turnover) |
+| O55 | Other business income (box 16) | 0 | gl-cor:amount (sa103f.otherIncome) |
+| D66 | Goods bought for resale (box 17) | 13470 | gl-cor:amount (sa103f.costOfGoods) |
+| D70 | Subcontractor payments (box 18) | 6666.66666666667 | gl-cor:amount (sa103f.subcontractors) |
+| D74 | Wages, salaries and staff costs (box 19) | 92735.7333333333 | gl-cor:amount (sa103f.staffCosts) |
+| D78 | Car, van and travel expenses (box 20) | 7881.875 | gl-cor:amount (sa103f.travel) |
+| D82 | Rent, rates, power and insurance (box 21) | 13200 | gl-cor:amount (sa103f.premises) |
+| D86 | Repairs and maintenance (box 22) | 950 | gl-cor:amount (sa103f.repairs) |
+| D90 | Phone, stationery and office costs (box 23) | 3035 | gl-cor:amount (sa103f.office) |
+| D94 | Advertising and entertainment (box 24) | 3800 | gl-cor:amount (sa103f.advertising) |
+| D98 | Interest on bank and other loans (box 25) | 0 | gl-cor:amount (sa103f.interest) |
+| D102 | Bank, credit card and finance charges (box 26) | 3900 | gl-cor:amount (sa103f.bankCharges) |
+| D106 | Irrecoverable debts written off (box 27) | -300 | gl-cor:amount (sa103f.badDebts) |
+| D110 | Accountancy, legal and professional fees (box 28) | 6925 | gl-cor:amount (sa103f.legal) |
+| D114 | Depreciation and loss on sale of assets (box 29) | 13912 | gl-cor:amount (sa103f.depreciation) |
+| D118 | Other business expenses (box 30) | 3231.66666666666 | gl-cor:amount (sa103f.otherExpenses) |
+| D122 | **Total expenses (box 31)** | 169407.941666667 | gl-cor:amount (sa103f.totalExpenses) |
+| O114 | Disallowable depreciation (box 44) | 13740 | gl-cor:amount (sa103f.disallowableDepreciation) |
+| O122 | **Total disallowable expenses (box 46)** | 13740 | gl-cor:amount (sa103f.totalDisallowable) |
+| D129 | **Net profit (box 47)** | 169792.058333333 | gl-cor:amount (sa103f.netProfit) |
+| O129 | Net loss (box 48) | 0 | gl-cor:amount (sa103f.netLoss) |
+| D139 | Annual investment allowance (box 49) | 52500 | tax.capitalAllowances.aia (sa103f) |
+| D144 | Capital allowances at 18% (box 50) | 4320 | tax.capitalAllowances.wda (sa103f) |
+| O144 | 100% and other enhanced capital allowances (box 55) | 0 | tax.capitalAllowances.enhanced (sa103f) |
+| O149 | Allowances on sale or cessation (box 56) | 7180 | tax.capitalAllowances.balancingAllowance (sa103f) |
+| O154 | **Total capital allowances (box 57)** | 64000 | tax.capitalAllowances (sa103f) |
+| O160 | Balancing charge (box 59) | 0 | tax.capitalAllowances.balancingCharge (sa103f) |
+| D169 | Goods and services for own use (box 60) | 0 | gl-cor:amount (sa103f.ownUse) |
+| D174 | **Total additions to net profit (box 61)** | 13740 | gl-cor:amount (sa103f.totalAdditions) |
+| O169 | **Total deductions from net profit (box 63)** | 64000 | gl-cor:amount (sa103f.totalDeductions) |
+| O174 | **Net business profit for tax purposes (box 64)** | 119532.058333333 | gl-cor:amount (sa103f.taxableProfit) |
+| O179 | Net business loss for tax purposes (box 65) | 0 | gl-cor:amount (sa103f.taxableLoss) |
+| O194 | **Adjusted profit (box 73)** | 119532.058333333 | gl-cor:amount (sa103f.adjustedProfit) |
+| O199 | Loss brought forward set against this year (box 74) | 0 | gl-cor:amount (sa103f.lossBroughtForward) |
+| O204 | Other business income not in boxes 15, 16 or 60 (box 75) | 2083.33333333333 | gl-cor:amount (sa103f.otherBusinessIncome) |
+| O210 | **Total taxable profits from this business (box 76)** | 121615.391666666 | gl-cor:amount (sa103f.profitForTax) |
+| D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
+| O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
+| D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
 | Q2 |  | 43927 |  |
 | V2 |  | 44291 |  |
-| H136 |  | 1 |  |
 | G141 |  | 0.18 |  |
-| J280 |  | 12500 |  |
+| J280 |  | 9500 |  |
 
 ### Wagesinterface
 

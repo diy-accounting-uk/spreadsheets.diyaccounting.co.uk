@@ -731,45 +731,45 @@ export const CELL_MAP = [
   // columns A and L beside each value. Nothing read this sheet back before,
   // so the full return could carry a different figure from the short one
   // beside it and no check would notice.
-  ["SE Full", "D55",  "Turnover (box 14)",                     "gl-cor:amount (sa103f.turnover)",            "Self Assessment (SA103F)", 0],
-  ["SE Full", "O55",  "Other business income (box 15)",        "gl-cor:amount (sa103f.otherIncome)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "D66",  "Goods bought for resale (box 16)",      "gl-cor:amount (sa103f.costOfGoods)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "D70",  "Subcontractor payments (box 17)",       "gl-cor:amount (sa103f.subcontractors)",      "Self Assessment (SA103F)", 1],
-  ["SE Full", "D74",  "Wages, salaries and staff costs (box 18)", "gl-cor:amount (sa103f.staffCosts)",       "Self Assessment (SA103F)", 1],
-  ["SE Full", "D78",  "Car, van and travel expenses (box 19)", "gl-cor:amount (sa103f.travel)",              "Self Assessment (SA103F)", 1],
-  ["SE Full", "D82",  "Rent, rates, power and insurance (box 20)", "gl-cor:amount (sa103f.premises)",        "Self Assessment (SA103F)", 1],
-  ["SE Full", "D86",  "Repairs and renewals (box 21)",         "gl-cor:amount (sa103f.repairs)",             "Self Assessment (SA103F)", 1],
-  ["SE Full", "D90",  "Telephone, stationery and office costs (box 22)", "gl-cor:amount (sa103f.office)",    "Self Assessment (SA103F)", 1],
-  ["SE Full", "D94",  "Advertising and entertainment (box 23)", "gl-cor:amount (sa103f.advertising)",        "Self Assessment (SA103F)", 1],
-  ["SE Full", "D98",  "Interest on bank and other loans (box 24)", "gl-cor:amount (sa103f.interest)",        "Self Assessment (SA103F)", 1],
-  ["SE Full", "D102", "Bank, credit card and finance charges (box 25)", "gl-cor:amount (sa103f.bankCharges)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D106", "Irrecoverable debts written off (box 26)", "gl-cor:amount (sa103f.badDebts)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "D110", "Accountancy, legal and professional fees (box 27)", "gl-cor:amount (sa103f.legal)",   "Self Assessment (SA103F)", 1],
-  ["SE Full", "D114", "Depreciation and loss on sale of assets (box 28)", "gl-cor:amount (sa103f.depreciation)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D118", "Other business expenses (box 29)",      "gl-cor:amount (sa103f.otherExpenses)",       "Self Assessment (SA103F)", 1],
-  ["SE Full", "D122", "**Total expenses (box 30)**",           "gl-cor:amount (sa103f.totalExpenses)",       "Self Assessment (SA103F)", 0],
-  ["SE Full", "O114", "Disallowable depreciation (box 43)",    "gl-cor:amount (sa103f.disallowableDepreciation)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "O122", "**Total disallowable expenses (box 45)**", "gl-cor:amount (sa103f.totalDisallowable)", "Self Assessment (SA103F)", 0],
-  ["SE Full", "D129", "**Net profit (box 46)**",               "gl-cor:amount (sa103f.netProfit)",           "Self Assessment (SA103F)", 0],
-  ["SE Full", "O129", "Net loss (box 47)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
-  ["SE Full", "D139", "Annual investment allowance (box 48)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "D144", "Writing down allowances (box 49)",      "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
-  ["SE Full", "O139", "Enhanced and other capital allowances (box 54)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "O144", "Allowances on sale or cessation (box 55)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "O149", "**Total capital allowances (box 56)**", "tax.capitalAllowances (sa103f)",             "Self Assessment (SA103F)", 0],
-  ["SE Full", "O160", "Balancing charge (box 58)",             "tax.capitalAllowances.balancingCharge (sa103f)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "D169", "Goods and services for own use (box 59)", "gl-cor:amount (sa103f.ownUse)",            "Self Assessment (SA103F)", 1],
-  ["SE Full", "D174", "**Total additions to net profit (box 60)**", "gl-cor:amount (sa103f.totalAdditions)", "Self Assessment (SA103F)", 0],
-  ["SE Full", "O169", "**Total deductions from net profit (box 62)**", "gl-cor:amount (sa103f.totalDeductions)", "Self Assessment (SA103F)", 0],
-  ["SE Full", "O174", "**Net business profit for tax purposes (box 63)**", "gl-cor:amount (sa103f.taxableProfit)", "Self Assessment (SA103F)", 0],
-  ["SE Full", "O179", "Net business loss for tax purposes (box 64)", "gl-cor:amount (sa103f.taxableLoss)",   "Self Assessment (SA103F)", 1],
-  ["SE Full", "O194", "**Adjusted profit (box 72)**",          "gl-cor:amount (sa103f.adjustedProfit)",      "Self Assessment (SA103F)", 0],
-  ["SE Full", "O199", "Loss brought forward set against this year (box 73)", "gl-cor:amount (sa103f.lossBroughtForward)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "O204", "Other business income not in boxes 14, 15 or 59 (box 74)", "gl-cor:amount (sa103f.otherBusinessIncome)", "Self Assessment (SA103F)", 1],
-  ["SE Full", "O210", "**Total taxable profits from this business (box 75)**", "gl-cor:amount (sa103f.profitForTax)", "Self Assessment (SA103F)", 0],
-  ["SE Full", "D219", "Adjusted loss (box 76)",                "gl-cor:amount (sa103f.adjustedLoss)",        "Self Assessment (SA103F)", 1],
-  ["SE Full", "O224", "Total loss to carry forward (box 79)",  "gl-cor:amount (sa103f.lossCarriedForward)",  "Self Assessment (SA103F)", 1],
-  ["SE Full", "D231", "Contractor deductions taken off (box 80)", "diya-gl:cisDeduction (sa103f)",           "Self Assessment (SA103F)", 1],
+  ["SE Full", "D55",  "Turnover (box 15)",                     "gl-cor:amount (sa103f.turnover)",            "Self Assessment (SA103F)", 0],
+  ["SE Full", "O55",  "Other business income (box 16)",        "gl-cor:amount (sa103f.otherIncome)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D66",  "Goods bought for resale (box 17)",      "gl-cor:amount (sa103f.costOfGoods)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D70",  "Subcontractor payments (box 18)",       "gl-cor:amount (sa103f.subcontractors)",      "Self Assessment (SA103F)", 1],
+  ["SE Full", "D74",  "Wages, salaries and staff costs (box 19)", "gl-cor:amount (sa103f.staffCosts)",       "Self Assessment (SA103F)", 1],
+  ["SE Full", "D78",  "Car, van and travel expenses (box 20)", "gl-cor:amount (sa103f.travel)",              "Self Assessment (SA103F)", 1],
+  ["SE Full", "D82",  "Rent, rates, power and insurance (box 21)", "gl-cor:amount (sa103f.premises)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D86",  "Repairs and maintenance (box 22)",      "gl-cor:amount (sa103f.repairs)",             "Self Assessment (SA103F)", 1],
+  ["SE Full", "D90",  "Phone, stationery and office costs (box 23)", "gl-cor:amount (sa103f.office)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D94",  "Advertising and entertainment (box 24)", "gl-cor:amount (sa103f.advertising)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D98",  "Interest on bank and other loans (box 25)", "gl-cor:amount (sa103f.interest)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "D102", "Bank, credit card and finance charges (box 26)", "gl-cor:amount (sa103f.bankCharges)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D106", "Irrecoverable debts written off (box 27)", "gl-cor:amount (sa103f.badDebts)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D110", "Accountancy, legal and professional fees (box 28)", "gl-cor:amount (sa103f.legal)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "D114", "Depreciation and loss on sale of assets (box 29)", "gl-cor:amount (sa103f.depreciation)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D118", "Other business expenses (box 30)",      "gl-cor:amount (sa103f.otherExpenses)",       "Self Assessment (SA103F)", 1],
+  ["SE Full", "D122", "**Total expenses (box 31)**",           "gl-cor:amount (sa103f.totalExpenses)",       "Self Assessment (SA103F)", 0],
+  ["SE Full", "O114", "Disallowable depreciation (box 44)",    "gl-cor:amount (sa103f.disallowableDepreciation)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O122", "**Total disallowable expenses (box 46)**", "gl-cor:amount (sa103f.totalDisallowable)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "D129", "**Net profit (box 47)**",               "gl-cor:amount (sa103f.netProfit)",           "Self Assessment (SA103F)", 0],
+  ["SE Full", "O129", "Net loss (box 48)",                     "gl-cor:amount (sa103f.netLoss)",             "Self Assessment (SA103F)", 1],
+  ["SE Full", "D139", "Annual investment allowance (box 49)",  "tax.capitalAllowances.aia (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "D144", "Capital allowances at 18% (box 50)",    "tax.capitalAllowances.wda (sa103f)",         "Self Assessment (SA103F)", 1],
+  ["SE Full", "O144", "100% and other enhanced capital allowances (box 55)", "tax.capitalAllowances.enhanced (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O149", "Allowances on sale or cessation (box 56)", "tax.capitalAllowances.balancingAllowance (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O154", "**Total capital allowances (box 57)**", "tax.capitalAllowances (sa103f)",             "Self Assessment (SA103F)", 0],
+  ["SE Full", "O160", "Balancing charge (box 59)",             "tax.capitalAllowances.balancingCharge (sa103f)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "D169", "Goods and services for own use (box 60)", "gl-cor:amount (sa103f.ownUse)",            "Self Assessment (SA103F)", 1],
+  ["SE Full", "D174", "**Total additions to net profit (box 61)**", "gl-cor:amount (sa103f.totalAdditions)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O169", "**Total deductions from net profit (box 63)**", "gl-cor:amount (sa103f.totalDeductions)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O174", "**Net business profit for tax purposes (box 64)**", "gl-cor:amount (sa103f.taxableProfit)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "O179", "Net business loss for tax purposes (box 65)", "gl-cor:amount (sa103f.taxableLoss)",   "Self Assessment (SA103F)", 1],
+  ["SE Full", "O194", "**Adjusted profit (box 73)**",          "gl-cor:amount (sa103f.adjustedProfit)",      "Self Assessment (SA103F)", 0],
+  ["SE Full", "O199", "Loss brought forward set against this year (box 74)", "gl-cor:amount (sa103f.lossBroughtForward)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O204", "Other business income not in boxes 15, 16 or 60 (box 75)", "gl-cor:amount (sa103f.otherBusinessIncome)", "Self Assessment (SA103F)", 1],
+  ["SE Full", "O210", "**Total taxable profits from this business (box 76)**", "gl-cor:amount (sa103f.profitForTax)", "Self Assessment (SA103F)", 0],
+  ["SE Full", "D219", "Adjusted loss (box 77)",                "gl-cor:amount (sa103f.adjustedLoss)",        "Self Assessment (SA103F)", 1],
+  ["SE Full", "O224", "Total loss to carry forward (box 80)",  "gl-cor:amount (sa103f.lossCarriedForward)",  "Self Assessment (SA103F)", 1],
+  ["SE Full", "D231", "Contractor deductions taken off (box 81)", "diya-gl:cisDeduction (sa103f)",           "Self Assessment (SA103F)", 1],
   // ── Wagesinterface (6m) — monthly payroll from Payslips.xlsx via external links ──
   ["Wagesinterface", "C4",  "Apr Gross Pay",    "diya-gl:grossPay (apr)",     "Payroll Summary", 1],
   ["Wagesinterface", "C5",  "May Gross Pay",    "diya-gl:grossPay (may)",     "Payroll Summary", 1],
@@ -1012,13 +1012,13 @@ export function standardReads() {
   // SE Full cells the return quotes without them being boxes of their own,
   // plus the boxes it prints with no formula behind them. The quoted cells
   // are the period the return covers (Q2 = Admin!B4, V2 = Admin!B17) and the
-  // two capital allowance rates and the Class 4 threshold it prints in its
-  // captions (H136 = Admin!G4, G141 = Admin!G5, J280 = Admin!N4). The empty
-  // ones are boxes 50, 51, 52, 53, 57 and 61, which a customer fills in by
-  // hand; reading them lets the box 56, 60 and 62 totals be checked as the
-  // exact sums the sheet computes rather than sums with terms left out.
+  // writing down rate and Class 4 threshold it prints in its captions
+  // (G141 = Admin!G5, J280 = Admin!N20). The empty ones are boxes 51, 52,
+  // 52.1, 53, 54 and 62, which a customer fills in by hand; reading them lets
+  // the box 57 and 63 totals be checked as the exact sums the sheet computes
+  // rather than sums with terms left out.
   reads["SE Full"] = reads["SE Full"] || [];
-  for (const cell of ["Q2", "V2", "H136", "G141", "J280", "D147", "D152", "D156", "D160", "O154", "D179"]) {
+  for (const cell of ["Q2", "V2", "G141", "J280", "D147", "D152", "D156", "D160", "O139", "D179"]) {
     if (!reads["SE Full"].includes(cell)) reads["SE Full"].push(cell);
   }
 
@@ -1268,7 +1268,7 @@ export function unitFor(sheet, cell) {
       return "money";
     case "SE Full":
       if (cell === "Q2" || cell === "V2") return "date";
-      if (cell === "H136" || cell === "G141") return "rate";
+      if (cell === "G141") return "rate";
       return "money";
     case "Wagesinterface":
       return column === "B" ? "date" : "money";
@@ -1714,26 +1714,26 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   if (seFull && pl) {
     // Each box against the profit and loss figure its own formula names.
     const sa103fPlSources = [
-      ["D55", "box 14 turnover", num(pl.B9)],
-      ["O55", "box 15 other business income", num(pl.B38)],
-      ["D66", "box 16 goods bought for resale", num(pl.B14) + num(pl.B16)],
-      ["D70", "box 17 subcontractor payments", num(pl.B15)],
-      ["D74", "box 18 wages, salaries and staff costs", num(pl.B21)],
-      ["D78", "box 19 car, van and travel expenses", num(pl.B25) + num(pl.B26)],
-      ["D82", "box 20 rent, rates, power and insurance", num(pl.B22)],
-      ["D86", "box 21 repairs and renewals", num(pl.B23)],
-      ["D90", "box 22 telephone, stationery and office costs", num(pl.B24)],
-      ["D94", "box 23 advertising and entertainment", num(pl.B27)],
-      ["D98", "box 24 interest on bank and other loans", num(pl.B30)],
-      ["D102", "box 25 bank, credit card and finance charges", num(pl.B31)],
-      ["D106", "box 26 irrecoverable debts written off", num(pl.B29)],
-      ["D110", "box 27 accountancy, legal and professional fees", num(pl.B28)],
-      ["D114", "box 28 depreciation and loss on sale of assets", num(pl.B33) + num(pl.B34)],
-      ["D118", "box 29 other business expenses", num(pl.B32)],
-      ["D122", "box 30 total expenses", num(pl.B17) + num(pl.B35)],
-      ["O114", "box 43 disallowable depreciation", num(pl.B34)],
-      ["O122", "box 45 total disallowable expenses", num(pl.B34)],
-      ["O204", "box 74 other business income", num(pl.B11)],
+      ["D55", "box 15 turnover", num(pl.B9)],
+      ["O55", "box 16 other business income", num(pl.B38)],
+      ["D66", "box 17 goods bought for resale", num(pl.B14) + num(pl.B16)],
+      ["D70", "box 18 subcontractor payments", num(pl.B15)],
+      ["D74", "box 19 wages, salaries and staff costs", num(pl.B21)],
+      ["D78", "box 20 car, van and travel expenses", num(pl.B25) + num(pl.B26)],
+      ["D82", "box 21 rent, rates, power and insurance", num(pl.B22)],
+      ["D86", "box 22 repairs and maintenance", num(pl.B23)],
+      ["D90", "box 23 phone, stationery and office costs", num(pl.B24)],
+      ["D94", "box 24 advertising and entertainment", num(pl.B27)],
+      ["D98", "box 25 interest on bank and other loans", num(pl.B30)],
+      ["D102", "box 26 bank, credit card and finance charges", num(pl.B31)],
+      ["D106", "box 27 irrecoverable debts written off", num(pl.B29)],
+      ["D110", "box 28 accountancy, legal and professional fees", num(pl.B28)],
+      ["D114", "box 29 depreciation and loss on sale of assets", num(pl.B33) + num(pl.B34)],
+      ["D118", "box 30 other business expenses", num(pl.B32)],
+      ["D122", "box 31 total expenses", num(pl.B17) + num(pl.B35)],
+      ["O114", "box 44 disallowable depreciation", num(pl.B34)],
+      ["O122", "box 46 total disallowable expenses", num(pl.B34)],
+      ["O204", "box 75 other business income", num(pl.B11)],
     ];
     for (const [cell, caption, plFigure] of sa103fPlSources) {
       check(`SA103F ${caption} (${cell}) = the profit and loss account`, num(seFull[cell]), plFigure);
@@ -1741,8 +1741,8 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
     // The form's own arithmetic, each total against the boxes it adds up.
     check(
-      "SA103F box 56 total capital allowances (O149) = boxes 48 to 55",
-      num(seFull.O149),
+      "SA103F box 57 total capital allowances (O154) = boxes 49 to 56",
+      num(seFull.O154),
       num(seFull.D139) +
         num(seFull.D144) +
         num(seFull.D147) +
@@ -1750,31 +1750,32 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         num(seFull.D156) +
         num(seFull.D160) +
         num(seFull.O139) +
-        num(seFull.O144),
+        num(seFull.O144) +
+        num(seFull.O149),
     );
     check(
-      "SA103F box 46 net profit (D129) = boxes 14 and 15 less box 30",
+      "SA103F box 47 net profit (D129) = boxes 15 and 16 less box 31",
       num(seFull.D129),
       Math.max(0, num(seFull.D55) + num(seFull.O55) - num(seFull.D122)),
     );
     check(
-      "SA103F box 60 total additions to net profit (D174) = boxes 45, 57, 58 and 59",
+      "SA103F box 61 total additions to net profit (D174) = boxes 46, 59 and 60",
       num(seFull.D174),
-      num(seFull.O122) + num(seFull.O154) + num(seFull.O160) + num(seFull.D169),
+      num(seFull.O122) + num(seFull.O160) + num(seFull.D169),
     );
-    check("SA103F box 62 total deductions from net profit (O169) = boxes 56 and 61", num(seFull.O169), num(seFull.O149) + num(seFull.D179));
-    // Box 63 works from the net profit when there is one and from the net
+    check("SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62", num(seFull.O169), num(seFull.O154) + num(seFull.D179));
+    // Box 64 works from the net profit when there is one and from the net
     // loss when there is not, which is what the box's own nested IF says.
     const taxProfitFromNetProfit = num(seFull.D129) + num(seFull.D174) - num(seFull.O169);
     const taxProfitFromNetLoss = -num(seFull.O129) + num(seFull.D174) - num(seFull.O169);
     check(
-      "SA103F box 63 net business profit for tax purposes (O174) = box 46 or box 47, plus box 60, less box 62",
+      "SA103F box 64 net business profit for tax purposes (O174) = box 47 or box 48, plus box 61, less box 63",
       num(seFull.O174),
       taxProfitFromNetProfit > 0 ? taxProfitFromNetProfit : Math.max(0, taxProfitFromNetLoss),
     );
-    check("SA103F box 72 adjusted profit (O194) = box 63", num(seFull.O194), num(seFull.O174));
+    check("SA103F box 73 adjusted profit (O194) = box 64", num(seFull.O194), num(seFull.O174));
     check(
-      "SA103F box 75 total taxable profits (O210) = box 72 less box 73 plus box 74",
+      "SA103F box 76 total taxable profits (O210) = box 73 less box 74 plus box 75",
       num(seFull.O210),
       num(seFull.O194) - num(seFull.O199) + num(seFull.O204),
     );
@@ -1783,60 +1784,59 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     // the fixed asset schedule across the cross-file external link.
     const returnSchedule = results["Fixedassets.xlsx!Schedule"];
     if (returnSchedule) {
-      check("SA103F box 48 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
-      check("SA103F box 49 writing down allowances (D144) = Schedule R1", num(seFull.D144), num(returnSchedule.R1));
+      check("SA103F box 49 annual investment allowance (D139) = Schedule Q1", num(seFull.D139), Math.max(0, num(returnSchedule.Q1)));
+      check("SA103F box 50 capital allowances at 18% (D144) = Schedule R1", num(seFull.D144), num(returnSchedule.R1));
       check(
-        "SA103F box 54 enhanced and other capital allowances (O139) = Schedule S1 while the small pool balance is under £1,000",
-        num(seFull.O139),
+        "SA103F box 55 100% and other enhanced capital allowances (O144) = Schedule S1 while the small pool balance is under £1,000",
+        num(seFull.O144),
         num(returnSchedule.R1) + num(returnSchedule.S1) < 1000 ? num(returnSchedule.S1) : 0,
       );
-      check("SA103F box 55 allowances on sale or cessation (O144) = Schedule Y1", num(seFull.O144), num(returnSchedule.Y1));
-      check("SA103F box 58 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
+      check("SA103F box 56 allowances on sale or cessation (O149) = Schedule Y1", num(seFull.O149), num(returnSchedule.Y1));
+      check("SA103F box 59 balancing charge (O160) = Schedule Z1", num(seFull.O160), num(returnSchedule.Z1));
     }
 
-    // Box 49 against the scenario's own assets and the year's own rate,
+    // Box 50 against the scenario's own assets and the year's own rate,
     // neither of them read back out of the workbook. Every existing asset
     // claims the writing down allowance on the tax written-down value it was
     // brought forward at, whatever it cost, so a car whose allowance is capped
-    // again, or diverted back into box 51, leaves box 49 short of what the
-    // scenario's assets are entitled to.
+    // again, or diverted into another allowance box, leaves box 50 short of
+    // what the scenario's assets are entitled to.
     if (taxData?.capital_allowances && expected.opening_fixed_assets) {
       const openingTaxWdv = expected.opening_fixed_assets.reduce((total, asset) => total + (asset.tax_wdv || 0), 0);
       check(
-        "SA103F box 49 writing down allowances (D144) = the scenario's opening tax written-down values at the year's writing down rate",
+        "SA103F box 50 capital allowances at 18% (D144) = the scenario's opening tax written-down values at the year's writing down rate",
         num(seFull.D144),
         openingTaxWdv * taxData.capital_allowances.writing_down_allowance,
       );
     }
 
-    // Box 51 restricted the allowance on a car costing over a threshold. The
-    // restriction is no longer in the tax code and the schedule no longer
-    // computes one, so the box carries nothing and box 49 carries the whole
-    // claim.
-    check("SA103F box 51 restricted car allowances (D152) is nil", num(seFull.D152), 0);
+    // Box 51 takes the special rate pool at 6%. The fixed asset schedule
+    // keeps a single main pool at the 18% rate, so the box carries nothing
+    // and box 50 carries the whole writing down claim.
+    check("SA103F box 51 capital allowances at 6% (D147) is nil", num(seFull.D147), 0);
 
     if (sa103s) {
       // Boxes the two returns carry identically.
       const sa103fCounterparts = [
-        ["D55", "D38", "box 14 turnover"],
-        ["O55", "O38", "box 15 other business income"],
-        ["D74", "D55", "box 18 wages, salaries and staff costs"],
-        ["D78", "D51", "box 19 car, van and travel expenses"],
-        ["D82", "D60", "box 20 rent, rates, power and insurance"],
-        ["D86", "D64", "box 21 repairs and renewals"],
-        ["D90", "O55", "box 22 telephone, stationery and office costs"],
-        ["D110", "O46", "box 27 accountancy, legal and professional fees"],
-        ["O129", "O71", "box 47 net loss"],
-        ["D139", "D80", "box 48 annual investment allowance"],
-        ["O139", "D85", "box 54 enhanced and other capital allowances"],
-        ["O160", "O85", "box 58 balancing charge"],
-        ["D169", "D94", "box 59 goods and services for own use"],
-        ["O174", "D99", "box 63 net business profit for tax purposes"],
-        ["O179", "O106", "box 64 net business loss for tax purposes"],
-        ["O199", "O94", "box 73 loss brought forward set against this year"],
-        ["O204", "O99", "box 74 other business income"],
-        ["O210", "D106", "box 75 total taxable profits"],
-        ["D231", "O124", "box 80 contractor deductions taken off"],
+        ["D55", "D38", "box 15 turnover"],
+        ["O55", "O38", "box 16 other business income"],
+        ["D74", "D55", "box 19 wages, salaries and staff costs"],
+        ["D78", "D51", "box 20 car, van and travel expenses"],
+        ["D82", "D60", "box 21 rent, rates, power and insurance"],
+        ["D86", "D64", "box 22 repairs and maintenance"],
+        ["D90", "O55", "box 23 phone, stationery and office costs"],
+        ["D110", "O46", "box 28 accountancy, legal and professional fees"],
+        ["O129", "O71", "box 48 net loss"],
+        ["D139", "D80", "box 49 annual investment allowance"],
+        ["O144", "D85", "box 55 100% and other enhanced capital allowances"],
+        ["O160", "O85", "box 59 balancing charge"],
+        ["D169", "D94", "box 60 goods and services for own use"],
+        ["O174", "D99", "box 64 net business profit for tax purposes"],
+        ["O179", "O106", "box 65 net business loss for tax purposes"],
+        ["O199", "O94", "box 74 loss brought forward set against this year"],
+        ["O204", "O99", "box 75 other business income"],
+        ["O210", "D106", "box 76 total taxable profits"],
+        ["D231", "O124", "box 81 contractor deductions taken off"],
       ];
       for (const [fullCell, shortCell, caption] of sa103fCounterparts) {
         check(`SA103F ${caption}: full return (${fullCell}) = short return (${shortCell})`, num(seFull[fullCell]), num(sa103s[shortCell]));
@@ -1847,21 +1847,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       // carries a net profit that much lower; the short return has no such
       // column and takes depreciation out of the total instead. The two
       // allowance layouts also split differently: the full return separates
-      // the restricted car allowances and the allowances on sale that the
-      // short return rolls into its own two boxes.
+      // the allowances on sale that the short return rolls into its own boxes.
       check(
-        "SA103F box 30 total expenses (D122) = the short return's total expenses with box 45 disallowable depreciation added back",
+        "SA103F box 31 total expenses (D122) = the short return's total expenses with box 46 disallowable depreciation added back",
         num(seFull.D122),
         num(sa103s.O64) + num(seFull.O122),
       );
       check(
-        "SA103F box 46 net profit (D129) = the short return's net profit less box 45 disallowable depreciation",
+        "SA103F box 47 net profit (D129) = the short return's net profit less box 46 disallowable depreciation",
         num(seFull.D129),
         num(sa103s.D71) - num(seFull.O122),
       );
       check(
-        "SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24",
-        num(seFull.O149),
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24",
+        num(seFull.O154),
         num(sa103s.D80) + num(sa103s.D85) + num(sa103s.O80),
       );
     }
@@ -1872,37 +1871,16 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)", num(seFull.Q2), num(results.Admin.B4), 0);
       check("SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)", num(seFull.V2), num(results.Admin.B17), 0);
       check(
-        "SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4)",
-        num(seFull.H136),
-        num(results.Admin.G4),
-        0.0001,
-      );
-      check(
         "SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)",
         num(seFull.G141),
         num(results.Admin.G5),
         0.0001,
       );
-      // The Class 4 threshold the return prints reads the Admin sheet's
-      // personal allowance, not its Class 4 lower limit. The two are the same
-      // figure in every tax year shipped so far, so the template's wiring is
-      // asserted as it stands and the true limit is carried as a warning in
-      // any year that parts them.
       check(
-        "SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4)",
+        "SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20)",
         num(seFull.J280),
-        num(results.Admin.N4),
+        num(results.Admin.N20),
       );
-      if (Math.abs(num(results.Admin.N4) - num(results.Admin.N20)) > 0.5) {
-        checks.push({
-          name: "SA103F: the Class 4 threshold the return prints against the Class 4 lower limit",
-          actual: num(seFull.J280),
-          expected: num(results.Admin.N20),
-          pass: false,
-          diff: num(seFull.J280) - num(results.Admin.N20),
-          severity: "warning",
-        });
-      }
     }
   }
 

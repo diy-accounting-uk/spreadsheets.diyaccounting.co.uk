@@ -579,9 +579,9 @@ a shipped-template limitation, stated in `paymentCodeFor()`.
 **The Precision Code master's straddling VAT entries are stated in the extractor.** Deriving them
 needs journal lines outside the accounting period, which the master does not carry.
 
-One declared list closes the section, so nobody counts it as an open item. Thirteen SE read cells
+One declared list closes the section, so nobody counts it as an open item. Fourteen SE read cells
 are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
-that set exactly: `SE Full!D147`, `D156`, `D160`, `D179`, `O154` and
+that set exactly: `SE Full!D147`, `D152`, `D156`, `D160`, `D179`, `O139` and
 `Vat.xlsx!Vatinterface!E4/E5/G4/G5/I4/I5/K4/K5`. Both engines carry nothing there, so both
 agree.
 

@@ -163,17 +163,12 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
     }
   });
 
-  // Three of these cells are quoted on the face of the SA103F as well, so
+  // Two of these cells are quoted on the face of the SA103F as well, so
   // corrupting one breaks the return's own echo of it alongside the tax-data
   // check. Those SA103F checks run before the Admin block, so they come
   // first in the failure list.
   it.each([
-    [
-      "Admin: Personal Allowance = tax data",
-      "N4",
-      1,
-      ["SA103F: the Class 4 threshold the return prints (J280) = the Admin personal allowance (N4)"],
-    ],
+    ["Admin: Personal Allowance = tax data", "N4", 1, []],
     ["Admin: Personal Allowance Taper Threshold = tax data", "N5", 1, []],
     ["Admin: Basic Rate = tax data", "N6", 0.5, []],
     ["Admin: Higher Rate = tax data", "N7", 0.5, []],
@@ -182,15 +177,15 @@ describeCalc("SE Admin echo and income tax checks catch a broken workbook", () =
     ["Admin: Higher Band Start = tax data", "N12", 1, []],
     ["Admin: Higher Band End = tax data", "N13", 1, []],
     ["Admin: NI Class 4 Lower Rate = tax data", "L20", 0.5, []],
-    ["Admin: NI Class 4 Lower Limit = tax data", "N20", 1, []],
+    [
+      "Admin: NI Class 4 Lower Limit = tax data",
+      "N20",
+      1,
+      ["SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20)"],
+    ],
     ["Admin: NI Class 4 Upper Rate = tax data", "L23", 0.5, []],
     ["Admin: NI Class 4 Upper Limit = tax data", "N23", 1, []],
-    [
-      "Admin: AIA Rate = tax data",
-      "G4",
-      0.5,
-      ["SA103F: the annual investment allowance rate the return prints (H136) = the Admin rate (G4)"],
-    ],
+    ["Admin: AIA Rate = tax data", "G4", 0.5, []],
     ["Admin: WDA Rate = tax data", "G5", 0.5, ["SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)"]],
     ["Admin: Mileage Higher Rate Limit = tax data", "F21", 1, []],
     ["Admin: Mileage Higher Rate Pence = tax data", "G21", 0.99, []],

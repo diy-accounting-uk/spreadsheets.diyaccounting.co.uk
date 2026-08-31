@@ -225,7 +225,7 @@ describeCalc(
       expect(corruptedChecks.find((c) => c.name === "P&L: HP interest and charges reach the finance line (B31)").pass).toBe(false);
       expect(failureNames(corruptedChecks)).toEqual([
         "P&L: Admin lines sum = Total",
-        "SA103F box 25 bank, credit card and finance charges (D102) = the profit and loss account",
+        "SA103F box 26 bank, credit card and finance charges (D102) = the profit and loss account",
         "P&L: HP interest and charges reach the finance line (B31)",
       ]);
     });
@@ -621,7 +621,7 @@ describeCalc(
       // The full return totals the same three allowance boxes, so losing one
       // breaks its box 56 alongside the bridge.
       expect(failureNames(corruptedChecks)).toEqual([
-        "SA103F box 56 total capital allowances (O149) = the short return's allowance boxes 22, 23 and 24",
+        "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24",
         PROFIT_BRIDGE_CHECK,
       ]);
       expect(seProfitBridge(corruptedResults).residue).toBeCloseTo(claimed, 6);
@@ -687,7 +687,7 @@ describeCalc(
       // The subcontractor line is box 17 on the full return, so the drift
       // breaks that box too.
       expect(failureNames(corruptedChecks)).toEqual([
-        "SA103F box 17 subcontractor payments (D70) = the profit and loss account",
+        "SA103F box 18 subcontractor payments (D70) = the profit and loss account",
         categoryNettingCheckName(nettingRow),
       ]);
     });

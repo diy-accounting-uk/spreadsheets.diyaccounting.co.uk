@@ -700,34 +700,30 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   const fullNetProfit = seFull.D55 + seFull.O55 - seFull.D122;
   seFull.D129 = fullNetProfit >= 0 ? fullNetProfit : 0;
   seFull.O129 = fullNetProfit < 0 ? -fullNetProfit : 0;
-  seFull.H136 = admin.G4;
   seFull.G141 = admin.G5;
   seFull.D139 = carry([scheduleQ], () => (scheduleQ > 0 ? scheduleQ : 0));
-  // Boxes the customer fills in by hand, with no formula to compute them.
-  // Box 51 is one of them now. The restriction it was built for -- a flat cap
-  // on the allowance for a car costing over a threshold -- is no longer in the
-  // tax code, so a car claims the plain writing down allowance in the pool
-  // with everything else and there is nothing left to restrict.
+  // Boxes the customer fills in by hand, with no formula to compute them. The
+  // schedule keeps one main pool at the 18% writing down rate, so the special
+  // rate pool (box 51), the zero-emission and structures-and-buildings claims
+  // (boxes 52, 52.1 and 53) and the electric charge-point claim (box 54) have
+  // nothing feeding them.
   seFull.D147 = SHEET_BLANK;
   seFull.D152 = SHEET_BLANK;
   seFull.D156 = SHEET_BLANK;
   seFull.D160 = SHEET_BLANK;
-  seFull.O154 = SHEET_BLANK;
+  seFull.O139 = SHEET_BLANK;
   seFull.D179 = SHEET_BLANK;
-  // Box 49 carries the whole writing down allowance the schedule claims.
+  // Box 50 carries the whole writing down allowance the schedule claims.
   seFull.D144 = carry([scheduleR], () => scheduleR);
-  seFull.O139 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
-  seFull.O144 = scheduleY;
-  seFull.O149 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O139, seFull.O144], () =>
-    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144]),
+  seFull.O144 = carry([scheduleR, scheduleS], () => (scheduleR + scheduleS < 1000 ? scheduleS : 0));
+  seFull.O149 = scheduleY;
+  seFull.O154 = carry([seFull.D139, seFull.D144, seFull.D152, seFull.O144, seFull.O149], () =>
+    sheetSum([seFull.D139, seFull.D144, seFull.D147, seFull.D152, seFull.D156, seFull.D160, seFull.O139, seFull.O144, seFull.O149]),
   );
   seFull.O160 = scheduleZ;
   seFull.D169 = goodsForOwnUse;
-  seFull.O169 = carry([seFull.O149], () => sheetNumber(seFull.O149) + sheetNumber(seFull.D179));
-  seFull.D174 = carry(
-    [seFull.O160],
-    () => sheetNumber(seFull.O122) + sheetNumber(seFull.O154) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169),
-  );
+  seFull.O169 = carry([seFull.O154], () => sheetNumber(seFull.O154) + sheetNumber(seFull.D179));
+  seFull.D174 = carry([seFull.O160], () => sheetNumber(seFull.O122) + sheetNumber(seFull.O160) + sheetNumber(seFull.D169));
   seFull.O174 = carry([seFull.D129, seFull.D174, seFull.O169, seFull.O129], () => {
     const fromNetProfit = seFull.D129 + seFull.D174 - seFull.O169;
     return fromNetProfit > 0 ? fromNetProfit : Math.max(0, -seFull.O129 + seFull.D174 - seFull.O169);
@@ -746,7 +742,7 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   seFull.D219 = carry([seFull.O179], () => seFull.O179);
   seFull.O224 = seFull.D219;
   seFull.D231 = contractorDeductions;
-  seFull.J280 = admin.N4;
+  seFull.J280 = admin.N20;
 
   // ── Income tax ──
   // The sheet charges tax on the full return's own taxable profit, not on the
