@@ -259,6 +259,66 @@ describeCalc(
       expect(failureNames(corrupted)).toHaveLength(3);
     });
 
+    it("reads both ledgers' fixed asset totals into the reconciliation and prints the reconcile verdict", () => {
+      const fr = results["Fixedassets.xlsx!FAreconciliation"];
+      // 63,000 of asset purchases and 15,000 of proceeds in the fixture, both
+      // gross; the schedule and the ledgers carry them net of 20% VAT.
+      expect(fr.E11).toBe(52500);
+      expect(fr.E13).toBe(52500);
+      expect(fr.E15).toBe(0);
+      expect(fr.K11).toBe(12500);
+      expect(fr.K13).toBe(12500);
+      expect(fr.K15).toBe(0);
+    });
+
+    it("fails only the additions tie when the purchase ledger's total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E13", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E13", value);
+      expect(failureNames(corrupted)).toEqual(["Fixed assets: Schedule additions = Purchases.xlsx fixed asset total"]);
+    });
+
+    it("fails only the disposals tie when the sales ledger's total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K13", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K13", value);
+      expect(failureNames(corrupted)).toEqual(["Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total"]);
+    });
+
+    it("fails both additions checks when the schedule's own additions total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E11", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E11", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule additions = Purchases.xlsx fixed asset total",
+        "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
+      ]);
+    });
+
+    it("fails both disposals checks when the schedule's own disposals total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K11", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K11", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total",
+        "Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT",
+      ]);
+    });
+
+    it("fails the printed reconciliation when the difference cells are corrupted via JSZip", async () => {
+      const purchasesDifference = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E15", 5000);
+      expect(purchasesDifference).toBe(5000);
+      expect(failureNames(checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E15", purchasesDifference))).toEqual([
+        "Fixed assets: the purchases reconciliation reads nil",
+      ]);
+
+      const salesDifference = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K15", 5000);
+      expect(salesDifference).toBe(5000);
+      expect(failureNames(checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K15", salesDifference))).toEqual([
+        "Fixed assets: the sales reconciliation reads nil",
+      ]);
+    });
+
     it("fails the balance sheet tie when PubBalSht F6 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "PubBalSht", "F6", 0);
       expect(value).toBe(0);

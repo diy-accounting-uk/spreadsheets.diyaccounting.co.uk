@@ -1461,7 +1461,10 @@ export function multiFileOptions(yearEndMonth) {
       "Vatreturns.xlsx": vatQtrReads,
       "Fixedassets.xlsx": {
         Schedule: [...new Set(scheduleReads)],
-        FAreconciliation: ["E11", "K11"],
+        // The sheet's own tie-out: E11/K11 re-sum the Schedule's rows,
+        // E13/K13 read the ledgers' annual fixed asset totals across the
+        // two leaf-to-leaf links, E15/K15 are the difference it prints.
+        FAreconciliation: ["E11", "E13", "E15", "K11", "K13", "K15"],
         // E2 is the long-term-creditors total for the "New Hire Purchase
         // Agreements" block (SUM(E8:E26)); I/J/K on rows 8 and 10 are the
         // two scenario agreements' own monthly payment, capital and
@@ -1635,7 +1638,11 @@ const FIXED_ASSET_CELL_LABELS = {
   },
   "Fixedassets.xlsx!FAreconciliation": {
     E11: "Additions the schedule lists, net of VAT",
+    E13: "Fixed asset purchases the purchase journal carries, net of VAT",
+    E15: "Purchases less schedule additions",
     K11: "Disposal proceeds the schedule lists, net of VAT",
+    K13: "Fixed asset sales the sales journal carries, net of VAT",
+    K15: "Sales less schedule disposals",
   },
 };
 
@@ -2771,11 +2778,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
-  // The Schedule's new-asset and disposal totals against what the scenario
-  // posted to Purchases.xlsx and Sales.xlsx, net of VAT — the same
-  // comparison FAreconciliation is built to make, made here because the
-  // sheet's own cross-file cells (E13/K13) are #REF! in the template.
+  // FAreconciliation is the workbook's own tie-out between the asset
+  // schedule and the two ledgers. E11/K11 re-sum the Schedule's New-asset
+  // and disposal rows; E13/K13 read the annual fixed asset totals straight
+  // out of Purchases.xlsx and Sales.xlsx across a leaf-to-leaf link.
+  // Comparing the two sides is the comparison the sheet was built to make.
   const faReconciliation = results["Fixedassets.xlsx!FAreconciliation"];
+  if (faReconciliation) {
+    check("Fixed assets: Schedule additions = Purchases.xlsx fixed asset total", num(faReconciliation.E11), num(faReconciliation.E13));
+    check("Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total", num(faReconciliation.K11), num(faReconciliation.K13));
+  }
+
+  // The scenario's own "fa"/"fs"-coded net totals then anchor the schedule
+  // side to what a customer actually typed in, so a schedule and a ledger
+  // that agree on the wrong figure still fails.
   if (faReconciliation && expected.purchases) {
     let assetGross = 0;
     for (const transactions of Object.values(expected.purchases)) {
@@ -2793,6 +2809,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       num(faReconciliation.K11),
       netOfVat(disposalGross, rate),
     );
+  }
+
+  // Row 15 is the verdict the sheet prints for the reader: the difference
+  // between the ledger and the schedule, which B15/G15 turn into the
+  // "reconcile" sentence. With both sides anchored above, nil here is the
+  // sheet agreeing with the book rather than with itself.
+  if (faReconciliation && expected.purchases) {
+    check("Fixed assets: the purchases reconciliation reads nil", num(faReconciliation.E15), 0);
+  }
+  if (faReconciliation && expected.sales) {
+    check("Fixed assets: the sales reconciliation reads nil", num(faReconciliation.K15), 0);
   }
 
   // The P&L depreciation and disposal lines carry the Schedule's annual
