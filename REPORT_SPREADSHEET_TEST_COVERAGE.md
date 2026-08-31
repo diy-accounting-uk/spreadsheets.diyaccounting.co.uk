@@ -63,10 +63,10 @@ are in `CELL_MAP`, and `checkCompliance` ties the forecast to the P&L and tax ca
 Touched: `Sales.xlsx` and `Purchases.xlsx` in full, opening and closing debtor and creditor
 sheets included; `Bank.xlsx` and `Cash.xlsx` month tabs, with each file's closing balance read
 from its Mar tab; hub Business Details, SE Short, SE Full, Profit & Loss Account, VitalTax,
-Income Tax, Profit Forecast, StockControl and Admin; `Fixedassets.xlsx` Schedule,
+Income Tax, Profit Forecast, Wagesinterface, StockControl and Admin; `Fixedassets.xlsx` Schedule,
 FAreconciliation and HPfinance; `Payslips.xlsx` Employee, the twelve month tabs, Payment, Admin
 and Payslips (print sheet); the whole of `Vat.xlsx`, meaning VATQtr1 to VATQtr5, Vatinterface and the ten
-straddling entry sheets; `Salesinvoice.xlsx` Product Details and Invoice Template.
+straddling entry sheets; `Salesinvoice.xlsx` all five sheets.
 
 `Profit Forecast` closed in a previous report: the forecast figures are all in `CELL_MAP`, and
 `checkCompliance` ties them to the P&L and tax calculations.
