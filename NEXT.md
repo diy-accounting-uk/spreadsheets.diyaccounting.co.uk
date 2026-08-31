@@ -48,7 +48,16 @@ lands:
   via start dates, ten printed-figure checks per product, the WagesInterface
   employees/directors split, a twelve-suite harness fix, and the M49 volatiles fixed at
   source (EQ3 0 moved). RECONCILES 1015/1016 and 782/783 (the one warning is T5).
-- exporter-comments track (Sonnet) — B4: started
+- exporter-comments track (Sonnet) — B4: merged to `claude/next-batch-wave-1` (only the
+  bank opening-balance line is a genuine no-home case, declared under a narrower
+  bank-opening-balance scope proven not to blank ordinary rows; 60/60 trio green. The
+  journal-OB wording differences and SE bankCode collapse stay measured by ratchets.)
+- taxi-dates track (Sonnet) — T6: started. The operator's generate-taxi dispatch failed
+  its 2023/2027 scorecards: 21 purchases lines are written with unshifted fixture dates
+  in non-featured-year packages (taxi.js translates sales by day offset, one purchases
+  path not at all). The comparator gained `--date-shift-days` (b20d6813); the track fixes
+  the purchases translation and wires the taxi scorecard's computed shift. SE and BST
+  matrices pass by design (unshifted dates); ltd's dispatch is in progress.
 - loader track (Sonnet) — B5: merged to `claude/next-batch-wave-1` (one-line mapping,
   gate proven firing, both CI chains within budget, 3604 tests green in its tree)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
@@ -83,14 +92,6 @@ follow the reconciliation-bug method.
   with a warning carrying the true date (`app/products/ltd.js:3541`, `se.js:2487`).
   Template surgery: point M18's column/row at the paid-date cell, flip the warning into a
   real check, prove breakable.
-- [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
-  the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
-  `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
-  ordinary bank rows and sales/purchases, leaving 13 SE and 6 Ltd whole-line mismatches the
-  re-seeded ratchets hold steady. Either read the comment from a real cell if one exists, or
-  declare the field per-block for those lines under the new inventory schema — discover
-  which is true from the sheets first.
-
 
 
 
