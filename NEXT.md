@@ -24,7 +24,9 @@ lands:
   products, ratchets retired, RECONCILES 859/859 and 683/683)
 - comparator track (Sonnet) — F23: merged to `claude/next-batch-wave-1` (matrix budgets at
   zero allowances for all four products, 48/48 in its tree; branch-side trio re-run in flight)
-- schema track (Sonnet) — F24: started
+- schema track (Sonnet) — F24: merged to `claude/next-batch-wave-1` (per-block inventory
+  with loud stale-name failure, payroll comment declared, ratchets re-seeded, 57/57 in its
+  tree; branch-side trio re-run in flight as the first F24+C1 combination)
 - exporter-accounts track (Sonnet) — B1 + B2: started
 - invoice-carriage track — B3: first attempt (Haiku) failed verification (P62 vanished
   from the recalculated sheet, no breakability, carriage check dropped); not merged.
@@ -76,14 +78,13 @@ follow the reconciliation-bug method.
   (`G13`/`M13`), and `OPENING_FIXED_ASSET_CLASSES` (`app/lib/scenario-extractor.js`) omits it
   the same way, so no fixture can exercise the gap from either side. Add the class to both
   maps and a fixture line that proves the legs survive.
-- [ ] **F24: payroll `lineItemComment` has no declared home** (Sonnet) — the payslip row has no
-  spare column (swept A-AG), so the field is a visible whole-line shortfall rather than a
-  declared unrepresentable: declaring it today would blank the field out of the blocks that now
-  match, because `roundtrip-unrepresentable.json` is per-product, not per-block. Widen the
-  inventory schema to per-block granularity and declare payroll's comment, keeping
-  every other block matching; re-seed the whole-line ratchets. The per-block widening was
-  deliberately deferred once as riskier-than-scope, so prove the schema change with its own
-  tests.
+- [ ] **B4: opening-balance lines never write `lineItemComment`** (Sonnet) — surfaced by F24:
+  the bank opening-balance line (`app/lib/xlsx-exporter.js:636-648`) and the
+  `OA_JOURNAL_MAP`-driven journal opening-balance lines (~972-1023) omit the field, unlike
+  ordinary bank rows and sales/purchases, leaving 13 SE and 6 Ltd whole-line mismatches the
+  re-seeded ratchets hold steady. Either read the comment from a real cell if one exists, or
+  declare the field per-block for those lines under the new inventory schema — discover
+  which is true from the sheets first.
 
 
 
