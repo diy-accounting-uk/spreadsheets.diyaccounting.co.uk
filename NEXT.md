@@ -52,12 +52,13 @@ lands:
   bank opening-balance line is a genuine no-home case, declared under a narrower
   bank-opening-balance scope proven not to blank ordinary rows; 60/60 trio green. The
   journal-OB wording differences and SE bankCode collapse stay measured by ratchets.)
-- taxi-dates track (Sonnet) — T6: started. The operator's generate-taxi dispatch failed
-  its 2023/2027 scorecards: 21 purchases lines are written with unshifted fixture dates
-  in non-featured-year packages (taxi.js translates sales by day offset, one purchases
-  path not at all). The comparator gained `--date-shift-days` (b20d6813); the track fixes
-  the purchases translation and wires the taxi scorecard's computed shift. SE and BST
-  matrices pass by design (unshifted dates); ltd's dispatch is in progress.
+- taxi-dates track (Sonnet) — T6: merged to `claude/next-batch-wave-1` (purchases dates
+  now translate like sales; 2023 and 2026 both RECONCILE with zero-unmatched scorecards;
+  BST confirmed consistent with no translation on either side; 293 + 60 tests green)
+- ltd non-March reconcile failures (run 33446208332): every non-March year-end fails 8
+  checks on a FRESH package while both March year-ends pass — the local mirror of CI's
+  generate-then-reconcile sequence is running to name the eight; fix track dispatches on
+  that evidence.
 - loader track (Sonnet) — B5: merged to `claude/next-batch-wave-1` (one-line mapping,
   gate proven firing, both CI chains within budget, 3604 tests green in its tree)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
