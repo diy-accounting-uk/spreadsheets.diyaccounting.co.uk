@@ -21,7 +21,7 @@ The product uses SE (self-employment) tax data. The tax data TOML filename encod
 
 ### Output Naming
 
-- Directory: `GB Accounts Basic Sole Trader {YYYY-MM-DD} ({MonYY}) Excel`
+- Directory: `GB Accounts Basic Sole Trader {YYYY-MM-DD} ({MonYY}) Excel 2007`
 - Spreadsheet: `Financialaccountsto{DDMMYY}.xlsx`
 - Guide PDF: `Basic Sole Trader User Guide.pdf`
 
@@ -84,7 +84,7 @@ The BST workbook contains 33 visible sheets plus internal named ranges (print ar
 │  Annual_IncomeTurnover, Annual_IncomeOther                          │
 │  Annual_Expense{Category}, Annual_Expense{Category}Disallowable    │
 │  Q1..Q4 variants of each expense/income category                    │
-│  (34 named ranges for quarterly reporting + 34 annual)              │
+│  (33 annual named ranges, each with 4 quarterly variants = 132)     │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -95,7 +95,7 @@ The BST workbook contains 33 visible sheets plus internal named ranges (print ar
 | Home | 1 | Navigation | No |
 | Business Details | 1 | Business info for tax return | Yes |
 | Fixed Assets | 1 | Asset register + capital allowances | Yes (new assets) |
-| Debtors & Creditors | 1 | Outstanding amounts report | No (formula-driven) |
+| Debtors & Creditors | 1 | Outstanding amounts report | No (formula-driven in the blank workbook; generator-overwritten in scenario-populated packages) |
 | SalesApr -- SalesMar | 12 | Monthly sales transactions | Yes |
 | PurchasesApr -- PurchasesMar | 12 | Monthly purchase transactions | Yes |
 | PurchasesStock | 1 | Opening/closing stock values | Yes (D5, D30) |
@@ -132,43 +132,40 @@ User data entry
   │                              ┌──────────────────────────┐
   │                              │ Profit & Loss Acc         │
   │                              │                           │
-  │                              │ C4  = Total Sales         │◄── SalesApr..Mar row 1
-  │                              │ C5  = Other Income        │◄── SalesApr..Mar col G
-  │                              │ C6  = Mileage Income      │
-  │                              │ C7  = Grant Income        │
-  │                              │ C9  = Gross Profit        │ = C4 - Cost of Sales
+  │                              │ C4  = Sales Turnover      │◄── SalesApr..Mar col F
+  │                              │ C6  = Cost of Sales       │◄── PurchasesApr..Mar col J + stock movement
+  │                              │ C7  = Other Direct Costs  │◄── PurchasesApr..Mar col K
+  │                              │ C9  = Gross Profit        │ = C4 - C6 - C7
   │                              │                           │
-  │                              │ C11 = Stock Purchases     │◄── PurchasesApr..Mar col J
+  │                              │ C11 = Employee Costs      │◄── PurchasesApr..Mar col L
   │                              │ C12 = Premises Costs      │◄── PurchasesApr..Mar col M
   │                              │ C13 = Repairs             │◄── PurchasesApr..Mar col N
   │                              │ C14 = Gen Admin           │◄── PurchasesApr..Mar col O
-  │                              │ C15 = Motor Expenses      │◄── PurchasesApr..Mar col P
+  │                              │ C15 = Motor Expenses      │◄── PurchasesApr..Mar col P (cash + mileage claim)
   │                              │ C16 = Travel              │◄── PurchasesApr..Mar col Q
   │                              │ C17 = Advertising         │◄── PurchasesApr..Mar col R
   │                              │ C18 = Legal & Prof.       │◄── PurchasesApr..Mar col S
   │                              │ C19 = Bad Debts           │◄── PurchasesApr..Mar col T
   │                              │ C20 = Interest            │◄── PurchasesApr..Mar col U
   │                              │ C21 = Other Expenses      │◄── PurchasesApr..Mar col V
-  │                              │ C22 = Fixed Asset Costs   │◄── PurchasesApr..Mar col W
+  │                              │ C22 = Total Expenses      │ = SUM(C11:C21)
   │                              │                           │
-  │                              │ C24 = Net Profit          │ = C9 - total expenses
-  │                              │ C26 = Capital Allowances  │◄── Fixed Assets
-  │                              │ C28 = Taxable Profit      │ = C24 adjusted
+  │                              │ C24 = Net Profit          │ = C9 - C22
+  │                              │ C26 = Capital Allowances  │◄── Fixed Assets (via SE Short)
+  │                              │ C28 = Taxable Profit      │ = C24 - C26
   │                              │                           │
-  │                              │ C30 = Estimated Income Tax│
-  │                              │ C32 = NI Class 4          │
-  │                              │ C33 = NI Class 2          │
-  │                              │ C35 = Net Income after Tax│
+  │                              │ C30 = Other Business Income│◄── SalesApr..Mar col G
+  │                              │ C32 = Income Tax          │◄── Income Tax E11 + E12
+  │                              │ C33 = National Insurance  │◄── Income Tax E15 + E16
+  │                              │ C35 = Net Income after Tax│ = C28 + C30 - C32 - C33
   │                              └─────────────┬─────────────┘
   │                                            │
   │                              ┌─────────────┴─────────────┐
   │                              │ SE Short                   │
-  │                              │ HMRC box references        │
-  │                              │ Box 8 = turnover           │
-  │                              │ Box 9 = other income       │
-  │                              │ Box 10-19 = expenses       │
-  │                              │ Box 20/21 = profit/loss    │
-  │                              │ Box 27 = taxable profit    │
+  │                              │ HMRC SA103S box references │
+  │                              │ (exact box numbers in the  │
+  │                              │ Filing Taxonomy Mapping     │
+  │                              │ section below)              │
   │                              └───────────────────────────┘
   │                                            │
   │                              ┌─────────────┴─────────────┐
@@ -186,8 +183,16 @@ User data entry
   │                              │ E18 = Total Tax + NI       │
   │                              └───────────────────────────┘
   │
-  └── Debtors & Creditors ◄── SalesApr..Mar col H (unpaid)
-                           ◄── PurchasesApr..Mar col H (unpaid)
+  └── Debtors & Creditors: two life stages
+      Shipped blank workbook: columns B/C and E/F at rows 3, 5, 7, ..., 27
+      still carry the original aging formulas -- each row reads one month's
+      SalesApr..Mar / PurchasesApr..Mar col H (unpaid) total, and row 29 sums
+      the lot into "Amount owed by customers" / "...to suppliers".
+      Scenario-populated packages (reconciliation, examples): the generator
+      overwrites those same B/C (rows 5-7, 12-15) and E/F (rows 5-7, 12-15)
+      cells with the scenario's own opening/closing debtor and creditor
+      entries, discarding the aging formulas at those specific rows. See
+      Filing Taxonomy Mapping below for the cell layout this produces.
 ```
 
 ### Purchase Expense Codes
@@ -196,9 +201,9 @@ The expense code in column E of each Purchases sheet drives the analysis columns
 
 | Code | Column | Category | P&L Row |
 |------|--------|----------|---------|
-| S | J | Stock/Materials (cost of goods) | C11 |
-| D | K | Other direct costs | C11 area |
-| E | L | Employee wages | C11 area |
+| S | J | Stock/Materials (cost of goods) | C6 |
+| D | K | Other direct costs | C7 |
+| E | L | Employee wages | C11 |
 | P | M | Premises costs | C12 |
 | R | N | Repairs and maintenance | C13 |
 | G | O | General admin | C14 |
@@ -206,10 +211,10 @@ The expense code in column E of each Purchases sheet drives the analysis columns
 | T | Q | Travel and subsistence | C16 |
 | A | R | Advertising | C17 |
 | L | S | Legal and professional | C18 |
-| B | T | Bad debts / bank charges | C19 |
+| B | T | Bad debts | C19 |
 | I | U | Interest / finance charges | C20 |
 | O | V | Other expenses | C21 |
-| F | W | Fixed assets | C22 |
+| F | W | Fixed assets | capitalised to the Fixed Assets schedule, not a P&L expense row |
 
 ### Mileage
 
@@ -225,7 +230,7 @@ This P&L makes no choice between the two ways of charging a vehicle: the claim a
 | B | Customer name | User entry |
 | C | Reference/invoice number | User entry |
 | D | Payment method | User entry (blank = unpaid) |
-| E | Mileage | Optional (alternative to motor expenses) |
+| E | Business mileage | Optional; adds into the running mileage total the mileage claim is priced from (see Mileage below) |
 | F | Gross sales value | User entry |
 | G | Other income | User entry (grants, etc. -- separate from turnover) |
 | H | Unpaid amount | Formula: shows F value if D is blank |
@@ -327,20 +332,23 @@ The generator sets `fullCalcOnLoad="1"` in `xl/workbook.xml` so Excel/LibreOffic
 
 ## Scenario Testing
 
-One test scenario is used for BST, generated from Precision Code Ltd example data.
+Three fixtures cover BST: `bst-scenario-basic.toml` runs in the main CI matrix against every generated year-end; `bst-brickwork-pro-nonvat.toml` and `bst-sp-sixty.toml` run in a separate `reconcile-extra` job against the latest year-end only, and an anomaly there warns rather than failing the workflow.
 
 ### bst-scenario-basic.toml
 
-**Precision Code Ltd (BST extract)** -- a sole trader IT consultancy with comprehensive activity. Generated by `scripts/extract-scenarios.cjs` from the master data in `examples/precision-code-ltd/`.
+**Precision Code Ltd (BST extract)** -- a sole trader IT consultancy with comprehensive activity, including business mileage. Generated by `app/bin/extract-scenarios.js` from the master data in `examples/precision-code-ltd/`.
 
-- **Sales**: 205,900 total across 12 months (multiple clients, mix of consultancy and software income)
-- **Purchases**: exercises all 14 BST expense codes (S, D, E, P, R, G, M, T, A, L, B, I, O, F)
+- **Sales**: 409,900 total across 12 months (multiple clients, mix of consultancy and software income)
+- **Purchases**: exercises all 14 BST expense codes (S, D, E, P, R, G, M, T, A, L, B, I, O, F), including mileage-coded motor claims (1,365 miles)
 - **Stock**: opening 10,000, closing 6,000 (PurchasesStock D5/D30)
-- **Debtors & Creditors**: opening and closing values populated on preparation sheet
-- **Expected P&L**: total sales 205,900, net profit 129,908
+- **Debtors & Creditors**: 3 opening + 3 closing debtors, 4 opening + 4 closing creditors
+- **Fixed assets**: 3 additions totalling 39,000
+- **Expected P&L**: total sales 409,900, gross profit 391,360, net profit 265,508
 - **Expected tax (2025-26)**: calculated from profit using SE tax rates (income tax + NI Class 4)
 
-The old `bst-scenario-extended.toml` has been removed. BST now runs a single scenario (basic) that exercises all 14 expense codes with realistic data volumes.
+### bst-brickwork-pro-nonvat.toml and bst-sp-sixty.toml
+
+**BrickWork Pro Trading** -- a construction sole trader under the VAT threshold, sub-contract labour bought in as a direct cost with no bank journal. **SP Sixty Driving** -- a private-hire driver who claims motoring as actual costs all year except March, which is claimed on mileage (1,674 miles, banded past the 10,000-mile higher-rate limit into the 25p lower-rate mileage band). Both exercise the mileage route and the fixed-asset chain from a different angle to the basic scenario.
 
 ### CELL_MAP Pattern
 
@@ -357,9 +365,11 @@ Report sections covered by CELL_MAP: Profit & Loss, Income Tax, SA103S (SE Short
 |--------|--------|-------|
 | A{row} | `tx.date` | Converted to Excel serial via `toExcelSerial()` |
 | B{row} | `tx.customer` | String (optional) |
+| C{row} | `tx.reference` | String (optional) |
 | D{row} | `tx.payment` | String (optional, e.g. "Bank", "DD") |
 | F{row} | `tx.amount` | Numeric |
 | G{row} | `tx.other_income` | Numeric (optional) |
+| BZ{row} | `tx.account` | diya-gl account ID, hidden column (optional) |
 
 Rows start at 4 for sales.
 
@@ -368,9 +378,12 @@ Rows start at 4 for sales.
 |--------|--------|-------|
 | A{row} | `tx.date` | Excel serial |
 | B{row} | `tx.supplier` | String (optional) |
+| C{row} | `tx.reference` | String (optional) |
 | D{row} | `tx.payment` | String (optional) |
 | E{row} | `tx.code` | Single letter expense code |
-| G{row} | `tx.amount` | Numeric |
+| F{row} | `tx.mileage` | Numeric miles, written instead of G when the entry is a mileage claim |
+| G{row} | `tx.amount` | Numeric, written unless `tx.mileage` is set |
+| BZ{row} | `tx.account` | diya-gl account ID, hidden column (optional) |
 
 Rows start at 5 for purchases.
 
@@ -384,33 +397,42 @@ Rows start at 5 for purchases.
 
 `standardReads()` defines which cells are read back after recalculation:
 
-**Profit & Loss Acc**: C4, C5, C6, C7, C9, C11-C22, C24, C26, C28, C30, C32, C33, C35 (23 cells -- sales through net income after tax)
+**Profit & Loss Acc**: C4, C6, C7, C9, C11-C22, C24, C26, C28, C30, C32, C33, C35 (23 cells -- sales through net income after tax) plus D4:O4 (12 monthly sales columns) -- 35 cells in total.
 
-**Income Tax**: E5, E6, E7, D8, C9, D9, E8, E9, C10, D10, E10, E11, E12, E15, E16, E18 (16 cells -- profit, the bands and rates the sheet applies, and the charge through total tax)
+**Income Tax**: E5, E6, E7, D8, C9, D9, E8, E9, C10, D10, E10, E11, E12, E15, E16, E18 (16 cells -- profit, the bands and rates the sheet actually applies, and the charge through total tax).
+
+`standardReads()` also reads SE Short, PurchasesStock, Debtors & Creditors, Fixed Assets, PurchasesMar (mileage and fixed-asset totals) and Admin -- see CELL_MAP in `app/products/bst.js` for the full cell list per sheet.
 
 ### Compliance Checks
 
-`checkCompliance()` compares read values against expected values with a tolerance of 1 (rounding):
+`checkCompliance()` in `app/products/bst.js` runs far more than a handful of spot-checks -- it cross-checks the whole book, by category:
 
-**P&L checks** (from `scenario.expected`):
-- Total Sales (C4 vs `total_sales`)
-- Gross Profit (C9 vs `gross_profit`)
-- Net Profit (C24 vs `net_profit`)
-- Premises Costs (C12 vs `total_premises`)
-- Gen Admin (C14 vs `total_gen_admin`)
-- Legal & Professional (C18 vs `total_legal`)
+- **P&L against the scenario's stated expectations**: Total Sales, Gross Profit, Net Profit, Premises Costs, Gen Admin, Legal & Professional (tolerance 1).
+- **P&L internal consistency**: Gross = Sales - Cost of Sales - Direct Costs; Net = Gross - Total Expenses; Total Sales = sum of the twelve monthly Sales sheets; the eleven expense lines sum to Total Expenses.
+- **Purchases journal closure**: every coded purchase reaches an account -- the P&L expense lines, direct costs, stock, or the Fixed Assets year-to-date column -- with nothing left over.
+- **Mileage**: the miles carried at PurchasesMar!C1 match the scenario's declared miles, the claim at A1 matches those miles priced at the tax year's approved rates, and Motor Expenses (C15) equals cash motoring plus the claim.
+- **Stock**: opening/closing stock cells match the scenario, and cost of sales equals stock purchases plus the stock movement.
+- **Debtors & Creditors**: each of the four entry blocks (opening/closing debtors, opening/closing creditors) sums to the scenario's declared entries; a book that declares no ledger at all leaves every slot in the block empty.
+- **Fixed assets and capital allowances**: the schedule's total cost and first addition match the scenario, AIA claimed matches cost x the Admin AIA rate, and the schedule's own capital-allowance total matches both the P&L's Capital Allowances line and the SE Short chain independently.
+- **Admin echo**: every tax-year rate, band and threshold read back from the Admin sheet matches the TOML it was generated from.
+- **Income tax and NI**: computed independently (personal allowance taper and all three rate bands included) against the sheet's own totals, and against the rate and band the sheet actually applies, not just the headline figures.
+- **SA103S cross-checks**: turnover, net profit and profit-for-tax tie back to the P&L and Income Tax sheets.
+- **Profit bridge**: the chain from the P&L's net profit through the SA103S adjustment boxes to the profit the Income Tax sheet charges has no residue.
 
-**Tax checks** (dynamically calculated from tax data):
-- Income Tax: E11 vs calculated income tax
-- NI Class 4 (lower): E15 vs calculated NI
-- Total Tax + NI: E18 vs calculated total
+### Independent tax calculation
 
-The tax calculation logic in `reconcile.js` mirrors the spreadsheet formulas:
-- Taxable income = profit - personal allowance
+`calculateExpectedTax()` in `app/lib/tax/income-tax.js` (used by both the reconciler and the JS calculation engine below) mirrors the spreadsheet's own formulas, including the personal allowance taper and all three income tax bands:
+- Personal allowance withdrawn = max(0, profit - taper_threshold) / 2; allowance = max(0, personal_allowance - withdrawn)
+- Taxable income = max(0, profit - allowance)
 - Basic rate tax = min(taxable, basic_band_end) x basic_rate
-- Higher rate tax = max(0, taxable - basic_band_end) x higher_rate
-- NI Class 4 lower = (min(profit, upper_limit) - lower_limit) x lower_rate
+- Higher rate tax = max(0, min(taxable, higher_band_end) - basic_band_end) x higher_rate
+- Additional rate tax = max(0, taxable - higher_band_end) x additional_rate
+- NI Class 4 lower = (min(profit, upper_limit) - lower_limit) x lower_rate, once profit exceeds the lower limit
 - NI Class 4 upper = max(0, profit - upper_limit) x upper_rate
+
+### JS Calculation Engine
+
+`app/lib/calculators/bst.js` (`calculateBstResults()`) recomputes the same `{ "SheetName": { "CellRef": value } }` shape a spreadsheet read returns, directly from diya-gl book data -- no Excel or LibreOffice involved. `reportSections()` and `checkCompliance()` in `app/products/bst.js` work unchanged on either source. CI uses this for the roundtrip scorecard gate (below): comparing the Excel-recalculated package against this independent JS computation catches a formula and a hand-written calculation drifting apart.
 
 ### Reconciliation Process
 
@@ -431,7 +453,6 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
 | C4 | Sales Turnover | `gl-cor:amount (salesTurnover)` | `frs102:TurnoverRevenue` | Box 10 |
-| C5 | Other Income | `gl-cor:amount (otherIncome)` | `frs102:OtherOperatingIncome` | — |
 | C6 | Cost of Sales | `gl-cor:amount (costOfSales)` | `frs102:CostOfSales` | Box 11 |
 | C7 | Direct Costs | `gl-cor:amount (directCosts)` | `dpl:OtherCosts` (CoS dimension) | Box 13 |
 | C9 | **Gross Profit** | `gl-cor:amount (grossProfit)` | `frs102:GrossProfit` | Box 14 |
@@ -448,15 +469,28 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 | C21 | Other Expenses | `accounts.purchases (other)` | `dpl:OtherCosts` | Box 24 |
 | C22 | Total Expenses | `gl-cor:amount (totalExpenses)` | `frs102:AdministrativeExpenses` | Box 25 |
 | C24 | **Net Profit** | `gl-cor:amount (netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| C26 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| C26 | Capital Allowances | `tax.capitalAllowances` | `ct-comp:TotalCapitalAllowances` | Boxes 22-25 net |
+| C28 | Taxable Profit | `gl-cor:amount (taxableProfit)` | `frs102:ProfitLossForFinancialYear` | — |
+| C30 | Other Business Income | `gl-cor:amount (otherIncomeReceived)` | `frs102:OtherOperatingIncome` | Box 9 |
+| C32 | Income Tax (less CIS) | `tax.incomeTax (net of CIS)` | `uk-tax:IncomeTaxCharged` | — |
+| C33 | NI Class 4 | `tax.nationalInsurance.class4` | `uk-tax:Class4NICsLowerRate` | — |
+| C35 | **Net Income After Tax** | `gl-cor:amount (netIncome)` | — | — |
 
 ### SE Short (SA103S)
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
 | D38 | Turnover | `gl-cor:amount (sa103s.turnover)` | `frs102:TurnoverRevenue` | Box 10 |
+| O38 | Other business income | `gl-cor:amount (sa103s.otherIncome)` | `frs102:OtherOperatingIncome` | Box 9 |
+| O71 | Net loss | `gl-cor:amount (sa103s.netLoss)` | — | Box 21 |
 | D71 | **Net profit** | `gl-cor:amount (sa103s.netProfit)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` | Box 27 |
-| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 28 |
+| D80 | Capital allowances | `tax.capitalAllowances (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 22 |
+| D85 | AIA / WDA claimed | `tax.capitalAllowances.aia (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 23 |
+| O80 | WDA + Capital Allowance claimed | `tax.capitalAllowances.wda (sa103s)` | `ct-comp:TotalCapitalAllowances` | Box 24 |
+| O85 | Balancing Charge | `tax.capitalAllowances.balancingCharge (sa103s)` | — | Box 25 |
+| D94 | Other tax adjustments (goods/services for own use) | `gl-cor:amount (sa103s.otherAdjust)` | — | Box 26 |
+| O94 | Loss brought forward | `gl-cor:amount (sa103s.lossBroughtForward)` | — | Box 28 |
+| O99 | Other business income | `gl-cor:amount (sa103s.otherBusinessIncome)` | — | Box 29 |
 | D99 | **Taxable profit** | `gl-cor:amount (sa103s.taxableProfit)` | `frs102:ProfitLossForFinancialYear` | Box 35 |
 | D106 | Net profit for tax | `gl-cor:amount (sa103s.profitForTax)` | `frs102:ProfitLossForFinancialYear` | SA100 |
 
@@ -467,8 +501,13 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 | E5 | Profit from SE | `gl-cor:amount (profitSE)` | `frs102:ProfitLossOnOrdinaryActivitiesBeforeTax` |
 | E6 | Personal Allowance | `tax.incomeTax.personalAllowance` | `uk-tax:PersonalAllowance` |
 | E7 | Taxable Income | `gl-cor:amount (taxableIncome)` | `uk-tax:TotalTaxableIncome` |
+| D8 | Basic rate the sheet applies | `tax.incomeTax.basicRate (applied)` | — |
+| C9 | Basic band ceiling the sheet applies | `tax.incomeTax.basicRateLimit (applied)` | — |
 | E8 | Tax at Basic Rate | `tax.incomeTax.basicRate` | `uk-tax:IncomeTaxCharged` |
+| D9 | Higher rate the sheet applies | `tax.incomeTax.higherRate (applied)` | — |
 | E9 | Tax at Higher Rate | `tax.incomeTax.higherRate` | `uk-tax:IncomeTaxCharged` |
+| C10 | Additional rate threshold the sheet applies | `tax.incomeTax.higherRateThreshold (applied)` | — |
+| D10 | Additional rate the sheet applies | `tax.incomeTax.additionalRate (applied)` | — |
 | E10 | Tax at Additional Rate | `tax.incomeTax.additionalRate` | `uk-tax:IncomeTaxCharged` |
 | E11 | **Total Income Tax** | `tax.incomeTax (total)` | `uk-tax:IncomeTaxCharged` |
 | E12 | CIS Deducted | `diya-gl:cisDeduction (total)` | `uk-tax:CISDeductions` |
@@ -496,19 +535,18 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 
 ### Triggers
 
-- **Schedule**: daily at 03:17 UTC
-- **Push**: any branch (except gh_pages), when relevant files change: `app/data/se-*`, `app/templates/bst/**`, `app/templates/meta.toml`, `app/products/bst.js`, the workflow itself
+- **Schedule and push are both disabled** (commented out since 2026-05-07): this workflow self-commits many generated Excel files per run, and combined with a daily schedule that pattern tripped GitHub's account-takeover/abuse heuristics. It now runs only via:
 - **workflow_call**: from other workflows, with skip flags
 - **workflow_dispatch**: manual, with skip flags
 
 ### Job Structure
 
 ```
-params ──> test ──> generate ──> reconcile (matrix) ──> commit
-                                    │
-                                    ├── year-end-1: basic
-                                    ├── year-end-2: basic
-                                    └── year-end-N: basic
+params ──> test ──> generate ──> reconcile (matrix) ──> reconcile-extra ──> commit
+                                    │                       │
+                                    ├── year-end-1: basic    └── latest year-end only:
+                                    ├── year-end-2: basic        brickwork-pro-nonvat, sp-sixty
+                                    └── year-end-N: basic        (anomaly warns, does not fail)
 ```
 
 ### Job Details
@@ -531,25 +569,32 @@ params ──> test ──> generate ──> reconcile (matrix) ──> commit
 - Identifies `latest` = most recent year-end (for examples)
 - Uploads `bst-packages` artifact
 
-**4. reconcile** (needs: params, generate; matrix strategy; timeout 15min each)
+**4. reconcile** (needs: params, generate; matrix strategy; timeout 20min each)
 - One job per year-end date from the matrix
 - `fail-fast: false` (all year-ends run even if one fails)
-- Installs LibreOffice (`libreoffice-calc`)
+- Installs LibreOffice (`libreoffice-calc`) and `poppler-utils`
 - Downloads `bst-packages` artifact
-- Runs ONE reconciliation per year-end:
-  - `npm run reconciliation -- --package bst --scenario basic --year-end {date}`
-- **Latest year-end only**: copies the basic-scenario populated xlsx to `examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx`
+- Runs ONE reconciliation per year-end: `npm run reconciliation -- --package bst --scenario basic --year-end {date}`
 - Checks all report `.md` files for `ANOMALYDETECTED` -- fails the job if any anomaly found
-- Uploads `bst-reports-{year-end}` artifact (per year-end)
-- Uploads `bst-examples` artifact (latest year-end only)
+- **Roundtrip scorecard** (EQ2, budget-gated on `app/data/roundtrip-matrix-budget.json`): recomputes the same package through the JS calculation engine (`app/lib/calculators/bst.js`) and compares it against the Excel-recalculated one via `app/bin/verify-roundtrip.js`. Only lost lines and dropped fields are gated; other differences print for visibility but do not fail the job.
+- **Stability check** (EQ3): `app/bin/verify-stability.js` re-runs the recalculated package to check it is deterministic.
+- **LLM judge**: only for the latest year-end, and only when the `ENABLE_LLM_JUDGE` repository variable is set -- assumes an AWS role over GitHub OIDC and runs `npm run judge:reconciliation`.
+- **Latest year-end only**: copies the basic-scenario populated xlsx to `examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx`, and builds the reconciliation results page.
+- Uploads `bst-reports-{year-end}` artifact (per year-end), `bst-examples` and `bst-reconciliation-page` (latest year-end only)
 
-**5. commit** (needs: params, generate, reconcile)
+**5. reconcile-extra** (needs: params, generate, reconcile; timeout 15min)
+- Runs only if `reconcile` succeeded
+- Reconciles `brickwork-pro-nonvat` and `sp-sixty` against the latest year-end only
+- An `ANOMALYDETECTED` here warns; it does not fail the workflow
+- Uploads `bst-extra-reports` artifact
+
+**6. commit** (needs: params, generate, reconcile, reconcile-extra)
 - Runs if reconcile succeeded or was skipped, and `skip-commit != true`
 - Checks out the ref with full history
-- Downloads all artifacts: `bst-packages`, `bst-reports-*` (merged), `bst-examples`
-- Commits packages, reports, and examples with message "Generate BST packages from app/data and app/templates"
+- Downloads all artifacts: `bst-packages`, `bst-reports-*` (merged), `bst-examples`, `bst-reconciliation-page`
+- Commits packages, reports, examples and the reconciliation page with message "Generate BST packages from app/data and app/templates"
 - `git pull --rebase` then `git push`
-- **Retry mechanism**: if push fails (e.g. concurrent pushes from other product workflows), waits with increasing delays (5s intervals up to 30s total), then retries `git pull --rebase && git push`
+- **Retry on push failure** (e.g. concurrent pushes from other product workflows): waits 30s (six 5s sleeps), then retries `git pull --rebase && git push`
 
 ### Concurrency
 
