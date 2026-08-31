@@ -111,6 +111,30 @@ follow the reconciliation-bug method.
   report's own method (JSZip sheet enumeration against the pipeline's reads/writes), refresh
   the date and repo-state line, and delete the closed gaps; the count should fall from
   313/16 untouched toward the residue the report says is deliberate.
+- [ ] **F22: the fixed-asset `cellWrites` layout loses five lines on export (S7)** (Opus) —
+  Ltd's fixed-asset debit and credit legs collapse to net book value, two Ltd bank opening
+  balances are lost, and SE loses its stock adjustment; `app/data/roundtrip-budget.json` holds
+  `linesLost` at 4 for Ltd and 1 for SE, and `app/test/verify-roundtrip.test.js`'s ratchet holds
+  its own run's count at 5 and 2. Redesign the FA/opening-balance write layout so the legs
+  survive export (generator write shapes + the exporter's read-back), then take `linesLost` to 0
+  for both products and retire the ratchets. The plan's most self-contained remaining defect.
+- [ ] **F23: non-March EQ2 is scored on counts only** (Sonnet) — `generate` shifts every posting
+  date onto the package's own accounting period, so a non-March export's dates sit a month or
+  two from the fixture's by design; the comparator doesn't undo the shift, the `ltd-may` ratchet
+  case skips transaction-level assertions, and `roundtrip-matrix-budget.json` gates only
+  `linesLost`/`fieldsDropped`. Teach the comparator to reverse the period-frame shift (the rule
+  is documented in the runner conventions: dates shift by the gap between the book's declared
+  period and the package's, with end-of-month clamping), then assert transactions in `ltd-may`
+  and widen the generate matrices' gates. Unlocks real EQ2 across all year-ends.
+- [ ] **F24: payroll `lineItemComment` has no declared home** (Sonnet) — the payslip row has no
+  spare column (swept A-AG), so the field is a visible whole-line shortfall rather than a
+  declared unrepresentable: declaring it today would blank the field out of the blocks that now
+  match, because `roundtrip-unrepresentable.json` is per-product, not per-block. Default route:
+  widen the inventory schema to per-block granularity and declare payroll's comment, keeping
+  every other block matching; re-seed the whole-line ratchets. (The alternative — template
+  surgery to add a column — is an Opus track; only on the operator's say-so.) The per-block
+  widening was deliberately deferred once as riskier-than-scope, so prove the schema change with
+  its own tests.
 - [ ] **J1: memoize the judge by content** (Sonnet) — `app/bin/judge-reconciliation.js` re-judges
   unchanged digests from `deploy.yml` (every web/infra push plus the daily cron) and the four
   `generate-*` workflows. Hash digest + rubric + model id into `judge-verdict-<product>.json`
