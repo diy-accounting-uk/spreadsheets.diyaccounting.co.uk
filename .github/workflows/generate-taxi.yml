@@ -234,16 +234,31 @@ jobs:
           node app/bin/report.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --mode saved --year-end ${{ matrix.year-end }} --output-dir target/taxi-scorecard-excel
           node app/bin/export.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-excel/data
           node app/bin/report.js --package taxi --data examples/basic-taxi-driver --years ${{ steps.roundtrip.outputs.years }} --output-dir target/taxi-scorecard-js
-          # Only linesLost and fieldsDropped are gated here
-          # (app/data/roundtrip-matrix-budget.json), not differing/noJsValue/
-          # noExcelValue: this package's own report labels are anchored to its
-          # own year-end while the fixture's dates never move off the
-          # master's, so EQ1 is only exact for the one year-end that happens
-          # to equal the master's own period end
-          # (examples/basic-taxi-driver/book.toml's periodCoveredEnd); every
-          # other year picks up whatever that year's own tax-rate tables move.
-          # The scorecard still prints in full for visibility.
-          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js --budget app/data/roundtrip-matrix-budget.json
+          # cellWrites (app/products/taxi.js) shifts every Sales and Purchases
+          # posting date by the exact day gap between the fixture's own 6
+          # April (examples/basic-taxi-driver/book.toml's periodCoveredStart)
+          # and this year end's own 6 April start. EQ2 needs the same
+          # day-based shift to score the transactions in that frame instead
+          # of the fixture's own dates.
+          DATE_SHIFT_DAYS=$(node -e '
+            const fs = require("fs");
+            const toml = fs.readFileSync("examples/basic-taxi-driver/book.toml", "utf8");
+            const m = toml.match(/periodCoveredStart\s*=\s*(\d{4}-\d{2}-\d{2})/);
+            const fixtureStart = Date.UTC(...m[1].split("-").map(Number).map((n, i) => (i === 1 ? n - 1 : n)));
+            const yeYear = Number("${{ matrix.year-end }}".slice(0, 4));
+            const packageStart = Date.UTC(yeYear - 1, 3, 6);
+            console.log(Math.round((packageStart - fixtureStart) / 86400000));
+          ')
+          echo "date-shift-days=$DATE_SHIFT_DAYS"
+          # differing/noJsValue/noExcelValue stay informational only: this
+          # package's own report labels are anchored to its own year-end
+          # while the fixture's dates now land on that year-end's own frame,
+          # so EQ1 is only exact for the one year-end that happens to equal
+          # the master's own period end (examples/basic-taxi-driver/
+          # book.toml's periodCoveredEnd); every other year picks up
+          # whatever that year's own tax-rate tables move. The scorecard
+          # still prints in full for visibility.
+          node app/bin/verify-roundtrip.js --package taxi --excel target/taxi-scorecard-excel --js target/taxi-scorecard-js --budget app/data/roundtrip-matrix-budget.json --date-shift-days "$DATE_SHIFT_DAYS"
       - name: 'EQ3: stability of the recalculated package'
         if: ${{ steps.roundtrip.outputs.populated != '' }}
         run: node app/bin/verify-stability.js --package taxi --source-dir "${{ steps.roundtrip.outputs.populated }}" --output-dir target/taxi-scorecard-stability
