@@ -28,6 +28,9 @@ absences with reasons, never silently closed.
   sweep rides the same moment (the wave-2 track's own sweep was starved by sibling
   LibreOffice contention; its blast radius was covered file-by-file and branch CI is running
   the suite now).
+- [ ] archive `PLAN_ROUNDTRIP_FIDELITY.md` when the full set lands — merged to main,
+  regenerated, deployed to prod. The plan is then fully closed (all gates at zero, declared
+  absences held); its record moves out of the live plan set.
 
 ## Open items
 
