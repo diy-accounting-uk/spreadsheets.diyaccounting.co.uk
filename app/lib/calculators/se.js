@@ -31,7 +31,6 @@ import {
 import {
   monthlyPayrollBlockRow,
   PAYSLIP_PRINT_CELLS,
-  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
   PAYSLIP_PRINT_PERIOD,
@@ -377,7 +376,8 @@ function buildPayslipsPrintPage(period, payroll) {
   for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
     sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
   }
-  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
+  // M18's ADDRESS now points at the same cell I9 does -- the wages-paid date.
+  sheet.M18 = sheet[PAYSLIP_PRINT_CELLS.periodEnd];
   return sheet;
 }
 
