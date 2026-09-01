@@ -59,10 +59,10 @@ opens it. What the spike does not produce is a pre-verified cached workbook — 
 template+writer combination stays CI's job, per template version, not per download.
 
 **Bundling**: one esbuild step (`scripts/build-books-bundle.mjs`) producing an ES module bundle.
-The handful of `fs`/`path` call sites (schema loading, template lookup) go behind an injected
-resource loader; the page supplies `fetch`-based loading of the template xlsx and schemas, Node
-keeps `readFileSync`. No fork of the pipeline modules — the bundle imports them as they are, so
-the page can never drift from the engine CI verifies.
+The `fs` call sites go behind an injected resource loader; the page supplies `fetch`-based
+loading, Node keeps `readFileSync`. No fork of the pipeline modules — the bundle imports them
+as they are, so the page can never drift from the engine CI verifies. The surface is measured
+in phase 3's first boundary decision, not guessed.
 
 ## Entry point
 
@@ -143,11 +143,35 @@ is a figure the page shows.
 | PurchasesStock | stock panel: opening/closing values and counts, materials % |
 | Debtors & Creditors | ledgers panel: named opening/closing debtors and creditors |
 | Fixed Assets | asset register panel: additions, the register, capital allowances |
-| Income Tax | tax computation render: income tax bands, Class 2 and Class 4 NI |
-| SE Short | SA103S render: the filed boxes, laid out as the form |
+| Income Tax | tax computation render in the form idiom: bands and NI as form rows, double-ruled total (see the tax-form renders below) |
+| SE Short | SA103S render: the form's own section order and box numbers, one figure per box (see the tax-form renders below) |
 | Business Details | book details panel (`entityInformation`, editable) |
 | Admin | rates panel: the year's tax data, read-only, sourced by provenance from `app/data/<year>.toml` |
 | Home | the page's own navigation — each sheet view reachable from it, as the sheet's hyperlinks are |
+
+**The tax-form renders — modern HMRC look-alikes.** The SA103S and Income Tax views follow
+the form, not the ledger: their job is a customer eyeballing figures against the return, so
+each render reproduces the form's structure — its section order, its box numbers, one figure
+per box — while the look stays the page's own.
+
+- *Layout*: one column of form rows, each row a label, a box-number chip and an amount box,
+  grouped under the form's own section headings (business income, expenses, net profit),
+  each section closed with a `--rule` line. The Income Tax view renders the computation the
+  same way: bands and Class 2/4 NI as form rows, the rate in pencil beside each band, and a
+  double rule above the total — the ledger pad's own closing convention.
+- *The box-number chip*: a small square outlined in `--rule` carrying the form's box number
+  in the tabular mono — the paper form's numbered box redrawn in the page's ink, not GOV.UK
+  form styling.
+- *Amount boxes*: right-aligned tabular mono inside a 1px `--ink` border on `--paper`.
+  Whole-pound boxes say "whole pounds" in pencil microcopy and round exactly as the sheet
+  rounds, so the box always matches what the return would carry.
+- *Drift inside a form*: a box shows exactly one figure — the calculated one. The as-read
+  figure and its signed drift sit in the right margin as the pencil correction, outside the
+  box, the way a checker annotates a paper return. Never a second number inside a box.
+- *Identity boundary*: the render echoes the form's layout for the customer's own figures
+  and carries the page's identity — its own masthead, tokens and type. No HMRC branding,
+  crest, colours or wordmark, nothing that could read as the actual government form or as a
+  filing. The microcopy says what it is: "check these against your return".
 
 **Design tokens** (deliberately grounded in the columnar ledger pad, not the site's default look):
 
@@ -299,47 +323,80 @@ harness's; an `extract_book` on a generated package matches the CLI's output byt
 
 ## Phase 3 — Web
 
-1. **Bundle spike.** esbuild bundle of exporter+loader+calculator+checks; a bare page that loads
-   the sp-sixty BST fixture xlsx and logs the book, the computed P&L and the check results.
-   *Verify: figures and check verdicts match `reconcile.js --package bst` for the same scenario.*
+The books page. Its specification is the sections above — entry point, data model, checks
+and helpers, UI design (the tax-form renders included). This section is the delivery
+structure over that specification.
 
-   **Decision gate.** Step 1 answers the browser question. Everything after it is a choice,
-   not a consequence. Continue if the bundle matches `reconcile.js` on the sp-sixty fixture —
-   same figures, same verdicts, no forked module. Stop if matching requires forking a pipeline
-   module or shimming beyond `fs`/`path` resource loading; that would mean the packaged-library
-   route needs design work first, and the finding goes to `_developers/PLAN_DIYA_CLOUD.md`.
+**Two boundary decisions, settled before any dispatch.**
 
-2. **Read-only viewer.** Upload (xlsx/zip), the three-level drill, drift annotations.
-   *Verify: a freshly generated package shows zero drift; a hand-corrupted cached `<v>` shows
-   exactly that cell's drift (the breakability proof, in-browser).*
-3. **Edits, checks, helpers.** In-place entry edits, recalculation, the checks panel, the two
-   helper classes with preview+undo.
-   *Verify: each helper's result reconciles — its book passes the same checks reconcile enforces.*
-4. **Save.** Client-side xlsx and zip generation.
-   *Verify: import → export → import yields a deep-equal book (Node vitest over the same bundle
-   entry points); an exported workbook run through `reconcile.js` RECONCILES.*
-5. **New/example books, entry-point panel, autosave, and the four layouts.** New-book form,
-   example loader, the `download.html` deep-link panel, IndexedDB autosave of the working book
-   (the in-progress book survives a closed tab and is offered back on return; the save icon
-   remains the only way anything leaves the browser), the four orientation layouts, Playwright
-   coverage in `test:browser` for all four viewports.
+1. *The bundle surface, measured 2026-09-01.* The engine modules the bundle imports carry
+   27 `fs` call sites, not a handful: 20 in `app/lib/xlsx-exporter.js` (the schema, year-TOML
+   and declared-absence loads the tax reconstruction added, plus the multi-file workbook
+   reads the BST path never executes), 3 in `diya-gl-loader.js`, 2 each in
+   `diya-gl-schema.js` and `scenario-loader.js`. The injected resource loader serves four
+   resource kinds: the two v2 schemas, the `app/data/<year>.toml` the book declares, and the
+   BST template xlsx for save; the multi-file reads stay Node-only behind the same injection.
+   Track W0 proves this inventory complete before anything else is built.
+2. *`.xls` uploads are rejected with instructions.* The legacy binary format has no cheap
+   pure-JS reader, and pulling a spreadsheet library in would fork the engine the bundle
+   exists not to fork. The picker accepts `.xlsx` and `.zip`; a `.xls` file gets a plain
+   message — open it in Excel or LibreOffice, save as `.xlsx`, try again. Reading `.xls`
+   directly is a later question and nothing in phase 3 decides it.
 
-**The equivalence test** (Playwright, lands with step 2 and grows with step 3): generate a BST
+**What exists and what is new.** Existing: the engine, proved through phases 1 and 2; the
+`download.html` panel patterns; the Playwright rig behind `test:browser`. New: the bundle
+build, the page and every view, the edit/undo layer, the helpers, the four layouts.
+
+### Delivery — six tracks, four waves
+
+Worktree sub-agents off the batch branch, coordinator merges. W0 is the only track that
+touches engine modules (the loader injection); for every other track `app/lib/` and
+`app/products/` are read-only, and `examples/`, the fixtures and the budgets are read-only
+for all.
+
+| Track | Tier | Owns | Delivers |
+|---|---|---|---|
+| **W0 — the bundle gate** | Opus — the injection design across four modules is the phase's one real risk | `scripts/build-books-bundle.mjs`, the resource-loader injection points in the four modules named above, a bare probe page, a Node parity test | the esbuild bundle; the probe page loads the sp-sixty fixture and logs book, P&L and check results |
+| **W1 — the viewer** | Sonnet — bounded coding against the UI spec | `books/bst.html`, the page state and drill modules, its Playwright specs | upload (`.xlsx`/`.zip`), the three-level drill, the drift annotations |
+| **W2 — panels and form renders** | Sonnet — the form design is already specified above | the view modules for the render-equivalence table's panels, the SA103S and Income Tax form renders included, and their render-equivalence coverage | every non-drill view |
+| **W3 — edits, checks, helpers** | Opus — the edit path, undo stack and helper previews carry the book's correctness | the edit/undo layer, the checks panel, the two helper classes with preview | in-place edits, recalculation on commit, helpers that apply through the edit path |
+| **W4 — save** | Sonnet | the save module, its Node roundtrip test | client-side `.xlsx` and zip generation off the fetched template |
+| **W5 — entry, examples, autosave, layouts** | Sonnet | the `download.html` panel, new-book and example flows, IndexedDB autosave, the four layout implementations, four-viewport Playwright specs | everything that makes the page reachable, restartable and shaped for each viewport |
+
+**Waves.** Wave 0: W0 alone — it ends at the **decision gate**: continue if the bundle
+matches `reconcile.js` on the sp-sixty fixture (same figures, same verdicts, no forked
+module); stop if matching requires forking a pipeline module or shimming beyond resource
+loading, and the finding goes to `_developers/PLAN_DIYA_CLOUD.md`. Wave 1: W1. Wave 2: W2
+and W3, concurrent — views render read-only from the calculated book while W3 owns state
+and the edit path, disjoint modules. Wave 3: W4 and W5, concurrent.
+
+**Each track's verification rung:**
+
+- *W0*: figures and check verdicts match `reconcile.js --package bst` for the same scenario.
+- *W1*: a freshly generated package shows zero drift; a hand-corrupted cached `<v>` shows
+  exactly that cell's drift — the breakability proof, in-browser.
+- *W2*: the render-equivalence sweep — every `cell/`, `section/` and `check/` key of BST's
+  `R` is rendered by some view, and each form render shows every box its form carries.
+- *W3*: each helper's result reconciles — its book passes the same checks reconcile
+  enforces; the edit-outcome cases (a purchase of X drops profit by X with turnover
+  unchanged; a sale of Y raises both by Y) hold against the page's figures with the check
+  panel green.
+- *W4*: import → export → import yields a deep-equal book (Node vitest over the same bundle
+  entry points); an exported workbook run through `reconcile.js` RECONCILES.
+- *W5*: the four viewport layouts pass their Playwright specs in `test:browser`.
+
+**The equivalence test** (Playwright, lands with W1 and grows through W3): generate a BST
 package populated with a reconciliation scenario's example data, load it into the page, and
-assert four sources agree value-for-value —
+assert four sources agree value-for-value — the fixture's own expectations, the values
+`report.js` reads from the generated file, the page's as-read values, and the page's
+calculated values. All four equal, canonicalised as the comparator rounds, and the drift
+annotations empty.
 
-1. the scenario's expected reconciliation data (the fixture's own expectations),
-2. the values `report.js` reads from the populated generated file,
-3. the page's as-read values from that same file,
-4. the page's calculated values.
-
-All four equal (canonicalised as the comparator rounds) and the drift annotations empty. Then
-the edit-outcome cases: adding a purchase of X reduces profit by X and leaves turnover unchanged;
-adding a sale of Y increases both profit and turnover by Y — asserted against the page's figures
-and the check panel staying green.
-
-Page lands at `web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle
-beside it; the bundle build joins the existing build steps in CI.
+**The closing ladder**, run by the coordinator on the merged branch: the render-equivalence
+sweep across all views; `test:browser` across the four viewports; the Node parity suite
+against `reconcile.js`; the full unit suite serially. The page lands at
+`web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle beside it, and
+the bundle build joins the existing build steps in CI.
 
 ## Out of scope for the spike
 
