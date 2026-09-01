@@ -215,33 +215,64 @@ entry point to drift.
   "customer overtyped a formula" annotation, proven as data first; the template formula
   inventory already exists (`formula-presence-guard.test.js` guards it).
 
-**The edit→recalc harness lands with phase 1.** The page's core mechanic, proven in Node
-with no browser: parse `lines.jsonl` (`diya-gl-canonical.js`), apply a named edit in memory,
-run `calculateFromDiyaGl`, assert the movement in the new `R`. Recalculation never rewrites
-lines — `D` is input-only — so an unchanged book recalculates to an unchanged `R`, and an
-edit moves exactly the figures it should. The serialization layer under test is one module,
-`diya-gl-canonical.js`, already EQ2-gated. The named cases:
+**Two boundary decisions, settled before any dispatch.**
 
-- add a purchase of X → profit falls by X, turnover unchanged;
-- add a sale of Y → profit and turnover rise by Y;
-- change a line's amount → its month, category and year totals move by the difference, and
-  the checks panel's verdicts stay green;
-- the identity: parse → serialize with no edit is byte-identical.
+1. *Version tolerance.* Phase 1 reads current-template files only. The extractors key on
+   anchors — the sheet names and header labels each one locates before reading — and the
+   `--file` mode validates every anchor first. A missing anchor is a named error stating
+   the sheet and the anchor it expected, never silent short output. Reading older
+   templates is a question for a later phase; nothing in phase 1 decides it.
+2. *Attribution needs the extractors' row mappings.* The sidecar can only say which line or
+   field an overtyped cell feeds if the extractors expose their row-to-line and
+   cell-to-field mappings. That exposure is an internal API on `app/lib/xlsx-exporter.js`,
+   designed once and shared — not a parallel re-implementation of the extraction logic. It
+   is the sidecar track's first step and the reason that track carries the high tier.
 
-**Tests cover the full BST reconciliation range with no LibreOffice in the loop**: unit
-tests drive all three fixtures (`bst-scenario-basic`, `bst-brickwork-pro-nonvat`,
-`bst-sp-sixty`) through generate → `--file` export → recalculate entirely on JSZip buffers,
-asserting the exported `D` equals the fixture and `R` matches the calculator run on the
-fixture directly. Byte-for-byte agreement with a LibreOffice-recalculated package stays
-where it already lives, in the CI roundtrip jobs.
+**What exists and what is new.** Existing, already tested: `extractBstTransactions`,
+`extractBook`, `calculateFromDiyaGl`, `diya-gl-canonical.js`, the v2 schemas, the three BST
+fixtures, and the template formula parsing inside `formula-presence-guard.test.js`. New
+code: the `--file` surface and anchor guard, the `report.json` emission from the CLI, the
+edit→recalc harness, the row-mapping exposure, a shared template-formula-map module, and
+the sidecar itself.
 
-*Verify: on a freshly generated BST package the output matches the CI tuple's `data/`
-byte-for-byte and `overtyped.json` is empty; turn one template formula cell into a literal
-and exactly that cell appears in `overtyped.json`, nothing else; the four edit cases pass on
-all three fixtures.*
+### Delivery — three tracks, two waves
 
-This is the smallest end-to-end proof of the import half on arbitrary files, and it is the
-tool half of the Submit VAT extract regardless of whether the page ever ships.
+Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
+`app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
+`app/data/roundtrip-budget.json` (phase 1 adds no book fields, so the budgets do not move).
+
+| Track | Tier | Owns | Delivers |
+|---|---|---|---|
+| **A — the file surface** | Sonnet — bounded coding against the existing export patterns | `app/bin/export.js`, one `package.json` script line, the anchor-validation additions in `app/lib/xlsx-exporter.js`, a new `app/test/export-file.test.js` | the `--file` mode (`.xlsx` or `.zip`), the `export-bst` alias, `report.json` in the same run, and the anchor guard with its named errors |
+| **B — the edit→recalc harness** | Sonnet — needs fluency with the calculator API and `R`'s shape, no design | one new test file, `app/test/diya-gl-edit-recalc.test.js` | parse `lines.jsonl`, apply a named edit in memory, run `calculateFromDiyaGl`, assert the movement in the new `R`, across all three fixtures |
+| **C — the overtype sidecar** | Opus — two internal API designs inside the pipeline's central module | the row-mapping exposure in `app/lib/xlsx-exporter.js`, a new sidecar module under `app/lib/`, the formula-map extraction out of `formula-presence-guard.test.js` into a module both it and the sidecar import, its tests | `overtyped.json`: the template-vs-upload formula diff, each entry attributed through the exposed mappings and `CELL_MAP` |
+
+**Wave 1**: A and B, concurrent — disjoint files. **Wave 2**: C, after A lands — both touch
+`xlsx-exporter.js`, and the sidecar diffs against the file the `--file` mode opens.
+
+**Each track's verification rung**, per the reconciliation-bug method:
+
+- *A*: the `--file` output on a generated package equals the `--source-dir` output
+  byte-for-byte; rename one sheet in a copy of the package and the run fails with the named
+  anchor error, not short output.
+- *B*: the four cases — add a purchase of X (profit falls X, turnover unchanged); add a sale
+  of Y (profit and turnover rise Y); change a line's amount (its month, category and year
+  totals move by the difference, check verdicts stay green); the identity (parse → serialize
+  with no edit is byte-identical). Recalculation never rewrites lines — `D` is input-only —
+  so an unchanged book recalculating to an unchanged `R` is itself one of the assertions.
+- *C*: `overtyped.json` is empty on a fresh package; turn one template formula cell into a
+  literal and exactly that cell appears, nothing else; each entry's attribution matches
+  what `CELL_MAP` or the exposed mapping states for that cell.
+  `formula-presence-guard.test.js` stays green through the extraction it now imports.
+
+**The closing ladder**, run by the coordinator on the merged branch: the full unit suite
+serially; the CI tuple check (a fresh package's `--file` output equals the tuple's `data/`
+byte-for-byte); the roundtrip budgets unchanged at zero. LibreOffice agreement stays where
+it already lives, in the CI roundtrip jobs — no track runs soffice.
+
+This is the smallest end-to-end proof of the import half on a customer's own
+current-template file, and it is the tool half of the Submit VAT extract regardless of
+whether the page ever ships.
 
 ## Phase 2 — MCP
 
