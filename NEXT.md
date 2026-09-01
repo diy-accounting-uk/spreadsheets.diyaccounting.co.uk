@@ -30,9 +30,12 @@ absences with reasons, never silently closed.
   inside the asset-attributes track. Done when this branch merges.
 - [ ] batch closeout (operator, decided 2026-09-01): when the branch is otherwise stable,
   the operator re-runs all four generators in CI and commits; one clean serial `npm test`
-  sweep rides the same moment (the wave-2 track's own sweep was starved by sibling
-  LibreOffice contention; its blast radius was covered file-by-file and branch CI is running
-  the suite now).
+  sweep rides the same moment. Two riders land WITH that refresh: re-pin
+  `app/test/judge-reconciliation.test.js` to the post-fix reports (SE and Ltd go clean —
+  947/947 on the Ltd brickwork pair, no payslip warning — the pins deliberately stay on the
+  committed pre-fix reports until then, since the reconciliations drive the committed
+  `packages/`, which only the refresh rebuilds with the T5/T7 fixes), and the reports will
+  then show T7's twelve calendar checks and T5's payment-date check passing.
 - [ ] archive `PLAN_ROUNDTRIP_FIDELITY.md` when the full set lands — merged to main,
   regenerated, deployed to prod. The plan is then fully closed (all gates at zero, declared
   absences held); its record moves out of the live plan set.
