@@ -26,7 +26,9 @@ export const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER
 
 /**
  * The cell holding the date the month's wages were paid, one row below the
- * block start. It is the only date a month tab carries.
+ * block start. It closes the period the block opens with three columns to
+ * its left, and a book overwrites it with the day the wages actually went
+ * out. It is the only date on the tab any writer touches.
  * @param {number} monthIndex - 0-11
  * @returns {string}
  */
