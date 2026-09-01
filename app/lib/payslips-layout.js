@@ -33,6 +33,37 @@ export const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER
 export const payslipsWagesPaidCell = (monthIndex) => `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
 
 /**
+ * The cell a month tab's monthly payroll block opens its period in, on the
+ * same row as the wages-paid date that closes it. Nothing writes to it, so it
+ * is the tab's own calendar whether the package carries a book or not.
+ * @param {number} monthIndex - 0-11
+ * @returns {string}
+ */
+export const payslipsPeriodStartCell = (monthIndex) => `K${monthlyPayrollBlockRow(monthIndex) + 1}`;
+
+/**
+ * The days a month tab's monthly payroll block covers: the tab's own month of
+ * the accounting period, index 0 being the month the period opens in. A March
+ * year end runs its accounts over the same twelve months as its payroll, and
+ * its first block opens with the payroll year on 6 April rather than on the
+ * 1st.
+ * @param {Date} periodStart - the accounting period's first day
+ * @param {number} monthIndex - 0-11
+ * @param {Date} payrollYearStart - payrollYearStart() for this package
+ * @returns {{first: Date, last: Date}}
+ */
+export function payslipsMonthPeriod(periodStart, monthIndex, payrollYearStart) {
+  const months = periodStart.getUTCFullYear() * 12 + periodStart.getUTCMonth() + monthIndex;
+  const first = new Date(Date.UTC(Math.floor(months / 12), months % 12, 1));
+  const last = new Date(Date.UTC(Math.floor(months / 12), (months % 12) + 1, 0));
+  const opensWithPayrollYear =
+    monthIndex === 0 &&
+    payrollYearStart.getUTCFullYear() === first.getUTCFullYear() &&
+    payrollYearStart.getUTCMonth() === first.getUTCMonth();
+  return { first: opensWithPayrollYear ? payrollYearStart : first, last };
+}
+
+/**
  * The five employee rows of a month's monthly block, from block row + 3.
  * @param {number} monthIndex - 0-11
  * @returns {number[]}
