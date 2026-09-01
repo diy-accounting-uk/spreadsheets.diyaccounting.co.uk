@@ -13,8 +13,7 @@ downstream consumers are why the spike is worth running:
 - **DIYA Cloud itself** (`_developers/PLAN_DIYA_CLOUD.md`), further off.
 
 The BST page's own users may be few. That is acceptable: the page is a test harness that
-happens to be useful. One product, one page, no server — until the LLM review (the last
-section), whose model call is the one deliberate exception.
+happens to be useful. One product, one page, no server.
 
 ## User assertions (verbatim)
 
@@ -36,16 +35,21 @@ section), whose model call is the one deliberate exception.
 
 ## Why this is feasible without a server
 
-Every module the page needs is already pure JS on JSZip and smol-toml, verified 2026-08-30:
+Every module the page needs is already pure JS on JSZip and smol-toml:
 
 | Concern | Existing module | Browser status |
 |---|---|---|
-| xlsx → diya-gl | `app/lib/xlsx-exporter.js` (`extractBstTransactions`) | JSZip + string XML parsing; `fs`/`path` only for schema loading |
+| xlsx → diya-gl | `app/lib/xlsx-exporter.js` (`extractBstTransactions`, `extractBook`) | JSZip + string XML parsing; `fs`/`path` only for loading schemas, the `app/data/<year>.toml` rate files (the exporter reconstructs the book's `tax` tables from the year the package declares) and the declared-absence list |
 | diya-gl book | `app/lib/diya-gl-loader.js`, v2 schemas under `public/schema/` | pure JS + smol-toml |
-| Recalculate | `app/lib/calculators/bst.js`, `app/lib/tax/mileage.js` | pure JS, milliseconds |
+| Recalculate | `app/lib/calculators/bst.js`, `app/lib/tax/{income-tax,national-insurance,capital-allowances,mileage}.js` | pure JS, milliseconds |
 | Mechanical checks | `checkCompliance` in `app/products/bst.js` | pure JS — the reconciliation checks themselves |
 | diya-gl → xlsx | `app/lib/generator.js` cell writes into `app/templates/bst/` (2.5 MB) | JSZip surgery; stamps `fullCalcOnLoad="1"` so Excel recalculates on open |
 | zip | JSZip | native in browser |
+
+The import contract the page inherits is the roundtrip programme's: `bookFieldsMissing` is 0
+for BST, and every field the export does not carry is one
+`app/data/roundtrip-unrepresentable.json` declares with a reason. What the pipeline reads
+back on CI is exactly what the page can show.
 
 The one thing a browser cannot do is the LibreOffice recalculation. It doesn't need to: the page
 computes with the JS engine, and a saved workbook recalculates itself when Excel or LibreOffice
@@ -84,8 +88,9 @@ The diya-gl book is the single source of truth once loaded. Three ways in:
   drift annotation.
 - **New book** — an empty book with `documentInfo`/`entityInformation` from a short form
   (business name, year end), no as-read layer.
-- **Example** — loads a reconciliation scenario served as static assets:
-  `examples/precision-code-ltd/bst` (full ledger) and `examples/sp-sixty-driving/bst`
+- **Example** — loads one of BST's three reconciliation fixtures, served as static assets in
+  canonical form (`book.toml` + `lines.jsonl`): `bst-scenario-basic` (the Precision Code
+  subset, full ledger), `bst-brickwork-pro-nonvat` (the BrickWork trade), and `bst-sp-sixty`
   (no-ledger, mileage route).
 
 Edits mutate the book's lines; the calculator re-runs on every commit of an edit (whole-book
@@ -93,7 +98,7 @@ recompute is milliseconds; no incrementalism in the spike). Undo is a book-state
 
 **Drift**: for every calculated cell the page shows the diya-gl value as *the* value, with the
 workbook's as-read value as an annotation and the signed difference. Values canonicalise before
-comparison exactly as `verify-roundtrip.js` does (money to 6 dp then half-up to the penny), so
+comparison exactly as `verify-roundtrip.js` does (money half-up to the penny, rates to 6 dp), so
 LibreOffice float noise never reads as drift. Drift on an unedited import is a finding (that's
 EQ1 live in the browser); drift after edits is expected and labels itself "recalculated".
 
@@ -122,6 +127,25 @@ workbooks. The page's one job: see the year, trust the figures, fix what's flagg
 columns, with the year totals row anchored) → a month expands to its summary (the totals the
 month sheets print) → expands again to that month's entries, editable in place. One month open
 at a time; the year row of an open month stays pinned so the context never scrolls away.
+
+**Render equivalence — every covered sheet has a view.** The reconciliation touches all 33
+BST sheets (`REPORT_SPREADSHEET_TEST_COVERAGE.md`), and each has a render equivalent on the
+page; the test is that the page's views collectively render every key BST's report `R`
+carries — every `cell/`, `section/` and `check/` key — so a figure the reconciliation reads
+is a figure the page shows.
+
+| Workbook sheets | Page view |
+|---|---|
+| SalesApr–SalesMar, PurchasesApr–PurchasesMar (24) | the three-level drill: year table → month summary → entries |
+| Profit & Loss Acc | the year table's totals plus a P&L statement render |
+| PurchasesStock | stock panel: opening/closing values and counts, materials % |
+| Debtors & Creditors | ledgers panel: named opening/closing debtors and creditors |
+| Fixed Assets | asset register panel: additions, the register, capital allowances |
+| Income Tax | tax computation render: income tax bands, Class 2 and Class 4 NI |
+| SE Short | SA103S render: the filed boxes, laid out as the form |
+| Business Details | book details panel (`entityInformation`, editable) |
+| Admin | rates panel: the year's tax data, read-only, sourced by provenance from `app/data/<year>.toml` |
+| Home | the page's own navigation — each sheet view reachable from it, as the sheet's hyperlinks are |
 
 **Design tokens** (deliberately grounded in the columnar ledger pad, not the site's default look):
 
@@ -211,62 +235,5 @@ beside it; the bundle build joins the existing build steps in CI.
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
 the saved zip, VAT hand-off to Submit (`PLAN_VAT_EXPORT_FOR_SUBMIT.md` — this spike's import is
 its natural front half), and saved-account persistence (that is DIYA Cloud; the working-book
-autosave in phase 5 is the whole of what this page keeps). The LLM review below is in this plan
-but outside the spike: it starts only after phase 5 lands and the decision gate held.
+autosave in phase 5 is the whole of what this page keeps).
 
-## LLM review (after phase 5)
-
-The page asks an LLM to review the loaded accounts, comment, and propose fixes the user can
-select and apply. Explicitly opt-in, because it changes the page's trust claim.
-
-> feed in another idea [...] for a LLM review, we can find a compressed bedrock friendly format
-> and send a request and use [bedrock-meter] to cap the spend on a public endpoint. The AI
-> should review and comment on the accounts and propose fixes using a multi-turn and structure
-> format so that the proposed fixes can be selected and the request submitted the yields a new
-> compressed format diya-gl with the fixed.
-
-> [bedrock-meter] is a LIBRARY used in the page, not a hosted endpoint the browser calls.
-
-**The two things this changes, recorded first.**
-
-*The trust claim.* The books page promises "Nothing is uploaded; the file never leaves your
-machine." Any model call breaks that. So: the review is explicit opt-in per book, never a
-default; the copy on the review control says plainly what is sent, to which model, and under
-whose key; and the no-upload promise gains its qualifier only when the review ships, not
-before.
-
-*Untrusted input reaches a model that proposes changes to tax figures.* An uploaded workbook is
-attacker-controllable content — cell text, names and comments all flow into the compressed
-format and from there into the prompt. Prompt injection is a first-class risk: a crafted
-workbook could try to steer the model into proposing fixes that misstate tax. The guards below
-are load-bearing for exactly this reason — a proposed fix is treated as hostile until it
-validates, previews, and leaves the passing checks passing.
-
-**Metering.** The bedrock-meter library is bundled into the page. It wraps each Bedrock
-request, counts the tokens spent, keeps the running total, and refuses further requests once
-the configured cap is reached — enforced in-page, with the spend state shown beside the review
-control so running out is never a surprise.
-
-**The flow.**
-
-- *Compressed format.* A Bedrock-friendly rendering of the book, small enough to review in one
-  request: `documentInfo`/`entityInformation`, the monthly and category summaries the year
-  table already computes, the check results, and individual lines only where a check flags
-  them or a category is anomalous. Deterministic, versioned, round-trippable back to line
-  edits.
-- *Review turn.* The model reviews and comments and proposes fixes in a structured response —
-  a JSON list, each entry naming the lines it touches, the diya-gl edit it makes, and its
-  reasoning. The page renders each comment with its fix as a selectable item, in the same
-  preview language the page's own helpers use.
-- *Fix turn.* The selected fixes go back in a second request; the reply is a new
-  compressed-format diya-gl carrying them. The page expands it to line edits, shows the diff
-  as pencil annotations, and applies only on accept — through the same edit path as a hand
-  edit, so recalculation, the checks panel and undo all cover it.
-- *The guards (load-bearing).* A reply that fails schema validation is rejected with its
-  reason shown. A fix that would take a passing check to failing is rejected the same way.
-  Nothing applies without the user accepting the previewed diff.
-
-`app/bin/judge-reconciliation.js` is the in-repo precedent for prompt shape and rubric tone;
-the review prompt borrows its discipline (comment on what the figures show, never soften a
-check). First step when this starts: the compressed format and its round-trip test in Node —
-no page work and no model call until the format is proven on the reconciliation scenarios.

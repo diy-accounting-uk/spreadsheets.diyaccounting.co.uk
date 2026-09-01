@@ -65,7 +65,7 @@ follow the reconciliation-bug method.
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
-  browser page, with the opt-in LLM review as its post-phase-5 extension; specified, not started.
+  browser page, with a render equivalent for every reconciliation-covered sheet; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
 - `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
