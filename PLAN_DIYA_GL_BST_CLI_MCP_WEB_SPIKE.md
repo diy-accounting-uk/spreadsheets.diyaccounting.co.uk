@@ -269,13 +269,26 @@ phase's tracking surface — NEXT.md stays with the batch branch):
   failing by name with no stack trace; byte-for-byte with `--source-dir` proven.
 - [x] Track B — landed (`1913e709`, merged): 18 tests across the three fixtures, all four
   cases anchored on real lines, breakability demonstrated.
-- [ ] Track C — the overtype sidecar (Opus, worktree agent) — dispatched
+- [x] Track C — landed (`85c9d2bb`, merged): the extraction row map recorded by the
+  extractors themselves, `template-formula-map.js` shared with the guard test, and the
+  sidecar excluding the 2,367 prompt-formula input cells; empty on a fresh package, the
+  78-cell attribution sweep proven one cell at a time.
 - [ ] closing ladder (coordinator) — waits on the tracks
 - [ ] phase remainder, surfaced by Track B: `diya-gl-loader.js:139-151` hardcodes
   `BST_PURCHASE_CODE_MAP` regardless of the book's own declared chart — sp-sixty's
   Taxi-numbered accounts misroute (5900 "Legal" lands on code "f" fixed assets; 7000, the
   real fixed asset, drops entirely). Harmless for generator-shaped books, wrong for a real
-  customer chart; must resolve before phase 2's tools wrap this path.
+  customer chart; phase 2's Track D owns the fix.
+- [ ] phase remainder, surfaced by Track C (operator decision before phase 2 ships): the
+  BST `Debtors & Creditors` extractor and generator share an invented per-contact layout,
+  but the shipped sheet is a monthly outstanding table ("Owed start year", "Sales not yet
+  received", month-serial rows — confirmed in the template's shared strings). The round
+  trip passes only because both legs use the fiction; a real customer file gets nonsense
+  ledgers, and the anchor guard doesn't cover the sheet. Decide what BST debtors/creditors
+  ARE — align the pipeline to the real monthly table (moves `book.toml`'s BST ledger shape,
+  the generator writes, fixtures and budgets), or template surgery for per-contact rows.
+  Also carried from Track C: `adminMileageRates` (`xlsx-exporter.js:543`) silently zeroes
+  all mileage rates when Admin is missing in `--source-dir` mode (`--file` is guarded).
 
 Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
 `app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
@@ -370,6 +383,14 @@ track runs soffice.
 The books page. Its specification is the sections above — entry point, data model, checks
 and helpers, UI design (the tax-form renders included). This section is the delivery
 structure over that specification.
+
+**In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
+
+- [ ] W-pre — the static foundations (Sonnet, worktree agent) — dispatched: the page shell
+  with the design system and all four layouts on a static fixture snapshot; the SA103S and
+  Income Tax form-render prototypes; the `download.html` entry panel. Pure `web/` files, no
+  engine imports — its markup and CSS survive W1's wiring, and W0 stays untouched while the
+  engine modules are hot.
 
 **Two boundary decisions, settled before any dispatch.**
 
