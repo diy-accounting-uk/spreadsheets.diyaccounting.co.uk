@@ -17,15 +17,11 @@ absences with reasons, never silently closed.
 - [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
   carries that tab's month of the accounting period (generator-only, Ltd non-March, March
   byte-stable), with a breakable per-tab check in both engines.
-- [ ] blank-package weekly payroll caches are a year stale (surfaced by T7):
-  `rollPayslipsAdminDateReads` rolls only plain `=Admin!B<n>` reads, so the weekly blocks'
-  chained cells keep the template year's caches on any blank package whose payroll year
-  differs (recalculation fixes them; the monthly gate keeps the blocks inert). Needs an
-  evaluator for the tab-to-tab weekly chain; moves March package bytes.
-- [ ] Payslips `Payment` sheet pairs renamed-tab totals with tax-frame month ends (operator
-  decision first): it is a PAYE schedule, where the tax calendar is arguably correct, so
-  decide the frame before dispatching; its date columns are not read by the reconciliation
-  today.
+- [ ] weekly-cache roll + Payment realignment (Opus, worktree agent) — in flight, operator
+  decided both 2026-09-01: the weekly chain's caches roll on every year-end class (March
+  bytes move; the CI refresh reproduces them), and the `Payment` PAYE schedule keeps its
+  tax-frame dates with each row's totals repointed to the payroll month paid in that tax
+  month, gaining its first reconciliation reads and checks.
 - [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
   rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
   `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
