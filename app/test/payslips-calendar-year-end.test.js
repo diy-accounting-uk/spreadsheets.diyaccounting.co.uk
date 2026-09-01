@@ -587,7 +587,7 @@ describeCalc("ltd Payslips print page at a June year end", () => {
   it("corrupting the day a month tab's payroll opens fails only that tab's period check", async () => {
     const monthIndex = 1;
     const cell = payslipsPeriodStartCell(monthIndex);
-    const name = `Payslips!${PRINTED_TAB} ${cell} the monthly payroll opens in the ${PRINTED_TAB} of this period`;
+    const name = `Payslips!${PRINTED_TAB} ${cell} the monthly payroll opens in the accounting period's ${PRINTED_TAB}`;
     expect(checks.find((c) => c.name === name)?.pass).toBe(true);
     expect(monthlyPayrollBlockRow(monthIndex)).toBe(48);
 

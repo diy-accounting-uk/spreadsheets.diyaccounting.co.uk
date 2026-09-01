@@ -3443,7 +3443,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const cell = payslipsPeriodStartCell(monthIndex);
       const opens = payslipsMonthPeriod(periodStart, monthIndex, yearStart).first;
       check(
-        `Payslips!${tab} ${cell} the monthly payroll opens in the ${tab} of this period`,
+        `Payslips!${tab} ${cell} the monthly payroll opens in the accounting period's ${tab}`,
         num(month[cell]),
         toExcelSerial(opens.getUTCFullYear(), opens.getUTCMonth() + 1, opens.getUTCDate()),
         0,
