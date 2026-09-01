@@ -11,7 +11,10 @@
 //   EQ2, the data half: join the two data/ directories as a multiset of
 //   canonical lines, plus a field-by-field comparison of book.toml. The JS
 //   side writes the original fixture in canonical form, so this compares the
-//   export against the fixture and not against a second export.
+//   export against the fixture and not against a second export. A field the
+//   export leaves out is missing unless roundtrip-unrepresentable.json names
+//   a reason for it, in which case it is counted as declared instead, so a
+//   real loss and a structural absence are never confused.
 //
 // A diff -r line count moves when a report section is added, when a label is
 // reworded, and when a value changes, and the three are indistinguishable.
@@ -584,7 +587,7 @@ export function flattenBook(value, prefix = "") {
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
  * @param {string} exportDir
- * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>>, bookPaths: Map<string, string> }} [scope] -
+ * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>>, bookPaths: Map<string, RegExp> }} [scope] -
  *   the fields the encoding has no home for, from unrepresentableScope(),
  *   covering both a line's own fields and the book.toml paths in bookPaths.
  *   A block-scoped declaration whose block matches no line's scope key
