@@ -265,9 +265,15 @@ the sidecar itself.
 phase's tracking surface — NEXT.md stays with the batch branch):
 
 - [ ] Track A — the file surface (Sonnet, worktree agent) — dispatched
-- [ ] Track B — the edit→recalc harness (Sonnet, worktree agent) — dispatched
+- [x] Track B — landed (`1913e709`, merged): 18 tests across the three fixtures, all four
+  cases anchored on real lines, breakability demonstrated.
 - [ ] Track C — the overtype sidecar (Opus) — waits on A
 - [ ] closing ladder (coordinator) — waits on the tracks
+- [ ] phase remainder, surfaced by Track B: `diya-gl-loader.js:139-151` hardcodes
+  `BST_PURCHASE_CODE_MAP` regardless of the book's own declared chart — sp-sixty's
+  Taxi-numbered accounts misroute (5900 "Legal" lands on code "f" fixed assets; 7000, the
+  real fixed asset, drops entirely). Harmless for generator-shaped books, wrong for a real
+  customer chart; must resolve before phase 2's tools wrap this path.
 
 Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
 `app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
