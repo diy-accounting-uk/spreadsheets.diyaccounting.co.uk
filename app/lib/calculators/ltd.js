@@ -702,7 +702,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const directorPayroll = payrollByTab(payrollEntries, isDirectorsLine);
   results.WagesInterface = buildWagesInterface(employeePayroll, directorPayroll, tabs);
   results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
-  results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period);
+  results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period, tabs);
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
     const monthTab = buildPayslipsMonthTab(monthIndex, payrollEntries[tabs[monthIndex]] || []);
     addPayslipsWeeklyRemnants(monthTab, monthIndex);
@@ -1007,15 +1007,17 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
 // month opens on names its date, its tax week and its week within the month.
 // The payroll year is the tax year the package was generated for, not the
 // accounting period, so a company with a June year end still runs its payroll
-// from the 6 April the rates start on.
-function buildPayslipsCalendar(taxData, period) {
+// from the 6 April the rates start on. Column A is headed "Month Sheet" and
+// is the printed payslip's join, so it names the package's own month tabs in
+// order rather than the calendar months the dates beside it fall in.
+function buildPayslipsCalendar(taxData, period, tabs) {
   const financialYearStart = taxData.financial_year?.start;
   const payrollYear = financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
   const payrollYearStart = new Date(Date.UTC(payrollYear, 3, 6));
   const anchor = serialOf(payrollYearStart);
   const sheet = { B2: anchor };
   for (const { month, row, daysBefore, week } of payrollMonthStarts()) {
-    sheet[`A${row}`] = SHORT_MONTHS[(payrollYearStart.getUTCMonth() + month - 1) % 12];
+    sheet[`A${row}`] = tabs[month - 1];
     sheet[`B${row}`] = anchor + daysBefore;
     sheet[`C${row}`] = week;
     sheet[`D${row}`] = month;

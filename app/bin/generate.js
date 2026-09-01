@@ -25,6 +25,7 @@ import {
   renameMonthTabs,
   rewriteVatinterfaceFormulas,
   renameExternalLinkSheetNames,
+  reorientPayslipsAdminMonthSheets,
   monthEnd,
 } from "../lib/generator.js";
 import { generatePdf } from "../lib/guide.js";
@@ -121,6 +122,12 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
       if (yearEndMonth && templateFile.endsWith(".xlsx") && TAB_RENAME_FILES.has(templateFile)) {
         buffer = await renameMonthTabs(buffer, yearEndMonth);
         buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
+      }
+
+      // The Payslips Admin sheet names the month tab each payroll month belongs
+      // on, which the printed payslip joins through, so it moves with the tabs.
+      if (yearEndMonth && sheetsConfig?.payslipsAdmin) {
+        buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
       }
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {
