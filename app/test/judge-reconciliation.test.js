@@ -195,7 +195,7 @@ describe("parseReport", () => {
 
   it("reads the status line and the compliance check rows", () => {
     expect(parsed.status).toBe("RECONCILES (with warnings)");
-    expect(checkCounts(parsed)).toEqual({ passed: 695, warnings: 1, failed: 0 });
+    expect(checkCounts(parsed)).toEqual({ passed: 947, warnings: 1, failed: 0 });
   });
 
   it("indexes each section by its row label, indentation and bold stripped", () => {
@@ -240,8 +240,8 @@ describe("buildIndicators for the Limited Company", () => {
   const text = indicatorText("ltd", "ltdVat", { vatRegistered: true });
 
   it("states the run status and the check counts", () => {
-    expect(text).toContain("Deterministic run: RECONCILES (with warnings). Checks: 695 passed, 1 warning, 0 failed.");
-    expect(text).toContain("Warned: CT600: tax payable against the working sheet's charge for the year.");
+    expect(text).toContain("Deterministic run: RECONCILES (with warnings). Checks: 947 passed, 1 warning, 0 failed.");
+    expect(text).toContain("Warned: Payslips print: the date the scenario paid that month's wages, which the payment date would carry.");
   });
 
   it("states both sides of the balance sheet and the difference between them", () => {
