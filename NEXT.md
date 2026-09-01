@@ -6,7 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing.
+Nothing. The coordinator batch (24 items) merged to main in PR #48; history lives in its
+merge commits. One operator step remains from it: the generate-commit refresh — the
+committed `packages/` are stale derived artifacts until it runs, and it clears the last
+reconciliation residue in the committed reports.
 
 ## Open items
 
