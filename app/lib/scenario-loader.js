@@ -63,6 +63,20 @@ export function fixedAssetAdditions(scenario, capitalCode) {
   return additions;
 }
 
+/**
+ * The officers the company registers carry: the book's own directors table
+ * where it declares one, and otherwise the employees the payroll marks as
+ * directors. A company officer is not always on the payroll -- a company
+ * secretary or a non-executive director draws no salary -- so a register
+ * built from the payroll alone leaves those officers off the record.
+ * @param {Object} scenario
+ * @returns {Array<{name: string, role: string, appointed?: string, resigned?: string}>}
+ */
+export function registerOfficers(scenario) {
+  if (scenario?.directors?.length > 0) return scenario.directors;
+  return (scenario?.employees || []).filter((employee) => employee.isDirector).map((employee) => ({ name: employee.name, role: "Director" }));
+}
+
 export function loadScenario(path) {
   return parseTOML(readFileSync(path, "utf8"));
 }

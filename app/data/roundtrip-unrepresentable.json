@@ -127,6 +127,222 @@
       "reason": "VAT is one book-wide rate, entered as a percentage on the first Sales month tab, so no row carries a rate of its own. SE and Ltd restate that book rate on every line; the single-file templates have no rate cell at all."
     }
   ],
-  "bookFieldsComment": "One entry per book.toml path a product's package cannot hold. The path is the dotted form flattenBook() writes, with empty brackets standing for every index of an array of tables (debtors[].invoice covers debtors[0] through debtors[n]). \"products\" names every product the absence applies to.",
-  "bookFields": []
+  "bookFieldsComment": "One entry per book.toml path a product's package cannot hold. The path is the dotted form flattenBook() writes, with empty brackets standing for every index of an array of tables (debtors[].invoice covers debtors[0] through debtors[n]) and \"*\" standing for a whole segment a table keys on something else (accounts.sales.*.diya-gl:column covers every sales account). \"products\" names every product the absence applies to; an entry that matches nothing a run left out throws, so a declaration cannot outlive the absence it describes.",
+  "bookFields": [
+    {
+      "path": "accounts.assets.*.accountMainDescription",
+      "products": ["se", "ltd"],
+      "reason": "The chart of accounts is what the package itself declares: the accounts its rows post to, plus the categories a transaction sheet heads an analysis column for. A fixed asset class the opening balance sheet leaves at nil reaches neither -- the opening journal skips a nil cell, and no sheet heads a column per balance sheet account -- so the account leaves nothing behind to name."
+    },
+    {
+      "path": "accounts.capital.*.accountMainDescription",
+      "products": ["ltd"],
+      "reason": "The dividends account carries no opening balance and no analysis column of its own: the year's dividend reaches the trial balance from the board minute, not from a coded row, so nothing on the sheets names the account it posts to."
+    },
+    {
+      "path": "accounts.liabilities.*.accountMainDescription",
+      "products": ["ltd"],
+      "reason": "A liability the opening balance sheet leaves at nil is skipped by the opening journal, and the balance sheet heads no column per account, so an account with no opening figure and no coded row leaves nothing behind to name."
+    },
+    {
+      "path": "accounts.sales.*.diya-gl:column",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Sales tab totals every income account in one Gross Sales Value column (F), with start-up grants beside it in G, and heads no analysis column per account. A row's own account travels in the carrier column instead, which is not a column the sheet totals."
+    },
+    {
+      "path": "creditors[].invoice",
+      "products": ["bst"],
+      "reason": "The Debtors & Creditors sheet gives each entry a name and an amount -- opening in columns B and C, closing in E and F -- and no invoice reference column beside either."
+    },
+    {
+      "path": "debtors[].invoice",
+      "products": ["bst"],
+      "reason": "The Debtors & Creditors sheet gives each entry a name and an amount -- opening in columns B and C, closing in E and F -- and no invoice reference column beside either."
+    },
+    {
+      "path": "documentInfo.creationDate",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "No sheet records when the book was written. The Admin dates are the accounting period's start and end, and a workbook's file timestamps are not part of what the workbook says."
+    },
+    {
+      "path": "employees[].niCategory",
+      "products": ["se", "ltd"],
+      "reason": "The Payslips Employee block's director flag and NI category share one cell: marking a director enters \"D\" there in place of the category letter, so a director's own category is not on the sheet to read back."
+    },
+    {
+      "path": "employees[].role",
+      "products": ["se", "ltd"],
+      "reason": "The Payslips Employee block carries a surname, forenames, a national insurance number, a start date, a pay frequency, a payroll number and an NI category. It has no cell for a job title."
+    },
+    {
+      "path": "entityInformation.diya-gl:basisOfAccounting",
+      "products": ["bst", "taxi", "se"],
+      "reason": "The self-employment return carries the basis as a tick box (\"If you used traditional accounting rather than cash basis to calculate your income and expenses, put 'X' in the box\"). An unticked box means the cash basis and an unfinished form alike, so a blank states nothing to read back."
+    },
+    {
+      "path": "entityInformation.diya-gl:basisOfAccounting",
+      "products": ["ltd"],
+      "reason": "Company accounts are drawn up on the accruals basis by law, so the Company package's sheets carry no basis cell at all."
+    },
+    {
+      "path": "entityInformation.diya-gl:cisRegistered",
+      "products": ["ltd"],
+      "reason": "The purchases journal keeps a CIS certificates column for the tax withheld from a sub-contractor. No sheet carries a flag for the company's own registration under the scheme."
+    },
+    {
+      "path": "entityInformation.diya-gl:nino",
+      "products": ["taxi"],
+      "reason": "The Taxi Driver Business Details sheet labels a unique taxpayer reference and nothing else about the trader's own identity; no sheet in the package takes a national insurance number."
+    },
+    {
+      "path": "entityInformation.diya-gl:vatRegistered",
+      "products": ["bst", "taxi"],
+      "reason": "The two single-file templates have no VAT rate cell. Their Sales tabs total a gross sales value with no rate beside it, so nothing on any sheet says whether the business charges VAT."
+    },
+    {
+      "path": "entityInformation.organizationTelephone",
+      "products": ["bst", "taxi"],
+      "reason": "The Business Details sheet takes a name, a description, an address, a town and a postcode, with no telephone box; and these two products ship no Salesinvoice workbook, whose letterhead is where the multi-file packages keep the number."
+    },
+    {
+      "path": "entityInformation.taxAuthorityIdentifier",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The field names the authority a return is filed with. Every one of these packages files with HMRC by construction and no sheet states it, so there is nothing on the workbook to read it back from."
+    },
+    {
+      "path": "entityInformation.taxRegistrationNumber",
+      "products": ["bst", "taxi", "se"],
+      "reason": "The self-employment return prints the unique taxpayer reference from a pair of boxes on the Business Details sheet (\"SE Short\"!O8 and R8 read O5 and R5), each holding part of it. The sheet states nowhere how the reference divides between the two, so two halves do not join back into the one reference the book declares."
+    },
+    {
+      "path": "stock.openingValue",
+      "products": ["ltd"],
+      "reason": "The Company Stock sheet takes a physical count against each month end and reads its own opening value off the opening balance sheet (D6 = OpenAccounts!E15). The opening stock is that balance sheet figure, which the export carries as openingBalances.stock; the Stock sheet states none of its own."
+    },
+    {
+      "path": "tax.capitalAllowances.annualInvestmentAllowance",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "The year file's annual_investment_allowance is the relief scale HMRC allows (1.00 = full relief up to the cap), not the schema's cap in pounds. The cap itself has no home in the app/data file the package was generated from, so reconstructing it would mean assuming today's figure."
+    },
+    {
+      "path": "tax.capitalAllowances.specialRateWDA",
+      "products": ["bst", "taxi", "se"],
+      "reason": "The self-employment year files declare one writing_down_allowance rate. The special rate pool is a Company distinction their capital allowance block does not draw."
+    },
+    {
+      "path": "tax.corporationTax.associatedCompanies",
+      "products": ["ltd"],
+      "reason": "No app/data year file carries a count of associated companies: it is a fact about the group a company sits in, not a rate the generator applied."
+    },
+    {
+      "path": "tax.incomeTax.additionalRate",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.additionalRateThreshold",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.basicRate",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.basicRateLimit",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.higherRate",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.higherRateThreshold",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.personalAllowance",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.incomeTax.personalAllowanceTaperThreshold",
+      "products": ["ltd"],
+      "reason": "app/data/ltd-<year>.toml carries corporation tax, employer NI and capital allowances. Income tax is the shareholder's, not the company's, and the Company year files declare none of its rates or bands."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployeeMainRate",
+      "products": ["bst", "se", "ltd"],
+      "reason": "No app/data year file carries the employee side of Class 1. The Company files carry an employer_ni block and the self-employment files carry Class 2 and Class 4, and the deduction a payslip states is entered on the payslip rather than worked out from a rate."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployeePrimaryThreshold",
+      "products": ["bst", "se", "ltd"],
+      "reason": "No app/data year file carries the employee side of Class 1. The Company files carry an employer_ni block and the self-employment files carry Class 2 and Class 4, and the deduction a payslip states is entered on the payslip rather than worked out from a threshold."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployeeUpperEarningsLimit",
+      "products": ["bst", "se", "ltd"],
+      "reason": "No app/data year file carries the employee side of Class 1. The Company files carry an employer_ni block and the self-employment files carry Class 2 and Class 4, and the deduction a payslip states is entered on the payslip rather than worked out from a limit."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployeeUpperRate",
+      "products": ["bst", "se", "ltd"],
+      "reason": "No app/data year file carries the employee side of Class 1. The Company files carry an employer_ni block and the self-employment files carry Class 2 and Class 4, and the deduction a payslip states is entered on the payslip rather than worked out from a rate."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployerRate",
+      "products": ["bst", "se"],
+      "reason": "The self-employment year files carry no employer_ni block: a sole trader's Admin sheet runs their own Class 2 and Class 4, not a payroll's employer contributions."
+    },
+    {
+      "path": "tax.nationalInsurance.class1EmployerSecondaryThreshold",
+      "products": ["bst", "se"],
+      "reason": "The self-employment year files carry no employer_ni block: a sole trader's Admin sheet runs their own Class 2 and Class 4, not a payroll's employer contributions."
+    },
+    {
+      "path": "tax.nationalInsurance.class2SmallProfitsThreshold",
+      "products": ["bst", "taxi", "se", "ltd"],
+      "reason": "No app/data year file carries the Class 2 small profits threshold; the files declare the weekly rate and the Class 4 limits, and the threshold below which Class 2 stops being due is not one of them."
+    },
+    {
+      "path": "tax.nationalInsurance.class2WeeklyRate",
+      "products": ["ltd"],
+      "reason": "Class 2 is a self-employed contribution. app/data/ltd-<year>.toml carries the employer side of Class 1 instead, so a Company package has no provenance for it."
+    },
+    {
+      "path": "tax.nationalInsurance.class4LowerProfits",
+      "products": ["ltd"],
+      "reason": "Class 4 is a self-employed contribution. app/data/ltd-<year>.toml carries the employer side of Class 1 instead, so a Company package has no provenance for it."
+    },
+    {
+      "path": "tax.nationalInsurance.class4MainRate",
+      "products": ["ltd"],
+      "reason": "Class 4 is a self-employed contribution. app/data/ltd-<year>.toml carries the employer side of Class 1 instead, so a Company package has no provenance for it."
+    },
+    {
+      "path": "tax.nationalInsurance.class4UpperProfits",
+      "products": ["ltd"],
+      "reason": "Class 4 is a self-employed contribution. app/data/ltd-<year>.toml carries the employer side of Class 1 instead, so a Company package has no provenance for it."
+    },
+    {
+      "path": "tax.nationalInsurance.class4UpperRate",
+      "products": ["ltd"],
+      "reason": "Class 4 is a self-employed contribution. app/data/ltd-<year>.toml carries the employer side of Class 1 instead, so a Company package has no provenance for it."
+    },
+    {
+      "path": "tax.nationalInsurance.employmentAllowance",
+      "products": ["bst", "se"],
+      "reason": "The employment allowance is a relief against an employer's Class 1 bill, and the self-employment year files carry no employer_ni block to state it in."
+    },
+    {
+      "path": "tax.vat.reducedRate",
+      "products": ["se", "ltd"],
+      "reason": "No app/data year file carries the reduced rate: the [vat] block declares the standard rate and the registration threshold, which are the two figures the workbooks use."
+    }
+  ]
 }

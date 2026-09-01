@@ -1262,7 +1262,10 @@ const ENTITY_CELLS = {
     organizationTown: "C10",
     organizationPostcode: "C12",
   },
-  se: { file: "Financialaccounts.xlsx", sheet: "Business Details", organizationIdentifier: "C5" },
+  // The SA103F front page runs label then entry down column C: C5 the
+  // taxpayer's name and C17, the merged box under the C16 "Description of
+  // business" label, the trade.
+  se: { file: "Financialaccounts.xlsx", sheet: "Business Details", organizationIdentifier: "C5", organizationDescription: "C17" },
   ltd: {
     "file": "Financialaccounts.xlsx",
     "sheet": "OpenAccounts",
@@ -1279,6 +1282,15 @@ const ENTITY_CELLS = {
     "taxRegistrationNumber": "O3",
   },
 };
+
+// The customer-facing invoice's letterhead, on Salesinvoice.xlsx's own
+// Business Details sheet: A8 heads the telephone number and A11 the VAT
+// registration number, each with its entry cell in column B. The VAT cell
+// ships a placeholder the guides tell an unregistered business to overwrite
+// with a single space, so it is read back only where the book's own rate
+// cell says the business charges VAT.
+const SALESINVOICE_ENTITY_CELLS = { organizationTelephone: "B8" };
+const SALESINVOICE_VAT_NUMBER_CELL = "B11";
 
 // The employer block the SE and Ltd Payslips workbook carries, which is where
 // the address reaches those two products' sheets.
@@ -1304,15 +1316,13 @@ const CHARGE_ROWS = [2, 3, 4, 5, 6];
 const CHARGE_COLUMNS = { date: "A", description: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
 const BOARD_MINUTE_CELLS = { boardMeetingDate: "F2", amount: "E4" };
 
-// Directors&Secretary runs one officer a row from row 2 (the writer's own
-// rows: 2 the first director, 3 the secretary, 4-8 further directors). A the
-// full name, D the capacity the writer or the template itself names them
-// under ("Director"/"Company Secretary"), F a resignation date. The sheet
-// carries no appointment date of its own -- a director who also holds shares
-// is dated and counted from the register of members instead, the same link
-// the writer draws when it fills DirectorsInterests' registered date.
+// Directors&Secretary runs one officer a row from row 2: A the full name, C
+// the date of appointment, D the capacity they were appointed in, F a
+// resignation date. Shares come from the register of members, which is the
+// same link the writer draws when it fills DirectorsInterests' registered
+// date.
 const DIRECTOR_SECRETARY_ROWS = [2, 3, 4, 5, 6, 7, 8];
-const DIRECTOR_SECRETARY_COLUMNS = { name: "A", capacity: "D", resigned: "F" };
+const DIRECTOR_SECRETARY_COLUMNS = { name: "A", appointed: "C", capacity: "D", resigned: "F" };
 
 // The OpenAccounts cells the Ltd opening balance sheet is entered in, as the
 // book's openingBalances table rather than as the journal OA_JOURNAL_MAP
@@ -1428,6 +1438,11 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
           : BST_PURCHASE_CODE_MAP;
 
   const accounts = {};
+  const declare = (section, code, account) => {
+    if (!accounts[section]) accounts[section] = {};
+    accounts[section][code] = account;
+  };
+
   for (const code of new Set(lines.map((line) => String(line.accountMainID)))) {
     // The chart a product codes its purchases from says which accounts are
     // purchases, whatever range they sit in: the Taxi Driver chart keeps its
@@ -1435,19 +1450,46 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
     const section = purchaseCodes[code] ? "purchases" : accountSection(code);
     const analysis =
       section === "sales" ? salesHeadings[salesCodes[code]] : section === "purchases" ? purchaseHeadings[purchaseCodes[code]] : null;
-    const named =
+    const name =
       analysis?.heading ??
       (section === "bank" ? BANK_ACCOUNT_NAMES[code] : OA_JOURNAL_MAP.find((mapping) => mapping.accountMainID === code)?.comment);
-    if (!accounts[section]) accounts[section] = {};
     // The schema requires a description on every account. A sheet that names
     // no analysis column for a code says nothing about it, and the code is
     // then all the account has.
-    const account = { accountMainDescription: named || `Account ${code}` };
+    const account = { accountMainDescription: name || `Account ${code}` };
+    // A code in the bank range is a bank account because the package keeps a
+    // bank workbook for it, which is the same fact that put it in this
+    // section.
+    if (section === "bank") account.accountType = "bank";
     // The column the sheet totals this account in, which is what makes the
     // account's own place on the transaction sheet part of the book.
     if (analysis) account["diya-gl:column"] = analysis.column;
-    accounts[section][code] = account;
+    declare(section, code, account);
   }
+
+  // The transaction sheets name their own categories whether or not the year
+  // put a row in one: a month tab's row 4 holds a code letter per analysis
+  // column and rows 2 and 3 its heading. An account with no transaction is
+  // still an account the package carries, so the chart takes it from the
+  // column that stands for it. Several accounts share one code letter on the
+  // BST, SE and Ltd charts, and a column headed with a shared letter says
+  // nothing about which of them it stands for, so only a letter one account
+  // owns is declared this way.
+  for (const [section, codeMap, headings] of [
+    ["sales", salesCodes, salesHeadings],
+    ["purchases", purchaseCodes, purchaseHeadings],
+  ]) {
+    const soleAccountForLetter = new Map();
+    for (const [code, letter] of Object.entries(codeMap)) {
+      soleAccountForLetter.set(letter, soleAccountForLetter.has(letter) ? undefined : String(code));
+    }
+    for (const [letter, analysis] of Object.entries(headings)) {
+      const code = soleAccountForLetter.get(letter);
+      if (!code || accounts[section]?.[code]) continue;
+      declare(section, code, { accountMainDescription: analysis.heading || `Account ${code}`, "diya-gl:column": analysis.column });
+    }
+  }
+
   return accounts;
 }
 
@@ -1676,11 +1718,35 @@ function employeeIdsByName(payrollLines) {
   return ids;
 }
 
+/**
+ * The tax code each employee's payslip rows carry, keyed by the name beside
+ * it. The code is a standing fact the book states once, so the first month
+ * an employee's row states one settles it.
+ * @param {Object} payslipsZip
+ * @returns {Promise<Map<string, string>>}
+ */
+async function taxCodesByEmployeeName(payslipsZip) {
+  const sheetMap = await buildSheetMap(payslipsZip);
+  const sharedStrings = await loadSharedStrings(payslipsZip);
+  const codes = new Map();
+  for (const [monthIndex, sheetName] of monthSheetsInPeriodOrder(sheetMap).entries()) {
+    const xml = await payslipsZip.file(sheetMap.get(sheetName)).async("string");
+    for (const row of payslipsMonthEntryRows(monthIndex)) {
+      const name = textAt(xml, `${PAYSLIPS_ENTRY_COLUMNS.name}${row}`, sharedStrings);
+      if (!name || codes.has(name)) continue;
+      const taxCode = textAt(xml, `${PAYSLIPS_ENTRY_COLUMNS.taxCode}${row}`, sharedStrings);
+      if (taxCode) codes.set(name, taxCode);
+    }
+  }
+  return codes;
+}
+
 async function employeesFrom(payslipsZip, payrollLines) {
   const sheet = await openSheet(payslipsZip, "Employee");
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
   const idsByName = employeeIdsByName(payrollLines);
+  const taxCodes = await taxCodesByEmployeeName(payslipsZip);
   const employees = [];
   for (const base of EMPLOYEE_BASE_ROWS) {
     const surname = textAt(xml, `D${base + EMPLOYEE_OFFSETS.surname}`, sharedStrings);
@@ -1699,10 +1765,9 @@ async function employeesFrom(payslipsZip, payrollLines) {
       // carries it.
       grossPay: 0,
       payFrequency: frequency === "W" ? "weekly" : "monthly",
-      // No cell carries a tax code: the monthly block's own "Tax Code"
-      // column (D, labelled on every month tab's row 3) is never filled by
-      // the writer, always a placeholder space.
-      taxCode: "",
+      // The schema requires a tax code on every employee, so a payslip block
+      // that states none leaves the placeholder space the template ships.
+      taxCode: taxCodes.get(name) || "",
       isDirector: category === "D",
     };
     assign(employee, "startDate", dateAt(xml, `D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`, sharedStrings));
@@ -1746,12 +1811,13 @@ async function registersFrom(companySecretaryZip) {
       const name = textAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, sharedStrings);
       if (!name) continue;
       const director = { name, role: textAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`, sharedStrings) || "Director" };
-      // The sheet keeps no appointment date of its own; a director who also
-      // holds shares was appointed the day the register of members dates
-      // their holding.
+      assign(director, "appointed", dateAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`, sharedStrings));
+      // The register of members counts the shares an officer holds, and
+      // dates the holding on a sheet that leaves its own appointment cell
+      // empty.
       const holding = (registers.members || []).find((member) => member.name === name);
       if (holding) {
-        assign(director, "appointed", holding.acquiredDate);
+        if (director.appointed === undefined) assign(director, "appointed", holding.acquiredDate);
         assign(director, "shares", holding.shares);
       }
       assign(director, "resigned", dateAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.resigned}${row}`, sharedStrings));
@@ -1787,6 +1853,79 @@ async function registersFrom(companySecretaryZip) {
   }
 
   return registers;
+}
+
+// Where a named debtor or creditor balance is entered, per product, ledger
+// and timing. SE and Ltd keep a sheet per ledger per timing in the Sales and
+// Purchases workbooks, each running one entry a row from row 5 with B the
+// counterparty, C the invoice reference and the net amount in the column the
+// sheet totals (SE G1 = SUM(G5:G300), Ltd H1 = SUM(H5:H300)). The Basic Sole
+// Trader keeps both ledgers on one Debtors & Creditors sheet, opening on the
+// left (B the name, C the amount) and closing on the right (E and F), three
+// debtor rows from row 5 and four creditor rows from row 12, with no invoice
+// column beside either. The Taxi package keeps no named ledger at all.
+const LEDGER_ENTRY_ROWS = Array.from({ length: 50 }, (unused, index) => 5 + index);
+const BST_LEDGER_SHEET = "Debtors & Creditors";
+const LEDGER_BLOCKS = {
+  bst: {
+    debtors: {
+      opening: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "B", amount: "C" },
+      closing: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "E", amount: "F" },
+    },
+    creditors: {
+      opening: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "B", amount: "C" },
+      closing: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "E", amount: "F" },
+    },
+  },
+  se: {
+    debtors: {
+      opening: { file: "Sales.xlsx", sheet: "OpeningDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
+      closing: { file: "Sales.xlsx", sheet: "ClosingDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
+    },
+    creditors: {
+      opening: { file: "Purchases.xlsx", sheet: "OpeningCreditors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
+      closing: { file: "Purchases.xlsx", sheet: "ClosingCreditors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
+    },
+  },
+  ltd: {
+    debtors: {
+      opening: { file: "Sales.xlsx", sheet: "OpeningDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "H" },
+      closing: { file: "Sales.xlsx", sheet: "ClosingDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "H" },
+    },
+    creditors: {
+      opening: { file: "Purchases.xlsx", sheet: "OpeningCreditors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "H" },
+      closing: { file: "Purchases.xlsx", sheet: "ClosingCreditors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "H" },
+    },
+  },
+};
+
+/**
+ * One named ledger the package carries, in the order the book declares it:
+ * every opening entry the sheet names, then every closing one.
+ * @param {string} sourceDir - the populated package
+ * @param {Object} hubZip - the single-file workbook, where the ledger lives on it
+ * @param {string} product
+ * @param {string} ledger - debtors or creditors
+ */
+async function ledgerFrom(sourceDir, hubZip, product, ledger) {
+  const timings = LEDGER_BLOCKS[product]?.[ledger];
+  if (!timings) return [];
+
+  const entries = [];
+  for (const [timing, block] of Object.entries(timings)) {
+    const zip = block.file ? await openWorkbook(sourceDir, block.file) : hubZip;
+    const sheet = zip ? await openSheet(zip, block.sheet) : null;
+    if (!sheet) continue;
+    const { xml, sharedStrings } = sheet;
+    for (const row of block.rows) {
+      const counterparty = textAt(xml, `${block.counterparty}${row}`, sharedStrings);
+      if (!counterparty) continue;
+      const entry = { counterparty, amount: numberAt(xml, `${block.amount}${row}`, sharedStrings) ?? 0, timing };
+      if (block.invoice) assign(entry, "invoice", textAt(xml, `${block.invoice}${row}`, sharedStrings));
+      entries.push(entry);
+    }
+  }
+  return entries;
 }
 
 async function stockFrom(hubZip, product) {
@@ -1849,6 +1988,19 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     entityInformation["diya-gl:vatRegistered"] = numberAt(salesSheet.xml, vatRateCell, salesSheet.sharedStrings) > 0;
   }
 
+  if (multiFile) {
+    const salesinvoiceZip = await openWorkbook(sourceDir, "Salesinvoice.xlsx");
+    const letterhead = salesinvoiceZip ? await openSheet(salesinvoiceZip, "Business Details") : null;
+    if (letterhead) {
+      for (const [field, cell] of Object.entries(SALESINVOICE_ENTITY_CELLS)) {
+        if (entityInformation[field] === undefined) assign(entityInformation, field, textAt(letterhead.xml, cell, letterhead.sharedStrings));
+      }
+      if (entityInformation["diya-gl:vatRegistered"]) {
+        assign(entityInformation, "diya-gl:vatNumber", textAt(letterhead.xml, SALESINVOICE_VAT_NUMBER_CELL, letterhead.sharedStrings));
+      }
+    }
+  }
+
   const adminSheet = await openSheet(hubZip, "Admin");
   const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
 
@@ -1894,6 +2046,11 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
 
   const stock = await stockFrom(hubZip, product);
   if (stock) book.stock = stock;
+
+  for (const ledger of ["debtors", "creditors"]) {
+    const entries = await ledgerFrom(sourceDir, hubZip, product, ledger);
+    if (entries.length > 0) book[ledger] = entries;
+  }
 
   const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;

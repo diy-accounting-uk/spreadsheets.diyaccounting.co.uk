@@ -44,6 +44,7 @@ import {
   payslipsWagesPaidCell,
 } from "../payslips-layout.js";
 import { addMonths, endOfMonth, SHEET_BLANK } from "./shared.js";
+import { registerOfficers } from "../scenario-loader.js";
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
@@ -207,11 +208,9 @@ const PAYROLL_FIRST_WEEK_DAYS = 5;
 const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
 
 const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-// The register of directors and secretary keeps the first director on row 2
-// and the company secretary on row 3, so a second director starts at row 4.
-// The register of directors' interests runs a director a row from row 2.
-const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
-const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+// The register of directors and secretary runs one officer a row from row 2,
+// and the register of directors' interests one a row from row 2 as well.
+const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const SHARE_NOMINAL_VALUE = 1;
 const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
@@ -934,7 +933,7 @@ const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
 // One month tab's monthly payroll block: an employee a row from block row +
 // 3, with the wages-paid date above them. A row the scenario has no employee
 // for keeps the three columns the template ships as a literal zero and stays
-// blank in the other four, which is what the workbook itself carries there.
+// blank in the other five, which is what the workbook itself carries there.
 function buildPayslipsMonthTab(monthIndex, entries) {
   const sheet = {};
   const columns = PAYSLIPS_ENTRY_COLUMNS;
@@ -945,6 +944,7 @@ function buildPayslipsMonthTab(monthIndex, entries) {
       return;
     }
     if (entry.name) sheet[`${columns.name}${row}`] = entry.name;
+    if (entry.taxCode) sheet[`${columns.taxCode}${row}`] = entry.taxCode;
     sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
     sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
     sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
@@ -1065,21 +1065,22 @@ function buildCompanySecretary(scenario) {
   });
 
   // The register of directors and secretary, and the register of directors'
-  // interests. The directors are the scenario's own employees marked
-  // isDirector, the officer address is the business's own, and a director's
-  // interest is dated from the day the register of members says they acquired
-  // their shares. Row 2 already carries the template's "Director" capacity
-  // text; a second director has to state its own, which nothing reads back.
+  // interests: every officer the book declares, in the order it declares
+  // them, with the business's own address and the capacity each was
+  // appointed in. A director's interest is dated from the day the register of
+  // members says they acquired their shares.
   const officers = {};
   const interests = {};
-  const directors = (scenario.employees || []).filter((employee) => employee.isDirector);
+  const directors = registerOfficers(scenario);
   const business = scenario.business || {};
   const officerAddress = [business.address, business.town, business.postcode].filter(Boolean).join(", ") || undefined;
   directors.forEach((director, index) => {
-    const officerRow = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+    const officerRow = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
     if (officerRow !== undefined) {
       officers[`A${officerRow}`] = director.name;
       if (officerAddress) officers[`B${officerRow}`] = officerAddress;
+      if (director.appointed) officers[`C${officerRow}`] = serialOf(parseDate(director.appointed));
+      officers[`D${officerRow}`] = director.role || "Director";
     }
     const interestRow = DIRECTORS_INTERESTS_ROWS[index];
     if (interestRow === undefined) return;

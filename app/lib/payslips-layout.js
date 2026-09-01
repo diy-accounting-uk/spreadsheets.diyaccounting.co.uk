@@ -39,11 +39,13 @@ export const payslipsWagesPaidCell = (monthIndex) => `M${monthlyPayrollBlockRow(
  */
 export const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
 
-// The columns one employee's payslip row carries: F the name, M gross pay, N
-// income tax, O employee NI, R net pay, S the payslip's own reference (a
-// blank spacer in the template that no formula reads) and T employer NI, the
-// entry cell the block's own total row sums.
+// The columns one employee's payslip row carries: D the tax code (headed
+// "Tax Code" in D3, which heads every weekly and monthly block on the tab),
+// F the name, M gross pay, N income tax, O employee NI, R net pay, S the
+// payslip's own reference (a blank spacer in the template that no formula
+// reads) and T employer NI, the entry cell the block's own total row sums.
 export const PAYSLIPS_ENTRY_COLUMNS = {
+  taxCode: "D",
   name: "F",
   grossPay: "M",
   incomeTax: "N",

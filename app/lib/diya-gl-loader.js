@@ -222,6 +222,8 @@ export function diyaGlToScenario(book, lines, product) {
   if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
   if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
   if (entity["diya-gl:vatNumber"]) business.vat_number = entity["diya-gl:vatNumber"];
+  if (entity["diya-gl:companyNumber"]) business.company_number = entity["diya-gl:companyNumber"];
+  if (entity.organizationTelephone) business.phone = entity.organizationTelephone;
 
   // Build expected values
   const expected = { total_sales: totalSales };
@@ -336,6 +338,13 @@ export function diyaGlToScenario(book, lines, product) {
   // Payroll (SE/Ltd only) — group by month
   const payrollLines = filteredLines.filter((l) => l.sourceJournalID === "payroll");
   if (payrollLines.length > 0) {
+    // The tax code is a standing fact about the employee, which the book
+    // states once on the employees table and the payslip row carries in its
+    // own Tax Code column.
+    const taxCodeByEmployee = new Map();
+    for (const employee of book.employees || []) {
+      if (employee.taxCode) taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+    }
     const payrollByMonth = {};
     for (const line of payrollLines) {
       const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
@@ -349,6 +358,7 @@ export function diyaGlToScenario(book, lines, product) {
         employerNI: line["diya-gl:employerNI"] || 0,
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
+        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || "",
         accountMainID: line.accountMainID,
         reference: line.documentReference,
       });
@@ -409,6 +419,19 @@ export function diyaGlToScenario(book, lines, product) {
       terms: charge.terms,
       board_meeting: charge.boardMeetingDate,
     }));
+  }
+  // The officers Companies House knows about, which is not the payroll: the
+  // book's directors table names a secretary and a non-executive director
+  // the company never pays through PAYE, and without this they would reach
+  // no register at all.
+  if (product === "ltd" && book.directors?.length > 0) {
+    scenario.directors = book.directors.map((director) => {
+      const officer = { name: director.name, role: director.role };
+      if (director.appointed !== undefined) officer.appointed = director.appointed;
+      if (director.resigned !== undefined) officer.resigned = director.resigned;
+      if (director.shares !== undefined) officer.shares = director.shares;
+      return officer;
+    });
   }
   if (product === "ltd" && book.members?.length > 0) {
     scenario.members = book.members.map((member) => {

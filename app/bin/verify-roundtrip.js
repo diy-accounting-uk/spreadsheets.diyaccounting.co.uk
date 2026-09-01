@@ -427,11 +427,25 @@ function bookPathPattern(path) {
   return path.replace(/\[\d+\]/g, "[]");
 }
 
+// A pattern may also put "*" where a whole dotted segment goes, which is what
+// a table keyed by something other than an index needs: the chart of accounts
+// keys on the account code, so accounts.sales.*.diya-gl:column stands for
+// every sales account at once.
+const WILDCARD_SEGMENT = "*";
+
+function bookPathMatcher(pattern) {
+  const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped.split("\\*").join("[^.]+")}$`);
+}
+
 function validateBookFieldEntry(entry, index) {
   const where = `roundtrip-unrepresentable.json bookFields[${index}]${entry?.path ? ` ("${entry.path}")` : ""}`;
   if (typeof entry?.path !== "string" || entry.path.length === 0) throw new Error(`${where} has no path`);
   if (entry.path !== bookPathPattern(entry.path)) {
     throw new Error(`${where} names an array index; a book path pattern writes empty brackets, e.g. "debtors[].invoice"`);
+  }
+  if (entry.path.split(".").some((segment) => segment.includes(WILDCARD_SEGMENT) && segment !== WILDCARD_SEGMENT)) {
+    throw new Error(`${where} puts "*" inside a segment; a wildcard stands for a whole segment, e.g. "accounts.sales.*.diya-gl:column"`);
   }
   if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
     throw new Error(`${where} has a malformed "products" list`);
@@ -441,22 +455,31 @@ function validateBookFieldEntry(entry, index) {
 
 /**
  * The book.toml paths the checked-in inventory says a product's package has
- * nowhere to hold, keyed by path pattern with the reason behind each. A
- * fixture path the export does not carry is scored as declared when its
- * pattern is named here, and as missing when it is not, so a field is never
- * silently dropped from the score.
+ * nowhere to hold, keyed by path pattern with the matcher for each. A fixture
+ * path the export does not carry is scored as declared when a pattern here
+ * matches it, and as missing when none does, so a field is never silently
+ * dropped from the score.
  * @param {string} product
  * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
- * @returns {Map<string, string>} path pattern -> reason
+ * @returns {Map<string, RegExp>} path pattern -> what it matches
  */
 export function bookFieldScope(product, inventory) {
   const declared = new Map();
   const entries = inventory?.bookFields ?? [];
   entries.forEach((entry, index) => validateBookFieldEntry(entry, index));
   for (const entry of entries) {
-    if (entry.products.includes(product)) declared.set(entry.path, entry.reason);
+    if (entry.products.includes(product)) declared.set(entry.path, bookPathMatcher(entry.path));
   }
   return declared;
+}
+
+// The declaration pattern covering a path, or undefined where none does.
+function declarationFor(scope, path) {
+  const normalised = bookPathPattern(path);
+  for (const [pattern, matches] of scope.bookPaths) {
+    if (matches.test(normalised)) return pattern;
+  }
+  return undefined;
 }
 
 /**
@@ -615,10 +638,15 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   const bookDeclared = [];
   const bookDiffering = [];
   let bookEqual = 0;
+  const matchedDeclarations = new Set();
   for (const [path, value] of fixtureFlat) {
     if (!exportedFlat.has(path)) {
-      if (scope.bookPaths.has(bookPathPattern(path))) bookDeclared.push(path);
-      else bookMissing.push(path);
+      const declaration = declarationFor(scope, path);
+      if (declaration === undefined) bookMissing.push(path);
+      else {
+        matchedDeclarations.add(declaration);
+        bookDeclared.push(path);
+      }
     } else if (exportedFlat.get(path) === value) bookEqual++;
     else bookDiffering.push(path);
   }
@@ -628,9 +656,8 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   // export has started carrying the field, or the path was renamed or
   // mistyped. Either way the reason it states no longer describes anything,
   // so it throws rather than sitting in the file counting for nothing.
-  const declaredPatterns = new Set(bookDeclared.map(bookPathPattern));
   for (const pattern of scope.bookPaths.keys()) {
-    if (declaredPatterns.has(pattern)) continue;
+    if (matchedDeclarations.has(pattern)) continue;
     throw new Error(
       `roundtrip-unrepresentable.json declares book path "${pattern}" absent for ${scope.product ?? "this product"}, ` +
         `but this run's export carries it (or the fixture no longer states it) -- the declaration matches nothing`,
