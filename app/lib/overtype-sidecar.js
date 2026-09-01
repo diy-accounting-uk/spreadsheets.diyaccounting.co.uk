@@ -92,7 +92,8 @@ async function templateFormulasAt(templatePath) {
  * @param {Buffer} workbookBuffer - the customer's xlsx
  * @param {Object} [options]
  * @param {Object} [options.extractionMap] - a bstExtractionMap() the export
- *   recorded its rows into, for line and book-field attribution
+ *   recorded its rows into, so a cell on a transaction row can name the line
+ *   that row produced
  * @param {string} [options.templatePath] - the baseline workbook
  * @param {Object} [options.reportLabels] - a product module's cellLabels()
  * @param {Function} [options.isInputCell] - which cells are the customer's to fill
