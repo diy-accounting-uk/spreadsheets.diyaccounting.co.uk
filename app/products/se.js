@@ -914,15 +914,33 @@ export const CELL_MAP = [
   // ── Admin (generator-injected tax data) — cell positions verified against
   // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
   // SE's income tax band cells sit one row above BST's (M11/N12/N13 rather
-  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17.
+  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17. The gl
+  // mapping is the book field a cell states where the schema has one; the
+  // band start, the AIA scale and the two mileage band edges have no schema
+  // field of their own, and the export reconstructs the whole tax table from
+  // the year file the package names rather than from any of these cells.
+  // They stay in this map because it is also the read scope: both engines
+  // publish exactly the cells named here, and checkCompliance reads these
+  // against the tax data the package was generated from.
   ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
   ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
   ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
   ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                       "tax.incomeTax.basicRateLimit",            "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                    "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "N13", "Higher Band End",                      "tax.incomeTax.additionalRateThreshold",   "Admin (Generator Injected)", 0],
   ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits", "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",            "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",             "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",             "tax.mileage.carOver10000",                "Admin (Generator Injected)", 0],
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
   ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];
