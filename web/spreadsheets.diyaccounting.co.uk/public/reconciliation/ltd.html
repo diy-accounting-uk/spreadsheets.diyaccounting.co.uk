@@ -78,14 +78,14 @@
           <li><strong>Featured scenario:</strong> ltd-scenario-full (Precision Code Ltd - full)</li>
           <li><strong>Year end:</strong> 2027-10-31</li>
           <li><strong>Checks:</strong> 1018 passed, 1 warnings, 0 failed</li>
-          <li><strong>Reconciliation runs published:</strong> 95</li>
+          <li><strong>Reconciliation runs published:</strong> 93</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators line up with the headline: turnover net of VAT and disposals matches scale, balance sheet and trial balance balance, VAT boxes are non-nil for a registered business, and tax and profit bridge reconcile with zero residue. Only the named payslip-date warning and a high gross margin are worth a glance.</p>
+          <p>Indicators line up with the headline: VAT-registered with all four quarters non-nil, net assets equal shareholders' funds, audit cell and bridge residue zero, and tax charged on a positive chargeable profit at a sensible scale. Only cosmetic notes on the margin and a -0.00 presentation.</p>
           <ul>
-            <li><strong>trading margin 0.94</strong> (Directors' report): gross profit 322,496.67 on turnover 341,283.33 implies almost no cost of sales for a consultancy — plausible for services but worth a glance [note]</li>
-            <li><strong>Payslips print date warning</strong> (Deterministic run): already named by the run; payment date on payslips only [note]</li>
+            <li><strong>trading margin 0.94</strong> (Directors' report): gross profit 322,496.67 on turnover 341,283.33 implies almost no cost of sales for a consultancy with 3 payroll staff; worth a glance but not inconsistent with the stated journals [note]</li>
+            <li><strong>&quot;still owes -0.00 to the members&quot;</strong> (Cash at bank and in hand): negative-zero presentation on the members' balance; cosmetic only [note]</li>
           </ul>
           <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-01. The arithmetic checks below run first and decide the status.</p>
         </div>
@@ -93,17 +93,15 @@
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Year end</th><th>Period</th><th>Scenario</th><th>Status</th></tr></thead>
 <tbody>
+<tr><td>2027-10-31</td><td>Oct27</td><td>ltd-brickwork-pro-nonvat</td><td>RECONCILES (with warnings)</td></tr>
+<tr><td>2027-10-31</td><td>Oct27</td><td>ltd-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-10-31</td><td>Oct27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2027-09-30</td><td>Sep27</td><td>ltd-brickwork-pro-nonvat</td><td>RECONCILES</td></tr>
-<tr><td>2027-09-30</td><td>Sep27</td><td>ltd-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-09-30</td><td>Sep27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-08-31</td><td>Aug27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-07-31</td><td>Jul27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-06-30</td><td>Jun27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-05-31</td><td>May27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-04-30</td><td>Apr27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2027-03-31</td><td>Mar27</td><td>ltd-brickwork-pro-nonvat</td><td>RECONCILES</td></tr>
-<tr><td>2027-03-31</td><td>Mar27</td><td>ltd-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-03-31</td><td>Mar27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-02-28</td><td>Feb27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-01-31</td><td>Jan27</td><td>ltd-scenario-full</td><td>RECONCILES (with warnings)</td></tr>
