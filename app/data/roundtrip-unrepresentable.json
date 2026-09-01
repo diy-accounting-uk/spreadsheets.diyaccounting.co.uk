@@ -1,5 +1,6 @@
 {
-  "comment": "Fields a diya-gl line carries that the Excel packages have nowhere to put, one entry per field with the reach it applies to and what the sheets do instead. An entry names its reach with exactly one of \"products\" (every block of that product) or \"blocks\" (only the named product/block pairs, block being a line's own scope key from verify-roundtrip.js's lineScopeBlock() -- ordinarily its sourceJournalID, except a bank block opening-balance line, which scopes to \"bank-opening-balance\" so a declaration can name it without blanking the ordinary bank rows sharing its sourceJournalID); a field can carry several entries, e.g. one product-wide and one block-scoped for a different product, as long as no single entry mixes the two. EQ2 counts these apart from the fields the export simply drops, so the two are never confused. An entry leaves this file when a sheet gains a column for the field and the writer fills it.",
+  "comment": "What the Excel packages have nowhere to put, in two sections: \"fields\", the fields a diya-gl line carries, and \"bookFields\", the paths a book.toml carries. Both name a reach and what the sheets do instead, and EQ2 counts both apart from what the export simply drops, so a real loss is never confused with a structural absence. An entry leaves this file when a sheet gains a cell for it and the writer fills it -- verify-roundtrip.js throws on a declaration that no longer matches anything, so a stale entry cannot sit here counting for nothing.",
+  "fieldsComment": "One entry per line field. An entry names its reach with exactly one of \"products\" (every block of that product) or \"blocks\" (only the named product/block pairs, block being a line's own scope key from verify-roundtrip.js's lineScopeBlock() -- ordinarily its sourceJournalID, except a bank block opening-balance line, which scopes to \"bank-opening-balance\" so a declaration can name it without blanking the ordinary bank rows sharing its sourceJournalID); a field can carry several entries, e.g. one product-wide and one block-scoped for a different product, as long as no single entry mixes the two.",
   "fields": [
     {
       "field": "diya-gl:assetID",
@@ -125,5 +126,7 @@
       "products": ["bst", "taxi", "se", "ltd"],
       "reason": "VAT is one book-wide rate, entered as a percentage on the first Sales month tab, so no row carries a rate of its own. SE and Ltd restate that book rate on every line; the single-file templates have no rate cell at all."
     }
-  ]
+  ],
+  "bookFieldsComment": "One entry per book.toml path a product's package cannot hold. The path is the dotted form flattenBook() writes, with empty brackets standing for every index of an array of tables (debtors[].invoice covers debtors[0] through debtors[n]). \"products\" names every product the absence applies to.",
+  "bookFields": []
 }
