@@ -6,7 +6,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Nothing. The coordinator batch (24 items) merged to main in PR #48; history lives in its
+**Book read-back batch** — the three `book.toml` read-back tracks from
+`PLAN_ROUNDTRIP_FIDELITY.md`, coordinated on `claude/book-readback` (draft PR back to main).
+Shared exit criterion: every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json`
+reaches zero, with the decided-out fields (per-contact ledgers, any other structural absence)
+held as declared absences with reasons, never silently closed.
+
+- [ ] registers-and-employees (Sonnet, worktree agent) — started
+- [ ] rates-by-provenance (Sonnet, worktree agent) — started
+- [ ] asset-attributes (Opus) — waits on wave 1
+- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks The coordinator batch (24 items) merged to main in PR #48; history lives in its
 merge commits. One operator step remains from it: the generate-commit refresh — the
 committed `packages/` are stale derived artifacts until it runs, and it clears the last
 reconciliation residue in the committed reports.
