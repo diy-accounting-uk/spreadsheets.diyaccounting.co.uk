@@ -22,9 +22,13 @@
 
 import { PAYROLL_WEEKS_PER_MONTH, PAYSLIP_PRINT_SHEET, PAYSLIP_PRINT_CELLS } from "./payslips-layout.js";
 
-export const PAYSLIPS_EMPLOYEE_SHEET = "Employee";
-export const PAYSLIPS_ADMIN_SHEET = "Admin";
-export const PAYSLIPS_PAYMENT_SHEET = "Payment";
+const PAYSLIPS_EMPLOYEE_SHEET = "Employee";
+const PAYSLIPS_ADMIN_SHEET = "Admin";
+const PAYSLIPS_PAYMENT_SHEET = "Payment";
+
+// The twelve month tabs are whichever sheets carry a month's name, in workbook
+// order -- the names move with the package's year end, their order does not.
+const MONTH_TAB_NAMES = new Set(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
 
 // The Admin daily calendar: B2 is the payroll year's first day and every row
 // below it one day later, down to the last row the chain reaches.
@@ -475,5 +479,3 @@ export function rollPayslipsCachedDateChain(sheetXmls, startYear, sharedStrings,
   }
   return rolled;
 }
-
-const MONTH_TAB_NAMES = new Set(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
