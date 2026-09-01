@@ -264,10 +264,12 @@ the sidecar itself.
 **In flight** on `claude/bst-cli-phase-1` (off `claude/book-readback-2`; this block is the
 phase's tracking surface — NEXT.md stays with the batch branch):
 
-- [ ] Track A — the file surface (Sonnet, worktree agent) — dispatched
+- [x] Track A — landed (`64838188`, merged): `--file` mode with staging, the `export-bst`
+  alias, `report.json` in the same run, and the anchor guard (26 sheets, 13 header labels)
+  failing by name with no stack trace; byte-for-byte with `--source-dir` proven.
 - [x] Track B — landed (`1913e709`, merged): 18 tests across the three fixtures, all four
   cases anchored on real lines, breakability demonstrated.
-- [ ] Track C — the overtype sidecar (Opus) — waits on A
+- [ ] Track C — the overtype sidecar (Opus, worktree agent) — dispatched
 - [ ] closing ladder (coordinator) — waits on the tracks
 - [ ] phase remainder, surfaced by Track B: `diya-gl-loader.js:139-151` hardcodes
   `BST_PURCHASE_CODE_MAP` regardless of the book's own declared chart — sp-sixty's
