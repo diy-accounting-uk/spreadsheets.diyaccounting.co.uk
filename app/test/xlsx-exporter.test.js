@@ -1203,3 +1203,69 @@ describe("extractBook — the named ledgers", () => {
     expect(after.debtors[1]).toEqual(before.debtors[1]);
   });
 });
+
+describe("extractBook — the Schedule's asset attributes and disposals", () => {
+  const VAN_BOUGHT = 44562; // 2022-01-01
+  const VAN_SOLD = 45777; // 2025-04-30
+  const MOTOR_EXISTING_ROW = 50;
+
+  function scheduleWithVan(overrides = {}) {
+    return {
+      // The class block's own rate cell, which every asset row in the block
+      // reads (H50 = H$43 on the shipped template).
+      H43: 0.25,
+      B50: VAN_BOUGHT,
+      C50: "Van (2.5 years old)",
+      E50: 30000,
+      F50: 9828,
+      H50: { formula: "H$43", value: 0.25 },
+      O50: 24000,
+      U50: VAN_SOLD,
+      V50: 12500,
+      ...overrides,
+    };
+  }
+
+  it("reads an asset's purchase date, depreciation rate and disposal back off its own row", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.fixedAssets).toEqual([
+      {
+        assetID: "FA-0001",
+        class: "motorVehicles",
+        cost: 30000,
+        description: "Van (2.5 years old)",
+        accumulatedDepreciation: 9828,
+        taxWrittenDownValue: 24000,
+        acquiredDate: "2022-01-01",
+        depreciationRate: 0.25,
+        disposedDate: "2025-04-30",
+        disposalProceeds: 12500,
+      },
+    ]);
+  });
+
+  it("breaks only the disposal proceeds a corrupted cell carries", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Fixedassets.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Schedule");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="V${MOTOR_EXISTING_ROW}"><v>12500</v></c>`, `<c r="V${MOTOR_EXISTING_ROW}"><v>3</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.fixedAssets[0].disposalProceeds).toBe(3);
+    expect({ ...after.fixedAssets[0], disposalProceeds: 12500 }).toEqual(before.fixedAssets[0]);
+  });
+
+  it("leaves the disposal fields off an asset the year did not sell", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan({ U50: undefined, V50: undefined }) });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect("disposedDate" in book.fixedAssets[0]).toBe(false);
+    expect("disposalProceeds" in book.fixedAssets[0]).toBe(false);
+    expect(book.fixedAssets[0].depreciationRate).toBe(0.25);
+  });
+});

@@ -835,20 +835,50 @@ const SCHEDULE_EXISTING_ASSET_ROWS = {
   ],
 };
 
-const SCHEDULE_ASSET_COLUMNS = { description: "C", cost: "E", accumulatedDepreciation: "F", taxWrittenDownValue: "O" };
-const SCHEDULE_DISPOSAL_COLUMNS = ["U", "V"];
+// The Schedule heads its own columns in rows 1 and 2: B "Date Asset
+// Purchased", C "Asset Description", E "Original Cost", F "Accumulated
+// Depreciation", H "Deprn Rate %" (each asset row reads its class block's own
+// rate cell), O "Written Down TAX Value", U "Date Asset Sold" and V "Sales
+// Value Assets Sold".
+const SCHEDULE_ASSET_COLUMNS = {
+  acquiredDate: "B",
+  description: "C",
+  cost: "E",
+  accumulatedDepreciation: "F",
+  depreciationRate: "H",
+  taxWrittenDownValue: "O",
+};
+const SCHEDULE_DISPOSAL_COLUMNS = { disposedDate: "U", disposalProceeds: "V" };
 
 // The single-file products keep one Fixed Assets sheet inside the workbook
 // and their writers fill only its in-year addition block: BST the Plant &
 // Machinery "NEW FIXED ASSETS Bought AFTER" rows, Taxi the "Vehicles under
 // £12,000 bought after" rows. Each block's extent is its own sub-total
-// formula (BST "Fixed Assets"!E72 = SUM(E67:E71), Taxi D52 = SUM(D47:D51)).
-// The reference column beside each row (BST D, Taxi C) takes the buying
-// document's reference, not an identifier for the asset, so it is not read
-// back as one.
+// formula (BST "Fixed Assets"!E72 = SUM(E67:E71), Taxi D52 = SUM(D47:D51)),
+// and each sheet heads its own columns in rows 1 and 2. The reference column
+// beside each row (BST D, Taxi C) takes the buying document's reference, not
+// an identifier for the asset, so it is not read back as one. Neither block
+// heads a depreciation rate: these two schedules run capital allowances
+// only, off the rates the Admin sheet carries.
 const SINGLE_FILE_ASSET_BLOCKS = {
-  bst: { sheet: "Fixed Assets", rows: [67, 68, 69, 70, 71], acquiredDate: "B", description: "C", cost: "E" },
-  taxi: { sheet: "Fixed Assets", rows: [47, 48, 49, 50, 51], acquiredDate: "A", description: "B", cost: "D" },
+  bst: {
+    sheet: "Fixed Assets",
+    rows: [67, 68, 69, 70, 71],
+    acquiredDate: "B",
+    description: "C",
+    cost: "E",
+    disposedDate: "O",
+    disposalProceeds: "P",
+  },
+  taxi: {
+    sheet: "Fixed Assets",
+    rows: [47, 48, 49, 50, 51],
+    acquiredDate: "A",
+    description: "B",
+    cost: "D",
+    disposedDate: "M",
+    disposalProceeds: "N",
+  },
 };
 
 async function scheduleSheet(sourceDir) {
@@ -877,6 +907,8 @@ async function singleFileAssetRegisterFrom(sourceDir, product) {
     const asset = { cost };
     assign(asset, "description", textAt(xml, `${layout.description}${row}`, sharedStrings));
     assign(asset, "acquiredDate", dateAt(xml, `${layout.acquiredDate}${row}`, sharedStrings));
+    assign(asset, "disposedDate", dateAt(xml, `${layout.disposedDate}${row}`, sharedStrings));
+    assign(asset, "disposalProceeds", numberAt(xml, `${layout.disposalProceeds}${row}`, sharedStrings));
     assets.push(asset);
   }
   return assets;
@@ -912,7 +944,11 @@ async function fixedAssetRegisterFrom(sourceDir, product) {
       assign(asset, "description", textAt(xml, `${SCHEDULE_ASSET_COLUMNS.description}${row}`, sharedStrings));
       assign(asset, "accumulatedDepreciation", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.accumulatedDepreciation}${row}`, sharedStrings));
       assign(asset, "taxWrittenDownValue", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.taxWrittenDownValue}${row}`, sharedStrings));
-      const disposed = SCHEDULE_DISPOSAL_COLUMNS.some((column) => numberAt(xml, `${column}${row}`, sharedStrings) !== undefined);
+      assign(asset, "acquiredDate", dateAt(xml, `${SCHEDULE_ASSET_COLUMNS.acquiredDate}${row}`, sharedStrings));
+      assign(asset, "depreciationRate", numberAt(xml, `${SCHEDULE_ASSET_COLUMNS.depreciationRate}${row}`, sharedStrings));
+      assign(asset, "disposedDate", dateAt(xml, `${SCHEDULE_DISPOSAL_COLUMNS.disposedDate}${row}`, sharedStrings));
+      assign(asset, "disposalProceeds", numberAt(xml, `${SCHEDULE_DISPOSAL_COLUMNS.disposalProceeds}${row}`, sharedStrings));
+      const disposed = asset.disposedDate !== undefined || asset.disposalProceeds !== undefined;
       assets.push({ asset, disposed });
     }
   }
