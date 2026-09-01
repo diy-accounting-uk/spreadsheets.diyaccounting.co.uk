@@ -6,14 +6,16 @@
 // formatting, charts, conditional formatting, and XML packaging.
 
 import JSZip from "jszip";
-import { buildSheetMap } from "./spreadsheet-runner.js";
+import { buildSheetMap, loadSharedStrings } from "./spreadsheet-runner.js";
 import {
+  PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_SHEET,
   payslipsMonthPeriod,
   payslipsPeriodStartCell,
   payslipsWagesPaidCell,
 } from "./payslips-layout.js";
+import { rollPayslipsCachedDateChain } from "./payslips-date-chain.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -1104,6 +1106,20 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
       if (file.name === sheetsConfig.payslipsAdmin) continue;
       const rolled = rollPayslipsAdminDateReads(await file.async("string"), startYear);
       zip.file(file.name, rolled, { date: file.date });
+    }
+
+    // Only the seeds of the weekly payroll chain read the Admin calendar. The
+    // blocks below and after them count days off each other, across tabs, so
+    // the roll above leaves them on the template's year. Recompute those from
+    // their own formulas over the calendar just written.
+    const payslipsSheetPaths = await buildSheetMap(zip);
+    const payslipsSheetXmls = new Map();
+    for (const [name, path] of payslipsSheetPaths) payslipsSheetXmls.set(name, await zip.file(path).async("string"));
+    const chained = rollPayslipsCachedDateChain(payslipsSheetXmls, startYear, await loadSharedStrings(zip), setCellCachedValue);
+    for (const [name, xml] of chained) {
+      if (xml === payslipsSheetXmls.get(name)) continue;
+      const path = payslipsSheetPaths.get(name);
+      zip.file(path, xml, { date: zip.file(path).date });
     }
   }
 
