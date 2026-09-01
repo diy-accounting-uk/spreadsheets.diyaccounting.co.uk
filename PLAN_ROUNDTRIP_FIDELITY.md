@@ -602,7 +602,8 @@ fixture, the four `roundtrip-*` jobs gate it on every push, and the four `genera
 score it and stability on every year end. Nothing consumes the JS representation in production yet,
 so the remaining items above buy nothing until something does.
 
-The extractor CLI and books page in [PLAN_DIYA_GL_BST_SPIKE.md](PLAN_DIYA_GL_BST_SPIKE.md) are the
+The CLI, MCP and books-page phases in
+[PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md](PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md) are the
 first production use in prospect. When that starts, reread this document's "What roundtrip fidelity means"
 and "How we measure it" first, then `app/bin/verify-roundtrip.js` and `app/lib/report-serializer.js`
 for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the `book.toml` item above.

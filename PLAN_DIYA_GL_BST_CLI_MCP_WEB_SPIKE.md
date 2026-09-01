@@ -1,9 +1,11 @@
-# PLAN: diya-gl BST spike — the books in a browser page
+# PLAN: diya-gl BST spike — CLI, MCP, web
 
-A spike of the BROWSER MECHANISM, not of the BST page. The question under test is whether the
-pipeline's own modules run in a browser end to end: xlsx → diya-gl → recalculate → checks →
-xlsx. BST is the cheapest vehicle — the simplest package that exercises the whole path. Three
-downstream consumers are why the spike is worth running:
+One engine, three surfaces, delivered in that order: a CLI over the extract/recalculate loop
+(phase 1), an MCP server exposing the same operations as tools (phase 2), and the books page
+in a browser (phase 3). The question under test is whether the pipeline's own modules carry
+all three end to end: xlsx → diya-gl → recalculate → checks → xlsx. BST is the cheapest
+vehicle — the simplest package that exercises the whole path. Three downstream consumers are
+why the spike is worth running:
 
 - **Submit VAT extract** — the real product in prospect (the spreadsheets half of Submit's
   backlog item B16); this spike's import is its front half.
@@ -186,7 +188,7 @@ They live in the inspector rail (desktop landscape), the drawer (desktop portrai
 Quality floor without announcement: keyboard focus visible throughout, the entries grid fully
 keyboard-editable, WCAG AA contrast on both themes.
 
-## Spike zero — the extractor as a CLI
+## Phase 1 — CLI
 
 Before any browser work: the import half as a tool, run against a customer's own file.
 
@@ -213,7 +215,7 @@ entry point to drift.
   "customer overtyped a formula" annotation, proven as data first; the template formula
   inventory already exists (`formula-presence-guard.test.js` guards it).
 
-**The edit→recalc harness lands with spike zero.** The page's core mechanic, proven in Node
+**The edit→recalc harness lands with phase 1.** The page's core mechanic, proven in Node
 with no browser: parse `lines.jsonl` (`diya-gl-canonical.js`), apply a named edit in memory,
 run `calculateFromDiyaGl`, assert the movement in the new `R`. Recalculation never rewrites
 lines — `D` is input-only — so an unchanged book recalculates to an unchanged `R`, and an
@@ -241,14 +243,36 @@ all three fixtures.*
 This is the smallest end-to-end proof of the import half on arbitrary files, and it is the
 tool half of the Submit VAT extract regardless of whether the page ever ships.
 
-## Phases
+## Phase 2 — MCP
 
-0. **The extractor CLI** (spike zero above).
+The same operations as an MCP server, so an agent session (a Claude Code session here, or
+Submit's own tooling) can operate on a customer's books without the page existing. A stdio
+server over the same modules the CLI proved — no new engine code, tools mapping one-to-one
+onto what phase 1 already tests:
+
+| Tool | Wraps |
+|---|---|
+| `extract_book` | the `--file` export: xlsx/zip in, `D` + `overtyped.json` out |
+| `report` | `calculateFromDiyaGl`: `D` in, `R` out (figures, sections, check verdicts) |
+| `edit_lines` | the phase-1 harness's named edits: add/change/remove lines, returns the new `R` and the moved figures |
+| `save_workbook` | the generator: `D` in, a recalculating `.xlsx`/`.zip` out |
+
+State is one loaded book per session, held in memory; every tool answers with canonical
+forms so a transcript is reproducible as a phase-1 test case. The server registers in
+`.mcp.json` for this repo's own sessions first — its first user is the reconciliation
+workflow itself (load a fixture, probe a figure, try a fix), which is also its test: the
+phase-1 harness cases run through the MCP tool layer and must return the same `R` movements.
+
+*Verify: the four edit cases pass through the tool layer with answers identical to the
+harness's; an `extract_book` on a generated package matches the CLI's output byte-for-byte.*
+
+## Phase 3 — Web
+
 1. **Bundle spike.** esbuild bundle of exporter+loader+calculator+checks; a bare page that loads
    the sp-sixty BST fixture xlsx and logs the book, the computed P&L and the check results.
    *Verify: figures and check verdicts match `reconcile.js --package bst` for the same scenario.*
 
-   **Decision gate.** Phase 1 answers the spike's question. Everything after it is a choice,
+   **Decision gate.** Step 1 answers the browser question. Everything after it is a choice,
    not a consequence. Continue if the bundle matches `reconcile.js` on the sp-sixty fixture —
    same figures, same verdicts, no forked module. Stop if matching requires forking a pipeline
    module or shimming beyond `fs`/`path` resource loading; that would mean the packaged-library
@@ -269,7 +293,7 @@ tool half of the Submit VAT extract regardless of whether the page ever ships.
    remains the only way anything leaves the browser), the four orientation layouts, Playwright
    coverage in `test:browser` for all four viewports.
 
-**The equivalence test** (Playwright, lands with phase 2 and grows with phase 3): generate a BST
+**The equivalence test** (Playwright, lands with step 2 and grows with step 3): generate a BST
 package populated with a reconciliation scenario's example data, load it into the page, and
 assert four sources agree value-for-value —
 
@@ -291,5 +315,5 @@ beside it; the bundle build joins the existing build steps in CI.
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
 the saved zip, VAT hand-off to Submit (this spike's import is its natural front half), and
 saved-account persistence (that is DIYA Cloud; the working-book
-autosave in phase 5 is the whole of what this page keeps).
+autosave in step 5 is the whole of what this page keeps).
 

@@ -73,8 +73,9 @@ follow the reconciliation-bug method.
 
 ## Plans not tracked here
 
-- `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
-  browser page, with a render equivalent for every reconciliation-covered sheet; specified, not started.
+- `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` — a BST package opens, edits, recalculates and saves as
+  diya-gl, delivered as a CLI, then an MCP server, then a browser page with a render equivalent
+  for every reconciliation-covered sheet; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
 
 ## Discipline
