@@ -571,35 +571,27 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 111 for SE and 156 for Ltd, and
-the budget holds each at that number. (SE's 111 includes the land & buildings account its book
-declares but no SE line posts to — the same structural absence as 0010 and 0020.) The gap is
-one-directional: the fixture's data reaches the package; the read-back mappings don't exist yet.
-The trigger is unchanged — the first consumer of the JS representation (the VAT export is the
-named candidate), and only the blocks it needs. When picked up, the work runs as waves of
-concurrent worktree sub-agents; every landing follows the same three steps (mapping,
-fixture-anchored proof both legs survive, that block's `bookFieldsMissing` number falls in
-`roundtrip-budget.json`) and ends with the verify-roundtrip trio green.
+**`book.toml` comes back short.** Being worked as the book read-back batch (PR #53). Wave 1
+landed via PR #52: the rates-by-provenance track (tax tables reconstructed from
+`app/data/<year>.toml` keyed by the package's own declared year) and the
+registers-and-employees track (`[[members]]`, director enrichment, employee identity and
+start dates). Missing fields now run 90 for BST, 26 for Taxi, 99 for SE and 122 for Ltd,
+measured on the merged tree and budget-held at zero slack. Every landing follows the same
+three steps (mapping, fixture-anchored proof both legs survive, that block's
+`bookFieldsMissing` number falls in `roundtrip-budget.json`) and ends with the
+verify-roundtrip trio green.
 
-*Wave 1 — two concurrent tracks, disjoint exporter sections; the coordinator resolves the
-shared budget/test-file merges:*
-- **Registers-and-employees track** (Sonnet): read back `RegisterofMembers` and the
-  Directors&Secretary/DirectorsInterests entries into `[[members]]` and the director tables
-  (the cells are populated and checked; only the reverse mapping is missing), and rebuild
-  `[[employees]]` (name, start date, pay frequency, rate) from the Employee sheet and payslip
-  cells. An attribute with no cell gets a generator write to a labelled spare cell or a
-  per-block declaration — decided from the XML, not assumed.
-- **Rates-by-provenance track** (Sonnet): emit the tax rate tables from `app/data/<year>.toml`
-  keyed by the package's declared year — reconstruction by provenance, since the sheets hold
-  the rates in formulas — with a check that the sheet's formula results agree with the
-  emitted table.
-
-*Wave 2 — one track, after wave 1 (it shares the exporter and touches the product modules):*
-- **Asset-attributes track** (Opus): the fixed-asset register's identity attributes and the
-  HP agreement schedules. Generator writes into free description columns discovered from the
-  Schedule/HPfinance XML, then exporter read-back into `[[fixedAssets]]` and
-  `[[hpAgreements]]` — the same shape the land & buildings class followed, widened to the
-  register.
+*Wave 2 — in flight:*
+- **Asset-attributes and the declared-absence floor** (Opus): the fixed-asset register's
+  identity attributes and the HP agreement schedules — generator writes into free
+  description columns discovered from the Schedule/HPfinance XML, then exporter read-back
+  into `[[fixedAssets]]` and `[[hpAgreements]]`; the upstream closures wave 1 surfaced
+  (non-payroll directors, the payroll Tax Code column, the loader's entityInformation
+  copies); and the batch's exit criterion — every remaining missing field is either closed
+  or declared with a reason, so all four `bookFieldsMissing` budgets reach zero with the
+  declared absences ratcheted separately.
+- **Fixture-master rate alignment** (Sonnet): the masters carry rates from a different year
+  file than the one each product's CI generates with; align them and re-prove the trio.
 
 *Not scheduled — decided (operator, 2026-08-31):* the per-contact debtor and creditor ledgers
 stay budget-held. The sheets total them without per-contact rows, closing them would mean

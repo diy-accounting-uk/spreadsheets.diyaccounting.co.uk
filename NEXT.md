@@ -12,22 +12,21 @@ every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json` reaches 
 the decided-out fields (per-contact ledgers, any other structural absence) held as declared
 absences with reasons, never silently closed.
 
-- [ ] registers-and-employees (Sonnet, worktree agent) — code-complete, own-tree suite green
-  (7059 tests); now merging the post-deploy main and re-measuring all four budgets on the
-  combined tree before landing.
-- [ ] asset-attributes (Opus) — dispatches after the registers landing
-- [ ] declared-absence floor: budgets to zero (design with asset-attributes). The rates
-  track's unmappable fields feed it: the AIA relief-scale factor (never the absolute cap),
-  reduced VAT rate, associated companies, Class 2 small-profits threshold, Class 1 employee
-  NI fields, and Ltd's whole `tax.incomeTax` (no `[income_tax]` in `ltd-*.toml`).
-- [ ] batch remainder, surfaced by the rates track:
-  - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
-    `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`
-    where it is 0), and the Ltd master's employer-NI block matches `ltd-2025.toml` not the
-    `ltd-2024.toml` the roundtrip job generates with.
-  - stale/wrong CELL_MAP tax labels: dead non-schema field names at `app/products/se.js:904-917`;
-    `bst.js:278` and `taxi.js:286` label Admin!N14/N13 `higherRateThreshold` where the value is
-    the additional-rate threshold.
+- [ ] T5: payslip payment date (Sonnet, worktree agent) — in flight; template surgery
+  repointing `Payslips!M18` at the paid-date cell in SE and Ltd, warning flips to a check.
+- [ ] T7: blank-package calendar (Opus, worktree agent) — operator decided (2026-09-01): the
+  blank package shows accounting-frame dates; the in-tab calendar reorients with the renamed
+  tabs. Dispatched.
+- [ ] asset-attributes + budgets to zero (Opus, worktree agent) — in flight: fixed-asset and
+  HP identity read-back; the upstream closures the registers track reported (non-payroll
+  directors never written from `scenario.directors[]` at `ltd.js:598/659/674`; the payroll
+  Tax Code column `D` never written at `ltd.js:826-844`/`se.js:459-470`; the loader never
+  copies `companyNumber`/`telephone` at `diya-gl-loader.js:~216`); and the declared-absence
+  floor — every remaining missing field is closed or declared with a reason, taking all four
+  `bookFieldsMissing` budgets to zero.
+- [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
+  rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
+  `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
 
 ## Open items
 
