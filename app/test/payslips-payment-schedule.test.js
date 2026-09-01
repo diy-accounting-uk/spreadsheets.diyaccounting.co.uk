@@ -263,6 +263,47 @@ describe("the PAYE schedule at the template's own year end", () => {
   });
 });
 
+// Keeping a stale cache is the failure this evaluator exists to stop, so a
+// formula it cannot read has to stop the build rather than leave the cell
+// where the template left it.
+describe("a Payslips chain formula the evaluator cannot read", () => {
+  const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "ltd-2026.toml"), "utf8"));
+  const sheetsConfig = parseTOML(readFileSync(resolve(APP_DIR, "templates", "ltd", "meta.toml"), "utf8")).sheets.payslips;
+
+  async function generateWithFormula(sheetPath, cellRef, formula) {
+    const zip = await JSZip.loadAsync(readFileSync(resolve(APP_DIR, "templates", "ltd", "Payslips.xlsx")));
+    const xml = await zip.file(sheetPath).async("string");
+    const pattern = new RegExp(`(<c r="${cellRef}"[^>]*><f[^>]*>)([^<]*)(</f>)`);
+    expect(pattern.test(xml)).toBe(true);
+    zip.file(sheetPath, xml.replace(pattern, (_m, pre, _old, post) => `${pre}${formula}${post}`));
+    return generateSpreadsheet(await zip.generateAsync({ type: "nodebuffer" }), taxData, sheetsConfig);
+  }
+
+  it("throws on a function it does not know", async () => {
+    await expect(generateWithFormula("xl/worksheets/sheet2.xml", "M19", "EOMONTH(K19,0)")).rejects.toThrow(
+      /Payslips Apr!M19 reads EOMONTH\(K19,0\), whose EOMONTH this evaluator does not know/,
+    );
+  });
+
+  it("throws on a WEEKDAY numbering the chain does not use", async () => {
+    await expect(generateWithFormula("xl/worksheets/sheet2.xml", "M9", "K9+(7-WEEKDAY(K9, 1))")).rejects.toThrow(
+      /whose WEEKDAY return type this evaluator does not know/,
+    );
+  });
+
+  it("throws on a reference off the end of the Admin calendar", async () => {
+    await expect(generateWithFormula("xl/worksheets/sheet2.xml", "K9", "Admin!B400")).rejects.toThrow(
+      /Payslips Admin!B400 is off the Admin calendar/,
+    );
+  });
+
+  it("throws on a chain that comes back to itself", async () => {
+    await expect(generateWithFormula("xl/worksheets/sheet2.xml", "K9", "M9-6")).rejects.toThrow(
+      /Payslips Apr!K9 is on a chain that comes back to itself/,
+    );
+  });
+});
+
 // The evaluator computes each cached date from the workbook's own formula, so
 // the only honest oracle is the engine those formulas were written for.
 // Requires: LibreOffice installed (brew install --cask libreoffice)
