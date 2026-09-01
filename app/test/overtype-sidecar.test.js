@@ -15,7 +15,13 @@ import { tmpdir } from "os";
 import { resolve, dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
-import { extractBstTransactions, bstExtractionMap, bstBookFieldCells, isBstInputCell, BST_TRANSACTION_REGIONS } from "../lib/xlsx-exporter.js";
+import {
+  extractBstTransactions,
+  bstExtractionMap,
+  bstBookFieldCells,
+  isBstInputCell,
+  BST_TRANSACTION_REGIONS,
+} from "../lib/xlsx-exporter.js";
 import { overtypedCells, BST_TEMPLATE_PATH } from "../lib/overtype-sidecar.js";
 import { parseCells, formulaCells, sortCellRefs } from "../lib/template-formula-map.js";
 import { cellLabels, CELL_MAP } from "../products/bst.js";
@@ -292,11 +298,15 @@ describe("the shipped Basic Sole Trader packages against the template", () => {
         .filter((file) => file.endsWith(".xlsx"))
     : [];
 
-  it.skipIf(shipped.length === 0)("reports nothing for any year a customer can download", async () => {
-    for (const file of shipped) {
-      expect(Object.keys(await overtypedCells(readFileSync(file))), file).toEqual([]);
-    }
-  }, 120000);
+  it.skipIf(shipped.length === 0)(
+    "reports nothing for any year a customer can download",
+    async () => {
+      for (const file of shipped) {
+        expect(Object.keys(await overtypedCells(readFileSync(file))), file).toEqual([]);
+      }
+    },
+    120000,
+  );
 });
 
 // export.js runs main() at import time, so the CLI cases run it as a child
@@ -316,10 +326,14 @@ describe("export.js --file writes the sidecar beside the rest", () => {
 
   it("writes an empty overtyped.json for a package the generator just produced", () => {
     const outputDir = tempDir();
-    const output = execFileSync(process.execPath, ["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir], {
-      cwd: ROOT,
-      encoding: "utf8",
-    });
+    const output = execFileSync(
+      process.execPath,
+      ["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir],
+      {
+        cwd: ROOT,
+        encoding: "utf8",
+      },
+    );
     expect(output).toContain("overtyped.json: 0 cells typed over a template formula");
     expect(JSON.parse(readFileSync(join(outputDir, "overtyped.json"), "utf8"))).toEqual({});
   }, 60000);

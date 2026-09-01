@@ -99,12 +99,7 @@ async function templateFormulasAt(templatePath) {
  * @returns {Promise<Object>} keyed "sheet!cell", in sheet then row then column order
  */
 export async function overtypedCells(workbookBuffer, options = {}) {
-  const {
-    extractionMap,
-    templatePath = BST_TEMPLATE_PATH,
-    reportLabels = bstCellLabels(),
-    isInputCell = isBstInputCell,
-  } = options;
+  const { extractionMap, templatePath = BST_TEMPLATE_PATH, reportLabels = bstCellLabels(), isInputCell = isBstInputCell } = options;
 
   const templateFormulas = await templateFormulasAt(templatePath);
 
