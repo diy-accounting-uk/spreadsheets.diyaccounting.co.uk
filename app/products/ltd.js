@@ -12,8 +12,7 @@ import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, registerOfficers } from "../lib/scenario-loader.js";
 import {
   monthlyPayrollBlockRow,
-  PAYE_DUE_DATE_DAYS,
-  PAYE_MONTH_END_DAYS,
+  PAYE_DUE_DAY,
   PAYE_SCHEDULE_FIRST_ROW,
   PAYE_SCHEDULE_MONTH_TAB_CELLS,
   PAYE_SCHEDULE_MONTH_TABS,
@@ -25,6 +24,7 @@ import {
   PAYSLIPS_EMPLOYEE_BASE_ROWS,
   PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
   PAYSLIPS_ENTRY_COLUMNS,
+  payeTaxMonthDates,
   payrollRecordOpened,
   payrollYearStart,
   payslipsMonthEntryRows,
@@ -3473,39 +3473,17 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   const paymentSchedule = results["Payslips.xlsx!Payment"];
   const payrollYearOpens = taxData?.financial_year?.start ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear()) : null;
   if (paymentSchedule && payrollYearOpens) {
-    const payrollYearOpensSerial = toExcelSerial(
-      payrollYearOpens.getUTCFullYear(),
-      payrollYearOpens.getUTCMonth() + 1,
-      payrollYearOpens.getUTCDate(),
-    );
+    const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
       const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
-      const monthEndSerial = payrollYearOpensSerial + PAYE_MONTH_END_DAYS[taxMonth];
-      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends in ${tab}`, num(paymentSchedule[`B${row}`]), monthEndSerial, 0);
+      const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
       check(
-        `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the 19th after it`,
+        `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
         num(paymentSchedule[`C${row}`]),
-        payrollYearOpensSerial + PAYE_DUE_DATE_DAYS[taxMonth],
+        asSerial(due),
         0,
       );
-
-      // The calendar reaches each month end by counting a fixed number of days
-      // from 6 April, and a leap February puts an extra day in the count. The
-      // schedule then dates two of its rows a day short. The template's own
-      // arithmetic is what it is, so the shortfall is a warning carrying the
-      // day the month really ends on.
-      const dated = dateFromSerial(monthEndSerial);
-      const lastDay = new Date(Date.UTC(dated.getUTCFullYear(), dated.getUTCMonth() + 1, 0));
-      if (dated.getUTCDate() !== lastDay.getUTCDate()) {
-        checks.push({
-          name: `Payslips!Payment B${row} tax month ${taxMonth + 1} stops short of the end of ${tab}`,
-          actual: formatSerialDate(monthEndSerial),
-          expected: formatSerialDate(toExcelSerial(lastDay.getUTCFullYear(), lastDay.getUTCMonth() + 1, lastDay.getUTCDate())),
-          pass: false,
-          severity: "warning",
-          diff: "",
-        });
-      }
     });
   }
 

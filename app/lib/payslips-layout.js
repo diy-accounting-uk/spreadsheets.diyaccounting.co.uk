@@ -161,13 +161,35 @@ export function payrollRecordOpened(payroll, parse) {
 // ── The PAYE remittance schedule (the Payment sheet) ────────────────────────
 //
 // One row per tax month from row 4. B holds the month end and C the day the
-// payment falls due, both read off the Admin payroll calendar at a fixed row,
-// so each is the payroll year's first day plus a fixed number of days. The
-// rows are the same on every package, whatever its year end, because the tax
-// calendar is.
+// payment falls due. The rows are the same on every package, whatever its year
+// end, because the tax calendar is.
+//
+// The template reaches both dates by counting a fixed number of days down the
+// Admin calendar, and the count cannot be right for a leap payroll year and a
+// common one at once: the month-end rows land a day early on every month after
+// a leap February, and the last two due-date rows land on the 20th in a year
+// without one. So the generator writes both columns as the dates they are.
 export const PAYE_SCHEDULE_FIRST_ROW = 4;
-export const PAYE_MONTH_END_DAYS = [24, 55, 85, 116, 147, 177, 208, 238, 269, 300, 328, 359];
-export const PAYE_DUE_DATE_DAYS = [43, 74, 104, 135, 166, 196, 227, 257, 288, 319, 348, 379];
+export const PAYE_MONTH_END_ROWS = [26, 57, 87, 118, 149, 179, 210, 240, 271, 302, 330, 361];
+export const PAYE_DUE_DATE_ROWS = [45, 76, 106, 137, 168, 198, 229, 259, 290, 321, 350, 381];
+// The day of the month a PAYE payment falls due, in the month after the tax
+// month it settles.
+export const PAYE_DUE_DAY = 19;
+
+/**
+ * The two dates a PAYE schedule row carries: the end of the calendar month the
+ * tax month runs to, and the day the payment for it falls due.
+ * @param {Date} payrollYearOpens - payrollYearStart() for this package
+ * @param {number} taxMonthIndex - 0-11, row 4 being 0
+ * @returns {{ends: Date, due: Date}}
+ */
+export function payeTaxMonthDates(payrollYearOpens, taxMonthIndex) {
+  const months = payrollYearOpens.getUTCFullYear() * 12 + payrollYearOpens.getUTCMonth() + taxMonthIndex;
+  return {
+    ends: new Date(Date.UTC(Math.floor(months / 12), (months % 12) + 1, 0)),
+    due: new Date(Date.UTC(Math.floor((months + 1) / 12), (months + 1) % 12, PAYE_DUE_DAY)),
+  };
+}
 
 // The month tab each row takes its figures from: the tab named for the
 // calendar month that tax month ends in, which is the tab a month's payroll is

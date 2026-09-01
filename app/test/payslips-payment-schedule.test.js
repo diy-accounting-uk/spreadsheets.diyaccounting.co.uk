@@ -28,6 +28,7 @@ import {
   runMultiFileSpreadsheet,
 } from "../lib/spreadsheet-runner.js";
 import {
+  datePayslipsPaymentSchedule,
   generateSpreadsheet,
   getMonthTabSequence,
   realignPayslipsPaymentSchedule,
@@ -37,13 +38,12 @@ import {
   reorientPayslipsMonthTabPeriods,
 } from "../lib/generator.js";
 import {
-  PAYE_DUE_DATE_DAYS,
-  PAYE_MONTH_END_DAYS,
   PAYE_SCHEDULE_FIRST_ROW,
   PAYE_SCHEDULE_MONTH_TABS,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_SHEET,
+  payeTaxMonthDates,
   payrollYearStart,
 } from "../lib/payslips-layout.js";
 import { payslipsChainedDateCells } from "../lib/payslips-date-chain.js";
@@ -70,27 +70,31 @@ const dateOf = (value) => new Date(EXCEL_EPOCH_UTC + value * MS_PER_DAY);
 const isoWeekday = (date) => ((date.getUTCDay() + 6) % 7) + 1;
 
 // The blank Payslips.xlsx a customer downloads, built the way generate.js
-// builds it: the tax data written in, then -- for a year end other than the
-// template's March -- the tabs renamed, the calendar's month-sheet column and
-// the tabs' own periods reoriented, and the PAYE schedule repointed.
+// builds it: the tax data written in, the tabs' own periods and the PAYE
+// schedule's dates written out, and -- for a company year end other than the
+// template's March -- the tabs renamed, the calendar's month-sheet column
+// moved with them and the schedule repointed. A Self Employed year ends on
+// 5 April, so its tabs are the template's own and run to the March before.
 async function blankPayslips({ product, taxData: taxDataFile, yearEnd, yearEndMonth }) {
   const taxData = parseTOML(readFileSync(resolve(DATA_DIR, taxDataFile), "utf8"));
   const period = taxData.tax_year || taxData.financial_year;
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", product, "meta.toml"), "utf8"));
   const payrollYearOpens = payrollYearStart(new Date(period.start).getUTCFullYear());
+  const tabsYearEnd = yearEndMonth ? yearEnd : new Date(Date.UTC(yearEnd.getUTCFullYear(), yearEnd.getUTCMonth(), 0));
 
   let buffer = await generateSpreadsheet(
     readFileSync(resolve(APP_DIR, "templates", product, "Payslips.xlsx")),
     taxData,
     productMeta.sheets.payslips,
   );
-  // Only the Ltd package reorients: a Self Employed year always ends on
-  // 5 April, so its tabs are the template's own.
   if (yearEndMonth) {
     buffer = await renameMonthTabs(buffer, yearEndMonth);
     buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
     buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, PAYSLIPS_ADMIN_SHEET_PATH);
-    buffer = await reorientPayslipsMonthTabPeriods(buffer, yearEnd, payrollYearOpens);
+  }
+  buffer = await reorientPayslipsMonthTabPeriods(buffer, tabsYearEnd, payrollYearOpens);
+  buffer = await datePayslipsPaymentSchedule(buffer, payrollYearOpens);
+  if (yearEndMonth) {
     buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
   }
   return { buffer, payrollYearOpens };
@@ -128,7 +132,24 @@ const PACKAGES = [
     yearEnd: new Date(Date.UTC(2026, 11, 31)),
     yearEndMonth: 12,
   },
+  // The payroll year 2023-24 runs through a leap February, which the Admin
+  // calendar's fixed rows count past a day early.
+  {
+    name: "ltd at a March year end over a leap February",
+    product: "ltd",
+    taxData: "ltd-2023.toml",
+    yearEnd: new Date(Date.UTC(2024, 2, 31)),
+    yearEndMonth: 3,
+  },
+  {
+    name: "ltd at a September year end over a leap February",
+    product: "ltd",
+    taxData: "ltd-2023.toml",
+    yearEnd: new Date(Date.UTC(2023, 8, 30)),
+    yearEndMonth: 9,
+  },
   { name: "se", product: "se", taxData: "se-2026-2027.toml", yearEnd: new Date(Date.UTC(2027, 3, 5)), yearEndMonth: 0 },
+  { name: "se over a leap February", product: "se", taxData: "se-2023-2024.toml", yearEnd: new Date(Date.UTC(2024, 3, 5)), yearEndMonth: 0 },
 ];
 
 describe.each(PACKAGES)("the blank Payslips workbook for $name", (pkg) => {
@@ -173,17 +194,14 @@ describe.each(PACKAGES)("the blank Payslips workbook for $name", (pkg) => {
   it("gives each tab's monthly block its own whole month", () => {
     // The tabs run consecutive months and each block covers the month it is
     // named for -- except the first block of a package whose accounting period
-    // opens with the payroll year, which starts on 6 April with it. A leap
-    // February leaves the calendar's fixed rows one day short of the month
-    // end, which is the only shortfall allowed for.
+    // opens with the payroll year, which starts on 6 April with it.
     let previous = null;
     book.monthTabs.forEach((tab, monthIndex) => {
       const row = 9 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex];
       const first = dateOf(book.value(tab, `K${row}`));
       if (monthIndex > 0) expect(first.getUTCDate(), `${tab}!K${row}`).toBe(1);
       const monthEnd = serial(new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)));
-      expect(monthEnd - book.value(tab, `M${row}`), `${tab}!M${row} against the end of its month`).toBeLessThanOrEqual(1);
-      expect(monthEnd - book.value(tab, `M${row}`), `${tab}!M${row} against the end of its month`).toBeGreaterThanOrEqual(0);
+      expect(book.value(tab, `M${row}`), `${tab}!M${row} is the end of its month`).toBe(monthEnd);
       const months = first.getUTCFullYear() * 12 + first.getUTCMonth();
       if (previous !== null) expect(months, `${tab} follows the month before it`).toBe(previous + 1);
       previous = months;
@@ -207,11 +225,13 @@ describe.each(PACKAGES)("the blank Payslips workbook for $name", (pkg) => {
     expect(book.value("Employee", "O9")).toBe(serial(new Date(Date.UTC(dateOf(opens).getUTCFullYear() + 1, 3, 5))));
   });
 
-  it("dates each PAYE schedule row from the same payroll year", () => {
-    PAYE_SCHEDULE_MONTH_TABS.forEach((_, taxMonth) => {
+  it("ends each PAYE schedule row on its month's own last day, and dues it on the 19th after", () => {
+    PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
       const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
-      expect(book.value("Payment", `B${row}`)).toBe(opens + PAYE_MONTH_END_DAYS[taxMonth]);
-      expect(book.value("Payment", `C${row}`)).toBe(opens + PAYE_DUE_DATE_DAYS[taxMonth]);
+      const { ends, due } = payeTaxMonthDates(dateOf(opens), taxMonth);
+      expect(book.value("Payment", `B${row}`), `Payment B${row} (${tab})`).toBe(serial(ends));
+      expect(book.value("Payment", `C${row}`), `Payment C${row} (${tab})`).toBe(serial(due));
+      expect(dateOf(book.value("Payment", `C${row}`)).getUTCDate(), `Payment C${row} (${tab})`).toBe(19);
     });
   });
 

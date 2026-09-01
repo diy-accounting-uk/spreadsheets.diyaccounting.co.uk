@@ -28,11 +28,10 @@ import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporat
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
-  PAYE_DUE_DATE_DAYS,
-  PAYE_MONTH_END_DAYS,
   PAYE_SCHEDULE_FIRST_ROW,
   PAYE_SCHEDULE_MONTH_TAB_CELLS,
   PAYE_SCHEDULE_MONTH_TABS,
+  payeTaxMonthDates,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
@@ -708,7 +707,7 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const directorPayroll = payrollByTab(payrollEntries, isDirectorsLine);
   results.WagesInterface = buildWagesInterface(employeePayroll, directorPayroll, tabs);
   const yearStart = payrollYearStart(payrollYearOf(taxData, period));
-  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, serialOf(yearStart));
+  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, yearStart);
   results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period, tabs);
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
     const monthTab = buildPayslipsMonthTab(monthIndex, payrollEntries[tabs[monthIndex]] || []);
@@ -931,12 +930,13 @@ function buildWagesInterface(employeePayroll, directorPayroll, tabs) {
 // loan columns the total also carries stay nil. A row takes the month tab
 // named for the calendar month its tax month ends in, so row 4 is April
 // whatever the package's year end.
-function buildPayslipsPayment(payroll, yearStartSerial) {
+function buildPayslipsPayment(payroll, payrollYearOpens) {
   const sheet = {};
   PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
     const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
-    sheet[`B${row}`] = yearStartSerial + PAYE_MONTH_END_DAYS[taxMonth];
-    sheet[`C${row}`] = yearStartSerial + PAYE_DUE_DATE_DAYS[taxMonth];
+    const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+    sheet[`B${row}`] = serialOf(ends);
+    sheet[`C${row}`] = serialOf(due);
     const nationalInsurance = payroll[tab].employerNI + payroll[tab].employeeNI;
     sheet[`D${row}`] = nationalInsurance;
     sheet[`E${row}`] = payroll[tab].incomeTax;

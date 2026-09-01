@@ -67,14 +67,36 @@ describe.each(["se", "ltd"])("%s Payslips print sheet period join", (product) =>
   });
 });
 
-// A March year end names its tabs the way the template already does, so the
-// reorientation has nothing to move and must hand the workbook back byte for
-// byte -- every March package's Payslips.xlsx is what it always was.
+// A March year end runs the same twelve months as the payroll calendar, so the
+// calendar's own rows give the right dates -- but only in a year of 365 days.
+// The rows are a fixed count from 6 April, so a leap February pushes every
+// month after it a day early. Both are written out rather than read off.
 describe("ltd Payslips month-tab periods at the template's own year end", () => {
-  it("hands a March package's workbook back untouched", async () => {
+  const monthlyBlock = async (buffer, tab, sheetPath) => {
+    const zip = await JSZip.loadAsync(buffer);
+    const xml = await zip.file(sheetPath).async("string");
+    const at = (ref) => (new RegExp(`<c r="${ref}"[^>]*><f>([^<]*)</f>`).exec(xml) || [])[1];
+    return { tab, opens: at(`K${monthlyPayrollBlockRow(11) + 1}`), closes: at(`M${monthlyPayrollBlockRow(11) + 1}`) };
+  };
+
+  it("gives March its own month in a year of 365 days", async () => {
     const buffer = readFileSync(resolve(ROOT, "app/templates/ltd/Payslips.xlsx"));
     const reoriented = await reorientPayslipsMonthTabPeriods(buffer, new Date(Date.UTC(2026, 2, 31)), payrollYearStart(2025));
-    expect(reoriented).toBe(buffer);
+    expect(await monthlyBlock(reoriented, "Mar", "xl/worksheets/sheet13.xml")).toEqual({
+      tab: "Mar",
+      opens: "DATE(2026,3,1)",
+      closes: "DATE(2026,3,31)",
+    });
+  });
+
+  it("gives March its own month after a leap February", async () => {
+    const buffer = readFileSync(resolve(ROOT, "app/templates/ltd/Payslips.xlsx"));
+    const reoriented = await reorientPayslipsMonthTabPeriods(buffer, new Date(Date.UTC(2024, 2, 31)), payrollYearStart(2023));
+    expect(await monthlyBlock(reoriented, "Mar", "xl/worksheets/sheet13.xml")).toEqual({
+      tab: "Mar",
+      opens: "DATE(2024,3,1)",
+      closes: "DATE(2024,3,31)",
+    });
   });
 });
 

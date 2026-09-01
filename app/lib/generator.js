@@ -8,9 +8,13 @@
 import JSZip from "jszip";
 import { buildSheetMap, loadSharedStrings } from "./spreadsheet-runner.js";
 import {
+  PAYE_DUE_DATE_ROWS,
+  PAYE_MONTH_END_ROWS,
+  PAYE_SCHEDULE_FIRST_ROW,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_SHEET,
+  payeTaxMonthDates,
   payslipsMonthPeriod,
   payslipsPeriodStartCell,
   payslipsWagesPaidCell,
@@ -1449,7 +1453,7 @@ export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth,
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
-// ── Payslips month-tab payroll periods (Ltd Company non-March year ends) ────
+// ── Payslips month-tab payroll periods ──────────────────────────────────────
 //
 // Every month tab opens its monthly payroll block with the days it covers: K
 // the first, M the last, both read off the Payslips Admin daily calendar. That
@@ -1466,18 +1470,20 @@ export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth,
 // needs May and June of a calendar year the chain stops short of. So the two
 // cells carry their own dates.
 //
+// A March year end reads the same twelve months off the calendar, but only
+// while the year has 365 days in it. The rows the template points at are a
+// fixed count from 6 April, so a leap February pushes every month after it a
+// day early: the block on Mar opened on 29 February and closed on the 30th.
+// So the dates are written on every year end, and the calendar is left to the
+// weekly blocks that count their way down it.
+//
 // M is also where the writer puts the date the month's wages were paid, which
 // is why the block's period is what the printed payslip reads back as its
 // period end. K is written by nobody and is the tab's calendar on a blank
 // package and a populated one alike.
 export async function reorientPayslipsMonthTabPeriods(xlsxBuffer, yearEndDate, payrollYearStart) {
   const yearEndMonth = yearEndDate.getUTCMonth() + 1;
-  const templateTabs = getMonthTabSequence(3);
   const targetTabs = getMonthTabSequence(yearEndMonth);
-
-  if (templateTabs.join(",") === targetTabs.join(",")) {
-    return xlsxBuffer;
-  }
 
   const zip = await JSZip.loadAsync(xlsxBuffer);
   const sheetMap = await buildSheetMap(zip);
@@ -1614,8 +1620,49 @@ function setPayrollPeriodCell(sheetXml, tab, cellRef, day) {
   if (!/^Admin!\$?B\$?\d+$/.test(formula || "")) {
     throw new Error(`Payslips ${tab} ${cellRef} reads ${formula ?? "no formula"}, not the Admin calendar`);
   }
-  const date = `DATE(${day.getUTCFullYear()},${day.getUTCMonth() + 1},${day.getUTCDate()})`;
-  return setCellFormula(sheetXml, cellRef, date, toExcelSerial(day));
+  return setCellFormula(sheetXml, cellRef, excelDateFormula(day), toExcelSerial(day));
+}
+
+const excelDateFormula = (day) => `DATE(${day.getUTCFullYear()},${day.getUTCMonth() + 1},${day.getUTCDate()})`;
+
+// ── Payslips PAYE schedule dates ────────────────────────────────────────────
+//
+// B is the end of the calendar month a tax month runs to and C the day the
+// payment for it falls due, the 19th of the month after. The template reaches
+// both by counting a fixed number of days down the Admin calendar, and no
+// single count is right for both a leap payroll year and a common one: the
+// month ends land a day early on everything after a leap February, and the
+// last two due dates land on the 20th in a year without one. Every package
+// ships one of the two wrong, so both columns carry their own dates.
+export async function datePayslipsPaymentSchedule(xlsxBuffer, payrollYearOpens, paymentSheetName = "Payment") {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const paymentPath = (await buildSheetMap(zip)).get(paymentSheetName);
+  if (!paymentPath) throw new Error(`No ${paymentSheetName} sheet in the Payslips workbook`);
+  let paymentXml = await zip.file(paymentPath).async("string");
+
+  for (let taxMonth = 0; taxMonth < PAYE_MONTH_END_ROWS.length; taxMonth++) {
+    const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+    const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+    paymentXml = setPaymentScheduleDate(paymentXml, `B${row}`, PAYE_MONTH_END_ROWS[taxMonth], ends);
+    paymentXml = setPaymentScheduleDate(paymentXml, `C${row}`, PAYE_DUE_DATE_ROWS[taxMonth], due);
+  }
+
+  zip.file(paymentPath, paymentXml, { date: zip.file(paymentPath).date });
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// One schedule date. The cell has to be reading the Admin calendar row the
+// template ships for it: a schedule that has moved row, or one already
+// carrying its own date, is a change to see rather than a cell to overwrite.
+function setPaymentScheduleDate(paymentXml, cellRef, adminRow, day) {
+  const cell = matchCell(paymentXml, cellRef);
+  if (!cell) throw new Error(`Payslips Payment ${cellRef} not found`);
+  const formula = (cell.fullMatch.match(/<f[^>]*>([^<]*)<\/f>/) || [])[1];
+  if (formula !== `Admin!$B$${adminRow}`) {
+    throw new Error(`Payslips Payment ${cellRef} reads ${formula ?? "no formula"}, not Admin!$B$${adminRow}`);
+  }
+  return setCellFormula(paymentXml, cellRef, excelDateFormula(day), toExcelSerial(day));
 }
 
 // ── Vatinterface formula rewriting (Ltd Company all year-end months) ────────

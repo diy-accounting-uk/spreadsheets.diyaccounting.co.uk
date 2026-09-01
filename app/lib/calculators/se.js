@@ -30,9 +30,9 @@ import {
 } from "../tax/vat.js";
 import {
   monthlyPayrollBlockRow,
-  PAYE_DUE_DATE_DAYS,
-  PAYE_MONTH_END_DAYS,
   PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  payeTaxMonthDates,
+  payrollYearStart,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
@@ -821,8 +821,9 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   const payment = {};
   payroll.forEach((month, index) => {
     const row = WAGES_MONTH_ROWS[index];
-    payment[`B${row}`] = dateSerials[4] + PAYE_MONTH_END_DAYS[index];
-    payment[`C${row}`] = dateSerials[4] + PAYE_DUE_DATE_DAYS[index];
+    const taxMonth = payeTaxMonthDates(payrollYearStart(startYear), index);
+    payment[`B${row}`] = excelSerial(taxMonth.ends);
+    payment[`C${row}`] = excelSerial(taxMonth.due);
     payment[`D${row}`] = month.employerNI + month.employeeNI;
     payment[`E${row}`] = month.incomeTax;
     payment[`I${row}`] = payment[`D${row}`] + payment[`E${row}`];
