@@ -27,8 +27,12 @@ absences with reasons, never silently closed.
   Debtors/Creditors sheets with counterparty, invoice and amount columns, and the single-file
   products keep name+amount pairs. Only BST's `invoice` (no column) stays declared. Reverse
   the closure if the decision was policy rather than a fact about the templates.
-- [ ] batch closeout, before PR #53's successor goes ready: one clean serial `npm test`
-  sweep on the merged branch (the wave-2 track's own sweep was starved by sibling
+- [x] labels-track regression — the SE CELL_MAP deletions had emptied the calculators' read
+  scope (`withinReadScope()`) and 13 SE checks with it; restored with schema-correct names
+  inside the asset-attributes track. Done when this branch merges.
+- [ ] batch closeout (operator, decided 2026-09-01): when the branch is otherwise stable,
+  the operator re-runs all four generators in CI and commits; one clean serial `npm test`
+  sweep rides the same moment (the wave-2 track's own sweep was starved by sibling
   LibreOffice contention; its blast radius was covered file-by-file and branch CI is running
   the suite now).
 
