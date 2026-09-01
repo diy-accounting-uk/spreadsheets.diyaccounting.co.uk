@@ -337,6 +337,34 @@ phase-1 harness cases run through the MCP tool layer and must return the same `R
 *Verify: the four edit cases pass through the tool layer with answers identical to the
 harness's; an `extract_book` on a generated package matches the CLI's output byte-for-byte.*
 
+### Delivery — three tracks, two waves
+
+**In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
+
+- [ ] Track D — the edit-lines API and the loader chart fix (Sonnet, worktree agent) — dispatched
+- [ ] Track E — the save_workbook carve-out (Opus, worktree agent) — dispatched
+- [ ] Track F — the MCP server (Sonnet) — waits on D, E, and phase 1's Track C
+- [ ] closing ladder (coordinator) — waits on the tracks
+
+| Track | Tier | Owns | Delivers |
+|---|---|---|---|
+| **D — edits API + loader chart fix** | Sonnet — the harness is the spec; the loader fix has an in-repo precedent | a new `app/lib/diya-gl-edits.js`, the chart-honouring fix in `app/lib/diya-gl-loader.js`, `app/test/diya-gl-edit-recalc.test.js` (refactor onto the API, drop its workaround anchors) | the named edits (add sale, add purchase, change amount — counter-leg handling included) as a library API the server and the page both call; the loader reading the book's own declared chart instead of the hardcoded BST map, proven on the sp-sixty fixture |
+| **E — save_workbook carve-out** | Opus — carving a pure function out of the generator's CLI-shaped orchestration | a "book → workbook buffer" function factored from `app/bin/generate.js`/`app/lib/generator.js` (BST path), its tests | `saveBstWorkbook(book, lines) → xlsx buffer` (and the zip shape), byte-identical to what the CLI path generates for the same book; phase 3's save step reuses it |
+| **F — the MCP server** | Sonnet — wrappers over landed functions, no new engine code | a new `app/bin/` (or `app/lib/mcp/`) stdio server, `.mcp.json` registration, its tests | the four tools over the landed functions; the phase-1 harness cases replayed through the tool layer; `extract_book` byte-for-byte with the CLI |
+
+**Wave 1**: D and E, concurrent — disjoint files. **Wave 2**: F, after D, E and phase 1's
+Track C land (F wraps the `--file` path Track C is still wiring).
+
+**Track rungs**: *D* — the harness's 18 tests green on the API with the sp-sixty workaround
+anchors replaced by the chart-correct expectations; the misrouted account (5900) and the
+dropped one (7000) each get a fixture-anchored assertion. *E* — byte-for-byte against the
+CLI-generated workbook for all three fixtures; a corrupted book field fails generation with
+a named error. *F* — the phase's own verify line above.
+
+**The closing ladder**, coordinator, merged branch: full serial suite; the CLI and the tool
+layer agree byte-for-byte on the same input; the roundtrip budgets unchanged at zero. No
+track runs soffice.
+
 ## Phase 3 — Web
 
 The books page. Its specification is the sections above — entry point, data model, checks
