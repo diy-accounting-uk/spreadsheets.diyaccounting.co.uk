@@ -6,14 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-The coordinator batch is complete: all 24 items landed on `claude/next-batch-wave-1`,
-the full suite is green (81 files, 7025 tests), branch CI is green, and PR #48 is ready
-for review. Track-by-track history lives in the branch's merge commits.
-
-Remaining before merge is the operator's: review and merge PR #48, re-dispatch the
-generate matrices on the branch if CI confirmation of the new gates is wanted first,
-and run the post-merge generate-commit refresh (the committed packages are stale derived
-artifacts until it runs).
+Nothing. The coordinator batch (24 items) merged to main in PR #48; history lives in its
+merge commits. One operator step remains from it: the generate-commit refresh — the
+committed `packages/` are stale derived artifacts until it runs, and it clears the last
+reconciliation residue in the committed reports.
 
 ## Open items
 
