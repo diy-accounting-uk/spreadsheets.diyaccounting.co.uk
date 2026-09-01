@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Company 2022-03-31 (Mar22) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: RECONCILES
+Status: RECONCILES (with warnings)
 
 Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.
 
@@ -12,11 +12,11 @@ Trade: IT consultancy and software development
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 341283 | 341283.333333333 | +0.3333333330228925 | PASS |
-| Trial Balance: audit accuracy (EJ91) | 0 | 3.24689608532935e-10 | +3.24689608532935e-10 | PASS |
+| Trial Balance: audit accuracy (EJ91) | 0 | 3.55612428393215e-10 | +3.55612428393215e-10 | PASS |
 | Opening balance sheet: accuracy check (E37) | 0 | 0 | 0 | PASS |
 | Trial Balance: opening balances audit check (D91) | 0 | 0 | 0 | PASS |
-| Trial Balance opening: fixed asset cost | 33000 | 33000 | 0 | PASS |
-| Trial Balance opening: accumulated depreciation | -10098 | -10098 | 0 | PASS |
+| Trial Balance opening: fixed asset cost | 233000 | 233000 | 0 | PASS |
+| Trial Balance opening: accumulated depreciation | -50098 | -50098 | 0 | PASS |
 | Trial Balance opening: stock | 10000 | 10000 | 0 | PASS |
 | Trial Balance opening: trade debtors | 10800 | 10800 | 0 | PASS |
 | Trial Balance opening: bank current account | 25000 | 25000 | 0 | PASS |
@@ -29,12 +29,12 @@ Trade: IT consultancy and software development
 | Trial Balance opening: directors loan | -20000 | -20000 | 0 | PASS |
 | Trial Balance opening: creditors due after more than one year | -25000 | -25000 | 0 | PASS |
 | Trial Balance opening: share capital | -100 | -100 | 0 | PASS |
-| Trial Balance opening: revenue reserve | -20702 | -20702 | 0 | PASS |
+| Trial Balance opening: revenue reserve | -180702 | -180702 | 0 | PASS |
 | Trial Balance: directors loan final = opening + movement | -13000 | -13000 | 0 | PASS |
 | P&L: Gross = Turnover - CoS | 322496.66666666634 | 322496.666666666 | -3.4924596548080444e-10 | PASS |
 | P&L: Operating = Gross - Admin | 171840.391666666 | 171840.391666666 | 0 | PASS |
 | P&L: PBT = Operating + Interest | 172115.391666666 | 172115.391666666 | 0 | PASS |
-| P&L: Admin lines sum = Total | 150656.27500000002 | 150656.275 | -2.9103830456733704e-11 | PASS |
+| P&L: Admin lines sum = Total | 150656.27500000005 | 150656.275 | -5.820766091346741e-11 | PASS |
 | Premises | 12000 | 12000 | 0 | PASS |
 | Legal & Professional | 4425 | 4425 | 0 | PASS |
 | Stock: opening carried in from the opening balance sheet | 10000 | 10000 | 0 | PASS |
@@ -203,20 +203,20 @@ Trade: IT consultancy and software development
 | VAT: Q5 ends on the last period the Vatinterface carries | 20 | 20 | 0 | PASS |
 | VAT: periods more than one of the five returns declares | 0 | 0 | 0 | PASS |
 | VAT: output VAT declared on more than one of the five returns | 0 | 0 | 0 | PASS |
-| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 48990 | 48990 | 0 | PASS |
+| Fixed assets: closing NBV = cost less disposals, less depreciation carried forward less depreciation on disposals | 208990 | 208990 | 0 | PASS |
 | Schedule: motor vehicle WDA = opening tax value x the year's WDA rate, uncapped | 4320 | 4320 | 0 | PASS |
 | Schedule: motor vehicle pool after WDA = opening tax value less WDA | 19680 | 19680 | 0 | PASS |
 | Schedule: motor vehicle balancing allowance = pool after WDA less disposal proceeds | 7180 | 7180 | 0 | PASS |
 | Schedule: motor vehicle WDA + balancing allowance = opening tax value less disposal proceeds | 11500 | 11500 | 0 | PASS |
-| Fixed asset note (land): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
+| Fixed asset note (land): cost brought forward = Schedule | 200000 | 200000 | 0 | PASS |
 | Fixed asset note (land): additions = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (land): cost carried forward | 0 | 0 | 0 | PASS |
-| Fixed asset note (land): depreciation brought forward = Schedule | 0 | 0 | 0 | PASS |
+| Fixed asset note (land): cost carried forward | 200000 | 200000 | 0 | PASS |
+| Fixed asset note (land): depreciation brought forward = Schedule | 40000 | 40000 | 0 | PASS |
 | Fixed asset note (land): charge for the year = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (land): depreciation on disposals = Schedule | 0 | 0 | 0 | PASS |
-| Fixed asset note (land): depreciation carried forward | 0 | 0 | 0 | PASS |
-| Fixed asset note (land): net book value = cost less depreciation | 0 | 0 | 0 | PASS |
+| Fixed asset note (land): depreciation carried forward | 40000 | 40000 | 0 | PASS |
+| Fixed asset note (land): net book value = cost less depreciation | 160000 | 160000 | 0 | PASS |
 | Fixed asset note (plant): cost brought forward = Schedule | 0 | 0 | 0 | PASS |
 | Fixed asset note (plant): additions = Schedule | 52500 | 52500 | 0 | PASS |
 | Fixed asset note (plant): disposals at cost = Schedule | 0 | 0 | 0 | PASS |
@@ -253,18 +253,18 @@ Trade: IT consultancy and software development
 | Fixed asset note (motor): depreciation on disposals = Schedule | 17328 | 17328 | 0 | PASS |
 | Fixed asset note (motor): depreciation carried forward | 0 | 0 | 0 | PASS |
 | Fixed asset note (motor): net book value = cost less depreciation | 0 | 0 | 0 | PASS |
-| Fixed asset note: total cost brought forward = Schedule existing assets | 33000 | 33000 | 0 | PASS |
+| Fixed asset note: total cost brought forward = Schedule existing assets | 233000 | 233000 | 0 | PASS |
 | Fixed asset note: total additions = Schedule new assets | 52500 | 52500 | 0 | PASS |
 | Fixed asset note: total charge for the year = Schedule | 13740 | 13740 | 0 | PASS |
 | Fixed asset note: total disposals at cost = Schedule | 30000 | 30000 | 0 | PASS |
 | Fixed asset note: total depreciation on disposals = Schedule | 17328 | 17328 | 0 | PASS |
-| Fixed asset note: total net book value = the asset class columns | 48990 | 48990 | 0 | PASS |
+| Fixed asset note: total net book value = the asset class columns | 208990 | 208990 | 0 | PASS |
 | Fixed asset schedule (land): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Land & Property |  | PASS |
 | Fixed asset schedule (plant): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Plant & Machinery |  | PASS |
 | Fixed asset schedule (fixtures): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Fixtures & Fittings |  | PASS |
 | Fixed asset schedule (computer): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Computers |  | PASS |
 | Fixed asset schedule (motor): opening cost and depreciation agree with the opening balance sheet | an Existing ... heading | Existing Motor Vehicles |  | PASS |
-| Published balance sheet: fixed assets = fixed asset note net book value | 48990 | 48990 | 0 | PASS |
+| Published balance sheet: fixed assets = fixed asset note net book value | 208990 | 208990 | 0 | PASS |
 | RegisterofMembers: nominal value x shares issued = PubBalSht share capital | 100 | 100 | 0 | PASS |
 | Directors' report: sales turnover = published P&L turnover | 341283.333333333 | 341283.333333333 | 0 | PASS |
 | Directors' report: last year's turnover = published P&L prior year column | 0 | 0 | 0 | PASS |
@@ -286,6 +286,9 @@ Trade: IT consultancy and software development
 | Register of members: row 5 holds Emma Wilson's shares | 15 | 15 | 0 | PASS |
 | Directors' report: first shareholder named | Carol Smith | Carol Smith |  | PASS |
 | Directors' report: second shareholder named | David Brown | David Brown |  | PASS |
+| Directors&Secretary: row 2 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
+| DirectorsInterests: row 2 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
+| DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries | 43831 | 43831 | 0 | PASS |
 | Directors' report: dividend declared = the board minute | 15000 | 15000 | 0 | PASS |
 | Board minute: dividend declared = the scenario's declaration | 15000 | 15000 | 0 | PASS |
 | Board minute: meeting date = the scenario's board meeting | 46112 | 46112 | 0 | PASS |
@@ -298,8 +301,12 @@ Trade: IT consultancy and software development
 | Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 9135.789999999979 | 9135.78833333336 | -0.0016666666197124869 | PASS |
 | Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC | 0 | 0 | 0 | PASS |
 | Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 23575.274416666594 | 23575.2744166666 | +7.275957614183426e-12 | PASS |
+| Fixed assets: Schedule additions = Purchases.xlsx fixed asset total | 52500 | 52500 | 0 | PASS |
+| Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 12500 | 12500 | 0 | PASS |
 | Fixed assets: Schedule additions = fixed asset purchases net of VAT | 52500 | 52500 | 0 | PASS |
 | Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT | 12500 | 12500 | 0 | PASS |
+| Fixed assets: the purchases reconciliation reads nil | 0 | 0 | 0 | PASS |
+| Fixed assets: the sales reconciliation reads nil | 0 | 0 | 0 | PASS |
 | P&L: depreciation = fixed asset note charge for the year | 13740 | 13740 | 0 | PASS |
 | P&L: loss on disposal = Schedule cost less depreciation less proceeds | 172 | 172 | 0 | PASS |
 | HP: first agreement monthly payment = the amount financed with charges over its term | 750 | 750 | 0 | PASS |
@@ -620,127 +627,270 @@ Trade: IT consultancy and software development
 | Payslips calendar: the payroll year opens on 6 April | 6 April | 6 April 2021 |  | PASS |
 | Payslips calendar: payroll month 1 opens on the first day of tax week 1 | 44292 | 44292 | 0 | PASS |
 | Payslips calendar: payroll month 1 opens tax week 1 | 1 | 1 | 0 | PASS |
-| Payslips calendar: payroll month 1 is named for the month it opens | Apr | Apr |  | PASS |
+| Payslips calendar: payroll month 1 names the Apr tab | Apr | Apr |  | PASS |
 | Payslips calendar: payroll month 2 opens on the first day of tax week 5 | 44318 | 44318 | 0 | PASS |
 | Payslips calendar: payroll month 2 opens tax week 5 | 5 | 5 | 0 | PASS |
-| Payslips calendar: payroll month 2 is named for the month it opens | May | May |  | PASS |
+| Payslips calendar: payroll month 2 names the May tab | May | May |  | PASS |
 | Payslips calendar: payroll month 3 opens on the first day of tax week 9 | 44346 | 44346 | 0 | PASS |
 | Payslips calendar: payroll month 3 opens tax week 9 | 9 | 9 | 0 | PASS |
-| Payslips calendar: payroll month 3 is named for the month it opens | Jun | Jun |  | PASS |
+| Payslips calendar: payroll month 3 names the Jun tab | Jun | Jun |  | PASS |
 | Payslips calendar: payroll month 4 opens on the first day of tax week 14 | 44381 | 44381 | 0 | PASS |
 | Payslips calendar: payroll month 4 opens tax week 14 | 14 | 14 | 0 | PASS |
-| Payslips calendar: payroll month 4 is named for the month it opens | Jul | Jul |  | PASS |
+| Payslips calendar: payroll month 4 names the Jul tab | Jul | Jul |  | PASS |
 | Payslips calendar: payroll month 5 opens on the first day of tax week 18 | 44409 | 44409 | 0 | PASS |
 | Payslips calendar: payroll month 5 opens tax week 18 | 18 | 18 | 0 | PASS |
-| Payslips calendar: payroll month 5 is named for the month it opens | Aug | Aug |  | PASS |
+| Payslips calendar: payroll month 5 names the Aug tab | Aug | Aug |  | PASS |
 | Payslips calendar: payroll month 6 opens on the first day of tax week 22 | 44437 | 44437 | 0 | PASS |
 | Payslips calendar: payroll month 6 opens tax week 22 | 22 | 22 | 0 | PASS |
-| Payslips calendar: payroll month 6 is named for the month it opens | Sep | Sep |  | PASS |
+| Payslips calendar: payroll month 6 names the Sep tab | Sep | Sep |  | PASS |
 | Payslips calendar: payroll month 7 opens on the first day of tax week 27 | 44472 | 44472 | 0 | PASS |
 | Payslips calendar: payroll month 7 opens tax week 27 | 27 | 27 | 0 | PASS |
-| Payslips calendar: payroll month 7 is named for the month it opens | Oct | Oct |  | PASS |
+| Payslips calendar: payroll month 7 names the Oct tab | Oct | Oct |  | PASS |
 | Payslips calendar: payroll month 8 opens on the first day of tax week 31 | 44500 | 44500 | 0 | PASS |
 | Payslips calendar: payroll month 8 opens tax week 31 | 31 | 31 | 0 | PASS |
-| Payslips calendar: payroll month 8 is named for the month it opens | Nov | Nov |  | PASS |
+| Payslips calendar: payroll month 8 names the Nov tab | Nov | Nov |  | PASS |
 | Payslips calendar: payroll month 9 opens on the first day of tax week 35 | 44528 | 44528 | 0 | PASS |
 | Payslips calendar: payroll month 9 opens tax week 35 | 35 | 35 | 0 | PASS |
-| Payslips calendar: payroll month 9 is named for the month it opens | Dec | Dec |  | PASS |
+| Payslips calendar: payroll month 9 names the Dec tab | Dec | Dec |  | PASS |
 | Payslips calendar: payroll month 10 opens on the first day of tax week 40 | 44563 | 44563 | 0 | PASS |
 | Payslips calendar: payroll month 10 opens tax week 40 | 40 | 40 | 0 | PASS |
-| Payslips calendar: payroll month 10 is named for the month it opens | Jan | Jan |  | PASS |
+| Payslips calendar: payroll month 10 names the Jan tab | Jan | Jan |  | PASS |
 | Payslips calendar: payroll month 11 opens on the first day of tax week 44 | 44591 | 44591 | 0 | PASS |
 | Payslips calendar: payroll month 11 opens tax week 44 | 44 | 44 | 0 | PASS |
-| Payslips calendar: payroll month 11 is named for the month it opens | Feb | Feb |  | PASS |
+| Payslips calendar: payroll month 11 names the Feb tab | Feb | Feb |  | PASS |
 | Payslips calendar: payroll month 12 opens on the first day of tax week 48 | 44619 | 44619 | 0 | PASS |
 | Payslips calendar: payroll month 12 opens tax week 48 | 48 | 48 | 0 | PASS |
-| Payslips calendar: payroll month 12 is named for the month it opens | Mar | Mar |  | PASS |
+| Payslips calendar: payroll month 12 names the Mar tab | Mar | Mar |  | PASS |
 | Payslips calendar: the payroll months are numbered one to twelve in order | 0 | 0 | 0 | PASS |
 | Payslips calendar: every payroll month opens on its own first week | 12 | 12 | 0 | PASS |
-| WagesInterface Apr C4 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Apr D4 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Apr E4 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Apr H4 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Apr C4 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Apr D4 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Apr E4 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Apr H4 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Apr C17 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Apr D17 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Apr E17 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Apr H17 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Apr D4 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Apr E4 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Apr I4 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface May C5 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface May D5 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface May E5 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface May H5 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees May C5 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees May D5 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees May E5 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees May H5 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors May C18 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors May D18 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors May E18 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors May H18 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment May D5 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment May E5 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment May I5 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Jun C6 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Jun D6 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Jun E6 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Jun H6 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Jun C6 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Jun D6 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Jun E6 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Jun H6 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Jun C19 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jun D19 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jun E19 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jun H19 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Jun D6 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jun E6 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jun I6 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Jul C7 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Jul D7 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Jul E7 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Jul H7 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Jul C7 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Jul D7 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Jul E7 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Jul H7 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Jul C20 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jul D20 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jul E20 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jul H20 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Jul D7 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jul E7 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jul I7 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Aug C8 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Aug D8 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Aug E8 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Aug H8 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Aug C8 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Aug D8 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Aug E8 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Aug H8 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Aug C21 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Aug D21 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Aug E21 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Aug H21 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Aug D8 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Aug E8 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Aug I8 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Sep C9 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Sep D9 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Sep E9 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Sep H9 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Sep C9 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Sep D9 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Sep E9 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Sep H9 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Sep C22 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Sep D22 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Sep E22 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Sep H22 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Sep D9 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Sep E9 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Sep I9 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Oct C10 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Oct D10 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Oct E10 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Oct H10 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Oct C10 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Oct D10 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Oct E10 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Oct H10 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Oct C23 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Oct D23 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Oct E23 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Oct H23 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Oct D10 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Oct E10 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Oct I10 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Nov C11 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Nov D11 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Nov E11 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Nov H11 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Nov C11 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Nov D11 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Nov E11 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Nov H11 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Nov C24 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Nov D24 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Nov E24 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Nov H24 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Nov D11 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Nov E11 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Nov I11 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Dec C12 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Dec D12 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Dec E12 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Dec H12 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Dec C12 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Dec D12 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Dec E12 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Dec H12 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Dec C25 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Dec D25 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Dec E25 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Dec H25 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Dec D12 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Dec E12 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Dec I12 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Jan C13 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Jan D13 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Jan E13 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Jan H13 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Jan C13 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Jan D13 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Jan E13 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Jan H13 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Jan C26 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jan D26 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jan E26 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jan H26 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Jan D13 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jan E13 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jan I13 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Feb C14 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Feb D14 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Feb E14 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Feb H14 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Feb C14 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Feb D14 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Feb E14 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Feb H14 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Feb C27 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Feb D27 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Feb E27 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Feb H27 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Feb D14 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Feb E14 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Feb I14 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| WagesInterface Mar C15 gross pay | 6748 | 6748 | 0 | PASS |
-| WagesInterface Mar D15 income tax | 800 | 800 | 0 | PASS |
-| WagesInterface Mar E15 employee NI | 296 | 296 | 0 | PASS |
-| WagesInterface Mar H15 employer NI | 577.2 | 577.2 | 0 | PASS |
+| WagesInterface employees Mar C15 gross pay | 5700 | 5700 | 0 | PASS |
+| WagesInterface employees Mar D15 income tax | 800 | 800 | 0 | PASS |
+| WagesInterface employees Mar E15 employee NI | 296 | 296 | 0 | PASS |
+| WagesInterface employees Mar H15 employer NI | 570 | 570 | 0 | PASS |
+| WagesInterface directors Mar C28 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Mar D28 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Mar E28 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Mar H28 employer NI | 7.2 | 7.2 | 0 | PASS |
 | Payslips!Payment Mar D15 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Mar E15 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Mar I15 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
-| MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net | 81642.67 | 81642.6666666667 | -0.0033333332976326346 | PASS |
+| Payslips print: the page reads the May tab | May | May |  | PASS |
+| Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
+| Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
+| Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
+| Payslips print: gross pay is the pay the scenario recorded | 3500 | 3500 | 0 | PASS |
+| Payslips print: income tax is the tax the scenario recorded | 530 | 530 | 0 | PASS |
+| Payslips print: national insurance is the employee NI the scenario recorded | 200 | 200 | 0 | PASS |
+| Payslips print: net pay is the net pay the scenario recorded | 2770 | 2770 | 0 | PASS |
+| Payslips print: gross pay to date is every month printed so far | 7000 | 7000 | 0 | PASS |
+| Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
+| Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
+| Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
+| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
+| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45808 | 0 |  | **WARNING** |
+| Payslips!Jul F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
+| Payslips!Jul M51 gross pay | 3500 | 3500 | 0 | PASS |
+| Payslips!Jul N51 income tax | 530 | 530 | 0 | PASS |
+| Payslips!Jul O51 employee NI | 200 | 200 | 0 | PASS |
+| Payslips!Jul R51 net pay | 2770 | 2770 | 0 | PASS |
+| Payslips!Jul T51 employer NI | 382.5 | 382.5 | 0 | PASS |
+| Payslips!Jul S51 reference | PAY-EMP001-2025-07 | PAY-EMP001-2025-07 |  | PASS |
+| Payslips!Jul F52 employee name | Bob Williams | Bob Williams |  | PASS |
+| Payslips!Jul M52 gross pay | 2200 | 2200 | 0 | PASS |
+| Payslips!Jul N52 income tax | 270 | 270 | 0 | PASS |
+| Payslips!Jul O52 employee NI | 96 | 96 | 0 | PASS |
+| Payslips!Jul R52 net pay | 1834 | 1834 | 0 | PASS |
+| Payslips!Jul T52 employer NI | 187.5 | 187.5 | 0 | PASS |
+| Payslips!Jul S52 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
+| Payslips!Jul F53 employee name | Carol Smith | Carol Smith |  | PASS |
+| Payslips!Jul M53 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Jul N53 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Jul O53 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Jul R53 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Jul T53 employer NI | 7.2 | 7.2 | 0 | PASS |
+| Payslips!Jul S53 reference | PAY-EMP003-2025-07 | PAY-EMP003-2025-07 |  | PASS |
+| Payslips!Jul M49 wages paid date | 45869 | 45869 | 0 | PASS |
+| Payslips!Aug F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
+| Payslips!Aug M51 gross pay | 3500 | 3500 | 0 | PASS |
+| Payslips!Aug N51 income tax | 530 | 530 | 0 | PASS |
+| Payslips!Aug O51 employee NI | 200 | 200 | 0 | PASS |
+| Payslips!Aug R51 net pay | 2770 | 2770 | 0 | PASS |
+| Payslips!Aug T51 employer NI | 382.5 | 382.5 | 0 | PASS |
+| Payslips!Aug S51 reference | PAY-EMP001-2025-08 | PAY-EMP001-2025-08 |  | PASS |
+| Payslips!Aug F52 employee name | Bob Williams | Bob Williams |  | PASS |
+| Payslips!Aug M52 gross pay | 2200 | 2200 | 0 | PASS |
+| Payslips!Aug N52 income tax | 270 | 270 | 0 | PASS |
+| Payslips!Aug O52 employee NI | 96 | 96 | 0 | PASS |
+| Payslips!Aug R52 net pay | 1834 | 1834 | 0 | PASS |
+| Payslips!Aug T52 employer NI | 187.5 | 187.5 | 0 | PASS |
+| Payslips!Aug S52 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
+| Payslips!Aug F53 employee name | Carol Smith | Carol Smith |  | PASS |
+| Payslips!Aug M53 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Aug N53 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Aug O53 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Aug R53 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Aug T53 employer NI | 7.2 | 7.2 | 0 | PASS |
+| Payslips!Aug S53 reference | PAY-EMP003-2025-08 | PAY-EMP003-2025-08 |  | PASS |
+| Payslips!Aug M49 wages paid date | 45900 | 45900 | 0 | PASS |
+| Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F14 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F15 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul T41 period total (no weekly employer NI to bring forward) | 0 | 0 | 0 | PASS |
+| Payslips!Aug H11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M11 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M12 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M13 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M14 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M15 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = employees' gross pay + Purchases w-coded net | 69066.67 | 69066.6666666667 | -0.0033333332976326346 | PASS |
+| MnthP&L: Directors Wages (B19) = directors' gross pay + Purchases d-coded net | 16742.67 | 16742.6666666667 | -0.0033333332976326346 | PASS |
 | MnthP&L: Employers National Insurance (B20) = payroll employer NI | 6926.399999999999 | 6926.4 | +9.094947017729282e-13 | PASS |
 | Trial Balance: PAYE/NI creditor first-month movement (L34) = that month's payroll tax due | -1673.2 | -1673.2 | 0 | PASS |
 | Admin P6: corporation tax small profits rate | 19 | 19 | 0 | PASS |
@@ -827,7 +977,7 @@ Trade: IT consultancy and software development
 | CT600: underlying rate of corporation tax = the tax it bears over the profits chargeable | 18.999999999999968 | 19 | +3.197442310920451e-14 | PASS |
 | CT600: tax outstanding | 23575.2744166666 | 23575.2744166666 | 0 | PASS |
 | Fixed asset note: corporation tax for the year = CT charge | 23639.7805895061 | 23639.7805895061 | 0 | PASS |
-| Fixed asset note: directors emoluments = trial balance directors wages | 4166.66666666667 | 4166.66666666667 | 0 | PASS |
+| Fixed asset note: directors emoluments = trial balance directors wages | 16742.6666666667 | 16742.6666666667 | 0 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
 | CT: first tax row profit = chargeable profit by its share of those days | 124419.897839506 | 124419.897839506 | 0 | PASS |
 | CT: second tax row profit = chargeable profit by its share of those days | 0 | 0 | 0 | PASS |
@@ -867,9 +1017,16 @@ Trade: IT consultancy and software development
 | Category netting: Legal & Professional Fees (purchases l) net reaches MnthP&L!B33 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Charitable Donations (purchases y) net reaches MnthP&L!B37 with no residue | 0 | -3.979039320256561e-13 | -3.979039320256561e-13 | PASS |
 | Category netting: Goodwill written off (purchases z) net reaches MnthP&L!B38 with no residue | 0 | 0 | 0 | PASS |
-| Category netting: Wages and Salaries, less the payroll's own gross pay (purchases w) net reaches MnthP&L!B18 less the payroll gross pay with no residue | 0 | -3.399236447876319e-11 | -3.399236447876319e-11 | PASS |
+| Category netting: Wages and Salaries, less the employees' own gross pay (purchases w) net reaches MnthP&L!B18 less the employees' gross pay with no residue | 0 | -3.399236447876319e-11 | -3.399236447876319e-11 | PASS |
+| Category netting: Directors Wages, less the directors' own gross pay (purchases d) net reaches MnthP&L!B19 less the directors' gross pay with no residue | 0 | -3.3651303965598345e-11 | -3.3651303965598345e-11 | PASS |
 | Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue | 0 | 0 | 0 | PASS |
+| Salesinvoice Product Details: VAT Rate = the tax year's standard rate | 20 | 20 | 0 | PASS |
+| Salesinvoice: line VAT = price x quantity x the tax year's standard rate | 240 | 240 | 0 | PASS |
+| Salesinvoice: net total = the invoice's one line | 1200 | 1200 | 0 | PASS |
+| Salesinvoice: carriage charge lands on the invoice | 37.5 | 37.5 | 0 | PASS |
+| Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate | 247.5 | 247.5 | 0 | PASS |
+| Salesinvoice: amount payable = net plus carriage plus VAT | 1485 | 1485 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
 
@@ -915,7 +1072,8 @@ Journal amounts include VAT at 20%.
 | Legal & Professional Fees (purchases l) | 5,310 | 885 | 4,425 | MnthP&L!B33 | 4,425 | 0 |
 | Charitable Donations (purchases y) | 500 | 83.33 | 416.67 | MnthP&L!B37 | 416.67 | 0 |
 | Goodwill written off (purchases z) | 3,000 | 500 | 2,500 | MnthP&L!B38 | 2,500 | 0 |
-| Wages and Salaries, less the payroll's own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the payroll gross pay | 666.67 | 0 |
+| Wages and Salaries, less the employees' own gross pay (purchases w) | 800 | 133.33 | 666.67 | MnthP&L!B18 less the employees' gross pay | 666.67 | 0 |
+| Directors Wages, less the directors' own gross pay (purchases d) | 5,000 | 833.33 | 4,166.67 | MnthP&L!B19 less the directors' gross pay | 4,166.67 | 0 |
 | Capitalised fixed asset spend (purchases fa) | 63,000 | 10,500 | 52,500 | Fixedassets.xlsx!FAreconciliation!E11 | 52,500 | 0 |
 | Fixed asset disposal proceeds (sales fs) | 15,000 | 2,500 | 12,500 | Fixedassets.xlsx!FAreconciliation!K11 | 12,500 | 0 |
 
@@ -937,7 +1095,7 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Tangible assets (net book value) | 22,902 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tangible assets (net book value) | 182,902 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 10,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 10,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash and Bank Balances | 30,500 |
@@ -946,7 +1104,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 1,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan Account | 20,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Retained Profit and Loss account | 20,702 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Retained Profit and Loss account | 180,702 |
 | **Accuracy Check** | 0 |
 
 ## Profit & Loss Account
@@ -964,8 +1122,8 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Direct Costs (code o) | 2,670 |
 | Cost of Sales | 18,786.67 |
 | **Gross Profit** | 322,496.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 81,642.67 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Directors Non-PAYE (code d) | 4,166.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;PAYE Wages + Non-PAYE Employee | 69,066.67 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Directors Wages + Non-PAYE (code d) | 16,742.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Employers National Insurance | 6,926.4 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises (code r) | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Light, Heat, Power (code p) | 1,200 |
@@ -1046,7 +1204,7 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| Fixed Assets (NBV) | 48,990 |
+| Fixed Assets (NBV) | 208,990 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 6,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 7,900 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 192,995.43 |
@@ -1056,28 +1214,28 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 9,135.79 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 43,543.31 |
 | **Net Current Assets** | 163,352.12 |
-| **Total Assets less CL** | 212,342.12 |
+| **Total Assets less CL** | 372,342.12 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 13,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Creditors due after more than one year | 45,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Creditors | 58,000 |
-| **Net Assets** | 154,342.12 |
+| **Net Assets** | 314,342.12 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Called up share capital | 100 |
-| **Shareholders' Funds** | 154,342.12 |
+| **Shareholders' Funds** | 314,342.12 |
 
 ## Fixed Asset Note
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Original cost brought forward | 33,000 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Original cost brought forward | 233,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Additions | 52,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Disposals | 30,000 |
-| **Original cost carried forward** | 55,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation brought forward | 10,098 |
+| **Original cost carried forward** | 255,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Depreciation brought forward | 50,098 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Charge for the year | 13,740 |
 | &nbsp;&nbsp;&nbsp;&nbsp;On disposals | 17,328 |
-| **Depreciation carried forward** | 6,510 |
-| **Net book value** | 48,990 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 4,166.67 |
+| **Depreciation carried forward** | 46,510 |
+| **Net book value** | 208,990 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Directors emoluments | 16,742.67 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Corporation tax for the year | 23,639.78 |
 
 ## Directors' Report
@@ -1104,12 +1262,12 @@ Journal amounts include VAT at 20%.
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Land & Property | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Land & Property | 200,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Plant & Machinery | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Fixtures & Fittings | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Computers | 3,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Fixed Asset Motor Vehicles | 30,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Land & Property | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Land & Property | -40,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Plant & Machinery | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Fixtures | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Acc Depreciation Computers | -270 |
@@ -1127,7 +1285,7 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Directors Loan Account | -20,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Creditor Long Term | -25,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -20,702 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -180,702 |
 | **Opening Balances Audit Check** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 181,315.43 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 10,275 |
@@ -1194,7 +1352,7 @@ Journal amounts include VAT at 20%.
 | J4 | Registered Office Town | Manchester | gl-bus:organizationAddress |
 | N6 | Postcode | M1 1AA | gl-bus:organizationAddress |
 | O3 | Tax Reference per CT603 Notice | 1234567890 | gl-taf:taxRegistrationNumber |
-| E13 | Tangible assets (net book value) | 22902 | gl-cor:amount (opening.fixedAssets) |
+| E13 | Tangible assets (net book value) | 182902 | gl-cor:amount (opening.fixedAssets) |
 | E15 | Stock at cost | 10000 | accounts.assets.1100 (opening) |
 | E16 | Trade Debtors | 10800 | accounts.assets.1300 (opening) |
 | E18 | Cash and Bank Balances | 30500 | gl-cor:amount (opening.bank) |
@@ -1203,7 +1361,7 @@ Journal amounts include VAT at 20%.
 | E26 | Taxation and Social Security | 1500 | gl-cor:amount (opening.taxAndSocial) |
 | E30 | Directors Loan Account | 20000 | accounts.liabilities.2500 (opening) |
 | E33 | Called up share capital | 100 | accounts.capital.3000 (opening) |
-| E34 | Retained Profit and Loss account | 20702 | accounts.capital.3100 (opening) |
+| E34 | Retained Profit and Loss account | 180702 | accounts.capital.3100 (opening) |
 | E37 | **Accuracy Check** | 0 | gl-cor:amount (openingBalanceCheck) |
 | E48 |  | 0 |  |
 
@@ -1222,8 +1380,8 @@ Journal amounts include VAT at 20%.
 | B13 | Other Direct Costs (code o) | 2670 | accounts.purchases.5002 |
 | B14 | Cost of Sales | 18786.6666666667 | gl-cor:amount (costOfSales) |
 | B16 | **Gross Profit** | 322496.666666666 | gl-cor:amount (grossProfit) |
-| B18 | PAYE Wages + Non-PAYE Employee | 81642.6666666667 | dpl:WagesAndSalaries (combined) |
-| B19 | Directors Non-PAYE (code d) | 4166.66666666667 | accounts.purchases.5100 |
+| B18 | PAYE Wages + Non-PAYE Employee | 69066.6666666667 | dpl:WagesAndSalaries (combined) |
+| B19 | Directors Wages + Non-PAYE (code d) | 16742.6666666667 | accounts.purchases.5100 |
 | B20 | Employers National Insurance | 6926.4 | dpl:SocialSecurityCosts |
 | B21 | Premises (code r) | 12000 | accounts.purchases.5200 |
 | B22 | Light, Heat, Power (code p) | 1200 | accounts.purchases.5201 |
@@ -1654,7 +1812,7 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| F6 | Fixed Assets (NBV) | 48990 | gl-cor:amount (pubBS.fixedAssets) |
+| F6 | Fixed Assets (NBV) | 208990 | gl-cor:amount (pubBS.fixedAssets) |
 | E10 | Stock at cost | 6000 | accounts.assets.1100 (pubBS) |
 | E11 | Trade Debtors | 7900 | accounts.assets.1300 (pubBS) |
 | E12 | Cash at bank and in hand | 192995.43 | gl-cor:amount (pubBS.bankCash) |
@@ -1664,39 +1822,39 @@ Journal amounts include VAT at 20%.
 | E18 | Taxation and Social Security | 9135.78833333336 | gl-cor:amount (pubBS.taxAndSocial) |
 | E20 | Current Liabilities | 43543.31275 | gl-cor:amount (pubBS.creditors) |
 | F22 | **Net Current Assets** | 163352.11725 | gl-cor:amount (pubBS.netCurrent) |
-| F26 | **Total Assets less CL** | 212342.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
+| F26 | **Total Assets less CL** | 372342.11725 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 13000 | accounts.liabilities.2500 (pubBS) |
 | E30 | Creditors due after more than one year | 45000 | accounts.liabilities.2600 (pubBS) |
 | F31 | Other Creditors | 58000 | gl-cor:amount (pubBS.otherCred) |
-| F33 | **Net Assets** | 154342.11725 | gl-cor:amount (pubBS.netAssets) |
+| F33 | **Net Assets** | 314342.11725 | gl-cor:amount (pubBS.netAssets) |
 | F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
-| F39 | **Shareholders' Funds** | 154342.11725 | gl-cor:amount (pubBS.equity) |
+| F39 | **Shareholders' Funds** | 314342.11725 | gl-cor:amount (pubBS.equity) |
 | D2 |  | 44651 |  |
 
 ### PubNotes
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G8 | Original cost brought forward | 33000 | gl-cor:amount (note1.costBf) |
+| G8 | Original cost brought forward | 233000 | gl-cor:amount (note1.costBf) |
 | G9 | Additions | 52500 | gl-cor:amount (note1.additions) |
 | G10 | Disposals | 30000 | gl-cor:amount (note1.disposals) |
-| G11 | **Original cost carried forward** | 55500 | gl-cor:amount (note1.costCf) |
-| G14 | Depreciation brought forward | 10098 | gl-cor:amount (note1.depBf) |
+| G11 | **Original cost carried forward** | 255500 | gl-cor:amount (note1.costCf) |
+| G14 | Depreciation brought forward | 50098 | gl-cor:amount (note1.depBf) |
 | G15 | Charge for the year | 13740 | gl-cor:amount (note1.charge) |
 | G16 | On disposals | 17328 | gl-cor:amount (note1.depDisposals) |
-| G17 | **Depreciation carried forward** | 6510 | gl-cor:amount (note1.depCf) |
-| G20 | **Net book value** | 48990 | gl-cor:amount (note1.nbv) |
-| D35 | Directors emoluments | 4166.66666666667 | gl-cor:amount (note2.emoluments) |
+| G17 | **Depreciation carried forward** | 46510 | gl-cor:amount (note1.depCf) |
+| G20 | **Net book value** | 208990 | gl-cor:amount (note1.nbv) |
+| D35 | Directors emoluments | 16742.6666666667 | gl-cor:amount (note2.emoluments) |
 | D41 | Corporation tax for the year | 23639.7805895061 | gl-cor:taxAmount (note4.ct) |
-| B8 |  | 0 |  |
+| B8 |  | 200000 |  |
 | B9 |  | 0 |  |
 | B10 |  | 0 |  |
-| B11 |  | 0 |  |
-| B14 |  | 0 |  |
+| B11 |  | 200000 |  |
+| B14 |  | 40000 |  |
 | B15 |  | 0 |  |
 | B16 |  | 0 |  |
-| B17 |  | 0 |  |
-| B20 |  | 0 |  |
+| B17 |  | 40000 |  |
+| B20 |  | 160000 |  |
 | C8 |  | 0 |  |
 | C9 |  | 52500 |  |
 | C10 |  | 0 |  |
@@ -1768,12 +1926,12 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D6 | Opening: Fixed Asset Land & Property | 0 | accounts.assets (opening cost) |
+| D6 | Opening: Fixed Asset Land & Property | 200000 | accounts.assets (opening cost) |
 | D7 | Opening: Fixed Asset Plant & Machinery | 0 | accounts.assets.0010 (opening cost) |
 | D8 | Opening: Fixed Asset Fixtures & Fittings | 0 | accounts.assets.0020 (opening cost) |
 | D9 | Opening: Fixed Asset Computers | 3000 | accounts.assets.0030 (opening cost) |
 | D10 | Opening: Fixed Asset Motor Vehicles | 30000 | accounts.assets.0040 (opening cost) |
-| D11 | Opening: Acc Depreciation Land & Property | 0 | accounts.assets (opening dep) |
+| D11 | Opening: Acc Depreciation Land & Property | -40000 | accounts.assets (opening dep) |
 | D12 | Opening: Acc Depreciation Plant & Machinery | 0 | accounts.assets.0010 (opening dep) |
 | D13 | Opening: Acc Depreciation Fixtures | 0 | accounts.assets.0020 (opening dep) |
 | D14 | Opening: Acc Depreciation Computers | -270 | accounts.assets.0030 (opening dep) |
@@ -1791,7 +1949,7 @@ Journal amounts include VAT at 20%.
 | D39 | Opening: Directors Loan Account | -20000 | accounts.liabilities.2500 (opening) |
 | D40 | Opening: Creditor Long Term | -25000 | accounts.liabilities.2600 (opening) |
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
-| D43 | Opening: Revenue Reserve P&L Account | -20702 | accounts.capital.3100 (opening) |
+| D43 | Opening: Revenue Reserve P&L Account | -180702 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
 | EJ22 | Final: Bank Current Account | 181315.43 | accounts.assets.1200 (final) |
 | EJ23 | Final: Bank Savings Account | 10275 | accounts.assets.1210 (final) |
@@ -1802,8 +1960,8 @@ Journal amounts include VAT at 20%.
 | EJ39 | Final: Directors Loan Account | -13000 | accounts.liabilities.2500 (final) |
 | EJ40 | Final: Creditor Long Term | -45000 | accounts.liabilities.2600 (final) |
 | EJ48 | Final: Dividends declared | 15000 | gl-cor:amount (dividendsDeclared) |
-| EJ91 | **Audit Accuracy Check** | 3.24689608532935e-10 | gl-cor:amount (trialBalanceCheck) |
-| EJ66 |  | 4166.66666666667 |  |
+| EJ91 | **Audit Accuracy Check** | 3.55612428393215e-10 | gl-cor:amount (trialBalanceCheck) |
+| EJ66 |  | 16742.6666666667 |  |
 | EJ28 |  | -10832.25 |  |
 | EJ32 |  | 0 |  |
 | EJ33 |  | -9135.78833333336 |  |
@@ -1851,54 +2009,102 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C4 |  | 6748 |  |
+| C4 |  | 5700 |  |
 | D4 |  | 800 |  |
 | E4 |  | 296 |  |
-| H4 |  | 577.2 |  |
-| C5 |  | 6748 |  |
+| H4 |  | 570 |  |
+| C5 |  | 5700 |  |
 | D5 |  | 800 |  |
 | E5 |  | 296 |  |
-| H5 |  | 577.2 |  |
-| C6 |  | 6748 |  |
+| H5 |  | 570 |  |
+| C6 |  | 5700 |  |
 | D6 |  | 800 |  |
 | E6 |  | 296 |  |
-| H6 |  | 577.2 |  |
-| C7 |  | 6748 |  |
+| H6 |  | 570 |  |
+| C7 |  | 5700 |  |
 | D7 |  | 800 |  |
 | E7 |  | 296 |  |
-| H7 |  | 577.2 |  |
-| C8 |  | 6748 |  |
+| H7 |  | 570 |  |
+| C8 |  | 5700 |  |
 | D8 |  | 800 |  |
 | E8 |  | 296 |  |
-| H8 |  | 577.2 |  |
-| C9 |  | 6748 |  |
+| H8 |  | 570 |  |
+| C9 |  | 5700 |  |
 | D9 |  | 800 |  |
 | E9 |  | 296 |  |
-| H9 |  | 577.2 |  |
-| C10 |  | 6748 |  |
+| H9 |  | 570 |  |
+| C10 |  | 5700 |  |
 | D10 |  | 800 |  |
 | E10 |  | 296 |  |
-| H10 |  | 577.2 |  |
-| C11 |  | 6748 |  |
+| H10 |  | 570 |  |
+| C11 |  | 5700 |  |
 | D11 |  | 800 |  |
 | E11 |  | 296 |  |
-| H11 |  | 577.2 |  |
-| C12 |  | 6748 |  |
+| H11 |  | 570 |  |
+| C12 |  | 5700 |  |
 | D12 |  | 800 |  |
 | E12 |  | 296 |  |
-| H12 |  | 577.2 |  |
-| C13 |  | 6748 |  |
+| H12 |  | 570 |  |
+| C13 |  | 5700 |  |
 | D13 |  | 800 |  |
 | E13 |  | 296 |  |
-| H13 |  | 577.2 |  |
-| C14 |  | 6748 |  |
+| H13 |  | 570 |  |
+| C14 |  | 5700 |  |
 | D14 |  | 800 |  |
 | E14 |  | 296 |  |
-| H14 |  | 577.2 |  |
-| C15 |  | 6748 |  |
+| H14 |  | 570 |  |
+| C15 |  | 5700 |  |
 | D15 |  | 800 |  |
 | E15 |  | 296 |  |
-| H15 |  | 577.2 |  |
+| H15 |  | 570 |  |
+| C17 |  | 1048 |  |
+| D17 |  | 0 |  |
+| E17 |  | 0 |  |
+| H17 |  | 7.2 |  |
+| C18 |  | 1048 |  |
+| D18 |  | 0 |  |
+| E18 |  | 0 |  |
+| H18 |  | 7.2 |  |
+| C19 |  | 1048 |  |
+| D19 |  | 0 |  |
+| E19 |  | 0 |  |
+| H19 |  | 7.2 |  |
+| C20 |  | 1048 |  |
+| D20 |  | 0 |  |
+| E20 |  | 0 |  |
+| H20 |  | 7.2 |  |
+| C21 |  | 1048 |  |
+| D21 |  | 0 |  |
+| E21 |  | 0 |  |
+| H21 |  | 7.2 |  |
+| C22 |  | 1048 |  |
+| D22 |  | 0 |  |
+| E22 |  | 0 |  |
+| H22 |  | 7.2 |  |
+| C23 |  | 1048 |  |
+| D23 |  | 0 |  |
+| E23 |  | 0 |  |
+| H23 |  | 7.2 |  |
+| C24 |  | 1048 |  |
+| D24 |  | 0 |  |
+| E24 |  | 0 |  |
+| H24 |  | 7.2 |  |
+| C25 |  | 1048 |  |
+| D25 |  | 0 |  |
+| E25 |  | 0 |  |
+| H25 |  | 7.2 |  |
+| C26 |  | 1048 |  |
+| D26 |  | 0 |  |
+| E26 |  | 0 |  |
+| H26 |  | 7.2 |  |
+| C27 |  | 1048 |  |
+| D27 |  | 0 |  |
+| E27 |  | 0 |  |
+| H27 |  | 7.2 |  |
+| C28 |  | 1048 |  |
+| D28 |  | 0 |  |
+| E28 |  | 0 |  |
+| H28 |  | 7.2 |  |
 
 ### Sales.xlsx!Apr
 
@@ -2417,12 +2623,12 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E1 | Total cost of every asset on the schedule, assets sold in the year included | 85500 |  |
-| F1 | Total accumulated depreciation brought forward | 10098 |  |
-| G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
+| E1 | Total cost of every asset on the schedule, assets sold in the year included | 285500 |  |
+| F1 | Total accumulated depreciation brought forward | 50098 |  |
+| G1 | Total net book value brought forward (cost less depreciation brought forward) | 182902 |  |
 | I1 | Total depreciation charged for the year | 13740 |  |
-| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
-| K1 | Total net book value carried forward, disposals removed | 48990 |  |
+| J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 63838 |  |
+| K1 | Total net book value carried forward, disposals removed | 208990 |  |
 | Q1 | Total annual investment allowance claimed | 52500 |  |
 | R1 | Total writing down allowance claimed | 4320 |  |
 | V1 | Sale proceeds of the assets sold in the year, net of VAT | 12500 |  |
@@ -2430,10 +2636,10 @@ Journal amounts include VAT at 20%.
 | X1 | Accumulated depreciation on the assets sold in the year | 17328 |  |
 | Y1 | Balancing allowance on the disposals | 7180 |  |
 | Z1 | Balancing charge on the disposals | 0 |  |
-| E57 | Cost of the assets owned at the start of the year | 33000 |  |
+| E57 | Cost of the assets owned at the start of the year | 233000 |  |
 | E110 | Cost of the assets bought during the year | 52500 |  |
-| E11 |  | 0 |  |
-| F11 |  | 0 |  |
+| E11 |  | 200000 |  |
+| F11 |  | 40000 |  |
 | I11 |  | 0 |  |
 | W11 |  | 0 |  |
 | X11 |  | 0 |  |
@@ -2503,7 +2709,11 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | E11 | Additions the schedule lists, net of VAT | 52500 |  |
+| E13 | Fixed asset purchases the purchase journal carries, net of VAT | 52500 |  |
+| E15 | Purchases less schedule additions | 0 |  |
 | K11 | Disposal proceeds the schedule lists, net of VAT | 12500 |  |
+| K13 | Fixed asset sales the sales journal carries, net of VAT | 12500 |  |
+| K15 | Sales less schedule disposals | 0 |  |
 
 ### Fixedassets.xlsx!HPfinance
 
@@ -2557,6 +2767,26 @@ Journal amounts include VAT at 20%.
 | D15 |  | 873.2 |  |
 | E15 |  | 800 |  |
 | I15 |  | 1673.2 |  |
+
+### Payslips.xlsx!Payslips
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H3 |  | May |  |
+| H4 |  | 48 |  |
+| L7 |  | MONTHLY PAYROLL |  |
+| I9 |  | 45808 |  |
+| I10 |  | 2 |  |
+| M8 |  | 1 |  |
+| G14 |  | 3500 |  |
+| H14 |  | 530 |  |
+| I14 |  | 200 |  |
+| M14 |  | 2770 |  |
+| G16 |  | 7000 |  |
+| H16 |  | 1060 |  |
+| I16 |  | 400 |  |
+| M16 |  | 5540 |  |
+| M18 |  | 0 |  |
 
 ### Payslips.xlsx!Admin
 
@@ -2623,6 +2853,97 @@ Journal amounts include VAT at 20%.
 | D329 |  | 12 |  |
 | F329 |  | 1 |  |
 
+### Payslips.xlsx!Jul
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T41 |  | 0 |  |
+| M49 |  | 45869 |  |
+| F51 |  | Alice Johnson |  |
+| M51 |  | 3500 |  |
+| N51 |  | 530 |  |
+| O51 |  | 200 |  |
+| R51 |  | 2770 |  |
+| S51 |  | PAY-EMP001-2025-07 |  |
+| T51 |  | 382.5 |  |
+| F52 |  | Bob Williams |  |
+| M52 |  | 2200 |  |
+| N52 |  | 270 |  |
+| O52 |  | 96 |  |
+| R52 |  | 1834 |  |
+| S52 |  | PAY-EMP002-2025-07 |  |
+| T52 |  | 187.5 |  |
+| F53 |  | Carol Smith |  |
+| M53 |  | 1048 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| R53 |  | 1048 |  |
+| S53 |  | PAY-EMP003-2025-07 |  |
+| T53 |  | 7.2 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Payslips.xlsx!Aug
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H11 |  | 0 |  |
+| I11 |  | 0 |  |
+| J11 |  | 0 |  |
+| L11 |  | 0 |  |
+| H12 |  | 0 |  |
+| I12 |  | 0 |  |
+| J12 |  | 0 |  |
+| L12 |  | 0 |  |
+| K12 |  | 0 |  |
+| H13 |  | 0 |  |
+| I13 |  | 0 |  |
+| J13 |  | 0 |  |
+| L13 |  | 0 |  |
+| K13 |  | 0 |  |
+| H14 |  | 0 |  |
+| I14 |  | 0 |  |
+| J14 |  | 0 |  |
+| L14 |  | 0 |  |
+| K14 |  | 0 |  |
+| H15 |  | 0 |  |
+| I15 |  | 0 |  |
+| J15 |  | 0 |  |
+| L15 |  | 0 |  |
+| K15 |  | 0 |  |
+| M49 |  | 45900 |  |
+| F51 |  | Alice Johnson |  |
+| M51 |  | 3500 |  |
+| N51 |  | 530 |  |
+| O51 |  | 200 |  |
+| R51 |  | 2770 |  |
+| S51 |  | PAY-EMP001-2025-08 |  |
+| T51 |  | 382.5 |  |
+| F52 |  | Bob Williams |  |
+| M52 |  | 2200 |  |
+| N52 |  | 270 |  |
+| O52 |  | 96 |  |
+| R52 |  | 1834 |  |
+| S52 |  | PAY-EMP002-2025-08 |  |
+| T52 |  | 187.5 |  |
+| F53 |  | Carol Smith |  |
+| M53 |  | 1048 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| R53 |  | 1048 |  |
+| S53 |  | PAY-EMP003-2025-08 |  |
+| T53 |  | 7.2 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
 ### Companysecretary.xlsx!RegisterofMembers
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -2648,6 +2969,21 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C2 |  | 30000 |  |
+
+### Companysecretary.xlsx!Directors&Secretary
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A2 |  | Carol Smith |  |
+| B2 |  | 123 High Street, Manchester, M1 1AA |  |
+
+### Companysecretary.xlsx!DirectorsInterests
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| A2 |  | Carol Smith |  |
+| B2 |  | 123 High Street, Manchester, M1 1AA |  |
+| C2 |  | 43831 |  |
 
 ### expensesform.xlsx!Month 01
 
@@ -2720,6 +3056,25 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C30 |  | 0.45 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 1200 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 247.5 |  |
+| P64 |  | 1485 |  |
+| J38 |  | 1200 |  |
+| L38 |  | 1 |  |
+| P38 |  | 1200 |  |
+| V38 |  | 240 |  |
 
 ### Currentaccount.xlsx!Mar
 
