@@ -386,11 +386,13 @@ structure over that specification.
 
 **In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
 
-- [ ] W-pre — the static foundations (Sonnet, worktree agent) — dispatched: the page shell
-  with the design system and all four layouts on a static fixture snapshot; the SA103S and
-  Income Tax form-render prototypes; the `download.html` entry panel. Pure `web/` files, no
-  engine imports — its markup and CSS survive W1's wiring, and W0 stays untouched while the
-  engine modules are hot.
+- [x] W-pre — landed (`3a5ad81a`, merged): the shell with the six tokens and all four
+  layouts as real media-query combinations, the three-level drill, the pencil-correction
+  mark; the SA103S and Income Tax form renders; the `download.html` panel. The snapshot
+  (`books/bst-data.js`, the W1 replacement point) derives from the real `bst-scenario-basic`
+  fixture and reconciles to the committed report's figures. 33/33 browser tests, four
+  viewport screenshots reviewed. The other two example fixtures are visibly-disabled
+  buttons until W1; entry cells are styled but inert until W3.
 
 **Two boundary decisions, settled before any dispatch.**
 
