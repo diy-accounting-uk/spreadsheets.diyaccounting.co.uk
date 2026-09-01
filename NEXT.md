@@ -14,9 +14,18 @@ absences with reasons, never silently closed.
 
 - [ ] T5: payslip payment date (Sonnet, worktree agent) — in flight; template surgery
   repointing `Payslips!M18` at the paid-date cell in SE and Ltd, warning flips to a check.
-- [ ] T7: blank-package calendar (Opus, worktree agent) — operator decided (2026-09-01): the
-  blank package shows accounting-frame dates; the in-tab calendar reorients with the renamed
-  tabs. Dispatched.
+- [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
+  carries that tab's month of the accounting period (generator-only, Ltd non-March, March
+  byte-stable), with a breakable per-tab check in both engines.
+- [ ] blank-package weekly payroll caches are a year stale (surfaced by T7):
+  `rollPayslipsAdminDateReads` rolls only plain `=Admin!B<n>` reads, so the weekly blocks'
+  chained cells keep the template year's caches on any blank package whose payroll year
+  differs (recalculation fixes them; the monthly gate keeps the blocks inert). Needs an
+  evaluator for the tab-to-tab weekly chain; moves March package bytes.
+- [ ] Payslips `Payment` sheet pairs renamed-tab totals with tax-frame month ends (operator
+  decision first): it is a PAYE schedule, where the tax calendar is arguably correct, so
+  decide the frame before dispatching; its date columns are not read by the reconciliation
+  today.
 - [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
   rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
   `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
@@ -67,7 +76,6 @@ follow the reconciliation-bug method.
 - `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
   browser page, with a render equivalent for every reconciliation-covered sheet; specified, not started.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
-- `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
 

@@ -5,8 +5,8 @@ pipeline's own modules run in a browser end to end: xlsx → diya-gl → recalcu
 xlsx. BST is the cheapest vehicle — the simplest package that exercises the whole path. Three
 downstream consumers are why the spike is worth running:
 
-- **Submit VAT extract** (`PLAN_VAT_EXPORT_FOR_SUBMIT.md`) — the real product; this spike's
-  import is its front half.
+- **Submit VAT extract** — the real product in prospect (the spreadsheets half of Submit's
+  backlog item B16); this spike's import is its front half.
 - **The packaged JS library** that `_developers/PLAN_DIYA_CLOUD.md` assertion 2 requires this
   repo to output. This spike is that library's first browser consumer, so bugs surface here
   rather than in Submit.
@@ -188,21 +188,55 @@ keyboard-editable, WCAG AA contrast on both themes.
 
 ## Spike zero — the extractor as a CLI
 
-Before any browser work: extraction alone, as a tool run against a customer's own file.
+Before any browser work: the import half as a tool, run against a customer's own file.
 
 ```
 npm run export-bst -- my-file.xlsx
 ```
 
-A thin wrapper over the existing export path (`app/bin/export.js` already does this for a
-package directory): accept one `.xlsx` (or a `.zip`, unzipped to find the workbook), run
-`extractBstTransactions` + `extractBook`, validate against the v2 schemas, and write
-`book.toml` + `lines.jsonl` beside the input (or to `--output-dir`). Errors print the schema
-violations, not a stack trace.
+**Surface** (decided 2026-09-01): `app/bin/export.js` gains a `--file` mode accepting one
+`.xlsx` (or a `.zip`, unzipped to find the workbook) alongside the existing `--source-dir`;
+the npm script is an alias for `--package bst --file`. One tool, one code path, no second
+entry point to drift.
 
-*Verify: run it on a freshly generated BST package and the output matches the CI tuple's
-`data/` byte-for-byte; run it on each of the three fixture-generated packages and the
-verify-roundtrip data half scores the same zeros CI holds.*
+**Each run emits three things**, beside the input or to `--output-dir`:
+
+- **`book.toml` + `lines.jsonl`** — the diya-gl data `D`, validated against the v2 schemas;
+  errors print the schema violations, not a stack trace. `D` carries inputs only — derived
+  values never enter it, by the tuple contract; everything computed lives in `R`.
+- **`report.json`** — `R`, computed by the JS engine from the extracted `D`, so the CLI is
+  the whole D→R loop in one run: extract, recalculate, report.
+- **`overtyped.json`** — the provenance sidecar: every cell the template ships as a formula
+  that arrived as a typed literal (a bare `<v>` where the template carries `<f>`), keyed
+  `sheet!cell`, with the template's formula, the value found, and — where `CELL_MAP` or an
+  extractor maps that cell — the book field or line it feeds. This is the page's future
+  "customer overtyped a formula" annotation, proven as data first; the template formula
+  inventory already exists (`formula-presence-guard.test.js` guards it).
+
+**The edit→recalc harness lands with spike zero.** The page's core mechanic, proven in Node
+with no browser: parse `lines.jsonl` (`diya-gl-canonical.js`), apply a named edit in memory,
+run `calculateFromDiyaGl`, assert the movement in the new `R`. Recalculation never rewrites
+lines — `D` is input-only — so an unchanged book recalculates to an unchanged `R`, and an
+edit moves exactly the figures it should. The serialization layer under test is one module,
+`diya-gl-canonical.js`, already EQ2-gated. The named cases:
+
+- add a purchase of X → profit falls by X, turnover unchanged;
+- add a sale of Y → profit and turnover rise by Y;
+- change a line's amount → its month, category and year totals move by the difference, and
+  the checks panel's verdicts stay green;
+- the identity: parse → serialize with no edit is byte-identical.
+
+**Tests cover the full BST reconciliation range with no LibreOffice in the loop**: unit
+tests drive all three fixtures (`bst-scenario-basic`, `bst-brickwork-pro-nonvat`,
+`bst-sp-sixty`) through generate → `--file` export → recalculate entirely on JSZip buffers,
+asserting the exported `D` equals the fixture and `R` matches the calculator run on the
+fixture directly. Byte-for-byte agreement with a LibreOffice-recalculated package stays
+where it already lives, in the CI roundtrip jobs.
+
+*Verify: on a freshly generated BST package the output matches the CI tuple's `data/`
+byte-for-byte and `overtyped.json` is empty; turn one template formula cell into a literal
+and exactly that cell appears in `overtyped.json`, nothing else; the four edit cases pass on
+all three fixtures.*
 
 This is the smallest end-to-end proof of the import half on arbitrary files, and it is the
 tool half of the Submit VAT extract regardless of whether the page ever ships.
@@ -255,7 +289,7 @@ beside it; the bundle build joins the existing build steps in CI.
 ## Out of scope for the spike
 
 SE/Ltd/Taxi (multi-file packages and external links change the import story), the guide PDFs in
-the saved zip, VAT hand-off to Submit (`PLAN_VAT_EXPORT_FOR_SUBMIT.md` — this spike's import is
-its natural front half), and saved-account persistence (that is DIYA Cloud; the working-book
+the saved zip, VAT hand-off to Submit (this spike's import is its natural front half), and
+saved-account persistence (that is DIYA Cloud; the working-book
 autosave in phase 5 is the whole of what this page keeps).
 
