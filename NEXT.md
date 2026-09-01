@@ -17,7 +17,18 @@ held as declared absences with reasons, never silently closed.
   tests on the merged branch; SE 111→102, Ltd 156→139). The budget re-measures on the
   combined tree once the sibling lands, since each track measured without the other's changes.
 - [ ] asset-attributes (Opus) — waits on wave 1
-- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks The coordinator batch (24 items) merged to main in PR #48; history lives in its
+- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks.
+  The rates track's unmappable fields feed it: the AIA relief-scale factor (never the absolute
+  cap), reduced VAT rate, associated companies, Class 2 small-profits threshold, Class 1
+  employee NI fields, and Ltd's whole `tax.incomeTax` (no `[income_tax]` in `ltd-*.toml`).
+- [ ] batch remainder, surfaced by the rates track:
+  - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
+    `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`
+    where it is 0), and the Ltd master's employer-NI block matches `ltd-2025.toml` not the
+    `ltd-2024.toml` the roundtrip job generates with.
+  - stale/wrong CELL_MAP tax labels: dead non-schema field names at `app/products/se.js:904-917`;
+    `bst.js:278` and `taxi.js:286` label Admin!N14/N13 `higherRateThreshold` where the value is
+    the additional-rate threshold. The coordinator batch (24 items) merged to main in PR #48; history lives in its
 merge commits. One operator step remains from it: the generate-commit refresh — the
 committed `packages/` are stale derived artifacts until it runs, and it clears the last
 reconciliation residue in the committed reports.
