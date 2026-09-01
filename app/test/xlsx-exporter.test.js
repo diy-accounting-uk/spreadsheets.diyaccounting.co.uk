@@ -19,11 +19,13 @@ import {
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
 import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
+import { CELL_MAP as LTD_CELL_MAP } from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -691,5 +693,270 @@ describe("extractPayrollTransactions — the month's own block row", () => {
   it("takes no line from a block row the sheet holds no pay on", async () => {
     const lines = await exportedPayroll({ Jun: { M59: 45838, N61: 0, O61: 0, T61: 0 } });
     expect(lines).toEqual([]);
+  });
+});
+
+// ── The Ltd company registers and payroll: members, directors, employees ──
+//
+// RegisterofMembers, Directors&Secretary and the Payslips Employee sheet each
+// carry one of the book's registers. A director who also holds shares is
+// dated and counted from the register of members, the same link the writer
+// draws when it fills DirectorsInterests.
+
+const LTD_APRIL_THIRTIETH = 45777; // 2025-04-30
+const LTD_MAY_THIRTY_FIRST = 45808; // 2025-05-31
+const CAROL_ACQUIRED = 43831; // 2020-01-01
+const DAVID_ACQUIRED = 44362; // 2021-06-15
+const BOB_JOINED = 45809; // 2025-06-01, after the payroll year opens on 2025-04-06
+
+// periodCovered() takes the accounting period from a posting; a register
+// test that carries no transaction of its own still needs one to date the
+// package by.
+const DUMMY_POSTING = { sourceJournalID: "sales", postingDate: "2025-04-01", accountMainID: "4000", amount: 1 };
+
+function employeeSheetBlock(base, { surname, forenames, startDateSerial, weekly = false, niCategory = "A" }) {
+  const cells = {
+    [`D${base + 2}`]: surname,
+    [`D${base + 3}`]: forenames,
+    [`D${base + 15}`]: weekly ? "W" : "M",
+    [`D${base + 16}`]: 1,
+    [`D${base + 17}`]: niCategory,
+  };
+  if (startDateSerial !== undefined) cells[`D${base + 11}`] = startDateSerial;
+  return cells;
+}
+
+async function ltdRegistersPackage({
+  registerofMembers = {},
+  directorsAndSecretary = {},
+  payslipsApril = {},
+  payslipsMay = {},
+  employee = {},
+} = {}) {
+  return writePackage({
+    "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+    "Sales.xlsx": { Apr: { G2: 20 } },
+    "Purchases.xlsx": { Apr: {} },
+    "Payslips.xlsx": { Employee: employee, Apr: payslipsApril, May: payslipsMay },
+    "Companysecretary.xlsx": { "RegisterofMembers": registerofMembers, "Directors&Secretary": directorsAndSecretary },
+  });
+}
+
+describe("extractBook — the Ltd registers of members and directors", () => {
+  const registerofMembers = {
+    A3: "Carol Smith",
+    C3: CAROL_ACQUIRED,
+    F3: 1,
+    G3: 60,
+    A4: "David Brown",
+    C4: DAVID_ACQUIRED,
+    F4: 1,
+    G4: 25,
+  };
+  const directorsAndSecretary = {
+    A2: "Carol Smith",
+    D2: "Managing Director",
+    // Row 3 is the template's own secretary placeholder: a capacity with no
+    // name, exactly the shape the shipped Directors&Secretary sheet carries
+    // for an officer the generator never wrote.
+    D3: "Company Secretary",
+  };
+
+  async function exportedRegisters() {
+    const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
+    return extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+  }
+
+  it("reads the register of members back with the shares and the date each holding was acquired", async () => {
+    const book = await exportedRegisters();
+    expect(book.members).toEqual([
+      { memberID: "M1", name: "Carol Smith", shares: 60, acquiredDate: "2020-01-01" },
+      { memberID: "M2", name: "David Brown", shares: 25, acquiredDate: "2021-06-15" },
+    ]);
+  });
+
+  it("does not carry the register's single company-wide nominal value back onto a member", async () => {
+    // The register prices every holding at the same £1 nominal value; the
+    // book schema keeps a per-member field for it but the loader never fills
+    // one, so reading it back would only ever be an extra field no fixture
+    // declares.
+    const book = await exportedRegisters();
+    expect(book.members.some((member) => "nominalValue" in member)).toBe(false);
+  });
+
+  it("names a director from Directors&Secretary and dates and counts their holding off the register of members", async () => {
+    const book = await exportedRegisters();
+    expect(book.directors).toEqual([{ name: "Carol Smith", role: "Managing Director", shares: 60, appointed: "2020-01-01" }]);
+  });
+
+  it("takes no director from a capacity-only row the writer never put a name on", async () => {
+    const book = await exportedRegisters();
+    expect(book.directors.find((director) => director.role === "Company Secretary")).toBeUndefined();
+  });
+
+  it("leaves shares and appointed off a director who holds no shares", async () => {
+    const dir = await ltdRegistersPackage({
+      registerofMembers: {},
+      directorsAndSecretary: { A2: "Priya Patel", D2: "Finance Director" },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.directors).toEqual([{ name: "Priya Patel", role: "Finance Director" }]);
+  });
+
+  it("breaks only the shares a corrupted RegisterofMembers cell carries, on both the member and the director it names", async () => {
+    const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Companysecretary.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = "xl/worksheets/sheet1.xml";
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="G3"><v>60</v></c>`, `<c r="G3"><v>99</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.members[0].shares).toBe(99);
+    expect(after.directors[0].shares).toBe(99);
+    expect(after.members[1]).toEqual(before.members[1]);
+    expect(after.directors[0].name).toBe(before.directors[0].name);
+    expect(after.directors[0].appointed).toBe(before.directors[0].appointed);
+  });
+});
+
+describe("extractBook — the Ltd payroll register", () => {
+  async function payrollLinesFor(dir) {
+    return extractPayrollTransactions(dir);
+  }
+
+  it("recovers the book's own employee id from the payslip reference, not the sheet's payroll number", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP007-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].employeeID).toBe("EMP007");
+  });
+
+  it("falls back to the sheet's own payroll number when no payslip names the employee", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: {},
+    });
+    const lines = [...(await payrollLinesFor(dir)), DUMMY_POSTING];
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].employeeID).toBe("1");
+  });
+
+  it("takes the first month's gross pay as the book's per-period figure, not the year's running total", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP001-2025-04",
+      }),
+      payslipsMay: payslipBlock(48, {
+        paidOn: LTD_MAY_THIRTY_FIRST,
+        name: "Alice Johnson",
+        grossPay: 4000,
+        incomeTax: 600,
+        employeeNI: 220,
+        netPay: 3180,
+        employerNI: 430,
+        reference: "PAY-EMP001-2025-05",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].grossPay).toBe(3500);
+  });
+
+  it("reads an employee's start date off the Employee sheet's own cell", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP001-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].startDate).toBe("2025-06-01");
+  });
+
+  it("recovers isDirector but not a real NI category from the sheet's shared director-flag cell", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(39, { surname: "Smith", forenames: "Carol", startDateSerial: CAROL_ACQUIRED, niCategory: "D" }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Carol Smith",
+        grossPay: 1048,
+        incomeTax: 0,
+        employeeNI: 0,
+        netPay: 1048,
+        employerNI: 7.2,
+        reference: "PAY-EMP003-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0]).toMatchObject({ isDirector: true });
+    expect(book.employees[0].niCategory).toBeUndefined();
+  });
+
+  it("breaks only the employee id a corrupted payslip reference carries", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP007-2025-04",
+      }),
+    });
+    const before = await extractBook(dir, "ltd", await payrollLinesFor(dir), LTD_CELL_MAP);
+    expect(before.employees[0].employeeID).toBe("EMP007");
+
+    const path = resolve(dir, "Payslips.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("Apr");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(
+      sheetPath,
+      xml.replace(`t="inlineStr"><is><t>PAY-EMP007-2025-04</t></is>`, `t="inlineStr"><is><t>not a payslip reference</t></is>`),
+    );
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const lines = await payrollLinesFor(dir);
+    const after = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(after.employees[0].employeeID).toBe("1");
+    expect(after.employees[0].name).toBe(before.employees[0].name);
+    expect(after.employees[0].grossPay).toBe(before.employees[0].grossPay);
   });
 });
