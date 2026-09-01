@@ -240,7 +240,7 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: 'corretto'
           java-version: ${{ env.JAVA_VERSION }}
