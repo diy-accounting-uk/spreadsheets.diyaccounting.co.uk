@@ -27,6 +27,7 @@ import {
   renameExternalLinkSheetNames,
   reorientPayslipsAdminMonthSheets,
   reorientPayslipsMonthTabPeriods,
+  realignPayslipsPaymentSchedule,
   monthEnd,
 } from "../lib/generator.js";
 import { payrollYearStart } from "../lib/payslips-layout.js";
@@ -134,6 +135,10 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
         // covers, read off that same tax-year calendar. The tab's name is the
         // accounting period's month, so that is the month the block covers.
         buffer = await reorientPayslipsMonthTabPeriods(buffer, endDate, payrollYearStart(new Date(ty.start).getUTCFullYear()));
+        // The PAYE schedule's rows are tax months, dated off that same
+        // calendar, so each one takes the tab holding the payroll paid in it
+        // rather than the tab the rename left it pointing at.
+        buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
       }
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {

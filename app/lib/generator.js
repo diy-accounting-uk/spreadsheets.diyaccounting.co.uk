@@ -1503,6 +1503,106 @@ export async function reorientPayslipsMonthTabPeriods(xlsxBuffer, yearEndDate, p
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
+// ── Payslips PAYE remittance schedule (Ltd Company non-March year ends) ─────
+//
+// The Payment sheet is what the company pays HMRC each month. Rows 4 to 15 are
+// the twelve tax months: B the month end, C the day the payment is due on the
+// 19th after it, and D to H the figures from the payroll paid in that month.
+// B and C read the Admin calendar, which runs the tax year from 6 April, so
+// row 4 is April whatever the package's year end.
+//
+// The columns beside them name a month tab, and the rename pass moves every
+// tab name in the workbook by position. On a June year end it turned row 4's
+// Apr into Jul: the row headed 30 April went on to sum the tab holding July's
+// payroll. A PAYE month runs the 6th to the 5th and the schedule's dates are
+// right, so it is the totals that move back: each row takes the tab named for
+// the calendar month that tax month ends in, which is the tab the writers put
+// that month's payroll on.
+//
+// The row a tab's director figures sit on follows the weeks that tab's month
+// holds, so it moves when the tab does -- which is why this is generated per
+// year end rather than fixed in the template.
+const PAYMENT_SCHEDULE_FIRST_ROW = 4;
+// The columns each row reads its month tab through: row 1 aggregates for the
+// employees' figures, the director block's own rows for the statutory pay the
+// company recovers.
+const PAYMENT_ROW_ONE_COLUMNS = { D: ["T", "O"], E: ["N"], H: ["P"] };
+const PAYMENT_DIRECTOR_BLOCK_COLUMNS = { F: ["AD", "AE", "AF", "AG"], G: ["AE", "AF", "AG"] };
+// The director block opens twelve rows below the monthly payroll block, and
+// the NIC compensation the schedule reads sits two rows below that.
+const PAYMENT_DIRECTOR_ROW_OFFSET = 12;
+const PAYMENT_NIC_COMPENSATION_ROW_OFFSET = 2;
+
+export async function realignPayslipsPaymentSchedule(xlsxBuffer, yearEndMonth, paymentSheetName = "Payment") {
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) {
+    return xlsxBuffer;
+  }
+
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+  const paymentPath = sheetMap.get(paymentSheetName);
+  if (!paymentPath) throw new Error(`No ${paymentSheetName} sheet in the Payslips workbook`);
+  let paymentXml = await zip.file(paymentPath).async("string");
+
+  for (let taxMonth = 0; taxMonth < 12; taxMonth++) {
+    const row = PAYMENT_SCHEDULE_FIRST_ROW + taxMonth;
+    // The tab the rename pass left this row reading, and the one the tax
+    // month's own calendar month names.
+    const readTab = targetTabs[taxMonth];
+    const paidTab = templateTabs[taxMonth];
+    const readBlockRow = payslipsDirectorBlockRow(taxMonth);
+    const paidBlockRow = payslipsDirectorBlockRow(targetTabs.indexOf(paidTab));
+
+    for (const [column, sources] of Object.entries(PAYMENT_ROW_ONE_COLUMNS)) {
+      paymentXml = repointPaymentCell(
+        paymentXml,
+        `${column}${row}`,
+        sources.map((source) => `${readTab}!${source}1`).join("+"),
+        sources.map((source) => `${paidTab}!${source}1`).join("+"),
+      );
+    }
+    for (const [column, sources] of Object.entries(PAYMENT_DIRECTOR_BLOCK_COLUMNS)) {
+      const offset = column === "G" ? PAYMENT_NIC_COMPENSATION_ROW_OFFSET : 0;
+      paymentXml = repointPaymentCell(
+        paymentXml,
+        `${column}${row}`,
+        sources.map((source) => `${readTab}!${source}${readBlockRow + offset}`).join("+"),
+        sources.map((source) => `${paidTab}!${source}${paidBlockRow + offset}`).join("+"),
+      );
+    }
+  }
+
+  zip.file(paymentPath, paymentXml, { date: zip.file(paymentPath).date });
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// The row a month tab's director block opens on, by the tab's place in the
+// package's own year -- the same weeks-per-month rule the monthly payroll
+// block follows.
+const payslipsDirectorBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER_MONTH[monthIndex] + PAYMENT_DIRECTOR_ROW_OFFSET;
+
+// One schedule cell repointed from the tab the rename left it on to the tab
+// whose payroll the tax month covers. The cell has to be holding the formula
+// the template ships, addressed to the tab the rename produced: anything else
+// is a template change to see rather than a formula to overwrite. The cached
+// value is left where it is -- both tabs are empty on a blank package, and a
+// populated one is recalculated.
+function repointPaymentCell(paymentXml, cellRef, expected, replacement) {
+  const cell = matchCell(paymentXml, cellRef);
+  if (!cell) throw new Error(`Payslips Payment ${cellRef} not found`);
+  const formula = (cell.fullMatch.match(/<f[^>]*>([^<]*)<\/f>/) || [])[1];
+  if (formula !== expected) {
+    throw new Error(`Payslips Payment ${cellRef} reads ${formula ?? "no formula"}, not ${expected}`);
+  }
+  const value = (cell.fullMatch.match(/<v>([^<]*)<\/v>/) || [])[1];
+  if (value === undefined) throw new Error(`Payslips Payment ${cellRef} has no cached value`);
+  return setCellFormula(paymentXml, cellRef, replacement, value);
+}
+
 // One end of a month tab's payroll period. The cell has to be reading the
 // Admin calendar for the block to be the one this rewrites: a block that has
 // moved row, or a template that has stopped reading the calendar here, is a
