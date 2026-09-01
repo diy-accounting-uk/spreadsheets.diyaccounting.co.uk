@@ -322,9 +322,12 @@ jobs:
         run: |
           npm run reconciliation -- --package bst --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
           npm run reconciliation -- --package bst --scenario sp-sixty --year-end ${{ needs.generate.outputs.latest }}
+      - run: rm -rf reports/populated
       - uses: actions/upload-artifact@v7
         with:
-          name: bst-extra-reports
+          # The commit job collects reports by the bst-reports-* pattern, so this
+          # name has to start with it or the extra scenarios never reach the tree.
+          name: bst-reports-extra
           retention-days: 1
           path: reports/
       - name: Check extra reconciliation
@@ -379,6 +382,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
+          # The extra scenarios reconcile only at the latest year-end, so a
+          # committed report at any older year-end can never refresh again and
+          # the deploy judge would read its frozen behaviour forever. Drop
+          # superseded ones; the latest year-end's are the only ones kept.
+          LATEST='${{ needs.generate.outputs.latest }}'
+          if [[ -n "$LATEST" ]]; then
+            find reports \( -name "*bst-brickwork-pro-*.md" -o -name "*bst-sp-sixty.md" \) ! -name "*${LATEST//-/_}*" -delete
+          fi
           git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
           if git diff --staged --quiet; then
             echo "No changes to commit"

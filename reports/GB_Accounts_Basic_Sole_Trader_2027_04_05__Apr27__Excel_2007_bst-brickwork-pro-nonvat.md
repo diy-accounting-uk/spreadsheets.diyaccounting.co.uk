@@ -3,7 +3,7 @@
 Scenario: bst-brickwork-pro-nonvat
 Status: RECONCILES
 
-Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, there is no payroll and no bank journal, and no CIS is suffered on the trader's own sales.
+Construction sole trader under the VAT registration threshold, on the Basic Sole Trader package. Sub-contract labour is bought in as a direct cost, the labourer's wage is an employee cost, and there is no bank journal. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5.
 
 Trade: Bricklaying, plastering and general building
 
@@ -12,13 +12,15 @@ Trade: Bricklaying, plastering and general building
 | Check | Expected | Actual | Diff | Result |
 |-------|----------|--------|------|--------|
 | Total Sales | 75000 | 75000 | 0 | PASS |
+| Gross Profit | 39500 | 39500 | 0 | PASS |
+| Net Profit | 15530 | 15530 | 0 | PASS |
 | Gen Admin | 720 | 720 | 0 | PASS |
 | Legal & Professional | 1000 | 1000 | 0 | PASS |
 | P&L: Gross = Sales - CoS - Direct | 39500 | 39500 | 0 | PASS |
-| P&L: Net = Gross - Expenses | 33530 | 33530 | 0 | PASS |
+| P&L: Net = Gross - Expenses | 15530 | 15530 | 0 | PASS |
 | P&L: Total Sales = sum of monthly Sales sheets | 75000 | 75000 | 0 | PASS |
-| P&L: Expense lines sum = Total | 5970 | 5970 | 0 | PASS |
-| Purchases: journal total = expenses + direct costs + stock purchases + capitalised assets | 52970 | 52970 | 0 | PASS |
+| P&L: Expense lines sum = Total | 23970 | 23970 | 0 | PASS |
+| Purchases: cash journal total = expenses + direct costs + stock purchases + capitalised assets | 70970 | 70970 | 0 | PASS |
 | Opening Stock | 3000 | 3000 | 0 | PASS |
 | Closing Stock | 2500 | 2500 | 0 | PASS |
 | Stock: cost of sales = stock purchases + stock movement | 15500 | 15500 | 0 | PASS |
@@ -30,12 +32,15 @@ Trade: Bricklaying, plastering and general building
 | Fixed Assets: first addition recorded | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: Schedule capital allowance total = P&L Capital Allowances | 12000 | 12000 | 0 | PASS |
-| P&L: Taxable Profit = Net Profit - Capital Allowances | 21530 | 21530 | 0 | PASS |
+| P&L: Taxable Profit = Net Profit - Capital Allowances | 3530 | 3530 | 0 | PASS |
 | Admin: Personal Allowance = tax data | 12570 | 12570 | 0 | PASS |
+| Admin: Personal Allowance Taper Threshold = tax data | 100000 | 100000 | 0 | PASS |
 | Admin: Basic Rate = tax data | 0.2 | 0.2 | 0 | PASS |
 | Admin: Higher Rate = tax data | 0.4 | 0.4 | 0 | PASS |
+| Admin: Additional Rate = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Basic Band End = tax data | 37700 | 37700 | 0 | PASS |
 | Admin: Higher Band Start = tax data | 37701 | 37701 | 0 | PASS |
+| Admin: Higher Band End = tax data | 125140 | 125140 | 0 | PASS |
 | Admin: NI Class 2 Rate = tax data | 0 | 0 | 0 | PASS |
 | Admin: NI Class 4 Lower Rate = tax data | 0.06 | 0.06 | 0 | PASS |
 | Admin: NI Class 4 Lower Limit = tax data | 12570 | 12570 | 0 | PASS |
@@ -43,28 +48,30 @@ Trade: Bricklaying, plastering and general building
 | Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
-| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
-| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
-| Income Tax | 1792 | 1792 | 0 | PASS |
-| NI Class 4 (lower) | 537.6 | 537.6 | 0 | PASS |
-| Total Tax + NI | 2330 | 2329.6 | -0.40000000000009095 | PASS |
+| Income Tax | 0 | 0 | 0 | PASS |
+| NI Class 4 (lower) | 0 | 0 | 0 | PASS |
+| Total Tax + NI | 0 | 0 | 0 | PASS |
+| Tax: Personal allowance after taper | 12570 | 12570 | 0 | PASS |
 | Tax: sheet applies the basic rate to the lower band | 0.2 | 0.2 | 0 | PASS |
 | Tax: sheet applies the higher rate above the band | 0.4 | 0.4 | 0 | PASS |
-| Tax: sheet splits the bands at the higher band start | 37701 | 37701 | 0 | PASS |
-| Tax at basic rate | 1792 | 1792 | 0 | PASS |
-| P&L: tax charged = Income Tax sheet total less CIS deducted | 1792 | 1792 | 0 | PASS |
+| Tax: sheet applies the additional rate above the higher band | 0.45 | 0.45 | 0 | PASS |
+| Tax: sheet splits the basic and higher bands at the basic band end | 37700 | 37700 | 0 | PASS |
+| Tax: sheet splits the higher and additional bands at the higher band end | 125140 | 125140 | 0 | PASS |
+| Tax at basic rate | 0 | 0 | 0 | PASS |
+| P&L: tax charged = Income Tax sheet total less CIS deducted | 0 | 0 | 0 | PASS |
 | Tax at higher rate | 0 | 0 | 0 | PASS |
-| Tax: Taxable = Profit - Allowance | 8960 | 8960 | 0 | PASS |
-| Tax: IT = Basic + Higher | 1792 | 1792 | 0 | PASS |
-| Tax: Total = IT - CIS + NI | 2329.6 | 2329.6 | 0 | PASS |
+| Tax at additional rate | 0 | 0 | 0 | PASS |
+| Tax: Taxable = Profit - Allowance | 0 | 0 | 0 | PASS |
+| Tax: IT = Basic + Higher + Additional | 0 | 0 | 0 | PASS |
+| Tax: Total = IT + CIS deduction line + NI | 0 | 0 | 0 | PASS |
 | SA103S: Turnover = P&L Sales | 75000 | 75000 | 0 | PASS |
-| SA103S: Net profit close to P&L Net | 33530 | 33530 | 0 | PASS |
-| SA103S: Profit for tax = Income Tax E5 | 21530 | 21530 | 0 | PASS |
+| SA103S: Net profit close to P&L Net | 15530 | 15530 | 0 | PASS |
+| SA103S: Profit for tax = Income Tax E5 | 3530 | 3530 | 0 | PASS |
 | P&L: Capital Allowances = SE Short chain | 12000 | 12000 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 
@@ -72,7 +79,7 @@ Trade: Bricklaying, plastering and general building
 
 | Line | Cell | Amount |
 |------|------|-------:|
-| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 33,530 |
+| Net profit per the profit and loss account | Profit & Loss Acc!C24 | 15,530 |
 | Add other business income (box 9) | SE Short!O38 | 0 |
 | Less net loss for the year (box 21) | SE Short!O71 | 0 |
 | Less annual investment allowance (box 22) | SE Short!D80 | -12,000 |
@@ -82,8 +89,8 @@ Trade: Bricklaying, plastering and general building
 | Add goods and services for own use (box 26) | SE Short!D94 | 0 |
 | Add other business income (box 29) | SE Short!O99 | 0 |
 | Less loss brought forward (box 28) | SE Short!O94 | 0 |
-| **Tax profit the bridge computes** | | **21,530** |
-| Tax profit the sheet carries | Income Tax!E5 | 21,530 |
+| **Tax profit the bridge computes** | | **3,530** |
+| Tax profit the sheet carries | Income Tax!E5 | 3,530 |
 | **Residue** | | **0** |
 
 ## Business Details
@@ -101,11 +108,10 @@ Trade: Bricklaying, plastering and general building
 | | Amount |
 |---|------:|
 | Sales Turnover | 75,000 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other Income | — |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of Sales (stock + direct) | 15,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Direct Costs | 20,000 |
 | **Gross Profit** | 39,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Employee Costs | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employee Costs | 18,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises Costs | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Repairs & Maintenance | 350 |
 | &nbsp;&nbsp;&nbsp;&nbsp;General Admin | 720 |
@@ -116,14 +122,14 @@ Trade: Bricklaying, plastering and general building
 | &nbsp;&nbsp;&nbsp;&nbsp;Bad Debts | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Interest & Finance | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Expenses | 1,200 |
-| Total Expenses | 5,970 |
-| **Net Profit** | 33,530 |
+| Total Expenses | 23,970 |
+| **Net Profit** | 15,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital Allowances | 12,000 |
-| Taxable Profit | 21,530 |
+| Taxable Profit | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other Income received | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 1,792 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 537.6 |
-| Net Income After Tax | 19,200.4 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Income Tax less CIS deducted | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 | 0 |
+| Net Income After Tax | 3,530 |
 
 ## Monthly Sales
 
@@ -146,45 +152,45 @@ Trade: Bricklaying, plastering and general building
 
 | | Amount |
 |---|------:|
-| Profit from Self Employment | 21,530 |
+| Profit from Self Employment | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: Personal Allowance | 12,570 |
-| Taxable Income | 8,960 |
+| Taxable Income | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Basic rate the sheet applies | 0.2 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,701 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Basic band ceiling the sheet applies | 37,700 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Higher rate the sheet applies | 0.4 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 1,792 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Basic Rate | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Tax at Higher Rate | 0 |
-| **Total Income Tax** | 1,792 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate threshold the sheet applies | 125,140 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Additional rate the sheet applies | 0.45 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Tax at Additional Rate | 0 |
+| **Total Income Tax** | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Less: CIS Deducted | -0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 537.6 |
+| &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (lower band) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;NI Class 4 (upper band) | 0 |
-| **Total Tax + NI** | 2,329.6 |
+| **Total Tax + NI** | 0 |
 
 ## Self Assessment (SA103S)
 
 | | Amount |
 |---|------:|
-| Business name | — |
-| Accounting date | — |
 | Turnover | 75,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Cost of goods | 35,500 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other direct costs | 2,400 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Motor & travel expenses | 2,400 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Employee costs | 18,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Premises costs | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Other expenses | 350 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Repairs & maintenance | 350 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 9) | — |
-| **Net profit/loss** | 33,530 |
+| **Net profit/loss** | 15,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Net loss (box 21) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Capital allowances | 12,000 |
 | &nbsp;&nbsp;&nbsp;&nbsp;AIA / WDA claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;WDA + Capital Allowance claimed | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Balancing Charge | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other tax adjustments | 0 |
-| **Taxable profit** | 21,530 |
+| **Taxable profit** | 3,530 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Loss brought forward (box 28) | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Other business income (box 29) | 0 |
-| VAT threshold note | — |
-| **Net profit for tax calc** | 21,530 |
+| **Net profit for tax calc** | 3,530 |
 
 ## Stock
 
@@ -218,6 +224,8 @@ Trade: Bricklaying, plastering and general building
 | | Amount |
 |---|------:|
 | Purchases capitalised as fixed assets | 12,000 |
+| Business miles for the year | 0 |
+| Mileage claimed for the year | 0 |
 
 ## Fixed Assets
 
@@ -236,10 +244,13 @@ Trade: Bricklaying, plastering and general building
 | | Amount |
 |---|------:|
 | Personal Allowance | 12,570 |
+| Personal Allowance Taper Threshold | 100,000 |
 | Basic Rate | 0.2 |
 | Higher Rate | 0.4 |
+| Additional Rate | 0.45 |
 | Basic Band End | 37,700 |
 | Higher Band Start | 37,701 |
+| Higher Band End | 125,140 |
 | NI Class 2 Rate | 0 |
 | NI Class 4 Lower Rate | 0.06 |
 | NI Class 4 Lower Limit | 12,570 |
@@ -247,8 +258,6 @@ Trade: Bricklaying, plastering and general building
 | NI Class 4 Upper Limit | 50,270 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
-| Motor Vehicle Cost Threshold | 12,000 |
-| Motor Vehicle Restriction | 3,000 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -265,9 +274,9 @@ Trade: Bricklaying, plastering and general building
 |------|-----------|-------|-----------------|
 | C5 | Business Name | BrickWork Pro Trading | entityInformation.organizationIdentifier |
 | C7 | Description | Bricklaying, plastering and general building | entityInformation.organizationDescription |
-| C8 | Address | Unit 5, Industrial Estate | gl-bus:organizationAddress |
-| C10 | Town | Sheffield | gl-bus:organizationAddress (town) |
-| C12 | Postcode | S1 2AB | gl-bus:organizationAddress (postcode) |
+| C8 | Address | Unit 5, Industrial Estate | entityInformation.organizationAddressLine |
+| C10 | Town | Sheffield | entityInformation.organizationTown |
+| C12 | Postcode | S1 2AB | entityInformation.organizationPostcode |
 
 ### Profit & Loss Acc
 
@@ -277,7 +286,7 @@ Trade: Bricklaying, plastering and general building
 | C6 | Cost of Sales (stock + direct) | 15500 | gl-cor:amount (costOfSales) |
 | C7 | Direct Costs | 20000 | gl-cor:amount (directCosts) |
 | C9 | **Gross Profit** | 39500 | gl-cor:amount (grossProfit) |
-| C11 | Employee Costs | 0 | accounts.purchases.5101 |
+| C11 | Employee Costs | 18000 | accounts.purchases.5101 |
 | C12 | Premises Costs | 0 | accounts.purchases.5200 |
 | C13 | Repairs & Maintenance | 350 | accounts.purchases.5400 |
 | C14 | General Admin | 720 | accounts.purchases.5501 |
@@ -288,14 +297,14 @@ Trade: Bricklaying, plastering and general building
 | C19 | Bad Debts | 0 | accounts.purchases.5801 (badDebts) |
 | C20 | Interest & Finance | 0 | accounts.purchases.5803 |
 | C21 | Other Expenses | 1200 | accounts.purchases (other) |
-| C22 | Total Expenses | 5970 | gl-cor:amount (totalExpenses) |
-| C24 | **Net Profit** | 33530 | gl-cor:amount (netProfit) |
+| C22 | Total Expenses | 23970 | gl-cor:amount (totalExpenses) |
+| C24 | **Net Profit** | 15530 | gl-cor:amount (netProfit) |
 | C26 | Capital Allowances | 12000 | tax.capitalAllowances |
-| C28 | Taxable Profit | 21530 | gl-cor:amount (taxableProfit) |
+| C28 | Taxable Profit | 3530 | gl-cor:amount (taxableProfit) |
 | C30 | Other Income received | 0 | gl-cor:amount (otherIncomeReceived) |
-| C32 | Income Tax less CIS deducted | 1792 | tax.incomeTax (net of CIS) |
-| C33 | NI Class 4 | 537.6 | tax.nationalInsurance.class4 |
-| C35 | Net Income After Tax | 19200.4 | gl-cor:amount (netIncome) |
+| C32 | Income Tax less CIS deducted | 0 | tax.incomeTax (net of CIS) |
+| C33 | NI Class 4 | 0 | tax.nationalInsurance.class4 |
+| C35 | Net Income After Tax | 3530 | gl-cor:amount (netIncome) |
 | D4 | Apr | 6500 | gl-cor:amount (monthlySales.apr) |
 | E4 | May | 6000 | gl-cor:amount (monthlySales.may) |
 | F4 | Jun | 6200 | gl-cor:amount (monthlySales.jun) |
@@ -313,19 +322,22 @@ Trade: Bricklaying, plastering and general building
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E5 | Profit from Self Employment | 21530 | gl-cor:amount (profitSE) |
+| E5 | Profit from Self Employment | 3530 | gl-cor:amount (profitSE) |
 | E6 | Less: Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
-| E7 | Taxable Income | 8960 | gl-cor:amount (taxableIncome) |
+| E7 | Taxable Income | 0 | gl-cor:amount (taxableIncome) |
 | D8 | Basic rate the sheet applies | 0.2 | tax.incomeTax.basicRate (applied) |
-| C9 | Basic band ceiling the sheet applies | 37701 | tax.incomeTax.higherBandStart (applied) |
+| C9 | Basic band ceiling the sheet applies | 37700 | tax.incomeTax.basicRateLimit (applied) |
 | D9 | Higher rate the sheet applies | 0.4 | tax.incomeTax.higherRate (applied) |
-| E8 | Tax at Basic Rate | 1792 | tax.incomeTax.basicRate |
+| E8 | Tax at Basic Rate | 0 | tax.incomeTax.basicRate |
 | E9 | Tax at Higher Rate | 0 | tax.incomeTax.higherRate |
-| E10 | **Total Income Tax** | 1792 | tax.incomeTax (total) |
-| E11 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
-| E15 | NI Class 4 (lower band) | 537.6 | tax.nationalInsurance.class4MainRate |
+| C10 | Additional rate threshold the sheet applies | 125140 | tax.incomeTax.higherRateThreshold (applied) |
+| D10 | Additional rate the sheet applies | 0.45 | tax.incomeTax.additionalRate (applied) |
+| E10 | Tax at Additional Rate | 0 | tax.incomeTax.additionalRate |
+| E11 | **Total Income Tax** | 0 | tax.incomeTax (total) |
+| E12 | Less: CIS Deducted | 0 | diya-gl:cisDeduction (total) |
+| E15 | NI Class 4 (lower band) | 0 | tax.nationalInsurance.class4MainRate |
 | E16 | NI Class 4 (upper band) | 0 | tax.nationalInsurance.class4UpperRate |
-| E18 | **Total Tax + NI** | 2329.6 | gl-cor:taxAmount (totalTaxNI) |
+| E18 | **Total Tax + NI** | 0 | gl-cor:taxAmount (totalTaxNI) |
 
 ### SE Short
 
@@ -333,59 +345,61 @@ Trade: Bricklaying, plastering and general building
 |------|-----------|-------|-----------------|
 | D38 | Turnover | 75000 | gl-cor:amount (sa103s.turnover) |
 | D46 | Cost of goods | 35500 | gl-cor:amount (sa103s.costOfGoods) |
-| D51 | Other direct costs | 2400 | gl-cor:amount (sa103s.otherDirect) |
-| D55 | Employee costs | 0 | gl-cor:amount (sa103s.employeeCosts) |
+| D51 | Motor & travel expenses | 2400 | gl-cor:amount (sa103s.motorAndTravel) |
+| D55 | Employee costs | 18000 | gl-cor:amount (sa103s.employeeCosts) |
 | D60 | Premises costs | 0 | gl-cor:amount (sa103s.premises) |
-| D64 | Other expenses | 350 | gl-cor:amount (sa103s.otherExpenses) |
-| D71 | **Net profit/loss** | 33530 | gl-cor:amount (sa103s.netProfit) |
+| D64 | Repairs & maintenance | 350 | gl-cor:amount (sa103s.repairs) |
+| D71 | **Net profit/loss** | 15530 | gl-cor:amount (sa103s.netProfit) |
 | O71 | Net loss (box 21) | 0 | gl-cor:amount (sa103s.netLoss) |
 | D80 | Capital allowances | 12000 | tax.capitalAllowances (sa103s) |
 | D85 | AIA / WDA claimed | 0 | tax.capitalAllowances.aia (sa103s) |
 | O80 | WDA + Capital Allowance claimed | 0 | tax.capitalAllowances.wda (sa103s) |
 | O85 | Balancing Charge | 0 | tax.capitalAllowances.balancingCharge (sa103s) |
 | D94 | Other tax adjustments | 0 | gl-cor:amount (sa103s.otherAdjust) |
-| D99 | **Taxable profit** | 21530 | gl-cor:amount (sa103s.taxableProfit) |
+| D99 | **Taxable profit** | 3530 | gl-cor:amount (sa103s.taxableProfit) |
 | O94 | Loss brought forward (box 28) | 0 | gl-cor:amount (sa103s.lossBroughtForward) |
 | O99 | Other business income (box 29) | 0 | gl-cor:amount (sa103s.otherBusinessIncome) |
-| D106 | **Net profit for tax calc** | 21530 | gl-cor:amount (sa103s.profitForTax) |
+| D106 | **Net profit for tax calc** | 3530 | gl-cor:amount (sa103s.profitForTax) |
 
 ### PurchasesStock
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| D5 | Opening Stock | 3000 | accounts.assets.1100 (opening) |
-| D7 | Stock at Cost | 3000 | accounts.assets.1100 (atCost) |
-| D30 | Closing Stock | 2500 | accounts.assets.1100 (closing) |
+| D5 | Opening Stock | 3000 | stock.openingValue |
+| D7 | Stock at Cost | 3000 | stock.openingValue (carried) |
+| D30 | Closing Stock | 2500 | stock.closingValue |
 
 ### Debtors & Creditors
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C5 | Opening Debtor 1 | 4620 | accounts.assets.1300 (opening[0]) |
-| C6 | Opening Debtor 2 | 1980 | accounts.assets.1300 (opening[1]) |
-| F5 | Closing Debtor 1 | 4690 | accounts.assets.1300 (closing[0]) |
-| F6 | Closing Debtor 2 | 2010 | accounts.assets.1300 (closing[1]) |
-| C12 | Opening Creditor 1 | 60 | accounts.liabilities.2100 (opening[0]) |
-| C13 | Opening Creditor 2 | 800 | accounts.liabilities.2100 (opening[1]) |
-| C14 | Opening Creditor 3 | 200 | accounts.liabilities.2100 (opening[2]) |
-| C15 | Opening Creditor 4 | 450 | accounts.liabilities.2100 (opening[3]) |
-| F12 | Closing Creditor 1 | 60 | accounts.liabilities.2100 (closing[0]) |
-| F13 | Closing Creditor 2 | 800 | accounts.liabilities.2100 (closing[1]) |
-| F14 | Closing Creditor 3 | 200 | accounts.liabilities.2100 (closing[2]) |
-| F15 | Closing Creditor 4 | 450 | accounts.liabilities.2100 (closing[3]) |
+| C5 | Opening Debtor 1 | 4620 | debtors[timing=opening][0].amount |
+| C6 | Opening Debtor 2 | 1980 | debtors[timing=opening][1].amount |
+| F5 | Closing Debtor 1 | 4690 | debtors[timing=closing][0].amount |
+| F6 | Closing Debtor 2 | 2010 | debtors[timing=closing][1].amount |
+| C12 | Opening Creditor 1 | 60 | creditors[timing=opening][0].amount |
+| C13 | Opening Creditor 2 | 800 | creditors[timing=opening][1].amount |
+| C14 | Opening Creditor 3 | 200 | creditors[timing=opening][2].amount |
+| C15 | Opening Creditor 4 | 450 | creditors[timing=opening][3].amount |
+| F12 | Closing Creditor 1 | 60 | creditors[timing=closing][0].amount |
+| F13 | Closing Creditor 2 | 800 | creditors[timing=closing][1].amount |
+| F14 | Closing Creditor 3 | 200 | creditors[timing=closing][2].amount |
+| F15 | Closing Creditor 4 | 450 | creditors[timing=closing][3].amount |
 
 ### PurchasesMar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| X1 | Purchases capitalised as fixed assets | 12000 | accounts.assets.fixedAssets (purchased) |
+| X1 | Purchases capitalised as fixed assets | 12000 | fixedAssets (purchased, year total) |
+| C1 | Business miles for the year | 0 | gl-bus:measurableQuantity (miles) |
+| A1 | Mileage claimed for the year | 0 | tax.mileage (claim) |
 
 ### Fixed Assets
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| E67 | New Asset Cost (Plant & Machinery) | 12000 | accounts.assets.fixedAssets (cost) |
-| E1 | Total Original Cost | 12000 | accounts.assets.fixedAssets (totalCost) |
+| E67 | New Asset Cost (Plant & Machinery) | 12000 | fixedAssets[0].cost |
+| E1 | Total Original Cost | 12000 | fixedAssets (totalCost) |
 | K1 | Total First Year Allowance / AIA | 12000 | tax.capitalAllowances.aia (schedule) |
 | L1 | Total Writing Down Allowance | 0 | tax.capitalAllowances.wda (schedule) |
 | M1 | Total Written Down Tax Value | 0 | tax.capitalAllowances.writtenDownValue (schedule) |
@@ -397,21 +411,22 @@ Trade: Bricklaying, plastering and general building
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | N4 | Personal Allowance | 12570 | tax.incomeTax.personalAllowance |
+| N5 | Personal Allowance Taper Threshold | 100000 | tax.incomeTax.personalAllowanceTaperThreshold |
 | N7 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N8 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
-| M12 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
-| N13 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
-| L17 | NI Class 2 Rate | 0 | tax.nationalInsurance.class2Rate |
-| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| N9 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
+| M12 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
+| N13 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
+| N14 | Higher Band End | 125140 | tax.incomeTax.higherRateThreshold |
+| L17 | NI Class 2 Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.wdaRate |
-| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
-| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
+| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |

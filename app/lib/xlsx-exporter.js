@@ -22,9 +22,10 @@ import {
   payslipsWagesPaidCell,
 } from "./payslips-layout.js";
 import { findXlsx } from "./xlsx-reader.js";
-import { readFileSync as readSchemaFile } from "fs";
+import { readFileSync as readSchemaFile, existsSync as fileExists } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
 
 // The column the writer parks a row's own accountMainID in and the exporter
 // reads back. Several accounts share one code letter -- SE sends 5501, 5301,
@@ -39,23 +40,6 @@ export const ACCOUNT_ID_COLUMN = "BZ";
 // Where each multi-file product's writer turns VAT on: a percentage on the
 // first Sales month tab, which every sheet downstream reads.
 const VAT_RATE_CELLS = { se: "H2", ltd: "G2" };
-
-// The published book schema, which says which tax fields a book may declare.
-const BOOK_SCHEMA = JSON.parse(
-  readSchemaFile(
-    resolvePath(
-      directoryOf(fileURLToPath(import.meta.url)),
-      "..",
-      "..",
-      "web",
-      "spreadsheets.diyaccounting.co.uk",
-      "public",
-      "schema",
-      "diya-gl-book-v2.schema.json",
-    ),
-    "utf8",
-  ),
-);
 
 /**
  * Build reverse code map: { code → accountMainID }.
@@ -1361,40 +1345,178 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
   return accounts;
 }
 
-// The Admin sheet is where the generator injects the year's tax data, and the
-// product's own CELL_MAP already says which dotted tax path each Admin cell
-// carries. Reading the map backwards turns the sheet back into the book's tax
-// table without a second copy of the addresses.
-function taxFromAdmin(xml, sharedStrings, cellMap) {
-  const tax = {};
-  for (const [sheet, cell, , glMapping] of cellMap || []) {
-    if (sheet !== "Admin" || typeof glMapping !== "string" || !glMapping.startsWith("tax.")) continue;
-    const path = glMapping.split(".").slice(1);
-    // A CELL_MAP entry names the sheet's own label for a rate, which is not
-    // always the field the book schema declares for it. The book carries the
-    // fields the schema states and nothing else, and the ones it has no field
-    // for stay on the Admin sheet where the reconciliation reads them.
-    if (!bookTaxFields(path)) continue;
-    const value = readCellValue(xml, cell, sharedStrings);
-    if (typeof value !== "number") continue;
-    let node = tax;
-    for (const segment of path.slice(0, -1)) {
-      if (!node[segment]) node[segment] = {};
-      node = node[segment];
-    }
-    node[path[path.length - 1]] = value;
+// ============================================================================
+// Tax rate tables -- reconstruction by provenance
+// ============================================================================
+//
+// A package's tax rates and thresholds live on its Admin sheet mostly as
+// formula inputs and intermediate cells, not as a set of labelled figures an
+// exporter can read straight back into the book schema's tax.* shape -- the
+// four products lay income tax and NI bands out at different rows, and Ltd's
+// corporation tax cells carry whole-number percentages with no schema field
+// of their own. Every one of those figures came from the same place: one
+// app/data/<year>.toml the generator applied wholesale. So rather than
+// reverse-engineer each Admin layout, the export goes back to that same
+// source, keyed by whichever year the package's own Admin sheet says it was
+// generated from.
+
+const TAX_DATA_DIR = resolvePath(directoryOf(fileURLToPath(import.meta.url)), "..", "data");
+
+/**
+ * The app/data/*.toml file name a package's own Admin sheet declares itself
+ * generated from.
+ *
+ * BST, Taxi and SE carry the tax_year label the generator wrote as literal
+ * text (buildCellEdits/buildTaxiCellEdits/buildSeCellEdits in generator.js,
+ * stringEdits.B23 = ty.label, e.g. "2024-25"), which names an
+ * app/data/se-YYYY-YYYY.toml file directly.
+ *
+ * Ltd writes no such label -- its stringEdits is empty -- so its declared
+ * year is derived from Admin!F21, the one year-end date the generator always
+ * sets (buildLtdCellEdits in generator.js). The rule -- a year end in
+ * January to March names the financial year that started the calendar year
+ * before, any other month names the financial year starting that same
+ * calendar year -- is the one the generate-ltd.yml reconciliation matrix
+ * itself uses to pick a --years value for a given --year-end (its FYSTART
+ * shell arithmetic), so this reproduces the same choice rather than the UK
+ * corporation tax financial-year-of-the-period-start rule Admin!K6 computes.
+ * The two agree only for a March year end (the template's native case) --
+ * K6 answers a different question (which FY(s) a period spanning two of
+ * them apportions its profit across) and disagrees with FYSTART for every
+ * other year-end month, so it is not a usable proxy here.
+ *
+ * @param {string} adminXml - the package's Admin sheet
+ * @param {Object} adminSharedStrings
+ * @param {string} product - bst, taxi, se or ltd
+ * @returns {string|undefined} a file name under app/data/, or undefined if the sheet names no year
+ */
+export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
+  if (product === "ltd") {
+    const yearEndSerial = numberAt(adminXml, "F21", adminSharedStrings);
+    if (yearEndSerial === undefined) return undefined;
+    const [year, month] = excelSerialToDate(yearEndSerial).split("-").map(Number);
+    const financialYearStart = month <= 3 ? year - 1 : year;
+    return `ltd-${financialYearStart}.toml`;
   }
+  const label = textAt(adminXml, "B23", adminSharedStrings);
+  const startYear = label ? Number(label.split("-")[0]) : NaN;
+  return Number.isFinite(startYear) ? `se-${startYear}-${startYear + 1}.toml` : undefined;
+}
+
+// Every dotted tax.* path the schema declares that an app/data/<year>.toml
+// also carries, and the arithmetic each one takes to get there. A field the
+// toml has no equivalent for stays absent rather than guessed:
+//
+// - tax.vat.reducedRate, tax.corporationTax.associatedCompanies and
+//   tax.nationalInsurance.class2SmallProfitsThreshold: no app/data/*.toml
+//   field carries these at all.
+// - tax.capitalAllowances.annualInvestmentAllowance: the toml's own
+//   `annual_investment_allowance` is the *relief scale* HMRC allows (1.00 =
+//   100% relief up to the cap), not the schema's absolute cap in pounds --
+//   the cap figure itself has no home in this file, so this field is left
+//   unmapped rather than assumed to be today's £1,000,000.
+// - Class 1 employee NI (main/upper rate, primary threshold, UEL): no
+//   app/data/*.toml carries the employee side, only Ltd's employer_ni block.
+function taxTablesFromRateData(raw) {
+  const tax = {};
+  const set = (table, field, value) => {
+    if (value === undefined) return;
+    if (!tax[table]) tax[table] = {};
+    tax[table][field] = value;
+  };
+
+  const it = raw.income_tax;
+  if (it) {
+    set("incomeTax", "personalAllowance", it.personal_allowance);
+    set("incomeTax", "personalAllowanceTaperThreshold", it.personal_allowance_taper_threshold);
+    set("incomeTax", "basicRate", it.basic_rate);
+    set("incomeTax", "basicRateLimit", it.basic_band_end);
+    set("incomeTax", "higherRate", it.higher_rate);
+    // The book's higherRateThreshold is the gross-income point the higher
+    // rate starts at -- personal allowance plus the basic band -- not the
+    // toml's own band-end, which the additional rate threshold matches
+    // instead (both already stated as absolute income, not profit net of
+    // the personal allowance).
+    if (it.personal_allowance !== undefined && it.basic_band_end !== undefined) {
+      set("incomeTax", "higherRateThreshold", it.personal_allowance + it.basic_band_end);
+    }
+    set("incomeTax", "additionalRate", it.additional_rate);
+    set("incomeTax", "additionalRateThreshold", it.higher_band_end);
+  }
+
+  const ni = raw.national_insurance;
+  if (ni) {
+    set("nationalInsurance", "class2WeeklyRate", ni.class2_weekly_rate);
+    set("nationalInsurance", "class4MainRate", ni.class4_lower_rate);
+    set("nationalInsurance", "class4UpperRate", ni.class4_upper_rate);
+    set("nationalInsurance", "class4LowerProfits", ni.class4_lower_limit);
+    set("nationalInsurance", "class4UpperProfits", ni.class4_upper_limit);
+  }
+  // Ltd's own payroll is staff, not the company, so it carries no
+  // self-employed Class 2/4 data -- employer_ni fills the same
+  // nationalInsurance table with the employer side instead.
+  const eni = raw.employer_ni;
+  if (eni) {
+    set("nationalInsurance", "class1EmployerRate", eni.rate);
+    set("nationalInsurance", "class1EmployerSecondaryThreshold", eni.secondary_threshold);
+    set("nationalInsurance", "employmentAllowance", eni.employment_allowance);
+  }
+
+  const vat = raw.vat;
+  if (vat) {
+    set("vat", "standardRate", vat.standard_rate);
+    set("vat", "registrationThreshold", vat.registration_threshold);
+  }
+
+  const ct = raw.corporation_tax;
+  if (ct) {
+    set("corporationTax", "smallProfitsRate", ct.small_profits_rate);
+    set("corporationTax", "smallProfitsLimit", ct.small_profits_limit);
+    set("corporationTax", "mainRate", ct.main_rate);
+    set("corporationTax", "mainRateThreshold", ct.main_rate_limit);
+  }
+
+  const ca = raw.capital_allowances;
+  if (ca) {
+    set("capitalAllowances", "mainRateWDA", ca.writing_down_allowance_main ?? ca.writing_down_allowance);
+    set("capitalAllowances", "specialRateWDA", ca.writing_down_allowance_special);
+    set("capitalAllowances", "firstYearAllowanceRate", ca.full_expensing_rate);
+  }
+
+  const mil = raw.mileage;
+  if (mil) {
+    set("mileage", "carFirst10000", mil.higher_rate_pence);
+    set("mileage", "carOver10000", mil.lower_rate_pence);
+  }
+
+  const div = raw.dividend_tax;
+  if (div) {
+    set("dividends", "allowance", div.allowance);
+    set("dividends", "basicRate", div.basic_rate);
+    set("dividends", "higherRate", div.higher_rate);
+    set("dividends", "additionalRate", div.additional_rate);
+  }
+
   return tax;
 }
 
-// Whether the published book schema declares a dotted path under `tax`.
-function bookTaxFields(path) {
-  let node = BOOK_SCHEMA.properties.tax;
-  for (const segment of path) {
-    node = node?.properties?.[segment];
-    if (!node) return false;
-  }
-  return true;
+/**
+ * The book's tax.* tables for a package, reconstructed from the same
+ * app/data/<year>.toml the generator drew its rates from. Returns an empty
+ * object where the package names no year, or names one app/data/ has no
+ * file for.
+ * @param {string} adminXml - the package's Admin sheet
+ * @param {Object} adminSharedStrings
+ * @param {string} product - bst, taxi, se or ltd
+ * @returns {Object}
+ */
+export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
+  const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
+  if (!fileName) return {};
+  const filePath = resolvePath(TAX_DATA_DIR, fileName);
+  if (!fileExists(filePath)) return {};
+  const raw = parseTOML(readSchemaFile(filePath, "utf8"));
+  return taxTablesFromRateData(raw);
 }
 
 function numberAt(xml, cellRef, sharedStrings) {
@@ -1577,14 +1699,15 @@ async function stockFrom(hubZip, product) {
 /**
  * Build the whole book.toml a populated package carries: the accounting
  * period, the company's own details, the chart of accounts the transaction
- * sheets name, the year's tax data off the Admin sheet, and whatever
+ * sheets name, the year's tax rate tables reconstructed by provenance off
+ * the Admin sheet's declared year (see taxTablesForPackage), and whatever
  * registers the product keeps (stock, opening balances, employees,
  * directors, members, charges, dividends).
  *
  * @param {string} sourceDir - the populated package
  * @param {string} product - bst, taxi, se or ltd
  * @param {Array} lines - the transaction lines already exported, for the chart of accounts
- * @param {Array} cellMap - the product module's CELL_MAP, which names the Admin sheet's tax paths
+ * @param {Array} cellMap - the product module's CELL_MAP, retained for callers; no longer consulted for tax
  * @returns {Object} a book that validates against the published v2 book schema
  */
 export async function extractBook(sourceDir, product, lines, cellMap) {
@@ -1621,7 +1744,7 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   }
 
   const adminSheet = await openSheet(hubZip, "Admin");
-  const tax = adminSheet ? taxFromAdmin(adminSheet.xml, adminSheet.sharedStrings, cellMap) : {};
+  const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
 
   const period = periodCovered(await extractPeriodStartMonth(sourceDir, product), lines);
   const book = {

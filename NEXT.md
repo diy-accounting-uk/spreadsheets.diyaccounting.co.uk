@@ -12,10 +12,34 @@ Shared exit criterion: every product's `bookFieldsMissing` in `app/data/roundtri
 reaches zero, with the decided-out fields (per-contact ledgers, any other structural absence)
 held as declared absences with reasons, never silently closed.
 
-- [ ] registers-and-employees (Sonnet, worktree agent) — started
-- [ ] rates-by-provenance (Sonnet, worktree agent) — started
+- [ ] registers-and-employees (Sonnet, worktree agent) — code-complete, full suite running
+- [x] rates-by-provenance — landed on the batch branch (`1a5a2758`, merged; 58/58 exporter
+  tests on the merged branch; SE 111→102, Ltd 156→139). The budget re-measures on the
+  combined tree once the sibling lands, since each track measured without the other's changes.
 - [ ] asset-attributes (Opus) — waits on wave 1
-- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks The coordinator batch (24 items) merged to main in PR #48; history lives in its
+- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks.
+  The rates track's unmappable fields feed it: the AIA relief-scale factor (never the absolute
+  cap), reduced VAT rate, associated companies, Class 2 small-profits threshold, Class 1
+  employee NI fields, and Ltd's whole `tax.incomeTax` (no `[income_tax]` in `ltd-*.toml`).
+- [x] CT600 judge failure — landed on the batch branch (`89c271f2`..`45bc9bb3`, merged).
+  Root cause was NOT a live template defect: the CT600 fix already existed (`fd07e3c9`,
+  `15fb968a`) and the judge read a brickwork report frozen one day before it, because the
+  generate workflows uploaded extra-scenario reports under a name the commit job's collect
+  glob never matched. Fixed the artifact names, added a guard test, refreshed the four stale
+  Ltd brickwork reports (verified byte-identical LibreOffice against a CI-committed report),
+  re-pinned the judge parser fixture. Full serial suite 7065 tests green in the track.
+- [x] Judge mode-invariance — landed on the batch branch (operator decided: latest joins the
+  defaults matrix; superseded extras drop in the commit job, mirrored to SE/BST). The Oct27
+  brickwork pair is committed and the judge test re-pinned to it, so the next generate run
+  reproduces rather than changes the judged tree.
+- [ ] batch remainder, surfaced by the rates track:
+  - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
+    `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`
+    where it is 0), and the Ltd master's employer-NI block matches `ltd-2025.toml` not the
+    `ltd-2024.toml` the roundtrip job generates with.
+  - stale/wrong CELL_MAP tax labels: dead non-schema field names at `app/products/se.js:904-917`;
+    `bst.js:278` and `taxi.js:286` label Admin!N14/N13 `higherRateThreshold` where the value is
+    the additional-rate threshold. The coordinator batch (24 items) merged to main in PR #48; history lives in its
 merge commits. One operator step remains from it: the generate-commit refresh — the
 committed `packages/` are stale derived artifacts until it runs, and it clears the last
 reconciliation residue in the committed reports.

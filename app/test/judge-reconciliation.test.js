@@ -39,8 +39,8 @@ const REPORTS = resolve(ROOT, "reports");
 // The shipped reports, not a hand-written stand-in. An indicator that stops matching the
 // report generator's labels is the failure this suite exists to catch.
 const FIXTURES = {
-  ltdVat: "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-vat.md",
-  ltdNonVat: "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-nonvat.md",
+  ltdVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-vat.md",
+  ltdNonVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-nonvat.md",
   seVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-vat.md",
   seNonVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
   seAdvanced: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
@@ -195,7 +195,7 @@ describe("parseReport", () => {
 
   it("reads the status line and the compliance check rows", () => {
     expect(parsed.status).toBe("RECONCILES (with warnings)");
-    expect(checkCounts(parsed)).toEqual({ passed: 695, warnings: 1, failed: 0 });
+    expect(checkCounts(parsed)).toEqual({ passed: 947, warnings: 1, failed: 0 });
   });
 
   it("indexes each section by its row label, indentation and bold stripped", () => {
@@ -240,8 +240,8 @@ describe("buildIndicators for the Limited Company", () => {
   const text = indicatorText("ltd", "ltdVat", { vatRegistered: true });
 
   it("states the run status and the check counts", () => {
-    expect(text).toContain("Deterministic run: RECONCILES (with warnings). Checks: 695 passed, 1 warning, 0 failed.");
-    expect(text).toContain("Warned: CT600: tax payable against the working sheet's charge for the year.");
+    expect(text).toContain("Deterministic run: RECONCILES (with warnings). Checks: 947 passed, 1 warning, 0 failed.");
+    expect(text).toContain("Warned: Payslips print: the date the scenario paid that month's wages, which the payment date would carry.");
   });
 
   it("states both sides of the balance sheet and the difference between them", () => {
