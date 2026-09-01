@@ -334,9 +334,12 @@ jobs:
         run: |
           npm run reconciliation -- --package se --scenario brickwork-pro-nonvat --year-end ${{ needs.generate.outputs.latest }}
           npm run reconciliation -- --package se --scenario brickwork-pro-vat --year-end ${{ needs.generate.outputs.latest }}
+      - run: rm -rf reports/populated
       - uses: actions/upload-artifact@v7
         with:
-          name: se-extra-reports
+          # The commit job collects reports by the se-reports-* pattern, so this
+          # name has to start with it or the extra scenarios never reach the tree.
+          name: se-reports-extra
           retention-days: 1
           path: reports/
       - name: Check extra reconciliation
