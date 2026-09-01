@@ -141,6 +141,97 @@ function accountAt(xml, row, sharedStrings, reverseMap, codeStr, fallback) {
   return textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || reverseMap[codeStr] || fallback;
 }
 
+// ─── BST anchor guard ───────────────────────────────────────────────────
+//
+// The BST extractors above and extractBook() below read fixed cell
+// addresses on the strength of the sheet names and header labels the
+// current template ships with — they never check the labels are still
+// there. A customer's own file (the --file mode in app/bin/export.js) is
+// not a fixture this repo controls, so before any of those reads run, this
+// guard confirms every sheet the extractors open still exists and every
+// header cell they key their column reads on still carries the text the
+// template ships. A mismatch is a named error stating the sheet and the
+// anchor expected — never a silent short export, never a bare stack trace.
+//
+// Kept to what the BST path actually reads: extractBstTransactions() and
+// extractBook()'s entity/tax blocks. A later phase's row-mapping exposure
+// builds on this list, so keep additions here rather than duplicating them.
+
+// Every sheet extractBstTransactions() and extractBook() open by name.
+export const BST_REQUIRED_SHEETS = ["Business Details", "Admin", ...BST_SALES_SHEETS, ...BST_PURCHASE_SHEETS];
+
+// The header cell each extractor reads a column by position from, and the
+// text the current template prints there. SalesApr/PurchasesApr stand for
+// all twelve month tabs of each kind — the template repeats the same header
+// row on every one, so checking the sheets exist (BST_REQUIRED_SHEETS above)
+// plus one representative header block is what catches both a renamed sheet
+// and a reshuffled column, without reading the same header text 24 times.
+export const BST_HEADER_ANCHORS = [
+  { sheet: "Business Details", cell: "C3", label: "Your name" },
+  { sheet: "SalesApr", cell: "A1", label: "Sales    Date" },
+  { sheet: "SalesApr", cell: "B1", label: "Customer Name" },
+  { sheet: "SalesApr", cell: "C2", label: "Sales Invoice or reference" },
+  { sheet: "SalesApr", cell: "F2", label: "Gross Sales Value" },
+  { sheet: "PurchasesApr", cell: "A2", label: "Purchase Date" },
+  { sheet: "PurchasesApr", cell: "B2", label: "Supplier" },
+  { sheet: "PurchasesApr", cell: "C2", label: "Purchase Reference / Invoice Number" },
+  { sheet: "PurchasesApr", cell: "E2", label: "Enter Expense Code Letter" },
+  { sheet: "PurchasesApr", cell: "F2", label: "Enter Mileage on purchases" },
+  { sheet: "PurchasesApr", cell: "G2", label: "Total Purchase Value incl Vat" },
+  { sheet: "Admin", cell: "D21", label: "Higher rate allowance up to" },
+  { sheet: "Admin", cell: "D22", label: "Lower rate allowance over" },
+];
+
+/**
+ * A missing or mismatched anchor: which sheets are absent and which header
+ * cells no longer carry the label the extractors expect. Carries the full
+ * list so a caller can print every finding at once rather than the first.
+ */
+export class BstAnchorError extends Error {
+  constructor(missingSheets, mismatchedHeaders) {
+    const lines = [
+      ...missingSheets.map((sheet) => `sheet "${sheet}" not found`),
+      ...mismatchedHeaders.map(
+        ({ sheet, cell, label, found }) =>
+          `sheet "${sheet}" cell ${cell}: expected header "${label}", found ${found === undefined ? "nothing" : JSON.stringify(found)}`,
+      ),
+    ];
+    super(`This file does not match the current Basic Sole Trader template:\n${lines.map((line) => `  - ${line}`).join("\n")}`);
+    this.name = "BstAnchorError";
+    this.missingSheets = missingSheets;
+    this.mismatchedHeaders = mismatchedHeaders;
+  }
+}
+
+/**
+ * Confirm every sheet and header label the BST extractors key on is present
+ * before any of them run. Throws BstAnchorError naming every anchor that
+ * failed; returns nothing on success.
+ * @param {Buffer} xlsxBuffer
+ */
+export async function validateBstAnchors(xlsxBuffer) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+
+  const missingSheets = BST_REQUIRED_SHEETS.filter((sheet) => !sheetMap.has(sheet));
+  const missingSheetSet = new Set(missingSheets);
+
+  const mismatchedHeaders = [];
+  for (const anchor of BST_HEADER_ANCHORS) {
+    if (missingSheetSet.has(anchor.sheet)) continue; // already named above
+    const sheetPath = sheetMap.get(anchor.sheet);
+    const xml = await zip.file(sheetPath).async("string");
+    const found = textAt(xml, anchor.cell, sharedStrings);
+    if (found !== anchor.label) mismatchedHeaders.push({ ...anchor, found });
+  }
+
+  if (missingSheets.length > 0 || mismatchedHeaders.length > 0) {
+    throw new BstAnchorError(missingSheets, mismatchedHeaders);
+  }
+}
+// ─── end BST anchor guard ───────────────────────────────────────────────
+
 /**
  * Extract transaction lines from a single-file BST product.
  */
