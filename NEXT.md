@@ -12,8 +12,9 @@ every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json` reaches 
 the decided-out fields (per-contact ledgers, any other structural absence) held as declared
 absences with reasons, never silently closed.
 
-- [ ] T5: payslip payment date (Sonnet, worktree agent) — in flight; template surgery
-  repointing `Payslips!M18` at the paid-date cell in SE and Ltd, warning flips to a check.
+- [x] T5 — landed on the batch branch: `Payslips!M18` repointed at the wages-paid cell in
+  both products, the warning flipped to a real check; featured scenarios go clean at the
+  refresh (the judge re-pin rides the closeout).
 - [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
   carries that tab's month of the accounting period (generator-only, Ltd non-March, March
   byte-stable), with a breakable per-tab check in both engines.
@@ -43,25 +44,7 @@ absences with reasons, never silently closed.
 ## Open items
 
 The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
-
-Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
-follow the reconciliation-bug method.
-
-- [ ] **T7: a renamed month tab keeps its tax-anchored calendar dates when unpopulated**
-  (operator decision first) — surfaced by the print-frame track: on a non-March package the
-  tab named `Aug` still shows `K49`-`M49` = 1 May - 31 May, read off `Admin!B27`/`B57`; a
-  populated fixture overwrites `M49`, but the blank package a customer downloads shows
-  tax-year dates under an accounting-year tab name. No check covers it, and reorienting the
-  in-tab calendar is a template-level design question — decide whether the blank package
-  should carry accounting-frame dates before dispatching anything.
-- [ ] **T5: the printed payslip's payment date reads an empty header cell** (Haiku) —
-  surfaced by P1: `Payslips!M18` ("Payment date") in both products reads
-  `INDIRECT(ADDRESS($H$4,18,...))` — column R of the month block's header row, which the
-  template leaves empty — while the wages-paid date actually sits one row below (the cell
-  `I9` correctly reads). The check currently asserts the behaviour as it stands (`M18 = 0`)
-  with a warning carrying the true date (`app/products/ltd.js:3541`, `se.js:2487`).
-  Template surgery: point M18's column/row at the paid-date cell, flip the warning into a
-  real check, prove breakable.
+T5 and T7 landed on the batch branch; nothing is open outside the in-flight block above.
 
 
 
@@ -73,8 +56,8 @@ follow the reconciliation-bug method.
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` — a BST package opens, edits, recalculates and saves as
-  diya-gl, delivered as a CLI, then an MCP server, then a browser page with a render equivalent
-  for every reconciliation-covered sheet; specified, not started.
+  diya-gl, delivered as a CLI, then an MCP server, then a browser page. In delivery on
+  `claude/bst-cli-phase-1`; the plan's own tracking blocks carry progress.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
 
 ## Discipline
