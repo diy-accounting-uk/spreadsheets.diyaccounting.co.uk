@@ -21,6 +21,11 @@ held as declared absences with reasons, never silently closed.
   The rates track's unmappable fields feed it: the AIA relief-scale factor (never the absolute
   cap), reduced VAT rate, associated companies, Class 2 small-profits threshold, Class 1
   employee NI fields, and Ltd's whole `tax.incomeTax` (no `[income_tax]` in `ltd-*.toml`).
+- [ ] CT600 second-row filing defect (Opus, worktree agent) — started. Deploy run 33518884290's
+  judge fails the Ltd brickwork-pro-vat 2027 run: the CT working sheet spreads the 1,514.11
+  charge over two tax rows (731 days), CT600 files only row one, so box 63 carries 756.02.
+  Fix at source (apportionment and/or box 54-56 wiring), flip the warning to a real check,
+  prove breakable. Regeneration cannot clear it — the defect is in the shipped template.
 - [ ] batch remainder, surfaced by the rates track:
   - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
     `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`
