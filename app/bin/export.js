@@ -24,7 +24,9 @@
 // exported book is validated against the published v2 schemas before it is
 // written. --file also emits report.json: R, computed by the JS engine from
 // the D just extracted, through the same modules report.js --data uses, so
-// one run is the whole extract-recalculate-report loop.
+// one run is the whole extract-recalculate-report loop. Alongside it goes
+// overtyped.json, every sum the template computes that this copy of it
+// carries as a typed value instead.
 
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, rmSync } from "fs";
 import { resolve, dirname, basename, extname, join } from "path";
