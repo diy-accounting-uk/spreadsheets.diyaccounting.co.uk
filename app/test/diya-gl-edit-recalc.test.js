@@ -2,12 +2,13 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // diya-gl-edit-recalc.test.js — the edit-recalc harness: parse a BST
-// fixture's own lines.jsonl, apply one named edit in memory, run
-// calculateFromDiyaGl and checkCompliance again, and assert the movement in
-// the resulting report -- both the raw cell map calculateFromDiyaGl returns
-// and R, the canonical document buildReportDocument builds from it (the same
-// shape report.js writes to report.json). Recalculation never rewrites
-// lines: D stays input-only, so an edit's effect is read entirely off R.
+// fixture's own lines.jsonl, apply one named edit from diya-gl-edits.js in
+// memory, run calculateFromDiyaGl and checkCompliance again, and assert the
+// movement in the resulting report -- both the raw cell map
+// calculateFromDiyaGl returns and R, the canonical document
+// buildReportDocument builds from it (the same shape report.js writes to
+// report.json). Recalculation never rewrites lines: D stays input-only, so
+// an edit's effect is read entirely off R.
 //
 // Every edit is anchored to a real line or a real account the fixture
 // already carries -- never a synthetic category the fixture has no data
@@ -21,6 +22,7 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { addSaleLine, addPurchaseLine, changeLineAmount } from "../lib/diya-gl-edits.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
@@ -49,21 +51,6 @@ function valueAt(document, key) {
   const entry = document.values.find((v) => v.key === key);
   if (!entry) throw new Error(`R carries no value for ${key}`);
   return Number(entry.value);
-}
-
-function withAddedLine(lines, line) {
-  return [...lines, line];
-}
-
-function withChangedAmount(lines, entryNumber, newAmount) {
-  let found = false;
-  const changed = lines.map((line) => {
-    if (line.entryNumber !== entryNumber) return line;
-    found = true;
-    return { ...line, amount: newAmount };
-  });
-  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
-  return changed;
 }
 
 // Every check the product declares must still pass after an edit: the
@@ -234,7 +221,7 @@ for (const fixture of FIXTURES) {
     });
 
     it("adds a purchase of X: profit falls by X, turnover is unchanged", () => {
-      const edited = withAddedLine(lines, fixture.addPurchase.line);
+      const edited = addPurchaseLine(book, lines, { line: fixture.addPurchase.line });
       const after = runReport(book, edited);
 
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4")).toBe(valueAt(base.document, "cell/Profit & Loss Acc!C4"));
@@ -248,7 +235,7 @@ for (const fixture of FIXTURES) {
     });
 
     it("adds a sale of Y: profit and turnover both rise by Y", () => {
-      const edited = withAddedLine(lines, fixture.addSale.line);
+      const edited = addSaleLine(book, lines, { line: fixture.addSale.line });
       const after = runReport(book, edited);
 
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4") - valueAt(base.document, "cell/Profit & Loss Acc!C4")).toBe(
@@ -264,7 +251,10 @@ for (const fixture of FIXTURES) {
     });
 
     it("changes a sales line's amount: its month, turnover and net profit move by the difference, checks stay green", () => {
-      const edited = withChangedAmount(lines, fixture.changeSaleLine.entryNumber, fixture.changeSaleLine.newAmount);
+      const edited = changeLineAmount(book, lines, {
+        entryNumber: fixture.changeSaleLine.entryNumber,
+        newAmount: fixture.changeSaleLine.newAmount,
+      });
       const after = runReport(book, edited);
       const { delta, monthCell } = fixture.changeSaleLine;
 
@@ -275,7 +265,10 @@ for (const fixture of FIXTURES) {
     });
 
     it("changes a purchase line's amount: its category and net profit move by the difference, checks stay green", () => {
-      const edited = withChangedAmount(lines, fixture.changePurchaseLine.entryNumber, fixture.changePurchaseLine.newAmount);
+      const edited = changeLineAmount(book, lines, {
+        entryNumber: fixture.changePurchaseLine.entryNumber,
+        newAmount: fixture.changePurchaseLine.newAmount,
+      });
       const after = runReport(book, edited);
       const { delta, categoryCell } = fixture.changePurchaseLine;
 
