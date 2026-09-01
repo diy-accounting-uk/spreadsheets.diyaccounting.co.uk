@@ -194,8 +194,8 @@ describe("parseReport", () => {
   const parsed = parseReport(report("ltdVat"));
 
   it("reads the status line and the compliance check rows", () => {
-    expect(parsed.status).toBe("RECONCILES (with warnings)");
-    expect(checkCounts(parsed)).toEqual({ passed: 947, warnings: 1, failed: 0 });
+    expect(parsed.status).toBe("RECONCILES");
+    expect(checkCounts(parsed)).toEqual({ passed: 947, warnings: 0, failed: 0 });
   });
 
   it("indexes each section by its row label, indentation and bold stripped", () => {
@@ -240,8 +240,7 @@ describe("buildIndicators for the Limited Company", () => {
   const text = indicatorText("ltd", "ltdVat", { vatRegistered: true });
 
   it("states the run status and the check counts", () => {
-    expect(text).toContain("Deterministic run: RECONCILES (with warnings). Checks: 947 passed, 1 warning, 0 failed.");
-    expect(text).toContain("Warned: Payslips print: the date the scenario paid that month's wages, which the payment date would carry.");
+    expect(text).toContain("Deterministic run: RECONCILES. Checks: 947 passed, 0 warnings, 0 failed.");
   });
 
   it("states both sides of the balance sheet and the difference between them", () => {
@@ -563,7 +562,7 @@ describe("assemblePrompt", () => {
   it("digests each report and pairs it with its scenario headline", () => {
     const prompt = assemblePrompt("ltd", { reportsDir: REPORTS, rubric: "rubric text" });
     const run = prompt.runs.find((candidate) => candidate.scenario === "ltd-brickwork-pro-vat");
-    expect(run.status).toBe("RECONCILES (with warnings)");
+    expect(run.status).toBe("RECONCILES");
     expect(run.headline).toContain("BrickWork Pro Ltd");
     expect(run.indicators.join("\n")).toContain("net assets 47,516.89");
     expect(prompt.system).toContain("rubric text");

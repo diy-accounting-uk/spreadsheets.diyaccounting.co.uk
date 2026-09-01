@@ -3537,19 +3537,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("Payslips print: national insurance to date is every month printed so far", num(printed.I16), toDateSum("employeeNI"));
         check("Payslips print: net pay to date is every month printed so far", num(printed.M16), toDateSum("netPay"));
 
-        // The payment date the page prints reads the block's own header row
-        // in column R, where the template holds nothing -- the date the wages
-        // were paid sits a row below in column M, which is where I9 above
-        // finds it. The page therefore prints no payment date at all.
-        check("Payslips print: the payment date reads a cell the block leaves empty", num(printed.M18), 0, 0);
-        checks.push({
-          name: "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
-          actual: num(printed.M18),
-          expected: toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
-          pass: false,
-          severity: "warning",
-          diff: "",
-        });
+        // The payment date the page prints joins to the same cell I9 above
+        // does -- the wages-paid date a row below the block's header row.
+        check(
+          "Payslips print: the payment date is the day the scenario paid that month's wages",
+          num(printed.M18),
+          toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          0,
+        );
       }
     }
 

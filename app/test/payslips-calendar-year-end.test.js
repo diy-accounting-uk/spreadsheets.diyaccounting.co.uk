@@ -220,7 +220,7 @@ describeCalc("se Payslips Jul/Aug: the dead #REF! cells and the fixture's own pa
     ["H16", 1, "Payslips print: income tax to date is every month printed so far"],
     ["I16", 1, "Payslips print: national insurance to date is every month printed so far"],
     ["M16", 1, "Payslips print: net pay to date is every month printed so far"],
-    ["M18", 1, "Payslips print: the payment date reads a cell the block leaves empty"],
+    ["M18", 1, "Payslips print: the payment date is the day the scenario paid that month's wages"],
   ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
     expect(checks.find((c) => c.name === name)?.pass).toBe(true);
 
@@ -354,7 +354,7 @@ describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own p
     ["H16", 1, "Payslips print: income tax to date is every month printed so far"],
     ["I16", 1, "Payslips print: national insurance to date is every month printed so far"],
     ["M16", 1, "Payslips print: net pay to date is every month printed so far"],
-    ["M18", 1, "Payslips print: the payment date reads a cell the block leaves empty"],
+    ["M18", 1, "Payslips print: the payment date is the day the scenario paid that month's wages"],
   ])("corrupting Payslips.xlsx!Payslips!%s fails only its own printed-payslip check", async (cellRef, newValue, name) => {
     expect(checks.find((c) => c.name === name)?.pass).toBe(true);
 

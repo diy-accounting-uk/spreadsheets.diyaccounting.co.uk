@@ -150,12 +150,6 @@ export const PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER = 1;
 export const PAYSLIP_PRINT_PERIOD_CELLS = { G14: "grossPay", H14: "incomeTax", I14: "employeeNI", M14: "netPay" };
 export const PAYSLIP_PRINT_TO_DATE_CELLS = { G16: "grossPay", H16: "incomeTax", I16: "employeeNI", M16: "netPay" };
 
-// The page's payment date reads column R of the block's own header row, where
-// the template holds nothing; the date the wages were paid sits a row below
-// in column M, which is where the period-end cell finds it. So the page
-// prints a nil there whatever the month held.
-export const PAYSLIP_PRINT_EMPTY_PAYMENT_DATE = 0;
-
 // Nothing downstream reads the printed page, so the reconciliation asks it
 // for a period other than the sheet's own default of 1 -- a join stuck on the
 // default prints the wrong period with every other check still green.
