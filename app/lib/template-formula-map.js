@@ -118,6 +118,17 @@ export function sortCellRefs(refs) {
  *   style    -- the cell's s= (style index), or null
  *   hasValue -- true if the cell carries a cached <v> or an inline <is>
  */
+// A formula's text is XML content, so a comparison operator reaches the file
+// escaped: IF((G6&lt;&gt;0),...). Read it back as the formula bar shows it.
+function unescapeXml(text) {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
 export function parseCells(xml) {
   const cells = new Map();
   const cellRe = /<c r="([A-Z]+\d+)"([^>]*?)(\/>|>([\s\S]*?)<\/c>)/g;
@@ -133,7 +144,7 @@ export function parseCells(xml) {
       const fm = inner.match(/<f([^>]*)(?:\/>|>([\s\S]*?)<\/f>)/);
       if (fm) {
         hasF = true;
-        formula = fm[2] ?? "";
+        formula = fm[2] === undefined ? "" : unescapeXml(fm[2]);
         const attrs = fm[1];
         const siMatch = attrs.match(/si="(\d+)"/);
         if (siMatch) fSi = siMatch[1];
