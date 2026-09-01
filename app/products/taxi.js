@@ -283,7 +283,7 @@ export const CELL_MAP = [
   ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicRateLimit",             "Admin (Generator Injected)", 0, "money"],
   ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.basicRateLimit (+1)",        "Admin (Generator Injected)", 0, "money"],
-  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.higherRateThreshold",        "Admin (Generator Injected)", 0, "money"],
+  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.additionalRateThreshold",    "Admin (Generator Injected)", 0, "money"],
   ["Admin", "L16", "NI Class 2 Weekly Rate",              "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0, "rate"],
   ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits","Admin (Generator Injected)", 0, "money"],
