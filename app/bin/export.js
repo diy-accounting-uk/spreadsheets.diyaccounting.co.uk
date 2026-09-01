@@ -24,7 +24,9 @@
 // exported book is validated against the published v2 schemas before it is
 // written. --file also emits report.json: R, computed by the JS engine from
 // the D just extracted, through the same modules report.js --data uses, so
-// one run is the whole extract-recalculate-report loop.
+// one run is the whole extract-recalculate-report loop. Alongside it goes
+// overtyped.json, every sum the template computes that this copy of it
+// carries as a typed value instead.
 
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, rmSync } from "fs";
 import { resolve, dirname, basename, extname, join } from "path";
@@ -42,7 +44,9 @@ import {
   periodCovered,
   validateBstAnchors,
   BstAnchorError,
+  bstExtractionMap,
 } from "../lib/xlsx-exporter.js";
+import { overtypedCells } from "../lib/overtype-sidecar.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
@@ -147,6 +151,16 @@ function writeFileReportJson(outputDir, packageName, book, lines, productMod) {
   console.log(`  report.json: ${document.values.length} values`);
 }
 
+// overtyped.json for a --file run: every sum the Basic Sole Trader template
+// computes that this copy of it no longer does, each one attributed through
+// the mapping the extraction just recorded.
+async function writeOvertypedJson(outputDir, workbook, extractionMap, productMod) {
+  const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
+  writeFileSync(resolve(outputDir, "overtyped.json"), `${JSON.stringify(overtyped, null, 2)}\n`);
+  const count = Object.keys(overtyped).length;
+  console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
+}
+
 // The v2 schema validation, then book.toml + lines.jsonl written through
 // diya-gl-canonical.js, shared by both --source-dir and --file so the two
 // can only ever differ in how they got to (book, lines), never in how that
@@ -198,11 +212,13 @@ async function runFileMode(filePath, outputDirArg, productMod) {
       throw err;
     }
 
-    const lines = await extractBstTransactions(workbook);
+    const extractionMap = bstExtractionMap();
+    const lines = await extractBstTransactions(workbook, extractionMap);
     const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
 
     writeDiyaGlData(resolvedOutput, book, lines);
     writeFileReportJson(resolvedOutput, "bst", book, lines, productMod);
+    await writeOvertypedJson(resolvedOutput, workbook, extractionMap, productMod);
 
     console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
   } finally {
