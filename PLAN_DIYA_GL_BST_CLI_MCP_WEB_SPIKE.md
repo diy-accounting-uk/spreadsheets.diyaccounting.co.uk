@@ -261,6 +261,14 @@ the sidecar itself.
 
 ### Delivery — three tracks, two waves
 
+**In flight** on `claude/bst-cli-phase-1` (off `claude/book-readback-2`; this block is the
+phase's tracking surface — NEXT.md stays with the batch branch):
+
+- [ ] Track A — the file surface (Sonnet, worktree agent) — dispatched
+- [ ] Track B — the edit→recalc harness (Sonnet, worktree agent) — dispatched
+- [ ] Track C — the overtype sidecar (Opus) — waits on A
+- [ ] closing ladder (coordinator) — waits on the tracks
+
 Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
 `app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
 `app/data/roundtrip-budget.json` (phase 1 adds no book fields, so the budgets do not move).
