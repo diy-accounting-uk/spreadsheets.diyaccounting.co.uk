@@ -12,8 +12,10 @@ Shared exit criterion: every product's `bookFieldsMissing` in `app/data/roundtri
 reaches zero, with the decided-out fields (per-contact ledgers, any other structural absence)
 held as declared absences with reasons, never silently closed.
 
-- [ ] registers-and-employees (Sonnet, worktree agent) — started
-- [ ] rates-by-provenance (Sonnet, worktree agent) — started
+- [ ] registers-and-employees (Sonnet, worktree agent) — code-complete, full suite running
+- [x] rates-by-provenance — landed on the batch branch (`1a5a2758`, merged; 58/58 exporter
+  tests on the merged branch; SE 111→102, Ltd 156→139). The budget re-measures on the
+  combined tree once the sibling lands, since each track measured without the other's changes.
 - [ ] asset-attributes (Opus) — waits on wave 1
 - [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks The coordinator batch (24 items) merged to main in PR #48; history lives in its
 merge commits. One operator step remains from it: the generate-commit refresh — the
