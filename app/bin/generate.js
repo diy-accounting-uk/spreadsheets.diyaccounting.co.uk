@@ -352,10 +352,8 @@ async function main() {
     console.log(`\n=== Injecting diya-gl data into ${lastResult.dirName} ===`);
 
     if (packageFilter === "bst") {
-      // The populated Basic Sole Trader workbook comes from saveBstWorkbook,
-      // the same call the MCP tools and the books page make, so the CLI cannot
-      // write a different workbook from the same book. It takes the tax data
-      // this run selected rather than deriving it, so --years still decides.
+      // saveBstWorkbook takes the tax data this run selected rather than
+      // deriving it from the book, so --years still decides the year.
       const { workbook, filename } = await saveBstWorkbook(book, lines, { taxData: lastResult.taxData });
       await runSpreadsheet(workbook, {}, reads, {
         saveRecalculatedTo: resolve(finalOutputDir, filename),
