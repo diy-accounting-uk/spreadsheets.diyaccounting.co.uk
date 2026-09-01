@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-brickwork-pro-nonvat
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 Construction sole trader, CIS sub-contractors, one labourer on the payroll. Turnover is under the VAT registration threshold. Journal amounts carry no VAT. The VAT twin of this scenario scales the trade 1.5 times but buys the same van at the same £12,000 net cost, so net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil.
 
@@ -467,8 +467,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: income tax to date is every month printed so far | 181 | 181 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 72.4 | 72.4 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 2746.6 | 2746.6 | 0 | PASS |
-| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
-| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45805 | 0 |  | **WARNING** |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 18000 | 18000 | 0 | PASS |
 | Payslips!Jul F51 employee name | Tom Davies | Tom Davies |  | PASS |
 | Payslips!Jul M51 gross pay | 1500 | 1500 | 0 | PASS |
@@ -1500,20 +1499,20 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
 | N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
-| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
-| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
-| N13 | Higher Band End | 125140 | tax.incomeTax.higherBandEnd |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
+| N12 | Higher Band Start | 37701 |  |
+| N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
-| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.wdaRate |
-| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
-| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 |  |
+| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
+| F21 | Mileage Higher Rate Limit | 10000 |  |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| F22 | Mileage Lower Rate Start | 10001 |  |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
 | F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 | B4 |  | 46118 |  |
@@ -2168,7 +2167,7 @@ The books charge VAT at 0%. Gross equals net for all 10 journal categories that 
 | H16 |  | 181 |  |
 | I16 |  | 72.4 |  |
 | M16 |  | 2746.6 |  |
-| M18 |  | 0 |  |
+| M18 |  | 45805 |  |
 
 ### Payslips.xlsx!Admin
 
