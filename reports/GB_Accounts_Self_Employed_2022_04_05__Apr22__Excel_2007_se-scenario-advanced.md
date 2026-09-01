@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2022-04-05 (Apr22) Excel 2007
 
 Scenario: se-scenario-advanced
-Status: RECONCILES
+Status: RECONCILES (with warnings)
 
 SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.
 
@@ -463,7 +463,101 @@ Trade: IT consultancy and software development
 | Payslips!Payment mar D15 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment mar E15 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment mar I15 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips print: the page reads the May tab | May | May |  | PASS |
+| Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
+| Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
+| Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
+| Payslips print: gross pay is the pay the scenario recorded | 3500 | 3500 | 0 | PASS |
+| Payslips print: income tax is the tax the scenario recorded | 530 | 530 | 0 | PASS |
+| Payslips print: national insurance is the employee NI the scenario recorded | 200 | 200 | 0 | PASS |
+| Payslips print: net pay is the net pay the scenario recorded | 2770 | 2770 | 0 | PASS |
+| Payslips print: gross pay to date is every month printed so far | 7000 | 7000 | 0 | PASS |
+| Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
+| Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
+| Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
+| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
+| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45808 | 0 |  | **WARNING** |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 92735.73333333332 | 92735.7333333333 | -2.9103830456733704e-11 | PASS |
+| Payslips!Jul F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
+| Payslips!Jul M51 gross pay | 3500 | 3500 | 0 | PASS |
+| Payslips!Jul N51 income tax | 530 | 530 | 0 | PASS |
+| Payslips!Jul O51 employee NI | 200 | 200 | 0 | PASS |
+| Payslips!Jul R51 net pay | 2770 | 2770 | 0 | PASS |
+| Payslips!Jul T51 employer NI | 382.5 | 382.5 | 0 | PASS |
+| Payslips!Jul S51 reference | PAY-EMP001-2025-07 | PAY-EMP001-2025-07 |  | PASS |
+| Payslips!Jul F52 employee name | Bob Williams | Bob Williams |  | PASS |
+| Payslips!Jul M52 gross pay | 2200 | 2200 | 0 | PASS |
+| Payslips!Jul N52 income tax | 270 | 270 | 0 | PASS |
+| Payslips!Jul O52 employee NI | 96 | 96 | 0 | PASS |
+| Payslips!Jul R52 net pay | 1834 | 1834 | 0 | PASS |
+| Payslips!Jul T52 employer NI | 187.5 | 187.5 | 0 | PASS |
+| Payslips!Jul S52 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
+| Payslips!Jul F53 employee name | Carol Smith | Carol Smith |  | PASS |
+| Payslips!Jul M53 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Jul N53 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Jul O53 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Jul R53 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Jul T53 employer NI | 7.2 | 7.2 | 0 | PASS |
+| Payslips!Jul S53 reference | PAY-EMP003-2025-07 | PAY-EMP003-2025-07 |  | PASS |
+| Payslips!Jul M49 wages paid date | 45869 | 45869 | 0 | PASS |
+| Payslips!Aug F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
+| Payslips!Aug M51 gross pay | 3500 | 3500 | 0 | PASS |
+| Payslips!Aug N51 income tax | 530 | 530 | 0 | PASS |
+| Payslips!Aug O51 employee NI | 200 | 200 | 0 | PASS |
+| Payslips!Aug R51 net pay | 2770 | 2770 | 0 | PASS |
+| Payslips!Aug T51 employer NI | 382.5 | 382.5 | 0 | PASS |
+| Payslips!Aug S51 reference | PAY-EMP001-2025-08 | PAY-EMP001-2025-08 |  | PASS |
+| Payslips!Aug F52 employee name | Bob Williams | Bob Williams |  | PASS |
+| Payslips!Aug M52 gross pay | 2200 | 2200 | 0 | PASS |
+| Payslips!Aug N52 income tax | 270 | 270 | 0 | PASS |
+| Payslips!Aug O52 employee NI | 96 | 96 | 0 | PASS |
+| Payslips!Aug R52 net pay | 1834 | 1834 | 0 | PASS |
+| Payslips!Aug T52 employer NI | 187.5 | 187.5 | 0 | PASS |
+| Payslips!Aug S52 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
+| Payslips!Aug F53 employee name | Carol Smith | Carol Smith |  | PASS |
+| Payslips!Aug M53 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Aug N53 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Aug O53 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Aug R53 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Aug T53 employer NI | 7.2 | 7.2 | 0 | PASS |
+| Payslips!Aug S53 reference | PAY-EMP003-2025-08 | PAY-EMP003-2025-08 |  | PASS |
+| Payslips!Aug M49 wages paid date | 45900 | 45900 | 0 | PASS |
+| Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F14 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F15 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul T41 period total (no weekly employer NI to bring forward) | 0 | 0 | 0 | PASS |
+| Payslips!Aug H11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M11 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M12 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M13 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M14 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M15 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
 | VAT Q1: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 16920 | 16920 | 0 | PASS |
 | VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 10926.5 | 10926.5 | 0 | PASS |
 | VAT Q1: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
@@ -694,6 +788,12 @@ Trade: IT consultancy and software development
 | Category netting: Purchases after stock adjustment, less the year's stock movement (purchases s) net reaches Profit & Loss Account!B14 less the stock movement with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue | 0 | 0 | 0 | PASS |
+| Salesinvoice Product Details: VAT Rate = the tax year's standard rate | 20 | 20 | 0 | PASS |
+| Salesinvoice: line VAT = price x quantity x the tax year's standard rate | 240 | 240 | 0 | PASS |
+| Salesinvoice: net total = the invoice's one line | 1200 | 1200 | 0 | PASS |
+| Salesinvoice: carriage charge lands on the invoice | 37.5 | 37.5 | 0 | PASS |
+| Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate | 247.5 | 247.5 | 0 | PASS |
+| Salesinvoice: amount payable = net plus carriage plus VAT | 1485 | 1485 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
 
@@ -2073,7 +2173,7 @@ Journal amounts include VAT at 20%.
 | G1 | Total net book value brought forward (cost less depreciation brought forward) | 22902 |  |
 | I1 | Total depreciation charged for the year | 13740 |  |
 | J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 23838 |  |
-| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 48990 |  |
+| K1 | Total net book value carried forward, disposals removed | 48990 |  |
 | Q1 | Total annual investment allowance claimed | 52500 |  |
 | R1 | Total writing down allowance claimed | 4320 |  |
 | S1 | Total tax written down value carried forward | 19680 |  |
@@ -2149,6 +2249,26 @@ Journal amounts include VAT at 20%.
 | E15 |  | 800 |  |
 | I15 |  | 1673.2 |  |
 
+### Payslips.xlsx!Payslips
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H3 |  | May |  |
+| H4 |  | 48 |  |
+| L7 |  | MONTHLY PAYROLL |  |
+| I9 |  | 45808 |  |
+| I10 |  | 2 |  |
+| M8 |  | 1 |  |
+| G14 |  | 3500 |  |
+| H14 |  | 530 |  |
+| I14 |  | 200 |  |
+| M14 |  | 2770 |  |
+| G16 |  | 7000 |  |
+| H16 |  | 1060 |  |
+| I16 |  | 400 |  |
+| M16 |  | 5540 |  |
+| M18 |  | 0 |  |
+
 ### Payslips.xlsx!Admin
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -2197,3 +2317,113 @@ Journal amounts include VAT at 20%.
 | A381 |  | Mar |  |
 | B381 |  | 44671 |  |
 | D381 |  | 12 |  |
+
+### Payslips.xlsx!Jul
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T41 |  | 0 |  |
+| M49 |  | 45869 |  |
+| F51 |  | Alice Johnson |  |
+| M51 |  | 3500 |  |
+| N51 |  | 530 |  |
+| O51 |  | 200 |  |
+| R51 |  | 2770 |  |
+| S51 |  | PAY-EMP001-2025-07 |  |
+| T51 |  | 382.5 |  |
+| F52 |  | Bob Williams |  |
+| M52 |  | 2200 |  |
+| N52 |  | 270 |  |
+| O52 |  | 96 |  |
+| R52 |  | 1834 |  |
+| S52 |  | PAY-EMP002-2025-07 |  |
+| T52 |  | 187.5 |  |
+| F53 |  | Carol Smith |  |
+| M53 |  | 1048 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| R53 |  | 1048 |  |
+| S53 |  | PAY-EMP003-2025-07 |  |
+| T53 |  | 7.2 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Payslips.xlsx!Aug
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H11 |  | 0 |  |
+| I11 |  | 0 |  |
+| J11 |  | 0 |  |
+| L11 |  | 0 |  |
+| H12 |  | 0 |  |
+| I12 |  | 0 |  |
+| J12 |  | 0 |  |
+| L12 |  | 0 |  |
+| K12 |  | 0 |  |
+| H13 |  | 0 |  |
+| I13 |  | 0 |  |
+| J13 |  | 0 |  |
+| L13 |  | 0 |  |
+| K13 |  | 0 |  |
+| H14 |  | 0 |  |
+| I14 |  | 0 |  |
+| J14 |  | 0 |  |
+| L14 |  | 0 |  |
+| K14 |  | 0 |  |
+| H15 |  | 0 |  |
+| I15 |  | 0 |  |
+| J15 |  | 0 |  |
+| L15 |  | 0 |  |
+| K15 |  | 0 |  |
+| M49 |  | 45900 |  |
+| F51 |  | Alice Johnson |  |
+| M51 |  | 3500 |  |
+| N51 |  | 530 |  |
+| O51 |  | 200 |  |
+| R51 |  | 2770 |  |
+| S51 |  | PAY-EMP001-2025-08 |  |
+| T51 |  | 382.5 |  |
+| F52 |  | Bob Williams |  |
+| M52 |  | 2200 |  |
+| N52 |  | 270 |  |
+| O52 |  | 96 |  |
+| R52 |  | 1834 |  |
+| S52 |  | PAY-EMP002-2025-08 |  |
+| T52 |  | 187.5 |  |
+| F53 |  | Carol Smith |  |
+| M53 |  | 1048 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| R53 |  | 1048 |  |
+| S53 |  | PAY-EMP003-2025-08 |  |
+| T53 |  | 7.2 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 1200 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 247.5 |  |
+| P64 |  | 1485 |  |
+| J38 |  | 1200 |  |
+| L38 |  | 1 |  |
+| P38 |  | 1200 |  |
+| V38 |  | 240 |  |
