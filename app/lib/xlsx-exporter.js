@@ -15,7 +15,12 @@ import {
   LTD_SALES_CODE_MAP,
 } from "./scenario-extractor.js";
 import { calculateMileageAllowance } from "./tax/mileage.js";
-import { PAYSLIPS_ENTRY_COLUMNS, payslipsMonthEntryRows, payslipsWagesPaidCell } from "./payslips-layout.js";
+import {
+  PAYSLIPS_ENTRY_COLUMNS,
+  PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
+  payslipsMonthEntryRows,
+  payslipsWagesPaidCell,
+} from "./payslips-layout.js";
 import { findXlsx } from "./xlsx-reader.js";
 import { readFileSync as readSchemaFile, existsSync as fileExists } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
@@ -1193,6 +1198,16 @@ const CHARGE_ROWS = [2, 3, 4, 5, 6];
 const CHARGE_COLUMNS = { date: "A", description: "B", valuation: "C", holder: "D", terms: "E", boardMeeting: "F" };
 const BOARD_MINUTE_CELLS = { boardMeetingDate: "F2", amount: "E4" };
 
+// Directors&Secretary runs one officer a row from row 2 (the writer's own
+// rows: 2 the first director, 3 the secretary, 4-8 further directors). A the
+// full name, D the capacity the writer or the template itself names them
+// under ("Director"/"Company Secretary"), F a resignation date. The sheet
+// carries no appointment date of its own -- a director who also holds shares
+// is dated and counted from the register of members instead, the same link
+// the writer draws when it fills DirectorsInterests' registered date.
+const DIRECTOR_SECRETARY_ROWS = [2, 3, 4, 5, 6, 7, 8];
+const DIRECTOR_SECRETARY_COLUMNS = { name: "A", capacity: "D", resigned: "F" };
+
 // The OpenAccounts cells the Ltd opening balance sheet is entered in, as the
 // book's openingBalances table rather than as the journal OA_JOURNAL_MAP
 // turns them into.
@@ -1542,29 +1557,53 @@ async function openingBalancesFrom(hubZip) {
   return Object.keys(balances).length > 0 ? balances : undefined;
 }
 
-async function employeesFrom(payslipsZip) {
+// A payslip's own reference embeds the employee's diya-gl id
+// ("PAY-EMP003-2025-04"), keyed by the name on the same row -- the Employee
+// sheet's own "Payroll number" cell is a position in the payroll, not that
+// id, so it stands in only where no payroll line names the employee.
+function employeeIdsByName(payrollLines) {
+  const ids = new Map();
+  for (const line of payrollLines || []) {
+    const match = /^PAY-([^-]+)-/.exec(line.documentReference || "");
+    if (match) ids.set(line.detailComment, match[1]);
+  }
+  return ids;
+}
+
+async function employeesFrom(payslipsZip, payrollLines) {
   const sheet = await openSheet(payslipsZip, "Employee");
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
+  const idsByName = employeeIdsByName(payrollLines);
   const employees = [];
   for (const base of EMPLOYEE_BASE_ROWS) {
     const surname = textAt(xml, `D${base + EMPLOYEE_OFFSETS.surname}`, sharedStrings);
     const forenames = textAt(xml, `D${base + EMPLOYEE_OFFSETS.forenames}`, sharedStrings);
-    const employeeID = textAt(xml, `D${base + EMPLOYEE_OFFSETS.employeeID}`, sharedStrings);
     if (!surname && !forenames) continue;
+    const name = [forenames, surname].filter(Boolean).join(" ");
+    const payrollNumber = textAt(xml, `D${base + EMPLOYEE_OFFSETS.employeeID}`, sharedStrings);
     const frequency = textAt(xml, `D${base + EMPLOYEE_OFFSETS.payFrequency}`, sharedStrings);
     const category = textAt(xml, `D${base + EMPLOYEE_OFFSETS.niCategory}`, sharedStrings);
     const employee = {
-      employeeID: employeeID || String(employees.length + 1),
-      name: [forenames, surname].filter(Boolean).join(" "),
+      employeeID: idsByName.get(name) || payrollNumber || String(employees.length + 1),
+      name,
       // The sheet keeps the pay a payslip states month by month, not a
-      // standing annual figure, so the book's declared gross pay is the year
-      // the payroll journal adds up to and is filled in by the caller.
+      // standing annual figure, so the book's declared per-period gross pay
+      // is filled in by the caller from the first month the payroll journal
+      // carries it.
       grossPay: 0,
       payFrequency: frequency === "W" ? "weekly" : "monthly",
+      // No cell carries a tax code: the monthly block's own "Tax Code"
+      // column (D, labelled on every month tab's row 3) is never filled by
+      // the writer, always a placeholder space.
       taxCode: "",
       isDirector: category === "D",
     };
+    assign(employee, "startDate", dateAt(xml, `D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`, sharedStrings));
+    // The sheet's own director flag and NI category share one cell: when the
+    // writer marks a director it enters "D" there instead of the category
+    // letter, so a director's real NI category is not on the sheet to read
+    // back.
     assign(employee, "niCategory", category === "D" ? undefined : category);
     employees.push(employee);
   }
@@ -1574,7 +1613,7 @@ async function employeesFrom(payslipsZip) {
 async function registersFrom(companySecretaryZip) {
   const registers = {};
 
-  const memberSheet = await openSheet(companySecretaryZip, "Register");
+  const memberSheet = await openSheet(companySecretaryZip, "RegisterofMembers");
   if (memberSheet) {
     const { xml, sharedStrings } = memberSheet;
     const members = [];
@@ -1583,11 +1622,36 @@ async function registersFrom(companySecretaryZip) {
       const shares = numberAt(xml, `${MEMBER_COLUMNS.shares}${row}`, sharedStrings);
       if (!name || !shares) continue;
       const member = { memberID: `M${members.length + 1}`, name, shares };
-      assign(member, "nominalValue", numberAt(xml, `${MEMBER_COLUMNS.nominalValue}${row}`, sharedStrings));
+      // The register prices every holding at the same £1 nominal value
+      // (SHARE_NOMINAL_VALUE in ltd.js), a company-wide figure rather than a
+      // per-member one, so column F is not read back onto the member -- the
+      // schema's own note on this field says the same.
       assign(member, "acquiredDate", dateAt(xml, `${MEMBER_COLUMNS.acquired}${row}`, sharedStrings));
       members.push(member);
     }
     if (members.length > 0) registers.members = members;
+  }
+
+  const directorSheet = await openSheet(companySecretaryZip, "Directors&Secretary");
+  if (directorSheet) {
+    const { xml, sharedStrings } = directorSheet;
+    const directors = [];
+    for (const row of DIRECTOR_SECRETARY_ROWS) {
+      const name = textAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, sharedStrings);
+      if (!name) continue;
+      const director = { name, role: textAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`, sharedStrings) || "Director" };
+      // The sheet keeps no appointment date of its own; a director who also
+      // holds shares was appointed the day the register of members dates
+      // their holding.
+      const holding = (registers.members || []).find((member) => member.name === name);
+      if (holding) {
+        assign(director, "appointed", holding.acquiredDate);
+        assign(director, "shares", holding.shares);
+      }
+      assign(director, "resigned", dateAt(xml, `${DIRECTOR_SECRETARY_COLUMNS.resigned}${row}`, sharedStrings));
+      directors.push(director);
+    }
+    if (directors.length > 0) registers.directors = directors;
   }
 
   const chargeSheet = await openSheet(companySecretaryZip, "Charges&Debentures");
@@ -1705,12 +1769,17 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
           assign(entityInformation, field, textAt(employerSheet.xml, cell, employerSheet.sharedStrings));
       }
     }
-    const employees = await employeesFrom(payslipsZip);
+    const payrollLines = lines.filter((l) => l.sourceJournalID === "payroll");
+    const employees = await employeesFrom(payslipsZip, payrollLines);
     if (employees.length > 0) {
+      // The book declares one gross pay per employee, the per-period rate a
+      // constant salary pays every month; the first month the payroll
+      // journal carries an employee's name is that rate, not the year's
+      // running total.
       const grossByEmployee = new Map();
-      for (const line of lines.filter((l) => l.sourceJournalID === "payroll")) {
-        const gross = line["diya-gl:grossPay"] ?? line.amount;
-        grossByEmployee.set(line.detailComment, (grossByEmployee.get(line.detailComment) || 0) + gross);
+      for (const line of payrollLines) {
+        if (grossByEmployee.has(line.detailComment)) continue;
+        grossByEmployee.set(line.detailComment, line["diya-gl:grossPay"] ?? line.amount);
       }
       for (const employee of employees) employee.grossPay = grossByEmployee.get(employee.name) || 0;
       book.employees = employees;
@@ -1729,11 +1798,6 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
 
     const companySecretaryZip = await openWorkbook(sourceDir, "Companysecretary.xlsx");
     if (companySecretaryZip) Object.assign(book, await registersFrom(companySecretaryZip));
-
-    const directors = (book.employees || [])
-      .filter((employee) => employee.isDirector)
-      .map((employee) => ({ name: employee.name, role: "director" }));
-    if (directors.length > 0) book.directors = directors;
   }
 
   if (Object.keys(tax).length > 0) book.tax = tax;
