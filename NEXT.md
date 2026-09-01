@@ -55,11 +55,11 @@ lands:
 - taxi-dates track (Sonnet) — T6: merged to `claude/next-batch-wave-1` (purchases dates
   now translate like sales; 2023 and 2026 both RECONCILE with zero-unmatched scorecards;
   BST confirmed consistent with no translation on either side; 293 + 60 tests green)
-- print-frame track (Opus): started on the ltd non-March failures (run 33446208332) —
-  8 print-page checks fail on a fresh non-March package: the page resolves the May tab as
-  period 11 where Aug/period 2 is expected, i.e. the write/lookup side and the check side
-  resolve "payroll month 2" in different frames (April-anchored vs the package's own).
-  March passes both years, so one side misses the tab reorientation.
+- print-frame track (Opus): merged to `claude/next-batch-wave-1` — the Admin "Month Sheet"
+  name column was the one piece the non-March reorientation never moved; the generator now
+  reorients it (formulas + caches, H3's stale cached name included), the JS calendar names
+  months from the tab list, and June/December RECONCILE 1018/1019 on fresh packages with
+  March unchanged and SE structurally unexposed. Breakability proven per cell.
 - loader track (Sonnet) — B5: merged to `claude/next-batch-wave-1` (one-line mapping,
   gate proven firing, both CI chains within budget, 3604 tests green in its tree)
 - divider track (Haiku) — T3: merged to `claude/next-batch-wave-1` (98ac8a93, 1282 guard
@@ -86,6 +86,13 @@ The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or 
 Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
 follow the reconciliation-bug method.
 
+- [ ] **T7: a renamed month tab keeps its tax-anchored calendar dates when unpopulated**
+  (operator decision first) — surfaced by the print-frame track: on a non-March package the
+  tab named `Aug` still shows `K49`-`M49` = 1 May - 31 May, read off `Admin!B27`/`B57`; a
+  populated fixture overwrites `M49`, but the blank package a customer downloads shows
+  tax-year dates under an accounting-year tab name. No check covers it, and reorienting the
+  in-tab calendar is a template-level design question — decide whether the blank package
+  should carry accounting-frame dates before dispatching anything.
 - [ ] **T5: the printed payslip's payment date reads an empty header cell** (Haiku) —
   surfaced by P1: `Payslips!M18` ("Payment date") in both products reads
   `INDIRECT(ADDRESS($H$4,18,...))` — column R of the month block's header row, which the
