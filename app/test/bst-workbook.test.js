@@ -29,7 +29,9 @@ const FIXTURES = [
 async function workbookTheGeneratePathComposes(book, lines) {
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates/bst/meta.toml"), "utf8"));
   const sharedMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates/meta.toml"), "utf8"));
-  const taxData = parseTOML(readFileSync(resolve(APP_DIR, `data/${taxYearFileName(new Date(book.documentInfo.periodCoveredEnd))}.toml`), "utf8"));
+  const taxData = parseTOML(
+    readFileSync(resolve(APP_DIR, `data/${taxYearFileName(new Date(book.documentInfo.periodCoveredEnd))}.toml`), "utf8"),
+  );
 
   const templateBuffer = readFileSync(resolve(APP_DIR, "templates/bst", productMeta.template.spreadsheet));
   const generated = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);

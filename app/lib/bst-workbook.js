@@ -10,16 +10,11 @@
 
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync } from "fs";
-import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
 
 import { generateSpreadsheet, packageNaming } from "./generator.js";
 import { applyCellWrites } from "./spreadsheet-runner.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { cellWrites as bstCellWrites } from "../products/bst.js";
-
-const APP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const BST_TEMPLATE_DIR = "templates/bst";
 const SHARED_META = "templates/meta.toml";
@@ -36,17 +31,24 @@ export class BookFieldError extends Error {
 }
 
 /**
- * The default resource loader: app/ on this machine, read synchronously.
- * Paths are app-relative and slash-separated, e.g. "data/se-2025-2026.toml".
+ * The default resource loader: this repo's app/ directory. Paths are
+ * app-relative and slash-separated, e.g. "data/se-2025-2026.toml".
+ *
+ * Node's own modules load on the first read rather than with this file, so a
+ * caller that supplies its own loader — a browser bundle — never pulls them in.
  */
-export function nodeResourceLoader(appDir = APP_DIR) {
+export function nodeResourceLoader(appDir) {
+  async function read(path, encoding) {
+    const { readFileSync } = await import("fs");
+    const { resolve, dirname } = await import("path");
+    const { fileURLToPath } = await import("url");
+    const base = appDir ?? resolve(dirname(fileURLToPath(import.meta.url)), "..");
+    return readFileSync(resolve(base, path), encoding);
+  }
+
   return {
-    async readText(path) {
-      return readFileSync(resolve(appDir, path), "utf8");
-    },
-    async readBinary(path) {
-      return readFileSync(resolve(appDir, path));
-    },
+    readText: (path) => read(path, "utf8"),
+    readBinary: (path) => read(path, undefined),
   };
 }
 
