@@ -22,9 +22,9 @@ absences with reasons, never silently closed.
   bytes move; the CI refresh reproduces them), and the `Payment` PAYE schedule keeps its
   tax-frame dates with each row's totals repointed to the payroll month paid in that tax
   month, gaining its first reconciliation reads and checks.
-- [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
-  rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
-  `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
+- [x] fixture-master rate alignment — landed (`774d52af`, merged; sync gate re-proven on
+  the merged masters, zero drift; 244 blast tests green). Budgets unchanged — the gain is
+  in the ungated book-level differing counts (BST 53→50, Taxi 13→10).
 - [x] labels-track regression — the SE CELL_MAP deletions had emptied the calculators' read
   scope (`withinReadScope()`) and 13 SE checks with it; restored with schema-correct names
   inside the asset-attributes track. Done when this branch merges.
