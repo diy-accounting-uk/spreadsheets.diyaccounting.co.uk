@@ -24,6 +24,7 @@ grossPay = 3500
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2024-01-15
 isDirector = false
 
 [[employees]]
@@ -34,6 +35,7 @@ grossPay = 2200
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2024-06-01
 isDirector = false
 
 [[employees]]
@@ -44,6 +46,7 @@ grossPay = 1048
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2020-01-01
 isDirector = true
 
 [[sales.apr]]
@@ -5738,6 +5741,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-04"
+accountMainID = "5101"
 
 [[payroll.apr]]
 date = 2025-04-30
@@ -5748,6 +5752,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-04"
+accountMainID = "5101"
 
 [[payroll.apr]]
 date = 2025-04-30
@@ -5758,6 +5763,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-04"
+accountMainID = "5100"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5768,6 +5774,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-05"
+accountMainID = "5101"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5778,6 +5785,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-05"
+accountMainID = "5101"
 
 [[payroll.may]]
 date = 2025-05-31
@@ -5788,6 +5796,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-05"
+accountMainID = "5100"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5798,6 +5807,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-06"
+accountMainID = "5101"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5808,6 +5818,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-06"
+accountMainID = "5101"
 
 [[payroll.jun]]
 date = 2025-06-30
@@ -5818,6 +5829,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-06"
+accountMainID = "5100"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5828,6 +5840,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-07"
+accountMainID = "5101"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5838,6 +5851,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-07"
+accountMainID = "5101"
 
 [[payroll.jul]]
 date = 2025-07-31
@@ -5848,6 +5862,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-07"
+accountMainID = "5100"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5858,6 +5873,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-08"
+accountMainID = "5101"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5868,6 +5884,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-08"
+accountMainID = "5101"
 
 [[payroll.aug]]
 date = 2025-08-31
@@ -5878,6 +5895,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-08"
+accountMainID = "5100"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5888,6 +5906,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-09"
+accountMainID = "5101"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5898,6 +5917,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-09"
+accountMainID = "5101"
 
 [[payroll.sep]]
 date = 2025-09-30
@@ -5908,6 +5928,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-09"
+accountMainID = "5100"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5918,6 +5939,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-10"
+accountMainID = "5101"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5928,6 +5950,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-10"
+accountMainID = "5101"
 
 [[payroll.oct]]
 date = 2025-10-31
@@ -5938,6 +5961,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-10"
+accountMainID = "5100"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5948,6 +5972,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-11"
+accountMainID = "5101"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5958,6 +5983,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-11"
+accountMainID = "5101"
 
 [[payroll.nov]]
 date = 2025-11-30
@@ -5968,6 +5994,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-11"
+accountMainID = "5100"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5978,6 +6005,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2025-12"
+accountMainID = "5101"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5988,6 +6016,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2025-12"
+accountMainID = "5101"
 
 [[payroll.dec]]
 date = 2025-12-31
@@ -5998,6 +6027,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2025-12"
+accountMainID = "5100"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -6008,6 +6038,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2026-01"
+accountMainID = "5101"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -6018,6 +6049,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2026-01"
+accountMainID = "5101"
 
 [[payroll.jan]]
 date = 2026-01-31
@@ -6028,6 +6060,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2026-01"
+accountMainID = "5100"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -6038,6 +6071,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2026-02"
+accountMainID = "5101"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -6048,6 +6082,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2026-02"
+accountMainID = "5101"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -6058,6 +6093,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2026-02"
+accountMainID = "5100"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -6068,6 +6104,7 @@ employeeNI = 200
 employerNI = 382.5
 netPay = 2770
 reference = "PAY-EMP001-2026-03"
+accountMainID = "5101"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -6078,6 +6115,7 @@ employeeNI = 96
 employerNI = 187.5
 netPay = 1834
 reference = "PAY-EMP002-2026-03"
+accountMainID = "5101"
 
 [[payroll.mar]]
 date = 2026-03-31
@@ -6088,6 +6126,7 @@ employeeNI = 0
 employerNI = 7.2
 netPay = 1048
 reference = "PAY-EMP003-2026-03"
+accountMainID = "5100"
 
 [stock]
 opening = 10000

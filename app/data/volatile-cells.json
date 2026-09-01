@@ -1,0 +1,16 @@
+{
+  "description": "Cells that are expected to move between saved and recalculated runs (EQ3 stability).",
+  "notes": "Volatile formulas: Excel's own ca=\"1\" always-recalculate flag, here on the print sheet's INDIRECT(ADDRESS(...)) reads. The generator rolls the Payslips.xlsx Admin sheet's daily date chain (B3:B381, seeded at B2) and every plain =Admin!B<n> cached copy the workbook's other sheets keep of it, so those agree without a recalculation. A dynamic INDIRECT/ADDRESS lookup into the same chain resolves its target only at recalculation time, so its cache still moves.",
+  "cells": [
+    {
+      "key": "cell/Payslips.xlsx!Payslips!I9",
+      "type": "volatile formula",
+      "reason": "Formula INDIRECT(ADDRESS($H$4+1,13,1,TRUE,$H$3)), marked ca=\"1\" (Excel's always-recalculate flag). It resolves dynamically into a month tab's own date column, itself part of the Admin daily chain seeded at Admin!B2, so its cached value is only as fresh as the last full recalculation."
+    },
+    {
+      "key": "cell/Payslips.xlsx!Payslips!I10",
+      "type": "volatile formula",
+      "reason": "Formula INDIRECT(ADDRESS($H$4+1,5,1,TRUE,$H$3)), marked ca=\"1\", the same dynamic always-recalculate lookup as I9 into a different column."
+    }
+  ]
+}

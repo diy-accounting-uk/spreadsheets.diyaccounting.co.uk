@@ -13,6 +13,9 @@ import {
   buildReverseCodeMap,
   extractBstTransactions,
   extractTaxiTransactions,
+  extractBankTransactions,
+  extractJournalEntries,
+  extractPayrollTransactions,
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
@@ -277,6 +280,124 @@ describe("extractBook", () => {
   });
 });
 
+// ── The figures the sheets carry undated ───────────────────────────────────
+//
+// An opening balance and a year-end stock count are entered as bare amounts,
+// with no date cell beside either one. Both are dated by the period the
+// package covers, so a workbook that banks nothing in its first month, or
+// banks late, still brings its opening balance back on the day it was
+// brought forward.
+
+const LTD_PERIOD = { start: "2025-04-01", end: "2026-03-31" };
+// 2025-04-22 as an Excel serial: a receipt three weeks into the first month.
+const APRIL_TWENTY_SECOND = 45769;
+
+async function writePackage(workbooks) {
+  const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-period-"));
+  for (const [name, sheets] of Object.entries(workbooks)) {
+    writeFileSync(join(dir, name), await buildWorkbook(sheets));
+  }
+  return dir;
+}
+
+describe("extractBankTransactions — the opening balance in A1", () => {
+  it("dates the balance by the period, not by the first row the account banks", async () => {
+    const dir = await writePackage({
+      "Currentaccount.xlsx": {
+        Apr: { A1: 25000, A6: APRIL_TWENTY_SECOND, B6: "Acme Corp", E6: "DR", F6: 8000 },
+        May: { A1: { formula: "Apr!A1+Apr!F1", value: 33000 } },
+      },
+    });
+    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+
+    const opening = lines.filter((line) => line["diya-gl:bankCode"] === "BC");
+    expect(opening).toHaveLength(1);
+    expect(opening[0]).toMatchObject({ postingDate: "2025-04-01", accountMainID: "1200", amount: 25000, debitCreditCode: "D" });
+    expect(lines.find((line) => line["diya-gl:bankCode"] === "DR").postingDate).toBe("2025-04-22");
+  });
+
+  it("brings back the balance of an account that banks nothing in the period's first month", async () => {
+    const dir = await writePackage({
+      "Savingaccount.xlsx": { Apr: { A1: 5000 }, May: { A1: { formula: "Apr!A1", value: 5000 } } },
+      "Cashaccount.xlsx": { Apr: { A1: 500 }, May: { A1: { formula: "Apr!A1", value: 500 } } },
+    });
+    const lines = await extractBankTransactions(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.amount, line.postingDate])).toEqual([
+      ["1210", 5000, "2025-04-01"],
+      ["1220", 500, "2025-04-01"],
+    ]);
+  });
+
+  it("takes no balance from a tab that only carries the one before it forward", async () => {
+    const dir = await writePackage({
+      "Creditcardaccount.xlsx": { Apr: {}, May: { A1: { formula: "Apr!A1", value: 500 } } },
+    });
+    expect(await extractBankTransactions(dir, "ltd", LTD_PERIOD)).toEqual([]);
+  });
+});
+
+describe("extractJournalEntries — the Ltd stock movement", () => {
+  const openAccounts = { E15: 10000, E33: 100 };
+
+  it("posts the fall from the opening figure to the year-end count against cost of sales", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 6000 } },
+    });
+    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+
+    expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount, line.postingDate])).toEqual([
+      ["1100", "C", 4000, "2026-03-31"],
+      ["5000", "D", 4000, "2026-03-31"],
+    ]);
+  });
+
+  it("turns the pair round when the year ends holding more stock than it opened with", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 14000 } },
+    });
+    const movement = (await extractJournalEntries(dir, "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+
+    expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
+      ["1100", "D", 4000],
+      ["5000", "C", 4000],
+    ]);
+  });
+
+  it("posts nothing where the count matches the opening figure", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 10000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.some((line) => line.documentReference === "JNL-001")).toBe(false);
+    expect(lines.map((line) => line.postingDate)).toEqual(["2025-04-01", "2025-04-01"]);
+  });
+});
+
+describe("extractJournalEntries — the Ltd opening balance sheet's land and buildings", () => {
+  it("carries both the cost and the accumulated depreciation leg", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000, M13: 40000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
+      ["0000", "D", 200000],
+      ["0000", "C", 40000],
+    ]);
+  });
+
+  it("drops the accumulated depreciation leg alone when the account holds nothing but cost", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { G13: 200000 } },
+    });
+    const lines = await extractJournalEntries(dir, "ltd", LTD_PERIOD);
+
+    expect(lines.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([["0000", "D", 200000]]);
+  });
+});
+
 // ── The shipped example ────────────────────────────────────────────────────
 
 const hasBstLatest = existsSync(BST_LATEST) && findXlsx(BST_LATEST) !== null;
@@ -483,5 +604,92 @@ describe("extractTaxiTransactions — the exported book", () => {
     const { book } = await exportedTaxiBook(taxiSheets({ purchaseRows: { A6: TAXI_FIRST_DAY + 2, B6: "Amazon", D6: "f", F6: 200 } }));
     expect(book.accounts.purchases["7000"]).toEqual({ "accountMainDescription": "Fixed Assets Motor Vehicles", "diya-gl:column": "S" });
     expect(book.accounts.assets).toBeUndefined();
+  });
+});
+
+// ── The payslip block a month tab puts under its weekly blocks ─────────────
+//
+// A month tab stacks one ten-row block per tax week from row 8, then the
+// monthly payroll block below them, so the block starts at row 48 in a
+// four-week month, 58 in a five-week one and 68 in the six-week last month.
+// The exporter has to follow the month's own layout: a fixed-row read brings
+// back the four-week months and silently loses the rest.
+
+const PAYSLIP_MONTH_TABS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+// One employee's line on a month's block, plus the wages-paid date above it.
+function payslipBlock(blockRow, { paidOn, name, grossPay, incomeTax, employeeNI, netPay, employerNI, reference }) {
+  return {
+    [`M${blockRow + 1}`]: paidOn,
+    [`F${blockRow + 3}`]: name,
+    [`M${blockRow + 3}`]: grossPay,
+    [`N${blockRow + 3}`]: incomeTax,
+    [`O${blockRow + 3}`]: employeeNI,
+    [`R${blockRow + 3}`]: netPay,
+    [`S${blockRow + 3}`]: reference,
+    [`T${blockRow + 3}`]: employerNI,
+  };
+}
+
+async function exportedPayroll(blocksByTab) {
+  const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-payslips-"));
+  const sheets = { Employee: {} };
+  for (const tab of PAYSLIP_MONTH_TABS) sheets[tab] = blocksByTab[tab] || {};
+  writeFileSync(join(dir, "Payslips.xlsx"), await buildWorkbook(sheets));
+  return extractPayrollTransactions(dir);
+}
+
+describe("extractPayrollTransactions — the month's own block row", () => {
+  const employee = {
+    name: "Alice Johnson",
+    grossPay: 3500,
+    incomeTax: 530,
+    employeeNI: 200,
+    netPay: 2770,
+    employerNI: 382.5,
+    reference: "PAY-EMP001",
+  };
+
+  it("reads a four-week month's block from row 48", async () => {
+    const lines = await exportedPayroll({ Apr: payslipBlock(48, { paidOn: 45777, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({
+      "sourceJournalID": "payroll",
+      "postingDate": "2025-04-30",
+      "amount": 3500,
+      "detailComment": "Alice Johnson",
+      "documentReference": "PAY-EMP001",
+      "diya-gl:employerNI": 382.5,
+      "diya-gl:netPay": 2770,
+    });
+  });
+
+  it("reads a five-week month's block from row 58, where a fixed-row read finds nothing", async () => {
+    const lines = await exportedPayroll({ Jun: payslipBlock(58, { paidOn: 45838, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ postingDate: "2025-06-30", amount: 3500, detailComment: "Alice Johnson" });
+  });
+
+  it("reads the six-week last month's block from row 68", async () => {
+    const lines = await exportedPayroll({ Mar: payslipBlock(68, { paidOn: 46112, ...employee }) });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ postingDate: "2026-03-31", amount: 3500 });
+  });
+
+  it("brings every month back whatever the weeks each one holds", async () => {
+    const blocksByTab = {};
+    // 4, 4 and 5 weeks a quarter, with a sixth on the last month.
+    const weeks = [4, 4, 5, 4, 4, 5, 4, 4, 5, 4, 4, 6];
+    PAYSLIP_MONTH_TABS.forEach((tab, index) => {
+      blocksByTab[tab] = payslipBlock(8 + 10 * weeks[index], { paidOn: 45777 + index * 30, ...employee, reference: `PAY-${tab}` });
+    });
+    const lines = await exportedPayroll(blocksByTab);
+    expect(lines).toHaveLength(12);
+    expect(lines.map((line) => line.documentReference)).toEqual(PAYSLIP_MONTH_TABS.map((tab) => `PAY-${tab}`));
+  });
+
+  it("takes no line from a block row the sheet holds no pay on", async () => {
+    const lines = await exportedPayroll({ Jun: { M59: 45838, N61: 0, O61: 0, T61: 0 } });
+    expect(lines).toEqual([]);
   });
 });

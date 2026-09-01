@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 683 },
-  { name: "se-brickwork-pro-vat", checkCount: 645 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 645 },
+  { name: "se-scenario-advanced", checkCount: 783 },
+  { name: "se-brickwork-pro-vat", checkCount: 717 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 712 },
 ];
 
 function loadFixture(name) {
@@ -275,6 +275,38 @@ describe("Self Employed engine: the read scope", () => {
         "Vat.xlsx!Vatinterface!I5",
         "Vat.xlsx!Vatinterface!K4",
         "Vat.xlsx!Vatinterface!K5",
+        // A monthly block row no employee sits on: the template ships the
+        // name, gross pay, net pay and reference columns empty and the three
+        // beside them as a literal zero.
+        "Payslips.xlsx!Jul!F54",
+        "Payslips.xlsx!Jul!M54",
+        "Payslips.xlsx!Jul!R54",
+        "Payslips.xlsx!Jul!S54",
+        "Payslips.xlsx!Jul!F55",
+        "Payslips.xlsx!Jul!M55",
+        "Payslips.xlsx!Jul!R55",
+        "Payslips.xlsx!Jul!S55",
+        "Payslips.xlsx!Aug!F54",
+        "Payslips.xlsx!Aug!M54",
+        "Payslips.xlsx!Aug!R54",
+        "Payslips.xlsx!Aug!S54",
+        "Payslips.xlsx!Aug!F55",
+        "Payslips.xlsx!Aug!M55",
+        "Payslips.xlsx!Aug!R55",
+        "Payslips.xlsx!Aug!S55",
+        // The weekly employee line and the payslip total the following
+        // month would bring forward, neither of which a monthly payroll
+        // ever fills.
+        "Payslips.xlsx!Jul!F11",
+        "Payslips.xlsx!Jul!F12",
+        "Payslips.xlsx!Jul!F13",
+        "Payslips.xlsx!Jul!F14",
+        "Payslips.xlsx!Jul!F15",
+        "Payslips.xlsx!Aug!M11",
+        "Payslips.xlsx!Aug!M12",
+        "Payslips.xlsx!Aug!M13",
+        "Payslips.xlsx!Aug!M14",
+        "Payslips.xlsx!Aug!M15",
       ].sort(),
     );
   });

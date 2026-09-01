@@ -176,11 +176,17 @@ describeCalc(
 
     it("publishes those figures in the fixed asset note", () => {
       const notes = results.PubNotes;
-      expect(notes.G8).toBe(33000);
+      // Existing assets at the year start: the van (30,000) and the laptop
+      // (3,000), plus the land & buildings opening asset (200,000).
+      expect(notes.G8).toBe(233000);
       expect(notes.G9).toBe(52500);
       expect(notes.G10).toBe(30000);
-      expect(notes.G11).toBe(55500);
-      expect(notes.G14).toBe(10098);
+      // Closing cost: existing (233,000) plus additions (52,500) less
+      // disposals at cost (30,000) = 255,500.
+      expect(notes.G11).toBe(255500);
+      // Depreciation brought forward: the van (9,828) and the laptop (270),
+      // plus the land & buildings opening asset's 40,000.
+      expect(notes.G14).toBe(50098);
       expect(notes.G20).toBe(notes.G11 - notes.G17);
       expect(results.PubBalSht.F6).toBe(notes.G20);
     });
@@ -257,6 +263,68 @@ describeCalc(
         ]),
       );
       expect(failureNames(corrupted)).toHaveLength(3);
+    });
+
+    it("reads both ledgers' fixed asset totals into the reconciliation and prints the reconcile verdict", () => {
+      const fr = results["Fixedassets.xlsx!FAreconciliation"];
+      // 63,000 of asset purchases and 15,000 of proceeds in the fixture, both
+      // gross; the schedule and the ledgers carry them net of 20% VAT.
+      expect(fr.E11).toBe(52500);
+      expect(fr.E13).toBe(52500);
+      expect(fr.E15).toBe(0);
+      expect(fr.K11).toBe(12500);
+      expect(fr.K13).toBe(12500);
+      expect(fr.K15).toBe(0);
+    });
+
+    it("fails only the additions tie when the purchase ledger's total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E13", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E13", value);
+      expect(failureNames(corrupted)).toEqual(["Fixed assets: Schedule additions = Purchases.xlsx fixed asset total"]);
+    });
+
+    it("fails only the disposals tie when the sales ledger's total is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K13", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K13", value);
+      expect(failureNames(corrupted)).toEqual(["Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total"]);
+    });
+
+    it("fails every check reading the schedule's own additions total when it is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E11", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E11", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule additions = Purchases.xlsx fixed asset total",
+        "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
+        "Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue",
+      ]);
+    });
+
+    it("fails every check reading the schedule's own disposals total when it is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K11", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K11", value);
+      expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total",
+        "Fixed assets: Schedule disposal proceeds = fixed asset sales net of VAT",
+        "Category netting: Fixed asset disposal proceeds (sales fs) net reaches Fixedassets.xlsx!FAreconciliation!K11 with no residue",
+      ]);
+    });
+
+    it("fails the printed reconciliation when the difference cells are corrupted via JSZip", async () => {
+      const purchasesDifference = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "E15", 5000);
+      expect(purchasesDifference).toBe(5000);
+      expect(failureNames(checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "E15", purchasesDifference))).toEqual([
+        "Fixed assets: the purchases reconciliation reads nil",
+      ]);
+
+      const salesDifference = await readCorruptedCell(savedDir, "Fixedassets.xlsx", "FAreconciliation", "K15", 5000);
+      expect(salesDifference).toBe(5000);
+      expect(failureNames(checksWithCorruptedCell("Fixedassets.xlsx!FAreconciliation", "K15", salesDifference))).toEqual([
+        "Fixed assets: the sales reconciliation reads nil",
+      ]);
     });
 
     it("fails the balance sheet tie when PubBalSht F6 is corrupted via JSZip", async () => {
@@ -472,17 +540,28 @@ describeCalc(
     // ── Payroll: WagesInterface, the PAYE/NI creditor, Payslips!Payment,
     // and the P&L wages route (item 4) ──
 
-    it("WagesInterface Apr gross pay and employer NI carry the payroll fixture's own totals", () => {
+    it("WagesInterface Apr splits the payroll fixture's own totals between employees and directors", () => {
       const wi = results.WagesInterface;
-      expect(wi.C4).toBe(6748); // Alice 3500 + Bob 2200 + Carol 1048
-      expect(wi.H4).toBeCloseTo(577.2, 5); // 382.5 + 187.5 + 7.2
+      expect(wi.C4).toBe(5700); // Alice 3500 + Bob 2200
+      expect(wi.H4).toBeCloseTo(570, 5); // 382.5 + 187.5
+      expect(wi.C17).toBe(1048); // Carol, the director
+      expect(wi.H17).toBeCloseTo(7.2, 5);
     });
 
     it("fails the gross pay tie when WagesInterface C4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "C4", 0);
       expect(value).toBe(0);
-      const name = "WagesInterface Apr C4 gross pay";
+      const name = "WagesInterface employees Apr C4 gross pay";
       const corrupted = checksWithCorruptedCell("WagesInterface", "C4", value);
+      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
+      expect(failureNames(corrupted)).toEqual([name]);
+    });
+
+    it("fails the directors' gross pay tie when WagesInterface C17 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "C17", 0);
+      expect(value).toBe(0);
+      const name = "WagesInterface directors Apr C17 gross pay";
+      const corrupted = checksWithCorruptedCell("WagesInterface", "C17", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
     });
@@ -499,7 +578,7 @@ describeCalc(
     it("fails the employer NI tie when WagesInterface H4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "WagesInterface", "H4", 0);
       expect(value).toBe(0);
-      const name = "WagesInterface Apr H4 employer NI";
+      const name = "WagesInterface employees Apr H4 employer NI";
       const corrupted = checksWithCorruptedCell("WagesInterface", "H4", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       expect(failureNames(corrupted)).toEqual([name]);
@@ -604,7 +683,7 @@ describeCalc(
     it("fails the P&L PAYE-wages route when MnthP&L B18 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Financialaccounts.xlsx", "MnthP&L", "B18", 0);
       expect(value).toBe(0);
-      const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = payroll gross pay + Purchases w-coded net";
+      const name = "MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = employees' gross pay + Purchases w-coded net";
       const corrupted = checksWithCorruptedCell("MnthP&L", "B18", value);
       expect(corrupted.find((c) => c.name === name).pass).toBe(false);
       // B18 also feeds the admin-lines-sum-to-total identity and the netting
@@ -945,6 +1024,7 @@ describeCalc(
       const nettingRow = ltdCategoryNetting(corruptedResults, expected).rows.find((row) => row.code === "purchases fa");
       expect(nettingRow.residue).toBeCloseTo(-drift, 6);
       expect(failureNames(corrupted)).toEqual([
+        "Fixed assets: Schedule additions = Purchases.xlsx fixed asset total",
         "Fixed assets: Schedule additions = fixed asset purchases net of VAT",
         categoryNettingCheckName(nettingRow),
       ]);
@@ -1300,6 +1380,99 @@ describeCalc(
       expect(failureNames(corrupted)).toEqual([
         "Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT",
       ]);
+    });
+
+    // ── Register of directors and secretary, and directors' interests ───────
+
+    it("registers the director and their interest", () => {
+      const officers = results["Companysecretary.xlsx!Directors&Secretary"];
+      const interests = results["Companysecretary.xlsx!DirectorsInterests"];
+      expect(officers.A2).toBe("Carol Smith");
+      expect(interests.A2).toBe("Carol Smith");
+      // Carol Smith's own row on RegisterofMembers carries "acquired" 2020-01-01.
+      expect(interests.C2).toBe(43831);
+    });
+
+    it("fails the officer row when Directors&Secretary A2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "Directors&Secretary", "A2", 0);
+      expect(value).not.toBe("Carol Smith");
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!Directors&Secretary", "A2", value);
+      expect(failureNames(corrupted)).toEqual(["Directors&Secretary: row 2 names Carol Smith"]);
+    });
+
+    it("fails the interest row when DirectorsInterests A2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "DirectorsInterests", "A2", 0);
+      expect(value).not.toBe("Carol Smith");
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!DirectorsInterests", "A2", value);
+      expect(failureNames(corrupted)).toEqual(["DirectorsInterests: row 2 names Carol Smith"]);
+    });
+
+    it("fails the interest date when DirectorsInterests C2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Companysecretary.xlsx", "DirectorsInterests", "C2", 40000);
+      expect(value).toBe(40000);
+      const corrupted = checksWithCorruptedCell("Companysecretary.xlsx!DirectorsInterests", "C2", value);
+      expect(failureNames(corrupted)).toEqual([
+        "DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries",
+      ]);
+    });
+
+    // ── Customer-facing invoice: VAT rate and the sample line's arithmetic ──
+
+    it("writes the tax year's standard rate into the sample product row and computes the line correctly", () => {
+      const productDetails = results["Salesinvoice.xlsx!Product Details"];
+      const invoice = results["Salesinvoice.xlsx!Invoice Template"];
+      expect(productDetails.D2).toBe(20);
+      // The scenario's first sale (Beta Systems, Apr, 1200) is the sample
+      // invoice's one line, quantity 1, plus a sample carriage charge of
+      // 37.5 taxed at the same standard rate: carriage VAT 7.5, VAT total
+      // 240 + 7.5 = 247.5, gross 1200 + 37.5 + 247.5 = 1485.
+      expect(invoice.P58).toBe(1200);
+      expect(invoice.V38).toBeCloseTo(240, 6);
+      expect(invoice.P60).toBeCloseTo(37.5, 6);
+      expect(invoice.P62).toBeCloseTo(247.5, 6);
+      expect(invoice.P64).toBeCloseTo(1485, 6);
+    });
+
+    it("fails the VAT rate check when Salesinvoice Product Details D2 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Product Details", "D2", 17.5);
+      expect(value).toBe(17.5);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Product Details", "D2", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice Product Details: VAT Rate = the tax year's standard rate"]);
+    });
+
+    it("fails only the line VAT check when Salesinvoice Invoice Template V38 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "V38", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "V38", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: line VAT = price x quantity x the tax year's standard rate"]);
+    });
+
+    it("fails only the net total check when Salesinvoice Invoice Template P58 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P58", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P58", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: net total = the invoice's one line"]);
+    });
+
+    it("fails only the carriage check when Salesinvoice Invoice Template P60 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P60", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P60", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: carriage charge lands on the invoice"]);
+    });
+
+    it("fails only the VAT total check when Salesinvoice Invoice Template P62 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P62", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P62", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate"]);
+    });
+
+    it("fails only the amount payable check when Salesinvoice Invoice Template P64 is corrupted via JSZip", async () => {
+      const value = await readCorruptedCell(savedDir, "Salesinvoice.xlsx", "Invoice Template", "P64", 0);
+      expect(value).toBe(0);
+      const corrupted = checksWithCorruptedCell("Salesinvoice.xlsx!Invoice Template", "P64", value);
+      expect(failureNames(corrupted)).toEqual(["Salesinvoice: amount payable = net plus carriage plus VAT"]);
     });
   },
   900000,

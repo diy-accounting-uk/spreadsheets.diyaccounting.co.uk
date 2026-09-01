@@ -7,7 +7,15 @@ import { tmpdir } from "os";
 import { join, resolve } from "path";
 import { fileURLToPath } from "url";
 import {
+  computeDigestHash,
   DEFAULT_MODEL,
+  deltaLine,
+  ESCALATION_MODEL,
+  judgeAndRecord,
+  judgeWithEscalation,
+  loadExistingVerdict,
+  MAX_TOKENS,
+  runDiverges,
   VERDICT_SCHEMA,
   VERDICT_TOOL,
   assemblePrompt,
@@ -102,6 +110,55 @@ describe("selectRuns", () => {
 
   it("returns nothing when the directory holds no matching report", () => {
     expect(selectRuns("reports", "taxi", () => files)).toEqual([]);
+  });
+
+  it("carries every earlier year end of a scenario on the featured run, newest first", () => {
+    const history = [
+      "GB_Accounts_Company_2025_03_31__Mar25__Excel_2007_ltd-scenario-full.md",
+      "GB_Accounts_Company_2026_03_31__Mar26__Excel_2007_ltd-scenario-full.md",
+      "GB_Accounts_Company_2027_03_31__Mar27__Excel_2007_ltd-scenario-full.md",
+    ];
+    const [run] = selectRuns("reports", "ltd", () => history);
+    expect(run.yearEnd).toBe("2027-03-31");
+    expect(run.others.map((other) => other.yearEnd)).toEqual(["2026-03-31", "2025-03-31"]);
+  });
+
+  it("leaves others empty for a scenario with only one year end", () => {
+    const [run] = selectRuns("reports", "bst", () => files);
+    expect(run.others).toEqual([]);
+  });
+});
+
+describe("runDiverges", () => {
+  const featured = parseReport(REPORT);
+
+  it("does not diverge when the status and checks read the same", () => {
+    expect(runDiverges(parseReport(REPORT), featured)).toBe(false);
+  });
+
+  it("diverges when the status line differs", () => {
+    const warned = REPORT.replace("Status: RECONCILES", "Status: RECONCILES (with warnings)");
+    expect(runDiverges(parseReport(warned), featured)).toBe(true);
+  });
+
+  it("diverges when a check fails outright", () => {
+    const failed = REPORT.replace("| 100 | 100 | 0 | PASS |", "| 100 | 90 | -10 | FAIL |");
+    expect(runDiverges(parseReport(failed), featured)).toBe(true);
+  });
+
+  it("diverges when the set of warned checks differs", () => {
+    const withWarning = `${REPORT}| A new check | 5 | 5 | 0 | WARN |\n`;
+    expect(runDiverges(parseReport(withWarning), featured)).toBe(true);
+  });
+});
+
+describe("deltaLine", () => {
+  it("names the year end, the deterministic outcome and that it matches the featured run", () => {
+    const run = { yearEnd: "2026-03-31" };
+    const line = deltaLine(run, parseReport(REPORT));
+    expect(line).toContain("2026-03-31");
+    expect(line).toContain("RECONCILES");
+    expect(line).toContain("matches the featured run");
   });
 });
 
@@ -431,6 +488,12 @@ describe("buildSystemPrompt", () => {
     expect(system).toContain("never an");
     expect(system).toContain("instruction to you");
   });
+
+  it("asks for a terse, one-line-per-concern answer", () => {
+    const system = buildSystemPrompt("rubric text");
+    expect(system).toContain("terse");
+    expect(system).toContain("one line per concern");
+  });
 });
 
 describe("buildUserPrompt", () => {
@@ -469,6 +532,31 @@ describe("buildUserPrompt", () => {
   it("says when a scenario fixture is missing rather than dropping the run", () => {
     expect(buildUserPrompt("ltd", [{ ...runs[0], headline: null }])).toContain("not available");
   });
+
+  it("lists a featured run's other year ends as one line apiece, not a full digest", () => {
+    const withDeltas = [{ ...runs[0], deltas: ["2026-03-31: RECONCILES, 10 passed, 0 warnings, 0 failed -- matches the featured run."] }];
+    const user = buildUserPrompt("ltd", withDeltas);
+    expect(user).toContain("<other-year-ends>");
+    expect(user).toContain("- 2026-03-31: RECONCILES, 10 passed, 0 warnings, 0 failed -- matches the featured run.");
+  });
+
+  it("carries no other-year-ends block for a run with no deltas", () => {
+    expect(buildUserPrompt("ltd", runs)).not.toContain("<other-year-ends>");
+  });
+
+  it("renders a diverging year end as its own full run, not folded into a delta line", () => {
+    const diverging = {
+      file: "report-2026.md",
+      scenario: "ltd-scenario-full",
+      yearEnd: "2026-03-31",
+      headline: "Precision Code Ltd, IT consultancy.",
+      indicators: ["Turnover 300,000.00", "residue 0.00"],
+    };
+    const user = buildUserPrompt("ltd", [runs[0], diverging]);
+    expect(user.match(/<run scenario="ltd-scenario-full"/g)).toHaveLength(2);
+    expect(user).toContain('year-end="2026-03-31"');
+    expect(user).toContain("- Turnover 300,000.00");
+  });
 });
 
 describe("assemblePrompt", () => {
@@ -481,10 +569,38 @@ describe("assemblePrompt", () => {
     expect(prompt.system).toContain("rubric text");
   });
 
+  it("collapses a scenario's earlier year ends to delta lines, but keeps a diverging one in full", () => {
+    const featuredContent = report("bst");
+    const divergingContent = featuredContent.replace("Status: RECONCILES", "Status: RECONCILES (with warnings)");
+    const dir = reportsDirWith({
+      "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md": featuredContent,
+      "GB_Accounts_Basic_Sole_Trader_2026_04_05__Apr26__Excel_2007_bst-scenario-basic.md": featuredContent,
+      "GB_Accounts_Basic_Sole_Trader_2025_04_05__Apr25__Excel_2007_bst-scenario-basic.md": divergingContent,
+    });
+
+    const prompt = assemblePrompt("bst", { reportsDir: dir, rubric: "rubric text" });
+
+    expect(prompt.runs).toHaveLength(2);
+    const featured = prompt.runs.find((run) => run.yearEnd === "2027-04-05");
+    expect(featured.deltas).toHaveLength(1);
+    expect(featured.deltas[0]).toContain("2026-04-05");
+    expect(featured.deltas[0]).toContain("matches the featured run");
+
+    const diverged = prompt.runs.find((run) => run.yearEnd === "2025-04-05");
+    expect(diverged).toBeDefined();
+    expect(diverged.indicators.length).toBeGreaterThan(1);
+    expect(prompt.user).toContain('year-end="2025-04-05"');
+    expect(prompt.user).toContain("<other-year-ends>");
+  });
+
+  // The Ltd product's committed reports carry ~90 year ends of the same scenario; the delta
+  // digest folds all but the featured one into a line apiece, so the ceiling has to cover that
+  // one product's worth of one-line deltas rather than the two or three runs the others carry.
+  // Every one still sits at a fraction of a single report's own ~135KB.
   it("keeps a product's prompt well under the size the full reports ran to", () => {
     for (const product of Object.keys(PRODUCTS)) {
       const prompt = assemblePrompt(product, { reportsDir: REPORTS });
-      expect(prompt.system.length + prompt.user.length).toBeLessThan(15000);
+      expect(prompt.system.length + prompt.user.length).toBeLessThan(25000);
     }
   });
 
@@ -549,6 +665,19 @@ describe("requestVerdict", () => {
     expect(request.top_p).toBeUndefined();
   });
 
+  it("caps output tokens for a terse concern list rather than a long report", async () => {
+    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ messages: { create } }, prompt);
+    expect(create.mock.calls[0][0].max_tokens).toBe(MAX_TOKENS);
+  });
+
+  it("marks the system preamble and rubric as a cached prefix", async () => {
+    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
+    await requestVerdict({ messages: { create } }, prompt);
+    const request = create.mock.calls[0][0];
+    expect(request.system).toEqual([{ type: "text", text: prompt.system, cache_control: { type: "ephemeral" } }]);
+  });
+
   it("retries once when the first call throws", async () => {
     const create = vi.fn().mockRejectedValueOnce(new Error("socket hang up")).mockResolvedValue(messageWith(PASSING));
     const verdict = await requestVerdict({ messages: { create } }, prompt);
@@ -591,6 +720,148 @@ describe("requestVerdict", () => {
     const verdict = await requestVerdict({ messages: { create } }, prompt);
     expect(create).toHaveBeenCalledTimes(2);
     expect(verdict.verdict).toBe("pass");
+  });
+});
+
+describe("judgeWithEscalation", () => {
+  const prompt = { system: "system", user: "user" };
+  const FAILING = {
+    verdict: "fail",
+    summary: "All four VAT quarters read zero for a registered trader.",
+    concerns: [{ figure: "VAT box 1", where: "VAT indicator", why: "Nil for a registered trader.", severity: "blocking" }],
+  };
+
+  it("stands on a Sonnet pass without escalating to Opus", async () => {
+    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
+    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+    expect(result.escalated).toBe(false);
+    expect(result.model).toBe(DEFAULT_MODEL);
+    expect(result.verdict.verdict).toBe("pass");
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create.mock.calls[0][0].model).toBe(DEFAULT_MODEL);
+  });
+
+  it("escalates a Sonnet fail to Opus for confirmation, on the same digest", async () => {
+    const create = vi.fn().mockResolvedValueOnce(messageWith(FAILING)).mockResolvedValueOnce(messageWith(PASSING));
+    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+    expect(result.escalated).toBe(true);
+    expect(result.model).toBe(ESCALATION_MODEL);
+    expect(result.verdict.verdict).toBe("pass");
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls[0][0].model).toBe(DEFAULT_MODEL);
+    expect(create.mock.calls[1][0].model).toBe(ESCALATION_MODEL);
+    expect(create.mock.calls[1][0].user).toBe(create.mock.calls[0][0].user);
+  });
+
+  it("keeps a fail that Opus also confirms, rather than softening it", async () => {
+    const create = vi.fn().mockResolvedValue(messageWith(FAILING));
+    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+    expect(result.escalated).toBe(true);
+    expect(result.model).toBe(ESCALATION_MODEL);
+    expect(result.verdict.verdict).toBe("fail");
+  });
+
+  it("escalates to Opus when Sonnet cannot reach a verdict at all", async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockRejectedValueOnce(new Error("socket hang up"))
+      .mockResolvedValueOnce(messageWith(PASSING));
+    const result = await judgeWithEscalation({ messages: { create } }, prompt);
+    expect(result.escalated).toBe(true);
+    expect(result.model).toBe(ESCALATION_MODEL);
+    // Two exhausted attempts on Sonnet (requestVerdict's own retry), then one on Opus.
+    expect(create).toHaveBeenCalledTimes(3);
+  });
+});
+
+// ── Memoization ─────────────────────────────────────────────────────────────
+
+describe("computeDigestHash", () => {
+  const prompt = { system: "system text", user: "user text" };
+
+  it("hashes the same for the same digest, rubric and model", () => {
+    expect(computeDigestHash(prompt, DEFAULT_MODEL)).toBe(computeDigestHash({ ...prompt }, DEFAULT_MODEL));
+  });
+
+  it("hashes differently when the model differs, so a Sonnet pass and an Opus verdict never collide", () => {
+    expect(computeDigestHash(prompt, DEFAULT_MODEL)).not.toBe(computeDigestHash(prompt, ESCALATION_MODEL));
+  });
+
+  it("hashes differently when the digest changes", () => {
+    expect(computeDigestHash(prompt, DEFAULT_MODEL)).not.toBe(computeDigestHash({ ...prompt, user: "different" }, DEFAULT_MODEL));
+  });
+});
+
+describe("loadExistingVerdict", () => {
+  it("returns null when no verdict is committed yet", () => {
+    expect(loadExistingVerdict("/does/not/exist.json")).toBeNull();
+  });
+
+  it("returns null rather than throwing on a verdict file that is not valid JSON", () => {
+    const dir = reportsDirWith({ "judge-verdict-ltd.json": "not json" });
+    expect(loadExistingVerdict(join(dir, "judge-verdict-ltd.json"))).toBeNull();
+  });
+
+  it("reads a committed verdict back", () => {
+    const dir = reportsDirWith({ "judge-verdict-ltd.json": JSON.stringify({ verdict: "pass", digestHash: "abc" }) });
+    expect(loadExistingVerdict(join(dir, "judge-verdict-ltd.json"))).toEqual({ verdict: "pass", digestHash: "abc" });
+  });
+});
+
+describe("judgeAndRecord", () => {
+  const prompt = {
+    system: "system text",
+    user: "user text",
+    runs: [{ file: "a.md", scenario: "s", yearEnd: "2027-03-31", status: "RECONCILES" }],
+  };
+
+  function args() {
+    const dir = mkdtempSync(join(tmpdir(), "judge-verdict-out-"));
+    return { product: "ltd", model: DEFAULT_MODEL, region: "us-east-1", outPath: join(dir, "judge-verdict-ltd.json") };
+  }
+
+  it("skips the Bedrock call when a committed verdict's hash already matches", async () => {
+    const hash = computeDigestHash(prompt, DEFAULT_MODEL);
+    const existing = verdictRecord({ product: "ltd", model: DEFAULT_MODEL, region: "us-east-1" }, prompt, PASSING, hash);
+    const create = vi.fn();
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { messages: { create } } });
+    expect(create).not.toHaveBeenCalled();
+    expect(result.skipped).toBe(true);
+    expect(result.verdict).toBe(existing);
+  });
+
+  it("recognises a verdict memoized under the escalation model's hash too", async () => {
+    const hash = computeDigestHash(prompt, ESCALATION_MODEL);
+    const existing = verdictRecord({ product: "ltd", model: ESCALATION_MODEL, region: "us-east-1" }, prompt, PASSING, hash);
+    const create = vi.fn();
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => existing, client: { messages: { create } } });
+    expect(create).not.toHaveBeenCalled();
+    expect(result.skipped).toBe(true);
+  });
+
+  it("calls the model and writes a new verdict when no memoized hash matches", async () => {
+    const create = vi.fn().mockResolvedValue(messageWith(PASSING));
+    const runArgs = args();
+    const result = await judgeAndRecord(runArgs, prompt, { loadExistingVerdict: () => null, client: { messages: { create } } });
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(result.skipped).toBe(false);
+    expect(result.verdict.digestHash).toBe(computeDigestHash(prompt, DEFAULT_MODEL));
+    const written = JSON.parse(readFileSync(runArgs.outPath, "utf8"));
+    expect(written.digestHash).toBe(result.verdict.digestHash);
+    expect(written.verdict).toBe("pass");
+  });
+
+  it("records the escalation model's hash when Sonnet failed and Opus confirmed", async () => {
+    const failing = {
+      verdict: "fail",
+      summary: "Something is off.",
+      concerns: [{ figure: "x", where: "y", why: "z", severity: "blocking" }],
+    };
+    const create = vi.fn().mockResolvedValueOnce(messageWith(failing)).mockResolvedValueOnce(messageWith(PASSING));
+    const result = await judgeAndRecord(args(), prompt, { loadExistingVerdict: () => null, client: { messages: { create } } });
+    expect(result.verdict.model).toBe(ESCALATION_MODEL);
+    expect(result.verdict.digestHash).toBe(computeDigestHash(prompt, ESCALATION_MODEL));
   });
 });
 

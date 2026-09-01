@@ -215,6 +215,9 @@ accountMainDescription = "Retained earnings"
 [accounts.capital."3200"]
 accountMainDescription = "Dividends"
 
+[accounts.assets."0000"]
+accountMainDescription = "Land and buildings"
+
 [accounts.assets."0010"]
 accountMainDescription = "Plant and machinery"
 
@@ -263,13 +266,15 @@ corporationTaxDue = 4500.00
 directorsLoan = 20000.00
 longTermCreditors = 25000.00
 shareCapital = 100.00
-retainedEarnings = 20702.00
+retainedEarnings = 180702.00
 
 [openingBalances.fixedAssetCost]
+landBuildings = 200000.00
 computerTechnology = 3000.00
 motorVehicles = 30000.00
 
 [openingBalances.fixedAssetDepreciation]
+landBuildings = 40000.00
 computerTechnology = 270.00
 motorVehicles = 9828.00
 
@@ -381,6 +386,13 @@ class = "computerTechnology"
 description = "Laptop (0.5 years old)"
 cost = 3000.00
 accumulatedDepreciation = 270.00
+
+[[fixedAssets]]
+assetID = "LTD-FA-3"
+class = "landBuildings"
+description = "Office premises"
+cost = 200000.00
+accumulatedDepreciation = 40000.00
 
 [[hpAgreements]]
 agreementID = "HP-2025-01"

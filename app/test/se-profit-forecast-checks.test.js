@@ -45,6 +45,10 @@ const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
+
 const FORECAST_SHEET = "Profit Forecast";
 
 // The taxable profit is the same in both years: the forecast's 171,875.39
@@ -176,10 +180,16 @@ for (const rateYear of RATE_YEARS) {
       expected = { ...scenario, ...scenario.expected };
 
       saveDir = mkdtempSync(join(tmpdir(), "se-profit-forecast-"));
-      results = await runMultiFileSpreadsheet(fileBuffers, seCellWrites(scenario), seReads(), "Financialaccounts.xlsx", {
-        ...seOptions(),
-        saveRecalculatedTo: saveDir,
-      });
+      results = await runMultiFileSpreadsheet(
+        fileBuffers,
+        seCellWrites(scenario, seTaxYearStart(taxData)),
+        seReads(),
+        "Financialaccounts.xlsx",
+        {
+          ...seOptions(),
+          saveRecalculatedTo: saveDir,
+        },
+      );
       checks = seCheckCompliance(results, expected, taxData, calculateExpectedTax);
     }, 600000);
 

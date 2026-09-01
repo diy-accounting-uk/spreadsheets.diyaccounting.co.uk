@@ -10,6 +10,21 @@ import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
+  monthlyPayrollBlockRow,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_EMPLOYEE_BASE_ROWS,
+  PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
+  PAYSLIPS_ENTRY_COLUMNS,
+  payrollRecordOpened,
+  payrollYearStart,
+  payslipsMonthEntryRows,
+  payslipsStartDate,
+  payslipsWagesPaidCell,
+} from "../lib/payslips-layout.js";
+import {
   buildCategoryNetting,
   buildProfitBridge,
   categoryNettingCheckName,
@@ -115,6 +130,33 @@ export function vatRateFor(scenario) {
   return scenario?.metadata?.vat_registered === false ? 0 : VAT_RATE;
 }
 
+// ── Sales invoice sample line (Salesinvoice.xlsx) ───────────────────────────
+// The customer-facing invoice template has no external link into the rest of
+// the book, so its own VAT rate is proved directly: the generator now writes
+// the tax year's standard rate into Product Details!D2:D99 (generator.js),
+// and this checks one sample invoice line, anchored to the fixture's own
+// first sale, computes the right net, VAT and gross from it. Row 2 of
+// Product Details already ships the template's own placeholder product code
+// (A2 = 1001); this only sets its selling price. Business Details!B11 is the
+// VAT registration number the invoice template itself gates its per-row VAT
+// lookup on (verified against the XML: Invoice Template!N38 reads
+// 'Product Details'!D:D only when O8, which reads 'Business Details'!B11, is
+// not blank) -- an unregistered business is left untouched, the same as the
+// template's own guidance for it. The invoice also carries a carriage charge
+// (Invoice Database!E, the "Carriage Charge" column), which the template
+// taxes separately from the product lines in Invoice Template!P62. That term
+// used to read a literal 0.2; it now reads 'Product Details'!$D$2, the same
+// cell every row of D2:D99 carries the tax year's rate into, so carriage is
+// taxed at the written rate like every other line.
+const SALESINVOICE_VAT_REG_CELL = "B11";
+const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
+const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
+const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
+const SALESINVOICE_PRODUCT_DETAILS_COLUMNS = { code: "A", price: "C", vatRate: "D" };
+const SALESINVOICE_INVOICE_DATABASE_COLUMNS = { activate: "A", invoiceNumber: "B", carriage: "E", productCode1: "F", quantity1: "G" };
+const SALESINVOICE_INVOICE_TEMPLATE_CELLS = { netTotal: "P58", carriageNet: "P60", vatTotal: "P62", grossTotal: "P64" };
+const SALESINVOICE_LINE1_CELLS = { productCode: "C38", unitPrice: "J38", quantity: "L38", lineNet: "P38", lineVat: "V38" };
+
 function netOfVat(gross, rate = VAT_RATE) {
   return Math.round((gross / (1 + rate)) * 100) / 100;
 }
@@ -145,7 +187,9 @@ const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", descr
 const STOCK_OPENING_COUNT_CELL = "AB6";
 const STOCK_CLOSING_COUNT_CELL = "AB30";
 
-export function cellWrites(scenario) {
+// targetStartYear is the year the package's tax year opens in, which for a
+// 5 April year end is the year before the one its directory names.
+export function cellWrites(scenario, targetStartYear) {
   const rate = vatRateFor(scenario);
   const salesWrites = {};
   const purchasesWrites = {};
@@ -357,7 +401,9 @@ export function cellWrites(scenario) {
   const payslipsWrites = {};
   if (scenario.employees) {
     // Employee blocks start at rows 13, 39, 65, 91, 117 (26-row intervals)
-    const EMP_BASE_ROWS = [13, 39, 65, 91, 117];
+    const EMP_BASE_ROWS = PAYSLIPS_EMPLOYEE_BASE_ROWS;
+    const payrollStart = targetStartYear ? payrollYearStart(targetStartYear) : null;
+    const payrollOpened = payrollRecordOpened(scenario.payroll, parseDate);
     payslipsWrites.Employee = {};
     const emp = payslipsWrites.Employee;
 
@@ -377,27 +423,43 @@ export function cellWrites(scenario) {
         emp[`D${base + 3}`] = parts.slice(0, -1).join(" "); // forename(s)
       }
       if (e.niNumber) emp[`M${base + 2}`] = e.niNumber;
-      if (e.startDate) emp[`D${base + 11}`] = e.startDate;
+      // The date the employee joined, read against the payroll year this
+      // package's calendar runs on. Without it the employee's line on every
+      // month tab stays blank and the printed payslip prints no figures.
+      if (e.startDate && payrollStart) {
+        const joined = parseDate(e.startDate);
+        const onSheet = payslipsStartDate(joined, payrollOpened, joined, payrollStart);
+        emp[`D${base + PAYSLIPS_EMPLOYEE_START_DATE_OFFSET}`] = toExcelSerial(
+          onSheet.getUTCFullYear(),
+          onSheet.getUTCMonth() + 1,
+          onSheet.getUTCDate(),
+        );
+      }
       emp[`D${base + 15}`] = e.payFrequency === "weekly" ? "W" : "M";
-      if (e.employeeID) emp[`D${base + 16}`] = e.employeeID;
+      // The payroll number, not the scenario's own employee id. The printed
+      // payslip adds this cell to its block's start row to find the
+      // employee's line on the month tab, so a name in it takes the whole
+      // page's arithmetic with it.
+      emp[`D${base + 16}`] = i + 1;
       emp[`D${base + 17}`] = e.isDirector ? "D" : e.niCategory || "A";
     }
   }
 
-  // Payslips.xlsx monthly payroll data — rows 51-55 in each monthly tab
+  // Payslips.xlsx monthly payroll data, on the month tab's own monthly block.
   if (scenario.payroll) {
     for (const [monthKey, entries] of Object.entries(scenario.payroll)) {
       const sheetName = MONTH_SHEETS[monthKey];
       if (!sheetName) continue;
       if (!payslipsWrites[sheetName]) payslipsWrites[sheetName] = {};
       const sheet = payslipsWrites[sheetName];
+      const blockRow = monthlyPayrollBlockRow(MONTH_KEYS.indexOf(monthKey));
       // Write wages paid date from first entry
       if (entries.length > 0) {
         const d = parseDate(entries[0].date);
-        sheet.M49 = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        sheet[`M${blockRow + 1}`] = toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
       }
       for (let i = 0; i < Math.min(entries.length, 5); i++) {
-        const row = 51 + i;
+        const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
         sheet[`M${row}`] = e.grossPay;
@@ -407,13 +469,18 @@ export function cellWrites(scenario) {
         // Column S is a blank spacer in the template (self-closing, no
         // formula, never summed) -- the payslip's own reference goes there,
         // since nothing else on the row reads it; column T is the real
-        // employer-NI data entry cell -- its own row56 SUM(T51:T55) feeds T1,
-        // which Wagesinterface!H reads. Verified against the template.
+        // employer-NI data entry cell -- the block's own total row sums it
+        // into T1, which Wagesinterface!H reads. Verified against the
+        // template.
         if (e.reference) sheet[`S${row}`] = e.reference;
         sheet[`T${row}`] = e.employerNI;
         if (e.accountMainID) sheet[`${ACCOUNT_ID_COLUMN}${row}`] = e.accountMainID;
       }
     }
+    payslipsWrites[PAYSLIP_PRINT_SHEET] = {
+      [PAYSLIP_PRINT_CELLS.frequency]: "M",
+      [PAYSLIP_PRINT_CELLS.period]: PAYSLIP_PRINT_PERIOD,
+    };
   }
 
   // Fixedassets.xlsx Schedule sheet -- verified against the template:
@@ -599,6 +666,25 @@ export function cellWrites(scenario) {
   if (scenario.vat_straddling_purchases)
     writeStraddlingPeriod(scenario.vat_straddling_purchases, "P", "supplier", STRADDLING_PURCHASES_COLUMNS);
 
+  // Salesinvoice.xlsx: one sample invoice line for a VAT-registered business,
+  // anchored to the fixture's own first sale so the customer-facing invoice
+  // total and VAT can be checked against a real figure (see checkCompliance).
+  const salesinvoiceWrites = {};
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
+    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Invoice Database"] = {
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.carriage}2`]: SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.productCode1}2`]: SALESINVOICE_SAMPLE_PRODUCT_CODE,
+      [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.quantity1}2`]: 1,
+    };
+    salesinvoiceWrites["Product Details"] = {
+      [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.price}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]: firstInvoiceSale.amount,
+    };
+  }
+
   const result = {
     "Sales.xlsx": salesWrites,
     "Purchases.xlsx": purchasesWrites,
@@ -609,6 +695,7 @@ export function cellWrites(scenario) {
   if (Object.keys(hubWrites).length > 0) result["Financialaccounts.xlsx"] = hubWrites;
   if (Object.keys(payslipsWrites).length > 0) result["Payslips.xlsx"] = payslipsWrites;
   if (Object.keys(fixedAssetsWrites).length > 0) result["Fixedassets.xlsx"] = fixedAssetsWrites;
+  if (Object.keys(salesinvoiceWrites).length > 0) result["Salesinvoice.xlsx"] = salesinvoiceWrites;
   return result;
 }
 
@@ -914,11 +1001,62 @@ export function multiFileOptions() {
       },
       "Payslips.xlsx": {
         Payment: Object.values(paymentCells).flat(),
+        // The printed payslip. H3/H4 are the join itself; L7, I9 and I10 are
+        // the block heading it lands on, and the rest is the first
+        // employee's line and its year-to-date row.
+        [PAYSLIP_PRINT_SHEET]: [
+          PAYSLIP_PRINT_CELLS.tab,
+          PAYSLIP_PRINT_CELLS.blockRow,
+          "L7",
+          "I9",
+          "I10",
+          "M8",
+          "G14",
+          "H14",
+          "I14",
+          "M14",
+          "G16",
+          "H16",
+          "I16",
+          "M16",
+          "M18",
+        ],
         // The payroll calendar the generator writes for the package's tax
         // year: B2 its seed date, I1 (=B366) the year it runs to, N1 the tax
         // year label the payslips print, and the name, date and month number
         // on each sampled row.
         Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
+        // Jul and Aug read directly (see PAYSLIPS_JUL_DEAD_CELLS and
+        // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the
+        // fixture actually populates, so a break in either area is caught
+        // on its own month instead of only through the Payment/Admin
+        // aggregates.
+        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]]: [
+          ...PAYSLIPS_JUL_DEAD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+        ],
+        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]]: [
+          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+        ],
+      },
+      // The customer-facing invoice: the VAT rate the generator wrote into
+      // the sample product row, and the one sample line's net, VAT and gross
+      // (verified against the XML: P58 = SUM(P38:P57), P62 =
+      // IF(P58<>0,SUM(V38:V57)+P60*'Product Details'!$D$2/100,0), P64 =
+      // SUM(P58:Q62)).
+      "Salesinvoice.xlsx": {
+        "Product Details": [`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`],
+        "Invoice Template": [
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.carriageNet,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal,
+          SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal,
+          SALESINVOICE_LINE1_CELLS.unitPrice,
+          SALESINVOICE_LINE1_CELLS.quantity,
+          SALESINVOICE_LINE1_CELLS.lineNet,
+          SALESINVOICE_LINE1_CELLS.lineVat,
+        ],
       },
     },
   };
@@ -970,6 +1108,33 @@ const PL_ROW_CAPTIONS = {
 // runs a 6 April year-end, so this row order matches MONTH_KEYS directly
 // with no year-end shift (unlike Ltd, which has to remap via fiscalTabs).
 const WAGES_MONTH_ROWS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+// Payslips.xlsx Jul (sheet5.xml) and Aug (sheet6.xml) shipped with 35 dead
+// #REF! cells: Jul!F11:F15 lost the weekly-block pay-date reference
+// (Employee!F$24/F$26 compared against E$9), Jul!T41 carried a stray
+// formula where every other month has a literal 0, and Aug!H11:M15 (K only
+// on rows 12-15) lost the previous month's row-41 brought-forward
+// reference. additionalReads never read either tab directly -- only the
+// Payment/Admin aggregates -- so none of it ever surfaced. Every fixture's
+// employees pay monthly, so the weekly-block gate (Employee!D$28 etc = "m")
+// and the carry-forward gate (Aug!T$9 = "Y") are never true: both blocks
+// always resolve to their blank/nil branch regardless of what the broken
+// formula pointed at, which is exactly why the #REF!s shipped unnoticed.
+const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
+const PAYSLIPS_JUL_DEAD_CELLS = [...PAYSLIPS_WEEKLY_ROWS.map((row) => `F${row}`), "T41"];
+const PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS = PAYSLIPS_WEEKLY_ROWS.flatMap((row) => {
+  const cells = ["H", "I", "J", "L", "M"].map((col) => `${col}${row}`);
+  if (row >= 12) cells.push(`K${row}`);
+  return cells;
+});
+
+// The cells Payslips.xlsx cellWrites populates for a month's payroll, one
+// employee a row down the month's own monthly block, plus the wages-paid date
+// the block is dated from.
+const payslipsMonthEntryCells = (monthIndex) => [
+  payslipsWagesPaidCell(monthIndex),
+  ...payslipsMonthEntryRows(monthIndex).flatMap((row) => Object.values(PAYSLIPS_ENTRY_COLUMNS).map((col) => `${col}${row}`)),
+];
 
 // Payslips.xlsx!Admin holds a day-by-day payroll calendar: column A the
 // payroll month's name, B the date, C the week number, D the payroll month
@@ -1186,7 +1351,7 @@ const FIXED_ASSET_CELL_LABELS = {
     G1: "Total net book value brought forward (cost less depreciation brought forward)",
     I1: "Total depreciation charged for the year",
     J1: "Total accumulated depreciation carried forward (brought forward plus the charge)",
-    K1: "Total net book value carried forward (E1 less J1), assets sold in the year still included",
+    K1: "Total net book value carried forward, disposals removed",
     Q1: "Total annual investment allowance claimed",
     R1: "Total writing down allowance claimed",
     S1: "Total tax written down value carried forward",
@@ -1533,6 +1698,11 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // A template cell that resolves to blank reads back as the string the
   // formula puts there (" "), so every arithmetic read goes through this.
   const num = (v) => (typeof v === "number" ? v : 0);
+
+  // The same cell as text. The sheet's blank is a space and an engine that
+  // computes the cell holds nothing there, so both sides have to reach a
+  // blank comparison as "".
+  const blank = (v) => String(v ?? "").trim();
 
   // The approved rates the generator injected into the Admin sheet, which is
   // what the Purchases sheets band their running mileage total by. The rates
@@ -2257,6 +2427,75 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Payslips!Payment ${MONTH_KEYS[i]} I${row} total amount payable`, payment[`I${row}`] || 0, niDue + sums.incomeTax);
     }
 
+    // ── Payslips!Payslips: the page the employer prints and hands over ─────
+    //
+    // The page joins itself to a month tab -- H3 names the tab, H4 the row
+    // its block starts on -- and every printed figure is an INDIRECT through
+    // that pair. Nothing downstream reads the page, so a join landing on the
+    // wrong period prints one month's pay under another month's heading with
+    // every other check here still green. cellWrites asks for a period other
+    // than the sheet's own default, and the heading is measured against the
+    // scenario's own entries for that period rather than against the tab the
+    // join chose.
+    const printed = results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`];
+    if (printed) {
+      const printedTab = MONTH_SHEETS[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]];
+      const printedEntries = expected.payroll[MONTH_KEYS[PAYSLIP_PRINT_PERIOD - 1]] || [];
+      checkText(`Payslips print: the page reads the ${printedTab} tab`, String(printed[PAYSLIP_PRINT_CELLS.tab] ?? "").trim(), printedTab);
+      checkText("Payslips print: the block the page reads is a monthly payroll", String(printed.L7 ?? "").trim(), "MONTHLY PAYROLL");
+      check(`Payslips print: the period printed is payroll month ${PAYSLIP_PRINT_PERIOD}`, num(printed.I10), PAYSLIP_PRINT_PERIOD, 0);
+      if (printedEntries.length > 0) {
+        const paidOn = parseDate(printedEntries[0].date);
+        check(
+          "Payslips print: the period ends the day the scenario paid that month's wages",
+          num(printed.I9),
+          toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          0,
+        );
+        // Every figure below the heading is gated on the employee's line
+        // carrying a pay number, which a month tab gives only to an employee
+        // whose starting date has arrived. M8 is that gate read straight off
+        // the page: it holds the payroll number the Employee sheet gave the
+        // first employee, and the whole page goes blank the moment it does
+        // not.
+        const printedEmployee = printedEntries[0];
+        check("Payslips print: the page's join to the employee's line carries their payroll number", num(printed.M8), 1, 0);
+        check("Payslips print: gross pay is the pay the scenario recorded", num(printed.G14), printedEmployee.grossPay || 0);
+        check("Payslips print: income tax is the tax the scenario recorded", num(printed.H14), printedEmployee.incomeTax || 0);
+        check(
+          "Payslips print: national insurance is the employee NI the scenario recorded",
+          num(printed.I14),
+          printedEmployee.employeeNI || 0,
+        );
+        check("Payslips print: net pay is the net pay the scenario recorded", num(printed.M14), printedEmployee.netPay || 0);
+
+        // The year-to-date row runs from the payroll year's first month to
+        // this one, so it is the scenario's own entries for that employee
+        // over the months printed so far -- the first entry of each month up
+        // to and including the one on the page.
+        const toDate = MONTH_KEYS.slice(0, PAYSLIP_PRINT_PERIOD).flatMap((key) => (expected.payroll[key] || []).slice(0, 1));
+        const toDateSum = (field) => toDate.reduce((total, entry) => total + (entry[field] || 0), 0);
+        check("Payslips print: gross pay to date is every month printed so far", num(printed.G16), toDateSum("grossPay"));
+        check("Payslips print: income tax to date is every month printed so far", num(printed.H16), toDateSum("incomeTax"));
+        check("Payslips print: national insurance to date is every month printed so far", num(printed.I16), toDateSum("employeeNI"));
+        check("Payslips print: net pay to date is every month printed so far", num(printed.M16), toDateSum("netPay"));
+
+        // The payment date the page prints reads the block's own header row
+        // in column R, where the template holds nothing -- the date the wages
+        // were paid sits a row below in column M, which is where I9 above
+        // finds it. The page therefore prints no payment date at all.
+        check("Payslips print: the payment date reads a cell the block leaves empty", num(printed.M18), 0, 0);
+        checks.push({
+          name: "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
+          actual: num(printed.M18),
+          expected: toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          pass: false,
+          severity: "warning",
+          diff: "",
+        });
+      }
+    }
+
     // P&L route: Wages & Salaries (row 21) = Purchases.xlsx "w"-coded net
     // (directors/employee wages posted as ordinary purchases, if any) plus
     // the payroll route's gross pay and employer NI (verified against the
@@ -2275,6 +2514,84 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         pl.B21 || 0,
         wCodeNet + totalGross + totalEmployerNI,
       );
+    }
+
+    // ── Payslips Jul/Aug: direct reads against the scenario's own payroll
+    // entries for that month ──
+    //
+    // Payment/Admin never read a month tab directly (see
+    // PAYSLIPS_JUL_DEAD_CELLS above), so nothing distinguished one month's
+    // payroll figures from another's. This fixture repeats the same three
+    // employees' gross pay, tax and NI every month, so a check anchored only
+    // on those numbers would pass with July and August's data swapped; the
+    // reference column and the wages-paid date both embed the month, so
+    // anchoring on them catches a neighbouring-month mix-up the totals
+    // cannot.
+    const checkMonthPayrollEntries = (monthIndex, entries) => {
+      const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
+      const month = results[`Payslips.xlsx!${tab}`];
+      if (!month) return;
+      const entryRows = payslipsMonthEntryRows(monthIndex);
+      entries.slice(0, 5).forEach((e, idx) => {
+        const row = entryRows[idx];
+        if (e.name) checkText(`Payslips!${tab} F${row} employee name`, month[`F${row}`], e.name);
+        check(`Payslips!${tab} M${row} gross pay`, num(month[`M${row}`]), e.grossPay || 0);
+        check(`Payslips!${tab} N${row} income tax`, num(month[`N${row}`]), e.incomeTax || 0);
+        check(`Payslips!${tab} O${row} employee NI`, num(month[`O${row}`]), e.employeeNI || 0);
+        check(`Payslips!${tab} R${row} net pay`, num(month[`R${row}`]), e.netPay || 0);
+        check(`Payslips!${tab} T${row} employer NI`, num(month[`T${row}`]), e.employerNI || 0);
+        if (e.reference) checkText(`Payslips!${tab} S${row} reference`, month[`S${row}`], e.reference);
+      });
+      if (entries.length > 0) {
+        const d = parseDate(entries[0].date);
+        const dateCell = `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
+        check(
+          `Payslips!${tab} ${dateCell} wages paid date`,
+          num(month[dateCell]),
+          toExcelSerial(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()),
+          0,
+        );
+      }
+    };
+    checkMonthPayrollEntries(3, expected.payroll.jul || []);
+    checkMonthPayrollEntries(4, expected.payroll.aug || []);
+
+    // ── Payslips Jul: the weekly-block employee-line pull (rows 11-15) and
+    // the period-4 total (T41), the exact cells fixed at Jul!F11:F15 and
+    // Jul!T41 ──
+    //
+    // Every fixture's employees pay monthly, so each row's own
+    // IF(Employee!D$28="m",...) weekly gate never reads true: F11:F15 stay
+    // blank regardless of what the row's own date-comparison branch (the
+    // one the #REF! sat in) resolves to, and T41 -- the period's own
+    // employer-NI total -- stays nil alongside it. The sheet's own blank is
+    // a single space (" ") and the JS engine holds nothing there at all, so
+    // both reach this check as "" once trimmed.
+    const jul = results["Payslips.xlsx!Jul"];
+    if (jul) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        checkText(`Payslips!Jul F${row} weekly employee line (every employee here pays monthly)`, blank(jul[`F${row}`]), "");
+      }
+      check("Payslips!Jul T41 period total (no weekly employer NI to bring forward)", num(jul.T41), 0, 0);
+    }
+
+    // ── Payslips Aug: the brought-forward reads at rows 11-15 (H/I/J/L/M,
+    // plus K on rows 12-15), the 29 cells fixed at Aug!H11:M15 ──
+    //
+    // T$9 (the flag that carries an unfinished weekly pay cycle into the
+    // next month) is never set by any scenario, so every one of these
+    // cells resolves to its "not carried forward" branch -- 0, or blank for
+    // the M-column payslip total -- regardless of what Jul!<col>41 itself
+    // holds.
+    const aug = results["Payslips.xlsx!Aug"];
+    if (aug) {
+      for (const row of PAYSLIPS_WEEKLY_ROWS) {
+        for (const col of ["H", "I", "J", "L"]) {
+          check(`Payslips!Aug ${col}${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`${col}${row}`]), 0, 0);
+        }
+        if (row >= 12) check(`Payslips!Aug K${row} brought forward from Jul (no weekly cycle carried over)`, num(aug[`K${row}`]), 0, 0);
+        checkText(`Payslips!Aug M${row} brought forward from Jul (no weekly cycle carried over)`, blank(aug[`M${row}`]), "");
+      }
     }
   }
 
@@ -2644,6 +2961,69 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // off and nothing else lost on the way.
   const netting = categoryNetting(results, expected);
   for (const row of netting?.rows || []) check(categoryNettingCheckName(row), row.residue, 0, 0.01);
+
+  // ── The customer-facing invoice against the tax year's own VAT rate ──────
+  //
+  // Salesinvoice.xlsx carries no external link to the rest of the book, so a
+  // wrong figure here never reaches the accounts -- it reaches the
+  // customer's customer. The generator writes the tax year's standard rate
+  // into Product Details!D2:D99 (generator.js); this checks the rate landed
+  // and that the one sample invoice line, plus the invoice's carriage
+  // charge, both compute their VAT correctly from it, hand-computed from the
+  // fixture's own first sale and the sample carriage charge.
+  const invoiceProductDetails = results["Salesinvoice.xlsx!Product Details"];
+  const invoiceTemplate = results["Salesinvoice.xlsx!Invoice Template"];
+  if (invoiceProductDetails && invoiceTemplate && taxData) {
+    const standardRatePercent = Math.round(taxData.vat.standard_rate * 100);
+    check(
+      "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+      num(invoiceProductDetails[`${SALESINVOICE_PRODUCT_DETAILS_COLUMNS.vatRate}${SALESINVOICE_SAMPLE_PRODUCT_ROW}`]),
+      standardRatePercent,
+      0,
+    );
+
+    // cellWrites only puts the sample invoice line and carriage charge on the
+    // sheet for a VAT-registered business (rate > 0 and a VAT number) --
+    // otherwise Salesinvoice.xlsx keeps its blank template state, and these
+    // five figures would have nothing to compare against.
+    const firstInvoiceSale = Object.values(expected.sales || {}).flat()[0];
+    if (rate > 0 && expected.business?.vat_number && firstInvoiceSale) {
+      const expectedNet = firstInvoiceSale.amount;
+      const expectedLineVat = (expectedNet * standardRatePercent) / 100;
+      const expectedCarriageVat = (SALESINVOICE_SAMPLE_CARRIAGE_CHARGE * standardRatePercent) / 100;
+      const expectedVatTotal = expectedLineVat + expectedCarriageVat;
+      check(
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        num(invoiceTemplate[SALESINVOICE_LINE1_CELLS.lineVat]),
+        expectedLineVat,
+        0.01,
+      );
+      check(
+        "Salesinvoice: net total = the invoice's one line",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.netTotal]),
+        expectedNet,
+        0.01,
+      );
+      check(
+        "Salesinvoice: carriage charge lands on the invoice",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.carriageNet]),
+        SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
+        0.01,
+      );
+      check(
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.vatTotal]),
+        expectedVatTotal,
+        0.01,
+      );
+      check(
+        "Salesinvoice: amount payable = net plus carriage plus VAT",
+        num(invoiceTemplate[SALESINVOICE_INVOICE_TEMPLATE_CELLS.grossTotal]),
+        expectedNet + SALESINVOICE_SAMPLE_CARRIAGE_CHARGE + expectedVatTotal,
+        0.01,
+      );
+    }
+  }
 
   return checks;
 }

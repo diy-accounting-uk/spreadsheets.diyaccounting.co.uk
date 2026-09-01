@@ -45,6 +45,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
 const SE_DIR = resolve(APP_DIR, "templates", "se");
 const DATA_DIR = resolve(APP_DIR, "data");
+// The year the tax year a package was built for opens in, which is the payroll
+// year the Employee sheet's start dates are read against.
+const seTaxYearStart = (taxData) => new Date(taxData.tax_year.start).getUTCFullYear();
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
 
 // Overwrites a cell's cached <v> content in place, leaving any <f> formula
@@ -113,7 +116,7 @@ describeCalc(
       }
 
       scenario = loadScenario(resolve(FIXTURES_DIR, "se-scenario-advanced.toml"));
-      const writes = seCellWrites(scenario);
+      const writes = seCellWrites(scenario, seTaxYearStart(taxData));
       const reads = seReads();
 
       // reconcile.js currently calls checkCompliance(results, scenario.expected, ...),
@@ -740,6 +743,74 @@ describeCalc(
       const checks = seCheckCompliance(results, mergedExpected, null, undefined);
       expect(checks.find((c) => c.name === "VAT Q5: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11)").pass).toBe(true);
       expect(checks.find((c) => c.name === "VAT Q5: box 5 net due (G17) = box 3 (G13) - box 4 (G15)").pass).toBe(true);
+    });
+
+    // ── Customer-facing invoice: VAT rate and the sample line's arithmetic ──
+    // Salesinvoice.xlsx carries no external link into the rest of the book,
+    // so a wrong figure here never reaches the accounts -- it reaches the
+    // customer's customer. taxDataForFixedAssets stands in for the tax-year
+    // data reconcile.js hands checkCompliance in production.
+
+    it("writes the tax year's standard rate into the sample product row and computes the line correctly", () => {
+      const productDetails = results["Salesinvoice.xlsx!Product Details"];
+      const invoice = results["Salesinvoice.xlsx!Invoice Template"];
+      expect(productDetails.D2).toBe(20);
+      // The scenario's first sale (Beta Systems, Apr, 1200) is the sample
+      // invoice's one line, quantity 1, plus a sample carriage charge of
+      // 37.5 taxed at the same standard rate: carriage VAT 7.5, VAT total
+      // 240 + 7.5 = 247.5, gross 1200 + 37.5 + 247.5 = 1485.
+      expect(invoice.P58).toBe(1200);
+      expect(invoice.V38).toBeCloseTo(240, 6);
+      expect(invoice.P60).toBeCloseTo(37.5, 6);
+      expect(invoice.P62).toBeCloseTo(247.5, 6);
+      expect(invoice.P64).toBeCloseTo(1485, 6);
+
+      const checks = seCheckCompliance(results, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      const names = [
+        "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        "Salesinvoice: net total = the invoice's one line",
+        "Salesinvoice: carriage charge lands on the invoice",
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        "Salesinvoice: amount payable = net plus carriage plus VAT",
+      ];
+      for (const name of names) {
+        const check = checks.find((c) => c.name === name);
+        expect(check, name).toBeDefined();
+        expect(check.pass, name).toBe(true);
+      }
+    });
+
+    it.each([
+      [
+        "Salesinvoice Product Details: VAT Rate = the tax year's standard rate",
+        "Salesinvoice.xlsx!Product Details",
+        "Product Details",
+        "D2",
+        17.5,
+      ],
+      [
+        "Salesinvoice: line VAT = price x quantity x the tax year's standard rate",
+        "Salesinvoice.xlsx!Invoice Template",
+        "Invoice Template",
+        "V38",
+        0,
+      ],
+      ["Salesinvoice: net total = the invoice's one line", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P58", 0],
+      ["Salesinvoice: carriage charge lands on the invoice", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P60", 0],
+      [
+        "Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate",
+        "Salesinvoice.xlsx!Invoice Template",
+        "Invoice Template",
+        "P62",
+        0,
+      ],
+      ["Salesinvoice: amount payable = net plus carriage plus VAT", "Salesinvoice.xlsx!Invoice Template", "Invoice Template", "P64", 0],
+    ])("fails only %s when %s is corrupted via JSZip", async (checkName, resultKey, sheetName, cellRef, newValue) => {
+      const corrupted = await readCorruptedCell(join(saveDir, "Salesinvoice.xlsx"), sheetName, cellRef, newValue);
+      const corruptedResults = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: corrupted } };
+      const corruptedChecks = seCheckCompliance(corruptedResults, mergedExpected, taxDataForFixedAssets, calculateExpectedTax);
+      expect(failureNames(corruptedChecks)).toEqual([checkName]);
     });
   },
   300000,

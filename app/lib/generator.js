@@ -7,6 +7,7 @@
 
 import JSZip from "jszip";
 import { buildSheetMap } from "./spreadsheet-runner.js";
+import { PAYSLIP_PRINT_CELLS, PAYSLIP_PRINT_SHEET } from "./payslips-layout.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -34,6 +35,13 @@ function stabilizeDirDates(zip) {
 // one a business files when its VAT stagger runs behind its accounting year,
 // and it lands on the last of the twenty periods the Vatinterface carries.
 export const VAT_RETURN_END_MONTHS = [3, 6, 9, 12, 15];
+
+// Salesinvoice.xlsx Product Details: one row a product, column D the VAT
+// Rate the row's invoice lines charge (verified against the XML: dimension
+// A1:H99, row 1 the header, D2:D99 every product row).
+const SALESINVOICE_PRODUCT_DETAILS_VAT_RATE_COLUMN = "D";
+const SALESINVOICE_PRODUCT_DETAILS_FIRST_ROW = 2;
+const SALESINVOICE_PRODUCT_DETAILS_LAST_ROW = 99;
 
 // ── Date helpers ────────────────────────────────────────────────────────────
 
@@ -696,6 +704,28 @@ export function rollPayslipsAdminCachedDates(payslipsXml, startYear) {
   return payslipsXml;
 }
 
+// The daily chain's first and last rows. Rolling stops at the last because a
+// reference past it reads a cell the chain never reaches.
+const PAYSLIPS_ADMIN_FIRST_CALENDAR_ROW = 2;
+const PAYSLIPS_ADMIN_CHAIN_LAST_ROW = 381;
+
+// Every sheet in the Payslips workbook reads dates back off the Admin chain
+// -- the month tabs their wages-paid and period dates, the Payment schedule
+// its due dates, the Employee sheet its calendar column. Each of those cells
+// keeps its own cached copy, which rolling the Admin sheet alone does not
+// reach, so they would still print the template's year until the workbook was
+// recalculated.
+export function rollPayslipsAdminDateReads(sheetXml, startYear) {
+  const startSerial = toExcelSerial(utcDate(startYear, 4, 6));
+  let xml = sheetXml;
+  for (const [, cellRef, rowStr] of [...xml.matchAll(/<c\s+r="([A-Z]+\d+)"[^>]*><f>Admin!\$?B\$?(\d+)<\/f><v>[^<]*<\/v><\/c>/g)]) {
+    const row = parseInt(rowStr, 10);
+    if (row < 2 || row > PAYSLIPS_ADMIN_CHAIN_LAST_ROW) continue;
+    xml = setCellCachedValue(xml, cellRef, startSerial + (row - 2));
+  }
+  return xml;
+}
+
 // ── Sales date generation (Taxi Driver) ────────────────────────────────────
 
 // Generate all weeks of the tax year as arrays of Date objects.
@@ -1048,6 +1078,15 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
     const payslipsDate = zip.file(sheetsConfig.payslipsAdmin).date;
     zip.file(sheetsConfig.payslipsAdmin, payslipsXml, { date: payslipsDate });
+
+    // Roll the cached copies the workbook's other sheets keep of the same
+    // chain, so a package that is never recalculated still shows its own
+    // year's dates on the month tabs and the PAYE payment schedule.
+    for (const file of zip.file(/^xl\/worksheets\/sheet\d+\.xml$/)) {
+      if (file.name === sheetsConfig.payslipsAdmin) continue;
+      const rolled = rollPayslipsAdminDateReads(await file.async("string"), startYear);
+      zip.file(file.name, rolled, { date: file.date });
+    }
   }
 
   // Expenses claim form (Ltd only — when sheetsConfig.mileageMonth is
@@ -1059,6 +1098,23 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
     monthXml = setCellValue(monthXml, "C30", taxData.mileage.higher_rate_pence);
     const monthDate = zip.file(sheetsConfig.mileageMonth).date;
     zip.file(sheetsConfig.mileageMonth, monthXml, { date: monthDate });
+  }
+
+  // Sales invoice VAT rate (Salesinvoice.xlsx Product Details, SE and Ltd
+  // only, when sheetsConfig.productDetails is present). The template hard-
+  // codes every product row's "VAT Rate" column at a literal 20, with no tie
+  // to the tax year the invoice is raised in (discovered from the XML:
+  // Product Details!D2:D99, header D1 the shared string "VAT Rate"). This
+  // workbook has no external link into the rest of the book, so the wrong
+  // figure never reached the accounts -- it reached the customer's customer.
+  if (sheetsConfig.productDetails) {
+    let productDetailsXml = await zip.file(sheetsConfig.productDetails).async("string");
+    const vatRatePercent = Math.round(taxData.vat.standard_rate * 100);
+    for (let row = SALESINVOICE_PRODUCT_DETAILS_FIRST_ROW; row <= SALESINVOICE_PRODUCT_DETAILS_LAST_ROW; row++) {
+      productDetailsXml = setCellValue(productDetailsXml, `${SALESINVOICE_PRODUCT_DETAILS_VAT_RATE_COLUMN}${row}`, vatRatePercent);
+    }
+    const productDetailsDate = zip.file(sheetsConfig.productDetails).date;
+    zip.file(sheetsConfig.productDetails, productDetailsXml, { date: productDetailsDate });
   }
 
   // VAT quarter dates (when sheetsConfig has vatQtr1..vatQtr5): write each
@@ -1277,6 +1333,83 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
 
   const origDate = zip.file("xl/workbook.xml").date;
   zip.file("xl/workbook.xml", wbXml, { date: origDate });
+
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// ── Payslips Admin month-sheet column (Ltd Company all year-end months) ─────
+//
+// Payslips Admin column A is headed "Month Sheet": for each day of the tax
+// calendar it names the month tab that day's payroll belongs on, and the
+// printed payslip joins through it -- H3 is LOOKUP(F4, Admin!D, Admin!A),
+// month number to tab name. The column builds the name from the calendar's
+// own 6 April anchor, so it names Apr, May, Jun ..., which is the tab order
+// only the March template ships. Rename the tabs for another year end and the
+// column still hands month 1 to "Apr", so the page reads whichever tab now
+// carries that name -- a different month of the year, printed under its own
+// period number, with nothing else on the sheet disagreeing.
+//
+// The tabs themselves are the frame everything else follows: each carries its
+// place in the package's own year in E, its block starts on the row that place
+// gives it, and the writers fill it by that place. So the name column is what
+// moves.
+export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth, adminSheetPath) {
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) {
+    return xlsxBuffer;
+  }
+
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  let adminXml = await zip.file(adminSheetPath).async("string");
+
+  // The column's month name is the calendar anchor's month plus the payroll
+  // month's distance from it, so the whole column moves by the distance from
+  // the template's first tab to this package's.
+  const monthShift = (yearEndMonth - 3 + 12) % 12;
+  const monthSheetFormula = /TEXT\(DATE\(YEAR\(B\$2\),MONTH\(B\$2\)\+\(D(\d+)-1\),1\),"Mmm"\)/g;
+  let formulasMoved = 0;
+  adminXml = adminXml.replace(monthSheetFormula, (_, row) => {
+    formulasMoved++;
+    return `TEXT(DATE(YEAR(B$2),MONTH(B$2)+(D${row}-1)+${monthShift},1),"Mmm")`;
+  });
+  if (formulasMoved === 0) {
+    throw new Error(`No Payslips Admin month-sheet formulas found in ${adminSheetPath}`);
+  }
+
+  // The cached names each of those cells carries, so a package that is never
+  // recalculated still joins to the right tab.
+  for (let row = PAYSLIPS_ADMIN_FIRST_CALENDAR_ROW; row <= PAYSLIPS_ADMIN_CHAIN_LAST_ROW; row++) {
+    const monthCell = matchCell(adminXml, `D${row}`);
+    if (!monthCell) throw new Error(`Payslips Admin D${row} not found in ${adminSheetPath}`);
+    const monthNumber = parseInt((monthCell.fullMatch.match(/<v>([^<]*)<\/v>/) || [])[1], 10);
+    if (!(monthNumber >= 1 && monthNumber <= 12)) {
+      throw new Error(`Payslips Admin D${row} holds ${monthNumber}, not a payroll month number`);
+    }
+    adminXml = setCellCachedValue(adminXml, `A${row}`, targetTabs[monthNumber - 1]);
+  }
+
+  const origDate = zip.file(adminSheetPath).date;
+  zip.file(adminSheetPath, adminXml, { date: origDate });
+
+  // The printed page keeps its own cached copy of the name the lookup returns,
+  // and a package is read before it is ever recalculated. The sheet ships
+  // asking for period 1, which both the weekly and the monthly lookup column
+  // answer with the calendar's first row, so that row's new name is the answer
+  // whichever frequency the page ships set to.
+  const printSheetPath = (await buildSheetMap(zip)).get(PAYSLIP_PRINT_SHEET);
+  if (!printSheetPath) throw new Error(`No ${PAYSLIP_PRINT_SHEET} sheet in the Payslips workbook`);
+  let printXml = await zip.file(printSheetPath).async("string");
+  const periodCell = matchCell(printXml, PAYSLIP_PRINT_CELLS.period);
+  if (!periodCell) throw new Error(`Payslips ${PAYSLIP_PRINT_CELLS.period} not found in ${printSheetPath}`);
+  const shippedPeriod = parseInt((periodCell.fullMatch.match(/<v>([^<]*)<\/v>/) || [])[1], 10);
+  if (shippedPeriod !== 1) {
+    throw new Error(`Payslips ${PAYSLIP_PRINT_CELLS.period} ships asking for period ${shippedPeriod}, not the calendar's first row`);
+  }
+  printXml = setCellCachedValue(printXml, PAYSLIP_PRINT_CELLS.tab, targetTabs[0]);
+  zip.file(printSheetPath, printXml, { date: zip.file(printSheetPath).date });
 
   stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });

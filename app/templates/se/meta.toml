@@ -38,3 +38,6 @@ vatQtr5 = "xl/worksheets/sheet5.xml"
 
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"
+
+[sheets.salesinvoice]
+productDetails = "xl/worksheets/sheet4.xml"

@@ -280,6 +280,66 @@ export function scoreReportDocumentsByKind(excelDocument, jsDocument) {
   return byKind;
 }
 
+// ── The period-frame shift ─────────────────────────────────────────────────
+
+// generate.js moves every posting date onto the package's own accounting
+// period (app/products/ltd.js, cellWrites/shiftMonths): forward by the
+// whole-month gap between the scenario's declared period start and the
+// package's, clamping a day the shifted month lacks to that month's own last
+// day. Reversing that on the export is lossy at a clamped date -- the exact
+// origin day cannot be recovered -- so this comparator puts the fixture
+// through the identical forward shift instead. Clamping then falls the same
+// way on both sides and the comparison after it is exact.
+function shiftMonths(date, monthOffset) {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + monthOffset;
+  const lastDayOfShiftedMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month, Math.min(date.getUTCDate(), lastDayOfShiftedMonth)));
+}
+
+/**
+ * The whole-month offset generate.js shifts every posting date by, from a
+ * scenario's own declared period start month to a package's year-end month.
+ * Mirrors the monthOffset arithmetic in app/products/ltd.js's cellWrites.
+ * @param {number} periodStartMonth - 1-indexed month documentInfo.periodCoveredStart falls in
+ * @param {number} yearEndMonth - 1-indexed month the package's own year end falls in
+ * @returns {number} 0-11
+ */
+export function periodFrameOffset(periodStartMonth, yearEndMonth) {
+  const targetStartMonth = yearEndMonth % 12;
+  const sourceStartMonth = periodStartMonth - 1;
+  return (targetStartMonth - sourceStartMonth + 12) % 12;
+}
+
+/**
+ * A YYYY-MM-DD posting date moved forward by a period-frame offset, in the
+ * same form scoreDataHalves reads lines.jsonl in.
+ * @param {string} text
+ * @param {number} monthOffset
+ * @returns {string}
+ */
+export function shiftPostingDate(text, monthOffset) {
+  const [year, month, day] = String(text).split("-").map(Number);
+  return shiftMonths(new Date(Date.UTC(year, month - 1, day)), monthOffset)
+    .toISOString()
+    .slice(0, 10);
+}
+
+/**
+ * A YYYY-MM-DD posting date moved by a whole number of days. Taxi's writer
+ * translates every date by the exact day gap between the fixture's 6 April
+ * and the package's (app/products/taxi.js), so its frame shift is day-based
+ * where Ltd's is month-based; month arithmetic drifts across unequal month
+ * lengths and leap days.
+ * @param {string} text
+ * @param {number} dayOffset
+ * @returns {string}
+ */
+export function shiftPostingDateByDays(text, dayOffset) {
+  const [year, month, day] = String(text).split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day + dayOffset)).toISOString().slice(0, 10);
+}
+
 // ── EQ2: the data half ─────────────────────────────────────────────────────
 
 function readJsonl(path) {
@@ -327,6 +387,107 @@ function wholeLine(line, unrepresentable) {
   );
 }
 
+// ── The unrepresentable-field inventory ────────────────────────────────────
+
+// An inventory entry names its reach with exactly one of "products" (every
+// block of a product) or "blocks" (only the named product/block pairs, block
+// being a line's own scope key from lineScopeBlock() below -- ordinarily its
+// sourceJournalID, narrowed for the one case that needs it). Mixing the two
+// on one entry would let a product-wide and a block-scoped declaration be
+// read as either, so it is rejected outright rather than guessed at.
+function validateInventoryEntry(entry, index) {
+  const where = `roundtrip-unrepresentable.json fields[${index}]${entry?.field ? ` ("${entry.field}")` : ""}`;
+  if (typeof entry?.field !== "string" || entry.field.length === 0) throw new Error(`${where} has no field name`);
+  const hasProducts = Object.prototype.hasOwnProperty.call(entry, "products");
+  const hasBlocks = Object.prototype.hasOwnProperty.call(entry, "blocks");
+  if (hasProducts === hasBlocks) throw new Error(`${where} must declare exactly one of "products" or "blocks", never both or neither`);
+  if (hasProducts) {
+    if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
+      throw new Error(`${where} has a malformed "products" list`);
+    }
+  } else {
+    if (!Array.isArray(entry.blocks) || entry.blocks.length === 0) throw new Error(`${where} has a malformed "blocks" list`);
+    for (const scope of entry.blocks) {
+      if (!scope || typeof scope.product !== "string" || !scope.product || typeof scope.block !== "string" || !scope.block) {
+        throw new Error(`${where} has a malformed block scope; each entry needs a "product" and a "block"`);
+      }
+    }
+  }
+}
+
+// A scope with no declarations, for a call site that has no inventory file
+// or is scoring a product the inventory names nothing for.
+const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map() };
+
+/**
+ * The fields the checked-in inventory says the Excel encoding has nowhere to
+ * put, for one product, split into the fields no block of that product can
+ * carry (`productWide`) and the fields only a specific block cannot carry
+ * (`byBlock`, keyed by a line's own scope key from lineScopeBlock()). A
+ * line's own applicable set is `productWide` plus whatever `byBlock` names
+ * for that line's scope, so a block-scoped declaration blanks only the
+ * block it names -- a block that still carries the field (e.g. sales
+ * keeping its own description column) keeps being compared on it.
+ * @param {string} product
+ * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
+ * @returns {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }}
+ */
+export function unrepresentableScope(product, inventory) {
+  const productWide = new Set();
+  const byBlock = new Map();
+  const fields = inventory?.fields ?? [];
+  fields.forEach((entry, index) => validateInventoryEntry(entry, index));
+  for (const entry of fields) {
+    if (entry.products) {
+      if (entry.products.includes(product)) productWide.add(entry.field);
+      continue;
+    }
+    for (const scope of entry.blocks) {
+      if (scope.product !== product) continue;
+      if (!byBlock.has(scope.block)) byBlock.set(scope.block, new Set());
+      byBlock.get(scope.block).add(entry.field);
+    }
+  }
+  return { product, productWide, byBlock };
+}
+
+// A line's scope key for the unrepresentable-field inventory: ordinarily its
+// own sourceJournalID, except a bank block opening-balance line. That line
+// shares its sourceJournalID with the ordinary receipt and payment rows
+// around it, which do carry a lineItemComment and a documentReference of
+// their own -- so a declaration scoped to plain "bank" would blank those
+// fields off every ordinary row too. The opening-balance line is unambiguous
+// (detailComment is "Opening balance" nowhere else in a bank block), so it
+// gets a scope of its own that a declaration can name without touching the
+// rest of the block.
+const BANK_OPENING_BALANCE_BLOCK = "bank-opening-balance";
+
+function lineScopeBlock(line) {
+  if (line.sourceJournalID === "bank" && line.detailComment === "Opening balance") return BANK_OPENING_BALANCE_BLOCK;
+  return line.sourceJournalID;
+}
+
+// The fields a given line's own block leaves unrepresentable: the
+// product-wide set plus whatever the block-scoped map names for that line's
+// scope key. A line with no matching block entry gets the product-wide set
+// alone, unchanged from before block scoping existed.
+function unrepresentableForLine(scope, line) {
+  const blockFields = scope.byBlock.get(lineScopeBlock(line));
+  if (!blockFields) return scope.productWide;
+  return new Set([...scope.productWide, ...blockFields]);
+}
+
+// Every field name any entry in the scope declares, product-wide or
+// block-scoped, for the coarse "does the export carry this field kind at
+// all" axis below -- that axis does not distinguish blocks, so a field
+// dropped from one block but carried by another is "no home" there and
+// "dropped" nowhere.
+function allDeclaredFields(scope) {
+  const all = new Set(scope.productWide);
+  for (const fields of scope.byBlock.values()) for (const field of fields) all.add(field);
+  return all;
+}
+
 /**
  * Flatten a parsed book.toml to dotted paths, so two books can be compared
  * field by field rather than as two blobs of text.
@@ -355,28 +516,49 @@ export function flattenBook(value, prefix = "") {
 }
 
 /**
- * The fields the checked-in inventory says the Excel encoding has nowhere to
- * put, for one product. EQ2 counts those apart from the fields the export
- * simply drops, so a known gap in the encoding never reads as a new loss.
- * @param {string} product
- * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
- * @returns {Set<string>}
- */
-export function unrepresentableFields(product, inventory) {
-  return new Set((inventory?.fields ?? []).filter((entry) => entry.products.includes(product)).map((entry) => entry.field));
-}
-
-/**
  * Score EQ2 between the fixture (the JS side's data/, which is the original
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
  * @param {string} exportDir
- * @param {Set<string>} [unrepresentable] - fields the encoding is known to have no home for
+ * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }} [scope] -
+ *   the fields the encoding has no home for, from unrepresentableScope(). A
+ *   block-scoped declaration whose block matches no line's scope key
+ *   (lineScopeBlock()) in this run is a stale or mistyped block name, not
+ *   silence, so it throws rather than quietly declaring nothing.
+ * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
+ *   to move the fixture's own postingDate forward by before comparing, for a
+ *   package whose year end put the export's dates through the same shift.
+ *   0 (the default) compares postingDate as the fixture wrote it.
+ * @param {number} [dateShiftDays] - a day-based frame offset for a writer
+ *   that translates dates by exact days (Taxi) rather than by month
+ *   positions (Ltd). Applied instead of a month shift; the two never
+ *   combine.
  */
-export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set()) {
-  const fixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
+export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, dateShiftMonths = 0, dateShiftDays = 0) {
+  const rawFixtureLines = readJsonl(resolve(fixtureDir, "lines.jsonl"));
   const exportedLines = readJsonl(resolve(exportDir, "lines.jsonl"));
+  const shiftDate = dateShiftMonths
+    ? (d) => shiftPostingDate(d, dateShiftMonths)
+    : dateShiftDays
+      ? (d) => shiftPostingDateByDays(d, dateShiftDays)
+      : null;
+  const fixtureLines = shiftDate
+    ? rawFixtureLines.map((line) => (line.postingDate === undefined ? line : { ...line, postingDate: shiftDate(line.postingDate) }))
+    : rawFixtureLines;
 
+  const observedBlocks = new Set(
+    [...fixtureLines, ...exportedLines].map((line) => lineScopeBlock(line)).filter((block) => block !== undefined),
+  );
+  for (const block of scope.byBlock.keys()) {
+    if (!observedBlocks.has(block)) {
+      throw new Error(
+        `roundtrip-unrepresentable.json declares a block-scoped field for ${scope.product ?? "this product"}'s "${block}" block, ` +
+          `but no line in this run scopes to "${block}" -- the declaration matches nothing`,
+      );
+    }
+  }
+
+  const unrepresentable = allDeclaredFields(scope);
   const fixtureFields = new Set(fixtureLines.flatMap((line) => Object.keys(line)));
   const exportedFields = new Set(exportedLines.flatMap((line) => Object.keys(line)));
   const missingFields = [...fixtureFields].filter((field) => !exportedFields.has(field)).sort();
@@ -409,8 +591,8 @@ export function scoreDataHalves(fixtureDir, exportDir, unrepresentable = new Set
       exportedLines.map((line) => project(line, ACCOUNT_FIELDS)),
     ),
     wholeLineMatches: multisetOverlap(
-      fixtureLines.map((line) => wholeLine(line, unrepresentable)),
-      exportedLines.map((line) => wholeLine(line, unrepresentable)),
+      fixtureLines.map((line) => wholeLine(line, unrepresentableForLine(scope, line))),
+      exportedLines.map((line) => wholeLine(line, unrepresentableForLine(scope, line))),
     ),
     fieldsDropped,
     fieldsDroppedCount: fieldsDropped.length,
@@ -477,15 +659,17 @@ function parseArgs(argv) {
   const budgetPath = getArg("--budget");
   const outPath = getArg("--out");
   const unrepresentablePath = getArg("--unrepresentable");
+  const dateShiftMonths = Number(getArg("--date-shift-months") ?? 0);
+  const dateShiftDays = Number(getArg("--date-shift-days") ?? 0);
 
   if (!packageName || !excelDir || !jsDir) {
     console.error(
-      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>]",
+      "Usage: verify-roundtrip.js --package <name> --excel <dir> --js <dir> [--budget <file>] [--out <file>] [--unrepresentable <file>] [--date-shift-months <n>] [--date-shift-days <n>]",
     );
     process.exit(1);
   }
 
-  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath };
+  return { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays };
 }
 
 /**
@@ -511,7 +695,9 @@ function readReportDocument(dir) {
 }
 
 async function main() {
-  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath } = parseArgs(process.argv);
+  const { packageName, excelDir, jsDir, budgetPath, outPath, unrepresentablePath, dateShiftMonths, dateShiftDays } = parseArgs(
+    process.argv,
+  );
 
   const excelDocument = readReportDocument(excelDir);
   const jsDocument = readReportDocument(jsDir);
@@ -523,7 +709,9 @@ async function main() {
   const hasData = existsSync(resolve(excelData, "lines.jsonl")) && existsSync(resolve(fixtureData, "lines.jsonl"));
   const inventoryPath = unrepresentablePath || resolve(process.cwd(), "app", "data", "roundtrip-unrepresentable.json");
   const inventory = existsSync(inventoryPath) ? JSON.parse(readFileSync(inventoryPath, "utf8")) : null;
-  const data = hasData ? scoreDataHalves(fixtureData, excelData, unrepresentableFields(packageName, inventory)) : null;
+  const data = hasData
+    ? scoreDataHalves(fixtureData, excelData, unrepresentableScope(packageName, inventory), dateShiftMonths, dateShiftDays)
+    : null;
 
   console.log(formatScorecard(packageName, excelDir, jsDir, score, byKind, data));
 
@@ -536,7 +724,21 @@ async function main() {
       differing: score.differing,
       noJsValue: score.noJsValue,
       noExcelValue: score.noExcelValue,
-      ...(data ? { linesLost: data.linesLost, fieldsDropped: data.fieldsDroppedCount, bookFieldsMissing: data.book.missing } : {}),
+      ...(data
+        ? {
+            linesLost: data.linesLost,
+            fieldsDropped: data.fieldsDroppedCount,
+            bookFieldsMissing: data.book.missing,
+            // A fixture line the export does not bring back as at least the
+            // same transaction (coarseUnmatched), or brings back as the same
+            // transaction but posted to a different account (accountUnmatched).
+            // With --date-shift-months set, these score in the shifted frame,
+            // so a non-March year end is judged on the transactions
+            // themselves rather than on counts alone.
+            coarseUnmatched: Math.max(0, data.fixtureLines - data.coarseMatches),
+            accountUnmatched: Math.max(0, data.coarseMatches - data.accountMatches),
+          }
+        : {}),
     },
     byKind: Object.fromEntries(
       [...byKind].map(([kind, kindScore]) => [

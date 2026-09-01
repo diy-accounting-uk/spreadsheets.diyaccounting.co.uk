@@ -28,6 +28,22 @@ import {
   VATINTERFACE_FIRST_ROW,
   VATINTERFACE_LAST_ROW,
 } from "../tax/vat.js";
+import {
+  monthlyPayrollBlockRow,
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
+  PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
+  PAYSLIP_PRINT_MONTHLY_HEADING,
+  PAYSLIP_PRINT_PERIOD,
+  PAYSLIP_PRINT_PERIOD_CELLS,
+  PAYSLIP_PRINT_SHEET,
+  PAYSLIP_PRINT_TO_DATE_CELLS,
+  PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES,
+  PAYSLIPS_ENTRY_COLUMNS,
+  PAYSLIPS_ZERO_FILLED_COLUMNS,
+  payslipsMonthEntryRows,
+  payslipsWagesPaidCell,
+} from "../payslips-layout.js";
 import { SHEET_BLANK, sheetNumber, sheetSum, excelSerial, dateFromExcelSerial } from "./shared.js";
 
 // The twelve month tabs, in the order the package lays them out, and the profit
@@ -92,6 +108,10 @@ const EXISTING_ASSET_BLOCKS = {
   motor: { rows: [38, 39, 40, 41, 42], rateKey: "motor_vehicles" },
 };
 const NEW_PLANT_ROW_COUNT = 5;
+
+// The sample carriage charge cellWrites puts on the invoice's Invoice
+// Database!E2 for a VAT-registered scenario (app/products/se.js).
+const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
 
 // The Payslips calendar rows the reconciliation samples, and the month names
 // the sheet's own TEXT(DATE(...)) formula produces.
@@ -260,6 +280,104 @@ const bankPayments = (months, index, code) => months[index].paymentsByCode[code]
 const bankReceipts = (months, index, code) => months[index].receiptsByCode[code] || 0;
 
 // ── Payroll ────────────────────────────────────────────────────────────────
+
+// The rows a month tab's weekly blocks keep for an employee paid weekly, and
+// the row the last of them totals into. Every fixture pays monthly, so the
+// weekly gate never reads true and these resolve to the sheet's own
+// not-carried-forward branch: nil where the template holds a figure, blank
+// where it holds text, which is why neither engine carries the M column.
+const PAYSLIPS_WEEKLY_ROWS = [11, 12, 13, 14, 15];
+const PAYSLIPS_WEEKLY_PERIOD_TOTAL_CELL = "T41";
+const PAYSLIPS_BROUGHT_FORWARD_COLUMNS = ["H", "I", "J", "L"];
+const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
+// The weekly employee line each row of position 3 keeps, and the payslip
+// total position 4 would bring forward: text cells, so the sheet's own
+// unfilled branch leaves a blank rather than a nil.
+const PAYSLIPS_WEEKLY_TEXT_COLUMN = { 3: PAYSLIPS_ENTRY_COLUMNS.name, 4: PAYSLIPS_ENTRY_COLUMNS.grossPay };
+// The four columns of a monthly block row the template ships empty, against
+// the three it ships as a literal zero.
+const PAYSLIPS_BLANK_COLUMNS = [
+  PAYSLIPS_ENTRY_COLUMNS.name,
+  PAYSLIPS_ENTRY_COLUMNS.grossPay,
+  PAYSLIPS_ENTRY_COLUMNS.netPay,
+  PAYSLIPS_ENTRY_COLUMNS.reference,
+];
+// The printed page's figures, all gated on a pay number no scenario gives.
+const PAYSLIP_PRINT_BLANK_CELLS = ["M8", "G14", "H14", "I14", "M14", "G16", "H16", "I16", "M16", "M18"];
+
+// One month tab's monthly payroll block: an employee a row from block row +
+// 3, with the wages-paid date above them. A row the scenario has no employee
+// for keeps the three columns the template ships as a literal zero and stays
+// blank in the other four, which is what the workbook itself carries there.
+function buildPayslipsMonthTab(monthIndex, entries) {
+  const sheet = {};
+  const columns = PAYSLIPS_ENTRY_COLUMNS;
+  payslipsMonthEntryRows(monthIndex).forEach((row, index) => {
+    const entry = entries[index];
+    if (!entry) {
+      for (const column of PAYSLIPS_ZERO_FILLED_COLUMNS) sheet[`${column}${row}`] = 0;
+      for (const column of PAYSLIPS_BLANK_COLUMNS) sheet[`${column}${row}`] = SHEET_BLANK;
+      return;
+    }
+    sheet[`${columns.name}${row}`] = entry.name || SHEET_BLANK;
+    sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
+    sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
+    sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
+    sheet[`${columns.netPay}${row}`] = entry.netPay || 0;
+    sheet[`${columns.employerNI}${row}`] = entry.employerNI || 0;
+    sheet[`${columns.reference}${row}`] = entry.reference || SHEET_BLANK;
+  });
+  if (entries.length > 0) sheet[payslipsWagesPaidCell(monthIndex)] = excelSerial(new Date(entries[0].date));
+
+  // Template position 3 keeps its weekly employee lines and its period total;
+  // position 4 keeps the cells that would bring an unfinished weekly cycle in
+  // from the month before it.
+  if (monthIndex === PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]) sheet[PAYSLIPS_WEEKLY_PERIOD_TOTAL_CELL] = 0;
+  if (monthIndex === PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]) {
+    for (const row of PAYSLIPS_WEEKLY_ROWS) {
+      for (const column of PAYSLIPS_BROUGHT_FORWARD_COLUMNS) sheet[`${column}${row}`] = 0;
+      if (row >= PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.firstRow) sheet[`${PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN.column}${row}`] = 0;
+    }
+  }
+  const weeklyTextColumn = PAYSLIPS_WEEKLY_TEXT_COLUMN[monthIndex];
+  if (weeklyTextColumn) for (const row of PAYSLIPS_WEEKLY_ROWS) sheet[`${weeklyTextColumn}${row}`] = SHEET_BLANK;
+  return sheet;
+}
+
+// The page the employer prints. H3 and H4 are the join -- the tab the chosen
+// period lands on and the row its block starts at -- and I9, I10 and L7 the
+// heading above the figures. Every figure below the heading is gated on the
+// employee's line carrying a pay number, which a month tab gives an employee
+// once their starting date has arrived. M8 is that number, and the
+// year-to-date row adds the same employee's line over every month up to the
+// one printed. A month with no payroll leaves the page blank below the
+// heading, which is the sheet's own gated branch.
+function buildPayslipsPrintPage(period, payroll) {
+  const monthIndex = period - 1;
+  const sheet = {
+    [PAYSLIP_PRINT_CELLS.tab]: MONTH_SHEETS[MONTH_KEYS[monthIndex]],
+    [PAYSLIP_PRINT_CELLS.blockRow]: monthlyPayrollBlockRow(monthIndex),
+    [PAYSLIP_PRINT_CELLS.heading]: PAYSLIP_PRINT_MONTHLY_HEADING,
+    [PAYSLIP_PRINT_CELLS.periodNumber]: period,
+  };
+  const entries = payroll[MONTH_KEYS[monthIndex]] || [];
+  if (entries.length === 0) {
+    for (const cell of PAYSLIP_PRINT_BLANK_CELLS) sheet[cell] = SHEET_BLANK;
+    return sheet;
+  }
+
+  const entry = entries[0];
+  sheet[PAYSLIP_PRINT_CELLS.periodEnd] = excelSerial(new Date(entry.date));
+  sheet.M8 = PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER;
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_PERIOD_CELLS)) sheet[cell] = entry[field] || 0;
+
+  const toDate = MONTH_KEYS.slice(0, period).flatMap((key) => (payroll[key] || []).slice(0, 1));
+  for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
+    sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
+  }
+  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
+  return sheet;
+}
 
 function payrollMonths(payroll) {
   return MONTH_KEYS.map((month) =>
@@ -435,6 +553,58 @@ function buildHpFinance(scenario) {
     cells.E2 += agreement.amount_financed;
   });
   return cells;
+}
+
+// Salesinvoice.xlsx links to nothing else in the book. The generator writes
+// the tax year's standard rate down Product Details column D, and the
+// invoice page looks its one sample line up from there.
+//
+// cellWrites only raises the sample invoice line for a VAT-registered
+// business with a first sale to anchor it on (rate > 0, a VAT number, and a
+// sale) -- the same condition checkCompliance's carriage checks gate on
+// (app/products/se.js). A recalculated package proves the two states: with
+// the line raised, Invoice Template!N27 through P64 resolve to real figures
+// off the sample line and its carriage charge; without it, N27 stays blank
+// and every cell downstream of it follows -- P58, P62 and P64 land on their
+// formulas' own zero branch, while C38, J38, L38, P38 and the carriage cell
+// P60 land on their formulas' own blank-string branch. This mirrors both
+// states rather than assuming one.
+function buildSalesInvoice(scenario, rate, taxData) {
+  const standardRatePercent = Math.round((taxData?.vat?.standard_rate ?? 0) * 100);
+  const productDetails = { D2: standardRatePercent };
+  const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
+  if (!(rate > 0 && scenario.business?.vat_number && firstInvoiceSale)) {
+    return {
+      "Salesinvoice.xlsx!Product Details": productDetails,
+      "Salesinvoice.xlsx!Invoice Template": {
+        J38: SHEET_BLANK,
+        L38: SHEET_BLANK,
+        P38: SHEET_BLANK,
+        V38: 0,
+        P58: 0,
+        P60: SHEET_BLANK,
+        P62: 0,
+        P64: 0,
+      },
+    };
+  }
+  const lineNet = firstInvoiceSale.amount;
+  const lineVat = (lineNet * standardRatePercent) / 100;
+  const carriageVat = (SALESINVOICE_SAMPLE_CARRIAGE_CHARGE * standardRatePercent) / 100;
+  const vatTotal = lineVat + carriageVat;
+  return {
+    "Salesinvoice.xlsx!Product Details": productDetails,
+    "Salesinvoice.xlsx!Invoice Template": {
+      J38: lineNet,
+      L38: 1,
+      P38: lineNet,
+      V38: lineVat,
+      P58: lineNet,
+      P60: SALESINVOICE_SAMPLE_CARRIAGE_CHARGE,
+      P62: vatTotal,
+      P64: lineNet + SALESINVOICE_SAMPLE_CARRIAGE_CHARGE + vatTotal,
+    },
+  };
 }
 
 // ── The Admin sheet ────────────────────────────────────────────────────────
@@ -898,8 +1068,10 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     "Fixedassets.xlsx!Schedule": scheduleCells,
     "Fixedassets.xlsx!FAreconciliation": faReconciliation,
     "Fixedassets.xlsx!HPfinance": buildHpFinance(scenario),
+    ...buildSalesInvoice(scenario, rate, taxData),
     "Payslips.xlsx!Payment": payment,
     "Payslips.xlsx!Admin": buildPayrollCalendar(startYear, dateSerials[4]),
+    [`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`]: buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, scenario.payroll || {}),
     "Bank.xlsx!Mar": { A1: bank[11].opening, A2: bank[11].closing },
     "Cash.xlsx!Mar": { A1: cash[11].opening, A2: cash[11].closing },
     "Sales.xlsx!OpeningDebtors": { G1: ledgerTotal(scenario.opening_debtors) },
@@ -907,6 +1079,11 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     "Purchases.xlsx!OpeningCreditors": { G1: ledgerTotal(scenario.opening_creditors) },
     "Purchases.xlsx!ClosingCreditors": { G1: ledgerTotal(scenario.closing_creditors) },
   };
+
+  for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
+    const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
+    results[`Payslips.xlsx!${tab}`] = buildPayslipsMonthTab(monthIndex, scenario.payroll?.[MONTH_KEYS[monthIndex]] || []);
+  }
 
   MONTH_KEYS.forEach((month, index) => {
     const tab = MONTH_SHEETS[month];

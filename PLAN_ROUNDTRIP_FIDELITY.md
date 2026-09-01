@@ -10,7 +10,7 @@ open.
 - [CONTEXT_BASIC_SOLE_TRADER.md](CONTEXT_BASIC_SOLE_TRADER.md), [CONTEXT_TAXI.md](CONTEXT_TAXI.md),
   [CONTEXT_SELF_EMPLOYED.md](CONTEXT_SELF_EMPLOYED.md), [CONTEXT_LIMITED_COMPANY.md](CONTEXT_LIMITED_COMPANY.md)
   hold the per-product sheet maps and CI pipelines.
-- [REPORT_SHEET_COVERAGE_GAPS.md](REPORT_SHEET_COVERAGE_GAPS.md) lists the template sheets no check touches.
+- [REPORT_SPREADSHEET_TEST_COVERAGE.md](REPORT_SPREADSHEET_TEST_COVERAGE.md) lists the template sheets no check touches.
 - [CLAUDE.md](CLAUDE.md) holds the reconciliation-bug method every change here follows.
 
 ## What roundtrip fidelity means
@@ -254,7 +254,8 @@ All four products run all four commands.
 ## State at parking, 2026-08-30
 
 Measured on the merged tree at `694641c1`, macOS LibreOffice, running each product's CI commands
-exactly as `test.yml` runs them.
+exactly as `test.yml` runs them. The tables below are that day's record; the 2026-08-31 batch
+moved several of their figures — the delta is the subsection at the end of this section.
 
 ### EQ1, the report half
 
@@ -366,6 +367,27 @@ three bank opening balances, all on the first day of the period. The opening bal
 grid of figures rather than a numbered journal, so the export re-derives them from the grid instead
 of replaying the fixture's own lines. Of the 701 that do match, 507 match on every field;
 `documentReference` and `lineItemComment` each differ on 194.
+
+### The 2026-08-31 batch, measured before merge (`claude/next-batch-wave-1`)
+
+- EQ1: `differing` is 0 for all four products (SE's 2 and Ltd's 4 above are fixed — the WDA
+  split now agrees, and the blank-cell comparisons trim on both paths). The batch's ~192 new
+  reads (fixed-asset reconciliation, both payslip month tabs, the print page, the invoice
+  cells, the statutory registers) all carry JS values.
+- EQ2: every fixture line comes back for every product — `linesLost` 0, the SE stock
+  adjustment and Ltd opening legs included. Whole-line matches stand at 685/696 (SE) and
+  721/724 (Ltd) under per-block declarations (`roundtrip-unrepresentable.json`): the payroll
+  comment, and the bank opening-balance line's comment and reference. The residue is
+  journal-OB wording and SE's bankCode collapse, measured by the ratchets.
+- Non-March EQ2 scores real transactions: the comparator shifts the fixture into the
+  package's period frame (month-positions for Ltd, exact days for Taxi), `ltd-may` asserts
+  transactions, and `roundtrip-matrix-budget.json` gates `coarseUnmatched` and
+  `accountUnmatched` at zero for all four products alongside `linesLost`/`fieldsDropped`.
+- EQ3: `volatile-cells.json` is down from 84 entries to 2 — the generator now rolls every
+  cached copy of the Admin date chain, and only the print page's genuinely `ca="1"`
+  INDIRECT reads remain.
+- The featured scenarios RECONCILE at 1015/1016 (Ltd) and 782/783 (SE); the one warning each
+  is the M18 payment-date template defect (NEXT.md T5).
 
 ## What each track delivered
 
@@ -549,38 +571,50 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 110 for SE and 156 for Ltd, and
-the budget holds each at that number. The largest blocks are the debtor and creditor ledgers, the
-fixed asset register, the HP agreements, the tax rate tables and the employee details, none of
-which the sheets hold in a form the exporter reads back yet.
+**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 111 for SE and 156 for Ltd, and
+the budget holds each at that number. (SE's 111 includes the land & buildings account its book
+declares but no SE line posts to — the same structural absence as 0010 and 0020.) The gap is
+one-directional: the fixture's data reaches the package; the read-back mappings don't exist yet.
+The trigger is unchanged — the first consumer of the JS representation (the VAT export is the
+named candidate), and only the blocks it needs. When picked up, the work runs as waves of
+concurrent worktree sub-agents; every landing follows the same three steps (mapping,
+fixture-anchored proof both legs survive, that block's `bookFieldsMissing` number falls in
+`roundtrip-budget.json`) and ends with the verify-roundtrip trio green.
 
-**S7, the fixed-asset `cellWrites` layout.** Four Ltd lines and one SE line do not survive the
-export. The Ltd fixed asset debit and credit collapse to net book value and two bank opening
-balances are lost; SE loses its stock adjustment. `app/data/roundtrip-budget.json` holds
-`linesLost` at 4 for Ltd and 1 for SE, and the ratchet in `app/test/verify-roundtrip.test.js` holds
-its own run's count at 5 and 2. Both can fall and neither can rise.
+*Wave 1 — two concurrent tracks, disjoint exporter sections; the coordinator resolves the
+shared budget/test-file merges:*
+- **Registers-and-employees track** (Sonnet): read back `RegisterofMembers` and the
+  Directors&Secretary/DirectorsInterests entries into `[[members]]` and the director tables
+  (the cells are populated and checked; only the reverse mapping is missing), and rebuild
+  `[[employees]]` (name, start date, pay frequency, rate) from the Employee sheet and payslip
+  cells. An attribute with no cell gets a generator write to a labelled spare cell or a
+  per-block declaration — decided from the XML, not assumed.
+- **Rates-by-provenance track** (Sonnet): emit the tax rate tables from `app/data/<year>.toml`
+  keyed by the package's declared year — reconstruction by provenance, since the sheets hold
+  the rates in formulas — with a check that the sheet's formula results agree with the
+  emitted table.
 
-**Non-March EQ2 is scored on counts only.** `generate` shifts every posting date onto the package's
-own accounting period, so for a non-March year end the exported dates sit a month or two from the
-fixture's by design. Anchoring the comparison needs that shift undone first and the comparator does
-not do it, so the `ltd-may` ratchet case skips the transaction-level assertions. The same shape
-appears in the `generate-*` matrices: the fixture's transactions carry the master's own calendar
-dates into every year-end directory, so only `linesLost` and `fieldsDropped` are portable across
-year ends, and `app/data/roundtrip-matrix-budget.json` gates those two alone.
+*Wave 2 — one track, after wave 1 (it shares the exporter and touches the product modules):*
+- **Asset-attributes track** (Opus): the fixed-asset register's identity attributes and the
+  HP agreement schedules. Generator writes into free description columns discovered from the
+  Schedule/HPfinance XML, then exporter read-back into `[[fixedAssets]]` and
+  `[[hpAgreements]]` — the same shape the land & buildings class followed, widened to the
+  register.
 
-**Payroll `lineItemComment` has no cell to carry it.** The other blocks now have homes: SE sales
-description in column E, the bank books' reference and comment columns, the payslip reference in
-column S, Taxi's two column Cs. The payslip row has no second spare column (swept A-AG), so its
-comment stays a visible whole-line shortfall rather than a declared unrepresentable — declaring
-it would blank the field out of the blocks that now match. `diya-gl:bankCode` differs on 7 SE
-lines because SE's bank book keeps one combined HMRC payments column where Ltd splits four ways —
-a shipped-template limitation, stated in `paymentCodeFor()`.
+*Not scheduled — decided (operator, 2026-08-31):* the per-contact debtor and creditor ledgers
+stay budget-held. The sheets total them without per-contact rows, closing them would mean
+template surgery, and the templates are not changing for this; the fields remain a declared
+structural absence.
 
-One declared list closes the section, so nobody counts it as an open item. Fourteen SE read cells
-are computed as the blanks the workbook itself holds, and `app/test/calculator-se.test.js` asserts
-that set exactly: `SE Full!D147`, `D152`, `D156`, `D160`, `D179`, `O139` and
-`Vat.xlsx!Vatinterface!E4/E5/G4/G5/I4/I5/K4/K5`. Both engines carry nothing there, so both
-agree.
+**Two shipped-template limitations are declared, not open.** The payslip row has no spare column
+for `lineItemComment` (swept A-AG); the field is declared unrepresentable for the payroll block
+alone in `app/data/roundtrip-unrepresentable.json`, whose per-block schema blanks it nowhere
+else. `diya-gl:bankCode` differs on 7 SE lines because SE's bank book keeps one combined HMRC
+payments column where Ltd splits four ways — stated in `paymentCodeFor()`.
+
+The cells both engines compute as the blanks the workbook itself holds are asserted as an exact
+list in `app/test/calculator-se.test.js`; that assertion, not this document, is the authority
+for the set.
 
 ## Parked
 

@@ -178,6 +178,9 @@ accountType = "bank"
 accountMainDescription = "Cash account"
 accountType = "bank"
 
+[accounts.assets."0000"]
+accountMainDescription = "Land and buildings"
+
 [accounts.assets."0010"]
 accountMainDescription = "Plant and machinery"
 

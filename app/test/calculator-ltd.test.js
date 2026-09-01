@@ -39,6 +39,18 @@ function runFixture({ dataDir, years, offset }) {
   return { book, lines, taxData, scenario, merged, results, checks, yearEnd };
 }
 
+// The checks the shipped workbook cannot pass, whichever engine computes it.
+// Both sides reach the same verdict on each, so the roundtrip scores them
+// equal; they are gaps in the templates, not in this engine.
+const SHEET_LIMITATION_GAPS = [
+  // The printed payslip's payment date reads column R of the block's own
+  // header row, where the template holds nothing. The date the wages were
+  // paid sits a row below in column M, which is where the period-end cell
+  // finds it, so both engines print a nil here and this warning carries the
+  // date the page would have shown.
+  "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
+];
+
 const FIXTURES = [
   // The Precision Code year the roundtrip job runs, at the March year end and
   // the tax year the package is generated for.
@@ -47,14 +59,14 @@ const FIXTURES = [
     dataDir: "examples/precision-code-ltd/full",
     years: "ltd-2024",
     offset: "-P1Y",
-    knownGaps: [],
+    knownGaps: SHEET_LIMITATION_GAPS,
   },
-  { name: "ltd-brickwork-pro-vat", dataDir: "examples/brickwork-pro/ltd-vat", years: "ltd-2026", knownGaps: [] },
+  { name: "ltd-brickwork-pro-vat", dataDir: "examples/brickwork-pro/ltd-vat", years: "ltd-2026", knownGaps: SHEET_LIMITATION_GAPS },
   {
     name: "ltd-brickwork-pro-nonvat",
     dataDir: "examples/brickwork-pro/ltd-nonvat",
     years: "ltd-2026",
-    knownGaps: [],
+    knownGaps: SHEET_LIMITATION_GAPS,
   },
 ];
 
@@ -162,7 +174,12 @@ describe("Precision Code Ltd, year ended 31 March 2025", () => {
     expect(pubPl.F9).toBeCloseTo(341283.33, 2);
     expect(pubPl.F50).toBeCloseTo(29221.27, 2);
     expect(pubPl.F54).toBeCloseTo(127958.62, 2);
-    expect(balanceSheet.F6).toBeCloseTo(48990, 2);
+    // The land & buildings asset (cost 200,000, depreciation 40,000 brought
+    // forward) sits in opening_fixed_assets rather than the year's additions
+    // or disposals, and its class depreciates at 0% (ltd-2024.toml), so it
+    // carries its whole net book value, 160,000, into this figure with no
+    // in-year movement: 48,990 + 160,000 = 208,990.
+    expect(balanceSheet.F6).toBeCloseTo(208990, 2);
     expect(balanceSheet.F33).toBeCloseTo(balanceSheet.F39, 6);
   });
 });
@@ -246,7 +263,15 @@ describe("a corrupted figure flips the checks that read it, and no others", () =
       flippedBy((results) => {
         results.WagesInterface.H4 += 50;
       }),
-    ).toEqual(["WagesInterface Apr H4 employer NI"]);
+    ).toEqual(["WagesInterface employees Apr H4 employer NI"]);
+  });
+
+  it("names the directors' own payroll tie and the wages line it feeds when the directors block moves", () => {
+    expect(
+      flippedBy((results) => {
+        results.WagesInterface.C17 += 50;
+      }),
+    ).toEqual(["WagesInterface directors Apr C17 gross pay"]);
   });
 
   it("names the VAT chain when a quarter's output box moves", () => {

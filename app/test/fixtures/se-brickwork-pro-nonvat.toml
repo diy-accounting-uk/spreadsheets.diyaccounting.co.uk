@@ -24,6 +24,7 @@ grossPay = 1500
 payFrequency = "monthly"
 taxCode = "1257L"
 niCategory = "A"
+startDate = 2023-03-15
 isDirector = false
 
 [[sales.apr]]
@@ -1407,6 +1408,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-04"
+accountMainID = "5101"
 
 [[payroll.may]]
 date = 2025-05-28
@@ -1417,6 +1419,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-05"
+accountMainID = "5101"
 
 [[payroll.jun]]
 date = 2025-06-28
@@ -1427,6 +1430,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-06"
+accountMainID = "5101"
 
 [[payroll.jul]]
 date = 2025-07-28
@@ -1437,6 +1441,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-07"
+accountMainID = "5101"
 
 [[payroll.aug]]
 date = 2025-08-28
@@ -1447,6 +1452,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-08"
+accountMainID = "5101"
 
 [[payroll.sep]]
 date = 2025-09-28
@@ -1457,6 +1463,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-09"
+accountMainID = "5101"
 
 [[payroll.oct]]
 date = 2025-10-28
@@ -1467,6 +1474,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-10"
+accountMainID = "5101"
 
 [[payroll.nov]]
 date = 2025-11-28
@@ -1477,6 +1485,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-11"
+accountMainID = "5101"
 
 [[payroll.dec]]
 date = 2025-12-28
@@ -1487,6 +1496,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2025-12"
+accountMainID = "5101"
 
 [[payroll.jan]]
 date = 2026-01-28
@@ -1497,6 +1507,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-01"
+accountMainID = "5101"
 
 [[payroll.feb]]
 date = 2026-02-28
@@ -1507,6 +1518,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-02"
+accountMainID = "5101"
 
 [[payroll.mar]]
 date = 2026-03-28
@@ -1517,6 +1529,7 @@ employeeNI = 36.2
 employerNI = 0
 netPay = 1373.3
 reference = "PAY-EMP002-2026-03"
+accountMainID = "5101"
 
 [stock]
 opening = 3000

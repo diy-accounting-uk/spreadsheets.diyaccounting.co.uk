@@ -42,6 +42,9 @@ adminExternalLink = "xl/externalLinks/externalLink1.xml"
 [sheets.payslips]
 payslipsAdmin = "xl/worksheets/sheet16.xml"
 
+[sheets.salesinvoice]
+productDetails = "xl/worksheets/sheet4.xml"
+
 [sheets.vatreturns]
 vatinterface = "xl/worksheets/sheet6.xml"
 vatQtr1 = "xl/worksheets/sheet1.xml"
