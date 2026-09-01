@@ -182,6 +182,15 @@ describe("overtyped.json when one template formula is typed over", () => {
       },
     });
   });
+
+  it("names a cell emptied down to its style as cleared too", async () => {
+    const emptied = (element) => element.replace(/>[\s\S]*<\/c>$/, "/>").replace(/\/><\/c>$/, "/>");
+    const overtyped = await overtypedAfterPatch("Profit & Loss Acc", "C9", emptied);
+    expect(Object.keys(overtyped)).toEqual(["Profit & Loss Acc!C9"]);
+    expect(overtyped["Profit & Loss Acc!C9"].kind).toBe("cleared");
+    expect(overtyped["Profit & Loss Acc!C9"].value).toBeNull();
+    expect(overtyped["Profit & Loss Acc!C9"].attribution.glMapping).toBe("gl-cor:amount (grossProfit)");
+  });
 });
 
 describe("attribution agrees with what CELL_MAP and the extraction map state", () => {

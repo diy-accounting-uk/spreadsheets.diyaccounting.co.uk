@@ -119,11 +119,15 @@ export async function overtypedCells(workbookBuffer, options = {}) {
       const found = cells.get(cellRef);
       if (found?.hasF) continue;
 
+      // A cell the upload has dropped, and one it keeps as an empty shell
+      // with only its style left, are the same loss: the template's sum is
+      // gone and no number stands in its place.
+      const typedOver = found?.hasValue ?? false;
       const { formula, sharedMaster } = formulas.get(cellRef);
       const entry = {
-        kind: found ? "literal" : "cleared",
+        kind: typedOver ? "literal" : "cleared",
         templateFormula: formula,
-        value: found ? (readCellValue(xml, cellRef, uploadSharedStrings) ?? null) : null,
+        value: typedOver ? (readCellValue(xml, cellRef, uploadSharedStrings) ?? null) : null,
         attribution: attribute(sheet, cellRef, extractionMap, reportLabels),
       };
       if (sharedMaster) entry.templateFormulaSharedFrom = sharedMaster;
