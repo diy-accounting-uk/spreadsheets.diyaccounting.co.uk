@@ -1605,3 +1605,18 @@ export function shortLabel(date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[date.getUTCMonth()]}${(date.getUTCFullYear() % 100).toString().padStart(2, "0")}`;
 }
+
+// The package directory and spreadsheet names a product's meta.toml patterns
+// produce for one year end.
+export function packageNaming(productMeta, sharedMeta, endDate) {
+  const dirName = productMeta.output.dir_pattern
+    .replace("{prefix}", sharedMeta.package.prefix)
+    .replace("{name}", productMeta.product.name)
+    .replace("{year_end_date}", formatDateYYYYMMDD(endDate))
+    .replace("{short_label}", shortLabel(endDate))
+    .replace("{format}", sharedMeta.package.format);
+
+  const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", formatDateDDMMYY(endDate));
+
+  return { dirName, xlsxFilename };
+}

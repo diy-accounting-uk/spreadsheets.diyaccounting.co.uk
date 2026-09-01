@@ -14,7 +14,7 @@ import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
-import { formatDateDDMMYY, formatDateYYYYMMDD, shortLabel, generateSpreadsheet } from "./generator.js";
+import { generateSpreadsheet, packageNaming } from "./generator.js";
 import { applyCellWrites } from "./spreadsheet-runner.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
 import { cellWrites as bstCellWrites } from "../products/bst.js";
@@ -59,22 +59,6 @@ export function taxYearFileName(date) {
   const beforeSixthOfApril = date.getUTCMonth() < 3 || (date.getUTCMonth() === 3 && date.getUTCDate() < 6);
   const startYear = beforeSixthOfApril ? year - 1 : year;
   return `se-${startYear}-${startYear + 1}`;
-}
-
-/**
- * The package directory and spreadsheet names a product's meta.toml patterns produce.
- */
-export function packageNaming(productMeta, sharedMeta, endDate) {
-  const dirName = productMeta.output.dir_pattern
-    .replace("{prefix}", sharedMeta.package.prefix)
-    .replace("{name}", productMeta.product.name)
-    .replace("{year_end_date}", formatDateYYYYMMDD(endDate))
-    .replace("{short_label}", shortLabel(endDate))
-    .replace("{format}", sharedMeta.package.format);
-
-  const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", formatDateDDMMYY(endDate));
-
-  return { dirName, xlsxFilename };
 }
 
 function periodCoveredEnd(book) {
