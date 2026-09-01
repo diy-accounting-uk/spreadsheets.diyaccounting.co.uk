@@ -7,6 +7,7 @@
 
 import JSZip from "jszip";
 import { buildSheetMap } from "./spreadsheet-runner.js";
+import { PAYSLIP_PRINT_CELLS, PAYSLIP_PRINT_SHEET } from "./payslips-layout.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -1392,6 +1393,23 @@ export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth,
 
   const origDate = zip.file(adminSheetPath).date;
   zip.file(adminSheetPath, adminXml, { date: origDate });
+
+  // The printed page keeps its own cached copy of the name the lookup returns,
+  // and a package is read before it is ever recalculated. The sheet ships
+  // asking for period 1, which both the weekly and the monthly lookup column
+  // answer with the calendar's first row, so that row's new name is the answer
+  // whichever frequency the page ships set to.
+  const printSheetPath = (await buildSheetMap(zip)).get(PAYSLIP_PRINT_SHEET);
+  if (!printSheetPath) throw new Error(`No ${PAYSLIP_PRINT_SHEET} sheet in the Payslips workbook`);
+  let printXml = await zip.file(printSheetPath).async("string");
+  const periodCell = matchCell(printXml, PAYSLIP_PRINT_CELLS.period);
+  if (!periodCell) throw new Error(`Payslips ${PAYSLIP_PRINT_CELLS.period} not found in ${printSheetPath}`);
+  const shippedPeriod = parseInt((periodCell.fullMatch.match(/<v>([^<]*)<\/v>/) || [])[1], 10);
+  if (shippedPeriod !== 1) {
+    throw new Error(`Payslips ${PAYSLIP_PRINT_CELLS.period} ships asking for period ${shippedPeriod}, not the calendar's first row`);
+  }
+  printXml = setCellCachedValue(printXml, PAYSLIP_PRINT_CELLS.tab, targetTabs[0]);
+  zip.file(printSheetPath, printXml, { date: zip.file(printSheetPath).date });
 
   stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
