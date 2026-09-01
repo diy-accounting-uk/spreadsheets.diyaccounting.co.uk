@@ -984,10 +984,10 @@ describe("the book-field declaration floor", () => {
   });
 
   it("throws when a declared path is one the export turns out to carry", () => {
-    const carried = EXPORT_BOOK.replace("[[debtors]]\ncounterparty = \"Acme Corp\"", '[[debtors]]\ncounterparty = "Acme Corp"\ninvoice = "INV-1"').replace(
-      "[[debtors]]\ncounterparty = \"Beta Systems\"",
-      '[[debtors]]\ncounterparty = "Beta Systems"\ninvoice = "INV-2"',
-    );
+    const carried = EXPORT_BOOK.replace(
+      '[[debtors]]\ncounterparty = "Acme Corp"',
+      '[[debtors]]\ncounterparty = "Acme Corp"\ninvoice = "INV-1"',
+    ).replace('[[debtors]]\ncounterparty = "Beta Systems"', '[[debtors]]\ncounterparty = "Beta Systems"\ninvoice = "INV-2"');
     const { fixture, exported } = writeBooks(FIXTURE_BOOK, carried);
     expect(() => scoreDataHalves(fixture, exported, unrepresentableScope("bst", INVENTORY))).toThrow(
       /declares book path "debtors\[\]\.invoice" absent for bst/,

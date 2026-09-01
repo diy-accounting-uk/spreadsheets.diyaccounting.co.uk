@@ -1486,7 +1486,7 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
     for (const [letter, analysis] of Object.entries(headings)) {
       const code = soleAccountForLetter.get(letter);
       if (!code || accounts[section]?.[code]) continue;
-      declare(section, code, { accountMainDescription: analysis.heading || `Account ${code}`, "diya-gl:column": analysis.column });
+      declare(section, code, { "accountMainDescription": analysis.heading || `Account ${code}`, "diya-gl:column": analysis.column });
     }
   }
 
@@ -1993,7 +1993,8 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     const letterhead = salesinvoiceZip ? await openSheet(salesinvoiceZip, "Business Details") : null;
     if (letterhead) {
       for (const [field, cell] of Object.entries(SALESINVOICE_ENTITY_CELLS)) {
-        if (entityInformation[field] === undefined) assign(entityInformation, field, textAt(letterhead.xml, cell, letterhead.sharedStrings));
+        if (entityInformation[field] === undefined)
+          assign(entityInformation, field, textAt(letterhead.xml, cell, letterhead.sharedStrings));
       }
       if (entityInformation["diya-gl:vatRegistered"]) {
         assign(entityInformation, "diya-gl:vatNumber", textAt(letterhead.xml, SALESINVOICE_VAT_NUMBER_CELL, letterhead.sharedStrings));

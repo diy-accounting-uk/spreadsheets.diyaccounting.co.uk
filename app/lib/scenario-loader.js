@@ -74,7 +74,9 @@ export function fixedAssetAdditions(scenario, capitalCode) {
  */
 export function registerOfficers(scenario) {
   if (scenario?.directors?.length > 0) return scenario.directors;
-  return (scenario?.employees || []).filter((employee) => employee.isDirector).map((employee) => ({ name: employee.name, role: "Director" }));
+  return (scenario?.employees || [])
+    .filter((employee) => employee.isDirector)
+    .map((employee) => ({ name: employee.name, role: "Director" }));
 }
 
 export function loadScenario(path) {
