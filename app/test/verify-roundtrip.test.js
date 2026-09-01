@@ -1036,3 +1036,76 @@ describe("roundtrip-unrepresentable.json's book-field declarations", () => {
     }
   });
 });
+
+// Every dotted path a book.toml can carry, in the pattern form a declaration
+// writes: an array of tables as "[]", a table keyed on anything but a fixed
+// name as "*". A declaration whose path is not one of these is a typo, and
+// nothing else would catch it -- a pattern that matches no path declares
+// nothing and is silent by design, because another fixture may simply not
+// carry the field.
+function schemaBookPaths() {
+  const schema = JSON.parse(
+    readFileSync(resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "schema", "diya-gl-book-v2.schema.json"), "utf8"),
+  );
+  const paths = new Set();
+  const deref = (node) =>
+    node?.$ref
+      ? node.$ref
+          .replace(/^#\//, "")
+          .split("/")
+          .reduce((target, segment) => target[segment], schema)
+      : node;
+
+  const walk = (node, prefix) => {
+    const resolved = deref(node);
+    if (!resolved) return;
+    if (resolved.type === "array") return walk(resolved.items, `${prefix}[]`);
+    const named = resolved.properties || {};
+    const keyed = resolved.patternProperties || {};
+    if (Object.keys(named).length === 0 && Object.keys(keyed).length === 0) {
+      if (prefix) paths.add(prefix);
+      return;
+    }
+    for (const [key, child] of Object.entries(named)) walk(child, prefix ? `${prefix}.${key}` : key);
+    for (const child of Object.values(keyed)) walk(child, prefix ? `${prefix}.*` : "*");
+  };
+
+  walk(schema, "");
+  return paths;
+}
+
+describe("every declared book path is one the schema can produce", () => {
+  const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
+
+  it("names no path the published book schema has no place for", () => {
+    const legal = schemaBookPaths();
+    const strays = (inventory.bookFields || []).map((entry) => entry.path).filter((path) => !legal.has(path));
+    expect(strays).toEqual([]);
+  });
+});
+
+describe("a declaration the book states no path for", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  it("stays silent, because another fixture may simply not carry the field", () => {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-unexercised-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    const line = { sourceJournalID: "sales", postingDate: "2025-04-01", accountMainID: "4000", amount: 100 };
+    for (const target of [fixture, exported]) {
+      writeFileSync(join(target, "lines.jsonl"), JSON.stringify(line) + "\n");
+      writeFileSync(join(target, "book.toml"), '[documentInfo]\nlanguage = "en"\n');
+    }
+    const inventory = { bookFields: [{ path: "stock.openingValue", products: ["ltd"], reason: "the sheet keeps no opening value" }] };
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", inventory));
+    expect(score.book.declared).toBe(0);
+    expect(score.book.missing).toBe(0);
+  });
+});

@@ -638,13 +638,15 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   const bookDeclared = [];
   const bookDiffering = [];
   let bookEqual = 0;
-  const matchedDeclarations = new Set();
+  const explainedAnAbsence = new Set();
+  const exercised = new Set();
   for (const [path, value] of fixtureFlat) {
+    const declaration = declarationFor(scope, path);
+    if (declaration !== undefined) exercised.add(declaration);
     if (!exportedFlat.has(path)) {
-      const declaration = declarationFor(scope, path);
       if (declaration === undefined) bookMissing.push(path);
       else {
-        matchedDeclarations.add(declaration);
+        explainedAnAbsence.add(declaration);
         bookDeclared.push(path);
       }
     } else if (exportedFlat.get(path) === value) bookEqual++;
@@ -652,15 +654,18 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   }
   const bookExtra = [...exportedFlat.keys()].filter((path) => !fixtureFlat.has(path));
 
-  // A declaration that matches nothing this run left out is stale: either the
-  // export has started carrying the field, or the path was renamed or
-  // mistyped. Either way the reason it states no longer describes anything,
-  // so it throws rather than sitting in the file counting for nothing.
+  // A declaration this book states a path for, and whose every stated path
+  // the export turns out to carry, no longer describes anything: the absence
+  // it excused has been closed. It throws rather than sitting in the file
+  // counting for nothing. A declaration the book states no path for at all
+  // is a different case -- another fixture simply does not carry the field --
+  // and stays silent, because the four scored packages are not the only books
+  // this comparator runs on.
   for (const pattern of scope.bookPaths.keys()) {
-    if (matchedDeclarations.has(pattern)) continue;
+    if (!exercised.has(pattern) || explainedAnAbsence.has(pattern)) continue;
     throw new Error(
       `roundtrip-unrepresentable.json declares book path "${pattern}" absent for ${scope.product ?? "this product"}, ` +
-        `but this run's export carries it (or the fixture no longer states it) -- the declaration matches nothing`,
+        `but this run's export carries every path the book states for it -- the declaration explains nothing`,
     );
   }
 
