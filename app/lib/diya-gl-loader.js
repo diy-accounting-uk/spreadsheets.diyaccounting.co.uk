@@ -424,13 +424,15 @@ export function diyaGlToScenario(book, lines, product) {
 
   // A purchase coded f capitalises out of the profit and loss account, and
   // earns its capital allowance only once the same asset is registered on the
-  // Fixed Assets schedule. The scenario extractor derives the BST additions
-  // from those purchases, and this path derives them by the same rule, so a
-  // package built from exported data claims what a package built from the
-  // fixture claims. The Taxi schedule takes vehicles only and the SE and Ltd
+  // Fixed Assets schedule. The scenario extractor derives the BST and Taxi
+  // additions from those purchases, and this path derives them by the same
+  // rule, so a package built from exported data claims what a package built
+  // from the fixture claims. Without it the two single-file writers fall back
+  // to scenario-loader's own derivation, which has only the supplier name to
+  // put in both the description and the reference column. The SE and Ltd
   // schedules are written from their own asset journals, so neither derives
   // its additions from the purchase journal.
-  if (product === "bst") {
+  if (product === "bst" || product === "taxi") {
     const additions = purchaseLines
       .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
       .map((l) => ({

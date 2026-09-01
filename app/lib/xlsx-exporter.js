@@ -838,9 +838,48 @@ const SCHEDULE_EXISTING_ASSET_ROWS = {
 const SCHEDULE_ASSET_COLUMNS = { description: "C", cost: "E", accumulatedDepreciation: "F", taxWrittenDownValue: "O" };
 const SCHEDULE_DISPOSAL_COLUMNS = ["U", "V"];
 
+// The single-file products keep one Fixed Assets sheet inside the workbook
+// and their writers fill only its in-year addition block: BST the Plant &
+// Machinery "NEW FIXED ASSETS Bought AFTER" rows, Taxi the "Vehicles under
+// £12,000 bought after" rows. Each block's extent is its own sub-total
+// formula (BST "Fixed Assets"!E72 = SUM(E67:E71), Taxi D52 = SUM(D47:D51)).
+// The reference column beside each row (BST D, Taxi C) takes the buying
+// document's reference, not an identifier for the asset, so it is not read
+// back as one.
+const SINGLE_FILE_ASSET_BLOCKS = {
+  bst: { sheet: "Fixed Assets", rows: [67, 68, 69, 70, 71], acquiredDate: "B", description: "C", cost: "E" },
+  taxi: { sheet: "Fixed Assets", rows: [47, 48, 49, 50, 51], acquiredDate: "A", description: "B", cost: "D" },
+};
+
 async function scheduleSheet(sourceDir) {
   const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
   return zip ? openSheet(zip, "Schedule") : null;
+}
+
+/**
+ * The fixed asset register a single-file product's Fixed Assets sheet
+ * carries: one entry per filled row of its in-year addition block.
+ * @param {string} sourceDir - the populated package
+ * @param {string} product - bst or taxi
+ */
+async function singleFileAssetRegisterFrom(sourceDir, product) {
+  const layout = SINGLE_FILE_ASSET_BLOCKS[product];
+  if (!layout) return [];
+  const zip = await openWorkbook(sourceDir, findXlsxName(sourceDir));
+  const sheet = zip ? await openSheet(zip, layout.sheet) : null;
+  if (!sheet) return [];
+  const { xml, sharedStrings } = sheet;
+
+  const assets = [];
+  for (const row of layout.rows) {
+    const cost = numberAt(xml, `${layout.cost}${row}`, sharedStrings);
+    if (cost === undefined || cost === 0) continue;
+    const asset = { cost };
+    assign(asset, "description", textAt(xml, `${layout.description}${row}`, sharedStrings));
+    assign(asset, "acquiredDate", dateAt(xml, `${layout.acquiredDate}${row}`, sharedStrings));
+    assets.push(asset);
+  }
+  return assets;
 }
 
 /**
@@ -849,11 +888,17 @@ async function scheduleSheet(sourceDir) {
  * they reach the Schedule through their own "fa"-coded purchase line, so
  * reading their rows back as opening assets would enter each of them twice.
  * @param {string} sourceDir - the populated package
- * @param {string} product - se or ltd; the other two keep no asset classes
+ * @param {string} product - bst, taxi, se or ltd
  */
 async function fixedAssetRegisterFrom(sourceDir, product) {
   const blocks = SCHEDULE_EXISTING_ASSET_ROWS[product];
-  if (!blocks) return [];
+  if (!blocks) {
+    // The single-file products have no asset classes and no opening block:
+    // their register is the in-year additions their own Fixed Assets sheet
+    // records, numbered the same way as the Schedule's below.
+    const singleFile = await singleFileAssetRegisterFrom(sourceDir, product);
+    return singleFile.map((asset, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
+  }
   const sheet = await scheduleSheet(sourceDir);
   if (!sheet) return [];
   const { xml, sharedStrings } = sheet;
@@ -883,6 +928,67 @@ async function fixedAssetRegisterFrom(sourceDir, product) {
   // numbers its entries in the order it declares them. Sorting the book's
   // arrays by id then hands the next pass that same order back.
   return ordered.map(({ asset }, index) => ({ assetID: `FA-${String(index + 1).padStart(4, "0")}`, ...asset }));
+}
+
+// Fixedassets.xlsx HPfinance, the "New Hire Purchase Agreements" block: one
+// agreement a row, every column labelled on row 5 (B "Agreement Date", C
+// "Finance Company", D "Agreement Reference", E "Total Amount Financed
+// excluding Admin & Interest", F "Admin Charges", G "Total Interest
+// Charged", H "Number of Months") plus L "Enter Supplier Name as entered on
+// Purchase Spreadsheet". Columns I to K are the sheet's own monthly
+// payment, capital and interest formulas, derived from those, so nothing
+// there is read back. The block runs as far as the sheet's own long-term
+// creditor total in E2 reaches: SUM(E8:E14) on the SE template and
+// SUM(E8:E26) on the Ltd one.
+const HP_FINANCE_ROWS = { se: [8, 14], ltd: [8, 26] };
+const HP_FINANCE_COLUMNS = {
+  startDate: "B",
+  financeCompany: "C",
+  agreementID: "D",
+  amountFinanced: "E",
+  adminCharges: "F",
+  totalInterest: "G",
+  termMonths: "H",
+  supplier: "L",
+};
+
+/**
+ * The hire purchase agreements the HPfinance sheet carries, one entry per
+ * row that names an amount financed.
+ * @param {string} sourceDir - the populated package
+ * @param {string} product - se or ltd; the single-file templates have no HP sheet
+ */
+async function hpAgreementsFrom(sourceDir, product) {
+  const extent = HP_FINANCE_ROWS[product];
+  if (!extent) return [];
+  const zip = await openWorkbook(sourceDir, "Fixedassets.xlsx");
+  const sheet = zip ? await openSheet(zip, "HPfinance") : null;
+  if (!sheet) return [];
+  const { xml, sharedStrings } = sheet;
+
+  const agreements = [];
+  for (let row = extent[0]; row <= extent[1]; row++) {
+    const amountFinanced = numberAt(xml, `${HP_FINANCE_COLUMNS.amountFinanced}${row}`, sharedStrings);
+    if (amountFinanced === undefined || amountFinanced === 0) continue;
+    const agreement = { amountFinanced };
+    assign(agreement, "agreementID", textAt(xml, `${HP_FINANCE_COLUMNS.agreementID}${row}`, sharedStrings));
+    assign(agreement, "financeCompany", textAt(xml, `${HP_FINANCE_COLUMNS.financeCompany}${row}`, sharedStrings));
+    assign(agreement, "supplier", textAt(xml, `${HP_FINANCE_COLUMNS.supplier}${row}`, sharedStrings));
+    // The schema requires these three on every agreement, so a cell left at
+    // nil is carried as the nil it is rather than dropped the way an
+    // optional field would be.
+    for (const field of ["adminCharges", "totalInterest", "termMonths"]) {
+      const value = numberAt(xml, `${HP_FINANCE_COLUMNS[field]}${row}`, sharedStrings);
+      if (value !== undefined) agreement[field] = value;
+    }
+    assign(agreement, "startDate", dateAt(xml, `${HP_FINANCE_COLUMNS.startDate}${row}`, sharedStrings));
+    // The schema keys an agreement by its own reference, which is what a
+    // purchase line's diya-gl:hpAgreement names. A row that leaves the
+    // reference cell blank is numbered in the order the sheet reads.
+    if (agreement.agreementID === undefined) agreement.agreementID = `HP-${String(agreements.length + 1).padStart(4, "0")}`;
+    agreements.push(agreement);
+  }
+  return agreements;
 }
 
 async function extractSeOpeningFixedAssets(sourceDir, period) {
@@ -1701,8 +1807,8 @@ async function stockFrom(hubZip, product) {
  * period, the company's own details, the chart of accounts the transaction
  * sheets name, the year's tax rate tables reconstructed by provenance off
  * the Admin sheet's declared year (see taxTablesForPackage), and whatever
- * registers the product keeps (stock, opening balances, employees,
- * directors, members, charges, dividends).
+ * registers the product keeps (stock, opening balances, fixed assets, hire
+ * purchase agreements, employees, directors, members, charges, dividends).
  *
  * @param {string} sourceDir - the populated package
  * @param {string} product - bst, taxi, se or ltd
@@ -1791,6 +1897,9 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
 
   const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
+
+  const hpAgreements = await hpAgreementsFrom(sourceDir, product);
+  if (hpAgreements.length > 0) book.hpAgreements = hpAgreements;
 
   if (product === "ltd") {
     const openingBalances = await openingBalancesFrom(hubZip);
