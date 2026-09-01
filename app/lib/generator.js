@@ -1528,7 +1528,6 @@ export async function reorientPayslipsMonthTabPeriods(xlsxBuffer, yearEndDate, p
 // The row a tab's director figures sit on follows the weeks that tab's month
 // holds, so it moves when the tab does -- which is why this is generated per
 // year end rather than fixed in the template.
-const PAYMENT_SCHEDULE_FIRST_ROW = 4;
 // The columns each row reads its month tab through: row 1 aggregates for the
 // employees' figures, the director block's own rows for the statutory pay the
 // company recovers.
@@ -1554,7 +1553,7 @@ export async function realignPayslipsPaymentSchedule(xlsxBuffer, yearEndMonth, p
   let paymentXml = await zip.file(paymentPath).async("string");
 
   for (let taxMonth = 0; taxMonth < 12; taxMonth++) {
-    const row = PAYMENT_SCHEDULE_FIRST_ROW + taxMonth;
+    const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
     // The tab the rename pass left this row reading, and the one the tax
     // month's own calendar month names.
     const readTab = targetTabs[taxMonth];
