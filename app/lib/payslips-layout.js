@@ -158,6 +158,28 @@ export function payrollRecordOpened(payroll, parse) {
   return earliest;
 }
 
+// ── The PAYE remittance schedule (the Payment sheet) ────────────────────────
+//
+// One row per tax month from row 4. B holds the month end and C the day the
+// payment falls due, both read off the Admin payroll calendar at a fixed row,
+// so each is the payroll year's first day plus a fixed number of days. The
+// rows are the same on every package, whatever its year end, because the tax
+// calendar is.
+export const PAYE_SCHEDULE_FIRST_ROW = 4;
+export const PAYE_MONTH_END_DAYS = [24, 55, 85, 116, 147, 177, 208, 238, 269, 300, 328, 359];
+export const PAYE_DUE_DATE_DAYS = [43, 74, 104, 135, 166, 196, 227, 257, 288, 319, 348, 379];
+
+// The month tab each row takes its figures from: the tab named for the
+// calendar month that tax month ends in, which is the tab a month's payroll is
+// written to. Row 4 is April whatever the package's year end, so this list
+// does not move with the tabs.
+export const PAYE_SCHEDULE_MONTH_TABS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+// The row-1 aggregates a schedule row reads its month tab through. The
+// schedule owes HMRC the whole month's figures, so these are the tab's own
+// totals rather than either side of the employee/director split.
+export const PAYE_SCHEDULE_MONTH_TAB_CELLS = { employerNI: "T1", employeeNI: "O1", incomeTax: "N1", studentLoan: "P1" };
+
 // The Payslips sheet is the page an employer prints and hands over. F3 picks
 // weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
 // a month tab name and a block start row, and every printed figure is an

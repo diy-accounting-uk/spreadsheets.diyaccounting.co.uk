@@ -28,6 +28,11 @@ import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporat
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_DUE_DATE_DAYS,
+  PAYE_MONTH_END_DAYS,
+  PAYE_SCHEDULE_FIRST_ROW,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  PAYE_SCHEDULE_MONTH_TABS,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
@@ -702,7 +707,8 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const employeePayroll = payrollByTab(payrollEntries, (index) => !isDirectorsLine(index));
   const directorPayroll = payrollByTab(payrollEntries, isDirectorsLine);
   results.WagesInterface = buildWagesInterface(employeePayroll, directorPayroll, tabs);
-  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
+  const yearStart = payrollYearStart(payrollYearOf(taxData, period));
+  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, serialOf(yearStart));
   results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period, tabs);
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
     const monthTab = buildPayslipsMonthTab(monthIndex, payrollEntries[tabs[monthIndex]] || []);
@@ -710,13 +716,18 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     results[`Payslips.xlsx!${tabs[monthIndex]}`] = monthTab;
   }
   // Every month tab opens its monthly payroll block with the day the month it
-  // is named for begins, so all twelve carry that one cell whether the
+  // is named for begins, and carries its own whole-month totals on row 1 for
+  // the PAYE schedule to read, so all twelve carry those cells whether the
   // reconciliation reads the rest of the tab or not.
-  const yearStart = payrollYearStart(payrollYearOf(taxData, period));
   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-    const key = `Payslips.xlsx!${tabs[monthIndex]}`;
+    const tab = tabs[monthIndex];
+    const key = `Payslips.xlsx!${tab}`;
     if (!results[key]) results[key] = {};
     results[key][payslipsPeriodStartCell(monthIndex)] = serialOf(payslipsMonthPeriod(period.start, monthIndex, yearStart).first);
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employerNI] = payroll[tab].employerNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = payroll[tab].employeeNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = payroll[tab].incomeTax;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
   }
   results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
 
@@ -913,13 +924,19 @@ function buildWagesInterface(employeePayroll, directorPayroll, tabs) {
   return sheet;
 }
 
-// Payment column D is the National Insurance due, employer and employee, E
-// the income tax and I the whole amount payable. The statutory pay and
-// student loan columns the total also carries stay nil.
-function buildPayslipsPayment(payroll, tabs) {
+// The PAYE remittance schedule, one row per tax month from row 4. B is the
+// month end and C the day the payment falls due, both counted off the payroll
+// year's first day. D is the National Insurance due, employer and employee, E
+// the income tax and I the whole amount payable; the statutory pay and student
+// loan columns the total also carries stay nil. A row takes the month tab
+// named for the calendar month its tax month ends in, so row 4 is April
+// whatever the package's year end.
+function buildPayslipsPayment(payroll, yearStartSerial) {
   const sheet = {};
-  tabs.forEach((tab, index) => {
-    const row = 4 + index;
+  PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
+    const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+    sheet[`B${row}`] = yearStartSerial + PAYE_MONTH_END_DAYS[taxMonth];
+    sheet[`C${row}`] = yearStartSerial + PAYE_DUE_DATE_DAYS[taxMonth];
     const nationalInsurance = payroll[tab].employerNI + payroll[tab].employeeNI;
     sheet[`D${row}`] = nationalInsurance;
     sheet[`E${row}`] = payroll[tab].incomeTax;
