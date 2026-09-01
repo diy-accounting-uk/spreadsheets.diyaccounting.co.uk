@@ -13,6 +13,7 @@ import {
   LTD_PURCHASE_CODE_MAP,
   LTD_SALES_CODE_MAP,
   TAXI_PURCHASE_CODE_MAP,
+  TAXI_BST_PURCHASE_CODE_MAP,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -37,6 +38,52 @@ function filterTaxi(lines) {
   return lines.filter((line) => {
     if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
     if (line.sourceJournalID === "purchases") return TAXI_PURCHASE_CODE_MAP[line.accountMainID] !== undefined;
+    return false;
+  });
+}
+
+// A book declares its own chart of accounts under book.toml's
+// [accounts.purchases] tables, but BST_PURCHASE_CODE_MAP assumes the Basic
+// Sole Trader master's own numbering. sp-sixty (and any book kept on the
+// Taxi Driver masters' chart) numbers the same categories differently: 5900
+// is "Legal and professional" there, not BST's fixed assets, and 7000 is a
+// fixed asset account BST_PURCHASE_CODE_MAP has no entry for at all, so its
+// line drops out of every total silently.
+//
+// Rather than guess a code from an account's free-text description, prefer
+// whichever known chart's keys are a superset of the book's own declared
+// purchase accounts -- exactly the coverage bstAccountFilter() already
+// builds into every generator-shaped BST fixture (precision-code-ltd,
+// brickwork-pro), so this changes nothing for them: BST_PURCHASE_CODE_MAP
+// covers their declared chart and is chosen first. A book that declares no
+// chart at all has nothing to compare against, so it takes the plain map.
+const BST_PURCHASE_CODE_MAP_CANDIDATES = [BST_PURCHASE_CODE_MAP, TAXI_BST_PURCHASE_CODE_MAP];
+
+function purchaseCodeMapCoversChart(declaredAccounts, purchaseCodeMap) {
+  return declaredAccounts.every((account) => purchaseCodeMap[account] !== undefined);
+}
+
+/**
+ * Pick the purchase code map whose keys cover every purchase account a BST
+ * book's own chart declares, falling back to BST_PURCHASE_CODE_MAP when no
+ * candidate covers the chart (or the book declares none).
+ * @param {Object} book - parsed book.toml
+ * @returns {Object} accountMainID -> BST code letter
+ */
+export function resolveBstPurchaseCodeMap(book) {
+  const declaredAccounts = Object.keys(book.accounts?.purchases || {});
+  if (declaredAccounts.length === 0) return BST_PURCHASE_CODE_MAP;
+  const match = BST_PURCHASE_CODE_MAP_CANDIDATES.find((map) => purchaseCodeMapCoversChart(declaredAccounts, map));
+  return match || BST_PURCHASE_CODE_MAP;
+}
+
+// filterBst (scenario-extractor.js) is hardcoded to BST_PURCHASE_CODE_MAP --
+// the same problem filterTaxi above works around for the Taxi chart, mirrored
+// here for a BST book whose own declared chart resolves to a different map.
+function filterBstChart(lines, purchaseCodeMap) {
+  return lines.filter((line) => {
+    if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
+    if (line.sourceJournalID === "purchases") return purchaseCodeMap[line.accountMainID] !== undefined;
     return false;
   });
 }
@@ -161,8 +208,8 @@ export function diyaGlToScenario(book, lines, product) {
   const filter = PRODUCT_FILTERS[product];
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
-  const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
-  let filteredLines = filter(lines);
+  const purchaseCodeMap = product === "bst" ? resolveBstPurchaseCodeMap(book) : PURCHASE_CODE_MAPS[product];
+  let filteredLines = product === "bst" ? filterBstChart(lines, purchaseCodeMap) : filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   // Every product whose cellWrites fills a mileage column takes the miles,
   // and only the Taxi Driver package takes a sales line's (see the note on

@@ -157,16 +157,20 @@ const FIXTURES = [
     // The no-ledger, mileage route: this book's own chart of accounts
     // numbers its purchase codes the way the Taxi Driver masters do (5100 is
     // Fuel, not BST's Directors wages), so BST_PURCHASE_CODE_MAP -- keyed by
-    // account number, not by the book's own accountMainDescription -- reads
-    // several of this fixture's accounts under a different BST code than
-    // their label names. Every edit below is anchored to a code letter
-    // verified against calculateFromDiyaGl's own output, not to the
+    // account number, not by the book's own accountMainDescription --
+    // diya-gl-loader.js's resolveBstPurchaseCodeMap() reads this book's own
+    // declared chart under [accounts.purchases] and resolves it to
+    // TAXI_BST_PURCHASE_CODE_MAP (the Taxi Driver masters' numbering, read
+    // onto BST's codes), not the generic BST_PURCHASE_CODE_MAP. Every edit
+    // below is anchored to a code letter verified against
+    // calculateFromDiyaGl's own output under that resolved map, not to the
     // account's plain-English description.
     name: "bst-sp-sixty",
     dir: resolve(ROOT, "examples", "sp-sixty-driving", "bst"),
     // Account 5400 ("Road tax and insurance" in this book's own chart) reads
-    // under BST_PURCHASE_CODE_MAP as code "r", landing on C13 (Repairs &
-    // Maintenance) -- not on Other Expenses, which its label might suggest.
+    // under TAXI_BST_PURCHASE_CODE_MAP as code "o", landing on C21 (Other
+    // Expenses) -- not on Repairs & Maintenance, which BST_PURCHASE_CODE_MAP
+    // (built for a BST-numbered chart) would have read it as.
     addPurchase: {
       line: {
         entryNumber: "TEST-ADD-PURCHASE-1",
@@ -180,7 +184,7 @@ const FIXTURES = [
         taxRate: 0,
       },
       amount: 95,
-      categoryCell: "C13",
+      categoryCell: "C21",
     },
     addSale: {
       line: {
@@ -206,8 +210,8 @@ const FIXTURES = [
     // Taxi's carriesMileage="all"; BST's "claims" mode reads purchases
     // only), so changing its amount moves no motoring figure.
     changeSaleLine: { entryNumber: "TXN-0001", newAmount: 214, delta: 40, monthCell: "D4" },
-    // TXN-0182: DVLA, account 5400 (code "r"), 180 on 2025-04-06.
-    changePurchaseLine: { entryNumber: "TXN-0182", newAmount: 235, delta: 55, categoryCell: "C13" },
+    // TXN-0182: DVLA, account 5400 (code "o"), 180 on 2025-04-06.
+    changePurchaseLine: { entryNumber: "TXN-0182", newAmount: 235, delta: 55, categoryCell: "C21" },
   },
 ];
 
