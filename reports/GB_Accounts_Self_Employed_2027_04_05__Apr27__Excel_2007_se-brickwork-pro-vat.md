@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-brickwork-pro-vat
-Status: RECONCILES
+Status: RECONCILES (with warnings)
 
 Construction sole trader, CIS sub-contractors, one labourer on the payroll. Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. The trade scales 1.5 times against the non-VAT twin of this scenario, but both buy the same van at the same £12,000 net cost, so the £14,400 here is that same asset with VAT on it and net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil.
 
@@ -142,6 +142,7 @@ Trade: Bricklaying, plastering and general building
 | SA103F: the period the return covers ends on the Admin tax year end (V2 = B17) | 46482 | 46482 | 0 | PASS |
 | SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5) | 0.14 | 0.14 | 0 | PASS |
 | SA103F: the Class 4 threshold the return prints (J280) = the Admin Class 4 lower limit (N20) | 12570 | 12570 | 0 | PASS |
+| SA103F: the online filing deadline banner (G1) names 31 January the year after the tax year ends | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 |  | PASS |
 | Fixed assets: Schedule new-asset additions = Purchases.xlsx fixed asset total | 12000 | 12000 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 0 | 0 | 0 | PASS |
 | Fixed assets: Schedule new-asset additions (FAreconciliation E11) = scenario fa-coded net total | 12000 | 12000 | 0 | PASS |
@@ -453,7 +454,73 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment mar D15 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment mar E15 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment mar I15 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips print: the page reads the May tab | May | May |  | PASS |
+| Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
+| Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
+| Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
+| Payslips print: gross pay is the pay the scenario recorded | 1500 | 1500 | 0 | PASS |
+| Payslips print: income tax is the tax the scenario recorded | 90.5 | 90.5 | 0 | PASS |
+| Payslips print: national insurance is the employee NI the scenario recorded | 36.2 | 36.2 | 0 | PASS |
+| Payslips print: net pay is the net pay the scenario recorded | 1373.3 | 1373.3 | 0 | PASS |
+| Payslips print: gross pay to date is every month printed so far | 3000 | 3000 | 0 | PASS |
+| Payslips print: income tax to date is every month printed so far | 181 | 181 | 0 | PASS |
+| Payslips print: national insurance to date is every month printed so far | 72.4 | 72.4 | 0 | PASS |
+| Payslips print: net pay to date is every month printed so far | 2746.6 | 2746.6 | 0 | PASS |
+| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
+| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45805 | 0 |  | **WARNING** |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 18000 | 18000 | 0 | PASS |
+| Payslips!Jul F51 employee name | Tom Davies | Tom Davies |  | PASS |
+| Payslips!Jul M51 gross pay | 1500 | 1500 | 0 | PASS |
+| Payslips!Jul N51 income tax | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Jul O51 employee NI | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Jul R51 net pay | 1373.3 | 1373.3 | 0 | PASS |
+| Payslips!Jul T51 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Jul S51 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
+| Payslips!Jul M49 wages paid date | 45866 | 45866 | 0 | PASS |
+| Payslips!Aug F51 employee name | Tom Davies | Tom Davies |  | PASS |
+| Payslips!Aug M51 gross pay | 1500 | 1500 | 0 | PASS |
+| Payslips!Aug N51 income tax | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Aug O51 employee NI | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Aug R51 net pay | 1373.3 | 1373.3 | 0 | PASS |
+| Payslips!Aug T51 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Aug S51 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
+| Payslips!Aug M49 wages paid date | 45897 | 45897 | 0 | PASS |
+| Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F14 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul F15 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Jul T41 period total (no weekly employer NI to bring forward) | 0 | 0 | 0 | PASS |
+| Payslips!Aug H11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L11 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M11 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K12 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M12 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K13 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M13 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K14 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M14 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Aug H15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug I15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug J15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug L15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug K15 brought forward from Jul (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Aug M15 brought forward from Jul (no weekly cycle carried over) |  |  |  | PASS |
 | VAT Q1: box 3 total (G13) = box 1 (G9) + EU acquisitions (G11) | 5610 | 5610 | 0 | PASS |
 | VAT Q1: box 5 net due (G17) = box 3 (G13) - box 4 (G15) | 1821 | 1821 | 0 | PASS |
 | VAT Q1: payment due date (G7) falls after the quarter end (G5) | 1 | 1 | 0 | PASS |
@@ -612,6 +679,7 @@ Trade: Bricklaying, plastering and general building
 | Admin: Mileage Lower Rate Pence = tax data | 0.25 | 0.25 | 0 | PASS |
 | Admin: VAT Registration Threshold = tax data | 90000 | 90000 | 0 | PASS |
 | Admin: VAT Standard Rate = tax data | 0.2 | 0.2 | 0 | PASS |
+| Admin: Amounts Payable By date (B21) = 31 January the year after the tax year ends | 46783 | 46783 | 0 | PASS |
 | Payslips calendar: the payroll year starts on the accounts tax year start (B2 = Admin B4) | 46118 | 46118 | 0 | PASS |
 | Payslips calendar: the year the calendar runs to (I1) = the accounts tax year end (Admin B17) | 46482 | 46482 | 0 | PASS |
 | Payslips calendar: the tax year the payslips print (N1) = the tax year the package was generated for | 2026-27 | 2026-27 |  | PASS |
@@ -654,6 +722,12 @@ Trade: Bricklaying, plastering and general building
 | Category netting: Other Expenses (purchases y) net reaches Profit & Loss Account!B32 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Purchases after stock adjustment, less the year's stock movement (purchases s) net reaches Profit & Loss Account!B14 less the stock movement with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Capitalised fixed asset spend (purchases fa) net reaches Fixedassets.xlsx!FAreconciliation!E11 with no residue | 0 | 0 | 0 | PASS |
+| Salesinvoice Product Details: VAT Rate = the tax year's standard rate | 20 | 20 | 0 | PASS |
+| Salesinvoice: line VAT = price x quantity x the tax year's standard rate | 1638 | 1638 | 0 | PASS |
+| Salesinvoice: net total = the invoice's one line | 8190 | 8190 | 0 | PASS |
+| Salesinvoice: carriage charge lands on the invoice | 37.5 | 37.5 | 0 | PASS |
+| Salesinvoice: VAT total = line VAT plus carriage VAT at the tax year's standard rate | 1645.5 | 1645.5 | 0 | PASS |
+| Salesinvoice: amount payable = net plus carriage plus VAT | 9873 | 9873 | 0 | PASS |
 
 ## Accounting profit to tax profit bridge
 
@@ -1361,6 +1435,7 @@ Journal amounts include VAT at 20%.
 | D219 | Adjusted loss (box 77) | 0 | gl-cor:amount (sa103f.adjustedLoss) |
 | O224 | Total loss to carry forward (box 80) | 0 | gl-cor:amount (sa103f.lossCarriedForward) |
 | D231 | Contractor deductions taken off (box 81) | 0 | diya-gl:cisDeduction (sa103f) |
+| G1 |  | COPY DETAILS TO HMRC FORM          Submit HMRC RETURN ONLINE                   by 31st January 2028 |  |
 | Q2 |  | 46118 |  |
 | V2 |  | 46482 |  |
 | G141 |  | 0.14 |  |
@@ -1461,6 +1536,7 @@ Journal amounts include VAT at 20%.
 | F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 | B4 |  | 46118 |  |
 | B17 |  | 46482 |  |
+| B21 |  | 46783 |  |
 
 ### StockControl
 
@@ -2022,7 +2098,7 @@ Journal amounts include VAT at 20%.
 | G1 | Total net book value brought forward (cost less depreciation brought forward) | 0 |  |
 | I1 | Total depreciation charged for the year | 1200 |  |
 | J1 | Total accumulated depreciation carried forward (brought forward plus the charge) | 1200 |  |
-| K1 | Total net book value carried forward (E1 less J1), assets sold in the year still included | 10800 |  |
+| K1 | Total net book value carried forward, disposals removed | 10800 |  |
 | Q1 | Total annual investment allowance claimed | 12000 |  |
 | R1 | Total writing down allowance claimed | 0 |  |
 | S1 | Total tax written down value carried forward | 0 |  |
@@ -2092,6 +2168,26 @@ Journal amounts include VAT at 20%.
 | E15 |  | 90.5 |  |
 | I15 |  | 126.7 |  |
 
+### Payslips.xlsx!Payslips
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H3 |  | May |  |
+| H4 |  | 48 |  |
+| L7 |  | MONTHLY PAYROLL |  |
+| I9 |  | 45805 |  |
+| I10 |  | 2 |  |
+| M8 |  | 1 |  |
+| G14 |  | 1500 |  |
+| H14 |  | 90.5 |  |
+| I14 |  | 36.2 |  |
+| M14 |  | 1373.3 |  |
+| G16 |  | 3000 |  |
+| H16 |  | 181 |  |
+| I16 |  | 72.4 |  |
+| M16 |  | 2746.6 |  |
+| M18 |  | 0 |  |
+
 ### Payslips.xlsx!Admin
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -2140,3 +2236,97 @@ Journal amounts include VAT at 20%.
 | A381 |  | Mar |  |
 | B381 |  | 46497 |  |
 | D381 |  | 12 |  |
+
+### Payslips.xlsx!Jul
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T41 |  | 0 |  |
+| M49 |  | 45866 |  |
+| F51 |  | Tom Davies |  |
+| M51 |  | 1500 |  |
+| N51 |  | 90.5 |  |
+| O51 |  | 36.2 |  |
+| R51 |  | 1373.3 |  |
+| S51 |  | PAY-EMP002-2025-07 |  |
+| T51 |  | 0 |  |
+| N52 |  | 0 |  |
+| O52 |  | 0 |  |
+| T52 |  | 0 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| T53 |  | 0 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Payslips.xlsx!Aug
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| H11 |  | 0 |  |
+| I11 |  | 0 |  |
+| J11 |  | 0 |  |
+| L11 |  | 0 |  |
+| H12 |  | 0 |  |
+| I12 |  | 0 |  |
+| J12 |  | 0 |  |
+| L12 |  | 0 |  |
+| K12 |  | 0 |  |
+| H13 |  | 0 |  |
+| I13 |  | 0 |  |
+| J13 |  | 0 |  |
+| L13 |  | 0 |  |
+| K13 |  | 0 |  |
+| H14 |  | 0 |  |
+| I14 |  | 0 |  |
+| J14 |  | 0 |  |
+| L14 |  | 0 |  |
+| K14 |  | 0 |  |
+| H15 |  | 0 |  |
+| I15 |  | 0 |  |
+| J15 |  | 0 |  |
+| L15 |  | 0 |  |
+| K15 |  | 0 |  |
+| M49 |  | 45897 |  |
+| F51 |  | Tom Davies |  |
+| M51 |  | 1500 |  |
+| N51 |  | 90.5 |  |
+| O51 |  | 36.2 |  |
+| R51 |  | 1373.3 |  |
+| S51 |  | PAY-EMP002-2025-08 |  |
+| T51 |  | 0 |  |
+| N52 |  | 0 |  |
+| O52 |  | 0 |  |
+| T52 |  | 0 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| T53 |  | 0 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Salesinvoice.xlsx!Product Details
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| D2 |  | 20 |  |
+
+### Salesinvoice.xlsx!Invoice Template
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| P58 |  | 8190 |  |
+| P60 |  | 37.5 |  |
+| P62 |  | 1645.5 |  |
+| P64 |  | 9873 |  |
+| J38 |  | 8190 |  |
+| L38 |  | 1 |  |
+| P38 |  | 8190 |  |
+| V38 |  | 1638 |  |
