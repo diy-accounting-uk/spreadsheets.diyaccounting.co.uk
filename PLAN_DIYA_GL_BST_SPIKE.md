@@ -186,8 +186,30 @@ They live in the inspector rail (desktop landscape), the drawer (desktop portrai
 Quality floor without announcement: keyboard focus visible throughout, the entries grid fully
 keyboard-editable, WCAG AA contrast on both themes.
 
+## Spike zero — the extractor as a CLI
+
+Before any browser work: extraction alone, as a tool run against a customer's own file.
+
+```
+npm run export-bst -- my-file.xlsx
+```
+
+A thin wrapper over the existing export path (`app/bin/export.js` already does this for a
+package directory): accept one `.xlsx` (or a `.zip`, unzipped to find the workbook), run
+`extractBstTransactions` + `extractBook`, validate against the v2 schemas, and write
+`book.toml` + `lines.jsonl` beside the input (or to `--output-dir`). Errors print the schema
+violations, not a stack trace.
+
+*Verify: run it on a freshly generated BST package and the output matches the CI tuple's
+`data/` byte-for-byte; run it on each of the three fixture-generated packages and the
+verify-roundtrip data half scores the same zeros CI holds.*
+
+This is the smallest end-to-end proof of the import half on arbitrary files, and it is the
+tool half of the Submit VAT extract regardless of whether the page ever ships.
+
 ## Phases
 
+0. **The extractor CLI** (spike zero above).
 1. **Bundle spike.** esbuild bundle of exporter+loader+calculator+checks; a bare page that loads
    the sp-sixty BST fixture xlsx and logs the book, the computed P&L and the check results.
    *Verify: figures and check verdicts match `reconcile.js --package bst` for the same scenario.*
