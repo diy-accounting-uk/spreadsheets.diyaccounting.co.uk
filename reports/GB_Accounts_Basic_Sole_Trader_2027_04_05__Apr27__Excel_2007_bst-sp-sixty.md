@@ -24,6 +24,7 @@ Trade: Private hire and taxi driving services
 | Purchases: business miles carried = the journals' miles | 1674 | 1674 | 0 | PASS |
 | Purchases: mileage claimed = those miles at the tax year's approved rates | 753.3000000000001 | 753.3 | -1.1368683772161603e-13 | PASS |
 | P&L: Motor Expenses = motoring paid for + the mileage claimed | 3233.3 | 3233 | -0.3000000000001819 | PASS |
+| Debtors & Creditors: no ledger declared leaves the block empty | 0 | 0 | 0 | PASS |
 | Fixed Assets: schedule total cost = asset additions | 200 | 200 | 0 | PASS |
 | Fixed Assets: first addition recorded | 200 | 200 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 200 | 200 | 0 | PASS |
@@ -44,8 +45,6 @@ Trade: Private hire and taxi driving services
 | Admin: NI Class 4 Upper Limit = tax data | 50270 | 50270 | 0 | PASS |
 | Admin: AIA Rate = tax data | 1 | 1 | 0 | PASS |
 | Admin: WDA Rate = tax data | 0.14 | 0.14 | 0 | PASS |
-| Admin: Motor Vehicle Cost Threshold = tax data | 12000 | 12000 | 0 | PASS |
-| Admin: Motor Vehicle Restriction = tax data | 3000 | 3000 | 0 | PASS |
 | Admin: Mileage Higher Rate Limit = tax data | 10000 | 10000 | 0 | PASS |
 | Admin: Mileage Higher Rate Pence = tax data | 0.45 | 0.45 | 0 | PASS |
 | Admin: Mileage Lower Rate Start = tax data | 10001 | 10001 | 0 | PASS |
@@ -256,8 +255,6 @@ Trade: Private hire and taxi driving services
 | NI Class 4 Upper Limit | 50,270 |
 | Annual Investment Allowance Rate | 1 |
 | Writing Down Allowance Rate | 0.14 |
-| Motor Vehicle Cost Threshold | 12,000 |
-| Motor Vehicle Restriction | 3,000 |
 | Mileage Higher Rate Limit | 10,000 |
 | Mileage Higher Rate Pence | 0.45 |
 | Mileage Lower Rate Start | 10,001 |
@@ -408,8 +405,6 @@ Trade: Private hire and taxi driving services
 | N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
 | G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.annualInvestmentAllowance |
 | G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
-| E8 | Motor Vehicle Cost Threshold | 12000 | tax.capitalAllowances.motorVehicleCostThreshold |
-| G8 | Motor Vehicle Restriction | 3000 | tax.capitalAllowances.motorVehicleRestriction |
 | F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
 | G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
 | F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
