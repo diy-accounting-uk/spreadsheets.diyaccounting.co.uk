@@ -17,16 +17,20 @@ absences with reasons, never silently closed.
 - [ ] T7: blank-package calendar (Opus, worktree agent) — operator decided (2026-09-01): the
   blank package shows accounting-frame dates; the in-tab calendar reorients with the renamed
   tabs. Dispatched.
-- [ ] asset-attributes + budgets to zero (Opus, worktree agent) — in flight: fixed-asset and
-  HP identity read-back; the upstream closures the registers track reported (non-payroll
-  directors never written from `scenario.directors[]` at `ltd.js:598/659/674`; the payroll
-  Tax Code column `D` never written at `ltd.js:826-844`/`se.js:459-470`; the loader never
-  copies `companyNumber`/`telephone` at `diya-gl-loader.js:~216`); and the declared-absence
-  floor — every remaining missing field is closed or declared with a reason, taking all four
-  `bookFieldsMissing` budgets to zero.
 - [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
   rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
   `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
+- [ ] **Operator review: the ledger decision was departed from.** The asset-attributes track
+  (landed) closed 154 named debtor/creditor ledger fields the 2026-08-31 decision had held as
+  a structural absence — the decision's stated reason ("the sheets total them without
+  per-contact rows") does not hold on the current tree: SE/Ltd keep Opening/Closing
+  Debtors/Creditors sheets with counterparty, invoice and amount columns, and the single-file
+  products keep name+amount pairs. Only BST's `invoice` (no column) stays declared. Reverse
+  the closure if the decision was policy rather than a fact about the templates.
+- [ ] batch closeout, before PR #53's successor goes ready: one clean serial `npm test`
+  sweep on the merged branch (the wave-2 track's own sweep was starved by sibling
+  LibreOffice contention; its blast radius was covered file-by-file and branch CI is running
+  the suite now).
 
 ## Open items
 
