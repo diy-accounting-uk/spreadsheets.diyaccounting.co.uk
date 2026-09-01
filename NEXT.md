@@ -20,13 +20,6 @@ absences with reasons, never silently closed.
 - [ ] fixture-master rate alignment (Sonnet, worktree agent) — in flight: masters carry
   rates from the wrong year file (`class2WeeklyRate = 3.45` vs the generated
   `se-2025-2026.toml`'s 0; Ltd employer-NI matching `ltd-2025.toml` not `ltd-2024.toml`).
-- [ ] **Operator review: the ledger decision was departed from.** The asset-attributes track
-  (landed) closed 154 named debtor/creditor ledger fields the 2026-08-31 decision had held as
-  a structural absence — the decision's stated reason ("the sheets total them without
-  per-contact rows") does not hold on the current tree: SE/Ltd keep Opening/Closing
-  Debtors/Creditors sheets with counterparty, invoice and amount columns, and the single-file
-  products keep name+amount pairs. Only BST's `invoice` (no column) stays declared. Reverse
-  the closure if the decision was policy rather than a fact about the templates.
 - [x] labels-track regression — the SE CELL_MAP deletions had emptied the calculators' read
   scope (`withinReadScope()`) and 13 SE checks with it; restored with schema-correct names
   inside the asset-attributes track. Done when this branch merges.
