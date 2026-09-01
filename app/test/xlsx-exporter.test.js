@@ -86,7 +86,12 @@ const BST_PURCHASE_ANALYSIS = { J2: "Stock Purchases", K2: "Direct other costs",
 function bstSheets({ purchaseRows = {}, salesRows = {} } = {}) {
   return {
     "Business Details": { C5: "BrickWork Pro", C7: "Bricklaying", C8: "12 Kiln Lane", C10: "Bakewell", C12: "DE45 1AA" },
-    "Admin": { N7: 0.2, N4: 12570, L17: 3.45 },
+    // B23 is the tax year label the generator writes as literal text
+    // (buildCellEdits in generator.js); the export reads it back to find
+    // which app/data/se-YYYY-YYYY.toml the tax tables below come from.
+    // "2023-24" names app/data/se-2023-2024.toml, whose personal_allowance,
+    // basic_rate and class2_weekly_rate feed the expectations below.
+    "Admin": { B23: "2023-24" },
     "SalesApr": { A4: APRIL_SEVENTH, B4: "Beta Systems", F4: 1200, ...salesRows },
     "PurchasesApr": { ...BST_PURCHASE_ANALYSIS, A5: APRIL_SEVENTH, B5: "Acme Supplies", E5: "o", G5: 240, ...purchaseRows },
     "PurchasesStock": { D5: 10000, D30: 6000 },
@@ -260,9 +265,9 @@ describe("extractBook", () => {
   });
 
   it("carries the National Insurance rates under the book schema's own names", async () => {
-    // The BST cell map names Admin!L17 and its neighbours the way the book
-    // schema does (class2WeeklyRate, class4MainRate, ...), so the exported
-    // book states them and still validates.
+    // app/data/se-2023-2024.toml's national_insurance fields land under the
+    // book schema's own names (class2WeeklyRate, class4MainRate, ...), so
+    // the exported book states them and still validates.
     const { book } = await exportedBook();
     expect(book.tax.nationalInsurance).toMatchObject({ class2WeeklyRate: 3.45 });
     expect(validateBook(book).valid).toBe(true);
