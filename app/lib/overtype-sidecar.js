@@ -73,6 +73,19 @@ function attribute(sheet, cellRef, extractionMap, reportLabels) {
   return null;
 }
 
+// Reading 64,252 formulas out of the template costs about as much as reading
+// the upload itself, and the template is a file in this repo that does not
+// change while a process runs. One read per path per process.
+const templateFormulasByPath = new Map();
+
+async function templateFormulasAt(templatePath) {
+  if (!templateFormulasByPath.has(templatePath)) {
+    const zip = await JSZip.loadAsync(readFileSync(templatePath));
+    templateFormulasByPath.set(templatePath, await workbookFormulaMap(zip));
+  }
+  return templateFormulasByPath.get(templatePath);
+}
+
 /**
  * Every template formula the upload no longer computes.
  *
@@ -93,8 +106,7 @@ export async function overtypedCells(workbookBuffer, options = {}) {
     isInputCell = isBstInputCell,
   } = options;
 
-  const templateZip = await JSZip.loadAsync(readFileSync(templatePath));
-  const templateFormulas = await workbookFormulaMap(templateZip);
+  const templateFormulas = await templateFormulasAt(templatePath);
 
   const uploadZip = await JSZip.loadAsync(workbookBuffer);
   const uploadSheets = await buildSheetMap(uploadZip);
