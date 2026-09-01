@@ -11,7 +11,10 @@
 //   EQ2, the data half: join the two data/ directories as a multiset of
 //   canonical lines, plus a field-by-field comparison of book.toml. The JS
 //   side writes the original fixture in canonical form, so this compares the
-//   export against the fixture and not against a second export.
+//   export against the fixture and not against a second export. A field the
+//   export leaves out is missing unless roundtrip-unrepresentable.json names
+//   a reason for it, in which case it is counted as declared instead, so a
+//   real loss and a structural absence are never confused.
 //
 // A diff -r line count moves when a report section is added, when a label is
 // reworded, and when a value changes, and the three are indistinguishable.
@@ -417,7 +420,70 @@ function validateInventoryEntry(entry, index) {
 
 // A scope with no declarations, for a call site that has no inventory file
 // or is scoring a product the inventory names nothing for.
-const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map() };
+const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new Map(), bookPaths: new Map() };
+
+// A book path pattern stands for every index of an array-of-tables entry, so
+// one declaration covers a register however many rows it has. flattenBook
+// writes an index into each array path (debtors[3].invoice); a pattern writes
+// empty brackets (debtors[].invoice) and matches them all.
+function bookPathPattern(path) {
+  return path.replace(/\[\d+\]/g, "[]");
+}
+
+// A pattern may also put "*" where a whole dotted segment goes, which is what
+// a table keyed by something other than an index needs: the chart of accounts
+// keys on the account code, so accounts.sales.*.diya-gl:column stands for
+// every sales account at once.
+const WILDCARD_SEGMENT = "*";
+
+function bookPathMatcher(pattern) {
+  const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^${escaped.split("\\*").join("[^.]+")}$`);
+}
+
+function validateBookFieldEntry(entry, index) {
+  const where = `roundtrip-unrepresentable.json bookFields[${index}]${entry?.path ? ` ("${entry.path}")` : ""}`;
+  if (typeof entry?.path !== "string" || entry.path.length === 0) throw new Error(`${where} has no path`);
+  if (entry.path !== bookPathPattern(entry.path)) {
+    throw new Error(`${where} names an array index; a book path pattern writes empty brackets, e.g. "debtors[].invoice"`);
+  }
+  if (entry.path.split(".").some((segment) => segment.includes(WILDCARD_SEGMENT) && segment !== WILDCARD_SEGMENT)) {
+    throw new Error(`${where} puts "*" inside a segment; a wildcard stands for a whole segment, e.g. "accounts.sales.*.diya-gl:column"`);
+  }
+  if (!Array.isArray(entry.products) || entry.products.length === 0 || !entry.products.every((p) => typeof p === "string" && p)) {
+    throw new Error(`${where} has a malformed "products" list`);
+  }
+  if (typeof entry.reason !== "string" || entry.reason.length === 0) throw new Error(`${where} has no reason`);
+}
+
+/**
+ * The book.toml paths the checked-in inventory says a product's package has
+ * nowhere to hold, keyed by path pattern with the matcher for each. A fixture
+ * path the export does not carry is scored as declared when a pattern here
+ * matches it, and as missing when none does, so a field is never silently
+ * dropped from the score.
+ * @param {string} product
+ * @param {Object} [inventory] - the parsed roundtrip-unrepresentable.json
+ * @returns {Map<string, RegExp>} path pattern -> what it matches
+ */
+export function bookFieldScope(product, inventory) {
+  const declared = new Map();
+  const entries = inventory?.bookFields ?? [];
+  entries.forEach((entry, index) => validateBookFieldEntry(entry, index));
+  for (const entry of entries) {
+    if (entry.products.includes(product)) declared.set(entry.path, bookPathMatcher(entry.path));
+  }
+  return declared;
+}
+
+// The declaration pattern covering a path, or undefined where none does.
+function declarationFor(scope, path) {
+  const normalised = bookPathPattern(path);
+  for (const [pattern, matches] of scope.bookPaths) {
+    if (matches.test(normalised)) return pattern;
+  }
+  return undefined;
+}
 
 /**
  * The fields the checked-in inventory says the Excel encoding has nowhere to
@@ -435,6 +501,7 @@ const EMPTY_SCOPE = { product: undefined, productWide: new Set(), byBlock: new M
 export function unrepresentableScope(product, inventory) {
   const productWide = new Set();
   const byBlock = new Map();
+  const bookPaths = bookFieldScope(product, inventory);
   const fields = inventory?.fields ?? [];
   fields.forEach((entry, index) => validateInventoryEntry(entry, index));
   for (const entry of fields) {
@@ -448,7 +515,7 @@ export function unrepresentableScope(product, inventory) {
       byBlock.get(scope.block).add(entry.field);
     }
   }
-  return { product, productWide, byBlock };
+  return { product, productWide, byBlock, bookPaths };
 }
 
 // A line's scope key for the unrepresentable-field inventory: ordinarily its
@@ -520,11 +587,13 @@ export function flattenBook(value, prefix = "") {
  * input written in canonical form) and the export (the Excel side's data/).
  * @param {string} fixtureDir
  * @param {string} exportDir
- * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>> }} [scope] -
- *   the fields the encoding has no home for, from unrepresentableScope(). A
- *   block-scoped declaration whose block matches no line's scope key
- *   (lineScopeBlock()) in this run is a stale or mistyped block name, not
- *   silence, so it throws rather than quietly declaring nothing.
+ * @param {{ product: string, productWide: Set<string>, byBlock: Map<string, Set<string>>, bookPaths: Map<string, RegExp> }} [scope] -
+ *   the fields the encoding has no home for, from unrepresentableScope(),
+ *   covering both a line's own fields and the book.toml paths in bookPaths.
+ *   A block-scoped declaration whose block matches no line's scope key
+ *   (lineScopeBlock()) in this run, and a book path the export turns out to
+ *   carry, are both stale or mistyped rather than silence, so either throws
+ *   rather than quietly declaring nothing.
  * @param {number} [dateShiftMonths] - the period-frame offset (periodFrameOffset)
  *   to move the fixture's own postingDate forward by before comparing, for a
  *   package whose year end put the export's dates through the same shift.
@@ -569,14 +638,39 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
   const exportedFlat = flattenBook(parseTOML(readFileSync(resolve(exportDir, "book.toml"), "utf8")));
 
   const bookMissing = [];
+  const bookDeclared = [];
   const bookDiffering = [];
   let bookEqual = 0;
+  const explainedAnAbsence = new Set();
+  const exercised = new Set();
   for (const [path, value] of fixtureFlat) {
-    if (!exportedFlat.has(path)) bookMissing.push(path);
-    else if (exportedFlat.get(path) === value) bookEqual++;
+    const declaration = declarationFor(scope, path);
+    if (declaration !== undefined) exercised.add(declaration);
+    if (!exportedFlat.has(path)) {
+      if (declaration === undefined) bookMissing.push(path);
+      else {
+        explainedAnAbsence.add(declaration);
+        bookDeclared.push(path);
+      }
+    } else if (exportedFlat.get(path) === value) bookEqual++;
     else bookDiffering.push(path);
   }
   const bookExtra = [...exportedFlat.keys()].filter((path) => !fixtureFlat.has(path));
+
+  // A declaration this book states a path for, and whose every stated path
+  // the export turns out to carry, no longer describes anything: the absence
+  // it excused has been closed. It throws rather than sitting in the file
+  // counting for nothing. A declaration the book states no path for at all
+  // is a different case -- another fixture simply does not carry the field --
+  // and stays silent, because the four scored packages are not the only books
+  // this comparator runs on.
+  for (const pattern of scope.bookPaths.keys()) {
+    if (!exercised.has(pattern) || explainedAnAbsence.has(pattern)) continue;
+    throw new Error(
+      `roundtrip-unrepresentable.json declares book path "${pattern}" absent for ${scope.product ?? "this product"}, ` +
+        `but this run's export carries every path the book states for it -- the declaration explains nothing`,
+    );
+  }
 
   return {
     fixtureLines: fixtureLines.length,
@@ -601,9 +695,11 @@ export function scoreDataHalves(fixtureDir, exportDir, scope = EMPTY_SCOPE, date
       equal: bookEqual,
       differing: bookDiffering.length,
       missing: bookMissing.length,
+      declared: bookDeclared.length,
       extra: bookExtra.length,
       differingPaths: bookDiffering.sort(),
       missingPaths: bookMissing.sort(),
+      declaredPaths: bookDeclared.sort(),
     },
   };
 }
@@ -637,7 +733,8 @@ function formatScorecard(packageName, excelDir, jsDir, score, byKind, data) {
       "|--------------:|---------------:|---------------------------:|-------------------------:|--------------------:|--------------------:|------------------------:|",
       `| ${data.fixtureLines} | ${data.exportedLines} | ${data.coarseMatches} | ${data.accountMatches} | ${data.wholeLineMatches} | ${data.fieldsDroppedCount} | ${data.fieldsUnrepresentable.length} |`,
       "",
-      `book.toml fields: equal ${data.book.equal}, differing ${data.book.differing}, missing ${data.book.missing}, extra ${data.book.extra}`,
+      `book.toml fields: equal ${data.book.equal}, differing ${data.book.differing}, missing ${data.book.missing}, ` +
+        `declared absent ${data.book.declared}, extra ${data.book.extra}`,
     );
     if (data.fieldsDropped.length > 0) lines.push(`Fields the export drops: ${data.fieldsDropped.join(", ")}`);
     if (data.fieldsUnrepresentable.length > 0) lines.push(`Fields the encoding has no home for: ${data.fieldsUnrepresentable.join(", ")}`);
@@ -729,6 +826,12 @@ async function main() {
             linesLost: data.linesLost,
             fieldsDropped: data.fieldsDroppedCount,
             bookFieldsMissing: data.book.missing,
+            // The fields the inventory names a reason for. Held exactly by
+            // the budget rather than left uncounted: a new declaration
+            // raises this count past its ceiling, and a declaration that
+            // stops being needed throws out of scoreDataHalves, so neither
+            // direction can pass unnoticed.
+            bookFieldsDeclared: data.book.declared,
             // A fixture line the export does not bring back as at least the
             // same transaction (coarseUnmatched), or brings back as the same
             // transaction but posted to a different account (accountUnmatched).

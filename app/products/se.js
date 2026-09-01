@@ -149,6 +149,8 @@ export function vatRateFor(scenario) {
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
 const SALESINVOICE_VAT_REG_CELL = "B11";
+// The same sheet's "Telephone" box, the entry cell beside its A8 label.
+const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
@@ -184,6 +186,9 @@ const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", descr
 
 // The StockControl physical-count cells for the two ends of the accounting
 // year -- row 6 is the opening count and row 30 the count at the year end.
+// The SA103F front page's "Description of business" box, the merged
+// C17:J17 entry cell under the label in C16.
+const BUSINESS_DESCRIPTION_CELL = "C17";
 const STOCK_OPENING_COUNT_CELL = "AB6";
 const STOCK_CLOSING_COUNT_CELL = "AB30";
 
@@ -395,6 +400,10 @@ export function cellWrites(scenario, targetStartYear) {
     const bd = hubWrites["Business Details"];
     const biz = scenario.business || {};
     bd.C5 = biz.name || scenario.metadata?.name || "";
+    // The SA103F front page runs label then entry down column C: C16 heads
+    // "Description of business" and C17:J17 is the merged box under it, in
+    // the same entry style C5 carries.
+    if (biz.description) bd[BUSINESS_DESCRIPTION_CELL] = biz.description;
   }
 
   // Payslips.xlsx employee details
@@ -462,6 +471,10 @@ export function cellWrites(scenario, targetStartYear) {
         const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
+        // Column D is the block's own "Tax Code" column, headed in D3 and
+        // read by no formula, so the code the employee is taxed under
+        // reaches the payslip it belongs on.
+        if (e.taxCode) sheet[`D${row}`] = e.taxCode;
         sheet[`M${row}`] = e.grossPay;
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
@@ -670,9 +683,15 @@ export function cellWrites(scenario, targetStartYear) {
   // anchored to the fixture's own first sale so the customer-facing invoice
   // total and VAT can be checked against a real figure (see checkCompliance).
   const salesinvoiceWrites = {};
+  // The invoice's own letterhead carries the business telephone number,
+  // which no other sheet in these workbooks has a box for.
+  if (scenario.business?.phone) salesinvoiceWrites["Business Details"] = { [SALESINVOICE_TELEPHONE_CELL]: scenario.business.phone };
   const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
   if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
-    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Business Details"] = {
+      ...salesinvoiceWrites["Business Details"],
+      [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number,
+    };
     salesinvoiceWrites["Invoice Database"] = {
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
@@ -895,15 +914,33 @@ export const CELL_MAP = [
   // ── Admin (generator-injected tax data) — cell positions verified against
   // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
   // SE's income tax band cells sit one row above BST's (M11/N12/N13 rather
-  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17.
+  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17. The gl
+  // mapping is the book field a cell states where the schema has one; the
+  // band start, the AIA scale and the two mileage band edges have no schema
+  // field of their own, and the export reconstructs the whole tax table from
+  // the year file the package names rather than from any of these cells.
+  // They stay in this map because it is also the read scope: both engines
+  // publish exactly the cells named here, and checkCompliance reads these
+  // against the tax data the package was generated from.
   ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
   ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
   ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
   ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                       "tax.incomeTax.basicRateLimit",            "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                    "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "N13", "Higher Band End",                      "tax.incomeTax.additionalRateThreshold",   "Admin (Generator Injected)", 0],
   ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
   ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits", "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",            "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",             "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",             "tax.mileage.carOver10000",                "Admin (Generator Injected)", 0],
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
   ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];

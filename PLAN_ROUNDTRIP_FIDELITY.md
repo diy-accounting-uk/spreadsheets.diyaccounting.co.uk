@@ -168,7 +168,10 @@ and scores both halves.
   **no JS value**, **no Excel value**. Each is a number that can only fall.
 - **EQ2** joins the two `D` documents as a multiset of canonical lines, plus a field-by-field
   comparison of `book.toml`. It compares the export against the original fixture, not against a
-  second export, so a field the first pass loses cannot pass by staying lost.
+  second export, so a field the first pass loses cannot pass by staying lost. A field the export
+  leaves out is **missing** unless `app/data/roundtrip-unrepresentable.json` names a reason for
+  it, in which case it is **declared** and counted apart. Both counts are budget-held, so
+  neither a new loss nor a new excuse for one can land unnoticed.
 
 `app/bin/verify-stability.js` scores EQ3 with the same comparator and the same policy.
 
@@ -571,32 +574,16 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Being worked as the book read-back batch (PR #53). Wave 1
-landed via PR #52: the rates-by-provenance track (tax tables reconstructed from
-`app/data/<year>.toml` keyed by the package's own declared year) and the
-registers-and-employees track (`[[members]]`, director enrichment, employee identity and
-start dates). Missing fields now run 90 for BST, 26 for Taxi, 99 for SE and 122 for Ltd,
-measured on the merged tree and budget-held at zero slack. Every landing follows the same
-three steps (mapping, fixture-anchored proof both legs survive, that block's
-`bookFieldsMissing` number falls in `roundtrip-budget.json`) and ends with the
-verify-roundtrip trio green.
+**`book.toml` comes back whole.** `bookFieldsMissing` is 0 for all four products, and
+`roundtrip-budget.json` gates it there. Every field the export does not carry is one
+`app/data/roundtrip-unrepresentable.json` names a reason for in its `bookFields` section,
+counted as `bookFieldsDeclared` and gated at 36 (BST), 10 (Taxi), 22 (SE) and 35 (Ltd). The
+ratchet runs both ways: a new declaration raises the count past its ceiling, and a
+declaration the export starts satisfying throws out of `scoreDataHalves`.
 
-*Wave 2 — in flight:*
-- **Asset-attributes and the declared-absence floor** (Opus): the fixed-asset register's
-  identity attributes and the HP agreement schedules — generator writes into free
-  description columns discovered from the Schedule/HPfinance XML, then exporter read-back
-  into `[[fixedAssets]]` and `[[hpAgreements]]`; the upstream closures wave 1 surfaced
-  (non-payroll directors, the payroll Tax Code column, the loader's entityInformation
-  copies); and the batch's exit criterion — every remaining missing field is either closed
-  or declared with a reason, so all four `bookFieldsMissing` budgets reach zero with the
-  declared absences ratcheted separately.
+*In flight:*
 - **Fixture-master rate alignment** (Sonnet): the masters carry rates from a different year
   file than the one each product's CI generates with; align them and re-prove the trio.
-
-*Not scheduled — decided (operator, 2026-08-31):* the per-contact debtor and creditor ledgers
-stay budget-held. The sheets total them without per-contact rows, closing them would mean
-template surgery, and the templates are not changing for this; the fields remain a declared
-structural absence.
 
 **Two shipped-template limitations are declared, not open.** The payslip row has no spare column
 for `lineItemComment` (swept A-AG); the field is declared unrepresentable for the payroll block

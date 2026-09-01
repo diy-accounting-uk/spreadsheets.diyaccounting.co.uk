@@ -5,7 +5,8 @@
     "noExcelValue": 0,
     "linesLost": 0,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 90
+    "bookFieldsMissing": 0,
+    "bookFieldsDeclared": 36
   },
   "taxi": {
     "differing": 0,
@@ -13,7 +14,8 @@
     "noExcelValue": 0,
     "linesLost": 0,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 26
+    "bookFieldsMissing": 0,
+    "bookFieldsDeclared": 10
   },
   "se": {
     "differing": 0,
@@ -21,7 +23,8 @@
     "noExcelValue": 0,
     "linesLost": 0,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 99
+    "bookFieldsMissing": 0,
+    "bookFieldsDeclared": 22
   },
   "ltd": {
     "differing": 0,
@@ -29,6 +32,7 @@
     "noExcelValue": 0,
     "linesLost": 0,
     "fieldsDropped": 0,
-    "bookFieldsMissing": 122
+    "bookFieldsMissing": 0,
+    "bookFieldsDeclared": 35
   }
 }

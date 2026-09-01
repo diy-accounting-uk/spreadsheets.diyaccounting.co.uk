@@ -9,7 +9,7 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
-import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, registerOfficers } from "../lib/scenario-loader.js";
 import {
   monthlyPayrollBlockRow,
   PAYROLL_WEEKS_PER_MONTH,
@@ -209,24 +209,21 @@ const SHARE_NOMINAL_VALUE = 1;
 const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
 // ── Register of directors and directors' interests (Companysecretary.xlsx) ─
-// Directors&Secretary carries one officer a row: A the full name, B the
-// address, C the date of appointment, D the capacity, E the board meeting
-// that confirmed it, F the date of resignation. Row 2 ships the template's
-// own "Director" capacity in D2 and row 3 its "Company Secretary" capacity in
-// D3 -- the sheet's own two officer placeholders (verified against the XML:
-// shared strings "Director"/"Company Secretary", "Incorporation
-// registration" already filling E2/E3). A second director beyond row 2 takes
-// the rows after the secretary's, writing its own capacity explicitly, since
-// only rows 2 and 3 carry the template's own capacity text.
+// Directors&Secretary carries one officer a row from row 2: A the full name,
+// B the address, C the date of appointment, D the capacity, E the board
+// meeting that confirmed it, F the date of resignation (verified against the
+// XML row 1 headings). Rows 2 and 3 ship the template's own "Director" and
+// "Company Secretary" placeholders in D, with "Incorporation registration"
+// already in E2/E3; an officer writes its own capacity over whichever row it
+// lands on, so the register reads in the order the book declares its
+// officers rather than in the order the placeholders suggest.
 //
-// DirectorsInterests runs one row a director from row 2, the template's own
+// DirectorsInterests runs one row an officer from row 2, the template's own
 // single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
-// director's own shareholding was registered -- the same "acquired" date
+// officer's own shareholding was registered -- the same "acquired" date
 // their row carries on RegisterofMembers, when they hold shares at all.
 const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
-const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
-const DIRECTOR_SECRETARY_SECRETARY_ROW = 3;
-const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
 
@@ -249,6 +246,8 @@ const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" }
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
 const SALESINVOICE_VAT_REG_CELL = "B11";
+// The same sheet's "Telephone" box, the entry cell beside its A8 label.
+const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
@@ -651,12 +650,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     });
   }
 
-  // Register of directors and secretary, and directors' interests: the
-  // directors are the scenario's own employees marked isDirector -- the same
-  // set OpenAccounts!E5/E6 already print by name. A missing entry here is a
-  // Companies House problem, not an arithmetic one, so this only ever writes
-  // what the scenario actually names.
-  const directors = (scenario.employees || []).filter((e) => e.isDirector);
+  // Register of directors and secretary, and directors' interests: every
+  // officer the book declares, in the order it declares them. A missing
+  // entry here is a Companies House problem, not an arithmetic one, so this
+  // only ever writes what the scenario actually names.
+  const directors = registerOfficers(scenario);
   if (directors.length > 0) {
     const biz = scenario.business || {};
     const officerAddress = [biz.address, biz.town, biz.postcode].filter(Boolean).join(", ") || undefined;
@@ -664,14 +662,21 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     companysecretaryWrites["Directors&Secretary"] = {};
     const officers = companysecretaryWrites["Directors&Secretary"];
     directors.forEach((director, index) => {
-      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      const row = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
       if (row === undefined) return;
       officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`] = director.name;
       if (officerAddress) officers[`${DIRECTOR_SECRETARY_COLUMNS.address}${row}`] = officerAddress;
-      // Rows 2 and 3 already carry the template's own "Director"/"Company
-      // Secretary" capacity text; a second director beyond row 2 has to say
-      // so itself.
-      if (row !== DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW) officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = "Director";
+      if (director.appointed) {
+        const appointed = parseDate(director.appointed);
+        officers[`${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`] = toExcelSerial(
+          appointed.getUTCFullYear(),
+          appointed.getUTCMonth() + 1,
+          appointed.getUTCDate(),
+        );
+      }
+      // The capacity the officer was appointed in, over whichever
+      // placeholder the row it lands on happens to carry.
+      officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = director.role || "Director";
     });
 
     companysecretaryWrites.DirectorsInterests = {};
@@ -830,6 +835,10 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
+        // Column D is the block's own "Tax Code" column, headed in D3 and
+        // read by no formula, so the code the employee is taxed under
+        // reaches the payslip it belongs on.
+        if (e.taxCode) sheet[`D${row}`] = e.taxCode;
         sheet[`M${row}`] = e.grossPay;
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
@@ -1062,9 +1071,15 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // anchored to the fixture's own first sale so the customer-facing invoice
   // total and VAT can be checked against a real figure (see checkCompliance).
   const salesinvoiceWrites = {};
+  // The invoice's own letterhead carries the business telephone number,
+  // which no other sheet in these workbooks has a box for.
+  if (scenario.business?.phone) salesinvoiceWrites["Business Details"] = { [SALESINVOICE_TELEPHONE_CELL]: scenario.business.phone };
   const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
   if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
-    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Business Details"] = {
+      ...salesinvoiceWrites["Business Details"],
+      [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number,
+    };
     salesinvoiceWrites["Invoice Database"] = {
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
@@ -1736,14 +1751,14 @@ export function multiFileOptions(yearEndMonth) {
         // charged, which the balance sheet has to carry as a creditor
         // falling due after more than one year.
         "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
-        // One officer a row: A the name, B the address. Rows 2 and 3 are the
-        // template's own director and secretary slots; the rest are a second
-        // director's, if the scenario names one.
-        "Directors&Secretary": [
-          DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW,
-          DIRECTOR_SECRETARY_SECRETARY_ROW,
-          ...DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS,
-        ].flatMap((row) => [`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`]),
+        // One officer a row from row 2: A the name, B the address, C the date
+        // of appointment, D the capacity they hold.
+        "Directors&Secretary": DIRECTOR_SECRETARY_OFFICER_ROWS.flatMap((row) => [
+          `${DIRECTOR_SECRETARY_COLUMNS.name}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`,
+        ]),
         // One director a row: A the name, B the address, C the date their own
         // shareholding was registered.
         "DirectorsInterests": DIRECTORS_INTERESTS_ROWS.flatMap((row) => [
@@ -2853,15 +2868,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   //
   // Neither sheet carries a formula or a route to the accounts -- a missing
   // entry is a Companies House problem, not an arithmetic one -- so this
-  // checks the entries land against the scenario's own directors, the same
-  // set OpenAccounts and the Report already print by name. An empty register
-  // fails here and nowhere else.
+  // checks the entries land against the scenario's own officers. An empty
+  // register fails here and nowhere else.
   const officers = results["Companysecretary.xlsx!Directors&Secretary"];
   const interests = results["Companysecretary.xlsx!DirectorsInterests"];
-  const expectedDirectors = (expected.employees || []).filter((e) => e.isDirector);
+  const expectedDirectors = registerOfficers(expected);
   if (officers && expectedDirectors.length > 0) {
     expectedDirectors.forEach((director, index) => {
-      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      const row = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
       if (row === undefined) return;
       checkText(
         `Directors&Secretary: row ${row} names ${director.name}`,
@@ -2869,6 +2883,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         (name) => name === director.name,
         director.name,
       );
+      if (director.role) {
+        checkText(
+          `Directors&Secretary: row ${row} appoints ${director.name} as ${director.role}`,
+          text(officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`]),
+          (capacity) => capacity === director.role,
+          director.role,
+        );
+      }
+      if (director.appointed) {
+        const appointed = parseDate(director.appointed);
+        check(
+          `Directors&Secretary: row ${row} dates ${director.name}'s appointment`,
+          num(officers[`${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`]),
+          toExcelSerial(appointed.getUTCFullYear(), appointed.getUTCMonth() + 1, appointed.getUTCDate()),
+          0,
+        );
+      }
     });
   }
   if (interests && expectedDirectors.length > 0) {
