@@ -965,3 +965,241 @@ describe("extractBook — the Ltd payroll register", () => {
     expect(after.employees[0].grossPay).toBe(before.employees[0].grossPay);
   });
 });
+
+// ── The registers the Fixed Assets workbook carries ────────────────────────
+//
+// A single-file package records an in-year asset purchase on its own Fixed
+// Assets sheet, and the multi-file packages keep their hire purchase
+// agreements on Fixedassets.xlsx's HPfinance sheet. Both are registers the
+// book declares, so both have to survive the export.
+
+const HP_JUNE_FIRST = 45809; // 2025-06-01
+const HP_SEPTEMBER_FIRST = 45901; // 2025-09-01
+
+function hpAgreementRow(row, { started, financeCompany, reference, financed, admin, interest, months, supplier }) {
+  return {
+    [`B${row}`]: started,
+    [`C${row}`]: financeCompany,
+    [`D${row}`]: reference,
+    [`E${row}`]: financed,
+    [`F${row}`]: admin,
+    [`G${row}`]: interest,
+    [`H${row}`]: months,
+    // The sheet works the monthly payment out for itself, so a cached
+    // formula result sits beside the entered figures.
+    [`I${row}`]: { formula: `IF(E${row}>0,(E${row}+F${row}+G${row})/H${row}," ")`, value: 750 },
+    [`L${row}`]: supplier,
+  };
+}
+
+const HP_FINANCE_SHEET = {
+  ...hpAgreementRow(8, {
+    started: HP_JUNE_FIRST,
+    financeCompany: "Close Brothers Asset Finance",
+    reference: "HP-2025-01",
+    financed: 13000,
+    admin: 200,
+    interest: 1800,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  }),
+  ...hpAgreementRow(10, {
+    started: HP_SEPTEMBER_FIRST,
+    financeCompany: "Close Brothers Asset Finance",
+    reference: "HP-2025-02",
+    financed: 7000,
+    admin: 100,
+    interest: 1000,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  }),
+};
+
+async function ltdPackageWithFixedAssets(fixedAssetsSheets) {
+  return writePackage({
+    "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+    "Sales.xlsx": { Apr: { G2: 20 } },
+    "Purchases.xlsx": { Apr: {} },
+    "Fixedassets.xlsx": fixedAssetsSheets,
+  });
+}
+
+describe("extractBook — the hire purchase agreements", () => {
+  it("reads every agreement the HPfinance block names", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.hpAgreements).toEqual([
+      {
+        agreementID: "HP-2025-01",
+        amountFinanced: 13000,
+        adminCharges: 200,
+        totalInterest: 1800,
+        termMonths: 20,
+        startDate: "2025-06-01",
+        financeCompany: "Close Brothers Asset Finance",
+        supplier: "Precision Tooling Supplies",
+      },
+      {
+        agreementID: "HP-2025-02",
+        amountFinanced: 7000,
+        adminCharges: 100,
+        totalInterest: 1000,
+        termMonths: 20,
+        startDate: "2025-09-01",
+        financeCompany: "Close Brothers Asset Finance",
+        supplier: "Precision Tooling Supplies",
+      },
+    ]);
+  });
+
+  it("breaks only the agreement whose amount financed a corrupted cell carries", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Fixedassets.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("HPfinance");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="E8"><v>13000</v></c>`, `<c r="E8"><v>99</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.hpAgreements[0].amountFinanced).toBe(99);
+    expect({ ...after.hpAgreements[0], amountFinanced: 13000 }).toEqual(before.hpAgreements[0]);
+    expect(after.hpAgreements[1]).toEqual(before.hpAgreements[1]);
+  });
+
+  it("leaves a row with no amount financed out of the register", async () => {
+    const dir = await ltdPackageWithFixedAssets({
+      Schedule: {},
+      HPfinance: { ...HP_FINANCE_SHEET, E10: 0 },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.hpAgreements.map((agreement) => agreement.agreementID)).toEqual(["HP-2025-01"]);
+  });
+});
+
+describe("extractBook — the single-file fixed asset register", () => {
+  const LAPTOP_BOUGHT = 45792; // 2025-05-15
+  const VAN_BOUGHT = 45955; // 2025-10-25
+
+  async function bstAssetPackage(fixedAssets) {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-assets-"));
+    writeFileSync(join(dir, "Financialaccounts.xlsx"), await buildWorkbook({ ...bstSheets(), "Fixed Assets": fixedAssets }));
+    return dir;
+  }
+
+  it("reads the Basic Sole Trader addition block back as the book's asset register", async () => {
+    const dir = await bstAssetPackage({
+      B67: LAPTOP_BOUGHT,
+      C67: "New laptop for development",
+      D67: "PUR-FA-001",
+      E67: 1800,
+      B69: VAN_BOUGHT,
+      C69: "Ford Transit Custom van",
+      D69: "PUR-FA-002",
+      E69: 36000,
+    });
+    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(book.fixedAssets).toEqual([
+      { assetID: "FA-0001", cost: 1800, description: "New laptop for development", acquiredDate: "2025-05-15" },
+      { assetID: "FA-0002", cost: 36000, description: "Ford Transit Custom van", acquiredDate: "2025-10-25" },
+    ]);
+  });
+
+  it("breaks only the asset whose cost a corrupted cell carries", async () => {
+    const dir = await bstAssetPackage({
+      B67: LAPTOP_BOUGHT,
+      C67: "New laptop for development",
+      E67: 1800,
+      B68: VAN_BOUGHT,
+      C68: "Ford Transit Custom van",
+      E68: 36000,
+    });
+    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+
+    const path = resolve(dir, findXlsx(dir));
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Fixed Assets");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="E67"><v>1800</v></c>`, `<c r="E67"><v>7</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(after.fixedAssets[0].cost).toBe(7);
+    expect(after.fixedAssets[0].description).toBe(before.fixedAssets[0].description);
+    expect(after.fixedAssets[1]).toEqual(before.fixedAssets[1]);
+  });
+});
+
+// ── The named debtor and creditor ledgers ──────────────────────────────────
+
+describe("extractBook — the named ledgers", () => {
+  it("reads the Ltd opening and closing sheets back in that order", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+      "Sales.xlsx": {
+        Apr: { G2: 20 },
+        OpeningDebtors: { B5: "Acme Corp", C5: "INV-0901", H5: 7200 },
+        ClosingDebtors: { B5: "WidgetWorks", C5: "INV-2104", H5: 1440 },
+      },
+      "Purchases.xlsx": {
+        Apr: {},
+        OpeningCreditors: { B5: "WorkSpace Ltd", C5: "WS-2403", H5: 1200 },
+        ClosingCreditors: { B5: "BT Business", C5: "BT-2603", H5: 60 },
+      },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.debtors).toEqual([
+      { counterparty: "Acme Corp", invoice: "INV-0901", amount: 7200, timing: "opening" },
+      { counterparty: "WidgetWorks", invoice: "INV-2104", amount: 1440, timing: "closing" },
+    ]);
+    expect(book.creditors).toEqual([
+      { counterparty: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200, timing: "opening" },
+      { counterparty: "BT Business", invoice: "BT-2603", amount: 60, timing: "closing" },
+    ]);
+  });
+
+  it("reads both halves of the single-file Debtors & Creditors sheet, which carries no invoice column", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
+    writeFileSync(
+      join(dir, "Financialaccounts.xlsx"),
+      await buildWorkbook({
+        ...bstSheets(),
+        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360, B12: "Shell", C12: 120, E12: "BT Business", F12: 60 },
+      }),
+    );
+    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(book.debtors).toEqual([
+      { counterparty: "Acme Corp", amount: 7200, timing: "opening" },
+      { counterparty: "Zeta Corp", amount: 360, timing: "closing" },
+    ]);
+    expect(book.creditors).toEqual([
+      { counterparty: "Shell", amount: 120, timing: "opening" },
+      { counterparty: "BT Business", amount: 60, timing: "closing" },
+    ]);
+  });
+
+  it("breaks only the balance a corrupted ledger cell carries", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
+    writeFileSync(
+      join(dir, "Financialaccounts.xlsx"),
+      await buildWorkbook({
+        ...bstSheets(),
+        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360 },
+      }),
+    );
+    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+
+    const path = resolve(dir, findXlsx(dir));
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Debtors & Creditors");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="C5"><v>7200</v></c>`, `<c r="C5"><v>1</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(after.debtors[0]).toEqual({ counterparty: "Acme Corp", amount: 1, timing: "opening" });
+    expect(after.debtors[1]).toEqual(before.debtors[1]);
+  });
+});

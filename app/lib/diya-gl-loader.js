@@ -340,10 +340,14 @@ export function diyaGlToScenario(book, lines, product) {
   if (payrollLines.length > 0) {
     // The tax code is a standing fact about the employee, which the book
     // states once on the employees table and the payslip row carries in its
-    // own Tax Code column.
+    // own Tax Code column. A payroll line names its employee by id or by
+    // name: the Payslips row is keyed by name, so a book exported from a
+    // package carries no id on the line to look one up by.
     const taxCodeByEmployee = new Map();
     for (const employee of book.employees || []) {
-      if (employee.taxCode) taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+      if (!employee.taxCode) continue;
+      taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+      taxCodeByEmployee.set(employee.name, employee.taxCode);
     }
     const payrollByMonth = {};
     for (const line of payrollLines) {
@@ -358,7 +362,7 @@ export function diyaGlToScenario(book, lines, product) {
         employerNI: line["diya-gl:employerNI"] || 0,
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
-        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || "",
+        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment) || "",
         accountMainID: line.accountMainID,
         reference: line.documentReference,
       });
