@@ -23,6 +23,8 @@ import {
   payrollRecordOpened,
   payrollYearStart,
   payslipsMonthEntryRows,
+  payslipsMonthPeriod,
+  payslipsPeriodStartCell,
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
@@ -1614,6 +1616,35 @@ export function standardReads() {
   return reads;
 }
 
+// The Payslips month tabs, by the name this year end gives each one.
+//
+// Every tab carries the day its monthly payroll block opens on, which is the
+// day the month the tab is named for begins. Nothing writes to that cell, so
+// it is the tab's own calendar on a blank package and a populated one alike,
+// and reading all twelve is what tells a tab dated from the payroll calendar
+// apart from one dated from the accounting period.
+//
+// Template positions 3 and 4 (originally Jul/Aug) are read out in full as
+// well (see PAYSLIPS_JUL_DEAD_CELLS and PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS
+// above), plus the rows the fixture actually populates, so a break in either
+// area is caught on its own month instead of only through the Payment/Admin
+// aggregates.
+function payslipsMonthTabReads(tabNames) {
+  const reads = {};
+  tabNames.forEach((tab, monthIndex) => {
+    reads[tab] = [payslipsPeriodStartCell(monthIndex)];
+  });
+  reads[tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]].push(
+    ...PAYSLIPS_JUL_DEAD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+  );
+  reads[tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]].push(
+    ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+  );
+  return reads;
+}
+
 // Leaf-file reads for the VAT chain: each month tab's VAT (G1) and gross
 // total (H1) from Sales.xlsx and Purchases.xlsx, plus every VATQtr box from
 // Vatreturns.xlsx. Vatreturns links Sales, Purchases and Financialaccounts,
@@ -1718,20 +1749,7 @@ export function multiFileOptions(yearEndMonth) {
             ...payrollMonthStarts().flatMap(({ row }) => ["A", "B", "C", "D", "F"].map((col) => `${col}${row}`)),
           ]),
         ],
-        // Template positions 3 and 4 (originally Jul/Aug) read directly
-        // under whatever name this year-end renamed them to (see
-        // PAYSLIPS_JUL_DEAD_CELLS and PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS
-        // above), plus the rows the fixture actually populates, so a break
-        // in either area is caught on its own month instead of only
-        // through the Payment/Admin aggregates.
-        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]: [
-          ...PAYSLIPS_JUL_DEAD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
-        ],
-        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]: [
-          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
-        ],
+        ...payslipsMonthTabReads(tabNames),
       },
       "Companysecretary.xlsx": {
         // One member a row: A the name, G the holding. F1 is the sheet's own
@@ -3431,6 +3449,37 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       starts.length,
       0,
     );
+  }
+
+  // ── Payslips month tabs: the day each monthly payroll block opens ────────
+  //
+  // A month tab is named for its own month of the accounting period, and the
+  // block on it opens with the day that month begins. The template dates
+  // those blocks from the Payslips calendar, which runs the tax year, and on
+  // a March year end the package's twelve months and the payroll year's are
+  // the same twelve, so the two frames agree and neither can be told from the
+  // other. Rename the tabs for another year end and a block still dated from
+  // the payroll calendar shows one month's days under another month's name --
+  // on the blank workbook a customer downloads, before any book is entered.
+  //
+  // The period start comes off the hub's own Admin sheet, so a block dated
+  // from the wrong calendar cannot agree with it by construction.
+  const periodStartSerial = num(results.Admin?.B9);
+  if (periodStartSerial && payslipsAdmin) {
+    const periodStart = dateFromSerial(periodStartSerial);
+    const yearStart = dateFromSerial(num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]));
+    fiscalTabs.forEach((tab, monthIndex) => {
+      const month = results[`Payslips.xlsx!${tab}`];
+      if (!month) return;
+      const cell = payslipsPeriodStartCell(monthIndex);
+      const opens = payslipsMonthPeriod(periodStart, monthIndex, yearStart).first;
+      check(
+        `Payslips!${tab} ${cell} the monthly payroll opens in the accounting period's ${tab}`,
+        num(month[cell]),
+        toExcelSerial(opens.getUTCFullYear(), opens.getUTCMonth() + 1, opens.getUTCDate()),
+        0,
+      );
+    });
   }
 
   if (expected.payroll) {

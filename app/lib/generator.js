@@ -7,7 +7,13 @@
 
 import JSZip from "jszip";
 import { buildSheetMap } from "./spreadsheet-runner.js";
-import { PAYSLIP_PRINT_CELLS, PAYSLIP_PRINT_SHEET } from "./payslips-layout.js";
+import {
+  PAYSLIP_PRINT_CELLS,
+  PAYSLIP_PRINT_SHEET,
+  payslipsMonthPeriod,
+  payslipsPeriodStartCell,
+  payslipsWagesPaidCell,
+} from "./payslips-layout.js";
 
 // ── Deterministic zip output ───────────────────────────────────────────────
 //
@@ -127,6 +133,18 @@ export function setCellCachedValue(xml, cellRef, value) {
 
   const newCell = match.fullMatch.replace(vMatch[0], `<v>${value}</v>`);
   return xml.replace(match.fullMatch, newCell);
+}
+
+// Replace a formula cell's formula and the cached value it carries together.
+// The cell has to be holding both already: a cell that has stopped being a
+// formula is a template change the caller needs to see rather than overwrite.
+export function setCellFormula(xml, cellRef, formula, value) {
+  const match = matchCell(xml, cellRef);
+  if (!match) throw new Error(`Cell ${cellRef} not found in XML`);
+  if (!/<f[^>]*>[^<]*<\/f>/.test(match.fullMatch)) throw new Error(`Cell ${cellRef} holds no formula to replace`);
+
+  const openTag = match.openTag.replace(/\s+t="[^"]*"/, "");
+  return xml.replace(match.fullMatch, `${openTag}><f>${escapeXml(formula)}</f><v>${value}</v></c>`);
 }
 
 export function setCellString(xml, cellRef, str) {
@@ -1413,6 +1431,75 @@ export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth,
 
   stabilizeDirDates(zip);
   return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// ── Payslips month-tab payroll periods (Ltd Company non-March year ends) ────
+//
+// Every month tab opens its monthly payroll block with the days it covers: K
+// the first, M the last, both read off the Payslips Admin daily calendar. That
+// calendar runs the tax year from 6 April, and the March template's tabs run
+// the same twelve months, so on that one year end the two frames sit on top of
+// each other and the block on the tab named May reads 1 to 31 May.
+//
+// Rename the tabs for another year end and they come apart. A June year end
+// names its second tab Aug and the block on it still reads 1 to 31 May: the
+// dates a customer sees are the payroll calendar's second month, under the
+// accounting period's second month's name. The tab name is the frame the rest
+// of the package follows, so it is the month the block covers -- and the Admin
+// calendar has no row to point at for it, because a period running to 30 June
+// needs May and June of a calendar year the chain stops short of. So the two
+// cells carry their own dates.
+//
+// M is also where the writer puts the date the month's wages were paid, which
+// is why the block's period is what the printed payslip reads back as its
+// period end. K is written by nobody and is the tab's calendar on a blank
+// package and a populated one alike.
+export async function reorientPayslipsMonthTabPeriods(xlsxBuffer, yearEndDate, payrollYearStart) {
+  const yearEndMonth = yearEndDate.getUTCMonth() + 1;
+  const templateTabs = getMonthTabSequence(3);
+  const targetTabs = getMonthTabSequence(yearEndMonth);
+
+  if (templateTabs.join(",") === targetTabs.join(",")) {
+    return xlsxBuffer;
+  }
+
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+
+  // The period opens on the first day of the month after the year-end month,
+  // twelve months back from the year end itself.
+  const periodStartMonths = yearEndDate.getUTCFullYear() * 12 + yearEndDate.getUTCMonth() - 11;
+  const periodStart = new Date(Date.UTC(Math.floor(periodStartMonths / 12), periodStartMonths % 12, 1));
+
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const tab = targetTabs[monthIndex];
+    const sheetPath = sheetMap.get(tab);
+    if (!sheetPath) throw new Error(`No ${tab} tab in the Payslips workbook`);
+
+    const { first, last } = payslipsMonthPeriod(periodStart, monthIndex, payrollYearStart);
+    let sheetXml = await zip.file(sheetPath).async("string");
+    sheetXml = setPayrollPeriodCell(sheetXml, tab, payslipsPeriodStartCell(monthIndex), first);
+    sheetXml = setPayrollPeriodCell(sheetXml, tab, payslipsWagesPaidCell(monthIndex), last);
+    zip.file(sheetPath, sheetXml, { date: zip.file(sheetPath).date });
+  }
+
+  stabilizeDirDates(zip);
+  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+}
+
+// One end of a month tab's payroll period. The cell has to be reading the
+// Admin calendar for the block to be the one this rewrites: a block that has
+// moved row, or a template that has stopped reading the calendar here, is a
+// change to see rather than a cell to overwrite.
+function setPayrollPeriodCell(sheetXml, tab, cellRef, day) {
+  const cell = matchCell(sheetXml, cellRef);
+  if (!cell) throw new Error(`Payslips ${tab} ${cellRef} not found`);
+  const formula = (cell.fullMatch.match(/<f[^>]*>([^<]*)<\/f>/) || [])[1];
+  if (!/^Admin!\$?B\$?\d+$/.test(formula || "")) {
+    throw new Error(`Payslips ${tab} ${cellRef} reads ${formula ?? "no formula"}, not the Admin calendar`);
+  }
+  const date = `DATE(${day.getUTCFullYear()},${day.getUTCMonth() + 1},${day.getUTCDate()})`;
+  return setCellFormula(sheetXml, cellRef, date, toExcelSerial(day));
 }
 
 // ── Vatinterface formula rewriting (Ltd Company all year-end months) ────────

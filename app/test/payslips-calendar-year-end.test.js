@@ -14,7 +14,8 @@ import { resolve, join } from "node:path";
 import { tmpdir } from "node:os";
 import { parse as parseTOML } from "smol-toml";
 import { runMultiFileSpreadsheet, hasLibreOffice, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
-import { generateSpreadsheet, getMonthTabSequence } from "../lib/generator.js";
+import { generateSpreadsheet, getMonthTabSequence, reorientPayslipsMonthTabPeriods } from "../lib/generator.js";
+import { monthlyPayrollBlockRow, payrollYearStart, payslipsPeriodStartCell, payslipsWagesPaidCell } from "../lib/payslips-layout.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import {
@@ -63,6 +64,17 @@ describe.each(["se", "ltd"])("%s Payslips print sheet period join", (product) =>
       expect(formula).toMatch(/INDIRECT\(ADDRESS\([^)]*,\$H\$3\)\)/);
       expect(formula).not.toContain('&amp; "!');
     }
+  });
+});
+
+// A March year end names its tabs the way the template already does, so the
+// reorientation has nothing to move and must hand the workbook back byte for
+// byte -- every March package's Payslips.xlsx is what it always was.
+describe("ltd Payslips month-tab periods at the template's own year end", () => {
+  it("hands a March package's workbook back untouched", async () => {
+    const buffer = readFileSync(resolve(ROOT, "app/templates/ltd/Payslips.xlsx"));
+    const reoriented = await reorientPayslipsMonthTabPeriods(buffer, new Date(Date.UTC(2026, 2, 31)), payrollYearStart(2025));
+    expect(reoriented).toBe(buffer);
   });
 });
 
@@ -387,6 +399,20 @@ describeCalc("ltd Payslips Jul/Aug: the dead #REF! cells and the fixture's own p
     expect(value).toBe(999);
     expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Aug", "H13", value))).toEqual([name]);
   });
+
+  // A March year end runs its accounts over the same twelve months as its
+  // payroll, so the template's own dates already name each tab's month and
+  // the first block opens with the payroll year on 6 April rather than on
+  // the 1st.
+  it("keeps the template's own opening dates, the payroll year's first day included", () => {
+    const periodChecks = checks.filter((c) => c.name.includes("the monthly payroll opens in the"));
+    expect(periodChecks).toHaveLength(12);
+    for (const c of periodChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+    expect(results["Payslips.xlsx!Apr"][payslipsPeriodStartCell(0)]).toBe(45753); // 6 April 2025
+    expect(results["Payslips.xlsx!May"][payslipsPeriodStartCell(1)]).toBe(45778); // 1 May 2025
+  });
 });
 
 // A June year end names its month tabs Jul through Jun, and everything on the
@@ -409,12 +435,21 @@ describeCalc("ltd Payslips print page at a June year end", () => {
   // the tab the printed page joins to.
   const MONTH_2_CALENDAR_ROW = 28;
 
+  // The accounting period this package covers, which its tab names run
+  // through: 1 July 2025 to 30 June 2026.
+  const PERIOD_MONTHS = TABS.map((tab, i) => ({
+    tab,
+    year: i < 6 ? 2025 : 2026,
+    month: ((6 + i) % 12) + 1,
+  }));
+
   let results;
   let checks;
   let taxData;
   let expected;
   let savedDir;
   let packageDir;
+  let generatedDir;
 
   function checksWithCorruptedCell(resultKey, cellRef, value) {
     const corrupted = { ...results, [resultKey]: { ...results[resultKey], [cellRef]: value } };
@@ -442,7 +477,7 @@ describeCalc("ltd Payslips print page at a June year end", () => {
       { cwd: ROOT, encoding: "utf8", timeout: 900000 },
     );
     const [generated] = readdirSync(packageDir);
-    const generatedDir = resolve(packageDir, generated);
+    generatedDir = resolve(packageDir, generated);
 
     const fileBuffers = {};
     for (const file of readdirSync(generatedDir).filter((f) => f.endsWith(".xlsx"))) {
@@ -519,5 +554,45 @@ describeCalc("ltd Payslips print page at a June year end", () => {
     const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Admin", `A${MONTH_2_CALENDAR_ROW}`, "May");
     expect(value).toBe("May");
     expect(failureNames(checksWithCorruptedCell("Payslips.xlsx!Admin", `A${MONTH_2_CALENDAR_ROW}`, value))).toEqual([name]);
+  });
+
+  // The blank workbook, straight out of the generator and before any book is
+  // written into it. This is what a customer downloads, and every date on it
+  // is a date they read: the tab named Aug used to open its monthly payroll
+  // on 1 May, the payroll calendar's second month under the accounting
+  // period's second month's name.
+  it("dates each blank month tab's monthly payroll block by the month its tab names", async () => {
+    const zip = await JSZip.loadAsync(readFileSync(resolve(generatedDir, "Payslips.xlsx")));
+    const sheetMap = await buildSheetMap(zip);
+    for (const [monthIndex, { tab, year, month }] of PERIOD_MONTHS.entries()) {
+      const xml = await zip.file(sheetMap.get(tab)).async("string");
+      const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      const formulaOf = (cellRef) => (xml.match(new RegExp(`<c r="${cellRef}"[^>]*><f>([^<]*)</f>`)) || [])[1];
+      expect(formulaOf(payslipsPeriodStartCell(monthIndex)), `${tab} opens`).toBe(`DATE(${year},${month},1)`);
+      expect(formulaOf(payslipsWagesPaidCell(monthIndex)), `${tab} closes`).toBe(`DATE(${year},${month},${lastDay})`);
+    }
+  });
+
+  it("passes every month-tab period check on the intact book", () => {
+    const periodChecks = checks.filter((c) => c.name.includes("the monthly payroll opens in the"));
+    expect(periodChecks).toHaveLength(12);
+    for (const c of periodChecks) {
+      expect(c.pass, `${c.name}: expected ${c.expected}, actual ${c.actual}`).toBe(true);
+    }
+  });
+
+  // 1 May 2026 is the day the block on this tab opened on before the tabs and
+  // the calendar were brought into one frame -- the payroll calendar's second
+  // month, which the tab named Aug still carried.
+  it("corrupting the day a month tab's payroll opens fails only that tab's period check", async () => {
+    const monthIndex = 1;
+    const cell = payslipsPeriodStartCell(monthIndex);
+    const name = `Payslips!${PRINTED_TAB} ${cell} the monthly payroll opens in the accounting period's ${PRINTED_TAB}`;
+    expect(checks.find((c) => c.name === name)?.pass).toBe(true);
+    expect(monthlyPayrollBlockRow(monthIndex)).toBe(48);
+
+    const value = await readCorruptedCell(savedDir, "Payslips.xlsx", PRINTED_TAB, cell, 46143);
+    expect(value).toBe(46143);
+    expect(failureNames(checksWithCorruptedCell(`Payslips.xlsx!${PRINTED_TAB}`, cell, value))).toEqual([name]);
   });
 });

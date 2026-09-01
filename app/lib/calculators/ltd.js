@@ -41,7 +41,10 @@ import {
   PAYSLIPS_ENTRY_COLUMNS,
   PAYSLIPS_ZERO_FILLED_COLUMNS,
   payslipsMonthEntryRows,
+  payslipsMonthPeriod,
+  payslipsPeriodStartCell,
   payslipsWagesPaidCell,
+  payrollYearStart,
 } from "../payslips-layout.js";
 import { addMonths, endOfMonth, SHEET_BLANK } from "./shared.js";
 import { registerOfficers } from "../scenario-loader.js";
@@ -707,6 +710,15 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
     addPayslipsWeeklyRemnants(monthTab, monthIndex);
     results[`Payslips.xlsx!${tabs[monthIndex]}`] = monthTab;
   }
+  // Every month tab opens its monthly payroll block with the day the month it
+  // is named for begins, so all twelve carry that one cell whether the
+  // reconciliation reads the rest of the tab or not.
+  const yearStart = payrollYearStart(payrollYearOf(taxData, period));
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const key = `Payslips.xlsx!${tabs[monthIndex]}`;
+    if (!results[key]) results[key] = {};
+    results[key][payslipsPeriodStartCell(monthIndex)] = serialOf(payslipsMonthPeriod(period.start, monthIndex, yearStart).first);
+  }
   results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
 
   const companySecretary = buildCompanySecretary(scenario);
@@ -1002,6 +1014,14 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
   return sheet;
 }
 
+// The year the package's payroll runs in, which is the year its tax data
+// opens in. A book that carries no tax data falls back on the year its own
+// accounting period ends in.
+function payrollYearOf(taxData, period) {
+  const financialYearStart = taxData.financial_year?.start;
+  return financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
+}
+
 // The calendar every payslip dates from. B2 carries the payroll year's first
 // day and every date under it is the row above plus one, so naming the row a
 // month opens on names its date, its tax week and its week within the month.
@@ -1011,10 +1031,7 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
 // is the printed payslip's join, so it names the package's own month tabs in
 // order rather than the calendar months the dates beside it fall in.
 function buildPayslipsCalendar(taxData, period, tabs) {
-  const financialYearStart = taxData.financial_year?.start;
-  const payrollYear = financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
-  const payrollYearStart = new Date(Date.UTC(payrollYear, 3, 6));
-  const anchor = serialOf(payrollYearStart);
+  const anchor = serialOf(payrollYearStart(payrollYearOf(taxData, period)));
   const sheet = { B2: anchor };
   for (const { month, row, daysBefore, week } of payrollMonthStarts()) {
     sheet[`A${row}`] = tabs[month - 1];
