@@ -1,4 +1,4 @@
-# Reconciliation Report: GB Accounts Company 2027-03-31 (Mar27) Excel 2007
+# Reconciliation Report: GB Accounts Company 2027-10-31 (Oct27) Excel 2007
 
 Scenario: ltd-brickwork-pro-vat
 Status: RECONCILES (with warnings)
@@ -52,6 +52,16 @@ Trade: Bricklaying, plastering and general building
 | VAT: annual input VAT | 14691 | 14691 | 0 | PASS |
 | VAT: annual output VAT = the sales journal at the book's rate | 22500 | 22500 | 0 | PASS |
 | VAT: annual input VAT = the purchase journal at the book's rate | 14691 | 14691 | 0 | PASS |
+| Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Sales.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
+| Purchases.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Apr: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx May: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
@@ -66,64 +76,54 @@ Trade: Bricklaying, plastering and general building
 | Purchases.xlsx Sep: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Sales.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
 | Purchases.xlsx Oct: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Sales.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Purchases.xlsx Nov: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Sales.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Purchases.xlsx Dec: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Sales.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Purchases.xlsx Jan: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Sales.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Purchases.xlsx Feb: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Sales.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Purchases.xlsx Mar: VAT rate charged (G2) | 20 | 20 | 0 | PASS |
-| Vatinterface D6: Apr sales net = Sales.xlsx Apr | 9750 | 9750 | 0 | PASS |
-| Vatinterface F6: Apr output VAT = Sales.xlsx Apr | 1950 | 1950 | 0 | PASS |
-| Vatinterface H6: Apr purchases net = Purchases.xlsx Apr | 4965 | 4965 | 0 | PASS |
-| Vatinterface J6: Apr input VAT = Purchases.xlsx Apr | 993 | 993 | 0 | PASS |
-| Vatinterface D7: May sales net = Sales.xlsx May | 9000 | 9000 | 0 | PASS |
-| Vatinterface F7: May output VAT = Sales.xlsx May | 1800 | 1800 | 0 | PASS |
-| Vatinterface H7: May purchases net = Purchases.xlsx May | 11265 | 11265 | 0 | PASS |
-| Vatinterface J7: May input VAT = Purchases.xlsx May | 2253 | 2253 | 0 | PASS |
-| Vatinterface D8: Jun sales net = Sales.xlsx Jun | 9300 | 9300 | 0 | PASS |
-| Vatinterface F8: Jun output VAT = Sales.xlsx Jun | 1860 | 1860 | 0 | PASS |
-| Vatinterface H8: Jun purchases net = Purchases.xlsx Jun | 2715 | 2715 | 0 | PASS |
-| Vatinterface J8: Jun input VAT = Purchases.xlsx Jun | 543 | 543 | 0 | PASS |
-| Vatinterface D9: Jul sales net = Sales.xlsx Jul | 8700 | 8700 | 0 | PASS |
-| Vatinterface F9: Jul output VAT = Sales.xlsx Jul | 1740 | 1740 | 0 | PASS |
-| Vatinterface H9: Jul purchases net = Purchases.xlsx Jul | 2790 | 2790 | 0 | PASS |
-| Vatinterface J9: Jul input VAT = Purchases.xlsx Jul | 558 | 558 | 0 | PASS |
-| Vatinterface D10: Aug sales net = Sales.xlsx Aug | 9750 | 9750 | 0 | PASS |
-| Vatinterface F10: Aug output VAT = Sales.xlsx Aug | 1950 | 1950 | 0 | PASS |
-| Vatinterface H10: Aug purchases net = Purchases.xlsx Aug | 9765 | 9765 | 0 | PASS |
-| Vatinterface J10: Aug input VAT = Purchases.xlsx Aug | 1953 | 1953 | 0 | PASS |
-| Vatinterface D11: Sep sales net = Sales.xlsx Sep | 9450 | 9450 | 0 | PASS |
-| Vatinterface F11: Sep output VAT = Sales.xlsx Sep | 1890 | 1890 | 0 | PASS |
-| Vatinterface H11: Sep purchases net = Purchases.xlsx Sep | 14265 | 14265 | 0 | PASS |
-| Vatinterface J11: Sep input VAT = Purchases.xlsx Sep | 2853 | 2853 | 0 | PASS |
-| Vatinterface D12: Oct sales net = Sales.xlsx Oct | 10200 | 10200 | 0 | PASS |
-| Vatinterface F12: Oct output VAT = Sales.xlsx Oct | 2040 | 2040 | 0 | PASS |
-| Vatinterface H12: Oct purchases net = Purchases.xlsx Oct | 2265 | 2265 | 0 | PASS |
-| Vatinterface J12: Oct input VAT = Purchases.xlsx Oct | 453 | 453 | 0 | PASS |
-| Vatinterface D13: Nov sales net = Sales.xlsx Nov | 9300 | 9300 | 0 | PASS |
-| Vatinterface F13: Nov output VAT = Sales.xlsx Nov | 1860 | 1860 | 0 | PASS |
-| Vatinterface H13: Nov purchases net = Purchases.xlsx Nov | 9765 | 9765 | 0 | PASS |
-| Vatinterface J13: Nov input VAT = Purchases.xlsx Nov | 1953 | 1953 | 0 | PASS |
-| Vatinterface D14: Dec sales net = Sales.xlsx Dec | 8250 | 8250 | 0 | PASS |
-| Vatinterface F14: Dec output VAT = Sales.xlsx Dec | 1650 | 1650 | 0 | PASS |
-| Vatinterface H14: Dec purchases net = Purchases.xlsx Dec | 2265 | 2265 | 0 | PASS |
-| Vatinterface J14: Dec input VAT = Purchases.xlsx Dec | 453 | 453 | 0 | PASS |
-| Vatinterface D15: Jan sales net = Sales.xlsx Jan | 9000 | 9000 | 0 | PASS |
-| Vatinterface F15: Jan output VAT = Sales.xlsx Jan | 1800 | 1800 | 0 | PASS |
-| Vatinterface H15: Jan purchases net = Purchases.xlsx Jan | 2865 | 2865 | 0 | PASS |
-| Vatinterface J15: Jan input VAT = Purchases.xlsx Jan | 573 | 573 | 0 | PASS |
-| Vatinterface D16: Feb sales net = Sales.xlsx Feb | 9750 | 9750 | 0 | PASS |
-| Vatinterface F16: Feb output VAT = Sales.xlsx Feb | 1950 | 1950 | 0 | PASS |
-| Vatinterface H16: Feb purchases net = Purchases.xlsx Feb | 8265 | 8265 | 0 | PASS |
-| Vatinterface J16: Feb input VAT = Purchases.xlsx Feb | 1653 | 1653 | 0 | PASS |
-| Vatinterface D17: Mar sales net = Sales.xlsx Mar | 10050 | 10050 | 0 | PASS |
-| Vatinterface F17: Mar output VAT = Sales.xlsx Mar | 2010 | 2010 | 0 | PASS |
-| Vatinterface H17: Mar purchases net = Purchases.xlsx Mar | 2265 | 2265 | 0 | PASS |
-| Vatinterface J17: Mar input VAT = Purchases.xlsx Mar | 453 | 453 | 0 | PASS |
+| Vatinterface D6: Nov sales net = Sales.xlsx Nov | 9750 | 9750 | 0 | PASS |
+| Vatinterface F6: Nov output VAT = Sales.xlsx Nov | 1950 | 1950 | 0 | PASS |
+| Vatinterface H6: Nov purchases net = Purchases.xlsx Nov | 4965 | 4965 | 0 | PASS |
+| Vatinterface J6: Nov input VAT = Purchases.xlsx Nov | 993 | 993 | 0 | PASS |
+| Vatinterface D7: Dec sales net = Sales.xlsx Dec | 9000 | 9000 | 0 | PASS |
+| Vatinterface F7: Dec output VAT = Sales.xlsx Dec | 1800 | 1800 | 0 | PASS |
+| Vatinterface H7: Dec purchases net = Purchases.xlsx Dec | 11265 | 11265 | 0 | PASS |
+| Vatinterface J7: Dec input VAT = Purchases.xlsx Dec | 2253 | 2253 | 0 | PASS |
+| Vatinterface D8: Jan sales net = Sales.xlsx Jan | 9300 | 9300 | 0 | PASS |
+| Vatinterface F8: Jan output VAT = Sales.xlsx Jan | 1860 | 1860 | 0 | PASS |
+| Vatinterface H8: Jan purchases net = Purchases.xlsx Jan | 2715 | 2715 | 0 | PASS |
+| Vatinterface J8: Jan input VAT = Purchases.xlsx Jan | 543 | 543 | 0 | PASS |
+| Vatinterface D9: Feb sales net = Sales.xlsx Feb | 8700 | 8700 | 0 | PASS |
+| Vatinterface F9: Feb output VAT = Sales.xlsx Feb | 1740 | 1740 | 0 | PASS |
+| Vatinterface H9: Feb purchases net = Purchases.xlsx Feb | 2790 | 2790 | 0 | PASS |
+| Vatinterface J9: Feb input VAT = Purchases.xlsx Feb | 558 | 558 | 0 | PASS |
+| Vatinterface D10: Mar sales net = Sales.xlsx Mar | 9750 | 9750 | 0 | PASS |
+| Vatinterface F10: Mar output VAT = Sales.xlsx Mar | 1950 | 1950 | 0 | PASS |
+| Vatinterface H10: Mar purchases net = Purchases.xlsx Mar | 9765 | 9765 | 0 | PASS |
+| Vatinterface J10: Mar input VAT = Purchases.xlsx Mar | 1953 | 1953 | 0 | PASS |
+| Vatinterface D11: Apr sales net = Sales.xlsx Apr | 9450 | 9450 | 0 | PASS |
+| Vatinterface F11: Apr output VAT = Sales.xlsx Apr | 1890 | 1890 | 0 | PASS |
+| Vatinterface H11: Apr purchases net = Purchases.xlsx Apr | 14265 | 14265 | 0 | PASS |
+| Vatinterface J11: Apr input VAT = Purchases.xlsx Apr | 2853 | 2853 | 0 | PASS |
+| Vatinterface D12: May sales net = Sales.xlsx May | 10200 | 10200 | 0 | PASS |
+| Vatinterface F12: May output VAT = Sales.xlsx May | 2040 | 2040 | 0 | PASS |
+| Vatinterface H12: May purchases net = Purchases.xlsx May | 2265 | 2265 | 0 | PASS |
+| Vatinterface J12: May input VAT = Purchases.xlsx May | 453 | 453 | 0 | PASS |
+| Vatinterface D13: Jun sales net = Sales.xlsx Jun | 9300 | 9300 | 0 | PASS |
+| Vatinterface F13: Jun output VAT = Sales.xlsx Jun | 1860 | 1860 | 0 | PASS |
+| Vatinterface H13: Jun purchases net = Purchases.xlsx Jun | 9765 | 9765 | 0 | PASS |
+| Vatinterface J13: Jun input VAT = Purchases.xlsx Jun | 1953 | 1953 | 0 | PASS |
+| Vatinterface D14: Jul sales net = Sales.xlsx Jul | 8250 | 8250 | 0 | PASS |
+| Vatinterface F14: Jul output VAT = Sales.xlsx Jul | 1650 | 1650 | 0 | PASS |
+| Vatinterface H14: Jul purchases net = Purchases.xlsx Jul | 2265 | 2265 | 0 | PASS |
+| Vatinterface J14: Jul input VAT = Purchases.xlsx Jul | 453 | 453 | 0 | PASS |
+| Vatinterface D15: Aug sales net = Sales.xlsx Aug | 9000 | 9000 | 0 | PASS |
+| Vatinterface F15: Aug output VAT = Sales.xlsx Aug | 1800 | 1800 | 0 | PASS |
+| Vatinterface H15: Aug purchases net = Purchases.xlsx Aug | 2865 | 2865 | 0 | PASS |
+| Vatinterface J15: Aug input VAT = Purchases.xlsx Aug | 573 | 573 | 0 | PASS |
+| Vatinterface D16: Sep sales net = Sales.xlsx Sep | 9750 | 9750 | 0 | PASS |
+| Vatinterface F16: Sep output VAT = Sales.xlsx Sep | 1950 | 1950 | 0 | PASS |
+| Vatinterface H16: Sep purchases net = Purchases.xlsx Sep | 8265 | 8265 | 0 | PASS |
+| Vatinterface J16: Sep input VAT = Purchases.xlsx Sep | 1653 | 1653 | 0 | PASS |
+| Vatinterface D17: Oct sales net = Sales.xlsx Oct | 10050 | 10050 | 0 | PASS |
+| Vatinterface F17: Oct output VAT = Sales.xlsx Oct | 2010 | 2010 | 0 | PASS |
+| Vatinterface H17: Oct purchases net = Purchases.xlsx Oct | 2265 | 2265 | 0 | PASS |
+| Vatinterface J17: Oct input VAT = Purchases.xlsx Oct | 453 | 453 | 0 | PASS |
 | VAT Q1: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E8: quarter sales net = its three period rows | 28050 | 28050 | 0 | PASS |
 | Vatinterface G8: quarter output VAT = its three period rows | 5610 | 5610 | 0 | PASS |
@@ -133,7 +133,7 @@ Trade: Bricklaying, plastering and general building
 | VAT Q1: box 4 (G15) = Vatinterface quarter VAT reclaimed (K8) | 3789 | 3789 | 0 | PASS |
 | VAT Q1: box 7 (G23) = Vatinterface quarter purchases net (I8) | 18945 | 18945 | 0 | PASS |
 | VAT Q1: box 6 (G21) = Vatinterface quarter sales net of VAT | 28050 | 28050 | 0 | PASS |
-| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 46234 | 46234 | 0 | PASS |
+| VAT Q1: payment due date (G7) = Vatinterface final date for payment (C8) | 46446 | 46446 | 0 | PASS |
 | VAT Q2: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E11: quarter sales net = its three period rows | 27900 | 27900 | 0 | PASS |
 | Vatinterface G11: quarter output VAT = its three period rows | 5580 | 5580 | 0 | PASS |
@@ -143,7 +143,7 @@ Trade: Bricklaying, plastering and general building
 | VAT Q2: box 4 (G15) = Vatinterface quarter VAT reclaimed (K11) | 5364 | 5364 | 0 | PASS |
 | VAT Q2: box 7 (G23) = Vatinterface quarter purchases net (I11) | 26820 | 26820 | 0 | PASS |
 | VAT Q2: box 6 (G21) = Vatinterface quarter sales net of VAT | 27900 | 27900 | 0 | PASS |
-| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46326 | 46326 | 0 | PASS |
+| VAT Q2: payment due date (G7) = Vatinterface final date for payment (C11) | 46538 | 46538 | 0 | PASS |
 | VAT Q3: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E14: quarter sales net = its three period rows | 27750 | 27750 | 0 | PASS |
 | Vatinterface G14: quarter output VAT = its three period rows | 5550 | 5550 | 0 | PASS |
@@ -153,7 +153,7 @@ Trade: Bricklaying, plastering and general building
 | VAT Q3: box 4 (G15) = Vatinterface quarter VAT reclaimed (K14) | 2859 | 2859 | 0 | PASS |
 | VAT Q3: box 7 (G23) = Vatinterface quarter purchases net (I14) | 14295 | 14295 | 0 | PASS |
 | VAT Q3: box 6 (G21) = Vatinterface quarter sales net of VAT | 27750 | 27750 | 0 | PASS |
-| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46418 | 46418 | 0 | PASS |
+| VAT Q3: payment due date (G7) = Vatinterface final date for payment (C14) | 46630 | 46630 | 0 | PASS |
 | VAT Q4: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E17: quarter sales net = its three period rows | 28800 | 28800 | 0 | PASS |
 | Vatinterface G17: quarter output VAT = its three period rows | 5760 | 5760 | 0 | PASS |
@@ -163,7 +163,7 @@ Trade: Bricklaying, plastering and general building
 | VAT Q4: box 4 (G15) = Vatinterface quarter VAT reclaimed (K17) | 2679 | 2679 | 0 | PASS |
 | VAT Q4: box 7 (G23) = Vatinterface quarter purchases net (I17) | 13395 | 13395 | 0 | PASS |
 | VAT Q4: box 6 (G21) = Vatinterface quarter sales net of VAT | 28800 | 28800 | 0 | PASS |
-| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46507 | 46507 | 0 | PASS |
+| VAT Q4: payment due date (G7) = Vatinterface final date for payment (C17) | 46721 | 46721 | 0 | PASS |
 | VAT Q5: quarter end date is one of the Vatinterface periods | 1 | 1 | 0 | PASS |
 | Vatinterface E20: quarter sales net = its three period rows | 0 | 0 | 0 | PASS |
 | Vatinterface G20: quarter output VAT = its three period rows | 0 | 0 | 0 | PASS |
@@ -173,7 +173,7 @@ Trade: Bricklaying, plastering and general building
 | VAT Q5: box 4 (G15) = Vatinterface quarter VAT reclaimed (K20) | 0 | 0 | 0 | PASS |
 | VAT Q5: box 7 (G23) = Vatinterface quarter purchases net (I20) | 0 | 0 | 0 | PASS |
 | VAT Q5: box 6 (G21) = Vatinterface quarter sales net of VAT | 0 | 0 | 0 | PASS |
-| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 46599 | 46599 | 0 | PASS |
+| VAT Q5: payment due date (G7) = Vatinterface final date for payment (C20) | 46812 | 46812 | 0 | PASS |
 | VAT: the five returns end on five different periods | 5 | 5 | 0 | PASS |
 | VAT: Q2 ends a quarter after Q1 | 3 | 3 | 0 | PASS |
 | VAT: Q3 ends a quarter after Q2 | 3 | 3 | 0 | PASS |
@@ -250,7 +250,7 @@ Trade: Bricklaying, plastering and general building
 | Published P&L: prior year closing stock while no comparatives are entered | 0 | 0 | 0 | PASS |
 | Published P&L: prior year stock movement while no comparatives are entered | 0 | 0 | 0 | PASS |
 | Published P&L: prior year retained profit while no comparatives are entered | 0 | 0 | 0 | PASS |
-| Directors' report: year end = published balance sheet date | 46477 | 46477 | 0 | PASS |
+| Directors' report: year end = published balance sheet date | 46691 | 46691 | 0 | PASS |
 | Directors' report: ordinary shares issued = register of members total | 100 | 100 | 0 | PASS |
 | Directors' report: first member's holding = register of members | 100 | 100 | 0 | PASS |
 | Directors' report: second member's holding = register of members | 0 | 0 | 0 | PASS |
@@ -285,481 +285,481 @@ Trade: Bricklaying, plastering and general building
 | Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 0 | 0 | 0 | PASS |
 | Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 0 | 0 | 0 | PASS |
 | Published balance sheet: cash at bank = Trial Balance bank account aggregate | 29824.7 | 29824.7 | 0 | PASS |
-| P&L Apr C4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
-| P&L Apr C5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Apr C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Apr C7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Apr C8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Apr C34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L May D4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
-| P&L May D5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L May D6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L May D7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L May D8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L May D34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jun E4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
-| P&L Jun E5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Jun E6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jun E7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Jun E8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Jun E34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jul F4 = Sales.xlsx "a" net | 8700 | 8700 | 0 | PASS |
-| P&L Jul F5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Jul F6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jul F7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Jul F8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Jul F34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Aug G4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
-| P&L Aug G5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Aug G6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Aug G7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Aug G8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Aug G34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Sep H4 = Sales.xlsx "a" net | 9450 | 9450 | 0 | PASS |
-| P&L Sep H5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Sep H6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Sep H7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Sep H8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Sep H34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Oct I4 = Sales.xlsx "a" net | 10200 | 10200 | 0 | PASS |
-| P&L Oct I5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Oct I6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Oct I7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Oct I8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Oct I34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Nov J4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
-| P&L Nov J5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Nov J6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Nov J7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Nov J8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Nov J34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Dec K4 = Sales.xlsx "a" net | 8250 | 8250 | 0 | PASS |
-| P&L Dec K5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Dec K6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Dec K7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Dec K8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Dec K34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jan L4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
-| P&L Jan L5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Jan L6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jan L7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Jan L8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Jan L34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Feb M4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
-| P&L Feb M5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Feb M6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Feb M7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Feb M8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Feb M34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Mar N4 = Sales.xlsx "a" net | 10050 | 10050 | 0 | PASS |
-| P&L Mar N5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
-| P&L Mar N6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Mar N7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
-| P&L Mar N8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
-| P&L Mar N34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Apr C12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Apr C13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Apr C21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Apr C22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Apr C23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Apr C24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Apr C25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Apr C26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Apr C27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Apr C28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Apr C29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Apr C30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Apr C31 = Purchases.xlsx "n" net | 1800 | 1800 | 0 | PASS |
-| P&L Apr C32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Apr C33 = Purchases.xlsx "l" net | 900 | 900 | 0 | PASS |
-| P&L Apr C37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Apr C38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L May D12 = Purchases.xlsx "c" net | 9000 | 9000 | 0 | PASS |
-| P&L May D13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L May D21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L May D22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L May D23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L May D24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L May D25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L May D26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L May D27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L May D28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L May D29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L May D30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L May D31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L May D32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L May D33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L May D37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L May D38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Jun E12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jun E13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jun E21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Jun E22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Jun E23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Jun E24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Jun E25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Jun E26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jun E27 = Purchases.xlsx "a" net | 450 | 450 | 0 | PASS |
-| P&L Jun E28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Jun E29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jun E30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Jun E31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Jun E32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Jun E33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Jun E37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Jun E38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Jul F12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jul F13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jul F21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Jul F22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Jul F23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Jul F24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Jul F25 = Purchases.xlsx "m" net | 525 | 525 | 0 | PASS |
-| P&L Jul F26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jul F27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Jul F28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Jul F29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jul F30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Jul F31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Jul F32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Jul F33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Jul F37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Jul F38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Aug G12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
-| P&L Aug G13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Aug G21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Aug G22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Aug G23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Aug G24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Aug G25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Aug G26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Aug G27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Aug G28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Aug G29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Aug G30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Aug G31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Aug G32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Aug G33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Aug G37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Aug G38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Sep H12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Sep H13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Sep H21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Sep H22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Sep H23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Sep H24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Sep H25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Sep H26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Sep H27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Sep H28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Sep H29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Sep H30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Sep H31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Sep H32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Sep H33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Sep H37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Sep H38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Oct I12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Oct I13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Oct I21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Oct I22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Oct I23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Oct I24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Oct I25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Oct I26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Oct I27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Oct I28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Oct I29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Oct I30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Oct I31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Oct I32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Oct I33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Oct I37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Oct I38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Nov J12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
-| P&L Nov J13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Nov J21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Nov J22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Nov J23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Nov J24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Nov J25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Nov J26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Nov J27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Nov J28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Nov J29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Nov J30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Nov J31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Nov J32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Nov J33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Nov J37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Nov J38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Dec K12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Dec K13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Dec K21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Dec K22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Dec K23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Dec K24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Dec K25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Dec K26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Dec K27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Dec K28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Dec K29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Dec K30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Dec K31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Dec K32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Dec K33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Dec K37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Dec K38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Jan L12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Jan L13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Jan L21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Jan L22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Jan L23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Jan L24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Jan L25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Jan L26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Jan L27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Jan L28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Jan L29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Jan L30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Jan L31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Jan L32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Jan L33 = Purchases.xlsx "l" net | 600 | 600 | 0 | PASS |
-| P&L Jan L37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Jan L38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Feb M12 = Purchases.xlsx "c" net | 6000 | 6000 | 0 | PASS |
-| P&L Feb M13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Feb M21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Feb M22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Feb M23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Feb M24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Feb M25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Feb M26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Feb M27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Feb M28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Feb M29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Feb M30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Feb M31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Feb M32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Feb M33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Feb M37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Feb M38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Mar N12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
-| P&L Mar N13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
-| P&L Mar N21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
-| P&L Mar N22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
-| P&L Mar N23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
-| P&L Mar N24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
-| P&L Mar N25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
-| P&L Mar N26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
-| P&L Mar N27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
-| P&L Mar N28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
-| P&L Mar N29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
-| P&L Mar N30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
-| P&L Mar N31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
-| P&L Mar N32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
-| P&L Mar N33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
-| P&L Mar N37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
-| P&L Mar N38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
-| P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
-| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 3090 | 3090 | 0 | PASS |
-| P&L May turnover = Sales.xlsx May net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
-| P&L May expense lines = Purchases.xlsx May net less materials, wages and asset purchases | 9390 | 9390 | 0 | PASS |
+| P&L Nov C4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
+| P&L Nov C5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Nov C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Nov C7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Nov C8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Nov C34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Dec D4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
+| P&L Dec D5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Dec D6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Dec D7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Dec D8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Dec D34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jan E4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
+| P&L Jan E5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Jan E6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Jan E7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Jan E8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Jan E34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Feb F4 = Sales.xlsx "a" net | 8700 | 8700 | 0 | PASS |
+| P&L Feb F5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Feb F6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Feb F7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Feb F8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Feb F34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Mar G4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
+| P&L Mar G5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Mar G6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Mar G7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Mar G8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Mar G34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Apr H4 = Sales.xlsx "a" net | 9450 | 9450 | 0 | PASS |
+| P&L Apr H5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Apr H6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Apr H7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Apr H8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Apr H34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L May I4 = Sales.xlsx "a" net | 10200 | 10200 | 0 | PASS |
+| P&L May I5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L May I6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L May I7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L May I8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L May I34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jun J4 = Sales.xlsx "a" net | 9300 | 9300 | 0 | PASS |
+| P&L Jun J5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Jun J6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Jun J7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Jun J8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Jun J34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jul K4 = Sales.xlsx "a" net | 8250 | 8250 | 0 | PASS |
+| P&L Jul K5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Jul K6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Jul K7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Jul K8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Jul K34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Aug L4 = Sales.xlsx "a" net | 9000 | 9000 | 0 | PASS |
+| P&L Aug L5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Aug L6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Aug L7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Aug L8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Aug L34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Sep M4 = Sales.xlsx "a" net | 9750 | 9750 | 0 | PASS |
+| P&L Sep M5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Sep M6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Sep M7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Sep M8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Sep M34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Oct N4 = Sales.xlsx "a" net | 10050 | 10050 | 0 | PASS |
+| P&L Oct N5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
+| P&L Oct N6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Oct N7 = Sales.xlsx "d" net | 0 | 0 | 0 | PASS |
+| P&L Oct N8 = Sales.xlsx "g" net | 0 | 0 | 0 | PASS |
+| P&L Oct N34 = negated Sales.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Nov C12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Nov C13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Nov C21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Nov C22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Nov C23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Nov C24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Nov C25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Nov C26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Nov C27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Nov C28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Nov C29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Nov C30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Nov C31 = Purchases.xlsx "n" net | 1800 | 1800 | 0 | PASS |
+| P&L Nov C32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Nov C33 = Purchases.xlsx "l" net | 900 | 900 | 0 | PASS |
+| P&L Nov C37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Nov C38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Dec D12 = Purchases.xlsx "c" net | 9000 | 9000 | 0 | PASS |
+| P&L Dec D13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Dec D21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Dec D22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Dec D23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Dec D24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Dec D25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Dec D26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Dec D27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Dec D28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Dec D29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Dec D30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Dec D31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Dec D32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Dec D33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Dec D37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Dec D38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Jan E12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Jan E13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jan E21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Jan E22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Jan E23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Jan E24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Jan E25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Jan E26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Jan E27 = Purchases.xlsx "a" net | 450 | 450 | 0 | PASS |
+| P&L Jan E28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Jan E29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Jan E30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Jan E31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Jan E32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Jan E33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Jan E37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Jan E38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Feb F12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Feb F13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Feb F21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Feb F22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Feb F23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Feb F24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Feb F25 = Purchases.xlsx "m" net | 525 | 525 | 0 | PASS |
+| P&L Feb F26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Feb F27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Feb F28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Feb F29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Feb F30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Feb F31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Feb F32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Feb F33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Feb F37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Feb F38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Mar G12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
+| P&L Mar G13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Mar G21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Mar G22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Mar G23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Mar G24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Mar G25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Mar G26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Mar G27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Mar G28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Mar G29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Mar G30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Mar G31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Mar G32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Mar G33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Mar G37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Mar G38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Apr H12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Apr H13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Apr H21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Apr H22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Apr H23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Apr H24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Apr H25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Apr H26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Apr H27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Apr H28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Apr H29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Apr H30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Apr H31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Apr H32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Apr H33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Apr H37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Apr H38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L May I12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L May I13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L May I21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L May I22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L May I23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L May I24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L May I25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L May I26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L May I27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L May I28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L May I29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L May I30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L May I31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L May I32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L May I33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L May I37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L May I38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Jun J12 = Purchases.xlsx "c" net | 7500 | 7500 | 0 | PASS |
+| P&L Jun J13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jun J21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Jun J22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Jun J23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Jun J24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Jun J25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Jun J26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Jun J27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jun J28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Jun J29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Jun J30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Jun J31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Jun J32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Jun J33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Jun J37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Jun J38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Jul K12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Jul K13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Jul K21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Jul K22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Jul K23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Jul K24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Jul K25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Jul K26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Jul K27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Jul K28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Jul K29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Jul K30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Jul K31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Jul K32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Jul K33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Jul K37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Jul K38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Aug L12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Aug L13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Aug L21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Aug L22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Aug L23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Aug L24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Aug L25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Aug L26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Aug L27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Aug L28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Aug L29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Aug L30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Aug L31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Aug L32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Aug L33 = Purchases.xlsx "l" net | 600 | 600 | 0 | PASS |
+| P&L Aug L37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Aug L38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Sep M12 = Purchases.xlsx "c" net | 6000 | 6000 | 0 | PASS |
+| P&L Sep M13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Sep M21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Sep M22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Sep M23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Sep M24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Sep M25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Sep M26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Sep M27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Sep M28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Sep M29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Sep M30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Sep M31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Sep M32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Sep M33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Sep M37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Sep M38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Oct N12 = Purchases.xlsx "c" net | 0 | 0 | 0 | PASS |
+| P&L Oct N13 = Purchases.xlsx "o" net | 0 | 0 | 0 | PASS |
+| P&L Oct N21 = Purchases.xlsx "r" net | 0 | 0 | 0 | PASS |
+| P&L Oct N22 = Purchases.xlsx "p" net | 0 | 0 | 0 | PASS |
+| P&L Oct N23 = Purchases.xlsx "t" net | 0 | 0 | 0 | PASS |
+| P&L Oct N24 = Purchases.xlsx "q" net | 0 | 0 | 0 | PASS |
+| P&L Oct N25 = Purchases.xlsx "m" net | 0 | 0 | 0 | PASS |
+| P&L Oct N26 = Purchases.xlsx "u" net | 0 | 0 | 0 | PASS |
+| P&L Oct N27 = Purchases.xlsx "a" net | 0 | 0 | 0 | PASS |
+| P&L Oct N28 = Purchases.xlsx "g" net | 90 | 90 | 0 | PASS |
+| P&L Oct N29 = Purchases.xlsx "h" net | 0 | 0 | 0 | PASS |
+| P&L Oct N30 = Purchases.xlsx "v" net | 300 | 300 | 0 | PASS |
+| P&L Oct N31 = Purchases.xlsx "n" net | 0 | 0 | 0 | PASS |
+| P&L Oct N32 = Purchases.xlsx "f" net | 0 | 0 | 0 | PASS |
+| P&L Oct N33 = Purchases.xlsx "l" net | 0 | 0 | 0 | PASS |
+| P&L Oct N37 = Purchases.xlsx "y" net | 0 | 0 | 0 | PASS |
+| P&L Oct N38 = Purchases.xlsx "z" net | 0 | 0 | 0 | PASS |
+| P&L Nov turnover = Sales.xlsx Nov net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Nov expense lines = Purchases.xlsx Nov net less materials, wages and asset purchases | 3090 | 3090 | 0 | PASS |
+| P&L Dec turnover = Sales.xlsx Dec net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
+| P&L Dec expense lines = Purchases.xlsx Dec net less materials, wages and asset purchases | 9390 | 9390 | 0 | PASS |
+| P&L Jan turnover = Sales.xlsx Jan net less bad debts and asset sales | 9300 | 9300 | 0 | PASS |
+| P&L Jan expense lines = Purchases.xlsx Jan net less materials, wages and asset purchases | 840 | 840 | 0 | PASS |
+| P&L Feb turnover = Sales.xlsx Feb net less bad debts and asset sales | 8700 | 8700 | 0 | PASS |
+| P&L Feb expense lines = Purchases.xlsx Feb net less materials, wages and asset purchases | 915 | 915 | 0 | PASS |
+| P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
+| P&L Apr turnover = Sales.xlsx Apr net less bad debts and asset sales | 9450 | 9450 | 0 | PASS |
+| P&L Apr expense lines = Purchases.xlsx Apr net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
+| P&L May turnover = Sales.xlsx May net less bad debts and asset sales | 10200 | 10200 | 0 | PASS |
+| P&L May expense lines = Purchases.xlsx May net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
 | P&L Jun turnover = Sales.xlsx Jun net less bad debts and asset sales | 9300 | 9300 | 0 | PASS |
-| P&L Jun expense lines = Purchases.xlsx Jun net less materials, wages and asset purchases | 840 | 840 | 0 | PASS |
-| P&L Jul turnover = Sales.xlsx Jul net less bad debts and asset sales | 8700 | 8700 | 0 | PASS |
-| P&L Jul expense lines = Purchases.xlsx Jul net less materials, wages and asset purchases | 915 | 915 | 0 | PASS |
-| P&L Aug turnover = Sales.xlsx Aug net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
-| P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
-| P&L Sep turnover = Sales.xlsx Sep net less bad debts and asset sales | 9450 | 9450 | 0 | PASS |
-| P&L Sep expense lines = Purchases.xlsx Sep net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
-| P&L Oct turnover = Sales.xlsx Oct net less bad debts and asset sales | 10200 | 10200 | 0 | PASS |
+| P&L Jun expense lines = Purchases.xlsx Jun net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
+| P&L Jul turnover = Sales.xlsx Jul net less bad debts and asset sales | 8250 | 8250 | 0 | PASS |
+| P&L Jul expense lines = Purchases.xlsx Jul net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
+| P&L Aug turnover = Sales.xlsx Aug net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
+| P&L Aug expense lines = Purchases.xlsx Aug net less materials, wages and asset purchases | 990 | 990 | 0 | PASS |
+| P&L Sep turnover = Sales.xlsx Sep net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
+| P&L Sep expense lines = Purchases.xlsx Sep net less materials, wages and asset purchases | 6390 | 6390 | 0 | PASS |
+| P&L Oct turnover = Sales.xlsx Oct net less bad debts and asset sales | 10050 | 10050 | 0 | PASS |
 | P&L Oct expense lines = Purchases.xlsx Oct net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
-| P&L Nov turnover = Sales.xlsx Nov net less bad debts and asset sales | 9300 | 9300 | 0 | PASS |
-| P&L Nov expense lines = Purchases.xlsx Nov net less materials, wages and asset purchases | 7890 | 7890 | 0 | PASS |
-| P&L Dec turnover = Sales.xlsx Dec net less bad debts and asset sales | 8250 | 8250 | 0 | PASS |
-| P&L Dec expense lines = Purchases.xlsx Dec net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
-| P&L Jan turnover = Sales.xlsx Jan net less bad debts and asset sales | 9000 | 9000 | 0 | PASS |
-| P&L Jan expense lines = Purchases.xlsx Jan net less materials, wages and asset purchases | 990 | 990 | 0 | PASS |
-| P&L Feb turnover = Sales.xlsx Feb net less bad debts and asset sales | 9750 | 9750 | 0 | PASS |
-| P&L Feb expense lines = Purchases.xlsx Feb net less materials, wages and asset purchases | 6390 | 6390 | 0 | PASS |
-| P&L Mar turnover = Sales.xlsx Mar net less bad debts and asset sales | 10050 | 10050 | 0 | PASS |
-| P&L Mar expense lines = Purchases.xlsx Mar net less materials, wages and asset purchases | 390 | 390 | 0 | PASS |
-| Payslips calendar: the payroll year opens on 6 April | 6 April | 6 April 2026 |  | PASS |
-| Payslips calendar: payroll month 1 opens on the first day of tax week 1 | 46118 | 46118 | 0 | PASS |
+| Payslips calendar: the payroll year opens on 6 April | 6 April | 6 April 2027 |  | PASS |
+| Payslips calendar: payroll month 1 opens on the first day of tax week 1 | 46483 | 46483 | 0 | PASS |
 | Payslips calendar: payroll month 1 opens tax week 1 | 1 | 1 | 0 | PASS |
-| Payslips calendar: payroll month 1 names the Apr tab | Apr | Apr |  | PASS |
-| Payslips calendar: payroll month 2 opens on the first day of tax week 5 | 46144 | 46144 | 0 | PASS |
+| Payslips calendar: payroll month 1 names the Nov tab | Nov | Nov |  | PASS |
+| Payslips calendar: payroll month 2 opens on the first day of tax week 5 | 46509 | 46509 | 0 | PASS |
 | Payslips calendar: payroll month 2 opens tax week 5 | 5 | 5 | 0 | PASS |
-| Payslips calendar: payroll month 2 names the May tab | May | May |  | PASS |
-| Payslips calendar: payroll month 3 opens on the first day of tax week 9 | 46172 | 46172 | 0 | PASS |
+| Payslips calendar: payroll month 2 names the Dec tab | Dec | Dec |  | PASS |
+| Payslips calendar: payroll month 3 opens on the first day of tax week 9 | 46537 | 46537 | 0 | PASS |
 | Payslips calendar: payroll month 3 opens tax week 9 | 9 | 9 | 0 | PASS |
-| Payslips calendar: payroll month 3 names the Jun tab | Jun | Jun |  | PASS |
-| Payslips calendar: payroll month 4 opens on the first day of tax week 14 | 46207 | 46207 | 0 | PASS |
+| Payslips calendar: payroll month 3 names the Jan tab | Jan | Jan |  | PASS |
+| Payslips calendar: payroll month 4 opens on the first day of tax week 14 | 46572 | 46572 | 0 | PASS |
 | Payslips calendar: payroll month 4 opens tax week 14 | 14 | 14 | 0 | PASS |
-| Payslips calendar: payroll month 4 names the Jul tab | Jul | Jul |  | PASS |
-| Payslips calendar: payroll month 5 opens on the first day of tax week 18 | 46235 | 46235 | 0 | PASS |
+| Payslips calendar: payroll month 4 names the Feb tab | Feb | Feb |  | PASS |
+| Payslips calendar: payroll month 5 opens on the first day of tax week 18 | 46600 | 46600 | 0 | PASS |
 | Payslips calendar: payroll month 5 opens tax week 18 | 18 | 18 | 0 | PASS |
-| Payslips calendar: payroll month 5 names the Aug tab | Aug | Aug |  | PASS |
-| Payslips calendar: payroll month 6 opens on the first day of tax week 22 | 46263 | 46263 | 0 | PASS |
+| Payslips calendar: payroll month 5 names the Mar tab | Mar | Mar |  | PASS |
+| Payslips calendar: payroll month 6 opens on the first day of tax week 22 | 46628 | 46628 | 0 | PASS |
 | Payslips calendar: payroll month 6 opens tax week 22 | 22 | 22 | 0 | PASS |
-| Payslips calendar: payroll month 6 names the Sep tab | Sep | Sep |  | PASS |
-| Payslips calendar: payroll month 7 opens on the first day of tax week 27 | 46298 | 46298 | 0 | PASS |
+| Payslips calendar: payroll month 6 names the Apr tab | Apr | Apr |  | PASS |
+| Payslips calendar: payroll month 7 opens on the first day of tax week 27 | 46663 | 46663 | 0 | PASS |
 | Payslips calendar: payroll month 7 opens tax week 27 | 27 | 27 | 0 | PASS |
-| Payslips calendar: payroll month 7 names the Oct tab | Oct | Oct |  | PASS |
-| Payslips calendar: payroll month 8 opens on the first day of tax week 31 | 46326 | 46326 | 0 | PASS |
+| Payslips calendar: payroll month 7 names the May tab | May | May |  | PASS |
+| Payslips calendar: payroll month 8 opens on the first day of tax week 31 | 46691 | 46691 | 0 | PASS |
 | Payslips calendar: payroll month 8 opens tax week 31 | 31 | 31 | 0 | PASS |
-| Payslips calendar: payroll month 8 names the Nov tab | Nov | Nov |  | PASS |
-| Payslips calendar: payroll month 9 opens on the first day of tax week 35 | 46354 | 46354 | 0 | PASS |
+| Payslips calendar: payroll month 8 names the Jun tab | Jun | Jun |  | PASS |
+| Payslips calendar: payroll month 9 opens on the first day of tax week 35 | 46719 | 46719 | 0 | PASS |
 | Payslips calendar: payroll month 9 opens tax week 35 | 35 | 35 | 0 | PASS |
-| Payslips calendar: payroll month 9 names the Dec tab | Dec | Dec |  | PASS |
-| Payslips calendar: payroll month 10 opens on the first day of tax week 40 | 46389 | 46389 | 0 | PASS |
+| Payslips calendar: payroll month 9 names the Jul tab | Jul | Jul |  | PASS |
+| Payslips calendar: payroll month 10 opens on the first day of tax week 40 | 46754 | 46754 | 0 | PASS |
 | Payslips calendar: payroll month 10 opens tax week 40 | 40 | 40 | 0 | PASS |
-| Payslips calendar: payroll month 10 names the Jan tab | Jan | Jan |  | PASS |
-| Payslips calendar: payroll month 11 opens on the first day of tax week 44 | 46417 | 46417 | 0 | PASS |
+| Payslips calendar: payroll month 10 names the Aug tab | Aug | Aug |  | PASS |
+| Payslips calendar: payroll month 11 opens on the first day of tax week 44 | 46782 | 46782 | 0 | PASS |
 | Payslips calendar: payroll month 11 opens tax week 44 | 44 | 44 | 0 | PASS |
-| Payslips calendar: payroll month 11 names the Feb tab | Feb | Feb |  | PASS |
-| Payslips calendar: payroll month 12 opens on the first day of tax week 48 | 46445 | 46445 | 0 | PASS |
+| Payslips calendar: payroll month 11 names the Sep tab | Sep | Sep |  | PASS |
+| Payslips calendar: payroll month 12 opens on the first day of tax week 48 | 46810 | 46810 | 0 | PASS |
 | Payslips calendar: payroll month 12 opens tax week 48 | 48 | 48 | 0 | PASS |
-| Payslips calendar: payroll month 12 names the Mar tab | Mar | Mar |  | PASS |
+| Payslips calendar: payroll month 12 names the Oct tab | Oct | Oct |  | PASS |
 | Payslips calendar: the payroll months are numbered one to twelve in order | 0 | 0 | 0 | PASS |
 | Payslips calendar: every payroll month opens on its own first week | 12 | 12 | 0 | PASS |
-| WagesInterface employees Apr C4 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Apr D4 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Apr E4 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Apr H4 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Apr C17 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Apr D17 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Apr E17 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Apr H17 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Apr D4 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Apr E4 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Apr I4 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees May C5 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees May D5 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees May E5 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees May H5 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors May C18 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors May D18 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors May E18 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors May H18 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment May D5 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment May E5 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment May I5 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Jun C6 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Jun D6 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Jun E6 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Jun H6 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jun C19 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Jun D19 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jun E19 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jun H19 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Jun D6 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Jun E6 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Jun I6 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Jul C7 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Jul D7 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Jul E7 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Jul H7 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jul C20 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Jul D20 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jul E20 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jul H20 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Jul D7 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Jul E7 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Jul I7 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Aug C8 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Aug D8 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Aug E8 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Aug H8 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Aug C21 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Aug D21 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Aug E21 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Aug H21 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Aug D8 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Aug E8 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Aug I8 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Sep C9 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Sep D9 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Sep E9 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Sep H9 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Sep C22 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Sep D22 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Sep E22 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Sep H22 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Sep D9 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Sep E9 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Sep I9 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Oct C10 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Oct D10 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Oct E10 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Oct H10 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Oct C23 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Oct D23 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Oct E23 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Oct H23 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Oct D10 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Oct E10 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Oct I10 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Nov C11 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Nov D11 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Nov E11 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Nov H11 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Nov C24 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Nov D24 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Nov E24 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Nov H24 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Nov D11 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Nov E11 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Nov I11 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Dec C12 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Dec D12 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Dec E12 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Dec H12 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Dec C25 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Dec D25 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Dec E25 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Dec H25 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Dec D12 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Dec E12 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Dec I12 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Jan C13 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Jan D13 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Jan E13 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Jan H13 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jan C26 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Jan D26 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jan E26 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Jan H26 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Jan D13 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Jan E13 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Jan I13 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Feb C14 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Feb D14 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Feb E14 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Feb H14 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Feb C27 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Feb D27 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Feb E27 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Feb H27 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Feb D14 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Feb E14 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Feb I14 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| WagesInterface employees Mar C15 gross pay | 1500 | 1500 | 0 | PASS |
-| WagesInterface employees Mar D15 income tax | 90.5 | 90.5 | 0 | PASS |
-| WagesInterface employees Mar E15 employee NI | 36.2 | 36.2 | 0 | PASS |
-| WagesInterface employees Mar H15 employer NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Mar C28 gross pay | 1048 | 1048 | 0 | PASS |
-| WagesInterface directors Mar D28 income tax | 0 | 0 | 0 | PASS |
-| WagesInterface directors Mar E28 employee NI | 0 | 0 | 0 | PASS |
-| WagesInterface directors Mar H28 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Payment Mar D15 NI due | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Payment Mar E15 income tax due | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Payment Mar I15 total amount payable | 126.7 | 126.7 | 0 | PASS |
-| Payslips print: the page reads the May tab | May | May |  | PASS |
+| WagesInterface employees Nov C4 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Nov D4 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Nov E4 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Nov H4 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Nov C17 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Nov D17 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Nov E17 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Nov H17 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Nov D4 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Nov E4 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Nov I4 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Dec C5 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Dec D5 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Dec E5 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Dec H5 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Dec C18 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Dec D18 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Dec E18 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Dec H18 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Dec D5 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Dec E5 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Dec I5 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Jan C6 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Jan D6 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Jan E6 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Jan H6 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jan C19 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jan D19 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jan E19 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jan H19 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Jan D6 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Jan E6 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Jan I6 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Feb C7 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Feb D7 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Feb E7 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Feb H7 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Feb C20 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Feb D20 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Feb E20 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Feb H20 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Feb D7 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Feb E7 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Feb I7 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Mar C8 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Mar D8 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Mar E8 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Mar H8 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Mar C21 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Mar D21 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Mar E21 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Mar H21 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Mar D8 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Mar E8 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Mar I8 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Apr C9 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Apr D9 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Apr E9 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Apr H9 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Apr C22 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Apr D22 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Apr E22 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Apr H22 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Apr D9 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Apr E9 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Apr I9 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees May C10 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees May D10 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees May E10 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees May H10 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors May C23 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors May D23 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors May E23 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors May H23 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment May D10 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment May E10 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment May I10 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Jun C11 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Jun D11 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Jun E11 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Jun H11 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jun C24 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jun D24 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jun E24 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jun H24 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Jun D11 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Jun E11 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Jun I11 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Jul C12 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Jul D12 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Jul E12 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Jul H12 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jul C25 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Jul D25 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jul E25 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Jul H25 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Jul D12 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Jul E12 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Jul I12 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Aug C13 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Aug D13 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Aug E13 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Aug H13 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Aug C26 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Aug D26 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Aug E26 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Aug H26 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Aug D13 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Aug E13 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Aug I13 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Sep C14 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Sep D14 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Sep E14 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Sep H14 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Sep C27 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Sep D27 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Sep E27 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Sep H27 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Sep D14 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Sep E14 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Sep I14 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| WagesInterface employees Oct C15 gross pay | 1500 | 1500 | 0 | PASS |
+| WagesInterface employees Oct D15 income tax | 90.5 | 90.5 | 0 | PASS |
+| WagesInterface employees Oct E15 employee NI | 36.2 | 36.2 | 0 | PASS |
+| WagesInterface employees Oct H15 employer NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Oct C28 gross pay | 1048 | 1048 | 0 | PASS |
+| WagesInterface directors Oct D28 income tax | 0 | 0 | 0 | PASS |
+| WagesInterface directors Oct E28 employee NI | 0 | 0 | 0 | PASS |
+| WagesInterface directors Oct H28 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Payment Oct D15 NI due | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment Oct E15 income tax due | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment Oct I15 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips print: the page reads the Dec tab | Dec | Dec |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
-| Payslips print: the period ends the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
+| Payslips print: the period ends the day the scenario paid that month's wages | 46019 | 46019 | 0 | PASS |
 | Payslips print: the page's join to the employee's line carries their payroll number | 1 | 1 | 0 | PASS |
 | Payslips print: gross pay is the pay the scenario recorded | 1048 | 1048 | 0 | PASS |
 | Payslips print: income tax is the tax the scenario recorded | 0 | 0 | 0 | PASS |
@@ -770,72 +770,72 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: national insurance to date is every month printed so far | 0 | 0 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 2096 | 2096 | 0 | PASS |
 | Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
-| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45805 | 0 |  | **WARNING** |
-| Payslips!Jul F51 employee name | Mike Brown | Mike Brown |  | PASS |
-| Payslips!Jul M51 gross pay | 1048 | 1048 | 0 | PASS |
-| Payslips!Jul N51 income tax | 0 | 0 | 0 | PASS |
-| Payslips!Jul O51 employee NI | 0 | 0 | 0 | PASS |
-| Payslips!Jul R51 net pay | 1048 | 1048 | 0 | PASS |
-| Payslips!Jul T51 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Jul S51 reference | PAY-EMP001-2025-07 | PAY-EMP001-2025-07 |  | PASS |
-| Payslips!Jul F52 employee name | Tom Davies | Tom Davies |  | PASS |
-| Payslips!Jul M52 gross pay | 1500 | 1500 | 0 | PASS |
-| Payslips!Jul N52 income tax | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Jul O52 employee NI | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Jul R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
-| Payslips!Jul T52 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Jul S52 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
-| Payslips!Jul M49 wages paid date | 45866 | 45866 | 0 | PASS |
-| Payslips!Aug F51 employee name | Mike Brown | Mike Brown |  | PASS |
-| Payslips!Aug M51 gross pay | 1048 | 1048 | 0 | PASS |
-| Payslips!Aug N51 income tax | 0 | 0 | 0 | PASS |
-| Payslips!Aug O51 employee NI | 0 | 0 | 0 | PASS |
-| Payslips!Aug R51 net pay | 1048 | 1048 | 0 | PASS |
-| Payslips!Aug T51 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Aug S51 reference | PAY-EMP001-2025-08 | PAY-EMP001-2025-08 |  | PASS |
-| Payslips!Aug F52 employee name | Tom Davies | Tom Davies |  | PASS |
-| Payslips!Aug M52 gross pay | 1500 | 1500 | 0 | PASS |
-| Payslips!Aug N52 income tax | 90.5 | 90.5 | 0 | PASS |
-| Payslips!Aug O52 employee NI | 36.2 | 36.2 | 0 | PASS |
-| Payslips!Aug R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
-| Payslips!Aug T52 employer NI | 0 | 0 | 0 | PASS |
-| Payslips!Aug S52 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
-| Payslips!Aug M49 wages paid date | 45897 | 45897 | 0 | PASS |
-| Payslips!Jul F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
-| Payslips!Jul F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
-| Payslips!Jul F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
-| Payslips!Jul F14 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
-| Payslips!Jul F15 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
-| Payslips!Jul T41 period total (no weekly employer NI to bring forward) | 0 | 0 | 0 | PASS |
-| Payslips!Aug H11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug I11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug J11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug L11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug M11 brought forward (no weekly cycle carried over) |  |  |  | PASS |
-| Payslips!Aug H12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug I12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug J12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug L12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug K12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug M12 brought forward (no weekly cycle carried over) |  |  |  | PASS |
-| Payslips!Aug H13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug I13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug J13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug L13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug K13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug M13 brought forward (no weekly cycle carried over) |  |  |  | PASS |
-| Payslips!Aug H14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug I14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug J14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug L14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug K14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug M14 brought forward (no weekly cycle carried over) |  |  |  | PASS |
-| Payslips!Aug H15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug I15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug J15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug L15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug K15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
-| Payslips!Aug M15 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 46019 | 0 |  | **WARNING** |
+| Payslips!Feb F51 employee name | Mike Brown | Mike Brown |  | PASS |
+| Payslips!Feb M51 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Feb N51 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Feb O51 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Feb R51 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Feb T51 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Feb S51 reference | PAY-EMP001-2025-07 | PAY-EMP001-2025-07 |  | PASS |
+| Payslips!Feb F52 employee name | Tom Davies | Tom Davies |  | PASS |
+| Payslips!Feb M52 gross pay | 1500 | 1500 | 0 | PASS |
+| Payslips!Feb N52 income tax | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Feb O52 employee NI | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Feb R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
+| Payslips!Feb T52 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Feb S52 reference | PAY-EMP002-2025-07 | PAY-EMP002-2025-07 |  | PASS |
+| Payslips!Feb M49 wages paid date | 46081 | 46081 | 0 | PASS |
+| Payslips!Mar F51 employee name | Mike Brown | Mike Brown |  | PASS |
+| Payslips!Mar M51 gross pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Mar N51 income tax | 0 | 0 | 0 | PASS |
+| Payslips!Mar O51 employee NI | 0 | 0 | 0 | PASS |
+| Payslips!Mar R51 net pay | 1048 | 1048 | 0 | PASS |
+| Payslips!Mar T51 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Mar S51 reference | PAY-EMP001-2025-08 | PAY-EMP001-2025-08 |  | PASS |
+| Payslips!Mar F52 employee name | Tom Davies | Tom Davies |  | PASS |
+| Payslips!Mar M52 gross pay | 1500 | 1500 | 0 | PASS |
+| Payslips!Mar N52 income tax | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Mar O52 employee NI | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Mar R52 net pay | 1373.3 | 1373.3 | 0 | PASS |
+| Payslips!Mar T52 employer NI | 0 | 0 | 0 | PASS |
+| Payslips!Mar S52 reference | PAY-EMP002-2025-08 | PAY-EMP002-2025-08 |  | PASS |
+| Payslips!Mar M49 wages paid date | 46109 | 46109 | 0 | PASS |
+| Payslips!Feb F11 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Feb F12 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Feb F13 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Feb F14 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Feb F15 weekly employee line (every employee here pays monthly) |  |  |  | PASS |
+| Payslips!Feb T41 period total (no weekly employer NI to bring forward) | 0 | 0 | 0 | PASS |
+| Payslips!Mar H11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar I11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar J11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar L11 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar M11 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Mar H12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar I12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar J12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar L12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar K12 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar M12 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Mar H13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar I13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar J13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar L13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar K13 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar M13 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Mar H14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar I14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar J14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar L14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar K14 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar M14 brought forward (no weekly cycle carried over) |  |  |  | PASS |
+| Payslips!Mar H15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar I15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar J15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar L15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar K15 brought forward (no weekly cycle carried over) | 0 | 0 | 0 | PASS |
+| Payslips!Mar M15 brought forward (no weekly cycle carried over) |  |  |  | PASS |
 | MnthP&L: PAYE Wages + Non-PAYE Employee (B18) = employees' gross pay + Purchases w-coded net | 18000 | 18000 | 0 | PASS |
 | MnthP&L: Directors Wages (B19) = directors' gross pay + Purchases d-coded net | 12576 | 12576 | 0 | PASS |
 | MnthP&L: Employers National Insurance (B20) = payroll employer NI | 0 | 0 | 0 | PASS |
@@ -861,20 +861,20 @@ Trade: Bricklaying, plastering and general building
 | Admin O17: mileage lower rate pence | 0.25 | 0.25 | 0 | PASS |
 | Admin M19: standard VAT rate | 20 | 20 | 0 | PASS |
 | Admin M21: standard VAT rate (second period) | 20 | 20 | 0 | PASS |
-| Admin: year-end seed = the package's own year end | 46477 | 46477 | 0 | PASS |
-| Admin: year-end seed drives the accounting period anchor | 46477 | 46477 | 0 | PASS |
-| Published P&L: year end = Admin year-end seed | 46477 | 46477 | 0 | PASS |
-| Published balance sheet: date = Admin year-end seed | 46477 | 46477 | 0 | PASS |
-| Fixed asset note: year end = Admin year-end seed | 46477 | 46477 | 0 | PASS |
+| Admin: year-end seed = the package's own year end | 46691 | 46691 | 0 | PASS |
+| Admin: year-end seed drives the accounting period anchor | 46691 | 46691 | 0 | PASS |
+| Published P&L: year end = Admin year-end seed | 46691 | 46691 | 0 | PASS |
+| Published balance sheet: date = Admin year-end seed | 46691 | 46691 | 0 | PASS |
+| Fixed asset note: year end = Admin year-end seed | 46691 | 46691 | 0 | PASS |
 | Admin: accounting period is twelve months | 365 | 365 | 0 | PASS |
-| Admin: first financial year row starts at the accounting period start | 46113 | 46113 | 0 | PASS |
+| Admin: first financial year row starts at the accounting period start | 46327 | 46327 | 0 | PASS |
 | Admin: second financial year row starts the day the first one ends | 46478 | 46478 | 0 | PASS |
-| Admin: second financial year row ends at the year end | 46477 | 46477 | 0 | PASS |
-| CT: working sheet heading starts at the accounting period start | 46113 | 46113 | 0 | PASS |
-| CT: working sheet heading ends at the year end | 46477 | 46477 | 0 | PASS |
+| Admin: second financial year row ends at the year end | 46691 | 46691 | 0 | PASS |
+| CT: working sheet heading starts at the accounting period start | 46327 | 46327 | 0 | PASS |
+| CT: working sheet heading ends at the year end | 46691 | 46691 | 0 | PASS |
 | CT: the two tax rows span the accounting period | 365 | 365 | 0 | PASS |
-| CT600: return period starts at the accounting period start | 46113 | 46113 | 0 | PASS |
-| CT600: return period ends at the year end | 46477 | 46477 | 0 | PASS |
+| CT600: return period starts at the accounting period start | 46327 | 46327 | 0 | PASS |
+| CT600: return period ends at the year end | 46691 | 46691 | 0 | PASS |
 | Expenses form Month 01: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
 | Expenses form Month 02: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
 | Expenses form Month 03: mileage rate = tax data | 0.45 | 0.45 | 0 | PASS |
@@ -913,11 +913,14 @@ Trade: Bricklaying, plastering and general building
 | CT600: profits before deductions = trading profits + interest | 7969 | 7969 | 0 | PASS |
 | CT600: profits chargeable = CT chargeable profit | 7969 | 7969 | 0 | PASS |
 | CT600: financial year = first tax row financial year | 2026 | 2026 | 0 | PASS |
-| CT600: amount of profit = first tax row profit | 7969 | 7969 | 0 | PASS |
+| CT600: amount of profit = first tax row profit | 3296.76438356164 | 3296.76438356164 | 0 | PASS |
 | CT600: tax rate = first tax row rate | 19 | 19 | 0 | PASS |
-| CT600: corporation tax = first tax row gross tax | 1514.11 | 1514.11 | 0 | PASS |
-| CT600: second financial year tax = second tax row gross tax | 0 | 0 | 0 | PASS |
-| CT600: tax payable = tax chargeable | 1514.11 | 1514.11 | 0 | PASS |
+| CT600: corporation tax = first tax row gross tax | 626.385232876712 | 626.385232876712 | 0 | PASS |
+| CT600: second financial year tax = second tax row gross tax | 887.724767123288 | 887.724767123288 | 0 | PASS |
+| CT600: second financial year = second tax row financial year | 2027 | 2027 | 0 | PASS |
+| CT600: second financial year profit = second tax row profit | 4672.23561643836 | 4672.23561643836 | 0 | PASS |
+| CT600: second financial year rate = second tax row rate | 19 | 19 | 0 | PASS |
+| CT600: tax payable = tax chargeable | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
 | CT600: marginal rate relief = the working sheet's relief | 0 | 0 | 0 | PASS |
 | CT600: tax net of marginal relief = the working sheet's charge | 1514.11 | 1514.11 | 0 | PASS |
 | CT600: corporation tax chargeable = tax net of marginal relief | 1514.11 | 1514.11 | 0 | PASS |
@@ -926,13 +929,13 @@ Trade: Bricklaying, plastering and general building
 | Fixed asset note: corporation tax for the year = CT charge | 1514.11 | 1514.11 | 0 | PASS |
 | Fixed asset note: directors emoluments = trial balance directors wages | 12576 | 12576 | 0 | PASS |
 | CT: the two tax rows together span the days the charge is spread over | 365 | 365 | 0 | PASS |
-| CT: first tax row profit = chargeable profit by its share of those days | 7969 | 7969 | 0 | PASS |
-| CT: second tax row profit = chargeable profit by its share of those days | 0 | 0 | 0 | PASS |
-| CT: first tax row gross tax = its profit at its rate | 1514.11 | 1514.11 | 0 | PASS |
-| CT: second tax row gross tax = its profit at its rate | 0 | 0 | 0 | PASS |
-| CT: first tax row tax = its gross tax less its marginal relief | 1514.11 | 1514.11 | 0 | PASS |
-| CT: second tax row tax = its gross tax less its marginal relief | 0 | 0 | 0 | PASS |
-| CT: charge for the year = the two tax rows | 1514.11 | 1514.11 | 0 | PASS |
+| CT: first tax row profit = chargeable profit by its share of those days | 3296.7643835616436 | 3296.76438356164 | -3.637978807091713e-12 | PASS |
+| CT: second tax row profit = chargeable profit by its share of those days | 4672.235616438356 | 4672.23561643836 | +3.637978807091713e-12 | PASS |
+| CT: first tax row gross tax = its profit at its rate | 626.3852328767116 | 626.385232876712 | +4.547473508864641e-13 | PASS |
+| CT: second tax row gross tax = its profit at its rate | 887.7247671232885 | 887.724767123288 | -5.684341886080801e-13 | PASS |
+| CT: first tax row tax = its gross tax less its marginal relief | 626.385232876712 | 626.385232876712 | 0 | PASS |
+| CT: second tax row tax = its gross tax less its marginal relief | 887.724767123288 | 887.724767123288 | 0 | PASS |
+| CT: charge for the year = the two tax rows | 1514.1100000000001 | 1514.11 | -2.2737367544323206e-13 | PASS |
 | CT: first tax row rate = the rate its share of the profit falls in | 19 | 19 | 0 | PASS |
 | CT: second tax row rate = the rate its share of the profit falls in | 19 | 19 | 0 | PASS |
 | CT: first tax row marginal relief = its share of the profit against its share of the limits | 0 | 0 | 0 | PASS |
@@ -1083,13 +1086,13 @@ Journal amounts include VAT at 20%.
 | | Amount |
 |---|------:|
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 7,969 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 3,296.76 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 1,514.11 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 626.39 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 4,672.24 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 887.72 |
 | **Box 63: corporation tax** | 1,514.11 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 0 |
 | **Box 65: corporation tax net of marginal rate relief** | 1,514.11 |
@@ -1221,30 +1224,30 @@ Journal amounts include VAT at 20%.
 | &nbsp;&nbsp;&nbsp;&nbsp;Purchases net of VAT | 73,455 |
 | **VAT due for the year** | 7,809 |
 | **How the return periods line up with the accounting year** |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 30 April 2026, 31 May 2026, 30 June 2026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 31 July 2026, 31 August 2026, 30 September 2026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 31 October 2026, 30 November 2026, 31 December 2026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 31 January 2027, 28 February 2027, 31 March 2027 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 30 April 2027, 31 May 2027, 30 June 2027 |
-| The returns above also cover the periods ending 30 April 2027, 31 May 2027, 30 June 2027, which fall outside the accounting year. |  |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 covers the periods ending | 30 November 2026, 31 December 2026, 31 January 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 covers the periods ending | 28 February 2027, 31 March 2027, 30 April 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 covers the periods ending | 31 May 2027, 30 June 2027, 31 July 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 covers the periods ending | 31 August 2027, 30 September 2027, 31 October 2027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 covers the periods ending | 30 November 2027, 31 December 2027, 31 January 2028 |
+| The returns above also cover the periods ending 30 November 2027, 31 December 2027, 31 January 2028, which fall outside the accounting year. |  |
 | &nbsp;&nbsp;&nbsp;&nbsp;Output VAT on those | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Input VAT on those | 0 |
 | **The return forms as the package fills them in** |  |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2026) box 1: VAT due on sales | 5,610 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2026) box 4: VAT reclaimed on purchases | 3,789 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 30 June 2026) box 5: net VAT due | 1,821 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2026) box 1: VAT due on sales | 5,580 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2026) box 4: VAT reclaimed on purchases | 5,364 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 September 2026) box 5: net VAT due | 216 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2026) box 1: VAT due on sales | 5,550 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2026) box 4: VAT reclaimed on purchases | 2,859 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 December 2026) box 5: net VAT due | 2,691 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2027) box 1: VAT due on sales | 5,760 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2027) box 4: VAT reclaimed on purchases | 2,679 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 March 2027) box 5: net VAT due | 3,081 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2027) box 1: VAT due on sales | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2027) box 4: VAT reclaimed on purchases | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 30 June 2027) box 5: net VAT due | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2027) box 1: VAT due on sales | 5,610 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2027) box 4: VAT reclaimed on purchases | 3,789 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q1 (period ending 31 January 2027) box 5: net VAT due | 1,821 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2027) box 1: VAT due on sales | 5,580 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2027) box 4: VAT reclaimed on purchases | 5,364 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q2 (period ending 30 April 2027) box 5: net VAT due | 216 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2027) box 1: VAT due on sales | 5,550 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2027) box 4: VAT reclaimed on purchases | 2,859 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q3 (period ending 31 July 2027) box 5: net VAT due | 2,691 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2027) box 1: VAT due on sales | 5,760 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2027) box 4: VAT reclaimed on purchases | 2,679 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q4 (period ending 31 October 2027) box 5: net VAT due | 3,081 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2028) box 1: VAT due on sales | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2028) box 4: VAT reclaimed on purchases | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Q5 (period ending 31 January 2028) box 5: net VAT due | 0 |
 
 ---
 
@@ -1644,27 +1647,27 @@ Journal amounts include VAT at 20%.
 | K28 | **Profit Chargeable to CT** | 7969 | gl-cor:amount (ct600.box315) |
 | K35 | **Corporation Tax** | 1514.11 | gl-cor:taxAmount (ct600.box430) |
 | K39 | Tax Outstanding | 1514.11 | gl-cor:taxAmount (ct600.box515) |
-| E5 |  | 46113 |  |
-| H5 |  | 46477 |  |
+| E5 |  | 46327 |  |
+| H5 |  | 46691 |  |
 | I15 |  | 12000 |  |
 | I16 |  | 0 |  |
 | I17 |  | 0 |  |
 | I18 |  | 0 |  |
-| A33 |  | 365 |  |
-| A34 |  | 0 |  |
+| A33 |  | 151 |  |
+| A34 |  | 214 |  |
 | A35 |  | 365 |  |
 | E33 |  | 2026 |  |
 | E34 |  | 2027 |  |
-| F33 |  | 7969 |  |
-| F34 |  | 0 |  |
+| F33 |  | 3296.76438356164 |  |
+| F34 |  | 4672.23561643836 |  |
 | G33 |  | 19 |  |
 | G34 |  | 19 |  |
-| J33 |  | 1514.11 |  |
-| J34 |  | 0 |  |
+| J33 |  | 626.385232876712 |  |
+| J34 |  | 887.724767123288 |  |
 | L33 |  | 0 |  |
 | L34 |  | 0 |  |
-| I33 |  | 1514.11 |  |
-| I34 |  | 0 |  |
+| I33 |  | 626.385232876712 |  |
+| I34 |  | 887.724767123288 |  |
 | K37 |  | 0 |  |
 
 ### CT600
@@ -1672,15 +1675,18 @@ Journal amounts include VAT at 20%.
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | C126 | Box 43: financial year | 2026 | gl-cor:period (ct600.box43) |
-| N126 | Box 44: amount of profit | 7969 | gl-cor:amount (ct600.box44) |
+| N126 | Box 44: amount of profit | 3296.76438356164 | gl-cor:amount (ct600.box44) |
 | AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
-| AJ126 | Box 46: tax | 1514.11 | gl-cor:taxAmount (ct600.box46) |
-| AJ128 | Box 56: tax | 0 | gl-cor:taxAmount (ct600.box56) |
+| AJ126 | Box 46: tax | 626.385232876712 | gl-cor:taxAmount (ct600.box46) |
+| C128 | Box 53: financial year | 2027 | gl-cor:period (ct600.box53) |
+| N128 | Box 54: amount of profit | 4672.23561643836 | gl-cor:amount (ct600.box54) |
+| AA128 | Box 55: rate of tax | 19 | gl-cor:rate (ct600.box55) |
+| AJ128 | Box 56: tax | 887.724767123288 | gl-cor:taxAmount (ct600.box56) |
 | AJ131 | **Box 63: corporation tax** | 1514.11 | gl-cor:taxAmount (ct600.box63) |
 | Y133 | Box 64: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box64) |
 | Y135 | **Box 65: corporation tax net of marginal rate relief** | 1514.11 | gl-cor:taxAmount (ct600.box65) |
-| B33 |  | 46113 |  |
-| M33 |  | 46477 |  |
+| B33 |  | 46327 |  |
+| M33 |  | 46691 |  |
 | W137 |  | 19 |  |
 | AK66 |  | 112500 |  |
 | Z70 |  | 7969 |  |
@@ -1708,12 +1714,12 @@ Journal amounts include VAT at 20%.
 | F51 | **Profit after Tax** | 17254.89 | gl-cor:amount (pubPL.pat) |
 | F52 | Dividends | 0 | gl-cor:amount (pubPL.dividends) |
 | F54 | **Retained Profit for the year** | 17254.89 | gl-cor:amount (pubPL.retained) |
-| D3 |  | 46477 |  |
+| D3 |  | 46691 |  |
 | B9 |  | 0 |  |
 | B14 |  | 0 |  |
 | B18 |  | 0 |  |
 | B54 |  | 0 |  |
-| E5 |  | 46477 |  |
+| E5 |  | 46691 |  |
 
 ### PubBalSht
 
@@ -1736,7 +1742,7 @@ Journal amounts include VAT at 20%.
 | F33 | **Net Assets** | 47516.89 | gl-cor:amount (pubBS.netAssets) |
 | F36 | Called up share capital | 100 | accounts.capital.3000 (pubBS) |
 | F39 | **Shareholders' Funds** | 47516.89 | gl-cor:amount (pubBS.equity) |
-| D2 |  | 46477 |  |
+| D2 |  | 46691 |  |
 
 ### PubNotes
 
@@ -1803,7 +1809,7 @@ Journal amounts include VAT at 20%.
 | B29 |  | 0.2 |  |
 | B30 |  | 0.33 |  |
 | B31 |  | 0.25 |  |
-| A11 |  | 46477 |  |
+| A11 |  | 46691 |  |
 
 ### Report
 
@@ -1814,7 +1820,7 @@ Journal amounts include VAT at 20%.
 | D89 | Trading margin | 0.528888888888889 | gl-cor:percentage (report.margin) |
 | D94 | Dividend declared | 0 | gl-cor:amount (report.dividend) |
 | I95 | Ordinary shares issued | 100 | gl-cor:quantity (report.sharesIssued) |
-| F22 |  | 46477 |  |
+| F22 |  | 46691 |  |
 | A97 |  | Mike Brown |  |
 | F97 |  | 100 |  |
 | F98 |  | 0 |  |
@@ -1901,15 +1907,15 @@ Journal amounts include VAT at 20%.
 | O17 |  | 0.25 |  |
 | M19 |  | 20 |  |
 | M21 |  | 20 |  |
-| F21 |  | 46477 |  |
-| B9 |  | 46113 |  |
-| B32 |  | 46477 |  |
+| F21 |  | 46691 |  |
+| B9 |  | 46327 |  |
+| B32 |  | 46691 |  |
 | K6 |  | 2026 |  |
-| L6 |  | 46113 |  |
+| L6 |  | 46327 |  |
 | N6 |  | 46477 |  |
 | K7 |  | 2027 |  |
 | L7 |  | 46478 |  |
-| N7 |  | 46477 |  |
+| N7 |  | 46691 |  |
 
 ### WagesInterface
 
@@ -2012,7 +2018,7 @@ Journal amounts include VAT at 20%.
 | E28 |  | 0 |  |
 | H28 |  | 0 |  |
 
-### Sales.xlsx!Apr
+### Sales.xlsx!Nov
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2022,13 +2028,63 @@ Journal amounts include VAT at 20%.
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
-### Sales.xlsx!May
+### Sales.xlsx!Dec
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | G1 |  | 1800 |  |
 | G2 |  | 20 |  |
 | H1 |  | 9000 |  |
+| T1 |  | 0 |  |
+| U1 |  | 0 |  |
+
+### Sales.xlsx!Jan
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| G1 |  | 1860 |  |
+| G2 |  | 20 |  |
+| H1 |  | 9300 |  |
+| T1 |  | 0 |  |
+| U1 |  | 0 |  |
+
+### Sales.xlsx!Feb
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| G1 |  | 1740 |  |
+| G2 |  | 20 |  |
+| H1 |  | 8700 |  |
+| T1 |  | 0 |  |
+| U1 |  | 0 |  |
+
+### Sales.xlsx!Mar
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| G1 |  | 1950 |  |
+| G2 |  | 20 |  |
+| H1 |  | 9750 |  |
+| T1 |  | 0 |  |
+| U1 |  | 0 |  |
+
+### Sales.xlsx!Apr
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| G1 |  | 1890 |  |
+| G2 |  | 20 |  |
+| H1 |  | 9450 |  |
+| T1 |  | 0 |  |
+| U1 |  | 0 |  |
+
+### Sales.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| G1 |  | 2040 |  |
+| G2 |  | 20 |  |
+| H1 |  | 10200 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
@@ -2046,63 +2102,13 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G1 |  | 1740 |  |
-| G2 |  | 20 |  |
-| H1 |  | 8700 |  |
-| T1 |  | 0 |  |
-| U1 |  | 0 |  |
-
-### Sales.xlsx!Aug
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| G1 |  | 1950 |  |
-| G2 |  | 20 |  |
-| H1 |  | 9750 |  |
-| T1 |  | 0 |  |
-| U1 |  | 0 |  |
-
-### Sales.xlsx!Sep
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| G1 |  | 1890 |  |
-| G2 |  | 20 |  |
-| H1 |  | 9450 |  |
-| T1 |  | 0 |  |
-| U1 |  | 0 |  |
-
-### Sales.xlsx!Oct
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| G1 |  | 2040 |  |
-| G2 |  | 20 |  |
-| H1 |  | 10200 |  |
-| T1 |  | 0 |  |
-| U1 |  | 0 |  |
-
-### Sales.xlsx!Nov
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| G1 |  | 1860 |  |
-| G2 |  | 20 |  |
-| H1 |  | 9300 |  |
-| T1 |  | 0 |  |
-| U1 |  | 0 |  |
-
-### Sales.xlsx!Dec
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
 | G1 |  | 1650 |  |
 | G2 |  | 20 |  |
 | H1 |  | 8250 |  |
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
-### Sales.xlsx!Jan
+### Sales.xlsx!Aug
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2112,7 +2118,7 @@ Journal amounts include VAT at 20%.
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
-### Sales.xlsx!Feb
+### Sales.xlsx!Sep
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2122,7 +2128,7 @@ Journal amounts include VAT at 20%.
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
-### Sales.xlsx!Mar
+### Sales.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2132,7 +2138,7 @@ Journal amounts include VAT at 20%.
 | T1 |  | 0 |  |
 | U1 |  | 0 |  |
 
-### Purchases.xlsx!Apr
+### Purchases.xlsx!Nov
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2144,7 +2150,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!May
+### Purchases.xlsx!Dec
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2156,7 +2162,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Jun
+### Purchases.xlsx!Jan
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2168,7 +2174,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Jul
+### Purchases.xlsx!Feb
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2180,7 +2186,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Aug
+### Purchases.xlsx!Mar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2192,7 +2198,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Sep
+### Purchases.xlsx!Apr
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2204,7 +2210,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 12000 |  |
 
-### Purchases.xlsx!Oct
+### Purchases.xlsx!May
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2216,7 +2222,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Nov
+### Purchases.xlsx!Jun
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2228,7 +2234,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Dec
+### Purchases.xlsx!Jul
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2240,7 +2246,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Jan
+### Purchases.xlsx!Aug
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2252,7 +2258,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Feb
+### Purchases.xlsx!Sep
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2264,7 +2270,7 @@ Journal amounts include VAT at 20%.
 | S1 |  | 0 |  |
 | AI1 |  | 0 |  |
 
-### Purchases.xlsx!Mar
+### Purchases.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2280,8 +2286,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 46203 |  |
-| G7 |  | 46234 |  |
+| G5 |  | 46418 |  |
+| G7 |  | 46446 |  |
 | G9 |  | 5610 |  |
 | G13 |  | 5610 |  |
 | G15 |  | 3789 |  |
@@ -2293,8 +2299,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 46295 |  |
-| G7 |  | 46326 |  |
+| G5 |  | 46507 |  |
+| G7 |  | 46538 |  |
 | G9 |  | 5580 |  |
 | G13 |  | 5580 |  |
 | G15 |  | 5364 |  |
@@ -2306,8 +2312,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 46387 |  |
-| G7 |  | 46418 |  |
+| G5 |  | 46599 |  |
+| G7 |  | 46630 |  |
 | G9 |  | 5550 |  |
 | G13 |  | 5550 |  |
 | G15 |  | 2859 |  |
@@ -2319,8 +2325,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 46477 |  |
-| G7 |  | 46507 |  |
+| G5 |  | 46691 |  |
+| G7 |  | 46721 |  |
 | G9 |  | 5760 |  |
 | G13 |  | 5760 |  |
 | G15 |  | 2679 |  |
@@ -2332,8 +2338,8 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| G5 |  | 46568 |  |
-| G7 |  | 46599 |  |
+| G5 |  | 46783 |  |
+| G7 |  | 46812 |  |
 | G9 |  | 0 |  |
 | G13 |  | 0 |  |
 | G15 |  | 0 |  |
@@ -2345,22 +2351,22 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B4 |  | 46081 |  |
-| C4 |  | 46112 |  |
+| B4 |  | 46295 |  |
+| C4 |  | 46326 |  |
 | D4 |  | 0 |  |
 | F4 |  | 0 |  |
 | H4 |  | 0 |  |
 | J4 |  | 0 |  |
 | M4 |  | 0 |  |
-| B5 |  | 46112 |  |
-| C5 |  | 46142 |  |
+| B5 |  | 46326 |  |
+| C5 |  | 46356 |  |
 | D5 |  | 0 |  |
 | F5 |  | 0 |  |
 | H5 |  | 0 |  |
 | J5 |  | 0 |  |
 | M5 |  | 0 |  |
-| B6 |  | 46142 |  |
-| C6 |  | 46173 |  |
+| B6 |  | 46356 |  |
+| C6 |  | 46387 |  |
 | D6 |  | 9750 |  |
 | E6 |  | 9750 |  |
 | F6 |  | 1950 |  |
@@ -2370,8 +2376,8 @@ Journal amounts include VAT at 20%.
 | J6 |  | 993 |  |
 | K6 |  | 993 |  |
 | M6 |  | 0 |  |
-| B7 |  | 46173 |  |
-| C7 |  | 46203 |  |
+| B7 |  | 46387 |  |
+| C7 |  | 46418 |  |
 | D7 |  | 9000 |  |
 | E7 |  | 18750 |  |
 | F7 |  | 1800 |  |
@@ -2381,8 +2387,8 @@ Journal amounts include VAT at 20%.
 | J7 |  | 2253 |  |
 | K7 |  | 3246 |  |
 | M7 |  | 0 |  |
-| B8 |  | 46203 |  |
-| C8 |  | 46234 |  |
+| B8 |  | 46418 |  |
+| C8 |  | 46446 |  |
 | D8 |  | 9300 |  |
 | E8 |  | 28050 |  |
 | F8 |  | 1860 |  |
@@ -2392,8 +2398,8 @@ Journal amounts include VAT at 20%.
 | J8 |  | 543 |  |
 | K8 |  | 3789 |  |
 | M8 |  | 0 |  |
-| B9 |  | 46234 |  |
-| C9 |  | 46265 |  |
+| B9 |  | 46446 |  |
+| C9 |  | 46477 |  |
 | D9 |  | 8700 |  |
 | E9 |  | 27000 |  |
 | F9 |  | 1740 |  |
@@ -2403,8 +2409,8 @@ Journal amounts include VAT at 20%.
 | J9 |  | 558 |  |
 | K9 |  | 3354 |  |
 | M9 |  | 0 |  |
-| B10 |  | 46265 |  |
-| C10 |  | 46295 |  |
+| B10 |  | 46477 |  |
+| C10 |  | 46507 |  |
 | D10 |  | 9750 |  |
 | E10 |  | 27750 |  |
 | F10 |  | 1950 |  |
@@ -2414,8 +2420,8 @@ Journal amounts include VAT at 20%.
 | J10 |  | 1953 |  |
 | K10 |  | 3054 |  |
 | M10 |  | 0 |  |
-| B11 |  | 46295 |  |
-| C11 |  | 46326 |  |
+| B11 |  | 46507 |  |
+| C11 |  | 46538 |  |
 | D11 |  | 9450 |  |
 | E11 |  | 27900 |  |
 | F11 |  | 1890 |  |
@@ -2425,8 +2431,8 @@ Journal amounts include VAT at 20%.
 | J11 |  | 2853 |  |
 | K11 |  | 5364 |  |
 | M11 |  | 0 |  |
-| B12 |  | 46326 |  |
-| C12 |  | 46356 |  |
+| B12 |  | 46538 |  |
+| C12 |  | 46568 |  |
 | D12 |  | 10200 |  |
 | E12 |  | 29400 |  |
 | F12 |  | 2040 |  |
@@ -2436,8 +2442,8 @@ Journal amounts include VAT at 20%.
 | J12 |  | 453 |  |
 | K12 |  | 5259 |  |
 | M12 |  | 0 |  |
-| B13 |  | 46356 |  |
-| C13 |  | 46387 |  |
+| B13 |  | 46568 |  |
+| C13 |  | 46599 |  |
 | D13 |  | 9300 |  |
 | E13 |  | 28950 |  |
 | F13 |  | 1860 |  |
@@ -2447,8 +2453,8 @@ Journal amounts include VAT at 20%.
 | J13 |  | 1953 |  |
 | K13 |  | 5259 |  |
 | M13 |  | 0 |  |
-| B14 |  | 46387 |  |
-| C14 |  | 46418 |  |
+| B14 |  | 46599 |  |
+| C14 |  | 46630 |  |
 | D14 |  | 8250 |  |
 | E14 |  | 27750 |  |
 | F14 |  | 1650 |  |
@@ -2458,8 +2464,8 @@ Journal amounts include VAT at 20%.
 | J14 |  | 453 |  |
 | K14 |  | 2859 |  |
 | M14 |  | 0 |  |
-| B15 |  | 46418 |  |
-| C15 |  | 46446 |  |
+| B15 |  | 46630 |  |
+| C15 |  | 46660 |  |
 | D15 |  | 9000 |  |
 | E15 |  | 26550 |  |
 | F15 |  | 1800 |  |
@@ -2469,8 +2475,8 @@ Journal amounts include VAT at 20%.
 | J15 |  | 573 |  |
 | K15 |  | 2979 |  |
 | M15 |  | 0 |  |
-| B16 |  | 46446 |  |
-| C16 |  | 46477 |  |
+| B16 |  | 46660 |  |
+| C16 |  | 46691 |  |
 | D16 |  | 9750 |  |
 | E16 |  | 27000 |  |
 | F16 |  | 1950 |  |
@@ -2480,8 +2486,8 @@ Journal amounts include VAT at 20%.
 | J16 |  | 1653 |  |
 | K16 |  | 2679 |  |
 | M16 |  | 0 |  |
-| B17 |  | 46477 |  |
-| C17 |  | 46507 |  |
+| B17 |  | 46691 |  |
+| C17 |  | 46721 |  |
 | D17 |  | 10050 |  |
 | E17 |  | 28800 |  |
 | F17 |  | 2010 |  |
@@ -2491,8 +2497,8 @@ Journal amounts include VAT at 20%.
 | J17 |  | 453 |  |
 | K17 |  | 2679 |  |
 | M17 |  | 0 |  |
-| B18 |  | 46507 |  |
-| C18 |  | 46538 |  |
+| B18 |  | 46721 |  |
+| C18 |  | 46752 |  |
 | D18 |  | 0 |  |
 | E18 |  | 19800 |  |
 | F18 |  | 0 |  |
@@ -2502,8 +2508,8 @@ Journal amounts include VAT at 20%.
 | J18 |  | 0 |  |
 | K18 |  | 2106 |  |
 | M18 |  | 0 |  |
-| B19 |  | 46538 |  |
-| C19 |  | 46568 |  |
+| B19 |  | 46752 |  |
+| C19 |  | 46783 |  |
 | D19 |  | 0 |  |
 | E19 |  | 10050 |  |
 | F19 |  | 0 |  |
@@ -2513,8 +2519,8 @@ Journal amounts include VAT at 20%.
 | J19 |  | 0 |  |
 | K19 |  | 453 |  |
 | M19 |  | 0 |  |
-| B20 |  | 46568 |  |
-| C20 |  | 46599 |  |
+| B20 |  | 46783 |  |
+| C20 |  | 46812 |  |
 | D20 |  | 0 |  |
 | E20 |  | 0 |  |
 | F20 |  | 0 |  |
@@ -2667,10 +2673,10 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| H3 |  | May |  |
+| H3 |  | Dec |  |
 | H4 |  | 48 |  |
 | L7 |  | MONTHLY PAYROLL |  |
-| I9 |  | 45805 |  |
+| I9 |  | 46019 |  |
 | I10 |  | 2 |  |
 | M8 |  | 1 |  |
 | G14 |  | 1048 |  |
@@ -2687,73 +2693,73 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| B2 |  | 46118 |  |
-| A2 |  | Apr |  |
+| B2 |  | 46483 |  |
+| A2 |  | Nov |  |
 | C2 |  | 1 |  |
 | D2 |  | 1 |  |
 | F2 |  | 1 |  |
-| A28 |  | May |  |
-| B28 |  | 46144 |  |
+| A28 |  | Dec |  |
+| B28 |  | 46509 |  |
 | C28 |  | 5 |  |
 | D28 |  | 2 |  |
 | F28 |  | 1 |  |
-| A56 |  | Jun |  |
-| B56 |  | 46172 |  |
+| A56 |  | Jan |  |
+| B56 |  | 46537 |  |
 | C56 |  | 9 |  |
 | D56 |  | 3 |  |
 | F56 |  | 1 |  |
-| A91 |  | Jul |  |
-| B91 |  | 46207 |  |
+| A91 |  | Feb |  |
+| B91 |  | 46572 |  |
 | C91 |  | 14 |  |
 | D91 |  | 4 |  |
 | F91 |  | 1 |  |
-| A119 |  | Aug |  |
-| B119 |  | 46235 |  |
+| A119 |  | Mar |  |
+| B119 |  | 46600 |  |
 | C119 |  | 18 |  |
 | D119 |  | 5 |  |
 | F119 |  | 1 |  |
-| A147 |  | Sep |  |
-| B147 |  | 46263 |  |
+| A147 |  | Apr |  |
+| B147 |  | 46628 |  |
 | C147 |  | 22 |  |
 | D147 |  | 6 |  |
 | F147 |  | 1 |  |
-| A182 |  | Oct |  |
-| B182 |  | 46298 |  |
+| A182 |  | May |  |
+| B182 |  | 46663 |  |
 | C182 |  | 27 |  |
 | D182 |  | 7 |  |
 | F182 |  | 1 |  |
-| A210 |  | Nov |  |
-| B210 |  | 46326 |  |
+| A210 |  | Jun |  |
+| B210 |  | 46691 |  |
 | C210 |  | 31 |  |
 | D210 |  | 8 |  |
 | F210 |  | 1 |  |
-| A238 |  | Dec |  |
-| B238 |  | 46354 |  |
+| A238 |  | Jul |  |
+| B238 |  | 46719 |  |
 | C238 |  | 35 |  |
 | D238 |  | 9 |  |
 | F238 |  | 1 |  |
-| A273 |  | Jan |  |
-| B273 |  | 46389 |  |
+| A273 |  | Aug |  |
+| B273 |  | 46754 |  |
 | C273 |  | 40 |  |
 | D273 |  | 10 |  |
 | F273 |  | 1 |  |
-| A301 |  | Feb |  |
-| B301 |  | 46417 |  |
+| A301 |  | Sep |  |
+| B301 |  | 46782 |  |
 | C301 |  | 44 |  |
 | D301 |  | 11 |  |
 | F301 |  | 1 |  |
-| A329 |  | Mar |  |
-| B329 |  | 46445 |  |
+| A329 |  | Oct |  |
+| B329 |  | 46810 |  |
 | C329 |  | 48 |  |
 | D329 |  | 12 |  |
 | F329 |  | 1 |  |
 
-### Payslips.xlsx!Jul
+### Payslips.xlsx!Feb
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | T41 |  | 0 |  |
-| M49 |  | 45866 |  |
+| M49 |  | 46081 |  |
 | F51 |  | Mike Brown |  |
 | M51 |  | 1048 |  |
 | N51 |  | 0 |  |
@@ -2778,7 +2784,7 @@ Journal amounts include VAT at 20%.
 | O55 |  | 0 |  |
 | T55 |  | 0 |  |
 
-### Payslips.xlsx!Aug
+### Payslips.xlsx!Mar
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
@@ -2806,7 +2812,7 @@ Journal amounts include VAT at 20%.
 | J15 |  | 0 |  |
 | L15 |  | 0 |  |
 | K15 |  | 0 |  |
-| M49 |  | 45897 |  |
+| M49 |  | 46109 |  |
 | F51 |  | Mike Brown |  |
 | M51 |  | 1048 |  |
 | N51 |  | 0 |  |
@@ -2947,28 +2953,28 @@ Journal amounts include VAT at 20%.
 | P38 |  | 8190 |  |
 | V38 |  | 1638 |  |
 
-### Currentaccount.xlsx!Mar
+### Currentaccount.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 29390.7 |  |
 | A2 |  | 29824.7 |  |
 
-### Savingaccount.xlsx!Mar
+### Savingaccount.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
 | A2 |  | 0 |  |
 
-### Cashaccount.xlsx!Mar
+### Cashaccount.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
 | A1 |  | 0 |  |
 | A2 |  | 0 |  |
 
-### Creditcardaccount.xlsx!Mar
+### Creditcardaccount.xlsx!Oct
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|

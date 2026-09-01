@@ -28,12 +28,10 @@ held as declared absences with reasons, never silently closed.
   glob never matched. Fixed the artifact names, added a guard test, refreshed the four stale
   Ltd brickwork reports (verified byte-identical LibreOffice against a CI-committed report),
   re-pinned the judge parser fixture. Full serial suite 7065 tests green in the track.
-- [ ] **Operator decision: Ltd extra-scenario report rot.** The extras run only at `latest`
-  (2027-10-31), so the committed 2027-03-31 and 2027-09-30 brickwork pairs — the ones the
-  deploy judge reads — freeze again after the next refresh adds an Oct27 pair. Either run
-  the Ltd extras over the same three-year-end matrix as the main reconcile job (3x extra CI
-  time, keeps coverage), or drop superseded extras in the commit job (free, loses the March
-  pair). SE and BST are immune (single year end).
+- [x] Judge mode-invariance — landed on the batch branch (operator decided: latest joins the
+  defaults matrix; superseded extras drop in the commit job, mirrored to SE/BST). The Oct27
+  brickwork pair is committed and the judge test re-pinned to it, so the next generate run
+  reproduces rather than changes the judged tree.
 - [ ] batch remainder, surfaced by the rates track:
   - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
     `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`

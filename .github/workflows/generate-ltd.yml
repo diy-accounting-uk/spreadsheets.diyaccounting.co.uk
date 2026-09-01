@@ -166,12 +166,13 @@ jobs:
           ALL_YEAR_ENDS=$(ls -d packages/GB\ Accounts\ Company*/ 2>/dev/null \
             | sed 's|.*/GB Accounts Company \([0-9-]*\).*|\1|' \
             | sort -r)
+          LATEST=$(echo "$ALL_YEAR_ENDS" | head -1)
           if [[ "$RECONCILE_ALL" == "true" ]]; then
             YEAR_ENDS=$(echo "$ALL_YEAR_ENDS" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
-            # Three representative year-ends rather than the full monthly
-            # rotation: the year-ends are mechanical tab-name/formula-rewrite
-            # rotations of the same template (see app/lib/spreadsheet-runner.js
+            # Representative year-ends rather than the full monthly rotation:
+            # the year-ends are mechanical tab-name/formula-rewrite rotations
+            # of the same template (see app/lib/spreadsheet-runner.js
             # getMonthTabSequence), and the JSZip catalogue guards already
             # cover the per-year-end variation across every shipped package.
             # LibreOffice reconciliation only needs one representative of each
@@ -180,15 +181,18 @@ jobs:
             #   - latest June: a 30-day mid-year month, fully rewritten tabs
             #   - latest February: the short month, and (on a leap year) the
             #     class of year-end that straddles a Feb 29 FY
+            # The overall latest year-end always joins them: its report is the
+            # newest of the featured scenario, so it is the run the deploy
+            # judge headlines — it must refresh on every dispatch mode, or the
+            # judge's verdict depends on which mode last ran.
             LATEST_MARCH=$(echo "$ALL_YEAR_ENDS" | grep -m1 -- '-03-31$')
             LATEST_JUNE=$(echo "$ALL_YEAR_ENDS" | grep -m1 -- '-06-30$')
             LATEST_FEBRUARY=$(echo "$ALL_YEAR_ENDS" | grep -m1 -E -- '-02-(28|29)$')
-            YEAR_ENDS=$(printf '%s\n' "$LATEST_MARCH" "$LATEST_JUNE" "$LATEST_FEBRUARY" \
+            YEAR_ENDS=$(printf '%s\n' "$LATEST_MARCH" "$LATEST_JUNE" "$LATEST_FEBRUARY" "$LATEST" \
               | sed '/^$/d' | sort -ru \
               | jq -R -s -c 'split("\n") | map(select(length > 0))')
           fi
           echo "year-ends=$YEAR_ENDS" | tee -a "$GITHUB_OUTPUT"
-          LATEST=$(echo "$ALL_YEAR_ENDS" | head -1)
           echo "latest=$LATEST" | tee -a "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v7
         with:
@@ -435,6 +439,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
+          # The extra scenarios reconcile only at the latest year-end, so a
+          # committed pair at any older year-end can never refresh again and
+          # the deploy judge would read its frozen behaviour forever. Drop
+          # superseded pairs; the latest pair is the only one kept.
+          LATEST='${{ needs.generate.outputs.latest }}'
+          if [[ -n "$LATEST" ]]; then
+            find reports -name "*ltd-brickwork-pro-*.md" ! -name "*${LATEST//-/_}*" -delete
+          fi
           git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
           if git diff --staged --quiet; then
             echo "No changes to commit"

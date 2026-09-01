@@ -39,8 +39,8 @@ const REPORTS = resolve(ROOT, "reports");
 // The shipped reports, not a hand-written stand-in. An indicator that stops matching the
 // report generator's labels is the failure this suite exists to catch.
 const FIXTURES = {
-  ltdVat: "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-vat.md",
-  ltdNonVat: "GB_Accounts_Company_2027_09_30__Sep27__Excel_2007_ltd-brickwork-pro-nonvat.md",
+  ltdVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-vat.md",
+  ltdNonVat: "GB_Accounts_Company_2027_10_31__Oct27__Excel_2007_ltd-brickwork-pro-nonvat.md",
   seVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-vat.md",
   seNonVat: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-brickwork-pro-nonvat.md",
   seAdvanced: "GB_Accounts_Self_Employed_2027_04_05__Apr27__Excel_2007_se-scenario-advanced.md",
