@@ -258,6 +258,12 @@ test.describe("DIYA-GL books page — the rung: upload, drift, breakability", ()
     await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "GB_Accounts_Basic_Sole_Trader.xlsx");
     await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 
+    // The whole of the snapshot's own drift collection, not just the three
+    // views this test happens to visit -- a finding on a view nobody clicked
+    // would otherwise pass silently.
+    const drift = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.drift);
+    expect(drift).toEqual([]);
+
     await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
     await expect(page.locator(".pencil-correction")).toHaveCount(0);
 
