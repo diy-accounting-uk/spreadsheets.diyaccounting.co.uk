@@ -64,13 +64,11 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
 - [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
   both the API and the MCP tool layer).
 
-From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
-automation — that is the plan's binding constraint):
-
-- [ ] the eight tax-year cuts (Sonnet agent) — in flight, operator authorized 2026-09-02:
-  apply/verify/commit per year oldest-first in `../diy-accounting-archive`, push to its
-  main, record the `packages-published/` role in its `CLAUDE.md`, delete this repo's
-  unused `ARCHIVE_PACKAGES_TOKEN` secret.
+- [x] the eight tax-year cuts — done and independently verified: nine commits on the
+  archive repo's main (119/119 digests match), the `packages-published/` role recorded
+  there, the unused secret deleted. `PLAN_PACKAGES_TO_ARCHIVE.md` reached its end state
+  and is archived to `_developers/archive/`; future cuts run through the
+  `archive-packages` skill.
 
 ## Plans not tracked here
 
@@ -79,6 +77,7 @@ None — both live plans are on this board.
 ## Discipline
 
 - Generated `packages/` output is committed; regenerating is a mass binary commit — one
-  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. The structural fix is
-  `PLAN_PACKAGES_TO_ARCHIVE.md` at this root: packages move to the `diy-accounting-archive`
-  repository and stop being tracked here.
+  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. Cuts of the
+  finished catalogue land in the archive repository through the `archive-packages` skill;
+  untracking `packages/` here remains an open question (the deploy and catalogue-sweep
+  readers need another source first).
