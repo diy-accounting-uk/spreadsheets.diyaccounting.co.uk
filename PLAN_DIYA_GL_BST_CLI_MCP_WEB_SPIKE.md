@@ -355,8 +355,13 @@ harness's; an `extract_book` on a generated package matches the CLI's output byt
   own hardcoded copy folded in — it bypassed the loader). Generator-shaped fixtures proven
   byte-identical; sp-sixty's misroutes corrected with a breakability proof. 3628 blast
   tests.
-- [ ] Track E — the save_workbook carve-out (Opus, worktree agent) — dispatched
-- [ ] Track F — the MCP server (Sonnet) — waits on D, E, and phase 1's Track C
+- [x] Track E — landed (merged): `app/lib/bst-workbook.js` — `saveBstWorkbook`/
+  `saveBstPackageZip` with the lazy resource-loader seam (zero new top-level `fs` sites),
+  byte-for-byte proven against the pre-refactor CLI on all three fixtures, `BookFieldError`
+  failing by name before the template is touched. `applyCellWrites` extracted from the
+  runner rather than forking cell-write semantics. Bundle-gate intel recorded in its
+  report: recalculation sits strictly downstream of the carved function.
+- [ ] Track F — the MCP server (Sonnet, worktree agent) — dispatched (C, D, E all landed)
 - [ ] closing ladder (coordinator) — waits on the tracks
 
 | Track | Tier | Owns | Delivers |
