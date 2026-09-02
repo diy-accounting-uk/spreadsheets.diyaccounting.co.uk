@@ -426,11 +426,11 @@
   // re-renders. A helper's whole plan is one call, so it is one undo step.
 
   function commit(edit, undoLabel, toastMessage) {
-    if (state.committing) return;
+    if (state.committing) return Promise.resolve();
     state.committing = true;
     var previousBook = state.book;
     var previousLines = state.lines;
-    Promise.resolve()
+    return Promise.resolve()
       .then(edit)
       .then(function (newLines) {
         return window.DiyaGlBooksLoader.recalculate(state.book, newLines, state.context);
@@ -447,6 +447,20 @@
         render();
         showToast("That edit did not apply: " + (error && error.message ? error.message : error));
       });
+  }
+
+  // The seam for lines that arrive from somewhere other than this page's own
+  // grid -- an agent session's edit through the MCP tools, a book built by
+  // another surface. It lands on the same commit path, so it recalculates,
+  // re-renders and undoes exactly like a hand edit.
+  function setLines(lines, label) {
+    return commit(
+      function () {
+        return lines;
+      },
+      label || "replace the book's lines",
+      null,
+    );
   }
 
   function undoLastEdit() {
@@ -1752,4 +1766,9 @@
       els.toast.classList.remove("is-visible");
     }, 4000);
   }
+
+  // What the page answers to from outside itself. setLines is the way a
+  // caller that is not the entries grid changes the book; undo is the same
+  // stack the topbar button and Ctrl+Z pop.
+  window.DiyaGlBooksPage = { setLines: setLines, undo: undoLastEdit };
 })();
