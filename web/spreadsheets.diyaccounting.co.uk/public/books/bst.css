@@ -1,0 +1,1255 @@
+/* SPDX-License-Identifier: AGPL-3.0-only */
+/* Copyright (C) 2025-2026 DIY Accounting Ltd */
+
+/* books/bst.css -- the ledger-pad design system for the DIYA-GL books page.
+   Six tokens, derived light and dark, IBM Plex Mono for figures, Archivo
+   for UI (system-stack fallback -- no new CDN font dependency; the site's
+   other pages already ship no webfont, so this page follows that pattern). */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  /* The six ledger tokens */
+  --paper: #fcfbf7;
+  --ink: #1d2a24;
+  --rule: #2f6b4f;
+  --pencil: #6b6f76;
+  --correction: #b3402a;
+  --tint: #e9f2ec;
+
+  /* Derived */
+  --paper-raised: #ffffff;
+  --rule-faint: rgba(47, 107, 79, 0.28);
+  --ink-faint: rgba(29, 42, 36, 0.6);
+  --shadow: 0 1px 2px rgba(29, 42, 36, 0.08);
+  --focus-ring: 0 0 0 3px rgba(47, 107, 79, 0.35);
+
+  --font-ui: Archivo, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+
+  --radius: 3px;
+  --topbar-h: 3.25rem;
+  --tabstrip-h: 2.5rem;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14201a;
+    --ink: #eaf2ec;
+    --rule: #5fae86;
+    --pencil: #9aa0a6;
+    --correction: #e2725a;
+    --tint: #1c2b23;
+    --paper-raised: #1a2a22;
+    --rule-faint: rgba(95, 174, 134, 0.3);
+    --ink-faint: rgba(234, 242, 236, 0.65);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #14201a;
+  --ink: #eaf2ec;
+  --rule: #5fae86;
+  --pencil: #9aa0a6;
+  --correction: #e2725a;
+  --tint: #1c2b23;
+  --paper-raised: #1a2a22;
+  --rule-faint: rgba(95, 174, 134, 0.3);
+  --ink-faint: rgba(234, 242, 236, 0.65);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
+
+html {
+  height: 100%;
+}
+
+body.diya-books {
+  margin: 0;
+  min-height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--rule);
+  color: var(--paper);
+  padding: 0.5em 1em;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5em;
+  top: 0.5em;
+}
+
+/* Focus visibility, quality floor */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible,
+.year-row:focus-visible,
+.tab-btn:focus-visible {
+  outline: 2px solid var(--rule);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.caps-label {
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--pencil);
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ============================== Topbar ============================== */
+
+.app-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: var(--topbar-h);
+  padding: 0 0.9rem;
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--rule-faint);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.app-mark {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  font-size: 1.05rem;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-mark span {
+  color: var(--rule);
+}
+
+.app-back {
+  font-size: 0.8rem;
+  color: var(--pencil);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.app-back:hover {
+  color: var(--rule);
+}
+
+.app-title {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule-faint);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.05rem;
+  flex: none;
+}
+.icon-btn:hover {
+  border-color: var(--rule);
+  background: var(--tint);
+}
+
+.save-btn {
+  border-color: var(--rule);
+  color: var(--rule);
+}
+
+/* ============================ Sheet tab strip ========================= */
+/* Echoes the workbook's own tab strip: caps, wide tracking, a rule underline
+   on the active view. */
+
+.sheet-tabs {
+  display: flex;
+  gap: 0.1rem;
+  overflow-x: auto;
+  height: var(--tabstrip-h);
+  padding: 0 0.5rem;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule-faint);
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: 19;
+  scrollbar-width: thin;
+}
+
+.tab-btn {
+  flex: none;
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--pencil);
+  padding: 0 0.75rem;
+  height: var(--tabstrip-h);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab-btn:hover {
+  color: var(--ink);
+}
+.tab-btn[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--rule);
+}
+
+/* ============================== App body =============================== */
+
+.app-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  min-height: calc(100vh - var(--topbar-h) - var(--tabstrip-h));
+}
+
+.view-root {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.view-root h2 {
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  margin: 0 0 0.75rem;
+}
+
+.view-root h3 {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pencil);
+  margin: 1.25rem 0 0.5rem;
+}
+
+.view-lede {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  margin: -0.4rem 0 1rem;
+}
+
+/* ============================== Home view ============================== */
+
+.home-nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
+.home-nav-list a {
+  display: block;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: var(--shadow);
+}
+.home-nav-list a:hover {
+  border-color: var(--rule);
+}
+.home-nav-list .nav-item-label {
+  font-weight: 600;
+  display: block;
+}
+.home-nav-list .nav-item-sheets {
+  color: var(--pencil);
+  font-size: 0.78rem;
+}
+
+/* ============================== Empty state ============================= */
+
+.empty-state {
+  max-width: 560px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px dashed var(--rule-faint);
+  border-radius: var(--radius);
+  text-align: center;
+  background: var(--paper-raised);
+}
+.empty-state h2 {
+  margin-top: 0;
+}
+.empty-state p {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+}
+.empty-state-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.picker-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.file-picker-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--rule);
+  font-weight: 600;
+  cursor: pointer;
+}
+.file-picker-label:hover {
+  background: var(--tint);
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn:hover {
+  border-color: var(--rule);
+}
+.btn-primary {
+  background: var(--rule);
+  border-color: var(--rule);
+  color: var(--paper);
+}
+.btn-primary:hover {
+  opacity: 0.92;
+}
+.example-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.example-list button {
+  text-align: left;
+}
+
+/* ============================== Year table ============================== */
+
+.year-table-scroll {
+  overflow: auto;
+  max-height: 72vh;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+table.year-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 1180px;
+}
+
+.year-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--paper-raised);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.66rem;
+  color: var(--pencil);
+  text-align: right;
+  white-space: nowrap;
+}
+.year-table thead th:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 4;
+}
+.year-table th.col-computed,
+.year-table td.col-computed {
+  background: var(--tint);
+}
+
+.year-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--rule-faint);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.year-table td.month-cell {
+  text-align: left;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  position: sticky;
+  left: 0;
+  background: var(--paper-raised);
+  z-index: 2;
+}
+
+.year-row {
+  cursor: pointer;
+}
+.year-row:hover td {
+  background: var(--tint);
+}
+.year-row.is-open td {
+  background: var(--tint);
+}
+.year-row.is-open {
+  position: sticky;
+  top: 2.1rem;
+  z-index: 5;
+}
+.year-row.is-open td.month-cell {
+  z-index: 6;
+}
+
+.year-row .disclosure {
+  display: inline-block;
+  width: 0.9em;
+  transition: transform 0.18s ease;
+}
+.year-row[aria-expanded="true"] .disclosure {
+  transform: rotate(90deg);
+}
+
+tfoot.year-totals tr {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+}
+tfoot.year-totals td,
+tfoot.year-totals th {
+  background: var(--tint);
+  border-top: 2px double var(--rule);
+  border-bottom: none;
+  font-weight: 700;
+  padding: 0.5rem 0.6rem;
+}
+tfoot.year-totals th {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  background: var(--tint);
+}
+
+/* Month detail: summary then entries, nested under the pinned year row */
+
+.month-detail-row td {
+  padding: 0;
+  background: var(--paper);
+}
+
+.month-detail {
+  padding: 0.9rem 1rem 1.2rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+
+.month-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.month-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+.month-summary-item .caps-label {
+  font-size: 0.62rem;
+}
+.month-summary-item .value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.entries-toggle {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.entries-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .entries-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+table.entries-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+table.entries-table caption {
+  text-align: left;
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.68rem;
+  color: var(--pencil);
+  margin-bottom: 0.35rem;
+}
+table.entries-table th {
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid var(--rule);
+  padding: 0.25rem 0.4rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pencil);
+}
+table.entries-table td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+table.entries-table td.entry-amount {
+  font-family: var(--font-mono);
+  text-align: right;
+  white-space: nowrap;
+}
+.entry-cell-editable {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.entry-cell-editable:hover,
+.entry-cell-editable:focus {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
+}
+.entries-note {
+  font-size: 0.75rem;
+  color: var(--pencil);
+  margin: 0.5rem 0 0;
+}
+
+/* ============================== Pencil correction ======================= */
+/* Signature element: a calculated value in ink, the workbook's as-read value
+   struck through beneath it in pencil, the signed drift in pennies beside. */
+
+.pencil-correction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.15;
+}
+.pencil-correction .computed-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.pencil-correction .as-read {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72em;
+  color: var(--pencil);
+  text-decoration: line-through;
+  text-decoration-color: var(--pencil);
+}
+.pencil-correction .drift-amount {
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  color: var(--correction);
+  margin-left: 0.3em;
+}
+.pencil-correction.in-margin {
+  align-items: flex-start;
+  font-size: 0.85em;
+  margin-left: 0.6rem;
+  border-left: 2px solid var(--correction);
+  padding-left: 0.4rem;
+}
+
+/* ============================== Checks / inspector ======================= */
+
+.inspector {
+  background: var(--paper-raised);
+  border-left: 1px solid var(--rule-faint);
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.drift-summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.drift-summary-item {
+  flex: 1;
+  min-width: 90px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.drift-summary-item .count {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  display: block;
+}
+.drift-summary-item.pass .count {
+  color: var(--rule);
+}
+.drift-summary-item.warn .count,
+.drift-summary-item.fail .count {
+  color: var(--correction);
+}
+
+ul.checks-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.check-item {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.65rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+.check-item .check-marker {
+  flex: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--paper);
+  margin-top: 0.1rem;
+}
+.check-item.pass .check-marker {
+  background: var(--rule);
+}
+.check-item.warn .check-marker,
+.check-item.fail .check-marker {
+  background: var(--correction);
+}
+.check-item .check-body {
+  flex: 1;
+  min-width: 0;
+}
+.check-item .check-label {
+  font-weight: 600;
+}
+.check-item .check-figures {
+  color: var(--pencil);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+.check-helper {
+  margin-top: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  background: var(--tint);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+}
+.check-helper p {
+  margin: 0 0 0.4rem;
+  color: var(--ink-faint);
+}
+
+.helpers-section {
+  margin-top: 1.25rem;
+}
+.helper-card {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.7rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+}
+.helper-card h4 {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+}
+.helper-card p {
+  margin: 0 0 0.5rem;
+  color: var(--ink-faint);
+}
+
+/* Drawer variant (desktop portrait) and mobile bottom-sheet share this */
+.inspector-drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-height: 70vh;
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule);
+  border-radius: 10px 10px 0 0;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform 0.22s ease;
+  z-index: 30;
+  overflow-y: auto;
+  padding: 1rem;
+}
+.inspector-drawer.is-open {
+  transform: translateY(0);
+}
+.drawer-handle {
+  width: 2.5rem;
+  height: 4px;
+  background: var(--rule-faint);
+  border-radius: 2px;
+  margin: 0 auto 0.75rem;
+}
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 25;
+}
+
+/* ============================== Charts ============================== */
+
+.chart-block {
+  margin-bottom: 1.5rem;
+}
+.chart-block svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.chart-bar-label {
+  font-family: var(--font-ui);
+  font-size: 0.6rem;
+}
+.chart-value-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--pencil);
+}
+.chart-legend-swatch {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 2px;
+  margin-right: 0.3em;
+  vertical-align: -1px;
+}
+
+/* ============================== Panels ============================== */
+
+.panel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.panel-card {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  padding: 0.85rem 1rem;
+}
+.panel-card h3 {
+  margin-top: 0;
+}
+table.kv-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+table.kv-table td {
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--rule-faint);
+}
+table.kv-table td:first-child {
+  color: var(--ink-faint);
+}
+table.kv-table td:last-child {
+  font-family: var(--font-mono);
+  text-align: right;
+  white-space: nowrap;
+}
+table.kv-table tr.total td {
+  font-weight: 700;
+  border-top: 2px double var(--rule);
+  border-bottom: none;
+}
+
+.rate-provenance {
+  font-size: 0.75rem;
+  color: var(--pencil);
+  margin-bottom: 0.75rem;
+}
+
+.editable-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 0.6rem;
+}
+.editable-field label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pencil);
+}
+.editable-field input {
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ============================== Tax-form renders ============================== */
+/* SA103S and Income Tax: the form's own section order and box numbers, the
+   page's own ink -- never HMRC branding, crest or wordmark. */
+
+.form-render {
+  max-width: 640px;
+}
+.form-render .form-masthead {
+  margin-bottom: 1rem;
+}
+.form-render .form-masthead .form-name {
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.form-render .form-masthead .form-microcopy {
+  font-size: 0.78rem;
+  color: var(--pencil);
+  font-style: italic;
+}
+
+.form-section {
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+.form-section h3 {
+  margin: 0 0 0.5rem;
+}
+
+.form-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+}
+
+.box-chip {
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--rule);
+}
+
+.form-row-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.86rem;
+}
+
+.form-amount-box {
+  flex: none;
+  min-width: 6.5rem;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  padding: 0.3rem 0.5rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.form-amount-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+}
+
+.whole-pounds-note {
+  font-size: 0.62rem;
+  color: var(--pencil);
+  font-style: italic;
+}
+
+.form-row-margin {
+  flex: none;
+  width: 7.5rem;
+}
+
+.form-row.total-row {
+  border-top: 3px double var(--ink);
+  margin-top: 0.3rem;
+  padding-top: 0.5rem;
+  font-weight: 700;
+}
+
+.form-rate-pencil {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--pencil);
+  font-style: italic;
+  margin-left: 0.4rem;
+}
+
+/* ============================== Mobile chrome ============================== */
+
+.mobile-tabbar {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule-faint);
+  z-index: 22;
+}
+.mobile-tabbar-inner {
+  display: flex;
+}
+.mobile-tab {
+  flex: 1;
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0.6rem 0;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pencil);
+  cursor: pointer;
+}
+.mobile-tab[aria-selected="true"] {
+  color: var(--rule);
+  font-weight: 700;
+}
+
+.mobile-action-bar {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--paper-raised);
+  border-top: 1px solid var(--rule-faint);
+  z-index: 22;
+}
+
+/* Mobile-portrait stacked month cards */
+.month-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.month-card {
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  padding: 0.7rem 0.85rem;
+}
+.month-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  cursor: pointer;
+}
+.month-card-head .month-name {
+  font-weight: 700;
+}
+.month-card-figures {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.2rem 0.6rem;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+}
+.month-card-figures .figure-label {
+  color: var(--ink-faint);
+}
+.month-card-figures .figure-value {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.year-summary-sticky {
+  position: sticky;
+  top: calc(var(--topbar-h) + var(--tabstrip-h));
+  z-index: 15;
+  background: var(--tint);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.8rem;
+  margin-bottom: 0.75rem;
+  display: none;
+}
+.year-summary-sticky .ys-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  padding: 0.1rem 0;
+}
+.year-summary-sticky .ys-row .ys-value {
+  font-family: var(--font-mono);
+}
+
+/* ============================== Motion ============================== */
+
+.month-detail {
+  animation: month-reveal 0.22s ease;
+}
+@keyframes month-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Hidden by default; the desktop-portrait layout below is the only one that
+   shows it (the only layout where the inspector's content lives behind a
+   drawer the reader must ask for). */
+.drawer-toggle-btn {
+  display: none;
+}
+
+/* ============================================================================
+   FOUR LAYOUTS
+   ============================================================================
+   Breakpoint: 900px marks desktop vs mobile. Orientation (landscape = width
+   >= height) picks the rail/table variant vs the drawer/stacked variant,
+   independent of the desktop/mobile split -- so all four combinations are
+   real layouts, not one fluid layout with a media query bolted on. */
+
+/* --- Desktop landscape: year table left (~2/3), inspector rail right --- */
+@media (min-width: 900px) and (orientation: landscape) {
+  .app-body {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  }
+  .inspector {
+    display: block;
+    position: sticky;
+    top: calc(var(--topbar-h) + var(--tabstrip-h));
+    height: calc(100vh - var(--topbar-h) - var(--tabstrip-h));
+  }
+  .inspector-drawer,
+  .drawer-backdrop,
+  .mobile-tabbar,
+  .mobile-action-bar,
+  .drawer-toggle-btn {
+    display: none !important;
+  }
+  .month-cards,
+  .year-summary-sticky {
+    display: none !important;
+  }
+}
+
+/* --- Desktop portrait: year table full width, inspector as bottom drawer --- */
+@media (min-width: 900px) and (orientation: portrait) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+  .inspector {
+    display: none;
+  }
+  .mobile-tabbar,
+  .mobile-action-bar {
+    display: none !important;
+  }
+  .drawer-toggle-btn {
+    display: inline-flex;
+  }
+  .month-cards,
+  .year-summary-sticky {
+    display: none !important;
+  }
+}
+
+/* --- Mobile landscape: the columnar table, horizontally scrollable, month column frozen --- */
+@media (max-width: 899px) and (orientation: landscape) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+  .inspector {
+    display: none;
+  }
+  .mobile-tabbar {
+    display: block;
+  }
+  .mobile-action-bar {
+    display: none !important;
+  }
+  .drawer-toggle-btn {
+    display: none !important;
+  }
+  .month-cards,
+  .year-summary-sticky {
+    display: none !important;
+  }
+  .view-root {
+    padding: 0.6rem;
+  }
+}
+
+/* --- Mobile portrait: stacked month cards, sticky year totals, bottom action bar --- */
+@media (max-width: 899px) and (orientation: portrait) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+  .inspector {
+    display: none;
+  }
+  .mobile-tabbar {
+    display: block;
+  }
+  .mobile-action-bar {
+    display: flex;
+  }
+  .drawer-toggle-btn {
+    display: none !important;
+  }
+  .year-table-scroll {
+    display: none !important;
+  }
+  .month-cards {
+    display: flex !important;
+  }
+  .year-summary-sticky {
+    display: block !important;
+  }
+}
+
+/* ============================== Toast ============================== */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translate(-50%, 8px);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  max-width: 90vw;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+  z-index: 50;
+}
+#toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

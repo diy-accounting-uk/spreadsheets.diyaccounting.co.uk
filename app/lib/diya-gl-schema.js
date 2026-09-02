@@ -13,21 +13,70 @@ import addFormats from "ajv-formats";
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { BOOK_SCHEMA_RESOURCE, LINES_SCHEMA_RESOURCE, nodeResourceLoader } from "./app-resources.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SCHEMA_DIR = resolve(__dirname, "..", "..", "web", "spreadsheets.diyaccounting.co.uk", "public", "schema");
+// The two published schemas compile once, on the first validation rather than
+// on import. A caller that cannot read files — the books page — hands them in
+// with useSchemas() before validating anything; in Node they come off disk.
+let validators = null;
 
-function loadSchema(fileName) {
-  return JSON.parse(readFileSync(resolve(SCHEMA_DIR, fileName), "utf8"));
+function compileSchemas(bookSchema, linesSchema) {
+  const ajv = new Ajv2020({ allErrors: true });
+  addFormats(ajv);
+  return { book: ajv.compile(bookSchema), lines: ajv.compile(linesSchema) };
 }
 
-const bookSchema = loadSchema("diya-gl-book-v2.schema.json");
-const linesSchema = loadSchema("diya-gl-lines-v2.schema.json");
+/**
+ * Supply the two v2 schemas rather than have them read from disk. The books
+ * page fetches them and calls this before its first validation.
+ * @param {Object} bookSchema - parsed diya-gl-book-v2.schema.json
+ * @param {Object} linesSchema - parsed diya-gl-lines-v2.schema.json
+ */
+export function useSchemas(bookSchema, linesSchema) {
+  validators = compileSchemas(bookSchema, linesSchema);
+}
 
-const ajv = new Ajv2020({ allErrors: true });
-addFormats(ajv);
-const validateBookSchema = ajv.compile(bookSchema);
-const validateLineSchema = ajv.compile(linesSchema);
+/**
+ * Load and compile the two schemas through a resource loader, for a caller
+ * that has one but would rather not parse the JSON itself.
+ * @param {{readText: (path: string) => Promise<string>}} [resources]
+ */
+export async function loadSchemasFrom(resources = nodeResourceLoader()) {
+  const [book, lines] = await Promise.all([
+    resources.readText(BOOK_SCHEMA_RESOURCE).then(JSON.parse),
+    resources.readText(LINES_SCHEMA_RESOURCE).then(JSON.parse),
+  ]);
+  useSchemas(book, lines);
+}
+
+// Validation is synchronous, and every caller in the pipeline relies on that,
+// so the Node fallback reads the two files synchronously. A bundle with no
+// file system reaches this only when the page forgot to call useSchemas(), and
+// then it fails loudly rather than validating nothing.
+function compiled() {
+  if (validators) return validators;
+  try {
+    const schemaDir = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "web",
+      "spreadsheets.diyaccounting.co.uk",
+      "public",
+      "schema",
+    );
+    const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
+    validators = compileSchemas(read("diya-gl-book-v2.schema.json"), read("diya-gl-lines-v2.schema.json"));
+  } catch (cause) {
+    throw new Error(
+      "the diya-gl schemas could not be read; a caller with no file system has to call useSchemas() or loadSchemasFrom() first",
+      {
+        cause,
+      },
+    );
+  }
+  return validators;
+}
 
 function formatAjvError(prefix, error) {
   return `${prefix}${error.instancePath || "/"} ${error.message}`;
@@ -55,6 +104,7 @@ function withIsoDates(value) {
  * @returns {{valid: boolean, errors: string[]}}
  */
 export function validateBook(book) {
+  const validateBookSchema = compiled().book;
   const valid = validateBookSchema(withIsoDates(book));
   const errors = valid ? [] : validateBookSchema.errors.map((e) => formatAjvError("book", e));
   return { valid, errors };
@@ -88,6 +138,7 @@ function declaredIDs(entries, idField) {
  * @returns {{valid: boolean, errors: string[]}}
  */
 export function validateLines(lines, book) {
+  const validateLineSchema = compiled().lines;
   const errors = [];
 
   const accountCodes = declaredAccountCodes(book);
