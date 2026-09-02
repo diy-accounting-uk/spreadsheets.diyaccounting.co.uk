@@ -104,6 +104,26 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await expect(correction.locator(".drift-amount")).toBeVisible();
   });
 
+  // The Debtors & Creditors sheet has no counterparty column: it opens with
+  // what was owed at the start of the year, then shows one row a month of
+  // what that month's sales and purchases left outstanding.
+  test("the debtors and creditors view shows a month a row and no counterparty names", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="debtors-creditors"]').click();
+
+    const debtors = page.locator(".panel-card").first();
+    await expect(debtors).toContainText("Owed by customers at start of year");
+    await expect(debtors).toContainText("£10,800.00");
+    await expect(debtors.locator("tr")).toHaveCount(14); // opening + twelve months + the total
+    await expect(debtors.locator("tr.total")).toContainText("Amount owed by customers");
+    await expect(debtors.locator("tr.total")).toContainText("£420,700.00");
+
+    const creditors = page.locator(".panel-card").nth(1);
+    await expect(creditors.locator("tr.total")).toContainText("£180,998.00");
+
+    await expect(page.locator("#view-root")).not.toContainText("Acme Corp");
+  });
+
   test("SA103S and Income Tax tax-form renders show box-number chips and no HMRC branding", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
 
