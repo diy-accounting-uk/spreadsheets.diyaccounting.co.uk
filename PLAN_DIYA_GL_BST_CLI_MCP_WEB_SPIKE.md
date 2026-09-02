@@ -273,7 +273,9 @@ phase's tracking surface — NEXT.md stays with the batch branch):
   extractors themselves, `template-formula-map.js` shared with the guard test, and the
   sidecar excluding the 2,367 prompt-formula input cells; empty on a fresh package, the
   78-cell attribution sweep proven one cell at a time.
-- [ ] closing ladder (coordinator) — waits on the tracks
+- [x] closing ladder (coordinator) — green: full serial suite 7254/7254 (one soffice
+  contention flake re-proved clean); `--file` vs `--source-dir` byte-identical `D` on a
+  freshly generated recalculated package; budgets unchanged at zero.
 - [ ] phase remainder, surfaced by Track C (operator decision before phase 2 ships): the
   BST `Debtors & Creditors` extractor and generator share an invented per-contact layout,
   but the shipped sheet is a monthly outstanding table ("Owed start year", "Sales not yet
@@ -366,7 +368,7 @@ harness's; an `extract_book` on a generated package matches the CLI's output byt
   named), four tools over the landed functions, `diya-gl-bst` registered in `.mcp.json`,
   edits composing across calls in one session. 20 replay assertions identical to the
   harness; `extract_book` byte-for-byte with the CLI over real stdio; 164 blast tests.
-- [ ] closing ladder (coordinator) — running: the full serial suite, the CLI-vs-tool-layer
+- [x] closing ladder (coordinator) — green with phase 1's: the tool layer replayed the harness
   byte agreement, budgets at zero. One known reconcile-at-rebase note: this branch's
   fixture books still carry `class2WeeklyRate 3.45`; the batch branch's rate alignment
   changes them to 0 when the branches merge — no assertion depends on the field.
