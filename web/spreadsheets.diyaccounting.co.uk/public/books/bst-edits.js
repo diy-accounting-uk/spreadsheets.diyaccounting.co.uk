@@ -234,9 +234,7 @@
       return {
         id: spec.id,
         label: spec.label,
-        expected: 0,
         actual: offenders.length,
-        unit: "count",
         result: pass ? "pass" : "fail",
         consequence: pass ? null : spec.consequence(snapshot),
         offenders: offenders.map(function (line) {
