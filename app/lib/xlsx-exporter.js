@@ -1858,11 +1858,9 @@ function taxTablesFromRateData(raw) {
  * @param {string} adminXml - the package's Admin sheet
  * @param {Object} adminSharedStrings
  * @param {string} product - bst, taxi, se or ltd
- * @param {Object} [rateData] - the year's already-parsed rate data, skipping the file read
  * @returns {Object}
  */
-export function taxTablesForPackage(adminXml, adminSharedStrings, product, rateData) {
-  if (rateData) return taxTablesFromRateData(rateData);
+export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
   const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
   if (!fileName) return {};
   const filePath = resolvePath(taxDataDir(), fileName);
