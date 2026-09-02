@@ -226,7 +226,13 @@ export function diyaGlToScenario(book, lines, product) {
   // buildGrouped's carriesMileage setting). Ltd keeps mileage on
   // expensesform.xlsx, which its journal writer does not post to.
   const carriesMileage = product === "taxi" ? "all" : product === "ltd" ? "none" : "claims";
-  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage });
+  // Only the Basic Sole Trader Sales and Purchases tabs keep the free-text
+  // receipt-record column (bst.js writes tx.payment into it); Taxi's own D
+  // column is its expense code letter, and SE/Ltd settle a line through a
+  // separate Bank.xlsx/Cash.xlsx journal entry rather than a flag on the
+  // sales/purchases row itself.
+  const carriesPaymentLabels = product === "bst";
+  const grouped = buildGrouped(filteredLines, purchaseCodeMap, { carriesSourceFields: true, carriesMileage, carriesPaymentLabels });
 
   // Compute expected values
   const salesLines = filteredLines.filter((l) => l.sourceJournalID === "sales");
