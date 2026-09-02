@@ -18,10 +18,10 @@ are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
   fiction). Moves BST's book ledger shape, generator writes, fixtures and declared budget
   counts; the sheet joins the anchor guard; the `adminMileageRates` silent-zero fallback
   rides along.
-- [ ] archive-packages helper (Sonnet, worktree agent) — dispatched:
-  `scripts/archive-packages.js`, `.claude/skills/archive-packages/SKILL.md` and the
-  `CLAUDE.md` skills line, per `PLAN_PACKAGES_TO_ARCHIVE.md` step 1. Steps 2-6 (the cuts)
-  are the operator's, below.
+- [x] archive-packages helper — the script, skill and `CLAUDE.md` line were already landed
+  (`862d7695`); the track added the missing test file (10 tests, every cut rule proven
+  breakable) and ran plan step 2: the dry run over the real catalogue is clean — 119/119
+  fully formed, exclusion list empty. The cuts (steps 3-6) are ready for the operator.
 
 ## Open items
 
@@ -47,8 +47,6 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
 From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
 automation — that is the plan's binding constraint):
 
-- [ ] dry-run the whole catalogue and read the excluded list — it should be empty;
-  anything listed is a generation bug to fix before cutting.
 - [ ] first cut, one tax year at a time, oldest first — eight reviewable commits pushed to
   the archive repo's main; record the `packages-published/` role in that repo's
   `CLAUDE.md`; delete this repo's unused `ARCHIVE_PACKAGES_TOKEN` secret.
