@@ -77,18 +77,16 @@
           <li><strong>Status:</strong> RECONCILES (with warnings)</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 782 passed, 1 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 782 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Indicators line up with the headline: VAT-registered with all four quarters non-nil, capital allowances and grants explain the profit-to-tax differences exactly, bridge residue nil, and tax charged on a clear taxable profit. Only the run's own payslip-date warning and a tapered personal allowance are worth a glance.</p>
+          <p>Turnover, capital allowances, grants uplift, VAT boxes and the zero-residue bridge all match the headline scale and VAT-registered status; 782 checks passed with no warnings. Only the tapered personal allowance is worth a glance.</p>
           <ul>
-            <li><strong>Turnover 339,200.00 vs sales invoiced 424,900.00 including 15,000.00 disposals</strong> (Turnover indicator / headline scale): Net-of-VAT turnover after removing disposals is consistent in scale; noted only as a sanity check, not a fault [note]</li>
-            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): Heavily tapered allowance at this profit level is plausible but worth a glance [note]</li>
-            <li><strong>Payslip print date warning</strong> (Deterministic run: 1 warning): Already named by the run; presentation only [note]</li>
+            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): Heavily tapered allowance on a 121,513.02 profit is plausible under the 100k taper but worth a glance; not a contradiction. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-02. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-01. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
@@ -96,7 +94,7 @@
 <tbody>
 <tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-nonvat</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2027-04-05</td><td>Apr27</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
+<tr><td>2027-04-05</td><td>Apr27</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
 <tr><td>2026-04-05</td><td>Apr26</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2025-04-05</td><td>Apr25</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
 <tr><td>2024-04-05</td><td>Apr24</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
@@ -576,8 +574,7 @@
 <tr><td>Payslips print: income tax to date is every month printed so far</td><td>1060</td><td>1060</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips print: national insurance to date is every month printed so far</td><td>400</td><td>400</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips print: net pay to date is every month printed so far</td><td>5540</td><td>5540</td><td>0</td><td>PASS</td></tr>
-<tr><td>Payslips print: the payment date reads a cell the block leaves empty</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
-<tr><td>Payslips print: the date the scenario paid that month's wages, which the payment date would carry</td><td>45808</td><td>0</td><td></td><td><strong>WARNING</strong></td></tr>
+<tr><td>Payslips print: the payment date is the day the scenario paid that month's wages</td><td>45808</td><td>45808</td><td>0</td><td>PASS</td></tr>
 <tr><td>P&amp;L: Wages &amp; Salaries (B21) = Purchases w-coded net + payroll gross + employer NI</td><td>92735.73333333332</td><td>92735.7333333333</td><td>-2.9103830456733704e-11</td><td>PASS</td></tr>
 <tr><td>Payslips!Jul F51 employee name</td><td>Alice Johnson</td><td>Alice Johnson</td><td></td><td>PASS</td></tr>
 <tr><td>Payslips!Jul M51 gross pay</td><td>3500</td><td>3500</td><td>0</td><td>PASS</td></tr>
@@ -2624,20 +2621,20 @@
 <tr><td>N6</td><td>Basic Rate</td><td>0.2</td><td>tax.incomeTax.basicRate</td></tr>
 <tr><td>N7</td><td>Higher Rate</td><td>0.4</td><td>tax.incomeTax.higherRate</td></tr>
 <tr><td>N8</td><td>Additional Rate</td><td>0.45</td><td>tax.incomeTax.additionalRate</td></tr>
-<tr><td>M11</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicBandEnd</td></tr>
-<tr><td>N12</td><td>Higher Band Start</td><td>37701</td><td>tax.incomeTax.higherBandStart</td></tr>
-<tr><td>N13</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.higherBandEnd</td></tr>
+<tr><td>M11</td><td>Basic Band End</td><td>37700</td><td>tax.incomeTax.basicRateLimit</td></tr>
+<tr><td>N12</td><td>Higher Band Start</td><td>37701</td><td></td></tr>
+<tr><td>N13</td><td>Higher Band End</td><td>125140</td><td>tax.incomeTax.additionalRateThreshold</td></tr>
 <tr><td>L16</td><td>NI Class 2 Weekly Rate</td><td>0</td><td>tax.nationalInsurance.class2WeeklyRate</td></tr>
-<tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4LowerRate</td></tr>
-<tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerLimit</td></tr>
+<tr><td>L20</td><td>NI Class 4 Lower Rate</td><td>0.06</td><td>tax.nationalInsurance.class4MainRate</td></tr>
+<tr><td>N20</td><td>NI Class 4 Lower Limit</td><td>12570</td><td>tax.nationalInsurance.class4LowerProfits</td></tr>
 <tr><td>L23</td><td>NI Class 4 Upper Rate</td><td>0.02</td><td>tax.nationalInsurance.class4UpperRate</td></tr>
-<tr><td>N23</td><td>NI Class 4 Upper Limit</td><td>50270</td><td>tax.nationalInsurance.class4UpperLimit</td></tr>
-<tr><td>G4</td><td>Annual Investment Allowance Rate</td><td>1</td><td>tax.capitalAllowances.aiaRate</td></tr>
-<tr><td>G5</td><td>Writing Down Allowance Rate</td><td>0.14</td><td>tax.capitalAllowances.wdaRate</td></tr>
-<tr><td>F21</td><td>Mileage Higher Rate Limit</td><td>10000</td><td>tax.mileage.higherRateLimit</td></tr>
-<tr><td>G21</td><td>Mileage Higher Rate Pence</td><td>0.45</td><td>tax.mileage.higherRatePence</td></tr>
-<tr><td>F22</td><td>Mileage Lower Rate Start</td><td>10001</td><td>tax.mileage.lowerRateStart</td></tr>
-<tr><td>G22</td><td>Mileage Lower Rate Pence</td><td>0.25</td><td>tax.mileage.lowerRatePence</td></tr>
+<tr><td>N23</td><td>NI Class 4 Upper Limit</td><td>50270</td><td>tax.nationalInsurance.class4UpperProfits</td></tr>
+<tr><td>G4</td><td>Annual Investment Allowance Rate</td><td>1</td><td></td></tr>
+<tr><td>G5</td><td>Writing Down Allowance Rate</td><td>0.14</td><td>tax.capitalAllowances.mainRateWDA</td></tr>
+<tr><td>F21</td><td>Mileage Higher Rate Limit</td><td>10000</td><td></td></tr>
+<tr><td>G21</td><td>Mileage Higher Rate Pence</td><td>0.45</td><td>tax.mileage.carFirst10000</td></tr>
+<tr><td>F22</td><td>Mileage Lower Rate Start</td><td>10001</td><td></td></tr>
+<tr><td>G22</td><td>Mileage Lower Rate Pence</td><td>0.25</td><td>tax.mileage.carOver10000</td></tr>
 <tr><td>F26</td><td>VAT Registration Threshold</td><td>90000</td><td>tax.vat.registrationThreshold</td></tr>
 <tr><td>F27</td><td>VAT Standard Rate</td><td>0.2</td><td>tax.vat.standardRate</td></tr>
 <tr><td>B4</td><td></td><td>46118</td><td></td></tr>
@@ -3340,7 +3337,7 @@
 <tr><td>H16</td><td></td><td>1060</td><td></td></tr>
 <tr><td>I16</td><td></td><td>400</td><td></td></tr>
 <tr><td>M16</td><td></td><td>5540</td><td></td></tr>
-<tr><td>M18</td><td></td><td>0</td><td></td></tr>
+<tr><td>M18</td><td></td><td>45808</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Payslips.xlsx!Admin</h5>

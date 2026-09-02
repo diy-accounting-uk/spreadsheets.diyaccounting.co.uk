@@ -13,6 +13,7 @@ import {
   LTD_PURCHASE_CODE_MAP,
   LTD_SALES_CODE_MAP,
   TAXI_PURCHASE_CODE_MAP,
+  TAXI_BST_PURCHASE_CODE_MAP,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -37,6 +38,52 @@ function filterTaxi(lines) {
   return lines.filter((line) => {
     if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
     if (line.sourceJournalID === "purchases") return TAXI_PURCHASE_CODE_MAP[line.accountMainID] !== undefined;
+    return false;
+  });
+}
+
+// A book declares its own chart of accounts under book.toml's
+// [accounts.purchases] tables, but BST_PURCHASE_CODE_MAP assumes the Basic
+// Sole Trader master's own numbering. sp-sixty (and any book kept on the
+// Taxi Driver masters' chart) numbers the same categories differently: 5900
+// is "Legal and professional" there, not BST's fixed assets, and 7000 is a
+// fixed asset account BST_PURCHASE_CODE_MAP has no entry for at all, so its
+// line drops out of every total silently.
+//
+// Rather than guess a code from an account's free-text description, prefer
+// whichever known chart's keys are a superset of the book's own declared
+// purchase accounts -- exactly the coverage bstAccountFilter() already
+// builds into every generator-shaped BST fixture (precision-code-ltd,
+// brickwork-pro), so this changes nothing for them: BST_PURCHASE_CODE_MAP
+// covers their declared chart and is chosen first. A book that declares no
+// chart at all has nothing to compare against, so it takes the plain map.
+const BST_PURCHASE_CODE_MAP_CANDIDATES = [BST_PURCHASE_CODE_MAP, TAXI_BST_PURCHASE_CODE_MAP];
+
+function purchaseCodeMapCoversChart(declaredAccounts, purchaseCodeMap) {
+  return declaredAccounts.every((account) => purchaseCodeMap[account] !== undefined);
+}
+
+/**
+ * Pick the purchase code map whose keys cover every purchase account a BST
+ * book's own chart declares, falling back to BST_PURCHASE_CODE_MAP when no
+ * candidate covers the chart (or the book declares none).
+ * @param {Object} book - parsed book.toml
+ * @returns {Object} accountMainID -> BST code letter
+ */
+export function resolveBstPurchaseCodeMap(book) {
+  const declaredAccounts = Object.keys(book.accounts?.purchases || {});
+  if (declaredAccounts.length === 0) return BST_PURCHASE_CODE_MAP;
+  const match = BST_PURCHASE_CODE_MAP_CANDIDATES.find((map) => purchaseCodeMapCoversChart(declaredAccounts, map));
+  return match || BST_PURCHASE_CODE_MAP;
+}
+
+// filterBst (scenario-extractor.js) is hardcoded to BST_PURCHASE_CODE_MAP --
+// the same problem filterTaxi above works around for the Taxi chart, mirrored
+// here for a BST book whose own declared chart resolves to a different map.
+function filterBstChart(lines, purchaseCodeMap) {
+  return lines.filter((line) => {
+    if (line.sourceJournalID === "sales") return BST_SALES_ACCOUNTS.has(line.accountMainID);
+    if (line.sourceJournalID === "purchases") return purchaseCodeMap[line.accountMainID] !== undefined;
     return false;
   });
 }
@@ -161,8 +208,8 @@ export function diyaGlToScenario(book, lines, product) {
   const filter = PRODUCT_FILTERS[product];
   if (!filter) throw new Error(`Unknown product: ${product}`);
 
-  const purchaseCodeMap = PURCHASE_CODE_MAPS[product];
-  let filteredLines = filter(lines);
+  const purchaseCodeMap = product === "bst" ? resolveBstPurchaseCodeMap(book) : PURCHASE_CODE_MAPS[product];
+  let filteredLines = product === "bst" ? filterBstChart(lines, purchaseCodeMap) : filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
   // Every product whose cellWrites fills a mileage column takes the miles,
   // and only the Taxi Driver package takes a sales line's (see the note on
@@ -222,6 +269,8 @@ export function diyaGlToScenario(book, lines, product) {
   if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
   if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
   if (entity["diya-gl:vatNumber"]) business.vat_number = entity["diya-gl:vatNumber"];
+  if (entity["diya-gl:companyNumber"]) business.company_number = entity["diya-gl:companyNumber"];
+  if (entity.organizationTelephone) business.phone = entity.organizationTelephone;
 
   // Build expected values
   const expected = { total_sales: totalSales };
@@ -336,6 +385,17 @@ export function diyaGlToScenario(book, lines, product) {
   // Payroll (SE/Ltd only) — group by month
   const payrollLines = filteredLines.filter((l) => l.sourceJournalID === "payroll");
   if (payrollLines.length > 0) {
+    // The tax code is a standing fact about the employee, which the book
+    // states once on the employees table and the payslip row carries in its
+    // own Tax Code column. A payroll line names its employee by id or by
+    // name: the Payslips row is keyed by name, so a book exported from a
+    // package carries no id on the line to look one up by.
+    const taxCodeByEmployee = new Map();
+    for (const employee of book.employees || []) {
+      if (!employee.taxCode) continue;
+      taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+      taxCodeByEmployee.set(employee.name, employee.taxCode);
+    }
     const payrollByMonth = {};
     for (const line of payrollLines) {
       const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
@@ -349,6 +409,7 @@ export function diyaGlToScenario(book, lines, product) {
         employerNI: line["diya-gl:employerNI"] || 0,
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
+        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment) || "",
         accountMainID: line.accountMainID,
         reference: line.documentReference,
       });
@@ -410,6 +471,19 @@ export function diyaGlToScenario(book, lines, product) {
       board_meeting: charge.boardMeetingDate,
     }));
   }
+  // The officers Companies House knows about, which is not the payroll: the
+  // book's directors table names a secretary and a non-executive director
+  // the company never pays through PAYE, and without this they would reach
+  // no register at all.
+  if (product === "ltd" && book.directors?.length > 0) {
+    scenario.directors = book.directors.map((director) => {
+      const officer = { name: director.name, role: director.role };
+      if (director.appointed !== undefined) officer.appointed = director.appointed;
+      if (director.resigned !== undefined) officer.resigned = director.resigned;
+      if (director.shares !== undefined) officer.shares = director.shares;
+      return officer;
+    });
+  }
   if (product === "ltd" && book.members?.length > 0) {
     scenario.members = book.members.map((member) => {
       const entry = { name: member.name, shares: member.shares };
@@ -424,13 +498,15 @@ export function diyaGlToScenario(book, lines, product) {
 
   // A purchase coded f capitalises out of the profit and loss account, and
   // earns its capital allowance only once the same asset is registered on the
-  // Fixed Assets schedule. The scenario extractor derives the BST additions
-  // from those purchases, and this path derives them by the same rule, so a
-  // package built from exported data claims what a package built from the
-  // fixture claims. The Taxi schedule takes vehicles only and the SE and Ltd
+  // Fixed Assets schedule. The scenario extractor derives the BST and Taxi
+  // additions from those purchases, and this path derives them by the same
+  // rule, so a package built from exported data claims what a package built
+  // from the fixture claims. Without it the two single-file writers fall back
+  // to scenario-loader's own derivation, which has only the supplier name to
+  // put in both the description and the reference column. The SE and Ltd
   // schedules are written from their own asset journals, so neither derives
   // its additions from the purchase journal.
-  if (product === "bst") {
+  if (product === "bst" || product === "taxi") {
     const additions = purchaseLines
       .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
       .map((l) => ({

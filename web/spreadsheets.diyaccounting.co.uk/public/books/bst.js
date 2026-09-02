@@ -1,0 +1,1169 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2025-2026 DIY Accounting Ltd
+
+// books/bst.js
+//
+// The books page shell: view state, rendering, and drill interaction over
+// the static snapshot in bst-data.js. No engine imports -- this file reads
+// window.DIYA_BST_SNAPSHOT only. When W1 wires the real bundle, this state
+// layer is replaced by the live extract/recalculate/report loop; the render
+// functions below are the intended shape for that data either way.
+
+(function () {
+  "use strict";
+
+  var SNAPSHOT = window.DIYA_BST_SNAPSHOT;
+
+  var VIEWS = [
+    { id: "home", label: "Home", sheets: "Home" },
+    { id: "year", label: "Year", sheets: "SalesApr–Mar, PurchasesApr–Mar" },
+    { id: "profit-loss", label: "P&L", sheets: "Profit & Loss Acc" },
+    { id: "stock", label: "Stock", sheets: "PurchasesStock" },
+    { id: "debtors-creditors", label: "Debtors/Creditors", sheets: "Debtors & Creditors" },
+    { id: "fixed-assets", label: "Fixed Assets", sheets: "Fixed Assets" },
+    { id: "income-tax", label: "Income Tax", sheets: "Income Tax" },
+    { id: "sa103s", label: "SA103S", sheets: "SE Short" },
+    { id: "business-details", label: "Business Details", sheets: "Business Details" },
+    { id: "admin", label: "Admin", sheets: "Admin" },
+  ];
+
+  var state = {
+    loaded: false,
+    view: "home",
+    openMonth: "2025-04",
+    entriesOpen: true,
+    drawerOpen: false,
+    mobileTab: "books",
+  };
+
+  var els = {};
+
+  document.addEventListener("DOMContentLoaded", init);
+
+  function init() {
+    els.app = document.getElementById("app");
+    els.topbarTitle = document.getElementById("app-title");
+    els.sheetTabs = document.getElementById("sheet-tabs");
+    els.viewRoot = document.getElementById("view-root");
+    els.inspector = document.getElementById("inspector");
+    els.inspectorDrawer = document.getElementById("inspector-drawer");
+    els.drawerBackdrop = document.getElementById("drawer-backdrop");
+    els.mobileTabbar = document.getElementById("mobile-tabbar");
+    els.mobileActionBar = document.getElementById("mobile-action-bar");
+    els.toast = document.getElementById("toast");
+    els.themeToggle = document.getElementById("theme-toggle");
+    els.saveBtn = document.getElementById("save-btn");
+    els.saveBtnMobile = document.getElementById("save-btn-mobile");
+    els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
+
+    renderSheetTabs();
+    bindGlobalControls();
+    render();
+  }
+
+  // ============================== formatting ==============================
+
+  var moneyFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
+  var moneyWholeFmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", maximumFractionDigits: 0 });
+
+  function fmtMoney(n) {
+    return moneyFmt.format(n);
+  }
+  function fmtWhole(n) {
+    return moneyWholeFmt.format(Math.round(n));
+  }
+  function fmtRate(n) {
+    return (n * 100).toFixed(n * 100 === Math.round(n * 100) ? 0 : 1) + "%";
+  }
+  function fmtPence(n) {
+    return Math.round(n * 100) + "p";
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // The signature element: a calculated value in ink, the workbook's as-read
+  // value struck through in pencil beneath it, signed drift in the margin.
+  function pencilCorrection(computed, asRead, opts) {
+    opts = opts || {};
+    var drift = Math.round((computed - asRead) * 100) / 100;
+    if (Math.abs(drift) < 0.005) {
+      return '<span class="mono num">' + esc(fmtMoney(computed)) + "</span>";
+    }
+    var sign = drift > 0 ? "+" : "−";
+    var driftAbs = Math.abs(drift).toFixed(2);
+    return (
+      '<span class="pencil-correction' +
+      (opts.inMargin ? " in-margin" : "") +
+      '">' +
+      '<span class="computed-value">' +
+      esc(fmtMoney(computed)) +
+      "</span>" +
+      '<span class="as-read">' +
+      esc(fmtMoney(asRead)) +
+      "</span>" +
+      '<span class="drift-amount">' +
+      sign +
+      driftAbs +
+      "</span>" +
+      "</span>"
+    );
+  }
+
+  // ============================== rendering ==============================
+
+  function render() {
+    document.body.classList.toggle("is-loaded", state.loaded);
+    renderTopbarTitle();
+    renderSheetTabs();
+    if (!state.loaded) {
+      els.viewRoot.innerHTML = renderEmptyState();
+      bindEmptyState();
+      els.inspector.innerHTML = "";
+      els.inspectorDrawer.innerHTML = "";
+      return;
+    }
+
+    var view = state.mobileTab === "charts" && isMobileViewport() ? "charts" : state.view;
+    els.viewRoot.innerHTML = renderView(view);
+    bindViewInteractions(view);
+
+    els.inspector.innerHTML = renderInspectorFull();
+    els.inspectorDrawer.innerHTML =
+      '<div class="drawer-handle"></div>' + (state.mobileTab === "checks" ? renderInspectorChecksOnly() : renderInspectorFull());
+    bindInspectorInteractions();
+    renderMobileTabbar();
+  }
+
+  function isMobileViewport() {
+    return window.matchMedia("(max-width: 899px)").matches;
+  }
+
+  function renderTopbarTitle() {
+    if (!state.loaded) {
+      els.topbarTitle.textContent = "DIYA-GL — Basic Sole Trader books";
+      return;
+    }
+    var name = SNAPSHOT.businessDetails.organizationIdentifier;
+    var viewMeta = VIEWS.filter(function (v) {
+      return v.id === state.view;
+    })[0];
+    els.topbarTitle.textContent = name + (viewMeta ? " — " + viewMeta.label : "");
+  }
+
+  function renderSheetTabs() {
+    if (!state.loaded) {
+      els.sheetTabs.innerHTML = "";
+      els.sheetTabs.classList.add("hidden");
+      return;
+    }
+    els.sheetTabs.classList.remove("hidden");
+    els.sheetTabs.innerHTML = VIEWS.map(function (v) {
+      return (
+        '<button type="button" class="tab-btn" role="tab" data-view="' +
+        v.id +
+        '" aria-selected="' +
+        (v.id === state.view ? "true" : "false") +
+        '">' +
+        esc(v.label) +
+        "</button>"
+      );
+    }).join("");
+    Array.prototype.forEach.call(els.sheetTabs.querySelectorAll(".tab-btn"), function (btn) {
+      btn.addEventListener("click", function () {
+        state.view = btn.getAttribute("data-view");
+        state.mobileTab = "books";
+        render();
+      });
+    });
+  }
+
+  function renderMobileTabbar() {
+    var tabs = [
+      { id: "books", label: "Books" },
+      { id: "charts", label: "Charts" },
+      { id: "checks", label: "Checks" },
+    ];
+    els.mobileTabbar.innerHTML =
+      '<div class="mobile-tabbar-inner" role="tablist" aria-label="Books sections">' +
+      tabs
+        .map(function (t) {
+          return (
+            '<button type="button" class="mobile-tab" role="tab" data-tab="' +
+            t.id +
+            '" aria-selected="' +
+            (state.mobileTab === t.id ? "true" : "false") +
+            '">' +
+            t.label +
+            "</button>"
+          );
+        })
+        .join("") +
+      "</div>";
+    Array.prototype.forEach.call(els.mobileTabbar.querySelectorAll(".mobile-tab"), function (btn) {
+      btn.addEventListener("click", function () {
+        var tab = btn.getAttribute("data-tab");
+        state.mobileTab = tab;
+        if (tab === "checks") {
+          openDrawer();
+        } else {
+          closeDrawer();
+        }
+        render();
+      });
+    });
+  }
+
+  function renderView(view) {
+    switch (view) {
+      case "home":
+        return renderHome();
+      case "year":
+        return renderYear();
+      case "profit-loss":
+        return renderProfitLoss();
+      case "stock":
+        return renderStock();
+      case "debtors-creditors":
+        return renderDebtorsCreditors();
+      case "fixed-assets":
+        return renderFixedAssets();
+      case "income-tax":
+        return renderIncomeTaxForm();
+      case "sa103s":
+        return renderSa103sForm();
+      case "business-details":
+        return renderBusinessDetails();
+      case "admin":
+        return renderAdmin();
+      case "charts":
+        return '<h2>Charts</h2><p class="view-lede">Drawn from the calculated book, never the as-read layer.</p>' + renderChartsBlock();
+      default:
+        return renderHome();
+    }
+  }
+
+  function bindViewInteractions(view) {
+    if (view === "year") {
+      bindYearView();
+    }
+    if (view === "home") {
+      Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-goto]"), function (a) {
+        a.addEventListener("click", function (e) {
+          e.preventDefault();
+          state.view = a.getAttribute("data-goto");
+          render();
+        });
+      });
+    }
+  }
+
+  // ============================== empty state ==============================
+
+  function renderEmptyState() {
+    return (
+      '<div class="empty-state">' +
+      "<h2>View your books in DIYA-GL</h2>" +
+      "<p>Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine.</p>" +
+      '<div class="empty-state-actions">' +
+      '<div class="picker-row">' +
+      '<label class="file-picker-label" for="file-picker">' +
+      '<span aria-hidden="true">📁</span> Choose a .xlsx or .zip file' +
+      "</label>" +
+      '<input type="file" id="file-picker" accept=".xlsx,.zip" class="hidden" />' +
+      '<button type="button" class="btn" id="new-book-btn">Start a new book</button>' +
+      "</div>" +
+      '<div class="example-list">' +
+      '<span class="caps-label">Or load an example</span>' +
+      '<button type="button" class="btn" data-example="bst-scenario-basic">bst-scenario-basic — Precision Code Trading, full ledger</button>' +
+      '<button type="button" class="btn" data-example="bst-brickwork-pro-nonvat" disabled title="Static preview ships one example; W1 wires the rest">bst-brickwork-pro-nonvat — BrickWork trade</button>' +
+      '<button type="button" class="btn" data-example="bst-sp-sixty" disabled title="Static preview ships one example; W1 wires the rest">bst-sp-sixty — no-ledger, mileage route</button>' +
+      "</div>" +
+      "</div>" +
+      '<p id="empty-state-message" class="view-lede" aria-live="polite"></p>' +
+      "</div>"
+    );
+  }
+
+  function bindEmptyState() {
+    var picker = document.getElementById("file-picker");
+    var msg = document.getElementById("empty-state-message");
+    picker.addEventListener("change", function () {
+      var file = picker.files && picker.files[0];
+      if (!file) return;
+      if (/\.xls$/i.test(file.name)) {
+        msg.textContent = "That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.";
+        return;
+      }
+      msg.textContent = "Reading " + file.name + " happens once the engine bundle is wired (W1). Try the example below to see the full page.";
+    });
+    document.getElementById("new-book-btn").addEventListener("click", function () {
+      msg.textContent = "Starting a blank book happens once the engine bundle is wired (W1). Try the example below to see the full page.";
+    });
+    Array.prototype.forEach.call(document.querySelectorAll("[data-example]"), function (btn) {
+      btn.addEventListener("click", function () {
+        if (btn.disabled) return;
+        loadExample();
+      });
+    });
+  }
+
+  function loadExample() {
+    state.loaded = true;
+    state.view = "year";
+    showToast("Loaded bst-scenario-basic — Precision Code Trading, 2025-04-01 to 2026-03-31.");
+    render();
+  }
+
+  // ============================== home ==============================
+
+  function renderHome() {
+    var bd = SNAPSHOT.businessDetails;
+    return (
+      "<h2>" +
+      esc(bd.organizationIdentifier) +
+      "</h2>" +
+      '<p class="view-lede">' +
+      esc(bd.periodCoveredStart) +
+      " to " +
+      esc(bd.periodCoveredEnd) +
+      " — every sheet the reconciliation touches has a view here, the way the workbook's own Home sheet links to each tab.</p>" +
+      '<ul class="home-nav-list">' +
+      VIEWS.map(function (v) {
+        return (
+          '<li><a href="#" data-goto="' +
+          v.id +
+          '"><span class="nav-item-label">' +
+          esc(v.label) +
+          '</span><span class="nav-item-sheets">' +
+          esc(v.sheets) +
+          "</span></a></li>"
+        );
+      }).join("") +
+      '<li><a href="#" data-goto="charts"><span class="nav-item-label">Charts</span><span class="nav-item-sheets">Expense mix, monthly trend</span></a></li>' +
+      "</ul>"
+    );
+  }
+
+  // ============================== year table + drill ==============================
+
+  function renderYear() {
+    return (
+      "<h2>Year</h2>" +
+      '<p class="view-lede">Twelve month rows, the P&amp;L category columns, totals anchored. Open a month for its summary, open again for its entries.</p>' +
+      renderYearSummarySticky() +
+      renderYearTableScroll() +
+      renderMonthCards()
+    );
+  }
+
+  function renderYearSummarySticky() {
+    var a = SNAPSHOT.annual;
+    return (
+      '<div class="year-summary-sticky" id="year-summary-sticky">' +
+      '<div class="ys-row"><span>Sales Turnover</span><span class="ys-value">' +
+      fmtMoney(a.sales) +
+      '</span></div><div class="ys-row"><span>Net Profit</span><span class="ys-value">' +
+      fmtMoney(a.netProfit) +
+      "</span></div></div>"
+    );
+  }
+
+  function renderYearTableScroll() {
+    var cats = SNAPSHOT.categories;
+    var head =
+      "<tr><th>Month</th>" +
+      cats
+        .map(function (c) {
+          return '<th class="' + (c.computed ? "col-computed" : "") + '">' + esc(c.label) + "</th>";
+        })
+        .join("") +
+      "</tr>";
+
+    var rows = SNAPSHOT.months
+      .map(function (m) {
+        var row = SNAPSHOT.monthly[m.key];
+        var isOpen = state.openMonth === m.key;
+        var cells = cats
+          .map(function (c) {
+            return '<td class="' + (c.computed ? "col-computed" : "") + '">' + fmtMoney(row[c.key]) + "</td>";
+          })
+          .join("");
+        var mainRow =
+          '<tr class="year-row' +
+          (isOpen ? " is-open" : "") +
+          '" data-month="' +
+          m.key +
+          '" tabindex="0" role="button" aria-expanded="' +
+          (isOpen ? "true" : "false") +
+          '"><td class="month-cell"><span class="disclosure" aria-hidden="true">▸</span> ' +
+          esc(m.label) +
+          "</td>" +
+          cells +
+          "</tr>";
+        var detailRow = isOpen
+          ? '<tr class="month-detail-row"><td colspan="' + (cats.length + 1) + '">' + renderMonthDetail(m.key) + "</td></tr>"
+          : "";
+        return mainRow + detailRow;
+      })
+      .join("");
+
+    var a = SNAPSHOT.annual;
+    var totals =
+      "<tr><th>Year total</th>" +
+      cats
+        .map(function (c) {
+          return '<td class="' + (c.computed ? "col-computed" : "") + '">' + fmtMoney(a[c.key]) + "</td>";
+        })
+        .join("") +
+      "</tr>";
+
+    return (
+      '<div class="year-table-scroll"><table class="year-table"><thead>' +
+      head +
+      "</thead><tbody>" +
+      rows +
+      '</tbody><tfoot class="year-totals">' +
+      totals +
+      "</tfoot></table></div>"
+    );
+  }
+
+  function renderMonthDetail(monthKey) {
+    var row = SNAPSHOT.monthly[monthKey];
+    var monthMeta = SNAPSHOT.months.filter(function (m) {
+      return m.key === monthKey;
+    })[0];
+    var summary =
+      '<div class="month-summary-grid">' +
+      [
+        ["Sales Turnover", row.sales],
+        ["Gross Profit", row.grossProfit],
+        ["Total Expenses", row.totalExpenses],
+        ["Net Profit", row.netProfit],
+      ]
+        .map(function (pair) {
+          return (
+            '<div class="month-summary-item"><span class="caps-label">' +
+            pair[0] +
+            '</span><span class="value">' +
+            fmtMoney(pair[1]) +
+            "</span></div>"
+          );
+        })
+        .join("") +
+      "</div>";
+
+    var entries = SNAPSHOT.entries[monthKey];
+    var entriesHtml = "";
+    if (entries) {
+      entriesHtml =
+        '<button type="button" class="btn entries-toggle" id="entries-toggle" aria-expanded="' +
+        (state.entriesOpen ? "true" : "false") +
+        '">' +
+        (state.entriesOpen ? "Hide entries" : "Show entries — " + (entries.sales.length + entries.purchases.length) + " lines") +
+        "</button>" +
+        (state.entriesOpen ? renderEntriesTables(entries) : "")
+      ;
+    } else {
+      entriesHtml = '<p class="entries-note">Entries for ' + esc(monthMeta.label) + " are not part of this static preview's dataset.</p>";
+    }
+
+    return '<div class="month-detail">' + summary + entriesHtml + "</div>";
+  }
+
+  function renderEntriesTables(entries) {
+    function table(caption, rows) {
+      return (
+        '<table class="entries-table"><caption>' +
+        caption +
+        "</caption><thead><tr><th>Date</th><th>Acct</th><th>Detail</th><th>Amount</th></tr></thead><tbody>" +
+        rows
+          .map(function (r) {
+            return (
+              "<tr><td>" +
+              r.date.slice(5) +
+              "</td><td>" +
+              r.account +
+              '</td><td><input class="entry-cell-editable" value="' +
+              esc(r.label + " — " + r.detail) +
+              '" readonly /></td><td class="entry-amount">' +
+              fmtMoney(r.amount) +
+              "</td></tr>"
+            );
+          })
+          .join("") +
+        "</tbody></table>"
+      );
+    }
+    return (
+      '<div class="entries-columns">' +
+      table("Sales", entries.sales) +
+      table("Purchases", entries.purchases) +
+      "</div>" +
+      '<p class="entries-note">Shown for editing once the edit/undo layer lands (phase 3, track W3). These are the real posted lines.</p>'
+    );
+  }
+
+  function renderMonthCards() {
+    return (
+      '<div class="month-cards">' +
+      SNAPSHOT.months
+        .map(function (m) {
+          var row = SNAPSHOT.monthly[m.key];
+          return (
+            '<div class="month-card" data-month-card="' +
+            m.key +
+            '">' +
+            '<div class="month-card-head" role="button" tabindex="0"><span class="month-name">' +
+            esc(m.label) +
+            "</span><span class=\"mono\">" +
+            fmtMoney(row.netProfit) +
+            "</span></div>" +
+            '<div class="month-card-figures">' +
+            '<span class="figure-label">Sales</span><span class="figure-value">' +
+            fmtMoney(row.sales) +
+            "</span>" +
+            '<span class="figure-label">Total expenses</span><span class="figure-value">' +
+            fmtMoney(row.totalExpenses) +
+            "</span>" +
+            "</div></div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function bindYearView() {
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".year-row"), function (tr) {
+      function toggle() {
+        var key = tr.getAttribute("data-month");
+        if (state.openMonth === key) {
+          state.openMonth = null;
+        } else {
+          state.openMonth = key;
+          state.entriesOpen = false;
+        }
+        render();
+      }
+      tr.addEventListener("click", toggle);
+      tr.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+    var entriesToggle = document.getElementById("entries-toggle");
+    if (entriesToggle) {
+      entriesToggle.addEventListener("click", function () {
+        state.entriesOpen = !state.entriesOpen;
+        render();
+      });
+    }
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".month-card-head"), function (head) {
+      function toggle() {
+        var key = head.closest(".month-card").getAttribute("data-month-card");
+        state.openMonth = key;
+        state.view = "year";
+        render();
+      }
+      head.addEventListener("click", toggle);
+      head.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
+      });
+    });
+  }
+
+  // ============================== P&L statement ==============================
+
+  function renderProfitLoss() {
+    var a = SNAPSHOT.annual;
+    var motorDrift = SNAPSHOT.drift.filter(function (d) {
+      return d.id === "motor-expenses";
+    })[0];
+    function row(label, value, opts) {
+      opts = opts || {};
+      return (
+        '<tr class="' +
+        (opts.total ? "total" : "") +
+        '"><td>' +
+        esc(label) +
+        "</td><td>" +
+        (opts.drift ? pencilCorrection(opts.drift.computed, opts.drift.asRead) : fmtMoney(value)) +
+        "</td></tr>"
+      );
+    }
+    return (
+      "<h2>Profit &amp; Loss Account</h2>" +
+      '<p class="view-lede">The year totals row from the Year view, rendered as the statement the P&amp;L sheet prints.</p>' +
+      '<table class="kv-table">' +
+      row("Sales Turnover", a.sales) +
+      row("Cost of Sales", a.costOfSales) +
+      row("Direct Costs", a.directCosts) +
+      row("Gross Profit", a.grossProfit, { total: true }) +
+      row("Employee Costs", a.employeeCosts) +
+      row("Premises Costs", a.premisesCosts) +
+      row("Repairs & Maintenance", a.repairs) +
+      row("General Admin", a.generalAdmin) +
+      row("Motor Expenses", a.motorExpenses, { drift: motorDrift }) +
+      row("Travel & Subsistence", a.travel) +
+      row("Advertising", a.advertising) +
+      row("Legal & Professional", a.legalProfessional) +
+      row("Bad Debts", a.badDebts) +
+      row("Interest & Finance", a.interestFinance) +
+      row("Other Expenses", a.otherExpenses) +
+      row("Total Expenses", a.totalExpenses, { total: true }) +
+      row("Net Profit", a.netProfit, { total: true }) +
+      row("Capital Allowances", SNAPSHOT.fixedAssets.aia) +
+      row("Taxable Profit", SNAPSHOT.incomeTax.profitFromSelfEmployment, { total: true }) +
+      "</table>"
+    );
+  }
+
+  // ============================== stock / debtors / fixed assets / business / admin ==============================
+
+  function renderStock() {
+    var s = SNAPSHOT.stock;
+    return (
+      "<h2>Stock</h2>" +
+      '<p class="view-lede">PurchasesStock: opening/closing values and the cost-of-sales movement.</p>' +
+      '<div class="panel-card"><table class="kv-table">' +
+      "<tr><td>Opening Stock</td><td>" +
+      fmtMoney(s.opening) +
+      "</td></tr>" +
+      "<tr><td>Closing Stock</td><td>" +
+      fmtMoney(s.closing) +
+      "</td></tr>" +
+      '<tr class="total"><td>Stock movement (cost of sales adjustment)</td><td>' +
+      fmtMoney(s.opening - s.closing) +
+      "</td></tr>" +
+      "</table></div>"
+    );
+  }
+
+  function renderDebtorsCreditors() {
+    function ledger(title, sections) {
+      return (
+        '<div class="panel-card"><h3>' +
+        title +
+        "</h3>" +
+        Object.keys(sections)
+          .map(function (key) {
+            var rows = sections[key];
+            var total = rows.reduce(function (sum, r) {
+              return sum + r.amount;
+            }, 0);
+            return (
+              '<p class="caps-label">' +
+              key +
+              '</p><table class="kv-table">' +
+              rows
+                .map(function (r) {
+                  return "<tr><td>" + esc(r.counterparty) + " (" + esc(r.invoice) + ")</td><td>" + fmtMoney(r.amount) + "</td></tr>";
+                })
+                .join("") +
+              '<tr class="total"><td>Total</td><td>' +
+              fmtMoney(total) +
+              "</td></tr></table>"
+            );
+          })
+          .join("") +
+        "</div>"
+      );
+    }
+    return (
+      "<h2>Debtors &amp; Creditors</h2>" +
+      '<p class="view-lede">Named opening/closing debtors and creditors, per the ledgers panel.</p>' +
+      '<div class="panel-grid">' +
+      ledger("Debtors", SNAPSHOT.debtors) +
+      ledger("Creditors", SNAPSHOT.creditors) +
+      "</div>"
+    );
+  }
+
+  function renderFixedAssets() {
+    var f = SNAPSHOT.fixedAssets;
+    return (
+      "<h2>Fixed Assets</h2>" +
+      '<p class="view-lede">Additions, the register, and the capital allowances the schedule carries.</p>' +
+      '<div class="panel-grid">' +
+      '<div class="panel-card"><h3>Additions</h3><table class="kv-table">' +
+      f.additions
+        .map(function (a) {
+          return "<tr><td>" + esc(a.description) + "</td><td>" + fmtMoney(a.cost) + "</td></tr>";
+        })
+        .join("") +
+      '<tr class="total"><td>Total Original Cost</td><td>' +
+      fmtMoney(f.totalCost) +
+      "</td></tr></table></div>" +
+      '<div class="panel-card"><h3>Capital allowances</h3><table class="kv-table">' +
+      "<tr><td>Annual Investment Allowance</td><td>" +
+      fmtMoney(f.aia) +
+      "</td></tr>" +
+      "<tr><td>Writing Down Allowance</td><td>" +
+      fmtMoney(f.wda) +
+      "</td></tr>" +
+      "<tr><td>Written Down Tax Value</td><td>" +
+      fmtMoney(f.writtenDownValue) +
+      "</td></tr>" +
+      "<tr><td>Disposals</td><td>" +
+      fmtMoney(f.disposals) +
+      "</td></tr>" +
+      "<tr><td>Balancing Charge</td><td>" +
+      fmtMoney(f.balancingCharge) +
+      "</td></tr></table></div>" +
+      "</div>"
+    );
+  }
+
+  function renderBusinessDetails() {
+    var bd = SNAPSHOT.businessDetails;
+    return (
+      "<h2>Business Details</h2>" +
+      '<p class="view-lede">entityInformation, editable once the edit layer lands (phase 3, track W3).</p>' +
+      '<div class="panel-card">' +
+      field("Business Name", bd.organizationIdentifier) +
+      field("Description", bd.organizationDescription) +
+      field("Address", bd.organizationAddressLine) +
+      field("Town", bd.organizationTown) +
+      field("Postcode", bd.organizationPostcode) +
+      field("Accounting period", bd.periodCoveredStart + " to " + bd.periodCoveredEnd) +
+      field("Basis of accounting", bd.basisOfAccounting) +
+      field("VAT registered", bd.vatRegistered ? "Yes" : "No") +
+      "</div>"
+    );
+    function field(label, value) {
+      return (
+        '<div class="editable-field"><label>' +
+        esc(label) +
+        '</label><input value="' +
+        esc(value) +
+        '" readonly /></div>'
+      );
+    }
+  }
+
+  function renderAdmin() {
+    var a = SNAPSHOT.admin;
+    return (
+      "<h2>Admin</h2>" +
+      '<p class="view-lede rate-provenance">The year’s tax data, read-only, sourced from ' +
+      esc(a.source) +
+      " (" +
+      esc(a.year) +
+      ').</p>' +
+      '<div class="panel-card"><table class="kv-table">' +
+      a.rates
+        .map(function (r) {
+          var val = r.format === "rate" ? fmtRate(r.value) : r.format === "pence" ? fmtPence(r.value) : r.format === "number" ? r.value.toLocaleString("en-GB") : fmtMoney(r.value);
+          return "<tr><td>" + esc(r.label) + "</td><td>" + val + "</td></tr>";
+        })
+        .join("") +
+      "</table></div>"
+    );
+  }
+
+  // ============================== tax-form renders ==============================
+
+  function renderIncomeTaxForm() {
+    var t = SNAPSHOT.incomeTax;
+    var itDrift = SNAPSHOT.drift.filter(function (d) {
+      return d.id === "income-tax-total";
+    })[0];
+    var totalDrift = SNAPSHOT.drift.filter(function (d) {
+      return d.id === "total-tax-ni";
+    })[0];
+    return (
+      '<div class="form-render">' +
+      '<div class="form-masthead"><div class="form-name">Income Tax computation</div>' +
+      '<div class="form-microcopy">Check these against your return.</div></div>' +
+      '<div class="form-section"><h3>Profit</h3>' +
+      formRow(null, "Profit from self employment", fmtWhole(t.profitFromSelfEmployment)) +
+      formRow(null, "Less: Personal Allowance", fmtWhole(t.personalAllowance)) +
+      formRow(null, "Taxable income", fmtWhole(t.taxableIncome)) +
+      "</div>" +
+      '<div class="form-section"><h3>Tax bands</h3>' +
+      t.bands
+        .map(function (b) {
+          return (
+            '<div class="form-row"><span class="form-row-label">' +
+            esc(b.label) +
+            (b.ceiling ? " to " + fmtWhole(b.ceiling) : "") +
+            '<span class="form-rate-pencil">' +
+            fmtRate(b.rate) +
+            '</span></span><span class="form-amount-wrap"><span class="box-chip">' +
+            esc(b.box) +
+            '</span></span><span class="form-amount-box">' +
+            fmtMoney(b.tax) +
+            "</span></div>"
+          );
+        })
+        .join("") +
+      '<div class="form-row total-row"><span class="form-row-label">Total Income Tax</span><span class="form-amount-box">' +
+      fmtMoney(t.totalIncomeTax) +
+      '</span><span class="form-row-margin">' +
+      (itDrift ? pencilCorrection(itDrift.computed, itDrift.asRead, { inMargin: true }) : "") +
+      "</span></div>" +
+      "</div>" +
+      '<div class="form-section"><h3>National Insurance</h3>' +
+      formRow(null, "Less: CIS deducted", fmtMoney(-t.cisDeducted)) +
+      formRow(null, "NI Class 4 (lower band)", fmtMoney(t.niClass4Lower)) +
+      formRow(null, "NI Class 4 (upper band)", fmtMoney(t.niClass4Upper)) +
+      "</div>" +
+      '<div class="form-row total-row"><span class="form-row-label">Total Tax + NI</span><span class="form-amount-box">' +
+      fmtMoney(t.totalTaxAndNi) +
+      '</span><span class="form-row-margin">' +
+      (totalDrift ? pencilCorrection(totalDrift.computed, totalDrift.asRead, { inMargin: true }) : "") +
+      "</span></div>" +
+      "</div>"
+    );
+
+    function formRow(box, label, amount) {
+      return (
+        '<div class="form-row"><span class="form-row-label">' +
+        esc(label) +
+        '</span><span class="form-amount-box">' +
+        amount +
+        "</span></div>"
+      );
+    }
+  }
+
+  function renderSa103sForm() {
+    return (
+      '<div class="form-render">' +
+      '<div class="form-masthead"><div class="form-name">SA103S — Self-employment (short)</div>' +
+      '<div class="form-microcopy">Check these against your return. Box numbers match the form; nothing here is the actual HMRC document.</div></div>' +
+      SNAPSHOT.sa103s.sections
+        .map(function (section) {
+          return (
+            '<div class="form-section"><h3>' +
+            esc(section.heading) +
+            "</h3>" +
+            section.rows
+              .map(function (r) {
+                return (
+                  '<div class="form-row' +
+                  (r.total ? " total-row" : "") +
+                  '"><span class="box-chip">' +
+                  esc(r.box) +
+                  '</span><span class="form-row-label">' +
+                  esc(r.label) +
+                  '</span><span class="form-amount-wrap"><span class="form-amount-box">' +
+                  fmtWhole(r.amount) +
+                  '</span><span class="whole-pounds-note">whole pounds</span></span></div>'
+                );
+              })
+              .join("") +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  // ============================== charts ==============================
+
+  function renderChartsBlock() {
+    return renderExpenseBar() + renderMonthlyColumns();
+  }
+
+  var CHART_COLOR_ORDER = ["#2f6b4f", "#4a8a6c", "#6ba98c", "#93c4ac", "#b8dbc9", "#6b6f76"];
+
+  function renderExpenseBar() {
+    var a = SNAPSHOT.annual;
+    var items = [
+      ["Employee Costs", a.employeeCosts],
+      ["Premises Costs", a.premisesCosts],
+      ["Other Expenses", a.otherExpenses],
+      ["Motor Expenses", a.motorExpenses],
+      ["Advertising", a.advertising],
+      ["Legal & Professional", a.legalProfessional],
+    ].sort(function (x, y) {
+      return y[1] - x[1];
+    });
+    var total = items.reduce(function (s, i) {
+      return s + i[1];
+    }, 0);
+    var width = 600;
+    var height = 34 * items.length + 10;
+    var barMax = width - 190;
+    var y = 10;
+    var bars = items
+      .map(function (item, i) {
+        var w = (item[1] / items[0][1]) * barMax;
+        var color = CHART_COLOR_ORDER[i % CHART_COLOR_ORDER.length];
+        var share = ((item[1] / total) * 100).toFixed(1);
+        var row =
+          '<text x="0" y="' +
+          (y + 14) +
+          '" class="chart-bar-label" fill="var(--ink)">' +
+          esc(item[0]) +
+          "</text>" +
+          '<rect x="150" y="' +
+          y +
+          '" width="' +
+          Math.max(w, 1) +
+          '" height="20" fill="' +
+          color +
+          '" rx="2"></rect>' +
+          '<text x="' +
+          (150 + w + 8) +
+          '" y="' +
+          (y + 14) +
+          '" class="chart-value-label" fill="var(--pencil)">' +
+          fmtMoney(item[1]) +
+          " (" + share + "%)" +
+          "</text>";
+        y += 34;
+        return row;
+      })
+      .join("");
+    return (
+      '<div class="chart-block"><h3>Where the costs are</h3>' +
+      '<svg viewBox="0 0 ' +
+      width +
+      " " +
+      height +
+      '" role="img" aria-label="Expense categories by annual total, largest first">' +
+      bars +
+      "</svg></div>"
+    );
+  }
+
+  function renderMonthlyColumns() {
+    var months = SNAPSHOT.months;
+    var width = 600;
+    var height = 220;
+    var padding = 28;
+    var chartW = width - padding * 2;
+    var chartH = height - padding * 2 - 20;
+    var groupW = chartW / months.length;
+    var barW = groupW / 3.2;
+    var maxVal = Math.max.apply(
+      null,
+      months.map(function (m) {
+        var r = SNAPSHOT.monthly[m.key];
+        return Math.max(r.sales, r.totalExpenses + r.costOfSales + r.directCosts);
+      })
+    );
+    var cumulative = 0;
+    var cumPoints = [];
+    var bars = months
+      .map(function (m, i) {
+        var r = SNAPSHOT.monthly[m.key];
+        var x = padding + i * groupW;
+        var costs = r.costOfSales + r.directCosts + r.totalExpenses;
+        var salesH = (r.sales / maxVal) * chartH;
+        var costsH = (costs / maxVal) * chartH;
+        var profitH = (Math.max(r.netProfit, 0) / maxVal) * chartH;
+        cumulative += r.netProfit;
+        cumPoints.push([x + groupW / 2, height - padding - 20 - (cumulative / (maxVal * 3)) * chartH]);
+        return (
+          '<rect x="' + x + '" y="' + (height - padding - 20 - salesH) + '" width="' + barW + '" height="' + salesH + '" fill="#2f6b4f"></rect>' +
+          '<rect x="' + (x + barW + 2) + '" y="' + (height - padding - 20 - costsH) + '" width="' + barW + '" height="' + costsH + '" fill="#b3402a"></rect>' +
+          '<rect x="' + (x + (barW + 2) * 2) + '" y="' + (height - padding - 20 - profitH) + '" width="' + barW + '" height="' + profitH + '" fill="#93c4ac"></rect>' +
+          '<text x="' + (x + groupW / 2) + '" y="' + (height - 6) + '" class="chart-bar-label" fill="var(--pencil)" text-anchor="middle">' + esc(m.label) + '</text>'
+        );
+      })
+      .join("");
+    var linePath = cumPoints
+      .map(function (p, i) {
+        return (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1);
+      })
+      .join(" ");
+    return (
+      '<div class="chart-block"><h3>Through the year</h3>' +
+      '<svg viewBox="0 0 ' +
+      width +
+      " " +
+      height +
+      '" role="img" aria-label="Monthly turnover, costs and profit, with cumulative profit">' +
+      bars +
+      '<path d="' +
+      linePath +
+      '" fill="none" stroke="var(--correction)" stroke-width="2"></path>' +
+      "</svg>" +
+      '<div class="chart-legend">' +
+      '<span><span class="chart-legend-swatch" style="background:#2f6b4f"></span>Turnover</span>' +
+      '<span><span class="chart-legend-swatch" style="background:#b3402a"></span>Costs</span>' +
+      '<span><span class="chart-legend-swatch" style="background:#93c4ac"></span>Profit</span>' +
+      '<span><span class="chart-legend-swatch" style="background:var(--correction)"></span>Cumulative profit</span>' +
+      "</div></div>"
+    );
+  }
+
+  // ============================== inspector: checks, drift, helpers ==============================
+
+  function renderDriftSummary() {
+    var checks = SNAPSHOT.checks;
+    var passCount = checks.filter(function (c) {
+      return c.result === "pass";
+    }).length;
+    var warnCount = checks.filter(function (c) {
+      return c.result !== "pass";
+    }).length;
+    var driftCount = SNAPSHOT.drift.filter(function (d) {
+      return Math.abs(d.computed - d.asRead) >= 0.005;
+    }).length;
+    return (
+      '<div class="drift-summary">' +
+      '<div class="drift-summary-item pass"><span class="count">' +
+      passCount +
+      '</span><span class="caps-label">Pass</span></div>' +
+      '<div class="drift-summary-item warn"><span class="count">' +
+      warnCount +
+      '</span><span class="caps-label">Flagged</span></div>' +
+      '<div class="drift-summary-item"><span class="count">' +
+      driftCount +
+      '</span><span class="caps-label">Drift cells</span></div>' +
+      "</div>"
+    );
+  }
+
+  function renderChecksList() {
+    return (
+      '<ul class="checks-list">' +
+      SNAPSHOT.checks
+        .map(function (c) {
+          var marker = c.result === "pass" ? "✓" : "!";
+          return (
+            '<li class="check-item ' +
+            c.result +
+            '"><span class="check-marker">' +
+            marker +
+            '</span><span class="check-body"><span class="check-label">' +
+            esc(c.label) +
+            '</span><br/><span class="check-figures">expected ' +
+            fmtMoney(c.expected) +
+            " · actual " +
+            fmtMoney(c.actual) +
+            "</span>" +
+            (c.helper
+              ? '<div class="check-helper"><p><strong>' +
+                esc(c.helper.title) +
+                "</strong> — " +
+                esc(c.helper.preview) +
+                '</p><button type="button" class="btn" disabled title="Helpers apply through the edit path, wired in phase 3 track W3">' +
+                esc(c.helper.actionLabel) +
+                "</button></div>"
+              : "") +
+            "</span></li>"
+          );
+        })
+        .join("") +
+      "</ul>"
+    );
+  }
+
+  function renderHelpersSection() {
+    return (
+      '<div class="helpers-section"><h3>Helpers</h3>' +
+      '<div class="helper-card"><h4>Make a sale/purchase from a bank item</h4>' +
+      "<p>Turns an unmatched bank line into a sales or purchases line, category picked from the expense codes. Basic Sole Trader books in this preview carry no bank sheet, so there is nothing to act on here — the control ships for products that do.</p>" +
+      '<button type="button" class="btn" disabled>Preview</button></div></div>'
+    );
+  }
+
+  function renderInspectorFull() {
+    return (
+      "<h3>Checks &amp; drift</h3>" +
+      renderDriftSummary() +
+      renderChecksList() +
+      renderHelpersSection() +
+      '<h3>Charts</h3>' +
+      renderChartsBlock() +
+      '<div style="margin-top:1rem"><button type="button" class="btn btn-primary" id="inspector-save-btn">Save workbook</button></div>'
+    );
+  }
+
+  function renderInspectorChecksOnly() {
+    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderChecksList() + renderHelpersSection();
+  }
+
+  function bindInspectorInteractions() {
+    var btn = document.getElementById("inspector-save-btn");
+    if (btn) {
+      btn.addEventListener("click", handleSave);
+    }
+  }
+
+  // ============================== global controls ==============================
+
+  function bindGlobalControls() {
+    els.themeToggle.addEventListener("click", function () {
+      var root = document.documentElement;
+      var current = root.getAttribute("data-theme");
+      var next = current === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try {
+        window.localStorage.setItem("diya-books-theme", next);
+      } catch (e) {
+        /* private browsing or storage disabled: theme just won't persist */
+      }
+      els.themeToggle.setAttribute("aria-pressed", next === "dark" ? "true" : "false");
+    });
+    try {
+      var saved = window.localStorage.getItem("diya-books-theme");
+      if (saved) {
+        document.documentElement.setAttribute("data-theme", saved);
+        els.themeToggle.setAttribute("aria-pressed", saved === "dark" ? "true" : "false");
+      }
+    } catch (e) {
+      /* no persisted theme available */
+    }
+
+    els.saveBtn.addEventListener("click", handleSave);
+    els.saveBtnMobile.addEventListener("click", handleSave);
+    els.drawerToggleBtn.addEventListener("click", function () {
+      if (state.drawerOpen) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    });
+    els.drawerBackdrop.addEventListener("click", closeDrawer);
+
+    window.addEventListener("resize", function () {
+      render();
+    });
+  }
+
+  function openDrawer() {
+    state.drawerOpen = true;
+    els.inspectorDrawer.classList.add("is-open");
+    els.drawerBackdrop.classList.remove("hidden");
+  }
+  function closeDrawer() {
+    state.drawerOpen = false;
+    els.inspectorDrawer.classList.remove("is-open");
+    els.drawerBackdrop.classList.add("hidden");
+    if (state.mobileTab === "checks") {
+      state.mobileTab = "books";
+      renderMobileTabbar();
+    }
+  }
+
+  function handleSave() {
+    if (!state.loaded) return;
+    showToast("Save generates the workbook client-side once the engine bundle is wired (phase 3, track W4).");
+  }
+
+  var toastTimer = null;
+  function showToast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add("is-visible");
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      els.toast.classList.remove("is-visible");
+    }, 4000);
+  }
+})();

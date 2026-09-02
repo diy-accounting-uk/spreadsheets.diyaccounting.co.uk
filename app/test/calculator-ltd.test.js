@@ -42,14 +42,7 @@ function runFixture({ dataDir, years, offset }) {
 // The checks the shipped workbook cannot pass, whichever engine computes it.
 // Both sides reach the same verdict on each, so the roundtrip scores them
 // equal; they are gaps in the templates, not in this engine.
-const SHEET_LIMITATION_GAPS = [
-  // The printed payslip's payment date reads column R of the block's own
-  // header row, where the template holds nothing. The date the wages were
-  // paid sits a row below in column M, which is where the period-end cell
-  // finds it, so both engines print a nil here and this warning carries the
-  // date the page would have shown.
-  "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
-];
+const SHEET_LIMITATION_GAPS = [];
 
 const FIXTURES = [
   // The Precision Code year the roundtrip job runs, at the March year end and

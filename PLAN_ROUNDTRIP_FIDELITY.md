@@ -168,7 +168,10 @@ and scores both halves.
   **no JS value**, **no Excel value**. Each is a number that can only fall.
 - **EQ2** joins the two `D` documents as a multiset of canonical lines, plus a field-by-field
   comparison of `book.toml`. It compares the export against the original fixture, not against a
-  second export, so a field the first pass loses cannot pass by staying lost.
+  second export, so a field the first pass loses cannot pass by staying lost. A field the export
+  leaves out is **missing** unless `app/data/roundtrip-unrepresentable.json` names a reason for
+  it, in which case it is **declared** and counted apart. Both counts are budget-held, so
+  neither a new loss nor a new excuse for one can land unnoticed.
 
 `app/bin/verify-stability.js` scores EQ3 with the same comparator and the same policy.
 
@@ -571,40 +574,16 @@ for all four products, now that every CI job passes `--data` to the Excel-side `
 `app/data/roundtrip-budget.json` holds `differing`, `noJsValue` and `noExcelValue` at zero for every
 product, and `budgetBreaches()` fails the run on a single differing money key.
 
-**`book.toml` comes back short.** Missing fields run 90 for BST, 26 for Taxi, 111 for SE and 156 for Ltd, and
-the budget holds each at that number. (SE's 111 includes the land & buildings account its book
-declares but no SE line posts to — the same structural absence as 0010 and 0020.) The gap is
-one-directional: the fixture's data reaches the package; the read-back mappings don't exist yet.
-The trigger is unchanged — the first consumer of the JS representation (the VAT export is the
-named candidate), and only the blocks it needs. When picked up, the work runs as waves of
-concurrent worktree sub-agents; every landing follows the same three steps (mapping,
-fixture-anchored proof both legs survive, that block's `bookFieldsMissing` number falls in
-`roundtrip-budget.json`) and ends with the verify-roundtrip trio green.
+**`book.toml` comes back whole.** `bookFieldsMissing` is 0 for all four products, and
+`roundtrip-budget.json` gates it there. Every field the export does not carry is one
+`app/data/roundtrip-unrepresentable.json` names a reason for in its `bookFields` section,
+counted as `bookFieldsDeclared` and gated at 36 (BST), 10 (Taxi), 22 (SE) and 35 (Ltd). The
+ratchet runs both ways: a new declaration raises the count past its ceiling, and a
+declaration the export starts satisfying throws out of `scoreDataHalves`.
 
-*Wave 1 — two concurrent tracks, disjoint exporter sections; the coordinator resolves the
-shared budget/test-file merges:*
-- **Registers-and-employees track** (Sonnet): read back `RegisterofMembers` and the
-  Directors&Secretary/DirectorsInterests entries into `[[members]]` and the director tables
-  (the cells are populated and checked; only the reverse mapping is missing), and rebuild
-  `[[employees]]` (name, start date, pay frequency, rate) from the Employee sheet and payslip
-  cells. An attribute with no cell gets a generator write to a labelled spare cell or a
-  per-block declaration — decided from the XML, not assumed.
-- **Rates-by-provenance track** (Sonnet): emit the tax rate tables from `app/data/<year>.toml`
-  keyed by the package's declared year — reconstruction by provenance, since the sheets hold
-  the rates in formulas — with a check that the sheet's formula results agree with the
-  emitted table.
-
-*Wave 2 — one track, after wave 1 (it shares the exporter and touches the product modules):*
-- **Asset-attributes track** (Opus): the fixed-asset register's identity attributes and the
-  HP agreement schedules. Generator writes into free description columns discovered from the
-  Schedule/HPfinance XML, then exporter read-back into `[[fixedAssets]]` and
-  `[[hpAgreements]]` — the same shape the land & buildings class followed, widened to the
-  register.
-
-*Not scheduled — decided (operator, 2026-08-31):* the per-contact debtor and creditor ledgers
-stay budget-held. The sheets total them without per-contact rows, closing them would mean
-template surgery, and the templates are not changing for this; the fields remain a declared
-structural absence.
+*In flight:*
+- **Fixture-master rate alignment** (Sonnet): the masters carry rates from a different year
+  file than the one each product's CI generates with; align them and re-prove the trio.
 
 **Two shipped-template limitations are declared, not open.** The payslip row has no spare column
 for `lineItemComment` (swept A-AG); the field is declared unrepresentable for the payroll block
@@ -623,7 +602,8 @@ fixture, the four `roundtrip-*` jobs gate it on every push, and the four `genera
 score it and stability on every year end. Nothing consumes the JS representation in production yet,
 so the remaining items above buy nothing until something does.
 
-The VAT export in [PLAN_VAT_EXPORT_FOR_SUBMIT.md](PLAN_VAT_EXPORT_FOR_SUBMIT.md) is the first
-production use in prospect. When it starts, reread this document's "What roundtrip fidelity means"
+The CLI, MCP and books-page phases in
+[PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md](PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md) are the
+first production use in prospect. When that starts, reread this document's "What roundtrip fidelity means"
 and "How we measure it" first, then `app/bin/verify-roundtrip.js` and `app/lib/report-serializer.js`
 for the comparison, `app/lib/tax/vat.js` for what the engine already computes, and the `book.toml` item above.

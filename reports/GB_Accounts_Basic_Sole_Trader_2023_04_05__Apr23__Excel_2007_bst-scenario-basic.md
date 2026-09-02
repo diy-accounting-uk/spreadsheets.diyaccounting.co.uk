@@ -423,7 +423,7 @@ Trade: IT consultancy and software development
 | N9 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
 | M12 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N13 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
-| N14 | Higher Band End | 150000 | tax.incomeTax.higherRateThreshold |
+| N14 | Higher Band End | 150000 | tax.incomeTax.additionalRateThreshold |
 | L17 | NI Class 2 Rate | 3.15 | tax.nationalInsurance.class2WeeklyRate |
 | L20 | NI Class 4 Lower Rate | 0.0973 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 11908 | tax.nationalInsurance.class4LowerProfits |
