@@ -116,10 +116,7 @@ async function main() {
   const assets = copyRuntimeAssets();
   const bytes = statSync(BUNDLE_FILE).size;
 
-  writeFileSync(
-    resolve(ENGINE_DIR, "metafile.json"),
-    JSON.stringify(result.metafile, null, 2) + "\n",
-  );
+  writeFileSync(resolve(ENGINE_DIR, "metafile.json"), JSON.stringify(result.metafile, null, 2) + "\n");
 
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);

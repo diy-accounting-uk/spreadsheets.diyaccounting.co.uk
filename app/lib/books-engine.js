@@ -10,7 +10,17 @@
 // Every module below is imported as it stands. Nothing here is a browser fork.
 
 // Reading a populated workbook back into diya-gl data.
-export { extractBstTransactions, extractMetadata, bstExtractionMap, bstBookFieldCells, isBstInputCell, validateBstAnchors, BstAnchorError, normaliseLine, taxTablesForPackage } from "./xlsx-exporter.js";
+export {
+  extractBstTransactions,
+  extractMetadata,
+  bstExtractionMap,
+  bstBookFieldCells,
+  isBstInputCell,
+  validateBstAnchors,
+  BstAnchorError,
+  normaliseLine,
+  taxTablesForPackage,
+} from "./xlsx-exporter.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader.js";
@@ -32,4 +42,11 @@ export { addSaleLine, addPurchaseLine, changeLineAmount } from "./diya-gl-edits.
 export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
 
 // The resource-loader contract a caller has to satisfy.
-export { nodeResourceLoader, resourceRoot, resourcePathWithinRoot, BOOK_SCHEMA_RESOURCE, LINES_SCHEMA_RESOURCE, ResourceUnavailableError } from "./app-resources.js";
+export {
+  nodeResourceLoader,
+  resourceRoot,
+  resourcePathWithinRoot,
+  BOOK_SCHEMA_RESOURCE,
+  LINES_SCHEMA_RESOURCE,
+  ResourceUnavailableError,
+} from "./app-resources.js";

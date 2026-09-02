@@ -128,7 +128,11 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => document.body.dataset.probeState !== "running", null, { timeout: 60_000 });
 
-      const probe = await page.evaluate(() => ({ ok: window.__DIYA_PROBE__.ok, error: window.__DIYA_PROBE__.error, json: window.__DIYA_PROBE__.json }));
+      const probe = await page.evaluate(() => ({
+        ok: window.__DIYA_PROBE__.ok,
+        error: window.__DIYA_PROBE__.error,
+        json: window.__DIYA_PROBE__.json,
+      }));
       expect(consoleErrors, "the probe page raised no uncaught error").toEqual([]);
       expect(probe.error ?? null, "the probe ran to completion").toBeNull();
       expect(probe.ok).toBe(true);

@@ -55,7 +55,15 @@ export async function loadSchemasFrom(resources = nodeResourceLoader()) {
 // then it fails loudly rather than validating nothing.
 function compiled() {
   if (validators) return validators;
-  const schemaDir = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "web", "spreadsheets.diyaccounting.co.uk", "public", "schema");
+  const schemaDir = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    "..",
+    "..",
+    "web",
+    "spreadsheets.diyaccounting.co.uk",
+    "public",
+    "schema",
+  );
   const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
   validators = compileSchemas(read("diya-gl-book-v2.schema.json"), read("diya-gl-lines-v2.schema.json"));
   return validators;
