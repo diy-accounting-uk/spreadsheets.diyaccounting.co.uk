@@ -114,7 +114,12 @@
     {
       "field": "paymentMethod",
       "products": ["taxi"],
-      "reason": "The Taxi Sales and Purchases tabs keep no Bank or Cash column: the column the Basic Sole Trader sheets give the payment label is the taxi expense code letter's."
+      "reason": "The Taxi Sales and Purchases tabs keep no Bank or Cash column: the column the Basic Sole Trader sheets give the payment label is the taxi expense code letter's. The Basic Sole Trader export reads its own column back, coarse-mapping the sheet's free text to \"cash\" or \"bank-transfer\"."
+    },
+    {
+      "field": "paymentMethod",
+      "products": ["se", "ltd"],
+      "reason": "The SE and Ltd sales and purchases sheets keep no settlement column of their own: how an invoice was paid reaches the package as a separate row on the Bank.xlsx or Cash.xlsx receipts and payments blocks, which the export reads back as its own bank-journal line rather than a flag on the sale or purchase it settles."
     },
     {
       "field": "taxCode",
