@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Company 2027-03-31 (Mar27) Excel 2007
 
 Scenario: ltd-scenario-full
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 Full Ltd-scoped extract from Precision Code Ltd master data. All journals, all accounts.
 
@@ -287,6 +287,7 @@ Trade: IT consultancy and software development
 | Directors' report: first shareholder named | Carol Smith | Carol Smith |  | PASS |
 | Directors' report: second shareholder named | David Brown | David Brown |  | PASS |
 | Directors&Secretary: row 2 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
+| Directors&Secretary: row 2 appoints Carol Smith as Director | Director | Director |  | PASS |
 | DirectorsInterests: row 2 names Carol Smith | Carol Smith | Carol Smith |  | PASS |
 | DirectorsInterests: row 2 registers Carol Smith's shareholding on the date the register of members carries | 43831 | 43831 | 0 | PASS |
 | Directors' report: dividend declared = the board minute | 15000 | 15000 | 0 | PASS |
@@ -663,6 +664,42 @@ Trade: IT consultancy and software development
 | Payslips calendar: payroll month 12 names the Mar tab | Mar | Mar |  | PASS |
 | Payslips calendar: the payroll months are numbered one to twelve in order | 0 | 0 | 0 | PASS |
 | Payslips calendar: every payroll month opens on its own first week | 12 | 12 | 0 | PASS |
+| Payslips!Payment B4 tax month 1 ends on the last day of Apr | 46142 | 46142 | 0 | PASS |
+| Payslips!Payment C4 tax month 1 is due on the 19th after it | 46161 | 46161 | 0 | PASS |
+| Payslips!Payment B5 tax month 2 ends on the last day of May | 46173 | 46173 | 0 | PASS |
+| Payslips!Payment C5 tax month 2 is due on the 19th after it | 46192 | 46192 | 0 | PASS |
+| Payslips!Payment B6 tax month 3 ends on the last day of Jun | 46203 | 46203 | 0 | PASS |
+| Payslips!Payment C6 tax month 3 is due on the 19th after it | 46222 | 46222 | 0 | PASS |
+| Payslips!Payment B7 tax month 4 ends on the last day of Jul | 46234 | 46234 | 0 | PASS |
+| Payslips!Payment C7 tax month 4 is due on the 19th after it | 46253 | 46253 | 0 | PASS |
+| Payslips!Payment B8 tax month 5 ends on the last day of Aug | 46265 | 46265 | 0 | PASS |
+| Payslips!Payment C8 tax month 5 is due on the 19th after it | 46284 | 46284 | 0 | PASS |
+| Payslips!Payment B9 tax month 6 ends on the last day of Sep | 46295 | 46295 | 0 | PASS |
+| Payslips!Payment C9 tax month 6 is due on the 19th after it | 46314 | 46314 | 0 | PASS |
+| Payslips!Payment B10 tax month 7 ends on the last day of Oct | 46326 | 46326 | 0 | PASS |
+| Payslips!Payment C10 tax month 7 is due on the 19th after it | 46345 | 46345 | 0 | PASS |
+| Payslips!Payment B11 tax month 8 ends on the last day of Nov | 46356 | 46356 | 0 | PASS |
+| Payslips!Payment C11 tax month 8 is due on the 19th after it | 46375 | 46375 | 0 | PASS |
+| Payslips!Payment B12 tax month 9 ends on the last day of Dec | 46387 | 46387 | 0 | PASS |
+| Payslips!Payment C12 tax month 9 is due on the 19th after it | 46406 | 46406 | 0 | PASS |
+| Payslips!Payment B13 tax month 10 ends on the last day of Jan | 46418 | 46418 | 0 | PASS |
+| Payslips!Payment C13 tax month 10 is due on the 19th after it | 46437 | 46437 | 0 | PASS |
+| Payslips!Payment B14 tax month 11 ends on the last day of Feb | 46446 | 46446 | 0 | PASS |
+| Payslips!Payment C14 tax month 11 is due on the 19th after it | 46465 | 46465 | 0 | PASS |
+| Payslips!Payment B15 tax month 12 ends on the last day of Mar | 46477 | 46477 | 0 | PASS |
+| Payslips!Payment C15 tax month 12 is due on the 19th after it | 46496 | 46496 | 0 | PASS |
+| Payslips!Apr K49 the monthly payroll opens in the accounting period's Apr | 46118 | 46118 | 0 | PASS |
+| Payslips!May K49 the monthly payroll opens in the accounting period's May | 46143 | 46143 | 0 | PASS |
+| Payslips!Jun K59 the monthly payroll opens in the accounting period's Jun | 46174 | 46174 | 0 | PASS |
+| Payslips!Jul K49 the monthly payroll opens in the accounting period's Jul | 46204 | 46204 | 0 | PASS |
+| Payslips!Aug K49 the monthly payroll opens in the accounting period's Aug | 46235 | 46235 | 0 | PASS |
+| Payslips!Sep K59 the monthly payroll opens in the accounting period's Sep | 46266 | 46266 | 0 | PASS |
+| Payslips!Oct K49 the monthly payroll opens in the accounting period's Oct | 46296 | 46296 | 0 | PASS |
+| Payslips!Nov K49 the monthly payroll opens in the accounting period's Nov | 46327 | 46327 | 0 | PASS |
+| Payslips!Dec K59 the monthly payroll opens in the accounting period's Dec | 46357 | 46357 | 0 | PASS |
+| Payslips!Jan K49 the monthly payroll opens in the accounting period's Jan | 46388 | 46388 | 0 | PASS |
+| Payslips!Feb K49 the monthly payroll opens in the accounting period's Feb | 46419 | 46419 | 0 | PASS |
+| Payslips!Mar K69 the monthly payroll opens in the accounting period's Mar | 46447 | 46447 | 0 | PASS |
 | WagesInterface employees Apr C4 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Apr D4 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Apr E4 employee NI | 296 | 296 | 0 | PASS |
@@ -674,6 +711,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Apr D4 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Apr E4 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Apr I4 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D4 NI due is the Apr tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E4 income tax due is the Apr tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I4 total payable is the Apr tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees May C5 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees May D5 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees May E5 employee NI | 296 | 296 | 0 | PASS |
@@ -685,6 +725,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment May D5 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment May E5 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment May I5 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D5 NI due is the May tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E5 income tax due is the May tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I5 total payable is the May tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Jun C6 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Jun D6 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Jun E6 employee NI | 296 | 296 | 0 | PASS |
@@ -696,6 +739,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Jun D6 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jun E6 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jun I6 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D6 NI due is the Jun tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E6 income tax due is the Jun tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I6 total payable is the Jun tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Jul C7 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Jul D7 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Jul E7 employee NI | 296 | 296 | 0 | PASS |
@@ -707,6 +753,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Jul D7 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jul E7 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jul I7 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D7 NI due is the Jul tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E7 income tax due is the Jul tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I7 total payable is the Jul tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Aug C8 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Aug D8 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Aug E8 employee NI | 296 | 296 | 0 | PASS |
@@ -718,6 +767,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Aug D8 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Aug E8 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Aug I8 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D8 NI due is the Aug tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E8 income tax due is the Aug tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I8 total payable is the Aug tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Sep C9 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Sep D9 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Sep E9 employee NI | 296 | 296 | 0 | PASS |
@@ -729,6 +781,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Sep D9 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Sep E9 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Sep I9 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D9 NI due is the Sep tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E9 income tax due is the Sep tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I9 total payable is the Sep tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Oct C10 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Oct D10 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Oct E10 employee NI | 296 | 296 | 0 | PASS |
@@ -740,6 +795,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Oct D10 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Oct E10 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Oct I10 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D10 NI due is the Oct tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E10 income tax due is the Oct tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I10 total payable is the Oct tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Nov C11 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Nov D11 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Nov E11 employee NI | 296 | 296 | 0 | PASS |
@@ -751,6 +809,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Nov D11 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Nov E11 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Nov I11 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D11 NI due is the Nov tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E11 income tax due is the Nov tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I11 total payable is the Nov tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Dec C12 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Dec D12 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Dec E12 employee NI | 296 | 296 | 0 | PASS |
@@ -762,6 +823,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Dec D12 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Dec E12 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Dec I12 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D12 NI due is the Dec tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E12 income tax due is the Dec tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I12 total payable is the Dec tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Jan C13 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Jan D13 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Jan E13 employee NI | 296 | 296 | 0 | PASS |
@@ -773,6 +837,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Jan D13 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Jan E13 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Jan I13 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D13 NI due is the Jan tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E13 income tax due is the Jan tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I13 total payable is the Jan tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Feb C14 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Feb D14 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Feb E14 employee NI | 296 | 296 | 0 | PASS |
@@ -784,6 +851,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Feb D14 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Feb E14 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Feb I14 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D14 NI due is the Feb tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E14 income tax due is the Feb tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I14 total payable is the Feb tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | WagesInterface employees Mar C15 gross pay | 5700 | 5700 | 0 | PASS |
 | WagesInterface employees Mar D15 income tax | 800 | 800 | 0 | PASS |
 | WagesInterface employees Mar E15 employee NI | 296 | 296 | 0 | PASS |
@@ -795,6 +865,9 @@ Trade: IT consultancy and software development
 | Payslips!Payment Mar D15 NI due | 873.2 | 873.2 | 0 | PASS |
 | Payslips!Payment Mar E15 income tax due | 800 | 800 | 0 | PASS |
 | Payslips!Payment Mar I15 total amount payable | 1673.2 | 1673.2 | 0 | PASS |
+| Payslips!Payment D15 NI due is the Mar tab's own | 873.2 | 873.2 | 0 | PASS |
+| Payslips!Payment E15 income tax due is the Mar tab's own | 800 | 800 | 0 | PASS |
+| Payslips!Payment I15 total payable is the Mar tab's own | 1673.2 | 1673.2 | 0 | PASS |
 | Payslips print: the page reads the May tab | May | May |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
@@ -808,8 +881,7 @@ Trade: IT consultancy and software development
 | Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
-| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
-| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45808 | 0 |  | **WARNING** |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
 | Payslips!Jul F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Jul M51 gross pay | 3500 | 3500 | 0 | PASS |
 | Payslips!Jul N51 income tax | 530 | 530 | 0 | PASS |
@@ -2731,39 +2803,63 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| B4 |  | 46142 |  |
+| C4 |  | 46161 |  |
 | D4 |  | 873.2 |  |
 | E4 |  | 800 |  |
 | I4 |  | 1673.2 |  |
+| B5 |  | 46173 |  |
+| C5 |  | 46192 |  |
 | D5 |  | 873.2 |  |
 | E5 |  | 800 |  |
 | I5 |  | 1673.2 |  |
+| B6 |  | 46203 |  |
+| C6 |  | 46222 |  |
 | D6 |  | 873.2 |  |
 | E6 |  | 800 |  |
 | I6 |  | 1673.2 |  |
+| B7 |  | 46234 |  |
+| C7 |  | 46253 |  |
 | D7 |  | 873.2 |  |
 | E7 |  | 800 |  |
 | I7 |  | 1673.2 |  |
+| B8 |  | 46265 |  |
+| C8 |  | 46284 |  |
 | D8 |  | 873.2 |  |
 | E8 |  | 800 |  |
 | I8 |  | 1673.2 |  |
+| B9 |  | 46295 |  |
+| C9 |  | 46314 |  |
 | D9 |  | 873.2 |  |
 | E9 |  | 800 |  |
 | I9 |  | 1673.2 |  |
+| B10 |  | 46326 |  |
+| C10 |  | 46345 |  |
 | D10 |  | 873.2 |  |
 | E10 |  | 800 |  |
 | I10 |  | 1673.2 |  |
+| B11 |  | 46356 |  |
+| C11 |  | 46375 |  |
 | D11 |  | 873.2 |  |
 | E11 |  | 800 |  |
 | I11 |  | 1673.2 |  |
+| B12 |  | 46387 |  |
+| C12 |  | 46406 |  |
 | D12 |  | 873.2 |  |
 | E12 |  | 800 |  |
 | I12 |  | 1673.2 |  |
+| B13 |  | 46418 |  |
+| C13 |  | 46437 |  |
 | D13 |  | 873.2 |  |
 | E13 |  | 800 |  |
 | I13 |  | 1673.2 |  |
+| B14 |  | 46446 |  |
+| C14 |  | 46465 |  |
 | D14 |  | 873.2 |  |
 | E14 |  | 800 |  |
 | I14 |  | 1673.2 |  |
+| B15 |  | 46477 |  |
+| C15 |  | 46496 |  |
 | D15 |  | 873.2 |  |
 | E15 |  | 800 |  |
 | I15 |  | 1673.2 |  |
@@ -2786,7 +2882,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 1060 |  |
 | I16 |  | 400 |  |
 | M16 |  | 5540 |  |
-| M18 |  | 0 |  |
+| M18 |  | 45808 |  |
 
 ### Payslips.xlsx!Admin
 
@@ -2853,10 +2949,45 @@ Journal amounts include VAT at 20%.
 | D329 |  | 12 |  |
 | F329 |  | 1 |  |
 
+### Payslips.xlsx!Apr
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46118 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46143 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Jun
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K59 |  | 46174 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
 ### Payslips.xlsx!Jul
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| K49 |  | 46204 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
 | T41 |  | 0 |  |
 | M49 |  | 45869 |  |
 | F51 |  | Alice Johnson |  |
@@ -2891,6 +3022,11 @@ Journal amounts include VAT at 20%.
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| K49 |  | 46235 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
 | H11 |  | 0 |  |
 | I11 |  | 0 |  |
 | J11 |  | 0 |  |
@@ -2944,6 +3080,76 @@ Journal amounts include VAT at 20%.
 | O55 |  | 0 |  |
 | T55 |  | 0 |  |
 
+### Payslips.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K59 |  | 46266 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46296 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Nov
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46327 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Dec
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K59 |  | 46357 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Jan
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46388 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Feb
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K49 |  | 46419 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Mar
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| K69 |  | 46447 |  |
+| T1 |  | 577.2 |  |
+| O1 |  | 296 |  |
+| N1 |  | 800 |  |
+| P1 |  | 0 |  |
+
 ### Companysecretary.xlsx!RegisterofMembers
 
 | Cell | DIY Label | Value | diya-gl mapping |
@@ -2976,6 +3182,8 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | A2 |  | Carol Smith |  |
 | B2 |  | 123 High Street, Manchester, M1 1AA |  |
+| D2 |  | Director |  |
+| D3 |  | Company Secretary |  |
 
 ### Companysecretary.xlsx!DirectorsInterests
 
