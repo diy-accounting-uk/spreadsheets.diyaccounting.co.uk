@@ -10,11 +10,11 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 tested and deployed. `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` archives when its one
 remainder lands:
 
-- [ ] the settlement flag (Sonnet, worktree agent) — in flight, operator decided
-  2026-09-02: coarse map both ways — column D reads back as bank-transfer/cash, finer
-  values declared unrepresentable per block; Taxi aligned, SE/Ltd checked; the
-  regenerate-from-export ledger flip proven fixed by a double round trip. Lands on a fresh
-  branch off the merged main with its own PR.
+- [ ] the settlement flag — **PR #56 awaits operator merge** (122 blast tests on the
+  merged branch): column D round-trips as the coarse payment method; the generate pipeline
+  gains the settlement write it never had; SE/Ltd declared with empirical proof; double
+  round trip byte-identical. On merge, `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` archives —
+  the spike is then fully delivered.
 
 ## Open items
 
