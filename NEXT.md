@@ -43,10 +43,11 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   as recalculated, and a two-group checks panel — engine checks untouched, new book-level
   checks whose three fix-it helpers preview and apply as one undoable step, each proven on
   a deliberately broken book. Also repaired the D&C view crash at the W1/ledger merge seam.
-- [ ] bst-latest refresh + upload openings (Sonnet, worktree agent) — in flight:
-  `examples/bst-latest` is a pre-alignment package (placeholder ledger cells, 12 spurious
-  drift findings on upload); regenerate it with the fixed writer and read C3/F3 into
-  `openingBalances` on upload, restoring W1's zero-drift rung with a strengthened spec.
+- [x] bst-latest refresh + upload openings — landed (merged; 27/27 sidecar and 41 blast
+  tests on the merged tree): the package regenerated against the aligned writer
+  (RECONCILES 91/91, sidecar 0), uploads read C3/F3 into `openingBalances` (the root of
+  the 12 spurious drift findings), the zero-drift spec asserts the whole drift collection.
+  The branch CI sidecar failure traced entirely to the stale fixture — no map bug.
 - [x] `changeLinePostingDate` / `changeLineAccount` — landed (merged; 81 unit + 15 helper
   specs green on the merged tree): position-preserving, date and chart validation with
   named errors, MCP-registered, the page's remove+add composition retired.
