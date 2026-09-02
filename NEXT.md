@@ -20,12 +20,10 @@ are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
   had been destroying 16 template formulas — the sidecar went 16→0 on a fresh package. All
   nine BST reports RECONCILE; the sheet (plus PurchasesStock and Fixed Assets) joined the
   anchor guard; `adminMileageRates` now throws by name.
-- [ ] the settlement flag is lost in the round trip (operator decision first): the BST
-  sheets' column D holds a two-way Bank/Cash label the generator writes but
-  `BST_SALES_COLUMNS`/`BST_PURCHASE_COLUMNS` never read back, so a package re-generated
-  from its own export flips its outstanding ledger (brickwork: 19,510 → the full year).
-  Restating the book's richer `paymentMethod` in that column needs a vocabulary decision
-  across all four products plus fixture changes — decide before dispatching.
+- [ ] the settlement flag (Sonnet, worktree agent) — in flight, operator decided
+  2026-09-02: coarse map both ways — column D reads back as bank-transfer/cash, finer
+  values declared unrepresentable per block; Taxi aligned, SE/Ltd checked; the
+  regenerate-from-export ledger flip proven fixed by a double round trip.
 - [x] archive-packages helper — the script, skill and `CLAUDE.md` line were already landed
   (`862d7695`); the track added the missing test file (10 tests, every cut rule proven
   breakable) and ran plan step 2: the dry run over the real catalogue is clean — 119/119
@@ -68,9 +66,10 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
 From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
 automation — that is the plan's binding constraint):
 
-- [ ] first cut, one tax year at a time, oldest first — eight reviewable commits pushed to
-  the archive repo's main; record the `packages-published/` role in that repo's
-  `CLAUDE.md`; delete this repo's unused `ARCHIVE_PACKAGES_TOKEN` secret.
+- [ ] the eight tax-year cuts (Sonnet agent) — in flight, operator authorized 2026-09-02:
+  apply/verify/commit per year oldest-first in `../diy-accounting-archive`, push to its
+  main, record the `packages-published/` role in its `CLAUDE.md`, delete this repo's
+  unused `ARCHIVE_PACKAGES_TOKEN` secret.
 
 ## Plans not tracked here
 
