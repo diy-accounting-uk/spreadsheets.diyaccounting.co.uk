@@ -34,6 +34,39 @@
 (function (global) {
   "use strict";
 
+  // The standard BST chart of accounts a new book starts from: one sales
+  // account (a blank business has no income streams yet to distinguish) and
+  // one purchase account per expense category the year table's own columns
+  // carry, so a brand-new book already has somewhere for every category of
+  // entry to post to once the edit layer lands. Codes and columns follow the
+  // same chart the reconciliation fixtures use (examples/precision-code-ltd
+  // and examples/sp-sixty-driving book.toml).
+  var STANDARD_NEW_BOOK_CHART = {
+    sales: {
+      4000: { accountMainDescription: "Sales" },
+    },
+    purchases: {
+      5000: { accountMainDescription: "Cost of sales" },
+      5001: { accountMainDescription: "Direct costs" },
+      5101: { accountMainDescription: "Employee costs" },
+      5200: { accountMainDescription: "Premises costs" },
+      5400: { accountMainDescription: "Repairs and maintenance" },
+      5501: { accountMainDescription: "General admin" },
+      5601: { accountMainDescription: "Motor expenses" },
+      5600: { accountMainDescription: "Travel and subsistence" },
+      5500: { accountMainDescription: "Advertising" },
+      5800: { accountMainDescription: "Legal and professional fees" },
+      5803: { accountMainDescription: "Interest and finance charges" },
+      5801: { accountMainDescription: "Bad debts written off" },
+      5002: { accountMainDescription: "Other expenses" },
+      5900: { accountMainDescription: "Fixed asset purchases" },
+    },
+  };
+
+  function cloneStandardChart() {
+    return JSON.parse(JSON.stringify(STANDARD_NEW_BOOK_CHART));
+  }
+
   var EXAMPLE_BOOKS = {
     "bst-scenario-basic": {
       dir: "precision-code-ltd",
@@ -647,6 +680,33 @@
     };
   }
 
+  // Shared by every path that has a book and lines already assembled (an
+  // example's book.toml+lines.jsonl, a brand-new empty book, or a working
+  // book handed back from autosave): run the same calculate/check loop
+  // loadExample always has, and carry the raw book and lines forward on the
+  // snapshot so save and autosave have something to act on. No as-read
+  // layer here -- only an upload reads a workbook's cached values, so drift
+  // is always empty on this path, exactly as the data model says an example
+  // (and, by the same reasoning, a new or restored book) carries none.
+  async function computeAndAssemble(label, book, lines, sourceKind) {
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+
+    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
+    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
+    var scenario = engine.diyaGlToScenario(book, lines, "bst");
+    var expected = Object.assign({}, scenario, scenario.expected);
+    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
+    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
+
+    var snapshot = await assembleSnapshot(label, book, lines, results, checks, [], taxData, taxYearName);
+    snapshot.book = book;
+    snapshot.lines = lines;
+    snapshot.source = { kind: sourceKind, label: label };
+    return snapshot;
+  }
+
   /**
    * Load one of the three BST reconciliation fixtures: book.toml +
    * lines.jsonl only, no workbook to read an as-read layer from.
@@ -664,17 +724,76 @@
     var bookToml = await resources.readText(base + "book.toml");
     var linesRaw = await resources.readText(base + "lines.jsonl");
     var parsed = engine.parseDiyaGlData(bookToml, linesRaw);
-    var book = parsed.book;
-    var lines = parsed.lines;
 
-    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
-    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
-    var scenario = engine.diyaGlToScenario(book, lines, "bst");
-    var expected = Object.assign({}, scenario, scenario.expected);
-    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
-    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
+    return computeAndAssemble(exampleKey, parsed.book, parsed.lines, "example");
+  }
 
-    return assembleSnapshot(exampleKey, book, lines, results, checks, [], taxData, taxYearName);
+  // The accounting period a year-end date implies: twelve months ending on
+  // that date, starting the day after the same calendar date one year
+  // earlier -- the same shape every BST fixture's own period takes, whether
+  // it is a March tax-year-end or a personal 6 April one.
+  function periodFromYearEnd(yearEndISO) {
+    var parts = yearEndISO.split("-").map(Number);
+    var endDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+    var startDate = new Date(Date.UTC(parts[0] - 1, parts[1] - 1, parts[2] + 1));
+    return { start: startDate.toISOString().slice(0, 10), end: endDate.toISOString().slice(0, 10) };
+  }
+
+  /**
+   * Build an empty but valid book from the new-book form's two fields: a
+   * business name and a year end. documentInfo and entityInformation are
+   * populated, the standard chart of accounts is attached so every P&L
+   * category has somewhere to post to, and there are no lines and no
+   * as-read layer -- the data model's second way in.
+   * @param {string} businessName
+   * @param {string} yearEndISO - a validated "YYYY-MM-DD" date
+   */
+  async function createNewBook(businessName, yearEndISO) {
+    var name = String(businessName || "").trim();
+    if (!name) throw new Error("Enter a business name.");
+    if (!yearEndISO) throw new Error("Enter a real year-end date.");
+
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+    var period = periodFromYearEnd(yearEndISO);
+    var book = {
+      documentInfo: {
+        entriesType: "journal",
+        language: "en",
+        periodCoveredStart: period.start,
+        periodCoveredEnd: period.end,
+        defaultCurrency: "GBP",
+        entriesComment: "New book for " + name,
+      },
+      entityInformation: {
+        organizationIdentifier: name,
+        "diya-gl:product": "BasicSoleTrader",
+        "diya-gl:vatRegistered": false,
+        "diya-gl:basisOfAccounting": "cash",
+      },
+      accounts: cloneStandardChart(),
+    };
+
+    var bookValidation = engine.validateBook(book);
+    if (!bookValidation.valid) {
+      throw new Error("Could not build a valid new book: " + bookValidation.errors.join("; "));
+    }
+
+    return computeAndAssemble(name, book, [], "new");
+  }
+
+  /**
+   * Recompute a snapshot from a book and lines already on hand -- the
+   * "continue where you left off" path, handing autosave's stored working
+   * book back through the same calculate/check loop every other load uses.
+   * @param {object} book
+   * @param {object[]} lines
+   * @param {string} label
+   * @param {string} sourceKind
+   */
+  function loadFromBookAndLines(book, lines, label, sourceKind) {
+    return computeAndAssemble(label, book, lines, sourceKind || "continued");
   }
 
   /**
@@ -738,8 +857,17 @@
     var snapshot = await assembleSnapshot(file.name, book, lines, results, checks, drift, taxData, taxYearName);
     snapshot.bookValidation = bookValidation;
     snapshot.linesValidation = linesValidation;
+    snapshot.book = book;
+    snapshot.lines = lines;
+    snapshot.source = { kind: "upload", label: file.name };
     return snapshot;
   }
 
-  global.DiyaGlBooksLoader = { EXAMPLE_BOOKS: EXAMPLE_BOOKS, loadExample: loadExample, loadFromFile: loadFromFile };
+  global.DiyaGlBooksLoader = {
+    EXAMPLE_BOOKS: EXAMPLE_BOOKS,
+    loadExample: loadExample,
+    loadFromFile: loadFromFile,
+    createNewBook: createNewBook,
+    loadFromBookAndLines: loadFromBookAndLines,
+  };
 })(window);
