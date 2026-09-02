@@ -206,6 +206,10 @@ select:focus-visible,
   color: var(--rule);
 }
 
+.undo-btn {
+  font-size: 1.15rem;
+}
+
 /* ============================ Sheet tab strip ========================= */
 /* Echoes the workbook's own tab strip: caps, wide tracking, a rule underline
    on the active view. */
@@ -617,6 +621,120 @@ table.entries-table td.entry-amount {
   margin: 0.5rem 0 0;
 }
 
+/* --- The editable entries grid --- */
+/* An amount sits in the same tabular mono the figures use; the field only
+   shows its edges on hover and focus, so a page of entries still reads as a
+   ruled ledger rather than a form. */
+
+.entry-amount-input {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.1rem 0.3rem;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  text-align: right;
+  width: 6.5rem;
+  max-width: 100%;
+}
+.entry-amount-input:hover,
+.entry-amount-input:focus {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
+}
+.entry-amount-input[data-dirty="true"] {
+  border-color: var(--correction);
+}
+
+td.entry-actions {
+  width: 1.6rem;
+  text-align: right;
+}
+.entry-delete {
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: none;
+  color: var(--pencil);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
+}
+.entry-delete:hover,
+.entry-delete:focus {
+  color: var(--correction);
+  border-color: var(--correction);
+}
+
+.entry-row.is-unposted {
+  background: rgba(179, 64, 42, 0.07);
+}
+.entry-flag {
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--correction);
+  border: 1px solid var(--correction);
+  border-radius: 2px;
+  padding: 0 0.2rem;
+  white-space: nowrap;
+}
+
+.entry-add-row td {
+  border-top: 1px solid var(--rule);
+  border-bottom: none;
+  padding-top: 0.4rem;
+  vertical-align: top;
+}
+.entry-add-row input,
+.entry-add-row select {
+  font: inherit;
+  font-size: 0.78rem;
+  color: inherit;
+  background: var(--paper);
+  border: 1px solid var(--rule-faint);
+  border-radius: 2px;
+  padding: 0.15rem 0.25rem;
+  max-width: 100%;
+}
+.entry-add-row .entry-add-account,
+.entry-add-row .entry-add-detail {
+  width: 100%;
+  margin-bottom: 0.15rem;
+}
+.entry-add-row .entry-add-date {
+  width: 100%;
+}
+.entry-add-btn {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper);
+  color: var(--rule);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.35rem;
+  cursor: pointer;
+}
+.entry-add-btn:hover {
+  background: var(--tint);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ============================== Pencil correction ======================= */
 /* Signature element: a calculated value in ink, the workbook's as-read value
    struck through beneath it in pencil, the signed drift in pennies beside. */
@@ -652,6 +770,18 @@ table.entries-table td.entry-amount {
   margin-left: 0.6rem;
   border-left: 2px solid var(--correction);
   padding-left: 0.4rem;
+}
+/* After an edit the same mark stops reading as a reconciliation finding:
+   the difference is the edit's own effect, and the tag says so. */
+.pencil-correction .drift-tag {
+  font-family: var(--font-ui);
+  font-size: 0.6em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pencil);
+}
+.pencil-correction.is-recalculated .drift-amount {
+  color: var(--pencil);
 }
 
 /* ============================== Checks / inspector ======================= */
@@ -690,7 +820,8 @@ table.entries-table td.entry-amount {
   color: var(--correction);
 }
 
-ul.checks-list {
+ul.checks-list,
+ul.book-checks-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -749,6 +880,59 @@ ul.checks-list {
 .check-helper p {
   margin: 0 0 0.4rem;
   color: var(--ink-faint);
+}
+
+/* --- Book checks and their fix-it previews --- */
+/* The preview reads as a pencilled note against the check it belongs to, in
+   the same mark language as a drift correction -- never a modal. */
+
+.checks-group-label {
+  margin: 0.75rem 0 0.35rem;
+}
+.checks-group-label:first-child {
+  margin-top: 0;
+}
+.check-consequence {
+  margin: 0.3rem 0 0.3rem;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+.check-offenders {
+  list-style: none;
+  margin: 0 0 0.4rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--pencil);
+}
+.check-offenders li {
+  padding: 0.05rem 0;
+}
+.helper-summary {
+  font-size: 0.78rem;
+}
+.helper-changes {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0 0 0 0.5rem;
+  border-left: 2px solid var(--rule);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--ink);
+}
+.helper-changes li {
+  padding: 0.05rem 0;
+}
+.helper-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.helper-actions .btn {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
 }
 
 .helpers-section {
