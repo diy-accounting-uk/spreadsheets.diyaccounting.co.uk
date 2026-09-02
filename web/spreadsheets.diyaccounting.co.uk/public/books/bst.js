@@ -278,8 +278,8 @@
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
       '<button type="button" class="btn" data-example="bst-scenario-basic">bst-scenario-basic — Precision Code Trading, full ledger</button>' +
-      '<button type="button" class="btn" data-example="bst-brickwork-pro-nonvat" disabled title="Static preview ships one example; W1 wires the rest">bst-brickwork-pro-nonvat — BrickWork trade</button>' +
-      '<button type="button" class="btn" data-example="bst-sp-sixty" disabled title="Static preview ships one example; W1 wires the rest">bst-sp-sixty — no-ledger, mileage route</button>' +
+      '<button type="button" class="btn" data-example="bst-brickwork-pro-nonvat">bst-brickwork-pro-nonvat — BrickWork trade</button>' +
+      '<button type="button" class="btn" data-example="bst-sp-sixty">bst-sp-sixty — no-ledger, mileage route</button>' +
       "</div>" +
       "</div>" +
       '<p id="empty-state-message" class="view-lede" aria-live="polite"></p>' +
@@ -294,27 +294,71 @@
       var file = picker.files && picker.files[0];
       if (!file) return;
       if (/\.xls$/i.test(file.name)) {
-        msg.textContent = "That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.";
+        showEmptyStateMessage("That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.", false);
+        picker.value = "";
         return;
       }
-      msg.textContent =
-        "Reading " + file.name + " happens once the engine bundle is wired (W1). Try the example below to see the full page.";
+      loadFromFile(file);
     });
     document.getElementById("new-book-btn").addEventListener("click", function () {
-      msg.textContent = "Starting a blank book happens once the engine bundle is wired (W1). Try the example below to see the full page.";
+      showEmptyStateMessage("Starting a blank book is wired once entry editing lands (phase 3, track W3). Try an example below.", false);
     });
     Array.prototype.forEach.call(document.querySelectorAll("[data-example]"), function (btn) {
       btn.addEventListener("click", function () {
         if (btn.disabled) return;
-        loadExample();
+        loadExample(btn.getAttribute("data-example"));
       });
     });
   }
 
-  function loadExample() {
+  function showEmptyStateMessage(text, isError) {
+    var msg = document.getElementById("empty-state-message");
+    if (!msg) return;
+    msg.textContent = text;
+    msg.classList.toggle("upload-error", !!isError);
+  }
+
+  function setPickerBusy(busy) {
+    Array.prototype.forEach.call(document.querySelectorAll(".empty-state button, .empty-state input"), function (el) {
+      el.disabled = busy;
+    });
+  }
+
+  function loadExample(exampleKey) {
+    setPickerBusy(true);
+    showEmptyStateMessage("Loading " + exampleKey + "…", false);
+    window.DiyaGlBooksLoader.loadExample(exampleKey)
+      .then(function (snapshot) {
+        applySnapshot(snapshot);
+        showToast("Loaded " + snapshot.scenario + ".");
+      })
+      .catch(function (error) {
+        setPickerBusy(false);
+        showEmptyStateMessage(error && error.message ? error.message : String(error), true);
+      });
+  }
+
+  function loadFromFile(file) {
+    setPickerBusy(true);
+    showEmptyStateMessage("Reading " + file.name + "…", false);
+    window.DiyaGlBooksLoader.loadFromFile(file)
+      .then(function (snapshot) {
+        applySnapshot(snapshot);
+        showToast("Loaded " + file.name + ".");
+      })
+      .catch(function (error) {
+        setPickerBusy(false);
+        showEmptyStateMessage(error && error.message ? error.message : String(error), true);
+      });
+  }
+
+  function applySnapshot(snapshot) {
+    SNAPSHOT = snapshot;
+    window.DIYA_BST_SNAPSHOT = snapshot;
     state.loaded = true;
     state.view = "year";
-    showToast("Loaded bst-scenario-basic — Precision Code Trading, 2025-04-01 to 2026-03-31.");
+    state.openMonth = snapshot.months[0].key;
+    setPickerBusy(false);
     render();
   }
 
@@ -468,7 +512,7 @@
         "</button>" +
         (state.entriesOpen ? renderEntriesTables(entries) : "");
     } else {
-      entriesHtml = '<p class="entries-note">Entries for ' + esc(monthMeta.label) + " are not part of this static preview's dataset.</p>";
+      entriesHtml = '<p class="entries-note">' + esc(monthMeta.label) + " carries no entries in this book.</p>";
     }
 
     return '<div class="month-detail">' + summary + entriesHtml + "</div>";
@@ -586,7 +630,7 @@
   function renderProfitLoss() {
     var a = SNAPSHOT.annual;
     var motorDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "motor-expenses";
+      return d.id === "Profit & Loss Acc!C15";
     })[0];
     function row(label, value, opts) {
       opts = opts || {};
@@ -776,10 +820,10 @@
   function renderIncomeTaxForm() {
     var t = SNAPSHOT.incomeTax;
     var itDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "income-tax-total";
+      return d.id === "Income Tax!E11";
     })[0];
     var totalDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "total-tax-ni";
+      return d.id === "Income Tax!E18";
     })[0];
     return (
       '<div class="form-render">' +
