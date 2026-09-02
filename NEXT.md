@@ -10,10 +10,13 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 generator refreshes on board; the judge test 108/108 everywhere the pins match their
 reports.
 
-- [ ] PR #54 (`claude/judge-repin`) awaits operator merge: the judge parser re-pinned to
-  the refreshed reports (Ltd brickwork now RECONCILES clean at 1020 checks); 108/108 on
-  the file. Until it merges, `test.yml` on main fails those three pins.
+- [x] PR #54 merged — the judge parser pins match the refreshed reports; main's `test.yml`
+  is coherent again.
 - [ ] one clean serial `npm test` sweep on main — running.
+- [ ] refresh `claude/bst-spike-2` from main and purge merged branches — queued behind the
+  sweep (the working tree is busy); merged branches to purge, local and origin:
+  `claude/book-readback`, `claude/book-readback-2`, `claude/bst-cli-phase-1` (fully
+  contained in `claude/bst-spike-2`), `claude/judge-repin`.
 - [x] `PLAN_ROUNDTRIP_FIDELITY.md` archived to `_developers/archive/` — the prod deploy
   from the PR #53 merge went green, closing the plan's full set.
 
