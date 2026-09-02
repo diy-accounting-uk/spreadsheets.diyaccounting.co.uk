@@ -12,10 +12,11 @@
 // this file fills it, and is no view's rewrite.
 //
 // Upload path: validateBstAnchors -> extractBstTransactions -> a book built
-// from the same cells CELL_MAP names (entity, stock, debtors/creditors) ->
-// loadTaxDataForBook -> diyaGlToScenario -> calculateFromDiyaGl ->
-// checkCompliance. Every calculated cell CELL_MAP carries is also read back
-// off the uploaded workbook's own cached value (xlsx-cells.js), canonicalised
+// from the same cells CELL_MAP names (entity, stock, opening trade
+// debtors/creditors) -> loadTaxDataForBook -> diyaGlToScenario ->
+// calculateFromDiyaGl -> checkCompliance. Every calculated cell CELL_MAP
+// carries is also read back off the uploaded workbook's own cached value
+// (xlsx-cells.js), canonicalised
 // the way verify-roundtrip.js canonicalises a roundtrip comparison (money
 // half-up to the penny, rates to 6 dp), and any cell that disagrees becomes a
 // drift finding -- EQ1 live in the browser, and the breakability proof: a
@@ -134,15 +135,6 @@
     5900: "capex",
   };
   var BST_SALES_ACCOUNTS = { 4000: 1, 4001: 1, 4002: 1, 4003: 1, 4004: 1, 4005: 1 };
-
-  // The named debtor/creditor ledger's own column layout on "Debtors &
-  // Creditors": name then amount, three opening and three closing debtor
-  // rows from 5, four opening and four closing creditor rows from 12. This
-  // is the layout the packages under examples/bst-latest still carry.
-  var LEDGER_LAYOUT = {
-    debtors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 5, slots: 3 },
-    creditors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 12, slots: 4 },
-  };
 
   // What the Debtors & Creditors sheet holds: one opening figure per
   // side at row 3, what each month left outstanding on rows 5 to 27 two apart,
@@ -673,35 +665,20 @@
     return { sales: sales, purchases: purchases };
   }
 
-  async function buildLedgersFromWorkbook(workbookCells) {
-    var debtors = [];
-    var creditors = [];
-    for (var ledgerName in LEDGER_LAYOUT) {
-      var layout = LEDGER_LAYOUT[ledgerName];
-      var target = ledgerName === "debtors" ? debtors : creditors;
-      for (var slot = 0; slot < layout.slots; slot++) {
-        var row = layout.firstRow + slot;
-        var openName = await workbookCells.readCell("Debtors & Creditors", layout.name + row);
-        var openAmount = await workbookCells.readCell("Debtors & Creditors", layout.amount + row);
-        if (openName && String(openName).trim()) {
-          target.push({
-            counterparty: String(openName).trim(),
-            amount: typeof openAmount === "number" ? openAmount : 0,
-            timing: "opening",
-          });
-        }
-        var closeName = await workbookCells.readCell("Debtors & Creditors", layout.closeName + row);
-        var closeAmount = await workbookCells.readCell("Debtors & Creditors", layout.closeAmount + row);
-        if (closeName && String(closeName).trim()) {
-          target.push({
-            counterparty: String(closeName).trim(),
-            amount: typeof closeAmount === "number" ? closeAmount : 0,
-            timing: "closing",
-          });
-        }
-      }
-    }
-    return { debtors: debtors, creditors: creditors };
+  // The Debtors & Creditors sheet's only two entered cells: C3 and F3,
+  // "Owed by/to customers/suppliers at start of year". Everything else on
+  // the sheet is the template's own formula (see LEDGER_SIDES), so this is
+  // the whole of what an upload has to state about the ledger -- read
+  // straight into the book's openingBalances table, the field
+  // diyaGlToScenario carries into scenario.opening_balance for the
+  // calculator.
+  async function buildOpeningBalancesFromWorkbook(workbookCells) {
+    var openingBalances = {};
+    var tradeDebtors = await workbookCells.readCell("Debtors & Creditors", LEDGER_SIDES.debtors.column + "3");
+    var tradeCreditors = await workbookCells.readCell("Debtors & Creditors", LEDGER_SIDES.creditors.column + "3");
+    if (typeof tradeDebtors === "number") openingBalances.tradeDebtors = tradeDebtors;
+    if (typeof tradeCreditors === "number") openingBalances.tradeCreditors = tradeCreditors;
+    return openingBalances;
   }
 
   async function buildEntityInformationFromWorkbook(cellMap, workbookCells) {
@@ -935,7 +912,7 @@
 
     var workbookCells = await global.DiyaGlXlsxCells.openWorkbookCells(xlsxBytes);
     var entity = await buildEntityInformationFromWorkbook(engine.CELL_MAP, workbookCells);
-    var ledgers = await buildLedgersFromWorkbook(workbookCells);
+    var openingBalances = await buildOpeningBalancesFromWorkbook(workbookCells);
     var openingStock = await workbookCells.readCell("PurchasesStock", "D5");
     var closingStock = await workbookCells.readCell("PurchasesStock", "D30");
     var period = periodFromLines(lines);
@@ -955,8 +932,7 @@
     if (typeof openingStock === "number" || typeof closingStock === "number") {
       book.stock = { openingValue: openingStock || 0, closingValue: closingStock || 0 };
     }
-    if (ledgers.debtors.length > 0) book.debtors = ledgers.debtors;
-    if (ledgers.creditors.length > 0) book.creditors = ledgers.creditors;
+    if (Object.keys(openingBalances).length > 0) book.openingBalances = openingBalances;
 
     var bookValidation = engine.validateBook(book);
     var linesValidation = engine.validateLines(lines, book);

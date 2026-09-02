@@ -6,79 +6,28 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**diya-gl spike + packages archive** — one batch on `claude/bst-spike-2`, one PR back to
-main when the board clears. Phases 1 (CLI) and 2 (MCP) of
-`PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` landed with green closing ladders; phase 3's
-statics (W-pre) and bundle gate (W0 — the gate held: the browser runs the unforked engine)
-are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
+**diya-gl spike** — delivered: PR #55 merged to main with all four packages regenerated,
+tested and deployed. `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` archives when its one
+remainder lands:
 
-- [x] BST ledger alignment — landed (merged; 368 engine + 22/22 books browser tests on the
-  merged tree). Only C3/F3 are entered on the real sheet — they map to
-  `openingBalances.tradeDebtors`/`tradeCreditors`, no schema change; the monthly
-  outstanding table is report output, carried as 28 new reads and checks; the named
-  ledgers are declared absent (measured, not hidden; bst declared 36→78). The old writer
-  had been destroying 16 template formulas — the sidecar went 16→0 on a fresh package. All
-  nine BST reports RECONCILE; the sheet (plus PurchasesStock and Fixed Assets) joined the
-  anchor guard; `adminMileageRates` now throws by name.
-- [ ] the settlement flag is lost in the round trip (operator decision first): the BST
-  sheets' column D holds a two-way Bank/Cash label the generator writes but
-  `BST_SALES_COLUMNS`/`BST_PURCHASE_COLUMNS` never read back, so a package re-generated
-  from its own export flips its outstanding ledger (brickwork: 19,510 → the full year).
-  Restating the book's richer `paymentMethod` in that column needs a vocabulary decision
-  across all four products plus fixture changes — decide before dispatching.
-- [x] archive-packages helper — the script, skill and `CLAUDE.md` line were already landed
-  (`862d7695`); the track added the missing test file (10 tests, every cut rule proven
-  breakable) and ran plan step 2: the dry run over the real catalogue is clean — 119/119
-  fully formed, exclusion list empty. The cuts (steps 3-6) are ready for the operator.
+- [ ] the settlement flag (Sonnet, worktree agent) — in flight, operator decided
+  2026-09-02: coarse map both ways — column D reads back as bank-transfer/cash, finer
+  values declared unrepresentable per block; Taxi aligned, SE/Ltd checked; the
+  regenerate-from-export ledger flip proven fixed by a double round trip. Lands on a fresh
+  branch off the merged main with its own PR.
 
 ## Open items
 
-From `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md`, phase 3 — dispatch after the ledger
-alignment lands (its book-shape change moves the page snapshot W1 wires):
-
-- [x] W1 — landed (merged, 43/43 browser tests on the merged tree): upload and all three
-  examples through the real engine, drift with the pencil-correction mark proven breakable
-  in-browser, the anchor guard surfacing named errors in the page's own styling. Its swap
-  put every panel and form render on the live engine, absorbing W2's scope.
-- [x] W3 — landed (merged, 42/42 books specs on the merged tree): one commit route for
-  every change (edits, deletes, adds, helpers), undo covering them all, drift relabelling
-  as recalculated, and a two-group checks panel — engine checks untouched, new book-level
-  checks whose three fix-it helpers preview and apply as one undoable step, each proven on
-  a deliberately broken book. Also repaired the D&C view crash at the W1/ledger merge seam.
-- [ ] bst-latest refresh + upload openings (Sonnet, worktree agent) — in flight:
-  `examples/bst-latest` is a pre-alignment package (placeholder ledger cells, 12 spurious
-  drift findings on upload); regenerate it with the fixed writer and read C3/F3 into
-  `openingBalances` on upload, restoring W1's zero-drift rung with a strengthened spec.
-- [ ] `changeLinePostingDate` / `changeLineAccount` as first-class named edits in
-  `diya-gl-edits.js` — the page composes remove+add for now; promote when a consumer
-  (the MCP tools, or a page feature) wants atomic date/account changes.
-- [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
-  JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
-  (a bare `Uint8Array.toString` silently corrupts); the save controls download real
-  workbooks with `fullCalcOnLoad` proven; round-trip 0 mismatches on the two ledger
-  fixtures (sp-sixty's divergence is the in-flight ledger alignment's territory).
-- [x] W5 — landed (merged, 26/26 books specs on the merged tree): the new-book form
-  producing an empty valid book through the same load path; IndexedDB autosave with a
-  never-auto-load continue offer, discard, and proven degradation when the store is
-  blocked; plus the fix that wired `state.book`/`state.lines` so the live page's save
-  controls actually work.
-- [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
-  both the API and the MCP tool layer).
-
-From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
-automation — that is the plan's binding constraint):
-
-- [ ] first cut, one tax year at a time, oldest first — eight reviewable commits pushed to
-  the archive repo's main; record the `packages-published/` role in that repo's
-  `CLAUDE.md`; delete this repo's unused `ARCHIVE_PACKAGES_TOKEN` secret.
+Nothing outside the in-flight block above.
 
 ## Plans not tracked here
 
-None — both live plans are on this board.
+None — the one live plan is on this board.
 
 ## Discipline
 
 - Generated `packages/` output is committed; regenerating is a mass binary commit — one
-  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. The structural fix is
-  `PLAN_PACKAGES_TO_ARCHIVE.md` at this root: packages move to the `diy-accounting-archive`
-  repository and stop being tracked here.
+  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. Cuts of the
+  finished catalogue land in the archive repository through the `archive-packages` skill;
+  untracking `packages/` here remains an open question (the deploy and catalogue-sweep
+  readers need another source first).
