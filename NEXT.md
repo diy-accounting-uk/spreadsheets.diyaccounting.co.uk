@@ -48,9 +48,11 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   (a bare `Uint8Array.toString` silently corrupts); the save controls download real
   workbooks with `fullCalcOnLoad` proven; round-trip 0 mismatches on the two ledger
   fixtures (sp-sixty's divergence is the in-flight ledger alignment's territory).
-- [ ] W5 — the two leftovers (Sonnet, worktree agent) — in flight: the new-book form (the
-  data model's third way in) and IndexedDB autosave of the working book; entry wiring,
-  examples and the layout matrix landed with W-pre/W1.
+- [x] W5 — landed (merged, 26/26 books specs on the merged tree): the new-book form
+  producing an empty valid book through the same load path; IndexedDB autosave with a
+  never-auto-load continue offer, discard, and proven degradation when the store is
+  blocked; plus the fix that wired `state.book`/`state.lines` so the live page's save
+  controls actually work.
 - [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
   both the API and the MCP tool layer).
 
