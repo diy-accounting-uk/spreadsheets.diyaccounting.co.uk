@@ -18,11 +18,13 @@ absences with reasons, never silently closed.
 - [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
   carries that tab's month of the accounting period (generator-only, Ltd non-March, March
   byte-stable), with a breakable per-tab check in both engines.
-- [ ] weekly-cache roll + Payment realignment (Opus, worktree agent) — in flight, operator
-  decided both 2026-09-01: the weekly chain's caches roll on every year-end class (March
-  bytes move; the CI refresh reproduces them), and the `Payment` PAYE schedule keeps its
-  tax-frame dates with each row's totals repointed to the payroll month paid in that tax
-  month, gaining its first reconciliation reads and checks.
+- [x] weekly-cache roll + Payment realignment + the Mar-2024 leap fix — landed (merged;
+  judge test 108/108 and 151 payslips tests green on the merged branch). The leap bug was
+  the template's fixed day-counts (no count fits both payroll-year lengths — plus a
+  previously unchecked common-year defect, C14/C15 on the 20th); the generator now writes
+  the payroll months' real dates. The branch is otherwise stable: re-run `generate-ltd`
+  (expect 25/25), then the closeout. Every SE/Ltd `packages/*/Payslips.xlsx` and report is
+  stale until the refresh.
 - [x] fixture-master rate alignment — landed (`774d52af`, merged; sync gate re-proven on
   the merged masters, zero drift; 244 blast tests green). Budgets unchanged — the gain is
   in the ungated book-level differing counts (BST 53→50, Taxi 13→10).
