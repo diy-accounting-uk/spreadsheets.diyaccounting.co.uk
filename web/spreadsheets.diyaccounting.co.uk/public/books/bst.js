@@ -100,6 +100,18 @@
   function fmtWhole(n) {
     return moneyWholeFmt.format(Math.round(n));
   }
+  /* Inside a form-amount-box the pound sign is the box's own prefix cell,
+     so the figure renders bare. */
+  function fmtBoxMoney(n) {
+    return fmtMoney(n).replace(/^-?\u00a3/, function (m) {
+      return m.charAt(0) === "-" ? "-" : "";
+    });
+  }
+  function fmtBoxWhole(n) {
+    return fmtWhole(n).replace(/^-?\u00a3/, function (m) {
+      return m.charAt(0) === "-" ? "-" : "";
+    });
+  }
   function fmtRate(n) {
     return (n * 100).toFixed(n * 100 === Math.round(n * 100) ? 0 : 1) + "%";
   }
@@ -1341,9 +1353,9 @@
       '<div class="form-masthead"><div class="form-name">Income Tax computation</div>' +
       '<div class="form-microcopy">Check these against your return.</div></div>' +
       '<div class="form-section"><h3>Profit</h3>' +
-      formRow(null, "Profit from self employment", fmtWhole(t.profitFromSelfEmployment)) +
-      formRow(null, "Less: Personal Allowance", fmtWhole(t.personalAllowance)) +
-      formRow(null, "Taxable income", fmtWhole(t.taxableIncome)) +
+      formRow(null, "Profit from self employment", fmtBoxWhole(t.profitFromSelfEmployment)) +
+      formRow(null, "Less: Personal Allowance", fmtBoxWhole(t.personalAllowance)) +
+      formRow(null, "Taxable income", fmtBoxWhole(t.taxableIncome)) +
       "</div>" +
       '<div class="form-section"><h3>Tax bands</h3>' +
       t.bands
@@ -1357,24 +1369,24 @@
             '</span></span><span class="form-amount-wrap"><span class="box-chip">' +
             esc(b.box) +
             '</span></span><span class="form-amount-box">' +
-            fmtMoney(b.tax) +
+            fmtBoxMoney(b.tax) +
             "</span></div>"
           );
         })
         .join("") +
       '<div class="form-row total-row"><span class="form-row-label">Total Income Tax</span><span class="form-amount-box">' +
-      fmtMoney(t.totalIncomeTax) +
+      fmtBoxMoney(t.totalIncomeTax) +
       '</span><span class="form-row-margin">' +
       (itDrift ? correctionFor(itDrift, { inMargin: true }) : "") +
       "</span></div>" +
       "</div>" +
       '<div class="form-section"><h3>National Insurance</h3>' +
-      formRow(null, "Less: CIS deducted", fmtMoney(-t.cisDeducted)) +
-      formRow(null, "NI Class 4 (lower band)", fmtMoney(t.niClass4Lower)) +
-      formRow(null, "NI Class 4 (upper band)", fmtMoney(t.niClass4Upper)) +
+      formRow(null, "Less: CIS deducted", fmtBoxMoney(-t.cisDeducted)) +
+      formRow(null, "NI Class 4 (lower band)", fmtBoxMoney(t.niClass4Lower)) +
+      formRow(null, "NI Class 4 (upper band)", fmtBoxMoney(t.niClass4Upper)) +
       "</div>" +
       '<div class="form-row total-row"><span class="form-row-label">Total Tax + NI</span><span class="form-amount-box">' +
-      fmtMoney(t.totalTaxAndNi) +
+      fmtBoxMoney(t.totalTaxAndNi) +
       '</span><span class="form-row-margin">' +
       (totalDrift ? correctionFor(totalDrift, { inMargin: true }) : "") +
       "</span></div>" +
@@ -1413,7 +1425,7 @@
                   '</span><span class="form-row-label">' +
                   esc(r.label) +
                   '</span><span class="form-amount-wrap"><span class="form-amount-box">' +
-                  fmtWhole(r.amount) +
+                  fmtBoxWhole(r.amount) +
                   '</span><span class="whole-pounds-note">whole pounds</span></span></div>'
                 );
               })
@@ -1432,7 +1444,7 @@
     return renderExpenseBar() + renderMonthlyColumns();
   }
 
-  var CHART_COLOR_ORDER = ["#2f6b4f", "#4a8a6c", "#6ba98c", "#93c4ac", "#b8dbc9", "#6b6f76"];
+  var CHART_COLOR_ORDER = ["#106868", "#158484", "#29c0c0", "#6ed3d3", "#a9e4e4", "#737373"];
 
   function renderExpenseBar() {
     var a = SNAPSHOT.annual;
