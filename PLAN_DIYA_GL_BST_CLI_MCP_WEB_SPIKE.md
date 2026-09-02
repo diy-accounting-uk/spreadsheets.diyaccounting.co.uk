@@ -274,11 +274,6 @@ phase's tracking surface — NEXT.md stays with the batch branch):
   sidecar excluding the 2,367 prompt-formula input cells; empty on a fresh package, the
   78-cell attribution sweep proven one cell at a time.
 - [ ] closing ladder (coordinator) — waits on the tracks
-- [ ] phase remainder, surfaced by Track B: `diya-gl-loader.js:139-151` hardcodes
-  `BST_PURCHASE_CODE_MAP` regardless of the book's own declared chart — sp-sixty's
-  Taxi-numbered accounts misroute (5900 "Legal" lands on code "f" fixed assets; 7000, the
-  real fixed asset, drops entirely). Harmless for generator-shaped books, wrong for a real
-  customer chart; phase 2's Track D owns the fix.
 - [ ] phase remainder, surfaced by Track C (operator decision before phase 2 ships): the
   BST `Debtors & Creditors` extractor and generator share an invented per-contact layout,
   but the shipped sheet is a monthly outstanding table ("Owed start year", "Sales not yet
@@ -354,7 +349,12 @@ harness's; an `extract_book` on a generated package matches the CLI's output byt
 
 **In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
 
-- [ ] Track D — the edit-lines API and the loader chart fix (Sonnet, worktree agent) — dispatched
+- [x] Track D — landed (`c3a93a52`+`c6cb6367`, merged): `diya-gl-edits.js` (no counter-leg
+  needed — a diya-gl line is the whole transaction), and `resolveBstPurchaseCodeMap(book)`
+  picking the candidate map whose keys cover the book's declared chart (the calculator's
+  own hardcoded copy folded in — it bypassed the loader). Generator-shaped fixtures proven
+  byte-identical; sp-sixty's misroutes corrected with a breakability proof. 3628 blast
+  tests.
 - [ ] Track E — the save_workbook carve-out (Opus, worktree agent) — dispatched
 - [ ] Track F — the MCP server (Sonnet) — waits on D, E, and phase 1's Track C
 - [ ] closing ladder (coordinator) — waits on the tracks
