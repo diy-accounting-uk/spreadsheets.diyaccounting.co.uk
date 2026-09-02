@@ -14,9 +14,8 @@ reports.
   the refreshed reports (Ltd brickwork now RECONCILES clean at 1020 checks); 108/108 on
   the file. Until it merges, `test.yml` on main fails those three pins.
 - [ ] one clean serial `npm test` sweep on main — running.
-- [ ] archive `PLAN_ROUNDTRIP_FIDELITY.md` when the prod deploy from the PR #53 merge goes
-  green (in progress at writing). The plan is then fully closed; its record moves out of
-  the live plan set.
+- [x] `PLAN_ROUNDTRIP_FIDELITY.md` archived to `_developers/archive/` — the prod deploy
+  from the PR #53 merge went green, closing the plan's full set.
 
 **diya-gl spike delivery** — on `claude/bst-spike-2` (from the merged batch tree). Phases 1
 (CLI) and 2 (MCP) landed with green closing ladders; tracking moved here from the plan doc
