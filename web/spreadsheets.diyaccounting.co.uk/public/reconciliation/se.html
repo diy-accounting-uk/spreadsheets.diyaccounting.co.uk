@@ -77,30 +77,31 @@
           <li><strong>Status:</strong> RECONCILES</li>
           <li><strong>Featured scenario:</strong> se-scenario-advanced (Precision Code - advanced self employed)</li>
           <li><strong>Year end:</strong> 2027-04-05</li>
-          <li><strong>Checks:</strong> 782 passed, 0 warnings, 0 failed</li>
+          <li><strong>Checks:</strong> 842 passed, 0 warnings, 0 failed</li>
           <li><strong>Reconciliation runs published:</strong> 9</li>
         </ul>
         <div class="recon-verdict recon-verdict-pass">
           <h4>Plausibility review: pass</h4>
-          <p>Turnover, capital allowances, grants uplift, VAT boxes and the zero-residue bridge all match the headline scale and VAT-registered status; 782 checks passed with no warnings. Only the tapered personal allowance is worth a glance.</p>
+          <p>Indicators match the headline: VAT-registered with all four quarters carrying VAT, turnover net of VAT and disposals at the right scale, capital allowances explaining the lower taxable profit, grants bridging to the taxed profit, and a zero-residue bridge with no balance sheet expected for this product. Only minor notes.</p>
           <ul>
-            <li><strong>Personal allowance 1,813.49</strong> (Income tax indicator): Heavily tapered allowance on a 121,513.02 profit is plausible under the 100k taper but worth a glance; not a contradiction. [note]</li>
+            <li><strong>profit before tax 171,773.02 vs SA103S net profit 183,429.68</strong> (Turnover/profit indicator and self assessment line): The two profit measures differ by 11,656.66; plausible from tax adjustments/grants presentation but worth a glance. [note]</li>
+            <li><strong>personal allowance of 1,813.49</strong> (Income tax indicator): Heavily tapered allowance is consistent with income near 120k, but the odd figure is worth a sanity check. [note]</li>
           </ul>
-          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-01. The arithmetic checks below run first and decide the status.</p>
+          <p class="recon-verdict-meta">Read back by anthropic.claude-opus-5, 2026-09-02. The arithmetic checks below run first and decide the status.</p>
         </div>
         <h4>Every run</h4>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Year end</th><th>Period</th><th>Scenario</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-nonvat</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-vat</td><td>RECONCILES (with warnings)</td></tr>
+<tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-nonvat</td><td>RECONCILES</td></tr>
+<tr><td>2027-04-05</td><td>Apr27</td><td>se-brickwork-pro-vat</td><td>RECONCILES</td></tr>
 <tr><td>2027-04-05</td><td>Apr27</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
-<tr><td>2026-04-05</td><td>Apr26</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2025-04-05</td><td>Apr25</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2024-04-05</td><td>Apr24</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2023-04-05</td><td>Apr23</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2022-04-05</td><td>Apr22</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
-<tr><td>2021-04-05</td><td>Apr21</td><td>se-scenario-advanced</td><td>RECONCILES (with warnings)</td></tr>
+<tr><td>2026-04-05</td><td>Apr26</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2025-04-05</td><td>Apr25</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2024-04-05</td><td>Apr24</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2023-04-05</td><td>Apr23</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2022-04-05</td><td>Apr22</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
+<tr><td>2021-04-05</td><td>Apr21</td><td>se-scenario-advanced</td><td>RECONCILES</td></tr>
 </tbody>
 </table></div>
       </section>
@@ -484,6 +485,9 @@
 <tr><td>Payslips!Payment apr D4 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment apr E4 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment apr I4 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D4 NI due is the apr tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E4 income tax due is the apr tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I4 total payable is the apr tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface may C5 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface may D5 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface may E5 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -491,6 +495,9 @@
 <tr><td>Payslips!Payment may D5 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment may E5 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment may I5 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D5 NI due is the may tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E5 income tax due is the may tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I5 total payable is the may tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jun C6 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jun D6 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jun E6 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -498,6 +505,9 @@
 <tr><td>Payslips!Payment jun D6 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jun E6 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jun I6 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D6 NI due is the jun tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E6 income tax due is the jun tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I6 total payable is the jun tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jul C7 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jul D7 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jul E7 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -505,6 +515,9 @@
 <tr><td>Payslips!Payment jul D7 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jul E7 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jul I7 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D7 NI due is the jul tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E7 income tax due is the jul tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I7 total payable is the jul tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface aug C8 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface aug D8 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface aug E8 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -512,6 +525,9 @@
 <tr><td>Payslips!Payment aug D8 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment aug E8 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment aug I8 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D8 NI due is the aug tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E8 income tax due is the aug tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I8 total payable is the aug tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface sep C9 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface sep D9 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface sep E9 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -519,6 +535,9 @@
 <tr><td>Payslips!Payment sep D9 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment sep E9 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment sep I9 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D9 NI due is the sep tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E9 income tax due is the sep tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I9 total payable is the sep tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface oct C10 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface oct D10 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface oct E10 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -526,6 +545,9 @@
 <tr><td>Payslips!Payment oct D10 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment oct E10 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment oct I10 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D10 NI due is the oct tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E10 income tax due is the oct tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I10 total payable is the oct tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface nov C11 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface nov D11 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface nov E11 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -533,6 +555,9 @@
 <tr><td>Payslips!Payment nov D11 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment nov E11 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment nov I11 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D11 NI due is the nov tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E11 income tax due is the nov tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I11 total payable is the nov tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface dec C12 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface dec D12 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface dec E12 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -540,6 +565,9 @@
 <tr><td>Payslips!Payment dec D12 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment dec E12 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment dec I12 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D12 NI due is the dec tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E12 income tax due is the dec tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I12 total payable is the dec tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jan C13 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jan D13 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface jan E13 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -547,6 +575,9 @@
 <tr><td>Payslips!Payment jan D13 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jan E13 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment jan I13 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D13 NI due is the jan tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E13 income tax due is the jan tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I13 total payable is the jan tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface feb C14 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface feb D14 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface feb E14 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -554,6 +585,9 @@
 <tr><td>Payslips!Payment feb D14 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment feb E14 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment feb I14 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D14 NI due is the feb tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E14 income tax due is the feb tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I14 total payable is the feb tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface mar C15 gross pay</td><td>6748</td><td>6748</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface mar D15 income tax</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Wagesinterface mar E15 employee NI</td><td>296</td><td>296</td><td>0</td><td>PASS</td></tr>
@@ -561,6 +595,9 @@
 <tr><td>Payslips!Payment mar D15 NI due</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment mar E15 income tax due</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips!Payment mar I15 total amount payable</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment D15 NI due is the mar tab's own</td><td>873.2</td><td>873.2</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment E15 income tax due is the mar tab's own</td><td>800</td><td>800</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment I15 total payable is the mar tab's own</td><td>1673.2</td><td>1673.2</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips print: the page reads the May tab</td><td>May</td><td>May</td><td></td><td>PASS</td></tr>
 <tr><td>Payslips print: the block the page reads is a monthly payroll</td><td>MONTHLY PAYROLL</td><td>MONTHLY PAYROLL</td><td></td><td>PASS</td></tr>
 <tr><td>Payslips print: the period printed is payroll month 2</td><td>2</td><td>2</td><td>0</td><td>PASS</td></tr>
@@ -865,6 +902,30 @@
 <tr><td>Payslips calendar row 366: the month name is its payroll month counted from the tax year start</td><td>Mar</td><td>Mar</td><td></td><td>PASS</td></tr>
 <tr><td>Payslips calendar row 381: the date runs on unbroken from the tax year start</td><td>46497</td><td>46497</td><td>0</td><td>PASS</td></tr>
 <tr><td>Payslips calendar row 381: the month name is its payroll month counted from the tax year start</td><td>Mar</td><td>Mar</td><td></td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B4 tax month 1 ends on the last day of Apr</td><td>46142</td><td>46142</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C4 tax month 1 is due on the 19th after it</td><td>46161</td><td>46161</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B5 tax month 2 ends on the last day of May</td><td>46173</td><td>46173</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C5 tax month 2 is due on the 19th after it</td><td>46192</td><td>46192</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B6 tax month 3 ends on the last day of Jun</td><td>46203</td><td>46203</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C6 tax month 3 is due on the 19th after it</td><td>46222</td><td>46222</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B7 tax month 4 ends on the last day of Jul</td><td>46234</td><td>46234</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C7 tax month 4 is due on the 19th after it</td><td>46253</td><td>46253</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B8 tax month 5 ends on the last day of Aug</td><td>46265</td><td>46265</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C8 tax month 5 is due on the 19th after it</td><td>46284</td><td>46284</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B9 tax month 6 ends on the last day of Sep</td><td>46295</td><td>46295</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C9 tax month 6 is due on the 19th after it</td><td>46314</td><td>46314</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B10 tax month 7 ends on the last day of Oct</td><td>46326</td><td>46326</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C10 tax month 7 is due on the 19th after it</td><td>46345</td><td>46345</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B11 tax month 8 ends on the last day of Nov</td><td>46356</td><td>46356</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C11 tax month 8 is due on the 19th after it</td><td>46375</td><td>46375</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B12 tax month 9 ends on the last day of Dec</td><td>46387</td><td>46387</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C12 tax month 9 is due on the 19th after it</td><td>46406</td><td>46406</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B13 tax month 10 ends on the last day of Jan</td><td>46418</td><td>46418</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C13 tax month 10 is due on the 19th after it</td><td>46437</td><td>46437</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B14 tax month 11 ends on the last day of Feb</td><td>46446</td><td>46446</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C14 tax month 11 is due on the 19th after it</td><td>46465</td><td>46465</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment B15 tax month 12 ends on the last day of Mar</td><td>46477</td><td>46477</td><td>0</td><td>PASS</td></tr>
+<tr><td>Payslips!Payment C15 tax month 12 is due on the 19th after it</td><td>46496</td><td>46496</td><td>0</td><td>PASS</td></tr>
 <tr><td>Accounting profit to tax profit bridge closes to zero</td><td>0</td><td>-1.4551915228366852e-11</td><td>-1.4551915228366852e-11</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product A (sales a) net reaches Profit &amp; Loss Account!B5 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
 <tr><td>Category netting: Sales Product B (sales b) net reaches Profit &amp; Loss Account!B6 with no residue</td><td>0</td><td>0</td><td>0</td><td>PASS</td></tr>
@@ -3277,43 +3338,268 @@
 <tr><td>K10</td><td></td><td>50</td><td></td></tr>
 </tbody>
 </table></div>
+<h5>Payslips.xlsx!Apr</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!May</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Jun</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Jul</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+<tr><td>T41</td><td></td><td>0</td><td></td></tr>
+<tr><td>M49</td><td></td><td>45869</td><td></td></tr>
+<tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
+<tr><td>M51</td><td></td><td>3500</td><td></td></tr>
+<tr><td>N51</td><td></td><td>530</td><td></td></tr>
+<tr><td>O51</td><td></td><td>200</td><td></td></tr>
+<tr><td>R51</td><td></td><td>2770</td><td></td></tr>
+<tr><td>S51</td><td></td><td>PAY-EMP001-2025-07</td><td></td></tr>
+<tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
+<tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
+<tr><td>M52</td><td></td><td>2200</td><td></td></tr>
+<tr><td>N52</td><td></td><td>270</td><td></td></tr>
+<tr><td>O52</td><td></td><td>96</td><td></td></tr>
+<tr><td>R52</td><td></td><td>1834</td><td></td></tr>
+<tr><td>S52</td><td></td><td>PAY-EMP002-2025-07</td><td></td></tr>
+<tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
+<tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
+<tr><td>M53</td><td></td><td>1048</td><td></td></tr>
+<tr><td>N53</td><td></td><td>0</td><td></td></tr>
+<tr><td>O53</td><td></td><td>0</td><td></td></tr>
+<tr><td>R53</td><td></td><td>1048</td><td></td></tr>
+<tr><td>S53</td><td></td><td>PAY-EMP003-2025-07</td><td></td></tr>
+<tr><td>T53</td><td></td><td>7.2</td><td></td></tr>
+<tr><td>N54</td><td></td><td>0</td><td></td></tr>
+<tr><td>O54</td><td></td><td>0</td><td></td></tr>
+<tr><td>T54</td><td></td><td>0</td><td></td></tr>
+<tr><td>N55</td><td></td><td>0</td><td></td></tr>
+<tr><td>O55</td><td></td><td>0</td><td></td></tr>
+<tr><td>T55</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Aug</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+<tr><td>H11</td><td></td><td>0</td><td></td></tr>
+<tr><td>I11</td><td></td><td>0</td><td></td></tr>
+<tr><td>J11</td><td></td><td>0</td><td></td></tr>
+<tr><td>L11</td><td></td><td>0</td><td></td></tr>
+<tr><td>H12</td><td></td><td>0</td><td></td></tr>
+<tr><td>I12</td><td></td><td>0</td><td></td></tr>
+<tr><td>J12</td><td></td><td>0</td><td></td></tr>
+<tr><td>L12</td><td></td><td>0</td><td></td></tr>
+<tr><td>K12</td><td></td><td>0</td><td></td></tr>
+<tr><td>H13</td><td></td><td>0</td><td></td></tr>
+<tr><td>I13</td><td></td><td>0</td><td></td></tr>
+<tr><td>J13</td><td></td><td>0</td><td></td></tr>
+<tr><td>L13</td><td></td><td>0</td><td></td></tr>
+<tr><td>K13</td><td></td><td>0</td><td></td></tr>
+<tr><td>H14</td><td></td><td>0</td><td></td></tr>
+<tr><td>I14</td><td></td><td>0</td><td></td></tr>
+<tr><td>J14</td><td></td><td>0</td><td></td></tr>
+<tr><td>L14</td><td></td><td>0</td><td></td></tr>
+<tr><td>K14</td><td></td><td>0</td><td></td></tr>
+<tr><td>H15</td><td></td><td>0</td><td></td></tr>
+<tr><td>I15</td><td></td><td>0</td><td></td></tr>
+<tr><td>J15</td><td></td><td>0</td><td></td></tr>
+<tr><td>L15</td><td></td><td>0</td><td></td></tr>
+<tr><td>K15</td><td></td><td>0</td><td></td></tr>
+<tr><td>M49</td><td></td><td>45900</td><td></td></tr>
+<tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
+<tr><td>M51</td><td></td><td>3500</td><td></td></tr>
+<tr><td>N51</td><td></td><td>530</td><td></td></tr>
+<tr><td>O51</td><td></td><td>200</td><td></td></tr>
+<tr><td>R51</td><td></td><td>2770</td><td></td></tr>
+<tr><td>S51</td><td></td><td>PAY-EMP001-2025-08</td><td></td></tr>
+<tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
+<tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
+<tr><td>M52</td><td></td><td>2200</td><td></td></tr>
+<tr><td>N52</td><td></td><td>270</td><td></td></tr>
+<tr><td>O52</td><td></td><td>96</td><td></td></tr>
+<tr><td>R52</td><td></td><td>1834</td><td></td></tr>
+<tr><td>S52</td><td></td><td>PAY-EMP002-2025-08</td><td></td></tr>
+<tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
+<tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
+<tr><td>M53</td><td></td><td>1048</td><td></td></tr>
+<tr><td>N53</td><td></td><td>0</td><td></td></tr>
+<tr><td>O53</td><td></td><td>0</td><td></td></tr>
+<tr><td>R53</td><td></td><td>1048</td><td></td></tr>
+<tr><td>S53</td><td></td><td>PAY-EMP003-2025-08</td><td></td></tr>
+<tr><td>T53</td><td></td><td>7.2</td><td></td></tr>
+<tr><td>N54</td><td></td><td>0</td><td></td></tr>
+<tr><td>O54</td><td></td><td>0</td><td></td></tr>
+<tr><td>T54</td><td></td><td>0</td><td></td></tr>
+<tr><td>N55</td><td></td><td>0</td><td></td></tr>
+<tr><td>O55</td><td></td><td>0</td><td></td></tr>
+<tr><td>T55</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Sep</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Oct</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Nov</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Dec</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Jan</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Feb</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
+<h5>Payslips.xlsx!Mar</h5>
+<div class="recon-scroll"><table class="recon-table">
+<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
+<tbody>
+<tr><td>T1</td><td></td><td>577.2</td><td></td></tr>
+<tr><td>O1</td><td></td><td>296</td><td></td></tr>
+<tr><td>N1</td><td></td><td>800</td><td></td></tr>
+<tr><td>P1</td><td></td><td>0</td><td></td></tr>
+</tbody>
+</table></div>
 <h5>Payslips.xlsx!Payment</h5>
 <div class="recon-scroll"><table class="recon-table">
 <thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
 <tbody>
+<tr><td>B4</td><td></td><td>46142</td><td></td></tr>
+<tr><td>C4</td><td></td><td>46161</td><td></td></tr>
 <tr><td>D4</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E4</td><td></td><td>800</td><td></td></tr>
 <tr><td>I4</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B5</td><td></td><td>46173</td><td></td></tr>
+<tr><td>C5</td><td></td><td>46192</td><td></td></tr>
 <tr><td>D5</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E5</td><td></td><td>800</td><td></td></tr>
 <tr><td>I5</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B6</td><td></td><td>46203</td><td></td></tr>
+<tr><td>C6</td><td></td><td>46222</td><td></td></tr>
 <tr><td>D6</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E6</td><td></td><td>800</td><td></td></tr>
 <tr><td>I6</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B7</td><td></td><td>46234</td><td></td></tr>
+<tr><td>C7</td><td></td><td>46253</td><td></td></tr>
 <tr><td>D7</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E7</td><td></td><td>800</td><td></td></tr>
 <tr><td>I7</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B8</td><td></td><td>46265</td><td></td></tr>
+<tr><td>C8</td><td></td><td>46284</td><td></td></tr>
 <tr><td>D8</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E8</td><td></td><td>800</td><td></td></tr>
 <tr><td>I8</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B9</td><td></td><td>46295</td><td></td></tr>
+<tr><td>C9</td><td></td><td>46314</td><td></td></tr>
 <tr><td>D9</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E9</td><td></td><td>800</td><td></td></tr>
 <tr><td>I9</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B10</td><td></td><td>46326</td><td></td></tr>
+<tr><td>C10</td><td></td><td>46345</td><td></td></tr>
 <tr><td>D10</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E10</td><td></td><td>800</td><td></td></tr>
 <tr><td>I10</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B11</td><td></td><td>46356</td><td></td></tr>
+<tr><td>C11</td><td></td><td>46375</td><td></td></tr>
 <tr><td>D11</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E11</td><td></td><td>800</td><td></td></tr>
 <tr><td>I11</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B12</td><td></td><td>46387</td><td></td></tr>
+<tr><td>C12</td><td></td><td>46406</td><td></td></tr>
 <tr><td>D12</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E12</td><td></td><td>800</td><td></td></tr>
 <tr><td>I12</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B13</td><td></td><td>46418</td><td></td></tr>
+<tr><td>C13</td><td></td><td>46437</td><td></td></tr>
 <tr><td>D13</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E13</td><td></td><td>800</td><td></td></tr>
 <tr><td>I13</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B14</td><td></td><td>46446</td><td></td></tr>
+<tr><td>C14</td><td></td><td>46465</td><td></td></tr>
 <tr><td>D14</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E14</td><td></td><td>800</td><td></td></tr>
 <tr><td>I14</td><td></td><td>1673.2</td><td></td></tr>
+<tr><td>B15</td><td></td><td>46477</td><td></td></tr>
+<tr><td>C15</td><td></td><td>46496</td><td></td></tr>
 <tr><td>D15</td><td></td><td>873.2</td><td></td></tr>
 <tr><td>E15</td><td></td><td>800</td><td></td></tr>
 <tr><td>I15</td><td></td><td>1673.2</td><td></td></tr>
@@ -3388,99 +3674,6 @@
 <tr><td>A381</td><td></td><td>Mar</td><td></td></tr>
 <tr><td>B381</td><td></td><td>46497</td><td></td></tr>
 <tr><td>D381</td><td></td><td>12</td><td></td></tr>
-</tbody>
-</table></div>
-<h5>Payslips.xlsx!Jul</h5>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
-<tbody>
-<tr><td>T41</td><td></td><td>0</td><td></td></tr>
-<tr><td>M49</td><td></td><td>45869</td><td></td></tr>
-<tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
-<tr><td>M51</td><td></td><td>3500</td><td></td></tr>
-<tr><td>N51</td><td></td><td>530</td><td></td></tr>
-<tr><td>O51</td><td></td><td>200</td><td></td></tr>
-<tr><td>R51</td><td></td><td>2770</td><td></td></tr>
-<tr><td>S51</td><td></td><td>PAY-EMP001-2025-07</td><td></td></tr>
-<tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
-<tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
-<tr><td>M52</td><td></td><td>2200</td><td></td></tr>
-<tr><td>N52</td><td></td><td>270</td><td></td></tr>
-<tr><td>O52</td><td></td><td>96</td><td></td></tr>
-<tr><td>R52</td><td></td><td>1834</td><td></td></tr>
-<tr><td>S52</td><td></td><td>PAY-EMP002-2025-07</td><td></td></tr>
-<tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
-<tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
-<tr><td>M53</td><td></td><td>1048</td><td></td></tr>
-<tr><td>N53</td><td></td><td>0</td><td></td></tr>
-<tr><td>O53</td><td></td><td>0</td><td></td></tr>
-<tr><td>R53</td><td></td><td>1048</td><td></td></tr>
-<tr><td>S53</td><td></td><td>PAY-EMP003-2025-07</td><td></td></tr>
-<tr><td>T53</td><td></td><td>7.2</td><td></td></tr>
-<tr><td>N54</td><td></td><td>0</td><td></td></tr>
-<tr><td>O54</td><td></td><td>0</td><td></td></tr>
-<tr><td>T54</td><td></td><td>0</td><td></td></tr>
-<tr><td>N55</td><td></td><td>0</td><td></td></tr>
-<tr><td>O55</td><td></td><td>0</td><td></td></tr>
-<tr><td>T55</td><td></td><td>0</td><td></td></tr>
-</tbody>
-</table></div>
-<h5>Payslips.xlsx!Aug</h5>
-<div class="recon-scroll"><table class="recon-table">
-<thead><tr><th>Cell</th><th>DIY Label</th><th>Value</th><th>diya-gl mapping</th></tr></thead>
-<tbody>
-<tr><td>H11</td><td></td><td>0</td><td></td></tr>
-<tr><td>I11</td><td></td><td>0</td><td></td></tr>
-<tr><td>J11</td><td></td><td>0</td><td></td></tr>
-<tr><td>L11</td><td></td><td>0</td><td></td></tr>
-<tr><td>H12</td><td></td><td>0</td><td></td></tr>
-<tr><td>I12</td><td></td><td>0</td><td></td></tr>
-<tr><td>J12</td><td></td><td>0</td><td></td></tr>
-<tr><td>L12</td><td></td><td>0</td><td></td></tr>
-<tr><td>K12</td><td></td><td>0</td><td></td></tr>
-<tr><td>H13</td><td></td><td>0</td><td></td></tr>
-<tr><td>I13</td><td></td><td>0</td><td></td></tr>
-<tr><td>J13</td><td></td><td>0</td><td></td></tr>
-<tr><td>L13</td><td></td><td>0</td><td></td></tr>
-<tr><td>K13</td><td></td><td>0</td><td></td></tr>
-<tr><td>H14</td><td></td><td>0</td><td></td></tr>
-<tr><td>I14</td><td></td><td>0</td><td></td></tr>
-<tr><td>J14</td><td></td><td>0</td><td></td></tr>
-<tr><td>L14</td><td></td><td>0</td><td></td></tr>
-<tr><td>K14</td><td></td><td>0</td><td></td></tr>
-<tr><td>H15</td><td></td><td>0</td><td></td></tr>
-<tr><td>I15</td><td></td><td>0</td><td></td></tr>
-<tr><td>J15</td><td></td><td>0</td><td></td></tr>
-<tr><td>L15</td><td></td><td>0</td><td></td></tr>
-<tr><td>K15</td><td></td><td>0</td><td></td></tr>
-<tr><td>M49</td><td></td><td>45900</td><td></td></tr>
-<tr><td>F51</td><td></td><td>Alice Johnson</td><td></td></tr>
-<tr><td>M51</td><td></td><td>3500</td><td></td></tr>
-<tr><td>N51</td><td></td><td>530</td><td></td></tr>
-<tr><td>O51</td><td></td><td>200</td><td></td></tr>
-<tr><td>R51</td><td></td><td>2770</td><td></td></tr>
-<tr><td>S51</td><td></td><td>PAY-EMP001-2025-08</td><td></td></tr>
-<tr><td>T51</td><td></td><td>382.5</td><td></td></tr>
-<tr><td>F52</td><td></td><td>Bob Williams</td><td></td></tr>
-<tr><td>M52</td><td></td><td>2200</td><td></td></tr>
-<tr><td>N52</td><td></td><td>270</td><td></td></tr>
-<tr><td>O52</td><td></td><td>96</td><td></td></tr>
-<tr><td>R52</td><td></td><td>1834</td><td></td></tr>
-<tr><td>S52</td><td></td><td>PAY-EMP002-2025-08</td><td></td></tr>
-<tr><td>T52</td><td></td><td>187.5</td><td></td></tr>
-<tr><td>F53</td><td></td><td>Carol Smith</td><td></td></tr>
-<tr><td>M53</td><td></td><td>1048</td><td></td></tr>
-<tr><td>N53</td><td></td><td>0</td><td></td></tr>
-<tr><td>O53</td><td></td><td>0</td><td></td></tr>
-<tr><td>R53</td><td></td><td>1048</td><td></td></tr>
-<tr><td>S53</td><td></td><td>PAY-EMP003-2025-08</td><td></td></tr>
-<tr><td>T53</td><td></td><td>7.2</td><td></td></tr>
-<tr><td>N54</td><td></td><td>0</td><td></td></tr>
-<tr><td>O54</td><td></td><td>0</td><td></td></tr>
-<tr><td>T54</td><td></td><td>0</td><td></td></tr>
-<tr><td>N55</td><td></td><td>0</td><td></td></tr>
-<tr><td>O55</td><td></td><td>0</td><td></td></tr>
-<tr><td>T55</td><td></td><td>0</td><td></td></tr>
 </tbody>
 </table></div>
 <h5>Salesinvoice.xlsx!Product Details</h5>
