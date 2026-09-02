@@ -361,8 +361,15 @@ harness's; an `extract_book` on a generated package matches the CLI's output byt
   failing by name before the template is touched. `applyCellWrites` extracted from the
   runner rather than forking cell-write semantics. Bundle-gate intel recorded in its
   report: recalculation sits strictly downstream of the carved function.
-- [ ] Track F — the MCP server (Sonnet, worktree agent) — dispatched (C, D, E all landed)
-- [ ] closing ladder (coordinator) — waits on the tracks
+- [x] Track F — landed (merged): a hand-rolled newline-delimited JSON-RPC stdio server
+  (the SDK's dependency set — express, hono, zod — is the "heavy" case the escape hatch
+  named), four tools over the landed functions, `diya-gl-bst` registered in `.mcp.json`,
+  edits composing across calls in one session. 20 replay assertions identical to the
+  harness; `extract_book` byte-for-byte with the CLI over real stdio; 164 blast tests.
+- [ ] closing ladder (coordinator) — running: the full serial suite, the CLI-vs-tool-layer
+  byte agreement, budgets at zero. One known reconcile-at-rebase note: this branch's
+  fixture books still carry `class2WeeklyRate 3.45`; the batch branch's rate alignment
+  changes them to 0 when the branches merge — no assertion depends on the field.
 
 | Track | Tier | Owns | Delivers |
 |---|---|---|---|
