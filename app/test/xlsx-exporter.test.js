@@ -203,6 +203,56 @@ describe("fields the sheets carry", () => {
   });
 });
 
+// ── The settlement column (D) ──────────────────────────────────────────────
+//
+// Sales!D and Purchases!D are the free-text "Receipt record Cash, Bank
+// deposit, Dr Cr Card" column the outstanding formula (Sales!H4 = IF(D4>0,
+// " ", F4) shaped) only ever tests for blank-or-not. The writer puts one of
+// two words there (paymentLabel() in scenario-extractor.js), and the export
+// reads the same two-way split back into a diya-gl:paymentMethod rather than
+// guessing a finer value from whatever word a hand-filled book carries.
+describe("the settlement column (Sales/Purchases D)", () => {
+  it("reads the writer's own Bank label back as bank-transfer", async () => {
+    const buffer = await buildWorkbook(bstSheets({ salesRows: { D4: "Bank" }, purchaseRows: { D5: "Bank" } }));
+    const lines = await extractBstTransactions(buffer);
+    expect(lines.find((line) => line.sourceJournalID === "sales").paymentMethod).toBe("bank-transfer");
+    expect(lines.find((line) => line.sourceJournalID === "purchases").paymentMethod).toBe("bank-transfer");
+  });
+
+  it("reads the writer's own Cash label back as cash", async () => {
+    const buffer = await buildWorkbook(bstSheets({ salesRows: { D4: "Cash" }, purchaseRows: { D5: "Cash" } }));
+    const lines = await extractBstTransactions(buffer);
+    expect(lines.find((line) => line.sourceJournalID === "sales").paymentMethod).toBe("cash");
+    expect(lines.find((line) => line.sourceJournalID === "purchases").paymentMethod).toBe("cash");
+  });
+
+  it("leaves paymentMethod off a row still outstanding, whose D cell is blank", async () => {
+    const buffer = await buildWorkbook(bstSheets());
+    const lines = await extractBstTransactions(buffer);
+    expect(lines.find((line) => line.sourceJournalID === "sales")).not.toHaveProperty("paymentMethod");
+    expect(lines.find((line) => line.sourceJournalID === "purchases")).not.toHaveProperty("paymentMethod");
+  });
+
+  it("coarse-maps a hand-typed finer word to bank-transfer rather than guessing a finer diya-gl:paymentMethod", async () => {
+    const buffer = await buildWorkbook(bstSheets({ salesRows: { D4: "Dr Cr Card" }, purchaseRows: { D5: "Cheque" } }));
+    const lines = await extractBstTransactions(buffer);
+    expect(lines.find((line) => line.sourceJournalID === "sales").paymentMethod).toBe("bank-transfer");
+    expect(lines.find((line) => line.sourceJournalID === "purchases").paymentMethod).toBe("bank-transfer");
+  });
+
+  it("is driven by D alone: breaking only that cell moves only paymentMethod on that one line", async () => {
+    const unpaid = await extractBstTransactions(await buildWorkbook(bstSheets()));
+    const paid = await extractBstTransactions(await buildWorkbook(bstSheets({ salesRows: { D4: "Bank" } })));
+    const [unpaidSale] = unpaid.filter((line) => line.sourceJournalID === "sales");
+    const [paidSale] = paid.filter((line) => line.sourceJournalID === "sales");
+    const changedKeys = new Set([...Object.keys(unpaidSale), ...Object.keys(paidSale)].filter((key) => unpaidSale[key] !== paidSale[key]));
+    expect(changedKeys).toEqual(new Set(["paymentMethod"]));
+    // Every other line on the workbook -- the purchase row D5 was never
+    // touched -- is untouched too.
+    expect(unpaid.filter((line) => line.sourceJournalID === "purchases")).toEqual(paid.filter((line) => line.sourceJournalID === "purchases"));
+  });
+});
+
 // ── The chart of accounts ──────────────────────────────────────────────────
 
 describe("analysisHeadings", () => {

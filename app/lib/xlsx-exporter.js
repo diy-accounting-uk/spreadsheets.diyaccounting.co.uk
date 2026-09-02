@@ -138,31 +138,52 @@ const BST_LEDGER_SHEET = "Debtors & Creditors";
 const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", tradeCreditors: "F3" };
 
 // A BST Sales tab, read off its own header rows: A the sale date, B the
-// customer, C the invoice reference and F the gross value, with the writer's
-// account carrier column beside them. Rows 4 down are the tab's own entries.
+// customer, C the invoice reference, D the receipt record ("Receipt record
+// Cash, Bank deposit, Dr Cr Card", the settlement column settlementMethod()
+// below coarse-maps back to a diya-gl paymentMethod) and F the gross value,
+// with the writer's account carrier column beside them. Rows 4 down are the
+// tab's own entries.
 const BST_SALES_COLUMNS = {
   postingDate: "A",
   detailComment: "B",
   documentReference: "C",
+  settlement: "D",
   amount: "F",
   accountMainID: ACCOUNT_ID_COLUMN,
 };
 const BST_SALES_FIRST_ROW = 4;
 
 // A BST Purchases tab: A the purchase date, B the supplier, C the invoice
-// reference, D nothing the export reads, E the expense code letter the
-// analysis columns key on, F the miles a mileage-log row claims and G the
-// gross value a bought purchase carries. Rows 5 down are the entries.
+// reference, D the same free-text receipt record the Sales tab keeps, E the
+// expense code letter the analysis columns key on, F the miles a
+// mileage-log row claims and G the gross value a bought purchase carries.
+// Rows 5 down are the entries.
 const BST_PURCHASE_COLUMNS = {
   postingDate: "A",
   detailComment: "B",
   documentReference: "C",
+  settlement: "D",
   expenseCode: "E",
   measurableQuantity: "F",
   amount: "G",
   accountMainID: ACCOUNT_ID_COLUMN,
 };
 const BST_PURCHASE_FIRST_ROW = 5;
+
+// The Sales and Purchases tabs' D column takes free text ("Cash", "Bank
+// deposit", "Dr Cr Card", ...): the outstanding formula (Sales!H4 = IF(D4>0,
+// " ", F4) shaped) only tells whether it is blank, comparing text greater
+// than zero being true for any non-blank text in Excel. The writer puts only
+// two words there (paymentLabel() in scenario-extractor.js: "Cash" for a
+// diya-gl:paymentMethod of "cash", "Bank" for every other value), and the
+// export reads the same two-way split back rather than guessing a finer
+// diya-gl:paymentMethod from a hand-typed word the column was never limited
+// to. A blank cell means the row is still outstanding and carries no
+// paymentMethod at all, not a "how" for a settlement that has not happened.
+function settlementMethod(text) {
+  if (!text) return undefined;
+  return text.trim().toLowerCase() === "cash" ? "cash" : "bank-transfer";
+}
 
 // Past this row the tabs hold their own totals, not entries.
 const BST_TRANSACTION_LAST_ROW = 200;
@@ -373,6 +394,8 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
       };
       const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
+      const settlement = settlementMethod(textAt(xml, `${column.settlement}${row}`, sharedStrings));
+      if (settlement) line.paymentMethod = settlement;
       push(line, region, row);
     }
   }
@@ -426,6 +449,8 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
       }
       const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
+      const settlement = settlementMethod(textAt(xml, `${column.settlement}${row}`, sharedStrings));
+      if (settlement) line.paymentMethod = settlement;
       push(line, region, row);
     }
   }
