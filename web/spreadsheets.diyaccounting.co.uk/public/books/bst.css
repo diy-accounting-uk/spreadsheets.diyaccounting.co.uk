@@ -1244,7 +1244,9 @@ table.kv-table tr.total td {
   max-width: 90vw;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
   z-index: 50;
 }
 #toast.is-visible {

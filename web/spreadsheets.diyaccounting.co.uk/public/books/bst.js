@@ -297,7 +297,8 @@
         msg.textContent = "That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.";
         return;
       }
-      msg.textContent = "Reading " + file.name + " happens once the engine bundle is wired (W1). Try the example below to see the full page.";
+      msg.textContent =
+        "Reading " + file.name + " happens once the engine bundle is wired (W1). Try the example below to see the full page.";
     });
     document.getElementById("new-book-btn").addEventListener("click", function () {
       msg.textContent = "Starting a blank book happens once the engine bundle is wired (W1). Try the example below to see the full page.";
@@ -465,8 +466,7 @@
         '">' +
         (state.entriesOpen ? "Hide entries" : "Show entries — " + (entries.sales.length + entries.purchases.length) + " lines") +
         "</button>" +
-        (state.entriesOpen ? renderEntriesTables(entries) : "")
-      ;
+        (state.entriesOpen ? renderEntriesTables(entries) : "");
     } else {
       entriesHtml = '<p class="entries-note">Entries for ' + esc(monthMeta.label) + " are not part of this static preview's dataset.</p>";
     }
@@ -519,7 +519,7 @@
             '">' +
             '<div class="month-card-head" role="button" tabindex="0"><span class="month-name">' +
             esc(m.label) +
-            "</span><span class=\"mono\">" +
+            '</span><span class="mono">' +
             fmtMoney(row.netProfit) +
             "</span></div>" +
             '<div class="month-card-figures">' +
@@ -740,13 +740,7 @@
       "</div>"
     );
     function field(label, value) {
-      return (
-        '<div class="editable-field"><label>' +
-        esc(label) +
-        '</label><input value="' +
-        esc(value) +
-        '" readonly /></div>'
-      );
+      return '<div class="editable-field"><label>' + esc(label) + '</label><input value="' + esc(value) + '" readonly /></div>';
     }
   }
 
@@ -758,11 +752,18 @@
       esc(a.source) +
       " (" +
       esc(a.year) +
-      ').</p>' +
+      ").</p>" +
       '<div class="panel-card"><table class="kv-table">' +
       a.rates
         .map(function (r) {
-          var val = r.format === "rate" ? fmtRate(r.value) : r.format === "pence" ? fmtPence(r.value) : r.format === "number" ? r.value.toLocaleString("en-GB") : fmtMoney(r.value);
+          var val =
+            r.format === "rate"
+              ? fmtRate(r.value)
+              : r.format === "pence"
+                ? fmtPence(r.value)
+                : r.format === "number"
+                  ? r.value.toLocaleString("en-GB")
+                  : fmtMoney(r.value);
           return "<tr><td>" + esc(r.label) + "</td><td>" + val + "</td></tr>";
         })
         .join("") +
@@ -921,7 +922,9 @@
           (y + 14) +
           '" class="chart-value-label" fill="var(--pencil)">' +
           fmtMoney(item[1]) +
-          " (" + share + "%)" +
+          " (" +
+          share +
+          "%)" +
           "</text>";
         y += 34;
         return row;
@@ -953,7 +956,7 @@
       months.map(function (m) {
         var r = SNAPSHOT.monthly[m.key];
         return Math.max(r.sales, r.totalExpenses + r.costOfSales + r.directCosts);
-      })
+      }),
     );
     var cumulative = 0;
     var cumPoints = [];
@@ -968,10 +971,40 @@
         cumulative += r.netProfit;
         cumPoints.push([x + groupW / 2, height - padding - 20 - (cumulative / (maxVal * 3)) * chartH]);
         return (
-          '<rect x="' + x + '" y="' + (height - padding - 20 - salesH) + '" width="' + barW + '" height="' + salesH + '" fill="#2f6b4f"></rect>' +
-          '<rect x="' + (x + barW + 2) + '" y="' + (height - padding - 20 - costsH) + '" width="' + barW + '" height="' + costsH + '" fill="#b3402a"></rect>' +
-          '<rect x="' + (x + (barW + 2) * 2) + '" y="' + (height - padding - 20 - profitH) + '" width="' + barW + '" height="' + profitH + '" fill="#93c4ac"></rect>' +
-          '<text x="' + (x + groupW / 2) + '" y="' + (height - 6) + '" class="chart-bar-label" fill="var(--pencil)" text-anchor="middle">' + esc(m.label) + '</text>'
+          '<rect x="' +
+          x +
+          '" y="' +
+          (height - padding - 20 - salesH) +
+          '" width="' +
+          barW +
+          '" height="' +
+          salesH +
+          '" fill="#2f6b4f"></rect>' +
+          '<rect x="' +
+          (x + barW + 2) +
+          '" y="' +
+          (height - padding - 20 - costsH) +
+          '" width="' +
+          barW +
+          '" height="' +
+          costsH +
+          '" fill="#b3402a"></rect>' +
+          '<rect x="' +
+          (x + (barW + 2) * 2) +
+          '" y="' +
+          (height - padding - 20 - profitH) +
+          '" width="' +
+          barW +
+          '" height="' +
+          profitH +
+          '" fill="#93c4ac"></rect>' +
+          '<text x="' +
+          (x + groupW / 2) +
+          '" y="' +
+          (height - 6) +
+          '" class="chart-bar-label" fill="var(--pencil)" text-anchor="middle">' +
+          esc(m.label) +
+          "</text>"
         );
       })
       .join("");
@@ -1079,7 +1112,7 @@
       renderDriftSummary() +
       renderChecksList() +
       renderHelpersSection() +
-      '<h3>Charts</h3>' +
+      "<h3>Charts</h3>" +
       renderChartsBlock() +
       '<div style="margin-top:1rem"><button type="button" class="btn btn-primary" id="inspector-save-btn">Save workbook</button></div>'
     );
