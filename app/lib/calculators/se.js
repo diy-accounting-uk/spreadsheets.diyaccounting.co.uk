@@ -30,6 +30,9 @@ import {
 } from "../tax/vat.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  payeTaxMonthDates,
+  payrollYearStart,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
@@ -812,9 +815,15 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   );
 
   // ── Payslips ──
+  // The PAYE remittance schedule: B the tax month end and C the day the
+  // payment falls due, both counted off the payroll year's first day; D the
+  // National Insurance due, E the income tax and I the whole amount payable.
   const payment = {};
   payroll.forEach((month, index) => {
     const row = WAGES_MONTH_ROWS[index];
+    const taxMonth = payeTaxMonthDates(payrollYearStart(startYear), index);
+    payment[`B${row}`] = excelSerial(taxMonth.ends);
+    payment[`C${row}`] = excelSerial(taxMonth.due);
     payment[`D${row}`] = month.employerNI + month.employeeNI;
     payment[`E${row}`] = month.incomeTax;
     payment[`I${row}`] = payment[`D${row}`] + payment[`E${row}`];
@@ -1086,6 +1095,17 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
     results[`Payslips.xlsx!${tab}`] = buildPayslipsMonthTab(monthIndex, scenario.payroll?.[MONTH_KEYS[monthIndex]] || []);
   }
+
+  // Every month tab carries its own whole-month totals on row 1, which is
+  // what the PAYE schedule row for that month reads it through.
+  payroll.forEach((month, index) => {
+    const key = `Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[index]]}`;
+    if (!results[key]) results[key] = {};
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employerNI] = month.employerNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = month.employeeNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = month.incomeTax;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
+  });
 
   MONTH_KEYS.forEach((month, index) => {
     const tab = MONTH_SHEETS[month];

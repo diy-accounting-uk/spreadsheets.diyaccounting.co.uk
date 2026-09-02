@@ -11,6 +11,11 @@ import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_DUE_DAY,
+  PAYE_SCHEDULE_FIRST_ROW,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  PAYE_SCHEDULE_MONTH_TABS,
+  payeTaxMonthDates,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_PERIOD,
   PAYSLIP_PRINT_SHEET,
@@ -988,13 +993,32 @@ export function multiFileOptions() {
     purchasesMonthReads[tab] = ["A1", "A2", "C2", "G2", "H1", "I1", VAT_RATE_CELL, "AD1"];
   }
 
-  // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
-  // as Wagesinterface): D = NI due (employer + employee), E = income tax
-  // due, I = total amount payable (verified against the template:
+  // Payslips!Payment — the PAYE remittance schedule, one row per tax month
+  // (rows 4-15 = Apr-Mar, same layout as Wagesinterface). B is the tax month
+  // end and C the day the payment falls due, both off the payroll calendar;
+  // D = NI due (employer + employee), E = income tax due, I = total amount
+  // payable (verified against the template: B4=Admin!$B$26, C4=Admin!$B$45,
   // D4=Apr!T1+Apr!O1, E4=Apr!N1, I4=D4+E4-F4-G4+H4, with F/G/H always 0 in
   // this fixture -- no statutory pay or student loan data).
   const paymentCells = {};
-  for (const row of WAGES_MONTH_ROWS) paymentCells[row] = ["D", "E", "I"].map((c) => `${c}${row}`);
+  for (const row of WAGES_MONTH_ROWS) paymentCells[row] = ["B", "C", "D", "E", "I"].map((c) => `${c}${row}`);
+
+  // Each month tab's own whole-month totals on row 1, which is what the
+  // schedule row above reads it through. Jul and Aug carry more: their dead
+  // cells and brought-forward cells (see PAYSLIPS_JUL_DEAD_CELLS and
+  // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the fixture
+  // populates, so a break in either area is caught on its own month instead
+  // of only through the Payment/Admin aggregates.
+  const payslipsMonthTabReads = {};
+  for (const monthKey of MONTH_KEYS) payslipsMonthTabReads[MONTH_SHEETS[monthKey]] = [...Object.values(PAYE_SCHEDULE_MONTH_TAB_CELLS)];
+  payslipsMonthTabReads[MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]].push(
+    ...PAYSLIPS_JUL_DEAD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+  );
+  payslipsMonthTabReads[MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]].push(
+    ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+  );
 
   return {
     postHubRecalc: ["Vat.xlsx"],
@@ -1026,6 +1050,7 @@ export function multiFileOptions() {
         HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
+        ...payslipsMonthTabReads,
         Payment: Object.values(paymentCells).flat(),
         // The printed payslip. H3/H4 are the join itself; L7, I9 and I10 are
         // the block heading it lands on, and the rest is the first
@@ -1052,19 +1077,6 @@ export function multiFileOptions() {
         // year label the payslips print, and the name, date and month number
         // on each sampled row.
         Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
-        // Jul and Aug read directly (see PAYSLIPS_JUL_DEAD_CELLS and
-        // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the
-        // fixture actually populates, so a break in either area is caught
-        // on its own month instead of only through the Payment/Admin
-        // aggregates.
-        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]]: [
-          ...PAYSLIPS_JUL_DEAD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
-        ],
-        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]]: [
-          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
-        ],
       },
       // The customer-facing invoice: the VAT rate the generator wrote into
       // the sample product row, and the one sample line's net, VAT and gross
@@ -2451,6 +2463,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Payslips!Payment ${MONTH_KEYS[i]} D${row} NI due`, payment[`D${row}`] || 0, niDue);
       check(`Payslips!Payment ${MONTH_KEYS[i]} E${row} income tax due`, payment[`E${row}`] || 0, sums.incomeTax);
       check(`Payslips!Payment ${MONTH_KEYS[i]} I${row} total amount payable`, payment[`I${row}`] || 0, niDue + sums.incomeTax);
+
+      // The same figures read off the tab the row is supposed to be reading.
+      // The fixture pays several months alike, so a row that has slipped onto
+      // a neighbouring tab can still match the scenario; it cannot match both
+      // the scenario and the tab it names.
+      const monthTab = results[`Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[i]]}`];
+      if (monthTab) {
+        const cells = PAYE_SCHEDULE_MONTH_TAB_CELLS;
+        const tabNI = (monthTab[cells.employerNI] || 0) + (monthTab[cells.employeeNI] || 0);
+        check(`Payslips!Payment D${row} NI due is the ${MONTH_KEYS[i]} tab's own`, payment[`D${row}`] || 0, tabNI);
+        check(
+          `Payslips!Payment E${row} income tax due is the ${MONTH_KEYS[i]} tab's own`,
+          payment[`E${row}`] || 0,
+          monthTab[cells.incomeTax] || 0,
+        );
+        check(
+          `Payslips!Payment I${row} total payable is the ${MONTH_KEYS[i]} tab's own`,
+          payment[`I${row}`] || 0,
+          tabNI + (monthTab[cells.incomeTax] || 0) + (monthTab[cells.studentLoan] || 0),
+        );
+      }
     }
 
     // ── Payslips!Payslips: the page the employer prints and hands over ─────
@@ -2969,6 +3002,30 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         SHORT_MONTH_NAMES[(yearStartMonthIndex + monthsIn) % 12],
       );
     }
+  }
+
+  // ── Payslips!Payment: the dates on the PAYE remittance schedule ──────────
+  //
+  // Twelve rows, one per tax month, each with the month it covers and the day
+  // the payment falls due. Both come off the payroll calendar at a fixed row,
+  // so they are the payroll year's first day plus a fixed count of days --
+  // measured here against the year the package's own tax data opens in, not
+  // against the calendar the sheet built them from.
+  const paymentSchedule = results["Payslips.xlsx!Payment"];
+  const payrollYearOpens = taxData?.tax_year?.start ? payrollYearStart(new Date(taxData.tax_year.start).getUTCFullYear()) : null;
+  if (paymentSchedule && payrollYearOpens) {
+    const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
+    PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
+      const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+      const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
+      check(
+        `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
+        num(paymentSchedule[`C${row}`]),
+        asSerial(due),
+        0,
+      );
+    });
   }
 
   // The whole distance from the accounting profit to the profit tax is
