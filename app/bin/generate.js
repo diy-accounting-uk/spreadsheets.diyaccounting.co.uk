@@ -27,7 +27,6 @@ import {
   renameExternalLinkSheetNames,
   reorientPayslipsAdminMonthSheets,
   reorientPayslipsMonthTabPeriods,
-  datePayslipsPaymentSchedule,
   realignPayslipsPaymentSchedule,
   monthEnd,
 } from "../lib/generator.js";
@@ -128,36 +127,17 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
         buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
       }
 
-      if (sheetsConfig?.payslipsAdmin) {
-        const payrollYearOpens = payrollYearStart(new Date(ty.start).getUTCFullYear());
-
-        // The Payslips Admin sheet names the month tab each payroll month
-        // belongs on, which the printed payslip joins through, so it moves
-        // with the tabs.
-        if (yearEndMonth) {
-          buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
-        }
-
-        // The last of the twelve months the tabs run. A company's year ends on
-        // a month end and the tabs run to it; a Self Employed year ends on
-        // 5 April, mid-month, and its tabs run to the March before.
-        const endsOnMonthEnd = endDate.getUTCDate() === monthEnd(endDate.getUTCFullYear(), endDate.getUTCMonth() + 1).getUTCDate();
-        const tabsYearEnd = endsOnMonthEnd ? endDate : monthEnd(endDate.getUTCFullYear(), endDate.getUTCMonth());
-
-        // Each month tab opens its monthly payroll block with the days it
-        // covers. The tab's name is the accounting period's month, so that is
-        // the month the block covers.
-        buffer = await reorientPayslipsMonthTabPeriods(buffer, tabsYearEnd, payrollYearOpens);
-
-        // The PAYE schedule's rows are tax months: each carries the end of the
-        // month it runs to and the day its payment falls due.
-        buffer = await datePayslipsPaymentSchedule(buffer, payrollYearOpens);
-
-        // Each row then takes the tab holding the payroll paid in its tax
-        // month rather than the tab the rename left it pointing at.
-        if (yearEndMonth) {
-          buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
-        }
+      // The Payslips Admin sheet names the month tab each payroll month belongs
+      // on, which the printed payslip joins through, so it moves with the tabs.
+      if (yearEndMonth && sheetsConfig?.payslipsAdmin) {
+        buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
+        // Each month tab's monthly payroll block already covers a month of the
+        // payroll year. The tab's name is the accounting period's month, so on
+        // another year end that is the month the block moves to.
+        buffer = await reorientPayslipsMonthTabPeriods(buffer, endDate, payrollYearStart(new Date(ty.start).getUTCFullYear()));
+        // Each PAYE schedule row then takes the tab holding the payroll paid
+        // in its tax month rather than the tab the rename left it pointing at.
+        buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
       }
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {

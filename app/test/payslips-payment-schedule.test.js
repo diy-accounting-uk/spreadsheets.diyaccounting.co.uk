@@ -28,7 +28,6 @@ import {
   runMultiFileSpreadsheet,
 } from "../lib/spreadsheet-runner.js";
 import {
-  datePayslipsPaymentSchedule,
   generateSpreadsheet,
   getMonthTabSequence,
   realignPayslipsPaymentSchedule,
@@ -70,17 +69,17 @@ const dateOf = (value) => new Date(EXCEL_EPOCH_UTC + value * MS_PER_DAY);
 const isoWeekday = (date) => ((date.getUTCDay() + 6) % 7) + 1;
 
 // The blank Payslips.xlsx a customer downloads, built the way generate.js
-// builds it: the tax data written in, the tabs' own periods and the PAYE
-// schedule's dates written out, and -- for a company year end other than the
-// template's March -- the tabs renamed, the calendar's month-sheet column
-// moved with them and the schedule repointed. A Self Employed year ends on
-// 5 April, so its tabs are the template's own and run to the March before.
+// builds it: the tax data written in -- which dates the tabs' payroll blocks
+// and the PAYE schedule over the payroll year -- and then, for a company year
+// end other than the template's March, the tabs renamed, the calendar's
+// month-sheet column and the blocks moved with them, and the schedule
+// repointed. A Self Employed year always ends on 5 April, so its tabs are the
+// template's own and nothing moves.
 async function blankPayslips({ product, taxData: taxDataFile, yearEnd, yearEndMonth }) {
   const taxData = parseTOML(readFileSync(resolve(DATA_DIR, taxDataFile), "utf8"));
   const period = taxData.tax_year || taxData.financial_year;
   const productMeta = parseTOML(readFileSync(resolve(APP_DIR, "templates", product, "meta.toml"), "utf8"));
   const payrollYearOpens = payrollYearStart(new Date(period.start).getUTCFullYear());
-  const tabsYearEnd = yearEndMonth ? yearEnd : new Date(Date.UTC(yearEnd.getUTCFullYear(), yearEnd.getUTCMonth(), 0));
 
   let buffer = await generateSpreadsheet(
     readFileSync(resolve(APP_DIR, "templates", product, "Payslips.xlsx")),
@@ -91,10 +90,7 @@ async function blankPayslips({ product, taxData: taxDataFile, yearEnd, yearEndMo
     buffer = await renameMonthTabs(buffer, yearEndMonth);
     buffer = await renameExternalLinkSheetNames(buffer, yearEndMonth);
     buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, PAYSLIPS_ADMIN_SHEET_PATH);
-  }
-  buffer = await reorientPayslipsMonthTabPeriods(buffer, tabsYearEnd, payrollYearOpens);
-  buffer = await datePayslipsPaymentSchedule(buffer, payrollYearOpens);
-  if (yearEndMonth) {
+    buffer = await reorientPayslipsMonthTabPeriods(buffer, yearEnd, payrollYearOpens);
     buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
   }
   return { buffer, payrollYearOpens };
