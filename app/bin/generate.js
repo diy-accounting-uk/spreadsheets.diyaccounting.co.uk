@@ -19,9 +19,7 @@ import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 import {
   generateSpreadsheet,
-  formatDateDDMMYY,
-  formatDateYYYYMMDD,
-  shortLabel,
+  packageNaming,
   renameMonthTabs,
   rewriteVatinterfaceFormulas,
   renameExternalLinkSheetNames,
@@ -34,6 +32,7 @@ import { payrollYearStart } from "../lib/payslips-layout.js";
 import { generatePdf } from "../lib/guide.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { saveBstWorkbook } from "../lib/bst-workbook.js";
 import { PRODUCT as BST } from "../products/bst.js";
 import { PRODUCT as TAXI } from "../products/taxi.js";
 import { PRODUCT as SE } from "../products/se.js";
@@ -81,17 +80,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
 
   console.log(`\nGenerating ${productMeta.product.name} for ${ty.label}...`);
 
-  // Build output directory
-  const dateStr = formatDateYYYYMMDD(endDate);
-  const label = shortLabel(endDate);
-  const ddmmyy = formatDateDDMMYY(endDate);
-
-  const dirName = productMeta.output.dir_pattern
-    .replace("{prefix}", sharedMeta.package.prefix)
-    .replace("{name}", productMeta.product.name)
-    .replace("{year_end_date}", dateStr)
-    .replace("{short_label}", label)
-    .replace("{format}", sharedMeta.package.format);
+  const { dirName, xlsxFilename } = packageNaming(productMeta, sharedMeta, endDate);
 
   const outDir = resolve(outputDir, dirName);
   mkdirSync(outDir, { recursive: true });
@@ -159,7 +148,6 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
 
     const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
 
-    const xlsxFilename = productMeta.output.spreadsheet_pattern.replace("{year_end_ddmmyy}", ddmmyy);
     writeFileSync(resolve(outDir, xlsxFilename), xlsxBuffer);
     console.log(`  Written: ${dirName}/`);
     console.log(`           ${xlsxFilename}`);
@@ -186,7 +174,7 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
     }
   }
 
-  return { dirName, taxYear: ty.label };
+  return { dirName, taxYear: ty.label, taxData };
 }
 
 function parseArgs(argv) {
@@ -354,7 +342,6 @@ async function main() {
     }
 
     const { book, lines } = loadDiyaGlData(resolve(dataDir), offset);
-    const scenario = diyaGlToScenario(book, lines, packageFilter);
 
     // Use the last generated package (most recent year-end)
     const lastResult = results[results.length - 1];
@@ -364,37 +351,49 @@ async function main() {
     // there directly; without one, recalculation happens in place.
     const finalOutputDir = outputDirOverride ? resolve(outputDirOverride) : pkgDir;
 
-    // Extract year-end info from the directory name
-    const yearEndMatch = lastResult.dirName.match(/(\d{4})-(\d{2})-(\d{2})/);
-    const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
-    const endMonth = yearEndMatch ? parseInt(yearEndMatch[2], 10) : null;
-    const startYear = endYear ? endYear - 1 : null;
-
-    const writes = productMod.cellWrites(scenario, startYear, endMonth);
     const reads = productMod.standardReads();
 
     console.log(`\n=== Injecting diya-gl data into ${lastResult.dirName} ===`);
 
-    if (productMod.MULTI_FILE) {
-      const { readdirSync: readdirSyncFs } = await import("fs");
-      const xlsxFiles = readdirSyncFs(pkgDir).filter((f) => f.endsWith(".xlsx"));
-      const fileBuffers = {};
-      for (const f of xlsxFiles) {
-        fileBuffers[f] = readFileSync(resolve(pkgDir, f));
-      }
-      await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
-        saveRecalculatedTo: finalOutputDir,
+    if (packageFilter === "bst") {
+      // saveBstWorkbook takes the tax data this run selected rather than
+      // deriving it from the book, so --years still decides the year.
+      const { workbook, filename } = await saveBstWorkbook(book, lines, { taxData: lastResult.taxData });
+      await runSpreadsheet(workbook, {}, reads, {
+        saveRecalculatedTo: resolve(finalOutputDir, filename),
       });
     } else {
-      const xlsxFiles = readdirSync(pkgDir).filter((f) => f.endsWith(".xlsx"));
-      if (xlsxFiles.length === 0) {
-        console.error(`No xlsx found in ${pkgDir}`);
-        process.exit(1);
+      const scenario = diyaGlToScenario(book, lines, packageFilter);
+
+      // Extract year-end info from the directory name
+      const yearEndMatch = lastResult.dirName.match(/(\d{4})-(\d{2})-(\d{2})/);
+      const endYear = yearEndMatch ? parseInt(yearEndMatch[1], 10) : null;
+      const endMonth = yearEndMatch ? parseInt(yearEndMatch[2], 10) : null;
+      const startYear = endYear ? endYear - 1 : null;
+
+      const writes = productMod.cellWrites(scenario, startYear, endMonth);
+
+      if (productMod.MULTI_FILE) {
+        const { readdirSync: readdirSyncFs } = await import("fs");
+        const xlsxFiles = readdirSyncFs(pkgDir).filter((f) => f.endsWith(".xlsx"));
+        const fileBuffers = {};
+        for (const f of xlsxFiles) {
+          fileBuffers[f] = readFileSync(resolve(pkgDir, f));
+        }
+        await runMultiFileSpreadsheet(fileBuffers, writes, reads, "Financialaccounts.xlsx", {
+          saveRecalculatedTo: finalOutputDir,
+        });
+      } else {
+        const xlsxFiles = readdirSync(pkgDir).filter((f) => f.endsWith(".xlsx"));
+        if (xlsxFiles.length === 0) {
+          console.error(`No xlsx found in ${pkgDir}`);
+          process.exit(1);
+        }
+        const xlsxBuffer = readFileSync(resolve(pkgDir, xlsxFiles[0]));
+        await runSpreadsheet(xlsxBuffer, writes, reads, {
+          saveRecalculatedTo: resolve(finalOutputDir, xlsxFiles[0]),
+        });
       }
-      const xlsxBuffer = readFileSync(resolve(pkgDir, xlsxFiles[0]));
-      await runSpreadsheet(xlsxBuffer, writes, reads, {
-        saveRecalculatedTo: resolve(finalOutputDir, xlsxFiles[0]),
-      });
     }
 
     console.log(`Populated package written to ${finalOutputDir}`);

@@ -6,7 +6,8 @@
 // read returns, so app/products/bst.js's reportSections() and
 // checkCompliance() work unchanged on either source.
 
-import { BST_PURCHASE_CODE_MAP, BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { resolveBstPurchaseCodeMap } from "../diya-gl-loader.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
@@ -70,9 +71,16 @@ function carriesBusinessMiles(line) {
 }
 
 export function calculateBstResults(book, lines, taxData, scenario) {
+  // A book's own declared chart can number its purchase accounts under a
+  // scheme other than the Basic Sole Trader master's own (see
+  // resolveBstPurchaseCodeMap in diya-gl-loader.js); this must resolve to
+  // the same map diyaGlToScenario used to build `scenario`, or the two
+  // disagree on which account lands under which code.
+  const purchaseCodeMap = resolveBstPurchaseCodeMap(book);
+
   // Filter to BST lines only
   const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && BST_SALES_ACCOUNTS.has(String(l.accountMainID)));
-  const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined);
+  const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && purchaseCodeMap[l.accountMainID] !== undefined);
 
   // Total sales (BST: gross, no VAT split)
   const totalSales = Math.round(salesLines.reduce((s, l) => s + l.amount, 0));
@@ -89,7 +97,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // nothing, and cellWrites gives the sheet its miles rather than its amount
   // so the sheet can price the claim at its own Admin rates.
   const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
-  const byCode = aggregateByCode(cashPurchaseLines, BST_PURCHASE_CODE_MAP);
+  const byCode = aggregateByCode(cashPurchaseLines, purchaseCodeMap);
 
   // The mileage claim the sheet makes of those miles. It reaches Motor
   // Expenses (verified against the template: PurchasesApr!G4 bands the running
