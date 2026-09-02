@@ -28,20 +28,21 @@ are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
 From `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md`, phase 3 — dispatch after the ledger
 alignment lands (its book-shape change moves the page snapshot W1 wires):
 
-- [ ] W1 — the viewer goes live (Sonnet): the shell swaps its static snapshot
-  (`books/bst-data.js`, the marked replacement point) for the bundled engine; upload,
-  drill, drift annotations; the in-browser breakability proof.
+- [ ] W1 — the viewer goes live (Sonnet, worktree agent) — in flight: the shell swaps its
+  static snapshot for the bundled engine; upload, drill, drift annotations; the in-browser
+  breakability proof. Renders ledgers from the engine's current shape; the ledger
+  alignment reconciles at merge.
 - [ ] W2 — panels and form renders live (Sonnet): checks panel, drift summary, the SA103S
   and Income Tax renders fed by the engine instead of static figures.
 - [ ] W3 — edits, checks, helpers (Opus): in-place entry edits through
   `diya-gl-edits.js`, recalculation, the two helper classes with preview and undo.
-- [ ] W4 — save (Sonnet, one decision first): client-side xlsx/zip via `bst-workbook.js`.
-  The generator's ~10 JSZip call sites ask for `nodebuffer`, which browsers cannot
-  produce — decide pipeline-wide output type vs a caller parameter before dispatch.
+- [ ] W4 — save (Sonnet, worktree agent) — in flight: client-side xlsx/zip via
+  `bst-workbook.js`. Output-type decision made (coordinator): the JSZip sites normalise to
+  `uint8array` with `Buffer.from` only at boundaries an API demands, byte-identity proven.
 - [ ] W5 — entry panel wiring, the other two example books, autosave, the four-layout
   Playwright matrix (Sonnet).
-- [ ] phase 2 leftover: a `remove line` edit op for the MCP `edit_lines` tool, left out of
-  Track D's rung — add when a consumer needs it.
+- [ ] phase 2 leftover: the `removeLine` edit op for the MCP `edit_lines` tool (Haiku,
+  worktree agent) — in flight.
 
 From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
 automation — that is the plan's binding constraint):
