@@ -12,12 +12,20 @@ main when the board clears. Phases 1 (CLI) and 2 (MCP) of
 statics (W-pre) and bundle gate (W0 — the gate held: the browser runs the unforked engine)
 are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
 
-- [ ] BST ledger alignment (Opus, worktree agent) — in flight, operator decided 2026-09-02:
-  the pipeline aligns to the REAL `Debtors & Creditors` sheet (a monthly outstanding table;
-  the exporter/generator had shared an invented per-contact layout that round-tripped as
-  fiction). Moves BST's book ledger shape, generator writes, fixtures and declared budget
-  counts; the sheet joins the anchor guard; the `adminMileageRates` silent-zero fallback
-  rides along.
+- [x] BST ledger alignment — landed (merged; 368 engine + 22/22 books browser tests on the
+  merged tree). Only C3/F3 are entered on the real sheet — they map to
+  `openingBalances.tradeDebtors`/`tradeCreditors`, no schema change; the monthly
+  outstanding table is report output, carried as 28 new reads and checks; the named
+  ledgers are declared absent (measured, not hidden; bst declared 36→78). The old writer
+  had been destroying 16 template formulas — the sidecar went 16→0 on a fresh package. All
+  nine BST reports RECONCILE; the sheet (plus PurchasesStock and Fixed Assets) joined the
+  anchor guard; `adminMileageRates` now throws by name.
+- [ ] the settlement flag is lost in the round trip (operator decision first): the BST
+  sheets' column D holds a two-way Bank/Cash label the generator writes but
+  `BST_SALES_COLUMNS`/`BST_PURCHASE_COLUMNS` never read back, so a package re-generated
+  from its own export flips its outstanding ledger (brickwork: 19,510 → the full year).
+  Restating the book's richer `paymentMethod` in that column needs a vocabulary decision
+  across all four products plus fixture changes — decide before dispatching.
 - [x] archive-packages helper — the script, skill and `CLAUDE.md` line were already landed
   (`862d7695`); the track added the missing test file (10 tests, every cut rule proven
   breakable) and ran plan step 2: the dry run over the real catalogue is clean — 119/119
