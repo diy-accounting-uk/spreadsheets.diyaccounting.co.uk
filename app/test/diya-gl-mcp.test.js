@@ -274,6 +274,8 @@ const FIXTURES = [
     changePurchaseLine: { entryNumber: "TXN-0164", newAmount: 5450, delta: 450, categoryCell: "C7" },
     removeSaleLine: { entryNumber: "TXN-0029", amount: 360, monthCell: "D4" },
     removePurchaseLine: { entryNumber: "TXN-0030", amount: 180, categoryCell: "C21" },
+    changeDateLine: { entryNumber: "TXN-0032", oldMonthCell: "D4", newPostingDate: "2025-05-05", newMonthCell: "E4", amount: 600 },
+    changeAccountLine: { entryNumber: "TXN-0098", amount: 600, oldCategoryCell: "C17", newAccountMainID: "5501", newCategoryCell: "C14" },
   },
   {
     name: "bst-brickwork-pro-nonvat",
@@ -315,6 +317,8 @@ const FIXTURES = [
     changePurchaseLine: { entryNumber: "TXN-0028", newAmount: 6450, delta: 450, categoryCell: "C7" },
     removeSaleLine: { entryNumber: "TXN-0018", amount: 1950, monthCell: "D4" },
     removePurchaseLine: { entryNumber: "TXN-0009", amount: 60, categoryCell: "C14" },
+    changeDateLine: { entryNumber: "TXN-0025", oldMonthCell: "E4", newPostingDate: "2025-06-10", newMonthCell: "F4", amount: 4200 },
+    changeAccountLine: { entryNumber: "TXN-0035", amount: 300, oldCategoryCell: "C17", newAccountMainID: "5501", newCategoryCell: "C14" },
   },
   {
     name: "bst-sp-sixty",
@@ -355,6 +359,8 @@ const FIXTURES = [
     changePurchaseLine: { entryNumber: "TXN-0182", newAmount: 235, delta: 55, categoryCell: "C21" },
     removeSaleLine: { entryNumber: "TXN-0002", amount: 198, monthCell: "D4" },
     removePurchaseLine: { entryNumber: "TXN-0181", amount: 30, categoryCell: "C14" },
+    changeDateLine: { entryNumber: "TXN-0003", oldMonthCell: "D4", newPostingDate: "2025-05-09", newMonthCell: "E4", amount: 221 },
+    changeAccountLine: { entryNumber: "TXN-0201", amount: 150, oldCategoryCell: "C17", newAccountMainID: "5700", newCategoryCell: "C14" },
   },
 ];
 
@@ -491,6 +497,36 @@ for (const fixture of FIXTURES) {
 
       const moved = result.movedFigures.find((entry) => entry.key === "cell/Profit & Loss Acc!C24");
       expect(moved.delta).toBe(-fixture.removeSaleLine.amount);
+    });
+
+    it("changes a sales line's posting date: its old and new month move by the amount, the year total is unmoved, checks stay green", async () => {
+      const tools = toolLayer(book, lines);
+      const { entryNumber, newPostingDate, oldMonthCell, newMonthCell, amount } = fixture.changeDateLine;
+      const result = await tools.call("edit_lines", { edit: "changeLinePostingDate", params: { entryNumber, newPostingDate } });
+
+      const beforeOld = valueAt(baseline, `cell/Profit & Loss Acc!${oldMonthCell}`);
+      const afterOld = valueAt(result.report, `cell/Profit & Loss Acc!${oldMonthCell}`);
+      expect(afterOld - beforeOld).toBe(-amount);
+      const beforeNew = valueAt(baseline, `cell/Profit & Loss Acc!${newMonthCell}`);
+      const afterNew = valueAt(result.report, `cell/Profit & Loss Acc!${newMonthCell}`);
+      expect(afterNew - beforeNew).toBe(amount);
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C4"));
+      expectAllChecksPass(result.report);
+    });
+
+    it("changes a purchase line's account: its old and new category move by the amount, net profit is unmoved, checks stay green", async () => {
+      const tools = toolLayer(book, lines);
+      const { entryNumber, newAccountMainID, oldCategoryCell, newCategoryCell, amount } = fixture.changeAccountLine;
+      const result = await tools.call("edit_lines", { edit: "changeLineAccount", params: { entryNumber, newAccountMainID } });
+
+      const beforeOld = valueAt(baseline, `cell/Profit & Loss Acc!${oldCategoryCell}`);
+      const afterOld = valueAt(result.report, `cell/Profit & Loss Acc!${oldCategoryCell}`);
+      expect(afterOld - beforeOld).toBe(-amount);
+      const beforeNew = valueAt(baseline, `cell/Profit & Loss Acc!${newCategoryCell}`);
+      const afterNew = valueAt(result.report, `cell/Profit & Loss Acc!${newCategoryCell}`);
+      expect(afterNew - beforeNew).toBe(amount);
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C24")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C24"));
+      expectAllChecksPass(result.report);
     });
 
     it("removes a purchase of Z: profit rises by Z, turnover is unchanged", async () => {
