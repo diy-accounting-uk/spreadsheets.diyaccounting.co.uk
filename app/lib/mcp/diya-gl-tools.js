@@ -159,10 +159,10 @@ async function saveWorkbook(session, params = {}) {
   const format = params.format === "zip" ? "zip" : "xlsx";
   if (format === "zip") {
     const { zip, filename } = await saveBstPackageZip(book, lines);
-    return { filename, format, base64: zip.toString("base64") };
+    return { filename, format, base64: Buffer.from(zip).toString("base64") };
   }
   const { workbook, filename } = await saveBstWorkbook(book, lines);
-  return { filename, format, base64: workbook.toString("base64") };
+  return { filename, format, base64: Buffer.from(workbook).toString("base64") };
 }
 
 /**

@@ -107,7 +107,7 @@ async function resolveBstInputs(book, lines, options) {
  * @param {Object} [options.resources] - resource loader; defaults to reading app/
  * @param {string} [options.taxYearName] - override the tax year the book's dates imply
  * @param {Object} [options.taxData] - already-parsed tax data, skipping the load
- * @returns {Promise<{ workbook: Buffer, filename: string }>}
+ * @returns {Promise<{ workbook: Uint8Array, filename: string }>}
  */
 export async function saveBstWorkbook(book, lines, options = {}) {
   const inputs = await resolveBstInputs(book, lines, options);
@@ -126,7 +126,7 @@ async function writeWorkbook({ resources, taxData, productMeta, writes }) {
  * package also carries the PDF guide, which needs a PDF renderer and so stays
  * with the CLI.
  *
- * @returns {Promise<{ zip: Buffer, filename: string }>}
+ * @returns {Promise<{ zip: Uint8Array, filename: string }>}
  */
 export async function saveBstPackageZip(book, lines, options = {}) {
   const inputs = await resolveBstInputs(book, lines, options);
@@ -135,7 +135,7 @@ export async function saveBstPackageZip(book, lines, options = {}) {
   const zip = new JSZip();
   zip.file(inputs.xlsxFilename, workbook, { date: new Date(Date.UTC(1980, 0, 1)) });
   const buffer = await zip.generateAsync({
-    type: "nodebuffer",
+    type: "uint8array",
     compression: "DEFLATE",
     compressionOptions: { level: 6 },
   });
