@@ -1701,7 +1701,13 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
 // source, keyed by whichever year the package's own Admin sheet says it was
 // generated from.
 
-const TAX_DATA_DIR = resolvePath(directoryOf(fileURLToPath(import.meta.url)), "..", "data");
+// Resolved on the first read rather than on import, so loading this module
+// costs nothing outside Node. A bundle reaches it only through
+// taxTablesForPackage() without pre-parsed rate data, and then it fails on the
+// file read rather than at import time.
+function taxDataDir() {
+  return resolvePath(directoryOf(fileURLToPath(import.meta.url)), "..", "data");
+}
 
 // Where BST, Taxi and SE print the tax year the generator built them for.
 const ADMIN_TAX_YEAR_LABEL_CELL = "B23";
@@ -1857,7 +1863,7 @@ function taxTablesFromRateData(raw) {
 export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
   const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
   if (!fileName) return {};
-  const filePath = resolvePath(TAX_DATA_DIR, fileName);
+  const filePath = resolvePath(taxDataDir(), fileName);
   if (!fileExists(filePath)) return {};
   const raw = parseTOML(readSchemaFile(filePath, "utf8"));
   return taxTablesFromRateData(raw);

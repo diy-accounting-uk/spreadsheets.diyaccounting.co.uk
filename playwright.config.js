@@ -17,7 +17,7 @@ export default defineConfig({
     {
       name: "browser-tests",
       testDir: "web/browser-tests",
-      testMatch: ["**/spreadsheets-content.browser.test.js", "**/books-bst.browser.test.js"],
+      testMatch: ["**/spreadsheets-content.browser.test.js", "**/books-bst.browser.test.js", "**/books-bundle-gate.browser.test.js"],
       workers: 1,
       outputDir: "./target/browser-test-results/",
     },
