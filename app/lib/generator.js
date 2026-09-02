@@ -1641,6 +1641,8 @@ const excelDateFormula = (day) => `DATE(${day.getUTCFullYear()},${day.getUTCMont
 // the 20th in a year without one. Every package ships one of the two wrong, so
 // all of them are written as the dates they are.
 
+const PAYSLIPS_PAYMENT_SHEET = "Payment";
+
 // Each tab's monthly payroll block, over the payroll year's own twelve months.
 // A tab renamed for another year end moves its block on to the accounting
 // period's months afterwards.
@@ -1675,8 +1677,6 @@ async function datePayslipsPaymentSchedule(zip, sheetPaths, payrollYearOpens) {
 
   zip.file(paymentPath, paymentXml, { date: zip.file(paymentPath).date });
 }
-
-const PAYSLIPS_PAYMENT_SHEET = "Payment";
 
 // One schedule date. The cell has to be reading the Admin calendar row the
 // template ships for it: a schedule that has moved row is a change to see
