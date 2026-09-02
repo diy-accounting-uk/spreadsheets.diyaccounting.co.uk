@@ -205,10 +205,22 @@ originally specified a self-contained "columnar ledger pad" identity: six bespok
 its own dark theme. It was built as specified and the operator rejected it on sight — "it
 looks like a claude site". The as-built direction:
 
-- The page uses the SPREADSHEETS SITE's own look, read from its real pages: the background
-  grid, gently floating panels for the page's regions, the site's palette and type. The
-  page is a page of the site, not a product with its own brand.
-- Dark mode may exist but is the site design's dark rendering, not a separate identity.
+- The page uses the SPREADSHEETS SITE's own look, read from `spreadsheets.css` as built:
+  the teal brand (#158484/#106868/#29c0c0), Arial, the `#f7fafa` ground with its 11px
+  `#e8eded` hairline grid, white panels at radius 8 with `0 2px 4px` shadows, 2px
+  teal-border buttons, 3px teal focus. The page is a page of the site, not a product with
+  its own brand. The token layer kept its NAMES (the JS references them) and re-valued
+  onto the site's values — the cheap reskin route the successors should reuse.
+- The form authority is submit's implemented HMRC field standards
+  (`web/public/docs/hmrc-form-field-standards/{README.md,styles.css}` and
+  `web/public/submit.css` in that repo): block bold labels above fields, hint text
+  `#505a5f`, 2px input borders with brand focus, bold red errors behind a 5px bar, 44px
+  minimum tap targets, and the joined currency box — a grey `#f3f2f1` £-prefix cell
+  against a right-aligned bare figure (the first build rendered a double £; the box holds
+  the bare figure). No GOV.UK branding, per that doc's own MUST-NOTs.
+- Dark mode may exist but is the site design's dark rendering, not a separate identity —
+  as built: teal accents on `#101919`/`#182424` surfaces, a subdued grid, and an
+  `--on-rule` token keeping filled-button text legible both ways.
 - The correction mark survives as a mark language (calculated figure primary, as-read
   figure struck through beside it, signed drift) but is drawn with the site's palette.
 - Motion: one orchestrated expand (year row unfolds to month, entries slide under),
