@@ -41,8 +41,8 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   `uint8array` with `Buffer.from` only at boundaries an API demands, byte-identity proven.
 - [ ] W5 — entry panel wiring, the other two example books, autosave, the four-layout
   Playwright matrix (Sonnet).
-- [ ] phase 2 leftover: the `removeLine` edit op for the MCP `edit_lines` tool (Haiku,
-  worktree agent) — in flight.
+- [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
+  both the API and the MCP tool layer).
 
 From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
 automation — that is the plan's binding constraint):
