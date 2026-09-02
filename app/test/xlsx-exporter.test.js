@@ -18,6 +18,7 @@ import {
   extractPayrollTransactions,
   extractBook,
   normaliseLine,
+  AdminSheetMissingError,
 } from "../lib/xlsx-exporter.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
@@ -1201,6 +1202,28 @@ describe("extractBook — the named ledgers", () => {
     const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
     expect(after.openingBalances.tradeDebtors).toBe(1);
     expect(after.openingBalances.tradeCreditors).toBe(before.openingBalances.tradeCreditors);
+  });
+});
+
+// The Admin sheet prices every mileage-log row. A workbook without it used to
+// export a book whose mileage claims were all nil and say nothing about why.
+describe("the Admin sheet the mileage rates are priced from", () => {
+  it("throws by name rather than pricing the claims at zero", async () => {
+    const sheets = bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } });
+    delete sheets.Admin;
+    const buffer = await buildWorkbook(sheets);
+
+    await expect(extractBstTransactions(buffer)).rejects.toThrow(AdminSheetMissingError);
+    await expect(extractBstTransactions(buffer)).rejects.toThrow(/sheet "Admin" not found/);
+  });
+
+  it("prices them from the sheet when it is there", async () => {
+    const buffer = await buildWorkbook(
+      bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } }),
+    );
+    const lines = await extractBstTransactions(buffer);
+    const mileageLine = lines.find((line) => line.measurableUnitOfMeasure === "miles");
+    expect(mileageLine.measurableQuantity).toBe(120);
   });
 });
 
