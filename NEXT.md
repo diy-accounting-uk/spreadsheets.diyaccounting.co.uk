@@ -40,9 +40,18 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   examples through the real engine, drift with the pencil-correction mark proven breakable
   in-browser, the anchor guard surfacing named errors in the page's own styling. Its swap
   put every panel and form render on the live engine, absorbing W2's scope.
-- [ ] W3 — edits, checks, helpers (Opus, worktree agent) — in flight: in-place entry edits
-  through `diya-gl-edits.js`, recalculation on commit, undo as a book-state stack, the two
-  helper classes with preview applying through the same edit path.
+- [x] W3 — landed (merged, 42/42 books specs on the merged tree): one commit route for
+  every change (edits, deletes, adds, helpers), undo covering them all, drift relabelling
+  as recalculated, and a two-group checks panel — engine checks untouched, new book-level
+  checks whose three fix-it helpers preview and apply as one undoable step, each proven on
+  a deliberately broken book. Also repaired the D&C view crash at the W1/ledger merge seam.
+- [ ] bst-latest refresh + upload openings (Sonnet, worktree agent) — in flight:
+  `examples/bst-latest` is a pre-alignment package (placeholder ledger cells, 12 spurious
+  drift findings on upload); regenerate it with the fixed writer and read C3/F3 into
+  `openingBalances` on upload, restoring W1's zero-drift rung with a strengthened spec.
+- [ ] `changeLinePostingDate` / `changeLineAccount` as first-class named edits in
+  `diya-gl-edits.js` — the page composes remove+add for now; promote when a consumer
+  (the MCP tools, or a page feature) wants atomic date/account changes.
 - [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
   JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
   (a bare `Uint8Array.toString` silently corrupts); the save controls download real
