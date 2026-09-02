@@ -6,23 +6,17 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**diya-gl spike** — delivered: PR #55 merged to main with all four packages regenerated,
-tested and deployed. `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` archives when its one
-remainder lands:
-
-- [ ] the settlement flag — **PR #56 awaits operator merge** (122 blast tests on the
-  merged branch): column D round-trips as the coarse payment method; the generate pipeline
-  gains the settlement write it never had; SE/Ltd declared with empirical proof; double
-  round trip byte-identical. On merge, `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` archives —
-  the spike is then fully delivered.
+Nothing. The diya-gl spike delivered in full — CLI, MCP server and the live books page —
+across PRs #55 and #56, regenerated, tested and deployed; its plan is archived to
+`_developers/archive/` beside the roundtrip-fidelity and packages-to-archive plans.
 
 ## Open items
 
-Nothing outside the in-flight block above.
+Nothing.
 
 ## Plans not tracked here
 
-None — the one live plan is on this board.
+None — no live plans; the archive holds the completed records.
 
 ## Discipline
 
