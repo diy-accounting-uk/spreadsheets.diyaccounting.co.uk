@@ -22,10 +22,10 @@ import { resolve as resolvePath } from "path";
 import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
 import { saveBstWorkbook, saveBstPackageZip } from "../bst-workbook.js";
-import { addSaleLine, addPurchaseLine, changeLineAmount } from "../diya-gl-edits.js";
+import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine } from "../diya-gl-edits.js";
 import * as bst from "../../products/bst.js";
 
-const EDITS = { addSaleLine, addPurchaseLine, changeLineAmount };
+const EDITS = { addSaleLine, addPurchaseLine, changeLineAmount, removeLine };
 
 /**
  * A fresh, empty session: no book loaded.

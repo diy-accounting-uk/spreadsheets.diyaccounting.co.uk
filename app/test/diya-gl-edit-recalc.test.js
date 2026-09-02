@@ -22,7 +22,7 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { addSaleLine, addPurchaseLine, changeLineAmount } from "../lib/diya-gl-edits.js";
+import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine } from "../lib/diya-gl-edits.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
@@ -110,6 +110,10 @@ const FIXTURES = [
     changeSaleLine: { entryNumber: "TXN-0016", newAmount: 1450, delta: 250, monthCell: "D4" },
     // TXN-0164: BuildTech Solutions, account 5001 (direct costs, "d"), 5000 on 2025-06-15.
     changePurchaseLine: { entryNumber: "TXN-0164", newAmount: 5450, delta: 450, categoryCell: "C7" },
+    // TXN-0029: FreshField Ltd, account 4001, 360 on 2025-04-03.
+    removeSaleLine: { entryNumber: "TXN-0029", amount: 360, monthCell: "D4" },
+    // TXN-0030: AWS, account 5002, 180 on 2025-04-03.
+    removePurchaseLine: { entryNumber: "TXN-0030", amount: 180, categoryCell: "C21" },
   },
   {
     name: "bst-brickwork-pro-nonvat",
@@ -152,6 +156,10 @@ const FIXTURES = [
     changeSaleLine: { entryNumber: "TXN-0014", newAmount: 4850, delta: 300, monthCell: "D4" },
     // TXN-0028: JB Plastering, account 5001 (direct costs, "d"), 6000 on 2025-05-15.
     changePurchaseLine: { entryNumber: "TXN-0028", newAmount: 6450, delta: 450, categoryCell: "C7" },
+    // TXN-0018: Brickwork job, account 4000, 1950 on 2025-04-20 (April).
+    removeSaleLine: { entryNumber: "TXN-0018", amount: 1950, monthCell: "D4" },
+    // TXN-0009: Vodafone, account 5501, 60 on 2025-04-01.
+    removePurchaseLine: { entryNumber: "TXN-0009", amount: 60, categoryCell: "C14" },
   },
   {
     // The no-ledger, mileage route: this book's own chart of accounts
@@ -212,6 +220,10 @@ const FIXTURES = [
     changeSaleLine: { entryNumber: "TXN-0001", newAmount: 214, delta: 40, monthCell: "D4" },
     // TXN-0182: DVLA, account 5400 (code "o"), 180 on 2025-04-06.
     changePurchaseLine: { entryNumber: "TXN-0182", newAmount: 235, delta: 55, categoryCell: "C21" },
+    // TXN-0002: Daily fares, account 4000, 198 on 2025-04-08 (April).
+    removeSaleLine: { entryNumber: "TXN-0002", amount: 198, monthCell: "D4" },
+    // TXN-0181: Vehicle insurance, account 5700, 30 on 2025-04-01.
+    removePurchaseLine: { entryNumber: "TXN-0181", amount: 30, categoryCell: "C14" },
   },
 ];
 
@@ -293,6 +305,42 @@ for (const fixture of FIXTURES) {
       const after = runReport(book, identityLines);
       expect(after.results).toEqual(base.results);
       expect(after.document).toEqual(base.document);
+    });
+
+    it("removes a sale of Y: profit and turnover both fall by Y", () => {
+      const edited = removeLine(book, lines, { entryNumber: fixture.removeSaleLine.entryNumber });
+      const after = runReport(book, edited);
+
+      expect(valueAt(after.document, "cell/Profit & Loss Acc!C4") - valueAt(base.document, "cell/Profit & Loss Acc!C4")).toBe(
+        -fixture.removeSaleLine.amount,
+      );
+      expect(after.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell] - base.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell]).toBe(
+        -fixture.removeSaleLine.amount,
+      );
+      expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
+        -fixture.removeSaleLine.amount,
+      );
+      expectAllChecksPass(after.checks);
+    });
+
+    it("removes a purchase of Z: profit rises by Z, turnover is unchanged", () => {
+      const edited = removeLine(book, lines, { entryNumber: fixture.removePurchaseLine.entryNumber });
+      const after = runReport(book, edited);
+
+      expect(valueAt(after.document, "cell/Profit & Loss Acc!C4")).toBe(valueAt(base.document, "cell/Profit & Loss Acc!C4"));
+      expect(after.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell] - base.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell]).toBe(
+        -fixture.removePurchaseLine.amount,
+      );
+      expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
+        fixture.removePurchaseLine.amount,
+      );
+      expectAllChecksPass(after.checks);
+    });
+
+    it("removes a non-existent line: throws a named error", () => {
+      expect(() => {
+        removeLine(book, lines, { entryNumber: "NO-SUCH-LINE" });
+      }).toThrow("No line carries entryNumber NO-SUCH-LINE");
     });
   });
 }

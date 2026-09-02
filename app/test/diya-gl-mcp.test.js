@@ -225,6 +225,8 @@ const FIXTURES = [
     },
     changeSaleLine: { entryNumber: "TXN-0016", newAmount: 1450, delta: 250, monthCell: "D4" },
     changePurchaseLine: { entryNumber: "TXN-0164", newAmount: 5450, delta: 450, categoryCell: "C7" },
+    removeSaleLine: { entryNumber: "TXN-0029", amount: 360, monthCell: "D4" },
+    removePurchaseLine: { entryNumber: "TXN-0030", amount: 180, categoryCell: "C21" },
   },
   {
     name: "bst-brickwork-pro-nonvat",
@@ -264,6 +266,8 @@ const FIXTURES = [
     },
     changeSaleLine: { entryNumber: "TXN-0014", newAmount: 4850, delta: 300, monthCell: "D4" },
     changePurchaseLine: { entryNumber: "TXN-0028", newAmount: 6450, delta: 450, categoryCell: "C7" },
+    removeSaleLine: { entryNumber: "TXN-0018", amount: 1950, monthCell: "D4" },
+    removePurchaseLine: { entryNumber: "TXN-0009", amount: 60, categoryCell: "C14" },
   },
   {
     name: "bst-sp-sixty",
@@ -302,6 +306,8 @@ const FIXTURES = [
     },
     changeSaleLine: { entryNumber: "TXN-0001", newAmount: 214, delta: 40, monthCell: "D4" },
     changePurchaseLine: { entryNumber: "TXN-0182", newAmount: 235, delta: 55, categoryCell: "C21" },
+    removeSaleLine: { entryNumber: "TXN-0002", amount: 198, monthCell: "D4" },
+    removePurchaseLine: { entryNumber: "TXN-0181", amount: 30, categoryCell: "C14" },
   },
 ];
 
@@ -422,6 +428,36 @@ for (const fixture of FIXTURES) {
       const reported = await methods["tools/call"]({ name: "report", arguments: {} });
       expect(reported.structuredContent.report).toEqual(secondDocument);
       void first;
+    });
+
+    it("removes a sale of Y: profit and turnover both fall by Y", async () => {
+      const tools = toolLayer(book, lines);
+      const result = await tools.call("edit_lines", { edit: "removeLine", params: { entryNumber: fixture.removeSaleLine.entryNumber } });
+
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C4") - valueAt(baseline, "cell/Profit & Loss Acc!C4")).toBe(
+        -fixture.removeSaleLine.amount,
+      );
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C24") - valueAt(baseline, "cell/Profit & Loss Acc!C24")).toBe(
+        -fixture.removeSaleLine.amount,
+      );
+      expectAllChecksPass(result.report);
+
+      const moved = result.movedFigures.find((entry) => entry.key === "cell/Profit & Loss Acc!C24");
+      expect(moved.delta).toBe(-fixture.removeSaleLine.amount);
+    });
+
+    it("removes a purchase of Z: profit rises by Z, turnover is unchanged", async () => {
+      const tools = toolLayer(book, lines);
+      const result = await tools.call("edit_lines", { edit: "removeLine", params: { entryNumber: fixture.removePurchaseLine.entryNumber } });
+
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C4"));
+      expect(valueAt(result.report, "cell/Profit & Loss Acc!C24") - valueAt(baseline, "cell/Profit & Loss Acc!C24")).toBe(
+        fixture.removePurchaseLine.amount,
+      );
+      expectAllChecksPass(result.report);
+
+      const moved = result.movedFigures.find((entry) => entry.key === "cell/Profit & Loss Acc!C24");
+      expect(moved.delta).toBe(fixture.removePurchaseLine.amount);
     });
   });
 }
