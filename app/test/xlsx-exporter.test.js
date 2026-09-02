@@ -18,6 +18,7 @@ import {
   extractPayrollTransactions,
   extractBook,
   normaliseLine,
+  AdminSheetMissingError,
 } from "../lib/xlsx-exporter.js";
 import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
@@ -1160,34 +1161,34 @@ describe("extractBook — the named ledgers", () => {
     ]);
   });
 
-  it("reads both halves of the single-file Debtors & Creditors sheet, which carries no invoice column", async () => {
+  // The Basic Sole Trader sheet names nobody. It takes one figure a side --
+  // what was owed when the year opened -- and computes every month row off
+  // the Sales and Purchases tabs, so a book read back from it carries the two
+  // opening balances and no named ledger at all.
+  it("reads the two Owed start year figures off the single-file Debtors & Creditors sheet", async () => {
     const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
     writeFileSync(
       join(dir, "Financialaccounts.xlsx"),
-      await buildWorkbook({
-        ...bstSheets(),
-        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360, B12: "Shell", C12: 120, E12: "BT Business", F12: 60 },
-      }),
+      await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": { C3: 10800, F3: 2220 } }),
     );
     const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
-    expect(book.debtors).toEqual([
-      { counterparty: "Acme Corp", amount: 7200, timing: "opening" },
-      { counterparty: "Zeta Corp", amount: 360, timing: "closing" },
-    ]);
-    expect(book.creditors).toEqual([
-      { counterparty: "Shell", amount: 120, timing: "opening" },
-      { counterparty: "BT Business", amount: 60, timing: "closing" },
-    ]);
+    expect(book.openingBalances).toEqual({ tradeDebtors: 10800, tradeCreditors: 2220 });
+    expect(book.debtors).toBeUndefined();
+    expect(book.creditors).toBeUndefined();
   });
 
-  it("breaks only the balance a corrupted ledger cell carries", async () => {
+  it("leaves the opening balances off a sheet that states neither figure", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
+    writeFileSync(join(dir, "Financialaccounts.xlsx"), await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": {} }));
+    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(book.openingBalances).toBeUndefined();
+  });
+
+  it("breaks only the side whose Owed start year cell is corrupted", async () => {
     const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
     writeFileSync(
       join(dir, "Financialaccounts.xlsx"),
-      await buildWorkbook({
-        ...bstSheets(),
-        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360 },
-      }),
+      await buildWorkbook({ ...bstSheets(), "Debtors & Creditors": { C3: 10800, F3: 2220 } }),
     );
     const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
 
@@ -1195,12 +1196,32 @@ describe("extractBook — the named ledgers", () => {
     const zip = await JSZip.loadAsync(readFileSync(path));
     const sheetPath = (await buildSheetMap(zip)).get("Debtors & Creditors");
     const xml = await zip.file(sheetPath).async("string");
-    zip.file(sheetPath, xml.replace(`<c r="C5"><v>7200</v></c>`, `<c r="C5"><v>1</v></c>`));
+    zip.file(sheetPath, xml.replace(`<c r="C3"><v>10800</v></c>`, `<c r="C3"><v>1</v></c>`));
     writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
 
     const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
-    expect(after.debtors[0]).toEqual({ counterparty: "Acme Corp", amount: 1, timing: "opening" });
-    expect(after.debtors[1]).toEqual(before.debtors[1]);
+    expect(after.openingBalances.tradeDebtors).toBe(1);
+    expect(after.openingBalances.tradeCreditors).toBe(before.openingBalances.tradeCreditors);
+  });
+});
+
+// The Admin sheet prices every mileage-log row. A workbook without it used to
+// export a book whose mileage claims were all nil and say nothing about why.
+describe("the Admin sheet the mileage rates are priced from", () => {
+  it("throws by name rather than pricing the claims at zero", async () => {
+    const sheets = bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } });
+    delete sheets.Admin;
+    const buffer = await buildWorkbook(sheets);
+
+    await expect(extractBstTransactions(buffer)).rejects.toThrow(AdminSheetMissingError);
+    await expect(extractBstTransactions(buffer)).rejects.toThrow(/sheet "Admin" not found/);
+  });
+
+  it("prices them from the sheet when it is there", async () => {
+    const buffer = await buildWorkbook(bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } }));
+    const lines = await extractBstTransactions(buffer);
+    const mileageLine = lines.find((line) => line.measurableUnitOfMeasure === "miles");
+    expect(mileageLine.measurableQuantity).toBe(120);
   });
 });
 

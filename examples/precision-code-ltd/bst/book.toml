@@ -132,6 +132,10 @@ accountMainDescription = "Loan interest payable"
 accountMainDescription = "Fixed asset purchases"
 "diya-gl:column" = "AI"
 
+[openingBalances]
+tradeDebtors = 10800.00
+tradeCreditors = 2220.00
+
 [stock]
 openingValue = 10000.00
 closingValue = 6000.00

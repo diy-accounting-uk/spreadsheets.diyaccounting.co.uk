@@ -433,6 +433,18 @@ export function diyaGlToScenario(book, lines, product) {
     if (Object.keys(openingBalance).length > 0) scenario.opening_balance = openingBalance;
   }
 
+  // The Basic Sole Trader has no opening journal. Its Debtors & Creditors
+  // sheet takes the two "Owed start year" figures straight, and the book
+  // states them on the same openingBalances table the export reads them back
+  // from, so the writer takes them from there rather than re-totalling the
+  // named ledgers the sheet has no room for.
+  if (product === "bst" && book.openingBalances) {
+    const openingBalance = {};
+    if (book.openingBalances.tradeDebtors !== undefined) openingBalance.trade_debtors = book.openingBalances.tradeDebtors;
+    if (book.openingBalances.tradeCreditors !== undefined) openingBalance.trade_creditors = book.openingBalances.tradeCreditors;
+    if (Object.keys(openingBalance).length > 0) scenario.opening_balance = openingBalance;
+  }
+
   // Fixed assets held at the opening balance sheet date (Schedule.xlsx,
   // SE and Ltd both). book.fixedAssets also carries assets bought during
   // the year, which reach the Schedule through their own "fa"-coded

@@ -128,30 +128,64 @@ describe("BST calculator checks are breakable", () => {
     expect(checkByName(checks, "Fixed Assets: schedule total cost = asset additions").pass).toBe(false);
   });
 
-  // sp-sixty-driving/bst declares no debtors or creditors at all, so the
-  // "no ledger declared" check should pass on its own results. This proves
-  // it breakable the way the Excel-side defect actually surfaced: a stray
-  // number in a slot the book never asked for, not a mutated GL line, since
-  // the leak lived in cellWrites' writeEntryBlock() and has no journal-line
-  // equivalent for the JS calculator to reproduce.
-  it("a leaked figure in an undeclared debtor slot fails the no-ledger check, and nothing else", () => {
-    const spSixtyDir = FIXTURES.find((f) => f.name === "sp-sixty-driving/bst").dir;
-    const { book, lines } = loadDiyaGlData(spSixtyDir);
+  // The Debtors & Creditors sheet is a monthly outstanding table over the
+  // Sales and Purchases tabs. A figure written over one month's row -- which
+  // is how the writer used to fill this sheet -- shows up as that month
+  // failing and its column total with it, and nothing else moving.
+  it("a figure written over one month's outstanding row fails that month and its column total", () => {
+    const { book, lines } = loadDiyaGlData(dir);
     const scenario = diyaGlToScenario(book, lines, "bst");
     const merged = { ...scenario, ...scenario.expected };
     const results = calculateBstResults(book, lines, taxData, merged);
 
     const before = checkCompliance(results, merged, taxData, calculateExpectedTax);
-    expect(checkByName(before, "Debtors & Creditors: no ledger declared leaves the block empty").pass).toBe(true);
-
-    const leaked = { ...results, "Debtors & Creditors": { ...results["Debtors & Creditors"], C5: 3162 } };
-    const after = checkCompliance(leaked, merged, taxData, calculateExpectedTax);
+    const overwritten = { ...results, "Debtors & Creditors": { ...results["Debtors & Creditors"], C13: 7200 } };
+    const after = checkCompliance(overwritten, merged, taxData, calculateExpectedTax);
 
     const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
     const brokenAfter = after.filter((c) => !c.pass).map((c) => c.name);
     const newlyBroken = brokenAfter.filter((n) => !brokenBefore.includes(n));
 
-    expect(newlyBroken).toEqual(["Debtors & Creditors: no ledger declared leaves the block empty"]);
+    expect(newlyBroken).toEqual(["Debtors & Creditors: Aug sales not yet received = that month's sales with no receipt recorded"]);
+  });
+
+  it("a wrong opening figure fails its own side of the sheet and leaves the other alone", () => {
+    const { book, lines } = loadDiyaGlData(dir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    const results = calculateBstResults(book, lines, taxData, merged);
+
+    const before = checkCompliance(results, merged, taxData, calculateExpectedTax);
+    const ledger = results["Debtors & Creditors"];
+    const wrong = { ...results, "Debtors & Creditors": { ...ledger, C3: ledger.C3 + 500 } };
+    const after = checkCompliance(wrong, merged, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["Debtors & Creditors: owed by customers at the start of the year = the opening balance declared"]);
+  });
+
+  // sp-sixty-driving/bst declares no opening ledger at all, so the sheet's
+  // two entered cells stay empty and only the month rows and totals are
+  // checked. A book with nothing to say leaves the "Owed start year" checks
+  // off the report rather than asserting a zero nobody entered.
+  it("a book with no opening ledger states neither opening figure", () => {
+    const spSixtyDir = FIXTURES.find((f) => f.name === "sp-sixty-driving/bst").dir;
+    const { book, lines } = loadDiyaGlData(spSixtyDir);
+    const scenario = diyaGlToScenario(book, lines, "bst");
+    const merged = { ...scenario, ...scenario.expected };
+    const checks = checkCompliance(calculateBstResults(book, lines, taxData, merged), merged, taxData, calculateExpectedTax);
+
+    expect(scenario.opening_balance).toBeUndefined();
+    const openingChecks = checks.filter((c) => c.name.includes("at the start of the year"));
+    expect(openingChecks).toEqual([]);
+    expect(checkByName(checks, "Debtors & Creditors: Apr sales not yet received = that month's sales with no receipt recorded").pass).toBe(
+      true,
+    );
   });
 
   it("a wrong Admin tax rate fails the Admin echo check and nothing about the P&L totals", () => {

@@ -95,7 +95,7 @@ The BST workbook contains 33 visible sheets plus internal named ranges (print ar
 | Home | 1 | Navigation | No |
 | Business Details | 1 | Business info for tax return | Yes |
 | Fixed Assets | 1 | Asset register + capital allowances | Yes (new assets) |
-| Debtors & Creditors | 1 | Outstanding amounts report | No (formula-driven in the blank workbook; generator-overwritten in scenario-populated packages) |
+| Debtors & Creditors | 1 | Monthly outstanding amounts | Yes (C3, F3 -- the two "Owed start year" figures; the rest is formula-driven) |
 | SalesApr -- SalesMar | 12 | Monthly sales transactions | Yes |
 | PurchasesApr -- PurchasesMar | 12 | Monthly purchase transactions | Yes |
 | PurchasesStock | 1 | Opening/closing stock values | Yes (D5, D30) |
@@ -183,16 +183,15 @@ User data entry
   │                              │ E18 = Total Tax + NI       │
   │                              └───────────────────────────┘
   │
-  └── Debtors & Creditors: two life stages
-      Shipped blank workbook: columns B/C and E/F at rows 3, 5, 7, ..., 27
-      still carry the original aging formulas -- each row reads one month's
-      SalesApr..Mar / PurchasesApr..Mar col H (unpaid) total, and row 29 sums
-      the lot into "Amount owed by customers" / "...to suppliers".
-      Scenario-populated packages (reconciliation, examples): the generator
-      overwrites those same B/C (rows 5-7, 12-15) and E/F (rows 5-7, 12-15)
-      cells with the scenario's own opening/closing debtor and creditor
-      entries, discarding the aging formulas at those specific rows. See
-      Filing Taxonomy Mapping below for the cell layout this produces.
+  └── Debtors & Creditors: a monthly outstanding table
+      B3/E3 label "Owed start year" over C3 and F3, the only two cells anyone
+      enters. Rows 5, 7, 9 ... 27 are the twelve months: B reads Admin!B5..B16
+      for the month end, C reads IF(Sales<Mon>!$H$1>0, Sales<Mon>!$H$1, " ")
+      and F the same off Purchases<Mon>!$H$1. Those H1 totals sum a column of
+      IF(F<>0, IF(D>0, " ", F), " ") -- a row counts as outstanding while its
+      payment column records nothing against it. Row 29 sums each column into
+      "Amount owed by customers" / "Amount owed to suppliers".
+      The sheet names no customer or supplier: it has no column for one.
 ```
 
 ### Purchase Expense Codes
@@ -341,7 +340,7 @@ Three fixtures cover BST: `bst-scenario-basic.toml` runs in the main CI matrix a
 - **Sales**: 409,900 total across 12 months (multiple clients, mix of consultancy and software income)
 - **Purchases**: exercises all 14 BST expense codes (S, D, E, P, R, G, M, T, A, L, B, I, O, F), including mileage-coded motor claims (1,365 miles)
 - **Stock**: opening 10,000, closing 6,000 (PurchasesStock D5/D30)
-- **Debtors & Creditors**: 3 opening + 3 closing debtors, 4 opening + 4 closing creditors
+- **Debtors & Creditors**: 10,800 owed by customers and 2,220 owed to suppliers when the year opened (C3/F3); every month row computes from the journals
 - **Fixed assets**: 3 additions totalling 39,000
 - **Expected P&L**: total sales 409,900, gross profit 391,360, net profit 265,508
 - **Expected tax (2025-26)**: calculated from profit using SE tax rates (income tax + NI Class 4)
@@ -412,7 +411,7 @@ Rows start at 5 for purchases.
 - **Purchases journal closure**: every coded purchase reaches an account -- the P&L expense lines, direct costs, stock, or the Fixed Assets year-to-date column -- with nothing left over.
 - **Mileage**: the miles carried at PurchasesMar!C1 match the scenario's declared miles, the claim at A1 matches those miles priced at the tax year's approved rates, and Motor Expenses (C15) equals cash motoring plus the claim.
 - **Stock**: opening/closing stock cells match the scenario, and cost of sales equals stock purchases plus the stock movement.
-- **Debtors & Creditors**: each of the four entry blocks (opening/closing debtors, opening/closing creditors) sums to the scenario's declared entries; a book that declares no ledger at all leaves every slot in the block empty.
+- **Debtors & Creditors**: both "Owed start year" figures match the book's opening balances; each of the twenty-four month rows matches that month's sales with no receipt recorded, or purchases with no payment recorded; and each column total is the opening figure plus all twelve months, both sides anchored in the scenario rather than in the cells above.
 - **Fixed assets and capital allowances**: the schedule's total cost and first addition match the scenario, AIA claimed matches cost x the Admin AIA rate, and the schedule's own capital-allowance total matches both the P&L's Capital Allowances line and the SE Short chain independently.
 - **Admin echo**: every tax-year rate, band and threshold read back from the Admin sheet matches the TOML it was generated from.
 - **Income tax and NI**: computed independently (personal allowance taper and all three rate bands included) against the sheet's own totals, and against the rate and band the sheet actually applies, not just the headline figures.
@@ -526,10 +525,16 @@ Maps BST cells to XBRL / FRS 102 accounting taxonomy concepts and SA103S filing 
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept |
 |------|-----------|-----------------|-------------|
-| C5-C7 | Opening Debtors | `accounts.assets.1300 (opening)` | `frs102:Debtors` (period start) |
-| F5-F7 | Closing Debtors | `accounts.assets.1300 (closing)` | `frs102:Debtors` (period end) |
-| C12-C15 | Opening Creditors | `accounts.liabilities.2100 (opening)` | `frs102:CreditorsDueWithinOneYear` (period start) |
-| F12-F15 | Closing Creditors | `accounts.liabilities.2100 (closing)` | `frs102:CreditorsDueWithinOneYear` (period end) |
+| C3 | Owed by customers at start of year | `openingBalances.tradeDebtors` | `frs102:Debtors` (period start) |
+| C5, C7 ... C27 | Monthly sales not yet received | `gl-cor:amount` (sales unreceived, per month) | -- |
+| C29 | Amount owed by customers | `gl-cor:amount` (debtors, year end) | `frs102:Debtors` (period end) |
+| F3 | Owed to suppliers at start of year | `openingBalances.tradeCreditors` | `frs102:CreditorsDueWithinOneYear` (period start) |
+| F5, F7 ... F27 | Monthly purchases still to be paid | `gl-cor:amount` (purchases unpaid, per month) | -- |
+| F29 | Amount owed to suppliers | `gl-cor:amount` (creditors, year end) | `frs102:CreditorsDueWithinOneYear` (period end) |
+
+The sheet has no counterparty or invoice column, so a book's named `debtors[]`
+and `creditors[]` entries have no home in this package: `app/data/roundtrip-unrepresentable.json`
+declares them structurally absent for BST.
 
 ## CI Pipeline (.github/workflows/generate-bst.yml)
 

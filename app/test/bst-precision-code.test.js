@@ -141,17 +141,36 @@ describeCalc("BST end-to-end: Precision Code basic scenario", () => {
 
   // ── Debtors & Creditors assertions ────────────────────────────────────
 
-  it("Debtors: opening debtors entered", () => {
-    const dc = results["Debtors & Creditors"];
-    const actualTotal = [dc.C5, dc.C6, dc.C7].reduce((s, v) => s + (v || 0), 0);
-    const expectedTotal = scenario.opening_debtors.reduce((s, d) => s + d.amount, 0);
-    expect(actualTotal).toBe(expectedTotal);
+  it("Debtors: what was owed by customers when the year opened", () => {
+    expect(results["Debtors & Creditors"].C3).toBe(scenario.opening_balance.trade_debtors);
   });
 
-  it("Creditors: opening creditors entered", () => {
+  it("Creditors: what was owed to suppliers when the year opened", () => {
+    expect(results["Debtors & Creditors"].F3).toBe(scenario.opening_balance.trade_creditors);
+  });
+
+  // Every sale in this scenario goes out with no receipt beside it, so each
+  // month row carries that whole month's sales -- the sheet's own rule
+  // (IF(F<>0, IF(D>0, " ", F), " ")) with nothing in D to switch it off.
+  it("Debtors: each month row carries that month's unreceived sales", () => {
     const dc = results["Debtors & Creditors"];
-    const actualTotal = [dc.C12, dc.C13, dc.C14, dc.C15].reduce((s, v) => s + (v || 0), 0);
-    const expectedTotal = scenario.opening_creditors.reduce((s, c) => s + c.amount, 0);
-    expect(actualTotal).toBe(expectedTotal);
+    const april = scenario.sales.apr.reduce((s, tx) => s + tx.amount, 0);
+    expect(dc.C5).toBe(april);
+    expect(dc.C27).toBe(scenario.sales.mar.reduce((s, tx) => s + tx.amount, 0));
+  });
+
+  // A mileage-log purchase writes miles rather than a value, so its row
+  // leaves the outstanding column blank however it was settled.
+  it("Creditors: each month row carries that month's unpaid purchases, mileage aside", () => {
+    const dc = results["Debtors & Creditors"];
+    const april = scenario.purchases.apr.filter((tx) => !tx.mileage).reduce((s, tx) => s + tx.amount, 0);
+    expect(dc.F5).toBe(april);
+  });
+
+  it("Debtors & Creditors: the column totals are the opening figure plus every month", () => {
+    const dc = results["Debtors & Creditors"];
+    const months = Object.keys(scenario.sales);
+    const salesOutstanding = months.reduce((s, m) => s + scenario.sales[m].reduce((t, tx) => t + tx.amount, 0), 0);
+    expect(dc.C29).toBe(scenario.opening_balance.trade_debtors + salesOutstanding);
   });
 });

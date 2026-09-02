@@ -90,8 +90,6 @@ describe("overtyped.json on an untouched package", () => {
   it.each([
     ["PurchasesApr", "E10", "the expense code letter the analysis columns key on"],
     ["PurchasesJun", "E5", "the first purchase row's expense code letter"],
-    ["Debtors & Creditors", "C5", "an opening debtor's amount"],
-    ["Debtors & Creditors", "B5", "an opening debtor's name"],
     ["PurchasesStock", "D30", "the closing stock value"],
   ])("does not count %s!%s, which is %s", async (sheet, cellRef) => {
     const template = formulaCells(parseCells(await sheetXml(readFileSync(BST_TEMPLATE_PATH), sheet)));
@@ -101,6 +99,27 @@ describe("overtyped.json on an untouched package", () => {
 
     expect(isBstInputCell(sheet, cellRef)).toBe(true);
     expect(await overtypedCells(original, { extractionMap: originalMap })).not.toHaveProperty(`${sheet}!${cellRef}`);
+  });
+
+  // The Debtors & Creditors sheet takes two figures and computes the rest.
+  // The writer once filled the month rows and the names beside them, which
+  // left sixteen destroyed formulas in every package it produced. The two
+  // entered cells carry no template formula of their own, so the sidecar has
+  // nothing to say about them either way.
+  it("leaves every Debtors & Creditors month row computing, and counts only its two entered cells as input", async () => {
+    const upload = parseCells(await sheetXml(original, "Debtors & Creditors"));
+    for (const row of [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27]) {
+      expect(upload.get(`C${row}`)?.hasF, `Debtors & Creditors!C${row}`).toBe(true);
+      expect(upload.get(`F${row}`)?.hasF, `Debtors & Creditors!F${row}`).toBe(true);
+      expect(upload.get(`B${row}`)?.hasF, `Debtors & Creditors!B${row}`).toBe(true);
+    }
+    expect(upload.get("C29")?.hasF).toBe(true);
+    expect(upload.get("F29")?.hasF).toBe(true);
+
+    expect(isBstInputCell("Debtors & Creditors", "C3")).toBe(true);
+    expect(isBstInputCell("Debtors & Creditors", "F3")).toBe(true);
+    expect(isBstInputCell("Debtors & Creditors", "C5")).toBe(false);
+    expect(isBstInputCell("Debtors & Creditors", "B5")).toBe(false);
   });
 });
 
@@ -267,8 +286,9 @@ describe("the extraction map's cell-to-field half", () => {
 
   it("names the ledger, stock and Admin cells too", () => {
     const map = bstExtractionMap();
-    expect(map.fieldForCell("Debtors & Creditors", "C5").field).toBe("debtors.opening.amount");
-    expect(map.fieldForCell("Debtors & Creditors", "F12").field).toBe("creditors.closing.amount");
+    expect(map.fieldForCell("Debtors & Creditors", "C3").field).toBe("openingBalances.tradeDebtors");
+    expect(map.fieldForCell("Debtors & Creditors", "F3").field).toBe("openingBalances.tradeCreditors");
+    expect(map.fieldForCell("Debtors & Creditors", "C5")).toBeUndefined();
     expect(map.fieldForCell("PurchasesStock", "D30").field).toBe("stock.closingValue");
     expect(map.fieldForCell("Admin", "B23").field).toMatch(/^tax /);
     expect(map.fieldForCell("Admin", "G21").field).toMatch(/mileage rate/);
