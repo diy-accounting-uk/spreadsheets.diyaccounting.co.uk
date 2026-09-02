@@ -149,6 +149,39 @@
     creditors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 12, slots: 4 },
   };
 
+  // What the Debtors & Creditors sheet actually holds: one opening figure per
+  // side at row 3, what each month left outstanding on rows 5 to 27 two apart,
+  // and the column total at row 29 -- the same cells CELL_MAP names, and the
+  // sheet's own wording for each. The sheet names no customer or supplier.
+  var LEDGER_SIDES = {
+    debtors: {
+      column: "C",
+      openingLabel: "Owed by customers at start of year",
+      monthlyLabel: "Sales not yet received",
+      totalLabel: "Amount owed by customers",
+    },
+    creditors: {
+      column: "F",
+      openingLabel: "Owed to suppliers at start of year",
+      monthlyLabel: "Purchases still to be paid",
+      totalLabel: "Amount owed to suppliers",
+    },
+  };
+
+  function buildLedgerSide(results, months, side) {
+    var sheet = results["Debtors & Creditors"] || {};
+    var spec = LEDGER_SIDES[side];
+    return {
+      openingLabel: spec.openingLabel,
+      opening: sheet[spec.column + "3"] || 0,
+      monthly: months.map(function (month, index) {
+        return sheet[spec.column + (5 + index * 2)] || 0;
+      }),
+      monthlyLabel: spec.monthlyLabel,
+      totalLabel: spec.totalLabel,
+    };
+  }
+
   // ============================== canonicalisation ==============================
   // Mirrors app/bin/verify-roundtrip.js's canonicalForUnit: a money value
   // rounds half up at a working precision finer than a penny first (so
@@ -382,12 +415,6 @@
   function buildStock(book) {
     if (!book.stock) return { opening: 0, closing: 0, atCost: 0 };
     return { opening: book.stock.openingValue || 0, closing: book.stock.closingValue || 0, atCost: book.stock.openingValue || 0 };
-  }
-
-  function buildLedgers(entries, side) {
-    return (entries || []).filter(function (e) {
-      return e.timing === side;
-    });
   }
 
   function buildIncomeTax(results) {
@@ -716,8 +743,6 @@
     var months = buildMonths(isoDate(book.documentInfo.periodCoveredStart));
     var stock = buildStock(book);
     var monthlyAndEntries = buildMonthlyAndEntries(lines, months, book.stock);
-    var ledgers =
-      book.debtors || book.creditors ? { debtors: book.debtors || [], creditors: book.creditors || [] } : { debtors: [], creditors: [] };
 
     return {
       scenario: scenarioLabel,
@@ -733,8 +758,8 @@
       drift: driftEntries,
       checks: buildChecks(checks),
       stock: stock,
-      debtors: { opening: buildLedgers(ledgers.debtors, "opening"), closing: buildLedgers(ledgers.debtors, "closing") },
-      creditors: { opening: buildLedgers(ledgers.creditors, "opening"), closing: buildLedgers(ledgers.creditors, "closing") },
+      debtors: buildLedgerSide(results, months, "debtors"),
+      creditors: buildLedgerSide(results, months, "creditors"),
       fixedAssets: book.fixedAssets ? buildFixedAssetsFromBook(book, results) : buildFixedAssetsFromLines(lines, results),
       incomeTax: buildIncomeTax(results),
       sa103s: buildSa103s(results),
