@@ -4,51 +4,56 @@
 // books/bst-data.js
 //
 // ============================================================================
-// W1 REPLACEMENT POINT
+// W1: live computation, wired
 // ============================================================================
-// This file is a static stand-in for the diya-gl book the real engine bundle
-// (scripts/build-books-bundle.mjs, phase 3 track W0/W1) extracts from an
-// uploaded workbook, recalculates, and reports on. Nothing here imports
-// app/lib or app/products -- W-pre is pure web/ markup proving the design.
+// This file was a static stand-in for the diya-gl book (see git history for
+// the fixture-derived object it used to export). It now loads the real
+// engine bundle (scripts/build-books-bundle.mjs) and computes
+// window.DIYA_BST_SNAPSHOT for real, from one of three sources: an uploaded
+// .xlsx/.zip, or one of the three BST reconciliation fixtures served as
+// static assets. Every view in bst.js still reads book data only through
+// window.DIYA_BST_SNAPSHOT -- this file is the extract/recalculate/report
+// loop that fills it, not a rewrite of any view.
 //
-// When W1 wires the engine, this whole object is replaced by the bundle's
-// live output: extractBook() -> calculateFromDiyaGl() -> checkCompliance().
-// Every view in bst.js reads book data only through window.DIYA_BST_SNAPSHOT,
-// so wiring the engine is a matter of replacing this file's contents with a
-// loader call, not rewriting the views.
+// Upload path: validateBstAnchors -> extractBstTransactions -> a book built
+// from the same cells CELL_MAP names (entity, stock, debtors/creditors) ->
+// loadTaxDataForBook -> diyaGlToScenario -> calculateFromDiyaGl ->
+// checkCompliance. Every calculated cell CELL_MAP carries is also read back
+// off the uploaded workbook's own cached value (xlsx-cells.js), canonicalised
+// the way verify-roundtrip.js canonicalises a roundtrip comparison (money
+// half-up to the penny, rates to 6 dp), and any cell that disagrees becomes a
+// drift finding -- EQ1 live in the browser, and the breakability proof: a
+// hand-corrupted cached <v> flips exactly that cell's drift and nothing else,
+// because the computed side never reads the workbook's cells at all.
 //
-// The figures below are not invented. They are the "bst-scenario-basic"
-// fixture (examples/precision-code-ltd/bst/book.toml + lines.jsonl), the
-// same fixture behind the committed, verified RECONCILES report:
-//   reports/GB_Accounts_Basic_Sole_Trader_2026_04_05__Apr26__Excel_2007_bst-scenario-basic.md
-// Annual totals below match that report's Compliance Checks table exactly.
-// Monthly figures are aggregated by hand from the fixture's own ledger lines
-// (lines.jsonl), grouped by posting month and account code per the report's
-// own cell-to-account mapping (its "Appendix: Cell Values" section). The
-// stock movement (opening 10,000 - closing 6,000 = 4,000) is recognised in
-// March, the accounting year end, exactly as the real Stock sheet does it --
-// not spread across the months whose ledger lines never carry it.
+// Example path: book.toml + lines.jsonl only, no workbook to read a cached
+// value from, so there is no as-read layer and no drift -- exactly what the
+// data model section says an example carries.
 // ============================================================================
 
 (function (global) {
   "use strict";
 
-  var MONTHS = [
-    { key: "2025-04", label: "Apr" },
-    { key: "2025-05", label: "May" },
-    { key: "2025-06", label: "Jun" },
-    { key: "2025-07", label: "Jul" },
-    { key: "2025-08", label: "Aug" },
-    { key: "2025-09", label: "Sep" },
-    { key: "2025-10", label: "Oct" },
-    { key: "2025-11", label: "Nov" },
-    { key: "2025-12", label: "Dec" },
-    { key: "2026-01", label: "Jan" },
-    { key: "2026-02", label: "Feb" },
-    { key: "2026-03", label: "Mar" },
-  ];
+  var EXAMPLE_BOOKS = {
+    "bst-scenario-basic": {
+      dir: "precision-code-ltd",
+      product: "bst",
+      label: "bst-scenario-basic — Precision Code Trading, 2025-04-01 to 2026-03-31",
+    },
+    "bst-brickwork-pro-nonvat": {
+      dir: "brickwork-pro",
+      product: "bst-nonvat",
+      label: "bst-brickwork-pro-nonvat — BrickWork trade",
+    },
+    "bst-sp-sixty": {
+      dir: "sp-sixty-driving",
+      product: "bst",
+      label: "bst-sp-sixty — no-ledger, mileage route",
+    },
+  };
 
-  // P&L category columns, in the sheet's own left-to-right order.
+  // The P&L category columns, in the sheet's own left-to-right order --
+  // product-fixed, not tied to any one fixture.
   var CATEGORIES = [
     { key: "sales", label: "Sales Turnover" },
     { key: "costOfSales", label: "Cost of Sales" },
@@ -69,556 +74,672 @@
     { key: "netProfit", label: "Net Profit", computed: true },
   ];
 
-  var MONTHLY = {
-    "2025-04": {
-      sales: 33400,
-      costOfSales: 600,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 120,
-      generalAdmin: 135,
-      motorExpenses: 602.25,
-      travel: 92,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 2062,
-      capex: 0,
-      grossProfit: 32800,
-      totalExpenses: 10211.25,
-      netProfit: 22588.75,
-    },
-    "2025-05": {
-      sales: 32920,
-      costOfSales: 720,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 0,
-      generalAdmin: 153,
-      motorExpenses: 666,
-      travel: 152,
-      advertising: 600,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 784,
-      capex: 1800,
-      grossProfit: 32200,
-      totalExpenses: 9555,
-      netProfit: 22645,
-    },
-    "2025-06": {
-      sales: 35200,
-      costOfSales: 360,
-      directCosts: 5000,
-      employeeCosts: 5700,
-      premisesCosts: 1560,
-      repairs: 0,
-      generalAdmin: 231,
-      motorExpenses: 654,
-      travel: 272,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 250,
-      otherExpenses: 430,
-      capex: 0,
-      grossProfit: 29840,
-      totalExpenses: 9397,
-      netProfit: 20443,
-    },
-    "2025-07": {
-      sales: 33760,
-      costOfSales: 720,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 180,
-      generalAdmin: 159,
-      motorExpenses: 584.25,
-      travel: 92,
-      advertising: 480,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 4144,
-      capex: 1200,
-      grossProfit: 33040,
-      totalExpenses: 12839.25,
-      netProfit: 20200.75,
-    },
-    "2025-08": {
-      sales: 36020,
-      costOfSales: 540,
-      directCosts: 0,
-      employeeCosts: 6500,
-      premisesCosts: 1200,
-      repairs: 240,
-      generalAdmin: 135,
-      motorExpenses: 602.25,
-      travel: 140,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 448,
-      capex: 0,
-      grossProfit: 35480,
-      totalExpenses: 9565.25,
-      netProfit: 25914.75,
-    },
-    "2025-09": {
-      sales: 33760,
-      costOfSales: 240,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1500,
-      repairs: 0,
-      generalAdmin: 147,
-      motorExpenses: 708,
-      travel: 92,
-      advertising: 0,
-      legalProfessional: 1260,
-      badDebts: 0,
-      interestFinance: 208,
-      otherExpenses: 820,
-      capex: 0,
-      grossProfit: 33520,
-      totalExpenses: 10435,
-      netProfit: 23085,
-    },
-    "2025-10": {
-      sales: 35560,
-      costOfSales: 480,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 96,
-      generalAdmin: 135,
-      motorExpenses: 606.75,
-      travel: 212,
-      advertising: 3000,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 976,
-      capex: 36000,
-      grossProfit: 35080,
-      totalExpenses: 12225.75,
-      netProfit: 22854.25,
-    },
-    "2025-11": {
-      sales: 35320,
-      costOfSales: 840,
-      directCosts: 3000,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 0,
-      generalAdmin: 165,
-      motorExpenses: 645,
-      travel: 164,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 604,
-      capex: 0,
-      grossProfit: 31480,
-      totalExpenses: 8778,
-      netProfit: 22702,
-    },
-    "2025-12": {
-      sales: 32800,
-      costOfSales: 480,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1620,
-      repairs: 0,
-      generalAdmin: 255,
-      motorExpenses: 613.5,
-      travel: 92,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 500,
-      interestFinance: 167,
-      otherExpenses: 5424,
-      capex: 0,
-      grossProfit: 32320,
-      totalExpenses: 14671.5,
-      netProfit: 17648.5,
-    },
-    "2026-01": {
-      sales: 35440,
-      costOfSales: 600,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 144,
-      generalAdmin: 153,
-      motorExpenses: 638.25,
-      travel: 92,
-      advertising: 480,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 904,
-      capex: 0,
-      grossProfit: 34840,
-      totalExpenses: 9611.25,
-      netProfit: 25228.75,
-    },
-    "2026-02": {
-      sales: 34360,
-      costOfSales: 660,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1200,
-      repairs: 360,
-      generalAdmin: 135,
-      motorExpenses: 595.5,
-      travel: 368,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 0,
-      otherExpenses: 778,
-      capex: 0,
-      grossProfit: 33700,
-      totalExpenses: 9436.5,
-      netProfit: 24263.5,
-    },
-    "2026-03": {
-      sales: 31360,
-      // Includes the 4,000 year-end stock movement adjustment (opening
-      // 10,000 - closing 6,000); see the module comment above.
-      costOfSales: 4300,
-      directCosts: 0,
-      employeeCosts: 5700,
-      premisesCosts: 1560,
-      repairs: 0,
-      generalAdmin: 159,
-      motorExpenses: 682.5,
-      travel: 92,
-      advertising: 0,
-      legalProfessional: 300,
-      badDebts: 0,
-      interestFinance: 125,
-      otherExpenses: 508,
-      capex: 0,
-      grossProfit: 27060,
-      totalExpenses: 9126.5,
-      netProfit: 17933.5,
-    },
+  // The Basic Sole Trader chart's own account-to-category mapping, mirroring
+  // the published chart in app/lib/scenario-extractor.js
+  // (BST_PURCHASE_CODE_MAP / BST_SALES_ACCOUNTS). Used only to group the
+  // month-by-month breakdown table the workbook has no single cell for --
+  // every totals row, check verdict and drift finding comes from the
+  // engine's own calculateFromDiyaGl output, never from this table.
+  var BST_PURCHASE_CATEGORY = {
+    5000: "stock",
+    5001: "directCosts",
+    5101: "employeeCosts",
+    5200: "premisesCosts",
+    5201: "premisesCosts",
+    5400: "repairs",
+    5501: "generalAdmin",
+    5601: "motorExpenses",
+    5600: "travel",
+    5500: "advertising",
+    5800: "legalProfessional",
+    5803: "interestFinance",
+    5801: "badDebts",
+    5002: "otherExpenses",
+    5300: "otherExpenses",
+    5301: "otherExpenses",
+    5401: "otherExpenses",
+    5700: "otherExpenses",
+    5701: "otherExpenses",
+    5802: "otherExpenses",
+    5100: "otherExpenses",
+    5900: "capex",
+  };
+  var BST_SALES_ACCOUNTS = { 4000: 1, 4001: 1, 4002: 1, 4003: 1, 4004: 1, 4005: 1 };
+
+  // The named debtor/creditor ledger's own column layout on "Debtors &
+  // Creditors" (verified against app/products/bst.js's cellWrites and
+  // mirrored by CELL_MAP's amount cells): name then amount, three opening and
+  // three closing debtor rows from 5, four opening and four closing creditor
+  // rows from 12.
+  var LEDGER_LAYOUT = {
+    debtors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 5, slots: 3 },
+    creditors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 12, slots: 4 },
   };
 
-  // Annual totals row -- matches the reconciliation report's Compliance
-  // Checks table exactly (net profit and total expenses carry the same
-  // 0.25 mileage-rounding residue the report itself records as PASS).
-  var ANNUAL = {
-    sales: 409900,
-    costOfSales: 10540,
-    directCosts: 8000,
-    employeeCosts: 69200,
-    premisesCosts: 15840,
-    repairs: 1140,
-    generalAdmin: 1962,
-    motorExpenses: 7598.25,
-    travel: 1860,
-    advertising: 4560,
-    legalProfessional: 4560,
-    badDebts: 500,
-    interestFinance: 750,
-    otherExpenses: 17882,
-    capex: 39000,
-    grossProfit: 391360,
-    totalExpenses: 125852.25,
-    netProfit: 265507.75,
-  };
+  // ============================== canonicalisation ==============================
+  // Mirrors app/bin/verify-roundtrip.js's canonicalForUnit: a money value
+  // rounds half up at a working precision finer than a penny first (so
+  // binary-float noise never nudges the penny the wrong way), then to the
+  // penny; a rate rounds half up to six places. Both operate on the numbers
+  // the engine and the workbook already hand back -- there is no string
+  // decimal arithmetic here, only enough guard to keep IEEE-754 noise from
+  // reading as a genuine difference.
+  var WORKING_DECIMALS = 6;
+  var MONEY_DECIMALS = 2;
+  var RATE_DECIMALS = 6;
 
-  // April 2025 entries -- the month drilled open by default in the year
-  // table. Real lines from lines.jsonl, unedited.
-  var APRIL_ENTRIES = {
-    monthKey: "2025-04",
-    sales: [
-      { date: "2025-04-01", account: "4001", label: "Beta Systems", detail: "Software licence renewal", amount: 1200 },
-      { date: "2025-04-03", account: "4001", label: "FreshField Ltd", detail: "Software monitoring licence", amount: 360 },
-      { date: "2025-04-05", account: "4001", label: "CloudNine Ltd", detail: "SaaS licence fee", amount: 600 },
-      { date: "2025-04-08", account: "4000", label: "Cedar Systems", detail: "Managed services", amount: 480 },
-      { date: "2025-04-10", account: "4000", label: "Pinnacle Group", detail: "Monthly support contract", amount: 720 },
-      { date: "2025-04-15", account: "4000", label: "Acme Corp", detail: "IT consultancy services", amount: 25000 },
-      { date: "2025-04-18", account: "4000", label: "TechStart Ltd", detail: "IT consultancy retainer", amount: 2400 },
-      { date: "2025-04-20", account: "4000", label: "DataFlow Inc", detail: "Ad-hoc consultancy project", amount: 1800 },
-      { date: "2025-04-28", account: "4003", label: "Horizon Analytics", detail: "Data analytics commission", amount: 840 },
-    ],
-    purchases: [
-      { date: "2025-04-01", account: "5200", label: "WorkSpace Ltd", detail: "Monthly office rent", amount: 1200 },
-      { date: "2025-04-01", account: "5501", label: "Microsoft", detail: "Microsoft 365 subscription", amount: 30 },
-      { date: "2025-04-01", account: "5501", label: "Slack", detail: "Slack team subscription", amount: 15 },
-      { date: "2025-04-01", account: "5002", label: "GitHub", detail: "GitHub Team subscription", amount: 45 },
-      { date: "2025-04-01", account: "5700", label: "Hiscox", detail: "Professional indemnity insurance", amount: 1440 },
-      { date: "2025-04-01", account: "5002", label: "Cloudflare", detail: "CDN and DNS services", amount: 24 },
-      { date: "2025-04-01", account: "5501", label: "Zoom", detail: "Video conferencing subscription", amount: 18 },
-      { date: "2025-04-03", account: "5002", label: "AWS", detail: "Cloud hosting charges", amount: 180 },
-      { date: "2025-04-03", account: "5401", label: "Argos", detail: "Miscellaneous office items", amount: 22 },
-      { date: "2025-04-05", account: "5401", label: "Ryman", detail: "Stationery supplies", amount: 24 },
-      { date: "2025-04-05", account: "5601", label: "BP", detail: "Fuel for company vehicle", amount: 180 },
-      { date: "2025-04-05", account: "5002", label: "DigitalOcean", detail: "Cloud VPS hosting", amount: 36 },
-      { date: "2025-04-08", account: "5600", label: "National Rail", detail: "Train ticket client meeting", amount: 48 },
-      { date: "2025-04-10", account: "5401", label: "Amazon", detail: "Office supplies", amount: 36 },
-      { date: "2025-04-10", account: "5701", label: "Xerox", detail: "Printer lease payment", amount: 180 },
-      { date: "2025-04-10", account: "5000", label: "TechParts", detail: "Hardware components for resale", amount: 600 },
-      { date: "2025-04-12", account: "5601", label: "NCP", detail: "Parking charges", amount: 18 },
-      { date: "2025-04-14", account: "5401", label: "Toolstation", detail: "Assorted fixings and parts", amount: 42 },
-      { date: "2025-04-14", account: "5600", label: "Uber", detail: "Taxi to client site", amount: 24 },
-      { date: "2025-04-14", account: "5600", label: "Costa Coffee", detail: "Client meeting refreshments", amount: 12 },
-      { date: "2025-04-15", account: "5601", label: "Shell", detail: "Fuel for company vehicle", amount: 150 },
-      { date: "2025-04-15", account: "5501", label: "Royal Mail", detail: "Postage", amount: 12 },
-      { date: "2025-04-18", account: "5601", label: "Jet", detail: "Fuel for company vehicle", amount: 96 },
-      { date: "2025-04-20", account: "5501", label: "BT", detail: "Business telephone line rental", amount: 60 },
-      { date: "2025-04-20", account: "5400", label: "Office Maintenance Ltd", detail: "Premises maintenance and repairs", amount: 120 },
-      { date: "2025-04-21", account: "5600", label: "Greggs", detail: "Working lunch", amount: 8 },
-      { date: "2025-04-22", account: "5401", label: "Screwfix", detail: "Miscellaneous supplies", amount: 18 },
-      { date: "2025-04-25", account: "5401", label: "Wilko", detail: "Cleaning and kitchen supplies", amount: 15 },
-      { date: "2025-04-25", account: "5601", label: "Mileage claim", detail: "Business mileage to Manchester", amount: 38.25 },
-      { date: "2025-04-28", account: "5601", label: "Shell", detail: "Additional fuel purchase", amount: 120 },
-      { date: "2025-04-30", account: "5800", label: "Smith & Co", detail: "Monthly accountancy retainer", amount: 300 },
-      { date: "2025-04-30", account: "5101", label: "Alice Johnson", detail: "Salary Apr 2025", amount: 3500 },
-      { date: "2025-04-30", account: "5101", label: "Bob Williams", detail: "Salary Apr 2025", amount: 2200 },
-    ],
-  };
+  function roundHalfUp(value, decimals) {
+    if (typeof value !== "number" || !isFinite(value)) return value;
+    var factor = Math.pow(10, decimals);
+    var guarded = value + (value >= 0 ? 1 : -1) * Math.max(Math.abs(value), 1) * 1e-9;
+    var sign = guarded < 0 ? -1 : 1;
+    return (sign * Math.round(Math.abs(guarded) * factor)) / factor;
+  }
 
-  // Illustrative pencil-correction pairs -- real expected/actual pairs lifted
-  // from the RECONCILES report's own Compliance Checks table (the same small
-  // mileage-rate rounding residue the report records as PASS). W1 replaces
-  // these with the true as-read-vs-recalculated pairing computed live from
-  // the uploaded workbook's cached <v> values.
-  var DRIFT = [
+  function canonicalise(value, unit) {
+    if (typeof value !== "number" || !isFinite(value)) return value;
+    if (unit === "rate") return roundHalfUp(value, RATE_DECIMALS);
+    return roundHalfUp(roundHalfUp(value, WORKING_DECIMALS), MONEY_DECIMALS);
+  }
+
+  // ============================== engine loading ==============================
+
+  var enginePromise = null;
+  function loadEngine() {
+    if (!enginePromise) enginePromise = import("./engine/diya-gl-engine.js");
+    return enginePromise;
+  }
+
+  var resourcesPromise = null;
+  function loadResources() {
+    if (!resourcesPromise) resourcesPromise = import("./bundle-resources.js").then((m) => m.browserResourceLoader());
+    return resourcesPromise;
+  }
+
+  var schemasReady = null;
+  function ensureSchemas(engine, resources) {
+    if (!schemasReady) schemasReady = engine.loadSchemasFrom(resources);
+    return schemasReady;
+  }
+
+  // ============================== the diya-gl -> snapshot mapping ==============================
+
+  function monthKeyOf(dateStr) {
+    return dateStr.slice(0, 7);
+  }
+
+  var MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function buildMonths(periodStartISO) {
+    var parts = periodStartISO.split("-").map(Number);
+    var startYear = parts[0];
+    var startMonth = parts[1]; // 1-12
+    var months = [];
+    for (var i = 0; i < 12; i++) {
+      var total = startMonth - 1 + i;
+      var year = startYear + Math.floor(total / 12);
+      var monthIndex = total % 12;
+      months.push({ key: year + "-" + String(monthIndex + 1).padStart(2, "0"), label: MONTH_LABELS[monthIndex] });
+    }
+    return months;
+  }
+
+  function emptyMonthRow() {
+    return {
+      sales: 0,
+      costOfSales: 0,
+      directCosts: 0,
+      employeeCosts: 0,
+      premisesCosts: 0,
+      repairs: 0,
+      generalAdmin: 0,
+      motorExpenses: 0,
+      travel: 0,
+      advertising: 0,
+      legalProfessional: 0,
+      badDebts: 0,
+      interestFinance: 0,
+      otherExpenses: 0,
+      capex: 0,
+    };
+  }
+
+  // The month-by-month breakdown table has no single workbook cell to read
+  // (the sheet only totals the year, on Profit & Loss Acc), so it is
+  // aggregated here from the same lines the engine calculated from, grouped
+  // by posting month and the BST chart's own category. The year-end stock
+  // movement is recognised in the period's last month, exactly as the Stock
+  // sheet's own opening-minus-closing chain carries it -- never spread across
+  // the months whose ledger lines carry only purchases.
+  function buildMonthlyAndEntries(lines, months, stock) {
+    var monthly = {};
+    var entries = {};
+    var i;
+    for (i = 0; i < months.length; i++) {
+      monthly[months[i].key] = emptyMonthRow();
+      entries[months[i].key] = { monthKey: months[i].key, sales: [], purchases: [] };
+    }
+    var lastKey = months[months.length - 1].key;
+
+    for (i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var monthKey = monthKeyOf(line.postingDate);
+      if (!monthly[monthKey]) continue; // outside the declared period
+      var code = Number(line.accountMainID);
+      if (line.sourceJournalID === "sales") {
+        if (!BST_SALES_ACCOUNTS[code]) continue;
+        monthly[monthKey].sales += line.amount;
+        entries[monthKey].sales.push({
+          date: line.postingDate,
+          account: String(line.accountMainID),
+          label: line.detailComment || "",
+          detail: line.documentReference || "",
+          amount: line.amount,
+        });
+      } else if (line.sourceJournalID === "purchases") {
+        var category = BST_PURCHASE_CATEGORY[code];
+        if (!category) continue;
+        if (category === "stock") monthly[monthKey].costOfSales += line.amount;
+        else monthly[monthKey][category] += line.amount;
+        entries[monthKey].purchases.push({
+          date: line.postingDate,
+          account: String(line.accountMainID),
+          label: line.detailComment || "",
+          detail: line.documentReference || "",
+          amount: line.amount,
+        });
+      }
+    }
+
+    if (stock && monthly[lastKey]) {
+      monthly[lastKey].costOfSales += (stock.openingValue || 0) - (stock.closingValue || 0);
+    }
+
+    for (i = 0; i < months.length; i++) {
+      var row = monthly[months[i].key];
+      row.grossProfit = row.sales - row.costOfSales - row.directCosts;
+      row.totalExpenses =
+        row.employeeCosts +
+        row.premisesCosts +
+        row.repairs +
+        row.generalAdmin +
+        row.motorExpenses +
+        row.travel +
+        row.advertising +
+        row.legalProfessional +
+        row.badDebts +
+        row.interestFinance +
+        row.otherExpenses;
+      row.netProfit = row.grossProfit - row.totalExpenses;
+      entries[months[i].key].sales.sort(function (a, b) {
+        return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+      });
+      entries[months[i].key].purchases.sort(function (a, b) {
+        return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+      });
+    }
+
+    return { monthly: monthly, entries: entries };
+  }
+
+  // The annual totals row: the authoritative figures the checks panel itself
+  // reads, straight off calculateFromDiyaGl's own output -- never re-derived
+  // from the monthly breakdown above.
+  function buildAnnual(results) {
+    var pl = results["Profit & Loss Acc"] || {};
+    return {
+      sales: pl.C4 || 0,
+      costOfSales: pl.C6 || 0,
+      directCosts: pl.C7 || 0,
+      grossProfit: pl.C9 || 0,
+      employeeCosts: pl.C11 || 0,
+      premisesCosts: pl.C12 || 0,
+      repairs: pl.C13 || 0,
+      generalAdmin: pl.C14 || 0,
+      motorExpenses: pl.C15 || 0,
+      travel: pl.C16 || 0,
+      advertising: pl.C17 || 0,
+      legalProfessional: pl.C18 || 0,
+      badDebts: pl.C19 || 0,
+      interestFinance: pl.C20 || 0,
+      otherExpenses: pl.C21 || 0,
+      totalExpenses: pl.C22 || 0,
+      netProfit: pl.C24 || 0,
+      capex: (results["Fixed Assets"] && results["Fixed Assets"].E1) || 0,
+    };
+  }
+
+  function buildChecks(checkResults) {
+    return checkResults.map(function (c, i) {
+      return {
+        id:
+          "check-" +
+          i +
+          "-" +
+          String(c.name)
+            .replace(/[^a-z0-9]+/gi, "-")
+            .toLowerCase(),
+        label: c.name,
+        expected: c.expected,
+        actual: c.actual,
+        result: c.pass ? "pass" : "fail",
+      };
+    });
+  }
+
+  function buildStock(book) {
+    if (!book.stock) return { opening: 0, closing: 0, atCost: 0 };
+    return { opening: book.stock.openingValue || 0, closing: book.stock.closingValue || 0, atCost: book.stock.openingValue || 0 };
+  }
+
+  function buildLedgers(entries, side) {
+    return (entries || []).filter(function (e) {
+      return e.timing === side;
+    });
+  }
+
+  function buildIncomeTax(results) {
+    var t = results[TAX_SHEET_NAME] || {};
+    return {
+      profitFromSelfEmployment: t.E5 || 0,
+      personalAllowance: t.E6 || 0,
+      taxableIncome: t.E7 || 0,
+      bands: [
+        { label: "Basic rate", rate: t.D8 || 0, ceiling: t.C9 || null, tax: t.E8 || 0, box: "E8" },
+        { label: "Higher rate", rate: t.D9 || 0, ceiling: t.C10 || null, tax: t.E9 || 0, box: "E9" },
+        { label: "Additional rate", rate: t.D10 || 0, ceiling: null, tax: t.E10 || 0, box: "E10" },
+      ],
+      totalIncomeTax: t.E11 || 0,
+      cisDeducted: -(t.E12 || 0),
+      niClass4Lower: t.E15 || 0,
+      niClass4Upper: t.E16 || 0,
+      totalTaxAndNi: t.E18 || 0,
+    };
+  }
+
+  var TAX_SHEET_NAME = "Income Tax";
+
+  // The SA103S box layout: the form's own section order and box numbers,
+  // each paired with the SE Short cell the engine's calculateFromDiyaGl
+  // writes it to (see CELL_MAP). Box 50 has no cell of its own in this
+  // template -- Business premises renovation allowance is a relief this
+  // sheet never claims -- so it stays a real, present zero rather than being
+  // dropped from the form.
+  var SA103S_LAYOUT = [
+    { heading: "Business income", rows: [{ box: "8", label: "Turnover", cell: "D38" }] },
     {
-      id: "motor-expenses",
-      label: "P&L: Motor Expenses",
-      view: "profit-loss",
-      computed: 7598.25,
-      asRead: 7598.0,
-      note: "motoring paid for + the mileage claimed",
+      heading: "Allowable business expenses",
+      rows: [
+        { box: "16", label: "Cost of goods bought for resale or goods used", cell: "D46" },
+        { box: "19", label: "Car, van and travel expenses", cell: "D51" },
+        { box: "20", label: "Wages, salaries and other staff costs", cell: "D55" },
+        { box: "21", label: "Rent, rates, power and insurance costs", cell: "D60" },
+        { box: "23", label: "Repairs and renewals of property and equipment", cell: "D64" },
+      ],
     },
     {
-      id: "purchases-cash-journal",
-      label: "Purchases: cash journal total",
-      view: "year",
-      computed: 178777.75,
-      asRead: 178778.0,
-      note: "expenses + direct costs + stock purchases + capitalised assets",
+      heading: "Net profit",
+      rows: [
+        { box: "31", label: "Net profit", cell: "D71", total: true },
+        { box: "32", label: "Or net loss", cell: "O71" },
+      ],
     },
     {
-      id: "income-tax-total",
-      label: "Income Tax",
-      view: "income-tax",
-      computed: 88131.6,
-      asRead: 88132.0,
-      note: "basic + higher + additional rate bands",
+      heading: "Capital allowances",
+      rows: [
+        { box: "49", label: "Annual investment allowance", cell: "D80" },
+        { box: "50", label: "Business premises renovation allowance", cell: null },
+        { box: "51", label: "All other capital allowances", cell: "O80" },
+        { box: "52", label: "Balancing charges", cell: "O85" },
+      ],
     },
     {
-      id: "total-tax-ni",
-      label: "Total Tax + NI",
-      view: "income-tax",
-      computed: 93918.36,
-      asRead: 93918.0,
-      note: "Income Tax + NI Class 4",
+      heading: "Taxable profit",
+      rows: [
+        { box: "57", label: "Total taxable profits", cell: "D99", total: true },
+        { box: "70", label: "Loss brought forward", cell: "O94" },
+        { box: "71", label: "Any other business income", cell: "O99" },
+      ],
     },
   ];
 
-  var CHECKS = [
-    { id: "total-sales", label: "Total Sales", expected: 409900, actual: 409900, result: "pass" },
-    { id: "gross-profit", label: "Gross Profit", expected: 391360, actual: 391360, result: "pass" },
-    { id: "net-profit", label: "Net Profit", expected: 265508, actual: 265507.75, result: "pass" },
-    { id: "premises-costs", label: "Premises Costs", expected: 15840, actual: 15840, result: "pass" },
-    { id: "purchases-cash-journal", label: "Purchases: cash journal total", expected: 178778, actual: 178777.75, result: "pass" },
-    { id: "motor-expenses", label: "P&L: Motor Expenses", expected: 7598.25, actual: 7598, result: "pass" },
-    { id: "stock-cost-of-sales", label: "Stock: cost of sales", expected: 10540, actual: 10540, result: "pass" },
-    { id: "fixed-assets-schedule", label: "Fixed Assets: schedule total cost = additions", expected: 39000, actual: 39000, result: "pass" },
-    { id: "income-tax", label: "Income Tax", expected: 88132, actual: 88131.6, result: "pass" },
-    { id: "total-tax-ni", label: "Total Tax + NI", expected: 93918, actual: 93918.36, result: "pass" },
-    { id: "sa103s-turnover", label: "SA103S: Turnover = P&L Sales", expected: 409900, actual: 409900, result: "pass" },
-    {
-      id: "bridge-residue",
-      label: "Accounting profit to tax profit bridge closes to zero",
-      expected: 0,
-      actual: 0,
-      result: "pass",
-    },
-    {
-      id: "mileage-rounding",
-      label: "Motor expenses ledger vs mileage-rate recalculation",
-      expected: 7598.25,
-      actual: 7598.0,
-      result: "warn",
-      helper: {
-        title: "Mileage rate rounding",
-        preview:
-          "The mileage claim was posted at a rounded pence-per-mile rate. Recalculating from the year's approved rates moves Motor Expenses by +0.25.",
-        actionLabel: "Preview fix",
+  function buildSa103s(results) {
+    var se = results["SE Short"] || {};
+    return {
+      sections: SA103S_LAYOUT.map(function (section) {
+        return {
+          heading: section.heading,
+          rows: section.rows.map(function (row) {
+            return { box: row.box, label: row.label, amount: row.cell ? se[row.cell] || 0 : 0, total: row.total };
+          }),
+        };
+      }),
+    };
+  }
+
+  function buildAdmin(taxData, taxYearName) {
+    var it = taxData.income_tax || {};
+    var ni = taxData.national_insurance || {};
+    var ca = taxData.capital_allowances || {};
+    var mil = taxData.mileage || {};
+    var vat = taxData.vat || {};
+    return {
+      year: (taxData.tax_year && taxData.tax_year.label) || taxYearName,
+      source: "app/data/" + taxYearName + ".toml",
+      rates: [
+        { label: "Personal Allowance", value: it.personal_allowance || 0, format: "currency" },
+        { label: "Personal Allowance Taper Threshold", value: it.personal_allowance_taper_threshold || 0, format: "currency" },
+        { label: "Basic Rate", value: it.basic_rate || 0, format: "rate" },
+        { label: "Higher Rate", value: it.higher_rate || 0, format: "rate" },
+        { label: "Additional Rate", value: it.additional_rate || 0, format: "rate" },
+        { label: "Basic Band End", value: it.basic_band_end || 0, format: "currency" },
+        { label: "Higher Band Start", value: it.higher_band_start || 0, format: "currency" },
+        { label: "Higher Band End", value: it.higher_band_end || 0, format: "currency" },
+        { label: "NI Class 2 Rate", value: ni.class2_rate || 0, format: "rate" },
+        { label: "NI Class 4 Lower Rate", value: ni.class4_lower_rate || 0, format: "rate" },
+        { label: "NI Class 4 Lower Limit", value: ni.class4_lower_limit || 0, format: "currency" },
+        { label: "NI Class 4 Upper Rate", value: ni.class4_upper_rate || 0, format: "rate" },
+        { label: "NI Class 4 Upper Limit", value: ni.class4_upper_limit || 0, format: "currency" },
+        { label: "Annual Investment Allowance Rate", value: ca.annual_investment_allowance || 0, format: "rate" },
+        { label: "Writing Down Allowance Rate", value: ca.writing_down_allowance || 0, format: "rate" },
+        { label: "Mileage Higher Rate Limit (miles)", value: mil.higher_rate_limit || 0, format: "number" },
+        { label: "Mileage Higher Rate", value: mil.higher_rate_pence || 0, format: "pence" },
+        { label: "Mileage Lower Rate Start (miles)", value: mil.lower_rate_start || 0, format: "number" },
+        { label: "Mileage Lower Rate", value: mil.lower_rate_pence || 0, format: "pence" },
+        { label: "VAT Registration Threshold", value: vat.registration_threshold || 0, format: "currency" },
+      ],
+    };
+  }
+
+  function buildBusinessDetails(book) {
+    var entity = book.entityInformation || {};
+    var info = book.documentInfo || {};
+    return {
+      organizationIdentifier: entity.organizationIdentifier || "",
+      organizationDescription: entity.organizationDescription || "",
+      organizationAddressLine: entity.organizationAddressLine || "",
+      organizationTown: entity.organizationTown || "",
+      organizationPostcode: entity.organizationPostcode || "",
+      periodCoveredStart: isoDate(info.periodCoveredStart),
+      periodCoveredEnd: isoDate(info.periodCoveredEnd),
+      basisOfAccounting: entity["diya-gl:basisOfAccounting"] || "cash",
+      vatRegistered: entity["diya-gl:vatRegistered"] === true,
+    };
+  }
+
+  function isoDate(value) {
+    if (!value) return "";
+    if (value instanceof Date) return value.toISOString().slice(0, 10);
+    return String(value).slice(0, 10);
+  }
+
+  // The fixed-asset additions list. Examples carry the full register on
+  // book.fixedAssets; an upload has no such register reconstructed (the
+  // calculator itself never reads it -- fixedAssetAdditions derives
+  // additions straight from the "f"-coded lines), so the same lines feed the
+  // additions list there too.
+  function buildFixedAssetsFromBook(book, results) {
+    var fa = results["Fixed Assets"] || {};
+    var additions = (book.fixedAssets || []).map(function (a) {
+      return { description: a.description || "Fixed asset", cost: a.cost || 0 };
+    });
+    return fixedAssetsSummary(additions, fa);
+  }
+
+  function buildFixedAssetsFromLines(lines, results) {
+    var fa = results["Fixed Assets"] || {};
+    var additions = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (line.sourceJournalID !== "purchases") continue;
+      if (BST_PURCHASE_CATEGORY[Number(line.accountMainID)] !== "capex") continue;
+      additions.push({ description: line.detailComment || "Fixed asset", cost: line.amount });
+    }
+    return fixedAssetsSummary(additions, fa);
+  }
+
+  function fixedAssetsSummary(additions, fa) {
+    return {
+      additions: additions,
+      totalCost: fa.E1 || 0,
+      aia: fa.K1 || 0,
+      wda: fa.L1 || 0,
+      writtenDownValue: fa.M1 || 0,
+      disposals: fa.Q1 || 0,
+      balancingCharge: fa.R1 || 0,
+    };
+  }
+
+  // Every calculated cell CELL_MAP names, read back off the uploaded
+  // workbook's own cached value and compared to what calculateFromDiyaGl
+  // computed from the extracted lines -- canonicalised the way
+  // verify-roundtrip.js canonicalises a roundtrip comparison. Text cells
+  // (entity fields) carry no meaningful "drift" in the pencil-correction
+  // sense, so only money/rate/count cells are compared. The Admin sheet's
+  // own section is excluded: those cells echo whichever app/data/<year>.toml
+  // the CURRENT page fetched, not a figure the accounting process derived
+  // from the book's lines, so an older file (generated before a rate table
+  // was corrected) would otherwise show a "drift" that is really a tax-data
+  // vintage question, not an EQ1 reconciliation finding.
+  var DRIFT_UNITS = { money: 1, rate: 1, count: 1 };
+  var DRIFT_EXCLUDED_SECTIONS = { "Admin (Generator Injected)": 1 };
+
+  async function buildDriftFromWorkbook(cellMap, workbookCells, results) {
+    var drift = [];
+    for (var i = 0; i < cellMap.length; i++) {
+      var entry = cellMap[i];
+      var sheet = entry[0],
+        cell = entry[1],
+        label = entry[2],
+        section = entry[4],
+        unit = entry[6];
+      if (!DRIFT_UNITS[unit]) continue;
+      if (DRIFT_EXCLUDED_SECTIONS[section]) continue;
+      if (!workbookCells.hasSheet(sheet)) continue;
+      var computedRaw = results[sheet] && results[sheet][cell];
+      if (typeof computedRaw !== "number") continue;
+      var asReadRaw = await workbookCells.readCell(sheet, cell);
+      if (typeof asReadRaw !== "number") continue;
+      var computed = canonicalise(computedRaw, unit);
+      var asRead = canonicalise(asReadRaw, unit);
+      if (Math.abs(computed - asRead) < 1e-9) continue;
+      drift.push({ id: sheet + "!" + cell, label: label, computed: computedRaw, asRead: asReadRaw, note: sheet + "!" + cell });
+    }
+    return drift;
+  }
+
+  // ============================== the two loaders ==============================
+
+  function periodFromLines(lines) {
+    if (lines.length === 0) throw new Error("This file carries no transaction lines to read an accounting period from.");
+    var dates = lines.map(function (l) {
+      return l.postingDate;
+    });
+    dates.sort();
+    var first = dates[0];
+    var firstYear = Number(first.slice(0, 4));
+    var firstMonth = Number(first.slice(5, 7));
+    var startYear = firstMonth >= 4 ? firstYear : firstYear - 1;
+    return { start: startYear + "-04-01", end: startYear + 1 + "-03-31" };
+  }
+
+  function buildAccountsChart(lines) {
+    var sales = {};
+    var purchases = {};
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var code = String(line.accountMainID);
+      if (line.sourceJournalID === "sales") sales[code] = { accountMainDescription: "Account " + code };
+      else if (line.sourceJournalID === "purchases") purchases[code] = { accountMainDescription: "Account " + code };
+    }
+    return { sales: sales, purchases: purchases };
+  }
+
+  async function buildLedgersFromWorkbook(workbookCells) {
+    var debtors = [];
+    var creditors = [];
+    for (var ledgerName in LEDGER_LAYOUT) {
+      var layout = LEDGER_LAYOUT[ledgerName];
+      var target = ledgerName === "debtors" ? debtors : creditors;
+      for (var slot = 0; slot < layout.slots; slot++) {
+        var row = layout.firstRow + slot;
+        var openName = await workbookCells.readCell("Debtors & Creditors", layout.name + row);
+        var openAmount = await workbookCells.readCell("Debtors & Creditors", layout.amount + row);
+        if (openName && String(openName).trim()) {
+          target.push({
+            counterparty: String(openName).trim(),
+            amount: typeof openAmount === "number" ? openAmount : 0,
+            timing: "opening",
+          });
+        }
+        var closeName = await workbookCells.readCell("Debtors & Creditors", layout.closeName + row);
+        var closeAmount = await workbookCells.readCell("Debtors & Creditors", layout.closeAmount + row);
+        if (closeName && String(closeName).trim()) {
+          target.push({
+            counterparty: String(closeName).trim(),
+            amount: typeof closeAmount === "number" ? closeAmount : 0,
+            timing: "closing",
+          });
+        }
+      }
+    }
+    return { debtors: debtors, creditors: creditors };
+  }
+
+  async function buildEntityInformationFromWorkbook(cellMap, workbookCells) {
+    var entity = { "diya-gl:product": "BasicSoleTrader", "diya-gl:vatRegistered": false };
+    for (var i = 0; i < cellMap.length; i++) {
+      var entry = cellMap[i];
+      if (entry[0] !== "Business Details") continue;
+      var path = entry[3];
+      if (path.indexOf("entityInformation.") !== 0) continue;
+      var field = path.slice("entityInformation.".length);
+      var value = await workbookCells.readCell(entry[0], entry[1]);
+      if (value !== undefined && value !== "") entity[field] = String(value);
+    }
+    return entity;
+  }
+
+  async function assembleSnapshot(scenarioLabel, book, lines, results, checks, driftEntries, taxData, taxYearName) {
+    var months = buildMonths(isoDate(book.documentInfo.periodCoveredStart));
+    var stock = buildStock(book);
+    var monthlyAndEntries = buildMonthlyAndEntries(lines, months, book.stock);
+    var ledgers =
+      book.debtors || book.creditors ? { debtors: book.debtors || [], creditors: book.creditors || [] } : { debtors: [], creditors: [] };
+
+    return {
+      scenario: scenarioLabel,
+      months: months,
+      categories: CATEGORIES,
+      monthly: monthlyAndEntries.monthly,
+      annual: buildAnnual(results),
+      entries: monthlyAndEntries.entries,
+      drift: driftEntries,
+      checks: buildChecks(checks),
+      stock: stock,
+      debtors: { opening: buildLedgers(ledgers.debtors, "opening"), closing: buildLedgers(ledgers.debtors, "closing") },
+      creditors: { opening: buildLedgers(ledgers.creditors, "opening"), closing: buildLedgers(ledgers.creditors, "closing") },
+      fixedAssets: book.fixedAssets ? buildFixedAssetsFromBook(book, results) : buildFixedAssetsFromLines(lines, results),
+      incomeTax: buildIncomeTax(results),
+      sa103s: buildSa103s(results),
+      admin: buildAdmin(taxData, taxYearName),
+      businessDetails: buildBusinessDetails(book),
+    };
+  }
+
+  /**
+   * Load one of the three BST reconciliation fixtures: book.toml +
+   * lines.jsonl only, no workbook to read an as-read layer from.
+   * @param {string} exampleKey - a key of EXAMPLE_BOOKS
+   */
+  async function loadExample(exampleKey) {
+    var meta = EXAMPLE_BOOKS[exampleKey];
+    if (!meta) throw new Error('Unknown example "' + exampleKey + '"');
+
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+
+    var base = "examples/" + meta.dir + "/" + meta.product + "/";
+    var bookToml = await resources.readText(base + "book.toml");
+    var linesRaw = await resources.readText(base + "lines.jsonl");
+    var parsed = engine.parseDiyaGlData(bookToml, linesRaw);
+    var book = parsed.book;
+    var lines = parsed.lines;
+
+    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
+    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
+    var scenario = engine.diyaGlToScenario(book, lines, "bst");
+    var expected = Object.assign({}, scenario, scenario.expected);
+    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
+    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
+
+    return assembleSnapshot(exampleKey, book, lines, results, checks, [], taxData, taxYearName);
+  }
+
+  /**
+   * Load an uploaded .xlsx or .zip: the anchor guard, the real extraction,
+   * live calculation, and the as-read layer read off the same bytes.
+   * @param {File} file
+   */
+  async function loadFromFile(file) {
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+
+    var arrayBuffer = await file.arrayBuffer();
+    var fileBytes = new Uint8Array(arrayBuffer);
+    var xlsxBytes = await global.DiyaGlXlsxCells.xlsxBytesFrom(fileBytes, file.name);
+
+    // validateBstAnchors throws BstAnchorError, named by sheet and header --
+    // never a silent short read. Let it propagate; the caller shows it.
+    await engine.validateBstAnchors(xlsxBytes);
+
+    var extractionMap = engine.bstExtractionMap();
+    var lines = await engine.extractBstTransactions(xlsxBytes, extractionMap);
+    if (lines.length === 0) throw new Error("This file carries no transaction lines to build a book from.");
+
+    var workbookCells = await global.DiyaGlXlsxCells.openWorkbookCells(xlsxBytes);
+    var entity = await buildEntityInformationFromWorkbook(engine.CELL_MAP, workbookCells);
+    var ledgers = await buildLedgersFromWorkbook(workbookCells);
+    var openingStock = await workbookCells.readCell("PurchasesStock", "D5");
+    var closingStock = await workbookCells.readCell("PurchasesStock", "D30");
+    var period = periodFromLines(lines);
+
+    var book = {
+      documentInfo: {
+        entriesType: "journal",
+        language: "en",
+        periodCoveredStart: period.start,
+        periodCoveredEnd: period.end,
+        defaultCurrency: "GBP",
+        entriesComment: "Uploaded from " + file.name,
       },
-    },
-  ];
+      entityInformation: entity,
+      accounts: buildAccountsChart(lines),
+    };
+    if (typeof openingStock === "number" || typeof closingStock === "number") {
+      book.stock = { openingValue: openingStock || 0, closingValue: closingStock || 0 };
+    }
+    if (ledgers.debtors.length > 0) book.debtors = ledgers.debtors;
+    if (ledgers.creditors.length > 0) book.creditors = ledgers.creditors;
 
-  var STOCK = { opening: 10000, closing: 6000, atCost: 10000 };
+    var bookValidation = engine.validateBook(book);
+    var linesValidation = engine.validateLines(lines, book);
 
-  var DEBTORS = {
-    opening: [
-      { counterparty: "Acme Corp", invoice: "INV-0901", amount: 7200 },
-      { counterparty: "Beta Systems", invoice: "INV-0902", amount: 1200 },
-      { counterparty: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
-    ],
-    closing: [
-      { counterparty: "Acme Corp", invoice: "INV-1012", amount: 6100 },
-      { counterparty: "WidgetWorks", invoice: "INV-2104", amount: 1440 },
-      { counterparty: "Zeta Corp", invoice: "CN-1801", amount: 360 },
-    ],
-  };
+    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
+    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
+    var scenario = engine.diyaGlToScenario(book, lines, "bst");
+    var expected = Object.assign({}, scenario, scenario.expected);
+    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
+    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
+    var drift = await buildDriftFromWorkbook(engine.CELL_MAP, workbookCells, results);
 
-  var CREDITORS = {
-    opening: [
-      { counterparty: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200 },
-      { counterparty: "Hiscox", invoice: "HX-1190", amount: 300 },
-      { counterparty: "Smith & Co", invoice: "SC-0087", amount: 600 },
-      { counterparty: "BT", invoice: "BT-5521", amount: 120 },
-    ],
-    closing: [
-      { counterparty: "WorkSpace Ltd", invoice: "WS-2988", amount: 1200 },
-      { counterparty: "Hiscox", invoice: "HX-1244", amount: 300 },
-      { counterparty: "Smith & Co", invoice: "SC-0112", amount: 60 },
-      { counterparty: "BT", invoice: "BT-5602", amount: 150 },
-    ],
-  };
+    var snapshot = await assembleSnapshot(file.name, book, lines, results, checks, drift, taxData, taxYearName);
+    snapshot.bookValidation = bookValidation;
+    snapshot.linesValidation = linesValidation;
+    return snapshot;
+  }
 
-  var FIXED_ASSETS = {
-    additions: [{ description: "New Asset Cost (Plant & Machinery)", cost: 1800 }],
-    totalCost: 39000,
-    aia: 39000,
-    wda: 0,
-    writtenDownValue: 0,
-    disposals: 0,
-    balancingCharge: 0,
-  };
-
-  var INCOME_TAX = {
-    profitFromSelfEmployment: 226508,
-    personalAllowance: 0,
-    taxableIncome: 226508,
-    bands: [
-      { label: "Basic rate", rate: 0.2, ceiling: 37700, tax: 7540, box: "E8" },
-      { label: "Higher rate", rate: 0.4, ceiling: 125140, tax: 34976, box: "E9" },
-      { label: "Additional rate", rate: 0.45, ceiling: null, tax: 45615.6, box: "E10" },
-    ],
-    totalIncomeTax: 88131.6,
-    cisDeducted: 0,
-    niClass4Lower: 2262,
-    niClass4Upper: 3524.76,
-    totalTaxAndNi: 93918.36,
-  };
-
-  var SA103S = {
-    sections: [
-      {
-        heading: "Business income",
-        rows: [{ box: "8", label: "Turnover", amount: 409900 }],
-      },
-      {
-        heading: "Allowable business expenses",
-        rows: [
-          { box: "16", label: "Cost of goods bought for resale or goods used", amount: 18540 },
-          { box: "19", label: "Car, van and travel expenses", amount: 9458 },
-          { box: "20", label: "Wages, salaries and other staff costs", amount: 69200 },
-          { box: "21", label: "Rent, rates, power and insurance costs", amount: 15840 },
-          { box: "23", label: "Repairs and renewals of property and equipment", amount: 1140 },
-        ],
-      },
-      {
-        heading: "Net profit",
-        rows: [
-          { box: "31", label: "Net profit", amount: 265508, total: true },
-          { box: "32", label: "Or net loss", amount: 0 },
-        ],
-      },
-      {
-        heading: "Capital allowances",
-        rows: [
-          { box: "49", label: "Annual investment allowance", amount: 39000 },
-          { box: "50", label: "Business premises renovation allowance", amount: 0 },
-          { box: "51", label: "All other capital allowances", amount: 0 },
-          { box: "52", label: "Balancing charges", amount: 0 },
-        ],
-      },
-      {
-        heading: "Taxable profit",
-        rows: [
-          { box: "57", label: "Total taxable profits", amount: 226508, total: true },
-          { box: "70", label: "Loss brought forward", amount: 0 },
-          { box: "71", label: "Any other business income", amount: 0 },
-        ],
-      },
-    ],
-  };
-
-  var ADMIN = {
-    year: "2025/26",
-    source: "app/data/2026.toml",
-    rates: [
-      { label: "Personal Allowance", value: 12570, format: "currency" },
-      { label: "Personal Allowance Taper Threshold", value: 100000, format: "currency" },
-      { label: "Basic Rate", value: 0.2, format: "rate" },
-      { label: "Higher Rate", value: 0.4, format: "rate" },
-      { label: "Additional Rate", value: 0.45, format: "rate" },
-      { label: "Basic Band End", value: 37700, format: "currency" },
-      { label: "Higher Band Start", value: 37701, format: "currency" },
-      { label: "Higher Band End", value: 125140, format: "currency" },
-      { label: "NI Class 2 Rate", value: 0, format: "rate" },
-      { label: "NI Class 4 Lower Rate", value: 0.06, format: "rate" },
-      { label: "NI Class 4 Lower Limit", value: 12570, format: "currency" },
-      { label: "NI Class 4 Upper Rate", value: 0.02, format: "rate" },
-      { label: "NI Class 4 Upper Limit", value: 50270, format: "currency" },
-      { label: "Annual Investment Allowance Rate", value: 1, format: "rate" },
-      { label: "Writing Down Allowance Rate", value: 0.18, format: "rate" },
-      { label: "Mileage Higher Rate Limit (miles)", value: 10000, format: "number" },
-      { label: "Mileage Higher Rate", value: 0.45, format: "pence" },
-      { label: "Mileage Lower Rate Start (miles)", value: 10001, format: "number" },
-      { label: "Mileage Lower Rate", value: 0.25, format: "pence" },
-      { label: "VAT Registration Threshold", value: 90000, format: "currency" },
-    ],
-  };
-
-  var BUSINESS_DETAILS = {
-    organizationIdentifier: "Precision Code Trading",
-    organizationDescription: "IT consultancy and software development",
-    organizationAddressLine: "123 High Street",
-    organizationTown: "Manchester",
-    organizationPostcode: "M1 1AA",
-    periodCoveredStart: "2025-04-01",
-    periodCoveredEnd: "2026-03-31",
-    basisOfAccounting: "cash",
-    vatRegistered: false,
-  };
-
-  global.DIYA_BST_SNAPSHOT = {
-    scenario: "bst-scenario-basic",
-    sourceReport: "GB_Accounts_Basic_Sole_Trader_2026_04_05__Apr26__Excel_2007_bst-scenario-basic.md",
-    months: MONTHS,
-    categories: CATEGORIES,
-    monthly: MONTHLY,
-    annual: ANNUAL,
-    entries: { "2025-04": APRIL_ENTRIES },
-    drift: DRIFT,
-    checks: CHECKS,
-    stock: STOCK,
-    debtors: DEBTORS,
-    creditors: CREDITORS,
-    fixedAssets: FIXED_ASSETS,
-    incomeTax: INCOME_TAX,
-    sa103s: SA103S,
-    admin: ADMIN,
-    businessDetails: BUSINESS_DETAILS,
-  };
+  global.DiyaGlBooksLoader = { EXAMPLE_BOOKS: EXAMPLE_BOOKS, loadExample: loadExample, loadFromFile: loadFromFile };
 })(window);

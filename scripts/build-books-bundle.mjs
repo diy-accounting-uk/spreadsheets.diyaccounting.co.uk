@@ -64,8 +64,15 @@ const nodeAbsent = {
   },
 };
 
-// Each entry is a path under examples/, as [directory, product].
-const EXAMPLE_BOOKS = [["sp-sixty-driving", "bst"]];
+// Each entry is a path under examples/, as [directory, product]. The three
+// BST reconciliation fixtures the books page offers as examples (W1): the
+// full-ledger Precision Code subset, the BrickWork non-VAT subset and the
+// no-ledger mileage-route book.
+const EXAMPLE_BOOKS = [
+  ["precision-code-ltd", "bst"],
+  ["brickwork-pro", "bst-nonvat"],
+  ["sp-sixty-driving", "bst"],
+];
 
 // The files the engine reads that are not the book itself: the tax year data
 // the save path applies, and the BST template with its meta. The two v2
@@ -97,6 +104,16 @@ function copyRuntimeAssets() {
       cpSync(resolve(ROOT, "examples", ...example, name), resolve(out, name));
     }
   }
+
+  // JSZip, vendored for the books page's own upload path (W1): reading an
+  // uploaded .xlsx/.zip's cached cell values for the as-read drift layer is
+  // not part of the engine's exported surface (app/lib/xlsx-exporter.js's
+  // cell reader is internal to it), so the page carries its own small copy
+  // of JSZip to unzip the upload and read cells itself, the same library the
+  // engine already depends on for the same job server-side.
+  const vendorOut = resolve(ASSETS_DIR, "vendor");
+  mkdirSync(vendorOut, { recursive: true });
+  cpSync(resolve(ROOT, "node_modules", "jszip", "dist", "jszip.min.js"), resolve(vendorOut, "jszip.min.js"));
 
   return { yearFiles: yearFiles.length, examples: EXAMPLE_BOOKS.length };
 }
