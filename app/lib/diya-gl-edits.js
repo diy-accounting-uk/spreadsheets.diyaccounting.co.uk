@@ -69,3 +69,22 @@ export function changeLineAmount(book, lines, params) {
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;
 }
+
+/**
+ * Remove one existing line, identified by its entryNumber.
+ * @param {Object} book - parsed book.toml (unused; see addSaleLine)
+ * @param {Array} lines - the book's current lines.jsonl entries
+ * @param {{entryNumber: string}} params
+ * @returns {Array} a new lines array with the named line removed
+ */
+export function removeLine(book, lines, params) {
+  const { entryNumber } = params;
+  let found = false;
+  const filtered = lines.filter((line) => {
+    if (line.entryNumber !== entryNumber) return true;
+    found = true;
+    return false;
+  });
+  if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
+  return filtered;
+}
