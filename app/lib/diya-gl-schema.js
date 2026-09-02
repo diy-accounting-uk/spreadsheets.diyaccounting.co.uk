@@ -55,17 +55,26 @@ export async function loadSchemasFrom(resources = nodeResourceLoader()) {
 // then it fails loudly rather than validating nothing.
 function compiled() {
   if (validators) return validators;
-  const schemaDir = resolve(
-    dirname(fileURLToPath(import.meta.url)),
-    "..",
-    "..",
-    "web",
-    "spreadsheets.diyaccounting.co.uk",
-    "public",
-    "schema",
-  );
-  const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
-  validators = compileSchemas(read("diya-gl-book-v2.schema.json"), read("diya-gl-lines-v2.schema.json"));
+  try {
+    const schemaDir = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "web",
+      "spreadsheets.diyaccounting.co.uk",
+      "public",
+      "schema",
+    );
+    const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
+    validators = compileSchemas(read("diya-gl-book-v2.schema.json"), read("diya-gl-lines-v2.schema.json"));
+  } catch (cause) {
+    throw new Error(
+      "the diya-gl schemas could not be read; a caller with no file system has to call useSchemas() or loadSchemasFrom() first",
+      {
+        cause,
+      },
+    );
+  }
   return validators;
 }
 

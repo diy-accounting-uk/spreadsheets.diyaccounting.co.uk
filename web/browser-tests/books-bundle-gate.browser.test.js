@@ -192,6 +192,27 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
     }
   });
 
+  test("validating before the schemas are supplied says so, rather than validating nothing", async ({ page }) => {
+    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    try {
+      // A fresh page, so the probe's own loadSchemasFrom() has not run yet.
+      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "commit" });
+      const outcome = await page.evaluate(async () => {
+        const engine = await import("/books/engine/diya-gl-engine.js");
+        try {
+          engine.validateBook({});
+          return { threw: false };
+        } catch (error) {
+          return { threw: true, message: String(error.message) };
+        }
+      });
+      expect(outcome.threw, "an unseeded validate throws").toBe(true);
+      expect(outcome.message).toContain("useSchemas");
+    } finally {
+      server.close();
+    }
+  });
+
   // Every other resource the engine reads is text. The BST template is bytes,
   // and nothing on the load path fetches it, so the asset layout's one binary
   // claim would otherwise go untested until W4 arrives.
