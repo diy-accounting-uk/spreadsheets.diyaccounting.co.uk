@@ -22,8 +22,8 @@ const taxData = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.to
 
 // The BST scenario comes from diyaGlToScenario(), the same derivation the
 // generator and report.js use, rather than a hand-kept literal: the master
-// data's own [stock], [[debtors]] and [[creditors]] tables are the one place
-// these figures live.
+// data's own [stock] and [openingBalances] tables are the one place these
+// figures live.
 function bstScenarioFor(book, lines) {
   const scenario = diyaGlToScenario(book, lines, "bst");
   return { ...scenario, ...scenario.expected };
@@ -193,7 +193,9 @@ describe("calculateFromDiyaGl — BST", () => {
       .filter((l) => l.sourceJournalID === "sales" && l.postingDate.startsWith("2025-04"))
       .reduce((sum, l) => sum + l.amount, 0);
     expect(ledger.C5).toBe(aprilSales);
-    expect(ledger.C29).toBe(book.openingBalances.tradeDebtors + [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27].reduce((sum, row) => sum + ledger[`C${row}`], 0));
+    expect(ledger.C29).toBe(
+      book.openingBalances.tradeDebtors + [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27].reduce((sum, row) => sum + ledger[`C${row}`], 0),
+    );
   });
 
   // ── Stock ──

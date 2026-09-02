@@ -48,7 +48,6 @@ function outstandingAmount(transaction) {
   return transaction.amount || 0;
 }
 
-
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
 export function cellWrites(scenario) {

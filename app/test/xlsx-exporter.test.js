@@ -1218,9 +1218,7 @@ describe("the Admin sheet the mileage rates are priced from", () => {
   });
 
   it("prices them from the sheet when it is there", async () => {
-    const buffer = await buildWorkbook(
-      bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } }),
-    );
+    const buffer = await buildWorkbook(bstSheets({ purchaseRows: { A6: APRIL_SEVENTH, B6: "Shell", E6: "m", F6: 120 } }));
     const lines = await extractBstTransactions(buffer);
     const mileageLine = lines.find((line) => line.measurableUnitOfMeasure === "miles");
     expect(mileageLine.measurableQuantity).toBe(120);
