@@ -1214,9 +1214,7 @@
       "border-radius:var(--radius);box-shadow:var(--shadow);padding:0.25rem;display:flex;flex-direction:column;min-width:210px;";
 
     var rect =
-      anchorEl && anchorEl.getBoundingClientRect
-        ? anchorEl.getBoundingClientRect()
-        : { bottom: 56, left: window.innerWidth - 220 };
+      anchorEl && anchorEl.getBoundingClientRect ? anchorEl.getBoundingClientRect() : { bottom: 56, left: window.innerWidth - 220 };
     menu.style.top = Math.max(4, Math.min(rect.bottom + 4, window.innerHeight - 100)) + "px";
     menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 220)) + "px";
 
