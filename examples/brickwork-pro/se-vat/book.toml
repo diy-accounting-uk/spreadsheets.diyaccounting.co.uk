@@ -184,7 +184,7 @@ additionalRate = 0.4500
 additionalRateThreshold = 125140.00
 
 [tax.nationalInsurance]
-class2WeeklyRate = 3.45
+class2WeeklyRate = 0.00
 class2SmallProfitsThreshold = 6725.00
 class4MainRate = 0.0600
 class4UpperRate = 0.0200

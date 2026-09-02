@@ -19,11 +19,13 @@ import {
   extractBook,
   normaliseLine,
 } from "../lib/xlsx-exporter.js";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { BST_PURCHASE_CODE_MAP, LTD_PURCHASE_CODE_MAP, LTD_SALES_CODE_MAP } from "../lib/scenario-extractor.js";
 import { CELL_MAP } from "../products/bst.js";
 import { CELL_MAP as TAXI_CELL_MAP } from "../products/taxi.js";
+import { CELL_MAP as LTD_CELL_MAP } from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -696,5 +698,574 @@ describe("extractPayrollTransactions — the month's own block row", () => {
   it("takes no line from a block row the sheet holds no pay on", async () => {
     const lines = await exportedPayroll({ Jun: { M59: 45838, N61: 0, O61: 0, T61: 0 } });
     expect(lines).toEqual([]);
+  });
+});
+
+// ── The Ltd company registers and payroll: members, directors, employees ──
+//
+// RegisterofMembers, Directors&Secretary and the Payslips Employee sheet each
+// carry one of the book's registers. A director who also holds shares is
+// dated and counted from the register of members, the same link the writer
+// draws when it fills DirectorsInterests.
+
+const LTD_APRIL_THIRTIETH = 45777; // 2025-04-30
+const LTD_MAY_THIRTY_FIRST = 45808; // 2025-05-31
+const CAROL_ACQUIRED = 43831; // 2020-01-01
+const DAVID_ACQUIRED = 44362; // 2021-06-15
+const BOB_JOINED = 45809; // 2025-06-01, after the payroll year opens on 2025-04-06
+
+// periodCovered() takes the accounting period from a posting; a register
+// test that carries no transaction of its own still needs one to date the
+// package by.
+const DUMMY_POSTING = { sourceJournalID: "sales", postingDate: "2025-04-01", accountMainID: "4000", amount: 1 };
+
+function employeeSheetBlock(base, { surname, forenames, startDateSerial, weekly = false, niCategory = "A" }) {
+  const cells = {
+    [`D${base + 2}`]: surname,
+    [`D${base + 3}`]: forenames,
+    [`D${base + 15}`]: weekly ? "W" : "M",
+    [`D${base + 16}`]: 1,
+    [`D${base + 17}`]: niCategory,
+  };
+  if (startDateSerial !== undefined) cells[`D${base + 11}`] = startDateSerial;
+  return cells;
+}
+
+async function ltdRegistersPackage({
+  registerofMembers = {},
+  directorsAndSecretary = {},
+  payslipsApril = {},
+  payslipsMay = {},
+  employee = {},
+} = {}) {
+  return writePackage({
+    "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+    "Sales.xlsx": { Apr: { G2: 20 } },
+    "Purchases.xlsx": { Apr: {} },
+    "Payslips.xlsx": { Employee: employee, Apr: payslipsApril, May: payslipsMay },
+    "Companysecretary.xlsx": { "RegisterofMembers": registerofMembers, "Directors&Secretary": directorsAndSecretary },
+  });
+}
+
+describe("extractBook — the Ltd registers of members and directors", () => {
+  const registerofMembers = {
+    A3: "Carol Smith",
+    C3: CAROL_ACQUIRED,
+    F3: 1,
+    G3: 60,
+    A4: "David Brown",
+    C4: DAVID_ACQUIRED,
+    F4: 1,
+    G4: 25,
+  };
+  const directorsAndSecretary = {
+    A2: "Carol Smith",
+    D2: "Managing Director",
+    // Row 3 is the template's own secretary placeholder: a capacity with no
+    // name, exactly the shape the shipped Directors&Secretary sheet carries
+    // for an officer the generator never wrote.
+    D3: "Company Secretary",
+  };
+
+  async function exportedRegisters() {
+    const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
+    return extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+  }
+
+  it("reads the register of members back with the shares and the date each holding was acquired", async () => {
+    const book = await exportedRegisters();
+    expect(book.members).toEqual([
+      { memberID: "M1", name: "Carol Smith", shares: 60, acquiredDate: "2020-01-01" },
+      { memberID: "M2", name: "David Brown", shares: 25, acquiredDate: "2021-06-15" },
+    ]);
+  });
+
+  it("does not carry the register's single company-wide nominal value back onto a member", async () => {
+    // The register prices every holding at the same £1 nominal value; the
+    // book schema keeps a per-member field for it but the loader never fills
+    // one, so reading it back would only ever be an extra field no fixture
+    // declares.
+    const book = await exportedRegisters();
+    expect(book.members.some((member) => "nominalValue" in member)).toBe(false);
+  });
+
+  it("names a director from Directors&Secretary and dates and counts their holding off the register of members", async () => {
+    const book = await exportedRegisters();
+    expect(book.directors).toEqual([{ name: "Carol Smith", role: "Managing Director", shares: 60, appointed: "2020-01-01" }]);
+  });
+
+  it("takes no director from a capacity-only row the writer never put a name on", async () => {
+    const book = await exportedRegisters();
+    expect(book.directors.find((director) => director.role === "Company Secretary")).toBeUndefined();
+  });
+
+  it("leaves shares and appointed off a director who holds no shares", async () => {
+    const dir = await ltdRegistersPackage({
+      registerofMembers: {},
+      directorsAndSecretary: { A2: "Priya Patel", D2: "Finance Director" },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.directors).toEqual([{ name: "Priya Patel", role: "Finance Director" }]);
+  });
+
+  it("breaks only the shares a corrupted RegisterofMembers cell carries, on both the member and the director it names", async () => {
+    const dir = await ltdRegistersPackage({ registerofMembers, directorsAndSecretary, employee: {} });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Companysecretary.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = "xl/worksheets/sheet1.xml";
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="G3"><v>60</v></c>`, `<c r="G3"><v>99</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.members[0].shares).toBe(99);
+    expect(after.directors[0].shares).toBe(99);
+    expect(after.members[1]).toEqual(before.members[1]);
+    expect(after.directors[0].name).toBe(before.directors[0].name);
+    expect(after.directors[0].appointed).toBe(before.directors[0].appointed);
+  });
+});
+
+describe("extractBook — the Ltd payroll register", () => {
+  async function payrollLinesFor(dir) {
+    return extractPayrollTransactions(dir);
+  }
+
+  it("recovers the book's own employee id from the payslip reference, not the sheet's payroll number", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP007-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].employeeID).toBe("EMP007");
+  });
+
+  it("falls back to the sheet's own payroll number when no payslip names the employee", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: {},
+    });
+    const lines = [...(await payrollLinesFor(dir)), DUMMY_POSTING];
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].employeeID).toBe("1");
+  });
+
+  it("takes the first month's gross pay as the book's per-period figure, not the year's running total", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP001-2025-04",
+      }),
+      payslipsMay: payslipBlock(48, {
+        paidOn: LTD_MAY_THIRTY_FIRST,
+        name: "Alice Johnson",
+        grossPay: 4000,
+        incomeTax: 600,
+        employeeNI: 220,
+        netPay: 3180,
+        employerNI: 430,
+        reference: "PAY-EMP001-2025-05",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].grossPay).toBe(3500);
+  });
+
+  it("reads an employee's start date off the Employee sheet's own cell", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP001-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0].startDate).toBe("2025-06-01");
+  });
+
+  it("recovers isDirector but not a real NI category from the sheet's shared director-flag cell", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(39, { surname: "Smith", forenames: "Carol", startDateSerial: CAROL_ACQUIRED, niCategory: "D" }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Carol Smith",
+        grossPay: 1048,
+        incomeTax: 0,
+        employeeNI: 0,
+        netPay: 1048,
+        employerNI: 7.2,
+        reference: "PAY-EMP003-2025-04",
+      }),
+    });
+    const lines = await payrollLinesFor(dir);
+    const book = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(book.employees[0]).toMatchObject({ isDirector: true });
+    expect(book.employees[0].niCategory).toBeUndefined();
+  });
+
+  it("breaks only the employee id a corrupted payslip reference carries", async () => {
+    const dir = await ltdRegistersPackage({
+      employee: employeeSheetBlock(13, { surname: "Johnson", forenames: "Alice", startDateSerial: BOB_JOINED }),
+      payslipsApril: payslipBlock(48, {
+        paidOn: LTD_APRIL_THIRTIETH,
+        name: "Alice Johnson",
+        grossPay: 3500,
+        incomeTax: 530,
+        employeeNI: 200,
+        netPay: 2770,
+        employerNI: 382.5,
+        reference: "PAY-EMP007-2025-04",
+      }),
+    });
+    const before = await extractBook(dir, "ltd", await payrollLinesFor(dir), LTD_CELL_MAP);
+    expect(before.employees[0].employeeID).toBe("EMP007");
+
+    const path = resolve(dir, "Payslips.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetMap = await buildSheetMap(zip);
+    const sheetPath = sheetMap.get("Apr");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(
+      sheetPath,
+      xml.replace(`t="inlineStr"><is><t>PAY-EMP007-2025-04</t></is>`, `t="inlineStr"><is><t>not a payslip reference</t></is>`),
+    );
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const lines = await payrollLinesFor(dir);
+    const after = await extractBook(dir, "ltd", lines, LTD_CELL_MAP);
+    expect(after.employees[0].employeeID).toBe("1");
+    expect(after.employees[0].name).toBe(before.employees[0].name);
+    expect(after.employees[0].grossPay).toBe(before.employees[0].grossPay);
+  });
+});
+
+// ── The registers the Fixed Assets workbook carries ────────────────────────
+//
+// A single-file package records an in-year asset purchase on its own Fixed
+// Assets sheet, and the multi-file packages keep their hire purchase
+// agreements on Fixedassets.xlsx's HPfinance sheet. Both are registers the
+// book declares, so both have to survive the export.
+
+const HP_JUNE_FIRST = 45809; // 2025-06-01
+const HP_SEPTEMBER_FIRST = 45901; // 2025-09-01
+
+function hpAgreementRow(row, { started, financeCompany, reference, financed, admin, interest, months, supplier }) {
+  return {
+    [`B${row}`]: started,
+    [`C${row}`]: financeCompany,
+    [`D${row}`]: reference,
+    [`E${row}`]: financed,
+    [`F${row}`]: admin,
+    [`G${row}`]: interest,
+    [`H${row}`]: months,
+    // The sheet works the monthly payment out for itself, so a cached
+    // formula result sits beside the entered figures.
+    [`I${row}`]: { formula: `IF(E${row}>0,(E${row}+F${row}+G${row})/H${row}," ")`, value: 750 },
+    [`L${row}`]: supplier,
+  };
+}
+
+const HP_FINANCE_SHEET = {
+  ...hpAgreementRow(8, {
+    started: HP_JUNE_FIRST,
+    financeCompany: "Close Brothers Asset Finance",
+    reference: "HP-2025-01",
+    financed: 13000,
+    admin: 200,
+    interest: 1800,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  }),
+  ...hpAgreementRow(10, {
+    started: HP_SEPTEMBER_FIRST,
+    financeCompany: "Close Brothers Asset Finance",
+    reference: "HP-2025-02",
+    financed: 7000,
+    admin: 100,
+    interest: 1000,
+    months: 20,
+    supplier: "Precision Tooling Supplies",
+  }),
+};
+
+async function ltdPackageWithFixedAssets(fixedAssetsSheets) {
+  return writePackage({
+    "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+    "Sales.xlsx": { Apr: { G2: 20 } },
+    "Purchases.xlsx": { Apr: {} },
+    "Fixedassets.xlsx": fixedAssetsSheets,
+  });
+}
+
+describe("extractBook — the hire purchase agreements", () => {
+  it("reads every agreement the HPfinance block names", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.hpAgreements).toEqual([
+      {
+        agreementID: "HP-2025-01",
+        amountFinanced: 13000,
+        adminCharges: 200,
+        totalInterest: 1800,
+        termMonths: 20,
+        startDate: "2025-06-01",
+        financeCompany: "Close Brothers Asset Finance",
+        supplier: "Precision Tooling Supplies",
+      },
+      {
+        agreementID: "HP-2025-02",
+        amountFinanced: 7000,
+        adminCharges: 100,
+        totalInterest: 1000,
+        termMonths: 20,
+        startDate: "2025-09-01",
+        financeCompany: "Close Brothers Asset Finance",
+        supplier: "Precision Tooling Supplies",
+      },
+    ]);
+  });
+
+  it("breaks only the agreement whose amount financed a corrupted cell carries", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: {}, HPfinance: HP_FINANCE_SHEET });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Fixedassets.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("HPfinance");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="E8"><v>13000</v></c>`, `<c r="E8"><v>99</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.hpAgreements[0].amountFinanced).toBe(99);
+    expect({ ...after.hpAgreements[0], amountFinanced: 13000 }).toEqual(before.hpAgreements[0]);
+    expect(after.hpAgreements[1]).toEqual(before.hpAgreements[1]);
+  });
+
+  it("leaves a row with no amount financed out of the register", async () => {
+    const dir = await ltdPackageWithFixedAssets({
+      Schedule: {},
+      HPfinance: { ...HP_FINANCE_SHEET, E10: 0 },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.hpAgreements.map((agreement) => agreement.agreementID)).toEqual(["HP-2025-01"]);
+  });
+});
+
+describe("extractBook — the single-file fixed asset register", () => {
+  const LAPTOP_BOUGHT = 45792; // 2025-05-15
+  const VAN_BOUGHT = 45955; // 2025-10-25
+
+  async function bstAssetPackage(fixedAssets) {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-assets-"));
+    writeFileSync(join(dir, "Financialaccounts.xlsx"), await buildWorkbook({ ...bstSheets(), "Fixed Assets": fixedAssets }));
+    return dir;
+  }
+
+  it("reads the Basic Sole Trader addition block back as the book's asset register", async () => {
+    const dir = await bstAssetPackage({
+      B67: LAPTOP_BOUGHT,
+      C67: "New laptop for development",
+      D67: "PUR-FA-001",
+      E67: 1800,
+      B69: VAN_BOUGHT,
+      C69: "Ford Transit Custom van",
+      D69: "PUR-FA-002",
+      E69: 36000,
+    });
+    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(book.fixedAssets).toEqual([
+      { assetID: "FA-0001", cost: 1800, description: "New laptop for development", acquiredDate: "2025-05-15" },
+      { assetID: "FA-0002", cost: 36000, description: "Ford Transit Custom van", acquiredDate: "2025-10-25" },
+    ]);
+  });
+
+  it("breaks only the asset whose cost a corrupted cell carries", async () => {
+    const dir = await bstAssetPackage({
+      B67: LAPTOP_BOUGHT,
+      C67: "New laptop for development",
+      E67: 1800,
+      B68: VAN_BOUGHT,
+      C68: "Ford Transit Custom van",
+      E68: 36000,
+    });
+    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+
+    const path = resolve(dir, findXlsx(dir));
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Fixed Assets");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="E67"><v>1800</v></c>`, `<c r="E67"><v>7</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(after.fixedAssets[0].cost).toBe(7);
+    expect(after.fixedAssets[0].description).toBe(before.fixedAssets[0].description);
+    expect(after.fixedAssets[1]).toEqual(before.fixedAssets[1]);
+  });
+});
+
+// ── The named debtor and creditor ledgers ──────────────────────────────────
+
+describe("extractBook — the named ledgers", () => {
+  it("reads the Ltd opening and closing sheets back in that order", async () => {
+    const dir = await writePackage({
+      "Financialaccounts.xlsx": { OpenAccounts: { E2: "Precision Code Ltd" } },
+      "Sales.xlsx": {
+        Apr: { G2: 20 },
+        OpeningDebtors: { B5: "Acme Corp", C5: "INV-0901", H5: 7200 },
+        ClosingDebtors: { B5: "WidgetWorks", C5: "INV-2104", H5: 1440 },
+      },
+      "Purchases.xlsx": {
+        Apr: {},
+        OpeningCreditors: { B5: "WorkSpace Ltd", C5: "WS-2403", H5: 1200 },
+        ClosingCreditors: { B5: "BT Business", C5: "BT-2603", H5: 60 },
+      },
+    });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.debtors).toEqual([
+      { counterparty: "Acme Corp", invoice: "INV-0901", amount: 7200, timing: "opening" },
+      { counterparty: "WidgetWorks", invoice: "INV-2104", amount: 1440, timing: "closing" },
+    ]);
+    expect(book.creditors).toEqual([
+      { counterparty: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200, timing: "opening" },
+      { counterparty: "BT Business", invoice: "BT-2603", amount: 60, timing: "closing" },
+    ]);
+  });
+
+  it("reads both halves of the single-file Debtors & Creditors sheet, which carries no invoice column", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
+    writeFileSync(
+      join(dir, "Financialaccounts.xlsx"),
+      await buildWorkbook({
+        ...bstSheets(),
+        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360, B12: "Shell", C12: 120, E12: "BT Business", F12: 60 },
+      }),
+    );
+    const book = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(book.debtors).toEqual([
+      { counterparty: "Acme Corp", amount: 7200, timing: "opening" },
+      { counterparty: "Zeta Corp", amount: 360, timing: "closing" },
+    ]);
+    expect(book.creditors).toEqual([
+      { counterparty: "Shell", amount: 120, timing: "opening" },
+      { counterparty: "BT Business", amount: 60, timing: "closing" },
+    ]);
+  });
+
+  it("breaks only the balance a corrupted ledger cell carries", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "xlsx-exporter-ledger-"));
+    writeFileSync(
+      join(dir, "Financialaccounts.xlsx"),
+      await buildWorkbook({
+        ...bstSheets(),
+        "Debtors & Creditors": { B5: "Acme Corp", C5: 7200, E5: "Zeta Corp", F5: 360 },
+      }),
+    );
+    const before = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+
+    const path = resolve(dir, findXlsx(dir));
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Debtors & Creditors");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="C5"><v>7200</v></c>`, `<c r="C5"><v>1</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "bst", [DUMMY_POSTING], CELL_MAP);
+    expect(after.debtors[0]).toEqual({ counterparty: "Acme Corp", amount: 1, timing: "opening" });
+    expect(after.debtors[1]).toEqual(before.debtors[1]);
+  });
+});
+
+describe("extractBook — the Schedule's asset attributes and disposals", () => {
+  const VAN_BOUGHT = 44562; // 2022-01-01
+  const VAN_SOLD = 45777; // 2025-04-30
+  const MOTOR_EXISTING_ROW = 50;
+
+  function scheduleWithVan(overrides = {}) {
+    return {
+      // The class block's own rate cell, which every asset row in the block
+      // reads (H50 = H$43 on the shipped template).
+      H43: 0.25,
+      B50: VAN_BOUGHT,
+      C50: "Van (2.5 years old)",
+      E50: 30000,
+      F50: 9828,
+      H50: { formula: "H$43", value: 0.25 },
+      O50: 24000,
+      U50: VAN_SOLD,
+      V50: 12500,
+      ...overrides,
+    };
+  }
+
+  it("reads an asset's purchase date, depreciation rate and disposal back off its own row", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(book.fixedAssets).toEqual([
+      {
+        assetID: "FA-0001",
+        class: "motorVehicles",
+        cost: 30000,
+        description: "Van (2.5 years old)",
+        accumulatedDepreciation: 9828,
+        taxWrittenDownValue: 24000,
+        acquiredDate: "2022-01-01",
+        depreciationRate: 0.25,
+        disposedDate: "2025-04-30",
+        disposalProceeds: 12500,
+      },
+    ]);
+  });
+
+  it("breaks only the disposal proceeds a corrupted cell carries", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan() });
+    const before = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+
+    const path = resolve(dir, "Fixedassets.xlsx");
+    const zip = await JSZip.loadAsync(readFileSync(path));
+    const sheetPath = (await buildSheetMap(zip)).get("Schedule");
+    const xml = await zip.file(sheetPath).async("string");
+    zip.file(sheetPath, xml.replace(`<c r="V${MOTOR_EXISTING_ROW}"><v>12500</v></c>`, `<c r="V${MOTOR_EXISTING_ROW}"><v>3</v></c>`));
+    writeFileSync(path, await zip.generateAsync({ type: "nodebuffer" }));
+
+    const after = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect(after.fixedAssets[0].disposalProceeds).toBe(3);
+    expect({ ...after.fixedAssets[0], disposalProceeds: 12500 }).toEqual(before.fixedAssets[0]);
+  });
+
+  it("leaves the disposal fields off an asset the year did not sell", async () => {
+    const dir = await ltdPackageWithFixedAssets({ Schedule: scheduleWithVan({ U50: undefined, V50: undefined }) });
+    const book = await extractBook(dir, "ltd", [DUMMY_POSTING], LTD_CELL_MAP);
+    expect("disposedDate" in book.fixedAssets[0]).toBe(false);
+    expect("disposalProceeds" in book.fixedAssets[0]).toBe(false);
+    expect(book.fixedAssets[0].depreciationRate).toBe(0.25);
   });
 });

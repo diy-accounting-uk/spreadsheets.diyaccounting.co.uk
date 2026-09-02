@@ -442,7 +442,7 @@ Trade: Owner-driver private hire and taxi services
 | N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
 | M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
 | N12 | Higher Band Start | 37701 | tax.incomeTax.basicRateLimit (+1) |
-| N13 | Higher Band End | 150000 | tax.incomeTax.higherRateThreshold |
+| N13 | Higher Band End | 150000 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 3.15 | tax.nationalInsurance.class2WeeklyRate |
 | L20 | NI Class 4 Lower Rate | 0.0973 | tax.nationalInsurance.class4MainRate |
 | N20 | NI Class 4 Lower Limit | 11908 | tax.nationalInsurance.class4LowerProfits |

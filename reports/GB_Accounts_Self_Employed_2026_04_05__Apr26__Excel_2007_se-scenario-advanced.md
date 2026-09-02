@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2026-04-05 (Apr26) Excel 2007
 
 Scenario: se-scenario-advanced
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 SE-scoped extract from Precision Code Ltd master data. Sales + purchases + bank + payroll, with VAT.
 
@@ -476,8 +476,7 @@ Trade: IT consultancy and software development
 | Payslips print: income tax to date is every month printed so far | 1060 | 1060 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 400 | 400 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 5540 | 5540 | 0 | PASS |
-| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
-| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45808 | 0 |  | **WARNING** |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 45808 | 45808 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 92735.73333333332 | 92735.7333333333 | -2.9103830456733704e-11 | PASS |
 | Payslips!Jul F51 employee name | Alice Johnson | Alice Johnson |  | PASS |
 | Payslips!Jul M51 gross pay | 3500 | 3500 | 0 | PASS |
@@ -1593,20 +1592,20 @@ Journal amounts include VAT at 20%.
 | N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
 | N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
-| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
-| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
-| N13 | Higher Band End | 125140 | tax.incomeTax.higherBandEnd |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
+| N12 | Higher Band Start | 37701 |  |
+| N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
-| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.wdaRate |
-| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
-| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 |  |
+| G5 | Writing Down Allowance Rate | 0.18 | tax.capitalAllowances.mainRateWDA |
+| F21 | Mileage Higher Rate Limit | 10000 |  |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| F22 | Mileage Lower Rate Start | 10001 |  |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
 | F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 | B4 |  | 45753 |  |
@@ -2267,7 +2266,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 1060 |  |
 | I16 |  | 400 |  |
 | M16 |  | 5540 |  |
-| M18 |  | 0 |  |
+| M18 |  | 45808 |  |
 
 ### Payslips.xlsx!Admin
 

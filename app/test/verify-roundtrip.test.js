@@ -872,3 +872,240 @@ describe.skipIf(!hasLibreOffice())("The fixed asset register across a double rou
     expect(readFileSync(join(secondData, "book.toml"), "utf8")).toBe(readFileSync(join(firstData, "book.toml"), "utf8"));
   });
 });
+
+// ── The declared-absence floor on book.toml ────────────────────────────────
+//
+// A fixture field the export leaves out is either a real loss or a place the
+// package has nowhere to hold. The inventory's bookFields section says which,
+// and the comparator counts the two apart so neither can be mistaken for the
+// other. A declaration that no longer matches anything throws, so it cannot
+// sit in the file explaining an absence that has since been closed.
+
+describe("the book-field declaration floor", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  const LINE = { sourceJournalID: "sales", postingDate: "2025-04-01", accountMainID: "4000", amount: 100 };
+
+  function writeBooks(fixtureBook, exportBook) {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-bookfields-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    for (const target of [fixture, exported]) writeFileSync(join(target, "lines.jsonl"), JSON.stringify(LINE) + "\n");
+    writeFileSync(join(fixture, "book.toml"), fixtureBook);
+    writeFileSync(join(exported, "book.toml"), exportBook);
+    return { fixture, exported };
+  }
+
+  const FIXTURE_BOOK = [
+    "[documentInfo]",
+    'creationDate = "2026-04-01"',
+    'language = "en"',
+    "",
+    "[[debtors]]",
+    'counterparty = "Acme Corp"',
+    'invoice = "INV-1"',
+    "",
+    "[[debtors]]",
+    'counterparty = "Beta Systems"',
+    'invoice = "INV-2"',
+    "",
+    '[accounts.sales."4000"]',
+    'accountMainDescription = "Consultancy"',
+    '"diya-gl:column" = "O"',
+    "",
+    '[accounts.sales."4001"]',
+    'accountMainDescription = "Licences"',
+    '"diya-gl:column" = "P"',
+    "",
+  ].join("\n");
+
+  const EXPORT_BOOK = [
+    "[documentInfo]",
+    'language = "en"',
+    "",
+    "[[debtors]]",
+    'counterparty = "Acme Corp"',
+    "",
+    "[[debtors]]",
+    'counterparty = "Beta Systems"',
+    "",
+    '[accounts.sales."4000"]',
+    'accountMainDescription = "Consultancy"',
+    "",
+    '[accounts.sales."4001"]',
+    'accountMainDescription = "Licences"',
+    "",
+  ].join("\n");
+
+  const INVENTORY = {
+    bookFields: [
+      { path: "documentInfo.creationDate", products: ["bst"], reason: "no sheet records when the book was written" },
+      { path: "debtors[].invoice", products: ["bst"], reason: "no invoice column beside the ledger entry" },
+      { path: "accounts.sales.*.diya-gl:column", products: ["bst"], reason: "one gross sales column for every account" },
+    ],
+  };
+
+  it("counts every declared path as declared and none as missing", () => {
+    const { fixture, exported } = writeBooks(FIXTURE_BOOK, EXPORT_BOOK);
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("bst", INVENTORY));
+    expect(score.book.missing).toBe(0);
+    // One creationDate, one invoice per debtor, one column per sales account.
+    expect(score.book.declared).toBe(5);
+    expect(score.book.declaredPaths).toEqual([
+      "accounts.sales.4000.diya-gl:column",
+      "accounts.sales.4001.diya-gl:column",
+      "debtors[0].invoice",
+      "debtors[1].invoice",
+      "documentInfo.creationDate",
+    ]);
+  });
+
+  it("counts an undeclared absence as missing, so a declaration cannot be widened by accident", () => {
+    const { fixture, exported } = writeBooks(FIXTURE_BOOK, EXPORT_BOOK);
+    const narrowed = { bookFields: INVENTORY.bookFields.filter((entry) => entry.path !== "debtors[].invoice") };
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("bst", narrowed));
+    expect(score.book.missing).toBe(2);
+    expect(score.book.missingPaths).toEqual(["debtors[0].invoice", "debtors[1].invoice"]);
+    expect(score.book.declared).toBe(3);
+  });
+
+  it("declares nothing for a product the entry does not name", () => {
+    const { fixture, exported } = writeBooks(FIXTURE_BOOK, EXPORT_BOOK);
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", INVENTORY));
+    expect(score.book.declared).toBe(0);
+    expect(score.book.missing).toBe(5);
+  });
+
+  it("throws when a declared path is one the export turns out to carry", () => {
+    const carried = EXPORT_BOOK.replace(
+      '[[debtors]]\ncounterparty = "Acme Corp"',
+      '[[debtors]]\ncounterparty = "Acme Corp"\ninvoice = "INV-1"',
+    ).replace('[[debtors]]\ncounterparty = "Beta Systems"', '[[debtors]]\ncounterparty = "Beta Systems"\ninvoice = "INV-2"');
+    const { fixture, exported } = writeBooks(FIXTURE_BOOK, carried);
+    expect(() => scoreDataHalves(fixture, exported, unrepresentableScope("bst", INVENTORY))).toThrow(
+      /declares book path "debtors\[\]\.invoice" absent for bst/,
+    );
+  });
+
+  it("rejects a declaration that names an array index instead of the whole table", () => {
+    const inventory = { bookFields: [{ path: "debtors[0].invoice", products: ["bst"], reason: "r" }] };
+    expect(() => unrepresentableScope("bst", inventory)).toThrow(/names an array index/);
+  });
+
+  it("rejects a wildcard that stands for part of a segment", () => {
+    const inventory = { bookFields: [{ path: "accounts.sales.40*.diya-gl:column", products: ["bst"], reason: "r" }] };
+    expect(() => unrepresentableScope("bst", inventory)).toThrow(/stands for a whole segment/);
+  });
+
+  it("rejects a declaration with no reason", () => {
+    const inventory = { bookFields: [{ path: "stock.openingValue", products: ["ltd"] }] };
+    expect(() => unrepresentableScope("ltd", inventory)).toThrow(/has no reason/);
+  });
+
+  it("rejects a declaration with no path", () => {
+    const inventory = { bookFields: [{ products: ["ltd"], reason: "r" }] };
+    expect(() => unrepresentableScope("ltd", inventory)).toThrow(/has no path/);
+  });
+});
+
+// ── The checked-in inventory itself ────────────────────────────────────────
+
+describe("roundtrip-unrepresentable.json's book-field declarations", () => {
+  const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
+  const budget = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-budget.json"), "utf8"));
+
+  it("validates for every product the budget gates", () => {
+    for (const product of Object.keys(budget)) expect(() => unrepresentableScope(product, inventory)).not.toThrow();
+  });
+
+  it("gates every product's missing book fields at zero and holds a declared count for each", () => {
+    for (const [product, entry] of Object.entries(budget)) {
+      expect(entry.bookFieldsMissing, product).toBe(0);
+      // The declared count is the ceiling a new declaration breaks. It counts
+      // paths rather than entries -- one debtors[].invoice declaration stands
+      // for every entry in the ledger -- so it can only be at least as large
+      // as the number of declarations naming this product.
+      expect(entry.bookFieldsDeclared, product).toBeGreaterThanOrEqual(unrepresentableScope(product, inventory).bookPaths.size);
+    }
+  });
+});
+
+// Every dotted path a book.toml can carry, in the pattern form a declaration
+// writes: an array of tables as "[]", a table keyed on anything but a fixed
+// name as "*". A declaration whose path is not one of these is a typo, and
+// nothing else would catch it -- a pattern that matches no path declares
+// nothing and is silent by design, because another fixture may simply not
+// carry the field.
+function schemaBookPaths() {
+  const schema = JSON.parse(
+    readFileSync(resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public", "schema", "diya-gl-book-v2.schema.json"), "utf8"),
+  );
+  const paths = new Set();
+  const deref = (node) =>
+    node?.$ref
+      ? node.$ref
+          .replace(/^#\//, "")
+          .split("/")
+          .reduce((target, segment) => target[segment], schema)
+      : node;
+
+  const walk = (node, prefix) => {
+    const resolved = deref(node);
+    if (!resolved) return;
+    if (resolved.type === "array") return walk(resolved.items, `${prefix}[]`);
+    const named = resolved.properties || {};
+    const keyed = resolved.patternProperties || {};
+    if (Object.keys(named).length === 0 && Object.keys(keyed).length === 0) {
+      if (prefix) paths.add(prefix);
+      return;
+    }
+    for (const [key, child] of Object.entries(named)) walk(child, prefix ? `${prefix}.${key}` : key);
+    for (const child of Object.values(keyed)) walk(child, prefix ? `${prefix}.*` : "*");
+  };
+
+  walk(schema, "");
+  return paths;
+}
+
+describe("every declared book path is one the schema can produce", () => {
+  const inventory = JSON.parse(readFileSync(resolve(ROOT, "app", "data", "roundtrip-unrepresentable.json"), "utf8"));
+
+  it("names no path the published book schema has no place for", () => {
+    const legal = schemaBookPaths();
+    const strays = (inventory.bookFields || []).map((entry) => entry.path).filter((path) => !legal.has(path));
+    expect(strays).toEqual([]);
+  });
+});
+
+describe("a declaration the book states no path for", () => {
+  let dir;
+
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true });
+    dir = undefined;
+  });
+
+  it("stays silent, because another fixture may simply not carry the field", () => {
+    dir = mkdtempSync(join(tmpdir(), "verify-roundtrip-unexercised-"));
+    const fixture = join(dir, "fixture");
+    const exported = join(dir, "export");
+    mkdirSync(fixture);
+    mkdirSync(exported);
+    const line = { sourceJournalID: "sales", postingDate: "2025-04-01", accountMainID: "4000", amount: 100 };
+    for (const target of [fixture, exported]) {
+      writeFileSync(join(target, "lines.jsonl"), JSON.stringify(line) + "\n");
+      writeFileSync(join(target, "book.toml"), '[documentInfo]\nlanguage = "en"\n');
+    }
+    const inventory = { bookFields: [{ path: "stock.openingValue", products: ["ltd"], reason: "the sheet keeps no opening value" }] };
+    const score = scoreDataHalves(fixture, exported, unrepresentableScope("ltd", inventory));
+    expect(score.book.declared).toBe(0);
+    expect(score.book.missing).toBe(0);
+  });
+});

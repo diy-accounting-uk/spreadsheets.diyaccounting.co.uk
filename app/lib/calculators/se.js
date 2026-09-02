@@ -30,8 +30,10 @@ import {
 } from "../tax/vat.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  payeTaxMonthDates,
+  payrollYearStart,
   PAYSLIP_PRINT_CELLS,
-  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
   PAYSLIP_PRINT_PERIOD,
@@ -294,10 +296,11 @@ const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
 // total position 4 would bring forward: text cells, so the sheet's own
 // unfilled branch leaves a blank rather than a nil.
 const PAYSLIPS_WEEKLY_TEXT_COLUMN = { 3: PAYSLIPS_ENTRY_COLUMNS.name, 4: PAYSLIPS_ENTRY_COLUMNS.grossPay };
-// The four columns of a monthly block row the template ships empty, against
+// The five columns of a monthly block row the template ships empty, against
 // the three it ships as a literal zero.
 const PAYSLIPS_BLANK_COLUMNS = [
   PAYSLIPS_ENTRY_COLUMNS.name,
+  PAYSLIPS_ENTRY_COLUMNS.taxCode,
   PAYSLIPS_ENTRY_COLUMNS.grossPay,
   PAYSLIPS_ENTRY_COLUMNS.netPay,
   PAYSLIPS_ENTRY_COLUMNS.reference,
@@ -308,7 +311,7 @@ const PAYSLIP_PRINT_BLANK_CELLS = ["M8", "G14", "H14", "I14", "M14", "G16", "H16
 // One month tab's monthly payroll block: an employee a row from block row +
 // 3, with the wages-paid date above them. A row the scenario has no employee
 // for keeps the three columns the template ships as a literal zero and stays
-// blank in the other four, which is what the workbook itself carries there.
+// blank in the other five, which is what the workbook itself carries there.
 function buildPayslipsMonthTab(monthIndex, entries) {
   const sheet = {};
   const columns = PAYSLIPS_ENTRY_COLUMNS;
@@ -320,6 +323,7 @@ function buildPayslipsMonthTab(monthIndex, entries) {
       return;
     }
     sheet[`${columns.name}${row}`] = entry.name || SHEET_BLANK;
+    sheet[`${columns.taxCode}${row}`] = entry.taxCode || SHEET_BLANK;
     sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
     sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
     sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
@@ -375,7 +379,8 @@ function buildPayslipsPrintPage(period, payroll) {
   for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
     sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
   }
-  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
+  // M18's ADDRESS now points at the same cell I9 does -- the wages-paid date.
+  sheet.M18 = sheet[PAYSLIP_PRINT_CELLS.periodEnd];
   return sheet;
 }
 
@@ -810,9 +815,15 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
   );
 
   // ── Payslips ──
+  // The PAYE remittance schedule: B the tax month end and C the day the
+  // payment falls due, both counted off the payroll year's first day; D the
+  // National Insurance due, E the income tax and I the whole amount payable.
   const payment = {};
   payroll.forEach((month, index) => {
     const row = WAGES_MONTH_ROWS[index];
+    const taxMonth = payeTaxMonthDates(payrollYearStart(startYear), index);
+    payment[`B${row}`] = excelSerial(taxMonth.ends);
+    payment[`C${row}`] = excelSerial(taxMonth.due);
     payment[`D${row}`] = month.employerNI + month.employeeNI;
     payment[`E${row}`] = month.incomeTax;
     payment[`I${row}`] = payment[`D${row}`] + payment[`E${row}`];
@@ -1084,6 +1095,17 @@ export function calculateSeResults(book, lines, taxData, scenario = {}) {
     const tab = MONTH_SHEETS[MONTH_KEYS[monthIndex]];
     results[`Payslips.xlsx!${tab}`] = buildPayslipsMonthTab(monthIndex, scenario.payroll?.[MONTH_KEYS[monthIndex]] || []);
   }
+
+  // Every month tab carries its own whole-month totals on row 1, which is
+  // what the PAYE schedule row for that month reads it through.
+  payroll.forEach((month, index) => {
+    const key = `Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[index]]}`;
+    if (!results[key]) results[key] = {};
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employerNI] = month.employerNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = month.employeeNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = month.incomeTax;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
+  });
 
   MONTH_KEYS.forEach((month, index) => {
     const tab = MONTH_SHEETS[month];
