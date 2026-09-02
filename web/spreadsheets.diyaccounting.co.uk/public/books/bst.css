@@ -413,6 +413,48 @@ select:focus-visible,
   text-align: left;
 }
 
+/* The new-book form: business name, year end -- the same editable-field
+   label/input pattern the Business Details view uses, so this reads as one
+   design language rather than a bolted-on dialog. */
+.new-book-form {
+  text-align: left;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--rule-faint);
+}
+.new-book-form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* The IndexedDB continue-offer: a saved working book, offered alongside the
+   fresh options, never loaded until the reader asks for it. */
+.continue-offer {
+  text-align: left;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius);
+  background: var(--tint);
+}
+.continue-offer h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pencil);
+}
+.continue-offer p {
+  margin: 0 0 0.6rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.continue-offer-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 /* ============================== Year table ============================== */
 
 .year-table-scroll {

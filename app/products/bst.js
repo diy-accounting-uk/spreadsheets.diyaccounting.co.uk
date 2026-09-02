@@ -8,6 +8,7 @@
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS, fixedAssetAdditions } from "../lib/scenario-loader.js";
+import { MONTH_ORDER } from "../lib/scenario-extractor.js";
 import { buildProfitBridge, PROFIT_BRIDGE_CHECK } from "../lib/report-generator.js";
 import { calculateMileageAllowance } from "../lib/tax/mileage.js";
 
@@ -19,9 +20,33 @@ export const PRODUCT = {
   prefix: "GB Accounts Basic Sole Trader",
 };
 
-// Slots the Debtors & Creditors sheet gives each opening/closing block.
-const DEBTOR_SLOTS = 3;
-const CREDITOR_SLOTS = 4;
+// The Debtors & Creditors sheet's month rows, in the template's own order:
+// row 5 is the first month of the period and row 27 the last, two rows apart.
+// C reads that month's Sales tab, F that month's Purchases tab.
+const LEDGER_MONTH_ROWS = Object.fromEntries(MONTH_ORDER.map((month, index) => [month, 5 + index * 2]));
+
+// The one figure each side of the sheet takes as input, under the "Owed start
+// year" labels at B3 and E3, and the scenario key each is stated on.
+const LEDGER_OPENING_CELLS = { debtors: "C3", creditors: "F3" };
+const LEDGER_OPENING_KEYS = { debtors: "trade_debtors", creditors: "trade_creditors" };
+
+// Where each side's column total lands: "Amount owed by customers" and
+// "Amount owed    to suppliers", both =SUM(row 3 down to row 28).
+const LEDGER_TOTAL_CELLS = { debtors: "C29", creditors: "F29" };
+
+const LEDGER_SHEET = "Debtors & Creditors";
+
+// What a transaction contributes to its month's outstanding figure. The sheet
+// carries a row's value into the outstanding column only while nothing is
+// recorded against it in the payment column (Sales H4 = IF(F4<>0, IF(D4>0,
+// " ", F4), " "), and the same shape on Purchases against G). A mileage-log
+// purchase writes miles rather than a value, so its outstanding cell reads
+// blank whatever the payment column says.
+function outstandingAmount(transaction) {
+  if (transaction.payment) return 0;
+  if (transaction.mileage) return 0;
+  return transaction.amount || 0;
+}
 
 // ── Scenario cell writes ───────────────────────────────────────────────────
 
@@ -95,30 +120,21 @@ export function cellWrites(scenario) {
     if (scenario.stock.closing !== undefined) writes.PurchasesStock.D30 = scenario.stock.closing;
   }
 
-  // Debtors and creditors. The sheet's own columns C and F carry a monthly
-  // analysis of sales not yet received and purchases still to be paid, so a
-  // slot left unwritten keeps a monthly figure that is neither a debtor nor a
-  // creditor. Each block is filled to the end for that reason: what the report
-  // shows under these labels is then the scenario's entries and nothing else.
-  // A book that declares no ledger at all (entries undefined, not just empty)
-  // still owns every slot in its block -- leaving it unwritten would publish
-  // whatever monthly sales or purchases figure the template's own formula
-  // already carries there as a fictitious debtor or creditor.
-  function writeEntryBlock(entries, nameColumn, amountColumn, firstRow, slots, nameField) {
-    if (!writes["Debtors & Creditors"]) writes["Debtors & Creditors"] = {};
-    const sheet = writes["Debtors & Creditors"];
-    for (let i = 0; i < slots; i++) {
-      const row = firstRow + i;
-      const entry = entries?.[i];
-      sheet[`${nameColumn}${row}`] = entry ? entry[nameField] : "";
-      sheet[`${amountColumn}${row}`] = entry ? entry.amount : "";
+  // Debtors and creditors. The sheet is a monthly outstanding table: the only
+  // cells it takes are the two "Owed start year" figures, and every month row
+  // is the template's own formula reading that month's Sales or Purchases tab.
+  // Writing a name or an amount over one of those rows destroys the formula
+  // and publishes the figure under a heading it does not belong to, which is
+  // what this writer used to do.
+  const openingLedger = scenario.opening_balance;
+  if (openingLedger) {
+    const sheet = {};
+    for (const ledger of ["debtors", "creditors"]) {
+      const owed = openingLedger[LEDGER_OPENING_KEYS[ledger]];
+      if (owed !== undefined) sheet[LEDGER_OPENING_CELLS[ledger]] = owed;
     }
+    if (Object.keys(sheet).length > 0) writes[LEDGER_SHEET] = sheet;
   }
-
-  writeEntryBlock(scenario.opening_debtors, "B", "C", 5, DEBTOR_SLOTS, "customer");
-  writeEntryBlock(scenario.closing_debtors, "E", "F", 5, DEBTOR_SLOTS, "customer");
-  writeEntryBlock(scenario.opening_creditors, "B", "C", 12, CREDITOR_SLOTS, "supplier");
-  writeEntryBlock(scenario.closing_creditors, "E", "F", 12, CREDITOR_SLOTS, "supplier");
 
   // Fixed asset additions go on the "Fixed Assets" sheet's Plant & Machinery
   // "NEW FIXED ASSETS Bought AFTER" block (rows 67-71, 5 slots). That block
@@ -241,20 +257,37 @@ export const CELL_MAP = [
   ["PurchasesStock", "D7",  "Stock at Cost",  "stock.openingValue (carried)", "Stock", 0, "money"],
   ["PurchasesStock", "D30", "Closing Stock",  "stock.closingValue", "Stock", 0, "money"],
   // ── Debtors & Creditors ──
-  ["Debtors & Creditors", "C5",  "Opening Debtor 1",  "debtors[timing=opening][0].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C6",  "Opening Debtor 2",  "debtors[timing=opening][1].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C7",  "Opening Debtor 3",  "debtors[timing=opening][2].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F5",  "Closing Debtor 1",  "debtors[timing=closing][0].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F6",  "Closing Debtor 2",  "debtors[timing=closing][1].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F7",  "Closing Debtor 3",  "debtors[timing=closing][2].amount",      "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C12", "Opening Creditor 1","creditors[timing=opening][0].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C13", "Opening Creditor 2","creditors[timing=opening][1].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C14", "Opening Creditor 3","creditors[timing=opening][2].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "C15", "Opening Creditor 4","creditors[timing=opening][3].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F12", "Closing Creditor 1","creditors[timing=closing][0].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F13", "Closing Creditor 2","creditors[timing=closing][1].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F14", "Closing Creditor 3","creditors[timing=closing][2].amount", "Debtors & Creditors", 1, "money"],
-  ["Debtors & Creditors", "F15", "Closing Creditor 4","creditors[timing=closing][3].amount", "Debtors & Creditors", 1, "money"],
+  // A monthly outstanding table. C3 and F3 are the year's opening figures,
+  // the only two cells entered; the month rows and the two totals are the
+  // template's own formulas over the Sales and Purchases tabs.
+  ["Debtors & Creditors", "C3",  "Owed by customers at start of year",  "openingBalances.tradeDebtors",   "Debtors & Creditors", 0, "money"],
+  ["Debtors & Creditors", "C5",  "Apr sales not yet received",  "gl-cor:amount (sales unreceived, apr)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C7",  "May sales not yet received",  "gl-cor:amount (sales unreceived, may)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C9",  "Jun sales not yet received",  "gl-cor:amount (sales unreceived, jun)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C11", "Jul sales not yet received",  "gl-cor:amount (sales unreceived, jul)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C13", "Aug sales not yet received",  "gl-cor:amount (sales unreceived, aug)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C15", "Sep sales not yet received",  "gl-cor:amount (sales unreceived, sep)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C17", "Oct sales not yet received",  "gl-cor:amount (sales unreceived, oct)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C19", "Nov sales not yet received",  "gl-cor:amount (sales unreceived, nov)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C21", "Dec sales not yet received",  "gl-cor:amount (sales unreceived, dec)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C23", "Jan sales not yet received",  "gl-cor:amount (sales unreceived, jan)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C25", "Feb sales not yet received",  "gl-cor:amount (sales unreceived, feb)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C27", "Mar sales not yet received",  "gl-cor:amount (sales unreceived, mar)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "C29", "**Amount owed by customers**", "gl-cor:amount (debtors, year end)",   "Debtors & Creditors", 0, "money"],
+  ["Debtors & Creditors", "F3",  "Owed to suppliers at start of year",  "openingBalances.tradeCreditors", "Debtors & Creditors", 0, "money"],
+  ["Debtors & Creditors", "F5",  "Apr purchases still to be paid",  "gl-cor:amount (purchases unpaid, apr)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F7",  "May purchases still to be paid",  "gl-cor:amount (purchases unpaid, may)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F9",  "Jun purchases still to be paid",  "gl-cor:amount (purchases unpaid, jun)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F11", "Jul purchases still to be paid",  "gl-cor:amount (purchases unpaid, jul)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F13", "Aug purchases still to be paid",  "gl-cor:amount (purchases unpaid, aug)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F15", "Sep purchases still to be paid",  "gl-cor:amount (purchases unpaid, sep)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F17", "Oct purchases still to be paid",  "gl-cor:amount (purchases unpaid, oct)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F19", "Nov purchases still to be paid",  "gl-cor:amount (purchases unpaid, nov)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F21", "Dec purchases still to be paid",  "gl-cor:amount (purchases unpaid, dec)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F23", "Jan purchases still to be paid",  "gl-cor:amount (purchases unpaid, jan)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F25", "Feb purchases still to be paid",  "gl-cor:amount (purchases unpaid, feb)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F27", "Mar purchases still to be paid",  "gl-cor:amount (purchases unpaid, mar)", "Debtors & Creditors", 1, "money"],
+  ["Debtors & Creditors", "F29", "**Amount owed to suppliers**", "gl-cor:amount (creditors, year end)",   "Debtors & Creditors", 0, "money"],
   // ── Purchase analysis (year-to-date columns on the last month's sheet) ──
   ["PurchasesMar", "X1", "Purchases capitalised as fixed assets", "fixedAssets (purchased, year total)", "Purchase Analysis", 0, "money"],
   ["PurchasesMar", "C1", "Business miles for the year",           "gl-bus:measurableQuantity (miles)",   "Purchase Analysis", 0, "count"],
@@ -461,41 +494,50 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     check("Stock: cost of sales = stock purchases + stock movement", pl.C6 || 0, stockPurchases + stockMovement);
   }
 
-  // Debtors/Creditors checks. Every slot in the block counts: the writer fills
-  // the ones the scenario does not use, so a monthly analysis figure surviving
-  // in one of them is a difference here rather than a stray row in the report.
-  function checkEntryBlock(name, entries, cells) {
-    const expectedTotal = entries.reduce((s, e) => s + e.amount, 0);
-    const actualTotal = cells.reduce((s, v) => s + (typeof v === "number" ? v : 0), 0);
-    check(name, actualTotal, expectedTotal);
-  }
-  if (expected.opening_debtors && results["Debtors & Creditors"]) {
-    const dc = results["Debtors & Creditors"];
-    checkEntryBlock("Opening Debtors", expected.opening_debtors, [dc.C5, dc.C6, dc.C7]);
-  }
-  if (expected.closing_debtors && results["Debtors & Creditors"]) {
-    const dc = results["Debtors & Creditors"];
-    checkEntryBlock("Closing Debtors", expected.closing_debtors, [dc.F5, dc.F6, dc.F7]);
-  }
-  if (expected.opening_creditors && results["Debtors & Creditors"]) {
-    const dc = results["Debtors & Creditors"];
-    checkEntryBlock("Opening Creditors", expected.opening_creditors, [dc.C12, dc.C13, dc.C14, dc.C15]);
-  }
-  if (expected.closing_creditors && results["Debtors & Creditors"]) {
-    const dc = results["Debtors & Creditors"];
-    checkEntryBlock("Closing Creditors", expected.closing_creditors, [dc.F12, dc.F13, dc.F14, dc.F15]);
-  }
+  // Debtors & Creditors. Both sides of the sheet are the same shape: an
+  // entered opening figure, twelve month rows the template computes off the
+  // Sales or Purchases tabs, and a column total over the two. Each month is
+  // checked against the journal it reads, so a formula written over -- which
+  // is how the whole table used to be filled -- fails on the month it hit.
+  const dc = results[LEDGER_SHEET];
+  if (dc) {
+    const sides = [
+      {
+        ledger: "debtors",
+        column: "C",
+        journal: expected.sales,
+        openingName: "owed by customers at the start of the year = the opening balance declared",
+        monthName: (month) => `${month} sales not yet received = that month's sales with no receipt recorded`,
+        totalName: "amount owed by customers = the opening figure plus every month not yet received",
+      },
+      {
+        ledger: "creditors",
+        column: "F",
+        journal: expected.purchases,
+        openingName: "owed to suppliers at the start of the year = the opening balance declared",
+        monthName: (month) => `${month} purchases still to be paid = that month's purchases with no payment recorded`,
+        totalName: "amount owed to suppliers = the opening figure plus every month still to be paid",
+      },
+    ];
 
-  // A book that declares no ledger at all still owns every slot in the
-  // block: an unwritten slot inherits the sheet's own monthly sales-not-yet-
-  // received or purchases-still-to-be-paid formula, which reads as a debtor
-  // or creditor nobody declared.
-  const hasLedger = expected.opening_debtors || expected.closing_debtors || expected.opening_creditors || expected.closing_creditors;
-  if (!hasLedger && results["Debtors & Creditors"]) {
-    const dc = results["Debtors & Creditors"];
-    const slots = ["C5", "C6", "C7", "F5", "F6", "F7", "C12", "C13", "C14", "C15", "F12", "F13", "F14", "F15"];
-    const leaked = slots.filter((cell) => typeof dc[cell] === "number" && dc[cell] !== 0).length;
-    check("Debtors & Creditors: no ledger declared leaves the block empty", leaked, 0, 0);
+    for (const side of sides) {
+      const opening = expected.opening_balance?.[LEDGER_OPENING_KEYS[side.ledger]];
+      if (opening !== undefined) {
+        check(`Debtors & Creditors: ${side.openingName}`, num(dc[LEDGER_OPENING_CELLS[side.ledger]]), opening);
+      }
+      if (!side.journal) continue;
+
+      let outstandingForYear = 0;
+      for (const [month, row] of Object.entries(LEDGER_MONTH_ROWS)) {
+        const outstanding = (side.journal[month] || []).reduce((sum, tx) => sum + outstandingAmount(tx), 0);
+        outstandingForYear += outstanding;
+        check(`Debtors & Creditors: ${side.monthName(MONTH_SHEETS[month])}`, num(dc[`${side.column}${row}`]), outstanding);
+      }
+      // The column total sums the entered opening figure and all twelve
+      // months, both sides anchored in the scenario rather than in the cells
+      // above, so a month the sheet dropped out of the SUM range fails here.
+      check(`Debtors & Creditors: ${side.totalName}`, num(dc[LEDGER_TOTAL_CELLS[side.ledger]]), (opening || 0) + outstandingForYear);
+    }
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L capital allowances ->

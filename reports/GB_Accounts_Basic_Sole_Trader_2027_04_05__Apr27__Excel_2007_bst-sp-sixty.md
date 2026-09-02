@@ -24,7 +24,32 @@ Trade: Private hire and taxi driving services
 | Purchases: business miles carried = the journals' miles | 1674 | 1674 | 0 | PASS |
 | Purchases: mileage claimed = those miles at the tax year's approved rates | 753.3000000000001 | 753.3 | -1.1368683772161603e-13 | PASS |
 | P&L: Motor Expenses = motoring paid for + the mileage claimed | 3233.3 | 3233 | -0.3000000000001819 | PASS |
-| Debtors & Creditors: no ledger declared leaves the block empty | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Apr sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: May sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jun sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jul sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Aug sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Sep sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Oct sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Nov sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Dec sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jan sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Feb sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Mar sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: amount owed by customers = the opening figure plus every month not yet received | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Apr purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: May purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jun purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jul purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Aug purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Sep purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Oct purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Nov purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Dec purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jan purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Feb purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Mar purchases still to be paid = that month's purchases with no payment recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: amount owed to suppliers = the opening figure plus every month still to be paid | 0 | 0 | 0 | PASS |
 | Fixed Assets: schedule total cost = asset additions | 200 | 200 | 0 | PASS |
 | Fixed Assets: first addition recorded | 200 | 200 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 200 | 200 | 0 | PASS |
@@ -201,20 +226,34 @@ Trade: Private hire and taxi driving services
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 4 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 1 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4 | — |
+| Owed by customers at start of year | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;May sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jun sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jul sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Aug sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sep sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Oct sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Nov sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Dec sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jan sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Feb sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Mar sales not yet received | — |
+| **Amount owed by customers** | 0 |
+| Owed to suppliers at start of year | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;May purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jun purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jul purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Aug purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sep purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Oct purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Nov purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Dec purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jan purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Feb purchases still to be paid | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Mar purchases still to be paid | — |
+| **Amount owed to suppliers** | 0 |
 
 ## Purchase Analysis
 
@@ -365,6 +404,13 @@ Trade: Private hire and taxi driving services
 | D5 | Opening Stock | 0 | stock.openingValue |
 | D7 | Stock at Cost | 0 | stock.openingValue (carried) |
 | D30 | Closing Stock | 0 | stock.closingValue |
+
+### Debtors & Creditors
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| C29 | **Amount owed by customers** | 0 | gl-cor:amount (debtors, year end) |
+| F29 | **Amount owed to suppliers** | 0 | gl-cor:amount (creditors, year end) |
 
 ### PurchasesMar
 

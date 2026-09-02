@@ -23,6 +23,7 @@ export default defineConfig({
         "**/books-bst-edits.browser.test.js",
         "**/books-bundle-gate.browser.test.js",
         "**/books-save.browser.test.js",
+        "**/books-empty-state.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",

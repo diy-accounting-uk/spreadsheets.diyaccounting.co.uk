@@ -66,12 +66,17 @@ async function zipOf(xlsxPath) {
   return zipPath;
 }
 
+// A sheet name as workbook.xml spells it. "Debtors & Creditors" is stored
+// with its ampersand escaped, so a literal match on the name the code uses
+// finds nothing.
+const asXml = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 // A copy of the fixture with one workbook.xml sheet name swapped for
 // another -- the shape a customer's own renamed tab takes.
 async function renameSheet(xlsxPath, from, to) {
   const zip = await JSZip.loadAsync(readFileSync(xlsxPath));
   const workbookXml = await zip.file("xl/workbook.xml").async("string");
-  const patched = workbookXml.replace(`name="${from}"`, `name="${to}"`);
+  const patched = workbookXml.replace(`name="${asXml(from)}"`, `name="${asXml(to)}"`);
   expect(patched).not.toBe(workbookXml); // the fixture actually had that sheet
   zip.file("xl/workbook.xml", patched);
   const buffer = await zip.generateAsync({ type: "nodebuffer" });
@@ -86,7 +91,7 @@ async function retypeCell(xlsxPath, sheetName, cellRef, newText) {
   const zip = await JSZip.loadAsync(readFileSync(xlsxPath));
   const workbookXml = await zip.file("xl/workbook.xml").async("string");
   const relsXml = await zip.file("xl/_rels/workbook.xml.rels").async("string");
-  const sheetMatch = workbookXml.match(new RegExp(`<sheet name="${sheetName}"[^>]*r:id="(rId\\d+)"`));
+  const sheetMatch = workbookXml.match(new RegExp(`<sheet name="${asXml(sheetName)}"[^>]*r:id="(rId\\d+)"`));
   expect(sheetMatch).not.toBeNull();
   const relMatch = relsXml.match(new RegExp(`Id="${sheetMatch[1]}"[^>]*Target="worksheets/([^"]+)"`));
   expect(relMatch).not.toBeNull();
@@ -225,6 +230,43 @@ describe("export.js --file mode", () => {
       expect(err.stderr).toContain('sheet "Business Details" cell C3');
       expect(err.stderr).toContain('expected header "Your name"');
       expect(err.stderr).toContain('found "Full name"');
+    },
+    30000,
+  );
+
+  // The Debtors & Creditors sheet is where the book's opening trade debtors
+  // and creditors are read from, and PurchasesStock and Fixed Assets feed the
+  // stock table and the asset register. All three were opened by name with
+  // nothing checking they were there, so a file short of one exported a book
+  // quietly missing that table.
+  it.each([
+    ["Debtors & Creditors", "B3", "Owed start year", "Beginning balance"],
+    ["PurchasesStock", "B4", "Opening Stock", "Stock brought forward"],
+    ["Fixed Assets", "E2", "Original Cost", "Purchase price"],
+  ])(
+    "rejects a package a customer retyped %s!%s on",
+    async (sheet, cell, label, replacement) => {
+      const retyped = await retypeCell(stagedXlsx(), sheet, cell, replacement);
+
+      const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", retyped]);
+
+      expect(err.status).toBe(1);
+      expect(err.stderr).toContain(`sheet "${sheet}" cell ${cell}`);
+      expect(err.stderr).toContain(`expected header "${label}"`);
+      expect(err.stderr).toContain(`found ${JSON.stringify(replacement)}`);
+    },
+    30000,
+  );
+
+  it(
+    "rejects a package the Debtors & Creditors sheet was renamed on, naming the sheet",
+    async () => {
+      const renamed = await renameSheet(stagedXlsx(), "Debtors & Creditors", "Aged debt");
+
+      const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", renamed]);
+
+      expect(err.status).toBe(1);
+      expect(err.stderr).toContain('sheet "Debtors & Creditors" not found');
     },
     30000,
   );

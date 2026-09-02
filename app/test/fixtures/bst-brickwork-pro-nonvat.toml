@@ -946,65 +946,9 @@ account = "5101"
 opening = 3000
 closing = 2500
 
-[[opening_debtors]]
-customer = "Acme Developments"
-invoice = "INV-0310"
-amount = 4620
-
-[[opening_debtors]]
-customer = "HomeStyle Renovations"
-invoice = "INV-0320"
-amount = 1980
-
-[[closing_debtors]]
-customer = "Acme Developments"
-invoice = "INV-1510"
-amount = 4690
-
-[[closing_debtors]]
-customer = "HomeStyle Renovations"
-invoice = "INV-1520"
-amount = 2010
-
-[[opening_creditors]]
-supplier = "Vodafone"
-invoice = "VF-2503"
-amount = 60
-
-[[opening_creditors]]
-supplier = "Jewson"
-invoice = "JW-2503"
-amount = 800
-
-[[opening_creditors]]
-supplier = "Shell"
-invoice = "SH-2503"
-amount = 200
-
-[[opening_creditors]]
-supplier = "Travis Perkins"
-invoice = "TP-2503"
-amount = 450
-
-[[closing_creditors]]
-supplier = "Vodafone"
-invoice = "VF-2603"
-amount = 60
-
-[[closing_creditors]]
-supplier = "Jewson"
-invoice = "JW-2603"
-amount = 800
-
-[[closing_creditors]]
-supplier = "Shell"
-invoice = "SH-2603"
-amount = 200
-
-[[closing_creditors]]
-supplier = "Travis Perkins"
-invoice = "TP-2603"
-amount = 450
+[opening_balance]
+trade_debtors = 6600
+trade_creditors = 1510
 
 [[fixed_asset_additions]]
 date = 2025-09-01

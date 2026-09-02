@@ -184,6 +184,20 @@ function precisionSubsetEntity(product, { vatRegistered }) {
 // Precision Code ledgers, registers and agreements
 // ============================================================================
 
+// The Basic Sole Trader package has one cell a side for what was owed when
+// the year opened -- the "Owed start year" figures at C3 and F3 on its
+// Debtors & Creditors sheet -- and no room anywhere for the names behind
+// them. Its book states the two totals on openingBalances, which is where
+// both the writer and the export read them.
+function bstOpeningBalances(openingDebtorEntries, openingCreditorEntries) {
+  const total = (entries) => Math.round(entries.reduce((sum, entry) => sum + entry.amount, 0) * 100) / 100;
+  return { tradeDebtors: total(openingDebtorEntries), tradeCreditors: total(openingCreditorEntries) };
+}
+
+function bstOpeningBalanceBlock(openingBalances) {
+  return { opening_balance: { trade_debtors: openingBalances.tradeDebtors, trade_creditors: openingBalances.tradeCreditors } };
+}
+
 const openingDebtors = ledgerListing(book.debtors, "customer", "opening");
 const publishedClosingDebtors = ledgerListing(book.debtors, "customer", "closing");
 const openingCreditors = ledgerListing(book.creditors, "supplier", "opening");
@@ -277,6 +291,7 @@ const bstEntity = precisionSubsetEntity("BasicSoleTrader", { vatRegistered: fals
 // purchases are registered there. A schedule short of the journal strands the
 // spend in neither statement.
 const bstFixedAssetAdditions = fixedAssetAdditions(bstLines, BST_PURCHASE_CODE_MAP, "f");
+const bstOpeningLedger = bstOpeningBalances(openingDebtors, openingCreditors);
 
 const bstToml = formatScenarioToml(
   {
@@ -290,10 +305,7 @@ const bstToml = formatScenarioToml(
   bstGrouped,
   {
     ...bstFigures,
-    opening_debtors: openingDebtors,
-    closing_debtors: closingDebtors,
-    opening_creditors: openingCreditors,
-    closing_creditors: closingCreditors,
+    ...bstOpeningBalanceBlock(bstOpeningLedger),
     // In-year additions go in the "Bought AFTER" block on the Fixed Assets
     // schedule. 100% Annual Investment Allowance applies, so the full cost is
     // claimed in the year.
@@ -303,6 +315,11 @@ const bstToml = formatScenarioToml(
 
 const bstV2 = {
   stock: { openingValue: 10000, closingValue: 6000 },
+  openingBalances: bstOpeningLedger,
+  // The named ledgers the trade actually kept. The Basic Sole Trader sheets
+  // have no counterparty column to hold them, so the round trip declares them
+  // structurally absent rather than dropping them out of the book and leaving
+  // the absence unmeasured.
   debtors: book.debtors,
   creditors: book.creditors,
   fixedAssets: bstFixedAssetAdditions.map((asset, index) => ({
@@ -858,6 +875,8 @@ const brickBstLines = filterBst(bstStaffWagesAsPurchases(withoutDirectorPayroll(
 const brickBstFigures = bstExpectedFigures(brickBstLines, brickBook.stock);
 const brickBstAdditions = fixedAssetAdditions(brickBstLines, BST_PURCHASE_CODE_MAP, "f");
 const brickBstEntity = brickworkEntity("BasicSoleTrader", { vatRegistered: false, soleTrader: true });
+const brickBstLedgers = brickworkLedgers(false);
+const brickBstOpeningLedger = bstOpeningBalances(brickBstLedgers.opening_debtors, brickBstLedgers.opening_creditors);
 
 const brickBstToml = formatScenarioToml(
   {
@@ -878,7 +897,7 @@ const brickBstToml = formatScenarioToml(
   }),
   {
     ...brickBstFigures,
-    ...brickworkLedgers(false),
+    ...bstOpeningBalanceBlock(brickBstOpeningLedger),
     fixed_asset_additions: brickBstAdditions,
   },
 );
@@ -894,6 +913,7 @@ const brickBstDiya = writeSubset(
     accountFilter: bstAccountFilter,
     tables: {
       stock: brickBook.stock,
+      openingBalances: brickBstOpeningLedger,
       ...brickworkLedgerTables(false),
       fixedAssets: brickBook.fixedAssets,
     },
