@@ -237,6 +237,24 @@ test.describe("DIYA-GL books page — undo", () => {
     await expect(page.locator("#undo-btn")).toHaveClass(/hidden/);
   });
 
+  test("mobile portrait offers undo in the bottom action bar", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const start = await yearTotal(page, "netProfit");
+    await addEntry(page, "purchases", { date: "2025-04-15", account: "5500", detail: "Undo me on a phone", amount: 60 });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+    await expect(page.locator("#undo-btn-mobile")).toBeVisible();
+
+    await page.locator("#undo-btn-mobile").click();
+    await expect(page.locator("#undo-btn-mobile")).toBeHidden();
+
+    // Back on a landscape desktop, the year table shows the book restored.
+    await page.setViewportSize(DESKTOP_LANDSCAPE);
+    await expectYearTotal(page, "netProfit", start);
+  });
+
   test("undo walks back through several edits one at a time", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);

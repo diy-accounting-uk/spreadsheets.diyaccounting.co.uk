@@ -37,16 +37,17 @@
     return enginePromise;
   }
 
+  // Half up away from zero at the penny, guarded against binary-float noise
+  // the same way bst-data.js canonicalises a figure before comparing it.
   function round2(value) {
-    return Math.round((value + Number.EPSILON * Math.max(Math.abs(value), 1)) * 100) / 100;
+    var scaled = value * 100;
+    var guarded = scaled + (scaled >= 0 ? 1 : -1) * Math.max(Math.abs(scaled), 1) * 1e-9;
+    var sign = guarded < 0 ? -1 : 1;
+    return (sign * Math.round(Math.abs(guarded))) / 100;
   }
 
   function isWholePence(amount) {
     return typeof amount === "number" && isFinite(amount) && Math.abs(amount * 100 - Math.round(amount * 100)) < 1e-6;
-  }
-
-  function fmtMoney(amount) {
-    return "£" + Number(amount).toFixed(2);
   }
 
   // ============================== the book checks ==============================
@@ -356,7 +357,5 @@
     changeAmount: changeAmount,
     deleteEntry: deleteEntry,
     undo: undo,
-    round2: round2,
-    fmtMoney: fmtMoney,
   };
 })(window);
