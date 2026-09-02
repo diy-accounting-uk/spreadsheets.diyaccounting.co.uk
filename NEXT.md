@@ -47,9 +47,10 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   `examples/bst-latest` is a pre-alignment package (placeholder ledger cells, 12 spurious
   drift findings on upload); regenerate it with the fixed writer and read C3/F3 into
   `openingBalances` on upload, restoring W1's zero-drift rung with a strengthened spec.
-- [ ] `changeLinePostingDate` / `changeLineAccount` as first-class named edits in
-  `diya-gl-edits.js` — the page composes remove+add for now; promote when a consumer
-  (the MCP tools, or a page feature) wants atomic date/account changes.
+- [ ] `changeLinePostingDate` / `changeLineAccount` as first-class named edits (Sonnet,
+  worktree agent) — in flight, operator wants them now: API + MCP registration + the
+  page's remove+add composition swapped, with positional fidelity the existing composition
+  lacks.
 - [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
   JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
   (a bare `Uint8Array.toString` silently corrupts); the save controls download real
