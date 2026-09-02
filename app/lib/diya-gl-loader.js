@@ -160,10 +160,20 @@ export function applyOffset(lines, offsetStr) {
  * @returns {{ book: Object, lines: Array }}
  */
 export function loadDiyaGlData(dataDir, offset) {
-  const bookToml = readFileSync(join(dataDir, "book.toml"), "utf-8");
+  return parseDiyaGlData(readFileSync(join(dataDir, "book.toml"), "utf-8"), readFileSync(join(dataDir, "lines.jsonl"), "utf-8"), offset);
+}
+
+/**
+ * The same two files as text, for a caller that fetched them rather than read
+ * them off a disk.
+ * @param {string} bookToml - the contents of book.toml
+ * @param {string} linesRaw - the contents of lines.jsonl
+ * @param {string} [offset] - ISO 8601 duration offset like "+P3M", "-P1Y"
+ * @returns {{ book: Object, lines: Array }}
+ */
+export function parseDiyaGlData(bookToml, linesRaw, offset) {
   const book = parseTOML(bookToml);
 
-  const linesRaw = readFileSync(join(dataDir, "lines.jsonl"), "utf-8");
   let lines = linesRaw
     .split("\n")
     .filter((line) => line.trim().length > 0)

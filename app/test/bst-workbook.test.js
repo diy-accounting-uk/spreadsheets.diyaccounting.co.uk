@@ -8,7 +8,8 @@ import { fileURLToPath } from "url";
 import JSZip from "jszip";
 import { parse as parseTOML } from "smol-toml";
 
-import { saveBstWorkbook, saveBstPackageZip, taxYearFileName, nodeResourceLoader, BookFieldError } from "../lib/bst-workbook.js";
+import { saveBstWorkbook, saveBstPackageZip, taxYearFileName, BookFieldError } from "../lib/bst-workbook.js";
+import { nodeResourceLoader } from "../lib/app-resources.js";
 import { generateSpreadsheet, packageNaming } from "../lib/generator.js";
 import { applyCellWrites, buildSheetMap, readCellValue, loadSharedStrings } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";

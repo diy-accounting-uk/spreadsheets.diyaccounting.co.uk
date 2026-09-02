@@ -14,6 +14,7 @@ import { parse as parseTOML } from "smol-toml";
 import { generateSpreadsheet, packageNaming } from "./generator.js";
 import { applyCellWrites } from "./spreadsheet-runner.js";
 import { diyaGlToScenario } from "./diya-gl-loader.js";
+import { nodeResourceLoader } from "./app-resources.js";
 import { cellWrites as bstCellWrites } from "../products/bst.js";
 
 const BST_TEMPLATE_DIR = "templates/bst";
@@ -28,28 +29,6 @@ export class BookFieldError extends Error {
     this.name = "BookFieldError";
     this.field = field;
   }
-}
-
-/**
- * The default resource loader: this repo's app/ directory. Paths are
- * app-relative and slash-separated, e.g. "data/se-2025-2026.toml".
- *
- * Node's own modules load on the first read rather than with this file, so a
- * caller that supplies its own loader — a browser bundle — never pulls them in.
- */
-export function nodeResourceLoader(appDir) {
-  async function read(path, encoding) {
-    const { readFileSync } = await import("fs");
-    const { resolve, dirname } = await import("path");
-    const { fileURLToPath } = await import("url");
-    const base = appDir ?? resolve(dirname(fileURLToPath(import.meta.url)), "..");
-    return readFileSync(resolve(base, path), encoding);
-  }
-
-  return {
-    readText: (path) => read(path, "utf8"),
-    readBinary: (path) => read(path, undefined),
-  };
 }
 
 /**
@@ -81,13 +60,30 @@ function periodCoveredEnd(book) {
  * Reading it all up front is what stops a book with a missing field producing a
  * half-written workbook.
  */
+/**
+ * The tax year data a book's own dates name, read through the resource loader.
+ * The calculator needs the same file the writer applies, so both take it from
+ * here rather than each resolving the year for itself.
+ *
+ * @param {Object} book - parsed book.toml
+ * @param {Object} [options]
+ * @param {Object} [options.resources] - resource loader; defaults to reading app/
+ * @param {string} [options.taxYearName] - override the tax year the book's dates imply
+ * @returns {Promise<Object>} the parsed app/data/<year>.toml
+ */
+export async function loadTaxDataForBook(book, options = {}) {
+  const resources = options.resources || nodeResourceLoader();
+  const taxYearName = options.taxYearName || taxYearFileName(periodCoveredEnd(book));
+  return parseTOML(await resources.readText(`data/${taxYearName}.toml`));
+}
+
 async function resolveBstInputs(book, lines, options) {
   const resources = options.resources || nodeResourceLoader();
 
   const bookPeriodEnd = periodCoveredEnd(book);
   const taxYearName = options.taxYearName || taxYearFileName(bookPeriodEnd);
 
-  const taxData = options.taxData || parseTOML(await resources.readText(`data/${taxYearName}.toml`));
+  const taxData = options.taxData || (await loadTaxDataForBook(book, { resources, taxYearName }));
   const yearInfo = taxData.tax_year || taxData.financial_year;
   if (!yearInfo) throw new Error(`${taxYearName}.toml declares neither tax_year nor financial_year`);
   const endDate = new Date(yearInfo.end);
