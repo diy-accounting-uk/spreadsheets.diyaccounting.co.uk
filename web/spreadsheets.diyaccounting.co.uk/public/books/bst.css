@@ -421,6 +421,7 @@ select:focus-visible,
   border: 1px solid var(--rule-faint);
   border-radius: var(--radius);
   background: var(--paper-raised);
+  container-type: inline-size;
 }
 
 table.year-table {
@@ -529,9 +530,17 @@ tfoot.year-totals th {
   background: var(--paper);
 }
 
+/* The year table is wider than its scroll container by design, and the open
+   month's detail lives in one of its cells. Sized to the container and
+   pinned to its left edge, the entries grid stays whole and in view however
+   far the columnar table is scrolled sideways. */
 .month-detail {
   padding: 0.9rem 1rem 1.2rem;
   border-bottom: 1px solid var(--rule-faint);
+  position: sticky;
+  left: 0;
+  width: 100cqw;
+  max-width: 100cqw;
 }
 
 .month-summary-grid {
@@ -561,6 +570,9 @@ tfoot.year-totals th {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1rem;
+  /* The two journals hold different numbers of lines; each table keeps its
+     own row heights rather than stretching to match the taller one. */
+  align-items: start;
 }
 @media (min-width: 640px) {
   .entries-columns {
@@ -687,26 +699,35 @@ td.entry-actions {
   border-top: 1px solid var(--rule);
   border-bottom: none;
   padding-top: 0.4rem;
-  vertical-align: top;
 }
-.entry-add-row input,
-.entry-add-row select {
+.entry-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+.entry-add-form input,
+.entry-add-form select {
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: inherit;
   background: var(--paper);
   border: 1px solid var(--rule-faint);
   border-radius: 2px;
   padding: 0.15rem 0.25rem;
-  max-width: 100%;
+  min-width: 0;
 }
-.entry-add-row .entry-add-account,
-.entry-add-row .entry-add-detail {
-  width: 100%;
-  margin-bottom: 0.15rem;
+.entry-add-form .entry-add-account {
+  flex: 1 1 8rem;
 }
-.entry-add-row .entry-add-date {
-  width: 100%;
+.entry-add-form .entry-add-detail {
+  flex: 2 1 8rem;
+}
+.entry-add-form .entry-add-amount {
+  flex: 0 0 5rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 .entry-add-btn {
   border: 1px solid var(--rule);

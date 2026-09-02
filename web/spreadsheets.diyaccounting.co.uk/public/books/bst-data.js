@@ -211,7 +211,7 @@
   // movement is recognised in the period's last month, exactly as the Stock
   // sheet's own opening-minus-closing chain carries it -- never spread across
   // the months whose ledger lines carry only purchases.
-  function entryOf(line, posted) {
+  function entryOf(line, posted, addressable) {
     return {
       entryNumber: line.entryNumber,
       date: line.postingDate,
@@ -220,7 +220,21 @@
       detail: line.documentReference || "",
       amount: line.amount,
       posted: posted,
+      addressable: addressable,
     };
+  }
+
+  // The edit functions name a line by its entryNumber, so a line sharing one
+  // with another (or carrying none) cannot be changed on its own. Those rows
+  // render as figures rather than fields rather than quietly editing two
+  // lines at once.
+  function addressableEntryNumbers(lines) {
+    var seen = {};
+    for (var i = 0; i < lines.length; i++) {
+      var key = lines[i].entryNumber;
+      seen[key] = (seen[key] || 0) + 1;
+    }
+    return seen;
   }
 
   function buildMonthlyAndEntries(lines, months, stock) {
@@ -232,9 +246,11 @@
       entries[months[i].key] = { monthKey: months[i].key, sales: [], purchases: [] };
     }
     var lastKey = months[months.length - 1].key;
+    var entryNumberCounts = addressableEntryNumbers(lines);
 
     for (i = 0; i < lines.length; i++) {
       var line = lines[i];
+      var addressable = !!line.entryNumber && entryNumberCounts[line.entryNumber] === 1;
       var monthKey = monthKeyOf(line.postingDate);
       if (!monthly[monthKey]) continue; // outside the declared period
       var code = Number(line.accountMainID);
@@ -245,12 +261,12 @@
       if (line.sourceJournalID === "sales") {
         var posted = !!BST_SALES_ACCOUNTS[code];
         if (posted) monthly[monthKey].sales += line.amount;
-        entries[monthKey].sales.push(entryOf(line, posted));
+        entries[monthKey].sales.push(entryOf(line, posted, addressable));
       } else if (line.sourceJournalID === "purchases") {
         var category = BST_PURCHASE_CATEGORY[code];
         if (category === "stock") monthly[monthKey].costOfSales += line.amount;
         else if (category) monthly[monthKey][category] += line.amount;
-        entries[monthKey].purchases.push(entryOf(line, !!category));
+        entries[monthKey].purchases.push(entryOf(line, !!category, addressable));
       }
     }
 

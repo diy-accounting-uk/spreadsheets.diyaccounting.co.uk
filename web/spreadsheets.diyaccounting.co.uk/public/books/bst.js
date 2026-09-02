@@ -682,8 +682,26 @@
         ? ""
         : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
       '</td><td><input class="entry-cell-editable" value="' +
-      esc(r.label + " — " + r.detail) +
-      '" readonly aria-label="Detail" /></td><td class="entry-amount">' +
+      esc(r.detail ? r.label + " — " + r.detail : r.label) +
+      '" readonly aria-label="Detail" /></td>' +
+      entryAmountCell(r) +
+      "</tr>"
+    );
+  }
+
+  // A line the edit functions cannot name on its own -- no entry number, or
+  // one it shares with another line -- shows its figure and no controls,
+  // rather than offering an edit that would move two lines at once.
+  function entryAmountCell(r) {
+    if (!r.addressable) {
+      return (
+        '<td class="entry-amount">' +
+        fmtMoney(r.amount) +
+        '</td><td class="entry-actions"><span class="entry-flag" title="This line shares its entry number with another, so it cannot be changed on its own">shared no.</span></td>'
+      );
+    }
+    return (
+      '<td class="entry-amount">' +
       '<input class="entry-amount-input" inputmode="decimal" data-amount-entry="' +
       esc(r.entryNumber) +
       '" aria-label="Amount for entry ' +
@@ -695,7 +713,7 @@
       esc(r.entryNumber) +
       '" title="Remove this entry" aria-label="Remove entry ' +
       esc(r.entryNumber) +
-      '">&times;</button></td></tr>'
+      '">&times;</button></td>'
     );
   }
 
@@ -715,15 +733,19 @@
         );
       })
       .join("");
+    // One full-width cell rather than a row of the grid's own columns: the
+    // form's controls are wider than the figures above them, and letting
+    // them set the column widths would spread the ledger out.
     return (
       '<tr class="entry-add-row" data-add-journal="' +
       journal +
-      '"><td><input type="date" class="entry-add-date" data-add-field="date" value="' +
+      '"><td colspan="5"><div class="entry-add-form">' +
+      '<input type="date" class="entry-add-date" data-add-field="date" value="' +
       esc(draft.date || monthKey + "-01") +
       '" aria-label="Date for the new ' +
       journal +
-      ' entry" /></td>' +
-      '<td colspan="2"><select class="entry-add-account" data-add-field="account" aria-label="Account for the new ' +
+      ' entry" />' +
+      '<select class="entry-add-account" data-add-field="account" aria-label="Account for the new ' +
       journal +
       ' entry">' +
       options +
@@ -732,17 +754,18 @@
       esc(draft.detail || "") +
       '" aria-label="Detail for the new ' +
       journal +
-      ' entry" /></td>' +
-      '<td class="entry-amount"><input class="entry-amount-input" data-add-field="amount" inputmode="decimal" placeholder="0.00" value="' +
+      ' entry" />' +
+      '<input class="entry-add-amount" data-add-field="amount" inputmode="decimal" placeholder="0.00" value="' +
       esc(draft.amount || "") +
       '" aria-label="Amount for the new ' +
       journal +
-      ' entry" /></td>' +
-      '<td class="entry-actions"><button type="button" class="entry-add-btn" data-add-entry="' +
+      ' entry" />' +
+      '<button type="button" class="entry-add-btn" data-add-entry="' +
       journal +
       '" title="Add this ' +
       journal +
-      ' entry">Add</button></td></tr>'
+      ' entry">Add</button>' +
+      "</div></td></tr>"
     );
   }
 
