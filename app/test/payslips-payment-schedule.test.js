@@ -270,12 +270,19 @@ describe("the PAYE schedule at the template's own year end", () => {
   });
 
   it("refuses a workbook whose schedule no longer reads the tab the rename left it on", async () => {
-    const zip = await JSZip.loadAsync(readFileSync(resolve(APP_DIR, "templates", "ltd", "Payslips.xlsx")));
+    // The rename turns row 4's Apr into Jul on a June year end, so that is
+    // what the realignment expects to find before it moves the row back.
+    const renamed = await renameExternalLinkSheetNames(
+      await renameMonthTabs(readFileSync(resolve(APP_DIR, "templates", "ltd", "Payslips.xlsx")), 6),
+      6,
+    );
+    const zip = await JSZip.loadAsync(renamed);
     const paymentPath = (await buildSheetMap(zip)).get("Payment");
     const xml = await zip.file(paymentPath).async("string");
-    zip.file(paymentPath, xml.replace("<f>Apr!N1</f>", "<f>Apr!N2</f>"));
+    expect(xml).toContain("<f>Jul!N1</f>");
+    zip.file(paymentPath, xml.replace("<f>Jul!N1</f>", "<f>Jul!N2</f>"));
     const buffer = await zip.generateAsync({ type: "nodebuffer" });
-    await expect(realignPayslipsPaymentSchedule(buffer, 6)).rejects.toThrow(/Payment E4 reads Apr!N2/);
+    await expect(realignPayslipsPaymentSchedule(buffer, 6)).rejects.toThrow(/Payment E4 reads Jul!N2/);
   });
 });
 
@@ -415,9 +422,9 @@ describeCalc("se Payslips PAYE schedule checks against the recalculated package"
   });
 
   it.each([
-    ["B4", ["Payslips!Payment B4 tax month 1 ends in Apr"]],
+    ["B4", ["Payslips!Payment B4 tax month 1 ends on the last day of Apr"]],
     ["C4", ["Payslips!Payment C4 tax month 1 is due on the 19th after it"]],
-    ["B15", ["Payslips!Payment B15 tax month 12 ends in Mar"]],
+    ["B15", ["Payslips!Payment B15 tax month 12 ends on the last day of Mar"]],
     ["D6", ["Payslips!Payment jun D6 NI due", "Payslips!Payment D6 NI due is the jun tab's own"]],
     ["E6", ["Payslips!Payment jun E6 income tax due", "Payslips!Payment E6 income tax due is the jun tab's own"]],
     ["I6", ["Payslips!Payment jun I6 total amount payable", "Payslips!Payment I6 total payable is the jun tab's own"]],
