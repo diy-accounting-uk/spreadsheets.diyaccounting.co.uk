@@ -64,6 +64,9 @@ const nodeAbsent = {
   },
 };
 
+// Each entry is a path under examples/, as [directory, product].
+const EXAMPLE_BOOKS = [["sp-sixty-driving", "bst"]];
+
 // The files the engine reads that are not the book itself: the tax year data
 // the save path applies, and the BST template with its meta. The two v2
 // schemas are left where they are — the site already publishes them at
@@ -84,15 +87,18 @@ function copyRuntimeAssets() {
     cpSync(resolve(ROOT, "app", "templates", "bst", name), resolve(templatesOut, "bst", name));
   }
 
-  // The BST fixture the probe page loads, served as the static files a fetch
-  // can reach. W1 serves the same layout for every example it offers.
-  const fixtureOut = resolve(ASSETS_DIR, "examples", "sp-sixty-driving", "bst");
-  mkdirSync(fixtureOut, { recursive: true });
-  for (const name of ["book.toml", "lines.jsonl"]) {
-    cpSync(resolve(ROOT, "examples", "sp-sixty-driving", "bst", name), resolve(fixtureOut, name));
+  // Example books, copied under the path the resource loader names them by:
+  // examples/<name>/<product>/{book.toml,lines.jsonl}. The probe page needs
+  // one; an example the page offers is added to this list.
+  for (const example of EXAMPLE_BOOKS) {
+    const out = resolve(ASSETS_DIR, "examples", ...example);
+    mkdirSync(out, { recursive: true });
+    for (const name of ["book.toml", "lines.jsonl"]) {
+      cpSync(resolve(ROOT, "examples", ...example, name), resolve(out, name));
+    }
   }
 
-  return { yearFiles: yearFiles.length };
+  return { yearFiles: yearFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
 async function main() {
@@ -118,7 +124,7 @@ async function main() {
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
-  console.log(`  assets: ${assets.yearFiles} tax year files, the BST template, the sp-sixty BST fixture`);
+  console.log(`  assets: ${assets.yearFiles} tax year files, the BST template, ${assets.examples} example book(s)`);
 }
 
 await main();
