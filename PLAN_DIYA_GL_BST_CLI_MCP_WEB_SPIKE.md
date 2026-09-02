@@ -276,16 +276,15 @@ phase's tracking surface — NEXT.md stays with the batch branch):
 - [x] closing ladder (coordinator) — green: full serial suite 7254/7254 (one soffice
   contention flake re-proved clean); `--file` vs `--source-dir` byte-identical `D` on a
   freshly generated recalculated package; budgets unchanged at zero.
-- [ ] phase remainder, surfaced by Track C (operator decision before phase 2 ships): the
-  BST `Debtors & Creditors` extractor and generator share an invented per-contact layout,
-  but the shipped sheet is a monthly outstanding table ("Owed start year", "Sales not yet
-  received", month-serial rows — confirmed in the template's shared strings). The round
-  trip passes only because both legs use the fiction; a real customer file gets nonsense
-  ledgers, and the anchor guard doesn't cover the sheet. Decide what BST debtors/creditors
-  ARE — align the pipeline to the real monthly table (moves `book.toml`'s BST ledger shape,
-  the generator writes, fixtures and budgets), or template surgery for per-contact rows.
-  Also carried from Track C: `adminMileageRates` (`xlsx-exporter.js:543`) silently zeroes
-  all mileage rates when Admin is missing in `--source-dir` mode (`--file` is guarded).
+- [ ] BST ledger alignment (Opus, worktree agent, on `claude/bst-spike-2`) — dispatched on
+  the operator's decision (2026-09-02): align the pipeline to the REAL sheet. The shipped
+  BST `Debtors & Creditors` is a monthly outstanding table ("Owed start year", "Sales not
+  yet received", month-serial rows); the exporter and generator shared an invented
+  per-contact layout that round-tripped only as fiction. BST's `book.toml` ledgers become
+  what the template holds — monthly outstanding totals — moving the book shape, the
+  generator writes, the fixtures and the budget's declared counts; the sheet joins the
+  anchor guard so a mismatched file fails by name. The `adminMileageRates` silent-zero
+  fallback (`--source-dir` mode) rides the same track.
 
 Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
 `app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
@@ -400,6 +399,10 @@ structure over that specification.
 
 **In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
 
+- [ ] W0 — the bundle gate (Opus, worktree agent, on `claude/bst-spike-2`) — dispatched:
+  the injected resource loader across the measured `fs` call sites, the esbuild bundle, and
+  the bare page proving the bundle matches `reconcile.js` on the sp-sixty fixture — ending
+  at the plan's continue-or-stop gate.
 - [x] W-pre — landed (`3a5ad81a`, merged): the shell with the six tokens and all four
   layouts as real media-query combinations, the three-level drill, the pencil-correction
   mark; the SA103S and Income Tax form renders; the `download.html` panel. The snapshot
