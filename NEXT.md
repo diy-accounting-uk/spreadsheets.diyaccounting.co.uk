@@ -28,13 +28,16 @@ reports.
   fiction). Moves BST's book ledger shape, generator writes, fixtures and declared budget
   counts; the sheet joins the anchor guard; the `adminMileageRates` silent-zero fallback
   rides along.
-- [ ] W0, the phase-3 bundle gate (Opus, worktree agent) — in flight: the injected resource
-  loader across the re-measured `fs` call sites (Track E's seam is the pattern), the
-  esbuild bundle, the bare page, and the automated continue-or-stop gate — the bundle's
-  figures and verdicts against `reconcile.js` on sp-sixty.
+- [ ] W0, the phase-3 bundle gate — **the gate holds: CONTINUE.** Agent complete (8 commits,
+  awaiting coordinator merge once the main closeout sweep frees the tree): the browser runs
+  the unforked engine — 9 sheets cell-identical, 61/61 verdicts matching, breakability
+  proven, 422.7 KiB reproducible bundle, the shared `app-resources.js` seam. Two riders for
+  the merge: prettier on W-pre's three books files (CI formatting gate), and W4 inherits a
+  decision — the generator asks JSZip for `nodebuffer` (~10 sites), which no browser
+  produces, so browser save needs an output-type choice.
 - [ ] phase 3 tracks W1-W5 (viewer, panels + form renders, edits/checks/helpers, save,
-  entry/examples/layouts) — dispatch as W0's gate holds; the designed shell, form renders
-  and entry panel are already landed (W-pre).
+  entry/examples/layouts) — W0's gate held, so these dispatch next; the designed shell,
+  form renders and entry panel are already landed (W-pre).
 
 ## Open items
 
