@@ -51,6 +51,22 @@ export async function runProbe(options = {}) {
   };
 }
 
+/**
+ * The one resource the load path never touches: the BST template, fetched as
+ * bytes rather than text. Reads it and opens it, so the asset layout's binary
+ * claim is tested rather than assumed. Writing a workbook back out is W4's.
+ */
+export async function readTemplate(options = {}) {
+  const resources = browserResourceLoader(options);
+  const meta = await resources.readText("templates/bst/meta.toml");
+  const spreadsheet = /spreadsheet\s*=\s*"([^"]+)"/.exec(meta);
+  if (!spreadsheet) throw new Error("templates/bst/meta.toml names no template spreadsheet");
+
+  const bytes = await resources.readBinary(`templates/bst/${spreadsheet[1]}`);
+  const metadata = await engine.extractMetadata(bytes, "bst");
+  return { name: spreadsheet[1], byteLength: bytes.byteLength, metadata };
+}
+
 function render(target, state) {
   target.textContent = JSON.stringify(state, null, 2);
 }

@@ -191,4 +191,24 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       server.close();
     }
   });
+
+  // Every other resource the engine reads is text. The BST template is bytes,
+  // and nothing on the load path fetches it, so the asset layout's one binary
+  // claim would otherwise go untested until W4 arrives.
+  test("the BST template is where the asset layout says, and opens in the browser", async ({ page }) => {
+    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    try {
+      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "domcontentloaded" });
+      const fetched = await page.evaluate(async () => {
+        const probe = await import("./probe.js");
+        return probe.readTemplate();
+      });
+
+      const templatePath = path.join(ROOT, "app/templates/bst", fetched.name);
+      expect(fetched.byteLength, "the copied template is the one in app/templates/bst").toBe(fs.statSync(templatePath).size);
+      expect(fetched.metadata, "the browser read the workbook, not just its bytes").toBeTruthy();
+    } finally {
+      server.close();
+    }
+  });
 });
