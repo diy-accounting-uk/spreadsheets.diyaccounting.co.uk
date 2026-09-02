@@ -212,6 +212,29 @@ test.describe("DIYA-GL books page — in-place edits", () => {
   });
 });
 
+test.describe("DIYA-GL books page — a book started from nothing", () => {
+  test("a brand-new book takes its first entry in the grid", async ({ page }) => {
+    await page.setViewportSize(DESKTOP_LANDSCAPE);
+    await page.goto(`${baseUrl}/books/bst.html`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Start a new book" }).click();
+    await page.locator("#new-book-name").fill("Acorn Trading");
+    await page.locator("#new-book-year-end").fill("2026-03-31");
+    await page.getByRole("button", { name: "Create book" }).click();
+    await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
+
+    // The new book's own chart is what the add row offers, and April opens
+    // on an empty grid with nothing but the row under the rule.
+    await openAprilEntries(page);
+    await expect(page.locator(".entries-table tbody tr.entry-row")).toHaveCount(0);
+    expect(await yearTotal(page, "sales")).toBe(0);
+
+    await addEntry(page, "sales", { date: "2025-04-06", account: "4000", detail: "First invoice", amount: 1500 });
+    await expectYearTotal(page, "sales", 1500);
+    await expectYearTotal(page, "netProfit", 1500);
+    await allChecksPass(page);
+  });
+});
+
 test.describe("DIYA-GL books page — undo", () => {
   test("undo restores the exact prior render, by button and by keyboard", async ({ page }) => {
     await openBook(page);
