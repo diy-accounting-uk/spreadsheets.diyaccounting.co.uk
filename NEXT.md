@@ -28,21 +28,21 @@ are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
 From `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md`, phase 3 — dispatch after the ledger
 alignment lands (its book-shape change moves the page snapshot W1 wires):
 
-- [ ] W1 — the viewer goes live (Sonnet, worktree agent) — in flight: the shell swaps its
-  static snapshot for the bundled engine; upload, drill, drift annotations; the in-browser
-  breakability proof. Renders ledgers from the engine's current shape; the ledger
-  alignment reconciles at merge.
-- [ ] W2 — panels and form renders live (Sonnet): checks panel, drift summary, the SA103S
-  and Income Tax renders fed by the engine instead of static figures.
-- [ ] W3 — edits, checks, helpers (Opus): in-place entry edits through
-  `diya-gl-edits.js`, recalculation, the two helper classes with preview and undo.
+- [x] W1 — landed (merged, 43/43 browser tests on the merged tree): upload and all three
+  examples through the real engine, drift with the pencil-correction mark proven breakable
+  in-browser, the anchor guard surfacing named errors in the page's own styling. Its swap
+  put every panel and form render on the live engine, absorbing W2's scope.
+- [ ] W3 — edits, checks, helpers (Opus, worktree agent) — in flight: in-place entry edits
+  through `diya-gl-edits.js`, recalculation on commit, undo as a book-state stack, the two
+  helper classes with preview applying through the same edit path.
 - [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
   JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
   (a bare `Uint8Array.toString` silently corrupts); the save controls download real
   workbooks with `fullCalcOnLoad` proven; round-trip 0 mismatches on the two ledger
   fixtures (sp-sixty's divergence is the in-flight ledger alignment's territory).
-- [ ] W5 — entry panel wiring, the other two example books, autosave, the four-layout
-  Playwright matrix (Sonnet).
+- [ ] W5 — the two leftovers (Sonnet, worktree agent) — in flight: the new-book form (the
+  data model's third way in) and IndexedDB autosave of the working book; entry wiring,
+  examples and the layout matrix landed with W-pre/W1.
 - [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
   both the API and the MCP tool layer).
 
