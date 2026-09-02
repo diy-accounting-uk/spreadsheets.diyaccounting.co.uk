@@ -105,7 +105,7 @@ function parseArgs(argv) {
 // directory so extractBook()'s directory-based reads (findXlsxName and the
 // rest) see exactly one workbook regardless of what else sits beside the
 // customer's original file. Caller removes the directory once done with it.
-async function stageWorkbook(filePath) {
+export async function stageWorkbook(filePath) {
   const stageDir = mkdtempSync(join(tmpdir(), "diya-gl-export-"));
   const ext = extname(filePath).toLowerCase();
   if (ext === ".xlsx") {
@@ -122,11 +122,12 @@ async function stageWorkbook(filePath) {
   return stageDir;
 }
 
-// report.json for a --file run: R, computed by the JS engine from the D just
-// extracted, through the same loadDiyaGlData -> diyaGlToScenario ->
-// calculateFromDiyaGl -> checkCompliance -> buildReportDocument pipeline
-// report.js's --data mode runs, so the two never diverge on how R is built.
-function writeFileReportJson(outputDir, packageName, book, lines, productMod) {
+// R for a (book, lines) pair: the JS engine's own D -> R loop --
+// diyaGlToScenario -> calculateFromDiyaGl -> checkCompliance ->
+// buildReportDocument -- the same loop report.js's --data mode runs, so the
+// CLI's --file mode, report.js and the MCP server's tools never diverge on
+// how R is built from the same D. Pure: no disk access, no console output.
+export function buildFileReportDocument(book, lines, packageName, productMod) {
   const taxData = extractTaxDataFromBook(book, packageName);
   const scenario = diyaGlToScenario(book, lines, packageName);
   const results = calculateFromDiyaGl(book, lines, packageName, taxData, scenario);
@@ -137,7 +138,7 @@ function writeFileReportJson(outputDir, packageName, book, lines, productMod) {
     typeof productMod.checkCompliance === "function"
       ? productMod.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd)
       : [];
-  const document = buildReportDocument({
+  return buildReportDocument({
     packageName,
     engine: "js",
     results,
@@ -147,18 +148,45 @@ function writeFileReportJson(outputDir, packageName, book, lines, productMod) {
     scenarioName: book.documentInfo?.entriesComment,
     yearEnd,
   });
+}
+
+function writeReportJson(outputDir, document) {
   writeFileSync(resolve(outputDir, "report.json"), serializeReportDocument(document));
   console.log(`  report.json: ${document.values.length} values`);
 }
 
-// overtyped.json for a --file run: every sum the Basic Sole Trader template
-// computes that this copy of it no longer does, each one attributed through
-// the mapping the extraction just recorded.
-async function writeOvertypedJson(outputDir, workbook, extractionMap, productMod) {
-  const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
+function writeOvertypedJson(outputDir, overtyped) {
   writeFileSync(resolve(outputDir, "overtyped.json"), `${JSON.stringify(overtyped, null, 2)}\n`);
   const count = Object.keys(overtyped).length;
   console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
+}
+
+// The whole --file extraction, in memory: staging, the anchor guard, D, R and
+// the overtype sidecar, with no disk write beyond the temporary stage
+// directory this function cleans up itself. --source-dir's CLI path and the
+// MCP server's extract_book tool both call this rather than each reaching
+// into xlsx-exporter.js and overtype-sidecar.js on their own, so a change to
+// how any of those three are produced can only ever happen in one place.
+export async function extractBstFromFile(filePath, productMod) {
+  const resolvedFile = resolve(filePath);
+  const stageDir = await stageWorkbook(resolvedFile);
+  try {
+    const xlsxFile = findXlsx(stageDir);
+    const workbook = readFileSync(resolve(stageDir, xlsxFile));
+
+    await validateBstAnchors(workbook);
+
+    const extractionMap = bstExtractionMap();
+    const lines = await extractBstTransactions(workbook, extractionMap);
+    const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
+
+    const document = buildFileReportDocument(book, lines, "bst", productMod);
+    const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
+
+    return { book, lines, document, overtyped };
+  } finally {
+    rmSync(stageDir, { recursive: true, force: true });
+  }
 }
 
 // The v2 schema validation, then book.toml + lines.jsonl written through
@@ -197,33 +225,23 @@ async function runFileMode(filePath, outputDirArg, productMod) {
   console.log(`File:       ${resolvedFile}`);
   console.log(`Output:     ${resolvedOutput}`);
 
-  const stageDir = await stageWorkbook(resolvedFile);
+  let extracted;
   try {
-    const xlsxFile = findXlsx(stageDir);
-    const workbook = readFileSync(resolve(stageDir, xlsxFile));
-
-    try {
-      await validateBstAnchors(workbook);
-    } catch (err) {
-      if (err instanceof BstAnchorError) {
-        console.error(err.message);
-        process.exit(1);
-      }
-      throw err;
+    extracted = await extractBstFromFile(resolvedFile, productMod);
+  } catch (err) {
+    if (err instanceof BstAnchorError) {
+      console.error(err.message);
+      process.exit(1);
     }
-
-    const extractionMap = bstExtractionMap();
-    const lines = await extractBstTransactions(workbook, extractionMap);
-    const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
-
-    writeDiyaGlData(resolvedOutput, book, lines);
-    writeFileReportJson(resolvedOutput, "bst", book, lines, productMod);
-    await writeOvertypedJson(resolvedOutput, workbook, extractionMap, productMod);
-
-    console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
-  } finally {
-    rmSync(stageDir, { recursive: true, force: true });
+    throw err;
   }
+
+  const { book, lines, document, overtyped } = extracted;
+  writeDiyaGlData(resolvedOutput, book, lines);
+  writeReportJson(resolvedOutput, document);
+  writeOvertypedJson(resolvedOutput, overtyped);
+
+  console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }
 
 async function main() {
@@ -275,7 +293,12 @@ async function main() {
   console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run as a CLI when invoked directly; a caller importing
+// extractBstFromFile or buildFileReportDocument (the MCP server does both)
+// must never trigger a second, argv-driven run of this file's own main().
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

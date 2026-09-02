@@ -17,6 +17,7 @@
     "report": "node app/bin/report.js",
     "export": "node app/bin/export.js",
     "export-bst": "node app/bin/export.js --package bst --file",
+    "mcp:diya-gl": "node app/bin/diya-gl-mcp.js",
     "verify:roundtrip": "node app/bin/verify-roundtrip.js",
     "verify:stability": "node app/bin/verify-stability.js",
     "cross-package-reconciliation": "node app/bin/cross-package-reconciliation.js",
