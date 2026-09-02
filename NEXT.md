@@ -36,9 +36,11 @@ alignment lands (its book-shape change moves the page snapshot W1 wires):
   and Income Tax renders fed by the engine instead of static figures.
 - [ ] W3 — edits, checks, helpers (Opus): in-place entry edits through
   `diya-gl-edits.js`, recalculation, the two helper classes with preview and undo.
-- [ ] W4 — save (Sonnet, worktree agent) — in flight: client-side xlsx/zip via
-  `bst-workbook.js`. Output-type decision made (coordinator): the JSZip sites normalise to
-  `uint8array` with `Buffer.from` only at boundaries an API demands, byte-identity proven.
+- [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
+  JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
+  (a bare `Uint8Array.toString` silently corrupts); the save controls download real
+  workbooks with `fullCalcOnLoad` proven; round-trip 0 mismatches on the two ledger
+  fixtures (sp-sixty's divergence is the in-flight ledger alignment's territory).
 - [ ] W5 — entry panel wiring, the other two example books, autosave, the four-layout
   Playwright matrix (Sonnet).
 - [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
