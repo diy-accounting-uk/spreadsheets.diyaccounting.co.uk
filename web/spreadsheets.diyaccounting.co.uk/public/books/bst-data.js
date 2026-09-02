@@ -3,17 +3,13 @@
 
 // books/bst-data.js
 //
-// ============================================================================
-// W1: live computation, wired
-// ============================================================================
-// This file was a static stand-in for the diya-gl book (see git history for
-// the fixture-derived object it used to export). It now loads the real
-// engine bundle (scripts/build-books-bundle.mjs) and computes
-// window.DIYA_BST_SNAPSHOT for real, from one of three sources: an uploaded
-// .xlsx/.zip, or one of the three BST reconciliation fixtures served as
-// static assets. Every view in bst.js still reads book data only through
-// window.DIYA_BST_SNAPSHOT -- this file is the extract/recalculate/report
-// loop that fills it, not a rewrite of any view.
+// The extract/recalculate/report loop behind the page. It loads the engine
+// bundle (scripts/build-books-bundle.mjs) and computes
+// window.DIYA_BST_SNAPSHOT from one of four sources: an uploaded .xlsx/.zip,
+// one of the three BST reconciliation fixtures served as static assets, a
+// blank book from the new-book form, or the working book autosave handed
+// back. Every view in bst.js reads book data only through the snapshot --
+// this file fills it, and is no view's rewrite.
 //
 // Upload path: validateBstAnchors -> extractBstTransactions -> a book built
 // from the same cells CELL_MAP names (entity, stock, debtors/creditors) ->
@@ -38,7 +34,7 @@
   // account (a blank business has no income streams yet to distinguish) and
   // one purchase account per expense category the year table's own columns
   // carry, so a brand-new book already has somewhere for every category of
-  // entry to post to once the edit layer lands. Codes and columns follow the
+  // entry to post to. Codes and columns follow the
   // same chart the reconciliation fixtures use (examples/precision-code-ltd
   // and examples/sp-sixty-driving book.toml).
   var STANDARD_NEW_BOOK_CHART = {
