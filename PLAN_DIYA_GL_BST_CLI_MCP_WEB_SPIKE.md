@@ -261,6 +261,31 @@ the sidecar itself.
 
 ### Delivery — three tracks, two waves
 
+**In flight** on `claude/bst-cli-phase-1` (off `claude/book-readback-2`; this block is the
+phase's tracking surface — NEXT.md stays with the batch branch):
+
+- [x] Track A — landed (`64838188`, merged): `--file` mode with staging, the `export-bst`
+  alias, `report.json` in the same run, and the anchor guard (26 sheets, 13 header labels)
+  failing by name with no stack trace; byte-for-byte with `--source-dir` proven.
+- [x] Track B — landed (`1913e709`, merged): 18 tests across the three fixtures, all four
+  cases anchored on real lines, breakability demonstrated.
+- [x] Track C — landed (`85c9d2bb`, merged): the extraction row map recorded by the
+  extractors themselves, `template-formula-map.js` shared with the guard test, and the
+  sidecar excluding the 2,367 prompt-formula input cells; empty on a fresh package, the
+  78-cell attribution sweep proven one cell at a time.
+- [x] closing ladder (coordinator) — green: full serial suite 7254/7254 (one soffice
+  contention flake re-proved clean); `--file` vs `--source-dir` byte-identical `D` on a
+  freshly generated recalculated package; budgets unchanged at zero.
+- [ ] BST ledger alignment (Opus, worktree agent, on `claude/bst-spike-2`) — dispatched on
+  the operator's decision (2026-09-02): align the pipeline to the REAL sheet. The shipped
+  BST `Debtors & Creditors` is a monthly outstanding table ("Owed start year", "Sales not
+  yet received", month-serial rows); the exporter and generator shared an invented
+  per-contact layout that round-tripped only as fiction. BST's `book.toml` ledgers become
+  what the template holds — monthly outstanding totals — moving the book shape, the
+  generator writes, the fixtures and the budget's declared counts; the sheet joins the
+  anchor guard so a mismatched file fails by name. The `adminMileageRates` silent-zero
+  fallback (`--source-dir` mode) rides the same track.
+
 Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
 `app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
 `app/data/roundtrip-budget.json` (phase 1 adds no book fields, so the budgets do not move).
@@ -321,11 +346,70 @@ phase-1 harness cases run through the MCP tool layer and must return the same `R
 *Verify: the four edit cases pass through the tool layer with answers identical to the
 harness's; an `extract_book` on a generated package matches the CLI's output byte-for-byte.*
 
+### Delivery — three tracks, two waves
+
+**In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
+
+- [x] Track D — landed (`c3a93a52`+`c6cb6367`, merged): `diya-gl-edits.js` (no counter-leg
+  needed — a diya-gl line is the whole transaction), and `resolveBstPurchaseCodeMap(book)`
+  picking the candidate map whose keys cover the book's declared chart (the calculator's
+  own hardcoded copy folded in — it bypassed the loader). Generator-shaped fixtures proven
+  byte-identical; sp-sixty's misroutes corrected with a breakability proof. 3628 blast
+  tests.
+- [x] Track E — landed (merged): `app/lib/bst-workbook.js` — `saveBstWorkbook`/
+  `saveBstPackageZip` with the lazy resource-loader seam (zero new top-level `fs` sites),
+  byte-for-byte proven against the pre-refactor CLI on all three fixtures, `BookFieldError`
+  failing by name before the template is touched. `applyCellWrites` extracted from the
+  runner rather than forking cell-write semantics. Bundle-gate intel recorded in its
+  report: recalculation sits strictly downstream of the carved function.
+- [x] Track F — landed (merged): a hand-rolled newline-delimited JSON-RPC stdio server
+  (the SDK's dependency set — express, hono, zod — is the "heavy" case the escape hatch
+  named), four tools over the landed functions, `diya-gl-bst` registered in `.mcp.json`,
+  edits composing across calls in one session. 20 replay assertions identical to the
+  harness; `extract_book` byte-for-byte with the CLI over real stdio; 164 blast tests.
+- [x] closing ladder (coordinator) — green with phase 1's: the tool layer replayed the harness
+  byte agreement, budgets at zero. One known reconcile-at-rebase note: this branch's
+  fixture books still carry `class2WeeklyRate 3.45`; the batch branch's rate alignment
+  changes them to 0 when the branches merge — no assertion depends on the field.
+
+| Track | Tier | Owns | Delivers |
+|---|---|---|---|
+| **D — edits API + loader chart fix** | Sonnet — the harness is the spec; the loader fix has an in-repo precedent | a new `app/lib/diya-gl-edits.js`, the chart-honouring fix in `app/lib/diya-gl-loader.js`, `app/test/diya-gl-edit-recalc.test.js` (refactor onto the API, drop its workaround anchors) | the named edits (add sale, add purchase, change amount — counter-leg handling included) as a library API the server and the page both call; the loader reading the book's own declared chart instead of the hardcoded BST map, proven on the sp-sixty fixture |
+| **E — save_workbook carve-out** | Opus — carving a pure function out of the generator's CLI-shaped orchestration | a "book → workbook buffer" function factored from `app/bin/generate.js`/`app/lib/generator.js` (BST path), its tests | `saveBstWorkbook(book, lines) → xlsx buffer` (and the zip shape), byte-identical to what the CLI path generates for the same book; phase 3's save step reuses it |
+| **F — the MCP server** | Sonnet — wrappers over landed functions, no new engine code | a new `app/bin/` (or `app/lib/mcp/`) stdio server, `.mcp.json` registration, its tests | the four tools over the landed functions; the phase-1 harness cases replayed through the tool layer; `extract_book` byte-for-byte with the CLI |
+
+**Wave 1**: D and E, concurrent — disjoint files. **Wave 2**: F, after D, E and phase 1's
+Track C land (F wraps the `--file` path Track C is still wiring).
+
+**Track rungs**: *D* — the harness's 18 tests green on the API with the sp-sixty workaround
+anchors replaced by the chart-correct expectations; the misrouted account (5900) and the
+dropped one (7000) each get a fixture-anchored assertion. *E* — byte-for-byte against the
+CLI-generated workbook for all three fixtures; a corrupted book field fails generation with
+a named error. *F* — the phase's own verify line above.
+
+**The closing ladder**, coordinator, merged branch: full serial suite; the CLI and the tool
+layer agree byte-for-byte on the same input; the roundtrip budgets unchanged at zero. No
+track runs soffice.
+
 ## Phase 3 — Web
 
 The books page. Its specification is the sections above — entry point, data model, checks
 and helpers, UI design (the tax-form renders included). This section is the delivery
 structure over that specification.
+
+**In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
+
+- [ ] W0 — the bundle gate (Opus, worktree agent, on `claude/bst-spike-2`) — dispatched:
+  the injected resource loader across the measured `fs` call sites, the esbuild bundle, and
+  the bare page proving the bundle matches `reconcile.js` on the sp-sixty fixture — ending
+  at the plan's continue-or-stop gate.
+- [x] W-pre — landed (`3a5ad81a`, merged): the shell with the six tokens and all four
+  layouts as real media-query combinations, the three-level drill, the pencil-correction
+  mark; the SA103S and Income Tax form renders; the `download.html` panel. The snapshot
+  (`books/bst-data.js`, the W1 replacement point) derives from the real `bst-scenario-basic`
+  fixture and reconciles to the committed report's figures. 33/33 browser tests, four
+  viewport screenshots reviewed. The other two example fixtures are visibly-disabled
+  buttons until W1; entry cells are styled but inert until W3.
 
 **Two boundary decisions, settled before any dispatch.**
 

@@ -16,3 +16,7 @@ package-lock.json
 
 # Generated reconciliation pages (built by app/bin/build-reconciliation-pages.js)
 web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+
+# Books engine bundle and the app/ files it reads (built by scripts/build-books-bundle.mjs)
+web/spreadsheets.diyaccounting.co.uk/public/books/engine/
+web/spreadsheets.diyaccounting.co.uk/public/books/assets/

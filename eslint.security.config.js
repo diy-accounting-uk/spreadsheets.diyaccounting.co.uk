@@ -54,6 +54,7 @@ export default [
       "scripts/",
       "eslint.security.config.js",
       "**/lib/toml-parser.js",
+      "web/spreadsheets.diyaccounting.co.uk/public/books/engine/",
     ],
   },
 ];
