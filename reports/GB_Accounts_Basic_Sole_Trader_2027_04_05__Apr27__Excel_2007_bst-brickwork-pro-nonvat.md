@@ -24,10 +24,34 @@ Trade: Bricklaying, plastering and general building
 | Opening Stock | 3000 | 3000 | 0 | PASS |
 | Closing Stock | 2500 | 2500 | 0 | PASS |
 | Stock: cost of sales = stock purchases + stock movement | 15500 | 15500 | 0 | PASS |
-| Opening Debtors | 6600 | 6600 | 0 | PASS |
-| Closing Debtors | 6700 | 6700 | 0 | PASS |
-| Opening Creditors | 1510 | 1510 | 0 | PASS |
-| Closing Creditors | 1510 | 1510 | 0 | PASS |
+| Debtors & Creditors: owed by customers at the start of the year = the opening balance declared | 6600 | 6600 | 0 | PASS |
+| Debtors & Creditors: Apr sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: May sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jun sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jul sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Aug sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Sep sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Oct sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Nov sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Dec sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Jan sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Feb sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: Mar sales not yet received = that month's sales with no receipt recorded | 0 | 0 | 0 | PASS |
+| Debtors & Creditors: amount owed by customers = the opening figure plus every month not yet received | 6600 | 6600 | 0 | PASS |
+| Debtors & Creditors: owed to suppliers at the start of the year = the opening balance declared | 1510 | 1510 | 0 | PASS |
+| Debtors & Creditors: Apr purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: May purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Jun purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Jul purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Aug purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Sep purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Oct purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Nov purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Dec purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Jan purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Feb purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: Mar purchases still to be paid = that month's purchases with no payment recorded | 1500 | 1500 | 0 | PASS |
+| Debtors & Creditors: amount owed to suppliers = the opening figure plus every month still to be paid | 19510 | 19510 | 0 | PASS |
 | Fixed Assets: schedule total cost = asset additions | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: first addition recorded | 12000 | 12000 | 0 | PASS |
 | Fixed Assets: AIA claimed = schedule cost x Admin AIA rate | 12000 | 12000 | 0 | PASS |
@@ -204,20 +228,34 @@ Trade: Bricklaying, plastering and general building
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 1 | 4,620 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 2 | 1,980 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 1 | 4,690 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 2 | 2,010 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Debtor 3 | — |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 1 | 60 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 2 | 800 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 3 | 200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Opening Creditor 4 | 450 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 1 | 60 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 2 | 800 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 3 | 200 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Closing Creditor 4 | 450 |
+| Owed by customers at start of year | 6,600 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;May sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jun sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jul sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Aug sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sep sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Oct sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Nov sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Dec sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jan sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Feb sales not yet received | — |
+| &nbsp;&nbsp;&nbsp;&nbsp;Mar sales not yet received | — |
+| **Amount owed by customers** | 6,600 |
+| Owed to suppliers at start of year | 1,510 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Apr purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;May purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jun purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jul purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Aug purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Sep purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Oct purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Nov purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Dec purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Jan purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Feb purchases still to be paid | 1,500 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Mar purchases still to be paid | 1,500 |
+| **Amount owed to suppliers** | 19,510 |
 
 ## Purchase Analysis
 
@@ -373,18 +411,22 @@ Trade: Bricklaying, plastering and general building
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C5 | Opening Debtor 1 | 4620 | debtors[timing=opening][0].amount |
-| C6 | Opening Debtor 2 | 1980 | debtors[timing=opening][1].amount |
-| F5 | Closing Debtor 1 | 4690 | debtors[timing=closing][0].amount |
-| F6 | Closing Debtor 2 | 2010 | debtors[timing=closing][1].amount |
-| C12 | Opening Creditor 1 | 60 | creditors[timing=opening][0].amount |
-| C13 | Opening Creditor 2 | 800 | creditors[timing=opening][1].amount |
-| C14 | Opening Creditor 3 | 200 | creditors[timing=opening][2].amount |
-| C15 | Opening Creditor 4 | 450 | creditors[timing=opening][3].amount |
-| F12 | Closing Creditor 1 | 60 | creditors[timing=closing][0].amount |
-| F13 | Closing Creditor 2 | 800 | creditors[timing=closing][1].amount |
-| F14 | Closing Creditor 3 | 200 | creditors[timing=closing][2].amount |
-| F15 | Closing Creditor 4 | 450 | creditors[timing=closing][3].amount |
+| C3 | Owed by customers at start of year | 6600 | openingBalances.tradeDebtors |
+| C29 | **Amount owed by customers** | 6600 | gl-cor:amount (debtors, year end) |
+| F3 | Owed to suppliers at start of year | 1510 | openingBalances.tradeCreditors |
+| F5 | Apr purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, apr) |
+| F7 | May purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, may) |
+| F9 | Jun purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, jun) |
+| F11 | Jul purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, jul) |
+| F13 | Aug purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, aug) |
+| F15 | Sep purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, sep) |
+| F17 | Oct purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, oct) |
+| F19 | Nov purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, nov) |
+| F21 | Dec purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, dec) |
+| F23 | Jan purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, jan) |
+| F25 | Feb purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, feb) |
+| F27 | Mar purchases still to be paid | 1500 | gl-cor:amount (purchases unpaid, mar) |
+| F29 | **Amount owed to suppliers** | 19510 | gl-cor:amount (creditors, year end) |
 
 ### PurchasesMar
 
