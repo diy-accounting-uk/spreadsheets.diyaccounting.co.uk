@@ -34,6 +34,8 @@
     entriesOpen: true,
     drawerOpen: false,
     mobileTab: "books",
+    newBookFormOpen: false,
+    savedBook: null, // { book, lines, source, savedAt }, once the autosave check resolves
   };
 
   var els = {};
@@ -59,6 +61,19 @@
     renderSheetTabs();
     bindGlobalControls();
     render();
+    checkForSavedBook();
+  }
+
+  // The saved-book check runs after the first render so the picker appears
+  // immediately; the continue-offer joins it the moment the check resolves.
+  // A blocked or missing IndexedDB resolves to null (autosave.js's own
+  // degrade contract), so this never blocks or errors the empty state --
+  // it just never gets an offer to show.
+  function checkForSavedBook() {
+    window.DiyaBooksAutosave.loadWorkingBook().then(function (record) {
+      state.savedBook = record || null;
+      if (!state.loaded) render();
+    });
   }
 
   // ============================== formatting ==============================
@@ -267,14 +282,18 @@
       '<div class="empty-state">' +
       "<h2>View your books in DIYA-GL</h2>" +
       "<p>Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine.</p>" +
+      (state.savedBook ? renderContinueOffer() : "") +
       '<div class="empty-state-actions">' +
       '<div class="picker-row">' +
       '<label class="file-picker-label" for="file-picker">' +
       '<span aria-hidden="true">📁</span> Choose a .xlsx or .zip file' +
       "</label>" +
       '<input type="file" id="file-picker" accept=".xlsx,.zip" class="hidden" />' +
-      '<button type="button" class="btn" id="new-book-btn">Start a new book</button>' +
+      '<button type="button" class="btn" id="new-book-btn" aria-expanded="' +
+      (state.newBookFormOpen ? "true" : "false") +
+      '">Start a new book</button>' +
       "</div>" +
+      (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
       '<button type="button" class="btn" data-example="bst-scenario-basic">bst-scenario-basic — Precision Code Trading, full ledger</button>' +
@@ -287,9 +306,78 @@
     );
   }
 
+  // "Start a new book": a short form -- business name, year end -- that
+  // builds an empty but valid book (documentInfo/entityInformation
+  // populated, the standard chart attached, no lines, no as-read layer) and
+  // loads it into the same state path an upload or example uses.
+  function renderNewBookForm() {
+    return (
+      '<form id="new-book-form" class="new-book-form" novalidate>' +
+      '<div class="editable-field">' +
+      '<label for="new-book-name">Business name</label>' +
+      '<input type="text" id="new-book-name" name="businessName" autocomplete="off" />' +
+      "</div>" +
+      '<div class="editable-field">' +
+      '<label for="new-book-year-end">Year end</label>' +
+      '<input type="date" id="new-book-year-end" name="yearEnd" />' +
+      "</div>" +
+      '<p id="new-book-error" class="upload-error hidden" role="alert"></p>' +
+      '<div class="new-book-form-actions">' +
+      '<button type="submit" class="btn btn-primary">Create book</button>' +
+      '<button type="button" class="btn" id="new-book-cancel">Cancel</button>' +
+      "</div>" +
+      "</form>"
+    );
+  }
+
+  // The IndexedDB autosave record, offered alongside the fresh options --
+  // never loaded without the user choosing to. "Discard" is the only other
+  // control that touches it.
+  function renderContinueOffer() {
+    var saved = state.savedBook;
+    var label = (saved.source && saved.source.label) || "your working book";
+    var when = formatSavedAt(saved.savedAt);
+    return (
+      '<div class="continue-offer">' +
+      "<h3>Continue where you left off</h3>" +
+      "<p>" +
+      esc(label) +
+      (when ? " — saved " + esc(when) : "") +
+      "</p>" +
+      '<div class="continue-offer-actions">' +
+      '<button type="button" class="btn btn-primary" id="continue-btn">Continue</button>' +
+      '<button type="button" class="btn" id="discard-btn">Discard</button>' +
+      "</div></div>"
+    );
+  }
+
+  function formatSavedAt(iso) {
+    if (!iso) return "";
+    try {
+      var date = new Date(iso);
+      if (isNaN(date.getTime())) return "";
+      return date.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    } catch (e) {
+      return "";
+    }
+  }
+
+  // A real calendar date, not just a string an <input type="date"> happened
+  // to accept -- rejects "2026-02-30" the way a real year end never would.
+  function parseRealDate(value) {
+    var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+    if (!match) return null;
+    var year = Number(match[1]);
+    var month = Number(match[2]);
+    var day = Number(match[3]);
+    if (month < 1 || month > 12) return null;
+    var date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+    return match[0];
+  }
+
   function bindEmptyState() {
     var picker = document.getElementById("file-picker");
-    var msg = document.getElementById("empty-state-message");
     picker.addEventListener("change", function () {
       var file = picker.files && picker.files[0];
       if (!file) return;
@@ -300,14 +388,94 @@
       }
       loadFromFile(file);
     });
+
     document.getElementById("new-book-btn").addEventListener("click", function () {
-      showEmptyStateMessage("Starting a blank book is wired once entry editing lands (phase 3, track W3). Try an example below.", false);
+      state.newBookFormOpen = !state.newBookFormOpen;
+      render();
+      var nameInput = document.getElementById("new-book-name");
+      if (nameInput) nameInput.focus();
     });
+
+    var newBookForm = document.getElementById("new-book-form");
+    if (newBookForm) {
+      newBookForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        handleCreateNewBook();
+      });
+      document.getElementById("new-book-cancel").addEventListener("click", function () {
+        state.newBookFormOpen = false;
+        render();
+      });
+    }
+
+    var continueBtn = document.getElementById("continue-btn");
+    if (continueBtn) continueBtn.addEventListener("click", handleContinueSavedBook);
+    var discardBtn = document.getElementById("discard-btn");
+    if (discardBtn) discardBtn.addEventListener("click", handleDiscardSavedBook);
+
     Array.prototype.forEach.call(document.querySelectorAll("[data-example]"), function (btn) {
       btn.addEventListener("click", function () {
         if (btn.disabled) return;
         loadExample(btn.getAttribute("data-example"));
       });
+    });
+  }
+
+  function handleCreateNewBook() {
+    var nameInput = document.getElementById("new-book-name");
+    var yearEndInput = document.getElementById("new-book-year-end");
+    var errorEl = document.getElementById("new-book-error");
+    var businessName = nameInput.value.trim();
+    var yearEndISO = parseRealDate(yearEndInput.value);
+
+    var errors = [];
+    if (!businessName) errors.push("Enter a business name.");
+    if (!yearEndISO) errors.push("Enter a real year-end date.");
+
+    if (errors.length > 0) {
+      errorEl.textContent = errors.join(" ");
+      errorEl.classList.remove("hidden");
+      return;
+    }
+    errorEl.classList.add("hidden");
+    errorEl.textContent = "";
+
+    setPickerBusy(true);
+    showEmptyStateMessage("Creating a new book for " + businessName + "…", false);
+    window.DiyaGlBooksLoader.createNewBook(businessName, yearEndISO)
+      .then(function (snapshot) {
+        state.newBookFormOpen = false;
+        applySnapshot(snapshot);
+        showToast("Started a new book for " + businessName + ".");
+      })
+      .catch(function (error) {
+        setPickerBusy(false);
+        showEmptyStateMessage(error && error.message ? error.message : String(error), true);
+      });
+  }
+
+  function handleContinueSavedBook() {
+    var saved = state.savedBook;
+    if (!saved) return;
+    var label = (saved.source && saved.source.label) || "your working book";
+    setPickerBusy(true);
+    showEmptyStateMessage("Continuing " + label + "…", false);
+    window.DiyaGlBooksLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind)
+      .then(function (snapshot) {
+        applySnapshot(snapshot);
+        showToast("Continued where you left off.");
+      })
+      .catch(function (error) {
+        setPickerBusy(false);
+        showEmptyStateMessage(error && error.message ? error.message : String(error), true);
+      });
+  }
+
+  function handleDiscardSavedBook() {
+    window.DiyaBooksAutosave.clearWorkingBook().then(function () {
+      state.savedBook = null;
+      render();
+      showToast("Discarded the saved working book.");
     });
   }
 
@@ -358,8 +526,28 @@
     state.loaded = true;
     state.view = "year";
     state.openMonth = snapshot.months[0].key;
+    state.book = snapshot.book || null;
+    state.lines = snapshot.lines || null;
     setPickerBusy(false);
     render();
+    autosaveCurrentBook();
+  }
+
+  // Every state commit the page currently has is a book load (upload,
+  // example, new book, or continuing a saved one) -- there is no edit/undo
+  // event to hook yet (phase 3 track W3, in flight separately), so this is
+  // called right here, at the one place state.book/state.lines change.
+  // Silent by design: a blocked or missing store degrades to no-autosave
+  // (autosave.js's own contract) and the page carries on exactly as if
+  // autosave were never called.
+  function autosaveCurrentBook() {
+    if (!state.book || !state.lines) return;
+    window.DiyaBooksAutosave.saveWorkingBook({
+      book: state.book,
+      lines: state.lines,
+      source: SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario },
+      savedAt: new Date().toISOString(),
+    });
   }
 
   // ============================== home ==============================
