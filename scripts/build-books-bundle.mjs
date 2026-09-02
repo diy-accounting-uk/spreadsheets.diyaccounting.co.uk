@@ -14,7 +14,7 @@
 //   node scripts/build-books-bundle.mjs
 
 import { build } from "esbuild";
-import { cpSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { cpSync, mkdirSync, readdirSync, rmSync, statSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -115,9 +115,6 @@ async function main() {
 
   const assets = copyRuntimeAssets();
   const bytes = statSync(BUNDLE_FILE).size;
-
-  writeFileSync(resolve(ENGINE_DIR, "metafile.json"), JSON.stringify(result.metafile, null, 2) + "\n");
-
   const inputCount = Object.keys(result.metafile.inputs).length;
   console.log(`books bundle: ${BUNDLE_FILE.replace(ROOT + "/", "")}`);
   console.log(`  ${(bytes / 1024).toFixed(1)} KiB from ${inputCount} modules`);
