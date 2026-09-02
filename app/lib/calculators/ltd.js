@@ -28,9 +28,12 @@ import { apportionCorporationTax, financialYearsInPeriod } from "../tax/corporat
 import { calculateCapitalAllowances } from "../tax/capital-allowances.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_SCHEDULE_FIRST_ROW,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  PAYE_SCHEDULE_MONTH_TABS,
+  payeTaxMonthDates,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
-  PAYSLIP_PRINT_EMPTY_PAYMENT_DATE,
   PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER,
   PAYSLIP_PRINT_MONTHLY_HEADING,
   PAYSLIP_PRINT_PERIOD_CELLS,
@@ -41,9 +44,13 @@ import {
   PAYSLIPS_ENTRY_COLUMNS,
   PAYSLIPS_ZERO_FILLED_COLUMNS,
   payslipsMonthEntryRows,
+  payslipsMonthPeriod,
+  payslipsPeriodStartCell,
   payslipsWagesPaidCell,
+  payrollYearStart,
 } from "../payslips-layout.js";
 import { addMonths, endOfMonth, SHEET_BLANK } from "./shared.js";
+import { registerOfficers } from "../scenario-loader.js";
 
 const SHORT_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MONTH_COLS = ["C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
@@ -207,11 +214,9 @@ const PAYROLL_FIRST_WEEK_DAYS = 5;
 const PAYSLIPS_CALENDAR_FIRST_ROW = 2;
 
 const REGISTER_MEMBER_ROWS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-// The register of directors and secretary keeps the first director on row 2
-// and the company secretary on row 3, so a second director starts at row 4.
-// The register of directors' interests runs a director a row from row 2.
-const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
-const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+// The register of directors and secretary runs one officer a row from row 2,
+// and the register of directors' interests one a row from row 2 as well.
+const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const SHARE_NOMINAL_VALUE = 1;
 const CHARGE_REGISTER_ROWS = [2, 3, 4, 5, 6];
@@ -701,12 +706,27 @@ export function calculateLtdResults(book, lines, taxData, scenario) {
   const employeePayroll = payrollByTab(payrollEntries, (index) => !isDirectorsLine(index));
   const directorPayroll = payrollByTab(payrollEntries, isDirectorsLine);
   results.WagesInterface = buildWagesInterface(employeePayroll, directorPayroll, tabs);
-  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, tabs);
+  const yearStart = payrollYearStart(payrollYearOf(taxData, period));
+  results["Payslips.xlsx!Payment"] = buildPayslipsPayment(payroll, yearStart);
   results["Payslips.xlsx!Admin"] = buildPayslipsCalendar(taxData, period, tabs);
   for (const monthIndex of PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES) {
     const monthTab = buildPayslipsMonthTab(monthIndex, payrollEntries[tabs[monthIndex]] || []);
     addPayslipsWeeklyRemnants(monthTab, monthIndex);
     results[`Payslips.xlsx!${tabs[monthIndex]}`] = monthTab;
+  }
+  // Every month tab opens its monthly payroll block with the day the month it
+  // is named for begins, and carries its own whole-month totals on row 1 for
+  // the PAYE schedule to read, so all twelve carry those cells whether the
+  // reconciliation reads the rest of the tab or not.
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const tab = tabs[monthIndex];
+    const key = `Payslips.xlsx!${tab}`;
+    if (!results[key]) results[key] = {};
+    results[key][payslipsPeriodStartCell(monthIndex)] = serialOf(payslipsMonthPeriod(period.start, monthIndex, yearStart).first);
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employerNI] = payroll[tab].employerNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.employeeNI] = payroll[tab].employeeNI;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.incomeTax] = payroll[tab].incomeTax;
+    results[key][PAYE_SCHEDULE_MONTH_TAB_CELLS.studentLoan] = 0;
   }
   results[`Payslips.xlsx!${PAYSLIP_PRINT_SHEET}`] = buildPayslipsPrintPage(PAYSLIP_PRINT_PERIOD, tabs, payrollEntries);
 
@@ -903,13 +923,20 @@ function buildWagesInterface(employeePayroll, directorPayroll, tabs) {
   return sheet;
 }
 
-// Payment column D is the National Insurance due, employer and employee, E
-// the income tax and I the whole amount payable. The statutory pay and
-// student loan columns the total also carries stay nil.
-function buildPayslipsPayment(payroll, tabs) {
+// The PAYE remittance schedule, one row per tax month from row 4. B is the
+// month end and C the day the payment falls due, both counted off the payroll
+// year's first day. D is the National Insurance due, employer and employee, E
+// the income tax and I the whole amount payable; the statutory pay and student
+// loan columns the total also carries stay nil. A row takes the month tab
+// named for the calendar month its tax month ends in, so row 4 is April
+// whatever the package's year end.
+function buildPayslipsPayment(payroll, payrollYearOpens) {
   const sheet = {};
-  tabs.forEach((tab, index) => {
-    const row = 4 + index;
+  PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
+    const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+    const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+    sheet[`B${row}`] = serialOf(ends);
+    sheet[`C${row}`] = serialOf(due);
     const nationalInsurance = payroll[tab].employerNI + payroll[tab].employeeNI;
     sheet[`D${row}`] = nationalInsurance;
     sheet[`E${row}`] = payroll[tab].incomeTax;
@@ -934,7 +961,7 @@ const PAYSLIPS_BROUGHT_FORWARD_LATE_COLUMN = { column: "K", firstRow: 12 };
 // One month tab's monthly payroll block: an employee a row from block row +
 // 3, with the wages-paid date above them. A row the scenario has no employee
 // for keeps the three columns the template ships as a literal zero and stays
-// blank in the other four, which is what the workbook itself carries there.
+// blank in the other five, which is what the workbook itself carries there.
 function buildPayslipsMonthTab(monthIndex, entries) {
   const sheet = {};
   const columns = PAYSLIPS_ENTRY_COLUMNS;
@@ -945,6 +972,7 @@ function buildPayslipsMonthTab(monthIndex, entries) {
       return;
     }
     if (entry.name) sheet[`${columns.name}${row}`] = entry.name;
+    if (entry.taxCode) sheet[`${columns.taxCode}${row}`] = entry.taxCode;
     sheet[`${columns.grossPay}${row}`] = entry.grossPay || 0;
     sheet[`${columns.incomeTax}${row}`] = entry.incomeTax || 0;
     sheet[`${columns.employeeNI}${row}`] = entry.employeeNI || 0;
@@ -998,8 +1026,17 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
   for (const [cell, field] of Object.entries(PAYSLIP_PRINT_TO_DATE_CELLS)) {
     sheet[cell] = toDate.reduce((total, line) => total + (line[field] || 0), 0);
   }
-  sheet.M18 = PAYSLIP_PRINT_EMPTY_PAYMENT_DATE;
+  // M18's ADDRESS now points at the same cell I9 does -- the wages-paid date.
+  sheet.M18 = sheet[PAYSLIP_PRINT_CELLS.periodEnd];
   return sheet;
+}
+
+// The year the package's payroll runs in, which is the year its tax data
+// opens in. A book that carries no tax data falls back on the year its own
+// accounting period ends in.
+function payrollYearOf(taxData, period) {
+  const financialYearStart = taxData.financial_year?.start;
+  return financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
 }
 
 // The calendar every payslip dates from. B2 carries the payroll year's first
@@ -1011,10 +1048,7 @@ function buildPayslipsPrintPage(period, tabs, entriesByTab) {
 // is the printed payslip's join, so it names the package's own month tabs in
 // order rather than the calendar months the dates beside it fall in.
 function buildPayslipsCalendar(taxData, period, tabs) {
-  const financialYearStart = taxData.financial_year?.start;
-  const payrollYear = financialYearStart ? new Date(financialYearStart).getUTCFullYear() : period.yearEnd.getUTCFullYear();
-  const payrollYearStart = new Date(Date.UTC(payrollYear, 3, 6));
-  const anchor = serialOf(payrollYearStart);
+  const anchor = serialOf(payrollYearStart(payrollYearOf(taxData, period)));
   const sheet = { B2: anchor };
   for (const { month, row, daysBefore, week } of payrollMonthStarts()) {
     sheet[`A${row}`] = tabs[month - 1];
@@ -1065,21 +1099,22 @@ function buildCompanySecretary(scenario) {
   });
 
   // The register of directors and secretary, and the register of directors'
-  // interests. The directors are the scenario's own employees marked
-  // isDirector, the officer address is the business's own, and a director's
-  // interest is dated from the day the register of members says they acquired
-  // their shares. Row 2 already carries the template's "Director" capacity
-  // text; a second director has to state its own, which nothing reads back.
+  // interests: every officer the book declares, in the order it declares
+  // them, with the business's own address and the capacity each was
+  // appointed in. A director's interest is dated from the day the register of
+  // members says they acquired their shares.
   const officers = {};
   const interests = {};
-  const directors = (scenario.employees || []).filter((employee) => employee.isDirector);
+  const directors = registerOfficers(scenario);
   const business = scenario.business || {};
   const officerAddress = [business.address, business.town, business.postcode].filter(Boolean).join(", ") || undefined;
   directors.forEach((director, index) => {
-    const officerRow = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+    const officerRow = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
     if (officerRow !== undefined) {
       officers[`A${officerRow}`] = director.name;
       if (officerAddress) officers[`B${officerRow}`] = officerAddress;
+      if (director.appointed) officers[`C${officerRow}`] = serialOf(parseDate(director.appointed));
+      officers[`D${officerRow}`] = director.role || "Director";
     }
     const interestRow = DIRECTORS_INTERESTS_ROWS[index];
     if (interestRow === undefined) return;

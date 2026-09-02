@@ -222,6 +222,8 @@ export function diyaGlToScenario(book, lines, product) {
   if (entity.organizationPostcode) business.postcode = entity.organizationPostcode;
   if (entity.taxRegistrationNumber) business.utr = entity.taxRegistrationNumber;
   if (entity["diya-gl:vatNumber"]) business.vat_number = entity["diya-gl:vatNumber"];
+  if (entity["diya-gl:companyNumber"]) business.company_number = entity["diya-gl:companyNumber"];
+  if (entity.organizationTelephone) business.phone = entity.organizationTelephone;
 
   // Build expected values
   const expected = { total_sales: totalSales };
@@ -336,6 +338,17 @@ export function diyaGlToScenario(book, lines, product) {
   // Payroll (SE/Ltd only) — group by month
   const payrollLines = filteredLines.filter((l) => l.sourceJournalID === "payroll");
   if (payrollLines.length > 0) {
+    // The tax code is a standing fact about the employee, which the book
+    // states once on the employees table and the payslip row carries in its
+    // own Tax Code column. A payroll line names its employee by id or by
+    // name: the Payslips row is keyed by name, so a book exported from a
+    // package carries no id on the line to look one up by.
+    const taxCodeByEmployee = new Map();
+    for (const employee of book.employees || []) {
+      if (!employee.taxCode) continue;
+      taxCodeByEmployee.set(employee.employeeID, employee.taxCode);
+      taxCodeByEmployee.set(employee.name, employee.taxCode);
+    }
     const payrollByMonth = {};
     for (const line of payrollLines) {
       const month = MONTH_NAMES[new Date(line.postingDate + "T00:00:00Z").getUTCMonth()];
@@ -349,6 +362,7 @@ export function diyaGlToScenario(book, lines, product) {
         employerNI: line["diya-gl:employerNI"] || 0,
         netPay: line["diya-gl:netPay"] || 0,
         employeeID: line["diya-gl:employeeID"] || "",
+        taxCode: taxCodeByEmployee.get(line["diya-gl:employeeID"]) || taxCodeByEmployee.get(line.detailComment) || "",
         accountMainID: line.accountMainID,
         reference: line.documentReference,
       });
@@ -410,6 +424,19 @@ export function diyaGlToScenario(book, lines, product) {
       board_meeting: charge.boardMeetingDate,
     }));
   }
+  // The officers Companies House knows about, which is not the payroll: the
+  // book's directors table names a secretary and a non-executive director
+  // the company never pays through PAYE, and without this they would reach
+  // no register at all.
+  if (product === "ltd" && book.directors?.length > 0) {
+    scenario.directors = book.directors.map((director) => {
+      const officer = { name: director.name, role: director.role };
+      if (director.appointed !== undefined) officer.appointed = director.appointed;
+      if (director.resigned !== undefined) officer.resigned = director.resigned;
+      if (director.shares !== undefined) officer.shares = director.shares;
+      return officer;
+    });
+  }
   if (product === "ltd" && book.members?.length > 0) {
     scenario.members = book.members.map((member) => {
       const entry = { name: member.name, shares: member.shares };
@@ -424,13 +451,15 @@ export function diyaGlToScenario(book, lines, product) {
 
   // A purchase coded f capitalises out of the profit and loss account, and
   // earns its capital allowance only once the same asset is registered on the
-  // Fixed Assets schedule. The scenario extractor derives the BST additions
-  // from those purchases, and this path derives them by the same rule, so a
-  // package built from exported data claims what a package built from the
-  // fixture claims. The Taxi schedule takes vehicles only and the SE and Ltd
+  // Fixed Assets schedule. The scenario extractor derives the BST and Taxi
+  // additions from those purchases, and this path derives them by the same
+  // rule, so a package built from exported data claims what a package built
+  // from the fixture claims. Without it the two single-file writers fall back
+  // to scenario-loader's own derivation, which has only the supplier name to
+  // put in both the description and the reference column. The SE and Ltd
   // schedules are written from their own asset journals, so neither derives
   // its additions from the purchase journal.
-  if (product === "bst") {
+  if (product === "bst" || product === "taxi") {
     const additions = purchaseLines
       .filter((l) => purchaseCodeMap[l.accountMainID] === "f")
       .map((l) => ({

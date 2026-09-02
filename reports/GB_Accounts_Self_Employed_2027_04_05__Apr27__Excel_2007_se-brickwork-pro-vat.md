@@ -1,7 +1,7 @@
 # Reconciliation Report: GB Accounts Self Employed 2027-04-05 (Apr27) Excel 2007
 
 Scenario: se-brickwork-pro-vat
-Status: RECONCILES (with warnings)
+Status: RECONCILES
 
 Construction sole trader, CIS sub-contractors, one labourer on the payroll. Turnover is over the VAT registration threshold, which is why the business is registered. Journal amounts include VAT at 20%. The trade scales 1.5 times against the non-VAT twin of this scenario, but both buy the same van at the same £12,000 net cost, so the £14,400 here is that same asset with VAT on it and net purchases across the pair do not scale by 1.5. The Employment Allowance covers the employer's National Insurance, so that line is nil.
 
@@ -377,6 +377,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment apr D4 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment apr E4 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment apr I4 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D4 NI due is the apr tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E4 income tax due is the apr tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I4 total payable is the apr tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface may C5 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface may D5 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface may E5 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -384,6 +387,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment may D5 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment may E5 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment may I5 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D5 NI due is the may tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E5 income tax due is the may tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I5 total payable is the may tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface jun C6 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface jun D6 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface jun E6 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -391,6 +397,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment jun D6 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment jun E6 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment jun I6 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D6 NI due is the jun tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E6 income tax due is the jun tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I6 total payable is the jun tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface jul C7 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface jul D7 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface jul E7 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -398,6 +407,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment jul D7 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment jul E7 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment jul I7 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D7 NI due is the jul tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E7 income tax due is the jul tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I7 total payable is the jul tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface aug C8 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface aug D8 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface aug E8 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -405,6 +417,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment aug D8 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment aug E8 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment aug I8 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D8 NI due is the aug tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E8 income tax due is the aug tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I8 total payable is the aug tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface sep C9 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface sep D9 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface sep E9 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -412,6 +427,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment sep D9 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment sep E9 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment sep I9 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D9 NI due is the sep tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E9 income tax due is the sep tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I9 total payable is the sep tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface oct C10 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface oct D10 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface oct E10 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -419,6 +437,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment oct D10 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment oct E10 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment oct I10 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D10 NI due is the oct tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E10 income tax due is the oct tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I10 total payable is the oct tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface nov C11 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface nov D11 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface nov E11 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -426,6 +447,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment nov D11 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment nov E11 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment nov I11 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D11 NI due is the nov tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E11 income tax due is the nov tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I11 total payable is the nov tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface dec C12 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface dec D12 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface dec E12 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -433,6 +457,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment dec D12 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment dec E12 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment dec I12 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D12 NI due is the dec tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E12 income tax due is the dec tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I12 total payable is the dec tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface jan C13 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface jan D13 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface jan E13 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -440,6 +467,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment jan D13 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment jan E13 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment jan I13 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D13 NI due is the jan tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E13 income tax due is the jan tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I13 total payable is the jan tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface feb C14 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface feb D14 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface feb E14 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -447,6 +477,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment feb D14 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment feb E14 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment feb I14 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D14 NI due is the feb tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E14 income tax due is the feb tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I14 total payable is the feb tab's own | 126.7 | 126.7 | 0 | PASS |
 | Wagesinterface mar C15 gross pay | 1500 | 1500 | 0 | PASS |
 | Wagesinterface mar D15 income tax | 90.5 | 90.5 | 0 | PASS |
 | Wagesinterface mar E15 employee NI | 36.2 | 36.2 | 0 | PASS |
@@ -454,6 +487,9 @@ Trade: Bricklaying, plastering and general building
 | Payslips!Payment mar D15 NI due | 36.2 | 36.2 | 0 | PASS |
 | Payslips!Payment mar E15 income tax due | 90.5 | 90.5 | 0 | PASS |
 | Payslips!Payment mar I15 total amount payable | 126.7 | 126.7 | 0 | PASS |
+| Payslips!Payment D15 NI due is the mar tab's own | 36.2 | 36.2 | 0 | PASS |
+| Payslips!Payment E15 income tax due is the mar tab's own | 90.5 | 90.5 | 0 | PASS |
+| Payslips!Payment I15 total payable is the mar tab's own | 126.7 | 126.7 | 0 | PASS |
 | Payslips print: the page reads the May tab | May | May |  | PASS |
 | Payslips print: the block the page reads is a monthly payroll | MONTHLY PAYROLL | MONTHLY PAYROLL |  | PASS |
 | Payslips print: the period printed is payroll month 2 | 2 | 2 | 0 | PASS |
@@ -467,8 +503,7 @@ Trade: Bricklaying, plastering and general building
 | Payslips print: income tax to date is every month printed so far | 181 | 181 | 0 | PASS |
 | Payslips print: national insurance to date is every month printed so far | 72.4 | 72.4 | 0 | PASS |
 | Payslips print: net pay to date is every month printed so far | 2746.6 | 2746.6 | 0 | PASS |
-| Payslips print: the payment date reads a cell the block leaves empty | 0 | 0 | 0 | PASS |
-| Payslips print: the date the scenario paid that month's wages, which the payment date would carry | 45805 | 0 |  | **WARNING** |
+| Payslips print: the payment date is the day the scenario paid that month's wages | 45805 | 45805 | 0 | PASS |
 | P&L: Wages & Salaries (B21) = Purchases w-coded net + payroll gross + employer NI | 18000 | 18000 | 0 | PASS |
 | Payslips!Jul F51 employee name | Tom Davies | Tom Davies |  | PASS |
 | Payslips!Jul M51 gross pay | 1500 | 1500 | 0 | PASS |
@@ -711,6 +746,30 @@ Trade: Bricklaying, plastering and general building
 | Payslips calendar row 366: the month name is its payroll month counted from the tax year start | Mar | Mar |  | PASS |
 | Payslips calendar row 381: the date runs on unbroken from the tax year start | 46497 | 46497 | 0 | PASS |
 | Payslips calendar row 381: the month name is its payroll month counted from the tax year start | Mar | Mar |  | PASS |
+| Payslips!Payment B4 tax month 1 ends on the last day of Apr | 46142 | 46142 | 0 | PASS |
+| Payslips!Payment C4 tax month 1 is due on the 19th after it | 46161 | 46161 | 0 | PASS |
+| Payslips!Payment B5 tax month 2 ends on the last day of May | 46173 | 46173 | 0 | PASS |
+| Payslips!Payment C5 tax month 2 is due on the 19th after it | 46192 | 46192 | 0 | PASS |
+| Payslips!Payment B6 tax month 3 ends on the last day of Jun | 46203 | 46203 | 0 | PASS |
+| Payslips!Payment C6 tax month 3 is due on the 19th after it | 46222 | 46222 | 0 | PASS |
+| Payslips!Payment B7 tax month 4 ends on the last day of Jul | 46234 | 46234 | 0 | PASS |
+| Payslips!Payment C7 tax month 4 is due on the 19th after it | 46253 | 46253 | 0 | PASS |
+| Payslips!Payment B8 tax month 5 ends on the last day of Aug | 46265 | 46265 | 0 | PASS |
+| Payslips!Payment C8 tax month 5 is due on the 19th after it | 46284 | 46284 | 0 | PASS |
+| Payslips!Payment B9 tax month 6 ends on the last day of Sep | 46295 | 46295 | 0 | PASS |
+| Payslips!Payment C9 tax month 6 is due on the 19th after it | 46314 | 46314 | 0 | PASS |
+| Payslips!Payment B10 tax month 7 ends on the last day of Oct | 46326 | 46326 | 0 | PASS |
+| Payslips!Payment C10 tax month 7 is due on the 19th after it | 46345 | 46345 | 0 | PASS |
+| Payslips!Payment B11 tax month 8 ends on the last day of Nov | 46356 | 46356 | 0 | PASS |
+| Payslips!Payment C11 tax month 8 is due on the 19th after it | 46375 | 46375 | 0 | PASS |
+| Payslips!Payment B12 tax month 9 ends on the last day of Dec | 46387 | 46387 | 0 | PASS |
+| Payslips!Payment C12 tax month 9 is due on the 19th after it | 46406 | 46406 | 0 | PASS |
+| Payslips!Payment B13 tax month 10 ends on the last day of Jan | 46418 | 46418 | 0 | PASS |
+| Payslips!Payment C13 tax month 10 is due on the 19th after it | 46437 | 46437 | 0 | PASS |
+| Payslips!Payment B14 tax month 11 ends on the last day of Feb | 46446 | 46446 | 0 | PASS |
+| Payslips!Payment C14 tax month 11 is due on the 19th after it | 46465 | 46465 | 0 | PASS |
+| Payslips!Payment B15 tax month 12 ends on the last day of Mar | 46477 | 46477 | 0 | PASS |
+| Payslips!Payment C15 tax month 12 is due on the 19th after it | 46496 | 46496 | 0 | PASS |
 | Accounting profit to tax profit bridge closes to zero | 0 | 0 | 0 | PASS |
 | Category netting: Sales Product A (sales a) net reaches Profit & Loss Account!B5 with no residue | 0 | 0 | 0 | PASS |
 | Category netting: Sub contractors (purchases c) net reaches Profit & Loss Account!B15 with no residue | 0 | 0 | 0 | PASS |
@@ -1518,20 +1577,20 @@ Journal amounts include VAT at 20%.
 | N6 | Basic Rate | 0.2 | tax.incomeTax.basicRate |
 | N7 | Higher Rate | 0.4 | tax.incomeTax.higherRate |
 | N8 | Additional Rate | 0.45 | tax.incomeTax.additionalRate |
-| M11 | Basic Band End | 37700 | tax.incomeTax.basicBandEnd |
-| N12 | Higher Band Start | 37701 | tax.incomeTax.higherBandStart |
-| N13 | Higher Band End | 125140 | tax.incomeTax.higherBandEnd |
+| M11 | Basic Band End | 37700 | tax.incomeTax.basicRateLimit |
+| N12 | Higher Band Start | 37701 |  |
+| N13 | Higher Band End | 125140 | tax.incomeTax.additionalRateThreshold |
 | L16 | NI Class 2 Weekly Rate | 0 | tax.nationalInsurance.class2WeeklyRate |
-| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4LowerRate |
-| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerLimit |
+| L20 | NI Class 4 Lower Rate | 0.06 | tax.nationalInsurance.class4MainRate |
+| N20 | NI Class 4 Lower Limit | 12570 | tax.nationalInsurance.class4LowerProfits |
 | L23 | NI Class 4 Upper Rate | 0.02 | tax.nationalInsurance.class4UpperRate |
-| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperLimit |
-| G4 | Annual Investment Allowance Rate | 1 | tax.capitalAllowances.aiaRate |
-| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.wdaRate |
-| F21 | Mileage Higher Rate Limit | 10000 | tax.mileage.higherRateLimit |
-| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.higherRatePence |
-| F22 | Mileage Lower Rate Start | 10001 | tax.mileage.lowerRateStart |
-| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.lowerRatePence |
+| N23 | NI Class 4 Upper Limit | 50270 | tax.nationalInsurance.class4UpperProfits |
+| G4 | Annual Investment Allowance Rate | 1 |  |
+| G5 | Writing Down Allowance Rate | 0.14 | tax.capitalAllowances.mainRateWDA |
+| F21 | Mileage Higher Rate Limit | 10000 |  |
+| G21 | Mileage Higher Rate Pence | 0.45 | tax.mileage.carFirst10000 |
+| F22 | Mileage Lower Rate Start | 10001 |  |
+| G22 | Mileage Lower Rate Pence | 0.25 | tax.mileage.carOver10000 |
 | F26 | VAT Registration Threshold | 90000 | tax.vat.registrationThreshold |
 | F27 | VAT Standard Rate | 0.2 | tax.vat.standardRate |
 | B4 |  | 46118 |  |
@@ -2127,43 +2186,240 @@ Journal amounts include VAT at 20%.
 |------|-----------|-------|-----------------|
 | E2 |  | 0 |  |
 
+### Payslips.xlsx!Apr
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!May
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Jun
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Jul
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+| T41 |  | 0 |  |
+| M49 |  | 45866 |  |
+| F51 |  | Tom Davies |  |
+| M51 |  | 1500 |  |
+| N51 |  | 90.5 |  |
+| O51 |  | 36.2 |  |
+| R51 |  | 1373.3 |  |
+| S51 |  | PAY-EMP002-2025-07 |  |
+| T51 |  | 0 |  |
+| N52 |  | 0 |  |
+| O52 |  | 0 |  |
+| T52 |  | 0 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| T53 |  | 0 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Payslips.xlsx!Aug
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+| H11 |  | 0 |  |
+| I11 |  | 0 |  |
+| J11 |  | 0 |  |
+| L11 |  | 0 |  |
+| H12 |  | 0 |  |
+| I12 |  | 0 |  |
+| J12 |  | 0 |  |
+| L12 |  | 0 |  |
+| K12 |  | 0 |  |
+| H13 |  | 0 |  |
+| I13 |  | 0 |  |
+| J13 |  | 0 |  |
+| L13 |  | 0 |  |
+| K13 |  | 0 |  |
+| H14 |  | 0 |  |
+| I14 |  | 0 |  |
+| J14 |  | 0 |  |
+| L14 |  | 0 |  |
+| K14 |  | 0 |  |
+| H15 |  | 0 |  |
+| I15 |  | 0 |  |
+| J15 |  | 0 |  |
+| L15 |  | 0 |  |
+| K15 |  | 0 |  |
+| M49 |  | 45897 |  |
+| F51 |  | Tom Davies |  |
+| M51 |  | 1500 |  |
+| N51 |  | 90.5 |  |
+| O51 |  | 36.2 |  |
+| R51 |  | 1373.3 |  |
+| S51 |  | PAY-EMP002-2025-08 |  |
+| T51 |  | 0 |  |
+| N52 |  | 0 |  |
+| O52 |  | 0 |  |
+| T52 |  | 0 |  |
+| N53 |  | 0 |  |
+| O53 |  | 0 |  |
+| T53 |  | 0 |  |
+| N54 |  | 0 |  |
+| O54 |  | 0 |  |
+| T54 |  | 0 |  |
+| N55 |  | 0 |  |
+| O55 |  | 0 |  |
+| T55 |  | 0 |  |
+
+### Payslips.xlsx!Sep
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Oct
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Nov
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Dec
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Jan
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Feb
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
+### Payslips.xlsx!Mar
+
+| Cell | DIY Label | Value | diya-gl mapping |
+|------|-----------|-------|-----------------|
+| T1 |  | 0 |  |
+| O1 |  | 36.2 |  |
+| N1 |  | 90.5 |  |
+| P1 |  | 0 |  |
+
 ### Payslips.xlsx!Payment
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
+| B4 |  | 46142 |  |
+| C4 |  | 46161 |  |
 | D4 |  | 36.2 |  |
 | E4 |  | 90.5 |  |
 | I4 |  | 126.7 |  |
+| B5 |  | 46173 |  |
+| C5 |  | 46192 |  |
 | D5 |  | 36.2 |  |
 | E5 |  | 90.5 |  |
 | I5 |  | 126.7 |  |
+| B6 |  | 46203 |  |
+| C6 |  | 46222 |  |
 | D6 |  | 36.2 |  |
 | E6 |  | 90.5 |  |
 | I6 |  | 126.7 |  |
+| B7 |  | 46234 |  |
+| C7 |  | 46253 |  |
 | D7 |  | 36.2 |  |
 | E7 |  | 90.5 |  |
 | I7 |  | 126.7 |  |
+| B8 |  | 46265 |  |
+| C8 |  | 46284 |  |
 | D8 |  | 36.2 |  |
 | E8 |  | 90.5 |  |
 | I8 |  | 126.7 |  |
+| B9 |  | 46295 |  |
+| C9 |  | 46314 |  |
 | D9 |  | 36.2 |  |
 | E9 |  | 90.5 |  |
 | I9 |  | 126.7 |  |
+| B10 |  | 46326 |  |
+| C10 |  | 46345 |  |
 | D10 |  | 36.2 |  |
 | E10 |  | 90.5 |  |
 | I10 |  | 126.7 |  |
+| B11 |  | 46356 |  |
+| C11 |  | 46375 |  |
 | D11 |  | 36.2 |  |
 | E11 |  | 90.5 |  |
 | I11 |  | 126.7 |  |
+| B12 |  | 46387 |  |
+| C12 |  | 46406 |  |
 | D12 |  | 36.2 |  |
 | E12 |  | 90.5 |  |
 | I12 |  | 126.7 |  |
+| B13 |  | 46418 |  |
+| C13 |  | 46437 |  |
 | D13 |  | 36.2 |  |
 | E13 |  | 90.5 |  |
 | I13 |  | 126.7 |  |
+| B14 |  | 46446 |  |
+| C14 |  | 46465 |  |
 | D14 |  | 36.2 |  |
 | E14 |  | 90.5 |  |
 | I14 |  | 126.7 |  |
+| B15 |  | 46477 |  |
+| C15 |  | 46496 |  |
 | D15 |  | 36.2 |  |
 | E15 |  | 90.5 |  |
 | I15 |  | 126.7 |  |
@@ -2186,7 +2442,7 @@ Journal amounts include VAT at 20%.
 | H16 |  | 181 |  |
 | I16 |  | 72.4 |  |
 | M16 |  | 2746.6 |  |
-| M18 |  | 0 |  |
+| M18 |  | 45805 |  |
 
 ### Payslips.xlsx!Admin
 
@@ -2236,81 +2492,6 @@ Journal amounts include VAT at 20%.
 | A381 |  | Mar |  |
 | B381 |  | 46497 |  |
 | D381 |  | 12 |  |
-
-### Payslips.xlsx!Jul
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| T41 |  | 0 |  |
-| M49 |  | 45866 |  |
-| F51 |  | Tom Davies |  |
-| M51 |  | 1500 |  |
-| N51 |  | 90.5 |  |
-| O51 |  | 36.2 |  |
-| R51 |  | 1373.3 |  |
-| S51 |  | PAY-EMP002-2025-07 |  |
-| T51 |  | 0 |  |
-| N52 |  | 0 |  |
-| O52 |  | 0 |  |
-| T52 |  | 0 |  |
-| N53 |  | 0 |  |
-| O53 |  | 0 |  |
-| T53 |  | 0 |  |
-| N54 |  | 0 |  |
-| O54 |  | 0 |  |
-| T54 |  | 0 |  |
-| N55 |  | 0 |  |
-| O55 |  | 0 |  |
-| T55 |  | 0 |  |
-
-### Payslips.xlsx!Aug
-
-| Cell | DIY Label | Value | diya-gl mapping |
-|------|-----------|-------|-----------------|
-| H11 |  | 0 |  |
-| I11 |  | 0 |  |
-| J11 |  | 0 |  |
-| L11 |  | 0 |  |
-| H12 |  | 0 |  |
-| I12 |  | 0 |  |
-| J12 |  | 0 |  |
-| L12 |  | 0 |  |
-| K12 |  | 0 |  |
-| H13 |  | 0 |  |
-| I13 |  | 0 |  |
-| J13 |  | 0 |  |
-| L13 |  | 0 |  |
-| K13 |  | 0 |  |
-| H14 |  | 0 |  |
-| I14 |  | 0 |  |
-| J14 |  | 0 |  |
-| L14 |  | 0 |  |
-| K14 |  | 0 |  |
-| H15 |  | 0 |  |
-| I15 |  | 0 |  |
-| J15 |  | 0 |  |
-| L15 |  | 0 |  |
-| K15 |  | 0 |  |
-| M49 |  | 45897 |  |
-| F51 |  | Tom Davies |  |
-| M51 |  | 1500 |  |
-| N51 |  | 90.5 |  |
-| O51 |  | 36.2 |  |
-| R51 |  | 1373.3 |  |
-| S51 |  | PAY-EMP002-2025-08 |  |
-| T51 |  | 0 |  |
-| N52 |  | 0 |  |
-| O52 |  | 0 |  |
-| T52 |  | 0 |  |
-| N53 |  | 0 |  |
-| O53 |  | 0 |  |
-| T53 |  | 0 |  |
-| N54 |  | 0 |  |
-| O54 |  | 0 |  |
-| T54 |  | 0 |  |
-| N55 |  | 0 |  |
-| O55 |  | 0 |  |
-| T55 |  | 0 |  |
 
 ### Salesinvoice.xlsx!Product Details
 

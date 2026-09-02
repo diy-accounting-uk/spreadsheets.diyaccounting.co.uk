@@ -26,11 +26,44 @@ export const monthlyPayrollBlockRow = (monthIndex) => 8 + 10 * PAYROLL_WEEKS_PER
 
 /**
  * The cell holding the date the month's wages were paid, one row below the
- * block start. It is the only date a month tab carries.
+ * block start. It closes the period the block opens with three columns to
+ * its left, and a book overwrites it with the day the wages actually went
+ * out. It is the only date on the tab any writer touches.
  * @param {number} monthIndex - 0-11
  * @returns {string}
  */
 export const payslipsWagesPaidCell = (monthIndex) => `M${monthlyPayrollBlockRow(monthIndex) + 1}`;
+
+/**
+ * The cell a month tab's monthly payroll block opens its period in, on the
+ * same row as the wages-paid date that closes it. Nothing writes to it, so it
+ * is the tab's own calendar whether the package carries a book or not.
+ * @param {number} monthIndex - 0-11
+ * @returns {string}
+ */
+export const payslipsPeriodStartCell = (monthIndex) => `K${monthlyPayrollBlockRow(monthIndex) + 1}`;
+
+/**
+ * The days a month tab's monthly payroll block covers: the tab's own month of
+ * the accounting period, index 0 being the month the period opens in. A March
+ * year end runs its accounts over the same twelve months as its payroll, and
+ * its first block opens with the payroll year on 6 April rather than on the
+ * 1st.
+ * @param {Date} periodStart - the accounting period's first day
+ * @param {number} monthIndex - 0-11
+ * @param {Date} payrollYearStart - payrollYearStart() for this package
+ * @returns {{first: Date, last: Date}}
+ */
+export function payslipsMonthPeriod(periodStart, monthIndex, payrollYearStart) {
+  const months = periodStart.getUTCFullYear() * 12 + periodStart.getUTCMonth() + monthIndex;
+  const first = new Date(Date.UTC(Math.floor(months / 12), months % 12, 1));
+  const last = new Date(Date.UTC(Math.floor(months / 12), (months % 12) + 1, 0));
+  const opensWithPayrollYear =
+    monthIndex === 0 &&
+    payrollYearStart.getUTCFullYear() === first.getUTCFullYear() &&
+    payrollYearStart.getUTCMonth() === first.getUTCMonth();
+  return { first: opensWithPayrollYear ? payrollYearStart : first, last };
+}
 
 /**
  * The five employee rows of a month's monthly block, from block row + 3.
@@ -39,11 +72,13 @@ export const payslipsWagesPaidCell = (monthIndex) => `M${monthlyPayrollBlockRow(
  */
 export const payslipsMonthEntryRows = (monthIndex) => [0, 1, 2, 3, 4].map((i) => monthlyPayrollBlockRow(monthIndex) + 3 + i);
 
-// The columns one employee's payslip row carries: F the name, M gross pay, N
-// income tax, O employee NI, R net pay, S the payslip's own reference (a
-// blank spacer in the template that no formula reads) and T employer NI, the
-// entry cell the block's own total row sums.
+// The columns one employee's payslip row carries: D the tax code (headed
+// "Tax Code" in D3, which heads every weekly and monthly block on the tab),
+// F the name, M gross pay, N income tax, O employee NI, R net pay, S the
+// payslip's own reference (a blank spacer in the template that no formula
+// reads) and T employer NI, the entry cell the block's own total row sums.
 export const PAYSLIPS_ENTRY_COLUMNS = {
+  taxCode: "D",
   name: "F",
   grossPay: "M",
   incomeTax: "N",
@@ -123,6 +158,50 @@ export function payrollRecordOpened(payroll, parse) {
   return earliest;
 }
 
+// ── The PAYE remittance schedule (the Payment sheet) ────────────────────────
+//
+// One row per tax month from row 4. B holds the month end and C the day the
+// payment falls due. The rows are the same on every package, whatever its year
+// end, because the tax calendar is.
+//
+// The template reaches both dates by counting a fixed number of days down the
+// Admin calendar, and the count cannot be right for a leap payroll year and a
+// common one at once: the month-end rows land a day early on every month after
+// a leap February, and the last two due-date rows land on the 20th in a year
+// without one. So the generator writes both columns as the dates they are.
+export const PAYE_SCHEDULE_FIRST_ROW = 4;
+export const PAYE_MONTH_END_ROWS = [26, 57, 87, 118, 149, 179, 210, 240, 271, 302, 330, 361];
+export const PAYE_DUE_DATE_ROWS = [45, 76, 106, 137, 168, 198, 229, 259, 290, 321, 350, 381];
+// The day of the month a PAYE payment falls due, in the month after the tax
+// month it settles.
+export const PAYE_DUE_DAY = 19;
+
+/**
+ * The two dates a PAYE schedule row carries: the end of the calendar month the
+ * tax month runs to, and the day the payment for it falls due.
+ * @param {Date} payrollYearOpens - payrollYearStart() for this package
+ * @param {number} taxMonthIndex - 0-11, row 4 being 0
+ * @returns {{ends: Date, due: Date}}
+ */
+export function payeTaxMonthDates(payrollYearOpens, taxMonthIndex) {
+  const months = payrollYearOpens.getUTCFullYear() * 12 + payrollYearOpens.getUTCMonth() + taxMonthIndex;
+  return {
+    ends: new Date(Date.UTC(Math.floor(months / 12), (months % 12) + 1, 0)),
+    due: new Date(Date.UTC(Math.floor((months + 1) / 12), (months + 1) % 12, PAYE_DUE_DAY)),
+  };
+}
+
+// The month tab each row takes its figures from: the tab named for the
+// calendar month that tax month ends in, which is the tab a month's payroll is
+// written to. Row 4 is April whatever the package's year end, so this list
+// does not move with the tabs.
+export const PAYE_SCHEDULE_MONTH_TABS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+
+// The row-1 aggregates a schedule row reads its month tab through. The
+// schedule owes HMRC the whole month's figures, so these are the tab's own
+// totals rather than either side of the employee/director split.
+export const PAYE_SCHEDULE_MONTH_TAB_CELLS = { employerNI: "T1", employeeNI: "O1", incomeTax: "N1", studentLoan: "P1" };
+
 // The Payslips sheet is the page an employer prints and hands over. F3 picks
 // weekly or monthly payslips and F4 the period; H3 and H4 turn that pair into
 // a month tab name and a block start row, and every printed figure is an
@@ -149,12 +228,6 @@ export const PAYSLIP_PRINT_FIRST_PAYROLL_NUMBER = 1;
 // payroll year's first month, each keyed by the payslip field it carries.
 export const PAYSLIP_PRINT_PERIOD_CELLS = { G14: "grossPay", H14: "incomeTax", I14: "employeeNI", M14: "netPay" };
 export const PAYSLIP_PRINT_TO_DATE_CELLS = { G16: "grossPay", H16: "incomeTax", I16: "employeeNI", M16: "netPay" };
-
-// The page's payment date reads column R of the block's own header row, where
-// the template holds nothing; the date the wages were paid sits a row below
-// in column M, which is where the period-end cell finds it. So the page
-// prints a nil there whatever the month held.
-export const PAYSLIP_PRINT_EMPTY_PAYMENT_DATE = 0;
 
 // Nothing downstream reads the printed page, so the reconciliation asks it
 // for a period other than the sheet's own default of 1 -- a join stuck on the

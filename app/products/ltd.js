@@ -9,9 +9,13 @@
 
 import { toExcelSerial } from "../lib/spreadsheet-runner.js";
 import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
-import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
+import { parseDate, MONTH_SHEETS, registerOfficers } from "../lib/scenario-loader.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_DUE_DAY,
+  PAYE_SCHEDULE_FIRST_ROW,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  PAYE_SCHEDULE_MONTH_TABS,
   PAYROLL_WEEKS_PER_MONTH,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_PERIOD,
@@ -20,9 +24,12 @@ import {
   PAYSLIPS_EMPLOYEE_BASE_ROWS,
   PAYSLIPS_EMPLOYEE_START_DATE_OFFSET,
   PAYSLIPS_ENTRY_COLUMNS,
+  payeTaxMonthDates,
   payrollRecordOpened,
   payrollYearStart,
   payslipsMonthEntryRows,
+  payslipsMonthPeriod,
+  payslipsPeriodStartCell,
   payslipsStartDate,
   payslipsWagesPaidCell,
 } from "../lib/payslips-layout.js";
@@ -209,24 +216,21 @@ const SHARE_NOMINAL_VALUE = 1;
 const BOARD_MINUTE_CELLS = { date: "F2", dividendDeclared: "E4" };
 
 // ── Register of directors and directors' interests (Companysecretary.xlsx) ─
-// Directors&Secretary carries one officer a row: A the full name, B the
-// address, C the date of appointment, D the capacity, E the board meeting
-// that confirmed it, F the date of resignation. Row 2 ships the template's
-// own "Director" capacity in D2 and row 3 its "Company Secretary" capacity in
-// D3 -- the sheet's own two officer placeholders (verified against the XML:
-// shared strings "Director"/"Company Secretary", "Incorporation
-// registration" already filling E2/E3). A second director beyond row 2 takes
-// the rows after the secretary's, writing its own capacity explicitly, since
-// only rows 2 and 3 carry the template's own capacity text.
+// Directors&Secretary carries one officer a row from row 2: A the full name,
+// B the address, C the date of appointment, D the capacity, E the board
+// meeting that confirmed it, F the date of resignation (verified against the
+// XML row 1 headings). Rows 2 and 3 ship the template's own "Director" and
+// "Company Secretary" placeholders in D, with "Incorporation registration"
+// already in E2/E3; an officer writes its own capacity over whichever row it
+// lands on, so the register reads in the order the book declares its
+// officers rather than in the order the placeholders suggest.
 //
-// DirectorsInterests runs one row a director from row 2, the template's own
+// DirectorsInterests runs one row an officer from row 2, the template's own
 // single placeholder row (D2/E2 pre-filled "None"). Column C is the date the
-// director's own shareholding was registered -- the same "acquired" date
+// officer's own shareholding was registered -- the same "acquired" date
 // their row carries on RegisterofMembers, when they hold shares at all.
 const DIRECTOR_SECRETARY_COLUMNS = { name: "A", address: "B", appointed: "C", capacity: "D" };
-const DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW = 2;
-const DIRECTOR_SECRETARY_SECRETARY_ROW = 3;
-const DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS = [4, 5, 6, 7, 8];
+const DIRECTOR_SECRETARY_OFFICER_ROWS = [2, 3, 4, 5, 6, 7, 8];
 const DIRECTORS_INTERESTS_ROWS = [2, 3, 4, 5, 6];
 const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" };
 
@@ -249,6 +253,8 @@ const DIRECTORS_INTERESTS_COLUMNS = { name: "A", address: "B", registered: "C" }
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
 const SALESINVOICE_VAT_REG_CELL = "B11";
+// The same sheet's "Telephone" box, the entry cell beside its A8 label.
+const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
@@ -651,12 +657,11 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     });
   }
 
-  // Register of directors and secretary, and directors' interests: the
-  // directors are the scenario's own employees marked isDirector -- the same
-  // set OpenAccounts!E5/E6 already print by name. A missing entry here is a
-  // Companies House problem, not an arithmetic one, so this only ever writes
-  // what the scenario actually names.
-  const directors = (scenario.employees || []).filter((e) => e.isDirector);
+  // Register of directors and secretary, and directors' interests: every
+  // officer the book declares, in the order it declares them. A missing
+  // entry here is a Companies House problem, not an arithmetic one, so this
+  // only ever writes what the scenario actually names.
+  const directors = registerOfficers(scenario);
   if (directors.length > 0) {
     const biz = scenario.business || {};
     const officerAddress = [biz.address, biz.town, biz.postcode].filter(Boolean).join(", ") || undefined;
@@ -664,14 +669,21 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
     companysecretaryWrites["Directors&Secretary"] = {};
     const officers = companysecretaryWrites["Directors&Secretary"];
     directors.forEach((director, index) => {
-      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      const row = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
       if (row === undefined) return;
       officers[`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`] = director.name;
       if (officerAddress) officers[`${DIRECTOR_SECRETARY_COLUMNS.address}${row}`] = officerAddress;
-      // Rows 2 and 3 already carry the template's own "Director"/"Company
-      // Secretary" capacity text; a second director beyond row 2 has to say
-      // so itself.
-      if (row !== DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW) officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = "Director";
+      if (director.appointed) {
+        const appointed = parseDate(director.appointed);
+        officers[`${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`] = toExcelSerial(
+          appointed.getUTCFullYear(),
+          appointed.getUTCMonth() + 1,
+          appointed.getUTCDate(),
+        );
+      }
+      // The capacity the officer was appointed in, over whichever
+      // placeholder the row it lands on happens to carry.
+      officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`] = director.role || "Director";
     });
 
     companysecretaryWrites.DirectorsInterests = {};
@@ -830,6 +842,10 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
         const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
+        // Column D is the block's own "Tax Code" column, headed in D3 and
+        // read by no formula, so the code the employee is taxed under
+        // reaches the payslip it belongs on.
+        if (e.taxCode) sheet[`D${row}`] = e.taxCode;
         sheet[`M${row}`] = e.grossPay;
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
@@ -1062,9 +1078,15 @@ export function cellWrites(scenario, targetStartYear, yearEndMonth) {
   // anchored to the fixture's own first sale so the customer-facing invoice
   // total and VAT can be checked against a real figure (see checkCompliance).
   const salesinvoiceWrites = {};
+  // The invoice's own letterhead carries the business telephone number,
+  // which no other sheet in these workbooks has a box for.
+  if (scenario.business?.phone) salesinvoiceWrites["Business Details"] = { [SALESINVOICE_TELEPHONE_CELL]: scenario.business.phone };
   const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
   if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
-    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Business Details"] = {
+      ...salesinvoiceWrites["Business Details"],
+      [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number,
+    };
     salesinvoiceWrites["Invoice Database"] = {
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
@@ -1599,6 +1621,38 @@ export function standardReads() {
   return reads;
 }
 
+// The Payslips month tabs, by the name this year end gives each one.
+//
+// Every tab carries the day its monthly payroll block opens on, which is the
+// day the month the tab is named for begins. Nothing writes to that cell, so
+// it is the tab's own calendar on a blank package and a populated one alike,
+// and reading all twelve is what tells a tab dated from the payroll calendar
+// apart from one dated from the accounting period.
+//
+// Template positions 3 and 4 (originally Jul/Aug) are read out in full as
+// well (see PAYSLIPS_JUL_DEAD_CELLS and PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS
+// above), plus the rows the fixture actually populates, so a break in either
+// area is caught on its own month instead of only through the Payment/Admin
+// aggregates.
+function payslipsMonthTabReads(tabNames) {
+  const reads = {};
+  tabNames.forEach((tab, monthIndex) => {
+    // The row-1 totals the PAYE schedule reads the tab through, so a schedule
+    // row summing the wrong month fails against the tab it should have read
+    // rather than only against the scenario.
+    reads[tab] = [payslipsPeriodStartCell(monthIndex), ...Object.values(PAYE_SCHEDULE_MONTH_TAB_CELLS)];
+  });
+  reads[tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]].push(
+    ...PAYSLIPS_JUL_DEAD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+  );
+  reads[tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]].push(
+    ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+  );
+  return reads;
+}
+
 // Leaf-file reads for the VAT chain: each month tab's VAT (G1) and gross
 // total (H1) from Sales.xlsx and Purchases.xlsx, plus every VATQtr box from
 // Vatreturns.xlsx. Vatreturns links Sales, Purchases and Financialaccounts,
@@ -1651,11 +1705,15 @@ export function multiFileOptions(yearEndMonth) {
     bankReads[fileName] = { [tabNames[11]]: ["A1", "A2"] };
   }
 
-  // Payslips!Payment -- one row per month (rows 4-15, same template order as
-  // WagesInterface). D = NI due (employer + employee), E = income tax due,
-  // I = total amount payable (verified against the template).
+  // Payslips!Payment -- the PAYE remittance schedule, one row per tax month
+  // from row 4. B is the tax month end and C the day the payment falls due,
+  // both off the payroll calendar; D = NI due (employer + employee), E =
+  // income tax due, I = total amount payable (verified against the template).
   const paymentCells = [];
-  for (let row = 4; row <= 15; row++) for (const col of ["D", "E", "I"]) paymentCells.push(`${col}${row}`);
+  for (let taxMonth = 0; taxMonth < PAYE_SCHEDULE_MONTH_TABS.length; taxMonth++) {
+    const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+    for (const col of ["B", "C", "D", "E", "I"]) paymentCells.push(`${col}${row}`);
+  }
 
   return {
     postHubRecalc: ["Vatreturns.xlsx"],
@@ -1703,20 +1761,7 @@ export function multiFileOptions(yearEndMonth) {
             ...payrollMonthStarts().flatMap(({ row }) => ["A", "B", "C", "D", "F"].map((col) => `${col}${row}`)),
           ]),
         ],
-        // Template positions 3 and 4 (originally Jul/Aug) read directly
-        // under whatever name this year-end renamed them to (see
-        // PAYSLIPS_JUL_DEAD_CELLS and PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS
-        // above), plus the rows the fixture actually populates, so a break
-        // in either area is caught on its own month instead of only
-        // through the Payment/Admin aggregates.
-        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]: [
-          ...PAYSLIPS_JUL_DEAD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
-        ],
-        [tabNames[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]: [
-          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
-        ],
+        ...payslipsMonthTabReads(tabNames),
       },
       "Companysecretary.xlsx": {
         // One member a row: A the name, G the holding. F1 is the sheet's own
@@ -1736,14 +1781,14 @@ export function multiFileOptions(yearEndMonth) {
         // charged, which the balance sheet has to carry as a creditor
         // falling due after more than one year.
         "Charges&Debentures": CHARGE_REGISTER_ROWS.map((row) => `C${row}`),
-        // One officer a row: A the name, B the address. Rows 2 and 3 are the
-        // template's own director and secretary slots; the rest are a second
-        // director's, if the scenario names one.
-        "Directors&Secretary": [
-          DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW,
-          DIRECTOR_SECRETARY_SECRETARY_ROW,
-          ...DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS,
-        ].flatMap((row) => [`${DIRECTOR_SECRETARY_COLUMNS.name}${row}`, `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`]),
+        // One officer a row from row 2: A the name, B the address, C the date
+        // of appointment, D the capacity they hold.
+        "Directors&Secretary": DIRECTOR_SECRETARY_OFFICER_ROWS.flatMap((row) => [
+          `${DIRECTOR_SECRETARY_COLUMNS.name}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.address}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`,
+          `${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`,
+        ]),
         // One director a row: A the name, B the address, C the date their own
         // shareholding was registered.
         "DirectorsInterests": DIRECTORS_INTERESTS_ROWS.flatMap((row) => [
@@ -2853,15 +2898,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   //
   // Neither sheet carries a formula or a route to the accounts -- a missing
   // entry is a Companies House problem, not an arithmetic one -- so this
-  // checks the entries land against the scenario's own directors, the same
-  // set OpenAccounts and the Report already print by name. An empty register
-  // fails here and nowhere else.
+  // checks the entries land against the scenario's own officers. An empty
+  // register fails here and nowhere else.
   const officers = results["Companysecretary.xlsx!Directors&Secretary"];
   const interests = results["Companysecretary.xlsx!DirectorsInterests"];
-  const expectedDirectors = (expected.employees || []).filter((e) => e.isDirector);
+  const expectedDirectors = registerOfficers(expected);
   if (officers && expectedDirectors.length > 0) {
     expectedDirectors.forEach((director, index) => {
-      const row = index === 0 ? DIRECTOR_SECRETARY_FIRST_DIRECTOR_ROW : DIRECTOR_SECRETARY_EXTRA_DIRECTOR_ROWS[index - 1];
+      const row = DIRECTOR_SECRETARY_OFFICER_ROWS[index];
       if (row === undefined) return;
       checkText(
         `Directors&Secretary: row ${row} names ${director.name}`,
@@ -2869,6 +2913,23 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         (name) => name === director.name,
         director.name,
       );
+      if (director.role) {
+        checkText(
+          `Directors&Secretary: row ${row} appoints ${director.name} as ${director.role}`,
+          text(officers[`${DIRECTOR_SECRETARY_COLUMNS.capacity}${row}`]),
+          (capacity) => capacity === director.role,
+          director.role,
+        );
+      }
+      if (director.appointed) {
+        const appointed = parseDate(director.appointed);
+        check(
+          `Directors&Secretary: row ${row} dates ${director.name}'s appointment`,
+          num(officers[`${DIRECTOR_SECRETARY_COLUMNS.appointed}${row}`]),
+          toExcelSerial(appointed.getUTCFullYear(), appointed.getUTCMonth() + 1, appointed.getUTCDate()),
+          0,
+        );
+      }
     });
   }
   if (interests && expectedDirectors.length > 0) {
@@ -3402,6 +3463,61 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
+  // ── Payslips!Payment: the dates on the PAYE remittance schedule ──────────
+  //
+  // Twelve rows, one per tax month, each with the month it covers and the day
+  // the payment falls due. Both come off the payroll calendar at a fixed row,
+  // so they are the payroll year's first day plus a fixed count of days --
+  // measured here against the year the package's own tax data opens in, not
+  // against the calendar the sheet built them from.
+  const paymentSchedule = results["Payslips.xlsx!Payment"];
+  const payrollYearOpens = taxData?.financial_year?.start ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear()) : null;
+  if (paymentSchedule && payrollYearOpens) {
+    const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
+    PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
+      const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+      const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
+      check(
+        `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
+        num(paymentSchedule[`C${row}`]),
+        asSerial(due),
+        0,
+      );
+    });
+  }
+
+  // ── Payslips month tabs: the day each monthly payroll block opens ────────
+  //
+  // A month tab is named for its own month of the accounting period, and the
+  // block on it opens with the day that month begins. The template dates
+  // those blocks from the Payslips calendar, which runs the tax year, and on
+  // a March year end the package's twelve months and the payroll year's are
+  // the same twelve, so the two frames agree and neither can be told from the
+  // other. Rename the tabs for another year end and a block still dated from
+  // the payroll calendar shows one month's days under another month's name --
+  // on the blank workbook a customer downloads, before any book is entered.
+  //
+  // The period start comes off the hub's own Admin sheet, so a block dated
+  // from the wrong calendar cannot agree with it by construction.
+  const periodStartSerial = num(results.Admin?.B9);
+  if (periodStartSerial && payslipsAdmin) {
+    const periodStart = dateFromSerial(periodStartSerial);
+    const yearStart = dateFromSerial(num(payslipsAdmin[PAYSLIPS_CALENDAR_ANCHOR_CELL]));
+    fiscalTabs.forEach((tab, monthIndex) => {
+      const month = results[`Payslips.xlsx!${tab}`];
+      if (!month) return;
+      const cell = payslipsPeriodStartCell(monthIndex);
+      const opens = payslipsMonthPeriod(periodStart, monthIndex, yearStart).first;
+      check(
+        `Payslips!${tab} ${cell} the monthly payroll opens in the accounting period's ${tab}`,
+        num(month[cell]),
+        toExcelSerial(opens.getUTCFullYear(), opens.getUTCMonth() + 1, opens.getUTCDate()),
+        0,
+      );
+    });
+  }
+
   if (expected.payroll) {
     // Same date-shift math cellWrites() uses to place each scenario month's
     // payroll on a Payslips.xlsx tab: monthKey's calendar month (e.g. "apr"
@@ -3457,20 +3573,41 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       checkWagesInterfaceRow(WAGES_INTERFACE_EMPLOYEE_FIRST_ROW + i, "employees", employeeSums);
       checkWagesInterfaceRow(WAGES_INTERFACE_DIRECTOR_FIRST_ROW + i, "directors", directorSums);
 
-      // Payslips!Payment: same row layout as the WagesInterface employees
-      // block (verified against the template), but reading the month tab's
-      // own whole-month totals rather than either side of the split -- what
-      // the company owes HMRC does not care who was a director. D = NI due
-      // (employer + employee), E = income tax due, I = total amount payable
-      // = D + E (F/G/H -- statutory pay recovered, NIC compensation, student
-      // loan -- stay 0 in this fixture).
+      // Payslips!Payment: the tax month a tab's payroll is paid in, which is
+      // the month the tab is named for -- row 4 is April on every package,
+      // whatever the year end, because the tax calendar does not move with
+      // the accounting period. The row reads the tab's own whole-month totals
+      // rather than either side of the split: what the company owes HMRC does
+      // not care who was a director. D = NI due (employer + employee), E =
+      // income tax due, I = total amount payable = D + E (F/G/H -- statutory
+      // pay recovered, NIC compensation, student loan -- stay 0 here).
       const payment = results["Payslips.xlsx!Payment"] || {};
-      const row = WAGES_INTERFACE_EMPLOYEE_FIRST_ROW + i;
+      const row = PAYE_SCHEDULE_FIRST_ROW + PAYE_SCHEDULE_MONTH_TABS.indexOf(tab);
       const monthSums = sumPayroll(entries);
       const niDue = monthSums.employerNI + monthSums.employeeNI;
       check(`Payslips!Payment ${tab} D${row} NI due`, num(payment[`D${row}`]), niDue);
       check(`Payslips!Payment ${tab} E${row} income tax due`, num(payment[`E${row}`]), monthSums.incomeTax);
       check(`Payslips!Payment ${tab} I${row} total amount payable`, num(payment[`I${row}`]), niDue + monthSums.incomeTax);
+
+      // The same figures read off the tab the row is supposed to be reading.
+      // The fixture pays several months alike, so a row that has slipped onto
+      // a neighbouring tab can still match the scenario; it cannot match both
+      // the scenario and the tab it names.
+      const monthTab = results[`Payslips.xlsx!${tab}`];
+      if (monthTab) {
+        const cells = PAYE_SCHEDULE_MONTH_TAB_CELLS;
+        check(
+          `Payslips!Payment D${row} NI due is the ${tab} tab's own`,
+          num(payment[`D${row}`]),
+          num(monthTab[cells.employerNI]) + num(monthTab[cells.employeeNI]),
+        );
+        check(`Payslips!Payment E${row} income tax due is the ${tab} tab's own`, num(payment[`E${row}`]), num(monthTab[cells.incomeTax]));
+        check(
+          `Payslips!Payment I${row} total payable is the ${tab} tab's own`,
+          num(payment[`I${row}`]),
+          num(monthTab[cells.employerNI]) + num(monthTab[cells.employeeNI]) + num(monthTab[cells.incomeTax]) + num(monthTab[cells.studentLoan]),
+        );
+      }
     });
 
     // ── Payslips!Payslips: the page the employer prints and hands over ─────
@@ -3537,19 +3674,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("Payslips print: national insurance to date is every month printed so far", num(printed.I16), toDateSum("employeeNI"));
         check("Payslips print: net pay to date is every month printed so far", num(printed.M16), toDateSum("netPay"));
 
-        // The payment date the page prints reads the block's own header row
-        // in column R, where the template holds nothing -- the date the wages
-        // were paid sits a row below in column M, which is where I9 above
-        // finds it. The page therefore prints no payment date at all.
-        check("Payslips print: the payment date reads a cell the block leaves empty", num(printed.M18), 0, 0);
-        checks.push({
-          name: "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
-          actual: num(printed.M18),
-          expected: toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
-          pass: false,
-          severity: "warning",
-          diff: "",
-        });
+        // The payment date the page prints joins to the same cell I9 above
+        // does -- the wages-paid date a row below the block's header row.
+        check(
+          "Payslips print: the payment date is the day the scenario paid that month's wages",
+          num(printed.M18),
+          toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          0,
+        );
       }
     }
 

@@ -26,8 +26,11 @@ import {
   rewriteVatinterfaceFormulas,
   renameExternalLinkSheetNames,
   reorientPayslipsAdminMonthSheets,
+  reorientPayslipsMonthTabPeriods,
+  realignPayslipsPaymentSchedule,
   monthEnd,
 } from "../lib/generator.js";
+import { payrollYearStart } from "../lib/payslips-layout.js";
 import { generatePdf } from "../lib/guide.js";
 import { runSpreadsheet, runMultiFileSpreadsheet } from "../lib/spreadsheet-runner.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
@@ -128,6 +131,13 @@ async function generateProduct(productDir, tomlPath, sourceDateEpoch, skipGuide,
       // on, which the printed payslip joins through, so it moves with the tabs.
       if (yearEndMonth && sheetsConfig?.payslipsAdmin) {
         buffer = await reorientPayslipsAdminMonthSheets(buffer, yearEndMonth, sheetsConfig.payslipsAdmin);
+        // Each month tab's monthly payroll block already covers a month of the
+        // payroll year. The tab's name is the accounting period's month, so on
+        // another year end that is the month the block moves to.
+        buffer = await reorientPayslipsMonthTabPeriods(buffer, endDate, payrollYearStart(new Date(ty.start).getUTCFullYear()));
+        // Each PAYE schedule row then takes the tab holding the payroll paid
+        // in its tax month rather than the tab the rename left it pointing at.
+        buffer = await realignPayslipsPaymentSchedule(buffer, yearEndMonth);
       }
 
       if (yearEndMonth && fileKey === "vatreturns" && sheetsConfig) {

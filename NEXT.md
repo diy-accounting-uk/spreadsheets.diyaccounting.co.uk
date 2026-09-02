@@ -6,66 +6,47 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**Book read-back batch** — the three `book.toml` read-back tracks from
-`PLAN_ROUNDTRIP_FIDELITY.md`, coordinated on `claude/book-readback` (draft PR back to main).
-Shared exit criterion: every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json`
-reaches zero, with the decided-out fields (per-contact ledgers, any other structural absence)
-held as declared absences with reasons, never silently closed.
+**Book read-back batch, wave 2** — continues on `claude/book-readback-2` (draft PR back to
+main; wave 1 landed via PR #52 with a green branch deploy). Shared exit criterion unchanged:
+every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json` reaches zero, with
+the decided-out fields (per-contact ledgers, any other structural absence) held as declared
+absences with reasons, never silently closed.
 
-- [ ] registers-and-employees (Sonnet, worktree agent) — code-complete, full suite running
-- [x] rates-by-provenance — landed on the batch branch (`1a5a2758`, merged; 58/58 exporter
-  tests on the merged branch; SE 111→102, Ltd 156→139). The budget re-measures on the
-  combined tree once the sibling lands, since each track measured without the other's changes.
-- [ ] asset-attributes (Opus) — waits on wave 1
-- [ ] declared-absence floor: budgets to zero (design with asset-attributes) — waits on the tracks.
-  The rates track's unmappable fields feed it: the AIA relief-scale factor (never the absolute
-  cap), reduced VAT rate, associated companies, Class 2 small-profits threshold, Class 1
-  employee NI fields, and Ltd's whole `tax.incomeTax` (no `[income_tax]` in `ltd-*.toml`).
-- [x] CT600 judge failure — landed on the batch branch (`89c271f2`..`45bc9bb3`, merged).
-  Root cause was NOT a live template defect: the CT600 fix already existed (`fd07e3c9`,
-  `15fb968a`) and the judge read a brickwork report frozen one day before it, because the
-  generate workflows uploaded extra-scenario reports under a name the commit job's collect
-  glob never matched. Fixed the artifact names, added a guard test, refreshed the four stale
-  Ltd brickwork reports (verified byte-identical LibreOffice against a CI-committed report),
-  re-pinned the judge parser fixture. Full serial suite 7065 tests green in the track.
-- [x] Judge mode-invariance — landed on the batch branch (operator decided: latest joins the
-  defaults matrix; superseded extras drop in the commit job, mirrored to SE/BST). The Oct27
-  brickwork pair is committed and the judge test re-pinned to it, so the next generate run
-  reproduces rather than changes the judged tree.
-- [ ] batch remainder, surfaced by the rates track:
-  - fixture masters carry rates from the wrong year file: BST/Taxi/SE masters declare
-    `class2WeeklyRate = 3.45` (the 2023-24 rate; packages generate with `se-2025-2026.toml`
-    where it is 0), and the Ltd master's employer-NI block matches `ltd-2025.toml` not the
-    `ltd-2024.toml` the roundtrip job generates with.
-  - stale/wrong CELL_MAP tax labels: dead non-schema field names at `app/products/se.js:904-917`;
-    `bst.js:278` and `taxi.js:286` label Admin!N14/N13 `higherRateThreshold` where the value is
-    the additional-rate threshold. The coordinator batch (24 items) merged to main in PR #48; history lives in its
-merge commits. One operator step remains from it: the generate-commit refresh — the
-committed `packages/` are stale derived artifacts until it runs, and it clears the last
-reconciliation residue in the committed reports.
+- [x] T5 — landed on the batch branch: `Payslips!M18` repointed at the wages-paid cell in
+  both products, the warning flipped to a real check; featured scenarios go clean at the
+  refresh (the judge re-pin rides the closeout).
+- [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
+  carries that tab's month of the accounting period (generator-only, Ltd non-March, March
+  byte-stable), with a breakable per-tab check in both engines.
+- [x] weekly-cache roll + Payment realignment + the Mar-2024 leap fix — landed (merged;
+  judge test 108/108 and 151 payslips tests green on the merged branch). The leap bug was
+  the template's fixed day-counts (no count fits both payroll-year lengths — plus a
+  previously unchecked common-year defect, C14/C15 on the 20th); the generator now writes
+  the payroll months' real dates. The branch is otherwise stable: re-run `generate-ltd`
+  (expect 25/25), then the closeout. Every SE/Ltd `packages/*/Payslips.xlsx` and report is
+  stale until the refresh.
+- [x] fixture-master rate alignment — landed (`774d52af`, merged; sync gate re-proven on
+  the merged masters, zero drift; 244 blast tests green). Budgets unchanged — the gain is
+  in the ungated book-level differing counts (BST 53→50, Taxi 13→10).
+- [x] labels-track regression — the SE CELL_MAP deletions had emptied the calculators' read
+  scope (`withinReadScope()`) and 13 SE checks with it; restored with schema-correct names
+  inside the asset-attributes track. Done when this branch merges.
+- [ ] batch closeout (operator, decided 2026-09-01): when the branch is otherwise stable,
+  the operator re-runs all four generators in CI and commits; one clean serial `npm test`
+  sweep rides the same moment. Two riders land WITH that refresh: re-pin
+  `app/test/judge-reconciliation.test.js` to the post-fix reports (SE and Ltd go clean —
+  947/947 on the Ltd brickwork pair, no payslip warning — the pins deliberately stay on the
+  committed pre-fix reports until then, since the reconciliations drive the committed
+  `packages/`, which only the refresh rebuilds with the T5/T7 fixes), and the reports will
+  then show T7's twelve calendar checks and T5's payment-date check passing.
+- [ ] archive `PLAN_ROUNDTRIP_FIDELITY.md` when the full set lands — merged to main,
+  regenerated, deployed to prod. The plan is then fully closed (all gates at zero, declared
+  absences held); its record moves out of the live plan set.
 
 ## Open items
 
 The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
-
-Each item names its suggested sub-agent tier; all branch from the post-deploy green main and
-follow the reconciliation-bug method.
-
-- [ ] **T7: a renamed month tab keeps its tax-anchored calendar dates when unpopulated**
-  (operator decision first) — surfaced by the print-frame track: on a non-March package the
-  tab named `Aug` still shows `K49`-`M49` = 1 May - 31 May, read off `Admin!B27`/`B57`; a
-  populated fixture overwrites `M49`, but the blank package a customer downloads shows
-  tax-year dates under an accounting-year tab name. No check covers it, and reorienting the
-  in-tab calendar is a template-level design question — decide whether the blank package
-  should carry accounting-frame dates before dispatching anything.
-- [ ] **T5: the printed payslip's payment date reads an empty header cell** (Haiku) —
-  surfaced by P1: `Payslips!M18` ("Payment date") in both products reads
-  `INDIRECT(ADDRESS($H$4,18,...))` — column R of the month block's header row, which the
-  template leaves empty — while the wages-paid date actually sits one row below (the cell
-  `I9` correctly reads). The check currently asserts the behaviour as it stands (`M18 = 0`)
-  with a warning carrying the true date (`app/products/ltd.js:3541`, `se.js:2487`).
-  Template surgery: point M18's column/row at the paid-date cell, flip the warning into a
-  real check, prove breakable.
+T5 and T7 landed on the batch branch; nothing is open outside the in-flight block above.
 
 
 
@@ -76,10 +57,10 @@ follow the reconciliation-bug method.
 
 ## Plans not tracked here
 
-- `PLAN_DIYA_GL_BST_SPIKE.md` — a BST package opens, edits, recalculates and saves as diya-gl in a
-  browser page, with the opt-in LLM review as its post-phase-5 extension; specified, not started.
+- `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` — a BST package opens, edits, recalculates and saves as
+  diya-gl, delivered as a CLI, then an MCP server, then a browser page. In delivery on
+  `claude/bst-cli-phase-1`; the plan's own tracking blocks carry progress.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
-- `PLAN_VAT_EXPORT_FOR_SUBMIT.md` — a VAT-return export Submit can import; not started.
 
 ## Discipline
 

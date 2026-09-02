@@ -11,6 +11,11 @@ import { ACCOUNT_ID_COLUMN } from "../lib/xlsx-exporter.js";
 import { parseDate, MONTH_SHEETS } from "../lib/scenario-loader.js";
 import {
   monthlyPayrollBlockRow,
+  PAYE_DUE_DAY,
+  PAYE_SCHEDULE_FIRST_ROW,
+  PAYE_SCHEDULE_MONTH_TAB_CELLS,
+  PAYE_SCHEDULE_MONTH_TABS,
+  payeTaxMonthDates,
   PAYSLIP_PRINT_CELLS,
   PAYSLIP_PRINT_PERIOD,
   PAYSLIP_PRINT_SHEET,
@@ -149,6 +154,8 @@ export function vatRateFor(scenario) {
 // cell every row of D2:D99 carries the tax year's rate into, so carriage is
 // taxed at the written rate like every other line.
 const SALESINVOICE_VAT_REG_CELL = "B11";
+// The same sheet's "Telephone" box, the entry cell beside its A8 label.
+const SALESINVOICE_TELEPHONE_CELL = "B8";
 const SALESINVOICE_SAMPLE_PRODUCT_CODE = 1001;
 const SALESINVOICE_SAMPLE_PRODUCT_ROW = 2;
 const SALESINVOICE_SAMPLE_CARRIAGE_CHARGE = 37.5;
@@ -184,6 +191,9 @@ const STRADDLING_PURCHASES_COLUMNS = { date: "A", name: "B", invoice: "C", descr
 
 // The StockControl physical-count cells for the two ends of the accounting
 // year -- row 6 is the opening count and row 30 the count at the year end.
+// The SA103F front page's "Description of business" box, the merged
+// C17:J17 entry cell under the label in C16.
+const BUSINESS_DESCRIPTION_CELL = "C17";
 const STOCK_OPENING_COUNT_CELL = "AB6";
 const STOCK_CLOSING_COUNT_CELL = "AB30";
 
@@ -395,6 +405,10 @@ export function cellWrites(scenario, targetStartYear) {
     const bd = hubWrites["Business Details"];
     const biz = scenario.business || {};
     bd.C5 = biz.name || scenario.metadata?.name || "";
+    // The SA103F front page runs label then entry down column C: C16 heads
+    // "Description of business" and C17:J17 is the merged box under it, in
+    // the same entry style C5 carries.
+    if (biz.description) bd[BUSINESS_DESCRIPTION_CELL] = biz.description;
   }
 
   // Payslips.xlsx employee details
@@ -462,6 +476,10 @@ export function cellWrites(scenario, targetStartYear) {
         const row = blockRow + 3 + i;
         const e = entries[i];
         if (e.name) sheet[`F${row}`] = e.name;
+        // Column D is the block's own "Tax Code" column, headed in D3 and
+        // read by no formula, so the code the employee is taxed under
+        // reaches the payslip it belongs on.
+        if (e.taxCode) sheet[`D${row}`] = e.taxCode;
         sheet[`M${row}`] = e.grossPay;
         sheet[`N${row}`] = e.incomeTax;
         sheet[`O${row}`] = e.employeeNI;
@@ -670,9 +688,15 @@ export function cellWrites(scenario, targetStartYear) {
   // anchored to the fixture's own first sale so the customer-facing invoice
   // total and VAT can be checked against a real figure (see checkCompliance).
   const salesinvoiceWrites = {};
+  // The invoice's own letterhead carries the business telephone number,
+  // which no other sheet in these workbooks has a box for.
+  if (scenario.business?.phone) salesinvoiceWrites["Business Details"] = { [SALESINVOICE_TELEPHONE_CELL]: scenario.business.phone };
   const firstInvoiceSale = Object.values(scenario.sales || {}).flat()[0];
   if (rate > 0 && scenario.business?.vat_number && firstInvoiceSale) {
-    salesinvoiceWrites["Business Details"] = { [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number };
+    salesinvoiceWrites["Business Details"] = {
+      ...salesinvoiceWrites["Business Details"],
+      [SALESINVOICE_VAT_REG_CELL]: scenario.business.vat_number,
+    };
     salesinvoiceWrites["Invoice Database"] = {
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.activate}2`]: 1,
       [`${SALESINVOICE_INVOICE_DATABASE_COLUMNS.invoiceNumber}2`]: 1,
@@ -895,26 +919,33 @@ export const CELL_MAP = [
   // ── Admin (generator-injected tax data) — cell positions verified against
   // buildSeCellEdits() in app/lib/generator.js and the template's own labels.
   // SE's income tax band cells sit one row above BST's (M11/N12/N13 rather
-  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17.
+  // than M12/N13/N14) and NI Class 2 sits at L16 rather than L17. The gl
+  // mapping is the book field a cell states where the schema has one; the
+  // band start, the AIA scale and the two mileage band edges have no schema
+  // field of their own, and the export reconstructs the whole tax table from
+  // the year file the package names rather than from any of these cells.
+  // They stay in this map because it is also the read scope: both engines
+  // publish exactly the cells named here, and checkCompliance reads these
+  // against the tax data the package was generated from.
   ["Admin", "N4",  "Personal Allowance",                  "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0],
   ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0],
   ["Admin", "N6",  "Basic Rate",                          "tax.incomeTax.basicRate",                 "Admin (Generator Injected)", 0],
   ["Admin", "N7",  "Higher Rate",                         "tax.incomeTax.higherRate",                "Admin (Generator Injected)", 0],
   ["Admin", "N8",  "Additional Rate",                     "tax.incomeTax.additionalRate",            "Admin (Generator Injected)", 0],
-  ["Admin", "M11", "Basic Band End",                      "tax.incomeTax.basicBandEnd",              "Admin (Generator Injected)", 0],
-  ["Admin", "N12", "Higher Band Start",                   "tax.incomeTax.higherBandStart",           "Admin (Generator Injected)", 0],
-  ["Admin", "N13", "Higher Band End",                     "tax.incomeTax.higherBandEnd",             "Admin (Generator Injected)", 0],
+  ["Admin", "M11", "Basic Band End",                       "tax.incomeTax.basicRateLimit",            "Admin (Generator Injected)", 0],
+  ["Admin", "N12", "Higher Band Start",                    "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "N13", "Higher Band End",                      "tax.incomeTax.additionalRateThreshold",   "Admin (Generator Injected)", 0],
   ["Admin", "L16", "NI Class 2 Weekly Rate",               "tax.nationalInsurance.class2WeeklyRate",  "Admin (Generator Injected)", 0],
-  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4LowerRate",   "Admin (Generator Injected)", 0],
-  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerLimit",  "Admin (Generator Injected)", 0],
+  ["Admin", "L20", "NI Class 4 Lower Rate",                "tax.nationalInsurance.class4MainRate",    "Admin (Generator Injected)", 0],
+  ["Admin", "N20", "NI Class 4 Lower Limit",               "tax.nationalInsurance.class4LowerProfits", "Admin (Generator Injected)", 0],
   ["Admin", "L23", "NI Class 4 Upper Rate",                "tax.nationalInsurance.class4UpperRate",   "Admin (Generator Injected)", 0],
-  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperLimit",  "Admin (Generator Injected)", 0],
-  ["Admin", "G4",  "Annual Investment Allowance Rate",     "tax.capitalAllowances.aiaRate",           "Admin (Generator Injected)", 0],
-  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.wdaRate",           "Admin (Generator Injected)", 0],
-  ["Admin", "F21", "Mileage Higher Rate Limit",            "tax.mileage.higherRateLimit",             "Admin (Generator Injected)", 0],
-  ["Admin", "G21", "Mileage Higher Rate Pence",             "tax.mileage.higherRatePence",             "Admin (Generator Injected)", 0],
-  ["Admin", "F22", "Mileage Lower Rate Start",              "tax.mileage.lowerRateStart",              "Admin (Generator Injected)", 0],
-  ["Admin", "G22", "Mileage Lower Rate Pence",              "tax.mileage.lowerRatePence",              "Admin (Generator Injected)", 0],
+  ["Admin", "N23", "NI Class 4 Upper Limit",               "tax.nationalInsurance.class4UpperProfits", "Admin (Generator Injected)", 0],
+  ["Admin", "G4",  "Annual Investment Allowance Rate",     "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G5",  "Writing Down Allowance Rate",          "tax.capitalAllowances.mainRateWDA",       "Admin (Generator Injected)", 0],
+  ["Admin", "F21", "Mileage Higher Rate Limit",            "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G21", "Mileage Higher Rate Pence",            "tax.mileage.carFirst10000",               "Admin (Generator Injected)", 0],
+  ["Admin", "F22", "Mileage Lower Rate Start",             "",                                        "Admin (Generator Injected)", 0],
+  ["Admin", "G22", "Mileage Lower Rate Pence",             "tax.mileage.carOver10000",                "Admin (Generator Injected)", 0],
   ["Admin", "F26", "VAT Registration Threshold",           "tax.vat.registrationThreshold",           "Admin (Generator Injected)", 0],
   ["Admin", "F27", "VAT Standard Rate",                    "tax.vat.standardRate",                    "Admin (Generator Injected)", 0],
 ];
@@ -962,13 +993,32 @@ export function multiFileOptions() {
     purchasesMonthReads[tab] = ["A1", "A2", "C2", "G2", "H1", "I1", VAT_RATE_CELL, "AD1"];
   }
 
-  // Payslips!Payment — one row per month (rows 4-15 = Apr-Mar, same layout
-  // as Wagesinterface): D = NI due (employer + employee), E = income tax
-  // due, I = total amount payable (verified against the template:
+  // Payslips!Payment — the PAYE remittance schedule, one row per tax month
+  // (rows 4-15 = Apr-Mar, same layout as Wagesinterface). B is the tax month
+  // end and C the day the payment falls due, both off the payroll calendar;
+  // D = NI due (employer + employee), E = income tax due, I = total amount
+  // payable (verified against the template: B4=Admin!$B$26, C4=Admin!$B$45,
   // D4=Apr!T1+Apr!O1, E4=Apr!N1, I4=D4+E4-F4-G4+H4, with F/G/H always 0 in
   // this fixture -- no statutory pay or student loan data).
   const paymentCells = {};
-  for (const row of WAGES_MONTH_ROWS) paymentCells[row] = ["D", "E", "I"].map((c) => `${c}${row}`);
+  for (const row of WAGES_MONTH_ROWS) paymentCells[row] = ["B", "C", "D", "E", "I"].map((c) => `${c}${row}`);
+
+  // Each month tab's own whole-month totals on row 1, which is what the
+  // schedule row above reads it through. Jul and Aug carry more: their dead
+  // cells and brought-forward cells (see PAYSLIPS_JUL_DEAD_CELLS and
+  // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the fixture
+  // populates, so a break in either area is caught on its own month instead
+  // of only through the Payment/Admin aggregates.
+  const payslipsMonthTabReads = {};
+  for (const monthKey of MONTH_KEYS) payslipsMonthTabReads[MONTH_SHEETS[monthKey]] = [...Object.values(PAYE_SCHEDULE_MONTH_TAB_CELLS)];
+  payslipsMonthTabReads[MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]].push(
+    ...PAYSLIPS_JUL_DEAD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
+  );
+  payslipsMonthTabReads[MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]].push(
+    ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
+    ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
+  );
 
   return {
     postHubRecalc: ["Vat.xlsx"],
@@ -1000,6 +1050,7 @@ export function multiFileOptions() {
         HPfinance: ["E2", "I8", "J8", "K8", "I10", "J10", "K10"],
       },
       "Payslips.xlsx": {
+        ...payslipsMonthTabReads,
         Payment: Object.values(paymentCells).flat(),
         // The printed payslip. H3/H4 are the join itself; L7, I9 and I10 are
         // the block heading it lands on, and the rest is the first
@@ -1026,19 +1077,6 @@ export function multiFileOptions() {
         // year label the payslips print, and the name, date and month number
         // on each sampled row.
         Admin: ["B2", "I1", "N1", ...PAYROLL_CALENDAR_SAMPLE_ROWS.flatMap((row) => [`A${row}`, `B${row}`, `D${row}`])],
-        // Jul and Aug read directly (see PAYSLIPS_JUL_DEAD_CELLS and
-        // PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS above) plus the rows the
-        // fixture actually populates, so a break in either area is caught
-        // on its own month instead of only through the Payment/Admin
-        // aggregates.
-        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]]]]: [
-          ...PAYSLIPS_JUL_DEAD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[0]),
-        ],
-        [MONTH_SHEETS[MONTH_KEYS[PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]]]]: [
-          ...PAYSLIPS_AUG_BROUGHT_FORWARD_CELLS,
-          ...payslipsMonthEntryCells(PAYSLIPS_DIRECTLY_READ_MONTH_INDEXES[1]),
-        ],
       },
       // The customer-facing invoice: the VAT rate the generator wrote into
       // the sample product row, and the one sample line's net, VAT and gross
@@ -2425,6 +2463,27 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check(`Payslips!Payment ${MONTH_KEYS[i]} D${row} NI due`, payment[`D${row}`] || 0, niDue);
       check(`Payslips!Payment ${MONTH_KEYS[i]} E${row} income tax due`, payment[`E${row}`] || 0, sums.incomeTax);
       check(`Payslips!Payment ${MONTH_KEYS[i]} I${row} total amount payable`, payment[`I${row}`] || 0, niDue + sums.incomeTax);
+
+      // The same figures read off the tab the row is supposed to be reading.
+      // The fixture pays several months alike, so a row that has slipped onto
+      // a neighbouring tab can still match the scenario; it cannot match both
+      // the scenario and the tab it names.
+      const monthTab = results[`Payslips.xlsx!${MONTH_SHEETS[MONTH_KEYS[i]]}`];
+      if (monthTab) {
+        const cells = PAYE_SCHEDULE_MONTH_TAB_CELLS;
+        const tabNI = (monthTab[cells.employerNI] || 0) + (monthTab[cells.employeeNI] || 0);
+        check(`Payslips!Payment D${row} NI due is the ${MONTH_KEYS[i]} tab's own`, payment[`D${row}`] || 0, tabNI);
+        check(
+          `Payslips!Payment E${row} income tax due is the ${MONTH_KEYS[i]} tab's own`,
+          payment[`E${row}`] || 0,
+          monthTab[cells.incomeTax] || 0,
+        );
+        check(
+          `Payslips!Payment I${row} total payable is the ${MONTH_KEYS[i]} tab's own`,
+          payment[`I${row}`] || 0,
+          tabNI + (monthTab[cells.incomeTax] || 0) + (monthTab[cells.studentLoan] || 0),
+        );
+      }
     }
 
     // ── Payslips!Payslips: the page the employer prints and hands over ─────
@@ -2480,19 +2539,14 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check("Payslips print: national insurance to date is every month printed so far", num(printed.I16), toDateSum("employeeNI"));
         check("Payslips print: net pay to date is every month printed so far", num(printed.M16), toDateSum("netPay"));
 
-        // The payment date the page prints reads the block's own header row
-        // in column R, where the template holds nothing -- the date the wages
-        // were paid sits a row below in column M, which is where I9 above
-        // finds it. The page therefore prints no payment date at all.
-        check("Payslips print: the payment date reads a cell the block leaves empty", num(printed.M18), 0, 0);
-        checks.push({
-          name: "Payslips print: the date the scenario paid that month's wages, which the payment date would carry",
-          actual: num(printed.M18),
-          expected: toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
-          pass: false,
-          severity: "warning",
-          diff: "",
-        });
+        // The payment date the page prints joins to the same cell I9 above
+        // does -- the wages-paid date a row below the block's header row.
+        check(
+          "Payslips print: the payment date is the day the scenario paid that month's wages",
+          num(printed.M18),
+          toExcelSerial(paidOn.getUTCFullYear(), paidOn.getUTCMonth() + 1, paidOn.getUTCDate()),
+          0,
+        );
       }
     }
 
@@ -2948,6 +3002,30 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         SHORT_MONTH_NAMES[(yearStartMonthIndex + monthsIn) % 12],
       );
     }
+  }
+
+  // ── Payslips!Payment: the dates on the PAYE remittance schedule ──────────
+  //
+  // Twelve rows, one per tax month, each with the month it covers and the day
+  // the payment falls due. Both come off the payroll calendar at a fixed row,
+  // so they are the payroll year's first day plus a fixed count of days --
+  // measured here against the year the package's own tax data opens in, not
+  // against the calendar the sheet built them from.
+  const paymentSchedule = results["Payslips.xlsx!Payment"];
+  const payrollYearOpens = taxData?.tax_year?.start ? payrollYearStart(new Date(taxData.tax_year.start).getUTCFullYear()) : null;
+  if (paymentSchedule && payrollYearOpens) {
+    const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
+    PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
+      const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
+      const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
+      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
+      check(
+        `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
+        num(paymentSchedule[`C${row}`]),
+        asSerial(due),
+        0,
+      );
+    });
   }
 
   // The whole distance from the accounting profit to the profit tax is

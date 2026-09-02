@@ -674,10 +674,12 @@ describeCalc(
     it("fails the total-payable tie when Payslips!Payment I4 is corrupted via JSZip", async () => {
       const value = await readCorruptedCell(savedDir, "Payslips.xlsx", "Payment", "I4", 0);
       expect(value).toBe(0);
-      const name = "Payslips!Payment Apr I4 total amount payable";
+      // The row's total is tied twice over: to the payroll the scenario
+      // recorded for the month, and to the month tab the row reads it through.
+      const names = ["Payslips!Payment Apr I4 total amount payable", "Payslips!Payment I4 total payable is the Apr tab's own"];
       const corrupted = checksWithCorruptedCell("Payslips.xlsx!Payment", "I4", value);
-      expect(corrupted.find((c) => c.name === name).pass).toBe(false);
-      expect(failureNames(corrupted)).toEqual([name]);
+      for (const name of names) expect(corrupted.find((c) => c.name === name).pass, name).toBe(false);
+      expect(failureNames(corrupted).sort()).toEqual([...names].sort());
     });
 
     it("fails the P&L PAYE-wages route when MnthP&L B18 is corrupted via JSZip", async () => {
