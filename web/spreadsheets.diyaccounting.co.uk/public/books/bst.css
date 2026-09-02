@@ -1,35 +1,47 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 /* Copyright (C) 2025-2026 DIY Accounting Ltd */
 
-/* books/bst.css -- the ledger-pad design system for the DIYA-GL books page.
-   Six tokens, derived light and dark, IBM Plex Mono for figures, Archivo
-   for UI (system-stack fallback -- no new CDN font dependency; the site's
-   other pages already ship no webfont, so this page follows that pattern). */
+/* books/bst.css -- the DIYA-GL books page in the spreadsheets site's own
+   design system: the site's teal palette and Arial type over the background
+   grid, page regions as gently floating white panels (spreadsheets.css is
+   the authority for both). Form fields and the tax-form renders follow the
+   submit repo's HMRC form-field standards (its hmrc-form-field-standards
+   demo and submit.css): block bold labels, hint text, 2px input borders,
+   bold red error messages with a 5px error bar, and the grey pound-prefix
+   cell on money boxes -- with this site's colours, never GOV.UK branding.
+   The page's semantic token names are kept (the JS references them); their
+   values alias the site system. */
 
 * {
   box-sizing: border-box;
 }
 
 :root {
-  /* The six ledger tokens */
-  --paper: #fcfbf7;
-  --ink: #1d2a24;
-  --rule: #2f6b4f;
-  --pencil: #6b6f76;
-  --correction: #b3402a;
-  --tint: #e9f2ec;
+  /* Site palette, aliased to the page's semantic names */
+  --paper: #f7fafa; /* --color-background */
+  --paper-raised: #ffffff; /* --color-surface */
+  --ink: #292a2a; /* --color-text-primary */
+  --ink-faint: #555555; /* --color-text-secondary */
+  --pencil: #737373; /* --color-text-muted */
+  --rule: #158484; /* --color-brand-primary */
+  --rule-dark: #106868;
+  --on-rule: #ffffff; /* text on a teal fill */
+  --correction: #dc3545; /* submit's error red */
+  --tint: #e6f5f5; /* the site's teal tint */
+  --rule-faint: #d5dede; /* --color-border */
+  --hint: #505a5f; /* submit's hint text */
+  --grid-line: #e8eded; /* the background grid */
+  --prefix-bg: #f3f2f1; /* the pound-prefix cell */
 
-  /* Derived */
-  --paper-raised: #ffffff;
-  --rule-faint: rgba(47, 107, 79, 0.28);
-  --ink-faint: rgba(29, 42, 36, 0.6);
-  --shadow: 0 1px 2px rgba(29, 42, 36, 0.08);
-  --focus-ring: 0 0 0 3px rgba(47, 107, 79, 0.35);
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --focus-ring: 0 0 0 3px rgba(21, 132, 132, 0.3);
 
-  --font-ui: Archivo, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --font-ui: Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
-  --radius: 3px;
+  --radius: 6px;
+  --radius-lg: 8px;
   --topbar-h: 3.25rem;
   --tabstrip-h: 2.5rem;
 
@@ -38,31 +50,45 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #14201a;
-    --ink: #eaf2ec;
-    --rule: #5fae86;
-    --pencil: #9aa0a6;
-    --correction: #e2725a;
-    --tint: #1c2b23;
-    --paper-raised: #1a2a22;
-    --rule-faint: rgba(95, 174, 134, 0.3);
-    --ink-faint: rgba(234, 242, 236, 0.65);
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --paper: #101919;
+    --paper-raised: #182424;
+    --ink: #e8efef;
+    --ink-faint: #c2cccc;
+    --pencil: #93a1a1;
+    --rule: #29c0c0;
+    --rule-dark: #35d5d5;
+    --on-rule: #0c1616;
+    --correction: #f1707c;
+    --tint: #16302f;
+    --rule-faint: #2b3a3a;
+    --hint: #9fb0b0;
+    --grid-line: #182323;
+    --prefix-bg: #223030;
+    --shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.45);
+    --focus-ring: 0 0 0 3px rgba(41, 192, 192, 0.35);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --paper: #14201a;
-  --ink: #eaf2ec;
-  --rule: #5fae86;
-  --pencil: #9aa0a6;
-  --correction: #e2725a;
-  --tint: #1c2b23;
-  --paper-raised: #1a2a22;
-  --rule-faint: rgba(95, 174, 134, 0.3);
-  --ink-faint: rgba(234, 242, 236, 0.65);
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --paper: #101919;
+  --paper-raised: #182424;
+  --ink: #e8efef;
+  --ink-faint: #c2cccc;
+  --pencil: #93a1a1;
+  --rule: #29c0c0;
+  --rule-dark: #35d5d5;
+  --on-rule: #0c1616;
+  --correction: #f1707c;
+  --tint: #16302f;
+  --rule-faint: #2b3a3a;
+  --hint: #9fb0b0;
+  --grid-line: #182323;
+  --prefix-bg: #223030;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.45);
+  --focus-ring: 0 0 0 3px rgba(41, 192, 192, 0.35);
   color-scheme: dark;
 }
 
@@ -73,11 +99,14 @@ html {
 body.diya-books {
   margin: 0;
   min-height: 100%;
-  background: var(--paper);
+  background-color: var(--paper);
+  background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 11px 11px;
   color: var(--ink);
   font-family: var(--font-ui);
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -103,7 +132,7 @@ select:focus-visible,
 [tabindex]:focus-visible,
 .year-row:focus-visible,
 .tab-btn:focus-visible {
-  outline: 2px solid var(--rule);
+  outline: 3px solid var(--rule);
   outline-offset: 2px;
   box-shadow: var(--focus-ring);
 }
@@ -150,25 +179,25 @@ select:focus-visible,
 
 .app-mark {
   font-family: var(--font-ui);
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.03em;
   font-size: 1.05rem;
-  color: var(--ink);
+  color: var(--rule);
   text-decoration: none;
   white-space: nowrap;
 }
 .app-mark span {
-  color: var(--rule);
+  color: var(--ink-faint);
 }
 
 .app-back {
   font-size: 0.8rem;
-  color: var(--pencil);
+  color: var(--rule);
   text-decoration: none;
   white-space: nowrap;
 }
 .app-back:hover {
-  color: var(--rule);
+  text-decoration: underline;
 }
 
 .app-title {
@@ -269,7 +298,8 @@ select:focus-visible,
 
 .view-root h2 {
   font-family: var(--font-ui);
-  font-size: 1.05rem;
+  font-size: 1.3em;
+  color: var(--rule);
   margin: 0 0 0.75rem;
 }
 
@@ -289,15 +319,15 @@ select:focus-visible,
 }
 
 /* An anchor-guard or book-construction error: named by sheet and cell, never
-   a stack trace, styled the same correction ink the drift and fail states
-   use elsewhere on the page. */
+   a stack trace. The submit repo's HMRC error pattern: bold red message
+   behind a 5px error bar. */
 .upload-error {
   color: var(--correction);
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
   white-space: pre-line;
-  border-left: 2px solid var(--correction);
-  padding-left: 0.6rem;
+  border-left: 5px solid var(--correction);
+  padding-left: 0.75rem;
 }
 
 /* ============================== Home view ============================== */
@@ -315,7 +345,7 @@ select:focus-visible,
   display: block;
   padding: 0.75rem 0.9rem;
   border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--paper-raised);
   color: var(--ink);
   text-decoration: none;
@@ -339,10 +369,11 @@ select:focus-visible,
   max-width: 560px;
   margin: 2rem auto;
   padding: 2rem;
-  border: 1px dashed var(--rule-faint);
-  border-radius: var(--radius);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
   text-align: center;
   background: var(--paper-raised);
+  box-shadow: var(--shadow);
 }
 .empty-state h2 {
   margin-top: 0;
@@ -364,14 +395,18 @@ select:focus-visible,
   justify-content: center;
   flex-wrap: wrap;
 }
+/* Buttons follow the site's .btn-download shapes: 2px teal border, white
+   surface, semibold; the primary fills teal. 44px minimum tap target per the
+   submit form standards. */
 .file-picker-label {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--rule);
+  padding: 0.6rem 1.25rem;
+  min-height: 44px;
+  border: 2px solid var(--rule);
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--paper-raised);
   color: var(--rule);
   font-weight: 600;
   cursor: pointer;
@@ -382,27 +417,33 @@ select:focus-visible,
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
-  padding: 0.6rem 1rem;
-  border: 1px solid var(--rule-faint);
+  padding: 0.5rem 1.1rem;
+  min-height: 44px;
+  border: 2px solid var(--rule);
   border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--paper-raised);
+  color: var(--rule);
   font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 .btn:hover {
-  border-color: var(--rule);
+  background: var(--tint);
 }
 .btn-primary {
   background: var(--rule);
   border-color: var(--rule);
-  color: var(--paper);
+  color: var(--on-rule);
 }
 .btn-primary:hover {
-  opacity: 0.92;
+  background: var(--rule-dark);
+  border-color: var(--rule-dark);
 }
 .example-list {
   display: flex;
@@ -420,7 +461,7 @@ select:focus-visible,
   text-align: left;
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px dashed var(--rule-faint);
+  border-top: 1px solid var(--rule-faint);
 }
 .new-book-form-actions {
   display: flex;
@@ -434,8 +475,8 @@ select:focus-visible,
   text-align: left;
   margin-bottom: 1.25rem;
   padding: 0.9rem 1rem;
-  border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
+  border-left: 4px solid var(--rule);
+  border-radius: 0 var(--radius) var(--radius) 0;
   background: var(--tint);
 }
 .continue-offer h3 {
@@ -461,8 +502,9 @@ select:focus-visible,
   overflow: auto;
   max-height: 72vh;
   border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--paper-raised);
+  box-shadow: var(--shadow);
   container-type: inline-size;
 }
 
@@ -723,7 +765,7 @@ td.entry-actions {
 }
 
 .entry-row.is-unposted {
-  background: rgba(179, 64, 42, 0.07);
+  background: rgba(220, 53, 69, 0.07);
 }
 .entry-flag {
   font-family: var(--font-ui);
@@ -753,11 +795,15 @@ td.entry-actions {
   font: inherit;
   font-size: 0.75rem;
   color: inherit;
-  background: var(--paper);
-  border: 1px solid var(--rule-faint);
-  border-radius: 2px;
+  background: var(--paper-raised);
+  border: 2px solid var(--rule-faint);
+  border-radius: 4px;
   padding: 0.15rem 0.25rem;
   min-width: 0;
+}
+.entry-add-form input:focus,
+.entry-add-form select:focus {
+  border-color: var(--rule);
 }
 .entry-add-form .entry-add-account {
   flex: 1 1 8rem;
@@ -798,9 +844,10 @@ td.entry-actions {
   border: 0;
 }
 
-/* ============================== Pencil correction ======================= */
-/* Signature element: a calculated value in ink, the workbook's as-read value
-   struck through beneath it in pencil, the signed drift in pennies beside. */
+/* ============================== Drift correction ======================= */
+/* A calculated value in the site's text ink, the workbook's as-read value
+   struck through beneath it in muted grey, the signed drift beside it in
+   the error red. Class names are load-bearing for the page and its tests. */
 
 .pencil-correction {
   display: inline-flex;
@@ -868,6 +915,8 @@ td.entry-actions {
   padding: 0.6rem 0.7rem;
   border: 1px solid var(--rule-faint);
   border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
   text-align: center;
 }
 .drift-summary-item .count {
@@ -1004,6 +1053,8 @@ ul.book-checks-list {
 .helper-card {
   border: 1px solid var(--rule-faint);
   border-radius: var(--radius);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow);
   padding: 0.6rem 0.7rem;
   margin-bottom: 0.6rem;
   font-size: 0.82rem;
@@ -1026,8 +1077,8 @@ ul.book-checks-list {
   max-height: 70vh;
   background: var(--paper-raised);
   border-top: 1px solid var(--rule);
-  border-radius: 10px 10px 0 0;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
   transform: translateY(100%);
   transition: transform 0.22s ease;
   z-index: 30;
@@ -1095,8 +1146,9 @@ ul.book-checks-list {
 }
 .panel-card {
   border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--paper-raised);
+  box-shadow: var(--shadow);
   padding: 0.85rem 1rem;
 }
 .panel-card h3 {
@@ -1137,48 +1189,63 @@ table.kv-table tr.total td {
   margin-bottom: 0.6rem;
 }
 .editable-field label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--pencil);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.editable-field .field-hint {
+  font-size: 0.8rem;
+  color: var(--hint);
+  margin: 0;
 }
 .editable-field input {
   font: inherit;
-  padding: 0.4rem 0.5rem;
-  border: 1px solid var(--rule-faint);
+  padding: 0.55rem 0.6rem;
+  border: 2px solid var(--rule-faint);
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--paper-raised);
   color: var(--ink);
+}
+.editable-field input:focus {
+  border-color: var(--rule);
 }
 
 /* ============================== Tax-form renders ============================== */
-/* SA103S and Income Tax: the form's own section order and box numbers, the
-   page's own ink -- never HMRC branding, crest or wordmark. */
+/* SA103S and Income Tax in the submit repo's HMRC form idiom: section
+   headings ruled in the brand colour, bold labels, bordered amount boxes
+   with the grey pound-prefix cell, hint text for the whole-pounds note --
+   the page's own colours, never HMRC branding, crest or wordmark. */
 
 .form-render {
   max-width: 640px;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.5rem;
 }
 .form-render .form-masthead {
   margin-bottom: 1rem;
 }
 .form-render .form-masthead .form-name {
   font-family: var(--font-ui);
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.15rem;
+  color: var(--rule);
 }
 .form-render .form-masthead .form-microcopy {
-  font-size: 0.78rem;
-  color: var(--pencil);
-  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--hint);
 }
 
 .form-section {
   margin-bottom: 1.1rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid var(--rule);
 }
 .form-section h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.6rem;
+  border-bottom: 2px solid var(--rule);
+  padding-bottom: 0.3rem;
 }
 
 .form-row {
@@ -1190,33 +1257,57 @@ table.kv-table tr.total td {
 
 .box-chip {
   flex: none;
-  width: 1.6rem;
+  min-width: 1.6rem;
   height: 1.6rem;
-  border: 1px solid var(--rule);
-  border-radius: 2px;
+  padding: 0 0.25rem;
+  border: 1px solid var(--pencil);
+  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--rule);
+  color: var(--ink-faint);
+  background: var(--paper);
 }
 
 .form-row-label {
   flex: 1;
   min-width: 0;
   font-size: 0.86rem;
+  font-weight: 600;
 }
 
+/* The money box: 2px border with the grey pound-prefix cell, the submit
+   currency-field pattern rendered read-only. */
 .form-amount-box {
   flex: none;
-  min-width: 6.5rem;
-  border: 1px solid var(--ink);
-  background: var(--paper);
-  padding: 0.3rem 0.5rem;
+  min-width: 8rem;
+  position: relative;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  background: var(--paper-raised);
+  padding: 0.3rem 0.5rem 0.3rem 2.2rem;
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+.form-amount-box::before {
+  content: "\00a3";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--prefix-bg);
+  border-right: 2px solid var(--ink);
+  border-radius: 2px 0 0 2px;
+  font-family: var(--font-ui);
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .form-amount-wrap {
@@ -1227,9 +1318,8 @@ table.kv-table tr.total td {
 }
 
 .whole-pounds-note {
-  font-size: 0.62rem;
-  color: var(--pencil);
-  font-style: italic;
+  font-size: 0.68rem;
+  color: var(--hint);
 }
 
 .form-row-margin {
@@ -1247,8 +1337,7 @@ table.kv-table tr.total td {
 .form-rate-pencil {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--pencil);
-  font-style: italic;
+  color: var(--hint);
   margin-left: 0.4rem;
 }
 
@@ -1302,8 +1391,9 @@ table.kv-table tr.total td {
 }
 .month-card {
   border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   background: var(--paper-raised);
+  box-shadow: var(--shadow);
   padding: 0.7rem 0.85rem;
 }
 .month-card-head {

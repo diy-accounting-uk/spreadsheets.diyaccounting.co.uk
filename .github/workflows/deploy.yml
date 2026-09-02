@@ -240,6 +240,9 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build books engine bundle
+        run: npm run build:books-bundle
+
       - uses: actions/setup-java@v6
         with:
           distribution: 'corretto'
