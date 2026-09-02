@@ -39,6 +39,9 @@
         >
           &#128203;
         </button>
+        <button type="button" id="undo-btn" class="icon-btn undo-btn hidden" title="Undo the last change" aria-label="Undo the last change">
+          &#8630;
+        </button>
         <button type="button" id="save-btn" class="icon-btn save-btn" title="Save workbook" aria-label="Save workbook">&#128190;</button>
       </header>
 
@@ -54,6 +57,7 @@
 
       <nav id="mobile-tabbar" class="mobile-tabbar" aria-label="Books sections"></nav>
       <div id="mobile-action-bar" class="mobile-action-bar">
+        <button type="button" id="undo-btn-mobile" class="btn hidden">Undo</button>
         <button type="button" id="save-btn-mobile" class="btn btn-primary" style="flex: 1">Save workbook</button>
       </div>
     </div>
@@ -64,6 +68,7 @@
     <script src="xlsx-cells.js"></script>
     <script src="autosave.js"></script>
     <script type="module" src="bst-data.js"></script>
+    <script src="bst-edits.js"></script>
     <script src="bst.js"></script>
   </body>
 </html>

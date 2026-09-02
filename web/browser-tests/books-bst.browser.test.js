@@ -229,6 +229,23 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await expect(page.locator(".form-row.total-row").first()).toBeVisible();
   });
 
+  test("the Debtors & Creditors view renders the sheet the template ships", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="debtors-creditors"]').click();
+
+    // One opening figure a side, then a row per month, then the column total
+    // -- no customer or supplier named, because the sheet names none.
+    const debtors = page.locator(".panel-card", { hasText: "Debtors" }).first();
+    await expect(debtors).toContainText("Owed by customers at start of year");
+    await expect(debtors).toContainText("£10,800.00");
+    await expect(debtors.locator("tr")).toHaveCount(14); // opening + twelve months + total
+    await expect(debtors).toContainText("Amount owed by customers");
+
+    const creditors = page.locator(".panel-card", { hasText: "Creditors" }).first();
+    await expect(creditors).toContainText("Owed to suppliers at start of year");
+    await expect(creditors).toContainText("£2,220.00");
+  });
+
   test("checks panel shows live pass/fail verdicts from the engine", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await expect(page.locator("#inspector .check-item")).not.toHaveCount(0);

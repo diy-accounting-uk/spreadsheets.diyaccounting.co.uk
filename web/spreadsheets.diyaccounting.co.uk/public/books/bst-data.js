@@ -3,17 +3,13 @@
 
 // books/bst-data.js
 //
-// ============================================================================
-// W1: live computation, wired
-// ============================================================================
-// This file was a static stand-in for the diya-gl book (see git history for
-// the fixture-derived object it used to export). It now loads the real
-// engine bundle (scripts/build-books-bundle.mjs) and computes
-// window.DIYA_BST_SNAPSHOT for real, from one of three sources: an uploaded
-// .xlsx/.zip, or one of the three BST reconciliation fixtures served as
-// static assets. Every view in bst.js still reads book data only through
-// window.DIYA_BST_SNAPSHOT -- this file is the extract/recalculate/report
-// loop that fills it, not a rewrite of any view.
+// The extract/recalculate/report loop behind the page. It loads the engine
+// bundle (scripts/build-books-bundle.mjs) and computes
+// window.DIYA_BST_SNAPSHOT from one of four sources: an uploaded .xlsx/.zip,
+// one of the three BST reconciliation fixtures served as static assets, a
+// blank book from the new-book form, or the working book autosave handed
+// back. Every view in bst.js reads book data only through the snapshot --
+// this file fills it, and is no view's rewrite.
 //
 // Upload path: validateBstAnchors -> extractBstTransactions -> a book built
 // from the same cells CELL_MAP names (entity, stock, debtors/creditors) ->
@@ -38,7 +34,7 @@
   // account (a blank business has no income streams yet to distinguish) and
   // one purchase account per expense category the year table's own columns
   // carry, so a brand-new book already has somewhere for every category of
-  // entry to post to once the edit layer lands. Codes and columns follow the
+  // entry to post to. Codes and columns follow the
   // same chart the reconciliation fixtures use (examples/precision-code-ltd
   // and examples/sp-sixty-driving book.toml).
   var STANDARD_NEW_BOOK_CHART = {
@@ -140,14 +136,46 @@
   var BST_SALES_ACCOUNTS = { 4000: 1, 4001: 1, 4002: 1, 4003: 1, 4004: 1, 4005: 1 };
 
   // The named debtor/creditor ledger's own column layout on "Debtors &
-  // Creditors" (verified against app/products/bst.js's cellWrites and
-  // mirrored by CELL_MAP's amount cells): name then amount, three opening and
-  // three closing debtor rows from 5, four opening and four closing creditor
-  // rows from 12.
+  // Creditors": name then amount, three opening and three closing debtor
+  // rows from 5, four opening and four closing creditor rows from 12. This
+  // is the layout the packages under examples/bst-latest still carry.
   var LEDGER_LAYOUT = {
     debtors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 5, slots: 3 },
     creditors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 12, slots: 4 },
   };
+
+  // What the Debtors & Creditors sheet holds: one opening figure per
+  // side at row 3, what each month left outstanding on rows 5 to 27 two apart,
+  // and the column total at row 29 -- the same cells CELL_MAP names, and the
+  // sheet's own wording for each. The sheet names no customer or supplier.
+  var LEDGER_SIDES = {
+    debtors: {
+      column: "C",
+      openingLabel: "Owed by customers at start of year",
+      monthlyLabel: "Sales not yet received",
+      totalLabel: "Amount owed by customers",
+    },
+    creditors: {
+      column: "F",
+      openingLabel: "Owed to suppliers at start of year",
+      monthlyLabel: "Purchases still to be paid",
+      totalLabel: "Amount owed to suppliers",
+    },
+  };
+
+  function buildLedgerSide(results, months, side) {
+    var sheet = results["Debtors & Creditors"] || {};
+    var spec = LEDGER_SIDES[side];
+    return {
+      openingLabel: spec.openingLabel,
+      opening: sheet[spec.column + "3"] || 0,
+      monthly: months.map(function (month, index) {
+        return sheet[spec.column + (5 + index * 2)] || 0;
+      }),
+      monthlyLabel: spec.monthlyLabel,
+      totalLabel: spec.totalLabel,
+    };
+  }
 
   // ============================== canonicalisation ==============================
   // Mirrors app/bin/verify-roundtrip.js's canonicalForUnit: a money value
@@ -244,6 +272,32 @@
   // movement is recognised in the period's last month, exactly as the Stock
   // sheet's own opening-minus-closing chain carries it -- never spread across
   // the months whose ledger lines carry only purchases.
+  function entryOf(line, posted, addressable) {
+    return {
+      entryNumber: line.entryNumber,
+      date: line.postingDate,
+      account: String(line.accountMainID),
+      label: line.detailComment || "",
+      detail: line.documentReference || "",
+      amount: line.amount,
+      posted: posted,
+      addressable: addressable,
+    };
+  }
+
+  // The edit functions name a line by its entryNumber, so a line sharing one
+  // with another (or carrying none) cannot be changed on its own. Those rows
+  // render as figures rather than fields rather than quietly editing two
+  // lines at once.
+  function addressableEntryNumbers(lines) {
+    var seen = {};
+    for (var i = 0; i < lines.length; i++) {
+      var key = lines[i].entryNumber;
+      seen[key] = (seen[key] || 0) + 1;
+    }
+    return seen;
+  }
+
   function buildMonthlyAndEntries(lines, months, stock) {
     var monthly = {};
     var entries = {};
@@ -253,34 +307,27 @@
       entries[months[i].key] = { monthKey: months[i].key, sales: [], purchases: [] };
     }
     var lastKey = months[months.length - 1].key;
+    var entryNumberCounts = addressableEntryNumbers(lines);
 
     for (i = 0; i < lines.length; i++) {
       var line = lines[i];
+      var addressable = !!line.entryNumber && entryNumberCounts[line.entryNumber] === 1;
       var monthKey = monthKeyOf(line.postingDate);
       if (!monthly[monthKey]) continue; // outside the declared period
       var code = Number(line.accountMainID);
+      // A line whose account the chart does not carry reaches no total in
+      // the workbook -- the money simply goes nowhere. It still belongs in
+      // the month's entries so the reader can see it and fix it, marked for
+      // what it is, and left out of the month's own figures.
       if (line.sourceJournalID === "sales") {
-        if (!BST_SALES_ACCOUNTS[code]) continue;
-        monthly[monthKey].sales += line.amount;
-        entries[monthKey].sales.push({
-          date: line.postingDate,
-          account: String(line.accountMainID),
-          label: line.detailComment || "",
-          detail: line.documentReference || "",
-          amount: line.amount,
-        });
+        var posted = !!BST_SALES_ACCOUNTS[code];
+        if (posted) monthly[monthKey].sales += line.amount;
+        entries[monthKey].sales.push(entryOf(line, posted, addressable));
       } else if (line.sourceJournalID === "purchases") {
         var category = BST_PURCHASE_CATEGORY[code];
-        if (!category) continue;
         if (category === "stock") monthly[monthKey].costOfSales += line.amount;
-        else monthly[monthKey][category] += line.amount;
-        entries[monthKey].purchases.push({
-          date: line.postingDate,
-          account: String(line.accountMainID),
-          label: line.detailComment || "",
-          detail: line.documentReference || "",
-          amount: line.amount,
-        });
+        else if (category) monthly[monthKey][category] += line.amount;
+        entries[monthKey].purchases.push(entryOf(line, !!category, addressable));
       }
     }
 
@@ -363,12 +410,6 @@
   function buildStock(book) {
     if (!book.stock) return { opening: 0, closing: 0, atCost: 0 };
     return { opening: book.stock.openingValue || 0, closing: book.stock.closingValue || 0, atCost: book.stock.openingValue || 0 };
-  }
-
-  function buildLedgers(entries, side) {
-    return (entries || []).filter(function (e) {
-      return e.timing === side;
-    });
   }
 
   function buildIncomeTax(results) {
@@ -557,8 +598,13 @@
   var DRIFT_UNITS = { money: 1, rate: 1, count: 1 };
   var DRIFT_EXCLUDED_SECTIONS = { "Admin (Generator Injected)": 1 };
 
-  async function buildDriftFromWorkbook(cellMap, workbookCells, results) {
-    var drift = [];
+  // The as-read layer, captured once off the uploaded bytes. The workbook's
+  // own cached values never change while the page is open -- editing moves
+  // the calculated side only -- so the cells are read here and every later
+  // drift comparison runs against this captured layer rather than reopening
+  // the file.
+  async function captureAsReadLayer(cellMap, workbookCells) {
+    var captured = [];
     for (var i = 0; i < cellMap.length; i++) {
       var entry = cellMap[i];
       var sheet = entry[0],
@@ -569,14 +615,33 @@
       if (!DRIFT_UNITS[unit]) continue;
       if (DRIFT_EXCLUDED_SECTIONS[section]) continue;
       if (!workbookCells.hasSheet(sheet)) continue;
-      var computedRaw = results[sheet] && results[sheet][cell];
+      var value = await workbookCells.readCell(sheet, cell);
+      if (typeof value !== "number") continue;
+      captured.push({ sheet: sheet, cell: cell, label: label, unit: unit, value: value });
+    }
+    return captured;
+  }
+
+  // Every captured cell compared to what the engine now computes. Before any
+  // edit a difference is a reconciliation finding; after one it is the edit's
+  // own effect, so the annotation says "recalculated" instead.
+  function driftFromAsRead(asReadLayer, results, recalculated) {
+    var drift = [];
+    for (var i = 0; i < asReadLayer.length; i++) {
+      var entry = asReadLayer[i];
+      var computedRaw = results[entry.sheet] && results[entry.sheet][entry.cell];
       if (typeof computedRaw !== "number") continue;
-      var asReadRaw = await workbookCells.readCell(sheet, cell);
-      if (typeof asReadRaw !== "number") continue;
-      var computed = canonicalise(computedRaw, unit);
-      var asRead = canonicalise(asReadRaw, unit);
+      var computed = canonicalise(computedRaw, entry.unit);
+      var asRead = canonicalise(entry.value, entry.unit);
       if (Math.abs(computed - asRead) < 1e-9) continue;
-      drift.push({ id: sheet + "!" + cell, label: label, computed: computedRaw, asRead: asReadRaw, note: sheet + "!" + cell });
+      drift.push({
+        id: entry.sheet + "!" + entry.cell,
+        label: entry.label,
+        computed: computedRaw,
+        asRead: entry.value,
+        note: entry.sheet + "!" + entry.cell,
+        recalculated: !!recalculated,
+      });
     }
     return drift;
   }
@@ -653,15 +718,33 @@
     return entity;
   }
 
-  async function assembleSnapshot(scenarioLabel, book, lines, results, checks, driftEntries, taxData, taxYearName) {
+  // The account chart the add-entry affordance offers, straight off the
+  // book's own [accounts] tables so a new line can only be posted somewhere
+  // the book already declares.
+  function buildChart(book) {
+    var accounts = book.accounts || {};
+    function listOf(side) {
+      return Object.keys(accounts[side] || {})
+        .sort()
+        .map(function (code) {
+          var account = accounts[side][code] || {};
+          return { code: code, description: account.accountMainDescription || "Account " + code };
+        });
+    }
+    return { sales: listOf("sales"), purchases: listOf("purchases") };
+  }
+
+  function assembleSnapshot(scenarioLabel, book, lines, results, checks, driftEntries, taxData, taxYearName) {
     var months = buildMonths(isoDate(book.documentInfo.periodCoveredStart));
     var stock = buildStock(book);
     var monthlyAndEntries = buildMonthlyAndEntries(lines, months, book.stock);
-    var ledgers =
-      book.debtors || book.creditors ? { debtors: book.debtors || [], creditors: book.creditors || [] } : { debtors: [], creditors: [] };
 
     return {
       scenario: scenarioLabel,
+      book: book,
+      lines: lines,
+      chart: buildChart(book),
+      period: { start: isoDate(book.documentInfo.periodCoveredStart), end: isoDate(book.documentInfo.periodCoveredEnd) },
       months: months,
       categories: CATEGORIES,
       monthly: monthlyAndEntries.monthly,
@@ -670,8 +753,8 @@
       drift: driftEntries,
       checks: buildChecks(checks),
       stock: stock,
-      debtors: { opening: buildLedgers(ledgers.debtors, "opening"), closing: buildLedgers(ledgers.debtors, "closing") },
-      creditors: { opening: buildLedgers(ledgers.creditors, "opening"), closing: buildLedgers(ledgers.creditors, "closing") },
+      debtors: buildLedgerSide(results, months, "debtors"),
+      creditors: buildLedgerSide(results, months, "creditors"),
       fixedAssets: book.fixedAssets ? buildFixedAssetsFromBook(book, results) : buildFixedAssetsFromLines(lines, results),
       incomeTax: buildIncomeTax(results),
       sa103s: buildSa103s(results),
@@ -680,14 +763,48 @@
     };
   }
 
-  // Shared by every path that has a book and lines already assembled (an
-  // example's book.toml+lines.jsonl, a brand-new empty book, or a working
-  // book handed back from autosave): run the same calculate/check loop
-  // loadExample always has, and carry the raw book and lines forward on the
-  // snapshot so save and autosave have something to act on. No as-read
-  // layer here -- only an upload reads a workbook's cached values, so drift
-  // is always empty on this path, exactly as the data model says an example
-  // (and, by the same reasoning, a new or restored book) carries none.
+  // One run of the D -> R loop, from whichever lines the page currently
+  // holds. Every entry point below ends here, so a first load and a load
+  // after an edit compute the same way -- the only difference is whether
+  // the drift annotations call themselves recalculated.
+  async function buildSnapshot(book, lines, context) {
+    var engine = await loadEngine();
+    var scenario = engine.diyaGlToScenario(book, lines, "bst");
+    var expected = Object.assign({}, scenario, scenario.expected);
+    var results = engine.calculateFromDiyaGl(book, lines, "bst", context.taxData, expected);
+    var checks = engine.checkCompliance(Object.assign({}, results), expected, context.taxData, engine.calculateExpectedTax);
+    var drift = context.asReadLayer ? driftFromAsRead(context.asReadLayer, results, !!context.edited) : [];
+
+    var snapshot = assembleSnapshot(context.scenarioLabel, book, lines, results, checks, drift, context.taxData, context.taxYearName);
+    snapshot.context = context;
+    snapshot.edited = !!context.edited;
+    snapshot.source = context.source || null;
+    return snapshot;
+  }
+
+  /**
+   * Recompute the whole book after an edit. The lines are the edit's own
+   * output (diya-gl-edits.js returns a new array; nothing here mutates in
+   * place), and the context carries what the load already resolved -- the
+   * tax year's data and the uploaded workbook's as-read layer.
+   * @param {Object} book
+   * @param {Array} lines
+   * @param {Object} context - the context the loading snapshot carried
+   * @param {boolean} [edited] - false when undo has taken the book all the
+   *   way back to what was loaded, so the drift annotations go back to
+   *   reading as findings rather than as the edits' own effect
+   */
+  async function recalculate(book, lines, context, edited) {
+    return buildSnapshot(book, lines, Object.assign({}, context, { edited: edited !== false }));
+  }
+
+  // Every path that has a book and lines already assembled (an example's
+  // book.toml+lines.jsonl, a brand-new empty book, or a working book handed
+  // back from autosave): resolve the tax year the book declares, then run
+  // the same loop. No as-read layer here -- only an upload reads a
+  // workbook's cached values, so drift is always empty on this path,
+  // exactly as the data model says an example (and, by the same reasoning,
+  // a new or restored book) carries none.
   async function computeAndAssemble(label, book, lines, sourceKind) {
     var engine = await loadEngine();
     var resources = await loadResources();
@@ -695,16 +812,14 @@
 
     var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
     var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
-    var scenario = engine.diyaGlToScenario(book, lines, "bst");
-    var expected = Object.assign({}, scenario, scenario.expected);
-    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
-    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
 
-    var snapshot = await assembleSnapshot(label, book, lines, results, checks, [], taxData, taxYearName);
-    snapshot.book = book;
-    snapshot.lines = lines;
-    snapshot.source = { kind: sourceKind, label: label };
-    return snapshot;
+    return buildSnapshot(book, lines, {
+      scenarioLabel: label,
+      taxData: taxData,
+      taxYearName: taxYearName,
+      asReadLayer: null,
+      source: { kind: sourceKind, label: label },
+    });
   }
 
   /**
@@ -767,7 +882,7 @@
         entriesComment: "New book for " + name,
       },
       entityInformation: {
-        organizationIdentifier: name,
+        "organizationIdentifier": name,
         "diya-gl:product": "BasicSoleTrader",
         "diya-gl:vatRegistered": false,
         "diya-gl:basisOfAccounting": "cash",
@@ -848,19 +963,28 @@
 
     var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
     var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
-    var scenario = engine.diyaGlToScenario(book, lines, "bst");
-    var expected = Object.assign({}, scenario, scenario.expected);
-    var results = engine.calculateFromDiyaGl(book, lines, "bst", taxData, expected);
-    var checks = engine.checkCompliance(Object.assign({}, results), expected, taxData, engine.calculateExpectedTax);
-    var drift = await buildDriftFromWorkbook(engine.CELL_MAP, workbookCells, results);
+    var asReadLayer = await captureAsReadLayer(engine.CELL_MAP, workbookCells);
 
-    var snapshot = await assembleSnapshot(file.name, book, lines, results, checks, drift, taxData, taxYearName);
+    var snapshot = await buildSnapshot(book, lines, {
+      scenarioLabel: file.name,
+      taxData: taxData,
+      taxYearName: taxYearName,
+      asReadLayer: asReadLayer,
+    });
     snapshot.bookValidation = bookValidation;
     snapshot.linesValidation = linesValidation;
-    snapshot.book = book;
-    snapshot.lines = lines;
-    snapshot.source = { kind: "upload", label: file.name };
     return snapshot;
+  }
+
+  // Whether a line's account reaches a money column at all. The two maps
+  // above are the published Basic Sole Trader chart; a code outside them is
+  // filtered out before the calculator ever sees the line, so its amount
+  // reaches no total on any sheet.
+  function reachesAnAccount(line) {
+    var code = Number(line.accountMainID);
+    if (line.sourceJournalID === "sales") return !!BST_SALES_ACCOUNTS[code];
+    if (line.sourceJournalID === "purchases") return !!BST_PURCHASE_CATEGORY[code];
+    return false;
   }
 
   global.DiyaGlBooksLoader = {
@@ -869,5 +993,7 @@
     loadFromFile: loadFromFile,
     createNewBook: createNewBook,
     loadFromBookAndLines: loadFromBookAndLines,
+    recalculate: recalculate,
+    reachesAnAccount: reachesAnAccount,
   };
 })(window);

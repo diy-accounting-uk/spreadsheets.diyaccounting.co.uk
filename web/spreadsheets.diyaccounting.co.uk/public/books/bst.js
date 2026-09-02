@@ -3,11 +3,11 @@
 
 // books/bst.js
 //
-// The books page shell: view state, rendering, and drill interaction over
-// the static snapshot in bst-data.js. No engine imports -- this file reads
-// window.DIYA_BST_SNAPSHOT only. When W1 wires the real bundle, this state
-// layer is replaced by the live extract/recalculate/report loop; the render
-// functions below are the intended shape for that data either way.
+// The books page shell: view state, rendering, drill interaction and the
+// entries grid. Every figure it renders comes from the snapshot bst-data.js
+// computes (window.DIYA_BST_SNAPSHOT); every change it makes goes out
+// through bst-edits.js, which reaches the engine's own edit functions. This
+// file imports no engine module of its own.
 
 (function () {
   "use strict";
@@ -36,6 +36,17 @@
     mobileTab: "books",
     newBookFormOpen: false,
     savedBook: null, // { book, lines, source, savedAt }, once the autosave check resolves
+    // The live book: D as the page currently holds it. Every edit replaces
+    // state.lines with the array diya-gl-edits.js returned and recomputes
+    // the whole book from it -- there is no incremental update.
+    book: null,
+    lines: null,
+    context: null,
+    bookChecks: [],
+    openHelper: null,
+    addDraft: {},
+    focusEntry: null,
+    committing: false,
   };
 
   var els = {};
@@ -56,6 +67,8 @@
     els.themeToggle = document.getElementById("theme-toggle");
     els.saveBtn = document.getElementById("save-btn");
     els.saveBtnMobile = document.getElementById("save-btn-mobile");
+    els.undoBtn = document.getElementById("undo-btn");
+    els.undoBtnMobile = document.getElementById("undo-btn-mobile");
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
 
     renderSheetTabs();
@@ -101,6 +114,8 @@
 
   // The signature element: a calculated value in ink, the workbook's as-read
   // value struck through in pencil beneath it, signed drift in the margin.
+  // Once the book has been edited the same mark says "recalculated" -- the
+  // difference is then the edit's own effect, not a reconciliation finding.
   function pencilCorrection(computed, asRead, opts) {
     opts = opts || {};
     var drift = Math.round((computed - asRead) * 100) / 100;
@@ -112,6 +127,7 @@
     return (
       '<span class="pencil-correction' +
       (opts.inMargin ? " in-margin" : "") +
+      (opts.recalculated ? " is-recalculated" : "") +
       '">' +
       '<span class="computed-value">' +
       esc(fmtMoney(computed)) +
@@ -123,8 +139,17 @@
       sign +
       driftAbs +
       "</span>" +
+      (opts.recalculated ? '<span class="drift-tag">recalculated</span>' : "") +
       "</span>"
     );
+  }
+
+  function correctionFor(driftEntry, opts) {
+    opts = opts || {};
+    return pencilCorrection(driftEntry.computed, driftEntry.asRead, {
+      inMargin: opts.inMargin,
+      recalculated: driftEntry.recalculated,
+    });
   }
 
   // ============================== rendering ==============================
@@ -133,6 +158,7 @@
     document.body.classList.toggle("is-loaded", state.loaded);
     renderTopbarTitle();
     renderSheetTabs();
+    renderUndoControls();
     if (!state.loaded) {
       els.viewRoot.innerHTML = renderEmptyState();
       bindEmptyState();
@@ -150,6 +176,26 @@
       '<div class="drawer-handle"></div>' + (state.mobileTab === "checks" ? renderInspectorChecksOnly() : renderInspectorFull());
     bindInspectorInteractions();
     renderMobileTabbar();
+    restoreEditFocus();
+  }
+
+  // A commit re-renders the whole grid, so the row the reader was working in
+  // gets its caret back rather than the page losing focus to the body.
+  function restoreEditFocus() {
+    if (!state.focusEntry) return;
+    var input = els.viewRoot.querySelector('[data-amount-entry="' + state.focusEntry + '"]');
+    state.focusEntry = null;
+    if (input) input.focus();
+  }
+
+  function renderUndoControls() {
+    var depth = window.DiyaGlBooksEdits.undo.depth();
+    var label = window.DiyaGlBooksEdits.undo.topLabel();
+    [els.undoBtn, els.undoBtnMobile].forEach(function (btn) {
+      if (!btn) return;
+      btn.classList.toggle("hidden", !state.loaded || depth === 0);
+      if (depth > 0) btn.title = "Undo: " + label;
+    });
   }
 
   function isMobileViewport() {
@@ -445,7 +491,7 @@
     window.DiyaGlBooksLoader.createNewBook(businessName, yearEndISO)
       .then(function (snapshot) {
         state.newBookFormOpen = false;
-        applySnapshot(snapshot);
+        applyLoadedSnapshot(snapshot);
         showToast("Started a new book for " + businessName + ".");
       })
       .catch(function (error) {
@@ -462,7 +508,7 @@
     showEmptyStateMessage("Continuing " + label + "…", false);
     window.DiyaGlBooksLoader.loadFromBookAndLines(saved.book, saved.lines, label, saved.source && saved.source.kind)
       .then(function (snapshot) {
-        applySnapshot(snapshot);
+        applyLoadedSnapshot(snapshot);
         showToast("Continued where you left off.");
       })
       .catch(function (error) {
@@ -497,7 +543,7 @@
     showEmptyStateMessage("Loading " + exampleKey + "…", false);
     window.DiyaGlBooksLoader.loadExample(exampleKey)
       .then(function (snapshot) {
-        applySnapshot(snapshot);
+        applyLoadedSnapshot(snapshot);
         showToast("Loaded " + snapshot.scenario + ".");
       })
       .catch(function (error) {
@@ -511,7 +557,7 @@
     showEmptyStateMessage("Reading " + file.name + "…", false);
     window.DiyaGlBooksLoader.loadFromFile(file)
       .then(function (snapshot) {
-        applySnapshot(snapshot);
+        applyLoadedSnapshot(snapshot);
         showToast("Loaded " + file.name + ".");
       })
       .catch(function (error) {
@@ -523,21 +569,28 @@
   function applySnapshot(snapshot) {
     SNAPSHOT = snapshot;
     window.DIYA_BST_SNAPSHOT = snapshot;
-    state.loaded = true;
-    state.view = "year";
-    state.openMonth = snapshot.months[0].key;
-    state.book = snapshot.book || null;
-    state.lines = snapshot.lines || null;
-    setPickerBusy(false);
-    render();
+    state.book = snapshot.book;
+    state.lines = snapshot.lines;
+    state.context = snapshot.context;
+    state.bookChecks = window.DiyaGlBooksEdits.bookChecks(snapshot);
     autosaveCurrentBook();
   }
 
-  // Every state commit the page currently has is a book load (upload,
-  // example, new book, or continuing a saved one) -- there is no edit/undo
-  // event to hook yet (phase 3 track W3, in flight separately), so this is
-  // called right here, at the one place state.book/state.lines change.
-  // Silent by design: a blocked or missing store degrades to no-autosave
+  function applyLoadedSnapshot(snapshot) {
+    applySnapshot(snapshot);
+    state.loaded = true;
+    state.view = "year";
+    state.openMonth = snapshot.months[0].key;
+    state.openHelper = null;
+    state.addDraft = {};
+    window.DiyaGlBooksEdits.undo.clear();
+    setPickerBusy(false);
+    render();
+  }
+
+  // Called at the one place state.book/state.lines change: applySnapshot,
+  // which every book load and every committed edit goes through. Silent by
+  // design: a blocked or missing store degrades to no-autosave
   // (autosave.js's own contract) and the page carries on exactly as if
   // autosave were never called.
   function autosaveCurrentBook() {
@@ -548,6 +601,71 @@
       source: SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario },
       savedAt: new Date().toISOString(),
     });
+  }
+
+  // ============================== the edit path ==============================
+  // One route for every change: the state being replaced goes on the undo
+  // stack, the edit function returns the new lines, the whole book is
+  // recomputed from them (calculator and checks both), and the page
+  // re-renders. A helper's whole plan is one call, so it is one undo step.
+
+  function commit(edit, undoLabel, toastMessage) {
+    if (state.committing) return Promise.resolve();
+    state.committing = true;
+    var previousBook = state.book;
+    var previousLines = state.lines;
+    return Promise.resolve()
+      .then(edit)
+      .then(function (newLines) {
+        return window.DiyaGlBooksLoader.recalculate(state.book, newLines, state.context);
+      })
+      .then(function (snapshot) {
+        window.DiyaGlBooksEdits.undo.push(previousBook, previousLines, undoLabel);
+        applySnapshot(snapshot);
+        state.committing = false;
+        render();
+        if (toastMessage) showToast(toastMessage);
+      })
+      .catch(function (error) {
+        state.committing = false;
+        render();
+        showToast("That edit did not apply: " + (error && error.message ? error.message : error));
+      });
+  }
+
+  // The seam for lines that arrive from somewhere other than this page's own
+  // grid -- an agent session's edit through the MCP tools, a book built by
+  // another surface. It lands on the same commit path, so it recalculates,
+  // re-renders and undoes exactly like a hand edit.
+  function setLines(lines, label) {
+    return commit(
+      function () {
+        return lines;
+      },
+      label || "replace the book's lines",
+      null,
+    );
+  }
+
+  function undoLastEdit() {
+    var previous = window.DiyaGlBooksEdits.undo.pop();
+    if (!previous) {
+      showToast("Nothing to undo.");
+      return;
+    }
+    state.committing = true;
+    window.DiyaGlBooksLoader.recalculate(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
+      .then(function (snapshot) {
+        applySnapshot(snapshot);
+        state.committing = false;
+        render();
+        showToast("Undid: " + previous.label + ".");
+      })
+      .catch(function (error) {
+        window.DiyaGlBooksEdits.undo.push(previous.book, previous.lines, previous.label);
+        state.committing = false;
+        showToast("Could not undo: " + (error && error.message ? error.message : error));
+      });
   }
 
   // ============================== home ==============================
@@ -698,7 +816,7 @@
         '">' +
         (state.entriesOpen ? "Hide entries" : "Show entries — " + (entries.sales.length + entries.purchases.length) + " lines") +
         "</button>" +
-        (state.entriesOpen ? renderEntriesTables(entries) : "");
+        (state.entriesOpen ? renderEntriesTables(entries, monthKey) : "");
     } else {
       entriesHtml = '<p class="entries-note">' + esc(monthMeta.label) + " carries no entries in this book.</p>";
     }
@@ -706,36 +824,132 @@
     return '<div class="month-detail">' + summary + entriesHtml + "</div>";
   }
 
-  function renderEntriesTables(entries) {
-    function table(caption, rows) {
+  // The entries grid: the month's own posted lines, editable in place. An
+  // amount commits through changeLineAmount, the row's delete through
+  // removeLine, and the row under the rule adds one through
+  // addSaleLine/addPurchaseLine. Every commit recomputes the whole book.
+  function renderEntriesTables(entries, monthKey) {
+    function table(caption, journal, rows) {
       return (
-        '<table class="entries-table"><caption>' +
+        '<table class="entries-table" data-journal="' +
+        journal +
+        '"><caption>' +
         caption +
-        "</caption><thead><tr><th>Date</th><th>Acct</th><th>Detail</th><th>Amount</th></tr></thead><tbody>" +
-        rows
-          .map(function (r) {
-            return (
-              "<tr><td>" +
-              r.date.slice(5) +
-              "</td><td>" +
-              r.account +
-              '</td><td><input class="entry-cell-editable" value="' +
-              esc(r.label + " — " + r.detail) +
-              '" readonly /></td><td class="entry-amount">' +
-              fmtMoney(r.amount) +
-              "</td></tr>"
-            );
-          })
-          .join("") +
-        "</tbody></table>"
+        "</caption><thead><tr><th>Date</th><th>Acct</th><th>Detail</th><th>Amount</th>" +
+        '<th><span class="sr-only">Remove</span></th></tr></thead><tbody>' +
+        rows.map(entryRow).join("") +
+        "</tbody><tfoot>" +
+        addEntryRow(journal, monthKey) +
+        "</tfoot></table>"
       );
     }
     return (
       '<div class="entries-columns">' +
-      table("Sales", entries.sales) +
-      table("Purchases", entries.purchases) +
+      table("Sales", "sales", entries.sales) +
+      table("Purchases", "purchases", entries.purchases) +
       "</div>" +
-      '<p class="entries-note">Shown for editing once the edit/undo layer lands (phase 3, track W3). These are the real posted lines.</p>'
+      '<p class="entries-note">Change an amount or remove a line and the whole book recalculates. Ctrl+Z (⌘Z) undoes the last change.</p>'
+    );
+  }
+
+  function entryRow(r) {
+    return (
+      '<tr class="entry-row' +
+      (r.posted ? "" : " is-unposted") +
+      '" data-entry="' +
+      esc(r.entryNumber) +
+      '"><td>' +
+      r.date.slice(5) +
+      "</td><td>" +
+      esc(r.account) +
+      (r.posted
+        ? ""
+        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
+      '</td><td><input class="entry-cell-editable" value="' +
+      esc(r.detail ? r.label + " — " + r.detail : r.label) +
+      '" readonly aria-label="Detail" /></td>' +
+      entryAmountCell(r) +
+      "</tr>"
+    );
+  }
+
+  // A line the edit functions cannot name on its own -- no entry number, or
+  // one it shares with another line -- shows its figure and no controls,
+  // rather than offering an edit that would move two lines at once.
+  function entryAmountCell(r) {
+    if (!r.addressable) {
+      return (
+        '<td class="entry-amount">' +
+        fmtMoney(r.amount) +
+        '</td><td class="entry-actions"><span class="entry-flag" title="This line shares its entry number with another, so it cannot be changed on its own">shared no.</span></td>'
+      );
+    }
+    return (
+      '<td class="entry-amount">' +
+      '<input class="entry-amount-input" inputmode="decimal" data-amount-entry="' +
+      esc(r.entryNumber) +
+      '" aria-label="Amount for entry ' +
+      esc(r.entryNumber) +
+      '" value="' +
+      r.amount.toFixed(2) +
+      '" /></td><td class="entry-actions">' +
+      '<button type="button" class="entry-delete" data-delete-entry="' +
+      esc(r.entryNumber) +
+      '" title="Remove this entry" aria-label="Remove entry ' +
+      esc(r.entryNumber) +
+      '">&times;</button></td>'
+    );
+  }
+
+  function addEntryRow(journal, monthKey) {
+    var draft = state.addDraft[journal] || {};
+    var accounts = (SNAPSHOT.chart && SNAPSHOT.chart[journal]) || [];
+    var options = accounts
+      .map(function (account) {
+        return (
+          '<option value="' +
+          esc(account.code) +
+          '"' +
+          (draft.account === account.code ? " selected" : "") +
+          ">" +
+          esc(account.code + " — " + account.description) +
+          "</option>"
+        );
+      })
+      .join("");
+    // One full-width cell rather than a row of the grid's own columns: the
+    // form's controls are wider than the figures above them, and letting
+    // them set the column widths would spread the ledger out.
+    return (
+      '<tr class="entry-add-row" data-add-journal="' +
+      journal +
+      '"><td colspan="5"><div class="entry-add-form">' +
+      '<input type="date" class="entry-add-date" data-add-field="date" value="' +
+      esc(draft.date || monthKey + "-01") +
+      '" aria-label="Date for the new ' +
+      journal +
+      ' entry" />' +
+      '<select class="entry-add-account" data-add-field="account" aria-label="Account for the new ' +
+      journal +
+      ' entry">' +
+      options +
+      "</select>" +
+      '<input class="entry-add-detail" data-add-field="detail" placeholder="Detail" value="' +
+      esc(draft.detail || "") +
+      '" aria-label="Detail for the new ' +
+      journal +
+      ' entry" />' +
+      '<input class="entry-add-amount" data-add-field="amount" inputmode="decimal" placeholder="0.00" value="' +
+      esc(draft.amount || "") +
+      '" aria-label="Amount for the new ' +
+      journal +
+      ' entry" />' +
+      '<button type="button" class="entry-add-btn" data-add-entry="' +
+      journal +
+      '" title="Add this ' +
+      journal +
+      ' entry">Add</button>' +
+      "</div></td></tr>"
     );
   }
 
@@ -811,6 +1025,114 @@
         }
       });
     });
+    bindEntriesGrid();
+  }
+
+  // ============================== the entries grid ==============================
+
+  function parseAmount(raw) {
+    var cleaned = String(raw).replace(/[£,\s]/g, "");
+    if (cleaned === "" || !/^-?\d*(\.\d*)?$/.test(cleaned)) return null;
+    var value = Number(cleaned);
+    return isFinite(value) ? value : null;
+  }
+
+  function bindEntriesGrid() {
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-amount-entry]"), function (input) {
+      var entryNumber = input.getAttribute("data-amount-entry");
+      var committed = input.value;
+      input.addEventListener("input", function () {
+        input.setAttribute("data-dirty", input.value === committed ? "false" : "true");
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          input.value = committed;
+          input.setAttribute("data-dirty", "false");
+        }
+      });
+      input.addEventListener("change", function () {
+        var amount = parseAmount(input.value);
+        if (amount === null) {
+          input.value = committed;
+          showToast("That is not an amount. The line is unchanged.");
+          return;
+        }
+        if (Math.abs(amount - Number(committed)) < 1e-9) {
+          input.value = committed;
+          return;
+        }
+        input.setAttribute("data-dirty", "false");
+        state.focusEntry = entryNumber;
+        commit(
+          function () {
+            return window.DiyaGlBooksEdits.changeAmount(state.book, state.lines, entryNumber, amount);
+          },
+          "change " + entryNumber + " to " + fmtMoney(amount),
+          "Changed " + entryNumber + " to " + fmtMoney(amount) + ".",
+        );
+      });
+    });
+
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-delete-entry]"), function (btn) {
+      btn.addEventListener("click", function () {
+        var entryNumber = btn.getAttribute("data-delete-entry");
+        commit(
+          function () {
+            return window.DiyaGlBooksEdits.deleteEntry(state.book, state.lines, entryNumber);
+          },
+          "remove " + entryNumber,
+          "Removed " + entryNumber + ".",
+        );
+      });
+    });
+
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".entry-add-row"), function (row) {
+      var journal = row.getAttribute("data-add-journal");
+      function fieldValue(name) {
+        var field = row.querySelector('[data-add-field="' + name + '"]');
+        return field ? field.value : "";
+      }
+      Array.prototype.forEach.call(row.querySelectorAll("[data-add-field]"), function (field) {
+        field.addEventListener("input", function () {
+          state.addDraft[journal] = {
+            date: fieldValue("date"),
+            account: fieldValue("account"),
+            detail: fieldValue("detail"),
+            amount: fieldValue("amount"),
+          };
+        });
+      });
+      row.querySelector("[data-add-entry]").addEventListener("click", function () {
+        var amount = parseAmount(fieldValue("amount"));
+        var date = fieldValue("date");
+        var account = fieldValue("account");
+        if (amount === null || amount === 0) {
+          showToast("Give the new entry an amount first.");
+          return;
+        }
+        if (!date) {
+          showToast("Give the new entry a date first.");
+          return;
+        }
+        if (!account) {
+          showToast("This book's chart carries no " + journal + " account to post to.");
+          return;
+        }
+        var entry = { journal: journal, date: date, account: account, detail: fieldValue("detail"), amount: amount };
+        state.addDraft[journal] = null;
+        commit(
+          function () {
+            return window.DiyaGlBooksEdits.addEntry(state.book, state.lines, entry);
+          },
+          "add a " + journal + " entry of " + fmtMoney(amount),
+          "Added a " + journal + " entry of " + fmtMoney(amount) + ".",
+        );
+      });
+    });
   }
 
   // ============================== P&L statement ==============================
@@ -828,7 +1150,7 @@
         '"><td>' +
         esc(label) +
         "</td><td>" +
-        (opts.drift ? pencilCorrection(opts.drift.computed, opts.drift.asRead) : fmtMoney(value)) +
+        (opts.drift ? correctionFor(opts.drift) : fmtMoney(value)) +
         "</td></tr>"
       );
     }
@@ -960,7 +1282,7 @@
     var bd = SNAPSHOT.businessDetails;
     return (
       "<h2>Business Details</h2>" +
-      '<p class="view-lede">entityInformation, editable once the edit layer lands (phase 3, track W3).</p>' +
+      '<p class="view-lede">entityInformation, as the book declares it.</p>' +
       '<div class="panel-card">' +
       field("Business Name", bd.organizationIdentifier) +
       field("Description", bd.organizationDescription) +
@@ -1043,7 +1365,7 @@
       '<div class="form-row total-row"><span class="form-row-label">Total Income Tax</span><span class="form-amount-box">' +
       fmtMoney(t.totalIncomeTax) +
       '</span><span class="form-row-margin">' +
-      (itDrift ? pencilCorrection(itDrift.computed, itDrift.asRead, { inMargin: true }) : "") +
+      (itDrift ? correctionFor(itDrift, { inMargin: true }) : "") +
       "</span></div>" +
       "</div>" +
       '<div class="form-section"><h3>National Insurance</h3>' +
@@ -1054,7 +1376,7 @@
       '<div class="form-row total-row"><span class="form-row-label">Total Tax + NI</span><span class="form-amount-box">' +
       fmtMoney(t.totalTaxAndNi) +
       '</span><span class="form-row-margin">' +
-      (totalDrift ? pencilCorrection(totalDrift.computed, totalDrift.asRead, { inMargin: true }) : "") +
+      (totalDrift ? correctionFor(totalDrift, { inMargin: true }) : "") +
       "</span></div>" +
       "</div>"
     );
@@ -1271,12 +1593,20 @@
 
   function renderDriftSummary() {
     var checks = SNAPSHOT.checks;
-    var passCount = checks.filter(function (c) {
-      return c.result === "pass";
-    }).length;
-    var warnCount = checks.filter(function (c) {
-      return c.result !== "pass";
-    }).length;
+    var passCount =
+      checks.filter(function (c) {
+        return c.result === "pass";
+      }).length +
+      state.bookChecks.filter(function (c) {
+        return c.result === "pass";
+      }).length;
+    var warnCount =
+      checks.filter(function (c) {
+        return c.result !== "pass";
+      }).length +
+      state.bookChecks.filter(function (c) {
+        return c.result !== "pass";
+      }).length;
     var driftCount = SNAPSHOT.drift.filter(function (d) {
       return Math.abs(d.computed - d.asRead) >= 0.005;
     }).length;
@@ -1290,14 +1620,20 @@
       '</span><span class="caps-label">Flagged</span></div>' +
       '<div class="drift-summary-item"><span class="count">' +
       driftCount +
-      '</span><span class="caps-label">Drift cells</span></div>' +
+      '</span><span class="caps-label">' +
+      (SNAPSHOT.edited ? "Recalculated" : "Drift cells") +
+      "</span></div>" +
       "</div>"
     );
   }
 
+  // The engine's own checks: checkCompliance, the ones the reconciliation
+  // runs. Both sides of each are derived from the same lines, so they follow
+  // an edit rather than catching one -- what they catch is the calculator
+  // and the book disagreeing.
   function renderChecksList() {
     return (
-      '<ul class="checks-list">' +
+      '<p class="caps-label checks-group-label">Engine checks</p><ul class="checks-list">' +
       SNAPSHOT.checks
         .map(function (c) {
           var marker = c.result === "pass" ? "✓" : "!";
@@ -1312,16 +1648,35 @@
             fmtMoney(c.expected) +
             " · actual " +
             fmtMoney(c.actual) +
+            "</span></span></li>"
+          );
+        })
+        .join("") +
+      "</ul>"
+    );
+  }
+
+  // The book checks: the ones over D itself, where an entry can be wrong
+  // while every total still adds up. A failing one carries its fix-it.
+  function renderBookChecksList() {
+    return (
+      '<p class="caps-label checks-group-label">Book checks</p><ul class="book-checks-list">' +
+      state.bookChecks
+        .map(function (c) {
+          var marker = c.result === "pass" ? "✓" : "!";
+          return (
+            '<li class="check-item ' +
+            c.result +
+            '" data-book-check="' +
+            esc(c.id) +
+            '"><span class="check-marker">' +
+            marker +
+            '</span><span class="check-body"><span class="check-label">' +
+            esc(c.label) +
+            '</span><br/><span class="check-figures">' +
+            (c.result === "pass" ? "every line" : c.actual + (c.actual === 1 ? " line" : " lines")) +
             "</span>" +
-            (c.helper
-              ? '<div class="check-helper"><p><strong>' +
-                esc(c.helper.title) +
-                "</strong> — " +
-                esc(c.helper.preview) +
-                '</p><button type="button" class="btn" disabled title="Helpers apply through the edit path, wired in phase 3 track W3">' +
-                esc(c.helper.actionLabel) +
-                "</button></div>"
-              : "") +
+            (c.result === "pass" ? "" : renderBookCheckDetail(c)) +
             "</span></li>"
           );
         })
@@ -1330,11 +1685,61 @@
     );
   }
 
+  function renderBookCheckDetail(check) {
+    var offenders =
+      '<ul class="check-offenders">' +
+      check.offenders
+        .slice(0, 5)
+        .map(function (o) {
+          return (
+            "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
+          );
+        })
+        .join("") +
+      (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +
+      "</ul>";
+    if (!check.helper) {
+      return '<p class="check-consequence">' + esc(check.consequence) + "</p>" + offenders;
+    }
+    var open = state.openHelper === check.id;
+    var preview = open ? window.DiyaGlBooksEdits.previewHelper(SNAPSHOT, check.id) : null;
+    return (
+      '<p class="check-consequence">' +
+      esc(check.consequence) +
+      "</p>" +
+      offenders +
+      '<div class="check-helper">' +
+      "<p><strong>" +
+      esc(check.helper.title) +
+      "</strong></p>" +
+      (open && preview
+        ? '<p class="helper-summary">' +
+          esc(preview.summary) +
+          '</p><ul class="helper-changes">' +
+          preview.changes
+            .map(function (change) {
+              return (
+                "<li>" + esc(change.entryNumber) + " — " + esc(change.what) + " " + esc(change.was) + " → " + esc(change.becomes) + "</li>"
+              );
+            })
+            .join("") +
+          '</ul><div class="helper-actions">' +
+          '<button type="button" class="btn btn-primary" data-helper-apply="' +
+          esc(check.id) +
+          '">Apply</button>' +
+          '<button type="button" class="btn" data-helper-cancel="' +
+          esc(check.id) +
+          '">Cancel</button></div>'
+        : '<button type="button" class="btn" data-helper-preview="' + esc(check.id) + '">' + esc(check.helper.actionLabel) + "</button>") +
+      "</div>"
+    );
+  }
+
   function renderHelpersSection() {
     return (
       '<div class="helpers-section"><h3>Helpers</h3>' +
       '<div class="helper-card"><h4>Make a sale/purchase from a bank item</h4>' +
-      "<p>Turns an unmatched bank line into a sales or purchases line, category picked from the expense codes. Basic Sole Trader books in this preview carry no bank sheet, so there is nothing to act on here — the control ships for products that do.</p>" +
+      "<p>Turns an unmatched bank line into a sales or purchases line, category picked from the expense codes. Basic Sole Trader books carry no bank sheet, so there is nothing to act on here — the control ships for products that do.</p>" +
       '<button type="button" class="btn" disabled>Preview</button></div></div>'
     );
   }
@@ -1343,6 +1748,7 @@
     return (
       "<h3>Checks &amp; drift</h3>" +
       renderDriftSummary() +
+      renderBookChecksList() +
       renderChecksList() +
       renderHelpersSection() +
       "<h3>Charts</h3>" +
@@ -1352,7 +1758,7 @@
   }
 
   function renderInspectorChecksOnly() {
-    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderChecksList() + renderHelpersSection();
+    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderBookChecksList() + renderChecksList() + renderHelpersSection();
   }
 
   function bindInspectorInteractions() {
@@ -1360,6 +1766,39 @@
     if (btn) {
       btn.addEventListener("click", handleSave);
     }
+    // The inspector is rendered twice -- the desktop rail and the drawer --
+    // so the helper controls are bound by data attribute across both copies.
+    [els.inspector, els.inspectorDrawer].forEach(function (root) {
+      Array.prototype.forEach.call(root.querySelectorAll("[data-helper-preview]"), function (control) {
+        control.addEventListener("click", function () {
+          state.openHelper = control.getAttribute("data-helper-preview");
+          render();
+        });
+      });
+      Array.prototype.forEach.call(root.querySelectorAll("[data-helper-cancel]"), function (control) {
+        control.addEventListener("click", function () {
+          state.openHelper = null;
+          render();
+        });
+      });
+      Array.prototype.forEach.call(root.querySelectorAll("[data-helper-apply]"), function (control) {
+        control.addEventListener("click", function () {
+          var checkId = control.getAttribute("data-helper-apply");
+          var check = state.bookChecks.filter(function (c) {
+            return c.id === checkId;
+          })[0];
+          var snapshotAtPreview = SNAPSHOT;
+          state.openHelper = null;
+          commit(
+            function () {
+              return window.DiyaGlBooksEdits.applyHelper(snapshotAtPreview, checkId);
+            },
+            check ? check.helper.title.toLowerCase() : checkId,
+            check ? check.helper.title + " — applied." : "Applied.",
+          );
+        });
+      });
+    });
   }
 
   // ============================== global controls ==============================
@@ -1389,6 +1828,22 @@
 
     els.saveBtn.addEventListener("click", handleSave);
     els.saveBtnMobile.addEventListener("click", handleSave);
+    els.undoBtn.addEventListener("click", undoLastEdit);
+    els.undoBtnMobile.addEventListener("click", undoLastEdit);
+
+    // Ctrl+Z / Cmd+Z undoes the book, except while a field holds typing the
+    // reader has not committed yet -- there the browser's own undo is what
+    // they meant.
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "z" && e.key !== "Z") return;
+      if (!(e.metaKey || e.ctrlKey) || e.shiftKey || e.altKey) return;
+      var active = document.activeElement;
+      if (active && active.getAttribute && active.getAttribute("data-dirty") === "true") return;
+      if (active && (active.tagName === "TEXTAREA" || (active.tagName === "INPUT" && active.hasAttribute("data-add-field")))) return;
+      if (!state.loaded) return;
+      e.preventDefault();
+      undoLastEdit();
+    });
     els.drawerToggleBtn.addEventListener("click", function () {
       if (state.drawerOpen) {
         closeDrawer();
@@ -1418,10 +1873,8 @@
     }
   }
 
-  // The live book and lines a loaded workbook parses to. Until the page
-  // wires uploading and the example flow through to real diya-gl data,
-  // state carries no book -- the save controls stay present but inert, and
-  // start working the moment something sets state.book and state.lines.
+  // The live book and lines, as every edit has left them. Save writes what
+  // the page is showing, not what was loaded.
   function currentBookAndLines() {
     if (state.book && state.lines) return { book: state.book, lines: state.lines };
     return null;
@@ -1521,4 +1974,9 @@
       els.toast.classList.remove("is-visible");
     }, 4000);
   }
+
+  // What the page answers to from outside itself. setLines is the way a
+  // caller that is not the entries grid changes the book; undo is the same
+  // stack the topbar button and Ctrl+Z pop.
+  window.DiyaGlBooksPage = { setLines: setLines, undo: undoLastEdit };
 })();
