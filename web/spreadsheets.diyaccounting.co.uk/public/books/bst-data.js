@@ -136,16 +136,15 @@
   var BST_SALES_ACCOUNTS = { 4000: 1, 4001: 1, 4002: 1, 4003: 1, 4004: 1, 4005: 1 };
 
   // The named debtor/creditor ledger's own column layout on "Debtors &
-  // Creditors" (verified against app/products/bst.js's cellWrites and
-  // mirrored by CELL_MAP's amount cells): name then amount, three opening and
-  // three closing debtor rows from 5, four opening and four closing creditor
-  // rows from 12.
+  // Creditors": name then amount, three opening and three closing debtor
+  // rows from 5, four opening and four closing creditor rows from 12. This
+  // is the layout the packages under examples/bst-latest still carry.
   var LEDGER_LAYOUT = {
     debtors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 5, slots: 3 },
     creditors: { name: "B", amount: "C", closeName: "E", closeAmount: "F", firstRow: 12, slots: 4 },
   };
 
-  // What the Debtors & Creditors sheet actually holds: one opening figure per
+  // What the Debtors & Creditors sheet holds: one opening figure per
   // side at row 3, what each month left outstanding on rows 5 to 27 two apart,
   // and the column total at row 29 -- the same cells CELL_MAP names, and the
   // sheet's own wording for each. The sheet names no customer or supplier.
