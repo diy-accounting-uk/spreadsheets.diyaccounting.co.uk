@@ -5,9 +5,9 @@
   "catalogue": "GB Accounts Self Employed",
   "featuredScenario": "se-scenario-advanced",
   "yearEnd": "2027-04-05",
-  "status": "RECONCILES",
+  "status": "RECONCILES (with warnings)",
   "runs": 9,
-  "updated": "2026-08-29",
+  "updated": "2026-09-02",
   "features": {
     "checks": true,
     "sales": true,
