@@ -222,8 +222,8 @@ describe("the emitted rates agree with the sheet's own formula results", () => {
     // (250000-100000)*0.015 = 2250, charge = 22750.
     const profit = 100000;
     const buffer = await buildWorkbook({
-      "Admin": { F21: 45747 },
-      "CorporationTax": { K28: profit, K35: { formula: "K33-K34", value: 22750 } },
+      Admin: { F21: 45747 },
+      CorporationTax: { K28: profit, K35: { formula: "K33-K34", value: 22750 } },
     });
 
     const zip = await JSZip.loadAsync(buffer);
@@ -251,10 +251,7 @@ describe("the emitted rates agree with the sheet's own formula results", () => {
     expect(cachedCharge).toBe(22750);
 
     // Proof of breakability: corrupt the copy's cached K35 alone.
-    const corruptedXml = ctXml.replace(
-      /<c r="K35"><f>K33-K34<\/f><v>22750<\/v><\/c>/,
-      `<c r="K35"><f>K33-K34</f><v>18000</v></c>`,
-    );
+    const corruptedXml = ctXml.replace(/<c r="K35"><f>K33-K34<\/f><v>22750<\/v><\/c>/, `<c r="K35"><f>K33-K34</f><v>18000</v></c>`);
     expect(corruptedXml).not.toBe(ctXml);
     const corruptedCachedCharge = readCellValue(corruptedXml, "K35", sharedStrings);
     expect(recomputed).not.toBeCloseTo(corruptedCachedCharge, 2);
