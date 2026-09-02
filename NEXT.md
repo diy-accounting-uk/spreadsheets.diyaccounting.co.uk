@@ -6,60 +6,48 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-**Book read-back batch, wave 2** — continues on `claude/book-readback-2` (draft PR back to
-main; wave 1 landed via PR #52 with a green branch deploy). Shared exit criterion unchanged:
-every product's `bookFieldsMissing` in `app/data/roundtrip-budget.json` reaches zero, with
-the decided-out fields (per-contact ledgers, any other structural absence) held as declared
-absences with reasons, never silently closed.
+**Batch closeout** — the book read-back batch merged to main in PR #53 with the four
+generator refreshes on board; the judge test 108/108 everywhere the pins match their
+reports.
 
-- [x] T5 — landed on the batch branch: `Payslips!M18` repointed at the wages-paid cell in
-  both products, the warning flipped to a real check; featured scenarios go clean at the
-  refresh (the judge re-pin rides the closeout).
-- [x] T7 — landed on the batch branch: the monthly payroll calendar on a renamed tab now
-  carries that tab's month of the accounting period (generator-only, Ltd non-March, March
-  byte-stable), with a breakable per-tab check in both engines.
-- [x] weekly-cache roll + Payment realignment + the Mar-2024 leap fix — landed (merged;
-  judge test 108/108 and 151 payslips tests green on the merged branch). The leap bug was
-  the template's fixed day-counts (no count fits both payroll-year lengths — plus a
-  previously unchecked common-year defect, C14/C15 on the 20th); the generator now writes
-  the payroll months' real dates. The branch is otherwise stable: re-run `generate-ltd`
-  (expect 25/25), then the closeout. Every SE/Ltd `packages/*/Payslips.xlsx` and report is
-  stale until the refresh.
-- [x] fixture-master rate alignment — landed (`774d52af`, merged; sync gate re-proven on
-  the merged masters, zero drift; 244 blast tests green). Budgets unchanged — the gain is
-  in the ungated book-level differing counts (BST 53→50, Taxi 13→10).
-- [x] labels-track regression — the SE CELL_MAP deletions had emptied the calculators' read
-  scope (`withinReadScope()`) and 13 SE checks with it; restored with schema-correct names
-  inside the asset-attributes track. Done when this branch merges.
-- [ ] batch closeout (operator, decided 2026-09-01): when the branch is otherwise stable,
-  the operator re-runs all four generators in CI and commits; one clean serial `npm test`
-  sweep rides the same moment. Two riders land WITH that refresh: re-pin
-  `app/test/judge-reconciliation.test.js` to the post-fix reports (SE and Ltd go clean —
-  947/947 on the Ltd brickwork pair, no payslip warning — the pins deliberately stay on the
-  committed pre-fix reports until then, since the reconciliations drive the committed
-  `packages/`, which only the refresh rebuilds with the T5/T7 fixes), and the reports will
-  then show T7's twelve calendar checks and T5's payment-date check passing.
-- [ ] archive `PLAN_ROUNDTRIP_FIDELITY.md` when the full set lands — merged to main,
-  regenerated, deployed to prod. The plan is then fully closed (all gates at zero, declared
-  absences held); its record moves out of the live plan set.
+- [x] PR #54 merged — the judge parser pins match the refreshed reports; main's `test.yml`
+  is coherent again.
+- [ ] one clean serial `npm test` sweep on main — running.
+- [ ] refresh `claude/bst-spike-2` from main and purge merged branches — queued behind the
+  sweep (the working tree is busy); merged branches to purge, local and origin:
+  `claude/book-readback`, `claude/book-readback-2`, `claude/bst-cli-phase-1` (fully
+  contained in `claude/bst-spike-2`), `claude/judge-repin`.
+- [x] `PLAN_ROUNDTRIP_FIDELITY.md` archived to `_developers/archive/` — the prod deploy
+  from the PR #53 merge went green, closing the plan's full set.
+
+**diya-gl spike delivery** — on `claude/bst-spike-2` (from the merged batch tree). Phases 1
+(CLI) and 2 (MCP) landed with green closing ladders; tracking moved here from the plan doc
+(operator, 2026-09-02).
+
+- [ ] BST ledger alignment (Opus, worktree agent) — in flight, operator decided 2026-09-02:
+  the pipeline aligns to the REAL `Debtors & Creditors` sheet (a monthly outstanding table;
+  the exporter/generator had shared an invented per-contact layout that round-tripped as
+  fiction). Moves BST's book ledger shape, generator writes, fixtures and declared budget
+  counts; the sheet joins the anchor guard; the `adminMileageRates` silent-zero fallback
+  rides along.
+- [ ] W0, the phase-3 bundle gate — **the gate holds: CONTINUE.** Agent complete (8 commits,
+  awaiting coordinator merge once the main closeout sweep frees the tree): the browser runs
+  the unforked engine — 9 sheets cell-identical, 61/61 verdicts matching, breakability
+  proven, 422.7 KiB reproducible bundle, the shared `app-resources.js` seam. Two riders for
+  the merge: prettier on W-pre's three books files (CI formatting gate), and W4 inherits a
+  decision — the generator asks JSZip for `nodebuffer` (~10 sites), which no browser
+  produces, so browser save needs an output-type choice.
+- [ ] phase 3 tracks W1-W5 (viewer, panels + form renders, edits/checks/helpers, save,
+  entry/examples/layouts) — W0's gate held, so these dispatch next; the designed shell,
+  form renders and entry panel are already landed (W-pre).
 
 ## Open items
 
 The reconciliation-bug method in CLAUDE.md applies to any new check, fixture or template item.
-T5 and T7 landed on the batch branch; nothing is open outside the in-flight block above.
-
-
-
-
-
-
-
+Nothing is open outside the in-flight blocks above.
 
 ## Plans not tracked here
 
-- `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` — a BST package opens, edits, recalculates and saves as
-  diya-gl, delivered as a CLI, then an MCP server, then a browser page. In delivery on
-  `claude/bst-cli-phase-1`; the plan's own tracking blocks carry progress.
 - `PLAN_PACKAGES_TO_ARCHIVE.md` — first cut into the archive repository via the `archive-packages` skill; not started.
 
 ## Discipline

@@ -1,18 +1,35 @@
 {
   "product": "bst",
   "verdict": "pass",
-  "summary": "Indicators match the headline: no VAT boxes for an unregistered trader, high gross margin as expected for a service business by sheet layout, capital spend excluded and claimed as allowances, and tax charged on a positive taxable profit with a zero-residue bridge.",
+  "summary": "The accounts read as a credible set for an IT consultancy sole trader: £409,900 turnover spread sensibly across twelve months, all fourteen purchase codes landing in cost of sales, direct costs or the expense lines, capital spend of £39,000 excluded from the P&L and fully relieved by AIA, and income tax plus Class 4 NI at plausible amounts for a £294,908 taxable profit. A few presentational oddities are noted but none block the run.",
   "concerns": [
     {
-      "figure": "Personal allowance 0.00",
-      "where": "Income tax indicator",
-      "why": "Correct at this income level (allowance fully tapered above 125,140), but worth a glance since it reads as a deliberate zero.",
+      "figure": "Income Tax £0 alongside \"Tax at basic rate\" £105,395 (Profit & Loss Acc C30/C32)",
+      "where": "Profit & Loss Account, Income Tax and Tax at basic rate lines",
+      "why": "The P&L shows Income Tax as zero while the line labelled \"Tax at basic rate\" carries the full £105,395 of income tax (basic plus higher band). The total tax deducted is right, but the labelling misplaces the figure and a reader would read the tax charge as nil on the face of the P&L.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S \"AIA / WDA claimed\" £0 and \"WDA + Capital Allowance claimed\" £0 (SE Short D85/O80)",
+      "where": "Self Assessment (SA103S) section",
+      "why": "The fixed asset schedule and P&L both show £39,000 of AIA claimed, and SA103S box D80 carries capital allowances of £39,000, but the AIA/WDA boxes on the return read zero. Worth checking the return would be filed with the allowance in the correct box.",
+      "severity": "note"
+    },
+    {
+      "figure": "SA103S expense analysis: cost of goods £18,540, other direct costs £9,458, other expenses £1,140",
+      "where": "Self Assessment (SA103S) section vs Profit & Loss Account expense lines",
+      "why": "The SA103S breakdown does not obviously map to the P&L lines (P&L cost of sales £10,540 plus direct costs £8,000; expenses of £57,452 against only £26,438 analysed on the return). Net profit and taxable profit agree, so this looks like a grouping/mapping difference rather than a missing journal, but the allocation between SA103S boxes should be checked.",
+      "severity": "note"
+    },
+    {
+      "figure": "Motor Expenses £7,598 and Other Expenses £17,882",
+      "where": "Profit & Loss Account, expense lines",
+      "why": "For an IT consultancy with no payroll, motor costs of £7,598 and an unanalysed \"Other Expenses\" figure of £17,882 (the largest single expense) are plausible but worth a look — the \"other\" bucket being the biggest cost is unusual and may indicate codes that should sit in a named line.",
       "severity": "note"
     }
   ],
   "model": "anthropic.claude-opus-5",
   "region": "us-east-1",
-  "digestHash": "0af3a7967f60abc049c5e9229bf808e38584fa870e0ff1779c390d43e1c11234",
   "runs": [
     {
       "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
@@ -21,5 +38,5 @@
       "status": "RECONCILES"
     }
   ],
-  "timestamp": "2026-09-02T07:37:03.749Z"
+  "timestamp": "2026-08-28T13:39:29.358Z"
 }
