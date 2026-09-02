@@ -466,32 +466,26 @@
 
   var STOCK = { opening: 10000, closing: 6000, atCost: 10000 };
 
+  // The Debtors & Creditors sheet names nobody. It takes what was owed when
+  // the year opened, then shows one row a month of what each month's sales
+  // and purchases left outstanding -- a sale counts while no receipt is
+  // recorded beside it, a purchase while no payment is. The totals are the
+  // opening figure plus all twelve months, which is what the sheet's
+  // "Amount owed by customers" and "Amount owed to suppliers" lines carry.
   var DEBTORS = {
-    opening: [
-      { counterparty: "Acme Corp", invoice: "INV-0901", amount: 7200 },
-      { counterparty: "Beta Systems", invoice: "INV-0902", amount: 1200 },
-      { counterparty: "Gamma Ltd", invoice: "INV-0903", amount: 2400 },
-    ],
-    closing: [
-      { counterparty: "Acme Corp", invoice: "INV-1012", amount: 6100 },
-      { counterparty: "WidgetWorks", invoice: "INV-2104", amount: 1440 },
-      { counterparty: "Zeta Corp", invoice: "CN-1801", amount: 360 },
-    ],
+    openingLabel: "Owed by customers at start of year",
+    opening: 10800,
+    totalLabel: "Amount owed by customers",
+    monthly: [33400, 32920, 35200, 33760, 36020, 33760, 35560, 35320, 32800, 35440, 34360, 31360],
+    monthlyLabel: "Sales not yet received",
   };
 
   var CREDITORS = {
-    opening: [
-      { counterparty: "WorkSpace Ltd", invoice: "WS-2403", amount: 1200 },
-      { counterparty: "Hiscox", invoice: "HX-1190", amount: 300 },
-      { counterparty: "Smith & Co", invoice: "SC-0087", amount: 600 },
-      { counterparty: "BT", invoice: "BT-5521", amount: 120 },
-    ],
-    closing: [
-      { counterparty: "WorkSpace Ltd", invoice: "WS-2988", amount: 1200 },
-      { counterparty: "Hiscox", invoice: "HX-1244", amount: 300 },
-      { counterparty: "Smith & Co", invoice: "SC-0112", amount: 60 },
-      { counterparty: "BT", invoice: "BT-5602", amount: 150 },
-    ],
+    openingLabel: "Owed to suppliers at start of year",
+    opening: 2220,
+    totalLabel: "Amount owed to suppliers",
+    monthly: [10773, 12021, 14667, 14739, 10067, 10603, 48663, 12537, 15102, 10173, 10065, 9368],
+    monthlyLabel: "Purchases still to be paid",
   };
 
   var FIXED_ASSETS = {

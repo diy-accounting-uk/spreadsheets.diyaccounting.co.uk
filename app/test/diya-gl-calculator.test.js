@@ -182,12 +182,18 @@ describe("calculateFromDiyaGl — BST", () => {
 
   // ── Debtors & Creditors ──
 
-  it("populates opening debtors", () => {
+  it("populates the two figures the sheet takes and the months it computes", () => {
     const { book, lines } = loadDiyaGlData(BST_DATA);
     results = calculateFromDiyaGl(book, lines, "bst", taxData, bstScenarioFor(book, lines));
-    expect(results["Debtors & Creditors"].C5).toBe(7200);
-    expect(results["Debtors & Creditors"].C6).toBe(1200);
-    expect(results["Debtors & Creditors"].C7).toBe(2400);
+    const ledger = results["Debtors & Creditors"];
+    expect(ledger.C3).toBe(book.openingBalances.tradeDebtors);
+    expect(ledger.F3).toBe(book.openingBalances.tradeCreditors);
+
+    const aprilSales = lines
+      .filter((l) => l.sourceJournalID === "sales" && l.postingDate.startsWith("2025-04"))
+      .reduce((sum, l) => sum + l.amount, 0);
+    expect(ledger.C5).toBe(aprilSales);
+    expect(ledger.C29).toBe(book.openingBalances.tradeDebtors + [5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27].reduce((sum, row) => sum + ledger[`C${row}`], 0));
   });
 
   // ── Stock ──

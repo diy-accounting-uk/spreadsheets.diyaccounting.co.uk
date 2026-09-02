@@ -649,38 +649,39 @@
   }
 
   function renderDebtorsCreditors() {
-    function ledger(title, sections) {
+    function ledger(title, side) {
+      var total = side.monthly.reduce(function (sum, amount) {
+        return sum + amount;
+      }, side.opening);
       return (
         '<div class="panel-card"><h3>' +
         title +
-        "</h3>" +
-        Object.keys(sections)
-          .map(function (key) {
-            var rows = sections[key];
-            var total = rows.reduce(function (sum, r) {
-              return sum + r.amount;
-            }, 0);
-            return (
-              '<p class="caps-label">' +
-              key +
-              '</p><table class="kv-table">' +
-              rows
-                .map(function (r) {
-                  return "<tr><td>" + esc(r.counterparty) + " (" + esc(r.invoice) + ")</td><td>" + fmtMoney(r.amount) + "</td></tr>";
-                })
-                .join("") +
-              '<tr class="total"><td>Total</td><td>' +
-              fmtMoney(total) +
-              "</td></tr></table>"
-            );
+        '</h3><table class="kv-table">' +
+        "<tr><td>" +
+        esc(side.openingLabel) +
+        "</td><td>" +
+        fmtMoney(side.opening) +
+        "</td></tr>" +
+        side.monthly
+          .map(function (amount, index) {
+            return "<tr><td>" + esc(SNAPSHOT.months[index].label) + "</td><td>" + fmtMoney(amount) + "</td></tr>";
           })
           .join("") +
-        "</div>"
+        '<tr class="total"><td>' +
+        esc(side.totalLabel) +
+        "</td><td>" +
+        fmtMoney(total) +
+        "</td></tr></table>" +
+        '<p class="caps-label">' +
+        esc(side.monthlyLabel) +
+        ", month by month</p></div>"
       );
     }
     return (
       "<h2>Debtors &amp; Creditors</h2>" +
-      '<p class="view-lede">Named opening/closing debtors and creditors, per the ledgers panel.</p>' +
+      '<p class="view-lede">What was owed when the year opened, and what each month left outstanding. ' +
+      "A sale counts while no receipt is recorded beside it, a purchase while no payment is. " +
+      "This sheet names no customer or supplier.</p>" +
       '<div class="panel-grid">' +
       ledger("Debtors", SNAPSHOT.debtors) +
       ledger("Creditors", SNAPSHOT.creditors) +
