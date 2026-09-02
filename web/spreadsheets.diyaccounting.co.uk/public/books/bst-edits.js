@@ -5,11 +5,11 @@
 //
 // The edit path, the undo stack and the fix-it helpers. Every change to the
 // book -- a hand edit in the entries grid, a delete, an added entry, or a
-// helper applying its whole plan -- goes through the four functions
+// helper applying its whole plan -- goes through the named edits
 // app/lib/diya-gl-edits.js exports (addSaleLine, addPurchaseLine,
-// changeLineAmount, removeLine), reached through the engine bundle. Nothing
-// here reimplements an edit, so the page, the CLI and the MCP server change
-// a book the same way.
+// changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount),
+// reached through the engine bundle. Nothing here reimplements an edit, so
+// the page, the CLI and the MCP server change a book the same way.
 //
 // Two kinds of check share the panel, and they answer different questions:
 //
@@ -128,8 +128,9 @@
         var period = snapshot.period;
         return offenders.reduce(function (chain, line) {
           return chain.then(function (currentLines) {
-            return replaceLine(api, snapshot.book, currentLines, line, {
-              postingDate: clampIntoPeriod(line.postingDate, period),
+            return api.changeLinePostingDate(snapshot.book, currentLines, {
+              entryNumber: line.entryNumber,
+              newPostingDate: clampIntoPeriod(line.postingDate, period),
             });
           });
         }, Promise.resolve(snapshot.lines));
@@ -168,7 +169,7 @@
         return offenders.reduce(function (chain, line) {
           return chain.then(function (currentLines) {
             var account = repostAccount(snapshot.chart, line.sourceJournalID);
-            return replaceLine(api, snapshot.book, currentLines, line, { accountMainID: account.code });
+            return api.changeLineAccount(snapshot.book, currentLines, { entryNumber: line.entryNumber, newAccountMainID: account.code });
           });
         }, Promise.resolve(snapshot.lines));
       },
@@ -209,17 +210,6 @@
       },
     },
   ];
-
-  // A field a line carries that changeLineAmount cannot reach -- its date or
-  // its account -- moves by removing the line and adding it back corrected.
-  // Both halves are diya-gl-edits.js's own functions, so the fix travels the
-  // same path as a hand edit and the same undo covers it.
-  function replaceLine(api, book, lines, line, changes) {
-    var corrected = Object.assign({}, line, changes);
-    var without = api.removeLine(book, lines, { entryNumber: line.entryNumber });
-    if (corrected.sourceJournalID === "sales") return api.addSaleLine(book, without, { line: corrected });
-    return api.addPurchaseLine(book, without, { line: corrected });
-  }
 
   /**
    * The book checks over the snapshot's own D, each with its fix-it action

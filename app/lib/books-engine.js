@@ -36,7 +36,7 @@ export { reportSections, checkCompliance, cellLabels, profitBridge, standardRead
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
 // Editing it.
-export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine } from "./diya-gl-edits.js";
+export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
 
 // Saving it back out as a workbook or the package zip.
 export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
