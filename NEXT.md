@@ -14,9 +14,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
   `build:books-bundle` into deploy.yml. Lands locally for the operator's visual review
   BEFORE any push to main (direct-to-main authorized after that look).
 
-The diya-gl spike otherwise delivered in full — CLI, MCP server and the live books page —
-across PRs #55 and #56, regenerated, tested and deployed; its plan is archived to
-`_developers/archive/` beside the roundtrip-fidelity and packages-to-archive plans.
+The diya-gl spike delivered in full — CLI, MCP server and the live books page — across
+PRs #55 and #56, regenerated, tested and deployed. Its plan lives at the root again as the
+as-built record and template: the four product plans
+(`PLAN_DIYA_GL_[BST|SE|TAXI|LTD]_CLI_MCP_WEB.md`) may evolve together.
 
 ## Open items
 
@@ -24,7 +25,8 @@ Nothing.
 
 ## Plans not tracked here
 
-None — no live plans; the archive holds the completed records.
+- `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md` — delivered; kept live at the root as the
+  as-built record and the template for the SE/Taxi/Ltd successors.
 
 ## Discipline
 
