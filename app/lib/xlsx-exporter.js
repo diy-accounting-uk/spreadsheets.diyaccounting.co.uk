@@ -113,6 +113,30 @@ const BST_PURCHASE_SHEETS = [
 const MONTH_SHEETS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 const CALENDAR_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+// The Basic Sole Trader Debtors & Creditors sheet, read off its own XML. It
+// is a monthly outstanding table, not a per-contact ledger: no column on it
+// takes a counterparty or an invoice reference.
+//
+//   B1/C1  "Sales         Month" / "Sales not yet received"   — the sales side
+//   E1/F1  "Purchase    Month" / "Purchases still   to be paid" — the purchases side
+//   B3/E3  "Owed start year", labelling C3 and F3
+//   rows 5, 7, 9 … 27, one per month of the period:
+//          B = Admin!B$5 … Admin!B$16, the month end
+//          C = IF(Sales<Mon>!$H$1>0, Sales<Mon>!$H$1, " ")
+//          F = IF(Purchases<Mon>!$H$1>0, Purchases<Mon>!$H$1, " ")
+//   B29/C29  "Amount owed by customers" / =SUM(C3:C28)
+//   E29/F29  "Amount owed    to suppliers" / =SUM(F3:F28)
+//
+// Only C3 and F3 are entered. Every other amount is the template's own
+// formula, and Sales<Mon>!H1 = SUM(H4:H300) over H4 = IF(F4<>0, IF(D4>0, " ",
+// F4), " ") — a sale counts as outstanding while column D records no receipt
+// against it, and a purchase likewise against its own payment column. So the
+// month figures restate the transaction rows, and the two entered cells are
+// the only thing on the sheet a book has to carry: the year's opening trade
+// debtors and trade creditors.
+const BST_LEDGER_SHEET = "Debtors & Creditors";
+const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", tradeCreditors: "F3" };
+
 // A BST Sales tab, read off its own header rows: A the sale date, B the
 // customer, C the invoice reference and F the gross value, with the writer's
 // account carrier column beside them. Rows 4 down are the tab's own entries.
@@ -212,7 +236,15 @@ function accountAt(xml, row, sharedStrings, reverseMap, codeStr, fallback) {
 // builds on this list, so keep additions here rather than duplicating them.
 
 // Every sheet extractBstTransactions() and extractBook() open by name.
-export const BST_REQUIRED_SHEETS = ["Business Details", "Admin", ...BST_SALES_SHEETS, ...BST_PURCHASE_SHEETS];
+export const BST_REQUIRED_SHEETS = [
+  "Business Details",
+  "Admin",
+  "PurchasesStock",
+  BST_LEDGER_SHEET,
+  "Fixed Assets",
+  ...BST_SALES_SHEETS,
+  ...BST_PURCHASE_SHEETS,
+];
 
 // The header cell each extractor reads a column by position from, and the
 // text the current template prints there. SalesApr/PurchasesApr stand for
@@ -234,6 +266,17 @@ export const BST_HEADER_ANCHORS = [
   { sheet: "PurchasesApr", cell: "G2", label: "Total Purchase Value incl Vat" },
   { sheet: "Admin", cell: "D21", label: "Higher rate allowance up to" },
   { sheet: "Admin", cell: "D22", label: "Lower rate allowance over" },
+  { sheet: "PurchasesStock", cell: "B4", label: "Opening Stock" },
+  { sheet: "PurchasesStock", cell: "D2", label: "Physical     Stock Value" },
+  { sheet: BST_LEDGER_SHEET, cell: "C1", label: "Sales not yet received" },
+  { sheet: BST_LEDGER_SHEET, cell: "F1", label: "Purchases still   to be paid" },
+  { sheet: BST_LEDGER_SHEET, cell: "B3", label: "Owed start year" },
+  { sheet: BST_LEDGER_SHEET, cell: "E3", label: "Owed start year" },
+  { sheet: BST_LEDGER_SHEET, cell: "B29", label: "Amount owed by customers" },
+  { sheet: BST_LEDGER_SHEET, cell: "E29", label: "Amount owed    to suppliers" },
+  { sheet: "Fixed Assets", cell: "C2", label: "Asset Description" },
+  { sheet: "Fixed Assets", cell: "E2", label: "Original Cost" },
+  { sheet: "Fixed Assets", cell: "B66", label: "Plant & Machinery" },
 ];
 
 /**
@@ -538,9 +581,26 @@ export async function extractTaxiTransactions(xlsxBuffer) {
 // product's Admin sheet, wherever that sheet lives.
 const ADMIN_MILEAGE_RATE_CELLS = { higher_rate_limit: "F21", higher_rate_pence: "G21", lower_rate_pence: "G22" };
 
+/**
+ * A workbook the mileage rates were to be read from with no Admin sheet on
+ * it. Named the way BstAnchorError is, because it is the same finding: a file
+ * that does not match the template the extractors were written against.
+ */
+export class AdminSheetMissingError extends Error {
+  constructor() {
+    super(
+      'This file does not match the template: sheet "Admin" not found, so the approved mileage rates a mileage-log row is priced at cannot be read.',
+    );
+    this.name = "AdminSheetMissingError";
+  }
+}
+
 async function adminMileageRates(sheetMap, zip, sharedStrings) {
   const adminPath = sheetMap.get("Admin");
-  if (!adminPath) return { higher_rate_limit: 0, higher_rate_pence: 0, lower_rate_pence: 0 };
+  // Returning zeros here priced every mileage claim in the package at nil and
+  // said nothing about it: a package short of its Admin sheet exported a
+  // silently mileage-free book.
+  if (!adminPath) throw new AdminSheetMissingError();
   const xml = await zip.file(adminPath).async("string");
   const rates = {};
   for (const [field, cell] of Object.entries(ADMIN_MILEAGE_RATE_CELLS)) rates[field] = numberAt(xml, cell, sharedStrings) ?? 0;
@@ -2055,24 +2115,12 @@ async function registersFrom(companySecretaryZip) {
 // and timing. SE and Ltd keep a sheet per ledger per timing in the Sales and
 // Purchases workbooks, each running one entry a row from row 5 with B the
 // counterparty, C the invoice reference and the net amount in the column the
-// sheet totals (SE G1 = SUM(G5:G300), Ltd H1 = SUM(H5:H300)). The Basic Sole
-// Trader keeps both ledgers on one Debtors & Creditors sheet, opening on the
-// left (B the name, C the amount) and closing on the right (E and F), three
-// debtor rows from row 5 and four creditor rows from row 12, with no invoice
-// column beside either. The Taxi package keeps no named ledger at all.
+// sheet totals (SE G1 = SUM(G5:G300), Ltd H1 = SUM(H5:H300)). Neither the
+// Basic Sole Trader nor the Taxi package names a debtor or a creditor
+// anywhere: BST keeps a monthly outstanding table instead (see
+// BST_OPENING_LEDGER_CELLS), and Taxi keeps no ledger sheet at all.
 const LEDGER_ENTRY_ROWS = Array.from({ length: 50 }, (unused, index) => 5 + index);
-const BST_LEDGER_SHEET = "Debtors & Creditors";
 const LEDGER_BLOCKS = {
-  bst: {
-    debtors: {
-      opening: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "B", amount: "C" },
-      closing: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "E", amount: "F" },
-    },
-    creditors: {
-      opening: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "B", amount: "C" },
-      closing: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "E", amount: "F" },
-    },
-  },
   se: {
     debtors: {
       opening: { file: "Sales.xlsx", sheet: "OpeningDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
@@ -2122,6 +2170,25 @@ async function ledgerFrom(sourceDir, hubZip, product, ledger) {
     }
   }
   return entries;
+}
+
+/**
+ * The two figures the Basic Sole Trader Debtors & Creditors sheet takes as
+ * input: what customers owed and what was owed to suppliers when the year
+ * opened. Everything else on that sheet is derived — see
+ * BST_OPENING_LEDGER_CELLS.
+ * @param {Object} hubZip - the single-file workbook
+ * @returns {Object|undefined} an openingBalances table, or undefined where
+ *   the sheet leaves both cells empty
+ */
+async function bstOpeningLedgerFrom(hubZip) {
+  const sheet = await openSheet(hubZip, BST_OPENING_LEDGER_CELLS.sheet);
+  if (!sheet) return undefined;
+  const balances = {};
+  for (const field of ["tradeDebtors", "tradeCreditors"]) {
+    assign(balances, field, numberAt(sheet.xml, BST_OPENING_LEDGER_CELLS[field], sheet.sharedStrings));
+  }
+  return Object.keys(balances).length > 0 ? balances : undefined;
 }
 
 async function stockFrom(hubZip, product) {
@@ -2249,6 +2316,11 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     if (entries.length > 0) book[ledger] = entries;
   }
 
+  if (product === "bst") {
+    const openingLedger = await bstOpeningLedgerFrom(hubZip);
+    if (openingLedger) book.openingBalances = openingLedger;
+  }
+
   const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
 
@@ -2302,13 +2374,8 @@ export function bstBookFieldCells() {
     cells.push({ sheet: stock.sheet, cell, field: `stock.${field}` });
   }
 
-  for (const [ledger, timings] of Object.entries(LEDGER_BLOCKS.bst)) {
-    for (const [timing, block] of Object.entries(timings)) {
-      for (const row of block.rows) {
-        cells.push({ sheet: block.sheet, cell: `${block.counterparty}${row}`, field: `${ledger}.${timing}.counterparty` });
-        cells.push({ sheet: block.sheet, cell: `${block.amount}${row}`, field: `${ledger}.${timing}.amount` });
-      }
-    }
+  for (const field of ["tradeDebtors", "tradeCreditors"]) {
+    cells.push({ sheet: BST_OPENING_LEDGER_CELLS.sheet, cell: BST_OPENING_LEDGER_CELLS[field], field: `openingBalances.${field}` });
   }
 
   // The Admin sheet names the year whose rates the whole tax block is rebuilt

@@ -74,6 +74,10 @@ accountMainDescription = "Legal and professional fees"
 accountMainDescription = "Fixed asset purchases"
 "diya-gl:column" = "AI"
 
+[openingBalances]
+tradeDebtors = 6600.00
+tradeCreditors = 1510.00
+
 [stock]
 openingValue = 3000.00
 closingValue = 2500.00

@@ -4398,75 +4398,9 @@ account = "5101"
 opening = 10000
 closing = 6000
 
-[[opening_debtors]]
-customer = "Acme Corp"
-invoice = "INV-0901"
-amount = 7200
-
-[[opening_debtors]]
-customer = "Beta Systems"
-invoice = "INV-0902"
-amount = 1200
-
-[[opening_debtors]]
-customer = "Gamma Ltd"
-invoice = "INV-0903"
-amount = 2400
-
-[[closing_debtors]]
-customer = "Acme Corp"
-invoice = "INV-1012"
-amount = 6100
-
-[[closing_debtors]]
-customer = "WidgetWorks"
-invoice = "INV-2104"
-amount = 1440
-
-[[closing_debtors]]
-customer = "Zeta Corp"
-invoice = "CN-1801"
-amount = 360
-
-[[opening_creditors]]
-supplier = "WorkSpace Ltd"
-invoice = "WS-2403"
-amount = 1200
-
-[[opening_creditors]]
-supplier = "Smith & Co"
-invoice = "SC-2403"
-amount = 300
-
-[[opening_creditors]]
-supplier = "TechParts Ltd"
-invoice = "TP-2403"
-amount = 600
-
-[[opening_creditors]]
-supplier = "Shell"
-invoice = "SH-2403"
-amount = 120
-
-[[closing_creditors]]
-supplier = "WorkSpace Ltd"
-invoice = "WS-2603"
-amount = 1200
-
-[[closing_creditors]]
-supplier = "Smith & Co"
-invoice = "SC-2603"
-amount = 300
-
-[[closing_creditors]]
-supplier = "BT Business"
-invoice = "BT-2603"
-amount = 60
-
-[[closing_creditors]]
-supplier = "Shell"
-invoice = "SH-2603"
-amount = 150
+[opening_balance]
+trade_debtors = 10800
+trade_creditors = 2220
 
 [[fixed_asset_additions]]
 date = 2025-05-15
