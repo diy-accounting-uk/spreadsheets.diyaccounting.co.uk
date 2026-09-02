@@ -376,8 +376,25 @@ function bstIndicators(report) {
     }),
     incomeTaxLine(report, "Income Tax Calculation"),
     bridgeLine(report),
+    debtorsCreditorsLine(report),
     "This product publishes no balance sheet and no VAT returns: a profit and loss account and a self assessment return are the whole output.",
   ];
+}
+
+// The Debtors & Creditors sheet is a monthly outstanding table over the sales
+// and purchases journals, not a list of named balances, and a row stays
+// outstanding until its payment column says otherwise. A journal that records
+// no receipts at all therefore shows every sale still owing, which reads as an
+// implausible debtor figure without this line beside it.
+function debtorsCreditorsLine(report) {
+  const owedByCustomers = value(report, "Debtors & Creditors", "Amount owed by customers");
+  const owedToSuppliers = value(report, "Debtors & Creditors", "Amount owed to suppliers");
+  if (owedByCustomers === null && owedToSuppliers === null) return null;
+  return (
+    `Debtors and creditors: ${amount(owedByCustomers)} owed by customers and ${amount(owedToSuppliers)} owed to suppliers at the year end. ` +
+    "This sheet names nobody -- it opens with what was owed at the start of the year and adds each month's sales with no receipt recorded " +
+    "and each month's purchases with no payment recorded, so a journal that records no settlements shows the whole year still outstanding."
+  );
 }
 
 function taxiIndicators(report) {

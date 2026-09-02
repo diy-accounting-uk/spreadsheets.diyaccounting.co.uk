@@ -22,6 +22,7 @@ import {
   payslipsWagesPaidCell,
 } from "./payslips-layout.js";
 import { findXlsx } from "./xlsx-reader.js";
+import { parseCellRef } from "./template-formula-map.js";
 import { readFileSync as readSchemaFile, existsSync as fileExists } from "fs";
 import { resolve as resolvePath, dirname as directoryOf } from "path";
 import { fileURLToPath } from "url";
@@ -112,6 +113,83 @@ const BST_PURCHASE_SHEETS = [
 const MONTH_SHEETS = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
 const CALENDAR_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+// The Basic Sole Trader Debtors & Creditors sheet, read off its own XML. It
+// is a monthly outstanding table, not a per-contact ledger: no column on it
+// takes a counterparty or an invoice reference.
+//
+//   B1/C1  "Sales         Month" / "Sales not yet received"   — the sales side
+//   E1/F1  "Purchase    Month" / "Purchases still   to be paid" — the purchases side
+//   B3/E3  "Owed start year", labelling C3 and F3
+//   rows 5, 7, 9 … 27, one per month of the period:
+//          B = Admin!B$5 … Admin!B$16, the month end
+//          C = IF(Sales<Mon>!$H$1>0, Sales<Mon>!$H$1, " ")
+//          F = IF(Purchases<Mon>!$H$1>0, Purchases<Mon>!$H$1, " ")
+//   B29/C29  "Amount owed by customers" / =SUM(C3:C28)
+//   E29/F29  "Amount owed    to suppliers" / =SUM(F3:F28)
+//
+// Only C3 and F3 are entered. Every other amount is the template's own
+// formula, and Sales<Mon>!H1 = SUM(H4:H300) over H4 = IF(F4<>0, IF(D4>0, " ",
+// F4), " ") — a sale counts as outstanding while column D records no receipt
+// against it, and a purchase likewise against its own payment column. So the
+// month figures restate the transaction rows, and the two entered cells are
+// the only thing on the sheet a book has to carry: the year's opening trade
+// debtors and trade creditors.
+const BST_LEDGER_SHEET = "Debtors & Creditors";
+const BST_OPENING_LEDGER_CELLS = { sheet: BST_LEDGER_SHEET, tradeDebtors: "C3", tradeCreditors: "F3" };
+
+// A BST Sales tab, read off its own header rows: A the sale date, B the
+// customer, C the invoice reference and F the gross value, with the writer's
+// account carrier column beside them. Rows 4 down are the tab's own entries.
+const BST_SALES_COLUMNS = {
+  postingDate: "A",
+  detailComment: "B",
+  documentReference: "C",
+  amount: "F",
+  accountMainID: ACCOUNT_ID_COLUMN,
+};
+const BST_SALES_FIRST_ROW = 4;
+
+// A BST Purchases tab: A the purchase date, B the supplier, C the invoice
+// reference, D nothing the export reads, E the expense code letter the
+// analysis columns key on, F the miles a mileage-log row claims and G the
+// gross value a bought purchase carries. Rows 5 down are the entries.
+const BST_PURCHASE_COLUMNS = {
+  postingDate: "A",
+  detailComment: "B",
+  documentReference: "C",
+  expenseCode: "E",
+  measurableQuantity: "F",
+  amount: "G",
+  accountMainID: ACCOUNT_ID_COLUMN,
+};
+const BST_PURCHASE_FIRST_ROW = 5;
+
+// Past this row the tabs hold their own totals, not entries.
+const BST_TRANSACTION_LAST_ROW = 200;
+
+/**
+ * Every block of rows a BST workbook's transaction lines come out of, and the
+ * column each field of a line is read from. extractBstTransactions() reads
+ * through this table, and bstExtractionMap() hands the same table back, so a
+ * caller can say which cell fed which line without restating the layout.
+ */
+export const BST_TRANSACTION_REGIONS = [
+  ...BST_SALES_SHEETS.map((sheet) => ({
+    sheet,
+    sourceJournalID: "sales",
+    firstRow: BST_SALES_FIRST_ROW,
+    lastRow: BST_TRANSACTION_LAST_ROW,
+    columns: BST_SALES_COLUMNS,
+  })),
+  ...BST_PURCHASE_SHEETS.map((sheet) => ({
+    sheet,
+    sourceJournalID: "purchases",
+    firstRow: BST_PURCHASE_FIRST_ROW,
+    lastRow: BST_TRANSACTION_LAST_ROW,
+    columns: BST_PURCHASE_COLUMNS,
+  })),
+];
+
 /**
  * Month tabs in accounting-period order.
  *
@@ -141,45 +219,164 @@ function accountAt(xml, row, sharedStrings, reverseMap, codeStr, fallback) {
   return textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || reverseMap[codeStr] || fallback;
 }
 
+// ─── BST anchor guard ───────────────────────────────────────────────────
+//
+// The BST extractors above and extractBook() below read fixed cell
+// addresses on the strength of the sheet names and header labels the
+// current template ships with — they never check the labels are still
+// there. A customer's own file (the --file mode in app/bin/export.js) is
+// not a fixture this repo controls, so before any of those reads run, this
+// guard confirms every sheet the extractors open still exists and every
+// header cell they key their column reads on still carries the text the
+// template ships. A mismatch is a named error stating the sheet and the
+// anchor expected — never a silent short export, never a bare stack trace.
+//
+// Kept to what the BST path actually reads: extractBstTransactions() and
+// extractBook()'s entity/tax blocks. A later phase's row-mapping exposure
+// builds on this list, so keep additions here rather than duplicating them.
+
+// Every sheet extractBstTransactions() and extractBook() open by name.
+export const BST_REQUIRED_SHEETS = [
+  "Business Details",
+  "Admin",
+  "PurchasesStock",
+  BST_LEDGER_SHEET,
+  "Fixed Assets",
+  ...BST_SALES_SHEETS,
+  ...BST_PURCHASE_SHEETS,
+];
+
+// The header cell each extractor reads a column by position from, and the
+// text the current template prints there. SalesApr/PurchasesApr stand for
+// all twelve month tabs of each kind — the template repeats the same header
+// row on every one, so checking the sheets exist (BST_REQUIRED_SHEETS above)
+// plus one representative header block is what catches both a renamed sheet
+// and a reshuffled column, without reading the same header text 24 times.
+export const BST_HEADER_ANCHORS = [
+  { sheet: "Business Details", cell: "C3", label: "Your name" },
+  { sheet: "SalesApr", cell: "A1", label: "Sales    Date" },
+  { sheet: "SalesApr", cell: "B1", label: "Customer Name" },
+  { sheet: "SalesApr", cell: "C2", label: "Sales Invoice or reference" },
+  { sheet: "SalesApr", cell: "F2", label: "Gross Sales Value" },
+  { sheet: "PurchasesApr", cell: "A2", label: "Purchase Date" },
+  { sheet: "PurchasesApr", cell: "B2", label: "Supplier" },
+  { sheet: "PurchasesApr", cell: "C2", label: "Purchase Reference / Invoice Number" },
+  { sheet: "PurchasesApr", cell: "E2", label: "Enter Expense Code Letter" },
+  { sheet: "PurchasesApr", cell: "F2", label: "Enter Mileage on purchases" },
+  { sheet: "PurchasesApr", cell: "G2", label: "Total Purchase Value incl Vat" },
+  { sheet: "Admin", cell: "D21", label: "Higher rate allowance up to" },
+  { sheet: "Admin", cell: "D22", label: "Lower rate allowance over" },
+  { sheet: "PurchasesStock", cell: "B4", label: "Opening Stock" },
+  { sheet: "PurchasesStock", cell: "D2", label: "Physical     Stock Value" },
+  { sheet: BST_LEDGER_SHEET, cell: "C1", label: "Sales not yet received" },
+  { sheet: BST_LEDGER_SHEET, cell: "F1", label: "Purchases still   to be paid" },
+  { sheet: BST_LEDGER_SHEET, cell: "B3", label: "Owed start year" },
+  { sheet: BST_LEDGER_SHEET, cell: "E3", label: "Owed start year" },
+  { sheet: BST_LEDGER_SHEET, cell: "B29", label: "Amount owed by customers" },
+  { sheet: BST_LEDGER_SHEET, cell: "E29", label: "Amount owed    to suppliers" },
+  { sheet: "Fixed Assets", cell: "C2", label: "Asset Description" },
+  { sheet: "Fixed Assets", cell: "E2", label: "Original Cost" },
+  { sheet: "Fixed Assets", cell: "B66", label: "Plant & Machinery" },
+];
+
+/**
+ * A missing or mismatched anchor: which sheets are absent and which header
+ * cells no longer carry the label the extractors expect. Carries the full
+ * list so a caller can print every finding at once rather than the first.
+ */
+export class BstAnchorError extends Error {
+  constructor(missingSheets, mismatchedHeaders) {
+    const lines = [
+      ...missingSheets.map((sheet) => `sheet "${sheet}" not found`),
+      ...mismatchedHeaders.map(
+        ({ sheet, cell, label, found }) =>
+          `sheet "${sheet}" cell ${cell}: expected header "${label}", found ${found === undefined ? "nothing" : JSON.stringify(found)}`,
+      ),
+    ];
+    super(`This file does not match the current Basic Sole Trader template:\n${lines.map((line) => `  - ${line}`).join("\n")}`);
+    this.name = "BstAnchorError";
+    this.missingSheets = missingSheets;
+    this.mismatchedHeaders = mismatchedHeaders;
+  }
+}
+
+/**
+ * Confirm every sheet and header label the BST extractors key on is present
+ * before any of them run. Throws BstAnchorError naming every anchor that
+ * failed; returns nothing on success.
+ * @param {Buffer} xlsxBuffer
+ */
+export async function validateBstAnchors(xlsxBuffer) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+  const sharedStrings = await loadSharedStrings(zip);
+
+  const missingSheets = BST_REQUIRED_SHEETS.filter((sheet) => !sheetMap.has(sheet));
+  const missingSheetSet = new Set(missingSheets);
+
+  const mismatchedHeaders = [];
+  for (const anchor of BST_HEADER_ANCHORS) {
+    if (missingSheetSet.has(anchor.sheet)) continue; // already named above
+    const sheetPath = sheetMap.get(anchor.sheet);
+    const xml = await zip.file(sheetPath).async("string");
+    const found = textAt(xml, anchor.cell, sharedStrings);
+    if (found !== anchor.label) mismatchedHeaders.push({ ...anchor, found });
+  }
+
+  if (missingSheets.length > 0 || mismatchedHeaders.length > 0) {
+    throw new BstAnchorError(missingSheets, mismatchedHeaders);
+  }
+}
+// ─── end BST anchor guard ───────────────────────────────────────────────
+
 /**
  * Extract transaction lines from a single-file BST product.
+ *
+ * @param {Buffer} xlsxBuffer
+ * @param {Object} [extractionMap] - a bstExtractionMap(), recorded into as
+ *   each row is read so a caller can trace an exported line back to the sheet
+ *   row it came from. Omitting it changes nothing about the lines returned.
  */
-export async function extractBstTransactions(xlsxBuffer) {
+export async function extractBstTransactions(xlsxBuffer, extractionMap) {
   const zip = await JSZip.loadAsync(xlsxBuffer);
   const sheetMap = await buildSheetMap(zip);
   const sharedStrings = await loadSharedStrings(zip);
   const lines = [];
   let entryNum = 1;
 
-  // Sales: rows 4+, A=date, B=customer, F=amount
-  for (let mi = 0; mi < 12; mi++) {
-    const sheetName = BST_SALES_SHEETS[mi];
-    const sheetPath = sheetMap.get(sheetName);
+  const regionsFor = (journal) => BST_TRANSACTION_REGIONS.filter((region) => region.sourceJournalID === journal);
+  const push = (line, region, row) => {
+    lines.push(line);
+    if (extractionMap) extractionMap.recordLine(line, region, row, lines.length - 1);
+  };
+
+  for (const region of regionsFor("sales")) {
+    const sheetPath = sheetMap.get(region.sheet);
     if (!sheetPath) continue;
     const xml = await zip.file(sheetPath).async("string");
+    const column = region.columns;
 
-    for (let row = 4; row <= 200; row++) {
-      const dateVal = readCellValue(xml, `A${row}`, sharedStrings);
-      const amount = readCellValue(xml, `F${row}`, sharedStrings);
+    for (let row = region.firstRow; row <= region.lastRow; row++) {
+      const dateVal = readCellValue(xml, `${column.postingDate}${row}`, sharedStrings);
+      const amount = readCellValue(xml, `${column.amount}${row}`, sharedStrings);
       if (dateVal === null || amount === null || typeof amount !== "number") break;
-      if (hasCellFormula(xml, `F${row}`)) continue;
+      if (hasCellFormula(xml, `${column.amount}${row}`)) continue;
 
-      const customer = readCellValue(xml, `B${row}`, sharedStrings) || "";
+      const customer = readCellValue(xml, `${column.detailComment}${row}`, sharedStrings) || "";
       const line = {
         sourceJournalID: "sales",
         postingDate: excelSerialToDate(dateVal),
-        accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || "4000",
+        accountMainID: textAt(xml, `${column.accountMainID}${row}`, sharedStrings) || "4000",
         amount,
         detailComment: typeof customer === "string" ? customer : "",
         entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
       };
-      const reference = textAt(xml, `C${row}`, sharedStrings);
+      const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
-      lines.push(line);
+      push(line, region, row);
     }
   }
 
-  // Purchases: rows 5+, A=date, B=supplier, E=code, F=mileage, G=amount.
   // A mileage-log row carries miles where a bought purchase carries an
   // amount: the workbook prices the miles itself, so the export prices them
   // back the same way, banding each row against the miles the rows before it
@@ -187,25 +384,25 @@ export async function extractBstTransactions(xlsxBuffer) {
   const reversePurchase = buildReverseCodeMap(BST_PURCHASE_CODE_MAP);
   const mileageRates = await adminMileageRates(sheetMap, zip, sharedStrings);
   let milesToDate = 0;
-  for (let mi = 0; mi < 12; mi++) {
-    const sheetName = BST_PURCHASE_SHEETS[mi];
-    const sheetPath = sheetMap.get(sheetName);
+  for (const region of regionsFor("purchases")) {
+    const sheetPath = sheetMap.get(region.sheet);
     if (!sheetPath) continue;
     const xml = await zip.file(sheetPath).async("string");
+    const column = region.columns;
 
-    for (let row = 5; row <= 200; row++) {
-      const dateVal = readCellValue(xml, `A${row}`, sharedStrings);
+    for (let row = region.firstRow; row <= region.lastRow; row++) {
+      const dateVal = readCellValue(xml, `${column.postingDate}${row}`, sharedStrings);
       if (dateVal === null) break;
-      const amount = readCellValue(xml, `G${row}`, sharedStrings);
-      const miles = readCellValue(xml, `F${row}`, sharedStrings);
-      const claimsMileage = typeof miles === "number" && miles > 0 && !hasCellFormula(xml, `F${row}`);
+      const amount = readCellValue(xml, `${column.amount}${row}`, sharedStrings);
+      const miles = readCellValue(xml, `${column.measurableQuantity}${row}`, sharedStrings);
+      const claimsMileage = typeof miles === "number" && miles > 0 && !hasCellFormula(xml, `${column.measurableQuantity}${row}`);
       if (!claimsMileage) {
         if (amount === null || typeof amount !== "number") break;
-        if (hasCellFormula(xml, `G${row}`)) continue;
+        if (hasCellFormula(xml, `${column.amount}${row}`)) continue;
       }
 
-      const supplier = readCellValue(xml, `B${row}`, sharedStrings) || "";
-      const code = readCellValue(xml, `E${row}`, sharedStrings) || "";
+      const supplier = readCellValue(xml, `${column.detailComment}${row}`, sharedStrings) || "";
+      const code = readCellValue(xml, `${column.expenseCode}${row}`, sharedStrings) || "";
       const codeStr = typeof code === "string" ? code.toLowerCase() : String(code).toLowerCase();
 
       let claimed;
@@ -227,9 +424,9 @@ export async function extractBstTransactions(xlsxBuffer) {
         line.measurableQuantity = miles;
         line.measurableUnitOfMeasure = "miles";
       }
-      const reference = textAt(xml, `C${row}`, sharedStrings);
+      const reference = textAt(xml, `${column.documentReference}${row}`, sharedStrings);
       if (reference) line.documentReference = reference;
-      lines.push(line);
+      push(line, region, row);
     }
   }
 
@@ -379,15 +576,35 @@ export async function extractTaxiTransactions(xlsxBuffer) {
 
 // The approved mileage rates the generator injected into the Admin sheet, in
 // the shape calculateMileageAllowance() takes.
+// The Admin sheet's own mileage table: the miles the higher rate runs to and
+// the pence per mile either side of it. The same three cells on every
+// product's Admin sheet, wherever that sheet lives.
+const ADMIN_MILEAGE_RATE_CELLS = { higher_rate_limit: "F21", higher_rate_pence: "G21", lower_rate_pence: "G22" };
+
+/**
+ * A workbook the mileage rates were to be read from with no Admin sheet on
+ * it. Named the way BstAnchorError is, because it is the same finding: a file
+ * that does not match the template the extractors were written against.
+ */
+export class AdminSheetMissingError extends Error {
+  constructor() {
+    super(
+      'This file does not match the template: sheet "Admin" not found, so the approved mileage rates a mileage-log row is priced at cannot be read.',
+    );
+    this.name = "AdminSheetMissingError";
+  }
+}
+
 async function adminMileageRates(sheetMap, zip, sharedStrings) {
   const adminPath = sheetMap.get("Admin");
-  if (!adminPath) return { higher_rate_limit: 0, higher_rate_pence: 0, lower_rate_pence: 0 };
+  // Returning zeros here priced every mileage claim in the package at nil and
+  // said nothing about it: a package short of its Admin sheet exported a
+  // silently mileage-free book.
+  if (!adminPath) throw new AdminSheetMissingError();
   const xml = await zip.file(adminPath).async("string");
-  return {
-    higher_rate_limit: numberAt(xml, "F21", sharedStrings) ?? 0,
-    higher_rate_pence: numberAt(xml, "G21", sharedStrings) ?? 0,
-    lower_rate_pence: numberAt(xml, "G22", sharedStrings) ?? 0,
-  };
+  const rates = {};
+  for (const [field, cell] of Object.entries(ADMIN_MILEAGE_RATE_CELLS)) rates[field] = numberAt(xml, cell, sharedStrings) ?? 0;
+  return rates;
 }
 
 // The same rates for a multi-file package, where the Admin sheet sits in
@@ -1544,7 +1761,16 @@ function chartOfAccounts(lines, salesHeadings, purchaseHeadings, product) {
 // source, keyed by whichever year the package's own Admin sheet says it was
 // generated from.
 
-const TAX_DATA_DIR = resolvePath(directoryOf(fileURLToPath(import.meta.url)), "..", "data");
+// Resolved on the first read rather than on import, so loading this module
+// costs nothing outside Node. A bundle reaches it only through
+// taxTablesForPackage() without pre-parsed rate data, and then it fails on the
+// file read rather than at import time.
+function taxDataDir() {
+  return resolvePath(directoryOf(fileURLToPath(import.meta.url)), "..", "data");
+}
+
+// Where BST, Taxi and SE print the tax year the generator built them for.
+const ADMIN_TAX_YEAR_LABEL_CELL = "B23";
 
 /**
  * The app/data/*.toml file name a package's own Admin sheet declares itself
@@ -1582,7 +1808,7 @@ export function packageTaxDataFile(adminXml, adminSharedStrings, product) {
     const financialYearStart = month <= 3 ? year - 1 : year;
     return `ltd-${financialYearStart}.toml`;
   }
-  const label = textAt(adminXml, "B23", adminSharedStrings);
+  const label = textAt(adminXml, ADMIN_TAX_YEAR_LABEL_CELL, adminSharedStrings);
   const startYear = label ? Number(label.split("-")[0]) : NaN;
   return Number.isFinite(startYear) ? `se-${startYear}-${startYear + 1}.toml` : undefined;
 }
@@ -1697,7 +1923,7 @@ function taxTablesFromRateData(raw) {
 export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
   const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
   if (!fileName) return {};
-  const filePath = resolvePath(TAX_DATA_DIR, fileName);
+  const filePath = resolvePath(taxDataDir(), fileName);
   if (!fileExists(filePath)) return {};
   const raw = parseTOML(readSchemaFile(filePath, "utf8"));
   return taxTablesFromRateData(raw);
@@ -1895,24 +2121,12 @@ async function registersFrom(companySecretaryZip) {
 // and timing. SE and Ltd keep a sheet per ledger per timing in the Sales and
 // Purchases workbooks, each running one entry a row from row 5 with B the
 // counterparty, C the invoice reference and the net amount in the column the
-// sheet totals (SE G1 = SUM(G5:G300), Ltd H1 = SUM(H5:H300)). The Basic Sole
-// Trader keeps both ledgers on one Debtors & Creditors sheet, opening on the
-// left (B the name, C the amount) and closing on the right (E and F), three
-// debtor rows from row 5 and four creditor rows from row 12, with no invoice
-// column beside either. The Taxi package keeps no named ledger at all.
+// sheet totals (SE G1 = SUM(G5:G300), Ltd H1 = SUM(H5:H300)). Neither the
+// Basic Sole Trader nor the Taxi package names a debtor or a creditor
+// anywhere: BST keeps a monthly outstanding table instead (see
+// BST_OPENING_LEDGER_CELLS), and Taxi keeps no ledger sheet at all.
 const LEDGER_ENTRY_ROWS = Array.from({ length: 50 }, (unused, index) => 5 + index);
-const BST_LEDGER_SHEET = "Debtors & Creditors";
 const LEDGER_BLOCKS = {
-  bst: {
-    debtors: {
-      opening: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "B", amount: "C" },
-      closing: { sheet: BST_LEDGER_SHEET, rows: [5, 6, 7], counterparty: "E", amount: "F" },
-    },
-    creditors: {
-      opening: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "B", amount: "C" },
-      closing: { sheet: BST_LEDGER_SHEET, rows: [12, 13, 14, 15], counterparty: "E", amount: "F" },
-    },
-  },
   se: {
     debtors: {
       opening: { file: "Sales.xlsx", sheet: "OpeningDebtors", rows: LEDGER_ENTRY_ROWS, counterparty: "B", invoice: "C", amount: "G" },
@@ -1962,6 +2176,25 @@ async function ledgerFrom(sourceDir, hubZip, product, ledger) {
     }
   }
   return entries;
+}
+
+/**
+ * The two figures the Basic Sole Trader Debtors & Creditors sheet takes as
+ * input: what customers owed and what was owed to suppliers when the year
+ * opened. Everything else on that sheet is derived — see
+ * BST_OPENING_LEDGER_CELLS.
+ * @param {Object} hubZip - the single-file workbook
+ * @returns {Object|undefined} an openingBalances table, or undefined where
+ *   the sheet leaves both cells empty
+ */
+async function bstOpeningLedgerFrom(hubZip) {
+  const sheet = await openSheet(hubZip, BST_OPENING_LEDGER_CELLS.sheet);
+  if (!sheet) return undefined;
+  const balances = {};
+  for (const field of ["tradeDebtors", "tradeCreditors"]) {
+    assign(balances, field, numberAt(sheet.xml, BST_OPENING_LEDGER_CELLS[field], sheet.sharedStrings));
+  }
+  return Object.keys(balances).length > 0 ? balances : undefined;
 }
 
 async function stockFrom(hubZip, product) {
@@ -2089,6 +2322,11 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
     if (entries.length > 0) book[ledger] = entries;
   }
 
+  if (product === "bst") {
+    const openingLedger = await bstOpeningLedgerFrom(hubZip);
+    if (openingLedger) book.openingBalances = openingLedger;
+  }
+
   const fixedAssets = await fixedAssetRegisterFrom(sourceDir, product);
   if (fixedAssets.length > 0) book.fixedAssets = fixedAssets;
 
@@ -2106,6 +2344,154 @@ export async function extractBook(sourceDir, product, lines, cellMap) {
   if (Object.keys(tax).length > 0) book.tax = tax;
   return book;
 }
+
+// ─── BST extraction map ─────────────────────────────────────────────────
+//
+// Which sheet cell produced which piece of the export. Two halves, because
+// the two questions are answered at different times:
+//
+//   - The book fields are fixed by the template. bstBookFieldCells() reads
+//     the same ENTITY_CELLS / STOCK_CELLS / LEDGER_BLOCKS / Admin constants
+//     extractBook() reads, so the answer cannot drift from the extraction.
+//   - The transaction rows depend on the file. A row only becomes a line if
+//     it holds a date and an amount, so extractBstTransactions() records each
+//     one into a map as it reads, rather than anything re-deriving it after.
+//
+// Internal to the pipeline: the overtype sidecar and this module's tests are
+// the readers. Nothing here is a promise to a caller outside the repo.
+
+/**
+ * Every cell a BST book field is read from, and the dotted path in the book
+ * it lands at. Built from the constants extractBook() itself reads.
+ * @returns {Array<{sheet: string, cell: string, field: string}>}
+ */
+export function bstBookFieldCells() {
+  const cells = [];
+
+  const entity = ENTITY_CELLS.bst;
+  for (const [field, cell] of Object.entries(entity)) {
+    if (field === "file" || field === "sheet") continue;
+    cells.push({ sheet: entity.sheet, cell, field: `entityInformation.${field}` });
+  }
+
+  const stock = STOCK_CELLS.bst;
+  for (const [field, cell] of Object.entries(stock)) {
+    if (field === "sheet") continue;
+    cells.push({ sheet: stock.sheet, cell, field: `stock.${field}` });
+  }
+
+  for (const field of ["tradeDebtors", "tradeCreditors"]) {
+    cells.push({ sheet: BST_OPENING_LEDGER_CELLS.sheet, cell: BST_OPENING_LEDGER_CELLS[field], field: `openingBalances.${field}` });
+  }
+
+  // The Admin sheet names the year whose rates the whole tax block is rebuilt
+  // from, and prices the mileage claims the purchase rows carry.
+  cells.push({ sheet: "Admin", cell: ADMIN_TAX_YEAR_LABEL_CELL, field: "tax (the year the rate tables are rebuilt from)" });
+  for (const cell of Object.values(ADMIN_MILEAGE_RATE_CELLS)) {
+    cells.push({ sheet: "Admin", cell, field: "the mileage rate a mileage-log line is priced at" });
+  }
+
+  return cells;
+}
+
+let bookFieldCellsByKey;
+
+function bookFieldCellIndex() {
+  if (!bookFieldCellsByKey) {
+    bookFieldCellsByKey = new Map();
+    for (const entry of bstBookFieldCells()) {
+      const key = `${entry.sheet}!${entry.cell}`;
+      if (!bookFieldCellsByKey.has(key)) bookFieldCellsByKey.set(key, entry);
+    }
+  }
+  return bookFieldCellsByKey;
+}
+
+/**
+ * True where the cell is one a BST extractor reads its input from -- a
+ * transaction row's own columns, or a cell a book field is read from.
+ *
+ * The template prints a prompt formula in some of these (PurchasesApr!E6's
+ * IF((G6<>0),"Enter Letter"," ") is the clearest), so a value sitting where a
+ * formula was is the sheet being filled in as designed, not a computation
+ * typed over. Callers comparing an upload against the template use this to
+ * tell one from the other.
+ *
+ * @param {string} sheet
+ * @param {string} cellRef - e.g. "E12"
+ */
+export function isBstInputCell(sheet, cellRef) {
+  const region = transactionRegionIndex().get(sheet);
+  if (region) {
+    const { col, row } = parseCellRef(cellRef);
+    if (row >= region.firstRow && row <= region.lastRow && region.columnLetters.has(col)) return true;
+  }
+  return bookFieldCellIndex().has(`${sheet}!${cellRef}`);
+}
+
+let transactionRegionsBySheet;
+
+function transactionRegionIndex() {
+  if (!transactionRegionsBySheet) {
+    transactionRegionsBySheet = new Map(
+      BST_TRANSACTION_REGIONS.map((region) => [region.sheet, { ...region, columnLetters: new Set(Object.values(region.columns)) }]),
+    );
+  }
+  return transactionRegionsBySheet;
+}
+
+/**
+ * A recorder the BST extractors write their row-to-line mapping into, and the
+ * lookup side that answers what a given cell fed.
+ *
+ * Pass it to extractBstTransactions() to have the transaction rows recorded;
+ * the book-field half needs no run, being fixed by the template.
+ */
+export function bstExtractionMap() {
+  const byRow = new Map();
+  const records = [];
+  const fieldCells = bookFieldCellIndex();
+
+  return {
+    /** Called by extractBstTransactions() for each row that produced a line. */
+    recordLine(line, region, row, index) {
+      const record = {
+        index,
+        entryNumber: line.entryNumber,
+        sourceJournalID: line.sourceJournalID,
+        sheet: region.sheet,
+        row,
+        cells: Object.fromEntries(Object.entries(region.columns).map(([field, col]) => [field, `${col}${row}`])),
+      };
+      records.push(record);
+      byRow.set(`${region.sheet}!${row}`, record);
+    },
+
+    /** Every recorded row, in export order. */
+    lines() {
+      return records;
+    },
+
+    /**
+     * The exported line the cell's own row produced, or undefined where that
+     * row produced none. `readAs` names the line field the cell was read
+     * into, and is null for a cell that merely shares the row (the sheet's
+     * own analysis columns, say).
+     */
+    lineForCell(sheet, cellRef) {
+      const record = byRow.get(`${sheet}!${parseCellRef(cellRef).row}`);
+      if (!record) return undefined;
+      const readAs = Object.entries(record.cells).find(([, ref]) => ref === cellRef)?.[0] ?? null;
+      return { ...record, readAs };
+    },
+
+    /** The book field the cell is read into, or undefined. */
+    fieldForCell(sheet, cellRef) {
+      return fieldCells.get(`${sheet}!${cellRef}`);
+    },
+  };
+}
+// ─── end BST extraction map ─────────────────────────────────────────────
 
 // findXlsx takes a directory and returns a file name; the single-file
 // products need that name to open their one workbook.

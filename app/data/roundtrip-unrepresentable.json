@@ -150,14 +150,44 @@
       "reason": "The Basic Sole Trader Sales tab totals every income account in one Gross Sales Value column (F), with start-up grants beside it in G, and heads no analysis column per account. A row's own account travels in the carrier column instead, which is not a column the sheet totals."
     },
     {
+      "path": "creditors[].amount",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
+      "path": "creditors[].counterparty",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
       "path": "creditors[].invoice",
       "products": ["bst"],
-      "reason": "The Debtors & Creditors sheet gives each entry a name and an amount -- opening in columns B and C, closing in E and F -- and no invoice reference column beside either."
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
+      "path": "creditors[].timing",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
+      "path": "debtors[].amount",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
+      "path": "debtors[].counterparty",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
     },
     {
       "path": "debtors[].invoice",
       "products": ["bst"],
-      "reason": "The Debtors & Creditors sheet gives each entry a name and an amount -- opening in columns B and C, closing in E and F -- and no invoice reference column beside either."
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
+    },
+    {
+      "path": "debtors[].timing",
+      "products": ["bst"],
+      "reason": "The Basic Sole Trader Debtors & Creditors sheet names nobody. It is a monthly outstanding table: two entered cells for what was owed when the year opened (C3 and F3, under the \"Owed start year\" labels), then one row a month whose amount is the template's own formula over that month's Sales or Purchases tab, and a column total under it. No column on the sheet takes a counterparty, an invoice reference, a per-entry amount or an opening/closing timing. What the package does hold of the ledger is the two opening totals, which the export carries as openingBalances.tradeDebtors and openingBalances.tradeCreditors."
     },
     {
       "path": "documentInfo.creationDate",

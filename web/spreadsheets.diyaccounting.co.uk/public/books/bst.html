@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>DIYA-GL Books — Basic Sole Trader | DIY Accounting Spreadsheets</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="View a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded — the file never leaves your machine."
+    />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="stylesheet" href="bst.css" />
+  </head>
+  <body class="diya-books">
+    <a href="#view-root" class="skip-link">Skip to main content</a>
+
+    <div id="app">
+      <header class="app-topbar">
+        <a class="app-mark" href="bst.html">DIYA<span>-GL</span></a>
+        <a class="app-back" href="../download.html?product=BasicSoleTrader">&larr; Back to Spreadsheets</a>
+        <div id="app-title" class="app-title">DIYA-GL — Basic Sole Trader books</div>
+        <button
+          type="button"
+          id="theme-toggle"
+          class="icon-btn"
+          aria-pressed="false"
+          title="Toggle dark theme"
+          aria-label="Toggle dark theme"
+        >
+          &#9788;
+        </button>
+        <button
+          type="button"
+          id="drawer-toggle-btn"
+          class="icon-btn drawer-toggle-btn"
+          title="Checks &amp; charts"
+          aria-label="Open checks and charts"
+        >
+          &#128203;
+        </button>
+        <button type="button" id="undo-btn" class="icon-btn undo-btn hidden" title="Undo the last change" aria-label="Undo the last change">
+          &#8630;
+        </button>
+        <button type="button" id="save-btn" class="icon-btn save-btn" title="Save workbook" aria-label="Save workbook">&#128190;</button>
+      </header>
+
+      <nav id="sheet-tabs" class="sheet-tabs hidden" role="tablist" aria-label="Book sheets"></nav>
+
+      <div class="app-body">
+        <main id="view-root" class="view-root" aria-live="polite"></main>
+        <aside id="inspector" class="inspector" aria-label="Checks, drift and charts"></aside>
+      </div>
+
+      <div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
+      <div id="inspector-drawer" class="inspector-drawer" aria-label="Checks, drift and charts"></div>
+
+      <nav id="mobile-tabbar" class="mobile-tabbar" aria-label="Books sections"></nav>
+      <div id="mobile-action-bar" class="mobile-action-bar">
+        <button type="button" id="undo-btn-mobile" class="btn hidden">Undo</button>
+        <button type="button" id="save-btn-mobile" class="btn btn-primary" style="flex: 1">Save workbook</button>
+      </div>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <script src="assets/vendor/jszip.min.js"></script>
+    <script src="xlsx-cells.js"></script>
+    <script src="autosave.js"></script>
+    <script type="module" src="bst-data.js"></script>
+    <script src="bst-edits.js"></script>
+    <script src="bst.js"></script>
+  </body>
+</html>

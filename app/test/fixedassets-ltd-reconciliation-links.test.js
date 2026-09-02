@@ -164,7 +164,7 @@ describe("Ltd Fixedassets.xlsx template: the FAreconciliation ledger links", () 
     expect(sheetsConfig.adminExternalLink).toBe("xl/externalLinks/externalLink1.xml");
 
     const template = readFileSync(resolve(LTD_DIR, "Fixedassets.xlsx"));
-    await expect(generateSpreadsheet(template, taxData, sheetsConfig)).resolves.toBeInstanceOf(Buffer);
+    await expect(generateSpreadsheet(template, taxData, sheetsConfig)).resolves.toBeInstanceOf(Uint8Array);
 
     // The same generation against a workbook whose link 1 has been swapped
     // for the purchase ledger, which is what renumbering the links would do.

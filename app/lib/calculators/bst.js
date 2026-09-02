@@ -6,7 +6,8 @@
 // read returns, so app/products/bst.js's reportSections() and
 // checkCompliance() work unchanged on either source.
 
-import { BST_PURCHASE_CODE_MAP, BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { BST_SALES_ACCOUNTS, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { resolveBstPurchaseCodeMap } from "../diya-gl-loader.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
 import { calculateNIClass4 } from "../tax/national-insurance.js";
@@ -69,10 +70,25 @@ function carriesBusinessMiles(line) {
   return line.measurableUnitOfMeasure === "miles" && typeof line.measurableQuantity === "number";
 }
 
+// What a month's transactions leave outstanding on the Debtors & Creditors
+// sheet: everything with nothing recorded against it in the payment column. A
+// mileage-log purchase writes miles rather than a value, so the sheet's own
+// outstanding formula reads blank for it whatever else the row says.
+function outstandingTotal(transactions) {
+  return (transactions || []).reduce((sum, tx) => (tx.payment || tx.mileage ? sum : sum + (tx.amount || 0)), 0);
+}
+
 export function calculateBstResults(book, lines, taxData, scenario) {
+  // A book's own declared chart can number its purchase accounts under a
+  // scheme other than the Basic Sole Trader master's own (see
+  // resolveBstPurchaseCodeMap in diya-gl-loader.js); this must resolve to
+  // the same map diyaGlToScenario used to build `scenario`, or the two
+  // disagree on which account lands under which code.
+  const purchaseCodeMap = resolveBstPurchaseCodeMap(book);
+
   // Filter to BST lines only
   const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && BST_SALES_ACCOUNTS.has(String(l.accountMainID)));
-  const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && BST_PURCHASE_CODE_MAP[l.accountMainID] !== undefined);
+  const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && purchaseCodeMap[l.accountMainID] !== undefined);
 
   // Total sales (BST: gross, no VAT split)
   const totalSales = Math.round(salesLines.reduce((s, l) => s + l.amount, 0));
@@ -89,7 +105,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   // nothing, and cellWrites gives the sheet its miles rather than its amount
   // so the sheet can price the claim at its own Admin rates.
   const cashPurchaseLines = purchaseLines.filter((l) => !carriesBusinessMiles(l));
-  const byCode = aggregateByCode(cashPurchaseLines, BST_PURCHASE_CODE_MAP);
+  const byCode = aggregateByCode(cashPurchaseLines, purchaseCodeMap);
 
   // The mileage claim the sheet makes of those miles. It reaches Motor
   // Expenses (verified against the template: PurchasesApr!G4 bands the running
@@ -309,27 +325,28 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   results.PurchasesStock.D7 = openingStock;
   results.PurchasesStock.D30 = closingStock;
 
-  // Debtors & Creditors (pass-through from scenario)
-  if (scenario.opening_debtors) {
-    scenario.opening_debtors.forEach((d, i) => {
-      results["Debtors & Creditors"][`C${5 + i}`] = d.amount;
-    });
-  }
-  if (scenario.closing_debtors) {
-    scenario.closing_debtors.forEach((d, i) => {
-      results["Debtors & Creditors"][`F${5 + i}`] = d.amount;
-    });
-  }
-  if (scenario.opening_creditors) {
-    scenario.opening_creditors.forEach((c, i) => {
-      results["Debtors & Creditors"][`C${12 + i}`] = c.amount;
-    });
-  }
-  if (scenario.closing_creditors) {
-    scenario.closing_creditors.forEach((c, i) => {
-      results["Debtors & Creditors"][`F${12 + i}`] = c.amount;
-    });
-  }
+  // Debtors & Creditors. A monthly outstanding table, not a list of named
+  // balances: the sheet takes the two "Owed start year" figures at C3 and F3
+  // and computes everything else. Each month row reads its own Sales or
+  // Purchases tab's outstanding total (Sales H1 = SUM over H4 = IF(F4<>0,
+  // IF(D4>0, " ", F4), " "), so a row counts while its payment column is
+  // empty), and the column totals sum the opening figure with all twelve.
+  const ledger = results["Debtors & Creditors"];
+  ledger.C3 = scenario.opening_balance?.trade_debtors ?? 0;
+  ledger.F3 = scenario.opening_balance?.trade_creditors ?? 0;
+  let debtorsForYear = 0;
+  let creditorsForYear = 0;
+  MONTH_ORDER.forEach((month, index) => {
+    const row = 5 + index * 2;
+    const salesOutstanding = outstandingTotal(scenario.sales?.[month]);
+    const purchasesOutstanding = outstandingTotal(scenario.purchases?.[month]);
+    ledger[`C${row}`] = salesOutstanding;
+    ledger[`F${row}`] = purchasesOutstanding;
+    debtorsForYear += salesOutstanding;
+    creditorsForYear += purchasesOutstanding;
+  });
+  ledger.C29 = ledger.C3 + debtorsForYear;
+  ledger.F29 = ledger.F3 + creditorsForYear;
 
   // Fixed Assets schedule
   if (assetAdditions.length > 0) {

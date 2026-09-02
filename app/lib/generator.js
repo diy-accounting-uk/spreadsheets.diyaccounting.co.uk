@@ -1343,7 +1343,7 @@ export async function generateSpreadsheet(templateBuffer, taxData, sheetsConfig)
 
   stabilizeDirDates(zip);
   return zip.generateAsync({
-    type: "nodebuffer",
+    type: "uint8array",
     compression: "DEFLATE",
     compressionOptions: { level: 6 },
   });
@@ -1384,7 +1384,7 @@ export async function renameMonthTabs(xlsxBuffer, yearEndMonth) {
   zip.file("xl/workbook.xml", wbXml, { date: origDate });
 
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // ── Payslips Admin month-sheet column (Ltd Company all year-end months) ─────
@@ -1461,7 +1461,7 @@ export async function reorientPayslipsAdminMonthSheets(xlsxBuffer, yearEndMonth,
   zip.file(printSheetPath, printXml, { date: zip.file(printSheetPath).date });
 
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // ── Payslips month-tab payroll periods (non-March year ends) ────────────────
@@ -1511,7 +1511,7 @@ export async function reorientPayslipsMonthTabPeriods(xlsxBuffer, yearEndDate, p
   }
 
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // ── Payslips PAYE remittance schedule (Ltd Company non-March year ends) ─────
@@ -1587,7 +1587,7 @@ export async function realignPayslipsPaymentSchedule(xlsxBuffer, yearEndMonth, p
 
   zip.file(paymentPath, paymentXml, { date: zip.file(paymentPath).date });
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // The row a month tab's director block opens on, by the tab's place in the
@@ -1725,7 +1725,7 @@ export async function rewriteVatinterfaceFormulas(xlsxBuffer, yearEndMonth, vati
   zip.file(vatinterfacePath, viXml, { date: origDate });
 
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // ── External link sheet name renaming (Ltd Company) ─────────────────────────
@@ -1771,7 +1771,7 @@ export async function renameExternalLinkSheetNames(xlsxBuffer, yearEndMonth) {
   }
 
   stabilizeDirDates(zip);
-  return zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 6 } });
+  return zip.generateAsync({ type: "uint8array", compression: "DEFLATE", compressionOptions: { level: 6 } });
 }
 
 // ── Output naming ───────────────────────────────────────────────────────────
@@ -1793,4 +1793,22 @@ export function formatDateYYYYMMDD(date) {
 export function shortLabel(date) {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   return `${months[date.getUTCMonth()]}${(date.getUTCFullYear() % 100).toString().padStart(2, "0")}`;
+}
+
+// The package directory and spreadsheet names a product's meta.toml patterns
+// produce for one year end. A multi-file product ships its workbooks under
+// their template names and declares no spreadsheet pattern, so it gets a
+// directory name and nothing else.
+export function packageNaming(productMeta, sharedMeta, endDate) {
+  const dirName = productMeta.output.dir_pattern
+    .replace("{prefix}", sharedMeta.package.prefix)
+    .replace("{name}", productMeta.product.name)
+    .replace("{year_end_date}", formatDateYYYYMMDD(endDate))
+    .replace("{short_label}", shortLabel(endDate))
+    .replace("{format}", sharedMeta.package.format);
+
+  const pattern = productMeta.output.spreadsheet_pattern;
+  const xlsxFilename = pattern ? pattern.replace("{year_end_ddmmyy}", formatDateDDMMYY(endDate)) : null;
+
+  return { dirName, xlsxFilename };
 }

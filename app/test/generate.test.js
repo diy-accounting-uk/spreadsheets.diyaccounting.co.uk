@@ -223,7 +223,7 @@ describe("generateSpreadsheet", () => {
   it("generates a valid xlsx buffer for 2025-26", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
     const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
     expect(buffer.length).toBeGreaterThan(100000); // sanity check size
     // Verify it's a valid zip (xlsx) — starts with PK signature
     expect(buffer[0]).toBe(0x50); // P
@@ -233,7 +233,7 @@ describe("generateSpreadsheet", () => {
   it("generates a valid xlsx buffer for 2024-25", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2024-2025.toml"), "utf8"));
     const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
     expect(buffer.length).toBeGreaterThan(100000);
   });
 
@@ -440,7 +440,7 @@ describe("SE generateSpreadsheet", () => {
     const templateBuffer = readFileSync(resolve(SE_DIR, "Financialaccounts.xlsx"));
 
     const buffer = await generateSpreadsheet(templateBuffer, taxData, seMeta.sheets.financialaccounts);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
     expect(buffer[0]).toBe(0x50); // PK zip signature
 
     // Verify SE-specific cell values in Admin
@@ -462,7 +462,7 @@ describe("SE generateSpreadsheet", () => {
     const templateBuffer = readFileSync(resolve(SE_DIR, "Payslips.xlsx"));
 
     const buffer = await generateSpreadsheet(templateBuffer, taxData, seMeta.sheets.payslips);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
 
     // Verify B2 = tax year start serial (45753 for Apr 6, 2025)
     const JSZip = (await import("jszip")).default;
@@ -526,7 +526,7 @@ describe("Ltd generateSpreadsheet", () => {
     const templateBuffer = readFileSync(resolve(LTD_DIR, "Financialaccounts.xlsx"));
 
     const buffer = await generateSpreadsheet(templateBuffer, taxData, ltdMeta.sheets.financialaccounts);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
     expect(buffer[0]).toBe(0x50);
 
     const JSZip = (await import("jszip")).default;
@@ -699,7 +699,7 @@ describe("generateSpreadsheet (taxi)", () => {
   it("generates a valid xlsx with Sales sheet dates for 2025-26", async () => {
     const taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
     const buffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
-    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer).toBeInstanceOf(Uint8Array);
     expect(buffer.length).toBeGreaterThan(100000);
 
     const JSZip = (await import("jszip")).default;

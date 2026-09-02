@@ -12,45 +12,63 @@ main when the board clears. Phases 1 (CLI) and 2 (MCP) of
 statics (W-pre) and bundle gate (W0 — the gate held: the browser runs the unforked engine)
 are merged. The batch also carries `PLAN_PACKAGES_TO_ARCHIVE.md`.
 
-- [ ] BST ledger alignment (Opus, worktree agent) — in flight, operator decided 2026-09-02:
-  the pipeline aligns to the REAL `Debtors & Creditors` sheet (a monthly outstanding table;
-  the exporter/generator had shared an invented per-contact layout that round-tripped as
-  fiction). Moves BST's book ledger shape, generator writes, fixtures and declared budget
-  counts; the sheet joins the anchor guard; the `adminMileageRates` silent-zero fallback
-  rides along.
-- [ ] archive-packages helper (Sonnet, worktree agent) — dispatched:
-  `scripts/archive-packages.js`, `.claude/skills/archive-packages/SKILL.md` and the
-  `CLAUDE.md` skills line, per `PLAN_PACKAGES_TO_ARCHIVE.md` step 1. Steps 2-6 (the cuts)
-  are the operator's, below.
+- [x] BST ledger alignment — landed (merged; 368 engine + 22/22 books browser tests on the
+  merged tree). Only C3/F3 are entered on the real sheet — they map to
+  `openingBalances.tradeDebtors`/`tradeCreditors`, no schema change; the monthly
+  outstanding table is report output, carried as 28 new reads and checks; the named
+  ledgers are declared absent (measured, not hidden; bst declared 36→78). The old writer
+  had been destroying 16 template formulas — the sidecar went 16→0 on a fresh package. All
+  nine BST reports RECONCILE; the sheet (plus PurchasesStock and Fixed Assets) joined the
+  anchor guard; `adminMileageRates` now throws by name.
+- [ ] the settlement flag (Sonnet, worktree agent) — in flight, operator decided
+  2026-09-02: coarse map both ways — column D reads back as bank-transfer/cash, finer
+  values declared unrepresentable per block; Taxi aligned, SE/Ltd checked; the
+  regenerate-from-export ledger flip proven fixed by a double round trip.
+- [x] archive-packages helper — the script, skill and `CLAUDE.md` line were already landed
+  (`862d7695`); the track added the missing test file (10 tests, every cut rule proven
+  breakable) and ran plan step 2: the dry run over the real catalogue is clean — 119/119
+  fully formed, exclusion list empty. The cuts (steps 3-6) are ready for the operator.
 
 ## Open items
 
 From `PLAN_DIYA_GL_BST_CLI_MCP_WEB_SPIKE.md`, phase 3 — dispatch after the ledger
 alignment lands (its book-shape change moves the page snapshot W1 wires):
 
-- [ ] W1 — the viewer goes live (Sonnet): the shell swaps its static snapshot
-  (`books/bst-data.js`, the marked replacement point) for the bundled engine; upload,
-  drill, drift annotations; the in-browser breakability proof.
-- [ ] W2 — panels and form renders live (Sonnet): checks panel, drift summary, the SA103S
-  and Income Tax renders fed by the engine instead of static figures.
-- [ ] W3 — edits, checks, helpers (Opus): in-place entry edits through
-  `diya-gl-edits.js`, recalculation, the two helper classes with preview and undo.
-- [ ] W4 — save (Sonnet, one decision first): client-side xlsx/zip via `bst-workbook.js`.
-  The generator's ~10 JSZip call sites ask for `nodebuffer`, which browsers cannot
-  produce — decide pipeline-wide output type vs a caller parameter before dispatch.
-- [ ] W5 — entry panel wiring, the other two example books, autosave, the four-layout
-  Playwright matrix (Sonnet).
-- [ ] phase 2 leftover: a `remove line` edit op for the MCP `edit_lines` tool, left out of
-  Track D's rung — add when a consumer needs it.
+- [x] W1 — landed (merged, 43/43 browser tests on the merged tree): upload and all three
+  examples through the real engine, drift with the pencil-correction mark proven breakable
+  in-browser, the anchor guard surfacing named errors in the page's own styling. Its swap
+  put every panel and form render on the live engine, absorbing W2's scope.
+- [x] W3 — landed (merged, 42/42 books specs on the merged tree): one commit route for
+  every change (edits, deletes, adds, helpers), undo covering them all, drift relabelling
+  as recalculated, and a two-group checks panel — engine checks untouched, new book-level
+  checks whose three fix-it helpers preview and apply as one undoable step, each proven on
+  a deliberately broken book. Also repaired the D&C view crash at the W1/ledger merge seam.
+- [x] bst-latest refresh + upload openings — landed (merged; 27/27 sidecar and 41 blast
+  tests on the merged tree): the package regenerated against the aligned writer
+  (RECONCILES 91/91, sidecar 0), uploads read C3/F3 into `openingBalances` (the root of
+  the 12 spurious drift findings), the zero-drift spec asserts the whole drift collection.
+  The branch CI sidecar failure traced entirely to the stale fixture — no map bug.
+- [x] `changeLinePostingDate` / `changeLineAccount` — landed (merged; 81 unit + 15 helper
+  specs green on the merged tree): position-preserving, date and chart validation with
+  named errors, MCP-registered, the page's remove+add composition retired.
+- [x] W4 — save — landed (merged, 120 blast tests + 39/39 browser in the track): all 11
+  JSZip sites emit `uint8array` with byte-identity proven; the MCP base64 boundary fixed
+  (a bare `Uint8Array.toString` silently corrupts); the save controls download real
+  workbooks with `fullCalcOnLoad` proven; round-trip 0 mismatches on the two ledger
+  fixtures (sp-sixty's divergence is the in-flight ledger alignment's territory).
+- [x] W5 — landed (merged, 26/26 books specs on the merged tree): the new-book form
+  producing an empty valid book through the same load path; IndexedDB autosave with a
+  never-auto-load continue offer, discard, and proven degradation when the store is
+  blocked; plus the fix that wired `state.book`/`state.lines` so the live page's save
+  controls actually work.
+- [x] phase 2 leftover: the `removeLine` edit op — landed (merged, 55 tests green through
+  both the API and the MCP tool layer).
 
-From `PLAN_PACKAGES_TO_ARCHIVE.md`, once the helper lands (operator-driven, no
-automation — that is the plan's binding constraint):
-
-- [ ] dry-run the whole catalogue and read the excluded list — it should be empty;
-  anything listed is a generation bug to fix before cutting.
-- [ ] first cut, one tax year at a time, oldest first — eight reviewable commits pushed to
-  the archive repo's main; record the `packages-published/` role in that repo's
-  `CLAUDE.md`; delete this repo's unused `ARCHIVE_PACKAGES_TOKEN` secret.
+- [x] the eight tax-year cuts — done and independently verified: nine commits on the
+  archive repo's main (119/119 digests match), the `packages-published/` role recorded
+  there, the unused secret deleted. `PLAN_PACKAGES_TO_ARCHIVE.md` reached its end state
+  and is archived to `_developers/archive/`; future cuts run through the
+  `archive-packages` skill.
 
 ## Plans not tracked here
 
@@ -59,6 +77,7 @@ None — both live plans are on this board.
 ## Discipline
 
 - Generated `packages/` output is committed; regenerating is a mass binary commit — one
-  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. The structural fix is
-  `PLAN_PACKAGES_TO_ARCHIVE.md` at this root: packages move to the `diy-accounting-archive`
-  repository and stop being tracked here.
+  deliberate, reviewed commit on a branch, never a scheduled/bot pattern. Cuts of the
+  finished catalogue land in the archive repository through the `archive-packages` skill;
+  untracking `packages/` here remains an open question (the deploy and catalogue-sweep
+  readers need another source first).

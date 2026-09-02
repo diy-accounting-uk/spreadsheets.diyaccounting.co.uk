@@ -182,6 +182,33 @@ async function buildSheetMap(zip) {
  * @param {Object} [options] - { saveRecalculatedTo: "/path/to/save.xlsx" }
  * @returns {Object} - { "SheetName": { "A1": value, "C4": value, ... }, ... }
  */
+export async function applyCellWrites(xlsxBuffer, cellWrites) {
+  const zip = await JSZip.loadAsync(xlsxBuffer);
+  const sheetMap = await buildSheetMap(zip);
+
+  for (const [sheetName, cells] of Object.entries(cellWrites)) {
+    const sheetPath = sheetMap.get(sheetName);
+    if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in workbook`);
+
+    let xml = await zip.file(sheetPath).async("string");
+    for (const [cellRef, value] of Object.entries(cells)) {
+      if (typeof value === "string") {
+        xml = setCellString(xml, cellRef, value);
+      } else {
+        xml = setCellValue(xml, cellRef, value);
+      }
+    }
+    const originalDate = zip.file(sheetPath).date;
+    zip.file(sheetPath, xml, { date: originalDate });
+  }
+
+  return zip.generateAsync({
+    type: "uint8array",
+    compression: "DEFLATE",
+    compressionOptions: { level: 1 },
+  });
+}
+
 export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options = {}) {
   const soffice = getLibreOffice();
   const workDir = resolve(tmpdir(), `spreadsheet-test-${randomBytes(4).toString("hex")}`);
@@ -189,33 +216,8 @@ export async function runSpreadsheet(xlsxBuffer, cellWrites, cellReads, options 
 
   try {
     // 1. Write data into the xlsx
-    const zip = await JSZip.loadAsync(xlsxBuffer);
-    const sheetMap = await buildSheetMap(zip);
-
-    for (const [sheetName, cells] of Object.entries(cellWrites)) {
-      const sheetPath = sheetMap.get(sheetName);
-      if (!sheetPath) throw new Error(`Sheet "${sheetName}" not found in workbook`);
-
-      let xml = await zip.file(sheetPath).async("string");
-      for (const [cellRef, value] of Object.entries(cells)) {
-        if (typeof value === "string") {
-          xml = setCellString(xml, cellRef, value);
-        } else {
-          xml = setCellValue(xml, cellRef, value);
-        }
-      }
-      const originalDate = zip.file(sheetPath).date;
-      zip.file(sheetPath, xml, { date: originalDate });
-    }
-
-    // Write modified xlsx to temp dir
     const inputPath = resolve(workDir, "input.xlsx");
-    const outBuffer = await zip.generateAsync({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-      compressionOptions: { level: 1 },
-    });
-    writeFileSync(inputPath, outBuffer);
+    writeFileSync(inputPath, await applyCellWrites(xlsxBuffer, cellWrites));
 
     // 2. Recalculate via LibreOffice headless
     // Direct xlsx→xlsx doesn't recalculate. Roundtrip through xls forces recalc.
@@ -625,7 +627,7 @@ async function refreshExternalLinkCaches(workDir, fileName) {
   if (!changed) return false;
 
   const outBuffer = await zip.generateAsync({
-    type: "nodebuffer",
+    type: "uint8array",
     compression: "DEFLATE",
     compressionOptions: { level: 1 },
   });
@@ -707,7 +709,7 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
         }
 
         const outBuffer = await zip.generateAsync({
-          type: "nodebuffer",
+          type: "uint8array",
           compression: "DEFLATE",
           compressionOptions: { level: 1 },
         });
