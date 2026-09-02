@@ -155,6 +155,53 @@ describe("diya-gl MCP server: stdio handshake", () => {
 });
 
 // ============================================================================
+// save_workbook: the base64 the tool hands back decodes to a real workbook.
+// ============================================================================
+
+describe("save_workbook: the base64 payload decodes to a real workbook", () => {
+  it("hands back bst-excel.xlsx as base64, recalculating on open", async () => {
+    const client = startMcpClient();
+    try {
+      await client.callTool("extract_book", { path: BST_XLSX });
+      const saved = await client.callTool("save_workbook", {});
+
+      expect(saved.format).toBe("xlsx");
+      expect(saved.filename).toMatch(/\.xlsx$/);
+
+      const bytes = Buffer.from(saved.base64, "base64");
+      expect(bytes.slice(0, 2).toString(), "the decoded bytes open as a zip (xlsx container)").toBe("PK");
+
+      const JSZip = (await import("jszip")).default;
+      const zip = await JSZip.loadAsync(bytes);
+      const workbookXml = await zip.file("xl/workbook.xml").async("string");
+      expect(workbookXml).toContain('fullCalcOnLoad="1"');
+    } finally {
+      client.close();
+    }
+  }, 30000);
+
+  it("hands back the package zip as base64 when asked for format zip", async () => {
+    const client = startMcpClient();
+    try {
+      await client.callTool("extract_book", { path: BST_XLSX });
+      const saved = await client.callTool("save_workbook", { format: "zip" });
+
+      expect(saved.format).toBe("zip");
+      expect(saved.filename).toMatch(/\.zip$/);
+
+      const bytes = Buffer.from(saved.base64, "base64");
+      const JSZip = (await import("jszip")).default;
+      const zip = await JSZip.loadAsync(bytes);
+      const entries = Object.keys(zip.files);
+      expect(entries.length).toBe(1);
+      expect(entries[0]).toMatch(/\.xlsx$/);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+});
+
+// ============================================================================
 // extract_book byte-for-byte with the CLI's own --file output.
 // ============================================================================
 

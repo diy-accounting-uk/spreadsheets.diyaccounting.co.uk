@@ -1185,9 +1185,98 @@
     }
   }
 
-  function handleSave() {
+  // The live book and lines a loaded workbook parses to. Until the page
+  // wires uploading and the example flow through to real diya-gl data,
+  // state carries no book -- the save controls stay present but inert, and
+  // start working the moment something sets state.book and state.lines.
+  function currentBookAndLines() {
+    if (state.book && state.lines) return { book: state.book, lines: state.lines };
+    return null;
+  }
+
+  function handleSave(event) {
     if (!state.loaded) return;
-    showToast("Save generates the workbook client-side once the engine bundle is wired (phase 3, track W4).");
+    var current = currentBookAndLines();
+    if (!current) {
+      showToast("Save generates the workbook client-side once a workbook's book and lines are loaded into the page.");
+      return;
+    }
+    openSaveMenu(event && event.currentTarget, current);
+  }
+
+  function openSaveMenu(anchorEl, current) {
+    closeSaveMenu();
+    var menu = document.createElement("div");
+    menu.id = "save-menu";
+    menu.setAttribute("role", "menu");
+    menu.style.cssText =
+      "position:fixed;z-index:1000;background:var(--paper-raised);border:1px solid var(--rule-faint);" +
+      "border-radius:var(--radius);box-shadow:var(--shadow);padding:0.25rem;display:flex;flex-direction:column;min-width:210px;";
+
+    var rect =
+      anchorEl && anchorEl.getBoundingClientRect ? anchorEl.getBoundingClientRect() : { bottom: 56, left: window.innerWidth - 220 };
+    menu.style.top = Math.max(4, Math.min(rect.bottom + 4, window.innerHeight - 100)) + "px";
+    menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 220)) + "px";
+
+    [
+      { label: "Download bst-excel.xlsx", format: "xlsx" },
+      { label: "Download package (.zip)", format: "zip" },
+    ].forEach(function (opt) {
+      var item = document.createElement("button");
+      item.type = "button";
+      item.setAttribute("role", "menuitem");
+      item.style.cssText =
+        "text-align:left;border:none;background:none;padding:0.5rem 0.75rem;cursor:pointer;color:var(--ink);font:inherit;";
+      item.textContent = opt.label;
+      item.addEventListener("click", function () {
+        closeSaveMenu();
+        runSave(current, opt.format);
+      });
+      menu.appendChild(item);
+    });
+
+    document.body.appendChild(menu);
+    els.saveMenu = menu;
+    window.setTimeout(function () {
+      document.addEventListener("click", onOutsideSaveMenuClick, true);
+      document.addEventListener("keydown", onSaveMenuKeydown);
+    }, 0);
+  }
+
+  function onOutsideSaveMenuClick(event) {
+    if (els.saveMenu && !els.saveMenu.contains(event.target)) closeSaveMenu();
+  }
+
+  function onSaveMenuKeydown(event) {
+    if (event.key === "Escape") closeSaveMenu();
+  }
+
+  function closeSaveMenu() {
+    if (els.saveMenu) {
+      els.saveMenu.remove();
+      els.saveMenu = null;
+      document.removeEventListener("click", onOutsideSaveMenuClick, true);
+      document.removeEventListener("keydown", onSaveMenuKeydown);
+    }
+  }
+
+  // save.js wraps saveBstWorkbook/saveBstPackageZip -- the same functions
+  // the CLI and the MCP server write a workbook through -- behind the
+  // engine bundle and a fetch-backed resource loader, then turns the bytes
+  // into a download. Dynamic import keeps this a plain script: no engine
+  // code loads until a save is actually asked for.
+  function runSave(current, format) {
+    showToast("Generating " + (format === "zip" ? "the package zip" : "bst-excel.xlsx") + "...");
+    import("./save.js")
+      .then(function (saveModule) {
+        return saveModule.buildSaveArtifact(current.book, current.lines, format).then(function (artifact) {
+          saveModule.downloadArtifact(artifact);
+          showToast("Saved " + artifact.filename + ".");
+        });
+      })
+      .catch(function (error) {
+        showToast("Could not generate the workbook: " + (error && error.message ? error.message : error));
+      });
   }
 
   var toastTimer = null;

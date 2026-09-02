@@ -203,7 +203,7 @@ export async function applyCellWrites(xlsxBuffer, cellWrites) {
   }
 
   return zip.generateAsync({
-    type: "nodebuffer",
+    type: "uint8array",
     compression: "DEFLATE",
     compressionOptions: { level: 1 },
   });
@@ -627,7 +627,7 @@ async function refreshExternalLinkCaches(workDir, fileName) {
   if (!changed) return false;
 
   const outBuffer = await zip.generateAsync({
-    type: "nodebuffer",
+    type: "uint8array",
     compression: "DEFLATE",
     compressionOptions: { level: 1 },
   });
@@ -709,7 +709,7 @@ export async function runMultiFileSpreadsheet(fileBuffers, fileWrites, cellReads
         }
 
         const outBuffer = await zip.generateAsync({
-          type: "nodebuffer",
+          type: "uint8array",
           compression: "DEFLATE",
           compressionOptions: { level: 1 },
         });
