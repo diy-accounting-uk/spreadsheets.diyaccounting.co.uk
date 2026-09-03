@@ -15,8 +15,8 @@ One table, then at most two closing lines.
 
 | # | Item | Source | Owner | State | Unblocked by | Status |
 
-- `#`: the `NEXT.md` label where the entry carries one (a wave, a track id such as `T3`,
-  a PR number); otherwise a running number in file order.
+- `#`: the task id from the plan (`T3`), the `NEXT.md` label where the entry carries one
+  (a wave gate such as `W0-h`, a PR number); otherwise a running number in file order.
 - `Item`: a short name, not the entry's full prose.
 - `Source`: the plan the item comes from, as its file name (`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`),
   or `operator` for an instruction given in chat that no plan yet carries, or `none` for
@@ -46,8 +46,11 @@ One table, then at most two closing lines.
   name the date; blocked items name the blocker; in-flight items name the current step;
   done items name the commit. The narrative lives in `NEXT.md` and the plan, never here.
 
-One row per distinct piece of work: a `NEXT.md` bullet that bundles several waves or
-tracks becomes one row per wave, so an operator can see what can start or resume now.
+One row per discrete task. When a `NEXT.md` entry points at a plan whose task list
+defines tasks (`T3`, `Track A`), read that plan and render one row per task with the
+plan's own task name, never one row per wave or per bullet; the wave is visible through
+`Unblocked by`. Tasks in the same wave that own disjoint files are each `ready-to-start`
+once the wave's gate has passed; a rebase-on-landing note is status, not a block.
 
 **Split human from machine.** When a machine task is blocked pending a human activity,
 render two rows: the human row (labelled with an `-h` suffix, `W0-h`) in its own state,
