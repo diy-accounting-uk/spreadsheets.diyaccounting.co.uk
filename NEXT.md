@@ -30,7 +30,7 @@ after each landing. No row waits on a merge.
 | T11 | Date and account editing on entry rows | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | blocked-to-start | Sonnet |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
 | R1 | Wire `book-checks.js` into `export.js` (`bookchecks.json`), the MCP `report` tool, the diya-gl zip writer and `books-engine.js`; `bst-edits.js` calls the module instead of its own `CHECKS` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3 | blocked-to-start | Sonnet; T5's remainder |
-| R2 | SP Sixty example: `TXN-0181` is dated 2025-04-01, before the book's period start 2025-04-06; decide whether the date or the period is wrong and fix at source | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | found by T5's date check; Sonnet |
+| R2 | SP Sixty example: `TXN-0181` is dated 2025-04-01, before the book's period start 2025-04-06; decide whether the date or the period is wrong and fix at source | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | found by T5's date check; Sonnet |
 | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
