@@ -9,9 +9,14 @@ import static co.uk.diyaccounting.spreadsheets.utils.Kind.infof;
 import static co.uk.diyaccounting.spreadsheets.utils.KindCdk.cfnOutput;
 import static co.uk.diyaccounting.spreadsheets.utils.KindCdk.ensureLogGroupWithDependency;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
@@ -35,6 +40,7 @@ import software.amazon.awscdk.services.cloudfront.FunctionCode;
 import software.amazon.awscdk.services.cloudfront.FunctionEventType;
 import software.amazon.awscdk.services.cloudfront.FunctionRuntime;
 import software.amazon.awscdk.services.cloudfront.HeadersFrameOption;
+import software.amazon.awscdk.services.cloudfront.HeadersReferrerPolicy;
 import software.amazon.awscdk.services.cloudfront.IOrigin;
 import software.amazon.awscdk.services.cloudfront.OriginRequestPolicy;
 import software.amazon.awscdk.services.cloudfront.ResponseCustomHeader;
@@ -112,6 +118,22 @@ public class SpreadsheetsStack extends Stack {
         }
     }
 
+    /**
+     * Loads the security header values from the classpath resource shared with
+     * web/browser-tests/serve.js, so the CloudFront response headers policy and the
+     * browser test server always send the same headers.
+     */
+    private static JsonNode loadSecurityHeaders() {
+        try (InputStream stream = SpreadsheetsStack.class.getResourceAsStream("/security-headers.json")) {
+            if (stream == null) {
+                throw new IllegalStateException("security-headers.json not found on the classpath");
+            }
+            return new ObjectMapper().readTree(stream);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to read security-headers.json", e);
+        }
+    }
+
     public SpreadsheetsStack(final Construct scope, final String id, final SpreadsheetsStackProps props) {
         super(scope, id, StackProps.builder().env(props.getEnv()).build());
 
@@ -165,7 +187,22 @@ public class SpreadsheetsStack extends Stack {
                 this.originBucket,
                 S3BucketOriginWithOACProps.builder().originAccessControl(oac).build());
 
-        // Response headers policy: CSP allows PayPal Donate SDK and self
+        // Security headers: values loaded from security-headers.json so the same
+        // header set can be replayed by the browser test server in
+        // web/browser-tests/serve.js. The CSP allows PayPal Donate SDK and self.
+        JsonNode securityHeaders = loadSecurityHeaders();
+        List<ResponseCustomHeader> customHeaders = new ArrayList<>();
+        Iterator<Map.Entry<String, JsonNode>> customHeaderFields =
+                securityHeaders.get("customHeaders").fields();
+        while (customHeaderFields.hasNext()) {
+            Map.Entry<String, JsonNode> field = customHeaderFields.next();
+            customHeaders.add(ResponseCustomHeader.builder()
+                    .header(field.getKey())
+                    .value(field.getValue().asText())
+                    .override(true)
+                    .build());
+        }
+
         ResponseHeadersPolicy responseHeadersPolicy = ResponseHeadersPolicy.Builder.create(
                         this, resourcePrefix + "-HeadersPolicy")
                 .responseHeadersPolicyName(resourcePrefix + "-headers")
@@ -181,63 +218,47 @@ public class SpreadsheetsStack extends Stack {
                         .build())
                 .securityHeadersBehavior(ResponseSecurityHeadersBehavior.builder()
                         .contentSecurityPolicy(ResponseHeadersContentSecurityPolicy.builder()
-                                .contentSecurityPolicy("default-src 'self'; "
-                                        + "script-src 'self' 'unsafe-inline' https://www.paypalobjects.com https://www.googletagmanager.com; "
-                                        + "style-src 'self' 'unsafe-inline'; "
-                                        + "img-src 'self' data: https://www.paypalobjects.com https://www.google-analytics.com https://www.googletagmanager.com https://avatars.githubusercontent.com; "
-                                        + "font-src 'self'; "
-                                        + "connect-src 'self' https://www.paypal.com https://www.paypalobjects.com https://*.google-analytics.com https://www.googletagmanager.com https://api.github.com; "
-                                        + "frame-src https://www.paypal.com; "
-                                        + "frame-ancestors 'none'; "
-                                        + "form-action 'self' https://www.paypal.com;")
+                                .contentSecurityPolicy(
+                                        securityHeaders.get("contentSecurityPolicy").asText())
                                 .override(true)
                                 .build())
                         .strictTransportSecurity(ResponseHeadersStrictTransportSecurity.builder()
-                                .accessControlMaxAge(Duration.days(365))
-                                .includeSubdomains(true)
+                                .accessControlMaxAge(Duration.seconds(
+                                        securityHeaders
+                                                .get("strictTransportSecurityMaxAgeSeconds")
+                                                .asLong()))
+                                .includeSubdomains(securityHeaders
+                                        .get("strictTransportSecurityIncludeSubdomains")
+                                        .asBoolean())
                                 .override(true)
                                 .build())
                         .contentTypeOptions(ResponseHeadersContentTypeOptions.builder()
                                 .override(true)
                                 .build())
                         .frameOptions(ResponseHeadersFrameOptions.builder()
-                                .frameOption(HeadersFrameOption.DENY)
+                                .frameOption(HeadersFrameOption.valueOf(
+                                        securityHeaders.get("frameOption").asText()))
                                 .override(true)
                                 .build())
                         .referrerPolicy(ResponseHeadersReferrerPolicy.builder()
-                                .referrerPolicy(
-                                        software.amazon.awscdk.services.cloudfront.HeadersReferrerPolicy
-                                                .STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                                .referrerPolicy(HeadersReferrerPolicy.valueOf(securityHeaders
+                                        .get("referrerPolicy")
+                                        .asText()
+                                        .toUpperCase(java.util.Locale.ROOT)
+                                        .replace('-', '_')))
                                 .override(true)
                                 .build())
                         .xssProtection(ResponseHeadersXSSProtection.builder()
-                                .protection(true)
-                                .modeBlock(true)
+                                .protection(
+                                        securityHeaders.get("xssProtection").asBoolean())
+                                .modeBlock(securityHeaders
+                                        .get("xssProtectionModeBlock")
+                                        .asBoolean())
                                 .override(true)
                                 .build())
                         .build())
                 .customHeadersBehavior(ResponseCustomHeadersBehavior.builder()
-                        .customHeaders(List.of(
-                                ResponseCustomHeader.builder()
-                                        .header("Cross-Origin-Opener-Policy")
-                                        .value("same-origin")
-                                        .override(true)
-                                        .build(),
-                                ResponseCustomHeader.builder()
-                                        .header("Cross-Origin-Embedder-Policy")
-                                        .value("unsafe-none")
-                                        .override(true)
-                                        .build(),
-                                ResponseCustomHeader.builder()
-                                        .header("Cross-Origin-Resource-Policy")
-                                        .value("same-origin")
-                                        .override(true)
-                                        .build(),
-                                ResponseCustomHeader.builder()
-                                        .header("Server")
-                                        .value("DIY-Accounting")
-                                        .override(true)
-                                        .build()))
+                        .customHeaders(customHeaders)
                         .build())
                 .build();
 

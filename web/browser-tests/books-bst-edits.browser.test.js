@@ -16,7 +16,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import http from "node:http";
+import { startStaticServer } from "./serve.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -24,37 +24,17 @@ fs.mkdirSync(screenshotsDir, { recursive: true });
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
 
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
-let server;
+let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(publicDir, requested);
-    if (!filePath.startsWith(publicDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  await new Promise((resolveServer) => server.listen(0, "127.0.0.1", resolveServer));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const server = await startStaticServer(publicDir);
+  baseUrl = server.baseUrl;
+  closeServer = server.close;
 });
 
 test.afterAll(async () => {
-  await new Promise((resolveClose) => server.close(resolveClose));
+  await closeServer();
 });
 
 // ── Reading the rendered year table ────────────────────────────────────────

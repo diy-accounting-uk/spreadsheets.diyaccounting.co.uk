@@ -10,8 +10,8 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import http from "node:http";
 import JSZip from "jszip";
+import { startStaticServer } from "./serve.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -26,41 +26,22 @@ const VIEWPORTS = {
   "mobile-portrait": { width: 390, height: 844 },
 };
 
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
 // The engine's own resource loader fetches the schemas and the tax year data
 // from site-absolute paths (/schema/, /books/assets/), so the page needs a
 // real HTTP origin to load against -- a file:// navigation has no origin for
-// fetch() to resolve those against. Mirrors web/browser-tests/books-bundle-gate.browser.test.js's server.
-let server;
+// fetch() to resolve those against. serve.js sends production's security
+// headers, so an eval-dependent bundle fails here the way it fails in prod.
+let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(publicDir, requested);
-    if (!filePath.startsWith(publicDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  await new Promise((resolveServer) => server.listen(0, "127.0.0.1", resolveServer));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const server = await startStaticServer(publicDir);
+  baseUrl = server.baseUrl;
+  closeServer = server.close;
 });
 
 test.afterAll(async () => {
-  await new Promise((resolveClose) => server.close(resolveClose));
+  await closeServer();
 });
 
 function bstUrl() {
