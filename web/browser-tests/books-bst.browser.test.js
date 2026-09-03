@@ -153,6 +153,24 @@ test.describe("DIYA-GL books page — empty state", () => {
     await expect(page.locator("#empty-state-message")).toContainText("save as .xlsx");
   });
 
+  test("an example button leads with the business, and loading one says so in the customer's words", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const basic = page.locator('[data-example="bst-scenario-basic"]');
+    await expect(basic.locator(".example-name")).toHaveText("Precision Code Trading");
+    await expect(basic.locator(".example-id")).toContainText("bst-scenario-basic");
+
+    await basic.click();
+    await expect(page.locator("#toast")).toHaveText("Loaded Precision Code Trading (example)");
+  });
+
+  test("an uploaded file is named back by its own file name", async ({ page }) => {
+    await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "my-books.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    await expect(page.locator("#toast")).toHaveText("Loaded my-books.xlsx");
+  });
+
   test("the other two example books load live, not just bst-scenario-basic", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"], /bst-brickwork-pro-nonvat/);
     await expect(page.locator("#app-title")).toContainText("BrickWork");
@@ -245,6 +263,20 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await expect(page.locator("#inspector .check-item")).not.toHaveCount(0);
     await expect(page.locator("#inspector .check-item.fail")).toHaveCount(0);
+
+    // A passing check says it matches; only a failure is worth two figures.
+    const passing = page.locator("#inspector .checks-list .check-item.pass").first();
+    await expect(passing.locator(".check-figures")).toHaveText("matches");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Need attention");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Differ from workbook");
+  });
+
+  test("the Admin view names the tax year, not the file the rates came from", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="admin"]').click();
+    const provenance = page.locator(".rate-provenance");
+    await expect(provenance).toContainText("tax year");
+    await expect(provenance).not.toContainText("app/data");
   });
 });
 

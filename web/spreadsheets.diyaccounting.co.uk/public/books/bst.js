@@ -376,6 +376,29 @@
 
   // ============================== empty state ==============================
 
+  // The three books the page can load without a file. A reader picks a
+  // business, not a fixture id, so the name leads and the id follows in
+  // small text.
+  var EXAMPLE_BOOKS = [
+    { key: "bst-scenario-basic", name: "Precision Code Trading", note: "full ledger" },
+    { key: "bst-brickwork-pro-nonvat", name: "BrickWork Pro Trading", note: "bricklaying trade" },
+    { key: "bst-sp-sixty", name: "SP Sixty Driving", note: "no ledger, mileage route" },
+  ];
+
+  function exampleButton(example) {
+    return (
+      '<button type="button" class="btn example-btn" data-example="' +
+      esc(example.key) +
+      '"><span class="example-name">' +
+      esc(example.name) +
+      '</span><span class="example-id">' +
+      esc(example.key) +
+      " — " +
+      esc(example.note) +
+      "</span></button>"
+    );
+  }
+
   function renderEmptyState() {
     return (
       '<div class="empty-state">' +
@@ -396,9 +419,7 @@
       (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
-      '<button type="button" class="btn" data-example="bst-scenario-basic">bst-scenario-basic — Precision Code Trading, full ledger</button>' +
-      '<button type="button" class="btn" data-example="bst-brickwork-pro-nonvat">bst-brickwork-pro-nonvat — BrickWork trade</button>' +
-      '<button type="button" class="btn" data-example="bst-sp-sixty">bst-sp-sixty — no-ledger, mileage route</button>' +
+      EXAMPLE_BOOKS.map(exampleButton).join("") +
       "</div>" +
       "</div>" +
       '<p id="empty-state-message" class="view-lede" aria-live="polite"></p>' +
@@ -610,7 +631,7 @@
     window.DiyaGlBooksLoader.loadExample(exampleKey)
       .then(function (snapshot) {
         applyLoadedSnapshot(snapshot);
-        showToast("Loaded " + snapshot.scenario + ".");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (example)");
       })
       .catch(function (error) {
         setPickerBusy(false);
@@ -628,7 +649,7 @@
     window.DiyaGlBooksLoader.loadFromAnySource(file)
       .then(function (snapshot) {
         applyLoadedSnapshot(snapshot);
-        showToast("Loaded " + file.name + ".");
+        showToast("Loaded " + file.name);
       })
       .catch(function (error) {
         setPickerBusy(false);
@@ -1838,11 +1859,11 @@
       '</span><span class="caps-label">Pass</span></div>' +
       '<div class="drift-summary-item warn"><span class="count">' +
       warnCount +
-      '</span><span class="caps-label">Flagged</span></div>' +
+      '</span><span class="caps-label">Need attention</span></div>' +
       '<div class="drift-summary-item"><span class="count">' +
       driftCount +
       '</span><span class="caps-label">' +
-      (SNAPSHOT.edited ? "Recalculated" : "Drift cells") +
+      (SNAPSHOT.edited ? "Recalculated" : "Differ from workbook") +
       "</span></div>" +
       "</div>"
     );
@@ -1867,10 +1888,8 @@
             marker +
             '</span><span class="check-body"><span class="check-label">' +
             esc(c.label) +
-            '</span><br/><span class="check-figures">expected ' +
-            fmtMoney(c.expected) +
-            " · actual " +
-            fmtMoney(c.actual) +
+            '</span><br/><span class="check-figures">' +
+            (c.result === "pass" ? "matches" : "expected " + fmtMoney(c.expected) + " · actual " + fmtMoney(c.actual)) +
             "</span></span></li>"
           );
         })
@@ -1958,28 +1977,18 @@
     );
   }
 
-  function renderHelpersSection() {
-    return (
-      '<div class="helpers-section"><h3>Helpers</h3>' +
-      '<div class="helper-card"><h4>Make a sale/purchase from a bank item</h4>' +
-      "<p>Turns an unmatched bank line into a sales or purchases line, category picked from the expense codes. Basic Sole Trader books carry no bank sheet, so there is nothing to act on here — the control ships for products that do.</p>" +
-      '<button type="button" class="btn" disabled>Preview</button></div></div>'
-    );
-  }
-
   function renderInspectorFull() {
     return (
       "<h3>Checks &amp; drift</h3>" +
       renderDriftSummary() +
       renderBookChecksList() +
       renderChecksList() +
-      renderHelpersSection() +
       '<div style="margin-top:1rem"><button type="button" class="btn btn-primary" id="inspector-save-btn">Save workbook</button></div>'
     );
   }
 
   function renderInspectorChecksOnly() {
-    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderBookChecksList() + renderChecksList() + renderHelpersSection();
+    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderBookChecksList() + renderChecksList();
   }
 
   function bindInspectorInteractions() {

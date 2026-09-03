@@ -403,11 +403,10 @@ test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broke
     await expect(rounded).toHaveValue("100.01");
   });
 
-  test("the bank-item helper stays disabled and says why", async ({ page }) => {
+  test("no bank-item card: Basic Sole Trader has no bank book to make an entry from", async ({ page }) => {
     await openBook(page);
-    const card = page.locator("#inspector .helper-card", { hasText: "Make a sale/purchase from a bank item" });
-    await expect(card.getByRole("button", { name: "Preview" })).toBeDisabled();
-    await expect(card).toContainText("carry no bank sheet");
+    await expect(page.locator("#inspector")).not.toContainText("bank item");
+    await expect(page.locator("#inspector .helper-card")).toHaveCount(0);
   });
 });
 

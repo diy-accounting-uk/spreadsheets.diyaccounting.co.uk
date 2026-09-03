@@ -457,6 +457,21 @@ select:focus-visible,
   flex-direction: column;
   gap: 0.4rem;
 }
+.example-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  text-align: left;
+}
+.example-btn .example-name {
+  font-weight: 700;
+}
+.example-btn .example-id {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: var(--hint);
+}
 .example-list button {
   text-align: left;
 }
