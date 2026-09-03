@@ -887,6 +887,29 @@
     return buildSnapshot(book, lines, Object.assign({}, context, { edited: edited !== false }));
   }
 
+  /**
+   * Recompute after a change to the book itself -- a business detail, an
+   * address, the accounting period. The tax year the book declares is
+   * resolved again, so a new year end brings that year's own rates and
+   * every check re-runs against them. The as-read layer and the source the
+   * load resolved carry through untouched.
+   * @param {Object} book
+   * @param {Array} lines
+   * @param {Object} context - the context the loading snapshot carried
+   * @param {boolean} [edited] - false when undo has taken the book back to
+   *   what was loaded
+   */
+  async function recalculateWithBook(book, lines, context, edited) {
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+
+    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
+    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
+
+    return buildSnapshot(book, lines, Object.assign({}, context, { taxData: taxData, taxYearName: taxYearName, edited: edited !== false }));
+  }
+
   // Every path that has a book and lines already assembled (an example's
   // book.toml+lines.jsonl, a brand-new empty book, or a working book handed
   // back from autosave): resolve the tax year the book declares, then run
@@ -1116,6 +1139,7 @@
     createNewBook: createNewBook,
     loadFromBookAndLines: loadFromBookAndLines,
     recalculate: recalculate,
+    recalculateWithBook: recalculateWithBook,
     reachesAnAccount: reachesAnAccount,
     headlinesFromReport: headlinesFromReport,
   };

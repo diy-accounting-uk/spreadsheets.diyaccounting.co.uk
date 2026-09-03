@@ -268,6 +268,36 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await expect(page.locator(".kv-table")).toContainText("Net Income After Tax");
   });
 
+  test("the business name is editable, moves the header, and undo puts it back", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await expect(name).toHaveValue("Precision Code Trading");
+
+    await name.fill("Precision Code Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading Ltd");
+
+    await page.locator("#undo-btn").click();
+    await expect(page.locator("#app-title")).not.toContainText("Ltd");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading");
+  });
+
+  test("the topbar controls carry a visible label at desktop widths and a name everywhere", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeVisible();
+    await expect(page.locator("#theme-toggle .btn-label")).toBeVisible();
+    await expect(page.locator("#save-btn")).toHaveAttribute("aria-label", "Save workbook");
+
+    // On a phone the labels give way, but the accessible names do not.
+    await page.setViewportSize(VIEWPORTS["mobile-portrait"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeHidden();
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Toggle dark theme");
+  });
+
   test("the Fixed Assets view prints a register, one row an asset", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await page.locator('.tab-btn[data-view="fixed-assets"]').click();

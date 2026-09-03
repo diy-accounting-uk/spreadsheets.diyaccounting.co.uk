@@ -281,6 +281,23 @@ select:focus-visible,
   border-color: var(--rule);
   background: var(--tint);
 }
+/* An icon is a guess until it is read: where the header has room, the
+   control says what it does. The aria-label carries it everywhere else. */
+.icon-btn .btn-label {
+  display: none;
+}
+@media (min-width: 900px) {
+  .icon-btn {
+    width: auto;
+    gap: 0.4rem;
+    padding: 0 0.7rem;
+  }
+  .icon-btn .btn-label {
+    display: inline;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+}
 
 .save-btn {
   border-color: var(--rule);

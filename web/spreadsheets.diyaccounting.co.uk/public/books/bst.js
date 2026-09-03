@@ -394,6 +394,9 @@
     if (view === "year") {
       bindYearView();
     }
+    if (view === "business-details") {
+      bindBusinessDetails();
+    }
     if (view === "home") {
       Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-goto]"), function (a) {
         a.addEventListener("click", function (e) {
@@ -854,7 +857,10 @@
       return;
     }
     state.committing = true;
-    window.DiyaGlBooksLoader.recalculate(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
+    // recalculateWithBook, not recalculate: undoing a year-end change has to
+    // put back the tax year the restored book declares, not keep the one the
+    // change brought in.
+    window.DiyaGlBooksLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
       .then(function (snapshot) {
         applySnapshot(snapshot);
         state.committing = false;
@@ -1686,32 +1692,124 @@
     );
   }
 
+  // The book's own details, editable in place. Every change goes through
+  // the same route an entry edit takes: one undo step, the whole book
+  // recomputed, every check run again. Changing the year end resolves the
+  // tax year afresh, so the rates the checks use follow the book.
   function renderBusinessDetails() {
     var bd = SNAPSHOT.businessDetails;
     return (
       "<h2>Business Details</h2>" +
-      '<div class="panel-card">' +
-      field("Business Name", bd.organizationIdentifier, rk2("Business Details", "C5", "business-details", "business-name")) +
-      field("Description", bd.organizationDescription, rk2("Business Details", "C7", "business-details", "description")) +
-      field("Address", bd.organizationAddressLine, rk2("Business Details", "C8", "business-details", "address")) +
-      field("Town", bd.organizationTown, rk2("Business Details", "C10", "business-details", "town")) +
-      field("Postcode", bd.organizationPostcode, rk2("Business Details", "C12", "business-details", "postcode")) +
-      field("Accounting period", bd.periodCoveredStart + " to " + bd.periodCoveredEnd) +
-      field("Basis of accounting", bd.basisOfAccounting) +
-      field("VAT registered", bd.vatRegistered ? "Yes" : "No") +
+      '<div class="panel-card panel-form-width">' +
+      field("Business Name", "organizationIdentifier", bd.organizationIdentifier, {
+        rKeyAttr: rk2("Business Details", "C5", "business-details", "business-name"),
+      }) +
+      field("Description", "organizationDescription", bd.organizationDescription, {
+        rKeyAttr: rk2("Business Details", "C7", "business-details", "description"),
+      }) +
+      field("Address", "organizationAddressLine", bd.organizationAddressLine, {
+        rKeyAttr: rk2("Business Details", "C8", "business-details", "address"),
+      }) +
+      field("Town", "organizationTown", bd.organizationTown, {
+        rKeyAttr: rk2("Business Details", "C10", "business-details", "town"),
+      }) +
+      field("Postcode", "organizationPostcode", bd.organizationPostcode, {
+        rKeyAttr: rk2("Business Details", "C12", "business-details", "postcode"),
+      }) +
+      field("Period start", "periodCoveredStart", bd.periodCoveredStart, { type: "date" }) +
+      field("Year end", "periodCoveredEnd", bd.periodCoveredEnd, {
+        type: "date",
+        hint: "Changing this loads that year's tax rates and runs every check again.",
+      }) +
+      readOnlyField("Basis of accounting", bd.basisOfAccounting) +
+      readOnlyField("VAT registered", bd.vatRegistered ? "Yes" : "No") +
       "</div>"
     );
-    function field(label, value, rKeyAttr) {
+
+    function field(label, bookField, value, opts) {
+      opts = opts || {};
+      var id = "book-field-" + bookField;
       return (
-        '<div class="editable-field"><label>' +
+        '<div class="editable-field"><label for="' +
+        id +
+        '">' +
         esc(label) +
-        "</label><input" +
-        (rKeyAttr || "") +
+        "</label>" +
+        (opts.hint ? '<span class="field-hint" id="' + id + '-hint">' + esc(opts.hint) + "</span>" : "") +
+        '<input id="' +
+        id +
+        '" type="' +
+        (opts.type || "text") +
+        '" data-book-field="' +
+        bookField +
+        '"' +
+        (opts.hint ? ' aria-describedby="' + id + '-hint"' : "") +
+        (opts.rKeyAttr || "") +
         ' value="' +
         esc(value) +
-        '" readonly /></div>'
+        '" /></div>'
       );
     }
+
+    function readOnlyField(label, value) {
+      return '<div class="editable-field"><label>' + esc(label) + '</label><input value="' + esc(value) + '" readonly /></div>';
+    }
+  }
+
+  var BOOK_PERIOD_FIELDS = { periodCoveredStart: 1, periodCoveredEnd: 1 };
+
+  function bookWithDetail(bookField, value) {
+    var book = JSON.parse(JSON.stringify(state.book));
+    if (BOOK_PERIOD_FIELDS[bookField]) {
+      book.documentInfo[bookField] = value;
+    } else {
+      book.entityInformation[bookField] = value;
+    }
+    return book;
+  }
+
+  function bindBusinessDetails() {
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-book-field]"), function (input) {
+      var bookField = input.getAttribute("data-book-field");
+      var committed = input.value;
+      input.addEventListener("change", function () {
+        var value = input.value.trim();
+        if (value === committed) return;
+        if (BOOK_PERIOD_FIELDS[bookField]) {
+          value = parseRealDate(value);
+          if (!value) {
+            input.value = committed;
+            showToast("That is not a real date. The book is unchanged.");
+            return;
+          }
+        } else if (!value) {
+          input.value = committed;
+          showToast("This detail cannot be empty. The book is unchanged.");
+          return;
+        }
+        commitBookDetail(bookField, value, input.previousElementSibling ? input.previousElementSibling.textContent : bookField);
+      });
+    });
+  }
+
+  function commitBookDetail(bookField, value, label) {
+    if (state.committing) return;
+    state.committing = true;
+    var previousBook = state.book;
+    var previousLines = state.lines;
+    window.DiyaGlBooksLoader.recalculateWithBook(bookWithDetail(bookField, value), state.lines, state.context)
+      .then(function (snapshot) {
+        window.DiyaGlBooksEdits.undo.push(previousBook, previousLines, "change " + label);
+        applySnapshot(snapshot);
+        state.committing = false;
+        render();
+        showToast("Changed " + label + ".");
+      })
+      .catch(function (error) {
+        state.committing = false;
+        render();
+        showToast("That change did not apply: " + (error && error.message ? error.message : error));
+      });
   }
 
   // buildAdmin() in bst-data.js reads app/data/<year>.toml straight into
