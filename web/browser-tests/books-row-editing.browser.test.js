@@ -97,10 +97,14 @@ test.describe("DIYA-GL books page — entry date editing", () => {
     const mayProfitBefore = await monthCell(page, "2025-05", "netProfit");
 
     // TXN-0020: a purchases line dated 2025-04-01, £45.00, account 5002.
+    // fill() on a date input sets the value and dispatches input and change
+    // together (Playwright's own contract for date/time inputs), so the
+    // edit is already committed by the time fill() returns -- an extra
+    // Enter would hunt for a row that has already moved out of April's
+    // entries table and hang.
     const dateField = page.locator('[data-date-entry="TXN-0020"]');
     await expect(dateField).toHaveValue("2025-04-01");
     await dateField.fill("2025-05-01");
-    await dateField.press("Enter");
     await expect(page.locator("#toast")).toContainText("Changed TXN-0020's date to 2025-05-01");
 
     // A purchase's date moving out of April drops April's own expenses (and
@@ -115,9 +119,20 @@ test.describe("DIYA-GL books page — entry date editing", () => {
     await openBook(page);
     await openAprilEntries(page);
 
+    // fill() commits immediately (see above), so an in-progress edit here is
+    // set directly and given a real "input" event -- the same event a typed
+    // digit fires -- rather than through Chromium's own date-segment
+    // keyboard editing, whose native Escape handling runs after this page's
+    // own listener and overwrites whatever that listener just restored.
+    // Escape itself is a real keypress; only the edit that precedes it is
+    // synthesised.
     const dateField = page.locator('[data-date-entry="TXN-0022"]');
     const committed = await dateField.inputValue();
-    await dateField.fill("2025-06-15");
+    await dateField.evaluate((el, value) => {
+      el.value = value;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }, "2025-06-15");
+    await expect(dateField).toHaveAttribute("data-dirty", "true");
     await dateField.press("Escape");
     await expect(dateField).toHaveValue(committed);
     await expect(dateField).toHaveAttribute("data-dirty", "false");
@@ -130,13 +145,12 @@ test.describe("DIYA-GL books page — entry date editing", () => {
 
     const dateField = page.locator('[data-date-entry="TXN-0022"]');
     await dateField.fill("2026-04-15");
-    await dateField.press("Enter");
     await expect(page.locator("#toast")).toContainText("Changed");
 
     const check = page.locator(bookCheck("book-dates-in-period"));
     await expect(check).toHaveClass(/fail/);
 
-    await page.locator('[data-helper-preview="book-dates-in-period"]').click();
+    await check.locator("[data-helper-preview]").click();
     await expect(check).toContainText("TXN-0022");
     await expect(check).toContainText("2026-04-15");
 
@@ -154,9 +168,12 @@ test.describe("DIYA-GL books page — entry date editing", () => {
 
     const dateField = page.locator('[data-date-entry="TXN-0020"]');
     await dateField.focus();
-    // A focused date input starts on its first (month) segment in this
-    // locale; typing eight digits fills month, day and year in one pass.
-    await page.keyboard.type("05012025");
+    // This locale's date input focuses the day segment first, and typed
+    // digits do not auto-advance between segments under automation, so one
+    // ArrowRight moves to the month segment and two digits there are enough
+    // to carry the entry into May without touching the day or year at all.
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.type("05");
     await page.keyboard.press("Enter");
     await expect(page.locator("#toast")).toContainText("Changed TXN-0020's date to 2025-05-01");
 
@@ -228,7 +245,7 @@ test.describe("DIYA-GL books page — year table default columns", () => {
     // C6+C7's sum), so it is appended after the seventeen category columns
     // rather than spliced among them -- Sales Turnover keeps its own
     // position and Cost of Sales renders last of the five default columns.
-    const visibleHeaders = page.locator(".year-table thead th:visible");
+    const visibleHeaders = page.locator(".year-table > thead > tr > th:visible");
     await expect(visibleHeaders).toHaveCount(5);
     await expect(visibleHeaders).toContainText(["Month", "Sales Turnover", "Total Expenses", "Net Profit", "Cost of Sales"]);
 
@@ -239,7 +256,7 @@ test.describe("DIYA-GL books page — year table default columns", () => {
     await expect(costOfSalesCell).toBeHidden();
 
     await enableAllCategories(page);
-    await expect(page.locator(".year-table thead th:visible")).toHaveCount(16);
+    await expect(page.locator(".year-table > thead > tr > th:visible")).toHaveCount(16);
     for (const label of [
       "Employee Costs",
       "Premises Costs",
@@ -253,7 +270,7 @@ test.describe("DIYA-GL books page — year table default columns", () => {
       "Interest & Finance",
       "Other Expenses",
     ]) {
-      await expect(page.locator(".year-table thead th", { hasText: label })).toBeVisible();
+      await expect(page.locator(".year-table > thead > tr > th", { hasText: label })).toBeVisible();
     }
     // Cost of Sales' own two component columns and Gross Profit are still
     // not among the eleven the toggle answers for.
@@ -269,6 +286,6 @@ test.describe("DIYA-GL books page — year table default columns", () => {
     await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 
     await expect(page.locator("#all-categories-toggle")).toBeChecked();
-    await expect(page.locator(".year-table thead th:visible")).toHaveCount(16);
+    await expect(page.locator(".year-table > thead > tr > th:visible")).toHaveCount(16);
   });
 });
