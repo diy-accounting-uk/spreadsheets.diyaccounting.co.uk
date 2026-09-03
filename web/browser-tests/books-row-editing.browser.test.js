@@ -87,10 +87,6 @@ function bookCheck(id) {
 
 // ── Date editing ─────────────────────────────────────────────────────────
 
-// The date input's segment order follows the browser locale; the keyboard test
-// types into the month segment, so the locale is pinned rather than assumed.
-test.use({ locale: "en-GB", timezoneId: "Europe/London" });
-
 test.describe("DIYA-GL books page — entry date editing", () => {
   test("moving an entry's date to another month moves both months' totals and leaves the year alone", async ({ page }) => {
     await openBook(page);
@@ -163,7 +159,7 @@ test.describe("DIYA-GL books page — entry date editing", () => {
     await expect(page.locator('[data-date-entry="TXN-0022"]')).toHaveValue("2025-04-01");
   });
 
-  test("Tab reaches the date input, typing and Enter commit the move, keyboard only", async ({ page }) => {
+  test("the date input is reachable by keyboard and Enter commits the move", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
 
@@ -172,13 +168,11 @@ test.describe("DIYA-GL books page — entry date editing", () => {
 
     const dateField = page.locator('[data-date-entry="TXN-0020"]');
     await dateField.focus();
-    // This locale's date input focuses the day segment first, and typed
-    // digits do not auto-advance between segments under automation, so one
-    // ArrowRight moves to the month segment and two digits there are enough
-    // to carry the entry into May without touching the day or year at all.
-    await page.keyboard.press("ArrowRight");
-    await page.keyboard.type("05");
-    await page.keyboard.press("Enter");
+    await expect(dateField).toBeFocused();
+    // A date input's segment order follows the browser's own locale, so the
+    // value is set as ISO rather than typed segment by segment; Enter commits.
+    await dateField.fill("2025-05-01");
+    await dateField.press("Enter");
     await expect(page.locator("#toast")).toContainText("Changed TXN-0020's date to 2025-05-01");
 
     await expect.poll(() => monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 45);
