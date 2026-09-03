@@ -57,6 +57,10 @@ output. "Where the page stands" is the audit of the delivered spike against this
 > /frontend-design:frontend-design to make sure is looks simple and refreshingly accessible for
 > users and incorporate proposed changes in PLAN_DIYA_GL_BST_CLI_MCP_WEB.md.
 
+> Please can you add to NEXT.md support for deep links into the sample datra sets e.g.
+> https://spreadsheets.diyaccounting.co.uk/books/bst.html?<some internally consistent>=<something
+> to show which data set>.
+
 ## Where the page stands
 
 Audited 2026-09-03 against the spike's record, then rebuilt on `claude/bst-ledger` (PR #57)
@@ -453,7 +457,13 @@ Open:
   drop the two-cell allowlist in `books-equivalence.browser.test.js` (A3) and the
   entry-number normalisation in `books-formats.browser.test.js` (E3). Runs after the merge
   as the operator's main-side generate refresh.
-- **H3** — merge PR #57.
+- **T16 deep links** (operator, 2026-09-03) — `books/bst.html?example=<id>` loads the named
+  example on arrival, using the ids the example buttons already carry (`bst-scenario-basic`,
+  `bst-brickwork-pro-nonvat`, `bst-sp-sixty`); `&view=<data-view id>` and `&month=YYYY-MM`
+  land on a view or an open month; an unknown id shows the empty state with a plain
+  message; the page keeps the URL current as the user moves so a link can be copied back
+  out; a deep link never touches the autosave record. A Playwright spec proves each
+  parameter and the unknown-id case.
 
 ### Horizons named, not decided
 
