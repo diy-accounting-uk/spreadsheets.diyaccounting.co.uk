@@ -15,7 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
-import { s1, s2, s3, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
+import { s1, s2, s2ForPackage, s3, s3YearEnd, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable.json"), "utf-8"));
@@ -133,8 +133,12 @@ async function uploadFile(page, buffer, name) {
 test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
   test("S3 (bst-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
-    const s2Map = s2(basic.bookDir, "basic");
     const s3Map = s3();
+    // bst-latest was built for its own year-end, not the master book's own
+    // 2025-26 year, so a year-dependent Admin figure (the writing-down
+    // allowance rate among them) only agrees when S2 is asked for that same
+    // year -- s2ForPackage takes the year-end S3 actually reported under.
+    const s2Map = s2ForPackage(basic.bookDir, s3YearEnd(), "basic-s3-year");
 
     const onlyS2 = [...s2Map.keys()].filter((key) => !s3Map.has(key));
     const onlyS3 = [...s3Map.keys()].filter((key) => !s2Map.has(key));

@@ -61,9 +61,13 @@ export function s1(scenarioName) {
   return scenario.expected || {};
 }
 
-function readReportMap(outDir) {
+function readReport(outDir) {
   const report = JSON.parse(fs.readFileSync(path.join(outDir, "report.json"), "utf-8"));
-  return new Map(report.values.map((entry) => [entry.key, { value: entry.value, unit: entry.unit }]));
+  return { map: new Map(report.values.map((entry) => [entry.key, { value: entry.value, unit: entry.unit }])), yearEnd: report.yearEnd };
+}
+
+function readReportMap(outDir) {
+  return readReport(outDir).map;
 }
 
 const s2Cache = new Map();
@@ -91,26 +95,109 @@ export function s2(bookDir, name) {
   return map;
 }
 
+const s2ForPackageCache = new Map();
+
+/**
+ * S2, computed for a stated year-end rather than the book's own -- the tax
+ * tables report.js's --years names, in the se-<start>-<end> form
+ * generate-bst.yml's own scorecard step derives from a year-end, plus
+ * --year-end itself so the two sides' report.json name the same year. A
+ * book's [tax] section carries only its own year's rates (extractTaxDataFromBook
+ * reads it as-is), so reaching another year's Admin figures takes an
+ * explicit --years override, not just a later --year-end.
+ * @param {string} bookDir - a diya-gl data directory, e.g. SCENARIOS[].bookDir
+ * @param {string} yearEnd - YYYY-MM-DD, the UK tax year-end convention (5 April)
+ * @param {string} [name] - a short label for the output directory; derived
+ *   from bookDir when omitted
+ * @returns {Map<string, {value: string, unit: string}>}
+ */
+export function s2ForPackage(bookDir, yearEnd, name) {
+  const cacheKey = `${path.resolve(ROOT, bookDir)}@${yearEnd}`;
+  if (s2ForPackageCache.has(cacheKey)) return s2ForPackageCache.get(cacheKey);
+
+  const label = name || bookDir.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "");
+  const outDir = path.resolve(ROOT, "target", `r-${label}-${yearEnd}`);
+  const taxYearEnd = Number(yearEnd.slice(0, 4));
+  const years = `se-${taxYearEnd - 1}-${taxYearEnd}`;
+  execFileSync(
+    process.execPath,
+    ["app/bin/report.js", "--package", "bst", "--data", bookDir, "--years", years, "--year-end", yearEnd, "--output-dir", outDir],
+    { cwd: ROOT, stdio: "pipe" },
+  );
+  const map = readReportMap(outDir);
+  s2ForPackageCache.set(cacheKey, map);
+  return map;
+}
+
+const BST_SCENARIO_BASIC_REPORT = /^GB_Accounts_Basic_Sole_Trader_(\d{4})_(\d{2})_(\d{2})__.*_bst-scenario-basic\.md$/;
+
 let s3Cache = null;
+
+/**
+ * The year-end examples/bst-latest was built for. generate-bst.yml only
+ * refreshes examples/bst-latest for the matrix's highest year-end, and
+ * commits that same run's reports/*.md alongside it, so the highest
+ * year-end named among the committed bst-scenario-basic reports is
+ * bst-latest's own -- read off the fixture rather than assumed.
+ * @returns {string} YYYY-MM-DD
+ */
+function latestBstYearEnd() {
+  const reportsDir = path.resolve(ROOT, "reports");
+  const yearEnds = fs
+    .readdirSync(reportsDir)
+    .map((name) => BST_SCENARIO_BASIC_REPORT.exec(name))
+    .filter(Boolean)
+    .map((m) => `${m[1]}-${m[2]}-${m[3]}`)
+    .sort();
+  const latest = yearEnds.at(-1);
+  if (!latest) throw new Error("latestBstYearEnd: no reports/*_bst-scenario-basic.md found to read bst-latest's year-end from");
+  return latest;
+}
 
 /**
  * S3: report.json read from the cached values of examples/bst-latest, the
  * one Excel package the repository keeps a saved reference of. Reads the
  * workbook's own cached cells -- no LibreOffice, no scenario, so it carries
- * no check/ keys of its own. Exists for bst-scenario-basic only.
+ * no check/ keys of its own. Exists for bst-scenario-basic only. --year-end
+ * names the year-end the fixture was actually built for (latestBstYearEnd),
+ * so the returned report.json carries it, ready for s2ForPackage to match.
  * @returns {Map<string, {value: string, unit: string}>}
  */
 export function s3() {
-  if (s3Cache) return s3Cache;
+  if (s3Cache) return s3Cache.map;
 
   const outDir = path.resolve(ROOT, "target", "r-excel");
   execFileSync(
     process.execPath,
-    ["app/bin/report.js", "--package", "bst", "--source-dir", "examples/bst-latest", "--mode", "saved", "--output-dir", outDir],
+    [
+      "app/bin/report.js",
+      "--package",
+      "bst",
+      "--source-dir",
+      "examples/bst-latest",
+      "--mode",
+      "saved",
+      "--year-end",
+      latestBstYearEnd(),
+      "--output-dir",
+      outDir,
+    ],
     { cwd: ROOT, stdio: "pipe" },
   );
-  s3Cache = readReportMap(outDir);
-  return s3Cache;
+  s3Cache = readReport(outDir);
+  return s3Cache.map;
+}
+
+/**
+ * The year-end S3's report.json carries, for a caller (A3) that wants S2
+ * built to match it. Reading it back off the document rather than calling
+ * latestBstYearEnd() a second time keeps the two sides tied to whatever
+ * year-end S3 actually reported under.
+ * @returns {string} YYYY-MM-DD
+ */
+export function s3YearEnd() {
+  s3();
+  return s3Cache.yearEnd;
 }
 
 /**
