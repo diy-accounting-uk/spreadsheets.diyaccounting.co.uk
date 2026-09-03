@@ -337,29 +337,12 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
     const firstBook = parseTOML(firstBookToml);
     expect(withoutUploadOnlyGaps(exportedBook)).toEqual(withoutUploadOnlyGaps(firstBook));
 
-    // extractBstTransactions (app/lib/xlsx-exporter.js, out of this task's
-    // reach) assigns entryNumber from a line's row position on the sheet,
-    // not from any value the workbook itself carries -- so entryNumber is
-    // never expected to survive a write-then-re-extract cycle unchanged,
-    // only the transaction it names. This compares every other field as a
-    // multiset: the same postings, the same amounts, the same count, in
-    // any order, regardless of which row each landed on this time.
-    const withoutEntryNumber = (line) => {
-      const { entryNumber, ...rest } = JSON.parse(line);
-      return JSON.stringify(rest);
-    };
-    const firstLines = firstLinesJsonl
-      .split("\n")
-      .filter((line) => line.trim().length > 0)
-      .map(withoutEntryNumber)
-      .sort();
-    const exportedLines = fs
-      .readFileSync(path.join(exportOutDir, "lines.jsonl"), "utf-8")
-      .split("\n")
-      .filter((line) => line.trim().length > 0)
-      .map(withoutEntryNumber)
-      .sort();
-    expect(exportedLines).toEqual(firstLines);
+    // extractBstTransactions (app/lib/xlsx-exporter.js) re-extracts the
+    // workbook after the round trip. The aligned writer and canonical row
+    // order put every line back on the row it started on, so the
+    // re-extracted lines.jsonl matches the first zip's byte for byte.
+    const exportedLinesJsonl = fs.readFileSync(path.join(exportOutDir, "lines.jsonl"), "utf-8");
+    expect(exportedLinesJsonl).toBe(firstLinesJsonl);
 
     // JSON -> page -> JSON is identical.
     await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
