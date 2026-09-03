@@ -5,24 +5,34 @@
 // module the books page can import, and copies the files that engine reads.
 //
 // The bundle imports app/lib/books-engine.js and the pipeline modules behind
-// it exactly as they stand. There is no browser fork of any of them: the only
+// it exactly as they stand. There is no browser fork of any of them: one
 // substitution is Node's own fs, path, url, os, crypto and child_process,
 // which resolve to stubs that throw when called. Nothing the BST browser path
 // runs calls them — the reads it does need go through the resource loader in
 // app/lib/app-resources.js, which the page backs with fetch.
 //
+// The other substitution is ajv itself. app/lib/diya-gl-schema.js compiles
+// the two published v2 schemas with ajv.compile(), which reaches `new
+// Function` - forbidden by the production CSP's script-src (no
+// unsafe-eval). Its three ajv imports resolve here to a stub built from
+// generateStandaloneValidatorSource(): ajv's own standalone code generator,
+// run once under Node rather than by the browser. ajv.compile() itself
+// never enters the bundle; only the two functions it already generated do.
+//
 //   node scripts/build-books-bundle.mjs
 
 import { build } from "esbuild";
-import { cpSync, mkdirSync, readdirSync, rmSync, statSync } from "fs";
+import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
+import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC_DIR = resolve(ROOT, "web", "spreadsheets.diyaccounting.co.uk", "public");
 const BOOKS_DIR = resolve(PUBLIC_DIR, "books");
 const ENGINE_DIR = resolve(BOOKS_DIR, "engine");
 const ASSETS_DIR = resolve(BOOKS_DIR, "assets");
+const SCHEMA_DIR = resolve(PUBLIC_DIR, "schema");
 const BUNDLE_FILE = resolve(ENGINE_DIR, "diya-gl-engine.js");
 
 // Node's own modules, which a browser has none of. Each name a pipeline module
@@ -63,6 +73,48 @@ const nodeAbsent = {
     }));
   },
 };
+
+// Ajv itself, absent the same way. Its stub for "ajv/dist/2020.js" carries the
+// two functions generateStandaloneValidatorSource() already generated, and
+// picks between them by the $id of the schema handed to .compile() - the
+// same call diya-gl-schema.js's compileSchemas() always makes, unchanged.
+function ajvAbsentPlugin(generatedSource) {
+  const STUBBED = new Set(["ajv/dist/2020.js", "ajv-formats", "ajv/dist/standalone/index.js"]);
+  const stubSources = {
+    "ajv/dist/2020.js": `${generatedSource}
+class Ajv2020Stub {
+  compile(schema) {
+    const id = schema && schema.$id;
+    if (id === "${BOOK_SCHEMA_ID}") return validateBook;
+    if (id === "${LINES_SCHEMA_ID}") return validateLines;
+    throw new Error(
+      "Ajv2020.compile(): the books bundle only carries the two published diya-gl schemas precompiled, got $id " + id +
+      ". ajv's own compiler is not in this bundle: the production CSP allows no unsafe-eval.",
+    );
+  }
+}
+export default Ajv2020Stub;`,
+    "ajv-formats": `export default function addFormats() {}`,
+    "ajv/dist/standalone/index.js": `export default function standaloneCode() {
+  throw new Error("standaloneCode(): not available in the books bundle. It runs once at build time to generate the precompiled validators the bundle already carries.");
+}`,
+  };
+
+  return {
+    name: "ajv-absent",
+    setup(pluginBuild) {
+      pluginBuild.onResolve({ filter: /^ajv/ }, (args) => {
+        if (!STUBBED.has(args.path)) return null;
+        return { path: args.path, namespace: "ajv-absent" };
+      });
+      pluginBuild.onLoad({ filter: /.*/, namespace: "ajv-absent" }, (args) => ({
+        contents: stubSources[args.path],
+        loader: "js",
+        resolveDir: ROOT,
+      }));
+    },
+  };
+}
 
 // Each entry is a path under examples/, as [directory, product]. The three
 // BST reconciliation fixtures the books page offers as examples (W1): the
@@ -118,8 +170,18 @@ function copyRuntimeAssets() {
   return { yearFiles: yearFiles.length, examples: EXAMPLE_BOOKS.length };
 }
 
+const BOOK_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-book-v2.schema.json";
+const LINES_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl-lines-v2.schema.json";
+
 async function main() {
   mkdirSync(ENGINE_DIR, { recursive: true });
+
+  const bookSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
+  const linesSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
+  if (bookSchema.$id !== BOOK_SCHEMA_ID || linesSchema.$id !== LINES_SCHEMA_ID) {
+    throw new Error("the published schemas' $id fields moved; update BOOK_SCHEMA_ID/LINES_SCHEMA_ID in this script to match");
+  }
+  const generatedSource = generateStandaloneValidatorSource(bookSchema, linesSchema);
 
   const result = await build({
     entryPoints: [resolve(ROOT, "app", "lib", "books-engine.js")],
@@ -131,7 +193,7 @@ async function main() {
     minify: true,
     sourcemap: false,
     legalComments: "none",
-    plugins: [nodeAbsent],
+    plugins: [nodeAbsent, ajvAbsentPlugin(generatedSource)],
     metafile: true,
     define: { "process.env.NODE_ENV": '"production"' },
   });
