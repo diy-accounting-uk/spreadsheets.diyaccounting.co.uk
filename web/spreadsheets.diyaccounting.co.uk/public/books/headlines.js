@@ -214,15 +214,29 @@
     );
   }
 
-  var PIE_SIZE = 300;
-  var PIE_CX = 118;
+  // A viewBox sized to fit a real mobile card without horizontal scroll
+  // (see the "through the year" charts' own CHART_W_COMPACT for the same
+  // reasoning), the pie centred so a direct label has equal room on either
+  // side -- an off-centre pie was the earlier bug here: labels on the
+  // narrow side ran past the canvas edge and were clipped mid-word.
+  var PIE_SIZE = 320;
+  var PIE_CX = 160;
   var PIE_CY = 130;
-  var PIE_R_OUTER = 92;
-  var PIE_R_INNER = 46;
+  var PIE_R_OUTER = 64;
+  var PIE_R_INNER = 32;
   var DIRECT_LABEL_SHARE = 0.08;
+  var DIRECT_LABEL_MAX_CHARS = 12;
 
   function sliceInfoText(slice, formatMoney) {
     return slice.label + " " + formatMoney(slice.value) + " (" + fmtPercent(slice.share) + ")";
+  }
+
+  // A direct on-chart label is deliberately short -- the full name is
+  // always in the legend and the table -- so its width stays predictable
+  // and it never needs to be measured against the canvas edge.
+  function truncateLabel(label, maxChars) {
+    if (label.length <= maxChars) return label;
+    return label.slice(0, maxChars - 1) + "…";
   }
 
   function renderPieSvg(id, slices, colors, formatMoney) {
@@ -277,7 +291,7 @@
           '" text-anchor="' +
           anchor +
           '" class="headline-pie-direct-label">' +
-          esc(slice.label) +
+          esc(truncateLabel(slice.label, DIRECT_LABEL_MAX_CHARS)) +
           "</text>";
       }
       angle += span;
@@ -286,7 +300,7 @@
       '<svg viewBox="0 0 ' +
       PIE_SIZE +
       " " +
-      PIE_SIZE * 0.75 +
+      Math.round(PIE_SIZE * 0.8) +
       '" class="headline-pie-svg" role="img" aria-label="' +
       esc(id) +
       '">' +
@@ -296,7 +310,7 @@
     );
   }
 
-  var BAR_WIDTH = 480;
+  var BAR_WIDTH = 320;
   var BAR_ROW_H = 40;
 
   function renderBarSvg(slices, colors, formatMoney) {
@@ -467,7 +481,16 @@
   // ============================== through the year ==============================
 
   var THROUGH_YEAR_KEY = "diyaGlHeadlinesThroughYearOpen";
-  var CHART_W = 480;
+  // The monthly columns chart carries twelve categories and stays legible
+  // scrolled on a mobile card, matching the year table's own horizontal
+  // scroll elsewhere in this app. The outgoings bar and the cumulative
+  // line carry far less per row, so they fit a mobile card's width
+  // natively -- no scroll, no risk of the value label running past the
+  // canvas edge (the earlier bug here: a value label's x-position tracked
+  // its own bar's width, so the widest bar pushed its label straight past
+  // the viewBox and it was silently clipped).
+  var CHART_W_WIDE = 480;
+  var CHART_W_COMPACT = 300;
 
   function readStoredOpen() {
     try {
@@ -487,53 +510,62 @@
     }
   }
 
+  var OUTGOINGS_BAR_LEFT_COL = 108;
+  var OUTGOINGS_BAR_RIGHT_ZONE = 78;
+  var OUTGOINGS_BAR_LABEL_MAX_CHARS = 15;
+
+  // The category name sits at a fixed left column and the value at a
+  // fixed right-anchored position -- both independent of the bar's own
+  // length, so neither can ever run past the canvas edge the way a
+  // length-tracking label could.
   function renderOutgoingsBarChart(headlines, formatMoney) {
     var slices = capSlicesForPalette(headlines.pies.outgoings.slices);
     var colors = colorsByRank(slices);
-    var height = 34 * slices.length + 10;
-    var barMaxWidth = CHART_W - 210;
+    var rowH = 32;
+    var height = rowH * slices.length + 8;
+    var barMaxWidth = CHART_W_COMPACT - OUTGOINGS_BAR_LEFT_COL - OUTGOINGS_BAR_RIGHT_ZONE - 6;
     var largest = slices.reduce(function (m, s) {
       return Math.max(m, Math.abs(s.value));
     }, 1);
-    var y = 8;
+    var y = 6;
     var rows = slices
       .map(function (slice, i) {
         var w = Math.max((Math.abs(slice.value) / largest) * barMaxWidth, 1);
         var row =
           '<text x="0" y="' +
-          (y + 16) +
+          (y + 14) +
           '" class="headline-chart-label">' +
-          esc(slice.label) +
+          esc(truncateLabel(slice.label, OUTGOINGS_BAR_LABEL_MAX_CHARS)) +
           "</text>" +
-          '<rect x="150" y="' +
+          '<rect x="' +
+          OUTGOINGS_BAR_LEFT_COL +
+          '" y="' +
           y +
           '" width="' +
           w.toFixed(1) +
-          '" height="22" rx="4" fill="' +
+          '" height="18" rx="3" fill="' +
           colors[i] +
           '"></rect>' +
           '<text x="' +
-          (150 + w + 8).toFixed(1) +
+          (CHART_W_COMPACT - 4) +
           '" y="' +
-          (y + 16) +
-          '" class="headline-chart-value">' +
+          (y + 14) +
+          '" text-anchor="end" class="headline-chart-value">' +
           esc(formatMoney(slice.value)) +
-          " (" +
-          fmtPercent(slice.share) +
-          ")</text>";
-        y += 34;
+          "</text>";
+        y += rowH;
         return row;
       })
       .join("");
     return (
       '<div class="headline-chart-block"><h4>Where the costs are</h4>' +
-      '<div class="headline-chart-scroll"><svg viewBox="0 0 ' +
-      CHART_W +
+      '<svg viewBox="0 0 ' +
+      CHART_W_COMPACT +
       " " +
       height +
-      '" class="headline-chart-svg" role="img" aria-label="Outgoings by category, largest first">' +
+      '" class="headline-chart-svg headline-chart-svg--compact" role="img" aria-label="Outgoings by category, largest first">' +
       rows +
-      "</svg></div></div>"
+      "</svg></div>"
     );
   }
 
@@ -541,7 +573,7 @@
 
   function renderMonthlyColumnsChart(snapshot) {
     var months = snapshot.months;
-    var width = CHART_W;
+    var width = CHART_W_WIDE;
     var height = 240;
     var padding = 34;
     var chartW = width - padding * 2;
@@ -635,13 +667,16 @@
   // the monthly columns above, which would invent a false alignment between
   // two measures of different size (see the dataviz method's dual-axis
   // anti-pattern).
-  function renderCumulativeProfitChart(snapshot) {
+  function renderCumulativeProfitChart(snapshot, formatMoney) {
     var months = snapshot.months;
-    var width = CHART_W;
-    var height = 140;
-    var padding = 34;
-    var chartW = width - padding * 2;
-    var chartH = height - padding - 20;
+    var width = CHART_W_COMPACT;
+    var height = 130;
+    var leftPadding = 10;
+    var rightPadding = 100; // room for the end-of-line value label
+    var topPadding = 16;
+    var bottomPadding = 16;
+    var chartW = width - leftPadding - rightPadding;
+    var chartH = height - topPadding - bottomPadding;
     var cumulative = 0;
     var values = months.map(function (m) {
       cumulative += snapshot.monthly[m.key].netProfit;
@@ -654,9 +689,9 @@
       }),
     );
     if (maxAbs === 0) maxAbs = 1;
-    var zeroY = height - padding - chartH / 2;
+    var zeroY = topPadding + chartH / 2;
     var points = months.map(function (m, i) {
-      var x = padding + (chartW / (months.length - 1 || 1)) * i;
+      var x = leftPadding + (chartW / (months.length - 1 || 1)) * i;
       var y = zeroY - (values[i] / maxAbs) * (chartH / 2);
       return { x: x, y: y };
     });
@@ -667,7 +702,7 @@
       .join(" ");
     var dots = points
       .map(function (p, i) {
-        var info = "Cumulative profit to " + esc(months[i].label) + ": " + esc(values[i].toFixed(2));
+        var info = "Cumulative profit to " + esc(months[i].label) + ": " + esc(formatMoney(values[i]));
         return (
           '<circle cx="' +
           p.x.toFixed(1) +
@@ -679,19 +714,29 @@
         );
       })
       .join("");
+    var last = points[points.length - 1];
+    var endLabel = last
+      ? '<text x="' +
+        (last.x + 8).toFixed(1) +
+        '" y="' +
+        (last.y + 4).toFixed(1) +
+        '" class="headline-chart-value">' +
+        esc(formatMoney(values[values.length - 1])) +
+        "</text>"
+      : "";
     return (
       '<div class="headline-chart-block"><h4>Cumulative profit</h4>' +
-      '<div class="headline-chart-scroll"><svg viewBox="0 0 ' +
+      '<svg viewBox="0 0 ' +
       width +
       " " +
       height +
-      '" class="headline-chart-svg" role="img" aria-label="Cumulative profit, month by month">' +
+      '" class="headline-chart-svg headline-chart-svg--compact" role="img" aria-label="Cumulative profit, month by month">' +
       '<line x1="' +
-      padding +
+      leftPadding +
       '" y1="' +
       zeroY.toFixed(1) +
       '" x2="' +
-      (width - padding).toFixed(1) +
+      (leftPadding + chartW).toFixed(1) +
       '" y2="' +
       zeroY.toFixed(1) +
       '" class="headline-chart-zero-line"></line>' +
@@ -699,7 +744,8 @@
       linePath +
       '" fill="none" stroke="var(--rule)" stroke-width="2"></path>' +
       dots +
-      "</svg></div></div>"
+      endLabel +
+      "</svg></div>"
     );
   }
 
@@ -712,7 +758,7 @@
       '<div class="headline-through-year-body">' +
       renderOutgoingsBarChart(headlines, formatMoney) +
       renderMonthlyColumnsChart(snapshot) +
-      renderCumulativeProfitChart(snapshot) +
+      renderCumulativeProfitChart(snapshot, formatMoney) +
       "</div></details>"
     );
   }

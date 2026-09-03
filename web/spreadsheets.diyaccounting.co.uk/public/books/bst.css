@@ -1722,7 +1722,8 @@ table.kv-table tr.total td {
 }
 .headline-pie-svg {
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
+  min-width: 240px;
   height: auto;
   display: block;
 }
@@ -1900,11 +1901,22 @@ table.kv-table tr.total td {
 .headline-chart-scroll {
   overflow-x: auto;
 }
+/* The monthly columns chart carries twelve categories and stays legible
+   scrolled on a mobile card (min-width holds it at its native size,
+   .headline-chart-scroll gives it a horizontal scrollbar rather than
+   shrinking its labels below 11px) -- the same trade-off the year table
+   makes elsewhere in this app. */
 .headline-chart-svg {
   display: block;
   width: 100%;
   min-width: 480px;
   height: auto;
+}
+/* The outgoings bar and the cumulative-profit line carry far less per
+   row and are sized to fit a mobile card without scrolling at all. */
+.headline-chart-svg--compact {
+  min-width: 0;
+  max-width: 420px;
 }
 .headline-chart-label {
   font-family: var(--font-ui);
