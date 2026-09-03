@@ -11,7 +11,8 @@ Batch branch `claude/bst-ledger` (pushed; deploys to ci on every push). Wave 1 d
 per task; the coordinator merges each landed commit into the batch branch and pushes.
 Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`), R2 (`f5f28df8`), T1
 (`8e37e594`; 42/42 books specs green under production's headers), T10 (`ddf23204`; render keys
-join as `cell/… || section/…` on one attribute).
+join as `cell/… || section/…` on one attribute), T3 (`2267852d`; workbook kinds stage through
+Node in `readBookSource`, the page keeps its in-memory workbook reader).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -22,13 +23,11 @@ after each landing. No row waits on a merge.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Opus |
-| T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | blocked-to-start | Sonnet; next owner of `bst.js` |
+| T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | in-flight | Sonnet; next owner of `bst.js` |
 | T9 | The strip: four tiles, two pies, redrawn charts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T14 | The equivalence suite: A3–A7 and E6 now; A1, A2, E3–E5 after T7 | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | The UX pass: nine changes plus the view corrections | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T7, T9 | blocked-to-start | Opus; owns the page files |
 | T11 | Date and account editing on entry rows | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | blocked-to-start | Sonnet |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| R1 | Wire `book-checks.js` into `export.js` (`bookchecks.json`), the MCP `report` tool, the diya-gl zip writer and `books-engine.js`; `bst-edits.js` calls the module instead of its own `CHECKS` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3 | blocked-to-start | Sonnet; T5's remainder |
-| H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
+| R1 | Wire `book-checks.js` into `export.js` (`bookchecks.json`), the MCP `report` tool, the diya-gl zip writer and `books-engine.js`; `bst-edits.js` calls the module instead of its own `CHECKS` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
