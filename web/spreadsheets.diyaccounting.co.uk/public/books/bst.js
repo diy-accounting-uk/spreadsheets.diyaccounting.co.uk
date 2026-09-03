@@ -199,6 +199,8 @@
 
   function render() {
     document.body.classList.toggle("is-loaded", state.loaded);
+    // Nothing to save until there is a book: the mobile bar stays away.
+    els.mobileActionBar.classList.toggle("hidden", !state.loaded);
     renderTopbarTitle();
     renderSheetTabs();
     renderUndoControls();
@@ -376,6 +378,8 @@
 
   // ============================== empty state ==============================
 
+  var DROP_HINT_RESTING = "or drop one here — .xlsx, .zip or .json";
+
   // The three books the page can load without a file. A reader picks a
   // business, not a fixture id, so the name leads and the id follows in
   // small text.
@@ -407,15 +411,15 @@
       (state.savedBook ? renderContinueOffer() : "") +
       '<div class="empty-state-actions">' +
       '<div class="picker-row">' +
-      '<label class="file-picker-label" for="file-picker">' +
-      '<span aria-hidden="true">📁</span> Choose a .xlsx, .zip or .json file' +
-      "</label>" +
+      '<label class="file-picker-label" for="file-picker">Choose a file</label>' +
       '<input type="file" id="file-picker" accept=".xlsx,.zip,.json" class="hidden" />' +
+      "</div>" +
+      '<p class="drop-hint" id="drop-hint">' +
+      DROP_HINT_RESTING +
+      "</p>" +
       '<button type="button" class="btn" id="new-book-btn" aria-expanded="' +
       (state.newBookFormOpen ? "true" : "false") +
       '">Start a new book</button>' +
-      "</div>" +
-      '<p class="drop-hint" id="drop-hint">or drop a file here</p>' +
       (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
@@ -705,7 +709,7 @@
     if (card) card.classList.toggle("is-drag-over", on);
     var hint = document.getElementById("drop-hint");
     if (hint) {
-      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : "or drop a file here";
+      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : DROP_HINT_RESTING;
     }
   }
 

@@ -41,6 +41,38 @@ function bstUrl() {
   return `${baseUrl}/books/bst.html`;
 }
 
+test.describe("DIYA-GL books page — one decision on the card", () => {
+  test("choosing a file is the filled button; everything else is quieter", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const picker = page.locator('label[for="file-picker"]');
+    await expect(picker).toHaveText("Choose a file");
+
+    // "Filled" is what makes it the one decision: its background is the
+    // brand colour, and the secondary controls sit on the card's own surface.
+    const [pickerBackground, newBookBackground] = await Promise.all([
+      picker.evaluate((el) => getComputedStyle(el).backgroundColor),
+      page.locator("#new-book-btn").evaluate((el) => getComputedStyle(el).backgroundColor),
+    ]);
+    expect(pickerBackground).not.toBe(newBookBackground);
+    expect(pickerBackground).toBe("rgb(21, 132, 132)");
+
+    // The card is the drop zone and says so.
+    await expect(page.locator(".empty-state #drop-hint")).toContainText("drop");
+  });
+
+  test("mobile portrait keeps the save bar away until there is a book to save", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#mobile-action-bar")).toBeHidden();
+
+    await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
+    await expect(page.locator(".month-cards")).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+  });
+});
+
 test.describe("DIYA-GL books page — new-book form", () => {
   test("the form creates and renders an empty, honest book", async ({ page }) => {
     await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
