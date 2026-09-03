@@ -249,7 +249,9 @@ describe("the settlement column (Sales/Purchases D)", () => {
     expect(changedKeys).toEqual(new Set(["paymentMethod"]));
     // Every other line on the workbook -- the purchase row D5 was never
     // touched -- is untouched too.
-    expect(unpaid.filter((line) => line.sourceJournalID === "purchases")).toEqual(paid.filter((line) => line.sourceJournalID === "purchases"));
+    expect(unpaid.filter((line) => line.sourceJournalID === "purchases")).toEqual(
+      paid.filter((line) => line.sourceJournalID === "purchases"),
+    );
   });
 });
 

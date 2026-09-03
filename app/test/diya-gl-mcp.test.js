@@ -531,7 +531,10 @@ for (const fixture of FIXTURES) {
 
     it("removes a purchase of Z: profit rises by Z, turnover is unchanged", async () => {
       const tools = toolLayer(book, lines);
-      const result = await tools.call("edit_lines", { edit: "removeLine", params: { entryNumber: fixture.removePurchaseLine.entryNumber } });
+      const result = await tools.call("edit_lines", {
+        edit: "removeLine",
+        params: { entryNumber: fixture.removePurchaseLine.entryNumber },
+      });
 
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C4")).toBe(valueAt(baseline, "cell/Profit & Loss Acc!C4"));
       expect(valueAt(result.report, "cell/Profit & Loss Acc!C24") - valueAt(baseline, "cell/Profit & Loss Acc!C24")).toBe(

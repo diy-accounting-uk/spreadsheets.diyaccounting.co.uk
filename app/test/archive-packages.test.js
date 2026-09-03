@@ -190,7 +190,9 @@ describe("the fully-formed gate", () => {
     const result = run(source, ["--archive", archive]);
 
     expect(result.status).toBe(0);
-    expect(result.stdout).toContain(`EXCLUDED ${oddOneOut} — file list differs from other Basic Sole Trader packages (missing: none; extra: Extra.xlsx)`);
+    expect(result.stdout).toContain(
+      `EXCLUDED ${oddOneOut} — file list differs from other Basic Sole Trader packages (missing: none; extra: Extra.xlsx)`,
+    );
     expect(result.stdout).toContain("Fully formed: 3 of 4");
   });
 });

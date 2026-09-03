@@ -122,117 +122,109 @@ async function retypeCell(xlsxPath, sheetName, cellRef, newText) {
 }
 
 describe("export.js --file mode", () => {
-  it(
-    "matches --source-dir byte-for-byte on the same package",
-    () => {
-      const sourceDirOutput = tempDir("export-file-source-out-");
-      const fileOutput = tempDir("export-file-file-out-");
+  it("matches --source-dir byte-for-byte on the same package", () => {
+    const sourceDirOutput = tempDir("export-file-source-out-");
+    const fileOutput = tempDir("export-file-file-out-");
 
-      run(["app/bin/export.js", "--package", "bst", "--source-dir", resolve(ROOT, "examples", "bst-latest"), "--output-dir", sourceDirOutput]);
-      run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", fileOutput]);
+    run([
+      "app/bin/export.js",
+      "--package",
+      "bst",
+      "--source-dir",
+      resolve(ROOT, "examples", "bst-latest"),
+      "--output-dir",
+      sourceDirOutput,
+    ]);
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", fileOutput]);
 
-      const bookFromSource = readFileSync(resolve(sourceDirOutput, "book.toml"));
-      const bookFromFile = readFileSync(resolve(fileOutput, "book.toml"));
-      expect(bookFromFile.equals(bookFromSource)).toBe(true);
+    const bookFromSource = readFileSync(resolve(sourceDirOutput, "book.toml"));
+    const bookFromFile = readFileSync(resolve(fileOutput, "book.toml"));
+    expect(bookFromFile.equals(bookFromSource)).toBe(true);
 
-      const linesFromSource = readFileSync(resolve(sourceDirOutput, "lines.jsonl"));
-      const linesFromFile = readFileSync(resolve(fileOutput, "lines.jsonl"));
-      expect(linesFromFile.equals(linesFromSource)).toBe(true);
-    },
-    30000,
-  );
+    const linesFromSource = readFileSync(resolve(sourceDirOutput, "lines.jsonl"));
+    const linesFromFile = readFileSync(resolve(fileOutput, "lines.jsonl"));
+    expect(linesFromFile.equals(linesFromSource)).toBe(true);
+  }, 30000);
 
-  it(
-    "reads a .zip by unzipping it to find the workbook, with the same byte-for-byte result",
-    async () => {
-      const xlsxPath = stagedXlsx();
-      const zipPath = await zipOf(xlsxPath);
-      const sourceDirOutput = tempDir("export-file-source-out-");
-      const zipOutput = tempDir("export-file-zip-out-");
+  it("reads a .zip by unzipping it to find the workbook, with the same byte-for-byte result", async () => {
+    const xlsxPath = stagedXlsx();
+    const zipPath = await zipOf(xlsxPath);
+    const sourceDirOutput = tempDir("export-file-source-out-");
+    const zipOutput = tempDir("export-file-zip-out-");
 
-      run(["app/bin/export.js", "--package", "bst", "--source-dir", resolve(ROOT, "examples", "bst-latest"), "--output-dir", sourceDirOutput]);
-      run(["app/bin/export.js", "--package", "bst", "--file", zipPath, "--output-dir", zipOutput]);
+    run([
+      "app/bin/export.js",
+      "--package",
+      "bst",
+      "--source-dir",
+      resolve(ROOT, "examples", "bst-latest"),
+      "--output-dir",
+      sourceDirOutput,
+    ]);
+    run(["app/bin/export.js", "--package", "bst", "--file", zipPath, "--output-dir", zipOutput]);
 
-      expect(readFileSync(resolve(zipOutput, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
-      expect(readFileSync(resolve(zipOutput, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
-    },
-    30000,
-  );
+    expect(readFileSync(resolve(zipOutput, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
+    expect(readFileSync(resolve(zipOutput, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
+  }, 30000);
 
-  it(
-    "writes beside the input when --output-dir is omitted",
-    () => {
-      const xlsxPath = stagedXlsx();
-      run(["app/bin/export.js", "--package", "bst", "--file", xlsxPath]);
+  it("writes beside the input when --output-dir is omitted", () => {
+    const xlsxPath = stagedXlsx();
+    run(["app/bin/export.js", "--package", "bst", "--file", xlsxPath]);
 
-      const besideInput = dirname(xlsxPath);
-      expect(existsSync(resolve(besideInput, "book.toml"))).toBe(true);
-      expect(existsSync(resolve(besideInput, "lines.jsonl"))).toBe(true);
-      expect(existsSync(resolve(besideInput, "report.json"))).toBe(true);
-    },
-    30000,
-  );
+    const besideInput = dirname(xlsxPath);
+    expect(existsSync(resolve(besideInput, "book.toml"))).toBe(true);
+    expect(existsSync(resolve(besideInput, "lines.jsonl"))).toBe(true);
+    expect(existsSync(resolve(besideInput, "report.json"))).toBe(true);
+  }, 30000);
 
-  it(
-    "emits report.json computed by the JS engine from the extracted data",
-    () => {
-      const outputDir = tempDir("export-file-report-out-");
-      run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir]);
+  it("emits report.json computed by the JS engine from the extracted data", () => {
+    const outputDir = tempDir("export-file-report-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir]);
 
-      const document = JSON.parse(readFileSync(resolve(outputDir, "report.json"), "utf8"));
-      expect(document.package).toBe("bst");
-      expect(document.engine).toBe("js");
-      expect(Array.isArray(document.values)).toBe(true);
-      expect(document.values.length).toBeGreaterThan(0);
-      // At least one compliance check ran against the book the same run
-      // extracted, so the report is more than a bare cell dump.
-      expect(document.values.some((entry) => entry.key.startsWith("check/"))).toBe(true);
+    const document = JSON.parse(readFileSync(resolve(outputDir, "report.json"), "utf8"));
+    expect(document.package).toBe("bst");
+    expect(document.engine).toBe("js");
+    expect(Array.isArray(document.values)).toBe(true);
+    expect(document.values.length).toBeGreaterThan(0);
+    // At least one compliance check ran against the book the same run
+    // extracted, so the report is more than a bare cell dump.
+    expect(document.values.some((entry) => entry.key.startsWith("check/"))).toBe(true);
 
-      // R is a pure function of D: the book.toml this run wrote is a valid
-      // diya-gl book, and calculateFromDiyaGl() needs nothing report.js's
-      // --data mode wouldn't already have from the same directory.
-      const book = parseTOML(readFileSync(resolve(outputDir, "book.toml"), "utf8"));
-      expect(book.documentInfo.periodCoveredStart).toBeDefined();
-    },
-    30000,
-  );
+    // R is a pure function of D: the book.toml this run wrote is a valid
+    // diya-gl book, and calculateFromDiyaGl() needs nothing report.js's
+    // --data mode wouldn't already have from the same directory.
+    const book = parseTOML(readFileSync(resolve(outputDir, "book.toml"), "utf8"));
+    expect(book.documentInfo.periodCoveredStart).toBeDefined();
+  }, 30000);
 
-  it(
-    "rejects a package a customer renamed a required sheet on, naming the sheet",
-    async () => {
-      const xlsxPath = stagedXlsx();
-      const renamed = await renameSheet(xlsxPath, "SalesApr", "SalesAprRenamed");
+  it("rejects a package a customer renamed a required sheet on, naming the sheet", async () => {
+    const xlsxPath = stagedXlsx();
+    const renamed = await renameSheet(xlsxPath, "SalesApr", "SalesAprRenamed");
 
-      const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", renamed]);
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", renamed]);
 
-      expect(err.status).toBe(1);
-      expect(err.stderr).toContain('sheet "SalesApr" not found');
-      expect(err.stderr).toContain("does not match the current Basic Sole Trader template");
-      // A named anchor error, not a stack trace: no frame line, no "Error:"
-      // preamble node's default uncaught-error printing would add.
-      expect(err.stderr).not.toMatch(/at\s+\S+\s+\(.*:\d+:\d+\)/);
-      expect(err.stderr).not.toContain("Error:");
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain('sheet "SalesApr" not found');
+    expect(err.stderr).toContain("does not match the current Basic Sole Trader template");
+    // A named anchor error, not a stack trace: no frame line, no "Error:"
+    // preamble node's default uncaught-error printing would add.
+    expect(err.stderr).not.toMatch(/at\s+\S+\s+\(.*:\d+:\d+\)/);
+    expect(err.stderr).not.toContain("Error:");
 
-      expect(existsSync(resolve(dirname(xlsxPath), "book.toml"))).toBe(false);
-    },
-    30000,
-  );
+    expect(existsSync(resolve(dirname(xlsxPath), "book.toml"))).toBe(false);
+  }, 30000);
 
-  it(
-    "rejects a package a customer retyped a header label on, naming the sheet and cell",
-    async () => {
-      const xlsxPath = stagedXlsx();
-      const retyped = await retypeCell(xlsxPath, "Business Details", "C3", "Full name");
+  it("rejects a package a customer retyped a header label on, naming the sheet and cell", async () => {
+    const xlsxPath = stagedXlsx();
+    const retyped = await retypeCell(xlsxPath, "Business Details", "C3", "Full name");
 
-      const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", retyped]);
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", retyped]);
 
-      expect(err.status).toBe(1);
-      expect(err.stderr).toContain('sheet "Business Details" cell C3');
-      expect(err.stderr).toContain('expected header "Your name"');
-      expect(err.stderr).toContain('found "Full name"');
-    },
-    30000,
-  );
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain('sheet "Business Details" cell C3');
+    expect(err.stderr).toContain('expected header "Your name"');
+    expect(err.stderr).toContain('found "Full name"');
+  }, 30000);
 
   // The Debtors & Creditors sheet is where the book's opening trade debtors
   // and creditors are read from, and PurchasesStock and Fixed Assets feed the
@@ -258,18 +250,14 @@ describe("export.js --file mode", () => {
     30000,
   );
 
-  it(
-    "rejects a package the Debtors & Creditors sheet was renamed on, naming the sheet",
-    async () => {
-      const renamed = await renameSheet(stagedXlsx(), "Debtors & Creditors", "Aged debt");
+  it("rejects a package the Debtors & Creditors sheet was renamed on, naming the sheet", async () => {
+    const renamed = await renameSheet(stagedXlsx(), "Debtors & Creditors", "Aged debt");
 
-      const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", renamed]);
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", renamed]);
 
-      expect(err.status).toBe(1);
-      expect(err.stderr).toContain('sheet "Debtors & Creditors" not found');
-    },
-    30000,
-  );
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain('sheet "Debtors & Creditors" not found');
+  }, 30000);
 
   it("rejects --file for a package other than bst", () => {
     const err = runExpectingFailure(["app/bin/export.js", "--package", "taxi", "--file", BST_XLSX]);

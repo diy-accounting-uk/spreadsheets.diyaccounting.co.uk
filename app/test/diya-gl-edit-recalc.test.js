@@ -22,7 +22,14 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
-import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../lib/diya-gl-edits.js";
+import {
+  addSaleLine,
+  addPurchaseLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+} from "../lib/diya-gl-edits.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
@@ -266,9 +273,10 @@ for (const fixture of FIXTURES) {
       const after = runReport(book, edited);
 
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4")).toBe(valueAt(base.document, "cell/Profit & Loss Acc!C4"));
-      expect(after.results["Profit & Loss Acc"][fixture.addPurchase.categoryCell] - base.results["Profit & Loss Acc"][fixture.addPurchase.categoryCell]).toBe(
-        fixture.addPurchase.amount,
-      );
+      expect(
+        after.results["Profit & Loss Acc"][fixture.addPurchase.categoryCell] -
+          base.results["Profit & Loss Acc"][fixture.addPurchase.categoryCell],
+      ).toBe(fixture.addPurchase.amount);
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
         -fixture.addPurchase.amount,
       );
@@ -282,9 +290,9 @@ for (const fixture of FIXTURES) {
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4") - valueAt(base.document, "cell/Profit & Loss Acc!C4")).toBe(
         fixture.addSale.amount,
       );
-      expect(after.results["Profit & Loss Acc"][fixture.addSale.monthCell] - base.results["Profit & Loss Acc"][fixture.addSale.monthCell]).toBe(
-        fixture.addSale.amount,
-      );
+      expect(
+        after.results["Profit & Loss Acc"][fixture.addSale.monthCell] - base.results["Profit & Loss Acc"][fixture.addSale.monthCell],
+      ).toBe(fixture.addSale.amount);
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
         fixture.addSale.amount,
       );
@@ -339,9 +347,10 @@ for (const fixture of FIXTURES) {
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4") - valueAt(base.document, "cell/Profit & Loss Acc!C4")).toBe(
         -fixture.removeSaleLine.amount,
       );
-      expect(after.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell] - base.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell]).toBe(
-        -fixture.removeSaleLine.amount,
-      );
+      expect(
+        after.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell] -
+          base.results["Profit & Loss Acc"][fixture.removeSaleLine.monthCell],
+      ).toBe(-fixture.removeSaleLine.amount);
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
         -fixture.removeSaleLine.amount,
       );
@@ -353,9 +362,10 @@ for (const fixture of FIXTURES) {
       const after = runReport(book, edited);
 
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C4")).toBe(valueAt(base.document, "cell/Profit & Loss Acc!C4"));
-      expect(after.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell] - base.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell]).toBe(
-        -fixture.removePurchaseLine.amount,
-      );
+      expect(
+        after.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell] -
+          base.results["Profit & Loss Acc"][fixture.removePurchaseLine.categoryCell],
+      ).toBe(-fixture.removePurchaseLine.amount);
       expect(valueAt(after.document, "cell/Profit & Loss Acc!C24") - valueAt(base.document, "cell/Profit & Loss Acc!C24")).toBe(
         fixture.removePurchaseLine.amount,
       );

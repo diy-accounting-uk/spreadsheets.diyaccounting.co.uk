@@ -3471,13 +3471,20 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
   // measured here against the year the package's own tax data opens in, not
   // against the calendar the sheet built them from.
   const paymentSchedule = results["Payslips.xlsx!Payment"];
-  const payrollYearOpens = taxData?.financial_year?.start ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear()) : null;
+  const payrollYearOpens = taxData?.financial_year?.start
+    ? payrollYearStart(new Date(taxData.financial_year.start).getUTCFullYear())
+    : null;
   if (paymentSchedule && payrollYearOpens) {
     const asSerial = (day) => toExcelSerial(day.getUTCFullYear(), day.getUTCMonth() + 1, day.getUTCDate());
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
       const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
       const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
-      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
+      check(
+        `Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`,
+        num(paymentSchedule[`B${row}`]),
+        asSerial(ends),
+        0,
+      );
       check(
         `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
         num(paymentSchedule[`C${row}`]),
@@ -3605,7 +3612,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
         check(
           `Payslips!Payment I${row} total payable is the ${tab} tab's own`,
           num(payment[`I${row}`]),
-          num(monthTab[cells.employerNI]) + num(monthTab[cells.employeeNI]) + num(monthTab[cells.incomeTax]) + num(monthTab[cells.studentLoan]),
+          num(monthTab[cells.employerNI]) +
+            num(monthTab[cells.employeeNI]) +
+            num(monthTab[cells.incomeTax]) +
+            num(monthTab[cells.studentLoan]),
         );
       }
     });

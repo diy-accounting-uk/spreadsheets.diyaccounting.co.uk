@@ -3018,7 +3018,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     PAYE_SCHEDULE_MONTH_TABS.forEach((tab, taxMonth) => {
       const row = PAYE_SCHEDULE_FIRST_ROW + taxMonth;
       const { ends, due } = payeTaxMonthDates(payrollYearOpens, taxMonth);
-      check(`Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`, num(paymentSchedule[`B${row}`]), asSerial(ends), 0);
+      check(
+        `Payslips!Payment B${row} tax month ${taxMonth + 1} ends on the last day of ${tab}`,
+        num(paymentSchedule[`B${row}`]),
+        asSerial(ends),
+        0,
+      );
       check(
         `Payslips!Payment C${row} tax month ${taxMonth + 1} is due on the ${PAYE_DUE_DAY}th after it`,
         num(paymentSchedule[`C${row}`]),

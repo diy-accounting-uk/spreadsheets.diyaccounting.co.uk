@@ -145,7 +145,13 @@ const PACKAGES = [
     yearEndMonth: 9,
   },
   { name: "se", product: "se", taxData: "se-2026-2027.toml", yearEnd: new Date(Date.UTC(2027, 3, 5)), yearEndMonth: 0 },
-  { name: "se over a leap February", product: "se", taxData: "se-2023-2024.toml", yearEnd: new Date(Date.UTC(2024, 3, 5)), yearEndMonth: 0 },
+  {
+    name: "se over a leap February",
+    product: "se",
+    taxData: "se-2023-2024.toml",
+    yearEnd: new Date(Date.UTC(2024, 3, 5)),
+    yearEndMonth: 0,
+  },
 ];
 
 describe.each(PACKAGES)("the blank Payslips workbook for $name", (pkg) => {
@@ -298,7 +304,10 @@ describe("a Payslips chain formula the evaluator cannot read", () => {
     const xml = await zip.file(sheetPath).async("string");
     const pattern = new RegExp(`(<c r="${cellRef}"[^>]*><f[^>]*>)([^<]*)(</f>)`);
     expect(pattern.test(xml)).toBe(true);
-    zip.file(sheetPath, xml.replace(pattern, (_m, pre, _old, post) => `${pre}${formula}${post}`));
+    zip.file(
+      sheetPath,
+      xml.replace(pattern, (_m, pre, _old, post) => `${pre}${formula}${post}`),
+    );
     return generateSpreadsheet(await zip.generateAsync({ type: "nodebuffer" }), taxData, sheetsConfig);
   }
 
@@ -436,7 +445,10 @@ describeCalc("se Payslips PAYE schedule checks against the recalculated package"
     const xml = await zip.file(paymentPath).async("string");
     const pattern = new RegExp(`(<c r="${cellRef}"[^>]*>(?:(?!</c>).)*?<v[^>]*>)([^<]*)(</v>)`, "s");
     expect(pattern.test(xml)).toBe(true);
-    zip.file(paymentPath, xml.replace(pattern, (_m, pre, _old, post) => `${pre}12345${post}`));
+    zip.file(
+      paymentPath,
+      xml.replace(pattern, (_m, pre, _old, post) => `${pre}12345${post}`),
+    );
 
     const reloaded = await JSZip.loadAsync(await zip.generateAsync({ type: "nodebuffer" }));
     const value = readCellValue(await reloaded.file(paymentPath).async("string"), cellRef, await loadSharedStrings(reloaded));
