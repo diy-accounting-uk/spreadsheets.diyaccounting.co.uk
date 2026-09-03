@@ -15,7 +15,7 @@ plan of record, drafted 2026-09-03 with sources; its decisions are the operator'
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| H4 | Merge PR #58 (`claude/byte-equality`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | — | ready-to-start | CI on the PR is the gate; nothing waits on it |
+| H4 | Merge PR #58 (`claude/byte-equality`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | — | ready-to-start | CI green on the PR; nothing waits on it |
 | L1 | Take the seven decisions in `PLAN_DIYA_GL_LAUNCH.md` ("Decisions for the operator"): Cognito tier, sign-in domain, where the runner builds, the next product, when to apply for Income Tax recognition, the Rust port, the company's VAT position | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | the plan's phases start from these |
 ## Plans not tracked here
 
