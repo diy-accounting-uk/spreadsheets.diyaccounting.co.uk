@@ -55,6 +55,20 @@ async function openLoadedBook(page, viewport, exampleName = /bst-scenario-basic/
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
 }
 
+// The strip sits above the year table in the document regardless of which
+// of the two the current viewport actually shows -- mobile portrait hides
+// .year-table-scroll in favour of .month-cards, but both are always in the
+// DOM, so document order alone proves "above" at every layout.
+async function expectStripAboveYearTable(page) {
+  await expect(page.locator(".headlines-strip")).toBeAttached();
+  const stripPrecedesTable = await page.evaluate(() => {
+    const strip = document.querySelector(".headlines-strip");
+    const table = document.querySelector(".year-table-scroll");
+    return !!(strip && table && strip.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING);
+  });
+  expect(stripPrecedesTable).toBe(true);
+}
+
 async function uploadFile(page, buffer, name) {
   await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
   await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
@@ -281,6 +295,7 @@ test.describe("DIYA-GL books page — the rung: upload, drift, breakability", ()
 test.describe("DIYA-GL books page — four layouts", () => {
   test("desktop landscape: inspector rail beside the year table", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expectStripAboveYearTable(page);
 
     await expect(page.locator("#inspector")).toBeVisible();
     await expect(page.locator("#inspector .checks-list")).toBeVisible();
@@ -292,6 +307,7 @@ test.describe("DIYA-GL books page — four layouts", () => {
 
   test("desktop portrait: inspector collapses to a bottom drawer opened by the toggle", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-portrait"]);
+    await expectStripAboveYearTable(page);
 
     await expect(page.locator("#inspector")).toBeHidden();
     await expect(page.locator("#drawer-toggle-btn")).toBeVisible();
@@ -306,6 +322,7 @@ test.describe("DIYA-GL books page — four layouts", () => {
 
   test("mobile landscape: the columnar table scrolls horizontally with the month column frozen", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["mobile-landscape"]);
+    await expectStripAboveYearTable(page);
 
     await expect(page.locator(".year-table-scroll")).toBeVisible();
     await expect(page.locator(".month-cards")).toBeHidden();
@@ -327,6 +344,7 @@ test.describe("DIYA-GL books page — four layouts", () => {
 
   test("mobile portrait: stacked month cards with a sticky year-totals header and a bottom action bar", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+    await expectStripAboveYearTable(page);
 
     await expect(page.locator(".month-cards")).toBeVisible();
     await expect(page.locator(".year-table-scroll")).toBeHidden();
@@ -339,16 +357,17 @@ test.describe("DIYA-GL books page — four layouts", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "books-bst-mobile-portrait.png"), fullPage: false });
   });
 
-  test("mobile Charts tab shows the visualisations, mobile Checks tab opens the drawer without charts", async ({ page }) => {
+  test("mobile portrait: the headlines strip leads the Books tab; the Checks tab opens the drawer without it", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
 
-    await page.locator('.mobile-tab[data-tab="charts"]').click();
-    await expect(page.locator("#view-root svg").first()).toBeVisible();
+    const firstChildId = await page.locator("#view-root > *").first().getAttribute("id");
+    expect(firstChildId).toBe("headlines-strip-mount");
+    await expect(page.locator("#view-root .headline-tiles [data-r-key^='headline/']")).toHaveCount(4);
 
     await page.locator('.mobile-tab[data-tab="checks"]').click();
     await expect(page.locator("#inspector-drawer")).toHaveClass(/is-open/);
     await expect(page.locator("#inspector-drawer .checks-list")).toBeVisible();
-    await expect(page.locator("#inspector-drawer svg")).toHaveCount(0);
+    await expect(page.locator("#inspector-drawer .headlines-strip")).toHaveCount(0);
   });
 });
 

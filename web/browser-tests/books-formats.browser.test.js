@@ -210,18 +210,6 @@ test.describe("DIYA-GL books page — every way in", () => {
   });
 });
 
-// The shipped fixture (examples/precision-code-ltd/bst/book.toml, read-only
-// for this task) quotes fixedAssets[].acquiredDate as a TOML string, while
-// diya-gl-canonical.js's own writer -- the one writeDiyaGlZip serialises
-// through, app/lib, out of this task's reach -- emits the same field as a
-// bare TOML date. That is a pre-existing mismatch between the fixture and
-// the canonical writer this A1 check surfaces, not something either side of
-// this comparison introduces, so it is normalised on both texts before the
-// byte-for-byte comparison the rest of the field carries unmodified.
-function normaliseAcquiredDateQuoting(tomlText) {
-  return tomlText.replace(/(acquiredDate = )"(\d{4}-\d{2}-\d{2})"/g, "$1$2");
-}
-
 // loadFromFile's own book-building for an uploaded workbook (bst-data.js)
 // is deliberately lighter than the CLI's extractBook: it has no access to
 // the real per-cell chart labels, the Fixed Assets register or the Admin
@@ -263,12 +251,12 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
 
     const { bytes } = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const zip = await JSZip.loadAsync(bytes);
-    expect(Object.keys(zip.files).sort()).toEqual(["book.toml", "lines.jsonl", "report.json"]);
+    expect(Object.keys(zip.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
     const bookToml = await zip.file("book.toml").async("string");
     const linesJsonl = await zip.file("lines.jsonl").async("string");
     const expectedBookToml = fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "book.toml"), "utf-8");
-    expect(normaliseAcquiredDateQuoting(bookToml)).toBe(normaliseAcquiredDateQuoting(expectedBookToml));
+    expect(bookToml).toBe(expectedBookToml);
     expect(linesJsonl).toBe(fs.readFileSync(path.join(ASSETS_EXAMPLE_DIR, "lines.jsonl"), "utf-8"));
   });
 
@@ -313,7 +301,7 @@ test.describe("DIYA-GL books page — every way out: the diya-gl zip and JSON do
 
     const diyaGlZip = await triggerSaveDownload(page, "Download books as diya-gl (.zip)");
     const diyaGl = await JSZip.loadAsync(diyaGlZip.bytes);
-    expect(Object.keys(diyaGl.files).sort()).toEqual(["book.toml", "lines.jsonl", "report.json"]);
+    expect(Object.keys(diyaGl.files).sort()).toEqual(["book.toml", "bookchecks.json", "lines.jsonl", "report.json"]);
 
     const json = await triggerSaveDownload(page, "Download books as JSON (.json)");
     const document = JSON.parse(json.bytes.toString("utf-8"));
