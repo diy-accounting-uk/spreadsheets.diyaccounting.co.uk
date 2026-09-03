@@ -127,9 +127,14 @@ describe("diya-gl MCP server: stdio handshake", () => {
       const extracted = await client.callTool("extract_book", { path: BST_XLSX });
       expect(extracted.lines.length).toBeGreaterThan(0);
       expect(extracted.report.package).toBe("bst");
+      expect(extracted.bookChecks.summary).toEqual({ pass: expect.any(Number), warn: expect.any(Number), fail: expect.any(Number) });
+      expect(extracted.bookChecks.results.length).toBe(
+        extracted.bookChecks.summary.pass + extracted.bookChecks.summary.warn + extracted.bookChecks.summary.fail,
+      );
 
       const reported = await client.callTool("report", {});
       expect(reported.report).toEqual(extracted.report);
+      expect(reported.bookChecks.summary).toEqual(extracted.bookChecks.summary);
     } finally {
       client.close();
     }
@@ -293,7 +298,11 @@ describe("save_workbook: the diya-gl-zip and json formats", () => {
       expect(saved.format).toBe("diya-gl-zip");
       const bytes = Buffer.from(saved.base64, "base64");
       const zip = await JSZip.loadAsync(bytes);
-      expect(Object.keys(zip.files)).toEqual(["book.toml", "lines.jsonl", "report.json"]);
+      expect(Object.keys(zip.files)).toEqual(["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]);
+
+      const bookchecks = JSON.parse(await zip.file("bookchecks.json").async("string"));
+      expect(Array.isArray(bookchecks)).toBe(true);
+      expect(bookchecks.length).toBeGreaterThan(0);
     } finally {
       client.close();
     }

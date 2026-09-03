@@ -16,6 +16,8 @@ import { tmpdir } from "os";
 import { join, resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
+import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
+import { loadTaxDataForBook } from "../lib/bst-workbook.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -175,6 +177,7 @@ describe("export.js --file mode", () => {
     expect(existsSync(resolve(besideInput, "book.toml"))).toBe(true);
     expect(existsSync(resolve(besideInput, "lines.jsonl"))).toBe(true);
     expect(existsSync(resolve(besideInput, "report.json"))).toBe(true);
+    expect(existsSync(resolve(besideInput, "bookchecks.json"))).toBe(true);
   }, 30000);
 
   it("emits report.json computed by the JS engine from the extracted data", () => {
@@ -195,6 +198,70 @@ describe("export.js --file mode", () => {
     // --data mode wouldn't already have from the same directory.
     const book = parseTOML(readFileSync(resolve(outputDir, "book.toml"), "utf8"));
     expect(book.documentInfo.periodCoveredStart).toBeDefined();
+  }, 30000);
+
+  it("emits bookchecks.json byte-identical to the module's own text for the same book", async () => {
+    const outputDir = tempDir("export-file-bookchecks-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", outputDir]);
+
+    const written = readFileSync(resolve(outputDir, "bookchecks.json"), "utf8");
+
+    const book = parseTOML(readFileSync(resolve(outputDir, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(outputDir, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const taxData = await loadTaxDataForBook(book);
+    const { results } = runBookChecks({ book, lines, taxData });
+
+    expect(written).toBe(bookChecksJson(results));
+  }, 30000);
+
+  // Breakability: a purchase dated one day after the period end is added
+  // through the diya-gl JSON round trip (the same seam the interchange
+  // tests below use), and only book-dates-in-period is expected to flip --
+  // the other seven rules read a book export.js's own extraction already
+  // leaves clean. The added date sits in the month right after the period
+  // end with no gap behind it, so it moves no other book carried in the
+  // book unaffected -- a date far in the past would open a stretch of empty
+  // months of its own and flip that rule too.
+  it("carries a fail for book-dates-in-period, and nothing else, when one line is dated outside the period", async () => {
+    const cleanOutput = tempDir("export-file-break-clean-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", cleanOutput]);
+    const cleanBookChecks = JSON.parse(readFileSync(resolve(cleanOutput, "bookchecks.json"), "utf8"));
+
+    const book = parseTOML(readFileSync(resolve(cleanOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(cleanOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const dayAfterPeriodEnd = new Date(book.documentInfo.periodCoveredEnd);
+    dayAfterPeriodEnd.setUTCDate(dayAfterPeriodEnd.getUTCDate() + 1);
+    const outOfPeriodLine = {
+      ...lines[0],
+      entryNumber: "BREAK-OUT-OF-PERIOD",
+      postingDate: dayAfterPeriodEnd.toISOString().slice(0, 10),
+    };
+
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const brokenDir = tempDir("export-file-break-src-");
+    const brokenPath = resolve(brokenDir, "broken-diya-gl.json");
+    writeFileSync(brokenPath, writeBookJson(book, [...lines, outOfPeriodLine]));
+
+    const brokenOutput = tempDir("export-file-break-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", brokenPath, "--output-dir", brokenOutput]);
+    const brokenBookChecks = JSON.parse(readFileSync(resolve(brokenOutput, "bookchecks.json"), "utf8"));
+
+    const byId = (checks) => Object.fromEntries(checks.map((c) => [c.id, c.result]));
+    const cleanResults = byId(cleanBookChecks);
+    const brokenResults = byId(brokenBookChecks);
+
+    expect(brokenResults["book-dates-in-period"]).toBe("fail");
+    expect(cleanResults["book-dates-in-period"]).not.toBe("fail");
+    for (const id of Object.keys(cleanResults)) {
+      if (id === "book-dates-in-period") continue;
+      expect(brokenResults[id], id).toBe(cleanResults[id]);
+    }
   }, 30000);
 
   it("rejects a package a customer renamed a required sheet on, naming the sheet", async () => {
@@ -309,7 +376,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
     const secondOutput = tempDir("export-file-interchange-second-");
     run(["app/bin/export.js", "--package", "bst", "--file", zipPath, "--output-dir", secondOutput]);
 
-    for (const name of ["book.toml", "lines.jsonl", "report.json"]) {
+    for (const name of ["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]) {
       expect(readFileSync(resolve(secondOutput, name)).equals(readFileSync(resolve(firstOutput, name))), name).toBe(true);
     }
     // Nothing to read overtyped values off any more -- a diya-gl zip in
@@ -334,7 +401,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
     const secondOutput = tempDir("export-file-json-second-");
     run(["app/bin/export.js", "--package", "bst", "--file", jsonPath, "--output-dir", secondOutput]);
 
-    for (const name of ["book.toml", "lines.jsonl", "report.json"]) {
+    for (const name of ["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]) {
       expect(readFileSync(resolve(secondOutput, name)).equals(readFileSync(resolve(firstOutput, name))), name).toBe(true);
     }
   }, 30000);
@@ -362,6 +429,7 @@ describe("export.js --file mode: the diya-gl interchange formats", () => {
 
     expect(readFileSync(resolve(secondOutput, "book.toml")).equals(readFileSync(resolve(firstOutput, "book.toml")))).toBe(true);
     expect(readFileSync(resolve(secondOutput, "lines.jsonl")).equals(readFileSync(resolve(firstOutput, "lines.jsonl")))).toBe(true);
+    expect(readFileSync(resolve(secondOutput, "bookchecks.json")).equals(readFileSync(resolve(firstOutput, "bookchecks.json")))).toBe(true);
   }, 30000);
 
   it("reads a package zip renamed .xlsx by content, not by its extension", async () => {

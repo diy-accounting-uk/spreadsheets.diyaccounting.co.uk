@@ -79,6 +79,12 @@ export { calculateExpectedTax } from "./tax/income-tax.js";
 // Editing it.
 export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
 
+// The book checks and warnings over D itself, and their fix-it helpers.
+export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./book-checks.js";
+
+// The year-at-a-glance headline figures, derived from R.
+export { headlinesFromReport } from "./bst-headlines.js";
+
 // Saving it back out as a workbook or the package zip.
 export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
 

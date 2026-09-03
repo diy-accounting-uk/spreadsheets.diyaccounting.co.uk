@@ -28,6 +28,11 @@
 // overtyped.json, every sum the template computes that this copy of it
 // carries as a typed value instead -- present only when the input carried an
 // actual workbook to compare against a computed value in the first place.
+// --file also emits bookchecks.json: the book checks and warnings
+// app/lib/book-checks.js runs over D, for whichever of the five kinds the
+// input sniffed as -- the tax data behind the VAT threshold warning comes
+// from loadTaxDataForBook, the book's own declared year read straight off
+// app/data/, so the figure is real rather than a stand-in constant.
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve, dirname, basename } from "path";
@@ -49,6 +54,8 @@ import { extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
+import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
+import { loadTaxDataForBook } from "../lib/bst-workbook.js";
 import {
   readBookSource,
   BstAnchorError,
@@ -159,6 +166,18 @@ function writeOvertypedJson(outputDir, overtyped) {
   console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
 }
 
+// The book checks and warnings, run over D with the book's own tax year's
+// data behind the VAT threshold warning -- loadTaxDataForBook resolves that
+// year from book.documentInfo alone, so this runs the same way whichever of
+// the five kinds --file read the book from.
+async function writeBookChecksJson(outputDir, book, lines) {
+  const taxData = await loadTaxDataForBook(book);
+  const { results } = runBookChecks({ book, lines, taxData });
+  writeFileSync(resolve(outputDir, "bookchecks.json"), bookChecksJson(results));
+  const failing = results.filter((r) => r.result === "fail").length;
+  console.log(`  bookchecks.json: ${results.length} rules, ${failing} failing`);
+}
+
 // The whole --file extraction: books-interchange.js sniffs the input and
 // turns it into D (a workbook and its package zip stage into a scratch
 // directory and run the anchor guard exactly as before; a diya-gl zip, a
@@ -226,6 +245,7 @@ async function runFileMode(filePath, outputDirArg, productMod) {
   writeDiyaGlData(resolvedOutput, book, lines);
   writeReportJson(resolvedOutput, document);
   if (overtyped) writeOvertypedJson(resolvedOutput, overtyped);
+  await writeBookChecksJson(resolvedOutput, book, lines);
 
   console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }
