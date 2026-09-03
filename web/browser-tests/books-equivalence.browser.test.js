@@ -156,31 +156,15 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
       if (excelValue !== jsValue) mismatches.push({ key, excelValue, jsValue });
     }
 
-    // examples/bst-latest is a saved package the repository keeps as a
-    // fixed reference, refreshed on its own schedule rather than on every
-    // fixture edit -- it can briefly lag the current fixture's text and
-    // tax-year data. These two cells are that lag's own gauge: a new,
-    // unexplained mismatch fails by name; these do not widen silently.
-    const KNOWN_STALE_KEYS = new Set([
-      "cell/Admin!G5",
-      "section/admin-generator-injected/writing-down-allowance-rate",
-      "cell/Business Details!C7",
-      "section/business-details/description",
-    ]);
-    const unexplained = mismatches.filter((mismatch) => !KNOWN_STALE_KEYS.has(mismatch.key));
-
     console.log(`A3: ${compared} keys compared between S3 and S2`);
     console.log(`A3: ${onlyS2.length} keys in S2 only (all check/), ${onlyS3.length} keys in S3 only`);
     if (mismatches.length) {
-      console.log(`A3: ${mismatches.length} value mismatch(es), ${unexplained.length} unexplained`);
+      console.log(`A3: ${mismatches.length} value mismatch(es)`);
     }
 
     expect(onlyS2NotCheck, `S2-only keys that are not check/ verdicts:\n${onlyS2NotCheck.join("\n")}`).toEqual([]);
     expect(onlyS3, `S3-only keys:\n${onlyS3.join("\n")}`).toEqual([]);
-    expect(
-      unexplained,
-      `mismatches not on the known-stale list:\n${unexplained.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`,
-    ).toEqual([]);
+    expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
     expect(compared).toBeGreaterThan(0);
   });
 });
