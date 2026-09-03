@@ -22,7 +22,8 @@ workbook now writes rows in canonical line order, so the next generate refresh m
 viewports), T15 (`2a114c13`; 32 edit and warning proofs; the sub-penny trigger needs a non-tie
 fraction on a direct-cost line and the mileage checks cannot be split by any edit), T11 (`77bfa74b`; row date and account
 editors, five default year columns). Closing ladder green on the merged batch: formatting, Maven verify, 7779/7779 unit tests
-serially, 150/150 browser tests.
+serially, 150/150 browser tests; CI green on the branch and the PR merge ref at `09d5106f`.
+PR #57 is ready for review.
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
