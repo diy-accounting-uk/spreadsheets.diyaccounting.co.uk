@@ -830,9 +830,15 @@ table.entries-table th {
   letter-spacing: 0.04em;
   color: var(--pencil);
 }
+/* The entries grid is nested inside a cell of the year table, so it takes
+   the columnar table's own cell rules back off: an account name reads as
+   text, wrapped and left-aligned, not as a figure. */
 table.entries-table td {
   padding: 0.3rem 0.4rem;
   border-bottom: 1px solid var(--rule-faint);
+  font-family: var(--font-ui);
+  text-align: left;
+  white-space: normal;
 }
 table.entries-table td.entry-amount {
   font-family: var(--font-mono);

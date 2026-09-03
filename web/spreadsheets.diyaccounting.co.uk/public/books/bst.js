@@ -58,6 +58,7 @@
     els.topbarTitle = document.getElementById("app-title");
     els.sheetTabs = document.getElementById("sheet-tabs");
     els.viewRoot = document.getElementById("view-root");
+    els.appBody = document.querySelector(".app-body");
     els.inspector = document.getElementById("inspector");
     els.inspectorDrawer = document.getElementById("inspector-drawer");
     els.drawerBackdrop = document.getElementById("drawer-backdrop");
@@ -351,6 +352,7 @@
         state.view = btn.getAttribute("data-view");
         state.mobileTab = "books";
         render();
+        scrollViewToTop();
       });
     });
     scrollActiveTabIntoView();
@@ -366,6 +368,14 @@
     var active = strip.querySelector('.tab-btn[aria-selected="true"]');
     if (!active) return;
     strip.scrollLeft = Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2);
+  }
+
+  // A new book, or a new view, starts at its own top. The view is its own
+  // scroller on a phone, and it keeps whatever position the last thing the
+  // reader clicked left it at.
+  function scrollViewToTop() {
+    if (els.appBody) els.appBody.scrollTop = 0;
+    window.scrollTo(0, 0);
   }
 
   // A fade at whichever edge has more tabs beyond it, so a row that scrolls
@@ -838,6 +848,7 @@
     window.DiyaGlBooksEdits.undo.clear();
     setPickerBusy(false);
     render();
+    scrollViewToTop();
   }
 
   // Called at the one place state.book/state.lines change: applySnapshot,
