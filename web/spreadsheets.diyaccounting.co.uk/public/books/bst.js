@@ -210,9 +210,10 @@
       return;
     }
 
-    var view = state.mobileTab === "charts" && isMobileViewport() ? "charts" : state.view;
+    var view = state.view;
     els.viewRoot.innerHTML = renderView(view);
     bindViewInteractions(view);
+    mountHeadlinesStrip();
 
     els.inspector.innerHTML = renderInspectorFull();
     els.inspectorDrawer.innerHTML =
@@ -241,8 +242,20 @@
     });
   }
 
-  function isMobileViewport() {
-    return window.matchMedia("(max-width: 899px)").matches;
+  // The year-at-a-glance strip: the first thing every loaded view shows,
+  // prepended fresh into view-root on every render (render() has just
+  // replaced the whole subtree, so there is never a stale mount to refresh
+  // instead). headlines.js computes its own minimal R from the snapshot and
+  // needs nothing else from this page.
+  function mountHeadlinesStrip() {
+    var mountEl = document.createElement("div");
+    mountEl.id = "headlines-strip-mount";
+    els.viewRoot.insertBefore(mountEl, els.viewRoot.firstChild);
+    window.DiyaGlHeadlines.mountHeadlines(mountEl, {
+      snapshot: SNAPSHOT,
+      headlinesFromReport: window.DiyaGlBooksLoader.headlinesFromReport,
+      formatMoney: fmtMoney,
+    });
   }
 
   function renderTopbarTitle() {
@@ -287,7 +300,6 @@
   function renderMobileTabbar() {
     var tabs = [
       { id: "books", label: "Books" },
-      { id: "charts", label: "Charts" },
       { id: "checks", label: "Checks" },
     ];
     els.mobileTabbar.innerHTML =
@@ -342,8 +354,6 @@
         return renderBusinessDetails();
       case "admin":
         return renderAdmin();
-      case "charts":
-        return '<h2>Charts</h2><p class="view-lede">Drawn from the calculated book, never the as-read layer.</p>' + renderChartsBlock();
       default:
         return renderHome();
     }
@@ -829,7 +839,6 @@
           "</span></a></li>"
         );
       }).join("") +
-      '<li><a href="#" data-goto="charts"><span class="nav-item-label">Charts</span><span class="nav-item-sheets">Expense mix, monthly trend</span></a></li>' +
       "</ul>"
     );
   }
@@ -1816,169 +1825,6 @@
     );
   }
 
-  // ============================== charts ==============================
-
-  function renderChartsBlock() {
-    return renderExpenseBar() + renderMonthlyColumns();
-  }
-
-  var CHART_COLOR_ORDER = ["#106868", "#158484", "#29c0c0", "#6ed3d3", "#a9e4e4", "#737373"];
-
-  function renderExpenseBar() {
-    var a = SNAPSHOT.annual;
-    var items = [
-      ["Employee Costs", a.employeeCosts],
-      ["Premises Costs", a.premisesCosts],
-      ["Other Expenses", a.otherExpenses],
-      ["Motor Expenses", a.motorExpenses],
-      ["Advertising", a.advertising],
-      ["Legal & Professional", a.legalProfessional],
-    ].sort(function (x, y) {
-      return y[1] - x[1];
-    });
-    var total = items.reduce(function (s, i) {
-      return s + i[1];
-    }, 0);
-    var width = 600;
-    var height = 34 * items.length + 10;
-    var barMax = width - 190;
-    var y = 10;
-    var bars = items
-      .map(function (item, i) {
-        var w = (item[1] / items[0][1]) * barMax;
-        var color = CHART_COLOR_ORDER[i % CHART_COLOR_ORDER.length];
-        var share = ((item[1] / total) * 100).toFixed(1);
-        var row =
-          '<text x="0" y="' +
-          (y + 14) +
-          '" class="chart-bar-label" fill="var(--ink)">' +
-          esc(item[0]) +
-          "</text>" +
-          '<rect x="150" y="' +
-          y +
-          '" width="' +
-          Math.max(w, 1) +
-          '" height="20" fill="' +
-          color +
-          '" rx="2"></rect>' +
-          '<text x="' +
-          (150 + w + 8) +
-          '" y="' +
-          (y + 14) +
-          '" class="chart-value-label" fill="var(--pencil)">' +
-          fmtMoney(item[1]) +
-          " (" +
-          share +
-          "%)" +
-          "</text>";
-        y += 34;
-        return row;
-      })
-      .join("");
-    return (
-      '<div class="chart-block"><h3>Where the costs are</h3>' +
-      '<svg viewBox="0 0 ' +
-      width +
-      " " +
-      height +
-      '" role="img" aria-label="Expense categories by annual total, largest first">' +
-      bars +
-      "</svg></div>"
-    );
-  }
-
-  function renderMonthlyColumns() {
-    var months = SNAPSHOT.months;
-    var width = 600;
-    var height = 220;
-    var padding = 28;
-    var chartW = width - padding * 2;
-    var chartH = height - padding * 2 - 20;
-    var groupW = chartW / months.length;
-    var barW = groupW / 3.2;
-    var maxVal = Math.max.apply(
-      null,
-      months.map(function (m) {
-        var r = SNAPSHOT.monthly[m.key];
-        return Math.max(r.sales, r.totalExpenses + r.costOfSales + r.directCosts);
-      }),
-    );
-    var cumulative = 0;
-    var cumPoints = [];
-    var bars = months
-      .map(function (m, i) {
-        var r = SNAPSHOT.monthly[m.key];
-        var x = padding + i * groupW;
-        var costs = r.costOfSales + r.directCosts + r.totalExpenses;
-        var salesH = (r.sales / maxVal) * chartH;
-        var costsH = (costs / maxVal) * chartH;
-        var profitH = (Math.max(r.netProfit, 0) / maxVal) * chartH;
-        cumulative += r.netProfit;
-        cumPoints.push([x + groupW / 2, height - padding - 20 - (cumulative / (maxVal * 3)) * chartH]);
-        return (
-          '<rect x="' +
-          x +
-          '" y="' +
-          (height - padding - 20 - salesH) +
-          '" width="' +
-          barW +
-          '" height="' +
-          salesH +
-          '" fill="#2f6b4f"></rect>' +
-          '<rect x="' +
-          (x + barW + 2) +
-          '" y="' +
-          (height - padding - 20 - costsH) +
-          '" width="' +
-          barW +
-          '" height="' +
-          costsH +
-          '" fill="#b3402a"></rect>' +
-          '<rect x="' +
-          (x + (barW + 2) * 2) +
-          '" y="' +
-          (height - padding - 20 - profitH) +
-          '" width="' +
-          barW +
-          '" height="' +
-          profitH +
-          '" fill="#93c4ac"></rect>' +
-          '<text x="' +
-          (x + groupW / 2) +
-          '" y="' +
-          (height - 6) +
-          '" class="chart-bar-label" fill="var(--pencil)" text-anchor="middle">' +
-          esc(m.label) +
-          "</text>"
-        );
-      })
-      .join("");
-    var linePath = cumPoints
-      .map(function (p, i) {
-        return (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1);
-      })
-      .join(" ");
-    return (
-      '<div class="chart-block"><h3>Through the year</h3>' +
-      '<svg viewBox="0 0 ' +
-      width +
-      " " +
-      height +
-      '" role="img" aria-label="Monthly turnover, costs and profit, with cumulative profit">' +
-      bars +
-      '<path d="' +
-      linePath +
-      '" fill="none" stroke="var(--correction)" stroke-width="2"></path>' +
-      "</svg>" +
-      '<div class="chart-legend">' +
-      '<span><span class="chart-legend-swatch" style="background:#2f6b4f"></span>Turnover</span>' +
-      '<span><span class="chart-legend-swatch" style="background:#b3402a"></span>Costs</span>' +
-      '<span><span class="chart-legend-swatch" style="background:#93c4ac"></span>Profit</span>' +
-      '<span><span class="chart-legend-swatch" style="background:var(--correction)"></span>Cumulative profit</span>' +
-      "</div></div>"
-    );
-  }
-
   // ============================== inspector: checks, drift, helpers ==============================
 
   function renderDriftSummary() {
@@ -2143,8 +1989,6 @@
       renderBookChecksList() +
       renderChecksList() +
       renderHelpersSection() +
-      "<h3>Charts</h3>" +
-      renderChartsBlock() +
       '<div style="margin-top:1rem"><button type="button" class="btn btn-primary" id="inspector-save-btn">Save workbook</button></div>'
     );
   }
@@ -2356,11 +2200,32 @@
   // then turns the bytes into a download. Dynamic import keeps this a
   // plain script: no engine code loads until a save is actually asked for.
   // The diya-gl formats need R, already sitting on the live snapshot.
+  // The diya-gl zip's fourth file: the same book checks and warnings
+  // export.js's --file mode writes as bookchecks.json and the MCP report
+  // tool returns alongside R, run over this page's own live book and lines
+  // with the tax data the load already resolved (SNAPSHOT.context.taxData --
+  // the same field bst-edits.js's own bookChecks() reads for the inspector
+  // panel). Round-tripped through bookChecksJson's own sort and stringify, so
+  // the bytes writeDiyaGlZip's JSON.stringify produces for bookchecks.json
+  // match a CLI export's byte for byte.
+  function buildBookChecksForZip(engine, book, lines) {
+    var taxData = (SNAPSHOT.context && SNAPSHOT.context.taxData) || null;
+    var results = engine.runBookChecks({ book: book, lines: lines, taxData: taxData }).results;
+    return JSON.parse(engine.bookChecksJson(results));
+  }
+
   function runSave(current, format) {
     showToast("Generating " + (SAVE_FORMAT_LABELS[format] || "the download") + "...");
-    import("./save.js")
-      .then(function (saveModule) {
-        var extras = format === "diya-gl-zip" || format === "json" ? { report: SNAPSHOT.report } : undefined;
+    Promise.all([import("./save.js"), format === "diya-gl-zip" ? import("./engine/diya-gl-engine.js") : Promise.resolve(null)])
+      .then(function (modules) {
+        var saveModule = modules[0];
+        var engine = modules[1];
+        var extras;
+        if (format === "diya-gl-zip") {
+          extras = { report: SNAPSHOT.report, bookchecks: buildBookChecksForZip(engine, current.book, current.lines) };
+        } else if (format === "json") {
+          extras = { report: SNAPSHOT.report };
+        }
         return saveModule.buildSaveArtifact(current.book, current.lines, format, extras).then(function (artifact) {
           saveModule.downloadArtifact(artifact);
           showToast("Saved " + artifact.filename + ".");

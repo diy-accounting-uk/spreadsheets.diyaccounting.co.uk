@@ -198,9 +198,32 @@
   // ============================== engine loading ==============================
 
   var enginePromise = null;
+  // The resolved module, once loadEngine() has settled -- kept alongside
+  // the promise so a caller that only needs a synchronous read of an
+  // already-loaded engine (the headlines strip's own mount, which cannot
+  // await inside render()) has somewhere to reach it. Every load path funnels
+  // through loadEngine() before a book renders, so by the time a book is on
+  // screen this is already set.
+  var loadedEngine = null;
   function loadEngine() {
-    if (!enginePromise) enginePromise = import("./engine/diya-gl-engine.js");
+    if (!enginePromise) {
+      enginePromise = import("./engine/diya-gl-engine.js").then(function (module) {
+        loadedEngine = module;
+        return module;
+      });
+    }
     return enginePromise;
+  }
+
+  // The year-at-a-glance strip (headlines.js) needs headlinesFromReport()
+  // synchronously inside bst.js's own render() -- mountHeadlines() has no
+  // async seam to await an import in. A book cannot be on screen without
+  // the engine already having loaded to compute its snapshot, so this is
+  // always available by the time the page has anything to mount the strip
+  // onto.
+  function headlinesFromReport(report) {
+    if (!loadedEngine) throw new Error("The books engine has not finished loading yet.");
+    return loadedEngine.headlinesFromReport(report);
   }
 
   var resourcesPromise = null;
@@ -1069,5 +1092,6 @@
     loadFromBookAndLines: loadFromBookAndLines,
     recalculate: recalculate,
     reachesAnAccount: reachesAnAccount,
+    headlinesFromReport: headlinesFromReport,
   };
 })(window);

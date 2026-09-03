@@ -1116,41 +1116,6 @@ ul.book-checks-list {
   z-index: 25;
 }
 
-/* ============================== Charts ============================== */
-
-.chart-block {
-  margin-bottom: 1.5rem;
-}
-.chart-block svg {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-.chart-bar-label {
-  font-family: var(--font-ui);
-  font-size: 0.6rem;
-}
-.chart-value-label {
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-}
-.chart-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-top: 0.5rem;
-  font-size: 0.72rem;
-  color: var(--pencil);
-}
-.chart-legend-swatch {
-  display: inline-block;
-  width: 0.7em;
-  height: 0.7em;
-  border-radius: 2px;
-  margin-right: 0.3em;
-  vertical-align: -1px;
-}
-
 /* ============================== Panels ============================== */
 
 .panel-grid {

@@ -128,7 +128,11 @@ test.describe("DIYA-GL books page — render-key coverage (A5)", () => {
       const renderedKeys = await sweepPage(page, example.button);
 
       const missing = [...s2Keys].filter((k) => !renderedKeys.has(k) && !(k in DECLARED));
-      const invented = [...renderedKeys].filter((k) => !s2Keys.has(k));
+      // headline/* keys are the year-at-a-glance strip's own derived figures
+      // (headlinesFromReport() over R, not a row R itself carries), so S2's
+      // report.json never names them -- skipped by prefix rather than
+      // widening what "invented" tolerates for cell/, section/ or check/.
+      const invented = [...renderedKeys].filter((k) => !s2Keys.has(k) && !k.startsWith("headline/"));
 
       expect(missing, `S2 keys neither rendered nor declared:\n${missing.join("\n")}`).toEqual([]);
       expect(invented, `data-r-key values not in S2:\n${invented.join("\n")}`).toEqual([]);
