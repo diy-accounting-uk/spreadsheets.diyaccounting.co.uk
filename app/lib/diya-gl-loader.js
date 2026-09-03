@@ -227,14 +227,27 @@ export function diyaGlToScenario(book, lines, product) {
   // row's position on the tab -- and the entry number extractBstTransactions
   // (xlsx-exporter.js) assigns from that position -- depends on the order
   // the caller happened to hand lines in, not on any fact of the line
-  // itself. A book saved to diya-gl and reloaded arrives sorted (the same
-  // compareLines() a canonical lines.jsonl is written in), which differs
-  // from a workbook's own native row order, so this line was renumbered on
-  // every such round trip. Sorting to that same order here first makes the
-  // row order a pure function of the line's own facts: any two equal books
-  // write the same rows to the same sheet positions, whichever order their
-  // lines array arrived in.
-  if (product === "bst") filteredLines = [...filteredLines].sort(compareLines);
+  // itself. extractBstTransactions numbers a line from its row on the
+  // sheet (sales rows first, then purchases, each in row order), so the
+  // entryNumber it wrote already records that native order. Sorting by
+  // sourceJournalID then entryNumber before writing puts every line back
+  // on the row it started on, so a workbook survives a write-then-re-
+  // extract cycle byte for byte. compareLines() only breaks a tie between
+  // two lines that share an entryNumber (a book with no workbook history
+  // of its own, where entryNumber is absent or repeated).
+  if (product === "bst") {
+    filteredLines = [...filteredLines].sort((a, b) => {
+      if (a.sourceJournalID !== b.sourceJournalID) return a.sourceJournalID < b.sourceJournalID ? -1 : 1;
+      const aEntry = a.entryNumber;
+      const bEntry = b.entryNumber;
+      if (aEntry !== bEntry) {
+        if (aEntry === undefined) return -1;
+        if (bEntry === undefined) return 1;
+        return aEntry < bEntry ? -1 : 1;
+      }
+      return compareLines(a, b);
+    });
+  }
   // Every product whose cellWrites fills a mileage column takes the miles,
   // and only the Taxi Driver package takes a sales line's (see the note on
   // buildGrouped's carriesMileage setting). Ltd keeps mileage on

@@ -159,16 +159,18 @@ const precisionAddress = {
   organizationTelephone: precisionEntity.organizationTelephone,
 };
 
-// The name and trade the company's book reads under when the same year is
-// kept as a sole trader's.
+// The name the company's book reads under when the same year is kept as a
+// sole trader's. The trade itself doesn't change between the company and its
+// sole-trader telling of the same year, so the description carries over from
+// the master entity rather than a second, separately worded copy of it.
 const PRECISION_SOLE_TRADER = {
   organizationIdentifier: "Precision Code Trading",
-  organizationDescription: "IT consultancy (sole trader adaptation)",
 };
 
 function precisionSubsetEntity(product, { vatRegistered }) {
   const entity = {
     ...PRECISION_SOLE_TRADER,
+    "organizationDescription": precisionEntity.organizationDescription,
     ...precisionAddress,
     "taxRegistrationNumber": precisionEntity.taxRegistrationNumber,
     "taxAuthorityIdentifier": "HMRC",
@@ -300,7 +302,7 @@ const bstToml = formatScenarioToml(
     product: "bst",
     tax_regime: "se",
     vat_registered: false,
-    business: businessBlock(bstEntity, { description: precisionEntity.organizationDescription }),
+    business: businessBlock(bstEntity),
   },
   bstGrouped,
   {

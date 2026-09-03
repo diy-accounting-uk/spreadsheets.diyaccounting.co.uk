@@ -15,7 +15,7 @@ import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
-import { s1, s2, s3, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
+import { s1, s2, s2ForPackage, s3, s3YearEnd, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable.json"), "utf-8"));
@@ -133,8 +133,12 @@ async function uploadFile(page, buffer, name) {
 test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
   test("S3 (bst-latest, saved) equals S2 (the JS engine) for every shared key", () => {
     const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
-    const s2Map = s2(basic.bookDir, "basic");
     const s3Map = s3();
+    // bst-latest was built for its own year-end, not the master book's own
+    // 2025-26 year, so a year-dependent Admin figure (the writing-down
+    // allowance rate among them) only agrees when S2 is asked for that same
+    // year -- s2ForPackage takes the year-end S3 actually reported under.
+    const s2Map = s2ForPackage(basic.bookDir, s3YearEnd(), "basic-s3-year");
 
     const onlyS2 = [...s2Map.keys()].filter((key) => !s3Map.has(key));
     const onlyS3 = [...s3Map.keys()].filter((key) => !s2Map.has(key));
@@ -156,31 +160,15 @@ test.describe("DIYA-GL books page — the sheet agrees (A3)", () => {
       if (excelValue !== jsValue) mismatches.push({ key, excelValue, jsValue });
     }
 
-    // examples/bst-latest is a saved package the repository keeps as a
-    // fixed reference, refreshed on its own schedule rather than on every
-    // fixture edit -- it can briefly lag the current fixture's text and
-    // tax-year data. These two cells are that lag's own gauge: a new,
-    // unexplained mismatch fails by name; these do not widen silently.
-    const KNOWN_STALE_KEYS = new Set([
-      "cell/Admin!G5",
-      "section/admin-generator-injected/writing-down-allowance-rate",
-      "cell/Business Details!C7",
-      "section/business-details/description",
-    ]);
-    const unexplained = mismatches.filter((mismatch) => !KNOWN_STALE_KEYS.has(mismatch.key));
-
     console.log(`A3: ${compared} keys compared between S3 and S2`);
     console.log(`A3: ${onlyS2.length} keys in S2 only (all check/), ${onlyS3.length} keys in S3 only`);
     if (mismatches.length) {
-      console.log(`A3: ${mismatches.length} value mismatch(es), ${unexplained.length} unexplained`);
+      console.log(`A3: ${mismatches.length} value mismatch(es)`);
     }
 
     expect(onlyS2NotCheck, `S2-only keys that are not check/ verdicts:\n${onlyS2NotCheck.join("\n")}`).toEqual([]);
     expect(onlyS3, `S3-only keys:\n${onlyS3.join("\n")}`).toEqual([]);
-    expect(
-      unexplained,
-      `mismatches not on the known-stale list:\n${unexplained.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`,
-    ).toEqual([]);
+    expect(mismatches, `mismatches:\n${mismatches.map((m) => `${m.key}: S3=${m.excelValue} S2=${m.jsValue}`).join("\n")}`).toEqual([]);
     expect(compared).toBeGreaterThan(0);
   });
 });
