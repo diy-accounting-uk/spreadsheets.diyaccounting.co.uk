@@ -58,6 +58,7 @@
     els.topbarTitle = document.getElementById("app-title");
     els.sheetTabs = document.getElementById("sheet-tabs");
     els.viewRoot = document.getElementById("view-root");
+    els.appBody = document.querySelector(".app-body");
     els.inspector = document.getElementById("inspector");
     els.inspectorDrawer = document.getElementById("inspector-drawer");
     els.drawerBackdrop = document.getElementById("drawer-backdrop");
@@ -186,6 +187,54 @@
     );
   }
 
+  // Every figure whose own cell disagrees with the workbook carries the
+  // mark, on whatever view renders it -- the page walks its own rendered
+  // keys rather than each render function knowing which cells might drift.
+  // In a form the mark goes to the row's right margin, so a box never shows
+  // two numbers; everywhere else the figure itself becomes the correction,
+  // keeping its report key on the computed half.
+  function applyDriftMarks(root) {
+    var byId = {};
+    var found = false;
+    (SNAPSHOT.drift || []).forEach(function (entry) {
+      if (Math.abs(entry.computed - entry.asRead) >= 0.005) {
+        byId[entry.id] = entry;
+        found = true;
+      }
+    });
+    if (!found) return;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-r-key]"), function (el) {
+      if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") return;
+      if (el.closest(".pencil-correction")) return;
+      var entry = null;
+      el.getAttribute("data-r-key")
+        .split(R_KEY_SEP)
+        .forEach(function (key) {
+          if (key.indexOf("cell/") === 0 && byId[key.slice(5)]) entry = byId[key.slice(5)];
+        });
+      if (!entry) return;
+
+      var formRow = el.classList.contains("form-amount-box") ? el.closest(".form-row") : null;
+      if (formRow) {
+        var margin = formRow.querySelector(".form-row-margin");
+        if (!margin) {
+          margin = document.createElement("span");
+          margin.className = "form-row-margin";
+          formRow.appendChild(margin);
+        }
+        if (!margin.querySelector(".pencil-correction")) {
+          margin.innerHTML = correctionFor(entry, { inMargin: true });
+        }
+        return;
+      }
+
+      var rKeyAttr = ' data-r-key="' + esc(el.getAttribute("data-r-key")) + '"';
+      el.removeAttribute("data-r-key");
+      el.innerHTML = correctionFor(entry, { rKeyAttr: rKeyAttr });
+    });
+  }
+
   function correctionFor(driftEntry, opts) {
     opts = opts || {};
     return pencilCorrection(driftEntry.computed, driftEntry.asRead, {
@@ -199,6 +248,8 @@
 
   function render() {
     document.body.classList.toggle("is-loaded", state.loaded);
+    // Nothing to save until there is a book: the mobile bar stays away.
+    els.mobileActionBar.classList.toggle("hidden", !state.loaded);
     renderTopbarTitle();
     renderSheetTabs();
     renderUndoControls();
@@ -212,6 +263,7 @@
 
     var view = state.view;
     els.viewRoot.innerHTML = renderView(view);
+    applyDriftMarks(els.viewRoot);
     bindViewInteractions(view);
     mountHeadlinesStrip();
 
@@ -258,6 +310,9 @@
     });
   }
 
+  // The business name is the half a reader needs; the view name gives way
+  // to it when the header runs out of room (the tab strip below says which
+  // view this is anyway).
   function renderTopbarTitle() {
     if (!state.loaded) {
       els.topbarTitle.textContent = "DIYA-GL — Basic Sole Trader books";
@@ -267,7 +322,11 @@
     var viewMeta = VIEWS.filter(function (v) {
       return v.id === state.view;
     })[0];
-    els.topbarTitle.textContent = name + (viewMeta ? " — " + viewMeta.label : "");
+    els.topbarTitle.innerHTML =
+      '<span class="title-business">' +
+      esc(name) +
+      "</span>" +
+      (viewMeta ? '<span class="title-view">' + esc(viewMeta.label) + "</span>" : "");
   }
 
   function renderSheetTabs() {
@@ -293,8 +352,39 @@
         state.view = btn.getAttribute("data-view");
         state.mobileTab = "books";
         render();
+        scrollViewToTop();
       });
     });
+    scrollActiveTabIntoView();
+    updateTabStripFades();
+  }
+
+  // The strip is narrower than its ten tabs on a phone, so the view being
+  // read is brought into it rather than left off the end. scrollLeft is set
+  // directly: scrollIntoView would scroll every ancestor, taking the page
+  // with it.
+  function scrollActiveTabIntoView() {
+    var strip = els.sheetTabs;
+    var active = strip.querySelector('.tab-btn[aria-selected="true"]');
+    if (!active) return;
+    strip.scrollLeft = Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2);
+  }
+
+  // A new book, or a new view, starts at its own top. The view is its own
+  // scroller on a phone, and it keeps whatever position the last thing the
+  // reader clicked left it at.
+  function scrollViewToTop() {
+    if (els.appBody) els.appBody.scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+
+  // A fade at whichever edge has more tabs beyond it, so a row that scrolls
+  // looks like one.
+  function updateTabStripFades() {
+    var strip = els.sheetTabs;
+    var furthest = strip.scrollWidth - strip.clientWidth;
+    strip.classList.toggle("fades-left", strip.scrollLeft > 1);
+    strip.classList.toggle("fades-right", strip.scrollLeft < furthest - 1);
   }
 
   function renderMobileTabbar() {
@@ -363,6 +453,9 @@
     if (view === "year") {
       bindYearView();
     }
+    if (view === "business-details") {
+      bindBusinessDetails();
+    }
     if (view === "home") {
       Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-goto]"), function (a) {
         a.addEventListener("click", function (e) {
@@ -376,6 +469,31 @@
 
   // ============================== empty state ==============================
 
+  var DROP_HINT_RESTING = "or drop one here — .xlsx, .zip or .json";
+
+  // The three books the page can load without a file. A reader picks a
+  // business, not a fixture id, so the name leads and the id follows in
+  // small text.
+  var EXAMPLE_BOOKS = [
+    { key: "bst-scenario-basic", name: "Precision Code Trading", note: "full ledger" },
+    { key: "bst-brickwork-pro-nonvat", name: "BrickWork Pro Trading", note: "bricklaying trade" },
+    { key: "bst-sp-sixty", name: "SP Sixty Driving", note: "no ledger, mileage route" },
+  ];
+
+  function exampleButton(example) {
+    return (
+      '<button type="button" class="btn example-btn" data-example="' +
+      esc(example.key) +
+      '"><span class="example-name">' +
+      esc(example.name) +
+      '</span><span class="example-id">' +
+      esc(example.key) +
+      " — " +
+      esc(example.note) +
+      "</span></button>"
+    );
+  }
+
   function renderEmptyState() {
     return (
       '<div class="empty-state">' +
@@ -384,21 +502,19 @@
       (state.savedBook ? renderContinueOffer() : "") +
       '<div class="empty-state-actions">' +
       '<div class="picker-row">' +
-      '<label class="file-picker-label" for="file-picker">' +
-      '<span aria-hidden="true">📁</span> Choose a .xlsx, .zip or .json file' +
-      "</label>" +
+      '<label class="file-picker-label" for="file-picker">Choose a file</label>' +
       '<input type="file" id="file-picker" accept=".xlsx,.zip,.json" class="hidden" />' +
+      "</div>" +
+      '<p class="drop-hint" id="drop-hint">' +
+      DROP_HINT_RESTING +
+      "</p>" +
       '<button type="button" class="btn" id="new-book-btn" aria-expanded="' +
       (state.newBookFormOpen ? "true" : "false") +
       '">Start a new book</button>' +
-      "</div>" +
-      '<p class="drop-hint" id="drop-hint">or drop a file here</p>' +
       (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
-      '<button type="button" class="btn" data-example="bst-scenario-basic">bst-scenario-basic — Precision Code Trading, full ledger</button>' +
-      '<button type="button" class="btn" data-example="bst-brickwork-pro-nonvat">bst-brickwork-pro-nonvat — BrickWork trade</button>' +
-      '<button type="button" class="btn" data-example="bst-sp-sixty">bst-sp-sixty — no-ledger, mileage route</button>' +
+      EXAMPLE_BOOKS.map(exampleButton).join("") +
       "</div>" +
       "</div>" +
       '<p id="empty-state-message" class="view-lede" aria-live="polite"></p>' +
@@ -610,7 +726,7 @@
     window.DiyaGlBooksLoader.loadExample(exampleKey)
       .then(function (snapshot) {
         applyLoadedSnapshot(snapshot);
-        showToast("Loaded " + snapshot.scenario + ".");
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (example)");
       })
       .catch(function (error) {
         setPickerBusy(false);
@@ -628,7 +744,7 @@
     window.DiyaGlBooksLoader.loadFromAnySource(file)
       .then(function (snapshot) {
         applyLoadedSnapshot(snapshot);
-        showToast("Loaded " + file.name + ".");
+        showToast("Loaded " + file.name);
       })
       .catch(function (error) {
         setPickerBusy(false);
@@ -684,7 +800,7 @@
     if (card) card.classList.toggle("is-drag-over", on);
     var hint = document.getElementById("drop-hint");
     if (hint) {
-      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : "or drop a file here";
+      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : DROP_HINT_RESTING;
     }
   }
 
@@ -732,6 +848,7 @@
     window.DiyaGlBooksEdits.undo.clear();
     setPickerBusy(false);
     render();
+    scrollViewToTop();
   }
 
   // Called at the one place state.book/state.lines change: applySnapshot,
@@ -755,7 +872,7 @@
   // recomputed from them (calculator and checks both), and the page
   // re-renders. A helper's whole plan is one call, so it is one undo step.
 
-  function commit(edit, undoLabel, toastMessage) {
+  function commit(edit, undoLabel, toastMessage, toastAction) {
     if (state.committing) return Promise.resolve();
     state.committing = true;
     var previousBook = state.book;
@@ -770,7 +887,7 @@
         applySnapshot(snapshot);
         state.committing = false;
         render();
-        if (toastMessage) showToast(toastMessage);
+        if (toastMessage) showToast(toastMessage, toastAction);
       })
       .catch(function (error) {
         state.committing = false;
@@ -800,7 +917,10 @@
       return;
     }
     state.committing = true;
-    window.DiyaGlBooksLoader.recalculate(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
+    // recalculateWithBook, not recalculate: undoing a year-end change has to
+    // put back the tax year the restored book declares, not keep the one the
+    // change brought in.
+    window.DiyaGlBooksLoader.recalculateWithBook(previous.book, previous.lines, state.context, window.DiyaGlBooksEdits.undo.depth() > 0)
       .then(function (snapshot) {
         applySnapshot(snapshot);
         state.committing = false;
@@ -822,11 +942,11 @@
       "<h2>" +
       esc(bd.organizationIdentifier) +
       "</h2>" +
-      '<p class="view-lede">' +
+      '<p class="view-period">' +
       esc(bd.periodCoveredStart) +
       " to " +
       esc(bd.periodCoveredEnd) +
-      " — every sheet the reconciliation touches has a view here, the way the workbook's own Home sheet links to each tab.</p>" +
+      "</p>" +
       '<ul class="home-nav-list">' +
       VIEWS.map(function (v) {
         return (
@@ -915,13 +1035,7 @@
   }
 
   function renderYear() {
-    return (
-      "<h2>Year</h2>" +
-      '<p class="view-lede">Twelve month rows, the P&amp;L category columns, totals anchored. Open a month for its summary, open again for its entries.</p>' +
-      renderYearSummarySticky() +
-      renderYearTableScroll() +
-      renderMonthCards()
-    );
+    return "<h2>Year</h2>" + renderYearSummarySticky() + renderYearTableScroll() + renderMonthCards();
   }
 
   function renderYearSummarySticky() {
@@ -969,9 +1083,13 @@
           "</td>" +
           cells +
           "</tr>";
-        var detailRow = isOpen
-          ? '<tr class="month-detail-row"><td colspan="' + (cats.length + 1) + '">' + renderMonthDetail(m.key) + "</td></tr>"
-          : "";
+        // Mobile portrait shows the month cards instead of this table and
+        // opens the detail inside the card, so only one copy of the
+        // entries grid is ever in the document.
+        var detailRow =
+          isOpen && !isMobilePortrait()
+            ? '<tr class="month-detail-row"><td colspan="' + (cats.length + 1) + '">' + renderMonthDetail(m.key) + "</td></tr>"
+            : "";
         return mainRow + detailRow;
       })
       .join("");
@@ -1052,9 +1170,13 @@
         journal +
         '"><caption>' +
         caption +
-        "</caption><thead><tr><th>Date</th><th>Acct</th><th>Detail</th><th>Amount</th>" +
+        "</caption><thead><tr><th>Date</th><th>Account</th><th>Detail</th><th>Amount</th>" +
         '<th><span class="sr-only">Remove</span></th></tr></thead><tbody>' +
-        rows.map(entryRow).join("") +
+        rows
+          .map(function (r) {
+            return entryRow(r, journal);
+          })
+          .join("") +
         "</tbody><tfoot>" +
         addEntryRow(journal, monthKey) +
         "</tfoot></table>"
@@ -1069,7 +1191,35 @@
     );
   }
 
-  function entryRow(r) {
+  // The name of the account a code posts to, from the book's own chart. A
+  // code the chart does not carry has no name to give.
+  function accountDescription(journal, code) {
+    var accounts = (SNAPSHOT.chart && SNAPSHOT.chart[journal]) || [];
+    for (var i = 0; i < accounts.length; i++) {
+      if (accounts[i].code === code) return accounts[i].description;
+    }
+    return null;
+  }
+
+  // A reader knows "Advertising", not 5500, so the name leads and the code
+  // follows it in small text.
+  function entryAccountCell(r, journal) {
+    var description = accountDescription(journal, r.account);
+    return (
+      "<td>" +
+      (description ? '<span class="entry-account-name">' + esc(description) + "</span>" : "") +
+      '<span class="entry-account-code">' +
+      esc(r.account) +
+      "</span>" +
+      (r.posted
+        ? ""
+        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
+      "</td>"
+    );
+  }
+
+  function entryRow(r, journal) {
+    var detail = r.detail ? r.label + " — " + r.detail : r.label;
     return (
       '<tr class="entry-row' +
       (r.posted ? "" : " is-unposted") +
@@ -1077,14 +1227,13 @@
       esc(r.entryNumber) +
       '"><td>' +
       r.date.slice(5) +
-      "</td><td>" +
-      esc(r.account) +
-      (r.posted
-        ? ""
-        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
-      '</td><td><input class="entry-cell-editable" value="' +
-      esc(r.detail ? r.label + " — " + r.detail : r.label) +
-      '" readonly aria-label="Detail" /></td>' +
+      "</td>" +
+      entryAccountCell(r, journal) +
+      '<td><span class="entry-detail" title="' +
+      esc(detail) +
+      '">' +
+      esc(detail) +
+      "</span></td>" +
       entryAmountCell(r) +
       "</tr>"
     );
@@ -1170,21 +1319,30 @@
     );
   }
 
+  // The phone's own year table: a card a month, opening in place to the
+  // month's summary and its entries -- the same grid, the same commit
+  // route, no navigation away from the list.
   function renderMonthCards() {
+    var portrait = isMobilePortrait();
     return (
       '<div class="month-cards">' +
       SNAPSHOT.months
         .map(function (m) {
           var row = SNAPSHOT.monthly[m.key];
+          var isOpen = portrait && state.openMonth === m.key;
           return (
-            '<div class="month-card" data-month-card="' +
+            '<div class="month-card' +
+            (isOpen ? " is-open" : "") +
+            '" data-month-card="' +
             m.key +
             '">' +
-            '<div class="month-card-head" role="button" tabindex="0"><span class="month-name">' +
+            '<button type="button" class="month-card-head" aria-expanded="' +
+            (isOpen ? "true" : "false") +
+            '"><span class="month-name">' +
             esc(m.label) +
             '</span><span class="mono">' +
             fmtMoney(row.netProfit) +
-            "</span></div>" +
+            "</span></button>" +
             '<div class="month-card-figures">' +
             '<span class="figure-label">Sales</span><span class="figure-value"' +
             monthlySalesRk(m.label) +
@@ -1194,12 +1352,18 @@
             '<span class="figure-label">Total expenses</span><span class="figure-value">' +
             fmtMoney(row.totalExpenses) +
             "</span>" +
-            "</div></div>"
+            "</div>" +
+            (isOpen ? renderMonthDetail(m.key) : "") +
+            "</div>"
           );
         })
         .join("") +
       "</div>"
     );
+  }
+
+  function isMobilePortrait() {
+    return window.matchMedia("(max-width: 899px) and (orientation: portrait)").matches;
   }
 
   function bindYearView() {
@@ -1230,18 +1394,12 @@
       });
     }
     Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".month-card-head"), function (head) {
-      function toggle() {
+      head.addEventListener("click", function () {
         var key = head.closest(".month-card").getAttribute("data-month-card");
-        state.openMonth = key;
+        state.openMonth = state.openMonth === key ? null : key;
+        state.entriesOpen = true;
         state.view = "year";
         render();
-      }
-      head.addEventListener("click", toggle);
-      head.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggle();
-        }
       });
     });
     bindEntriesGrid();
@@ -1305,6 +1463,7 @@
           },
           "remove " + entryNumber,
           "Removed " + entryNumber + ".",
+          { label: "Undo", onClick: undoLastEdit },
         );
       });
     });
@@ -1358,28 +1517,23 @@
 
   function renderProfitLoss() {
     var a = SNAPSHOT.annual;
-    var motorDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Profit & Loss Acc!C15";
-    })[0];
     function row(label, value, opts) {
       opts = opts || {};
-      var valueAttr = opts.drift ? "" : opts.rKeyAttr || "";
       return (
         '<tr class="' +
         (opts.total ? "total" : "") +
         '"><td>' +
         esc(label) +
         "</td><td" +
-        valueAttr +
+        (opts.rKeyAttr || "") +
         ">" +
-        (opts.drift ? correctionFor(opts.drift, { rKeyAttr: opts.rKeyAttr }) : fmtMoney(value)) +
+        fmtMoney(value) +
         "</td></tr>"
       );
     }
     return (
       "<h2>Profit &amp; Loss Account</h2>" +
-      '<p class="view-lede">The year totals row from the Year view, rendered as the statement the P&amp;L sheet prints.</p>' +
-      '<table class="kv-table">' +
+      '<div class="panel-card panel-form-width"><table class="kv-table">' +
       row("Sales Turnover", a.sales, { rKeyAttr: plAnnualRk("sales") }) +
       row("Cost of Sales", a.costOfSales, { rKeyAttr: plAnnualRk("costOfSales") }) +
       row("Direct Costs", a.directCosts, { rKeyAttr: plAnnualRk("directCosts") }) +
@@ -1388,7 +1542,7 @@
       row("Premises Costs", a.premisesCosts, { rKeyAttr: plAnnualRk("premisesCosts") }) +
       row("Repairs & Maintenance", a.repairs, { rKeyAttr: plAnnualRk("repairs") }) +
       row("General Admin", a.generalAdmin, { rKeyAttr: plAnnualRk("generalAdmin") }) +
-      row("Motor Expenses", a.motorExpenses, { drift: motorDrift, rKeyAttr: plAnnualRk("motorExpenses") }) +
+      row("Motor Expenses", a.motorExpenses, { rKeyAttr: plAnnualRk("motorExpenses") }) +
       row("Travel & Subsistence", a.travel, { rKeyAttr: plAnnualRk("travel") }) +
       row("Advertising", a.advertising, { rKeyAttr: plAnnualRk("advertising") }) +
       row("Legal & Professional", a.legalProfessional, { rKeyAttr: plAnnualRk("legalProfessional") }) +
@@ -1409,7 +1563,21 @@
         total: true,
         rKeyAttr: rk2("Income Tax", "E5", "income-tax-calculation", "profit-from-self-employment"),
       }) +
-      "</table>"
+      // The tax lines the sheet prints below Taxable Profit.
+      row("Other Income Received", a.otherIncome, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C30", "profit-loss-account", "other-income-received"),
+      }) +
+      row("Income Tax less CIS Deducted", a.incomeTaxLessCis, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C32", "profit-loss-account", "income-tax-less-cis-deducted"),
+      }) +
+      row("NI Class 4", a.niClass4, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C33", "profit-loss-account", "ni-class-4"),
+      }) +
+      row("Net Income After Tax", a.netIncomeAfterTax, {
+        total: true,
+        rKeyAttr: rk2("Profit & Loss Acc", "C35", "profit-loss-account", "net-income-after-tax"),
+      }) +
+      "</table></div>"
     );
   }
 
@@ -1419,7 +1587,6 @@
     var s = SNAPSHOT.stock;
     return (
       "<h2>Stock</h2>" +
-      '<p class="view-lede">PurchasesStock: opening/closing values and the cost-of-sales movement.</p>' +
       '<div class="panel-card"><table class="kv-table">' +
       "<tr><td>Opening Stock</td><td" +
       rk2("PurchasesStock", "D5", "stock", "opening-stock") +
@@ -1505,9 +1672,6 @@
     }
     return (
       "<h2>Debtors &amp; Creditors</h2>" +
-      '<p class="view-lede">What was owed when the year opened, and what each month left outstanding. ' +
-      "A sale counts while no receipt is recorded beside it, a purchase while no payment is. " +
-      "This sheet names no customer or supplier.</p>" +
       '<div class="panel-grid">' +
       ledger("Debtors", SNAPSHOT.debtors, "debtors") +
       ledger("Creditors", SNAPSHOT.creditors, "creditors") +
@@ -1515,23 +1679,46 @@
     );
   }
 
+  // One row an asset: what it cost, what the allowances take off it, and
+  // what is left to carry forward.
+  function renderAssetRegister(register, totalCost) {
+    if (!register.length) {
+      return '<p class="entries-note">This book records no fixed assets.</p>';
+    }
+    return (
+      '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>AIA</th><th>WDA</th><th>Written down</th></tr></thead><tbody>' +
+      register
+        .map(function (asset) {
+          return (
+            "<tr><td>" +
+            esc(asset.description) +
+            '</td><td class="num">' +
+            fmtMoney(asset.cost) +
+            '</td><td class="num">' +
+            fmtMoney(asset.aia) +
+            '</td><td class="num">' +
+            fmtMoney(asset.wda) +
+            '</td><td class="num">' +
+            fmtMoney(asset.writtenDownValue) +
+            "</td></tr>"
+          );
+        })
+        .join("") +
+      '</tbody><tfoot><tr class="total"><th>Total</th><td class="num"' +
+      rk2("Fixed Assets", "E1", "fixed-assets", "total-original-cost") +
+      ">" +
+      fmtMoney(totalCost) +
+      '</td><td colspan="3"></td></tr></tfoot></table>'
+    );
+  }
+
   function renderFixedAssets() {
     var f = SNAPSHOT.fixedAssets;
     return (
       "<h2>Fixed Assets</h2>" +
-      '<p class="view-lede">Additions, the register, and the capital allowances the schedule carries.</p>' +
-      '<div class="panel-grid">' +
-      '<div class="panel-card"><h3>Additions</h3><table class="kv-table">' +
-      f.additions
-        .map(function (a) {
-          return "<tr><td>" + esc(a.description) + "</td><td>" + fmtMoney(a.cost) + "</td></tr>";
-        })
-        .join("") +
-      '<tr class="total"><td>Total Original Cost</td><td' +
-      rk2("Fixed Assets", "E1", "fixed-assets", "total-original-cost") +
-      ">" +
-      fmtMoney(f.totalCost) +
-      "</td></tr></table></div>" +
+      '<div class="panel-card"><h3>The register</h3>' +
+      renderAssetRegister(f.register, f.totalCost) +
+      "</div>" +
       '<div class="panel-card"><h3>Capital allowances</h3><table class="kv-table">' +
       "<tr><td>Annual Investment Allowance</td><td" +
       rk2("Fixed Assets", "K1", "fixed-assets", "total-first-year-allowance-aia") +
@@ -1557,38 +1744,128 @@
       rk2("Fixed Assets", "R1", "fixed-assets", "total-balancing-charge") +
       ">" +
       fmtMoney(f.balancingCharge) +
-      "</td></tr></table></div>" +
-      "</div>"
+      "</td></tr></table></div>"
     );
   }
 
+  // The book's own details, editable in place. Every change goes through
+  // the same route an entry edit takes: one undo step, the whole book
+  // recomputed, every check run again. Changing the year end resolves the
+  // tax year afresh, so the rates the checks use follow the book.
   function renderBusinessDetails() {
     var bd = SNAPSHOT.businessDetails;
     return (
       "<h2>Business Details</h2>" +
-      '<p class="view-lede">entityInformation, as the book declares it.</p>' +
-      '<div class="panel-card">' +
-      field("Business Name", bd.organizationIdentifier, rk2("Business Details", "C5", "business-details", "business-name")) +
-      field("Description", bd.organizationDescription, rk2("Business Details", "C7", "business-details", "description")) +
-      field("Address", bd.organizationAddressLine, rk2("Business Details", "C8", "business-details", "address")) +
-      field("Town", bd.organizationTown, rk2("Business Details", "C10", "business-details", "town")) +
-      field("Postcode", bd.organizationPostcode, rk2("Business Details", "C12", "business-details", "postcode")) +
-      field("Accounting period", bd.periodCoveredStart + " to " + bd.periodCoveredEnd) +
-      field("Basis of accounting", bd.basisOfAccounting) +
-      field("VAT registered", bd.vatRegistered ? "Yes" : "No") +
+      '<div class="panel-card panel-form-width">' +
+      field("Business Name", "organizationIdentifier", bd.organizationIdentifier, {
+        rKeyAttr: rk2("Business Details", "C5", "business-details", "business-name"),
+      }) +
+      field("Description", "organizationDescription", bd.organizationDescription, {
+        rKeyAttr: rk2("Business Details", "C7", "business-details", "description"),
+      }) +
+      field("Address", "organizationAddressLine", bd.organizationAddressLine, {
+        rKeyAttr: rk2("Business Details", "C8", "business-details", "address"),
+      }) +
+      field("Town", "organizationTown", bd.organizationTown, {
+        rKeyAttr: rk2("Business Details", "C10", "business-details", "town"),
+      }) +
+      field("Postcode", "organizationPostcode", bd.organizationPostcode, {
+        rKeyAttr: rk2("Business Details", "C12", "business-details", "postcode"),
+      }) +
+      field("Period start", "periodCoveredStart", bd.periodCoveredStart, { type: "date" }) +
+      field("Year end", "periodCoveredEnd", bd.periodCoveredEnd, {
+        type: "date",
+        hint: "Changing this loads that year's tax rates and runs every check again.",
+      }) +
+      readOnlyField("Basis of accounting", bd.basisOfAccounting) +
+      readOnlyField("VAT registered", bd.vatRegistered ? "Yes" : "No") +
       "</div>"
     );
-    function field(label, value, rKeyAttr) {
+
+    function field(label, bookField, value, opts) {
+      opts = opts || {};
+      var id = "book-field-" + bookField;
       return (
-        '<div class="editable-field"><label>' +
+        '<div class="editable-field"><label for="' +
+        id +
+        '">' +
         esc(label) +
-        "</label><input" +
-        (rKeyAttr || "") +
+        "</label>" +
+        (opts.hint ? '<span class="field-hint" id="' + id + '-hint">' + esc(opts.hint) + "</span>" : "") +
+        '<input id="' +
+        id +
+        '" type="' +
+        (opts.type || "text") +
+        '" data-book-field="' +
+        bookField +
+        '"' +
+        (opts.hint ? ' aria-describedby="' + id + '-hint"' : "") +
+        (opts.rKeyAttr || "") +
         ' value="' +
         esc(value) +
-        '" readonly /></div>'
+        '" /></div>'
       );
     }
+
+    function readOnlyField(label, value) {
+      return '<div class="editable-field"><label>' + esc(label) + '</label><input value="' + esc(value) + '" readonly /></div>';
+    }
+  }
+
+  var BOOK_PERIOD_FIELDS = { periodCoveredStart: 1, periodCoveredEnd: 1 };
+
+  function bookWithDetail(bookField, value) {
+    var book = JSON.parse(JSON.stringify(state.book));
+    if (BOOK_PERIOD_FIELDS[bookField]) {
+      book.documentInfo[bookField] = value;
+    } else {
+      book.entityInformation[bookField] = value;
+    }
+    return book;
+  }
+
+  function bindBusinessDetails() {
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-book-field]"), function (input) {
+      var bookField = input.getAttribute("data-book-field");
+      var committed = input.value;
+      input.addEventListener("change", function () {
+        var value = input.value.trim();
+        if (value === committed) return;
+        if (BOOK_PERIOD_FIELDS[bookField]) {
+          value = parseRealDate(value);
+          if (!value) {
+            input.value = committed;
+            showToast("That is not a real date. The book is unchanged.");
+            return;
+          }
+        } else if (!value) {
+          input.value = committed;
+          showToast("This detail cannot be empty. The book is unchanged.");
+          return;
+        }
+        commitBookDetail(bookField, value, input.previousElementSibling ? input.previousElementSibling.textContent : bookField);
+      });
+    });
+  }
+
+  function commitBookDetail(bookField, value, label) {
+    if (state.committing) return;
+    state.committing = true;
+    var previousBook = state.book;
+    var previousLines = state.lines;
+    window.DiyaGlBooksLoader.recalculateWithBook(bookWithDetail(bookField, value), state.lines, state.context)
+      .then(function (snapshot) {
+        window.DiyaGlBooksEdits.undo.push(previousBook, previousLines, "change " + label);
+        applySnapshot(snapshot);
+        state.committing = false;
+        render();
+        showToast("Changed " + label + ".");
+      })
+      .catch(function (error) {
+        state.committing = false;
+        render();
+        showToast("That change did not apply: " + (error && error.message ? error.message : error));
+      });
   }
 
   // buildAdmin() in bst-data.js reads app/data/<year>.toml straight into
@@ -1622,11 +1899,9 @@
     var a = SNAPSHOT.admin;
     return (
       "<h2>Admin</h2>" +
-      '<p class="view-lede rate-provenance">The year’s tax data, read-only, sourced from ' +
-      esc(a.source) +
-      " (" +
+      '<p class="view-lede rate-provenance">Rates for the ' +
       esc(a.year) +
-      ").</p>" +
+      " tax year, read-only.</p>" +
       '<div class="panel-card"><table class="kv-table">' +
       a.rates
         .map(function (r, i) {
@@ -1666,12 +1941,6 @@
 
   function renderIncomeTaxForm() {
     var t = SNAPSHOT.incomeTax;
-    var itDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Income Tax!E11";
-    })[0];
-    var totalDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Income Tax!E18";
-    })[0];
     return (
       '<div class="form-render">' +
       '<div class="form-masthead"><div class="form-name">Income Tax computation</div>' +
@@ -1708,8 +1977,6 @@
             rk2("Income Tax", cfg.rateCell, "income-tax-calculation", cfg.rateSlug) +
             ">" +
             fmtRate(b.rate) +
-            '</span></span><span class="form-amount-wrap"><span class="box-chip">' +
-            esc(b.box) +
             '</span></span><span class="form-amount-box"' +
             rk2("Income Tax", b.box, "income-tax-calculation", INCOME_TAX_BAND_TAX_ROW_SLUG[b.box]) +
             ">" +
@@ -1722,12 +1989,12 @@
       rk2("Income Tax", "E11", "income-tax-calculation", "total-income-tax") +
       ">" +
       fmtBoxMoney(t.totalIncomeTax) +
-      '</span><span class="form-row-margin">' +
-      (itDrift ? correctionFor(itDrift, { inMargin: true }) : "") +
       "</span></div>" +
+      // CIS is tax already paid on the reader's behalf, so it belongs with
+      // the tax it comes off, not among the National Insurance lines.
+      formRow("Less: CIS deducted", fmtBoxMoney(-t.cisDeducted), rk2("Income Tax", "E12", "income-tax-calculation", "less-cis-deducted")) +
       "</div>" +
       '<div class="form-section"><h3>National Insurance</h3>' +
-      formRow("Less: CIS deducted", fmtBoxMoney(-t.cisDeducted), rk2("Income Tax", "E12", "income-tax-calculation", "less-cis-deducted")) +
       formRow(
         "NI Class 4 (lower band)",
         fmtBoxMoney(t.niClass4Lower),
@@ -1743,8 +2010,6 @@
       rk2("Income Tax", "E18", "income-tax-calculation", "total-tax-ni") +
       ">" +
       fmtBoxMoney(t.totalTaxAndNi) +
-      '</span><span class="form-row-margin">' +
-      (totalDrift ? correctionFor(totalDrift, { inMargin: true }) : "") +
       "</span></div>" +
       "</div>"
     );
@@ -1853,13 +2118,30 @@
       '</span><span class="caps-label">Pass</span></div>' +
       '<div class="drift-summary-item warn"><span class="count">' +
       warnCount +
-      '</span><span class="caps-label">Flagged</span></div>' +
+      '</span><span class="caps-label">Need attention</span></div>' +
       '<div class="drift-summary-item"><span class="count">' +
       driftCount +
       '</span><span class="caps-label">' +
-      (SNAPSHOT.edited ? "Recalculated" : "Drift cells") +
+      (SNAPSHOT.edited ? "Recalculated" : "Differ from workbook") +
       "</span></div>" +
       "</div>"
+    );
+  }
+
+  function checkMarker(result) {
+    return result === "pass" ? "✓" : result === "warn" ? "⚠" : "!";
+  }
+
+  // A wall of green rows is not reassurance. Everything that passes folds
+  // into one line the reader can open; what needs attention stays open.
+  function passingDisclosure(count, rowsHtml) {
+    return (
+      '<li class="checks-passing"><details><summary>' +
+      count +
+      (count === 1 ? " check passes" : " checks pass") +
+      '</summary><ul class="checks-passing-list">' +
+      rowsHtml +
+      "</ul></details></li>"
     );
   }
 
@@ -1868,74 +2150,88 @@
   // an edit rather than catching one -- what they catch is the calculator
   // and the book disagreeing.
   function renderChecksList() {
+    function row(c) {
+      return (
+        '<li class="check-item ' +
+        c.result +
+        '"' +
+        rk("check/" + c.label) +
+        '><span class="check-marker" aria-hidden="true">' +
+        checkMarker(c.result) +
+        '</span><span class="check-body"><span class="check-label">' +
+        esc(c.label) +
+        '</span><br/><span class="check-figures">' +
+        (c.result === "pass" ? "matches" : "expected " + fmtMoney(c.expected) + " · actual " + fmtMoney(c.actual)) +
+        "</span></span></li>"
+      );
+    }
+    var passing = SNAPSHOT.checks.filter(isPassing);
+    var open = SNAPSHOT.checks.filter(notPassing);
     return (
       '<p class="caps-label checks-group-label">Engine checks</p><ul class="checks-list">' +
-      SNAPSHOT.checks
-        .map(function (c) {
-          var marker = c.result === "pass" ? "✓" : "!";
-          return (
-            '<li class="check-item ' +
-            c.result +
-            '"' +
-            rk("check/" + c.label) +
-            '><span class="check-marker">' +
-            marker +
-            '</span><span class="check-body"><span class="check-label">' +
-            esc(c.label) +
-            '</span><br/><span class="check-figures">expected ' +
-            fmtMoney(c.expected) +
-            " · actual " +
-            fmtMoney(c.actual) +
-            "</span></span></li>"
-          );
-        })
-        .join("") +
+      open.map(row).join("") +
+      (passing.length ? passingDisclosure(passing.length, passing.map(row).join("")) : "") +
       "</ul>"
     );
   }
 
-  // The book checks: the ones over D itself, where an entry can be wrong
-  // while every total still adds up. A failing one carries its fix-it.
+  function isPassing(c) {
+    return c.result === "pass";
+  }
+  function notPassing(c) {
+    return c.result !== "pass";
+  }
+
+  // The book checks and warnings: the ones over D itself, where an entry can
+  // be wrong while every total still adds up. A failing check carries its
+  // fix-it; a warning is advisory and says so in a word, never in colour
+  // alone.
   function renderBookChecksList() {
+    function row(c) {
+      var isWarning = c.tier === "warning";
+      var figures = isWarning ? "" : c.result === "pass" ? "every line" : c.actual + (c.actual === 1 ? " line" : " lines");
+      return (
+        '<li class="check-item ' +
+        c.result +
+        (isWarning ? " is-warning" : "") +
+        '" data-book-check="' +
+        esc(c.id) +
+        '"><span class="check-marker" aria-hidden="true">' +
+        checkMarker(c.result) +
+        '</span><span class="check-body">' +
+        (c.result === "warn" ? '<span class="check-tier">Warning</span>' : "") +
+        '<span class="check-label">' +
+        esc(c.label) +
+        "</span>" +
+        (figures ? '<br/><span class="check-figures">' + figures + "</span>" : "") +
+        (c.result === "pass" ? "" : renderBookCheckDetail(c)) +
+        "</span></li>"
+      );
+    }
+    var passing = state.bookChecks.filter(isPassing);
+    var open = state.bookChecks.filter(notPassing);
     return (
       '<p class="caps-label checks-group-label">Book checks</p><ul class="book-checks-list">' +
-      state.bookChecks
-        .map(function (c) {
-          var marker = c.result === "pass" ? "✓" : "!";
-          return (
-            '<li class="check-item ' +
-            c.result +
-            '" data-book-check="' +
-            esc(c.id) +
-            '"><span class="check-marker">' +
-            marker +
-            '</span><span class="check-body"><span class="check-label">' +
-            esc(c.label) +
-            '</span><br/><span class="check-figures">' +
-            (c.result === "pass" ? "every line" : c.actual + (c.actual === 1 ? " line" : " lines")) +
-            "</span>" +
-            (c.result === "pass" ? "" : renderBookCheckDetail(c)) +
-            "</span></li>"
-          );
-        })
-        .join("") +
+      open.map(row).join("") +
+      (passing.length ? passingDisclosure(passing.length, passing.map(row).join("")) : "") +
       "</ul>"
     );
   }
 
   function renderBookCheckDetail(check) {
-    var offenders =
-      '<ul class="check-offenders">' +
-      check.offenders
-        .slice(0, 5)
-        .map(function (o) {
-          return (
-            "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
-          );
-        })
-        .join("") +
-      (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +
-      "</ul>";
+    var offenders = !check.offenders.length
+      ? ""
+      : '<ul class="check-offenders">' +
+        check.offenders
+          .slice(0, 5)
+          .map(function (o) {
+            return (
+              "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
+            );
+          })
+          .join("") +
+        (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +
+        "</ul>";
     if (!check.helper) {
       return '<p class="check-consequence">' + esc(check.consequence) + "</p>" + offenders;
     }
@@ -1973,28 +2269,18 @@
     );
   }
 
-  function renderHelpersSection() {
-    return (
-      '<div class="helpers-section"><h3>Helpers</h3>' +
-      '<div class="helper-card"><h4>Make a sale/purchase from a bank item</h4>' +
-      "<p>Turns an unmatched bank line into a sales or purchases line, category picked from the expense codes. Basic Sole Trader books carry no bank sheet, so there is nothing to act on here — the control ships for products that do.</p>" +
-      '<button type="button" class="btn" disabled>Preview</button></div></div>'
-    );
-  }
-
   function renderInspectorFull() {
     return (
       "<h3>Checks &amp; drift</h3>" +
       renderDriftSummary() +
       renderBookChecksList() +
       renderChecksList() +
-      renderHelpersSection() +
       '<div style="margin-top:1rem"><button type="button" class="btn btn-primary" id="inspector-save-btn">Save workbook</button></div>'
     );
   }
 
   function renderInspectorChecksOnly() {
-    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderBookChecksList() + renderChecksList() + renderHelpersSection();
+    return "<h3>Checks &amp; drift</h3>" + renderDriftSummary() + renderBookChecksList() + renderChecksList();
   }
 
   function bindInspectorInteractions() {
@@ -2088,6 +2374,7 @@
       }
     });
     els.drawerBackdrop.addEventListener("click", closeDrawer);
+    els.sheetTabs.addEventListener("scroll", updateTabStripFades);
 
     window.addEventListener("resize", function () {
       render();

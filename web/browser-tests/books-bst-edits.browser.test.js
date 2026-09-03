@@ -175,6 +175,32 @@ test.describe("DIYA-GL books page — in-place edits", () => {
     await allChecksPass(page);
   });
 
+  test("an entry names its account, keeps its detail on one line, and offers undo when removed", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const row = page.locator('.entries-table[data-journal="purchases"] tbody tr.entry-row').first();
+    const code = await row.locator(".entry-account-code").innerText();
+    await expect(row.locator(".entry-account-name")).not.toBeEmpty();
+    expect(code).toMatch(/^\d+$/);
+
+    // The whole detail is on the element's title even when the cell shows
+    // only as much as fits.
+    const detail = row.locator(".entry-detail");
+    const [shown, title] = await Promise.all([detail.innerText(), detail.getAttribute("title")]);
+    expect(title).toContain(shown.replace("…", "").trim());
+
+    const remove = row.locator("[data-delete-entry]");
+    await expect(remove).toHaveAttribute("aria-label", /Remove entry/);
+
+    const profitBefore = await yearTotal(page, "netProfit");
+    await remove.click();
+    const toast = page.locator("#toast");
+    await expect(toast).toContainText("Removed");
+    await toast.locator(".toast-action-btn").click();
+    await expectYearTotal(page, "netProfit", profitBefore);
+  });
+
   test("a typed non-amount is refused and leaves the line where it was", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -279,9 +305,31 @@ test.describe("DIYA-GL books page — undo", () => {
 test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broken book", () => {
   test("the featured book passes every book check before anything is broken", async ({ page }) => {
     await openBook(page);
-    await expect(page.locator("#inspector .book-checks-list .check-item")).toHaveCount(3);
+    for (const id of ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"]) {
+      await expect(bookCheck(page, id)).toHaveClass(/pass/);
+    }
     await expect(page.locator("#inspector .book-checks-list .check-item.fail")).toHaveCount(0);
     await allChecksPass(page);
+  });
+
+  test("the panel opens on what needs attention and folds what passes behind one line", async ({ page }) => {
+    await openBook(page);
+
+    // This book's turnover is far past the VAT registration threshold, so
+    // its warning is one of the rows the panel opens on.
+    const vat = bookCheck(page, "book-vat-threshold");
+    await expect(vat).toBeVisible();
+    await expect(vat).toHaveClass(/warn/);
+    await expect(vat).toContainText("Warning");
+    await expect(vat).toContainText("VAT registration threshold");
+
+    // Every passing check is still there, behind a disclosure that says how
+    // many there are rather than printing them all.
+    const engineSummary = page.locator("#inspector .checks-list .checks-passing summary");
+    await expect(engineSummary).toHaveText(/^\d+ checks pass$/);
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeHidden();
+    await engineSummary.click();
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeVisible();
   });
 
   test("an entry dated outside the period is caught and moved back into it", async ({ page }) => {
@@ -403,11 +451,10 @@ test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broke
     await expect(rounded).toHaveValue("100.01");
   });
 
-  test("the bank-item helper stays disabled and says why", async ({ page }) => {
+  test("no bank-item card: Basic Sole Trader has no bank book to make an entry from", async ({ page }) => {
     await openBook(page);
-    const card = page.locator("#inspector .helper-card", { hasText: "Make a sale/purchase from a bank item" });
-    await expect(card.getByRole("button", { name: "Preview" })).toBeDisabled();
-    await expect(card).toContainText("carry no bank sheet");
+    await expect(page.locator("#inspector")).not.toContainText("bank item");
+    await expect(page.locator("#inspector .helper-card")).toHaveCount(0);
   });
 });
 

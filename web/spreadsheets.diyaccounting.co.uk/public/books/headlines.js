@@ -214,26 +214,32 @@
     );
   }
 
-  // A viewBox sized to fit a real mobile card without horizontal scroll
-  // (see the "through the year" charts' own CHART_W_COMPACT for the same
-  // reasoning), the pie centred so a direct label has equal room on either
-  // side -- an off-centre pie was the earlier bug here: labels on the
-  // narrow side ran past the canvas edge and were clipped mid-word.
-  var PIE_SIZE = 320;
-  var PIE_CX = 160;
-  var PIE_CY = 130;
-  var PIE_R_OUTER = 64;
-  var PIE_R_INNER = 32;
+  // The pie draws at its own size: one user unit is one rendered pixel, so
+  // an 11px label is 11px on screen. The legend sits beside the chart, so
+  // the canvas is only as wide as the circle plus the room a direct label
+  // needs on either side.
+  var PIE_W = 210;
+  var PIE_H = 186;
+  var PIE_CX = 105;
+  var PIE_CY = 90;
+  var PIE_R_OUTER = 58;
+  var PIE_R_INNER = 29;
   var DIRECT_LABEL_SHARE = 0.08;
-  var DIRECT_LABEL_MAX_CHARS = 12;
+  var DIRECT_LABEL_FONT_PX = 11;
 
   function sliceInfoText(slice, formatMoney) {
     return slice.label + " " + formatMoney(slice.value) + " (" + fmtPercent(slice.share) + ")";
   }
 
-  // A direct on-chart label is deliberately short -- the full name is
-  // always in the legend and the table -- so its width stays predictable
-  // and it never needs to be measured against the canvas edge.
+  // A direct on-chart label is drawn whole or not at all. "Running cos…"
+  // tells a reader less than no label does, and the legend and the tooltip
+  // carry the full name either way. Arial's average glyph runs a little
+  // over half the font size wide, near enough to say whether a name clears
+  // the canvas edge.
+  function labelFits(label, roomPx) {
+    return label.length * DIRECT_LABEL_FONT_PX * 0.56 <= roomPx;
+  }
+
   function truncateLabel(label, maxChars) {
     if (label.length <= maxChars) return label;
     return label.slice(0, maxChars - 1) + "…";
@@ -269,11 +275,12 @@
         '"><title>' +
         esc(info) +
         "</title></path>";
-      if (slice.share >= DIRECT_LABEL_SHARE) {
+      var textPoint = polarToCartesian(PIE_CX, PIE_CY, PIE_R_OUTER + 14, mid);
+      var anchor = textPoint.x >= PIE_CX ? "start" : "end";
+      var room = anchor === "start" ? PIE_W - textPoint.x - 2 : textPoint.x - 2;
+      if (slice.share >= DIRECT_LABEL_SHARE && labelFits(slice.label, room)) {
         var leaderStart = polarToCartesian(PIE_CX, PIE_CY, PIE_R_OUTER + 2, mid);
-        var leaderEnd = polarToCartesian(PIE_CX, PIE_CY, PIE_R_OUTER + 14, mid);
-        var textPoint = polarToCartesian(PIE_CX, PIE_CY, PIE_R_OUTER + 18, mid);
-        var anchor = textPoint.x >= PIE_CX ? "start" : "end";
+        var leaderEnd = polarToCartesian(PIE_CX, PIE_CY, PIE_R_OUTER + 11, mid);
         labels +=
           '<line x1="' +
           leaderStart.x.toFixed(1) +
@@ -291,16 +298,16 @@
           '" text-anchor="' +
           anchor +
           '" class="headline-pie-direct-label">' +
-          esc(truncateLabel(slice.label, DIRECT_LABEL_MAX_CHARS)) +
+          esc(slice.label) +
           "</text>";
       }
       angle += span;
     });
     return (
       '<svg viewBox="0 0 ' +
-      PIE_SIZE +
+      PIE_W +
       " " +
-      Math.round(PIE_SIZE * 0.8) +
+      PIE_H +
       '" class="headline-pie-svg" role="img" aria-label="' +
       esc(id) +
       '">' +
@@ -421,8 +428,10 @@
       esc(title) +
       "</h3>" +
       reason +
+      '<div class="headline-pie-chrome">' +
       chrome +
       renderLegend(id, slices, colors, formatMoney) +
+      "</div>" +
       '<button type="button" class="headline-table-toggle" data-pie-table-toggle="' +
       id +
       '" aria-expanded="false">Show as table</button>' +
@@ -470,8 +479,9 @@
           esc(formatMoney(t.assets.writtenDown.value)) +
           " &middot; stock " +
           esc(formatMoney(t.assets.stock.value)) +
-          " &middot; owed to you " +
-          esc(formatMoney(t.assets.debtors.value)),
+          '<span class="headline-tile-aside">owed to you ' +
+          esc(formatMoney(t.assets.debtors.value)) +
+          ", counted separately</span>",
       ) +
       tile("Tax", "headline/tax", formatMoney(t.tax.value), "income tax and Class 4 NI, less CIS") +
       "</div>"
@@ -492,12 +502,13 @@
   var CHART_W_WIDE = 480;
   var CHART_W_COMPACT = 300;
 
+  // Closed until the reader asks for it, so the year table starts within
+  // the first screen; the choice is then remembered.
   function readStoredOpen() {
     try {
-      var v = global.localStorage.getItem(THROUGH_YEAR_KEY);
-      return v === null ? true : v === "1";
+      return global.localStorage.getItem(THROUGH_YEAR_KEY) === "1";
     } catch (e) {
-      return true;
+      return false;
     }
   }
 
@@ -642,7 +653,9 @@
       .join("");
     return (
       '<div class="headline-chart-block"><h4>Turnover, costs and profit by month</h4>' +
-      '<div class="headline-chart-scroll"><svg viewBox="0 0 ' +
+      // The one chart wider than a phone card scrolls, so it is a focus
+      // stop of its own: a keyboard has to be able to reach and move it.
+      '<div class="headline-chart-scroll" tabindex="0" role="group" aria-label="Monthly turnover, costs and profit, scrollable"><svg viewBox="0 0 ' +
       width +
       " " +
       height +

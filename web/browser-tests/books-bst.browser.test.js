@@ -153,6 +153,24 @@ test.describe("DIYA-GL books page — empty state", () => {
     await expect(page.locator("#empty-state-message")).toContainText("save as .xlsx");
   });
 
+  test("an example button leads with the business, and loading one says so in the customer's words", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const basic = page.locator('[data-example="bst-scenario-basic"]');
+    await expect(basic.locator(".example-name")).toHaveText("Precision Code Trading");
+    await expect(basic.locator(".example-id")).toContainText("bst-scenario-basic");
+
+    await basic.click();
+    await expect(page.locator("#toast")).toHaveText("Loaded Precision Code Trading (example)");
+  });
+
+  test("an uploaded file is named back by its own file name", async ({ page }) => {
+    await uploadFile(page, fs.readFileSync(FRESH_PACKAGE_PATH), "my-books.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    await expect(page.locator("#toast")).toHaveText("Loaded my-books.xlsx");
+  });
+
   test("the other two example books load live, not just bst-scenario-basic", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"], /bst-brickwork-pro-nonvat/);
     await expect(page.locator("#app-title")).toContainText("BrickWork");
@@ -222,6 +240,79 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await page.locator('.tab-btn[data-view="income-tax"]').click();
     await expect(page.locator(".form-render .form-name")).toHaveText(/Income Tax/);
     await expect(page.locator(".form-row.total-row").first()).toBeVisible();
+
+    // Only the real form has box numbers: the Income Tax computation is the
+    // sheet's own working, so it carries no chips.
+    await expect(page.locator(".form-render .box-chip")).toHaveCount(0);
+  });
+
+  test("the Income Tax view takes CIS off the tax, not out of National Insurance", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+
+    const niSection = page.locator(".form-section", { hasText: "National Insurance" });
+    await expect(niSection).not.toContainText("CIS");
+
+    // It sits with the Total Income Tax it comes off.
+    const taxSection = page.locator(".form-section", { hasText: "Tax bands" });
+    await expect(taxSection).toContainText("Less: CIS deducted");
+  });
+
+  test("the P&L carries the tax lines the sheet prints below Taxable Profit", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+
+    for (const key of ["C30", "C32", "C33", "C35"]) {
+      await expect(page.locator(`[data-r-key*="Profit & Loss Acc!${key}"]`)).toHaveCount(1);
+    }
+    await expect(page.locator(".kv-table")).toContainText("Net Income After Tax");
+  });
+
+  test("the business name is editable, moves the header, and undo puts it back", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="business-details"]').click();
+
+    const name = page.locator('[data-book-field="organizationIdentifier"]');
+    await expect(name).toHaveValue("Precision Code Trading");
+
+    await name.fill("Precision Code Trading Ltd");
+    await name.press("Enter");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading Ltd");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading Ltd");
+
+    await page.locator("#undo-btn").click();
+    await expect(page.locator("#app-title")).not.toContainText("Ltd");
+    await expect(page.locator("#app-title")).toContainText("Precision Code Trading");
+    await expect(page.locator('[data-book-field="organizationIdentifier"]')).toHaveValue("Precision Code Trading");
+  });
+
+  test("the topbar controls carry a visible label at desktop widths and a name everywhere", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeVisible();
+    await expect(page.locator("#theme-toggle .btn-label")).toBeVisible();
+    await expect(page.locator("#save-btn")).toHaveAttribute("aria-label", "Save workbook");
+
+    // On a phone the labels give way, but the accessible names do not.
+    await page.setViewportSize(VIEWPORTS["mobile-portrait"]);
+    await expect(page.locator("#save-btn .btn-label")).toBeHidden();
+    await expect(page.locator("#theme-toggle")).toHaveAttribute("aria-label", "Toggle dark theme");
+  });
+
+  test("the Fixed Assets view prints a register, one row an asset", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="fixed-assets"]').click();
+
+    const register = page.locator(".register-table");
+    await expect(register).toBeVisible();
+    await expect(register.locator("thead th")).toHaveText(["Asset", "Cost", "AIA", "WDA", "Written down"]);
+    await expect(register.locator("tbody tr")).not.toHaveCount(0);
+
+    // Every asset's cost, allowance and written-down value add up the way
+    // the schedule's own total says they do.
+    const costs = await register.locator("tbody tr td:nth-child(2)").allInnerTexts();
+    const total = costs.reduce((sum, text) => sum + Number(text.replace(/[£,]/g, "")), 0);
+    const printed = Number((await register.locator("tfoot td").first().innerText()).replace(/[£,]/g, ""));
+    expect(printed).toBeCloseTo(total, 2);
   });
 
   test("the Debtors & Creditors view renders the sheet the template ships", async ({ page }) => {
@@ -245,6 +336,20 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
     await expect(page.locator("#inspector .check-item")).not.toHaveCount(0);
     await expect(page.locator("#inspector .check-item.fail")).toHaveCount(0);
+
+    // A passing check says it matches; only a failure is worth two figures.
+    const passing = page.locator("#inspector .checks-list .check-item.pass").first();
+    await expect(passing.locator(".check-figures")).toHaveText("matches");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Need attention");
+    await expect(page.locator("#inspector .drift-summary")).toContainText("Differ from workbook");
+  });
+
+  test("the Admin view names the tax year, not the file the rates came from", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="admin"]').click();
+    const provenance = page.locator(".rate-provenance");
+    await expect(provenance).toContainText("tax year");
+    await expect(provenance).not.toContainText("app/data");
   });
 });
 
@@ -302,6 +407,14 @@ test.describe("DIYA-GL books page — four layouts", () => {
     await expect(page.locator("#mobile-tabbar")).toBeHidden();
     await expect(page.locator("#drawer-toggle-btn")).toBeHidden();
 
+    // The strip leads, but it does not fill the screen: the first month of
+    // the year table is on the page the reader lands on, unscrolled.
+    const firstRowBottom = await page
+      .locator(".year-table tbody tr.year-row")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(firstRowBottom, "April's row sits within the first screen").toBeLessThanOrEqual(VIEWPORTS["desktop-landscape"].height);
+
     await page.screenshot({ path: path.join(screenshotsDir, "books-bst-desktop-landscape.png"), fullPage: false });
   });
 
@@ -355,6 +468,40 @@ test.describe("DIYA-GL books page — four layouts", () => {
     await expect(page.locator("#year-summary-sticky")).toBeVisible();
 
     await page.screenshot({ path: path.join(screenshotsDir, "books-bst-mobile-portrait.png"), fullPage: false });
+  });
+
+  test("mobile portrait: a month card opens in place, and an edit inside it moves the card's own figure", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+
+    // April is the month a loaded book opens on, so the first tap closes it
+    // and proves the card answers a tap; the second opens it again.
+    const april = page.locator('[data-month-card="2025-04"]');
+    const head = april.locator(".month-card-head");
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(april.locator("table.entries-table")).toHaveCount(0);
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    // The entries are inside the card, not on a page the tap navigated to.
+    const entries = april.locator("table.entries-table");
+    await expect(entries).toHaveCount(2);
+    await expect(april.locator(".month-summary-grid")).toBeVisible();
+
+    // One month open at a time.
+    await expect(page.locator(".month-card .month-detail")).toHaveCount(1);
+
+    const salesFigure = april.locator(".month-card-figures .figure-value").first();
+    const before = Number((await salesFigure.innerText()).replace(/[£,]/g, ""));
+    const amount = april.locator('.entries-table[data-journal="sales"] .entry-amount-input').first();
+    const was = Number(await amount.inputValue());
+    await amount.fill(String(was + 250));
+    await amount.press("Enter");
+
+    await expect.poll(async () => Number((await salesFigure.innerText()).replace(/[£,]/g, ""))).toBe(before + 250);
   });
 
   test("mobile portrait: the headlines strip leads the Books tab; the Checks tab opens the drawer without it", async ({ page }) => {

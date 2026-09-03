@@ -80,11 +80,15 @@ describe.each(BOOKS)("headlinesFromReport — $name", ({ dir, expectedFile }) =>
     expect(Math.abs(netProfit - pl.C24)).toBeLessThan(0.01);
   });
 
-  it("assets total is written-down value plus stock plus debtors", () => {
+  it("assets total is written-down value plus stock, with what customers owe kept out of it", () => {
     expect(headlines.tiles.assets.total.value).toBeCloseTo(
-      headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value + headlines.tiles.assets.debtors.value,
+      headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value,
       6,
     );
+    // What customers owe is still reported, and the total does not trace
+    // back to its cell.
+    expect(headlines.tiles.assets.debtors.value).toBe(results["Debtors & Creditors"].C29 ?? 0);
+    expect(headlines.tiles.assets.total.from).not.toContain("cell/Debtors & Creditors!C29");
   });
 
   it("tax matches the sheet's total tax and NI less CIS", () => {
@@ -130,6 +134,16 @@ describe("headlinesFromReport — outgoings pie folds the smallest categories in
     expect(labels.slice(0, 5)).toEqual(["Employee Costs", "Cost of sales", "Other Expenses", "Premises Costs", "Motor Expenses"]);
   });
 
+  it("keeps what customers owe out of the assets total, which it would otherwise dwarf", () => {
+    const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+    const { tiles } = headlinesFromReport(report);
+    // This book records few settlements, so the sheet's "Amount owed by
+    // customers" runs close to the year's turnover -- far past anything the
+    // business actually holds.
+    expect(tiles.assets.debtors.value).toBeGreaterThan(tiles.assets.total.value * 10);
+    expect(tiles.assets.total.value).toBeCloseTo(tiles.assets.writtenDown.value + tiles.assets.stock.value, 6);
+  });
+
   it("folds everything past the top five into one Other slice, valued at the true remainder", () => {
     const other = pies.outgoings.slices.find((slice) => slice.label === "Other");
     expect(other).toBeDefined();
@@ -148,7 +162,7 @@ describe("headlinesFromReport — an absent optional key reads as zero with an e
     const withoutAssets = { ...report, values: report.values.filter((entry) => entry.key !== "cell/Fixed Assets!M1") };
     const headlines = headlinesFromReport(withoutAssets);
     expect(headlines.tiles.assets.writtenDown).toEqual({ value: 0, from: [], missing: true });
-    expect(headlines.tiles.assets.total.value).toBeCloseTo(headlines.tiles.assets.stock.value + headlines.tiles.assets.debtors.value, 6);
+    expect(headlines.tiles.assets.total.value).toBeCloseTo(headlines.tiles.assets.stock.value, 6);
   });
 });
 
@@ -246,5 +260,19 @@ describe("headlinesFromReport is breakable: corrupting one R value moves only th
     expect(after.pies).toEqual(before.pies);
     expect(after.tiles.assets.writtenDown.value).toBe(12345);
     expect(after.tiles.assets.total.value).not.toBe(before.tiles.assets.total.value);
+  });
+
+  it("corrupting what customers owe moves that figure and leaves the assets total alone", () => {
+    const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+    const before = headlinesFromReport(report);
+    const corrupted = {
+      ...report,
+      values: report.values.map((entry) => (entry.key === "cell/Debtors & Creditors!C29" ? { ...entry, value: "999" } : entry)),
+    };
+    const after = headlinesFromReport(corrupted);
+
+    expect(after.tiles.assets.debtors.value).toBe(999);
+    expect(after.tiles.assets.total.value).toBe(before.tiles.assets.total.value);
+    expect(after.keys["headline/assets"]).toBe(before.keys["headline/assets"]);
   });
 });

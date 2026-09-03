@@ -271,13 +271,21 @@ test.describe("DIYA-GL headlines strip — tiles equal bst-headlines.js's own fi
     expect(sub).toContain("running costs");
   });
 
-  test("the assets tile's sub-line names written-down value, stock and what's owed", async ({ page }) => {
+  test("the assets tile totals what the business holds and reports what it is owed beside it", async ({ page }) => {
     await mountStrip(page, snapshotFromReport(realReport));
     const subs = await page.locator(".headline-tile-sub").allTextContents();
     const assetsSub = subs.find((s) => s.includes("written-down"));
     expect(assetsSub).toBeDefined();
     expect(assetsSub).toContain("stock");
     expect(assetsSub).toContain("owed to you");
+    expect(assetsSub).toContain("counted separately");
+
+    // The tile's figure is the written-down value plus stock, and nothing
+    // else: what customers owe is beside it, not inside it.
+    const total = parseMoney(await page.locator('[data-r-key="headline/assets"]').textContent());
+    const owed = expectedHeadlines.tiles.assets.debtors.value;
+    expect(total).toBeCloseTo(expectedHeadlines.tiles.assets.writtenDown.value + expectedHeadlines.tiles.assets.stock.value, 2);
+    expect(owed).toBeGreaterThan(total);
   });
 
   test("the tax tile states what it includes", async ({ page }) => {
@@ -321,6 +329,31 @@ test.describe("DIYA-GL headlines strip — the pies sum to the tiles and prove o
     await page.locator('[data-pie-table-toggle="turnover"]').click();
     await expect(table).not.toHaveClass(/visually-hidden/);
     await expect(page.locator('[data-pie-table-toggle="turnover"]')).toHaveAttribute("aria-expanded", "true");
+  });
+
+  test("a direct slice label is drawn whole or not at all, and the legend sits beside the chart", async ({ page }) => {
+    await mountStrip(page, snapshotFromReport(realReport));
+
+    const labels = await page.locator('[data-pie-block="outgoings"] .headline-pie-direct-label').allTextContents();
+    for (const label of labels) {
+      expect(label, "a direct label is never cut short with an ellipsis").not.toContain("…");
+    }
+
+    const svgRight = await page
+      .locator('[data-pie-block="outgoings"] .headline-pie-svg')
+      .evaluate((el) => el.getBoundingClientRect().right);
+    const legendLeft = await page.locator('[data-pie-legend="outgoings"]').evaluate((el) => el.getBoundingClientRect().left);
+    expect(legendLeft, "the legend sits beside the pie, not under it").toBeGreaterThanOrEqual(svgRight - 1);
+  });
+
+  test("the through-the-year charts start collapsed", async ({ page }) => {
+    await mountStrip(page, snapshotFromReport(realReport));
+    const details = page.locator(".headline-through-year");
+    await expect(details).not.toHaveAttribute("open", "");
+    await expect(page.locator(".headline-through-year-body")).toBeHidden();
+
+    await page.locator(".headline-through-year summary").click();
+    await expect(page.locator(".headline-through-year-body")).toBeVisible();
   });
 
   test("the turnover pie renders as a pie for this profitable fixture", async ({ page }) => {

@@ -116,8 +116,14 @@ export function headlinesFromReport(report) {
 
   const writtenDown = readCell(report, "cell/Fixed Assets!M1", { optional: true });
   const stock = readCell(report, "cell/PurchasesStock!D30", { optional: true });
+  // What the business holds is the written-down value of its assets plus
+  // its stock. What customers owe is a different kind of figure and is
+  // reported beside the total, never inside it: the sheet's "Amount owed by
+  // customers" counts every invoiced-and-unsettled sale across the year, so
+  // in a book that records few settlements it approaches turnover and a sum
+  // that includes it reads as nonsense.
   const debtors = readCell(report, "cell/Debtors & Creditors!C29", { optional: true });
-  const assetsTotal = addFigures(writtenDown, stock, debtors);
+  const assetsTotal = addFigures(writtenDown, stock);
 
   const tax = readCell(report, "cell/Income Tax!E18");
 

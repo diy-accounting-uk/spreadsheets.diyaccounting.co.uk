@@ -296,4 +296,25 @@ test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
     await expect(page.locator(".pencil-correction")).toHaveCount(1);
     await expect(page.locator('.pencil-correction .computed-value[data-r-key*="Profit & Loss Acc!C15"]')).toHaveCount(1);
   });
+
+  // The mark is not wired to a handful of named cells: any figure whose own
+  // cell drifts carries it, on whatever view renders that figure. This one
+  // is on a view that carried no mark before.
+  test("a corrupted ledger total is marked on the Debtors & Creditors view", async ({ page }) => {
+    const corrupted = await corruptedCachedValue(FRESH_PACKAGE_PATH, "Debtors & Creditors", "C29", "123456");
+    await uploadFile(page, corrupted, "corrupted-debtors-total.xlsx");
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    const drift = await page.evaluate(() => window.DIYA_BST_SNAPSHOT.drift.map((d) => d.id));
+    expect(drift).toEqual(["Debtors & Creditors!C29"]);
+
+    await page.locator('.tab-btn[data-view="debtors-creditors"]').click();
+    await expect(page.locator(".pencil-correction")).toHaveCount(1);
+    await expect(page.locator('.pencil-correction .computed-value[data-r-key*="Debtors & Creditors!C29"]')).toHaveCount(1);
+    await expect(page.locator(".pencil-correction .as-read")).toContainText("123,456");
+
+    // Nothing else picked one up: the computed side never reads that cell.
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+    await expect(page.locator(".pencil-correction")).toHaveCount(0);
+  });
 });

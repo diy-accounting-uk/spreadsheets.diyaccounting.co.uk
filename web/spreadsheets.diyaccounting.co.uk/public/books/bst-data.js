@@ -409,6 +409,11 @@
       totalExpenses: pl.C22 || 0,
       netProfit: pl.C24 || 0,
       capex: (results["Fixed Assets"] && results["Fixed Assets"].E1) || 0,
+      // The tax lines the sheet prints below Taxable Profit.
+      otherIncome: pl.C30 || 0,
+      incomeTaxLessCis: pl.C32 || 0,
+      niClass4: pl.C33 || 0,
+      netIncomeAfterTax: pl.C35 || 0,
     };
   }
 
@@ -575,15 +580,15 @@
   // calculator itself never reads it -- fixedAssetAdditions derives
   // additions straight from the "f"-coded lines), so the same lines feed the
   // additions list there too.
-  function buildFixedAssetsFromBook(book, results) {
+  function buildFixedAssetsFromBook(book, results, taxData) {
     var fa = results["Fixed Assets"] || {};
     var additions = (book.fixedAssets || []).map(function (a) {
       return { description: a.description || "Fixed asset", cost: a.cost || 0 };
     });
-    return fixedAssetsSummary(additions, fa);
+    return fixedAssetsSummary(additions, fa, taxData);
   }
 
-  function buildFixedAssetsFromLines(lines, results) {
+  function buildFixedAssetsFromLines(lines, results, taxData) {
     var fa = results["Fixed Assets"] || {};
     var additions = [];
     for (var i = 0; i < lines.length; i++) {
@@ -592,12 +597,32 @@
       if (BST_PURCHASE_CATEGORY[Number(line.accountMainID)] !== "capex") continue;
       additions.push({ description: line.detailComment || "Fixed asset", cost: line.amount });
     }
-    return fixedAssetsSummary(additions, fa);
+    return fixedAssetsSummary(additions, fa, taxData);
   }
 
-  function fixedAssetsSummary(additions, fa) {
+  // The register a row at a time, the way the schedule's own new-assets
+  // block computes it: Annual Investment Allowance at the year's rate on
+  // every asset, no Writing Down Allowance on this block at all (the
+  // template carries no WDA formula here), and whatever the allowance does
+  // not cover left as that asset's written-down value.
+  function assetRegister(additions, taxData) {
+    var aiaRate = (taxData && taxData.capital_allowances && taxData.capital_allowances.annual_investment_allowance) || 0;
+    return additions.map(function (asset) {
+      var aia = asset.cost * aiaRate;
+      return {
+        description: asset.description,
+        cost: asset.cost,
+        aia: aia,
+        wda: 0,
+        writtenDownValue: asset.cost - aia,
+      };
+    });
+  }
+
+  function fixedAssetsSummary(additions, fa, taxData) {
     return {
       additions: additions,
+      register: assetRegister(additions, taxData),
       totalCost: fa.E1 || 0,
       aia: fa.K1 || 0,
       wda: fa.L1 || 0,
@@ -790,7 +815,7 @@
       stock: stock,
       debtors: buildLedgerSide(results, months, "debtors"),
       creditors: buildLedgerSide(results, months, "creditors"),
-      fixedAssets: book.fixedAssets ? buildFixedAssetsFromBook(book, results) : buildFixedAssetsFromLines(lines, results),
+      fixedAssets: book.fixedAssets ? buildFixedAssetsFromBook(book, results, taxData) : buildFixedAssetsFromLines(lines, results, taxData),
       incomeTax: buildIncomeTax(results),
       sa103s: buildSa103s(results),
       admin: buildAdmin(taxData, taxYearName),
@@ -860,6 +885,29 @@
    */
   async function recalculate(book, lines, context, edited) {
     return buildSnapshot(book, lines, Object.assign({}, context, { edited: edited !== false }));
+  }
+
+  /**
+   * Recompute after a change to the book itself -- a business detail, an
+   * address, the accounting period. The tax year the book declares is
+   * resolved again, so a new year end brings that year's own rates and
+   * every check re-runs against them. The as-read layer and the source the
+   * load resolved carry through untouched.
+   * @param {Object} book
+   * @param {Array} lines
+   * @param {Object} context - the context the loading snapshot carried
+   * @param {boolean} [edited] - false when undo has taken the book back to
+   *   what was loaded
+   */
+  async function recalculateWithBook(book, lines, context, edited) {
+    var engine = await loadEngine();
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+
+    var taxYearName = engine.taxYearFileName(new Date(book.documentInfo.periodCoveredEnd));
+    var taxData = await engine.loadTaxDataForBook(book, { resources: resources, taxYearName: taxYearName });
+
+    return buildSnapshot(book, lines, Object.assign({}, context, { taxData: taxData, taxYearName: taxYearName, edited: edited !== false }));
   }
 
   // Every path that has a book and lines already assembled (an example's
@@ -1091,6 +1139,7 @@
     createNewBook: createNewBook,
     loadFromBookAndLines: loadFromBookAndLines,
     recalculate: recalculate,
+    recalculateWithBook: recalculateWithBook,
     reachesAnAccount: reachesAnAccount,
     headlinesFromReport: headlinesFromReport,
   };
