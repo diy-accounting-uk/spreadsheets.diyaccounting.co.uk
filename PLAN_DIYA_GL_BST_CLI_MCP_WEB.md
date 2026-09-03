@@ -1,28 +1,23 @@
-# PLAN: diya-gl BST spike — CLI, MCP, web
+# PLAN: diya-gl BST — CLI, MCP, web
 
-One engine, three surfaces, delivered in that order: a CLI over the extract/recalculate loop
-(phase 1), an MCP server exposing the same operations as tools (phase 2), and the books page
-in a browser (phase 3). The question under test is whether the pipeline's own modules carry
-all three end to end: xlsx → diya-gl → recalculate → checks → xlsx. BST is the cheapest
-vehicle — the simplest package that exercises the whole path. Three downstream consumers are
-why the spike is worth running:
+One engine, three surfaces: a CLI over the extract/recalculate loop, an MCP server exposing
+the same operations as tools, and the books page in a browser. The pipeline's own modules
+carry all three end to end: xlsx → diya-gl → recalculate → checks → xlsx. BST is the
+vehicle because it is the simplest package that exercises the whole path. Three downstream
+consumers make it worth doing:
 
-- **Submit VAT extract** — the real product in prospect (the spreadsheets half of Submit's
-  backlog item B16); this spike's import is its front half.
-- **The packaged JS library** that `_developers/PLAN_DIYA_CLOUD.md` assertion 2 requires this
-  repo to output. This spike is that library's first browser consumer, so bugs surface here
-  rather than in Submit.
-- **DIYA Cloud itself** (`_developers/PLAN_DIYA_CLOUD.md`), further off.
+- **Submit VAT extract** (the spreadsheets half of Submit's backlog item B16). This page's
+  import is its front half.
+- **The packaged JS library** that `_developers/PLAN_DIYA_CLOUD.md` assertion 2 requires
+  this repo to output. The page is that library's first browser consumer.
+- **DIYA Cloud itself**, further off.
 
-The BST page's own users may be few. That is acceptable: the page is a test harness that
-happens to be useful. One product, one page, no server.
-
-**Delivered in full, 2026-09-02**: all three phases merged to main across PRs #55 and #56,
-regenerated, tested and deployed. This document is the as-built record and the template for
-the successors (`PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md`). Sections below are amended
-where delivery diverged from the plan; "As built — what changed at implementation time"
-carries the narrative, and "Learnings for the next product" is where a successor plan
-starts.
+The spike delivered all three surfaces on 2026-09-02 (PRs #55 and #56). This pass turns
+the spike into a usable ledger: every input format a customer might hold, headline figures
+and charts that show a complete set of accounts at a glance, a warning tier in the checks,
+and verification of the real in-browser experience against the reconciliation's own
+output. "Where the page stands" is the audit of the delivered spike against this document;
+"Task list" is the work, cut into waves for concurrent sub-agents.
 
 ## User assertions (verbatim)
 
@@ -42,653 +37,529 @@ starts.
 > have a button that creates a new sheet, and loads a sheet with [example data from the
 > reconciliation scenarios]
 
-## Why this is feasible without a server
+> expand this with a test approach that can. in browser, load one of trhe scenarios and compare
+> the values against the reonciliation test output (that does nit need to be in browser). We
+> should be able to see that the scanarios load the same information, and have the same
+> calcualates results displayed and also available for export as a zip of JSONL (new feature)
+> from the browser. We should also be able to make edits via the browser and see the calculates
+> results update as expected and also deliberately trigger warnings from the check, is should
+> also be possible (when no set of accounts is loaded) to drop a BST .xlsx, a BST package in a
+> zip, or a .json or a .json.zip onto the page and have it load that set of accounts. The purpose
+> of this pass is to fill out the feature set to have a usable ledger which supports multiple
+> input formats and is verified through testing of the actual in browser experience and I wamnt
+> to be able to see outputs in the HMRC look-a-like forms and a tax computation and a couple of
+> pie charts at the top which are mostly to help get the user into the idea that all their
+> accounst are here with a visual representation of a complete set of accounts and there should
+> be headline figures including: Turnover, outgoings total (plus a cost of sale / admin cost
+> separation) value of assets and tax liability.
 
-Every module the page needs is already pure JS on JSZip and smol-toml:
+> Also when done have a UX pass of https://spreadsheets.diyaccounting.co.uk/books/bst.html with
+> /frontend-design:frontend-design to make sure is looks simple and refreshingly accessible for
+> users and incorporate proposed changes in PLAN_DIYA_GL_BST_CLI_MCP_WEB.md.
 
-| Concern | Existing module | Browser status |
+## Where the page stands (audit, 2026-09-03)
+
+The audit read the page, its tests, the engine, the CLI and MCP against the claims this
+document made on 2026-09-02, and drove the live page and a local build at four viewports.
+
+**Production cannot load a book.** The site's Content Security Policy
+(`infra/.../SpreadsheetsStack.java`, `script-src 'self' 'unsafe-inline' …`) forbids
+`unsafe-eval`. `app/lib/diya-gl-schema.js` validates with ajv, which compiles each schema
+into JavaScript with `new Function`. Every load path (example, upload, new book) fails on
+`https://spreadsheets.diyaccounting.co.uk/books/bst.html` with a CSP violation rendered
+into the empty-state card. All 63 browser tests pass because the test server sends no CSP
+header. Nothing in `test:spreadsheetsBehaviour-prod` opens the books page. Task T1 fixes
+the validator, T2 makes the tests send the production headers so the class cannot recur.
+
+| Claim in the 2026-09-02 record | State | Evidence |
 |---|---|---|
-| xlsx → diya-gl | `app/lib/xlsx-exporter.js` (`extractBstTransactions`, `extractBook`) | JSZip + string XML parsing; `fs`/`path` only for loading schemas, the `app/data/<year>.toml` rate files (the exporter reconstructs the book's `tax` tables from the year the package declares) and the declared-absence list |
-| diya-gl book | `app/lib/diya-gl-loader.js`, v2 schemas under `public/schema/` | pure JS + smol-toml |
-| Recalculate | `app/lib/calculators/bst.js`, `app/lib/tax/{income-tax,national-insurance,capital-allowances,mileage}.js` | pure JS, milliseconds |
-| Mechanical checks | `checkCompliance` in `app/products/bst.js` | pure JS — the reconciliation checks themselves |
-| diya-gl → xlsx | `app/lib/generator.js` cell writes into `app/templates/bst/` (2.5 MB) | JSZip surgery; stamps `fullCalcOnLoad="1"` so Excel recalculates on open |
-| zip | JSZip | native in browser |
+| Upload `.xlsx`/`.zip`, examples, new book, autosave | BUILT | `bst.js:349-448`, `autosave.js`; `.xls` refused by extension only, no content sniffing |
+| Drag-and-drop | MISSING | no `drop`/`dragover` handler anywhere |
+| JSON or JSONL import/export | MISSING | the page has no TOML writer and no JSON path; `diya-gl-canonical.js` reads schemas at import via `fs`, so it is not in the bundle |
+| Three-level drill on desktop | BUILT | `renderYearTableScroll`, `renderMonthDetail`, `renderEntriesTables` |
+| Mobile-portrait month cards "with drill-in navigation" | BROKEN | the card head sets `state.openMonth` and re-renders the table view, which mobile portrait hides; a tap changes nothing visible |
+| P&L, stock, ledgers, Income Tax, SA103S, Admin, Home views | BUILT | one render function each; P&L stops at Taxable Profit and omits the sheet's tax lines C30–C35 |
+| Fixed assets "register" | PARTIAL | additions list and allowance totals; no per-asset register table |
+| Business details "editable" | NOT BUILT | inputs are `readonly` |
+| Charts: proportional bar and grouped columns | BUILT, DEFECTIVE | inline SVG from calculated data; labels render at ~6px, the top value clips, the cumulative-profit line rides a second scale and overshoots its chart (a dual axis); no table alternative; placed at the bottom of the inspector rail |
+| Headline figures | MISSING | only a two-line turnover/profit strip, mobile portrait only |
+| Edits: amount, add, delete, undo, helpers | BUILT | date and account edits exist in the engine but no row control exposes them; the browser test injects that case through `setLines` |
+| Checks: engine group and book group, three fix-it helpers | BUILT | pass/fail only; no warning state exists anywhere in the engine or the page |
+| Drift with the correction mark, canonicalised | BUILT | `captureAsReadLayer`, `pencilCorrection`; proven breakable on `Income Tax!E11` |
+| Save `.xlsx` and package `.zip` | BUILT | `save.js` through `saveBstWorkbook`/`saveBstPackageZip` |
+| Four layouts, dark mode, reduced motion | BUILT | `bst.css:1483-1579`; four viewport specs |
+| "The equivalence test: four sources agree value-for-value" | MISSING | the bundle gate compares the browser engine to the Node engine object-for-object; nothing compares the DOM, `report.json`, or the fixture expectations |
+| "Render-equivalence sweep: every R key has a view" | MISSING | no figure carries its R key; tests read figures by text content and position |
+| CLI `--file`, `report.json`, `overtyped.json`, anchor guard | BUILT | `export.js`; four output files; `BstAnchorError` by name |
+| MCP: four tools, `.mcp.json` | BUILT | hand-rolled JSON-RPC stdio; `extract_book` byte-for-byte with the CLI |
+| Bundle built in `deploy.yml` and `test:browser` | BUILT | `deploy.yml:244`, `package.json` |
 
-The import contract the page inherits is the roundtrip programme's: `bookFieldsMissing` is 0
-for BST, and every field the export does not carry is one
-`app/data/roundtrip-unrepresentable.json` declares with a reason. What the pipeline reads
-back on CI is exactly what the page can show.
+Claims the record made that the code does not support are corrected in the specification
+below; nothing is asserted here that a grep or a screenshot did not show.
 
-The one thing a browser cannot do is the LibreOffice recalculation. It doesn't need to: the page
-computes with the JS engine, and a saved workbook recalculates itself when Excel or LibreOffice
-opens it. What the spike does not produce is a pre-verified cached workbook — proving the
-template+writer combination stays CI's job, per template version, not per download.
+## Specification
 
-**Bundling**: one esbuild step (`scripts/build-books-bundle.mjs`) producing an ES module bundle.
-The `fs` call sites go behind an injected resource loader; the page supplies `fetch`-based
-loading, Node keeps `readFileSync`. No fork of the pipeline modules — the bundle imports them
-as they are, so the page can never drift from the engine CI verifies. The surface is measured
-in phase 3's first boundary decision, not guessed.
+### Why this works without a server
 
-## Entry point
+Every module the page needs is pure JS on JSZip and smol-toml, reached through the
+resource-loader seam (`app/lib/app-resources.js`: async `readText`/`readBinary`,
+app-relative paths, Node modules loaded lazily inside the read). The browser runs the
+unforked engine: 140 modules, ~426 KiB minified, built by `scripts/build-books-bundle.mjs`
+into `books/engine/`, with the schemas, the tax-year TOMLs, the BST template and the three
+example books copied beside it under `books/assets/`. Both directories are gitignored build
+outputs and `deploy.yml` builds them before the S3 sync.
 
-The page is reached from `download.html`: a `download-section` panel in the site's own
-styling —
+Two modules stand outside the bundle today and this pass brings them in: the canonical
+writers (`diya-gl-canonical.js`, which reads both schemas at import time and must go
+through the seam like `diya-gl-schema.js` did) and the report serializer
+(`report-serializer.js`, already pure, just not exported from `books-engine.js`).
 
-> **View your books in DIYA-GL** — Work in Progress
-> Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded;
-> the file never leaves your machine.
-> [View in DIYA-GL]
+The browser never runs LibreOffice. It computes with the JS engine, and a saved workbook
+recalculates itself on open (`fullCalcOnLoad="1"`). Proving the template+writer
+combination stays CI's job, per template version, not per download.
 
-**Placement (operator, 2026-09-02): the panel sits at the BOTTOM of the page, below
-"Documentation & User Guides", and is visibly marked "Work in Progress"** in the site's own
-tag idiom. The original plan put it mid-page in the download flow; a work-in-progress
-feature does not lead the page.
+### Entry point
 
-**Decision: the panel deep-links, it does not pick.** The books page owns the file picker; the
-panel's action is a link to `books/bst.html`, where the picker is the first thing offered. An
-IndexedDB Blob hand-off across the navigation was considered and dropped — it duplicates the
-picker, adds a mechanism that exists only to move a file between two pages of the same site,
-and the deep link loses nothing but one click.
+`download.html` carries a "View your books in DIYA-GL" panel at the bottom of the page,
+marked Work in Progress in the site's tag idiom, linking to `books/bst.html`. The panel
+deep-links; the page owns the file picker and the drop zone.
 
-## The data model
+### Ways in
 
-The diya-gl book is the single source of truth once loaded. Three ways in:
+The diya-gl book is the single source of truth once loaded. Five ways in:
 
-- **Upload** — a `.xlsx` or a `.zip` (unzipped to find `bst-excel.xlsx`). Extraction populates
-  the book; every cell value read from the workbook is kept aside as the *as-read* layer for
-  drift annotation.
-- **New book** — an empty book with `documentInfo`/`entityInformation` from a short form
-  (business name, year end), no as-read layer.
-- **Example** — loads one of BST's three reconciliation fixtures, served as static assets in
-  canonical form (`book.toml` + `lines.jsonl`): `bst-scenario-basic` (the Precision Code
-  subset, full ledger), `bst-brickwork-pro-nonvat` (the BrickWork trade), and `bst-sp-sixty`
-  (no-ledger, mileage route).
+| Source | Formats | How |
+|---|---|---|
+| Choose a file | any format below | the picker, `accept` widened to `.xlsx,.zip,.json` |
+| Drop a file | any format below | the whole empty-state card and the page behind it are one drop target while no book is loaded; a dragover highlights the card and names what can be dropped; the picker is the keyboard equivalent |
+| Load an example | the three reconciliation fixtures | served as `book.toml` + `lines.jsonl` under `books/assets/examples/`, byte-identical to `examples/<business>/bst*/` |
+| Start a new book | a short form | business name and year end into an empty valid book |
+| Continue | IndexedDB autosave | offered, never auto-loaded |
 
-Edits mutate the book's lines; the calculator re-runs on every commit of an edit (whole-book
-recompute is milliseconds; no incrementalism in the spike). Undo is a book-state stack.
+**Formats, sniffed by content and never by extension.** One module under `app/lib`
+(`books-interchange.js`, task T3) decides what a byte array is and hands back a
+`(book, lines, asRead?)` triple. The CLI's `--file` mode, the MCP `extract_book` tool and
+the page all call it, so a file that loads in one loads in all.
 
-**Drift**: for every calculated cell the page shows the diya-gl value as *the* value, with the
-workbook's as-read value as an annotation and the signed difference. Values canonicalise before
-comparison exactly as `verify-roundtrip.js` does (money half-up to the penny, rates to 6 dp), so
-LibreOffice float noise never reads as drift. Drift on an unedited import is a finding (that's
-EQ1 live in the browser); drift after edits is expected and labels itself "recalculated".
+| Bytes | Detected as | Loader |
+|---|---|---|
+| zip container with `xl/workbook.xml` | a BST workbook (`.xlsx`) | `extractBstTransactions` + `extractMetadata` after `validateBstAnchors`; keeps the as-read layer; `openingBalances` from `Debtors & Creditors!C3/F3` |
+| zip container whose entries include one `.xlsx` and no `lines.jsonl` | a BST package zip | unzip, find the workbook, as above |
+| zip container with `lines.jsonl` (and `book.toml`) | a diya-gl zip (the CLI's own output shape) | parse the two files, validate against the v2 schemas; `report.json`/`overtyped.json` in the zip are ignored on import (`D` carries inputs only) |
+| zip container with exactly one `*.json` entry | a diya-gl JSON, zipped | unzip, then as the next row |
+| text beginning `{` | a diya-gl JSON | `{"format":"diya-gl-books","version":1,"product":"bst","book":{…},"lines":[…]}`, validated against the v2 schemas |
+| OLE container (`D0 CF 11 E0`) | the legacy `.xls` | refused with the instruction to save as `.xlsx` in Excel or LibreOffice |
+| anything else | unknown | refused, naming the four accepted kinds |
 
-**Save**: a save icon generates the workbook client-side — the generator writes the current book
-into the fetched template — and offers `bst-excel.xlsx` or a zip of the package directory shape.
-`fullCalcOnLoad` means the downloaded file proves itself on first open.
+A workbook from another product (an SE or Ltd file) fails the anchor guard and the page
+shows the guard's own message naming the missing sheet. A drop while a book is loaded is
+refused with "Close this book first" and a control that does so (the autosave record is
+kept until the user discards it). Files over 25 MB are refused before parsing.
 
-## Checks and helpers
+### Ways out
 
-The checks panel runs `checkCompliance` — the same checks reconcile runs — on every recalculation,
-grouped pass/warn/fail with the check's own wording. Helpers act on the book, never on cells:
+The save control offers four downloads, all generated client-side from the current book:
 
-- **Fix-it actions** attached to failing checks where the fix is mechanical (a missing
-  counter-leg, an unbalanced entry, a date outside the period → move or split).
-- **Make a sale/purchase from a bank item** — a bank line with no counter-leg becomes a sales or
-  purchases line with the bank line as its settlement, category picked from the expense codes.
-- Every helper is previewed as "this will add/change these lines" before it applies, and applies
-  through the same edit path as a hand edit (so undo covers it).
+| Download | Contents | File name |
+|---|---|---|
+| Workbook (`.xlsx`) | `saveBstWorkbook`, `fullCalcOnLoad` set | the package's own workbook name |
+| Package (`.zip`) | `saveBstPackageZip`, the package directory shape | the package directory name |
+| Books as diya-gl (`.zip`) | `book.toml`, `lines.jsonl`, `report.json`, and `overtyped.json` when the source was a workbook; exactly the four files `export.js --file` writes, byte-for-byte | `<business>-diya-gl.zip` |
+| Books as JSON (`.json`) | the single-file form above | `<business>-diya-gl.json` |
 
-**As built, the check groups split.** `checkCompliance` derives both sides of every check
-from the same lines, so a line edit moves both sides together and no line edit can break an
-engine check — proven empirically (eight candidate breaking edits, zero failing checks).
-The panel therefore shows two groups: **engine checks** (`checkCompliance`, untouched,
-never softened) and **book checks** over `D` itself, where an entry can be wrong while
-every sheet total still adds up. Three book-check classes shipped, each with a fix-it
-helper previewing and applying as one undoable step: dated outside the accounting period
-(clamp into the period), posted to an account outside the book's chart (repost to a chart
-account), amount finer than a penny (round). There is no counter-leg class for BST — a
-diya-gl line is the whole transaction — and "make a sale/purchase from a bank item" does
-not apply to BST, which has no bank book; its card stays visibly disabled and says why.
-SE/Ltd, which settle through bank journals, are where that helper becomes real.
+`report.json` is `R` built by `buildReportDocument`/`serializeReportDocument` over the
+page's own `results`, `sections` and `checks`, so a browser export and a CLI export of the
+same book are the same bytes. That equality is the test approach's spine.
 
-## UI design
+### Data model and drift
 
-Subject: a sole trader's year of books. Audience: DIY Accounting customers who already know these
-workbooks. The page's one job: see the year, trust the figures, fix what's flagged.
+Edits mutate the book's lines through one commit route (`bst-edits.js`); the calculator
+re-runs on every commit (whole-book, milliseconds); undo is a book-state stack of 50.
 
-**Compressed by default, three levels**: the year table (12 month rows × the P&L category
-columns, with the year totals row anchored) → a month expands to its summary (the totals the
-month sheets print) → expands again to that month's entries, editable in place. One month open
-at a time; the year row of an open month stays pinned so the context never scrolls away.
+Drift: for every calculated cell the page shows the diya-gl value as the value, with the
+workbook's as-read value struck through beside it and the signed difference, canonicalised
+as `verify-roundtrip.js` canonicalises (money half-up to the penny, rates to 6 dp). Drift on
+an unedited import is a finding; drift after an edit relabels itself "recalculated".
 
-**Render equivalence — every covered sheet has a view.** The reconciliation touches all 33
-BST sheets (`REPORT_SPREADSHEET_TEST_COVERAGE.md`), and each has a render equivalent on the
-page; the test is that the page's views collectively render every key BST's report `R`
-carries — every `cell/`, `section/` and `check/` key — so a figure the reconciliation reads
-is a figure the page shows.
+### Checks, warnings and helpers
 
-| Workbook sheets | Page view |
-|---|---|
-| SalesApr–SalesMar, PurchasesApr–PurchasesMar (24) | the three-level drill: year table → month summary → entries |
-| Profit & Loss Acc | the year table's totals plus a P&L statement render |
-| PurchasesStock | stock panel: opening/closing values and counts, materials % |
-| Debtors & Creditors | ledgers panel: the two opening figures and the monthly outstanding table the sheet actually holds (as built — the plan's "named opening/closing debtors and creditors" assumed a per-contact layout the BST sheet does not have; see As built) |
-| Fixed Assets | asset register panel: additions, the register, capital allowances |
-| Income Tax | tax computation render in the form idiom: bands and NI as form rows, double-ruled total (see the tax-form renders below) |
-| SE Short | SA103S render: the form's own section order and box numbers, one figure per box (see the tax-form renders below) |
-| Business Details | book details panel (`entityInformation`, editable) |
-| Admin | rates panel: the year's tax data, read-only, sourced by provenance from `app/data/<year>.toml` |
-| Home | the page's own navigation — each sheet view reachable from it, as the sheet's hyperlinks are |
+Three tiers, in one panel, each with its own count in the summary tiles:
 
-**The tax-form renders — modern HMRC look-alikes.** The SA103S and Income Tax views follow
-the form, not the ledger: their job is a customer eyeballing figures against the return, so
-each render reproduces the form's structure — its section order, its box numbers, one figure
-per box.
+- **Engine checks** — `checkCompliance`, the reconciliation's own checks, never softened.
+  In the browser both sides of every engine check derive from the same `(book, lines)`, so
+  a line edit moves both sides together. The only engine checks a browser edit can fail are
+  the tolerance-0 and 0.01 ones: `SA103S: Net profit close to P&L Net` (a sub-penny
+  fraction on a `d`-coded or expense line splits the 2 dp form box from the whole-pound
+  P&L), the two mileage checks (an edited `measurableQuantity`), and the profit bridge. Task
+  T15 proves each one from the UI.
+- **Book checks** — over `D` itself, where an entry can be wrong while every sheet total
+  still adds up. The three shipped classes (dated outside the period, posted outside the
+  chart, finer than a penny) move from the page into `app/lib/book-checks.js` (task T5) so
+  the MCP `report` tool and Node tests run them too. Each keeps its fix-it helper: preview,
+  apply as one undoable step.
+- **Book warnings** (new) — the same module, result `warn`: advisory, never blocking a
+  save, each deliberately triggerable from the UI.
 
-- *Form styling authority (operator, 2026-09-02)*: every form and form-like render on the
-  page — upload, new-book, add-entry, helper previews, and both tax-form renders — strictly
-  follows `../submit.diyaccounting.co.uk`'s implemented HMRC form design guidance: its
-  field styling, labels, error presentation and button hierarchy, as its design docs and
-  the public submit site's VAT form styles define them. The submit repo is the single form
-  authority; the page does not invent its own form idiom.
-- *Layout*: one column of form rows, each row a label, a box-number chip and an amount box,
-  grouped under the form's own section headings (business income, expenses, net profit).
-  The Income Tax view renders the computation the same way: bands and Class 2/4 NI as form
-  rows with a distinct total row.
-- *Amount boxes*: right-aligned tabular figures. Whole-pound boxes say "whole pounds" in
-  microcopy and round exactly as the sheet rounds, so the box always matches what the
-  return would carry.
-- *Drift inside a form*: a box shows exactly one figure — the calculated one. The as-read
-  figure and its signed drift sit in the right margin as the correction mark, outside the
-  box, the way a checker annotates a paper return. Never a second number inside a box.
-- *Identity boundary*: the render echoes the form's layout for the customer's own figures
-  and carries the site's identity. No HMRC branding, crest, colours or wordmark, nothing
-  that could read as the actual government form or as a filing. The microcopy says what it
-  is: "check these against your return".
+| Warning | Trigger | Source of the threshold |
+|---|---|---|
+| Turnover has passed the VAT registration threshold | sales total ≥ `Admin!VAT Registration Threshold` for the book's year | the year's tax data, already in `R` |
+| Possible duplicate entry | two lines with the same journal, date, amount and detail | the lines |
+| Entry has no detail | empty `detailComment` | the lines |
+| Negative amount | a sale or purchase below zero (a refund belongs on the other journal) | the lines |
+| Month with no entries inside a trading year | zero lines in a month between the first and last dated entries | the lines |
 
-**Visual identity — the site's, not a standalone one (operator, 2026-09-02).** The plan
-originally specified a self-contained "columnar ledger pad" identity: six bespoke tokens
-(`--paper`/`--ink`/`--rule`/`--pencil`/`--correction`/`--tint`), IBM Plex Mono + Archivo,
-its own dark theme. It was built as specified and the operator rejected it on sight — "it
-looks like a claude site". The as-built direction:
+Result states across all three tiers are `pass`, `warn`, `fail`. The report serializer
+keeps `check/` verdicts as they are (engine checks never warn); book checks and warnings
+serialise under `bookcheck/<id>` with the three-state verdict, so `report.json` carries
+what the panel shows.
 
-- The page uses the SPREADSHEETS SITE's own look, read from `spreadsheets.css` as built:
-  the teal brand (#158484/#106868/#29c0c0), Arial, the `#f7fafa` ground with its 11px
-  `#e8eded` hairline grid, white panels at radius 8 with `0 2px 4px` shadows, 2px
-  teal-border buttons, 3px teal focus. The page is a page of the site, not a product with
-  its own brand. The token layer kept its NAMES (the JS references them) and re-valued
-  onto the site's values — the cheap reskin route the successors should reuse.
-- The form authority is submit's implemented HMRC field standards
-  (`web/public/docs/hmrc-form-field-standards/{README.md,styles.css}` and
-  `web/public/submit.css` in that repo): block bold labels above fields, hint text
-  `#505a5f`, 2px input borders with brand focus, bold red errors behind a 5px bar, 44px
-  minimum tap targets, and the joined currency box — a grey `#f3f2f1` £-prefix cell
-  against a right-aligned bare figure (the first build rendered a double £; the box holds
-  the bare figure). No GOV.UK branding, per that doc's own MUST-NOTs.
-- Dark mode may exist but is the site design's dark rendering, not a separate identity —
-  as built: teal accents on `#101919`/`#182424` surfaces, a subdued grid, and an
-  `--on-rule` token keeping filled-button text legible both ways.
-- The correction mark survives as a mark language (calculated figure primary, as-read
-  figure struck through beside it, signed drift) but is drawn with the site's palette.
-- Motion: one orchestrated expand (year row unfolds to month, entries slide under),
-  everything else instant; `prefers-reduced-motion` collapses it to a cut.
+"Make a sale/purchase from a bank item" does not apply to BST, which has no bank book. The
+card leaves the BST page (it was rendering a live-looking Preview button on a disabled
+helper) and returns on the SE/Ltd pages, where settlement is a bank-journal row.
 
-The successor plans should treat this as settled: study the site's pages and submit's form
-guidance BEFORE the first pixel, and never ground a page in a bespoke token set.
+### Headline figures and charts
 
-**Visualisations** — standard accounting views, nothing fancier, drawn as inline SVG from the
-calculated book (never from the as-read layer, so they always agree with the figures shown):
+A "year at a glance" strip sits at the top of the main column on every view, the first
+thing a loaded book shows. It exists to say "all of your accounts are here" before any
+table does. Four stat tiles and two pies, all from the calculated book, never the as-read
+layer.
 
-- *Where the costs are*: expense categories as a proportional bar, largest first, the year's
-  figure and share on each segment.
-- *Through the year*: monthly turnover, costs and profit as grouped columns across the twelve
-  months, with a cumulative profit line.
+| Tile | Figure | Derivation from `R` |
+|---|---|---|
+| Turnover | sales for the year | `cell/Profit & Loss Acc!C4` |
+| Outgoings | everything spent, with its split | `C6 + C7 + C22`; sub-line "cost of sales" = `C6 + C7` (stock and direct costs), "running costs" = `C22` (the eleven expense lines) |
+| Assets | what the business holds at year end | `cell/Fixed Assets!M1` (tax written-down value) + `cell/PurchasesStock!D30` (closing stock) + `cell/Debtors & Creditors!C29` (owed by customers); the three parts on the tile's second line |
+| Tax | income tax and Class 4 NI for the year, less CIS | `cell/Income Tax!E18` |
 
-They live in the inspector rail (desktop landscape), the drawer (desktop portrait), and behind a
-"Charts" tab on mobile. Palette from the same six tokens; figures in the same tabular mono.
+BST's P&L has no administrative-expenses subtotal; its split is cost of sales versus the
+expense lines, and the tile says so in the customer's words ("cost of sales" / "running
+costs"). The assets tile uses written-down value rather than cost because that is the
+figure the sheet carries forward; the alternative (cost, `Fixed Assets!E1`) is one line of
+code if the operator prefers it. BST computes no Class 2 NI (the sheet carries only the
+rate); the tax tile states what it includes.
 
-**Four layouts, designed not just fluid**:
+The derivation lives in `app/lib/bst-headlines.js` (task T4), a pure function from an `R`
+document to the tile figures and the two pie datasets, so the Node test and the page
+compute them the same way and the DOM hooks can name them (`headline/turnover`,
+`headline/outgoings`, `headline/assets`, `headline/tax`).
+
+**Two pies**, drawn as inline SVG:
+
+- *Where the turnover went*: cost of sales, running costs, tax and NI, kept. Four slices.
+  When net profit is negative the pie cannot be honest; the strip draws a horizontal
+  stacked bar for that book instead and says why.
+- *Outgoings by category*: the largest categories of `C6 + C7 + C11…C21`, up to five, the
+  rest folded into "Other". Never more than six slices.
+
+Rules from the dataviz method the pies must meet: one hue, the site's teal, stepped light
+to dark from the largest slice (the palette validated with the dataviz skill's
+`validate_palette.js` in both modes; if six teal steps fail adjacent-pair separation the
+cap drops to five slices); a legend and direct labels on slices above 8%; text in text
+tokens, never the slice colour; a 2 px surface gap between slices; a table alternative
+under each pie, reachable by a "show as table" toggle and always present for assistive
+technology; hover shows the figure and share; ≥44 px hit targets on touch. No pie of two
+slices anywhere. The strip's existing charts (the expense bar and the monthly columns)
+move under the pies as a collapsible "through the year" block, redrawn to the same rules:
+readable labels (≥11 px), no clipped values, and the cumulative profit line becomes its own
+small chart on its own axis, never a second scale on the columns.
+
+### Views
+
+Every sheet the reconciliation touches has a render on the page, and every figure the
+page renders carries the `R` key it shows (`data-r-key`, task T10):
+
+| Workbook sheets | Page view | Corrections this pass makes |
+|---|---|---|
+| SalesApr–Mar, PurchasesApr–Mar (24) | year table → month summary → entries | default columns Month, Sales, Cost of sales, Expenses, Profit with an "all categories" toggle, so the table fits desktop landscape without a hidden overflow; month column frozen when it scrolls; mobile-portrait cards open to the month summary and entries inside the card stack (T13) |
+| Profit & Loss Acc | the statement | carries the tax lines the sheet prints below Taxable Profit (C30–C35); set at the form width, in a panel, so a label and its figure sit within one eye span |
+| PurchasesStock | stock panel | unchanged |
+| Debtors & Creditors | the monthly outstanding table the sheet holds | unchanged |
+| Fixed Assets | additions, a per-asset register (cost, AIA, WDA, written-down value), allowances | the register table is new; panels use the column's width |
+| Income Tax | the computation in the form idiom | "Less: CIS deducted" leaves the National Insurance section; the cell-reference chips (E8/E9/E10) go, only SA103S has box numbers |
+| SE Short | SA103S with box numbers | unchanged |
+| Business Details | book details, editable through the commit route | name, address and dates become inputs; a year-end change reloads the tax data and re-runs every check |
+| Admin | the year's rates, read-only | the subtitle names the tax year, not a repository path |
+| Home | navigation to every view | unchanged |
+
+**The tax-form renders** follow the form, not the ledger: section order, box numbers, one
+figure per box, whole-pound boxes rounded as the sheet rounds. Drift inside a form sits in
+the right margin as the correction mark, never a second number in a box. No HMRC branding;
+the microcopy says "check these against your return".
+
+### Visual identity and the UX pass
+
+The identity is settled and the successor plans treat it as such: the page is a page of
+the spreadsheets site (teal brand, Arial, the `#f7fafa` ground with its hairline grid, white
+panels at radius 8, 2 px teal-border buttons, 3 px teal focus), and every form and
+form-like render follows `../submit.diyaccounting.co.uk`'s implemented HMRC form field
+standards (block bold labels, hint text `#505a5f`, 2 px input borders, bold red errors
+behind a 5 px bar, 44 px targets, the joined £-prefix currency box). The token layer keeps
+its names and carries the site's values. Dark mode is the site design's dark rendering.
+
+The UX pass (2026-09-03, four viewports, empty and loaded, with the frontend-design skill's
+questions: what is the page's one job, what does the reader see first, what can be removed)
+found the page leads with explanation where it should lead with the accounts, and buries
+its most reassuring content (the checks all pass, the charts) under jargon and at the
+bottom of a rail. The changes, all in task T13 unless noted:
+
+1. **Lead with the figures.** The strip (T9) replaces the sentence of instructions under
+   each view title. View subtitles go; a view's name is enough.
+2. **Copy in the customer's words.** The toast says "Loaded Precision Code Trading
+   (example)", not "Loaded bst-scenario-basic". Example buttons lead with the business
+   name; the fixture id drops to small text. "Drift cells" becomes "figures that differ from
+   your workbook". "Flagged" becomes "need attention". The checks list shows "matches" for
+   a passing engine check, not "expected £409,900.00 · actual £409,900.00".
+3. **Collapse what passes.** The panel opens on warnings and failures; passing checks fold
+   into one line ("94 checks pass") with a disclosure. Ninety-four identical green rows are
+   a wall, not reassurance.
+4. **The empty state is one decision.** "Choose a file" is the single filled primary
+   button; the drop zone is the card itself and says so; "Start a new book" and the
+   examples are secondary. The mobile action bar's "Save workbook" is hidden until a book
+   is loaded.
+5. **Entries read as accounts, not codes.** The account column shows the category name
+   with the code in small text; long detail truncates with an ellipsis and a title; the
+   delete control has an accessible name and undo in its toast.
+6. **Mobile portrait works.** Month cards open in place; the sheet tab row scrolls with a
+   visible fade and the active tab scrolled into view; the header keeps the business name
+   over the view name rather than truncating both; the Charts tab content starts below the
+   sticky tab row.
+7. **Panels use their space.** Fixed Assets and P&L stop rendering as narrow columns on an
+   empty canvas.
+8. **Controls say what they do.** Icon-only buttons (theme, save) carry visible labels at
+   desktop widths and `aria-label`s everywhere; every `role="button"` div becomes a button.
+9. **One accessibility gate.** axe runs on the loaded page at all four viewports inside
+   `test:browser` (T14) with zero serious or critical violations; keyboard-only traversal of
+   the year table, an entry edit and a helper apply are Playwright specs.
+
+Motion stays as built: one orchestrated expand, everything else instant, reduced motion
+collapses it to a cut.
+
+### Four layouts
 
 | Viewport | Layout |
 |---|---|
-| Desktop landscape | Year table left (~2/3), inspector rail right: checks, drift summary, helpers, save |
-| Desktop portrait | Year table full width; inspector as a bottom drawer that opens on check/drift tap |
-| Mobile landscape | The columnar table itself, horizontally scrollable with the month column frozen — the closest thing to holding the spreadsheet |
-| Mobile portrait | Stacked month cards with drill-in navigation, year totals as a sticky header, save/checks in a bottom action bar |
+| Desktop landscape | strip on top; year table left (~2/3); inspector rail right: checks, drift, helpers, save |
+| Desktop portrait | strip, then the year table full width; inspector as a bottom drawer |
+| Mobile landscape | the columnar table, horizontally scrollable, month column frozen |
+| Mobile portrait | strip as the top of the Books tab; stacked month cards that open in place; save and checks in the bottom action bar |
 
-Quality floor without announcement: keyboard focus visible throughout, the entries grid fully
-keyboard-editable, WCAG AA contrast on both themes.
+## Test approach
 
-## Phase 1 — CLI
+The question every test answers: does the browser show the customer exactly what the
+reconciliation proved? Five sources of a figure, and the assertions that tie them together.
 
-Before any browser work: the import half as a tool, run against a customer's own file.
+| Source | What it is | How a test obtains it |
+|---|---|---|
+| S1 fixture expectations | `[expected]` in `app/test/fixtures/bst-*.toml` | `scenario-loader.js` |
+| S2 Node `R` | `report.json` from the JS engine over the fixture book | `report.js --package bst --data examples/<business>/bst*` |
+| S3 Excel `R` | `report.json` read from the LibreOffice-recalculated package | `report.js --source-dir examples/bst-latest --mode saved` (cached values, no LibreOffice at test time); exists for `bst-scenario-basic` only, the scenario CI populates |
+| S4 browser `R` | `report.json` inside the page's diya-gl zip export | the Playwright download event, unzipped; also `window.DIYA_BST_SNAPSHOT.report` |
+| S5 the DOM | the figures on screen | every `[data-r-key]` element's text, parsed as money or rate |
 
-```
-npm run export-bst -- my-file.xlsx
-```
+Assertions, per scenario unless stated:
 
-**Surface** (decided 2026-09-01): `app/bin/export.js` gains a `--file` mode accepting one
-`.xlsx` (or a `.zip`, unzipped to find the workbook) alongside the existing `--source-dir`;
-the npm script is an alias for `--package bst --file`. One tool, one code path, no second
-entry point to drift.
+- **A1 Same information loaded.** The browser's `book.toml` and `lines.jsonl` (S4's zip)
+  equal the served example files byte-for-byte after a load with no edits.
+- **A2 Same calculated results.** S4's `report.json` equals S2's byte-for-byte.
+- **A3 The sheet agrees.** S3 equals S2 within `verify-roundtrip.js`'s canonicalisation
+  for every shared key (scenario basic).
+- **A4 The screen agrees.** For every `[data-r-key]` on every view, the parsed text equals
+  the S4 value for that key, canonicalised as the comparator rounds. Includes the
+  `headline/` keys through `bst-headlines.js` run in Node over S2.
+- **A5 Everything is shown.** The set of `cell/`, `section/` and `check/` keys in S2 minus
+  the set of `data-r-key`s the page renders (across all views and both drill levels)
+  equals the declared list in `app/data/render-unrepresentable.json`, each entry with a
+  reason. An undeclared absence fails. This is the render-equivalence sweep the record
+  claimed and never had.
+- **A6 The fixture holds.** S1's totals equal the corresponding S2 keys (already true in
+  the reconciliation tests; asserted here so the browser suite stands alone).
+- **A7 No drift on a true upload.** Uploading `examples/bst-latest`'s workbook yields an
+  empty drift collection; corrupting one cached `<v>` yields exactly that cell's mark.
 
-**Each run emits three things**, beside the input or to `--output-dir`:
+Then behaviour:
 
-- **`book.toml` + `lines.jsonl`** — the diya-gl data `D`, validated against the v2 schemas;
-  errors print the schema violations, not a stack trace. `D` carries inputs only — derived
-  values never enter it, by the tuple contract; everything computed lives in `R`.
-- **`report.json`** — `R`, computed by the JS engine from the extracted `D`, so the CLI is
-  the whole D→R loop in one run: extract, recalculate, report.
-- **`overtyped.json`** — the provenance sidecar: every cell the template ships as a formula
-  that arrived as a typed literal (a bare `<v>` where the template carries `<f>`), keyed
-  `sheet!cell`, with the template's formula, the value found, and — where `CELL_MAP` or an
-  extractor maps that cell — the book field or line it feeds. This is the page's future
-  "customer overtyped a formula" annotation, proven as data first; the template formula
-  inventory already exists (`formula-presence-guard.test.js` guards it).
+- **E1 Edits move the figures as the engine says.** For each of the edit cases (add a
+  purchase of X, add a sale of Y, change an amount, change a date, change an account, remove
+  a line, apply a helper) performed through the UI: the browser's post-edit `report.json`
+  equals Node's after applying the same named edit with `diya-gl-edits.js`, byte-for-byte;
+  and the specific movements hold (profit falls by X, turnover unchanged; both rise by Y;
+  the month, category and year totals move by the difference).
+- **E2 Deliberate warnings and failures.** A table of UI actions and the exact verdicts
+  they flip, nothing else flipping: out-of-period date → `book-dates-in-period`; account
+  outside the chart → `book-accounts-in-chart`; `100.005` → `book-amounts-whole-pence` and
+  `SA103S: Net profit close to P&L Net`; a sale that lifts turnover over the VAT
+  threshold → the VAT warning; an identical second entry → the duplicate warning; an
+  empty detail → its warning; a negative amount → its warning; an edited mileage quantity
+  → the two mileage checks. Each fix-it helper's preview text and result are asserted, and
+  undo restores the flagged state.
+- **E3 Round trips.** Workbook → page → diya-gl zip → page → workbook: the CLI's
+  `export.js --file` on the final workbook equals the first zip's `D` byte-for-byte. JSON →
+  page → JSON is identical. Package zip → page → package zip re-extracts to the same `D`.
+- **E4 Every way in.** Drop each of the six byte kinds (workbook, package zip, diya-gl
+  zip, JSON, zipped JSON, `.xls`) onto the empty page through a synthetic `DataTransfer`;
+  the first five load to the same `D` as the picker does; `.xls` and an SE workbook show
+  their named refusals; a drop onto a loaded book is refused; a `.zip` renamed `.xlsx`
+  still loads (content, not extension).
+- **E5 Every way out.** All four downloads: bytes captured, zips opened, `fullCalcOnLoad`
+  present in the workbook, the diya-gl zip's four files named exactly, the JSON validating
+  against the v2 schemas.
+- **E6 Four layouts, one gate.** The four viewport specs as built, plus axe at each
+  viewport on a loaded book with zero serious or critical violations, plus a
+  keyboard-only run through load, drill, edit, helper apply, save.
 
-**Two boundary decisions, settled before any dispatch.**
+Infrastructure:
 
-1. *Version tolerance.* Phase 1 reads current-template files only. The extractors key on
-   anchors — the sheet names and header labels each one locates before reading — and the
-   `--file` mode validates every anchor first. A missing anchor is a named error stating
-   the sheet and the anchor it expected, never silent short output. Reading older
-   templates is a question for a later phase; nothing in phase 1 decides it.
-2. *Attribution needs the extractors' row mappings.* The sidecar can only say which line or
-   field an overtyped cell feeds if the extractors expose their row-to-line and
-   cell-to-field mappings. That exposure is an internal API on `app/lib/xlsx-exporter.js`,
-   designed once and shared — not a parallel re-implementation of the extraction logic. It
-   is the sidecar track's first step and the reason that track carries the high tier.
+- **The test server sends production's headers.** The Content Security Policy string lives
+  in one file (`infra/main/resources/security-headers.json`) that `SpreadsheetsStack.java`
+  reads at synth time and `web/browser-tests/serve.js` reads at test time, so an
+  eval-dependent bundle fails in `test:browser` the way it failed in production.
+- **A production probe.** `test:spreadsheetsBehaviour-*` opens the books page, loads
+  `bst-scenario-basic`, and asserts the four headline tiles carry S2's figures, so a deploy
+  that breaks the load is caught by the behaviour run, not a customer.
+- **Serial and teed.** Browser specs run with one worker; anything longer than a glance is
+  teed to a log. No fixed sleeps; `expect.poll` on state.
+- **Where the tests live.** `web/browser-tests/books-equivalence.browser.test.js` (A1–A7),
+  `books-edits.browser.test.js` grows E1–E2, `books-formats.browser.test.js` (E3–E5),
+  `books-layouts.browser.test.js` (E6); a Node helper `web/browser-tests/r-sources.js`
+  produces S1–S3 and canonicalises. `app/test/books-interchange.test.js`,
+  `book-checks.test.js`, `bst-headlines.test.js` cover the engine modules with breakability
+  proofs, per the reconciliation-bug method.
 
-**What exists and what is new.** Existing, already tested: `extractBstTransactions`,
-`extractBook`, `calculateFromDiyaGl`, `diya-gl-canonical.js`, the v2 schemas, the three BST
-fixtures, and the template formula parsing inside `formula-presence-guard.test.js`. New
-code: the `--file` surface and anchor guard, the `report.json` emission from the CLI, the
-edit→recalc harness, the row-mapping exposure, a shared template-formula-map module, and
-the sidecar itself.
+## CLI and MCP
 
-### Delivery — three tracks, two waves
+As delivered: `export.js --file <xlsx|zip>` writes `book.toml`, `lines.jsonl`,
+`report.json`, `overtyped.json` beside the input or to `--output-dir`, with the anchor guard
+(29 sheets, 25 header cells) failing by name. The MCP server `diya-gl-bst` (`.mcp.json`)
+exposes `extract_book`, `report`, `edit_lines`, `save_workbook` over one in-memory book per
+session, replaying the harness cases byte-for-byte.
 
-**In flight** on `claude/bst-cli-phase-1` (off `claude/book-readback-2`; this block is the
-phase's tracking surface — NEXT.md stays with the batch branch):
+This pass adds, through the shared interchange module (T3): `--file` and `extract_book`
+accept the diya-gl zip, the JSON and the zipped JSON as inputs; `report` and the CLI's
+`report.json` carry the `bookcheck/` verdicts (T5); `save_workbook` gains
+`format: "diya-gl-zip" | "json"`. No new engine code beyond those modules.
 
-- [x] Track A — landed (`64838188`, merged): `--file` mode with staging, the `export-bst`
-  alias, `report.json` in the same run, and the anchor guard (26 sheets, 13 header labels)
-  failing by name with no stack trace; byte-for-byte with `--source-dir` proven.
-- [x] Track B — landed (`1913e709`, merged): 18 tests across the three fixtures, all four
-  cases anchored on real lines, breakability demonstrated.
-- [x] Track C — landed (`85c9d2bb`, merged): the extraction row map recorded by the
-  extractors themselves, `template-formula-map.js` shared with the guard test, and the
-  sidecar excluding the 2,367 prompt-formula input cells; empty on a fresh package, the
-  78-cell attribution sweep proven one cell at a time.
-- [x] closing ladder (coordinator) — green: full serial suite 7254/7254 (one soffice
-  contention flake re-proved clean); `--file` vs `--source-dir` byte-identical `D` on a
-  freshly generated recalculated package; budgets unchanged at zero.
-- [x] BST ledger alignment — landed on the operator's decision (2026-09-02): align the
-  pipeline to the REAL sheet. The shipped BST `Debtors & Creditors` is a monthly
-  outstanding table ("Owed start year", "Sales not yet received", month-serial rows at
-  5,7,…,27, totals at row 29); only C3 and F3 are ever entered, everything else is
-  formulas. The old writer wrote 28 cells over this, destroying 16 template formulas per
-  package. As built: C3/F3 map to `openingBalances.tradeDebtors`/`tradeCreditors` — fields
-  the v2 schema already had, so NO schema change; the monthly figures are derivable from
-  the lines, so they live in `R` (28 new CELL_MAP reads and checks), not in `D`; the named
-  per-contact ledgers are declared structurally absent for BST (declared count 36→78,
-  measured not hidden). The sidecar went 16→0 on a fresh package; the sheet (plus
-  PurchasesStock and Fixed Assets, same unguarded-open bug class) joined the anchor guard;
-  `adminMileageRates` now throws `AdminSheetMissingError` instead of silently pricing every
-  mileage claim at nil.
+## Delivered
 
-Worktree sub-agents off the batch branch, coordinator merges. Read-only for every track:
-`app/lib/diya-gl-canonical.js`, `examples/`, `app/test/fixtures/`,
-`app/data/roundtrip-budget.json` (phase 1 adds no book fields, so the budgets do not move).
+Phase 1 (CLI), phase 2 (MCP) and phase 3 (web) landed across `claude/bst-cli-phase-1`,
+`claude/bst-spike-2` and `claude/settlement-map` (PRs #55, #56, 2026-09-02), regenerated,
+tested and deployed. The per-track record, the byte-identity proofs and the two big
+corrections (the Debtors & Creditors fiction and the settlement column) are in the commit
+messages on those branches and in the As-built notes at the end of this document. The
+Playwright suite stands at 63 tests across five books specs.
 
-| Track | Tier | Owns | Delivers |
-|---|---|---|---|
-| **A — the file surface** | Sonnet — bounded coding against the existing export patterns | `app/bin/export.js`, one `package.json` script line, the anchor-validation additions in `app/lib/xlsx-exporter.js`, a new `app/test/export-file.test.js` | the `--file` mode (`.xlsx` or `.zip`), the `export-bst` alias, `report.json` in the same run, and the anchor guard with its named errors |
-| **B — the edit→recalc harness** | Sonnet — needs fluency with the calculator API and `R`'s shape, no design | one new test file, `app/test/diya-gl-edit-recalc.test.js` | parse `lines.jsonl`, apply a named edit in memory, run `calculateFromDiyaGl`, assert the movement in the new `R`, across all three fixtures |
-| **C — the overtype sidecar** | Opus — two internal API designs inside the pipeline's central module | the row-mapping exposure in `app/lib/xlsx-exporter.js`, a new sidecar module under `app/lib/`, the formula-map extraction out of `formula-presence-guard.test.js` into a module both it and the sidecar import, its tests | `overtyped.json`: the template-vs-upload formula diff, each entry attributed through the exposed mappings and `CELL_MAP` |
+## Task list
 
-**Wave 1**: A and B, concurrent — disjoint files. **Wave 2**: C, after A lands — both touch
-`xlsx-exporter.js`, and the sidecar diffs against the file the `--file` mode opens.
+Each task names its tier, the files it owns, what it delivers and the rung that proves it.
+Worktree sub-agents fork from main and open by merging the batch branch; the coordinator
+merges and removes each worktree as it lands. Read-only for every task: `examples/`,
+`app/test/fixtures/`, `app/data/roundtrip-*.json`, `app/products/bst.js`,
+`app/lib/calculators/`. Every task commits before it verifies, runs its own blast radius
+serially, and leaves the full suite to the coordinator's closing ladder.
 
-**Each track's verification rung**, per the reconciliation-bug method:
+### Wave 0 — production loads a book again (its own PR, first)
 
-- *A*: the `--file` output on a generated package equals the `--source-dir` output
-  byte-for-byte; rename one sheet in a copy of the package and the run fails with the named
-  anchor error, not short output.
-- *B*: the four cases — add a purchase of X (profit falls X, turnover unchanged); add a sale
-  of Y (profit and turnover rise Y); change a line's amount (its month, category and year
-  totals move by the difference, check verdicts stay green); the identity (parse → serialize
-  with no edit is byte-identical). Recalculation never rewrites lines — `D` is input-only —
-  so an unchanged book recalculating to an unchanged `R` is itself one of the assertions.
-- *C*: `overtyped.json` is empty on a fresh package; turn one template formula cell into a
-  literal and exactly that cell appears, nothing else; each entry's attribution matches
-  what `CELL_MAP` or the exposed mapping states for that cell.
-  `formula-presence-guard.test.js` stays green through the extraction it now imports.
+| Task | Tier | Owns | Delivers | Rung |
+|---|---|---|---|---|
+| **T1 CSP-safe validation** | Sonnet | `app/lib/diya-gl-schema.js`, `scripts/build-books-bundle.mjs`, `app/test/diya-gl-schema.test.js` | the two v2 schemas precompiled with ajv's standalone code generator at bundle-build time into `books/engine/`, the browser path importing the generated validators, Node keeping runtime compilation; no `new Function`/`eval` reachable from the bundle | the bundle loads and validates a book under the production CSP served locally (T2's server, or a one-off header in the spec until T2 lands); grep of the built bundle finds no `new Function`; validation errors byte-identical between the two paths on a deliberately invalid book |
+| **T2 headers in tests and the prod probe** | Sonnet | `infra/main/resources/security-headers.json`, `SpreadsheetsStack.java` (read the file), `web/browser-tests/serve.js` (one server for all books specs), `behaviour-tests/spreadsheets.behaviour.test.js` | one source for the security headers; every books spec served with them; the behaviour run loading an example on the books page and reading the headline tiles (until T9 lands: the year total) | the pre-T1 bundle fails `test:browser` under the new server, the post-T1 bundle passes; `./mvnw clean verify` and `cdk:synth` green with the header string unchanged |
 
-**The closing ladder**, run by the coordinator on the merged branch: the full unit suite
-serially; the CI tuple check (a fresh package's `--file` output equals the tuple's `data/`
-byte-for-byte); the roundtrip budgets unchanged at zero. LibreOffice agreement stays where
-it already lives, in the CI roundtrip jobs — no track runs soffice.
+T1 and T2 are disjoint and run concurrently. The wave closes with `test:browser`, `npm
+test`, and a deploy; the operator confirms the live page loads an example.
 
-This is the smallest end-to-end proof of the import half on a customer's own
-current-template file, and it is the tool half of the Submit VAT extract regardless of
-whether the page ever ships.
+### Wave 1 — engine foundations (Node-side, no page behaviour)
 
-## Phase 2 — MCP
+| Task | Tier | Owns | Delivers | Rung |
+|---|---|---|---|---|
+| **T3 interchange formats** | Opus | new `app/lib/books-interchange.js`, `app/lib/diya-gl-canonical.js` (schemas through the seam), `app/lib/books-engine.js` (export the canonical writers, the report serializer, `overtypedCells`, the new module), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/books-interchange.test.js` | content sniffing for the six byte kinds; readers for the diya-gl zip, JSON and zipped JSON; writers for the diya-gl zip (four files, the CLI's exact bytes) and the JSON; the CLI and MCP reading every kind and the MCP saving the two new kinds | the CLI's `--file` on a diya-gl zip of its own output reproduces that output byte-for-byte; a `.zip` renamed `.xlsx` loads; each refusal names its kind; the bundle builds with the canonical module inside and no import-time `fs` |
+| **T4 headline figures** | Sonnet | new `app/lib/bst-headlines.js`, `app/test/bst-headlines.test.js` | the pure derivation from an `R` document to four tiles and two pie datasets, the negative-profit branch, the ≤6-slice fold | figures anchored to the three fixtures' `[expected]` totals; one corrupted `R` value moves exactly the tiles that depend on it |
+| **T5 book checks and warnings** | Sonnet | new `app/lib/book-checks.js`, `app/test/book-checks.test.js`, `app/lib/report-serializer.js` (`bookcheck/` entries), `web/.../books/bst-edits.js` (thin: call the module through the bundle), `app/lib/mcp/diya-gl-tools.js` (`report` carries them) | the three classes moved, the five warnings added, three-state verdicts, helpers unchanged in behaviour | each of the eight rules broken by one crafted line and only that rule flips; the browser edits spec stays green; `report.json` gains the `bookcheck/` keys and nothing else changes |
+| **T10 render hooks** | Sonnet | `web/.../books/bst.js` (every render function), new `app/data/render-unrepresentable.json`, `app/test/render-coverage.test.js` | `data-r-key` on every rendered figure, including both drill levels, the declared-absence file, and a Node test that renders every view over S2 through jsdom and diffs the key sets | the declared list is short and every entry has a reason; removing one hook fails the test naming the key |
 
-The same operations as an MCP server, so an agent session (a Claude Code session here, or
-Submit's own tooling) can operate on a customer's books without the page existing. A stdio
-server over the same modules the CLI proved — no new engine code, tools mapping one-to-one
-onto what phase 1 already tests:
+T3 and T5 both touch `diya-gl-tools.js`: T5 owns the `report` change and rebases onto T3
+when T3 lands first. T10 is the only wave-1 task in `bst.js`.
 
-| Tool | Wraps |
-|---|---|
-| `extract_book` | the `--file` export: xlsx/zip in, `D` + `overtyped.json` out |
-| `report` | `calculateFromDiyaGl`: `D` in, `R` out (figures, sections, check verdicts) |
-| `edit_lines` | the phase-1 harness's named edits: add/change/remove lines, returns the new `R` and the moved figures |
-| `save_workbook` | the generator: `D` in, a recalculating `.xlsx`/`.zip` out |
+### Wave 2 — the page grows the features
 
-State is one loaded book per session, held in memory; every tool answers with canonical
-forms so a transcript is reproducible as a phase-1 test case. The server registers in
-`.mcp.json` for this repo's own sessions first — its first user is the reconciliation
-workflow itself (load a fixture, probe a figure, try a fix), which is also its test: the
-phase-1 harness cases run through the MCP tool layer and must return the same `R` movements.
+| Task | Tier | Owns | Delivers | Rung |
+|---|---|---|---|---|
+| **T7 formats on the page** | Sonnet | `bst.js` (load and save paths), `bst-data.js`, `save.js`, `bst.html`, the empty-state CSS block in `bst.css` | the drop zone with its states and refusals, the picker widened, every load through `books-interchange.js`, the two new downloads, `window.DIYA_BST_SNAPSHOT.report` | the six byte kinds through picker and drop each land the same `D`; the diya-gl zip download equals `export.js --file` on the same workbook byte-for-byte; the refusal copy matches the spec |
+| **T9 the strip** | Opus | new `web/.../books/headlines.js`, a `headlines` section appended to `bst.css`, the two chart functions moved out of `bst.js` into the module (coordinator applies the one-line mount in `bst.js`) | the four tiles, the two pies, the table alternatives, the redrawn bar and monthly charts, the palette validated in both modes with the dataviz validator, four-viewport screenshots reviewed by the operator | the tiles carry `headline/` keys equal to `bst-headlines.js` over S2; slices sum to the tile; a book with a net loss renders the stacked bar; axe clean on the strip |
 
-*Verify: the four edit cases pass through the tool layer with answers identical to the
-harness's; an `extract_book` on a generated package matches the CLI's output byte-for-byte.*
+Disjoint files except the mount line. Wave 2's closing ladder adds the operator's look at
+the strip at four viewports before wave 3 starts; the identity was rejected once on sight.
 
-### Delivery — three tracks, two waves
+### Wave 3 — verification and the UX pass
 
-**In flight** on `claude/bst-cli-phase-1` (this block is the phase's tracking surface):
+| Task | Tier | Owns | Delivers | Rung |
+|---|---|---|---|---|
+| **T13 the UX pass** | Opus | `bst.js`, `bst.css`, `bst.html` (T7 and T9 have landed) | the nine changes in "Visual identity and the UX pass" plus the view corrections in "Views": default columns and the toggle, mobile drill-in, the collapsed checks, the copy, the P&L tax lines, the per-asset register, editable business details, Income Tax's CIS row and chips, the Admin subtitle, the hidden mobile save bar, the bank-item card gone | the existing 63 specs stay green with selectors moved to `data-*`; four-viewport screenshots before and after; keyboard-only traversal recorded in a spec |
+| **T14 the equivalence suite** | Sonnet | new `web/browser-tests/r-sources.js`, `books-equivalence.browser.test.js`, `books-formats.browser.test.js`, `books-layouts.browser.test.js`, `playwright.config.js` (register), `package.json` (axe dependency) | A1–A7, E3–E6 | every assertion proven breakable: one corrupted `<v>` (A7), one edited served example (A1), one removed hook (A5), one changed R value in the snapshot (A4) each fail exactly the assertion that guards them |
 
-- [x] Track D — landed (`c3a93a52`+`c6cb6367`, merged): `diya-gl-edits.js` (no counter-leg
-  needed — a diya-gl line is the whole transaction), and `resolveBstPurchaseCodeMap(book)`
-  picking the candidate map whose keys cover the book's declared chart (the calculator's
-  own hardcoded copy folded in — it bypassed the loader). Generator-shaped fixtures proven
-  byte-identical; sp-sixty's misroutes corrected with a breakability proof. 3628 blast
-  tests.
-- [x] Track E — landed (merged): `app/lib/bst-workbook.js` — `saveBstWorkbook`/
-  `saveBstPackageZip` with the lazy resource-loader seam (zero new top-level `fs` sites),
-  byte-for-byte proven against the pre-refactor CLI on all three fixtures, `BookFieldError`
-  failing by name before the template is touched. `applyCellWrites` extracted from the
-  runner rather than forking cell-write semantics. Bundle-gate intel recorded in its
-  report: recalculation sits strictly downstream of the carved function.
-- [x] Track F — landed (merged): a hand-rolled newline-delimited JSON-RPC stdio server
-  (the SDK's dependency set — express, hono, zod — is the "heavy" case the escape hatch
-  named), four tools over the landed functions, `diya-gl-bst` registered in `.mcp.json`,
-  edits composing across calls in one session. 20 replay assertions identical to the
-  harness; `extract_book` byte-for-byte with the CLI over real stdio; 164 blast tests.
-- [x] closing ladder (coordinator) — green with phase 1's: the tool layer replayed the harness
-  byte agreement, budgets at zero. One known reconcile-at-rebase note: this branch's
-  fixture books still carry `class2WeeklyRate 3.45`; the batch branch's rate alignment
-  changes them to 0 when the branches merge — no assertion depends on the field.
+T13 owns the page files; T14 reads them only through `data-*` hooks, so the two run
+concurrently and T14 rebases once T13 lands.
 
-| Track | Tier | Owns | Delivers |
-|---|---|---|---|
-| **D — edits API + loader chart fix** | Sonnet — the harness is the spec; the loader fix has an in-repo precedent | a new `app/lib/diya-gl-edits.js`, the chart-honouring fix in `app/lib/diya-gl-loader.js`, `app/test/diya-gl-edit-recalc.test.js` (refactor onto the API, drop its workaround anchors) | the named edits (add sale, add purchase, change amount — counter-leg handling included) as a library API the server and the page both call; the loader reading the book's own declared chart instead of the hardcoded BST map, proven on the sp-sixty fixture |
-| **E — save_workbook carve-out** | Opus — carving a pure function out of the generator's CLI-shaped orchestration | a "book → workbook buffer" function factored from `app/bin/generate.js`/`app/lib/generator.js` (BST path), its tests | `saveBstWorkbook(book, lines) → xlsx buffer` (and the zip shape), byte-identical to what the CLI path generates for the same book; phase 3's save step reuses it |
-| **F — the MCP server** | Sonnet — wrappers over landed functions, no new engine code | a new `app/bin/` (or `app/lib/mcp/`) stdio server, `.mcp.json` registration, its tests | the four tools over the landed functions; the phase-1 harness cases replayed through the tool layer; `extract_book` byte-for-byte with the CLI |
+### Wave 4 — row editing and the behaviour proofs
 
-**Wave 1**: D and E, concurrent — disjoint files. **Wave 2**: F, after D, E and phase 1's
-Track C land (F wraps the `--file` path Track C is still wiring).
+| Task | Tier | Owns | Delivers | Rung |
+|---|---|---|---|---|
+| **T11 date and account editing** | Sonnet | `bst.js` (the entries grid), `bst-edits.js` (two commit ops), `bst.css` (grid inputs) | a date input and a category select on every entry row, committing through `changeLinePostingDate` and `changeLineAccount`, keyboard-complete, undoable | the two edits move the month and category totals as the engine says; an out-of-period date and an out-of-chart account are now reachable from the UI and the existing helper specs stop injecting through `setLines` |
+| **T15 edit and warning proofs** | Sonnet | `web/browser-tests/books-bst-edits.browser.test.js` | E1 in full (each UI edit's `report.json` equal to Node's after the same named edit) and E2's table, every row | each row of E2 flips exactly its verdicts; each helper's preview text matches; undo restores the flagged state |
 
-**Track rungs**: *D* — the harness's 18 tests green on the API with the sp-sixty workaround
-anchors replaced by the chart-correct expectations; the misrouted account (5900) and the
-dropped one (7000) each get a fixture-anchored assertion. *E* — byte-for-byte against the
-CLI-generated workbook for all three fixtures; a corrupted book field fails generation with
-a named error. *F* — the phase's own verify line above.
+T15 depends on T11 for the date and account rows; it lands the other rows first and adds
+those two on rebase.
 
-**The closing ladder**, coordinator, merged branch: full serial suite; the CLI and the tool
-layer agree byte-for-byte on the same input; the roundtrip budgets unchanged at zero. No
-track runs soffice.
+### Closing ladder, every wave
 
-## Phase 3 — Web
+Coordinator, merged batch branch, quiet machine: `npx vitest run --fileParallelism=false`
+teed; `npm run test:browser` teed; `npm run formatting`; `./mvnw clean verify` when
+`infra/` changed; the roundtrip budgets unchanged; then the PR. After the merge and deploy,
+`test:spreadsheetsBehaviour-prod` against the live page.
 
-The books page. Its specification is the sections above — entry point, data model, checks
-and helpers, UI design (the tax-form renders included). This section is the delivery
-structure over that specification.
+### Horizons named, not decided
 
-**Delivery record** (all landed):
+Reading `.xls` directly; a per-contact debtors ledger for BST (the sheet has none);
+Class 2 NI in the tax tile (the sheet carries only the rate); archiving CI's Excel-side
+`report.json` as a workflow artefact so S3 exists for all three scenarios rather than the
+one CI populates.
 
-- [x] W0 — the bundle gate held: **CONTINUE**. The browser runs the unforked engine — 9
-  sheets cell-identical browser vs Node on the sp-sixty book, 61/61 check verdicts
-  matching, book/lines validation identical, breakability proven by a one-penny bundle
-  drift failing on the exact cell. The re-measured inventory is in boundary decision 1.
-- [x] W-pre — landed (`3a5ad81a`, merged): the shell with all four layouts as real
-  media-query combinations, the three-level drill, the correction mark; the SA103S and
-  Income Tax form renders; the `download.html` panel. 33/33 browser tests, four viewport
-  screenshots reviewed. Its visual identity was later redone to the site's look (see UI
-  design) — the structure and behaviour survived, the token set did not.
-- [x] W1 — landed: the shell swapped its static snapshot (`books/bst-data.js`) for the
-  bundled engine — upload, all three examples, drift with the correction mark proven
-  breakable in-browser, anchor-guard errors surfaced by name in the page's own styling.
-  **W1's swap absorbed W2's entire scope**: every panel and form render was on the live
-  engine the moment the snapshot became live computation. W2 was never dispatched.
-- [x] W3 — landed: one commit route for every change (edits, deletes, adds, helpers), undo
-  covering them all (stack cap 50, Ctrl/Cmd+Z), drift relabelling as recalculated, the
-  two-group checks panel with three fix-it helpers each proven on a deliberately broken
-  book. The edit ops live in `app/lib/diya-gl-edits.js` — grown during delivery to
-  `addSaleLine`, `addPurchaseLine`, `changeLineAmount`, `removeLine`,
-  `changeLinePostingDate`, `changeLineAccount` (the last two promoted from a remove+add
-  composition on the operator's call: position-preserving, date- and chart-validated,
-  named errors).
-- [x] W4 — landed: client-side save through `bst-workbook.js`; all 11 JSZip `generateAsync`
-  sites normalised from `nodebuffer` (which no browser can produce) to `uint8array`, with
-  `Buffer.from` only at boundaries an API demands and byte-identity proven against the
-  pre-change code. Found and fixed en route: the MCP base64 boundary (a bare
-  `Uint8Array.toString("base64")` silently produces a comma-joined byte list, not an
-  error), and the live page's save controls being inert because `state.book`/`state.lines`
-  were never wired from a loaded snapshot.
-- [x] W5 — landed: the new-book form (empty valid book through the same load path),
-  IndexedDB autosave with a never-auto-loading continue offer, discard, and proven
-  degradation when the store is blocked.
-- [x] Post-delivery residual — the fixture-refresh episode: `examples/bst-latest` was a
-  pre-alignment package, so the sidecar honestly reported its 16 destroyed formulas (11
-  phantom test failures in CI) and uploads showed 12 spurious drift findings (root cause:
-  `loadFromFile` never set `book.openingBalances`, so the calculator computed from zero
-  openings against real as-read figures). Fixed by regenerating the example against the
-  aligned writer and reading C3/F3 into `openingBalances` on upload; the zero-drift spec
-  now asserts the whole drift collection, not three hardcoded render points.
-- [x] Site-design integration (operator, 2026-09-02) — the panel to the bottom of
-  `download.html` marked Work in Progress, the page restyled to the site's look with
-  submit's form guidance, and the production fetch failure fixed: `books/engine/` and
-  `books/assets/` are gitignored build outputs, and `deploy.yml` never ran
-  `build:books-bundle`, so production 404'd on the engine module. The bundle build is now
-  wired into the deploy job the same way redirects and sitemaps already were.
+## As-built notes from the spike (for the successor plans)
 
-**Two boundary decisions, settled before any dispatch.**
-
-1. *The bundle surface.* Measured 2026-09-01 as 27 `fs` call sites across four modules;
-   W0's re-measure against the real import graph found **68 across six** — the plan had
-   missed `xlsx-reader.js` (5) and `spreadsheet-runner.js` (35, plus `child_process`, `os`,
-   `crypto`). The count was never the blocker: **only the two sites that execute at import
-   time blocked the bundle** (`diya-gl-schema.js` compiling both schemas on import;
-   `xlsx-exporter.js` resolving `TAX_DATA_DIR` on import), both made lazy. Everything else
-   sits on Node-only paths, kept behind stubs that throw naming the call that reached them.
-   The injected resource loader (`app/lib/app-resources.js`, the seam Track E established:
-   async `readText`/`readBinary`, app-relative slash paths, Node modules loaded lazily
-   inside the read so a bundle pulls in no `fs`) serves the two v2 schemas, the
-   `app/data/<year>.toml` files, and the BST template xlsx for save; the multi-file reads
-   stay Node-only. Bundle: 422.7 KiB minified from 140 modules, byte-identical across two
-   builds.
-2. *`.xls` uploads are rejected with instructions.* The legacy binary format has no cheap
-   pure-JS reader, and pulling a spreadsheet library in would fork the engine the bundle
-   exists not to fork. The picker accepts `.xlsx` and `.zip`; a `.xls` file gets a plain
-   message — open it in Excel or LibreOffice, save as `.xlsx`, try again. Reading `.xls`
-   directly is a later question and nothing in phase 3 decides it.
-
-**What exists and what is new.** Existing: the engine, proved through phases 1 and 2; the
-`download.html` panel patterns; the Playwright rig behind `test:browser`. New: the bundle
-build, the page and every view, the edit/undo layer, the helpers, the four layouts.
-
-### Delivery — six tracks, four waves
-
-Worktree sub-agents off the batch branch, coordinator merges. W0 is the only track that
-touches engine modules (the loader injection); for every other track `app/lib/` and
-`app/products/` are read-only, and `examples/`, the fixtures and the budgets are read-only
-for all.
-
-| Track | Tier | Owns | Delivers |
-|---|---|---|---|
-| **W0 — the bundle gate** | Opus — the injection design across four modules is the phase's one real risk | `scripts/build-books-bundle.mjs`, the resource-loader injection points in the four modules named above, a bare probe page, a Node parity test | the esbuild bundle; the probe page loads the sp-sixty fixture and logs book, P&L and check results |
-| **W1 — the viewer** | Sonnet — bounded coding against the UI spec | `books/bst.html`, the page state and drill modules, its Playwright specs | upload (`.xlsx`/`.zip`), the three-level drill, the drift annotations |
-| **W2 — panels and form renders** | Sonnet — the form design is already specified above | the view modules for the render-equivalence table's panels, the SA103S and Income Tax form renders included, and their render-equivalence coverage | every non-drill view |
-| **W3 — edits, checks, helpers** | Opus — the edit path, undo stack and helper previews carry the book's correctness | the edit/undo layer, the checks panel, the two helper classes with preview | in-place edits, recalculation on commit, helpers that apply through the edit path |
-| **W4 — save** | Sonnet | the save module, its Node roundtrip test | client-side `.xlsx` and zip generation off the fetched template |
-| **W5 — entry, examples, autosave, layouts** | Sonnet | the `download.html` panel, new-book and example flows, IndexedDB autosave, the four layout implementations, four-viewport Playwright specs | everything that makes the page reachable, restartable and shaped for each viewport |
-
-**Waves.** Wave 0: W0 alone — it ends at the **decision gate**: continue if the bundle
-matches `reconcile.js` on the sp-sixty fixture (same figures, same verdicts, no forked
-module); stop if matching requires forking a pipeline module or shimming beyond resource
-loading, and the finding goes to `_developers/PLAN_DIYA_CLOUD.md`. Wave 1: W1. Wave 2: W2
-and W3, concurrent — views render read-only from the calculated book while W3 owns state
-and the edit path, disjoint modules. Wave 3: W4 and W5, concurrent.
-
-*As run*: W-pre (the static shell) preceded W0 and retired the design risk early with zero
-coordination cost — its markup and CSS survived W1's wiring. W1 and W4 ran concurrently
-(disjoint: page wiring vs engine output types), then W3 and W5 concurrently; W2 was
-absorbed by W1 and never dispatched. The successor plans should keep W-pre and drop W2.
-
-**Each track's verification rung:**
-
-- *W0*: figures and check verdicts match `reconcile.js --package bst` for the same scenario.
-- *W1*: a freshly generated package shows zero drift; a hand-corrupted cached `<v>` shows
-  exactly that cell's drift — the breakability proof, in-browser.
-- *W2*: the render-equivalence sweep — every `cell/`, `section/` and `check/` key of BST's
-  `R` is rendered by some view, and each form render shows every box its form carries.
-- *W3*: each helper's result reconciles — its book passes the same checks reconcile
-  enforces; the edit-outcome cases (a purchase of X drops profit by X with turnover
-  unchanged; a sale of Y raises both by Y) hold against the page's figures with the check
-  panel green.
-- *W4*: import → export → import yields a deep-equal book (Node vitest over the same bundle
-  entry points); an exported workbook run through `reconcile.js` RECONCILES.
-- *W5*: the four viewport layouts pass their Playwright specs in `test:browser`.
-
-**The equivalence test** (Playwright, lands with W1 and grows through W3): generate a BST
-package populated with a reconciliation scenario's example data, load it into the page, and
-assert four sources agree value-for-value — the fixture's own expectations, the values
-`report.js` reads from the generated file, the page's as-read values, and the page's
-calculated values. All four equal, canonicalised as the comparator rounds, and the drift
-annotations empty.
-
-**The closing ladder**, run by the coordinator on the merged branch: the render-equivalence
-sweep across all views; `test:browser` across the four viewports; the Node parity suite
-against `reconcile.js`; the full unit suite serially. The page lands at
-`web/spreadsheets.diyaccounting.co.uk/public/books/bst.html` with the bundle beside it, and
-the bundle build joins BOTH build paths: `test:browser` builds it before the specs, and
-`deploy.yml` builds it before the S3 sync — the second wiring was missed at first and
-production 404'd on the engine until it landed.
-
-## Out of scope for the spike
-
-SE/Ltd/Taxi (multi-file packages and external links change the import story — now the
-successor plans `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md`), the guide PDFs in the saved
-zip, VAT hand-off to Submit (this spike's import is its natural front half), and
-saved-account persistence (that is DIYA Cloud; the working-book autosave in step 5 is the
-whole of what this page keeps).
-
-## As built — what changed at implementation time
-
-The phase tracking blocks above carry per-track results; this is the cross-cutting record
-of where delivery diverged from the plan's assumptions.
-
-**The Debtors & Creditors fiction (the spike's biggest correction).** The plan, the
-exporter and the generator all assumed a per-contact ledger layout on BST's sheet. The
-shipped sheet is a monthly outstanding table with exactly two entered cells (C3/F3); the
-old writer destroyed 16 template formulas per package writing the fiction, and the round
-trip passed because both legs spoke it — the fixture went in through the invented layout
-and came back through it. The correction needed no schema change: the two real inputs were
-`openingBalances` fields the v2 schema already carried, and the monthly figures are report
-output (`R`), not book input (`D`). The named ledgers became declared absences —
-measured, not hidden. Everything downstream of the fiction then surfaced in sequence: the
-stale `examples/bst-latest` (phantom sidecar findings, spurious upload drift), the page's
-ledgers panel reading fiction rows, and the settlement gap below.
-
-**The settlement column.** The sheets' column D ("Cash, Bank deposit, Dr Cr Card") feeds
-the outstanding formula — any non-blank D counts a row as settled. The writer wrote it from
-the book's `paymentMethod`; nothing ever read it back, so a package regenerated from its
-own export flipped its outstanding ledger. Worse: `diyaGlToScenario()` — the path
-`generate.js --data`, `export.js`, `saveBstWorkbook` and the MCP tools all funnel through —
-never passed `carriesPaymentLabels` to the writer (only the fixture-building path did), so
-every master-generated BST package had parked every line as outstanding, forever. As built
-(operator decision, coarse map both ways): blank → no field, "cash" → `cash`, any other
-non-blank → `bank-transfer`, matching the writer's own rule; finer master values
-coarse-map and show as EQ2 whole-line mismatches rather than blanket suppression. SE/Ltd
-carry `paymentMethod` declarations proven empirically — their settlement is a bank-journal
-row, not a flag on the line.
-
-**The engine surface grew mid-delivery and the plan's module table stayed roughly true.**
-No pipeline module was forked for the browser. The additions: `diya-gl-edits.js` (six named
-ops; no counter-leg logic exists because a diya-gl line is the whole transaction),
-`bst-workbook.js` (the save carve-out with the resource-loader seam),
-`app-resources.js` (the seam shared with the schema module), `template-formula-map.js`
-(lifted out of the guard test), the overtype sidecar, and `resolveBstPurchaseCodeMap`
-(the loader honouring a book's own declared chart — the hardcoded map misrouted sp-sixty's
-Taxi-numbered accounts, and the calculator had its own bypassing copy that had to move in
-the same change).
-
-**Output types.** The pipeline asked JSZip for `nodebuffer` at 11 sites; browsers cannot
-produce it. Normalised to `uint8array` everywhere with `Buffer.from` only where an API
-demands a Buffer, byte-identity proven. One real bug fell out: `.toString("base64")` on a
-plain `Uint8Array` silently yields a comma-joined byte list — the MCP save tool was
-corrupting its output without erroring.
-
-**The MCP transport.** The `@modelcontextprotocol/sdk` pulls express, hono, cors, jose and
-zod to serve the three JSON-RPC methods a stdio server actually receives; this repo ships
-no server framework, so a ~60-line hand-rolled newline-delimited JSON-RPC transport was the
-right size. Verified against a real spawned process.
-
-**Byte-identity as the refactor discipline.** Every carve-out (the save function, the
-cell-write extraction, the output-type change, the `--file` mode) was proven byte-identical
-against the pre-refactor code — including capturing reference outputs with a no-op
-LibreOffice stand-in on PATH so the real CLI ran end to end without recalculation.
-
-## Learnings for the next product
-
-Written for whoever drafts `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md`. Each of these cost
-this spike real time; a second round starts from them.
+Cross-cutting facts that cost the spike real time. `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md`
+start here.
 
 1. **Study the design authorities before the first pixel.** The page was built twice
    because the first build invented an identity. The authorities are the site's own pages
-   (background grid, floating panels, palette, type) and
-   `../submit.diyaccounting.co.uk`'s implemented HMRC form design guidance for every form
-   and form-like render. The successor plans should name both as binding inputs to W-pre,
-   not discoveries for a redesign.
+   and submit's implemented HMRC form guidance. Name both as binding inputs to the first
+   shell track.
 2. **Verify sheet reality from the template XML before trusting any layout the code
-   implies.** Self-consistent fictions round-trip cleanly — the D&C trap. The generator
-   writing X and the exporter reading X proves nothing about the sheet. For SE/Ltd
-   especially: read the actual bank-journal, ledger and VAT sheets from the XML first, and
-   expect the CONTEXT docs and existing code to be wrong about them.
-3. **The CI reconciliations drive the COMMITTED packages.** A template or generator fix
-   shows green in committed reports only after a regeneration, so report-pinned tests
-   (the judge parser's fixtures) must be re-pinned as riders ON the refresh, never before
-   it — otherwise either the old pins or the new reports must fail. Sequence: fix →
-   regenerate → re-pin, one motion.
-4. **Sub-agents commit before they wait, and full suites never run concurrently.** The
-   repeated failure mode: an agent finishes coding, starts a full suite, ends its turn with
-   everything uncommitted, and the suite dies or lies under soffice contention. Briefs
-   should say: commit first, then verify; enumerate the blast radius file-by-file and run
-   it serially; leave exactly one full-suite closing ladder to the coordinator on a quiet
-   machine. Three concurrent full suites produced hours of noise and zero extra signal.
-5. **Worktrees fork from main.** Every brief opens with `git merge <working branch>` or the
-   agent builds against a stale base and measures the wrong world (one track "found" 202
-   failures that were simply a pre-restore tree).
-6. **Prove refactors byte-identical, and capture the reference BEFORE touching anything.**
-   The no-recalculation soffice stand-in (a PATH shim whose `--convert-to` copies) lets the
-   real CLI produce reference bytes without LibreOffice, cheaply and deterministically.
-7. **Gitignored build outputs need explicit deploy wiring.** Anything a page needs at
-   runtime that a build step produces (`books/engine/`, `books/assets/`) must be built in
-   `deploy.yml` as well as in the test path, or production 404s while every test passes.
-8. **The resource-loader seam is the whole browser story.** Async `readText`/`readBinary`,
-   app-relative slash paths, Node imports loaded lazily inside the read, zero top-level
-   `fs`. Import-time execution is the only real browser blocker — a module that reads at
-   import fails before any code runs; a module that reads lazily on a Node-only path just
-   needs a throwing stub. Count the real import graph, not the modules the plan remembers.
-9. **Product shape decides the plan's shape.** Taxi is single-file and closest to BST — its
-   spike is mostly a re-run (different sheets: VitalTax, mileage comparison, Wages
-   Forecast; its column D is an expense-code letter, not a settlement flag). SE and Ltd are
-   multi-file with external links: staging becomes a directory not a single workbook, the
-   anchor guard must cover every workbook, the save path must produce the multi-file
-   package with its external-link caches (the runner's multi-file rewrites are Node-only
-   today and `runMultiFileSpreadsheet` keeps its own cell-write copy), and settlement lives
-   in the bank journals — which is also where the "make a sale/purchase from a bank item"
-   helper finally becomes real.
-10. **Bugs cluster where nothing reads what something writes.** The spike's worst defects
-    were one-legged paths: the settlement column written but never read, the generate
-    pipeline never writing what the fixture path wrote, `state.book` never set so save was
-    inert, the D&C fiction. When planning a product, list every write with no reader and
-    every reader with no writer — that list is the defect forecast.
-
+   implies.** The Debtors & Creditors sheet is a monthly outstanding table with two entered
+   cells (C3/F3); the plan, exporter and generator all assumed a per-contact ledger and the
+   round trip passed because both legs spoke the fiction. For SE/Ltd, read the bank-journal,
+   ledger and VAT sheets from the XML first and expect the CONTEXT docs to be wrong.
+3. **The CI reconciliations drive the committed packages.** A template or generator fix
+   shows green only after a regeneration; report-pinned tests re-pin as riders on the
+   refresh. Fix → regenerate → re-pin, one motion.
+4. **Sub-agents commit before they wait, and full suites never run concurrently.** Three
+   concurrent full suites under soffice contention produced hours of noise and no signal.
+5. **Worktrees fork from main; every brief opens with a merge of the batch branch.**
+6. **Prove refactors byte-identical, and capture the reference before touching anything.**
+   A PATH shim whose `--convert-to` copies lets the real CLI produce reference bytes
+   without LibreOffice.
+7. **Gitignored build outputs need explicit deploy wiring**, and now: **build outputs need
+   production's headers in the test path.** The engine 404'd once and was blocked by CSP
+   once; each time every test passed.
+8. **The resource-loader seam is the whole browser story.** Import-time execution is the
+   only real blocker; a module that reads lazily on a Node-only path needs a throwing stub.
+   Count the real import graph, not the modules the plan remembers.
+9. **Product shape decides the plan's shape.** Taxi is single-file and closest to BST. SE
+   and Ltd are multi-file with external links: staging becomes a directory, the anchor
+   guard covers every workbook, the save path produces the multi-file package with its
+   link caches, and settlement lives in the bank journals, where "make a sale/purchase from
+   a bank item" becomes real.
+10. **Bugs cluster where nothing reads what something writes.** The settlement column
+    written but never read; `state.book` never set so save was inert; the D&C fiction; a
+    month card that sets state a hidden view renders. List every write with no reader and
+    every reader with no writer; that list is the defect forecast.
+11. **The engine's checks cannot fail from a line edit.** Both sides derive from the same
+    `(book, lines)`. Anything a customer can get wrong that the sheet still totals is a
+    book check, and it lives in `app/lib` so every surface runs it.
