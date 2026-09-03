@@ -1249,27 +1249,6 @@ ul.checks-passing-list {
   font-size: 0.78rem;
 }
 
-.helpers-section {
-  margin-top: 1.25rem;
-}
-.helper-card {
-  border: 1px solid var(--rule-faint);
-  border-radius: var(--radius);
-  background: var(--paper-raised);
-  box-shadow: var(--shadow);
-  padding: 0.6rem 0.7rem;
-  margin-bottom: 0.6rem;
-  font-size: 0.82rem;
-}
-.helper-card h4 {
-  margin: 0 0 0.3rem;
-  font-size: 0.85rem;
-}
-.helper-card p {
-  margin: 0 0 0.5rem;
-  color: var(--ink-faint);
-}
-
 /* Drawer variant (desktop portrait) and mobile bottom-sheet share this */
 .inspector-drawer {
   position: fixed;
