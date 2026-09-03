@@ -122,6 +122,16 @@
     return api.changeLineAmount(book, lines, { entryNumber: entryNumber, newAmount: newAmount });
   }
 
+  async function changeDate(book, lines, entryNumber, newPostingDate) {
+    var api = await engine();
+    return api.changeLinePostingDate(book, lines, { entryNumber: entryNumber, newPostingDate: newPostingDate });
+  }
+
+  async function changeAccount(book, lines, entryNumber, newAccountMainID) {
+    var api = await engine();
+    return api.changeLineAccount(book, lines, { entryNumber: entryNumber, newAccountMainID: newAccountMainID });
+  }
+
   async function deleteEntry(book, lines, entryNumber) {
     var api = await engine();
     return api.removeLine(book, lines, { entryNumber: entryNumber });
@@ -188,6 +198,8 @@
     applyHelper: applyHelper,
     addEntry: addEntry,
     changeAmount: changeAmount,
+    changeDate: changeDate,
+    changeAccount: changeAccount,
     deleteEntry: deleteEntry,
     undo: undo,
   };
