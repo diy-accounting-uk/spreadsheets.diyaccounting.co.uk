@@ -9,8 +9,8 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 Batch branch `claude/bst-ledger` (pushed; deploys to ci on every push). Wave 1 dispatched
 2026-09-03: T1, T2, T3, T4, T5, T10 as worktree sub-agents under `.claude/worktrees/`, one
 per task; the coordinator merges each landed commit into the batch branch and pushes.
-Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`; the books specs
-fail under production's headers until T1 lands, by design), R2 (`f5f28df8`).
+Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`), R2 (`f5f28df8`), T1
+(`8e37e594`; 42/42 books specs green under production's headers).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -21,7 +21,6 @@ after each landing. No row waits on a merge.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T1 | CSP-safe validation: precompiled schema validators in the bundle | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | production cannot load a book; Sonnet |
 | T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Opus |
 | T10 | Render hooks (`data-r-key`) and the declared-absence file | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; first owner of `bst.js` |
 | T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | blocked-to-start | Sonnet; next owner of `bst.js` |
