@@ -932,4 +932,64 @@ test.describe("Spreadsheets Site - spreadsheets.diyaccounting.co.uk", () => {
     console.log("TEST COMPLETE - Lightbox verified");
     console.log("=".repeat(60));
   });
+
+  test("DIYA-GL books page loads the bst-scenario-basic example under production's security headers", async ({ page }) => {
+    const consoleErrors = [];
+    page.on("pageerror", (error) => consoleErrors.push(String(error)));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+
+    // ============================================================
+    // STEP 1: Open the books page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 1: Open the books page");
+    console.log("=".repeat(60));
+
+    const booksUrl = `${spreadsheetsBaseUrl}/books/bst.html`;
+    console.log(` Navigating to: ${booksUrl}`);
+    await page.goto(booksUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-18-books-bst-empty.png` });
+
+    // ============================================================
+    // STEP 2: Load the bst-scenario-basic example
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 2: Load the bst-scenario-basic example");
+    console.log("=".repeat(60));
+
+    await page.locator('[data-example="bst-scenario-basic"]').click();
+    console.log(" Clicked the bst-scenario-basic example button");
+
+    // ============================================================
+    // STEP 3: Wait for the year totals row and read the year total
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 3: Wait for the year totals row");
+    console.log("=".repeat(60));
+
+    const yearTotals = page.locator("tfoot.year-totals");
+    await expect(yearTotals).toContainText("£409,900.00", { timeout: 30000 });
+    console.log(" Year totals row carries the expected year total");
+    await page.screenshot({ path: `${screenshotPath}/${timestamp()}-19-books-bst-loaded.png` });
+
+    // ============================================================
+    // STEP 4: No console error, no CSP violation shown on the page
+    // ============================================================
+    console.log("\n" + "=".repeat(60));
+    console.log("STEP 4: Check for console errors and CSP violations");
+    console.log("=".repeat(60));
+
+    const bodyText = await page.locator("body").innerText();
+    expect(bodyText).not.toContain("Content Security Policy");
+    console.log(" Page text carries no Content Security Policy violation");
+
+    expect(consoleErrors, `no console error, saw: ${consoleErrors.join(" | ")}`).toEqual([]);
+    console.log(" No console errors were raised while loading the example");
+
+    console.log("\n" + "=".repeat(60));
+    console.log("TEST COMPLETE - DIYA-GL books page verified");
+    console.log("=".repeat(60));
+  });
 });

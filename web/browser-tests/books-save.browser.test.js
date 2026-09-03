@@ -11,43 +11,16 @@
 // fixture's own value.
 
 import { test, expect } from "@playwright/test";
-import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
 import JSZip from "jszip";
+import { startStaticServer } from "./serve.js";
 
 import { buildSheetMap, readCellValue, loadSharedStrings } from "../../app/lib/spreadsheet-runner.js";
 
 const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
 const BUNDLE = path.join(PUBLIC_DIR, "books/engine/diya-gl-engine.js");
-
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
-function startStaticServer(rootDir) {
-  const server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(rootDir, requested);
-    if (!filePath.startsWith(rootDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  return new Promise((resolveServer) => {
-    server.listen(0, "127.0.0.1", () => resolveServer({ server, port: server.address().port }));
-  });
-}
 
 async function readCell(workbookBytes, sheetName, cellRef) {
   const zip = await JSZip.loadAsync(workbookBytes);
@@ -64,14 +37,14 @@ test.describe("books save — the browser save path produces a well-formed workb
   });
 
   test("clicking save downloads bst-excel.xlsx, fullCalcOnLoad set, the book's own details written", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
     let download = null;
     page.on("download", (d) => (download = d));
 
     try {
-      await page.goto(`http://127.0.0.1:${port}/books/save-probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/books/save-probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForSelector("#save-xlsx-btn:not([disabled])", { timeout: 30_000 });
 
       await page.click("#save-xlsx-btn");
@@ -103,14 +76,14 @@ test.describe("books save — the browser save path produces a well-formed workb
         "SP Sixty Driving",
       );
     } finally {
-      server.close();
+      await close();
     }
   });
 
   test("clicking save package downloads the zip with the workbook at its root", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     try {
-      await page.goto(`http://127.0.0.1:${port}/books/save-probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/books/save-probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForSelector("#save-zip-btn:not([disabled])", { timeout: 30_000 });
 
       await page.click("#save-zip-btn");
@@ -136,7 +109,7 @@ test.describe("books save — the browser save path produces a well-formed workb
       const workbookXml = await innerZip.file("xl/workbook.xml").async("string");
       expect(workbookXml).toContain('fullCalcOnLoad="1"');
     } finally {
-      server.close();
+      await close();
     }
   });
 });
