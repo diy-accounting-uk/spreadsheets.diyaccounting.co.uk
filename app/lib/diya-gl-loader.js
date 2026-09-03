@@ -27,6 +27,7 @@ import {
   computeSpreadsheetNetSales,
 } from "./scenario-extractor.js";
 import { totalBusinessMiles, calculateMileageAllowance, HMRC_CAR_MILEAGE_RATES } from "./tax/mileage.js";
+import { compareLines } from "./diya-gl-canonical.js";
 
 // The Taxi Driver masters keep their own chart of accounts (fuel at 5100,
 // fixed assets at 7000, ...), so filtering by BST_PURCHASE_CODE_MAP -- built
@@ -221,6 +222,19 @@ export function diyaGlToScenario(book, lines, product) {
   const purchaseCodeMap = product === "bst" ? resolveBstPurchaseCodeMap(book) : PURCHASE_CODE_MAPS[product];
   let filteredLines = product === "bst" ? filterBstChart(lines, purchaseCodeMap) : filter(lines);
   if (product === "se") filteredLines = seDrawingsFromDividends(filteredLines);
+  // buildGrouped below writes each month's rows to the sheet in whatever
+  // relative order filteredLines carries them in, so a Basic Sole Trader
+  // row's position on the tab -- and the entry number extractBstTransactions
+  // (xlsx-exporter.js) assigns from that position -- depends on the order
+  // the caller happened to hand lines in, not on any fact of the line
+  // itself. A book saved to diya-gl and reloaded arrives sorted (the same
+  // compareLines() a canonical lines.jsonl is written in), which differs
+  // from a workbook's own native row order, so this line was renumbered on
+  // every such round trip. Sorting to that same order here first makes the
+  // row order a pure function of the line's own facts: any two equal books
+  // write the same rows to the same sheet positions, whichever order their
+  // lines array arrived in.
+  if (product === "bst") filteredLines = [...filteredLines].sort(compareLines);
   // Every product whose cellWrites fills a mileage column takes the miles,
   // and only the Taxi Driver package takes a sales line's (see the note on
   // buildGrouped's carriesMileage setting). Ltd keeps mileage on
