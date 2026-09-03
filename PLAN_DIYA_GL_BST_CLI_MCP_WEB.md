@@ -456,6 +456,14 @@ merges and removes each worktree as it lands. Read-only for every task: `example
 `app/lib/calculators/`. Every task commits before it verifies, runs its own blast radius
 serially, and leaves the full suite to the coordinator's closing ladder.
 
+**Landing shape.** T1 and T2 ship first as their own PR: production is broken and a
+two-task fix does not wait behind a batch. Every other machine task lands on one batch
+branch, `claude/bst-ledger`, with a draft PR to main, and starts the moment its precursors
+are done. The waves below group tasks by kind; the precursors on the board in `NEXT.md`
+(one row per task, ids as here) are the only gates. The one real serialiser is `bst.js`:
+T10, then T7, then T13, then T11 own it in turn. Two human gates: the operator's look at
+the strip (before T13) and the batch merge.
+
 ### Wave 0 — production loads a book again (its own PR, first)
 
 | Task | Tier | Owns | Delivers | Rung |

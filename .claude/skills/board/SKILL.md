@@ -1,77 +1,70 @@
 ---
 name: board
-description: Render the open-work board — one table of every NEXT.md item that is in flight or open, plus anything finished in the current session, each with its source plan. Invoke when the operator asks for the board, the open items, or "what's in flight".
+description: Render the work board — the table in NEXT.md of every open task with its source plan, owner, precursors by id and state, plus anything finished in the current session. Invoke when the operator asks for the board, the open items, or "what's in flight".
 ---
 
 # board
 
-Render the current work board from `NEXT.md` at the repo root. Read it fresh every time;
-never render from memory of an earlier turn. There is no backlog file in this repo: the
-plans of record (`PLAN_*.md` at the root) and `NEXT.md` are the only sources.
+The board is the `## Board` table in `NEXT.md` at the repo root. It holds every open row
+in full (item, source, owner, precursors, state, status), so rendering never assembles
+rows from a plan: read `NEXT.md` fresh every time, refresh each row's state from
+evidence, render, and write the refreshed table back. A plan (`PLAN_*.md`) is where a
+row's detail lives; the board carries enough to act on without opening it.
 
-## Output shape
+## Columns
 
-One table, then at most two closing lines.
+| # | Item | Source | Owner | Precursors | State | Status |
 
-| # | Item | Source | Owner | State | Unblocked by | Status |
-
-- `#`: the task id from the plan (`T3`), the `NEXT.md` label where the entry carries one
-  (a wave gate such as `W0-h`, a PR number); otherwise a running number in file order.
-- `Item`: a short name, not the entry's full prose.
-- `Source`: the plan the item comes from, as its file name (`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`),
-  or `operator` for an instruction given in chat that no plan yet carries, or `none` for
-  an item `NEXT.md` holds on its own. When a plan row is the direct result of an operator
-  instruction, name the plan; the plan holds the assertion verbatim.
+- `#`: a stable id. Machine tasks keep the plan's task id (`T3`). Human steps are `H1`,
+  `H2`, … Rows finished in the current session are `D1`, `D2`, … Ids never renumber.
+- `Item`: the task's name, short, from the plan where one exists.
+- `Source`: the plan file name (`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`), `operator` for an
+  instruction given in chat that no plan yet carries, or `none` for a row `NEXT.md` holds
+  on its own.
 - `Owner`: `human` for an activity only the operator can do (merge a PR, approve an AWS
   write, review a design on sight, decide between named alternatives, run a command on a
-  host the session cannot reach) or `machine` for work a session or sub-agent does.
-- `State`: exactly one of six values, hyphenated so it stays one token:
+  host the session cannot reach); `machine` for work a session or sub-agent does.
+- `Precursors`: the ids of the rows that must be done before this one can start or resume,
+  comma-separated (`T3, T10`); a date or a named decision where that is the gate; `—`
+  when nothing gates it. Ids only, never prose. A machine task that waits on a human
+  activity names the human row here; the human activity is its own row.
+- `State`: exactly one of six values, derived from the precursors and the evidence:
   - `done` — finished in the current session, and only then.
   - `in-flight` — being worked right now by an agent or the operator.
-  - `ready-to-start` — never started; nothing prevents starting it, whoever the owner is.
+  - `ready-to-start` — never started; every precursor is done.
   - `ready-to-resume` — started earlier (a branch, worktree, PR or partial commit exists,
-    or `NEXT.md` says so), paused, and nothing prevents picking it up.
-  - `blocked-to-start` — never started; waiting on a date, a prerequisite item, or a
-    decision not yet made.
-  - `blocked-to-resume` — started, paused, and something now prevents resuming: a
-    prerequisite, a decision, or a conflict with work that landed since.
+    or the row says so), paused, and every precursor is done.
+  - `blocked-to-start` — never started; a precursor is not done.
+  - `blocked-to-resume` — started, paused, and a precursor is not done or landed work
+    conflicts with it.
 
   Started means evidence, not intent: check `git branch -a`, `git worktree list` and
-  `gh pr list` for the item's branch or PR before calling it resumable. Operator-owned
-  work that could start today is `ready-to-start`, not blocked. Work the plan orders after
-  another wave is `blocked-to-start` on that wave, and the status names it.
-- `Unblocked by`: for a blocked row, the row label(s) whose completion unblocks it, or the
-  date or decision it waits on; `—` for every other state.
-- `Status`: one clause, 12 words or fewer, current as of this render. Date-gated items
-  name the date; blocked items name the blocker; in-flight items name the current step;
-  done items name the commit. The narrative lives in `NEXT.md` and the plan, never here.
-
-One row per discrete task. When a `NEXT.md` entry points at a plan whose task list
-defines tasks (`T3`, `Track A`), read that plan and render one row per task with the
-plan's own task name, never one row per wave or per bullet; the wave is visible through
-`Unblocked by`. Tasks in the same wave that own disjoint files are each `ready-to-start`
-once the wave's gate has passed; a rebase-on-landing note is status, not a block.
-
-**Split human from machine.** When a machine task is blocked pending a human activity,
-render two rows: the human row (labelled with an `-h` suffix, `W0-h`) in its own state,
-and the machine row blocked on it with the human row in `Unblocked by`. The same split
-applies the other way: a wave's PR is machine work until it is ready, then the merge and
-any on-sight review is a human row that the next wave's machine row waits on. Never fold
-a human step into a machine row's status.
+  `gh pr list` for the row's branch or PR before calling it resumable. Operator-owned
+  work with no open precursor is `ready-to-start`, not blocked.
+- `Status`: one clause, 12 words or fewer, current as of this render. In-flight rows name
+  the current step; started rows name the branch or PR; done rows name the commit; a
+  tier or a rebase note fits here. The narrative lives in the plan, never here.
 
 ## Rules
 
-- Only work that is in flight, open, or finished in this session. Nothing done in an
+- One row per discrete task. When a plan defines tasks, the board carries one row per
+  task, never one per wave or bullet; grouping is visible through `Precursors`.
+- Split human from machine. A machine task blocked pending a human activity is two rows:
+  the human row in its own state, and the machine row naming it in `Precursors`. A batch's
+  merge, and any on-sight review, is a human row that the rows after it name.
+- Precursors are real dependencies (a module the task calls, a file it shares with an
+  unfinished row, a decision it needs), never an ordering chosen for tidiness. If two rows
+  could run on one branch at once, neither names the other.
+- Only rows that are open, in flight, or finished in this session. Nothing done in an
   earlier session, decided against, or removed; `git log` holds those.
-- Never annotate an item "deferred", "later", or similar. Status words describe state
-  (open, in flight, blocked on X, operator-owned, date-gated), not priority.
+- Never annotate a row "deferred", "later", or similar. Status words describe state, not
+  priority.
 - If a row cites a GitHub PR or issue known to be closed, drop the ref; run
   `gh pr list`/`gh issue list --state open` only when the answer would change a row.
 - After the table: one line naming the plans `NEXT.md` lists as not tracked there, if
-  any; and one sentence per item the session materially changed since `NEXT.md` was last
+  any; and one sentence per row the session materially changed since `NEXT.md` was last
   written. No other commentary.
-- **Write the statuses back.** After rendering, update any `NEXT.md` entry whose prose no
-  longer matches the status just printed (same facts, fitted to the entry). A `done` row
-  is removed from `NEXT.md`, not annotated. Commit the `NEXT.md`-only change to `main` (the
-  docs exception allows a direct push) and push. Never add rendered status for items that
-  are not on `NEXT.md`.
+- **Write the table back.** After rendering, replace the `## Board` table in `NEXT.md` with
+  the rendered one minus the `D` rows (`NEXT.md` holds only what is next; the session's
+  done rows live in `git log`). Run `npx prettier --write NEXT.md`, commit the
+  `NEXT.md`-only change to `main` (the docs exception allows a direct push) and push.
