@@ -302,6 +302,14 @@ test.describe("DIYA-GL books page — four layouts", () => {
     await expect(page.locator("#mobile-tabbar")).toBeHidden();
     await expect(page.locator("#drawer-toggle-btn")).toBeHidden();
 
+    // The strip leads, but it does not fill the screen: the first month of
+    // the year table is on the page the reader lands on, unscrolled.
+    const firstRowBottom = await page
+      .locator(".year-table tbody tr.year-row")
+      .first()
+      .evaluate((el) => el.getBoundingClientRect().bottom);
+    expect(firstRowBottom, "April's row sits within the first screen").toBeLessThanOrEqual(VIEWPORTS["desktop-landscape"].height);
+
     await page.screenshot({ path: path.join(screenshotsDir, "books-bst-desktop-landscape.png"), fullPage: false });
   });
 

@@ -323,6 +323,31 @@ test.describe("DIYA-GL headlines strip — the pies sum to the tiles and prove o
     await expect(page.locator('[data-pie-table-toggle="turnover"]')).toHaveAttribute("aria-expanded", "true");
   });
 
+  test("a direct slice label is drawn whole or not at all, and the legend sits beside the chart", async ({ page }) => {
+    await mountStrip(page, snapshotFromReport(realReport));
+
+    const labels = await page.locator('[data-pie-block="outgoings"] .headline-pie-direct-label').allTextContents();
+    for (const label of labels) {
+      expect(label, "a direct label is never cut short with an ellipsis").not.toContain("…");
+    }
+
+    const svgRight = await page
+      .locator('[data-pie-block="outgoings"] .headline-pie-svg')
+      .evaluate((el) => el.getBoundingClientRect().right);
+    const legendLeft = await page.locator('[data-pie-legend="outgoings"]').evaluate((el) => el.getBoundingClientRect().left);
+    expect(legendLeft, "the legend sits beside the pie, not under it").toBeGreaterThanOrEqual(svgRight - 1);
+  });
+
+  test("the through-the-year charts start collapsed", async ({ page }) => {
+    await mountStrip(page, snapshotFromReport(realReport));
+    const details = page.locator(".headline-through-year");
+    await expect(details).not.toHaveAttribute("open", "");
+    await expect(page.locator(".headline-through-year-body")).toBeHidden();
+
+    await page.locator(".headline-through-year summary").click();
+    await expect(page.locator(".headline-through-year-body")).toBeVisible();
+  });
+
   test("the turnover pie renders as a pie for this profitable fixture", async ({ page }) => {
     await mountStrip(page, snapshotFromReport(realReport));
     await expect(page.locator('[data-pie-block="turnover"] .headline-pie-svg')).toBeVisible();

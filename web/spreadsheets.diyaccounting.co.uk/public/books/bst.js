@@ -822,11 +822,11 @@
       "<h2>" +
       esc(bd.organizationIdentifier) +
       "</h2>" +
-      '<p class="view-lede">' +
+      '<p class="view-period">' +
       esc(bd.periodCoveredStart) +
       " to " +
       esc(bd.periodCoveredEnd) +
-      " — every sheet the reconciliation touches has a view here, the way the workbook's own Home sheet links to each tab.</p>" +
+      "</p>" +
       '<ul class="home-nav-list">' +
       VIEWS.map(function (v) {
         return (
@@ -915,13 +915,7 @@
   }
 
   function renderYear() {
-    return (
-      "<h2>Year</h2>" +
-      '<p class="view-lede">Twelve month rows, the P&amp;L category columns, totals anchored. Open a month for its summary, open again for its entries.</p>' +
-      renderYearSummarySticky() +
-      renderYearTableScroll() +
-      renderMonthCards()
-    );
+    return "<h2>Year</h2>" + renderYearSummarySticky() + renderYearTableScroll() + renderMonthCards();
   }
 
   function renderYearSummarySticky() {
@@ -1378,7 +1372,6 @@
     }
     return (
       "<h2>Profit &amp; Loss Account</h2>" +
-      '<p class="view-lede">The year totals row from the Year view, rendered as the statement the P&amp;L sheet prints.</p>' +
       '<table class="kv-table">' +
       row("Sales Turnover", a.sales, { rKeyAttr: plAnnualRk("sales") }) +
       row("Cost of Sales", a.costOfSales, { rKeyAttr: plAnnualRk("costOfSales") }) +
@@ -1419,7 +1412,6 @@
     var s = SNAPSHOT.stock;
     return (
       "<h2>Stock</h2>" +
-      '<p class="view-lede">PurchasesStock: opening/closing values and the cost-of-sales movement.</p>' +
       '<div class="panel-card"><table class="kv-table">' +
       "<tr><td>Opening Stock</td><td" +
       rk2("PurchasesStock", "D5", "stock", "opening-stock") +
@@ -1505,9 +1497,6 @@
     }
     return (
       "<h2>Debtors &amp; Creditors</h2>" +
-      '<p class="view-lede">What was owed when the year opened, and what each month left outstanding. ' +
-      "A sale counts while no receipt is recorded beside it, a purchase while no payment is. " +
-      "This sheet names no customer or supplier.</p>" +
       '<div class="panel-grid">' +
       ledger("Debtors", SNAPSHOT.debtors, "debtors") +
       ledger("Creditors", SNAPSHOT.creditors, "creditors") +
@@ -1519,7 +1508,6 @@
     var f = SNAPSHOT.fixedAssets;
     return (
       "<h2>Fixed Assets</h2>" +
-      '<p class="view-lede">Additions, the register, and the capital allowances the schedule carries.</p>' +
       '<div class="panel-grid">' +
       '<div class="panel-card"><h3>Additions</h3><table class="kv-table">' +
       f.additions
@@ -1566,7 +1554,6 @@
     var bd = SNAPSHOT.businessDetails;
     return (
       "<h2>Business Details</h2>" +
-      '<p class="view-lede">entityInformation, as the book declares it.</p>' +
       '<div class="panel-card">' +
       field("Business Name", bd.organizationIdentifier, rk2("Business Details", "C5", "business-details", "business-name")) +
       field("Description", bd.organizationDescription, rk2("Business Details", "C7", "business-details", "description")) +
@@ -1622,11 +1609,9 @@
     var a = SNAPSHOT.admin;
     return (
       "<h2>Admin</h2>" +
-      '<p class="view-lede rate-provenance">The year’s tax data, read-only, sourced from ' +
-      esc(a.source) +
-      " (" +
+      '<p class="view-lede rate-provenance">Rates for the ' +
       esc(a.year) +
-      ").</p>" +
+      " tax year, read-only.</p>" +
       '<div class="panel-card"><table class="kv-table">' +
       a.rates
         .map(function (r, i) {

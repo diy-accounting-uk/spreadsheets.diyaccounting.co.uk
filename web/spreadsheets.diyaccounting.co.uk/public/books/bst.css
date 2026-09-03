@@ -318,6 +318,13 @@ select:focus-visible,
   margin: -0.4rem 0 1rem;
 }
 
+.view-period {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  margin: -0.4rem 0 1rem;
+  font-family: var(--font-mono);
+}
+
 /* An anchor-guard or book-construction error: named by sheet and cell, never
    a stack trace. The submit repo's HMRC error pattern: bold red message
    behind a 5px error bar. */
@@ -1640,8 +1647,8 @@ table.kv-table tr.total td {
   border: 1px solid var(--rule-faint);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  padding: 1rem 1.1rem 1.25rem;
-  margin-bottom: 1.25rem;
+  padding: 0.85rem 1.1rem 0.9rem;
+  margin-bottom: 1rem;
 }
 
 /* -- tiles -- */
@@ -1662,19 +1669,20 @@ table.kv-table tr.total td {
   }
 }
 .headline-tile-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--pencil);
 }
 .headline-tile-value {
-  font-size: 1.7rem;
+  font-size: 1.4rem;
   font-weight: 700;
+  line-height: 1.2;
   color: var(--ink);
   font-variant-numeric: proportional-nums;
 }
 .headline-tile-sub {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: var(--pencil);
-  margin-top: 0.15rem;
+  margin-top: 0.1rem;
 }
 
 /* -- pies -- */
@@ -1683,16 +1691,25 @@ table.kv-table tr.total td {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
 }
 .headline-pie-block {
-  flex: 1 1 320px;
-  min-width: 280px;
+  flex: 1 1 340px;
+  min-width: 260px;
   position: relative;
 }
 .headline-pie-block h3 {
-  font-size: 0.95rem;
-  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  margin: 0 0 0.35rem;
+}
+/* Chart and legend side by side: the names sit beside the slices they
+   belong to instead of under the whole pie, which is what pushed the year
+   table off the first screen. */
+.headline-pie-chrome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
 }
 .headline-pie-reason {
   font-size: 0.8rem;
@@ -1700,10 +1717,9 @@ table.kv-table tr.total td {
   margin: 0 0 0.5rem;
 }
 .headline-pie-svg {
-  width: 100%;
-  max-width: 320px;
-  min-width: 240px;
-  height: auto;
+  width: 210px;
+  height: 186px;
+  flex: none;
   display: block;
 }
 .headline-pie-svg path {
@@ -1737,18 +1753,21 @@ table.kv-table tr.total td {
 
 .headline-legend {
   list-style: none;
-  margin: 0.75rem 0 0;
+  margin: 0;
   padding: 0;
+  flex: 1 1 160px;
+  min-width: 160px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 .headline-legend-item {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   align-items: center;
   gap: 0.4rem;
-  min-height: 44px;
-  padding: 0.4rem 0.6rem;
+  min-height: 32px;
+  padding: 0.25rem 0.4rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
   background: none;
@@ -1757,6 +1776,13 @@ table.kv-table tr.total td {
   color: var(--ink);
   cursor: pointer;
   text-align: left;
+}
+/* A finger needs the full target; a pointer does not, and the shorter row
+   is what keeps both legends beside their pies. */
+@media (pointer: coarse) {
+  .headline-legend-item {
+    min-height: 44px;
+  }
 }
 .headline-legend-item:hover,
 .headline-legend-item.is-active {
@@ -1787,9 +1813,9 @@ table.kv-table tr.total td {
 
 .headline-table-toggle {
   display: inline-block;
-  margin-top: 0.6rem;
-  padding: 0.5rem 0.75rem;
-  min-height: 44px;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  min-height: 32px;
   border: 2px solid var(--rule);
   border-radius: var(--radius);
   background: var(--paper-raised);
@@ -1853,16 +1879,17 @@ table.kv-table tr.total td {
 /* -- through the year -- */
 
 .headline-through-year {
-  margin-top: 1.5rem;
+  margin-top: 0.9rem;
   border-top: 1px solid var(--rule-faint);
-  padding-top: 0.75rem;
+  padding-top: 0.35rem;
 }
 .headline-through-year summary {
   cursor: pointer;
   font-weight: 700;
+  font-size: 0.9rem;
   color: var(--ink);
   padding: 0.35rem 0;
-  min-height: 44px;
+  min-height: 36px;
   display: flex;
   align-items: center;
 }
