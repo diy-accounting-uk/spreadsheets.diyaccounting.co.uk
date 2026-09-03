@@ -260,6 +260,9 @@
     });
   }
 
+  // The business name is the half a reader needs; the view name gives way
+  // to it when the header runs out of room (the tab strip below says which
+  // view this is anyway).
   function renderTopbarTitle() {
     if (!state.loaded) {
       els.topbarTitle.textContent = "DIYA-GL — Basic Sole Trader books";
@@ -269,7 +272,11 @@
     var viewMeta = VIEWS.filter(function (v) {
       return v.id === state.view;
     })[0];
-    els.topbarTitle.textContent = name + (viewMeta ? " — " + viewMeta.label : "");
+    els.topbarTitle.innerHTML =
+      '<span class="title-business">' +
+      esc(name) +
+      "</span>" +
+      (viewMeta ? '<span class="title-view">' + esc(viewMeta.label) + "</span>" : "");
   }
 
   function renderSheetTabs() {
@@ -297,6 +304,28 @@
         render();
       });
     });
+    scrollActiveTabIntoView();
+    updateTabStripFades();
+  }
+
+  // The strip is narrower than its ten tabs on a phone, so the view being
+  // read is brought into it rather than left off the end. scrollLeft is set
+  // directly: scrollIntoView would scroll every ancestor, taking the page
+  // with it.
+  function scrollActiveTabIntoView() {
+    var strip = els.sheetTabs;
+    var active = strip.querySelector('.tab-btn[aria-selected="true"]');
+    if (!active) return;
+    strip.scrollLeft = Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2);
+  }
+
+  // A fade at whichever edge has more tabs beyond it, so a row that scrolls
+  // looks like one.
+  function updateTabStripFades() {
+    var strip = els.sheetTabs;
+    var furthest = strip.scrollWidth - strip.clientWidth;
+    strip.classList.toggle("fades-left", strip.scrollLeft > 1);
+    strip.classList.toggle("fades-right", strip.scrollLeft < furthest - 1);
   }
 
   function renderMobileTabbar() {
@@ -988,9 +1017,13 @@
           "</td>" +
           cells +
           "</tr>";
-        var detailRow = isOpen
-          ? '<tr class="month-detail-row"><td colspan="' + (cats.length + 1) + '">' + renderMonthDetail(m.key) + "</td></tr>"
-          : "";
+        // Mobile portrait shows the month cards instead of this table and
+        // opens the detail inside the card, so only one copy of the
+        // entries grid is ever in the document.
+        var detailRow =
+          isOpen && !isMobilePortrait()
+            ? '<tr class="month-detail-row"><td colspan="' + (cats.length + 1) + '">' + renderMonthDetail(m.key) + "</td></tr>"
+            : "";
         return mainRow + detailRow;
       })
       .join("");
@@ -1220,21 +1253,30 @@
     );
   }
 
+  // The phone's own year table: a card a month, opening in place to the
+  // month's summary and its entries -- the same grid, the same commit
+  // route, no navigation away from the list.
   function renderMonthCards() {
+    var portrait = isMobilePortrait();
     return (
       '<div class="month-cards">' +
       SNAPSHOT.months
         .map(function (m) {
           var row = SNAPSHOT.monthly[m.key];
+          var isOpen = portrait && state.openMonth === m.key;
           return (
-            '<div class="month-card" data-month-card="' +
+            '<div class="month-card' +
+            (isOpen ? " is-open" : "") +
+            '" data-month-card="' +
             m.key +
             '">' +
-            '<div class="month-card-head" role="button" tabindex="0"><span class="month-name">' +
+            '<button type="button" class="month-card-head" aria-expanded="' +
+            (isOpen ? "true" : "false") +
+            '"><span class="month-name">' +
             esc(m.label) +
             '</span><span class="mono">' +
             fmtMoney(row.netProfit) +
-            "</span></div>" +
+            "</span></button>" +
             '<div class="month-card-figures">' +
             '<span class="figure-label">Sales</span><span class="figure-value"' +
             monthlySalesRk(m.label) +
@@ -1244,12 +1286,18 @@
             '<span class="figure-label">Total expenses</span><span class="figure-value">' +
             fmtMoney(row.totalExpenses) +
             "</span>" +
-            "</div></div>"
+            "</div>" +
+            (isOpen ? renderMonthDetail(m.key) : "") +
+            "</div>"
           );
         })
         .join("") +
       "</div>"
     );
+  }
+
+  function isMobilePortrait() {
+    return window.matchMedia("(max-width: 899px) and (orientation: portrait)").matches;
   }
 
   function bindYearView() {
@@ -1280,18 +1328,12 @@
       });
     }
     Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".month-card-head"), function (head) {
-      function toggle() {
+      head.addEventListener("click", function () {
         var key = head.closest(".month-card").getAttribute("data-month-card");
-        state.openMonth = key;
+        state.openMonth = state.openMonth === key ? null : key;
+        state.entriesOpen = true;
         state.view = "year";
         render();
-      }
-      head.addEventListener("click", toggle);
-      head.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          toggle();
-        }
       });
     });
     bindEntriesGrid();
@@ -2151,6 +2193,7 @@
       }
     });
     els.drawerBackdrop.addEventListener("click", closeDrawer);
+    els.sheetTabs.addEventListener("scroll", updateTabStripFades);
 
     window.addEventListener("resize", function () {
       render();

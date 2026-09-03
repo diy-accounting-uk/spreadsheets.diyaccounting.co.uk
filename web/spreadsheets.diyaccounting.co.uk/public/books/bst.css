@@ -215,12 +215,52 @@ select:focus-visible,
 .app-title {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.95rem;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+}
+.title-business {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.title-view {
+  flex: none;
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+.title-view::before {
+  content: "— ";
+}
+/* A phone header carries the business name; the tab strip underneath
+   already says which view is open. */
+@media (max-width: 560px) {
+  .app-topbar {
+    gap: 0.45rem;
+    padding: 0 0.5rem;
+  }
+  .app-mark span {
+    display: none;
+  }
+  .app-title {
+    font-size: 0.9rem;
+  }
+  .title-view {
+    display: none;
+  }
+  .app-back-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
 }
 
 .icon-btn {
@@ -267,6 +307,18 @@ select:focus-visible,
   top: var(--topbar-h);
   z-index: 19;
   scrollbar-width: thin;
+}
+
+/* Ten tabs on a phone: the row scrolls, and the edge with more tabs beyond
+   it fades so the row reads as one that carries on. */
+.sheet-tabs.fades-right {
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+}
+.sheet-tabs.fades-left {
+  mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent 100%);
+}
+.sheet-tabs.fades-left.fades-right {
+  mask-image: linear-gradient(to right, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
 }
 
 .tab-btn {
@@ -1486,9 +1538,30 @@ table.kv-table tr.total td {
 }
 .month-card-head {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: baseline;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   cursor: pointer;
+}
+/* The month opens inside its own card: the summary and the entries grid
+   land under the head, and the card keeps its place in the stack. */
+.month-card.is-open {
+  border-color: var(--rule);
+}
+.month-card .month-detail {
+  position: static;
+  width: auto;
+  max-width: none;
+  padding: 0.6rem 0 0;
+  border-bottom: none;
 }
 .month-card-head .month-name {
   font-weight: 700;

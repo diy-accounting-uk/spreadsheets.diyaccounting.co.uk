@@ -397,6 +397,40 @@ test.describe("DIYA-GL books page — four layouts", () => {
     await page.screenshot({ path: path.join(screenshotsDir, "books-bst-mobile-portrait.png"), fullPage: false });
   });
 
+  test("mobile portrait: a month card opens in place, and an edit inside it moves the card's own figure", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
+
+    // April is the month a loaded book opens on, so the first tap closes it
+    // and proves the card answers a tap; the second opens it again.
+    const april = page.locator('[data-month-card="2025-04"]');
+    const head = april.locator(".month-card-head");
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(april.locator("table.entries-table")).toHaveCount(0);
+
+    await head.click();
+    await expect(head).toHaveAttribute("aria-expanded", "true");
+
+    // The entries are inside the card, not on a page the tap navigated to.
+    const entries = april.locator("table.entries-table");
+    await expect(entries).toHaveCount(2);
+    await expect(april.locator(".month-summary-grid")).toBeVisible();
+
+    // One month open at a time.
+    await expect(page.locator(".month-card .month-detail")).toHaveCount(1);
+
+    const salesFigure = april.locator(".month-card-figures .figure-value").first();
+    const before = Number((await salesFigure.innerText()).replace(/[£,]/g, ""));
+    const amount = april.locator('.entries-table[data-journal="sales"] .entry-amount-input').first();
+    const was = Number(await amount.inputValue());
+    await amount.fill(String(was + 250));
+    await amount.press("Enter");
+
+    await expect.poll(async () => Number((await salesFigure.innerText()).replace(/[£,]/g, ""))).toBe(before + 250);
+  });
+
   test("mobile portrait: the headlines strip leads the Books tab; the Checks tab opens the drawer without it", async ({ page }) => {
     await openLoadedBook(page, VIEWPORTS["mobile-portrait"]);
 
