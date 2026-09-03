@@ -375,13 +375,14 @@
       '<div class="empty-state-actions">' +
       '<div class="picker-row">' +
       '<label class="file-picker-label" for="file-picker">' +
-      '<span aria-hidden="true">📁</span> Choose a .xlsx or .zip file' +
+      '<span aria-hidden="true">📁</span> Choose a .xlsx, .zip or .json file' +
       "</label>" +
-      '<input type="file" id="file-picker" accept=".xlsx,.zip" class="hidden" />' +
+      '<input type="file" id="file-picker" accept=".xlsx,.zip,.json" class="hidden" />' +
       '<button type="button" class="btn" id="new-book-btn" aria-expanded="' +
       (state.newBookFormOpen ? "true" : "false") +
       '">Start a new book</button>' +
       "</div>" +
+      '<p class="drop-hint" id="drop-hint">or drop a file here</p>' +
       (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
@@ -465,17 +466,29 @@
     return match[0];
   }
 
+  // A quick, name-only shortcut for the one format every reader recognises
+  // by its extension alone: the legacy .xls this pipeline has no reader
+  // for regardless of what the bytes turn out to be. Everything else is
+  // sniffed by content in loadFromAnySource, never by name. Shared by the
+  // picker and the drop zone, so a .xls-named file gets the same message
+  // through either door.
+  var LEGACY_XLS_MESSAGE = "That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.";
+
+  function isLegacyXlsName(name) {
+    return /\.xls$/i.test(name);
+  }
+
   function bindEmptyState() {
     var picker = document.getElementById("file-picker");
     picker.addEventListener("change", function () {
       var file = picker.files && picker.files[0];
       if (!file) return;
-      if (/\.xls$/i.test(file.name)) {
-        showEmptyStateMessage("That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.", false);
+      if (isLegacyXlsName(file.name)) {
+        showEmptyStateMessage(LEGACY_XLS_MESSAGE, false);
         picker.value = "";
         return;
       }
-      loadFromFile(file);
+      loadFromAnySource(file);
     });
 
     document.getElementById("new-book-btn").addEventListener("click", function () {
@@ -595,10 +608,14 @@
       });
   }
 
-  function loadFromFile(file) {
+  // Every way in reaches the page through this one function -- the picker's
+  // change handler and the drop zone's drop handler both call it. Format is
+  // sniffed by content inside loadFromAnySource, never by the name this
+  // File carries.
+  function loadFromAnySource(file) {
     setPickerBusy(true);
     showEmptyStateMessage("Reading " + file.name + "…", false);
-    window.DiyaGlBooksLoader.loadFromFile(file)
+    window.DiyaGlBooksLoader.loadFromAnySource(file)
       .then(function (snapshot) {
         applyLoadedSnapshot(snapshot);
         showToast("Loaded " + file.name + ".");
@@ -607,6 +624,82 @@
         setPickerBusy(false);
         showEmptyStateMessage(error && error.message ? error.message : String(error), true);
       });
+  }
+
+  // ============================== drop zone ==============================
+  // The empty-state card doubles as a drop target while no book is loaded;
+  // the whole document listens so a drop still lands correctly when the
+  // pointer is not exactly over the card. dragDepth counts nested
+  // dragenter/dragleave pairs (every element under the pointer fires its
+  // own), so the highlight only clears once the pointer has actually left
+  // the page. A drop while a book is loaded is refused -- the toast's own
+  // control clears the page back to the empty state without touching the
+  // autosave record, exactly what Discard is for.
+
+  var dragDepth = 0;
+
+  function bindDropZone() {
+    document.addEventListener("dragenter", function (e) {
+      e.preventDefault();
+      dragDepth++;
+      if (!state.loaded) setDropHighlight(true);
+    });
+    document.addEventListener("dragover", function (e) {
+      e.preventDefault();
+    });
+    document.addEventListener("dragleave", function () {
+      dragDepth = Math.max(0, dragDepth - 1);
+      if (dragDepth === 0) setDropHighlight(false);
+    });
+    document.addEventListener("drop", function (e) {
+      e.preventDefault();
+      dragDepth = 0;
+      setDropHighlight(false);
+      var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (state.loaded) {
+        showToast("Close this book first", { label: "Close this book", onClick: closeCurrentBook });
+        return;
+      }
+      if (isLegacyXlsName(file.name)) {
+        showEmptyStateMessage(LEGACY_XLS_MESSAGE, false);
+        return;
+      }
+      loadFromAnySource(file);
+    });
+  }
+
+  function setDropHighlight(on) {
+    var card = document.querySelector(".empty-state");
+    if (card) card.classList.toggle("is-drag-over", on);
+    var hint = document.getElementById("drop-hint");
+    if (hint) {
+      hint.textContent = on ? "Drop a workbook (.xlsx), a package zip, a diya-gl zip or a diya-gl JSON file" : "or drop a file here";
+    }
+  }
+
+  // Clears the loaded book back to the empty page without touching the
+  // autosave record: the same working book Discard would still remove, and
+  // still offered back as "Continue where you left off" the next time the
+  // reader opens or loads anything.
+  function closeCurrentBook() {
+    if (state.book && state.lines) {
+      state.savedBook = {
+        book: state.book,
+        lines: state.lines,
+        source: SNAPSHOT.source || { kind: "unknown", label: SNAPSHOT.scenario },
+        savedAt: new Date().toISOString(),
+      };
+    }
+    state.loaded = false;
+    state.book = null;
+    state.lines = null;
+    state.context = null;
+    state.bookChecks = [];
+    state.view = "home";
+    state.openHelper = null;
+    window.DiyaGlBooksEdits.undo.clear();
+    render();
   }
 
   function applySnapshot(snapshot) {
@@ -2155,6 +2248,8 @@
     window.addEventListener("resize", function () {
       render();
     });
+
+    bindDropZone();
   }
 
   function openDrawer() {
@@ -2206,6 +2301,8 @@
     [
       { label: "Download bst-excel.xlsx", format: "xlsx" },
       { label: "Download package (.zip)", format: "zip" },
+      { label: "Download books as diya-gl (.zip)", format: "diya-gl-zip" },
+      { label: "Download books as JSON (.json)", format: "json" },
     ].forEach(function (opt) {
       var item = document.createElement("button");
       item.type = "button";
@@ -2245,33 +2342,69 @@
     }
   }
 
+  var SAVE_FORMAT_LABELS = {
+    "xlsx": "bst-excel.xlsx",
+    "zip": "the package zip",
+    "diya-gl-zip": "the diya-gl zip",
+    "json": "the diya-gl JSON",
+  };
+
   // save.js wraps saveBstWorkbook/saveBstPackageZip -- the same functions
-  // the CLI and the MCP server write a workbook through -- behind the
-  // engine bundle and a fetch-backed resource loader, then turns the bytes
-  // into a download. Dynamic import keeps this a plain script: no engine
-  // code loads until a save is actually asked for.
+  // the CLI and the MCP server write a workbook through -- and
+  // writeDiyaGlZip/writeBookJson -- the same functions export.js writes
+  // through -- behind the engine bundle and a fetch-backed resource loader,
+  // then turns the bytes into a download. Dynamic import keeps this a
+  // plain script: no engine code loads until a save is actually asked for.
+  // The diya-gl formats need R, already sitting on the live snapshot.
   function runSave(current, format) {
-    showToast("Generating " + (format === "zip" ? "the package zip" : "bst-excel.xlsx") + "...");
+    showToast("Generating " + (SAVE_FORMAT_LABELS[format] || "the download") + "...");
     import("./save.js")
       .then(function (saveModule) {
-        return saveModule.buildSaveArtifact(current.book, current.lines, format).then(function (artifact) {
+        var extras = format === "diya-gl-zip" || format === "json" ? { report: SNAPSHOT.report } : undefined;
+        return saveModule.buildSaveArtifact(current.book, current.lines, format, extras).then(function (artifact) {
           saveModule.downloadArtifact(artifact);
           showToast("Saved " + artifact.filename + ".");
         });
       })
       .catch(function (error) {
-        showToast("Could not generate the workbook: " + (error && error.message ? error.message : error));
+        showToast("Could not generate the download: " + (error && error.message ? error.message : error));
       });
   }
 
   var toastTimer = null;
-  function showToast(message) {
-    els.toast.textContent = message;
+  // A plain message auto-dismisses after four seconds, as always. One
+  // carrying an action (the drop-onto-a-loaded-book refusal) stays until
+  // the reader clicks it, or the next showToast call replaces it.
+  function showToast(message, action) {
+    els.toast.innerHTML = "";
+    var text = document.createElement("span");
+    text.textContent = message;
+    els.toast.appendChild(text);
+    if (action) {
+      var actionBtn = document.createElement("button");
+      actionBtn.type = "button";
+      actionBtn.className = "toast-action-btn";
+      actionBtn.textContent = action.label;
+      // #toast is pointer-events:none so a plain message never blocks a
+      // click on the page underneath it; this button opts back in so the
+      // one toast that carries a control stays clickable.
+      actionBtn.style.cssText =
+        "margin-left:0.75rem;border:1px solid currentColor;background:none;color:inherit;" +
+        "padding:0.2rem 0.6rem;border-radius:var(--radius);cursor:pointer;font:inherit;pointer-events:auto;";
+      actionBtn.addEventListener("click", function () {
+        window.clearTimeout(toastTimer);
+        els.toast.classList.remove("is-visible");
+        action.onClick();
+      });
+      els.toast.appendChild(actionBtn);
+    }
     els.toast.classList.add("is-visible");
     window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(function () {
-      els.toast.classList.remove("is-visible");
-    }, 4000);
+    if (!action) {
+      toastTimer = window.setTimeout(function () {
+        els.toast.classList.remove("is-visible");
+      }, 4000);
+    }
   }
 
   // What the page answers to from outside itself. setLines is the way a

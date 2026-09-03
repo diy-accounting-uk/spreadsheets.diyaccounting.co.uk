@@ -496,6 +496,20 @@ select:focus-visible,
   gap: 0.5rem;
 }
 
+/* -- Drop zone (T7): the empty-state card doubles as a drop target while no
+   book is loaded. A dragover highlights the whole card and the drop-hint
+   line names the four accepted kinds; a drop while a book is loaded is
+   refused elsewhere (bst.js), so nothing here styles that case. -- */
+.empty-state.is-drag-over {
+  border-color: var(--rule);
+  background: var(--tint);
+  box-shadow: 0 0 0 3px var(--rule-faint);
+}
+.drop-hint {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+}
+
 /* ============================== Year table ============================== */
 
 .year-table-scroll {

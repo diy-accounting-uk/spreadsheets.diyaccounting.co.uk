@@ -210,8 +210,16 @@
   }
 
   var schemasReady = null;
+  // Two caches, loaded together: diya-gl-schema.js's (validateBook/
+  // validateLines, what readBookSource checks a diya-gl zip or JSON
+  // against) and diya-gl-canonical.js's own separate one (what
+  // canonicalBookToml/canonicalLinesJsonl/writeBookJson read field order
+  // and money-vs-rate typing from -- used by the diya-gl zip and JSON
+  // downloads). Both are Promise.all'd once and cached the same way.
   function ensureSchemas(engine, resources) {
-    if (!schemasReady) schemasReady = engine.loadSchemasFrom(resources);
+    if (!schemasReady) {
+      schemasReady = Promise.all([engine.loadSchemasFrom(resources), engine.loadCanonicalSchemasFrom(resources)]);
+    }
     return schemasReady;
   }
 
@@ -638,6 +646,33 @@
     return drift;
   }
 
+  // ============================== upload limits & content sniffing ==============================
+
+  // 25 MB: refused before any parsing, so a customer sees this message
+  // immediately rather than waiting through a partial read of a file this
+  // page will not accept.
+  var MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
+  function assertWithinUploadLimit(bytes) {
+    if (bytes.byteLength > MAX_UPLOAD_BYTES) {
+      throw new Error("This file is larger than 25 MB, more than this page reads in the browser. Export a smaller file and try again.");
+    }
+  }
+
+  // The workbook inside a package zip, found by content -- the single
+  // .xlsx entry -- never by the zip's own file name. detectBookSource
+  // already named this kind "package-zip" by the same rule (one .xlsx
+  // entry, no lines.jsonl), so a .zip renamed .xlsx reaches here exactly
+  // the same way a properly named one does.
+  async function unwrapPackageZip(fileBytes) {
+    var zip = await global.JSZip.loadAsync(fileBytes);
+    var entryName = Object.keys(zip.files).filter(function (name) {
+      return !zip.files[name].dir && /\.xlsx$/i.test(name);
+    })[0];
+    if (!entryName) throw new Error("No .xlsx workbook found inside this zip.");
+    return zip.file(entryName).async("uint8array");
+  }
+
   // ============================== the two loaders ==============================
 
   function periodFromLines(lines) {
@@ -740,6 +775,34 @@
     };
   }
 
+  // R, built the same call shape export.js's buildFileReportDocument builds
+  // it with for the CLI: the same package name, engine name, results and
+  // product module, the scenario merged with its own expected table, and
+  // the checks this snapshot already ran. A browser export and a CLI
+  // export of the same book write the same report.json bytes because both
+  // pass through buildReportDocument with the same arguments.
+  function buildReport(engine, book, results, checks, expectedScenario) {
+    var productMod = {
+      reportSections: engine.reportSections,
+      profitBridge: engine.profitBridge,
+      cellLabels: engine.cellLabels,
+      CELL_MAP: engine.CELL_MAP,
+      PRODUCT: engine.PRODUCT,
+    };
+    var periodEnd = book.documentInfo && book.documentInfo.periodCoveredEnd;
+    var yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
+    return engine.buildReportDocument({
+      packageName: "bst",
+      engine: "js",
+      results: results,
+      productMod: productMod,
+      scenario: expectedScenario,
+      checks: checks,
+      scenarioName: book.documentInfo && book.documentInfo.entriesComment,
+      yearEnd: yearEnd,
+    });
+  }
+
   // One run of the D -> R loop, from whichever lines the page currently
   // holds. Every entry point below ends here, so a first load and a load
   // after an edit compute the same way -- the only difference is whether
@@ -756,6 +819,7 @@
     snapshot.context = context;
     snapshot.edited = !!context.edited;
     snapshot.source = context.source || null;
+    snapshot.report = buildReport(engine, book, results, checks, expected);
     return snapshot;
   }
 
@@ -900,7 +964,9 @@
 
     var arrayBuffer = await file.arrayBuffer();
     var fileBytes = new Uint8Array(arrayBuffer);
-    var xlsxBytes = await global.DiyaGlXlsxCells.xlsxBytesFrom(fileBytes, file.name);
+    assertWithinUploadLimit(fileBytes);
+    var kind = await engine.detectBookSource(fileBytes, file.name);
+    var xlsxBytes = kind === "package-zip" ? await unwrapPackageZip(fileBytes) : fileBytes;
 
     // validateBstAnchors throws BstAnchorError, named by sheet and header --
     // never a silent short read. Let it propagate; the caller shows it.
@@ -952,6 +1018,37 @@
     return snapshot;
   }
 
+  /**
+   * Every way a file can reach the page, dispatched by content, never by
+   * the name it arrived under -- the picker and the drop zone both call
+   * this one function. A workbook or its package zip keeps the in-memory
+   * JSZip reader above (loadFromFile), which carries the as-read layer and
+   * reads openingBalances off cells a diya-gl source has none of; a
+   * diya-gl zip, a diya-gl JSON file or that JSON zipped go through the
+   * engine's own readBookSource, pure for those three kinds. The legacy
+   * .xls and anything unrecognised reach readBookSource too, purely to
+   * raise its own named refusal.
+   * @param {File} file
+   */
+  async function loadFromAnySource(file) {
+    var engine = await loadEngine();
+    var arrayBuffer = await file.arrayBuffer();
+    var fileBytes = new Uint8Array(arrayBuffer);
+    assertWithinUploadLimit(fileBytes);
+
+    var kind = await engine.detectBookSource(fileBytes, file.name);
+    if (kind === "workbook" || kind === "package-zip") {
+      return loadFromFile(file);
+    }
+    // readBookSource validates a diya-gl zip/JSON's book and lines against
+    // the published schemas as it reads them, so the schemas have to be in
+    // place before this call, not just before computeAndAssemble below.
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
+    var source = await engine.readBookSource(fileBytes, file.name);
+    return computeAndAssemble(file.name, source.book, source.lines, source.kind);
+  }
+
   // Whether a line's account reaches a money column at all. The two maps
   // above are the published Basic Sole Trader chart; a code outside them is
   // filtered out before the calculator ever sees the line, so its amount
@@ -967,6 +1064,7 @@
     EXAMPLE_BOOKS: EXAMPLE_BOOKS,
     loadExample: loadExample,
     loadFromFile: loadFromFile,
+    loadFromAnySource: loadFromAnySource,
     createNewBook: createNewBook,
     loadFromBookAndLines: loadFromBookAndLines,
     recalculate: recalculate,

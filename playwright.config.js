@@ -28,6 +28,7 @@ export default defineConfig({
         "**/books-equivalence.browser.test.js",
         "**/books-layouts.browser.test.js",
         "**/books-headlines.browser.test.js",
+        "**/books-formats.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",
