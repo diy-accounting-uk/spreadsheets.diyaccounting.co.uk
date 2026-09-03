@@ -78,31 +78,29 @@
   };
 
   /**
-   * The book checks over the snapshot's own D, run by book-checks.js through
-   * the engine bundle, each with its fix-it action where one exists. A
-   * passing check is reported too -- the panel says what it looked at, not
-   * only what it found.
+   * The book checks and warnings over the snapshot's own D, run by
+   * book-checks.js through the engine bundle, each with its fix-it action
+   * where one exists. Both tiers reach the panel: a check fails, a warning
+   * warns, and a passing one is reported too -- the panel says what it
+   * looked at, not only what it found.
    */
   function bookChecks(snapshot) {
     var api = requireEngine();
     var taxData = (snapshot.context && snapshot.context.taxData) || null;
     var results = api.runBookChecks({ book: snapshot.book, lines: snapshot.lines, taxData: taxData }).results;
-    return results
-      .filter(function (r) {
-        return r.tier === "check";
-      })
-      .map(function (r) {
-        var helper = r.helper ? { title: r.helper.label, actionLabel: ACTION_LABELS[r.id](r.actual) } : null;
-        return {
-          id: r.id,
-          label: r.label,
-          actual: r.actual,
-          result: r.result,
-          consequence: r.consequence,
-          offenders: r.offenders,
-          helper: helper,
-        };
-      });
+    return results.map(function (r) {
+      var helper = r.helper ? { title: r.helper.label, actionLabel: ACTION_LABELS[r.id](r.actual) } : null;
+      return {
+        id: r.id,
+        tier: r.tier,
+        label: r.label,
+        actual: r.actual,
+        result: r.result,
+        consequence: r.consequence,
+        offenders: r.offenders,
+        helper: helper,
+      };
+    });
   }
 
   /** The preview a helper shows before it is applied: exactly which lines change, and how. */

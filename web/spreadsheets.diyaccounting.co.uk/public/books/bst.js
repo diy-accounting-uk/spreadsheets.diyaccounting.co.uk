@@ -1869,77 +1869,110 @@
     );
   }
 
+  function checkMarker(result) {
+    return result === "pass" ? "✓" : result === "warn" ? "⚠" : "!";
+  }
+
+  // A wall of green rows is not reassurance. Everything that passes folds
+  // into one line the reader can open; what needs attention stays open.
+  function passingDisclosure(count, rowsHtml) {
+    return (
+      '<li class="checks-passing"><details><summary>' +
+      count +
+      (count === 1 ? " check passes" : " checks pass") +
+      '</summary><ul class="checks-passing-list">' +
+      rowsHtml +
+      "</ul></details></li>"
+    );
+  }
+
   // The engine's own checks: checkCompliance, the ones the reconciliation
   // runs. Both sides of each are derived from the same lines, so they follow
   // an edit rather than catching one -- what they catch is the calculator
   // and the book disagreeing.
   function renderChecksList() {
+    function row(c) {
+      return (
+        '<li class="check-item ' +
+        c.result +
+        '"' +
+        rk("check/" + c.label) +
+        '><span class="check-marker" aria-hidden="true">' +
+        checkMarker(c.result) +
+        '</span><span class="check-body"><span class="check-label">' +
+        esc(c.label) +
+        '</span><br/><span class="check-figures">' +
+        (c.result === "pass" ? "matches" : "expected " + fmtMoney(c.expected) + " · actual " + fmtMoney(c.actual)) +
+        "</span></span></li>"
+      );
+    }
+    var passing = SNAPSHOT.checks.filter(isPassing);
+    var open = SNAPSHOT.checks.filter(notPassing);
     return (
       '<p class="caps-label checks-group-label">Engine checks</p><ul class="checks-list">' +
-      SNAPSHOT.checks
-        .map(function (c) {
-          var marker = c.result === "pass" ? "✓" : "!";
-          return (
-            '<li class="check-item ' +
-            c.result +
-            '"' +
-            rk("check/" + c.label) +
-            '><span class="check-marker">' +
-            marker +
-            '</span><span class="check-body"><span class="check-label">' +
-            esc(c.label) +
-            '</span><br/><span class="check-figures">' +
-            (c.result === "pass" ? "matches" : "expected " + fmtMoney(c.expected) + " · actual " + fmtMoney(c.actual)) +
-            "</span></span></li>"
-          );
-        })
-        .join("") +
+      open.map(row).join("") +
+      (passing.length ? passingDisclosure(passing.length, passing.map(row).join("")) : "") +
       "</ul>"
     );
   }
 
-  // The book checks: the ones over D itself, where an entry can be wrong
-  // while every total still adds up. A failing one carries its fix-it.
+  function isPassing(c) {
+    return c.result === "pass";
+  }
+  function notPassing(c) {
+    return c.result !== "pass";
+  }
+
+  // The book checks and warnings: the ones over D itself, where an entry can
+  // be wrong while every total still adds up. A failing check carries its
+  // fix-it; a warning is advisory and says so in a word, never in colour
+  // alone.
   function renderBookChecksList() {
+    function row(c) {
+      var isWarning = c.tier === "warning";
+      var figures = isWarning ? "" : c.result === "pass" ? "every line" : c.actual + (c.actual === 1 ? " line" : " lines");
+      return (
+        '<li class="check-item ' +
+        c.result +
+        (isWarning ? " is-warning" : "") +
+        '" data-book-check="' +
+        esc(c.id) +
+        '"><span class="check-marker" aria-hidden="true">' +
+        checkMarker(c.result) +
+        '</span><span class="check-body">' +
+        (c.result === "warn" ? '<span class="check-tier">Warning</span>' : "") +
+        '<span class="check-label">' +
+        esc(c.label) +
+        "</span>" +
+        (figures ? '<br/><span class="check-figures">' + figures + "</span>" : "") +
+        (c.result === "pass" ? "" : renderBookCheckDetail(c)) +
+        "</span></li>"
+      );
+    }
+    var passing = state.bookChecks.filter(isPassing);
+    var open = state.bookChecks.filter(notPassing);
     return (
       '<p class="caps-label checks-group-label">Book checks</p><ul class="book-checks-list">' +
-      state.bookChecks
-        .map(function (c) {
-          var marker = c.result === "pass" ? "✓" : "!";
-          return (
-            '<li class="check-item ' +
-            c.result +
-            '" data-book-check="' +
-            esc(c.id) +
-            '"><span class="check-marker">' +
-            marker +
-            '</span><span class="check-body"><span class="check-label">' +
-            esc(c.label) +
-            '</span><br/><span class="check-figures">' +
-            (c.result === "pass" ? "every line" : c.actual + (c.actual === 1 ? " line" : " lines")) +
-            "</span>" +
-            (c.result === "pass" ? "" : renderBookCheckDetail(c)) +
-            "</span></li>"
-          );
-        })
-        .join("") +
+      open.map(row).join("") +
+      (passing.length ? passingDisclosure(passing.length, passing.map(row).join("")) : "") +
       "</ul>"
     );
   }
 
   function renderBookCheckDetail(check) {
-    var offenders =
-      '<ul class="check-offenders">' +
-      check.offenders
-        .slice(0, 5)
-        .map(function (o) {
-          return (
-            "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
-          );
-        })
-        .join("") +
-      (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +
-      "</ul>";
+    var offenders = !check.offenders.length
+      ? ""
+      : '<ul class="check-offenders">' +
+        check.offenders
+          .slice(0, 5)
+          .map(function (o) {
+            return (
+              "<li>" + esc(o.entryNumber) + " · " + esc(o.postingDate) + " · " + esc(o.accountMainID) + " · " + fmtMoney(o.amount) + "</li>"
+            );
+          })
+          .join("") +
+        (check.offenders.length > 5 ? "<li>and " + (check.offenders.length - 5) + " more</li>" : "") +
+        "</ul>";
     if (!check.helper) {
       return '<p class="check-consequence">' + esc(check.consequence) + "</p>" + offenders;
     }

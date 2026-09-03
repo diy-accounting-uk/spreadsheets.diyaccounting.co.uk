@@ -279,9 +279,31 @@ test.describe("DIYA-GL books page — undo", () => {
 test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broken book", () => {
   test("the featured book passes every book check before anything is broken", async ({ page }) => {
     await openBook(page);
-    await expect(page.locator("#inspector .book-checks-list .check-item")).toHaveCount(3);
+    for (const id of ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"]) {
+      await expect(bookCheck(page, id)).toHaveClass(/pass/);
+    }
     await expect(page.locator("#inspector .book-checks-list .check-item.fail")).toHaveCount(0);
     await allChecksPass(page);
+  });
+
+  test("the panel opens on what needs attention and folds what passes behind one line", async ({ page }) => {
+    await openBook(page);
+
+    // This book's turnover is far past the VAT registration threshold, so
+    // its warning is one of the rows the panel opens on.
+    const vat = bookCheck(page, "book-vat-threshold");
+    await expect(vat).toBeVisible();
+    await expect(vat).toHaveClass(/warn/);
+    await expect(vat).toContainText("Warning");
+    await expect(vat).toContainText("VAT registration threshold");
+
+    // Every passing check is still there, behind a disclosure that says how
+    // many there are rather than printing them all.
+    const engineSummary = page.locator("#inspector .checks-list .checks-passing summary");
+    await expect(engineSummary).toHaveText(/^\d+ checks pass$/);
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeHidden();
+    await engineSummary.click();
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeVisible();
   });
 
   test("an entry dated outside the period is caught and moved back into it", async ({ page }) => {
