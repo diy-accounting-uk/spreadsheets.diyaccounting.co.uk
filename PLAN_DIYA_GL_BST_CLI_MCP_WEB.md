@@ -164,7 +164,7 @@ The save control offers four downloads, all generated client-side from the curre
 |---|---|---|
 | Workbook (`.xlsx`) | `saveBstWorkbook`, `fullCalcOnLoad` set | the package's own workbook name |
 | Package (`.zip`) | `saveBstPackageZip`, the package directory shape | the package directory name |
-| Books as diya-gl (`.zip`) | `book.toml`, `lines.jsonl`, `report.json`, and `overtyped.json` when the source was a workbook; exactly the four files `export.js --file` writes, byte-for-byte | `<business>-diya-gl.zip` |
+| Books as diya-gl (`.zip`) | `book.toml`, `lines.jsonl`, `report.json`, `bookchecks.json`, and `overtyped.json` when the source was a workbook; exactly the files `export.js --file` writes, byte-for-byte | `<business>-diya-gl.zip` |
 | Books as JSON (`.json`) | the single-file form above | `<business>-diya-gl.json` |
 
 `report.json` is `R` built by `buildReportDocument`/`serializeReportDocument` over the
@@ -208,10 +208,12 @@ Three tiers, in one panel, each with its own count in the summary tiles:
 | Negative amount | a sale or purchase below zero (a refund belongs on the other journal) | the lines |
 | Month with no entries inside a trading year | zero lines in a month between the first and last dated entries | the lines |
 
-Result states across all three tiers are `pass`, `warn`, `fail`. The report serializer
-keeps `check/` verdicts as they are (engine checks never warn); book checks and warnings
-serialise under `bookcheck/<id>` with the three-state verdict, so `report.json` carries
-what the panel shows.
+Result states across all three tiers are `pass`, `warn`, `fail`. `R` stays exactly what the
+engine checks produce, so every producer of `report.json` (the CLI, the MCP, the page,
+`report.js`) writes the same bytes and the roundtrip budgets never see a new key. Book
+checks and warnings serialise beside it as `bookchecks.json` (one entry per rule: id,
+verdict, offenders), the fifth file of a diya-gl zip and of `export.js --file`'s output;
+the MCP `report` tool returns them as a separate field.
 
 "Make a sale/purchase from a bank item" does not apply to BST, which has no bank book. The
 card leaves the BST page (it was rendering a live-looking Preview button on a disabled
@@ -435,7 +437,7 @@ session, replaying the harness cases byte-for-byte.
 
 This pass adds, through the shared interchange module (T3): `--file` and `extract_book`
 accept the diya-gl zip, the JSON and the zipped JSON as inputs; `report` and the CLI's
-`report.json` carry the `bookcheck/` verdicts (T5); `save_workbook` gains
+output carry the book checks and warnings as `bookchecks.json` (T5); `save_workbook` gains
 `format: "diya-gl-zip" | "json"`. No new engine code beyond those modules.
 
 ## Delivered
@@ -482,7 +484,7 @@ loads an example.
 |---|---|---|---|---|
 | **T3 interchange formats** | Opus | new `app/lib/books-interchange.js`, `app/lib/diya-gl-canonical.js` (schemas through the seam), `app/lib/books-engine.js` (export the canonical writers, the report serializer, `overtypedCells`, the new module), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/books-interchange.test.js` | content sniffing for the six byte kinds; readers for the diya-gl zip, JSON and zipped JSON; writers for the diya-gl zip (four files, the CLI's exact bytes) and the JSON; the CLI and MCP reading every kind and the MCP saving the two new kinds | the CLI's `--file` on a diya-gl zip of its own output reproduces that output byte-for-byte; a `.zip` renamed `.xlsx` loads; each refusal names its kind; the bundle builds with the canonical module inside and no import-time `fs` |
 | **T4 headline figures** | Sonnet | new `app/lib/bst-headlines.js`, `app/test/bst-headlines.test.js` | the pure derivation from an `R` document to four tiles and two pie datasets, the negative-profit branch, the ≤6-slice fold | figures anchored to the three fixtures' `[expected]` totals; one corrupted `R` value moves exactly the tiles that depend on it |
-| **T5 book checks and warnings** | Sonnet | new `app/lib/book-checks.js`, `app/test/book-checks.test.js`, `app/lib/report-serializer.js` (`bookcheck/` entries), `web/.../books/bst-edits.js` (thin: call the module through the bundle), `app/lib/mcp/diya-gl-tools.js` (`report` carries them) | the three classes moved, the five warnings added, three-state verdicts, helpers unchanged in behaviour | each of the eight rules broken by one crafted line and only that rule flips; the browser edits spec stays green; `report.json` gains the `bookcheck/` keys and nothing else changes |
+| **T5 book checks and warnings** | Sonnet | new `app/lib/book-checks.js`, `app/test/book-checks.test.js`, `web/.../books/bst-edits.js` (thin: call the module through the bundle), `app/lib/mcp/diya-gl-tools.js` (`report` returns them as a field), `app/bin/export.js` (writes `bookchecks.json`) | the three classes moved, the five warnings added, three-state verdicts, helpers unchanged in behaviour | each of the eight rules broken by one crafted line and only that rule flips; the browser edits spec stays green; `report.json` is byte-identical before and after; `bookchecks.json` carries the eight rules |
 | **T10 render hooks** | Sonnet | `web/.../books/bst.js` (every render function), new `app/data/render-unrepresentable.json`, `app/test/render-coverage.test.js` | `data-r-key` on every rendered figure, including both drill levels, the declared-absence file, and a Node test that renders every view over S2 through jsdom and diffs the key sets | the declared list is short and every entry has a reason; removing one hook fails the test naming the key |
 
 T3 and T5 both touch `diya-gl-tools.js`: T5 owns the `report` change and rebases onto T3

@@ -6,6 +6,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
+Batch branch `claude/bst-ledger` (pushed; deploys to ci on every push). Wave 1 dispatched
+2026-09-03: T1, T2, T3, T4, T5, T10 as worktree sub-agents under `.claude/worktrees/`, one
+per task; the coordinator merges each landed commit into the batch branch and pushes.
+
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
 on it as soon as its precursors are done and the branch deploys to the ci environment
@@ -15,12 +19,12 @@ after each landing. No row waits on a merge.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T1 | CSP-safe validation: precompiled schema validators in the bundle | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | production cannot load a book; Sonnet |
-| T2 | Production security headers in the test server; prod behaviour probe | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | disjoint from T1; Sonnet |
-| T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus |
-| T4 | Headline figures module | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
-| T5 | Book checks and warnings module, three-state verdicts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; rebases onto T3 for the MCP file |
-| T10 | Render hooks (`data-r-key`) and the declared-absence file | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; first owner of `bst.js` |
+| T1 | CSP-safe validation: precompiled schema validators in the bundle | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | production cannot load a book; Sonnet |
+| T2 | Production security headers in the test server; prod behaviour probe | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | disjoint from T1; Sonnet |
+| T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Opus |
+| T4 | Headline figures module | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet |
+| T5 | Book checks and warnings module, three-state verdicts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; rebases onto T3 for the MCP file |
+| T10 | Render hooks (`data-r-key`) and the declared-absence file | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; first owner of `bst.js` |
 | T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | blocked-to-start | Sonnet; next owner of `bst.js` |
 | T9 | The strip: four tiles, two pies, redrawn charts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T4 | blocked-to-start | Opus; four-viewport screenshots as CI artefacts, axe gate |
 | T14 | The equivalence suite (A1–A7, E3–E6), axe at four viewports | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T10 | blocked-to-start | Sonnet; rebases as T13 moves the page |
