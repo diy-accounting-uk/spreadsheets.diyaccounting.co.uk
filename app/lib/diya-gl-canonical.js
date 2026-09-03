@@ -6,8 +6,8 @@
 // exactly on this text when their underlying facts agree, so a re-ordered
 // array, a re-ordered field, or a floating point rounding difference never
 // registers as a data difference. Field order, and which fields are money or
-// a rate, come from the published v2 schemas, read once at load, so this
-// module and the schemas cannot drift apart.
+// a rate, come from the published v2 schemas, so this module and the schemas
+// cannot drift apart.
 //
 // This is a comparison form, not the schema-conformant file the extractor or
 // the exporter serve: money is written to exactly two decimal places (a rate
@@ -15,20 +15,74 @@
 // A JSON number token or a TOML float can both carry that text -- neither
 // format has to become a string to hold it -- so canonicalLinesJsonl's
 // output still parses back as the numeric type the schema declares.
+//
+// The two schemas load lazily, not at import, so this module can sit in the
+// browser bundle: a caller with no file system (the books page) hands them
+// in with useSchemas() or loadSchemasFrom() before the first write; the Node
+// fallback reads them off disk on first use, exactly as diya-gl-schema.js
+// does for validation.
 
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { BOOK_SCHEMA_RESOURCE, LINES_SCHEMA_RESOURCE, nodeResourceLoader } from "./app-resources.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const SCHEMA_DIR = resolve(__dirname, "..", "..", "web", "spreadsheets.diyaccounting.co.uk", "public", "schema");
+let schemas = null;
 
-function loadSchema(fileName) {
-  return JSON.parse(readFileSync(resolve(SCHEMA_DIR, fileName), "utf8"));
+/**
+ * Supply the two v2 schemas rather than have them read from disk. A caller
+ * with no file system (the books page) fetches them and calls this before
+ * its first canonical write.
+ * @param {Object} bookSchema - parsed diya-gl-book-v2.schema.json
+ * @param {Object} linesSchema - parsed diya-gl-lines-v2.schema.json
+ */
+export function useSchemas(bookSchema, linesSchema) {
+  schemas = { book: bookSchema, lines: linesSchema };
 }
 
-const bookSchema = loadSchema("diya-gl-book-v2.schema.json");
-const linesSchema = loadSchema("diya-gl-lines-v2.schema.json");
+/**
+ * Load and parse the two schemas through a resource loader, for a caller
+ * that has one but would rather not read the files itself.
+ * @param {{readText: (path: string) => Promise<string>}} [resources]
+ */
+export async function loadSchemasFrom(resources = nodeResourceLoader()) {
+  const [book, lines] = await Promise.all([
+    resources.readText(BOOK_SCHEMA_RESOURCE).then(JSON.parse),
+    resources.readText(LINES_SCHEMA_RESOURCE).then(JSON.parse),
+  ]);
+  useSchemas(book, lines);
+}
+
+// Every canonical writer below reads field order and type off the schemas,
+// so the Node fallback reads them synchronously on first use -- every caller
+// in the pipeline treats canonicalLinesJsonl/canonicalBookToml as
+// synchronous. A bundle whose caller forgot useSchemas()/loadSchemasFrom()
+// reaches this only when it actually writes something, and fails loudly
+// rather than writing nothing.
+function compiled() {
+  if (schemas) return schemas;
+  try {
+    const schemaDir = resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "..",
+      "..",
+      "web",
+      "spreadsheets.diyaccounting.co.uk",
+      "public",
+      "schema",
+    );
+    const read = (fileName) => JSON.parse(readFileSync(resolve(schemaDir, fileName), "utf8"));
+    schemas = { book: read("diya-gl-book-v2.schema.json"), lines: read("diya-gl-lines-v2.schema.json") };
+  } catch (cause) {
+    throw new Error(
+      "the diya-gl schemas could not be read; a caller with no file system has to call useSchemas() or loadSchemasFrom() first",
+      {
+        cause,
+      },
+    );
+  }
+  return schemas;
+}
 
 function resolveRef(rootSchema, node) {
   if (!node || !node.$ref) return node;
@@ -50,22 +104,37 @@ function formatNumber(value, propSchema) {
   return Number(value).toFixed(isRate(propSchema) ? 4 : 2);
 }
 
+// A date field is whichever the schema declares "format": "date", whether
+// the value in hand is a TOML parser's Date instance or the plain ISO string
+// a JSON round trip hands back -- neither carries a time component the
+// canonical form should keep.
+function isDateField(propSchema) {
+  return propSchema?.format === "date";
+}
+
 function formatDate(value) {
-  return value instanceof Date ? value.toISOString().slice(0, 10) : value;
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  return String(value).slice(0, 10);
 }
 
 // ============================================================================
 // canonicalLinesJsonl
 // ============================================================================
 
-const LINE_FIELD_ORDER = Object.keys(linesSchema.properties);
-
 // The tuple a line sorts on: the year-end reports read a book by posting
 // date, so that leads; the rest breaks a tie deterministically without
 // carrying any meaning of its own.
 const LINE_SORT_KEYS = ["postingDate", "sourceJournalID", "accountMainID", "entryNumber", "lineNumber", "documentReference", "amount"];
 
-function compareLines(a, b) {
+/**
+ * The tuple order every canonical writer sorts diya-gl lines by, exported so
+ * a caller building its own ordered form (writeBookJson) sorts the same way
+ * rather than re-deriving the tuple.
+ * @param {Object} a
+ * @param {Object} b
+ * @returns {number}
+ */
+export function compareLines(a, b) {
   for (const key of LINE_SORT_KEYS) {
     const left = a[key];
     const right = b[key];
@@ -88,9 +157,9 @@ function jsonScalar(value, propSchema) {
 // quoted, escaped string for text, or an unquoted numeral for a number
 // (money and rates carry their canonical decimal places in the token
 // itself, which JSON.stringify's own number formatting would not preserve).
-function canonicalLineText(line) {
+function canonicalLineText(line, lineFieldOrder, linesSchema) {
   const parts = [];
-  for (const field of LINE_FIELD_ORDER) {
+  for (const field of lineFieldOrder) {
     if (!(field in line) || line[field] === undefined) continue;
     parts.push(`${JSON.stringify(field)}:${jsonScalar(line[field], linesSchema.properties[field])}`);
   }
@@ -105,8 +174,31 @@ function canonicalLineText(line) {
  * @returns {string} the canonical lines.jsonl text, newline-terminated
  */
 export function canonicalLinesJsonl(lines) {
+  const { lines: linesSchema } = compiled();
+  const lineFieldOrder = Object.keys(linesSchema.properties);
   const sorted = [...lines].sort(compareLines);
-  return sorted.map(canonicalLineText).join("\n") + "\n";
+  return sorted.map((line) => canonicalLineText(line, lineFieldOrder, linesSchema)).join("\n") + "\n";
+}
+
+/**
+ * One line's own fields reordered to the schema's declared order, values
+ * untouched -- the shape writeBookJson (books-interchange.js) serialises a
+ * line as. Any field the schema does not declare is kept, after the
+ * declared ones, so an unrecognised key is lost to validation rather than
+ * to this reordering.
+ * @param {Object} line
+ * @returns {Object}
+ */
+export function orderedLine(line) {
+  const { lines: linesSchema } = compiled();
+  const ordered = {};
+  for (const field of Object.keys(linesSchema.properties)) {
+    if (field in line && line[field] !== undefined) ordered[field] = line[field];
+  }
+  for (const field of Object.keys(line)) {
+    if (!(field in ordered)) ordered[field] = line[field];
+  }
+  return ordered;
 }
 
 // ============================================================================
@@ -136,7 +228,7 @@ function tomlString(value) {
 }
 
 function tomlScalar(value, propSchema) {
-  if (value instanceof Date) return formatDate(value);
+  if (isDateField(propSchema) || value instanceof Date) return formatDate(value);
   if (typeof value === "boolean") return String(value);
   if (typeof value === "number") return formatNumber(value, propSchema);
   return tomlString(value);
@@ -153,7 +245,7 @@ function tomlKey(key) {
 // section, then account code, then the accountDefinition fields. Nothing
 // else in book.toml has this shape, so it is rendered on its own rather than
 // forcing the generic table walker below to grow a third case for it.
-function renderAccounts(accounts, lines) {
+function renderAccounts(bookSchema, accounts, lines) {
   const sectionSchema = bookSchema.properties.accounts.properties;
   for (const section of Object.keys(sectionSchema)) {
     if (!accounts[section]) continue;
@@ -175,7 +267,7 @@ function renderAccounts(accounts, lines) {
 // schema order, scalars as `key = value`, a nested object recursed as
 // `[header.key]`, and a patternProperties dict (only openingBalances.
 // bankAccounts is one) as a table of bare account-code keys.
-function renderObjectTable(header, value, objectSchema, lines) {
+function renderObjectTable(bookSchema, header, value, objectSchema, lines) {
   const props = objectSchema?.properties || {};
   const scalarKeys = [];
   const nestedKeys = [];
@@ -197,7 +289,7 @@ function renderObjectTable(header, value, objectSchema, lines) {
       for (const code of Object.keys(value[key]).sort()) lines.push(`"${code}" = ${tomlScalar(value[key][code], null)}`);
       lines.push("");
     } else {
-      renderObjectTable(`${header}.${key}`, value[key], propSchema, lines);
+      renderObjectTable(bookSchema, `${header}.${key}`, value[key], propSchema, lines);
     }
   }
 }
@@ -218,23 +310,46 @@ function renderArrayOfTables(key, items, itemSchema, lines) {
  * schema order, every array-of-tables sorted by its id field, money and
  * rates at a fixed decimal precision, dates as YYYY-MM-DD. Two books that
  * agree on every fact produce byte-identical text.
- * @param {Object} book - parsed book.toml (TOML dates as JS Date instances, as every TOML parser returns them)
+ * @param {Object} book - parsed book.toml (dates as TOML Date instances or
+ *   ISO strings -- either reads the same, since date fields are told apart
+ *   by the schema's own "format": "date", not by the JS type in hand)
  * @returns {string} the canonical book.toml text
  */
 export function canonicalBookToml(book) {
+  const { book: bookSchema } = compiled();
   const lines = [];
   for (const key of Object.keys(bookSchema.properties)) {
     if (book[key] === undefined) continue;
     if (key === "accounts") {
-      renderAccounts(book[key], lines);
+      renderAccounts(bookSchema, book[key], lines);
       continue;
     }
     const propSchema = resolveRef(bookSchema, bookSchema.properties[key]);
     if (propSchema.type === "array") {
       renderArrayOfTables(key, book[key], resolveRef(bookSchema, propSchema.items), lines);
     } else {
-      renderObjectTable(key, book[key], propSchema, lines);
+      renderObjectTable(bookSchema, key, book[key], propSchema, lines);
     }
   }
   return lines.join("\n");
+}
+
+/**
+ * The book's top-level tables reordered to the schema's declared order,
+ * values untouched -- the shape writeBookJson (books-interchange.js)
+ * serialises a book as. Any table the schema does not declare is kept,
+ * after the declared ones.
+ * @param {Object} book - parsed book.toml
+ * @returns {Object}
+ */
+export function orderedBookTopLevel(book) {
+  const { book: bookSchema } = compiled();
+  const ordered = {};
+  for (const key of Object.keys(bookSchema.properties)) {
+    if (book[key] !== undefined) ordered[key] = book[key];
+  }
+  for (const key of Object.keys(book)) {
+    if (!(key in ordered)) ordered[key] = book[key];
+  }
+  return ordered;
 }
