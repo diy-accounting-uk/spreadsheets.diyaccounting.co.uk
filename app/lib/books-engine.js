@@ -28,6 +28,43 @@ export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader
 // Validating it.
 export { validateBook, validateLines, useSchemas, loadSchemasFrom } from "./diya-gl-schema.js";
 
+// Writing D in its canonical, comparison form -- book.toml and lines.jsonl
+// text, or one JSON file, or a diya-gl zip. This module keeps its own
+// schema state, separate from diya-gl-schema.js's validator cache above (no
+// shared cache to alias between them), so its loader carries its own name:
+// a caller with no file system supplies the same parsed schemas to both,
+// once each, at startup.
+export {
+  canonicalBookToml,
+  canonicalLinesJsonl,
+  orderedBookTopLevel,
+  orderedLine,
+  compareLines,
+  useSchemas as useCanonicalSchemas,
+  loadSchemasFrom as loadCanonicalSchemasFrom,
+} from "./diya-gl-canonical.js";
+
+// R's own serialisation, so a browser export and a CLI export of the same
+// book write the same report.json bytes.
+export { buildReportDocument, serializeReportDocument } from "./report-serializer.js";
+
+// The overtype sidecar: every template formula an upload carries as a typed
+// value instead of the sum the template computes.
+export { overtypedCells, BST_TEMPLATE_PATH } from "./overtype-sidecar.js";
+
+// Sniffing and reading any of the six kinds a byte array can be, and
+// writing D back out as a diya-gl zip or a single JSON file.
+export {
+  detectBookSource,
+  readBookSource,
+  writeBookJson,
+  writeDiyaGlZip,
+  UnknownBookSourceError,
+  XlsBookSourceError,
+  InvalidDiyaGlBookError,
+  InvalidDiyaGlJsonError,
+} from "./books-interchange.js";
+
 // Computing the reports, without a spreadsheet application.
 export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
 
