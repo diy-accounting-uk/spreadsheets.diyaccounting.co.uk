@@ -11,12 +11,12 @@
 //   node app/bin/export.js --package bst --file my-package.zip --output-dir /tmp/exported
 //
 // --source-dir reads a package the pipeline already unpacked into its own
-// directory. --file takes a single .xlsx, or a .zip unzipped in memory to
-// find the workbook inside it -- a customer's own download, not a directory
-// this repo laid out -- and writes beside that input unless --output-dir
-// says otherwise. --file supports --package bst only for now: the anchor
-// guard below is written against the Basic Sole Trader template, and
-// reading another product's file this way is undecided until it has one.
+// directory. --file takes any of the kinds books-interchange.js reads --
+// a customer's own download, not a directory this repo laid out -- and
+// writes beside that input unless --output-dir says otherwise. --file
+// supports --package bst only for now: the anchor guard is written against
+// the Basic Sole Trader template, and reading another product's file this
+// way is undecided until it has one.
 //
 // book.toml and lines.jsonl are written through app/lib/diya-gl-canonical.js,
 // the one form D is compared in, so a re-ordered line, a re-ordered field or
@@ -26,12 +26,11 @@
 // the D just extracted, through the same modules report.js --data uses, so
 // one run is the whole extract-recalculate-report loop. Alongside it goes
 // overtyped.json, every sum the template computes that this copy of it
-// carries as a typed value instead.
+// carries as a typed value instead -- present only when the input carried an
+// actual workbook to compare against a computed value in the first place.
 
-import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, cpSync, rmSync } from "fs";
-import { resolve, dirname, basename, extname, join } from "path";
-import { tmpdir } from "os";
-import JSZip from "jszip";
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { resolve, dirname, basename } from "path";
 import {
   extractBstTransactions,
   extractTaxiTransactions,
@@ -42,11 +41,7 @@ import {
   extractBook,
   extractPeriodStartMonth,
   periodCovered,
-  validateBstAnchors,
-  BstAnchorError,
-  bstExtractionMap,
 } from "../lib/xlsx-exporter.js";
-import { overtypedCells } from "../lib/overtype-sidecar.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../lib/diya-gl-canonical.js";
 import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
 import { findXlsx } from "../lib/xlsx-reader.js";
@@ -54,10 +49,34 @@ import { extractTaxDataFromBook, diyaGlToScenario } from "../lib/diya-gl-loader.
 import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
+import {
+  readBookSource,
+  BstAnchorError,
+  XlsBookSourceError,
+  UnknownBookSourceError,
+  InvalidDiyaGlBookError,
+  InvalidDiyaGlJsonError,
+} from "../lib/books-interchange.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
 import * as ltd from "../products/ltd.js";
+
+// Every error a book source can refuse a read with, named rather than a
+// stack trace: --file prints the message and exits, exactly as the anchor
+// guard already did before books-interchange.js grew four more ways a file
+// can be rejected.
+const NAMED_BOOK_SOURCE_ERRORS = [
+  BstAnchorError,
+  XlsBookSourceError,
+  UnknownBookSourceError,
+  InvalidDiyaGlBookError,
+  InvalidDiyaGlJsonError,
+];
+
+function isNamedBookSourceError(err) {
+  return NAMED_BOOK_SOURCE_ERRORS.some((ErrorClass) => err instanceof ErrorClass);
+}
 
 const PRODUCTS = { bst, taxi, se, ltd };
 
@@ -101,27 +120,6 @@ function parseArgs(argv) {
   return { packageName, sourceDir, file, outputDir };
 }
 
-// A single .xlsx, or the workbook a .zip carries, staged into its own empty
-// directory so extractBook()'s directory-based reads (findXlsxName and the
-// rest) see exactly one workbook regardless of what else sits beside the
-// customer's original file. Caller removes the directory once done with it.
-export async function stageWorkbook(filePath) {
-  const stageDir = mkdtempSync(join(tmpdir(), "diya-gl-export-"));
-  const ext = extname(filePath).toLowerCase();
-  if (ext === ".xlsx") {
-    cpSync(filePath, resolve(stageDir, basename(filePath)));
-  } else if (ext === ".zip") {
-    const zip = await JSZip.loadAsync(readFileSync(filePath));
-    const entryName = Object.keys(zip.files).find((name) => !zip.files[name].dir && name.toLowerCase().endsWith(".xlsx"));
-    if (!entryName) throw new Error(`No .xlsx workbook found inside ${filePath}`);
-    const buffer = await zip.file(entryName).async("nodebuffer");
-    writeFileSync(resolve(stageDir, basename(entryName)), buffer);
-  } else {
-    throw new Error(`--file expects a .xlsx or .zip, got "${filePath}"`);
-  }
-  return stageDir;
-}
-
 // R for a (book, lines) pair: the JS engine's own D -> R loop --
 // diyaGlToScenario -> calculateFromDiyaGl -> checkCompliance ->
 // buildReportDocument -- the same loop report.js's --data mode runs, so the
@@ -161,32 +159,20 @@ function writeOvertypedJson(outputDir, overtyped) {
   console.log(`  overtyped.json: ${count} ${count === 1 ? "cell" : "cells"} typed over a template formula`);
 }
 
-// The whole --file extraction, in memory: staging, the anchor guard, D, R and
-// the overtype sidecar, with no disk write beyond the temporary stage
-// directory this function cleans up itself. --source-dir's CLI path and the
+// The whole --file extraction: books-interchange.js sniffs the input and
+// turns it into D (a workbook and its package zip stage into a scratch
+// directory and run the anchor guard exactly as before; a diya-gl zip, a
+// JSON file or that JSON zipped validate straight against the published
+// schemas), then this builds R from that D. --source-dir's CLI path and the
 // MCP server's extract_book tool both call this rather than each reaching
-// into xlsx-exporter.js and overtype-sidecar.js on their own, so a change to
-// how any of those three are produced can only ever happen in one place.
+// into books-interchange.js on their own, so a change to how D or R are
+// produced can only ever happen in one place.
 export async function extractBstFromFile(filePath, productMod) {
   const resolvedFile = resolve(filePath);
-  const stageDir = await stageWorkbook(resolvedFile);
-  try {
-    const xlsxFile = findXlsx(stageDir);
-    const workbook = readFileSync(resolve(stageDir, xlsxFile));
-
-    await validateBstAnchors(workbook);
-
-    const extractionMap = bstExtractionMap();
-    const lines = await extractBstTransactions(workbook, extractionMap);
-    const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
-
-    const document = buildFileReportDocument(book, lines, "bst", productMod);
-    const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
-
-    return { book, lines, document, overtyped };
-  } finally {
-    rmSync(stageDir, { recursive: true, force: true });
-  }
+  const bytes = readFileSync(resolvedFile);
+  const { book, lines, overtyped } = await readBookSource(bytes, basename(resolvedFile), { productMod });
+  const document = buildFileReportDocument(book, lines, "bst", productMod);
+  return { book, lines, document, overtyped };
 }
 
 // The v2 schema validation, then book.toml + lines.jsonl written through
@@ -229,7 +215,7 @@ async function runFileMode(filePath, outputDirArg, productMod) {
   try {
     extracted = await extractBstFromFile(resolvedFile, productMod);
   } catch (err) {
-    if (err instanceof BstAnchorError) {
+    if (isNamedBookSourceError(err)) {
       console.error(err.message);
       process.exit(1);
     }
@@ -239,7 +225,7 @@ async function runFileMode(filePath, outputDirArg, productMod) {
   const { book, lines, document, overtyped } = extracted;
   writeDiyaGlData(resolvedOutput, book, lines);
   writeReportJson(resolvedOutput, document);
-  writeOvertypedJson(resolvedOutput, overtyped);
+  if (overtyped) writeOvertypedJson(resolvedOutput, overtyped);
 
   console.log(`\nExported ${lines.length} transactions to ${resolvedOutput}`);
 }

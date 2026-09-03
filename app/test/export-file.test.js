@@ -287,6 +287,153 @@ describe("export.js --file mode", () => {
   });
 });
 
+// The interchange formats: a diya-gl zip, a diya-gl JSON file, and that JSON
+// zipped, each fed back through --file. Round-tripping any of the three
+// reproduces the same book.toml/lines.jsonl/report.json the original
+// workbook wrote -- overtyped.json is the one file the workbook alone
+// carries, since only it has an as-read layer to compare against.
+describe("export.js --file mode: the diya-gl interchange formats", () => {
+  it("reads its own diya-gl zip output back to the same book.toml, lines.jsonl and report.json", async () => {
+    const firstOutput = tempDir("export-file-interchange-first-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", firstOutput]);
+
+    const zip = new JSZip();
+    for (const name of ["book.toml", "lines.jsonl", "report.json", "overtyped.json"]) {
+      zip.file(name, readFileSync(resolve(firstOutput, name)));
+    }
+    const buffer = await zip.generateAsync({ type: "nodebuffer" });
+    const zipDir = tempDir("export-file-interchange-zip-");
+    const zipPath = resolve(zipDir, "book-diya-gl.zip");
+    writeFileSync(zipPath, buffer);
+
+    const secondOutput = tempDir("export-file-interchange-second-");
+    run(["app/bin/export.js", "--package", "bst", "--file", zipPath, "--output-dir", secondOutput]);
+
+    for (const name of ["book.toml", "lines.jsonl", "report.json"]) {
+      expect(readFileSync(resolve(secondOutput, name)).equals(readFileSync(resolve(firstOutput, name))), name).toBe(true);
+    }
+    // Nothing to read overtyped values off any more -- a diya-gl zip in
+    // carries D only, so there is no workbook to compare against.
+    expect(existsSync(resolve(secondOutput, "overtyped.json"))).toBe(false);
+  }, 30000);
+
+  it("reads a diya-gl JSON file back to the same book.toml, lines.jsonl and report.json", async () => {
+    const firstOutput = tempDir("export-file-json-first-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", firstOutput]);
+
+    const book = parseTOML(readFileSync(resolve(firstOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(firstOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const jsonDir = tempDir("export-file-json-src-");
+    const jsonPath = resolve(jsonDir, "book-diya-gl.json");
+    writeFileSync(jsonPath, writeBookJson(book, lines));
+
+    const secondOutput = tempDir("export-file-json-second-");
+    run(["app/bin/export.js", "--package", "bst", "--file", jsonPath, "--output-dir", secondOutput]);
+
+    for (const name of ["book.toml", "lines.jsonl", "report.json"]) {
+      expect(readFileSync(resolve(secondOutput, name)).equals(readFileSync(resolve(firstOutput, name))), name).toBe(true);
+    }
+  }, 30000);
+
+  it("reads that same JSON file zipped, to the same book.toml and lines.jsonl", async () => {
+    const firstOutput = tempDir("export-file-jsonzip-first-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", firstOutput]);
+
+    const book = parseTOML(readFileSync(resolve(firstOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(firstOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+
+    const zip = new JSZip();
+    zip.file("book-diya-gl.json", writeBookJson(book, lines));
+    const buffer = await zip.generateAsync({ type: "nodebuffer" });
+    const zipDir = tempDir("export-file-jsonzip-src-");
+    const zipPath = resolve(zipDir, "book-diya-gl.json.zip");
+    writeFileSync(zipPath, buffer);
+
+    const secondOutput = tempDir("export-file-jsonzip-second-");
+    run(["app/bin/export.js", "--package", "bst", "--file", zipPath, "--output-dir", secondOutput]);
+
+    expect(readFileSync(resolve(secondOutput, "book.toml")).equals(readFileSync(resolve(firstOutput, "book.toml")))).toBe(true);
+    expect(readFileSync(resolve(secondOutput, "lines.jsonl")).equals(readFileSync(resolve(firstOutput, "lines.jsonl")))).toBe(true);
+  }, 30000);
+
+  it("reads a package zip renamed .xlsx by content, not by its extension", async () => {
+    const sourceDirOutput = tempDir("export-file-renamed-source-out-");
+    run([
+      "app/bin/export.js",
+      "--package",
+      "bst",
+      "--source-dir",
+      resolve(ROOT, "examples", "bst-latest"),
+      "--output-dir",
+      sourceDirOutput,
+    ]);
+
+    const zip = new JSZip();
+    zip.file("GB_Accounts_Basic_Sole_Trader.xlsx", readFileSync(BST_XLSX));
+    const buffer = await zip.generateAsync({ type: "nodebuffer" });
+    const dir = tempDir("export-file-renamed-src-");
+    const renamedPath = resolve(dir, "looks-like-a-workbook.xlsx");
+    writeFileSync(renamedPath, buffer);
+
+    const output = tempDir("export-file-renamed-out-");
+    run(["app/bin/export.js", "--package", "bst", "--file", renamedPath, "--output-dir", output]);
+
+    expect(readFileSync(resolve(output, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
+    expect(readFileSync(resolve(output, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
+  }, 30000);
+
+  it("refuses the legacy .xls format, naming it", () => {
+    const dir = tempDir("export-file-xls-");
+    const xlsPath = resolve(dir, "old-accounts.xls");
+    writeFileSync(xlsPath, Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0, 0, 0, 0]));
+
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", xlsPath]);
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain("older .xls format");
+  });
+
+  it("refuses a file that sniffs as none of the six kinds, naming what it accepts", () => {
+    const dir = tempDir("export-file-unknown-");
+    const badFile = resolve(dir, "not-a-book.dat");
+    writeFileSync(badFile, "not any of the accepted formats");
+
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", badFile]);
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain("not one of the kinds diya-gl reads");
+  });
+
+  it("refuses a diya-gl JSON at an unsupported version, naming the version found", async () => {
+    const firstOutput = tempDir("export-file-badversion-first-");
+    run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", firstOutput]);
+
+    const book = parseTOML(readFileSync(resolve(firstOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(firstOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const document = JSON.parse(writeBookJson(book, lines));
+    document.version = 2;
+
+    const dir = tempDir("export-file-badversion-src-");
+    const badPath = resolve(dir, "future.json");
+    writeFileSync(badPath, JSON.stringify(document));
+
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "bst", "--file", badPath]);
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain('"version": 1');
+    expect(err.stderr).toContain("found 2");
+  });
+});
+
 describe("package.json export-bst alias", () => {
   it("is --package bst --file, so npm run export-bst -- my-file.xlsx appends the file path", () => {
     const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));

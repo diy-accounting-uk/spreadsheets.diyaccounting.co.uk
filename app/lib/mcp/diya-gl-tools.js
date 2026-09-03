@@ -2,10 +2,12 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // diya-gl-tools.js — the four MCP tools, each a thin call into a function
-// phase 1 already tests: extract_book wraps export.js's --file pipeline,
+// phase 1 already tests: extract_book wraps export.js's --file pipeline
+// (books-interchange.js underneath, so every kind it reads loads here too),
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
-// and diya-gl-edits.js, save_workbook wraps bst-workbook.js. No engine code
-// lives here.
+// and diya-gl-edits.js, save_workbook wraps bst-workbook.js for a workbook
+// or package zip and books-interchange.js for the two diya-gl formats. No
+// engine code lives here.
 //
 // State: one loaded book per session (a plain object this module owns the
 // shape of), held in memory. extract_book replaces it outright. edit_lines
@@ -21,6 +23,7 @@
 import { resolve as resolvePath } from "path";
 import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
+import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
 import { saveBstWorkbook, saveBstPackageZip } from "../bst-workbook.js";
 import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../diya-gl-edits.js";
 import * as bst from "../../products/bst.js";
@@ -148,18 +151,27 @@ function editLines(session, { edit, params, book: explicitBook, lines: explicitL
 
 /**
  * save_workbook: D in (the session's loaded book, or an explicit {book,
- * lines}), a recalculating workbook or package zip out, as base64 alongside
- * its filename.
+ * lines}), one of four downloads out, as base64 alongside its filename: a
+ * recalculating workbook, its package zip, or D (and the R just computed
+ * from it) as a diya-gl zip or a single JSON file.
  */
 async function saveWorkbook(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
 
-  const format = params.format === "zip" ? "zip" : "xlsx";
+  const format = ["zip", "diya-gl-zip", "json"].includes(params.format) ? params.format : "xlsx";
   if (format === "zip") {
     const { zip, filename } = await saveBstPackageZip(book, lines);
     return { filename, format, base64: Buffer.from(zip).toString("base64") };
+  }
+  if (format === "diya-gl-zip") {
+    const zip = await writeDiyaGlZip({ book, lines, report: reportFor(book, lines) });
+    return { filename: "book-diya-gl.zip", format, base64: Buffer.from(zip).toString("base64") };
+  }
+  if (format === "json") {
+    const json = writeBookJson(book, lines);
+    return { filename: "book-diya-gl.json", format, base64: Buffer.from(json, "utf8").toString("base64") };
   }
   const { workbook, filename } = await saveBstWorkbook(book, lines);
   return { filename, format, base64: Buffer.from(workbook).toString("base64") };
@@ -215,11 +227,11 @@ export const TOOLS = {
   save_workbook: {
     name: "save_workbook",
     description:
-      "Write the session's currently loaded book into a Basic Sole Trader workbook (or its package zip), returned as base64 alongside its filename.",
+      "Write the session's currently loaded book into a Basic Sole Trader workbook, its package zip, a diya-gl zip (book.toml, lines.jsonl, report.json), or a single diya-gl JSON file, returned as base64 alongside its filename.",
     inputSchema: {
       type: "object",
       properties: {
-        format: { type: "string", enum: ["xlsx", "zip"], default: "xlsx" },
+        format: { type: "string", enum: ["xlsx", "zip", "diya-gl-zip", "json"], default: "xlsx" },
         book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
       },
