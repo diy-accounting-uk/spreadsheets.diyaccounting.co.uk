@@ -25,13 +25,19 @@
 // file calls them at import time, only inside the functions that stage a
 // workbook, so a bundle with no file system loads this module fine and
 // only throws if a caller actually reaches that path without one.
+//
+// overtype-sidecar.js is the one exception to a static import: it resolves
+// its template path from import.meta.url at its own module's top level, so
+// merely importing it -- not calling anything in it -- already fails under
+// a bundle's browser stubs for path/url. It is imported dynamically, inside
+// the one function that needs it, so loading this module never loads that
+// one until a workbook is actually read.
 
 import JSZip from "jszip";
-import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "fs";
+import { readFileSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
-import { join, resolve, basename } from "path";
+import { resolve, basename } from "path";
 import { validateBstAnchors, BstAnchorError, extractBstTransactions, extractBook, bstExtractionMap } from "./xlsx-exporter.js";
-import { overtypedCells } from "./overtype-sidecar.js";
 import { validateBook, validateLines } from "./diya-gl-schema.js";
 import { canonicalBookToml, canonicalLinesJsonl, compareLines, orderedBookTopLevel, orderedLine } from "./diya-gl-canonical.js";
 import { serializeReportDocument } from "./report-serializer.js";
@@ -166,12 +172,25 @@ export async function detectBookSource(bytes, name) {
 // readBookSource
 // ============================================================================
 
+// A fresh scratch directory name, not read back from the filesystem the way
+// mkdtempSync's own uniqueness check would (that call has no browser stub,
+// unlike the plain mkdirSync every other Node-only path in this pipeline
+// already uses) -- two callers landing on the same millisecond and the same
+// six-figure suffix is not a real risk for a directory this function alone
+// creates, writes one file into, and removes before returning.
+function freshStageDir() {
+  const unique = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
+  const stageDir = resolve(tmpdir(), `diya-gl-interchange-${unique}`);
+  mkdirSync(stageDir, { recursive: true });
+  return stageDir;
+}
+
 // extractBook() (xlsx-exporter.js) reads a workbook off a directory, not a
 // buffer, so a byte array reaching this path is staged into a scratch one
 // first, named the way the original upload was so nothing downstream that
 // happens to notice the filename sees anything odd.
 function stageWorkbookBytes(bytes, name) {
-  const stageDir = mkdtempSync(join(tmpdir(), "diya-gl-interchange-"));
+  const stageDir = freshStageDir();
   const fileName = name && /\.xlsx$/i.test(name) ? basename(name) : "workbook.xlsx";
   writeFileSync(resolve(stageDir, fileName), bytes);
   return stageDir;
@@ -181,7 +200,7 @@ async function stagePackageZipBytes(bytes) {
   const zip = await JSZip.loadAsync(bytes);
   const entryName = Object.keys(zip.files).find((name) => !zip.files[name].dir && name.toLowerCase().endsWith(".xlsx"));
   const buffer = await zip.file(entryName).async("uint8array");
-  const stageDir = mkdtempSync(join(tmpdir(), "diya-gl-interchange-"));
+  const stageDir = freshStageDir();
   writeFileSync(resolve(stageDir, basename(entryName)), buffer);
   return stageDir;
 }
@@ -198,6 +217,7 @@ async function readWorkbookSource(kind, bytes, name, deps) {
     const extractionMap = bstExtractionMap();
     const lines = await extractBstTransactions(workbook, extractionMap);
     const book = await extractBook(stageDir, "bst", lines, productMod.CELL_MAP);
+    const { overtypedCells } = await import("./overtype-sidecar.js");
     const overtyped = await overtypedCells(workbook, { extractionMap, reportLabels: productMod.cellLabels() });
 
     return { kind, book, lines, overtyped, workbookBytes: new Uint8Array(workbook) };

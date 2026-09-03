@@ -48,9 +48,13 @@ export {
 // book write the same report.json bytes.
 export { buildReportDocument, serializeReportDocument } from "./report-serializer.js";
 
-// The overtype sidecar: every template formula an upload carries as a typed
-// value instead of the sum the template computes.
-export { overtypedCells, BST_TEMPLATE_PATH } from "./overtype-sidecar.js";
+// overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
+// that module resolves its template path from import.meta.url at the top
+// level, outside any function, so merely importing it throws under the
+// bundle's browser stubs for path/url. Its own callers (export.js,
+// books-interchange.js, the MCP tools) reach it directly and stay off this
+// entry point, which is Node-only pipeline code with nothing bundle-side
+// depending on it yet.
 
 // Sniffing and reading any of the six kinds a byte array can be, and
 // writing D back out as a diya-gl zip or a single JSON file.
