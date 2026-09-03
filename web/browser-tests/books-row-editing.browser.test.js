@@ -279,8 +279,9 @@ test.describe("DIYA-GL books page — year table default columns", () => {
     await openBook(page);
     await enableAllCategories(page);
 
+    // The URL now carries the example as a deep link, so the reload loads
+    // the book by itself; there is no example button to click.
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
     await expect(page.locator(".year-table-scroll")).toBeVisible({ timeout: 30_000 });
 
     await expect(page.locator("#all-categories-toggle")).toBeChecked();
