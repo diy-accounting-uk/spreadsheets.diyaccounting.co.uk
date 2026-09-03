@@ -469,7 +469,11 @@
   // A quick, name-only shortcut for the one format every reader recognises
   // by its extension alone: the legacy .xls this pipeline has no reader
   // for regardless of what the bytes turn out to be. Everything else is
-  // sniffed by content in loadFromAnySource, never by name.
+  // sniffed by content in loadFromAnySource, never by name. Shared by the
+  // picker and the drop zone, so a .xls-named file gets the same message
+  // through either door.
+  var LEGACY_XLS_MESSAGE = "That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.";
+
   function isLegacyXlsName(name) {
     return /\.xls$/i.test(name);
   }
@@ -480,7 +484,7 @@
       var file = picker.files && picker.files[0];
       if (!file) return;
       if (isLegacyXlsName(file.name)) {
-        showEmptyStateMessage("That's the older .xls format. Open it in Excel or LibreOffice, save as .xlsx, and try again.", false);
+        showEmptyStateMessage(LEGACY_XLS_MESSAGE, false);
         picker.value = "";
         return;
       }
@@ -655,6 +659,10 @@
       if (!file) return;
       if (state.loaded) {
         showToast("Close this book first", { label: "Close this book", onClick: closeCurrentBook });
+        return;
+      }
+      if (isLegacyXlsName(file.name)) {
+        showEmptyStateMessage(LEGACY_XLS_MESSAGE, false);
         return;
       }
       loadFromAnySource(file);
