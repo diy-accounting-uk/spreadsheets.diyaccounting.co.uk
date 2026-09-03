@@ -15,7 +15,7 @@ join as `cell/… || section/…` on one attribute), T3 (`2267852d`; workbook ki
 Node in `readBookSource`, the page keeps its in-memory workbook reader), T14 (`2c3f5f75`; A3 carries
 a two-cell allowlist because `examples/bst-latest` predates the fixture's tax-table and description
 edits; the axe gate fails on `color-contrast` at three viewports until T13), T9 (`63ce7e64`; the strip
-module is built but not yet mounted in `bst.js`), R1 (`3a2192e2`).
+module is built but not yet mounted in `bst.js`), R1 (`3a2192e2`), T7 (`cdcc271c`; 46 page specs green).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -26,8 +26,8 @@ after each landing. No row waits on a merge.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | in-flight | Sonnet; next owner of `bst.js` |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
+| R5 | `extractBstTransactions` assigns `entryNumber` by row position, so a regenerate-then-re-extract cycle renumbers lines; decide whether the workbook can carry the entry number (E3's round trip normalises it today) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | found by T7; Sonnet |
 | R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the allowlist |
 | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
