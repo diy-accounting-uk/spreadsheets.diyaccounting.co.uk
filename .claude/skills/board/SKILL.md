@@ -13,7 +13,7 @@ plans of record (`PLAN_*.md` at the root) and `NEXT.md` are the only sources.
 
 One table, then at most two closing lines.
 
-| # | Item | Source | State | Status |
+| # | Item | Source | Owner | State | Unblocked by | Status |
 
 - `#`: the `NEXT.md` label where the entry carries one (a wave, a track id such as `T3`,
   a PR number); otherwise a running number in file order.
@@ -22,6 +22,9 @@ One table, then at most two closing lines.
   or `operator` for an instruction given in chat that no plan yet carries, or `none` for
   an item `NEXT.md` holds on its own. When a plan row is the direct result of an operator
   instruction, name the plan; the plan holds the assertion verbatim.
+- `Owner`: `human` for an activity only the operator can do (merge a PR, approve an AWS
+  write, review a design on sight, decide between named alternatives, run a command on a
+  host the session cannot reach) or `machine` for work a session or sub-agent does.
 - `State`: exactly one of six values, hyphenated so it stays one token:
   - `done` — finished in the current session, and only then.
   - `in-flight` — being worked right now by an agent or the operator.
@@ -37,12 +40,21 @@ One table, then at most two closing lines.
   `gh pr list` for the item's branch or PR before calling it resumable. Operator-owned
   work that could start today is `ready-to-start`, not blocked. Work the plan orders after
   another wave is `blocked-to-start` on that wave, and the status names it.
+- `Unblocked by`: for a blocked row, the row label(s) whose completion unblocks it, or the
+  date or decision it waits on; `—` for every other state.
 - `Status`: one clause, 12 words or fewer, current as of this render. Date-gated items
   name the date; blocked items name the blocker; in-flight items name the current step;
   done items name the commit. The narrative lives in `NEXT.md` and the plan, never here.
 
 One row per distinct piece of work: a `NEXT.md` bullet that bundles several waves or
 tracks becomes one row per wave, so an operator can see what can start or resume now.
+
+**Split human from machine.** When a machine task is blocked pending a human activity,
+render two rows: the human row (labelled with an `-h` suffix, `W0-h`) in its own state,
+and the machine row blocked on it with the human row in `Unblocked by`. The same split
+applies the other way: a wave's PR is machine work until it is ready, then the merge and
+any on-sight review is a human row that the next wave's machine row waits on. Never fold
+a human step into a machine row's status.
 
 ## Rules
 

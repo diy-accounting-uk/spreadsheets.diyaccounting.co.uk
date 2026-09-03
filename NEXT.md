@@ -12,15 +12,24 @@ five waves for concurrent sub-agents (T1–T15, tiers and file ownership per tas
 
 ## Open items
 
-- **Wave 0, first and as its own PR**: production cannot load a book. The site CSP forbids
+Each wave is machine work to a PR, then a human step (merge, and where named, a review)
+that the next wave waits on.
+
+- **W0 (machine, ready)**: production cannot load a book. The site CSP forbids
   `unsafe-eval` and the schema validator compiles with generated code; every load path on
   `https://spreadsheets.diyaccounting.co.uk/books/bst.html` fails while all 63 browser tests
   pass. T1 (precompiled validators in the bundle) and T2 (the test server sends production's
-  headers; the behaviour run opens the books page). Then deploy and confirm on the live page.
-- Waves 1–4 in the plan's order: engine foundations (T3 interchange formats, T4 headline
-  figures, T5 book checks and warnings, T10 render hooks), page features (T7 formats on the
-  page, T9 the strip with the two pies), verification and the UX pass (T13, T14), row editing
-  and the behaviour proofs (T11, T15).
+  headers; the behaviour run opens the books page), to a PR.
+- **W0-h (human)**: merge the W0 PR, let the deploy run, confirm the live page loads an
+  example. Unblocks W1.
+- **W1 (machine)**: T3 interchange formats, T4 headline figures, T5 book checks and
+  warnings, T10 render hooks. Waits on W0-h. **W1-h (human)**: merge. Unblocks W2.
+- **W2 (machine)**: T7 formats on the page, T9 the strip with the two pies. Waits on W1-h.
+  **W2-h (human)**: look at the strip at four viewports, then merge. Unblocks W3.
+- **W3 (machine)**: T13 the UX pass, T14 the equivalence suite. Waits on W2-h.
+  **W3-h (human)**: merge. Unblocks W4.
+- **W4 (machine)**: T11 date and account row editing, T15 edit and warning proofs. Waits on
+  W3-h. **W4-h (human)**: merge; run `test:spreadsheetsBehaviour-prod`.
 
 ## Plans not tracked here
 
