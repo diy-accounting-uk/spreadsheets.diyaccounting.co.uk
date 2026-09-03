@@ -51,22 +51,20 @@ describe("the three example books", () => {
     expect(summary).toEqual({ pass: 7, warn: 1, fail: 0 });
   });
 
-  it("SP Sixty Driving: one entry predates the declared period, the other checks and every warning pass", () => {
+  it("SP Sixty Driving: every entry sits inside the declared period, and every check and warning pass", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "sp-sixty-driving", "bst"));
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
 
     const datesCheck = resultFor(results, "book-dates-in-period");
-    expect(datesCheck.result).toBe("fail");
-    expect(datesCheck.actual).toBe(1);
-    expect(datesCheck.offenders).toHaveLength(1);
-    expect(datesCheck.offenders[0].entryNumber).toBe("TXN-0181");
-    expect(datesCheck.offenders[0].postingDate).toBe("2025-04-01");
+    expect(datesCheck.result).toBe("pass");
+    expect(datesCheck.actual).toBe(0);
+    expect(datesCheck.offenders).toHaveLength(0);
 
     expect(resultFor(results, "book-accounts-in-chart").result).toBe("pass");
     expect(resultFor(results, "book-amounts-whole-pence").result).toBe("pass");
     for (const id of WARNING_IDS) expect(resultFor(results, id).result, id).toBe("pass");
 
-    expect(summary).toEqual({ pass: 7, warn: 0, fail: 1 });
+    expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
   });
 
   it("BrickWork Pro (non-VAT): every check and every warning pass", () => {
