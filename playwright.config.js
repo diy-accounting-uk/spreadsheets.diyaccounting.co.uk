@@ -21,6 +21,7 @@ export default defineConfig({
         "**/spreadsheets-content.browser.test.js",
         "**/books-bst.browser.test.js",
         "**/books-bst-edits.browser.test.js",
+        "**/books-warnings.browser.test.js",
         "**/books-bundle-gate.browser.test.js",
         "**/books-save.browser.test.js",
         "**/books-empty-state.browser.test.js",
