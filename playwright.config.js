@@ -27,6 +27,7 @@ export default defineConfig({
         "**/books-render-coverage.browser.test.js",
         "**/books-equivalence.browser.test.js",
         "**/books-layouts.browser.test.js",
+        "**/books-headlines.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",

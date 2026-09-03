@@ -1602,3 +1602,340 @@ table.kv-table tr.total td {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* headlines */
+/* books/headlines.js -- the "year at a glance" strip: four stat tiles, two
+   pies and the collapsible "through the year" charts. One hue, the site's
+   teal, stepped light to dark from the largest slice.
+
+   Palette validated with the dataviz skill's validate_palette.js in
+   --ordinal mode (light surface #ffffff, dark surface #182424 -- this
+   page's --paper-raised in each mode), five steps, hue 195:
+
+     light: #034040,#045858,#057676,#079a9a,#08c4c5
+       Lightness monotone  PASS  steps read light -> dark
+       Adjacent DL         PASS  all gaps >= 0.06
+       Light-end contrast  PASS  #08c4c5 at 2.16:1 vs #ffffff
+       Single hue          PASS  hue spread 1deg
+       -> ALL CHECKS PASS
+
+     dark:  #045f5f,#057e7e,#07a3a4,#09cfd0,#1ffcfb
+       Lightness monotone  PASS  steps read light -> dark
+       Adjacent DL         PASS  all gaps >= 0.06
+       Light-end contrast  PASS  #045f5f at 2.13:1 vs #182424
+       Single hue          PASS  hue spread 1deg
+       -> ALL CHECKS PASS
+
+   Six steps failed the dark-mode ramp's adjacent-gap check at this hue (the
+   sRGB gamut for teal narrows sharply below OKLCH L ~0.6, so six steps
+   packed into the reachable range sit too close together) -- the cap
+   dropped to five, and headlines.js folds a sixth outgoings-pie slice into
+   "Other" before assigning colour, per the module's capSlicesForPalette(). */
+
+:root {
+  --headline-pie-1: #034040; /* largest slice */
+  --headline-pie-2: #045858;
+  --headline-pie-3: #057676;
+  --headline-pie-4: #079a9a;
+  --headline-pie-5: #08c4c5; /* smallest slice, and "Other" */
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --headline-pie-1: #045f5f;
+    --headline-pie-2: #057e7e;
+    --headline-pie-3: #07a3a4;
+    --headline-pie-4: #09cfd0;
+    --headline-pie-5: #1ffcfb;
+  }
+}
+:root[data-theme="dark"] {
+  --headline-pie-1: #045f5f;
+  --headline-pie-2: #057e7e;
+  --headline-pie-3: #07a3a4;
+  --headline-pie-4: #09cfd0;
+  --headline-pie-5: #1ffcfb;
+}
+
+.headlines-strip {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-faint);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 1rem 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* -- tiles -- */
+
+.headline-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 899px) {
+  .headline-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 479px) {
+  .headline-tiles {
+    grid-template-columns: 1fr;
+  }
+}
+.headline-tile-label {
+  font-size: 0.8rem;
+  color: var(--pencil);
+}
+.headline-tile-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: proportional-nums;
+}
+.headline-tile-sub {
+  font-size: 0.76rem;
+  color: var(--pencil);
+  margin-top: 0.15rem;
+}
+
+/* -- pies -- */
+
+.headline-pies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+.headline-pie-block {
+  flex: 1 1 320px;
+  min-width: 280px;
+  position: relative;
+}
+.headline-pie-block h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+.headline-pie-reason {
+  font-size: 0.8rem;
+  color: var(--pencil);
+  margin: 0 0 0.5rem;
+}
+.headline-pie-svg {
+  width: 100%;
+  max-width: 320px;
+  min-width: 240px;
+  height: auto;
+  display: block;
+}
+.headline-pie-svg path {
+  transition: opacity 0.15s ease;
+}
+.headline-pie-svg path.is-dimmed {
+  opacity: 0.45;
+}
+.headline-pie-leader {
+  stroke: var(--pencil);
+  stroke-width: 1;
+}
+.headline-pie-direct-label {
+  font-size: 12px;
+  fill: var(--ink);
+  font-family: var(--font-ui);
+}
+.headline-bar-svg {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.headline-bar-svg rect {
+  transition: opacity 0.15s ease;
+}
+.headline-bar-svg rect.is-dimmed {
+  opacity: 0.55;
+}
+
+.headline-legend {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.headline-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.headline-legend-item:hover,
+.headline-legend-item.is-active {
+  background: var(--tint);
+}
+.headline-legend-item.is-dimmed {
+  opacity: 0.55;
+}
+.headline-legend-swatch {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  border-radius: 2px;
+  flex: none;
+}
+.headline-legend--static {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  font-size: 0.78rem;
+  color: var(--pencil);
+  margin-top: 0.5rem;
+}
+.headline-legend--static .headline-legend-swatch {
+  margin-right: 0.3em;
+  vertical-align: -1px;
+}
+
+.headline-table-toggle {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.75rem;
+  min-height: 44px;
+  border: 2px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--rule);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.headline-table-toggle:hover {
+  background: var(--tint);
+}
+.headline-pie-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+}
+.headline-pie-table th,
+.headline-pie-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--rule-faint);
+  text-align: left;
+}
+.headline-pie-table td {
+  text-align: right;
+  font-family: var(--font-mono);
+}
+.headline-pie-table th[scope="row"] {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  text-align: left;
+}
+
+.headline-tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  font-size: 0.76rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  margin-top: -6px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -- through the year -- */
+
+.headline-through-year {
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--rule-faint);
+  padding-top: 0.75rem;
+}
+.headline-through-year summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 0.35rem 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.headline-through-year-body {
+  margin-top: 0.5rem;
+}
+.headline-chart-block {
+  margin-bottom: 1.5rem;
+}
+.headline-chart-block h4 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+  color: var(--ink-faint);
+}
+.headline-chart-scroll {
+  overflow-x: auto;
+}
+/* The monthly columns chart carries twelve categories and stays legible
+   scrolled on a mobile card (min-width holds it at its native size,
+   .headline-chart-scroll gives it a horizontal scrollbar rather than
+   shrinking its labels below 11px) -- the same trade-off the year table
+   makes elsewhere in this app. */
+.headline-chart-svg {
+  display: block;
+  width: 100%;
+  min-width: 480px;
+  height: auto;
+}
+/* The outgoings bar and the cumulative-profit line carry far less per
+   row and are sized to fit a mobile card without scrolling at all. */
+.headline-chart-svg--compact {
+  min-width: 0;
+  max-width: 420px;
+}
+.headline-chart-label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  fill: var(--ink);
+}
+.headline-chart-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  fill: var(--pencil);
+}
+.headline-chart-zero-line {
+  stroke: var(--rule-faint);
+  stroke-width: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .headline-pie-svg path,
+  .headline-bar-svg rect {
+    transition: none !important;
+  }
+}
