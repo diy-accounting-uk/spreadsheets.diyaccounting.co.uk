@@ -462,9 +462,8 @@ environment (`deploy.yml` dispatched on the branch) after each landing, and the 
 run against `ci-spreadsheets.diyaccounting.co.uk` is where the books page proves it loads.
 Nothing waits on a merge. The waves below group tasks by kind; the precursors on the board
 in `NEXT.md` (one row per task, ids as here) are the only gates. The one real serialiser is
-`bst.js`: T10, then T7, then T13, then T11 own it in turn. Two human activities: the
-operator's look at the strip on the ci deploy (before T13) and the merge of the batch to
-main at the end, which no task waits on.
+`bst.js`: T10, then T7, then T13, then T11 own it in turn. Every gate is a pipeline check;
+the only human step is the merge of the batch to main at the end, which no task waits on.
 
 ### Wave 0 — production loads a book again (first on the branch)
 
@@ -474,8 +473,8 @@ main at the end, which no task waits on.
 | **T2 headers in tests and the prod probe** | Sonnet | `infra/main/resources/security-headers.json`, `SpreadsheetsStack.java` (read the file), `web/browser-tests/serve.js` (one server for all books specs), `behaviour-tests/spreadsheets.behaviour.test.js` | one source for the security headers; every books spec served with them; the behaviour run loading an example on the books page and reading the headline tiles (until T9 lands: the year total) | the pre-T1 bundle fails `test:browser` under the new server, the post-T1 bundle passes; `./mvnw clean verify` and `cdk:synth` green with the header string unchanged |
 
 T1 and T2 are disjoint and run concurrently. The wave closes with `test:browser`, `npm
-test`, and the branch deploy; the behaviour run against ci confirms the page loads an
-example.
+test`, and the branch deploy; T2's behaviour probe against ci is the check that the page
+loads an example.
 
 ### Wave 1 — engine foundations (Node-side, no page behaviour)
 
@@ -494,10 +493,10 @@ when T3 lands first. T10 is the only wave-1 task in `bst.js`.
 | Task | Tier | Owns | Delivers | Rung |
 |---|---|---|---|---|
 | **T7 formats on the page** | Sonnet | `bst.js` (load and save paths), `bst-data.js`, `save.js`, `bst.html`, the empty-state CSS block in `bst.css` | the drop zone with its states and refusals, the picker widened, every load through `books-interchange.js`, the two new downloads, `window.DIYA_BST_SNAPSHOT.report` | the six byte kinds through picker and drop each land the same `D`; the diya-gl zip download equals `export.js --file` on the same workbook byte-for-byte; the refusal copy matches the spec |
-| **T9 the strip** | Opus | new `web/.../books/headlines.js`, a `headlines` section appended to `bst.css`, the two chart functions moved out of `bst.js` into the module (coordinator applies the one-line mount in `bst.js`) | the four tiles, the two pies, the table alternatives, the redrawn bar and monthly charts, the palette validated in both modes with the dataviz validator, four-viewport screenshots reviewed by the operator | the tiles carry `headline/` keys equal to `bst-headlines.js` over S2; slices sum to the tile; a book with a net loss renders the stacked bar; axe clean on the strip |
+| **T9 the strip** | Opus | new `web/.../books/headlines.js`, a `headlines` section appended to `bst.css`, the two chart functions moved out of `bst.js` into the module (coordinator applies the one-line mount in `bst.js`) | the four tiles, the two pies, the table alternatives, the redrawn bar and monthly charts, the palette validated in both modes with the dataviz validator, four-viewport screenshots of the strip captured as CI artefacts | the tiles carry `headline/` keys equal to `bst-headlines.js` over S2; slices sum to the tile; a book with a net loss renders the stacked bar; axe clean on the strip |
 
-Disjoint files except the mount line. Wave 2's closing ladder adds the operator's look at
-the strip at four viewports before wave 3 starts; the identity was rejected once on sight.
+Disjoint files except the mount line. The strip's four-viewport screenshots land as CI
+artefacts on every run, so a look at them costs a click and never gates a task.
 
 ### Wave 3 — verification and the UX pass
 

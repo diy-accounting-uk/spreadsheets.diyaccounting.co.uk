@@ -49,6 +49,10 @@ row's detail lives; the board carries enough to act on without opening it.
 
 - One row per discrete task. When a plan defines tasks, the board carries one row per
   task, never one per wave or bullet; grouping is visible through `Precursors`.
+- Verification is never a human row. Confirming a deploy, checking a page loads, looking
+  at a render: each is a pipeline check (a behaviour probe, a screenshot artefact, an axe
+  gate) inside the machine row that produces it. A human row exists only for an action
+  the session may not take: merge a PR, write to AWS, decide between named alternatives.
 - Split human from machine. A machine task blocked pending a human activity is two rows:
   the human row in its own state, and the machine row naming it in `Precursors`. A batch's
   merge, and any on-sight review, is a human row that the rows after it name.

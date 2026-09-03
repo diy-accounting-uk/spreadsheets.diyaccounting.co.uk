@@ -17,19 +17,17 @@ after each landing. No row waits on a merge.
 |---|---|---|---|---|---|---|
 | T1 | CSP-safe validation: precompiled schema validators in the bundle | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | production cannot load a book; Sonnet |
 | T2 | Production security headers in the test server; prod behaviour probe | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | disjoint from T1; Sonnet |
-| H1 | Confirm the ci deploy loads an example after T1/T2 land | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T1, T2 | blocked-to-start | ci behaviour run covers it too |
 | T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus |
 | T4 | Headline figures module | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | T5 | Book checks and warnings module, three-state verdicts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; rebases onto T3 for the MCP file |
 | T10 | Render hooks (`data-r-key`) and the declared-absence file | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; first owner of `bst.js` |
 | T7 | Formats on the page: drop zone, widened picker, two new downloads | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T3, T10 | blocked-to-start | Sonnet; next owner of `bst.js` |
-| T9 | The strip: four tiles, two pies, redrawn charts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T4 | blocked-to-start | Opus; palette validated both modes |
-| H2 | Look at the strip at four viewports | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T9 | blocked-to-start | identity was rejected on sight once |
+| T9 | The strip: four tiles, two pies, redrawn charts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T4 | blocked-to-start | Opus; four-viewport screenshots as CI artefacts, axe gate |
 | T14 | The equivalence suite (A1–A7, E3–E6), axe at four viewports | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T10 | blocked-to-start | Sonnet; rebases as T13 moves the page |
-| T13 | The UX pass: nine changes plus the view corrections | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T7, T9, H2 | blocked-to-start | Opus; owns the page files |
+| T13 | The UX pass: nine changes plus the view corrections | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T7, T9 | blocked-to-start | Opus; owns the page files |
 | T11 | Date and account editing on entry rows | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | blocked-to-start | Sonnet |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| H3 | Merge the batch PR to main; run `test:spreadsheetsBehaviour-prod` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
+| H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
