@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
@@ -192,10 +191,8 @@ public class SpreadsheetsStack extends Stack {
         // web/browser-tests/serve.js. The CSP allows PayPal Donate SDK and self.
         JsonNode securityHeaders = loadSecurityHeaders();
         List<ResponseCustomHeader> customHeaders = new ArrayList<>();
-        Iterator<Map.Entry<String, JsonNode>> customHeaderFields =
-                securityHeaders.get("customHeaders").fields();
-        while (customHeaderFields.hasNext()) {
-            Map.Entry<String, JsonNode> field = customHeaderFields.next();
+        for (Map.Entry<String, JsonNode> field :
+                securityHeaders.get("customHeaders").properties()) {
             customHeaders.add(ResponseCustomHeader.builder()
                     .header(field.getKey())
                     .value(field.getValue().asText())
@@ -218,15 +215,15 @@ public class SpreadsheetsStack extends Stack {
                         .build())
                 .securityHeadersBehavior(ResponseSecurityHeadersBehavior.builder()
                         .contentSecurityPolicy(ResponseHeadersContentSecurityPolicy.builder()
-                                .contentSecurityPolicy(
-                                        securityHeaders.get("contentSecurityPolicy").asText())
+                                .contentSecurityPolicy(securityHeaders
+                                        .get("contentSecurityPolicy")
+                                        .asText())
                                 .override(true)
                                 .build())
                         .strictTransportSecurity(ResponseHeadersStrictTransportSecurity.builder()
-                                .accessControlMaxAge(Duration.seconds(
-                                        securityHeaders
-                                                .get("strictTransportSecurityMaxAgeSeconds")
-                                                .asLong()))
+                                .accessControlMaxAge(Duration.seconds(securityHeaders
+                                        .get("strictTransportSecurityMaxAgeSeconds")
+                                        .asLong()))
                                 .includeSubdomains(securityHeaders
                                         .get("strictTransportSecurityIncludeSubdomains")
                                         .asBoolean())
@@ -249,8 +246,7 @@ public class SpreadsheetsStack extends Stack {
                                 .override(true)
                                 .build())
                         .xssProtection(ResponseHeadersXSSProtection.builder()
-                                .protection(
-                                        securityHeaders.get("xssProtection").asBoolean())
+                                .protection(securityHeaders.get("xssProtection").asBoolean())
                                 .modeBlock(securityHeaders
                                         .get("xssProtectionModeBlock")
                                         .asBoolean())
