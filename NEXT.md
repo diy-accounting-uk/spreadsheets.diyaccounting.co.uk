@@ -15,7 +15,7 @@ plan of record, drafted 2026-09-03 with sources; its decisions are the operator'
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T16 | Deep links into the example data sets: `books/bst.html?example=<id>` loads that example on arrival (`bst-scenario-basic`, `bst-brickwork-pro-nonvat`, `bst-sp-sixty`, the ids the example buttons already carry as `data-example`), optionally `&view=<data-view id>` and `&month=YYYY-MM` to land on a view or an open month; an unknown id shows the empty state with a plain message; the URL updates as the user switches views so a link can be copied back out; a spec proves each | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; a PR |
+| T16 | Deep links into the example data sets: `books/bst.html?example=<id>` loads that example on arrival (`bst-scenario-basic`, `bst-brickwork-pro-nonvat`, `bst-sp-sixty`, the ids the example buttons already carry as `data-example`), optionally `&view=<data-view id>` and `&month=YYYY-MM` to land on a view or an open month; an unknown id shows the empty state with a plain message; the URL updates as the user switches views so a link can be copied back out; a spec proves each | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet; a PR |
 | L1 | Take the seven decisions in `PLAN_DIYA_GL_LAUNCH.md` ("Decisions for the operator"): Cognito tier, sign-in domain, where the runner builds, the next product, when to apply for Income Tax recognition, the Rust port, the company's VAT position | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | the plan's phases start from these |
 ## Plans not tracked here
 
