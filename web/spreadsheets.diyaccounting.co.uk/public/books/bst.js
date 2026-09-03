@@ -1664,21 +1664,25 @@
   // prints (row.cell), reaching this page unchanged in SNAPSHOT.sa103s. This
   // names the section row each cell reprints (CELL_MAP); box 50 (Business
   // premises renovation allowance) carries no cell of its own and gets no key.
-  var SE_SHORT_ROW_SLUG_BY_CELL = {
-    D38: "turnover",
-    D46: "cost-of-goods",
-    D51: "motor-travel-expenses",
-    D55: "employee-costs",
-    D60: "premises-costs",
-    D64: "repairs-maintenance",
-    D71: "net-profit-loss",
-    O71: "net-loss-box-21",
-    D80: "capital-allowances",
-    O80: "wda-capital-allowance-claimed",
-    O85: "balancing-charge",
-    D99: "taxable-profit",
-    O94: "loss-brought-forward-box-28",
-    O99: "other-business-income-box-29",
+  // buildSa103s() (bst-data.js) drops SA103S_LAYOUT's own "cell" field on
+  // its way into the snapshot, keeping the box number -- so this keys off
+  // the box instead, carrying the same cell + row slug that field named.
+  // Box 50 (Business premises renovation allowance) carries no cell.
+  var SA103S_BOX_R_KEY = {
+    8: ["D38", "turnover"],
+    16: ["D46", "cost-of-goods"],
+    19: ["D51", "motor-travel-expenses"],
+    20: ["D55", "employee-costs"],
+    21: ["D60", "premises-costs"],
+    23: ["D64", "repairs-maintenance"],
+    31: ["D71", "net-profit-loss"],
+    32: ["O71", "net-loss-box-21"],
+    49: ["D80", "capital-allowances"],
+    51: ["O80", "wda-capital-allowance-claimed"],
+    52: ["O85", "balancing-charge"],
+    57: ["D99", "taxable-profit"],
+    70: ["O94", "loss-brought-forward-box-28"],
+    71: ["O99", "other-business-income-box-29"],
   };
 
   function renderSa103sForm() {
@@ -1694,8 +1698,8 @@
             "</h3>" +
             section.rows
               .map(function (r) {
-                var rowSlug = r.cell ? SE_SHORT_ROW_SLUG_BY_CELL[r.cell] : null;
-                var attr = rowSlug ? rk2("SE Short", r.cell, "self-assessment-sa103s", rowSlug) : "";
+                var boxKey = SA103S_BOX_R_KEY[r.box];
+                var attr = boxKey ? rk2("SE Short", boxKey[0], "self-assessment-sa103s", boxKey[1]) : "";
                 return (
                   '<div class="form-row' +
                   (r.total ? " total-row" : "") +

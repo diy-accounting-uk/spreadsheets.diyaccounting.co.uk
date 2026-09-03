@@ -24,6 +24,7 @@ export default defineConfig({
         "**/books-bundle-gate.browser.test.js",
         "**/books-save.browser.test.js",
         "**/books-empty-state.browser.test.js",
+        "**/books-render-coverage.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",
