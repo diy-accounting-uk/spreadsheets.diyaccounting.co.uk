@@ -1,18 +1,35 @@
 {
   "product": "bst",
   "verdict": "pass",
-  "summary": "The accounts read as a credible set for an IT consultancy sole trader: £409,900 turnover spread sensibly across twelve months, all fourteen purchase codes landing in cost of sales, direct costs or the expense lines, capital spend of £39,000 excluded from the P&L and fully relieved by AIA, and income tax plus Class 4 NI at plausible amounts for a £294,908 taxable profit. A few presentational oddities are noted but none block the run.",
+  "summary": "Indicators agree with the headline: no VAT boxes for an unregistered trader, tax charged on a positive taxable profit, capital allowances match the capitalised spend, and the profit bridge residue is zero. Only minor notes on the nil personal allowance and the unsettled debtor balance.",
   "concerns": [
     {
-      "figure": "Income Tax £0 alongside \"Tax at basic rate\" £105,395 (Profit & Loss Acc C30/C32)",
-      "where": "Profit & Loss Account, Income Tax and Tax at basic rate lines",
-      "why": "The P&L shows Income Tax as zero while the line labelled \"Tax at basic rate\" carries the full £105,395 of income tax (basic plus higher band). The total tax deducted is right, but the labelling misplaces the figure and a reader would read the tax charge as nil on the face of the P&L.",
+      "figure": "Personal allowance 0.00",
+      "where": "Income tax indicator",
+      "why": "Consistent with taper at £226,508 income, but worth a glance that the allowance is deliberately nil rather than unpopulated.",
       "severity": "note"
     },
     {
-      "figure": "SA103S \"AIA / WDA claimed\" £0 and \"WDA + Capital Allowance claimed\" £0 (SE Short D85/O80)",
-      "where": "Self Assessment (SA103S) section",
-      "why": "The fixed asset schedule and P&L both show £39,000 of AIA claimed, and SA103S box D80 carries capital allowances of £39,000, but the AIA/WDA boxes on the return read zero. Worth checking the return would be filed with the allowance in the correct box.",
+      "figure": "Debtors 420,700.00 vs sales invoiced 409,900.00",
+      "where": "Debtors and creditors indicator",
+      "why": "Debtors exceed the year's sales; explained by the stated opening balance and no settlements recorded, so behavioural rather than wrong.",
+      "severity": "note"
+    }
+  ],
+  "model": "anthropic.claude-opus-5",
+  "region": "us-east-1",
+  "digestHash": "2a6089c4f0248e89307299defab9e867f1ade0758d079f326aef1d07414d7035",
+  "runs": [
+    {
+      "file": "GB_Accounts_Basic_Sole_Trader_2027_04_05__Apr27__Excel_2007_bst-scenario-basic.md",
+      "scenario": "bst-scenario-basic",
+      "yearEnd": "2027-04-05",
+      "status": "RECONCILES"
+    }
+  ],
+  "timestamp": "2026-09-03T20:55:00.185Z"
+}
+but the AIA/WDA boxes on the return read zero. Worth checking the return would be filed with the allowance in the correct box.",
       "severity": "note"
     },
     {
