@@ -46,6 +46,8 @@
     openHelper: null,
     addDraft: {},
     focusEntry: null,
+    focusField: null,
+    allCategories: false,
     committing: false,
   };
 
@@ -72,6 +74,7 @@
     els.undoBtnMobile = document.getElementById("undo-btn-mobile");
     els.drawerToggleBtn = document.getElementById("drawer-toggle-btn");
 
+    state.allCategories = loadAllCategoriesPreference();
     renderSheetTabs();
     bindGlobalControls();
     render();
@@ -277,10 +280,15 @@
 
   // A commit re-renders the whole grid, so the row the reader was working in
   // gets its caret back rather than the page losing focus to the body.
+  // state.focusField names which of the row's three edit controls to
+  // return to; it defaults to the amount input, the first one this page had.
+  var FOCUS_FIELD_ATTR = { amount: "data-amount-entry", date: "data-date-entry", account: "data-account-entry" };
   function restoreEditFocus() {
     if (!state.focusEntry) return;
-    var input = els.viewRoot.querySelector('[data-amount-entry="' + state.focusEntry + '"]');
+    var attr = FOCUS_FIELD_ATTR[state.focusField] || FOCUS_FIELD_ATTR.amount;
+    var input = els.viewRoot.querySelector("[" + attr + '="' + state.focusEntry + '"]');
     state.focusEntry = null;
+    state.focusField = null;
     if (input) input.focus();
   }
 
@@ -1050,13 +1058,82 @@
     );
   }
 
+  // Twelve category columns plus the three computed subtotals fit no
+  // desktop landscape width without an overflow, so the table shows five by
+  // default (Month, Sales, Cost of Sales, Total Expenses, Net Profit) and
+  // folds the rest behind an "All categories" toggle. The eleven expense
+  // columns (Employee Costs through Other Expenses) answer that toggle; Cost
+  // of Sales' own two component cells (C6 stock-and-direct, C7 direct costs)
+  // and the Gross Profit subtotal stay hidden always, because the visible
+  // Cost of Sales column already carries their sum. Every hidden column is
+  // still in the DOM -- CSS hides it, the markup never drops it -- so its
+  // r-key stays where the render-coverage and equivalence sweeps expect it,
+  // and the composite column (no single cell holds C6+C7's sum) is appended
+  // after all seventeen category columns rather than spliced among them, so
+  // none of their positions move.
+  var YEAR_TABLE_TOGGLE_KEYS = {
+    employeeCosts: 1,
+    premisesCosts: 1,
+    repairs: 1,
+    generalAdmin: 1,
+    motorExpenses: 1,
+    travel: 1,
+    advertising: 1,
+    legalProfessional: 1,
+    badDebts: 1,
+    interestFinance: 1,
+    otherExpenses: 1,
+  };
+  var YEAR_TABLE_ALWAYS_HIDDEN_KEYS = { costOfSales: 1, directCosts: 1, grossProfit: 1 };
+
+  function yearTableColumns() {
+    var cols = SNAPSHOT.categories.map(function (c) {
+      var visibility = YEAR_TABLE_ALWAYS_HIDDEN_KEYS[c.key] ? "always" : YEAR_TABLE_TOGGLE_KEYS[c.key] ? "toggle" : "default";
+      return { key: c.key, label: c.label, computed: c.computed, visibility: visibility };
+    });
+    cols.push({ key: "costOfSalesComposite", label: "Cost of Sales", computed: true, visibility: "default", composite: true });
+    return cols;
+  }
+
+  function yearColClass(c) {
+    var classes = [];
+    if (c.computed) classes.push("col-computed");
+    if (c.visibility === "always") classes.push("col-hidden-always");
+    if (c.visibility === "toggle") classes.push("col-toggle");
+    return classes.join(" ");
+  }
+
+  function yearColValue(c, row) {
+    return c.composite ? row.costOfSales + row.directCosts : row[c.key];
+  }
+
+  function allCategoriesVisible() {
+    return !!state.allCategories;
+  }
+
+  function loadAllCategoriesPreference() {
+    try {
+      return window.localStorage.getItem("diya-books-all-categories") === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function saveAllCategoriesPreference(value) {
+    try {
+      window.localStorage.setItem("diya-books-all-categories", value ? "true" : "false");
+    } catch (e) {
+      /* private browsing or storage disabled: the toggle just won't persist */
+    }
+  }
+
   function renderYearTableScroll() {
-    var cats = SNAPSHOT.categories;
+    var cats = yearTableColumns();
     var head =
       "<tr><th>Month</th>" +
       cats
         .map(function (c) {
-          return '<th class="' + (c.computed ? "col-computed" : "") + '">' + esc(c.label) + "</th>";
+          return '<th class="' + yearColClass(c) + '">' + esc(c.label) + "</th>";
         })
         .join("") +
       "</tr>";
@@ -1068,7 +1145,7 @@
         var cells = cats
           .map(function (c) {
             var attr = c.key === "sales" ? monthlySalesRk(m.label) : "";
-            return '<td class="' + (c.computed ? "col-computed" : "") + '"' + attr + ">" + fmtMoney(row[c.key]) + "</td>";
+            return '<td class="' + yearColClass(c) + '"' + attr + ">" + fmtMoney(yearColValue(c, row)) + "</td>";
           })
           .join("");
         var mainRow =
@@ -1099,13 +1176,20 @@
       "<tr><th>Year total</th>" +
       cats
         .map(function (c) {
-          return '<td class="' + (c.computed ? "col-computed" : "") + '"' + plAnnualRk(c.key) + ">" + fmtMoney(a[c.key]) + "</td>";
+          var attr = c.composite ? "" : plAnnualRk(c.key);
+          return '<td class="' + yearColClass(c) + '"' + attr + ">" + fmtMoney(yearColValue(c, a)) + "</td>";
         })
         .join("") +
       "</tr>";
 
     return (
-      '<div class="year-table-scroll"><table class="year-table"><thead>' +
+      '<div class="year-table-controls"><label class="all-categories-toggle">' +
+      '<input type="checkbox" id="all-categories-toggle"' +
+      (allCategoriesVisible() ? " checked" : "") +
+      " /> All categories</label></div>" +
+      '<div class="year-table-scroll' +
+      (allCategoriesVisible() ? " show-all-categories" : "") +
+      '"><table class="year-table"><thead>' +
       head +
       "</thead><tbody>" +
       rows +
@@ -1202,19 +1286,71 @@
   }
 
   // A reader knows "Advertising", not 5500, so the name leads and the code
-  // follows it in small text.
+  // follows it in small text. A line the edit functions cannot name on its
+  // own (see entryAmountCell) keeps the display only, with no picker to post
+  // it under the wrong entry's number.
   function entryAccountCell(r, journal) {
     var description = accountDescription(journal, r.account);
-    return (
-      "<td>" +
+    var display =
       (description ? '<span class="entry-account-name">' + esc(description) + "</span>" : "") +
       '<span class="entry-account-code">' +
       esc(r.account) +
       "</span>" +
       (r.posted
         ? ""
-        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
-      "</td>"
+        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>');
+    if (!r.addressable) return "<td>" + display + "</td>";
+
+    var accounts = (SNAPSHOT.chart && SNAPSHOT.chart[journal]) || [];
+    var inChart = accounts.some(function (a) {
+      return a.code === String(r.account);
+    });
+    // An entry already posted outside the chart (an import, not this page's
+    // own add row -- that only ever offers chart codes) keeps its own value
+    // as the select's first option, so opening the picker never silently
+    // reassigns it to whichever account sorts first.
+    var options =
+      (inChart ? "" : '<option value="' + esc(r.account) + '" selected>' + esc(r.account) + " — outside chart</option>") +
+      accounts
+        .map(function (account) {
+          return (
+            '<option value="' +
+            esc(account.code) +
+            '"' +
+            (inChart && String(r.account) === account.code ? " selected" : "") +
+            ">" +
+            esc(account.code + " — " + account.description) +
+            "</option>"
+          );
+        })
+        .join("");
+    return (
+      "<td>" +
+      display +
+      '<select class="entry-account-select" data-account-entry="' +
+      esc(r.entryNumber) +
+      '" aria-label="Account for entry ' +
+      esc(r.entryNumber) +
+      '">' +
+      options +
+      "</select></td>"
+    );
+  }
+
+  // The posting date, editable the same way as the account: a real date
+  // input rather than a picker of period-legal choices, because a date
+  // outside the accounting period is exactly what book-dates-in-period has
+  // to be able to catch when a reader types one in.
+  function entryDateCell(r) {
+    if (!r.addressable) return "<td>" + esc(r.date) + "</td>";
+    return (
+      '<td><input type="date" class="entry-date-input" data-date-entry="' +
+      esc(r.entryNumber) +
+      '" aria-label="Date for entry ' +
+      esc(r.entryNumber) +
+      '" value="' +
+      esc(r.date) +
+      '" /></td>'
     );
   }
 
@@ -1225,9 +1361,8 @@
       (r.posted ? "" : " is-unposted") +
       '" data-entry="' +
       esc(r.entryNumber) +
-      '"><td>' +
-      r.date.slice(5) +
-      "</td>" +
+      '">' +
+      entryDateCell(r) +
       entryAccountCell(r, journal) +
       '<td><span class="entry-detail" title="' +
       esc(detail) +
@@ -1393,6 +1528,14 @@
         render();
       });
     }
+    var allCategoriesToggle = document.getElementById("all-categories-toggle");
+    if (allCategoriesToggle) {
+      allCategoriesToggle.addEventListener("change", function () {
+        state.allCategories = allCategoriesToggle.checked;
+        saveAllCategoriesPreference(state.allCategories);
+        render();
+      });
+    }
     Array.prototype.forEach.call(els.viewRoot.querySelectorAll(".month-card-head"), function (head) {
       head.addEventListener("click", function () {
         var key = head.closest(".month-card").getAttribute("data-month-card");
@@ -1444,12 +1587,68 @@
         }
         input.setAttribute("data-dirty", "false");
         state.focusEntry = entryNumber;
+        state.focusField = "amount";
         commit(
           function () {
             return window.DiyaGlBooksEdits.changeAmount(state.book, state.lines, entryNumber, amount);
           },
           "change " + entryNumber + " to " + fmtMoney(amount),
           "Changed " + entryNumber + " to " + fmtMoney(amount) + ".",
+        );
+      });
+    });
+
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-date-entry]"), function (input) {
+      var entryNumber = input.getAttribute("data-date-entry");
+      var committed = input.value;
+      input.addEventListener("input", function () {
+        input.setAttribute("data-dirty", input.value === committed ? "false" : "true");
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          input.blur();
+        }
+        if (e.key === "Escape") {
+          input.value = committed;
+          input.setAttribute("data-dirty", "false");
+        }
+      });
+      input.addEventListener("change", function () {
+        var newDate = input.value;
+        if (!newDate) {
+          input.value = committed;
+          showToast("That is not a date. The line is unchanged.");
+          return;
+        }
+        if (newDate === committed) return;
+        input.setAttribute("data-dirty", "false");
+        state.focusEntry = entryNumber;
+        state.focusField = "date";
+        commit(
+          function () {
+            return window.DiyaGlBooksEdits.changeDate(state.book, state.lines, entryNumber, newDate);
+          },
+          "change " + entryNumber + "'s date to " + newDate,
+          "Changed " + entryNumber + "'s date to " + newDate + ".",
+        );
+      });
+    });
+
+    Array.prototype.forEach.call(els.viewRoot.querySelectorAll("[data-account-entry]"), function (select) {
+      var entryNumber = select.getAttribute("data-account-entry");
+      var committed = select.value;
+      select.addEventListener("change", function () {
+        var newAccount = select.value;
+        if (newAccount === committed) return;
+        state.focusEntry = entryNumber;
+        state.focusField = "account";
+        commit(
+          function () {
+            return window.DiyaGlBooksEdits.changeAccount(state.book, state.lines, entryNumber, newAccount);
+          },
+          "change " + entryNumber + "'s account to " + newAccount,
+          "Changed " + entryNumber + "'s account to " + newAccount + ".",
         );
       });
     });

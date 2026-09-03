@@ -625,6 +625,35 @@ select:focus-visible,
 
 /* ============================== Year table ============================== */
 
+.year-table-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+.all-categories-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  color: var(--pencil);
+  cursor: pointer;
+}
+
+/* Columns behind the "All categories" toggle, and the Cost of Sales
+   components it never reveals, stay in the table -- every data-r-key the
+   render sweeps expect keeps existing -- but take no room in the layout. */
+.year-table th.col-toggle,
+.year-table td.col-toggle,
+.year-table th.col-hidden-always,
+.year-table td.col-hidden-always {
+  display: none;
+}
+.year-table-scroll.show-all-categories th.col-toggle,
+.year-table-scroll.show-all-categories td.col-toggle {
+  display: table-cell;
+}
+
 .year-table-scroll {
   overflow: auto;
   max-height: 72vh;
@@ -639,6 +668,13 @@ table.year-table {
   border-collapse: collapse;
   width: 100%;
   min-width: 1180px;
+}
+/* With only the five default columns showing, 1180px of minimum width
+   forces them apart across an empty table -- the whole reason the toggle
+   exists is to let the default view fit desktop landscape without that
+   overflow. */
+.year-table-scroll:not(.show-all-categories) table.year-table {
+  min-width: 0;
 }
 
 .year-table thead th {
@@ -800,10 +836,10 @@ table.entries-table {
   font-size: 0.82rem;
 }
 table.entries-table th:nth-child(1) {
-  width: 3.4rem;
+  width: 8rem;
 }
 table.entries-table th:nth-child(2) {
-  width: 32%;
+  width: 30%;
 }
 table.entries-table th:nth-child(4) {
   width: 6.5rem;
@@ -913,6 +949,48 @@ table.entries-table td.entry-amount {
 }
 .entry-amount-input[data-dirty="true"] {
   border-color: var(--correction);
+}
+
+/* The date and account editors sit under the row's own read-only text
+   (the account cell keeps its name-and-code display too), styled the same
+   quiet way as the amount field: an edge only on hover and focus. */
+.entry-date-input {
+  display: block;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.1rem 0.2rem;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  width: 100%;
+  max-width: 100%;
+}
+.entry-date-input:hover,
+.entry-date-input:focus {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
+}
+.entry-date-input[data-dirty="true"] {
+  border-color: var(--correction);
+}
+.entry-account-select {
+  display: block;
+  margin-top: 0.2rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.1rem 0.2rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.7rem;
+  width: 100%;
+  max-width: 100%;
+}
+.entry-account-select:hover,
+.entry-account-select:focus {
+  border-color: var(--rule-faint);
+  background: var(--paper-raised);
 }
 
 td.entry-actions {
@@ -1787,6 +1865,9 @@ table.kv-table tr.total td {
     display: none !important;
   }
   .year-table-scroll {
+    display: none !important;
+  }
+  .year-table-controls {
     display: none !important;
   }
   .month-cards {
