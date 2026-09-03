@@ -186,6 +186,54 @@
     );
   }
 
+  // Every figure whose own cell disagrees with the workbook carries the
+  // mark, on whatever view renders it -- the page walks its own rendered
+  // keys rather than each render function knowing which cells might drift.
+  // In a form the mark goes to the row's right margin, so a box never shows
+  // two numbers; everywhere else the figure itself becomes the correction,
+  // keeping its report key on the computed half.
+  function applyDriftMarks(root) {
+    var byId = {};
+    var found = false;
+    (SNAPSHOT.drift || []).forEach(function (entry) {
+      if (Math.abs(entry.computed - entry.asRead) >= 0.005) {
+        byId[entry.id] = entry;
+        found = true;
+      }
+    });
+    if (!found) return;
+
+    Array.prototype.forEach.call(root.querySelectorAll("[data-r-key]"), function (el) {
+      if (el.tagName === "INPUT" || el.tagName === "SELECT" || el.tagName === "TEXTAREA") return;
+      if (el.closest(".pencil-correction")) return;
+      var entry = null;
+      el.getAttribute("data-r-key")
+        .split(R_KEY_SEP)
+        .forEach(function (key) {
+          if (key.indexOf("cell/") === 0 && byId[key.slice(5)]) entry = byId[key.slice(5)];
+        });
+      if (!entry) return;
+
+      var formRow = el.classList.contains("form-amount-box") ? el.closest(".form-row") : null;
+      if (formRow) {
+        var margin = formRow.querySelector(".form-row-margin");
+        if (!margin) {
+          margin = document.createElement("span");
+          margin.className = "form-row-margin";
+          formRow.appendChild(margin);
+        }
+        if (!margin.querySelector(".pencil-correction")) {
+          margin.innerHTML = correctionFor(entry, { inMargin: true });
+        }
+        return;
+      }
+
+      var rKeyAttr = ' data-r-key="' + esc(el.getAttribute("data-r-key")) + '"';
+      el.removeAttribute("data-r-key");
+      el.innerHTML = correctionFor(entry, { rKeyAttr: rKeyAttr });
+    });
+  }
+
   function correctionFor(driftEntry, opts) {
     opts = opts || {};
     return pencilCorrection(driftEntry.computed, driftEntry.asRead, {
@@ -214,6 +262,7 @@
 
     var view = state.view;
     els.viewRoot.innerHTML = renderView(view);
+    applyDriftMarks(els.viewRoot);
     bindViewInteractions(view);
     mountHeadlinesStrip();
 
@@ -1457,21 +1506,17 @@
 
   function renderProfitLoss() {
     var a = SNAPSHOT.annual;
-    var motorDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Profit & Loss Acc!C15";
-    })[0];
     function row(label, value, opts) {
       opts = opts || {};
-      var valueAttr = opts.drift ? "" : opts.rKeyAttr || "";
       return (
         '<tr class="' +
         (opts.total ? "total" : "") +
         '"><td>' +
         esc(label) +
         "</td><td" +
-        valueAttr +
+        (opts.rKeyAttr || "") +
         ">" +
-        (opts.drift ? correctionFor(opts.drift, { rKeyAttr: opts.rKeyAttr }) : fmtMoney(value)) +
+        fmtMoney(value) +
         "</td></tr>"
       );
     }
@@ -1486,7 +1531,7 @@
       row("Premises Costs", a.premisesCosts, { rKeyAttr: plAnnualRk("premisesCosts") }) +
       row("Repairs & Maintenance", a.repairs, { rKeyAttr: plAnnualRk("repairs") }) +
       row("General Admin", a.generalAdmin, { rKeyAttr: plAnnualRk("generalAdmin") }) +
-      row("Motor Expenses", a.motorExpenses, { drift: motorDrift, rKeyAttr: plAnnualRk("motorExpenses") }) +
+      row("Motor Expenses", a.motorExpenses, { rKeyAttr: plAnnualRk("motorExpenses") }) +
       row("Travel & Subsistence", a.travel, { rKeyAttr: plAnnualRk("travel") }) +
       row("Advertising", a.advertising, { rKeyAttr: plAnnualRk("advertising") }) +
       row("Legal & Professional", a.legalProfessional, { rKeyAttr: plAnnualRk("legalProfessional") }) +
@@ -1885,12 +1930,6 @@
 
   function renderIncomeTaxForm() {
     var t = SNAPSHOT.incomeTax;
-    var itDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Income Tax!E11";
-    })[0];
-    var totalDrift = SNAPSHOT.drift.filter(function (d) {
-      return d.id === "Income Tax!E18";
-    })[0];
     return (
       '<div class="form-render">' +
       '<div class="form-masthead"><div class="form-name">Income Tax computation</div>' +
@@ -1939,8 +1978,6 @@
       rk2("Income Tax", "E11", "income-tax-calculation", "total-income-tax") +
       ">" +
       fmtBoxMoney(t.totalIncomeTax) +
-      '</span><span class="form-row-margin">' +
-      (itDrift ? correctionFor(itDrift, { inMargin: true }) : "") +
       "</span></div>" +
       // CIS is tax already paid on the reader's behalf, so it belongs with
       // the tax it comes off, not among the National Insurance lines.
@@ -1962,8 +1999,6 @@
       rk2("Income Tax", "E18", "income-tax-calculation", "total-tax-ni") +
       ">" +
       fmtBoxMoney(t.totalTaxAndNi) +
-      '</span><span class="form-row-margin">' +
-      (totalDrift ? correctionFor(totalDrift, { inMargin: true }) : "") +
       "</span></div>" +
       "</div>"
     );
