@@ -228,19 +228,19 @@ timing = "closing"
 assetID = "BST-FA-1"
 description = "New laptop for development"
 cost = 1800.00
-acquiredDate = "2025-05-15"
+acquiredDate = 2025-05-15
 
 [[fixedAssets]]
 assetID = "BST-FA-2"
 description = "Office furniture"
 cost = 1200.00
-acquiredDate = "2025-07-15"
+acquiredDate = 2025-07-15
 
 [[fixedAssets]]
 assetID = "BST-FA-3"
 description = "Ford Transit Custom van"
 cost = 36000.00
-acquiredDate = "2025-10-25"
+acquiredDate = 2025-10-25
 
 [tax.incomeTax]
 personalAllowance = 12570.00
