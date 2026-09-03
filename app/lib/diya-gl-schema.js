@@ -43,11 +43,15 @@ export function useSchemas(bookSchema, linesSchema) {
  * compiled validators: called with the parsed data, each returns a boolean
  * and leaves its failures on its own `.errors` property.
  *
- * This is the seam a caller with no `new Function` uses - a Content Security
- * Policy with no `unsafe-eval` forbids the `new Function` inside ajv.compile,
- * which useSchemas() and loadSchemasFrom() both call. The books bundle
- * builds the two functions ahead of time with generateStandaloneValidatorSource()
- * below and hands them in here before its first validation.
+ * This is the injection seam for a caller with no `new Function` - a Content
+ * Security Policy with no `unsafe-eval` forbids the `new Function` inside
+ * ajv.compile, which useSchemas() and loadSchemasFrom() both reach. The
+ * books bundle takes a different route to the same result (see
+ * scripts/build-books-bundle.mjs: it resolves ajv's own imports to functions
+ * generateStandaloneValidatorSource() built ahead of time, so useSchemas()
+ * and loadSchemasFrom() keep working unchanged); this function is the direct
+ * seam for a caller - a test proving the two validator sources agree, or a
+ * future one - that would rather hand the compiled validators in itself.
  * @param {{book: Function, lines: Function}} generated
  */
 export function useValidators(generated) {
