@@ -1471,7 +1471,7 @@
     }
     return (
       "<h2>Profit &amp; Loss Account</h2>" +
-      '<table class="kv-table">' +
+      '<div class="panel-card panel-form-width"><table class="kv-table">' +
       row("Sales Turnover", a.sales, { rKeyAttr: plAnnualRk("sales") }) +
       row("Cost of Sales", a.costOfSales, { rKeyAttr: plAnnualRk("costOfSales") }) +
       row("Direct Costs", a.directCosts, { rKeyAttr: plAnnualRk("directCosts") }) +
@@ -1501,7 +1501,21 @@
         total: true,
         rKeyAttr: rk2("Income Tax", "E5", "income-tax-calculation", "profit-from-self-employment"),
       }) +
-      "</table>"
+      // The tax lines the sheet prints below Taxable Profit.
+      row("Other Income Received", a.otherIncome, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C30", "profit-loss-account", "other-income-received"),
+      }) +
+      row("Income Tax less CIS Deducted", a.incomeTaxLessCis, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C32", "profit-loss-account", "income-tax-less-cis-deducted"),
+      }) +
+      row("NI Class 4", a.niClass4, {
+        rKeyAttr: rk2("Profit & Loss Acc", "C33", "profit-loss-account", "ni-class-4"),
+      }) +
+      row("Net Income After Tax", a.netIncomeAfterTax, {
+        total: true,
+        rKeyAttr: rk2("Profit & Loss Acc", "C35", "profit-loss-account", "net-income-after-tax"),
+      }) +
+      "</table></div>"
     );
   }
 
@@ -1603,22 +1617,46 @@
     );
   }
 
+  // One row an asset: what it cost, what the allowances take off it, and
+  // what is left to carry forward.
+  function renderAssetRegister(register, totalCost) {
+    if (!register.length) {
+      return '<p class="entries-note">This book records no fixed assets.</p>';
+    }
+    return (
+      '<table class="register-table"><thead><tr><th>Asset</th><th>Cost</th><th>AIA</th><th>WDA</th><th>Written down</th></tr></thead><tbody>' +
+      register
+        .map(function (asset) {
+          return (
+            "<tr><td>" +
+            esc(asset.description) +
+            '</td><td class="num">' +
+            fmtMoney(asset.cost) +
+            '</td><td class="num">' +
+            fmtMoney(asset.aia) +
+            '</td><td class="num">' +
+            fmtMoney(asset.wda) +
+            '</td><td class="num">' +
+            fmtMoney(asset.writtenDownValue) +
+            "</td></tr>"
+          );
+        })
+        .join("") +
+      '</tbody><tfoot><tr class="total"><th>Total</th><td class="num"' +
+      rk2("Fixed Assets", "E1", "fixed-assets", "total-original-cost") +
+      ">" +
+      fmtMoney(totalCost) +
+      '</td><td colspan="3"></td></tr></tfoot></table>'
+    );
+  }
+
   function renderFixedAssets() {
     var f = SNAPSHOT.fixedAssets;
     return (
       "<h2>Fixed Assets</h2>" +
-      '<div class="panel-grid">' +
-      '<div class="panel-card"><h3>Additions</h3><table class="kv-table">' +
-      f.additions
-        .map(function (a) {
-          return "<tr><td>" + esc(a.description) + "</td><td>" + fmtMoney(a.cost) + "</td></tr>";
-        })
-        .join("") +
-      '<tr class="total"><td>Total Original Cost</td><td' +
-      rk2("Fixed Assets", "E1", "fixed-assets", "total-original-cost") +
-      ">" +
-      fmtMoney(f.totalCost) +
-      "</td></tr></table></div>" +
+      '<div class="panel-card"><h3>The register</h3>' +
+      renderAssetRegister(f.register, f.totalCost) +
+      "</div>" +
       '<div class="panel-card"><h3>Capital allowances</h3><table class="kv-table">' +
       "<tr><td>Annual Investment Allowance</td><td" +
       rk2("Fixed Assets", "K1", "fixed-assets", "total-first-year-allowance-aia") +
@@ -1644,8 +1682,7 @@
       rk2("Fixed Assets", "R1", "fixed-assets", "total-balancing-charge") +
       ">" +
       fmtMoney(f.balancingCharge) +
-      "</td></tr></table></div>" +
-      "</div>"
+      "</td></tr></table></div>"
     );
   }
 
@@ -1792,8 +1829,6 @@
             rk2("Income Tax", cfg.rateCell, "income-tax-calculation", cfg.rateSlug) +
             ">" +
             fmtRate(b.rate) +
-            '</span></span><span class="form-amount-wrap"><span class="box-chip">' +
-            esc(b.box) +
             '</span></span><span class="form-amount-box"' +
             rk2("Income Tax", b.box, "income-tax-calculation", INCOME_TAX_BAND_TAX_ROW_SLUG[b.box]) +
             ">" +
@@ -1809,9 +1844,11 @@
       '</span><span class="form-row-margin">' +
       (itDrift ? correctionFor(itDrift, { inMargin: true }) : "") +
       "</span></div>" +
+      // CIS is tax already paid on the reader's behalf, so it belongs with
+      // the tax it comes off, not among the National Insurance lines.
+      formRow("Less: CIS deducted", fmtBoxMoney(-t.cisDeducted), rk2("Income Tax", "E12", "income-tax-calculation", "less-cis-deducted")) +
       "</div>" +
       '<div class="form-section"><h3>National Insurance</h3>' +
-      formRow("Less: CIS deducted", fmtBoxMoney(-t.cisDeducted), rk2("Income Tax", "E12", "income-tax-calculation", "less-cis-deducted")) +
       formRow(
         "NI Class 4 (lower band)",
         fmtBoxMoney(t.niClass4Lower),

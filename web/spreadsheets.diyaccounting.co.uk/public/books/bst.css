@@ -1291,6 +1291,43 @@ ul.checks-passing-list {
   box-shadow: var(--shadow);
   padding: 0.85rem 1rem;
 }
+/* A statement reads best when a label and its figure sit within one eye
+   span, so the P&L panel takes the form width rather than the column's. */
+.panel-form-width {
+  max-width: 34rem;
+}
+
+/* The asset register: a row an asset, full width, figures in the column
+   they belong to. */
+.register-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.register-table th {
+  text-align: left;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pencil);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.3rem 0.5rem;
+}
+.register-table thead th:not(:first-child) {
+  text-align: right;
+}
+.register-table td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--rule-faint);
+}
+.register-table tfoot th,
+.register-table tfoot td {
+  border-bottom: none;
+  border-top: 2px solid var(--rule);
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .panel-card h3 {
   margin-top: 0;
 }

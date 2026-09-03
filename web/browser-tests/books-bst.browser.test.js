@@ -240,6 +240,49 @@ test.describe("DIYA-GL books page — loaded views", () => {
     await page.locator('.tab-btn[data-view="income-tax"]').click();
     await expect(page.locator(".form-render .form-name")).toHaveText(/Income Tax/);
     await expect(page.locator(".form-row.total-row").first()).toBeVisible();
+
+    // Only the real form has box numbers: the Income Tax computation is the
+    // sheet's own working, so it carries no chips.
+    await expect(page.locator(".form-render .box-chip")).toHaveCount(0);
+  });
+
+  test("the Income Tax view takes CIS off the tax, not out of National Insurance", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="income-tax"]').click();
+
+    const niSection = page.locator(".form-section", { hasText: "National Insurance" });
+    await expect(niSection).not.toContainText("CIS");
+
+    // It sits with the Total Income Tax it comes off.
+    const taxSection = page.locator(".form-section", { hasText: "Tax bands" });
+    await expect(taxSection).toContainText("Less: CIS deducted");
+  });
+
+  test("the P&L carries the tax lines the sheet prints below Taxable Profit", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="profit-loss"]').click();
+
+    for (const key of ["C30", "C32", "C33", "C35"]) {
+      await expect(page.locator(`[data-r-key*="Profit & Loss Acc!${key}"]`)).toHaveCount(1);
+    }
+    await expect(page.locator(".kv-table")).toContainText("Net Income After Tax");
+  });
+
+  test("the Fixed Assets view prints a register, one row an asset", async ({ page }) => {
+    await openLoadedBook(page, VIEWPORTS["desktop-landscape"]);
+    await page.locator('.tab-btn[data-view="fixed-assets"]').click();
+
+    const register = page.locator(".register-table");
+    await expect(register).toBeVisible();
+    await expect(register.locator("thead th")).toHaveText(["Asset", "Cost", "AIA", "WDA", "Written down"]);
+    await expect(register.locator("tbody tr")).not.toHaveCount(0);
+
+    // Every asset's cost, allowance and written-down value add up the way
+    // the schedule's own total says they do.
+    const costs = await register.locator("tbody tr td:nth-child(2)").allInnerTexts();
+    const total = costs.reduce((sum, text) => sum + Number(text.replace(/[£,]/g, "")), 0);
+    const printed = Number((await register.locator("tfoot td").first().innerText()).replace(/[£,]/g, ""));
+    expect(printed).toBeCloseTo(total, 2);
   });
 
   test("the Debtors & Creditors view renders the sheet the template ships", async ({ page }) => {
