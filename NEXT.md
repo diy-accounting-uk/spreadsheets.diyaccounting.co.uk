@@ -7,18 +7,20 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`'s batch (`claude/bst-ledger`, PR #57) merged to main on
-2026-09-03 and is live in production. The generate-bst refresh committed `c3e206d2`; R4b is
-dispatched as a worktree sub-agent and lands as a PR.
+2026-09-03 and is live in production. The generate-bst refresh committed `c3e206d2`; R4b's
+fixes are PR #58 (`claude/byte-equality`). `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
+plan of record, drafted 2026-09-03 with sources; its decisions are the operator's.
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| R4b | Byte equality with no allowances: the diya-gl writer orders rows by entry number (E3), the BST subset carries the master's business description (the extractor invented one), and A3 builds S2 for the saved package's own year-end (the writing-down allowance differs by tax year) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine 
+| H4 | Merge PR #58 (`claude/byte-equality`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | — | ready-to-start | CI on the PR is the gate; nothing waits on it |
+| L1 | Take the eight decisions in `PLAN_DIYA_GL_LAUNCH.md` ("Decisions for the operator"): billing shape, Cognito tier, sign-in domain, where the runner builds, the next product, when to apply for Income Tax recognition, the Rust port, the company's VAT position | PLAN_DIYA_GL_LAUNCH.md | human | — | ready-to-start | the plan's phases start from these |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md` — not yet drafted; they start from the BST
-  plan's as-built notes.
+  plan's as-built notes. `PLAN_DIYA_GL_LAUNCH.md` recommends SE next.
 
 ## Discipline
 
