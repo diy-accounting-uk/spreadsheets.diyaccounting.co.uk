@@ -19,7 +19,8 @@ module is built but not yet mounted in `bst.js`), R1 (`3a2192e2`), T7 (`cdcc271c
 `color-contrast` now fails at all four viewports until T13), R5 (`696ae207`; a regenerated BST
 workbook now writes rows in canonical line order, so the next generate refresh moves ~199 of
 `bst-latest`'s 528 rows), T13 (`061c4c42`; 105 browser specs green, the axe gate green at four
-viewports).
+viewports), T15 (`2a114c13`; 32 edit and warning proofs; the sub-penny trigger needs a non-tie
+fraction on a direct-cost line and the mileage checks cannot be split by any edit).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -30,9 +31,8 @@ after each landing. No row waits on a merge.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet |
 | R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the A3 allowlist and E3's entry-number normalisation in the formats spec |
-| H3 | Merge PR #57 (`claude/bst-ledger`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T11, T15 | blocked-to-start | nothing waits on it |
+| H3 | Merge PR #57 (`claude/bst-ledger`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T11 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
