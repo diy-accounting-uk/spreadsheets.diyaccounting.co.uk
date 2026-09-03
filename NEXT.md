@@ -27,7 +27,7 @@ after each landing. No row waits on a merge.
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| R5 | `extractBstTransactions` assigns `entryNumber` by row position, so a regenerate-then-re-extract cycle renumbers lines; decide whether the workbook can carry the entry number (E3's round trip normalises it today) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | found by T7; Sonnet |
+| R5 | `extractBstTransactions` assigns `entryNumber` by row position, so a regenerate-then-re-extract cycle renumbers lines; decide whether the workbook can carry the entry number (E3's round trip normalises it today) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | found by T7; Sonnet |
 | R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the allowlist |
 | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
