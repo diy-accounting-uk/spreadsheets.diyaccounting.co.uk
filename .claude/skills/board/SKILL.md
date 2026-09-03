@@ -22,17 +22,27 @@ One table, then at most two closing lines.
   or `operator` for an instruction given in chat that no plan yet carries, or `none` for
   an item `NEXT.md` holds on its own. When a plan row is the direct result of an operator
   instruction, name the plan; the plan holds the assertion verbatim.
-- `State`: exactly one word. `done` (finished in the current session, and only then),
-  `in-flight` (being worked right now), `ready` (nothing prevents starting it, whoever the
-  owner is), or `blocked` (waiting on a date, a prerequisite item, or a decision not yet
-  made). Operator-owned work that could start today is `ready`, not `blocked`. Work the
-  plan orders after another wave is `blocked` on that wave, and the status names it.
+- `State`: exactly one of six values, hyphenated so it stays one token:
+  - `done` — finished in the current session, and only then.
+  - `in-flight` — being worked right now by an agent or the operator.
+  - `ready-to-start` — never started; nothing prevents starting it, whoever the owner is.
+  - `ready-to-resume` — started earlier (a branch, worktree, PR or partial commit exists,
+    or `NEXT.md` says so), paused, and nothing prevents picking it up.
+  - `blocked-to-start` — never started; waiting on a date, a prerequisite item, or a
+    decision not yet made.
+  - `blocked-to-resume` — started, paused, and something now prevents resuming: a
+    prerequisite, a decision, or a conflict with work that landed since.
+
+  Started means evidence, not intent: check `git branch -a`, `git worktree list` and
+  `gh pr list` for the item's branch or PR before calling it resumable. Operator-owned
+  work that could start today is `ready-to-start`, not blocked. Work the plan orders after
+  another wave is `blocked-to-start` on that wave, and the status names it.
 - `Status`: one clause, 12 words or fewer, current as of this render. Date-gated items
   name the date; blocked items name the blocker; in-flight items name the current step;
   done items name the commit. The narrative lives in `NEXT.md` and the plan, never here.
 
 One row per distinct piece of work: a `NEXT.md` bullet that bundles several waves or
-tracks becomes one row per wave, so an operator can see what can start now.
+tracks becomes one row per wave, so an operator can see what can start or resume now.
 
 ## Rules
 
