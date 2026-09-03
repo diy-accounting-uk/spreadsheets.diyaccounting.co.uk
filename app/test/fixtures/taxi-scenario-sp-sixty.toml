@@ -900,7 +900,7 @@ date = 2026-03-20
 amount = 236
 
 [[purchases.apr]]
-date = 2025-04-01
+date = 2025-04-06
 supplier = "Vodafone"
 description = "Mobile phone and data plan"
 code = "g"
