@@ -12,7 +12,10 @@ per task; the coordinator merges each landed commit into the batch branch and pu
 Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`), R2 (`f5f28df8`), T1
 (`8e37e594`; 42/42 books specs green under production's headers), T10 (`ddf23204`; render keys
 join as `cell/… || section/…` on one attribute), T3 (`2267852d`; workbook kinds stage through
-Node in `readBookSource`, the page keeps its in-memory workbook reader).
+Node in `readBookSource`, the page keeps its in-memory workbook reader), R1 (`acc2e802`,
+`3a2192e2`; `bookchecks.json` from `export.js --file`, the MCP `report`/`extract_book`/
+`save_workbook` tools and `books-engine.js` all reach `book-checks.js` the same way, and
+`bst-edits.js` calls the engine bundle instead of its own duplicated rule code).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -27,7 +30,7 @@ after each landing. No row waits on a merge.
 | T9 | The strip: four tiles, two pies, redrawn charts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T14 | The equivalence suite: A3–A7 and E6 now; A1, A2, E3–E5 after T7 | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | The UX pass: nine changes plus the view corrections | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T7, T9 | blocked-to-start | Opus; owns the page files |
 | T11 | Date and account editing on entry rows | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | blocked-to-start | Sonnet |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| R1 | Wire `book-checks.js` into `export.js` (`bookchecks.json`), the MCP `report` tool, the diya-gl zip writer and `books-engine.js`; `bst-edits.js` calls the module instead of its own `CHECKS` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
+| H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
