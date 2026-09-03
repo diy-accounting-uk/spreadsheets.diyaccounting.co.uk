@@ -28,6 +28,47 @@ export { parseDiyaGlData, diyaGlToScenario, applyOffset } from "./diya-gl-loader
 // Validating it.
 export { validateBook, validateLines, useSchemas, loadSchemasFrom } from "./diya-gl-schema.js";
 
+// Writing D in its canonical, comparison form -- book.toml and lines.jsonl
+// text, or one JSON file, or a diya-gl zip. This module keeps its own
+// schema state, separate from diya-gl-schema.js's validator cache above (no
+// shared cache to alias between them), so its loader carries its own name:
+// a caller with no file system supplies the same parsed schemas to both,
+// once each, at startup.
+export {
+  canonicalBookToml,
+  canonicalLinesJsonl,
+  orderedBookTopLevel,
+  orderedLine,
+  compareLines,
+  useSchemas as useCanonicalSchemas,
+  loadSchemasFrom as loadCanonicalSchemasFrom,
+} from "./diya-gl-canonical.js";
+
+// R's own serialisation, so a browser export and a CLI export of the same
+// book write the same report.json bytes.
+export { buildReportDocument, serializeReportDocument } from "./report-serializer.js";
+
+// overtypedCells (overtype-sidecar.js) is deliberately NOT re-exported here:
+// that module resolves its template path from import.meta.url at the top
+// level, outside any function, so merely importing it throws under the
+// bundle's browser stubs for path/url. Its own callers (export.js,
+// books-interchange.js, the MCP tools) reach it directly and stay off this
+// entry point, which is Node-only pipeline code with nothing bundle-side
+// depending on it yet.
+
+// Sniffing and reading any of the six kinds a byte array can be, and
+// writing D back out as a diya-gl zip or a single JSON file.
+export {
+  detectBookSource,
+  readBookSource,
+  writeBookJson,
+  writeDiyaGlZip,
+  UnknownBookSourceError,
+  XlsBookSourceError,
+  InvalidDiyaGlBookError,
+  InvalidDiyaGlJsonError,
+} from "./books-interchange.js";
+
 // Computing the reports, without a spreadsheet application.
 export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
 
@@ -37,6 +78,12 @@ export { calculateExpectedTax } from "./tax/income-tax.js";
 
 // Editing it.
 export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "./diya-gl-edits.js";
+
+// The book checks and warnings over D itself, and their fix-it helpers.
+export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./book-checks.js";
+
+// The year-at-a-glance headline figures, derived from R.
+export { headlinesFromReport } from "./bst-headlines.js";
 
 // Saving it back out as a workbook or the package zip.
 export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";

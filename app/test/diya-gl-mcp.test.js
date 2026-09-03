@@ -21,10 +21,12 @@
 
 import { describe, it, expect, afterEach } from "vitest";
 import { execFileSync, spawn } from "child_process";
-import { readFileSync, mkdtempSync, rmSync } from "fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join, resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { parse as parseTOML } from "smol-toml";
+import JSZip from "jszip";
 import { createMethods } from "../lib/mcp/server.js";
 import { createSession, loadIntoSession } from "../lib/mcp/diya-gl-tools.js";
 import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
@@ -125,9 +127,14 @@ describe("diya-gl MCP server: stdio handshake", () => {
       const extracted = await client.callTool("extract_book", { path: BST_XLSX });
       expect(extracted.lines.length).toBeGreaterThan(0);
       expect(extracted.report.package).toBe("bst");
+      expect(extracted.bookChecks.summary).toEqual({ pass: expect.any(Number), warn: expect.any(Number), fail: expect.any(Number) });
+      expect(extracted.bookChecks.results.length).toBe(
+        extracted.bookChecks.summary.pass + extracted.bookChecks.summary.warn + extracted.bookChecks.summary.fail,
+      );
 
       const reported = await client.callTool("report", {});
       expect(reported.report).toEqual(extracted.report);
+      expect(reported.bookChecks.summary).toEqual(extracted.bookChecks.summary);
     } finally {
       client.close();
     }
@@ -220,6 +227,98 @@ describe("extract_book: byte-for-byte with export.js --file", () => {
       expect(extracted.bookToml).toBe(cliBookToml);
       expect(extracted.linesJsonl).toBe(cliLinesJsonl);
       expect(extracted.overtyped).toEqual(cliOvertyped);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+});
+
+// ============================================================================
+// extract_book on the interchange formats books-interchange.js added: a
+// diya-gl zip and a diya-gl JSON file, both read from the same CLI output
+// extract_book already matches byte-for-byte above.
+// ============================================================================
+
+describe("extract_book: the diya-gl zip and JSON formats", () => {
+  it("reads a diya-gl zip to the same book.toml and lines.jsonl as the workbook it came from", async () => {
+    const cliOutput = tempDir("mcp-extract-zip-cli-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "bst", "--file", BST_XLSX, "--output-dir", cliOutput], { cwd: ROOT });
+
+    const zip = new JSZip();
+    for (const name of ["book.toml", "lines.jsonl", "report.json"]) zip.file(name, readFileSync(resolve(cliOutput, name)));
+    const buffer = await zip.generateAsync({ type: "nodebuffer" });
+    const zipPath = resolve(tempDir("mcp-extract-zip-src-"), "book-diya-gl.zip");
+    writeFileSync(zipPath, buffer);
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: zipPath });
+      expect(extracted.bookToml).toBe(readFileSync(resolve(cliOutput, "book.toml"), "utf8"));
+      expect(extracted.linesJsonl).toBe(readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8"));
+    } finally {
+      client.close();
+    }
+  }, 30000);
+
+  it("reads a diya-gl JSON file to the same book.toml and lines.jsonl", async () => {
+    const cliOutput = tempDir("mcp-extract-json-cli-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "bst", "--file", BST_XLSX, "--output-dir", cliOutput], { cwd: ROOT });
+
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const book = parseTOML(readFileSync(resolve(cliOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const jsonPath = resolve(tempDir("mcp-extract-json-src-"), "book-diya-gl.json");
+    writeFileSync(jsonPath, writeBookJson(book, lines));
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: jsonPath });
+      expect(extracted.bookToml).toBe(readFileSync(resolve(cliOutput, "book.toml"), "utf8"));
+      expect(extracted.linesJsonl).toBe(readFileSync(resolve(cliOutput, "lines.jsonl"), "utf8"));
+    } finally {
+      client.close();
+    }
+  }, 30000);
+});
+
+// ============================================================================
+// save_workbook: the two diya-gl formats it gained alongside xlsx and zip.
+// ============================================================================
+
+describe("save_workbook: the diya-gl-zip and json formats", () => {
+  it("hands back a diya-gl zip carrying book.toml, lines.jsonl and report.json", async () => {
+    const client = startMcpClient();
+    try {
+      await client.callTool("extract_book", { path: BST_XLSX });
+      const saved = await client.callTool("save_workbook", { format: "diya-gl-zip" });
+
+      expect(saved.format).toBe("diya-gl-zip");
+      const bytes = Buffer.from(saved.base64, "base64");
+      const zip = await JSZip.loadAsync(bytes);
+      expect(Object.keys(zip.files)).toEqual(["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]);
+
+      const bookchecks = JSON.parse(await zip.file("bookchecks.json").async("string"));
+      expect(Array.isArray(bookchecks)).toBe(true);
+      expect(bookchecks.length).toBeGreaterThan(0);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+
+  it("hands back a diya-gl JSON file that reads back to the same lines", async () => {
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: BST_XLSX });
+      const saved = await client.callTool("save_workbook", { format: "json" });
+
+      expect(saved.format).toBe("json");
+      const text = Buffer.from(saved.base64, "base64").toString("utf8");
+      const document = JSON.parse(text);
+      expect(document.format).toBe("diya-gl-books");
+      expect(document.lines.length).toBe(extracted.lines.length);
     } finally {
       client.close();
     }

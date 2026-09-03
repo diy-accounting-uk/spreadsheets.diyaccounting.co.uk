@@ -2,10 +2,18 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // diya-gl-tools.js — the four MCP tools, each a thin call into a function
-// phase 1 already tests: extract_book wraps export.js's --file pipeline,
+// phase 1 already tests: extract_book wraps export.js's --file pipeline
+// (books-interchange.js underneath, so every kind it reads loads here too),
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
-// and diya-gl-edits.js, save_workbook wraps bst-workbook.js. No engine code
-// lives here.
+// and diya-gl-edits.js, save_workbook wraps bst-workbook.js for a workbook
+// or package zip and books-interchange.js for the two diya-gl formats. No
+// engine code lives here.
+//
+// extract_book and report both carry a bookChecks field alongside report --
+// the same app/lib/book-checks.js results and summary export.js writes as
+// bookchecks.json, run with the book's own tax year's data from
+// loadTaxDataForBook. save_workbook's diya-gl-zip format writes that same
+// data into the zip as its fifth file.
 //
 // State: one loaded book per session (a plain object this module owns the
 // shape of), held in memory. extract_book replaces it outright. edit_lines
@@ -21,8 +29,10 @@
 import { resolve as resolvePath } from "path";
 import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
-import { saveBstWorkbook, saveBstPackageZip } from "../bst-workbook.js";
+import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
+import { saveBstWorkbook, saveBstPackageZip, loadTaxDataForBook } from "../bst-workbook.js";
 import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../diya-gl-edits.js";
+import { runBookChecks, bookChecksJson } from "../book-checks.js";
 import * as bst from "../../products/bst.js";
 
 const EDITS = { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount };
@@ -58,6 +68,15 @@ function requireLoaded(session) {
 
 function reportFor(book, lines) {
   return buildFileReportDocument(book, lines, "bst", bst);
+}
+
+// The book checks and warnings, with the book's own tax year's data behind
+// the VAT threshold warning -- the same loadTaxDataForBook call export.js's
+// --file mode makes, so a session's report and a CLI export of the same
+// book carry the same bookchecks.json content.
+async function bookChecksFor(book, lines) {
+  const taxData = await loadTaxDataForBook(book);
+  return runBookChecks({ book, lines, taxData });
 }
 
 // Every R key whose canonicalised value changed between two reports, with
@@ -101,19 +120,22 @@ async function extractBook(session, { path }) {
     linesJsonl: canonicalLinesJsonl(lines),
     report: document,
     overtyped,
+    bookChecks: await bookChecksFor(book, lines),
   };
 }
 
 /**
  * report: D in (the session's loaded book, or an explicit {book, lines}), R
- * out. Never caches R -- always a fresh run of calculateFromDiyaGl and
+ * out, alongside bookChecks (the book checks and warnings over D itself,
+ * with the book's own tax year's data behind the VAT threshold warning).
+ * Never caches R -- always a fresh run of calculateFromDiyaGl and
  * checkCompliance over whichever D is in play.
  */
-function report(session, params = {}) {
+async function report(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
-  return { report: reportFor(book, lines) };
+  return { report: reportFor(book, lines), bookChecks: await bookChecksFor(book, lines) };
 }
 
 /**
@@ -148,18 +170,32 @@ function editLines(session, { edit, params, book: explicitBook, lines: explicitL
 
 /**
  * save_workbook: D in (the session's loaded book, or an explicit {book,
- * lines}), a recalculating workbook or package zip out, as base64 alongside
- * its filename.
+ * lines}), one of four downloads out, as base64 alongside its filename: a
+ * recalculating workbook, its package zip, or D (and the R and the book
+ * checks just computed from it) as a diya-gl zip or a single JSON file.
  */
 async function saveWorkbook(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
 
-  const format = params.format === "zip" ? "zip" : "xlsx";
+  const format = ["zip", "diya-gl-zip", "json"].includes(params.format) ? params.format : "xlsx";
   if (format === "zip") {
     const { zip, filename } = await saveBstPackageZip(book, lines);
     return { filename, format, base64: Buffer.from(zip).toString("base64") };
+  }
+  if (format === "diya-gl-zip") {
+    const { results } = await bookChecksFor(book, lines);
+    // Round-tripped through bookChecksJson's own sort and stringify, so the
+    // bytes writeDiyaGlZip's own JSON.stringify produces for bookchecks.json
+    // match export.js --file's output exactly.
+    const bookchecks = JSON.parse(bookChecksJson(results));
+    const zip = await writeDiyaGlZip({ book, lines, report: reportFor(book, lines), bookchecks });
+    return { filename: "book-diya-gl.zip", format, base64: Buffer.from(zip).toString("base64") };
+  }
+  if (format === "json") {
+    const json = writeBookJson(book, lines);
+    return { filename: "book-diya-gl.json", format, base64: Buffer.from(json, "utf8").toString("base64") };
   }
   const { workbook, filename } = await saveBstWorkbook(book, lines);
   return { filename, format, base64: Buffer.from(workbook).toString("base64") };
@@ -174,7 +210,7 @@ export const TOOLS = {
   extract_book: {
     name: "extract_book",
     description:
-      "Extract a diya-gl book from a Basic Sole Trader .xlsx or .zip package: D (book.toml + lines.jsonl, canonical and parsed), R (the computed report) and the overtype sidecar (every template formula the upload carries as a typed value instead). Replaces the session's loaded book.",
+      "Extract a diya-gl book from a Basic Sole Trader .xlsx or .zip package: D (book.toml + lines.jsonl, canonical and parsed), R (the computed report), the book checks and warnings over D, and the overtype sidecar (every template formula the upload carries as a typed value instead). Replaces the session's loaded book.",
     inputSchema: {
       type: "object",
       properties: {
@@ -186,7 +222,8 @@ export const TOOLS = {
   },
   report: {
     name: "report",
-    description: "Compute R (figures, report sections and compliance check verdicts) from the session's currently loaded book.",
+    description:
+      "Compute R (figures, report sections and compliance check verdicts) and the book checks and warnings from the session's currently loaded book.",
     inputSchema: {
       type: "object",
       properties: {
@@ -215,11 +252,11 @@ export const TOOLS = {
   save_workbook: {
     name: "save_workbook",
     description:
-      "Write the session's currently loaded book into a Basic Sole Trader workbook (or its package zip), returned as base64 alongside its filename.",
+      "Write the session's currently loaded book into a Basic Sole Trader workbook, its package zip, a diya-gl zip (book.toml, lines.jsonl, report.json, bookchecks.json), or a single diya-gl JSON file, returned as base64 alongside its filename.",
     inputSchema: {
       type: "object",
       properties: {
-        format: { type: "string", enum: ["xlsx", "zip"], default: "xlsx" },
+        format: { type: "string", enum: ["xlsx", "zip", "diya-gl-zip", "json"], default: "xlsx" },
         book: { type: "object", description: "Optional: a diya-gl book, bypassing the session" },
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
       },

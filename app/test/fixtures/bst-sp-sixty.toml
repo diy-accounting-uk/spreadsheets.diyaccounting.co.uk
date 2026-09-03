@@ -87,7 +87,7 @@ payment = "Bank"
 amount = 3178
 
 [[purchases.apr]]
-date = 2025-04-01
+date = 2025-04-06
 supplier = "Vodafone"
 description = "Mobile phone and data plan"
 payment = "Bank"

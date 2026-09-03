@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Headlines strip probe</title>
+    <link rel="stylesheet" href="bst.css" />
+    <style>
+      body.diya-books {
+        margin: 0;
+        background: var(--paper);
+      }
+      #root {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+    </style>
+  </head>
+  <body class="diya-books">
+    <!--
+      Not the books page -- that is bst.html. This page mounts the
+      headlines strip on its own, fed a snapshot the caller builds and
+      passes to window.DiyaGlHeadlines.mountHeadlines() directly, so it
+      exercises the strip without going through the engine bundle, the
+      schema validators, or an uploaded workbook at all.
+    -->
+    <div id="root"></div>
+    <script src="headlines.js"></script>
+  </body>
+</html>

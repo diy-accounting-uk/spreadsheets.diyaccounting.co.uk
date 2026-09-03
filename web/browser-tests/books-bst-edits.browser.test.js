@@ -16,7 +16,18 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import http from "node:http";
+import JSZip from "jszip";
+import { startStaticServer } from "./serve.js";
+import { applyNamedEdit } from "./r-sources.js";
+import {
+  addSaleLine,
+  addPurchaseLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+} from "../../app/lib/diya-gl-edits.js";
+import { applyHelper } from "../../app/lib/book-checks.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -24,37 +35,17 @@ fs.mkdirSync(screenshotsDir, { recursive: true });
 
 const DESKTOP_LANDSCAPE = { width: 1440, height: 900 };
 
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
-let server;
+let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(publicDir, requested);
-    if (!filePath.startsWith(publicDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  await new Promise((resolveServer) => server.listen(0, "127.0.0.1", resolveServer));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const server = await startStaticServer(publicDir);
+  baseUrl = server.baseUrl;
+  closeServer = server.close;
 });
 
 test.afterAll(async () => {
-  await new Promise((resolveClose) => server.close(resolveClose));
+  await closeServer();
 });
 
 // ── Reading the rendered year table ────────────────────────────────────────
@@ -123,6 +114,29 @@ function bookCheck(page, id) {
 
 async function allChecksPass(page) {
   await expect(page.locator("#inspector .check-item.fail")).toHaveCount(0);
+}
+
+// ── E1: the browser's report.json equals Node's after the same edit ───────
+// applyNamedEdit (r-sources.js) applies one of diya-gl-edits.js's named
+// edits to examples/precision-code-ltd/bst in Node and builds report.json
+// exactly the way the page's own buildReport does -- same package, engine,
+// merged scenario, checks, scenarioName and yearEnd. The featured book's
+// own directory, so the two sides start from the same D.
+const BST_SCENARIO_BASIC_DIR = "examples/precision-code-ltd/bst";
+
+// The save menu's diya-gl zip download, captured and unzipped -- the same
+// mechanism books-formats.browser.test.js uses for A1/A2, kept local here so
+// this file does not reach into another task's spec for a helper.
+async function downloadDiyaGlReport(page) {
+  await page.click("#save-btn");
+  const item = page.getByRole("menuitem", { name: "Download books as diya-gl (.zip)", exact: true });
+  await item.waitFor({ state: "visible" });
+  const [download] = await Promise.all([page.waitForEvent("download"), item.click()]);
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const zip = await JSZip.loadAsync(Buffer.concat(chunks));
+  return zip.file("report.json").async("string");
 }
 
 test.describe("DIYA-GL books page — in-place edits", () => {
@@ -195,6 +209,32 @@ test.describe("DIYA-GL books page — in-place edits", () => {
     await allChecksPass(page);
   });
 
+  test("an entry names its account, keeps its detail on one line, and offers undo when removed", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const row = page.locator('.entries-table[data-journal="purchases"] tbody tr.entry-row').first();
+    const code = await row.locator(".entry-account-code").innerText();
+    await expect(row.locator(".entry-account-name")).not.toBeEmpty();
+    expect(code).toMatch(/^\d+$/);
+
+    // The whole detail is on the element's title even when the cell shows
+    // only as much as fits.
+    const detail = row.locator(".entry-detail");
+    const [shown, title] = await Promise.all([detail.innerText(), detail.getAttribute("title")]);
+    expect(title).toContain(shown.replace("…", "").trim());
+
+    const remove = row.locator("[data-delete-entry]");
+    await expect(remove).toHaveAttribute("aria-label", /Remove entry/);
+
+    const profitBefore = await yearTotal(page, "netProfit");
+    await remove.click();
+    const toast = page.locator("#toast");
+    await expect(toast).toContainText("Removed");
+    await toast.locator(".toast-action-btn").click();
+    await expectYearTotal(page, "netProfit", profitBefore);
+  });
+
   test("a typed non-amount is refused and leaves the line where it was", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
@@ -209,6 +249,209 @@ test.describe("DIYA-GL books page — in-place edits", () => {
 
     await expect(amountField).toHaveValue(was);
     expect(await yearTotal(page, "sales")).toBe(salesBefore);
+  });
+});
+
+test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's", () => {
+  test("add a purchase of X: browser and Node agree, and profit falls by X with turnover unchanged", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    const line = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "purchases",
+      postingDate: "2025-04-15",
+      accountMainID: "5500",
+      amount: 250,
+      documentType: "invoice",
+      detailComment: "Extra advertising",
+    };
+    await addEntry(page, "purchases", {
+      date: line.postingDate,
+      account: line.accountMainID,
+      detail: line.detailComment,
+      amount: line.amount,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a purchases entry of £250.00");
+
+    expect(await yearTotal(page, "sales")).toBe(salesBefore);
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore - 250);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => addPurchaseLine(book, lines, { line }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("add a sale of Y: browser and Node agree, and turnover and profit both rise by Y", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    const line = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "sales",
+      postingDate: "2025-04-20",
+      accountMainID: "4001",
+      amount: 400,
+      documentType: "invoice",
+      detailComment: "Extra licence",
+    };
+    await addEntry(page, "sales", { date: line.postingDate, account: line.accountMainID, detail: line.detailComment, amount: line.amount });
+    await expect(page.locator("#toast")).toContainText("Added a sales entry of £400.00");
+
+    expect(await yearTotal(page, "sales")).toBe(salesBefore + 400);
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore + 400);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => addSaleLine(book, lines, { line }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("change an amount: browser and Node agree, and the month and year move by the difference", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const aprilSalesBefore = await monthCell(page, "2025-04", "sales");
+
+    const firstRow = page.locator('.entries-table[data-journal="sales"] tbody tr.entry-row').first();
+    const entryNumber = await firstRow.getAttribute("data-entry");
+    const amountField = firstRow.locator(".entry-amount-input");
+    const was = Number(await amountField.inputValue());
+    const newAmount = was + 175;
+    await amountField.fill(String(newAmount));
+    await amountField.press("Enter");
+    await expect(page.locator("#toast")).toContainText("Changed");
+
+    await expectYearTotal(page, "sales", salesBefore + 175);
+    expect(await monthCell(page, "2025-04", "sales")).toBe(aprilSalesBefore + 175);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => changeLineAmount(book, lines, { entryNumber, newAmount }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("remove a line: browser and Node agree, and the removed amount leaves its month", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const aprilSalesBefore = await monthCell(page, "2025-04", "sales");
+
+    const firstRow = page.locator('.entries-table[data-journal="sales"] tbody tr.entry-row').first();
+    const entryNumber = await firstRow.getAttribute("data-entry");
+    const removedAmount = Number(await firstRow.locator(".entry-amount-input").inputValue());
+
+    await firstRow.locator("[data-delete-entry]").click();
+    await expect(page.locator("#toast")).toContainText("Removed " + entryNumber);
+
+    await expectYearTotal(page, "sales", salesBefore - removedAmount);
+    expect(await monthCell(page, "2025-04", "sales")).toBe(aprilSalesBefore - removedAmount);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => removeLine(book, lines, { entryNumber }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("apply the whole-pence helper: browser and Node agree after rounding a crafted sub-penny line", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const craftedLine = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "purchases",
+      postingDate: "2025-04-19",
+      accountMainID: "5500",
+      amount: 100.005,
+      documentType: "invoice",
+      detailComment: "Third of a bill",
+    };
+    await addEntry(page, "purchases", {
+      date: craftedLine.postingDate,
+      account: craftedLine.accountMainID,
+      detail: craftedLine.detailComment,
+      amount: craftedLine.amount,
+    });
+
+    const check = bookCheck(page, "book-amounts-whole-pence");
+    await expect(check).toHaveClass(/fail/);
+    await check.locator("[data-helper-preview]").click();
+    await check.locator("[data-helper-apply]").click();
+    await expect(bookCheck(page, "book-amounts-whole-pence")).toHaveClass(/pass/);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => {
+      const withCraftedLine = addPurchaseLine(book, lines, { line: craftedLine });
+      return applyHelper({ book, lines: withCraftedLine }, "book-amounts-whole-pence");
+    });
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  // TXN-0017: a purchases line dated 2025-04-01, posted to 5200 (Premises).
+  // Moving its date to May moves the expense out of April's month total and
+  // into May's, with the year's own net profit unmoved.
+  test("change a date via setLines: browser and Node agree, and the expense moves from April into May", async ({ page }) => {
+    await openBook(page);
+    const entryNumber = "TXN-0017";
+    const newPostingDate = "2025-05-15";
+    const profitBefore = await yearTotal(page, "netProfit");
+    const aprilProfitBefore = await monthCell(page, "2025-04", "netProfit");
+    const mayProfitBefore = await monthCell(page, "2025-05", "netProfit");
+
+    await page.evaluate(
+      async ({ entryNumber, newPostingDate }) => {
+        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const lines = snapshot.lines.map((line) => (line.entryNumber === entryNumber ? { ...line, postingDate: newPostingDate } : line));
+        await window.DiyaGlBooksPage.setLines(lines, "test: change a date");
+      },
+      { entryNumber, newPostingDate },
+    );
+    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
+    expect(await monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 1200);
+    expect(await monthCell(page, "2025-05", "netProfit")).toBe(mayProfitBefore - 1200);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) =>
+      changeLinePostingDate(book, lines, { entryNumber, newPostingDate }),
+    );
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  // TXN-0020: a purchases line posted to 5002 (Other). Reposting it to 5501
+  // (General admin) moves it between two expense categories that both roll
+  // into the same P&L total, so net profit does not move -- only the entry's
+  // own account does.
+  test("change an account via setLines: browser and Node agree, and net profit does not move", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const entryNumber = "TXN-0020";
+    const newAccountMainID = "5501";
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    await page.evaluate(
+      async ({ entryNumber, newAccountMainID }) => {
+        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const lines = snapshot.lines.map((line) =>
+          line.entryNumber === entryNumber ? { ...line, accountMainID: newAccountMainID } : line,
+        );
+        await window.DiyaGlBooksPage.setLines(lines, "test: change an account");
+      },
+      { entryNumber, newAccountMainID },
+    );
+    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
+    const movedRow = page.locator(`tr.entry-row[data-entry="${entryNumber}"] .entry-account-code`);
+    await expect(movedRow).toHaveText(newAccountMainID);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) =>
+      changeLineAccount(book, lines, { entryNumber, newAccountMainID }),
+    );
+    expect(browserReport).toBe(nodeReport.text);
   });
 });
 
@@ -299,9 +542,31 @@ test.describe("DIYA-GL books page — undo", () => {
 test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broken book", () => {
   test("the featured book passes every book check before anything is broken", async ({ page }) => {
     await openBook(page);
-    await expect(page.locator("#inspector .book-checks-list .check-item")).toHaveCount(3);
+    for (const id of ["book-dates-in-period", "book-accounts-in-chart", "book-amounts-whole-pence"]) {
+      await expect(bookCheck(page, id)).toHaveClass(/pass/);
+    }
     await expect(page.locator("#inspector .book-checks-list .check-item.fail")).toHaveCount(0);
     await allChecksPass(page);
+  });
+
+  test("the panel opens on what needs attention and folds what passes behind one line", async ({ page }) => {
+    await openBook(page);
+
+    // This book's turnover is far past the VAT registration threshold, so
+    // its warning is one of the rows the panel opens on.
+    const vat = bookCheck(page, "book-vat-threshold");
+    await expect(vat).toBeVisible();
+    await expect(vat).toHaveClass(/warn/);
+    await expect(vat).toContainText("Warning");
+    await expect(vat).toContainText("VAT registration threshold");
+
+    // Every passing check is still there, behind a disclosure that says how
+    // many there are rather than printing them all.
+    const engineSummary = page.locator("#inspector .checks-list .checks-passing summary");
+    await expect(engineSummary).toHaveText(/^\d+ checks pass$/);
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeHidden();
+    await engineSummary.click();
+    await expect(page.locator("#inspector .checks-list .checks-passing .check-item.pass").first()).toBeVisible();
   });
 
   test("an entry dated outside the period is caught and moved back into it", async ({ page }) => {
@@ -423,11 +688,10 @@ test.describe("DIYA-GL books page — the rung: helpers fix a deliberately broke
     await expect(rounded).toHaveValue("100.01");
   });
 
-  test("the bank-item helper stays disabled and says why", async ({ page }) => {
+  test("no bank-item card: Basic Sole Trader has no bank book to make an entry from", async ({ page }) => {
     await openBook(page);
-    const card = page.locator("#inspector .helper-card", { hasText: "Make a sale/purchase from a bank item" });
-    await expect(card.getByRole("button", { name: "Preview" })).toBeDisabled();
-    await expect(card).toContainText("carry no bank sheet");
+    await expect(page.locator("#inspector")).not.toContainText("bank item");
+    await expect(page.locator("#inspector .helper-card")).toHaveCount(0);
   });
 });
 

@@ -11,7 +11,7 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
-import http from "node:http";
+import { startStaticServer } from "./serve.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -21,45 +21,57 @@ const VIEWPORTS = {
   "desktop-landscape": { width: 1440, height: 900 },
 };
 
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
 // A real HTTP origin, exactly like books-bst.browser.test.js: the engine's
 // resource loader fetches schemas and tax data from site-absolute paths, and
 // IndexedDB itself is scoped to an origin -- a file:// page has neither.
-let server;
+let closeServer;
 let baseUrl;
 
 test.beforeAll(async () => {
-  server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(publicDir, requested);
-    if (!filePath.startsWith(publicDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  await new Promise((resolveServer) => server.listen(0, "127.0.0.1", resolveServer));
-  baseUrl = `http://127.0.0.1:${server.address().port}`;
+  const server = await startStaticServer(publicDir);
+  baseUrl = server.baseUrl;
+  closeServer = server.close;
 });
 
 test.afterAll(async () => {
-  await new Promise((resolveClose) => server.close(resolveClose));
+  await closeServer();
 });
 
 function bstUrl() {
   return `${baseUrl}/books/bst.html`;
 }
+
+test.describe("DIYA-GL books page — one decision on the card", () => {
+  test("choosing a file is the filled button; everything else is quieter", async ({ page }) => {
+    await page.setViewportSize(VIEWPORTS["desktop-landscape"]);
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+
+    const picker = page.locator('label[for="file-picker"]');
+    await expect(picker).toHaveText("Choose a file");
+
+    // "Filled" is what makes it the one decision: its background is the
+    // brand colour, and the secondary controls sit on the card's own surface.
+    const [pickerBackground, newBookBackground] = await Promise.all([
+      picker.evaluate((el) => getComputedStyle(el).backgroundColor),
+      page.locator("#new-book-btn").evaluate((el) => getComputedStyle(el).backgroundColor),
+    ]);
+    expect(pickerBackground).not.toBe(newBookBackground);
+    expect(pickerBackground).toBe("rgb(21, 132, 132)");
+
+    // The card is the drop zone and says so.
+    await expect(page.locator(".empty-state #drop-hint")).toContainText("drop");
+  });
+
+  test("mobile portrait keeps the save bar away until there is a book to save", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#mobile-action-bar")).toBeHidden();
+
+    await page.getByRole("button", { name: /bst-scenario-basic/ }).click();
+    await expect(page.locator(".month-cards")).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+  });
+});
 
 test.describe("DIYA-GL books page — new-book form", () => {
   test("the form creates and renders an empty, honest book", async ({ page }) => {

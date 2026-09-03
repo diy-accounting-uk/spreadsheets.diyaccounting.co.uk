@@ -10,10 +10,12 @@
 
 import { describe, it, expect } from "vitest";
 import { parse as parseTOML } from "smol-toml";
-import { readFileSync, readdirSync, statSync } from "fs";
+import { build } from "esbuild";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
 import { resolve, dirname, join, relative } from "path";
-import { fileURLToPath } from "url";
-import { validateBook, validateLines } from "../lib/diya-gl-schema.js";
+import { fileURLToPath, pathToFileURL } from "url";
+import { validateBook, validateLines, useSchemas, useValidators, generateStandaloneValidatorSource } from "../lib/diya-gl-schema.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -147,5 +149,73 @@ describe("diya-gl schema, proved breakable", () => {
     const withStrayTable = { ...book, notATable: { anything: 1 } };
     expect(validateBook(withStrayTable).valid).toBe(false);
     expect(validateBook(book).valid).toBe(true);
+  });
+});
+
+// The browser bundle validates with functions ajv's standalone code
+// generator built ahead of time (scripts/build-books-bundle.mjs), because
+// ajv.compile() reaches `new Function`, which the production CSP forbids.
+// This proves that path agrees with the runtime-compiled one it replaces:
+// same verdict, same errors, on a book and lines fixture that pass and on
+// one crafted to fail.
+describe("diya-gl schema, the standalone-generated validators agree with the runtime-compiled ones", () => {
+  const bookSchema = JSON.parse(readFileSync(join(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
+  const linesSchema = JSON.parse(readFileSync(join(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
+  const fullDir = join(EXAMPLES_DIR, "precision-code-ltd", "full");
+  const book = readBook(fullDir);
+  const lines = readLines(fullDir);
+  const invalidBook = { ...book, notATable: { anything: 1 } };
+  const invalidLine = { ...lines[0], "diya-gl:notAField": "x" };
+
+  // generateStandaloneValidatorSource() emits a module with a bare
+  // require("ajv-formats/dist/formats") for its format checks - the same
+  // thing the books bundle resolves at build time. esbuild does the same
+  // resolution here, into a real ES module on disk that import() can load.
+  async function loadGeneratedValidators() {
+    const source = generateStandaloneValidatorSource(bookSchema, linesSchema);
+    const result = await build({
+      stdin: { contents: source, resolveDir: ROOT, loader: "js" },
+      bundle: true,
+      format: "esm",
+      platform: "node",
+      write: false,
+    });
+    const dir = mkdtempSync(join(tmpdir(), "diya-gl-schema-standalone-"));
+    const file = join(dir, "generated-validators.mjs");
+    writeFileSync(file, result.outputFiles[0].text);
+    try {
+      const generated = await import(pathToFileURL(file).href);
+      return { book: generated.validateBook, lines: generated.validateLines };
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("validates a book and its lines identically through both paths", async () => {
+    useSchemas(bookSchema, linesSchema);
+    const runtimeValidBook = validateBook(book);
+    const runtimeValidLines = validateLines(lines, book);
+    const runtimeInvalidBook = validateBook(invalidBook);
+    const runtimeInvalidLines = validateLines([invalidLine], book);
+
+    useValidators(await loadGeneratedValidators());
+    const generatedValidBook = validateBook(book);
+    const generatedValidLines = validateLines(lines, book);
+    const generatedInvalidBook = validateBook(invalidBook);
+    const generatedInvalidLines = validateLines([invalidLine], book);
+
+    // Restore the runtime-compiled path, so every other test in this file
+    // (and any test file sharing this worker) validates with it.
+    useSchemas(bookSchema, linesSchema);
+
+    expect(runtimeValidBook.valid, "the fixture book validates").toBe(true);
+    expect(runtimeValidLines.valid, "the fixture lines validate").toBe(true);
+    expect(runtimeInvalidBook.valid, "the crafted book fails").toBe(false);
+    expect(runtimeInvalidLines.valid, "the crafted line fails").toBe(false);
+
+    expect(generatedValidBook).toEqual(runtimeValidBook);
+    expect(generatedValidLines).toEqual(runtimeValidLines);
+    expect(generatedInvalidBook).toEqual(runtimeInvalidBook);
+    expect(generatedInvalidLines).toEqual(runtimeInvalidLines);
   });
 });

@@ -410,6 +410,9 @@ jobs:
       - name: Build sitemaps
         run: npm run build:sitemaps
 
+      - name: Build the books engine bundle
+        run: npm run build:books-bundle
+
       - name: Symlink zips into public directory
         run: ln -sfn ../../../target/zips web/spreadsheets.diyaccounting.co.uk/public/zips
 

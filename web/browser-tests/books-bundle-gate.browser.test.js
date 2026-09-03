@@ -13,9 +13,9 @@
 // web/spreadsheets.diyaccounting.co.uk/public/books/probe.js. Keep them in step.
 
 import { test, expect } from "@playwright/test";
-import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { startStaticServer } from "./serve.js";
 
 import {
   parseDiyaGlData,
@@ -33,33 +33,6 @@ const ROOT = process.cwd();
 const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public");
 const BUNDLE = path.join(PUBLIC_DIR, "books/engine/diya-gl-engine.js");
 const FIXTURE = path.join(ROOT, "examples/sp-sixty-driving/bst");
-
-const CONTENT_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".toml": "text/plain; charset=utf-8",
-  ".jsonl": "text/plain; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-};
-
-function startStaticServer(rootDir) {
-  const server = http.createServer((req, res) => {
-    const requested = decodeURIComponent(new URL(req.url, "http://localhost").pathname);
-    const filePath = path.join(rootDir, requested);
-    if (!filePath.startsWith(rootDir) || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-      res.writeHead(404).end("not found");
-      return;
-    }
-    res.writeHead(200, { "content-type": CONTENT_TYPES[path.extname(filePath)] || "application/octet-stream" });
-    res.end(fs.readFileSync(filePath));
-  });
-  return new Promise((resolveServer) => {
-    server.listen(0, "127.0.0.1", () => resolveServer({ server, port: server.address().port }));
-  });
-}
 
 // The Node run: the same steps probe.js takes, against the modules themselves.
 async function nodeRun() {
@@ -120,12 +93,12 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   });
 
   test("the bundled engine and the pipeline modules agree on the sp-sixty BST book", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     const consoleErrors = [];
     page.on("pageerror", (error) => consoleErrors.push(String(error)));
 
     try {
-      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/books/probe.html`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(() => document.body.dataset.probeState !== "running", null, { timeout: 60_000 });
 
       const probe = await page.evaluate(() => ({
@@ -167,14 +140,14 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       expect(node.checks.length, "the book produced checks to compare").toBeGreaterThan(0);
       expect(node.results["Profit & Loss Acc"].C4, "the book produced a turnover to compare").toBeGreaterThan(0);
     } finally {
-      server.close();
+      await close();
     }
   });
 
   test("a Node-only path fails loudly in the browser rather than returning nothing", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     try {
-      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/books/probe.html`, { waitUntil: "domcontentloaded" });
       const outcome = await page.evaluate(async () => {
         const engine = await import("./engine/diya-gl-engine.js");
         try {
@@ -188,15 +161,15 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       expect(outcome.threw, "reading a file through the Node loader throws in a browser").toBe(true);
       expect(outcome.message).toContain("not available in the books bundle");
     } finally {
-      server.close();
+      await close();
     }
   });
 
   test("validating before the schemas are supplied says so, rather than validating nothing", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     try {
       // A fresh page, so the probe's own loadSchemasFrom() has not run yet.
-      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "commit" });
+      await page.goto(`${baseUrl}/books/probe.html`, { waitUntil: "commit" });
       const outcome = await page.evaluate(async () => {
         const engine = await import("/books/engine/diya-gl-engine.js");
         try {
@@ -209,7 +182,7 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       expect(outcome.threw, "an unseeded validate throws").toBe(true);
       expect(outcome.message).toContain("useSchemas");
     } finally {
-      server.close();
+      await close();
     }
   });
 
@@ -217,9 +190,9 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
   // and nothing on the load path fetches it, so the asset layout's one binary
   // claim would otherwise go untested until W4 arrives.
   test("the BST template is where the asset layout says, and opens in the browser", async ({ page }) => {
-    const { server, port } = await startStaticServer(PUBLIC_DIR);
+    const { baseUrl, close } = await startStaticServer(PUBLIC_DIR);
     try {
-      await page.goto(`http://127.0.0.1:${port}/books/probe.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${baseUrl}/books/probe.html`, { waitUntil: "domcontentloaded" });
       const fetched = await page.evaluate(async () => {
         const probe = await import("./probe.js");
         return probe.readTemplate();
@@ -229,7 +202,7 @@ test.describe("books bundle gate — the browser engine is the Node engine", () 
       expect(fetched.byteLength, "the copied template is the one in app/templates/bst").toBe(fs.statSync(templatePath).size);
       expect(fetched.metadata, "the browser read the workbook, not just its bytes").toBeTruthy();
     } finally {
-      server.close();
+      await close();
     }
   });
 });

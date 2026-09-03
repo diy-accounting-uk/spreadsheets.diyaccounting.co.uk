@@ -57,45 +57,24 @@ output. "Where the page stands" is the audit of the delivered spike against this
 > /frontend-design:frontend-design to make sure is looks simple and refreshingly accessible for
 > users and incorporate proposed changes in PLAN_DIYA_GL_BST_CLI_MCP_WEB.md.
 
-## Where the page stands (audit, 2026-09-03)
+## Where the page stands
 
-The audit read the page, its tests, the engine, the CLI and MCP against the claims this
-document made on 2026-09-02, and drove the live page and a local build at four viewports.
+Audited 2026-09-03 against the spike's record, then rebuilt on `claude/bst-ledger` (PR #57)
+the same day. The audit found production unable to load any book (the site's Content
+Security Policy forbids `unsafe-eval`; ajv compiled schemas at runtime; every browser test
+passed against a server that sent no headers), no drag-and-drop, no JSON or JSONL path, no
+headline figures, no test tying the screen to the reconciliation's output, a mobile month
+card whose tap changed nothing, read-only business details, and charts on a second axis.
 
-**Production cannot load a book.** The site's Content Security Policy
-(`infra/.../SpreadsheetsStack.java`, `script-src 'self' 'unsafe-inline' …`) forbids
-`unsafe-eval`. `app/lib/diya-gl-schema.js` validates with ajv, which compiles each schema
-into JavaScript with `new Function`. Every load path (example, upload, new book) fails on
-`https://spreadsheets.diyaccounting.co.uk/books/bst.html` with a CSP violation rendered
-into the empty-state card. All 63 browser tests pass because the test server sends no CSP
-header. Nothing in `test:spreadsheetsBehaviour-prod` opens the books page. Task T1 fixes
-the validator, T2 makes the tests send the production headers so the class cannot recur.
-
-| Claim in the 2026-09-02 record | State | Evidence |
-|---|---|---|
-| Upload `.xlsx`/`.zip`, examples, new book, autosave | BUILT | `bst.js:349-448`, `autosave.js`; `.xls` refused by extension only, no content sniffing |
-| Drag-and-drop | MISSING | no `drop`/`dragover` handler anywhere |
-| JSON or JSONL import/export | MISSING | the page has no TOML writer and no JSON path; `diya-gl-canonical.js` reads schemas at import via `fs`, so it is not in the bundle |
-| Three-level drill on desktop | BUILT | `renderYearTableScroll`, `renderMonthDetail`, `renderEntriesTables` |
-| Mobile-portrait month cards "with drill-in navigation" | BROKEN | the card head sets `state.openMonth` and re-renders the table view, which mobile portrait hides; a tap changes nothing visible |
-| P&L, stock, ledgers, Income Tax, SA103S, Admin, Home views | BUILT | one render function each; P&L stops at Taxable Profit and omits the sheet's tax lines C30–C35 |
-| Fixed assets "register" | PARTIAL | additions list and allowance totals; no per-asset register table |
-| Business details "editable" | NOT BUILT | inputs are `readonly` |
-| Charts: proportional bar and grouped columns | BUILT, DEFECTIVE | inline SVG from calculated data; labels render at ~6px, the top value clips, the cumulative-profit line rides a second scale and overshoots its chart (a dual axis); no table alternative; placed at the bottom of the inspector rail |
-| Headline figures | MISSING | only a two-line turnover/profit strip, mobile portrait only |
-| Edits: amount, add, delete, undo, helpers | BUILT | date and account edits exist in the engine but no row control exposes them; the browser test injects that case through `setLines` |
-| Checks: engine group and book group, three fix-it helpers | BUILT | pass/fail only; no warning state exists anywhere in the engine or the page |
-| Drift with the correction mark, canonicalised | BUILT | `captureAsReadLayer`, `pencilCorrection`; proven breakable on `Income Tax!E11` |
-| Save `.xlsx` and package `.zip` | BUILT | `save.js` through `saveBstWorkbook`/`saveBstPackageZip` |
-| Four layouts, dark mode, reduced motion | BUILT | `bst.css:1483-1579`; four viewport specs |
-| "The equivalence test: four sources agree value-for-value" | MISSING | the bundle gate compares the browser engine to the Node engine object-for-object; nothing compares the DOM, `report.json`, or the fixture expectations |
-| "Render-equivalence sweep: every R key has a view" | MISSING | no figure carries its R key; tests read figures by text content and position |
-| CLI `--file`, `report.json`, `overtyped.json`, anchor guard | BUILT | `export.js`; four output files; `BstAnchorError` by name |
-| MCP: four tools, `.mcp.json` | BUILT | hand-rolled JSON-RPC stdio; `extract_book` byte-for-byte with the CLI |
-| Bundle built in `deploy.yml` and `test:browser` | BUILT | `deploy.yml:244`, `package.json` |
-
-Claims the record made that the code does not support are corrected in the specification
-below; nothing is asserted here that a grep or a screenshot did not show.
+After the batch: the validators are precompiled; the specs serve production's headers from
+the same file the CDK stack reads; six byte kinds load by content through one module the
+CLI, MCP and page share; the diya-gl zip and JSON export exist and the zip's `report.json`
+is byte-identical to the CLI's; book checks and five warnings run on every surface; the
+year-at-a-glance strip leads every view; every rendered figure carries its report key and
+the five-source suite, the round trips, the warning proofs and an axe gate at four viewports
+run in `test:browser` (127 browser tests). Three fixture defects fixed at source on the way:
+SP Sixty's April bill dated before its period, fixed-asset dates written differently by
+the extractor and the export, and a regenerated workbook renumbering lines.
 
 ## Specification
 
@@ -164,7 +143,7 @@ The save control offers four downloads, all generated client-side from the curre
 |---|---|---|
 | Workbook (`.xlsx`) | `saveBstWorkbook`, `fullCalcOnLoad` set | the package's own workbook name |
 | Package (`.zip`) | `saveBstPackageZip`, the package directory shape | the package directory name |
-| Books as diya-gl (`.zip`) | `book.toml`, `lines.jsonl`, `report.json`, and `overtyped.json` when the source was a workbook; exactly the four files `export.js --file` writes, byte-for-byte | `<business>-diya-gl.zip` |
+| Books as diya-gl (`.zip`) | `book.toml`, `lines.jsonl`, `report.json`, `bookchecks.json`; the same bytes `export.js --file` writes for those files (the CLI adds `overtyped.json` for a workbook source; the sidecar reads the template through Node and stays a horizon for the browser) | `<business>-diya-gl.zip` |
 | Books as JSON (`.json`) | the single-file form above | `<business>-diya-gl.json` |
 
 `report.json` is `R` built by `buildReportDocument`/`serializeReportDocument` over the
@@ -187,11 +166,12 @@ Three tiers, in one panel, each with its own count in the summary tiles:
 
 - **Engine checks** — `checkCompliance`, the reconciliation's own checks, never softened.
   In the browser both sides of every engine check derive from the same `(book, lines)`, so
-  a line edit moves both sides together. The only engine checks a browser edit can fail are
-  the tolerance-0 and 0.01 ones: `SA103S: Net profit close to P&L Net` (a sub-penny
-  fraction on a `d`-coded or expense line splits the 2 dp form box from the whole-pound
-  P&L), the two mileage checks (an edited `measurableQuantity`), and the profit bridge. Task
-  T15 proves each one from the UI.
+  a line edit moves both sides together. As proven from the UI: a non-whole-pound amount on
+  a direct-cost or stock line (a `d`/`s` code, e.g. `100.006`) fails `SA103S: Net profit
+  close to P&L Net` and the profit bridge, because the P&L rounds to whole pounds and the
+  form box to pennies; the whole-pence helper clears the book check but not those two, and
+  only undo does (a rounding tie such as `100.005` flips nothing). The two mileage checks
+  cannot be split by any edit: both sides recompute from the same line.
 - **Book checks** — over `D` itself, where an entry can be wrong while every sheet total
   still adds up. The three shipped classes (dated outside the period, posted outside the
   chart, finer than a penny) move from the page into `app/lib/book-checks.js` (task T5) so
@@ -208,10 +188,12 @@ Three tiers, in one panel, each with its own count in the summary tiles:
 | Negative amount | a sale or purchase below zero (a refund belongs on the other journal) | the lines |
 | Month with no entries inside a trading year | zero lines in a month between the first and last dated entries | the lines |
 
-Result states across all three tiers are `pass`, `warn`, `fail`. The report serializer
-keeps `check/` verdicts as they are (engine checks never warn); book checks and warnings
-serialise under `bookcheck/<id>` with the three-state verdict, so `report.json` carries
-what the panel shows.
+Result states across all three tiers are `pass`, `warn`, `fail`. `R` stays exactly what the
+engine checks produce, so every producer of `report.json` (the CLI, the MCP, the page,
+`report.js`) writes the same bytes and the roundtrip budgets never see a new key. Book
+checks and warnings serialise beside it as `bookchecks.json` (one entry per rule: id,
+verdict, offenders), the fifth file of a diya-gl zip and of `export.js --file`'s output;
+the MCP `report` tool returns them as a separate field.
 
 "Make a sale/purchase from a bank item" does not apply to BST, which has no bank book. The
 card leaves the BST page (it was rendering a live-looking Preview button on a disabled
@@ -228,14 +210,15 @@ layer.
 |---|---|---|
 | Turnover | sales for the year | `cell/Profit & Loss Acc!C4` |
 | Outgoings | everything spent, with its split | `C6 + C7 + C22`; sub-line "cost of sales" = `C6 + C7` (stock and direct costs), "running costs" = `C22` (the eleven expense lines) |
-| Assets | what the business holds at year end | `cell/Fixed Assets!M1` (tax written-down value) + `cell/PurchasesStock!D30` (closing stock) + `cell/Debtors & Creditors!C29` (owed by customers); the three parts on the tile's second line |
+| Assets | what the business holds at year end | `cell/Fixed Assets!M1` (tax written-down value) + `cell/PurchasesStock!D30` (closing stock); `cell/Debtors & Creditors!C29` (owed by customers) shown on the second line, not summed: the example book records few settlements, so debtors nearly equal turnover and the sum read as nonsense |
 | Tax | income tax and Class 4 NI for the year, less CIS | `cell/Income Tax!E18` |
 
 BST's P&L has no administrative-expenses subtotal; its split is cost of sales versus the
 expense lines, and the tile says so in the customer's words ("cost of sales" / "running
 costs"). The assets tile uses written-down value rather than cost because that is the
 figure the sheet carries forward; the alternative (cost, `Fixed Assets!E1`) is one line of
-code if the operator prefers it. BST computes no Class 2 NI (the sheet carries only the
+code if the operator prefers it. The summary tiles count "need attention" as failures plus
+warnings; the panel tells them apart by icon, word and colour. BST computes no Class 2 NI (the sheet carries only the
 rate); the tax tile states what it includes.
 
 The derivation lives in `app/lib/bst-headlines.js` (task T4), a pure function from an `R`
@@ -435,7 +418,7 @@ session, replaying the harness cases byte-for-byte.
 
 This pass adds, through the shared interchange module (T3): `--file` and `extract_book`
 accept the diya-gl zip, the JSON and the zipped JSON as inputs; `report` and the CLI's
-`report.json` carry the `bookcheck/` verdicts (T5); `save_workbook` gains
+output carry the book checks and warnings as `bookchecks.json` (T5); `save_workbook` gains
 `format: "diya-gl-zip" | "json"`. No new engine code beyond those modules.
 
 ## Delivered
@@ -449,88 +432,35 @@ Playwright suite stands at 63 tests across five books specs.
 
 ## Task list
 
-Each task names its tier, the files it owns, what it delivers and the rung that proves it.
-Worktree sub-agents fork from main and open by merging the batch branch; the coordinator
-merges and removes each worktree as it lands. Read-only for every task: `examples/`,
-`app/test/fixtures/`, `app/data/roundtrip-*.json`, `app/products/bst.js`,
-`app/lib/calculators/`. Every task commits before it verifies, runs its own blast radius
-serially, and leaves the full suite to the coordinator's closing ladder.
+Delivered on `claude/bst-ledger` (PR #57), one batch branch, every row landed by a
+worktree sub-agent and merged by the coordinator; the board in `NEXT.md` carried the rows
+while they were open:
 
-**Landing shape.** One batch branch, `claude/bst-ledger`, with a draft PR to main. Every
-machine task lands on it the moment its precursors are done; the branch deploys to the ci
-environment (`deploy.yml` dispatched on the branch) after each landing, and the behaviour
-run against `ci-spreadsheets.diyaccounting.co.uk` is where the books page proves it loads.
-Nothing waits on a merge. The waves below group tasks by kind; the precursors on the board
-in `NEXT.md` (one row per task, ids as here) are the only gates. The one real serialiser is
-`bst.js`: T10, then T7, then T13, then T11 own it in turn. Every gate is a pipeline check;
-the only human step is the merge of the batch to main at the end, which no task waits on.
+- T1 precompiled validators (`8e37e594`); T2 one source of security headers, the ci and
+  prod behaviour probe (`e0c8518f`); T3 the interchange module, CLI and MCP reading every
+  kind (`2267852d`); T4 the headline figures module (`cbebf3f8`); T5 book checks and
+  warnings (`80d25fc1`); T10 render keys and the coverage sweep (`ddf23204`); R1 the checks
+  wired into the CLI, MCP and page (`3a2192e2`); R2 SP Sixty's April bill (`f5f28df8`);
+  T7 formats on the page (`cdcc271c`); T9 the strip (`63ce7e64`); R3 the strip mounted,
+  `bookchecks.json` in the zip (`82037b7d`); T14 the equivalence and layout suites
+  (`2c3f5f75`); R5 rows land on the same sheet position every time (`696ae207`); T13 the
+  UX pass (`061c4c42`); T11 date and account row editors, the five-column year table
+  (`77bfa74b`); T15 the edit and warning proofs (`2a114c13`).
 
-### Wave 0 — production loads a book again (first on the branch)
+Open:
 
-| Task | Tier | Owns | Delivers | Rung |
-|---|---|---|---|---|
-| **T1 CSP-safe validation** | Sonnet | `app/lib/diya-gl-schema.js`, `scripts/build-books-bundle.mjs`, `app/test/diya-gl-schema.test.js` | the two v2 schemas precompiled with ajv's standalone code generator at bundle-build time into `books/engine/`, the browser path importing the generated validators, Node keeping runtime compilation; no `new Function`/`eval` reachable from the bundle | the bundle loads and validates a book under the production CSP served locally (T2's server, or a one-off header in the spec until T2 lands); grep of the built bundle finds no `new Function`; validation errors byte-identical between the two paths on a deliberately invalid book |
-| **T2 headers in tests and the prod probe** | Sonnet | `infra/main/resources/security-headers.json`, `SpreadsheetsStack.java` (read the file), `web/browser-tests/serve.js` (one server for all books specs), `behaviour-tests/spreadsheets.behaviour.test.js` | one source for the security headers; every books spec served with them; the behaviour run loading an example on the books page and reading the headline tiles (until T9 lands: the year total) | the pre-T1 bundle fails `test:browser` under the new server, the post-T1 bundle passes; `./mvnw clean verify` and `cdk:synth` green with the header string unchanged |
-
-T1 and T2 are disjoint and run concurrently. The wave closes with `test:browser`, `npm
-test`, and the branch deploy; T2's behaviour probe against ci is the check that the page
-loads an example.
-
-### Wave 1 — engine foundations (Node-side, no page behaviour)
-
-| Task | Tier | Owns | Delivers | Rung |
-|---|---|---|---|---|
-| **T3 interchange formats** | Opus | new `app/lib/books-interchange.js`, `app/lib/diya-gl-canonical.js` (schemas through the seam), `app/lib/books-engine.js` (export the canonical writers, the report serializer, `overtypedCells`, the new module), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/books-interchange.test.js` | content sniffing for the six byte kinds; readers for the diya-gl zip, JSON and zipped JSON; writers for the diya-gl zip (four files, the CLI's exact bytes) and the JSON; the CLI and MCP reading every kind and the MCP saving the two new kinds | the CLI's `--file` on a diya-gl zip of its own output reproduces that output byte-for-byte; a `.zip` renamed `.xlsx` loads; each refusal names its kind; the bundle builds with the canonical module inside and no import-time `fs` |
-| **T4 headline figures** | Sonnet | new `app/lib/bst-headlines.js`, `app/test/bst-headlines.test.js` | the pure derivation from an `R` document to four tiles and two pie datasets, the negative-profit branch, the ≤6-slice fold | figures anchored to the three fixtures' `[expected]` totals; one corrupted `R` value moves exactly the tiles that depend on it |
-| **T5 book checks and warnings** | Sonnet | new `app/lib/book-checks.js`, `app/test/book-checks.test.js`, `app/lib/report-serializer.js` (`bookcheck/` entries), `web/.../books/bst-edits.js` (thin: call the module through the bundle), `app/lib/mcp/diya-gl-tools.js` (`report` carries them) | the three classes moved, the five warnings added, three-state verdicts, helpers unchanged in behaviour | each of the eight rules broken by one crafted line and only that rule flips; the browser edits spec stays green; `report.json` gains the `bookcheck/` keys and nothing else changes |
-| **T10 render hooks** | Sonnet | `web/.../books/bst.js` (every render function), new `app/data/render-unrepresentable.json`, `app/test/render-coverage.test.js` | `data-r-key` on every rendered figure, including both drill levels, the declared-absence file, and a Node test that renders every view over S2 through jsdom and diffs the key sets | the declared list is short and every entry has a reason; removing one hook fails the test naming the key |
-
-T3 and T5 both touch `diya-gl-tools.js`: T5 owns the `report` change and rebases onto T3
-when T3 lands first. T10 is the only wave-1 task in `bst.js`.
-
-### Wave 2 — the page grows the features
-
-| Task | Tier | Owns | Delivers | Rung |
-|---|---|---|---|---|
-| **T7 formats on the page** | Sonnet | `bst.js` (load and save paths), `bst-data.js`, `save.js`, `bst.html`, the empty-state CSS block in `bst.css` | the drop zone with its states and refusals, the picker widened, every load through `books-interchange.js`, the two new downloads, `window.DIYA_BST_SNAPSHOT.report` | the six byte kinds through picker and drop each land the same `D`; the diya-gl zip download equals `export.js --file` on the same workbook byte-for-byte; the refusal copy matches the spec |
-| **T9 the strip** | Opus | new `web/.../books/headlines.js`, a `headlines` section appended to `bst.css`, the two chart functions moved out of `bst.js` into the module (coordinator applies the one-line mount in `bst.js`) | the four tiles, the two pies, the table alternatives, the redrawn bar and monthly charts, the palette validated in both modes with the dataviz validator, four-viewport screenshots of the strip captured as CI artefacts | the tiles carry `headline/` keys equal to `bst-headlines.js` over S2; slices sum to the tile; a book with a net loss renders the stacked bar; axe clean on the strip |
-
-Disjoint files except the mount line. The strip's four-viewport screenshots land as CI
-artefacts on every run, so a look at them costs a click and never gates a task.
-
-### Wave 3 — verification and the UX pass
-
-| Task | Tier | Owns | Delivers | Rung |
-|---|---|---|---|---|
-| **T13 the UX pass** | Opus | `bst.js`, `bst.css`, `bst.html` (T7 and T9 have landed) | the nine changes in "Visual identity and the UX pass" plus the view corrections in "Views": default columns and the toggle, mobile drill-in, the collapsed checks, the copy, the P&L tax lines, the per-asset register, editable business details, Income Tax's CIS row and chips, the Admin subtitle, the hidden mobile save bar, the bank-item card gone | the existing 63 specs stay green with selectors moved to `data-*`; four-viewport screenshots before and after; keyboard-only traversal recorded in a spec |
-| **T14 the equivalence suite** | Sonnet | new `web/browser-tests/r-sources.js`, `books-equivalence.browser.test.js`, `books-formats.browser.test.js`, `books-layouts.browser.test.js`, `playwright.config.js` (register), `package.json` (axe dependency) | A1–A7, E3–E6 | every assertion proven breakable: one corrupted `<v>` (A7), one edited served example (A1), one removed hook (A5), one changed R value in the snapshot (A4) each fail exactly the assertion that guards them |
-
-T13 owns the page files; T14 reads them only through `data-*` hooks, so the two run
-concurrently and T14 rebases once T13 lands.
-
-### Wave 4 — row editing and the behaviour proofs
-
-| Task | Tier | Owns | Delivers | Rung |
-|---|---|---|---|---|
-| **T11 date and account editing** | Sonnet | `bst.js` (the entries grid), `bst-edits.js` (two commit ops), `bst.css` (grid inputs) | a date input and a category select on every entry row, committing through `changeLinePostingDate` and `changeLineAccount`, keyboard-complete, undoable | the two edits move the month and category totals as the engine says; an out-of-period date and an out-of-chart account are now reachable from the UI and the existing helper specs stop injecting through `setLines` |
-| **T15 edit and warning proofs** | Sonnet | `web/browser-tests/books-bst-edits.browser.test.js` | E1 in full (each UI edit's `report.json` equal to Node's after the same named edit) and E2's table, every row | each row of E2 flips exactly its verdicts; each helper's preview text matches; undo restores the flagged state |
-
-T15 depends on T11 for the date and account rows; it lands the other rows first and adds
-those two on rebase.
-
-### Closing ladder, every wave
-
-Coordinator, merged batch branch, quiet machine: `npx vitest run --fileParallelism=false`
-teed; `npm run test:browser` teed; `npm run formatting`; `./mvnw clean verify` when
-`infra/` changed; the roundtrip budgets unchanged; then the PR. After the merge and deploy,
-`test:spreadsheetsBehaviour-prod` against the live page.
+- **R4** — refresh `examples/bst-latest` through the generate-bst workflow on main, then
+  drop the two-cell allowlist in `books-equivalence.browser.test.js` (A3) and the
+  entry-number normalisation in `books-formats.browser.test.js` (E3). Runs after the merge
+  as the operator's main-side generate refresh.
+- **H3** — merge PR #57.
 
 ### Horizons named, not decided
 
-Reading `.xls` directly; a per-contact debtors ledger for BST (the sheet has none);
-Class 2 NI in the tax tile (the sheet carries only the rate); archiving CI's Excel-side
-`report.json` as a workflow artefact so S3 exists for all three scenarios rather than the
-one CI populates.
+Reading `.xls` directly; the overtype sidecar in the browser (it reads the template through
+Node); a per-contact debtors ledger for BST (the sheet has none); Class 2 NI in the tax
+tile (the sheet carries only the rate); archiving CI's Excel-side `report.json` as a
+workflow artefact so S3 exists for all three scenarios rather than the one CI populates.
 
 ## As-built notes from the spike (for the successor plans)
 
@@ -570,6 +500,17 @@ start here.
     written but never read; `state.book` never set so save was inert; the D&C fiction; a
     month card that sets state a hidden view renders. List every write with no reader and
     every reader with no writer; that list is the defect forecast.
-11. **The engine's checks cannot fail from a line edit.** Both sides derive from the same
+11. **Brief sub-agents to block on their own runs.** Three of sixteen agents ended their
+    turn with a Playwright run still going and work uncommitted, twice each. The brief
+    line that fixed it: commit first; wait with one blocking Bash call
+    (`timeout 900 bash -c 'while pgrep -f "playwright test" >/dev/null; do sleep 15; done'`);
+    never end a turn with a test running. Model overload on the top tier (three 529s in
+    one hour) was absorbed by re-dispatching the same brief one tier down; a brief rich
+    enough to survive that is the standard.
+12. **A canonical-writer change regenerates the fixtures in the same batch.** The
+    fixture sync gate diffs a fresh extraction against the committed books; three bare
+    dates failed it until the extractor ran again. A push that touches only `examples/`
+    triggers no test run, so the next code push carries the gate.
+13. **The engine's checks cannot fail from a line edit.** Both sides derive from the same
     `(book, lines)`. Anything a customer can get wrong that the sheet still totals is a
     book check, and it lives in `app/lib` so every surface runs it.

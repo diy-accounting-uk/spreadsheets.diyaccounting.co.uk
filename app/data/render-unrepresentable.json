@@ -1,0 +1,42 @@
+{
+  "cell/Profit & Loss Acc!C26": "The P&L view's Capital Allowances row shows the Fixed Assets schedule's AIA total (Fixed Assets!K1) instead of this sheet's own duplicate cell.",
+  "section/profit-loss-account/capital-allowances": "The P&L view's Capital Allowances row shows the Fixed Assets schedule's AIA total (Fixed Assets!K1) instead of this sheet's own duplicate cell.",
+  "cell/Profit & Loss Acc!C28": "The P&L view's Taxable Profit row shows the Income Tax sheet's own profit figure (Income Tax!E5) instead of this sheet's own duplicate cell.",
+  "section/profit-loss-account/taxable-profit": "The P&L view's Taxable Profit row shows the Income Tax sheet's own profit figure (Income Tax!E5) instead of this sheet's own duplicate cell.",
+
+  "cell/PurchasesMar!X1": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+  "section/purchase-analysis/purchases-capitalised-as-fixed-assets": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+  "cell/PurchasesMar!C1": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+  "section/purchase-analysis/business-miles-for-the-year": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+  "cell/PurchasesMar!A1": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+  "section/purchase-analysis/mileage-claimed-for-the-year": "No view prints the year's Purchase Analysis totals (purchases capitalised, business miles, mileage claimed).",
+
+  "cell/Fixed Assets!E67": "The Fixed Assets view lists every addition from the book's own lines; the schedule's single-row input cell has no distinct printed figure.",
+  "section/fixed-assets/new-asset-cost-plant-machinery": "The Fixed Assets view lists every addition from the book's own lines; the schedule's single-row input cell has no distinct printed figure.",
+
+  "cell/PurchasesStock!D7": "The Stock view shows Opening and Closing Stock only; this carry-forward duplicate of Opening Stock has no separate row.",
+  "section/stock/stock-at-cost": "The Stock view shows Opening and Closing Stock only; this carry-forward duplicate of Opening Stock has no separate row.",
+
+  "cell/SE Short!O38": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "section/self-assessment-sa103s/other-business-income-box-9": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "cell/SE Short!D85": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "section/self-assessment-sa103s/aia-wda-claimed": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "cell/SE Short!D94": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "section/self-assessment-sa103s/other-tax-adjustments": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "cell/SE Short!D106": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+  "section/self-assessment-sa103s/net-profit-for-tax-calc": "The SA103S view's box layout (SA103S_LAYOUT, bst-data.js) does not print this box.",
+
+  "section/accounting-profit-to-tax-profit-bridge/net-profit-per-the-profit-and-loss-account": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-9": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/less-net-loss-for-the-year-box-21": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/less-annual-investment-allowance-box-22": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/less-small-balance-allowance-box-23": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/less-other-capital-allowances-box-24": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/add-balancing-charges-box-25": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/add-goods-and-services-for-own-use-box-26": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/add-other-business-income-box-29": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/less-loss-brought-forward-box-28": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-bridge-computes": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/tax-profit-the-sheet-carries": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page.",
+  "section/accounting-profit-to-tax-profit-bridge/residue": "The page has no profit-bridge view; the bridge from accounting profit to tax profit is not printed anywhere on the books page."
+}

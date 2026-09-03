@@ -18,7 +18,9 @@
     <div id="app">
       <header class="app-topbar">
         <a class="app-mark" href="bst.html">DIYA<span>-GL</span></a>
-        <a class="app-back" href="../download.html?product=BasicSoleTrader">&larr; Back to Spreadsheets</a>
+        <a class="app-back" href="../download.html?product=BasicSoleTrader"
+          ><span aria-hidden="true">&larr;</span> <span class="app-back-label">Back to Spreadsheets</span></a
+        >
         <div id="app-title" class="app-title">DIYA-GL — Basic Sole Trader books</div>
         <button
           type="button"
@@ -28,7 +30,7 @@
           title="Toggle dark theme"
           aria-label="Toggle dark theme"
         >
-          &#9788;
+          &#9788;<span class="btn-label">Theme</span>
         </button>
         <button
           type="button"
@@ -37,12 +39,14 @@
           title="Checks &amp; charts"
           aria-label="Open checks and charts"
         >
-          &#128203;
+          &#128203;<span class="btn-label">Checks</span>
         </button>
         <button type="button" id="undo-btn" class="icon-btn undo-btn hidden" title="Undo the last change" aria-label="Undo the last change">
-          &#8630;
+          &#8630;<span class="btn-label">Undo</span>
         </button>
-        <button type="button" id="save-btn" class="icon-btn save-btn" title="Save workbook" aria-label="Save workbook">&#128190;</button>
+        <button type="button" id="save-btn" class="icon-btn save-btn" title="Save workbook" aria-label="Save workbook">
+          &#128190;<span class="btn-label">Save</span>
+        </button>
       </header>
 
       <nav id="sheet-tabs" class="sheet-tabs hidden" role="tablist" aria-label="Book sheets"></nav>
@@ -69,6 +73,7 @@
     <script src="autosave.js"></script>
     <script type="module" src="bst-data.js"></script>
     <script src="bst-edits.js"></script>
+    <script src="headlines.js"></script>
     <script src="bst.js"></script>
   </body>
 </html>

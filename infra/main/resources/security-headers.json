@@ -1,0 +1,16 @@
+{
+  "contentSecurityPolicy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.paypalobjects.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://www.paypalobjects.com https://www.google-analytics.com https://www.googletagmanager.com https://avatars.githubusercontent.com; font-src 'self'; connect-src 'self' https://www.paypal.com https://www.paypalobjects.com https://*.google-analytics.com https://www.googletagmanager.com https://api.github.com; frame-src https://www.paypal.com; frame-ancestors 'none'; form-action 'self' https://www.paypal.com;",
+  "strictTransportSecurityMaxAgeSeconds": 31536000,
+  "strictTransportSecurityIncludeSubdomains": true,
+  "contentTypeOptionsNosniff": true,
+  "frameOption": "DENY",
+  "referrerPolicy": "strict-origin-when-cross-origin",
+  "xssProtection": true,
+  "xssProtectionModeBlock": true,
+  "customHeaders": {
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Embedder-Policy": "unsafe-none",
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Server": "DIY-Accounting"
+  }
+}

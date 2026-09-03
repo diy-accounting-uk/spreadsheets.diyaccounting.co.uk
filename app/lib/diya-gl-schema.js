@@ -10,6 +10,7 @@
 
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import standaloneCode from "ajv/dist/standalone/index.js";
 import { readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
@@ -34,6 +35,46 @@ function compileSchemas(bookSchema, linesSchema) {
  */
 export function useSchemas(bookSchema, linesSchema) {
   validators = compileSchemas(bookSchema, linesSchema);
+}
+
+/**
+ * Supply the two validators already compiled, rather than have this module
+ * compile the schemas itself. They must be shaped exactly like ajv's own
+ * compiled validators: called with the parsed data, each returns a boolean
+ * and leaves its failures on its own `.errors` property.
+ *
+ * This is the injection seam for a caller with no `new Function` - a Content
+ * Security Policy with no `unsafe-eval` forbids the `new Function` inside
+ * ajv.compile, which useSchemas() and loadSchemasFrom() both reach. The
+ * books bundle takes a different route to the same result (see
+ * scripts/build-books-bundle.mjs: it resolves ajv's own imports to functions
+ * generateStandaloneValidatorSource() built ahead of time, so useSchemas()
+ * and loadSchemasFrom() keep working unchanged); this function is the direct
+ * seam for a caller - a test proving the two validator sources agree, or a
+ * future one - that would rather hand the compiled validators in itself.
+ * @param {{book: Function, lines: Function}} generated
+ */
+export function useValidators(generated) {
+  validators = generated;
+}
+
+/**
+ * Turn the two v2 schemas into the source of a standalone JavaScript module
+ * that exports `validateBook` and `validateLines` - ajv's own code
+ * generator, run once here rather than by `new Function` every time a page
+ * loads. The source still calls a bare `require("ajv-formats/dist/formats")`
+ * for its format checks, so a caller bundles it (esbuild, webpack, rollup)
+ * before running it anywhere the module has no `require`.
+ * @param {Object} bookSchema - parsed diya-gl-book-v2.schema.json
+ * @param {Object} linesSchema - parsed diya-gl-lines-v2.schema.json
+ * @returns {string} an ES module's source
+ */
+export function generateStandaloneValidatorSource(bookSchema, linesSchema) {
+  const ajv = new Ajv2020({ allErrors: true, code: { source: true, esm: true } });
+  addFormats(ajv);
+  ajv.addSchema(bookSchema, "book");
+  ajv.addSchema(linesSchema, "lines");
+  return standaloneCode(ajv, { validateBook: "book", validateLines: "lines" });
 }
 
 /**
