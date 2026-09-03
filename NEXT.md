@@ -16,7 +16,9 @@ Node in `readBookSource`, the page keeps its in-memory workbook reader), T14 (`2
 a two-cell allowlist because `examples/bst-latest` predates the fixture's tax-table and description
 edits; the axe gate fails on `color-contrast` at three viewports until T13), T9 (`63ce7e64`; the strip
 module is built but not yet mounted in `bst.js`), R1 (`3a2192e2`), T7 (`cdcc271c`; 46 page specs green), R3 (`82037b7d`; the strip is live on every view; axe
-`color-contrast` now fails at all four viewports until T13).
+`color-contrast` now fails at all four viewports until T13), R5 (`696ae207`; a regenerated BST
+workbook now writes rows in canonical line order, so the next generate refresh moves ~199 of
+`bst-latest`'s 528 rows).
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
@@ -28,8 +30,7 @@ after each landing. No row waits on a merge.
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| R5 | `extractBstTransactions` assigns `entryNumber` by row position, so a regenerate-then-re-extract cycle renumbers lines; decide whether the workbook can carry the entry number (E3's round trip normalises it today) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | in-flight | found by T7; Sonnet |
-| R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the allowlist |
+| R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the A3 allowlist and E3's entry-number normalisation in the formats spec |
 | H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
