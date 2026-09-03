@@ -210,8 +210,16 @@
   }
 
   var schemasReady = null;
+  // Two caches, loaded together: diya-gl-schema.js's (validateBook/
+  // validateLines, what readBookSource checks a diya-gl zip or JSON
+  // against) and diya-gl-canonical.js's own separate one (what
+  // canonicalBookToml/canonicalLinesJsonl/writeBookJson read field order
+  // and money-vs-rate typing from -- used by the diya-gl zip and JSON
+  // downloads). Both are Promise.all'd once and cached the same way.
   function ensureSchemas(engine, resources) {
-    if (!schemasReady) schemasReady = engine.loadSchemasFrom(resources);
+    if (!schemasReady) {
+      schemasReady = Promise.all([engine.loadSchemasFrom(resources), engine.loadCanonicalSchemasFrom(resources)]);
+    }
     return schemasReady;
   }
 
@@ -1032,6 +1040,11 @@
     if (kind === "workbook" || kind === "package-zip") {
       return loadFromFile(file);
     }
+    // readBookSource validates a diya-gl zip/JSON's book and lines against
+    // the published schemas as it reads them, so the schemas have to be in
+    // place before this call, not just before computeAndAssemble below.
+    var resources = await loadResources();
+    await ensureSchemas(engine, resources);
     var source = await engine.readBookSource(fileBytes, file.name);
     return computeAndAssemble(file.name, source.book, source.lines, source.kind);
   }

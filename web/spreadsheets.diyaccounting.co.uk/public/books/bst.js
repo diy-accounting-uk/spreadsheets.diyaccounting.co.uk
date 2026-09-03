@@ -2385,9 +2385,12 @@
       actionBtn.type = "button";
       actionBtn.className = "toast-action-btn";
       actionBtn.textContent = action.label;
+      // #toast is pointer-events:none so a plain message never blocks a
+      // click on the page underneath it; this button opts back in so the
+      // one toast that carries a control stays clickable.
       actionBtn.style.cssText =
         "margin-left:0.75rem;border:1px solid currentColor;background:none;color:inherit;" +
-        "padding:0.2rem 0.6rem;border-radius:var(--radius);cursor:pointer;font:inherit;";
+        "padding:0.2rem 0.6rem;border-radius:var(--radius);cursor:pointer;font:inherit;pointer-events:auto;";
       actionBtn.addEventListener("click", function () {
         window.clearTimeout(toastTimer);
         els.toast.classList.remove("is-visible");
