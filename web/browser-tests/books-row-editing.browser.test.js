@@ -87,6 +87,10 @@ function bookCheck(id) {
 
 // ── Date editing ─────────────────────────────────────────────────────────
 
+// The date input's segment order follows the browser locale; the keyboard test
+// types into the month segment, so the locale is pinned rather than assumed.
+test.use({ locale: "en-GB", timezoneId: "Europe/London" });
+
 test.describe("DIYA-GL books page — entry date editing", () => {
   test("moving an entry's date to another month moves both months' totals and leaves the year alone", async ({ page }) => {
     await openBook(page);

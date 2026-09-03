@@ -21,8 +21,8 @@ workbook now writes rows in canonical line order, so the next generate refresh m
 `bst-latest`'s 528 rows), T13 (`061c4c42`; 105 browser specs green, the axe gate green at four
 viewports), T15 (`2a114c13`; 32 edit and warning proofs; the sub-penny trigger needs a non-tie
 fraction on a direct-cost line and the mileage checks cannot be split by any edit), T11 (`77bfa74b`; row date and account
-editors, five default year columns). Closing ladder in flight on the merged batch: formatting,
-Maven verify, the full serial unit suite, the full browser suite.
+editors, five default year columns). Closing ladder green on the merged batch: formatting, Maven verify, 7779/7779 unit tests
+serially, 150/150 browser tests.
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
 ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
