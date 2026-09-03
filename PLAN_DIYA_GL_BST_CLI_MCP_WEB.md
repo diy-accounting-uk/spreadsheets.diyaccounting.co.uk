@@ -456,15 +456,17 @@ merges and removes each worktree as it lands. Read-only for every task: `example
 `app/lib/calculators/`. Every task commits before it verifies, runs its own blast radius
 serially, and leaves the full suite to the coordinator's closing ladder.
 
-**Landing shape.** T1 and T2 ship first as their own PR: production is broken and a
-two-task fix does not wait behind a batch. Every other machine task lands on one batch
-branch, `claude/bst-ledger`, with a draft PR to main, and starts the moment its precursors
-are done. The waves below group tasks by kind; the precursors on the board in `NEXT.md`
-(one row per task, ids as here) are the only gates. The one real serialiser is `bst.js`:
-T10, then T7, then T13, then T11 own it in turn. Two human gates: the operator's look at
-the strip (before T13) and the batch merge.
+**Landing shape.** One batch branch, `claude/bst-ledger`, with a draft PR to main. Every
+machine task lands on it the moment its precursors are done; the branch deploys to the ci
+environment (`deploy.yml` dispatched on the branch) after each landing, and the behaviour
+run against `ci-spreadsheets.diyaccounting.co.uk` is where the books page proves it loads.
+Nothing waits on a merge. The waves below group tasks by kind; the precursors on the board
+in `NEXT.md` (one row per task, ids as here) are the only gates. The one real serialiser is
+`bst.js`: T10, then T7, then T13, then T11 own it in turn. Two human activities: the
+operator's look at the strip on the ci deploy (before T13) and the merge of the batch to
+main at the end, which no task waits on.
 
-### Wave 0 — production loads a book again (its own PR, first)
+### Wave 0 — production loads a book again (first on the branch)
 
 | Task | Tier | Owns | Delivers | Rung |
 |---|---|---|---|---|
@@ -472,7 +474,8 @@ the strip (before T13) and the batch merge.
 | **T2 headers in tests and the prod probe** | Sonnet | `infra/main/resources/security-headers.json`, `SpreadsheetsStack.java` (read the file), `web/browser-tests/serve.js` (one server for all books specs), `behaviour-tests/spreadsheets.behaviour.test.js` | one source for the security headers; every books spec served with them; the behaviour run loading an example on the books page and reading the headline tiles (until T9 lands: the year total) | the pre-T1 bundle fails `test:browser` under the new server, the post-T1 bundle passes; `./mvnw clean verify` and `cdk:synth` green with the header string unchanged |
 
 T1 and T2 are disjoint and run concurrently. The wave closes with `test:browser`, `npm
-test`, and a deploy; the operator confirms the live page loads an example.
+test`, and the branch deploy; the behaviour run against ci confirms the page loads an
+example.
 
 ### Wave 1 — engine foundations (Node-side, no page behaviour)
 

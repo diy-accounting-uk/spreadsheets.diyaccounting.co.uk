@@ -7,9 +7,9 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
-ledger. Landing shape: T1 and T2 ship first as their own PR because production is broken;
-every other machine row lands on one batch branch, `claude/bst-ledger`, with a draft PR to
-main, and starts as soon as its precursors are done.
+ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
+on it as soon as its precursors are done and the branch deploys to the ci environment
+after each landing. No row waits on a merge.
 
 ## Board
 
@@ -17,7 +17,7 @@ main, and starts as soon as its precursors are done.
 |---|---|---|---|---|---|---|
 | T1 | CSP-safe validation: precompiled schema validators in the bundle | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | production cannot load a book; Sonnet |
 | T2 | Production security headers in the test server; prod behaviour probe | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | disjoint from T1; Sonnet |
-| H1 | Merge the T1/T2 PR; confirm the live page loads an example | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T1, T2 | blocked-to-start | deploy runs on merge |
+| H1 | Confirm the ci deploy loads an example after T1/T2 land | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T1, T2 | blocked-to-start | ci behaviour run covers it too |
 | T3 | Interchange formats: sniffing, diya-gl zip and JSON readers and writers, CLI and MCP | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus |
 | T4 | Headline figures module | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet |
 | T5 | Book checks and warnings module, three-state verdicts | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet; rebases onto T3 for the MCP file |
@@ -29,7 +29,7 @@ main, and starts as soon as its precursors are done.
 | T13 | The UX pass: nine changes plus the view corrections | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T7, T9, H2 | blocked-to-start | Opus; owns the page files |
 | T11 | Date and account editing on entry rows | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T13 | blocked-to-start | Sonnet |
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
-| H3 | Merge the batch PR; run `test:spreadsheetsBehaviour-prod` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | H1, T13, T14, T15 | blocked-to-start | closing ladder green first |
+| H3 | Merge the batch PR to main; run `test:spreadsheetsBehaviour-prod` | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
