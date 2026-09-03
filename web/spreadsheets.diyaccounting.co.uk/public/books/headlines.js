@@ -479,8 +479,9 @@
           esc(formatMoney(t.assets.writtenDown.value)) +
           " &middot; stock " +
           esc(formatMoney(t.assets.stock.value)) +
-          " &middot; owed to you " +
-          esc(formatMoney(t.assets.debtors.value)),
+          '<span class="headline-tile-aside">owed to you ' +
+          esc(formatMoney(t.assets.debtors.value)) +
+          ", counted separately</span>",
       ) +
       tile("Tax", "headline/tax", formatMoney(t.tax.value), "income tax and Class 4 NI, less CIS") +
       "</div>"

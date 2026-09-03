@@ -1932,6 +1932,10 @@ table.kv-table tr.total td {
   color: var(--pencil);
   margin-top: 0.1rem;
 }
+/* A figure the tile reports but does not add in. */
+.headline-tile-aside {
+  display: block;
+}
 
 /* -- pies -- */
 

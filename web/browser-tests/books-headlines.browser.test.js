@@ -271,13 +271,21 @@ test.describe("DIYA-GL headlines strip — tiles equal bst-headlines.js's own fi
     expect(sub).toContain("running costs");
   });
 
-  test("the assets tile's sub-line names written-down value, stock and what's owed", async ({ page }) => {
+  test("the assets tile totals what the business holds and reports what it is owed beside it", async ({ page }) => {
     await mountStrip(page, snapshotFromReport(realReport));
     const subs = await page.locator(".headline-tile-sub").allTextContents();
     const assetsSub = subs.find((s) => s.includes("written-down"));
     expect(assetsSub).toBeDefined();
     expect(assetsSub).toContain("stock");
     expect(assetsSub).toContain("owed to you");
+    expect(assetsSub).toContain("counted separately");
+
+    // The tile's figure is the written-down value plus stock, and nothing
+    // else: what customers owe is beside it, not inside it.
+    const total = parseMoney(await page.locator('[data-r-key="headline/assets"]').textContent());
+    const owed = expectedHeadlines.tiles.assets.debtors.value;
+    expect(total).toBeCloseTo(expectedHeadlines.tiles.assets.writtenDown.value + expectedHeadlines.tiles.assets.stock.value, 2);
+    expect(owed).toBeGreaterThan(total);
   });
 
   test("the tax tile states what it includes", async ({ page }) => {
