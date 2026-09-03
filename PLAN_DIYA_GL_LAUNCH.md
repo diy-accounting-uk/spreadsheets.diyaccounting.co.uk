@@ -10,6 +10,10 @@ against the market and the arithmetic, and lays out a launch sequence with gates
 
 > I was thinking of launching a product here. Take the above into this conversation and help me propose a sound revenue stream for the DIY spreadsheets site. First publicity, the spreadsheets website has the local running version packages for non technical desktop users available on a donation basis like the spreadsheets and the distro they get includes the versioning and provenance you suggest above and just the extraction and templates for the chosen product and this can also generate the .xlsx version (packaging TBD) so that is the commercila public face, and it's also going to be possible to `npm run from a public package...` which can be launched to a tech community along with the diya-gl schema as a work to represent a useful and declared subset of accounting standards (even better if we could certify this compliance). Perhaps rust ports (against the same provence tests) and docker and brew coverage etc... Then.... the commerciual offering is a 99p/month spreadsheets subscription which is storage of their diya-gl zip, a profile and a cognito user (social federated auth via google) using the same cognito client as the submit account but through the additional spreadsheets domain. Then... the paid tier is a small conversion of free/donation users wanting cloud storage and online (desktop and mobile) as well as an audience from the npm package users wanting to send users to a white labelled online accounting service that integrates with MTD. Start writing a doc for this, think, do web searches, debunk, extend, plan.
 
+> No, 99p / month is my ONLY actual customer success on submit, keep it: [...] no tiers, it's
+> free offline or 99p / month cloud, no founder stuff, it's buildable in a day we could be live
+> tonight if I felt like it.
+
 ## Thesis
 
 Sell ownership, then convenience, then filing. The free face gives every UK sole trader a
@@ -147,11 +151,10 @@ divided by 1.2 first.
 | £2.99 monthly | £2.99 | £0.245 | £2.745 | £2.75 | 8.2% |
 | £24 yearly | £24.00 | £0.560 | £23.44 | £1.95 | 2.3% |
 
-Monthly 99p works technically (it clears the 30p minimum) and loses a fifth of the money
-to fees, on twelve charges a year that each carry dispute and failed-payment risk. Yearly
-billing at the same headline keeps 96% and gives twelve months of retention for free.
-Premium UK cards cost 1.9% + 20p and EEA cards 2.5% + 20p (same source), which moves the
-monthly fee share past 25%.
+Monthly 99p clears the 30p minimum and keeps 78p of every pound. That is the price: it is
+the one price Submit's customers have actually paid, and the fee share is the cost of a
+price people already understand. Premium UK cards cost 1.9% + 20p and EEA cards 2.5% + 20p
+(same source), which moves the fee share past 25% on those cards.
 
 **Churn and conversion.** Small-business SaaS runs 3% to 5% monthly churn ([Churnkey
 benchmarks](https://churnkey.co/blog/whats-a-normal-churn-rate-in-saas), read 2026-09-03), so
@@ -167,22 +170,20 @@ put the site's actual downloads-to-donations ratio into this section; it is the 
 this document cannot find online.
 
 **Revenue at the freemium range.** With 10,000 active free users of the books page or the
-local runner, 2% to 5% paying at 99p a month billed yearly is 200 to 500 subscribers and
-£2,300 to £5,750 a year after fees. That funds hosting and support for the tier many times
-over (section 4) and buys nothing else. The tier is a foundation and a data point, and the
-plan says so rather than dressing it up.
+local runner, 2% to 5% paying 99p a month is 200 to 500 subscribers and £1,860 to £4,650 a
+year after fees. That funds hosting and support for the tier many times over (section 4)
+and buys nothing else. The tier is a foundation and a data point.
 
-**The price ladder this plan would run.**
+**The offer.** Two things and nothing between them.
 
-| Rung | Price | What it is | Why this price |
-| --- | --- | --- | --- |
-| Free | £0, donation prompts | the site, the browser page, the local runner, the npm package, the format | the twenty-year model; ownership is the promise |
-| Supporter | 99p a month, billed £11.88 a year; no monthly billing | the file stored with versions, a profile, sign-in with Google, sync between the browser page and the local runner, a share link for an accountant | the operator's headline, repaired so 96% survives Stripe |
-| Filing | priced with Submit when Income Tax recognition lands (Submit's VAT pricing sets the anchor) | quarterly updates and the final declaration from the stored book | recognition, not storage, is what justifies a real price |
-| Founder | £29 once for three years of Supporter | the launch-week offer to the tech community and the donor list | cash now, and a cohort that reports bugs |
+| Offer | Price | What it is |
+| --- | --- | --- |
+| Offline | £0, donation prompts | the site, the browser page, the local runner, the npm package, the format; the twenty-year model, ownership is the promise |
+| Cloud | 99p a month, Stripe subscription, monthly billing | the file stored with versions, a profile, sign-in with Google through the spreadsheets domain, the same book on desktop and mobile |
 
-A monthly 99p option can exist for people who refuse annual billing, at £1.49 a month, so
-the fee share is under 15% and the difference in price says why.
+Filing (quarterly updates through Submit when Income Tax recognition lands) is priced with
+Submit when it exists; it is not a tier of this site. No founder offer, no annual plan, no
+second price.
 
 ## 4. Costs and break-even
 
@@ -259,7 +260,7 @@ operator's "packaging TBD" resolves to: HTML file now, PWA with it, Tauri only o
 
 **Donation prompts.** The page shows no ask today. The right moments are after a successful
 save and after a year's figures first appear, each once, each dismissable, each pointing at
-the existing Stripe links, with the Supporter tier beside them once it exists.
+the existing Stripe links, with the 99p cloud offer beside them once it exists.
 
 ### 5b. The tech-community launch
 
@@ -368,7 +369,7 @@ community, the thing they check first. It costs a build step and a page.
 | 0. Provenance | the five stamps in the zip and `report.json`; the reconciled-releases page; the format version in `book.toml`; the npm package `@diy-accounting-uk/diya-gl` with `recalc`, published from a reconciled tag | PR #57 on main (done) | `npx diya-gl recalc` reproduces the page's `report.json` byte-for-byte on the three fixtures; the releases page shows one entry | two to three weeks |
 | 1. The free face | the single-file HTML runner for BST built from the same bundle; the PWA manifest; two donation prompts on the page; the spec page for the format | phase 0 | 1,000 runner downloads or 2,000 page loads with a book loaded in the first month; a downloads-to-donations ratio measured; support tickets under one a day | two weeks |
 | 2. Tech launch | Show HN and AccountingWEB; Docker image; the MCP server documented; Homebrew tap | phase 1 | 500 npm weekly downloads sustained for a month, or 300 GitHub stars; three external bug reports fixed | one week plus the follow-up |
-| 3. Supporter tier | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; Stripe Payment Link for £11.88 a year and the £29 founder offer; the customer portal | phase 1; a decision on the pool tier | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
+| 3. Cloud, 99p a month | the app client on Submit's pool; S3 bucket and four Lambda routes in submit-prod (from the DIYA Cloud plan, phase 2, cut down); sign-in and "save to my account" on the page; Stripe Payment Link for £11.88 a year and the £29 founder offer; the customer portal | phase 1; a decision on the pool tier | 100 paying subscribers within three months of launch; monthly churn under 5%; tickets under one per twenty subscribers a month | four to six weeks |
 | 4. The other products | SE, Taxi and Ltd on the page and in the package, in that order (their plans exist as successors of the BST plan) | phase 3 revenue covering the operator's time | each product reconciles in CI and loads on the page | per product, the BST spike's own record: about a week each with the learnings applied |
 | 5. Filing | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
@@ -401,29 +402,26 @@ concurrent edits, and any monthly-billed 99p option.
 
 ## Decisions for the operator
 
-1. **Billing shape.** Annual only at £11.88 with a £29 three-year founder offer (this
-   plan's recommendation), or annual plus a £1.49 monthly option, or the literal 99p monthly
-   with 22% lost to fees.
-2. **Cognito tier for the shared pool.** Move Submit's pool from Plus (threat protection,
+1. **Cognito tier for the shared pool.** Move Submit's pool from Plus (threat protection,
    $0.02 per MAU, no free tier) to Essentials ($0.015 per MAU above 10,000 free), which
    makes the first ten thousand spreadsheets users free but drops the threat-protection
    features Plus carries; or keep Plus and pay about 1.5p per user per month.
-3. **Sign-in domain.** Submit's hosted sign-in page with a redirect to the spreadsheets site
+2. **Sign-in domain.** Submit's hosted sign-in page with a redirect to the spreadsheets site
    (recommended), or a second custom domain on the same pool, which Cognito allows one of
    and would mean moving Submit's.
-4. **Where the runner is built.** From this repository's bundle (recommended; the engine is
+3. **Where the runner is built.** From this repository's bundle (recommended; the engine is
    proven here), or from the published npm package (cleaner as a consumer, but a second
    build to keep reconciled).
-5. **Which products follow BST onto the page.** SE next (closest to BST and the largest
+4. **Which products follow BST onto the page.** SE next (closest to BST and the largest
    audience), or Ltd (where FRS 105 alignment can be demonstrated), or Taxi (cheapest,
    smallest audience).
-6. **The HMRC application.** Start the Developer Hub application for Income Tax in phase 3
+5. **The HMRC application.** Start the Developer Hub application for Income Tax in phase 3
    so the 2027–28 window is met, or wait for phase 3's revenue to prove the demand and
    accept the 2028–29 window.
-7. **The Rust port.** Hold it as a horizon (recommended), or fund it as the tech-community
+6. **The Rust port.** Hold it as a horizon (recommended), or fund it as the tech-community
    launch's headline.
-8. **VAT position.** Confirm the company's VAT registration status; every price in section
-   3 assumes unregistered.
+7. **VAT position.** Confirm the company's VAT registration status; the price in section 3
+   assumes unregistered.
 
 ## Where this changes the DIYA Cloud plan
 
