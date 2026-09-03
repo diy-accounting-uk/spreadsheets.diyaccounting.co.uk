@@ -7,11 +7,14 @@
 // stable across a workbook -> diya-gl -> workbook -> diya-gl cycle if the
 // generator always lands a given transaction on the same row, whatever order
 // the caller's lines array happened to arrive in -- diyaGlToScenario
-// (diya-gl-loader.js) sorts every Basic Sole Trader line into that order
-// before generateSpreadsheet ever sees it. This proves the cycle holds: once
-// through generation, a second generate-and-extract pass reproduces the same
-// lines.jsonl byte for byte, whether or not a diya-gl zip's canonical sort
-// sits between the two passes.
+// (diya-gl-loader.js) sorts every Basic Sole Trader line by sourceJournalID
+// then its own entryNumber (the book's entry order) before generateSpreadsheet
+// ever sees it, so a line with a workbook history returns to the row it
+// started on regardless of the array order it arrives in. This proves the
+// cycle holds: once through generation, a second generate-and-extract pass
+// reproduces the same lines.jsonl byte for byte, whether or not a diya-gl
+// zip's canonical sort sits between the two passes, and reversing the input
+// array changes nothing about the rows each line lands on.
 
 import { describe, it, expect } from "vitest";
 import { resolve, dirname } from "path";
