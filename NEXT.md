@@ -7,15 +7,14 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`'s batch (`claude/bst-ledger`, PR #57) merged to main on
-2026-09-03 and is deploying to production. Nothing is dispatched.
+2026-09-03 and is live in production. The generate-bst refresh committed `c3e206d2`; R4b is
+dispatched as a worktree sub-agent and lands as a PR.
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| R4 | Run the main-side generate-bst refresh with commit so `examples/bst-latest` carries the aligned writer and canonical row order | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | — | ready-to-start | the workflow commits to main, which a session may not do |
-| R4b | Drop the two-cell A3 allowlist in `books-equivalence.browser.test.js` and E3's entry-number normalisation in `books-formats.browser.test.js`; both assert byte equality | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | R4 | blocked-to-start | Sonnet; a PR |
-
+| R4b | Drop the two-cell A3 allowlist in `books-equivalence.browser.test.js` and E3's entry-number normalisation in `books-formats.browser.test.js`; both assert byte equality | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine 
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md` — not yet drafted; they start from the BST
