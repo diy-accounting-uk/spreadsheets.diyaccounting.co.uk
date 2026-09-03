@@ -15,6 +15,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { loadScenario } from "../../app/lib/scenario-loader.js";
 import { canonicalForUnit } from "../../app/bin/verify-roundtrip.js";
+import { loadDiyaGlData, diyaGlToScenario, extractTaxDataFromBook } from "../../app/lib/diya-gl-loader.js";
+import { calculateFromDiyaGl } from "../../app/lib/diya-gl-calculator.js";
+import { calculateExpectedTax } from "../../app/lib/tax/income-tax.js";
+import { buildReportDocument, serializeReportDocument } from "../../app/lib/report-serializer.js";
+import * as bst from "../../app/products/bst.js";
 
 const ROOT = process.cwd();
 
@@ -119,6 +124,47 @@ export function s3() {
  */
 export function canonical(value, unit) {
   return canonicalForUnit(String(value), unit);
+}
+
+/**
+ * Apply one edit to a diya-gl book directory's own lines in Node, then build
+ * report.json exactly the way report.js's --data path and the page's own
+ * buildReport (bst-data.js) both do: the same package name, engine, merged
+ * scenario, checks, scenarioName and yearEnd. A browser edit's report.json
+ * is expected to equal this function's `text`, byte for byte, for the same
+ * edit applied to the same book.
+ * @param {string} bookDir - a diya-gl data directory, e.g. examples/precision-code-ltd/bst
+ * @param {(book: Object, lines: Array) => Array} edit - applies one edit to
+ *   (book, lines) and returns the new lines array; typically one of
+ *   diya-gl-edits.js's named edits, or book-checks.js's applyHelper wrapped
+ *   to take (book, lines)
+ * @returns {{text: string, document: Object, book: Object, lines: Array}}
+ */
+export function applyNamedEdit(bookDir, edit) {
+  const resolvedBookDir = path.resolve(ROOT, bookDir);
+  const { book, lines } = loadDiyaGlData(resolvedBookDir);
+  const newLines = edit(book, lines);
+
+  const taxData = extractTaxDataFromBook(book, "bst");
+  const scenario = diyaGlToScenario(book, newLines, "bst");
+  const results = calculateFromDiyaGl(book, newLines, "bst", taxData, scenario);
+  const mergedScenario = { ...scenario, ...scenario.expected };
+  const periodEnd = book.documentInfo?.periodCoveredEnd;
+  const yearEnd = periodEnd ? new Date(periodEnd).toISOString().slice(0, 10) : null;
+  const checks = bst.checkCompliance({ ...results }, mergedScenario, taxData, calculateExpectedTax, yearEnd);
+
+  const document = buildReportDocument({
+    packageName: "bst",
+    engine: "js",
+    results,
+    productMod: bst,
+    scenario: mergedScenario,
+    checks,
+    scenarioName: book.documentInfo?.entriesComment,
+    yearEnd,
+  });
+
+  return { text: serializeReportDocument(document), document, book, lines: newLines };
 }
 
 /**

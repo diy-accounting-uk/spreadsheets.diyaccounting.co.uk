@@ -16,7 +16,18 @@
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
+import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
+import { applyNamedEdit } from "./r-sources.js";
+import {
+  addSaleLine,
+  addPurchaseLine,
+  changeLineAmount,
+  removeLine,
+  changeLinePostingDate,
+  changeLineAccount,
+} from "../../app/lib/diya-gl-edits.js";
+import { applyHelper } from "../../app/lib/book-checks.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
@@ -103,6 +114,29 @@ function bookCheck(page, id) {
 
 async function allChecksPass(page) {
   await expect(page.locator("#inspector .check-item.fail")).toHaveCount(0);
+}
+
+// ── E1: the browser's report.json equals Node's after the same edit ───────
+// applyNamedEdit (r-sources.js) applies one of diya-gl-edits.js's named
+// edits to examples/precision-code-ltd/bst in Node and builds report.json
+// exactly the way the page's own buildReport does -- same package, engine,
+// merged scenario, checks, scenarioName and yearEnd. The featured book's
+// own directory, so the two sides start from the same D.
+const BST_SCENARIO_BASIC_DIR = "examples/precision-code-ltd/bst";
+
+// The save menu's diya-gl zip download, captured and unzipped -- the same
+// mechanism books-formats.browser.test.js uses for A1/A2, kept local here so
+// this file does not reach into another task's spec for a helper.
+async function downloadDiyaGlReport(page) {
+  await page.click("#save-btn");
+  const item = page.getByRole("menuitem", { name: "Download books as diya-gl (.zip)", exact: true });
+  await item.waitFor({ state: "visible" });
+  const [download] = await Promise.all([page.waitForEvent("download"), item.click()]);
+  const stream = await download.createReadStream();
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  const zip = await JSZip.loadAsync(Buffer.concat(chunks));
+  return zip.file("report.json").async("string");
 }
 
 test.describe("DIYA-GL books page — in-place edits", () => {
@@ -215,6 +249,209 @@ test.describe("DIYA-GL books page — in-place edits", () => {
 
     await expect(amountField).toHaveValue(was);
     expect(await yearTotal(page, "sales")).toBe(salesBefore);
+  });
+});
+
+test.describe("DIYA-GL books page — E1: each edit's report.json equals Node's", () => {
+  test("add a purchase of X: browser and Node agree, and profit falls by X with turnover unchanged", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    const line = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "purchases",
+      postingDate: "2025-04-15",
+      accountMainID: "5500",
+      amount: 250,
+      documentType: "invoice",
+      detailComment: "Extra advertising",
+    };
+    await addEntry(page, "purchases", {
+      date: line.postingDate,
+      account: line.accountMainID,
+      detail: line.detailComment,
+      amount: line.amount,
+    });
+    await expect(page.locator("#toast")).toContainText("Added a purchases entry of £250.00");
+
+    expect(await yearTotal(page, "sales")).toBe(salesBefore);
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore - 250);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => addPurchaseLine(book, lines, { line }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("add a sale of Y: browser and Node agree, and turnover and profit both rise by Y", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    const line = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "sales",
+      postingDate: "2025-04-20",
+      accountMainID: "4001",
+      amount: 400,
+      documentType: "invoice",
+      detailComment: "Extra licence",
+    };
+    await addEntry(page, "sales", { date: line.postingDate, account: line.accountMainID, detail: line.detailComment, amount: line.amount });
+    await expect(page.locator("#toast")).toContainText("Added a sales entry of £400.00");
+
+    expect(await yearTotal(page, "sales")).toBe(salesBefore + 400);
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore + 400);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => addSaleLine(book, lines, { line }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("change an amount: browser and Node agree, and the month and year move by the difference", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const aprilSalesBefore = await monthCell(page, "2025-04", "sales");
+
+    const firstRow = page.locator('.entries-table[data-journal="sales"] tbody tr.entry-row').first();
+    const entryNumber = await firstRow.getAttribute("data-entry");
+    const amountField = firstRow.locator(".entry-amount-input");
+    const was = Number(await amountField.inputValue());
+    const newAmount = was + 175;
+    await amountField.fill(String(newAmount));
+    await amountField.press("Enter");
+    await expect(page.locator("#toast")).toContainText("Changed");
+
+    await expectYearTotal(page, "sales", salesBefore + 175);
+    expect(await monthCell(page, "2025-04", "sales")).toBe(aprilSalesBefore + 175);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => changeLineAmount(book, lines, { entryNumber, newAmount }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("remove a line: browser and Node agree, and the removed amount leaves its month", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const salesBefore = await yearTotal(page, "sales");
+    const aprilSalesBefore = await monthCell(page, "2025-04", "sales");
+
+    const firstRow = page.locator('.entries-table[data-journal="sales"] tbody tr.entry-row').first();
+    const entryNumber = await firstRow.getAttribute("data-entry");
+    const removedAmount = Number(await firstRow.locator(".entry-amount-input").inputValue());
+
+    await firstRow.locator("[data-delete-entry]").click();
+    await expect(page.locator("#toast")).toContainText("Removed " + entryNumber);
+
+    await expectYearTotal(page, "sales", salesBefore - removedAmount);
+    expect(await monthCell(page, "2025-04", "sales")).toBe(aprilSalesBefore - removedAmount);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => removeLine(book, lines, { entryNumber }));
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  test("apply the whole-pence helper: browser and Node agree after rounding a crafted sub-penny line", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const craftedLine = {
+      entryNumber: "NEW-0001",
+      sourceJournalID: "purchases",
+      postingDate: "2025-04-19",
+      accountMainID: "5500",
+      amount: 100.005,
+      documentType: "invoice",
+      detailComment: "Third of a bill",
+    };
+    await addEntry(page, "purchases", {
+      date: craftedLine.postingDate,
+      account: craftedLine.accountMainID,
+      detail: craftedLine.detailComment,
+      amount: craftedLine.amount,
+    });
+
+    const check = bookCheck(page, "book-amounts-whole-pence");
+    await expect(check).toHaveClass(/fail/);
+    await check.locator("[data-helper-preview]").click();
+    await check.locator("[data-helper-apply]").click();
+    await expect(bookCheck(page, "book-amounts-whole-pence")).toHaveClass(/pass/);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) => {
+      const withCraftedLine = addPurchaseLine(book, lines, { line: craftedLine });
+      return applyHelper({ book, lines: withCraftedLine }, "book-amounts-whole-pence");
+    });
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  // TXN-0017: a purchases line dated 2025-04-01, posted to 5200 (Premises).
+  // Moving its date to May moves the expense out of April's month total and
+  // into May's, with the year's own net profit unmoved.
+  test("change a date via setLines: browser and Node agree, and the expense moves from April into May", async ({ page }) => {
+    await openBook(page);
+    const entryNumber = "TXN-0017";
+    const newPostingDate = "2025-05-15";
+    const profitBefore = await yearTotal(page, "netProfit");
+    const aprilProfitBefore = await monthCell(page, "2025-04", "netProfit");
+    const mayProfitBefore = await monthCell(page, "2025-05", "netProfit");
+
+    await page.evaluate(
+      async ({ entryNumber, newPostingDate }) => {
+        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const lines = snapshot.lines.map((line) => (line.entryNumber === entryNumber ? { ...line, postingDate: newPostingDate } : line));
+        await window.DiyaGlBooksPage.setLines(lines, "test: change a date");
+      },
+      { entryNumber, newPostingDate },
+    );
+    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
+    expect(await monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 1200);
+    expect(await monthCell(page, "2025-05", "netProfit")).toBe(mayProfitBefore - 1200);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) =>
+      changeLinePostingDate(book, lines, { entryNumber, newPostingDate }),
+    );
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
+  // TXN-0020: a purchases line posted to 5002 (Other). Reposting it to 5501
+  // (General admin) moves it between two expense categories that both roll
+  // into the same P&L total, so net profit does not move -- only the entry's
+  // own account does.
+  test("change an account via setLines: browser and Node agree, and net profit does not move", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+    const entryNumber = "TXN-0020";
+    const newAccountMainID = "5501";
+    const profitBefore = await yearTotal(page, "netProfit");
+
+    await page.evaluate(
+      async ({ entryNumber, newAccountMainID }) => {
+        const snapshot = window.DIYA_BST_SNAPSHOT;
+        const lines = snapshot.lines.map((line) =>
+          line.entryNumber === entryNumber ? { ...line, accountMainID: newAccountMainID } : line,
+        );
+        await window.DiyaGlBooksPage.setLines(lines, "test: change an account");
+      },
+      { entryNumber, newAccountMainID },
+    );
+    await page.waitForFunction(() => window.DIYA_BST_SNAPSHOT.edited === true);
+
+    expect(await yearTotal(page, "netProfit")).toBe(profitBefore);
+    const movedRow = page.locator(`tr.entry-row[data-entry="${entryNumber}"] .entry-account-code`);
+    await expect(movedRow).toHaveText(newAccountMainID);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(BST_SCENARIO_BASIC_DIR, (book, lines) =>
+      changeLineAccount(book, lines, { entryNumber, newAccountMainID }),
+    );
+    expect(browserReport).toBe(nodeReport.text);
   });
 });
 
