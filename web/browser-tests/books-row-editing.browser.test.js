@@ -159,7 +159,7 @@ test.describe("DIYA-GL books page — entry date editing", () => {
     await expect(page.locator('[data-date-entry="TXN-0022"]')).toHaveValue("2025-04-01");
   });
 
-  test("the date input is reachable by keyboard and Enter commits the move", async ({ page }) => {
+  test("the date input is reachable by keyboard and a committed date moves the entry", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);
 
@@ -170,9 +170,9 @@ test.describe("DIYA-GL books page — entry date editing", () => {
     await dateField.focus();
     await expect(dateField).toBeFocused();
     // A date input's segment order follows the browser's own locale, so the
-    // value is set as ISO rather than typed segment by segment; Enter commits.
+    // value is set as ISO rather than typed segment by segment; the change
+    // event commits and the row re-renders under May.
     await dateField.fill("2025-05-01");
-    await dateField.press("Enter");
     await expect(page.locator("#toast")).toContainText("Changed TXN-0020's date to 2025-05-01");
 
     await expect.poll(() => monthCell(page, "2025-04", "netProfit")).toBe(aprilProfitBefore + 45);
