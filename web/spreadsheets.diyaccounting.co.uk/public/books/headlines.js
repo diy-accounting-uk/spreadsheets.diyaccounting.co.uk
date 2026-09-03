@@ -652,7 +652,9 @@
       .join("");
     return (
       '<div class="headline-chart-block"><h4>Turnover, costs and profit by month</h4>' +
-      '<div class="headline-chart-scroll"><svg viewBox="0 0 ' +
+      // The one chart wider than a phone card scrolls, so it is a focus
+      // stop of its own: a keyboard has to be able to reach and move it.
+      '<div class="headline-chart-scroll" tabindex="0" role="group" aria-label="Monthly turnover, costs and profit, scrollable"><svg viewBox="0 0 ' +
       width +
       " " +
       height +

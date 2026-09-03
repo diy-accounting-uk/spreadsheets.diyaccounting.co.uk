@@ -22,7 +22,7 @@
   --paper-raised: #ffffff; /* --color-surface */
   --ink: #292a2a; /* --color-text-primary */
   --ink-faint: #555555; /* --color-text-secondary */
-  --pencil: #737373; /* --color-text-muted */
+  --pencil: #666666; /* the site's muted grey, one step darker so it also clears 4.5:1 on the teal tint */
   --rule: #158484; /* --color-brand-primary */
   --rule-dark: #106868;
   --on-rule: #ffffff; /* text on a teal fill */
@@ -48,6 +48,8 @@
   --radius-lg: 8px;
   --topbar-h: 3.25rem;
   --tabstrip-h: 2.5rem;
+  --mobile-tabbar-h: 2.6rem;
+  --mobile-action-bar-h: 3.4rem;
 
   color-scheme: light;
 }
@@ -301,7 +303,7 @@ select:focus-visible,
 
 .save-btn {
   border-color: var(--rule);
-  color: var(--rule);
+  color: var(--rule-dark);
 }
 
 .undo-btn {
@@ -980,11 +982,13 @@ td.entry-actions {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+/* Small text, so the darker step of the brand teal: the lighter one only
+   clears 4.3:1 at this size. */
 .entry-add-btn {
   border: 1px solid var(--rule);
   border-radius: 2px;
   background: var(--paper);
-  color: var(--rule);
+  color: var(--rule-dark);
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.7rem;
@@ -1539,6 +1543,7 @@ table.kv-table tr.total td {
 
 .mobile-tabbar {
   display: none;
+  height: var(--mobile-tabbar-h);
   position: sticky;
   bottom: 0;
   background: var(--paper-raised);
@@ -1568,10 +1573,12 @@ table.kv-table tr.total td {
 
 .mobile-action-bar {
   display: none;
+  height: var(--mobile-action-bar-h);
+  align-items: center;
   position: sticky;
   bottom: 0;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   background: var(--paper-raised);
   border-top: 1px solid var(--rule-faint);
   z-index: 22;
@@ -1740,9 +1747,14 @@ table.kv-table tr.total td {
 }
 
 /* --- Mobile landscape: the columnar table, horizontally scrollable, month column frozen --- */
+/* The bottom bars are app chrome, not part of the page: the view scrolls in
+   the space above them, so a control can never sit under one. */
 @media (max-width: 899px) and (orientation: landscape) {
   .app-body {
     grid-template-columns: 1fr;
+    height: calc(100vh - var(--topbar-h) - var(--tabstrip-h) - var(--mobile-tabbar-h));
+    min-height: 0;
+    overflow-y: auto;
   }
   .inspector {
     display: none;
@@ -1769,6 +1781,13 @@ table.kv-table tr.total td {
 @media (max-width: 899px) and (orientation: portrait) {
   .app-body {
     grid-template-columns: 1fr;
+    height: calc(100vh - var(--topbar-h) - var(--tabstrip-h) - var(--mobile-tabbar-h) - var(--mobile-action-bar-h));
+    min-height: 0;
+    overflow-y: auto;
+  }
+  /* The view is its own scroller here, so the year totals pin to its top. */
+  .year-summary-sticky {
+    top: 0;
   }
   .inspector {
     display: none;
