@@ -6,36 +6,16 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Batch branch `claude/bst-ledger` (draft PR #57; deploys to ci on every push). Wave 1 dispatched
-2026-09-03: T1, T2, T3, T4, T5, T10 as worktree sub-agents under `.claude/worktrees/`, one
-per task; the coordinator merges each landed commit into the batch branch and pushes.
-Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`), R2 (`f5f28df8`), T1
-(`8e37e594`; 42/42 books specs green under production's headers), T10 (`ddf23204`; render keys
-join as `cell/… || section/…` on one attribute), T3 (`2267852d`; workbook kinds stage through
-Node in `readBookSource`, the page keeps its in-memory workbook reader), T14 (`2c3f5f75`; A3 carries
-a two-cell allowlist because `examples/bst-latest` predates the fixture's tax-table and description
-edits; the axe gate fails on `color-contrast` at three viewports until T13), T9 (`63ce7e64`; the strip
-module is built but not yet mounted in `bst.js`), R1 (`3a2192e2`), T7 (`cdcc271c`; 46 page specs green), R3 (`82037b7d`; the strip is live on every view; axe
-`color-contrast` now fails at all four viewports until T13), R5 (`696ae207`; a regenerated BST
-workbook now writes rows in canonical line order, so the next generate refresh moves ~199 of
-`bst-latest`'s 528 rows), T13 (`061c4c42`; 105 browser specs green, the axe gate green at four
-viewports), T15 (`2a114c13`; 32 edit and warning proofs; the sub-penny trigger needs a non-tie
-fraction on a direct-cost line and the mileage checks cannot be split by any edit), T11 (`77bfa74b`; row date and account
-editors, five default year columns). Closing ladder green on the merged batch: formatting, Maven verify, 7779/7779 unit tests
-serially, 150/150 browser tests; CI green on the branch and the PR merge ref at `09d5106f`.
-PR #57 is ready for review.
-
-`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md` is active again (2026-09-03): the spike becomes a usable
-ledger. Landing shape: one batch branch, `claude/bst-ledger`, draft PR to main; every row lands
-on it as soon as its precursors are done and the branch deploys to the ci environment
-after each landing. No row waits on a merge.
+`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`'s batch (`claude/bst-ledger`, PR #57) merged to main on
+2026-09-03 and is deploying to production. Nothing is dispatched.
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the A3 allowlist and E3's entry-number normalisation in the formats spec |
-| H3 | Merge PR #57 (`claude/bst-ledger`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human 
+| R4 | Run the main-side generate-bst refresh with commit so `examples/bst-latest` carries the aligned writer and canonical row order | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | — | ready-to-start | the workflow commits to main, which a session may not do |
+| R4b | Drop the two-cell A3 allowlist in `books-equivalence.browser.test.js` and E3's entry-number normalisation in `books-formats.browser.test.js`; both assert byte equality | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | R4 | blocked-to-start | Sonnet; a PR |
+
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md` — not yet drafted; they start from the BST
