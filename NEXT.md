@@ -6,7 +6,7 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-Batch branch `claude/bst-ledger` (pushed; deploys to ci on every push). Wave 1 dispatched
+Batch branch `claude/bst-ledger` (draft PR #57; deploys to ci on every push). Wave 1 dispatched
 2026-09-03: T1, T2, T3, T4, T5, T10 as worktree sub-agents under `.claude/worktrees/`, one
 per task; the coordinator merges each landed commit into the batch branch and pushes.
 Landed on the batch: T4 (`cbebf3f8`), T5 (`80d25fc1`), T2 (`e0c8518f`), R2 (`f5f28df8`), T1
@@ -31,7 +31,7 @@ after each landing. No row waits on a merge.
 |---|---|---|---|---|---|---|
 | T15 | Edit and warning proofs (E1, E2) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | T5, T11 | blocked-to-start | Sonnet |
 | R4 | Refresh `examples/bst-latest` through the generate-bst workflow on main so the A3 allowlist in `books-equivalence.browser.test.js` empties | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine | H3 | blocked-to-start | the operator's main-side generate refresh; then drop the A3 allowlist and E3's entry-number normalisation in the formats spec |
-| H3 | Merge the batch PR to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
+| H3 | Merge PR #57 (`claude/bst-ledger`) to main | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | human | T13, T14, T15 | blocked-to-start | nothing waits on it |
 
 ## Plans not tracked here
 
