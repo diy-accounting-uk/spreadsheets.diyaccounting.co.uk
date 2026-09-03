@@ -14,7 +14,7 @@ dispatched as a worktree sub-agent and lands as a PR.
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| R4b | Drop the two-cell A3 allowlist in `books-equivalence.browser.test.js` and E3's entry-number normalisation in `books-formats.browser.test.js`; both assert byte equality | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine 
+| R4b | Byte equality with no allowances: the diya-gl writer orders rows by entry number (E3), the BST subset carries the master's business description (the extractor invented one), and A3 builds S2 for the saved package's own year-end (the writing-down allowance differs by tax year) | PLAN_DIYA_GL_BST_CLI_MCP_WEB.md | machine 
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md` — not yet drafted; they start from the BST
