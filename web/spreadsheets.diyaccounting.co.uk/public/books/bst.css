@@ -708,7 +708,7 @@ tfoot.year-totals th {
 
 .entries-columns {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   /* The two journals hold different numbers of lines; each table keeps its
      own row heights rather than stretching to match the taller one. */
@@ -716,14 +716,29 @@ tfoot.year-totals th {
 }
 @media (min-width: 640px) {
   .entries-columns {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 
+/* Fixed layout, so a long account name or detail can never widen the grid
+   past the month panel it is pinned inside. */
 table.entries-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.82rem;
+}
+table.entries-table th:nth-child(1) {
+  width: 3.4rem;
+}
+table.entries-table th:nth-child(2) {
+  width: 32%;
+}
+table.entries-table th:nth-child(4) {
+  width: 6.5rem;
+}
+table.entries-table th:nth-child(5) {
+  width: 2rem;
 }
 table.entries-table caption {
   text-align: left;
@@ -752,6 +767,29 @@ table.entries-table td.entry-amount {
   font-family: var(--font-mono);
   text-align: right;
   white-space: nowrap;
+}
+/* The account reads as an account: its name, with the code beneath it in
+   the small text a reader only needs when posting. */
+.entry-account-name {
+  display: block;
+  line-height: 1.25;
+}
+.entry-account-code {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--hint);
+}
+/* One line, cut with an ellipsis; the whole detail is on the row's title. */
+.entry-detail {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entry-account-name,
+.entry-account-code {
+  overflow-wrap: anywhere;
 }
 .entry-cell-editable {
   border: 1px solid transparent;

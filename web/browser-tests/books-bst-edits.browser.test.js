@@ -175,6 +175,32 @@ test.describe("DIYA-GL books page — in-place edits", () => {
     await allChecksPass(page);
   });
 
+  test("an entry names its account, keeps its detail on one line, and offers undo when removed", async ({ page }) => {
+    await openBook(page);
+    await openAprilEntries(page);
+
+    const row = page.locator('.entries-table[data-journal="purchases"] tbody tr.entry-row').first();
+    const code = await row.locator(".entry-account-code").innerText();
+    await expect(row.locator(".entry-account-name")).not.toBeEmpty();
+    expect(code).toMatch(/^\d+$/);
+
+    // The whole detail is on the element's title even when the cell shows
+    // only as much as fits.
+    const detail = row.locator(".entry-detail");
+    const [shown, title] = await Promise.all([detail.innerText(), detail.getAttribute("title")]);
+    expect(title).toContain(shown.replace("…", "").trim());
+
+    const remove = row.locator("[data-delete-entry]");
+    await expect(remove).toHaveAttribute("aria-label", /Remove entry/);
+
+    const profitBefore = await yearTotal(page, "netProfit");
+    await remove.click();
+    const toast = page.locator("#toast");
+    await expect(toast).toContainText("Removed");
+    await toast.locator(".toast-action-btn").click();
+    await expectYearTotal(page, "netProfit", profitBefore);
+  });
+
   test("a typed non-amount is refused and leaves the line where it was", async ({ page }) => {
     await openBook(page);
     await openAprilEntries(page);

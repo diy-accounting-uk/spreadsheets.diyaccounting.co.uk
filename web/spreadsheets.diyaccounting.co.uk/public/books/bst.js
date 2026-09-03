@@ -780,7 +780,7 @@
   // recomputed from them (calculator and checks both), and the page
   // re-renders. A helper's whole plan is one call, so it is one undo step.
 
-  function commit(edit, undoLabel, toastMessage) {
+  function commit(edit, undoLabel, toastMessage, toastAction) {
     if (state.committing) return Promise.resolve();
     state.committing = true;
     var previousBook = state.book;
@@ -795,7 +795,7 @@
         applySnapshot(snapshot);
         state.committing = false;
         render();
-        if (toastMessage) showToast(toastMessage);
+        if (toastMessage) showToast(toastMessage, toastAction);
       })
       .catch(function (error) {
         state.committing = false;
@@ -1071,9 +1071,13 @@
         journal +
         '"><caption>' +
         caption +
-        "</caption><thead><tr><th>Date</th><th>Acct</th><th>Detail</th><th>Amount</th>" +
+        "</caption><thead><tr><th>Date</th><th>Account</th><th>Detail</th><th>Amount</th>" +
         '<th><span class="sr-only">Remove</span></th></tr></thead><tbody>' +
-        rows.map(entryRow).join("") +
+        rows
+          .map(function (r) {
+            return entryRow(r, journal);
+          })
+          .join("") +
         "</tbody><tfoot>" +
         addEntryRow(journal, monthKey) +
         "</tfoot></table>"
@@ -1088,7 +1092,35 @@
     );
   }
 
-  function entryRow(r) {
+  // The name of the account a code posts to, from the book's own chart. A
+  // code the chart does not carry has no name to give.
+  function accountDescription(journal, code) {
+    var accounts = (SNAPSHOT.chart && SNAPSHOT.chart[journal]) || [];
+    for (var i = 0; i < accounts.length; i++) {
+      if (accounts[i].code === code) return accounts[i].description;
+    }
+    return null;
+  }
+
+  // A reader knows "Advertising", not 5500, so the name leads and the code
+  // follows it in small text.
+  function entryAccountCell(r, journal) {
+    var description = accountDescription(journal, r.account);
+    return (
+      "<td>" +
+      (description ? '<span class="entry-account-name">' + esc(description) + "</span>" : "") +
+      '<span class="entry-account-code">' +
+      esc(r.account) +
+      "</span>" +
+      (r.posted
+        ? ""
+        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
+      "</td>"
+    );
+  }
+
+  function entryRow(r, journal) {
+    var detail = r.detail ? r.label + " — " + r.detail : r.label;
     return (
       '<tr class="entry-row' +
       (r.posted ? "" : " is-unposted") +
@@ -1096,14 +1128,13 @@
       esc(r.entryNumber) +
       '"><td>' +
       r.date.slice(5) +
-      "</td><td>" +
-      esc(r.account) +
-      (r.posted
-        ? ""
-        : ' <span class="entry-flag" title="This account is outside the book\'s chart, so the amount reaches no total">no account</span>') +
-      '</td><td><input class="entry-cell-editable" value="' +
-      esc(r.detail ? r.label + " — " + r.detail : r.label) +
-      '" readonly aria-label="Detail" /></td>' +
+      "</td>" +
+      entryAccountCell(r, journal) +
+      '<td><span class="entry-detail" title="' +
+      esc(detail) +
+      '">' +
+      esc(detail) +
+      "</span></td>" +
       entryAmountCell(r) +
       "</tr>"
     );
@@ -1324,6 +1355,7 @@
           },
           "remove " + entryNumber,
           "Removed " + entryNumber + ".",
+          { label: "Undo", onClick: undoLastEdit },
         );
       });
     });
