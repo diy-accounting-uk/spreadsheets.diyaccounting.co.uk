@@ -432,6 +432,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S5 headline keys declared per product and `headlines.js` as a reducer `746677e3`, merged
+  2026-09-04. The reducer's hooks are `turnover.secondLine` and `assets.extra`; Ltd T3b adds
+  `tax.secondLine`, `assets.secondLine` and a turnover pie slice hook for dividends under those
+  names, Taxi T12 adds `pieLines` and the vehicle tile.
 - T15 the SA103 box-to-API mapping `777d5ee0`, merged to `claude/diya-gl-products` 2026-09-04. It
   found `se.js`'s `SE Short` `CELL_MAP` box labels one behind the 2026 form on `O71` (22), `O80`
   (25), `O85` (26), `O94` (29) and `O99` (30); T16 relabels them with the sheet.
