@@ -432,6 +432,19 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S3 `product-workbook.js` writes any product (`saveWorkbook`, `saveWorkbookFiles`,
+  `savePackageZip`, `productOf`, `taxYearFileName`; `setFullCalcOnLoad` and
+  `applyYearEndSequence` in the generator) `3dc296c9`, `4275ecdf`, `91767d78`, merged 2026-09-04;
+  BST saves and `generate.js` output byte-identical across BST, SE and a June Ltd year end. Two
+  corrections for later rows: `taxYearFileName(date, "ltd")` names the year the period ends in,
+  which is the wrong financial year (a period ending 2026-03-31 is FY2025, `ltd-2025`), and the
+  writer takes the year end from the tax file rather than the book; Ltd T1 fixes both with the
+  test that pins them. Taxi T11 decides whether the Taxi entry keeps the `targetStartYear`
+  argument. No `writer` hook exists yet; S4 adds it with its body.
+- S5 headline keys declared per product and `headlines.js` as a reducer `746677e3`, merged
+  2026-09-04. The reducer's hooks are `turnover.secondLine` and `assets.extra`; Ltd T3b adds
+  `tax.secondLine`, `assets.secondLine` and a turnover pie slice hook for dividends under those
+  names, Taxi T12 adds `pieLines` and the vehicle tile.
 - T15 the SA103 box-to-API mapping `777d5ee0`, merged to `claude/diya-gl-products` 2026-09-04. It
   found `se.js`'s `SE Short` `CELL_MAP` box labels one behind the 2026 form on `O71` (22), `O80`
   (25), `O85` (26), `O94` (29) and `O99` (30); T16 relabels them with the sheet.

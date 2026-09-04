@@ -456,6 +456,13 @@ each rebasing on the last.
   raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
   payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
 
+- T8 design `d1161d69`, 2026-09-04: the coding brief under T8 and the layout draft
+  `app/data/hmrc/form-layouts/ltd.json` on the batch branch. It found the CT600 sheet's capital
+  allowance boxes dead on every package: `AA177`, `AL177` and `AA179` read the working sheet's
+  column H, which is empty on rows 15 to 18, while the allowances sit in column I. **T21** (Sonnet,
+  with R6) points them at column I in the template and regenerates; until then the layout takes
+  boxes 690, 705 and 710 from `CorporationTax!I15`, `I16+I17` and `-I18`.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
