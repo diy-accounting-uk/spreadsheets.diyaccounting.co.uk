@@ -406,13 +406,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 | T7 | Kestrel's 3 April fuel settlement moved into the period in the master data; `extract-scenarios.js` rerun; the sync gate green | — | Haiku | `examples/kestrel-executive-cars/lines.jsonl`, `examples/kestrel-executive-cars/taxi/`, `app/test/fixtures/taxi-scenario-kestrel.toml`, `app/test/book-checks.test.js` (one case) |
 | T8 | Book warnings: fare day with no miles, vehicle purchase not on the register (with the register helper, a book-changing apply), miles past the band; breakability proofs | T2 | Sonnet | `app/lib/book-checks.js`, `app/test/book-checks.test.js` |
 | T9 | Taxi extractor records the extraction map and the overtype sidecar reads a generated Taxi baseline with a Taxi input-cell predicate (Sales C, D, E, F; purchases A to F and BZ; the asset block; the four Business Details cells and D29, O29) | SE:S2, T3, T6 | Sonnet | `app/lib/xlsx-exporter.js`, `app/lib/overtype-sidecar.js`, `app/test/overtype-sidecar.test.js`, `app/test/xlsx-exporter.test.js` |
-| T10 | Anchor guard table for Taxi: the 33 sheets and the 13 header cells above | SE:S2 | Sonnet | `app/lib/anchor-tables.js` (the Taxi entry), `app/test/books-interchange.test.js` |
+| T10 | Anchor guard table for Taxi: the 33 sheets and the 13 header cells above | SE:S2 | Sonnet | `app/lib/anchors/taxi.js` (new), `app/lib/books-interchange.js` (the Taxi entry), `app/test/books-interchange.test.js` |
 | T11 | Writer through the product writer: Taxi template directory, `cellWrites(scenario)`, the Sales grid rebuild, package naming; `export.js --file` and the MCP tools accept `taxi` | SE:S3, SE:S6, T1 | Sonnet | `app/lib/product-workbook.js` (the Taxi entry), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/taxi-workbook.test.js` (new), `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
 | T12 | Headline declaration beside Taxi's `CELL_MAP` and the comparison tile's figures | SE:S5, T6 | Sonnet | `app/products/taxi.js` (the declaration), `app/lib/headlines.js` (only if the reducer needs a field), `app/test/taxi-headlines.test.js` (new) |
 | T13 | Taxi view manifest: the view list above, the Taxi derivations from `CELL_MAP` and `reportSections()`, the render-unrepresentable entries for Taxi; the briefs for T14 and T15 | SE:S7, T6 | Fable (design wave) | `web/.../books/products/taxi.js` (new), `app/data/render-unrepresentable/taxi.json` (new) |
 | T14 | The takings view: year, month, week, day, fares; add-a-fare, add-rental, add-other-income; the four layouts | T13 | Fable (design wave) | `web/.../books/products/taxi-takings.js` (new), `web/.../books/taxi.css` (new) |
 | T15 | The comparison panel, the P&L health-check block, the vehicle register, the tax computation in the SA302 order with payments on account, the quarterly summary, the forecast, the SA103S render with the 2026 boxes and the box-12 placement | T13, T19 | Opus (design wave) | `web/.../books/products/taxi-views.js`, `web/.../books/products/taxi-forms.js` (new) |
-| T16 | Example books and deep links: the three Taxi fixtures served under `books/assets/examples/`, `books/taxi.html`, the download page's panel, the behaviour probe | SE:S8, T7 | Sonnet | `web/.../books/examples.js` (Taxi entries), `scripts/build-books-bundle.mjs` (the Taxi template assets), `web/.../books/taxi.html` (new), `web/.../public/download.html`, `behaviour-tests/spreadsheets.behaviour.test.js` |
+| T16 | Example books and deep links: the three Taxi fixtures served under `books/assets/examples/`, `books/taxi.html`, the download page's panel, the behaviour probe | SE:S8, T7 | Sonnet | `scripts/example-books.json` (three Taxi rows; `books/examples.js` is generated from it by SE:S8), `scripts/build-books-bundle.mjs` (the Taxi template assets), `web/.../books/taxi.html` (new), `web/.../public/download.html`, `behaviour-tests/spreadsheets.behaviour.test.js` |
 | T17 | The equivalence suite, round trips, warning proofs, layouts and axe for Taxi; `r-sources.js` takes a product | T11, T14, T15, T16 | Sonnet | `web/browser-tests/books-taxi-{equivalence,formats,edits,layouts}.browser.test.js` (new), `web/browser-tests/r-sources.js`, `playwright.config.js` |
 | T18 | The form-box proof: every 2026 box the page prints carries the right key, the mileage and actual-cost routes place the vehicle figures as specified, and the margin carries the sheet's figure where the two differ | T15, T17 | Sonnet | `web/browser-tests/books-taxi-forms.browser.test.js` (new), `playwright.config.js` |
 | T19 | Tax data: `class2_small_profits_threshold` (6,845) and the 3.50 weekly rate in `se-2025-2026.toml` and `se-2026-2027.toml`; `calculateExpectedTax` returns the Class 2 line; the computation view prints it (T15) | — | Sonnet | `app/data/se-2025-2026.toml`, `app/data/se-2026-2027.toml`, `app/lib/tax/income-tax.js`, `app/lib/diya-gl-loader.js` (one field), `app/test/tax/income-tax.test.js`, `app/test/tax/national-insurance.test.js` |
@@ -1137,7 +1137,7 @@ Files. Modifies `app/lib/xlsx-exporter.js` (`extractTaxiTransactions` records in
 a `taxiBookFieldCells()` and `isTaxiInputCell()` beside the BST ones), `app/lib/overtype-sidecar.js`
 (a Taxi baseline), `app/test/overtype-sidecar.test.js`, `app/test/xlsx-exporter.test.js`. Follows
 the shapes SE:S2 lands (the map key `file!sheet!cell`, the `templatePaths` and `isInputCell`
-options); read `app/lib/anchor-tables.js` and the sidecar as they are on the batch branch before
+options); read `app/lib/anchors/run.js`, `app/lib/anchors/bst.js` and the sidecar as they are on the batch branch before
 writing a line.
 
 Design. Regions for the recorder, one per row kind: Sales day row `{ postingDate: "A",
@@ -1184,8 +1184,9 @@ Tier: Sonnet.
 Purpose: a Taxi workbook passes the guard and a BST workbook on the Taxi table is refused
 naming `Draft Tax calculation`.
 
-Files. Modifies `app/lib/anchor-tables.js` (the Taxi entry, in the shape SE:S2 landed for BST)
-and `app/test/books-interchange.test.js`. Must not touch the BST or SE entries.
+Files. Creates `app/lib/anchors/taxi.js` (the Taxi table, in the shape SE:S2 landed in
+`app/lib/anchors/bst.js`); modifies `app/lib/books-interchange.js` (the Taxi entry in the product
+map, beside SE:T1's) and `app/test/books-interchange.test.js`. Must not touch the BST or SE entries.
 
 Design. Sheets: the 33 in `xl/workbook.xml` order (Home, Business Details, SE Short, Profit &
 Loss Acc, VitalTax, Fixed Assets, Draft Tax calculation, Wages Forecast, SalesApr, PurchasesApr,
@@ -1406,7 +1407,8 @@ Deliverable: the views and the selector list T17 and T18 need.
 Purpose: `books/taxi.html` loads the three Taxi fixtures by button and by `?example=`, and the
 download page links it.
 
-Files. Modifies `web/.../books/examples.js` (three entries, in the shape SE:S8 landed),
+Files. Modifies `scripts/example-books.json` (three rows, in the shape SE:S8 landed; the build
+writes `books/examples.js` from it, never hand-edited),
 `scripts/build-books-bundle.mjs` only if S8 left a per-product asset list there (the Taxi
 template `templates/taxi/{meta.toml,taxi-excel.xlsx}` must reach `books/assets/templates/taxi/`
 for the save path), `web/.../public/download.html` (the panel at line 130 gains a Taxi link
@@ -1562,7 +1564,7 @@ Tier: Sonnet.
 |---|---|---|
 | A, starts now, no SE row needed | T1, T2, T3, T7, T19 | five files with no overlap: the writer block and one loader line; `book-checks.js`; the extractor's Sales loop; Kestrel's master; the tax module and two TOMLs |
 | B, after A, no SE row needed | T4 with T8; then T5; then T6 | T4 owns the calculator's income path and `checkCompliance`, T8 owns `book-checks.js`; T5 needs T4's calculator; T6 closes the writer, extractor and calculator set and carries the regeneration and re-pin |
-| C, after SE:S2, S3, S5, S6 | T9, T10, T11, T12 | four files: the extractor and sidecar; `anchor-tables.js`; the product writer, CLI and tools; `headlines.js` and the declaration |
+| C, after SE:S2, S3, S5, S6 | T9, T10, T11, T12 | four files: the extractor and sidecar; `anchors/taxi.js`; the product writer, CLI and tools; `headlines.js` and the declaration |
 | D, after SE:S7, S8 | T13 first; then T14 with T15; T16 alongside | T13 writes the manifest the other two render into; T14 and T15 own separate modules; T16 owns the page and the examples |
 | E, after D and T11 | T17, then T18 | both append `playwright.config.js` and both read T14's and T15's selectors |
 

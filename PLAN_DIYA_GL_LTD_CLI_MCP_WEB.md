@@ -408,7 +408,7 @@ and T16, which touch Ltd-owned files only.
 | # | Item | Precursors | Tier | Files |
 |---|---|---|---|---|
 | T1 | Ltd writer profile: period → `yearEndMonth`, `targetStartYear` and the `ltd-<FY>` tax file; the non-March sequence per file in `generate.js` order; the docx copied; twelve-month refusal; the Ltd branch of `app/lib/product-workbook.js` | SE:S3 | Opus | `app/products/ltd.js` (writer profile export), `app/lib/product-workbook.js` (Ltd branch), `app/test/ltd-workbook.test.js` |
-| T2 | Ltd anchor table for thirteen workbooks, tabs in year-end order, header cells per extractor; extraction map keyed `file!sheet!cell` through the four multi-file extractors; the sidecar's Ltd input-cell predicate | SE:S2, SE:T1 | Sonnet | `app/lib/anchors/ltd.js` (new), `app/lib/anchor-tables.js` (one registration line), `app/products/ltd.js` (layout exports), `app/test/ltd-anchors.test.js` |
+| T2 | Ltd anchor table for thirteen workbooks, tabs in year-end order, header cells per extractor; extraction map keyed `file!sheet!cell` through the four multi-file extractors; the sidecar's Ltd input-cell predicate | SE:S2, SE:T1 | Sonnet | `app/lib/anchors/ltd.js` (new), `app/lib/books-interchange.js` (one registration line), `app/products/ltd.js` (layout exports), `app/test/ltd-anchors.test.js` |
 | T3 | Headline key declaration beside `CELL_MAP`: the four tiles, the five-slice turnover pie with the `dividends` key, the twenty-six outgoings lines | none for the declaration and its Node test; SE:S5 for the reducer's `dividends` key | Sonnet | `app/products/ltd.js` (declaration), `app/test/ltd-headlines.test.js` |
 | T4 | The calculator emits every leaf cell the twenty-two Ltd links address; the writer's `readTargetCell` over `results`; the stale-cache state on the six link-reading hub sheets; the pinned addressed-cell list and the cache-agreement test | SE:S4, T1 | Fable (design wave) | `app/lib/calculators/ltd.js` (link-addressed cells), `app/products/ltd.js` (Ltd reader), `app/test/fixtures/ltd-link-cells.json`, `app/test/ltd-link-caches.test.js` |
 | T5 | The eight Ltd book checks and warnings, with previews and breakability proofs; the chart check scoped to sales and purchases | none | Opus | `app/lib/book-checks/ltd.js`, `app/lib/book-checks.js` (product hook, one line), `app/test/book-checks-ltd.test.js` |
@@ -416,7 +416,7 @@ and T16, which touch Ltd-owned files only.
 | T7 | Ltd view manifest, ledger half: year (year-end order), Bank, Debtors and creditors, P&L with months, Stock, Fixed assets with HP, Business details with the opening balance sheet, Admin, Home | SE:S7, T3 | Sonnet | `web/.../books/products/ltd.js` (manifest), `products/ltd-ledger.js` |
 | T8 | Ltd view manifest, forms half: Accounts, Corporation tax, CT600, VAT returns, Payroll, Company with the voucher; the drift correction mark in each form's margin | SE:S7, SE:T8, T3, T7 | Opus (design wave) | `web/.../books/products/ltd-forms.js`, `app/data/hmrc/form-layouts/ltd.json` |
 | T9 | Ltd unrepresentable list with reasons; the render-coverage sweep over the three Ltd books | T7, T8 | Haiku | `app/data/render-unrepresentable/ltd.json`, `web/browser-tests/books-ltd-render-coverage.browser.test.js` |
-| T10 | Ltd example ids, deep links and the three example buttons served through `books/examples.js`; `EXAMPLE_BOOKS` rows; the bundle copies `ltd-*.toml`, the thirteen templates and the docx | SE:S8 | Sonnet | `scripts/build-books-bundle.mjs` (append rows), `web/.../books/examples.js` (Ltd entries), `web/browser-tests/books-ltd-deep-links.browser.test.js` |
+| T10 | Ltd example ids, deep links and the three example buttons served through `books/examples.js`; `EXAMPLE_BOOKS` rows; the bundle copies `ltd-*.toml`, the thirteen templates and the docx | SE:S8 | Sonnet | `scripts/example-books.json` (three Ltd rows; `books/examples.js` is generated from it by SE:S8), `scripts/build-books-bundle.mjs` (the Ltd asset copies), `web/browser-tests/books-ltd-deep-links.browser.test.js` |
 | T11 | Equivalence suite: `r-sources.js` Ltd scenarios, S3 from ltd-latest with the seven-month shift, A1 to A7 | T1, T2, T4, T7, T8 | Opus | `web/browser-tests/r-sources.js` (append), `books-ltd-equivalence.browser.test.js` |
 | T12 | Formats suite: E3 multi-file on both year ends, E4 refusals, E5 package contents | T1, T2, T11 | Sonnet | `books-ltd-formats.browser.test.js` |
 | T13 | Edits and warnings suite: E1 per journal, E2 for every rule, the two editable engine checks | T5, T6, T7 | Sonnet | `books-ltd-edits.browser.test.js`, `books-ltd-warnings.browser.test.js` |
@@ -429,11 +429,15 @@ and T16, which touch Ltd-owned files only.
 | M1 | Human: merge the batch PR, dispatch `generate-ltd` with skip-commit on the branch, then the refresh on main | T1 to T19 | operator | — |
 
 Shared files (`build-books-bundle.mjs`, `r-sources.js`, `playwright.config.js`, the
-behaviour spec, `anchor-tables.js`, `book-checks.js`, `diya-gl-tools.js`) take append-only
+behaviour spec, `books-interchange.js`, `book-checks.js`, `diya-gl-tools.js`) take append-only
 edits after the SE rows that touch them have merged. `app/products/ltd.js` is edited by T1
 (writer profile export), T2 (layout exports), T3 (headline declaration), T4 (link reader)
 and T16 (CT600 labels), each in its own region; they land in the order T16, T3, T2, T1, T4,
 each rebasing on the last.
+
+### Landed
+
+- T19 filing data, `b36c11ca`, merged to `claude/diya-gl-products` 2026-09-04.
 
 ### Verification ladder
 
@@ -587,7 +591,8 @@ Purpose: an uploaded package is checked workbook by workbook before any extracto
 it, and every extracted cell is recorded under `file!sheet!cell`.
 
 Files. Creates `app/lib/anchors/ltd.js` and `app/test/ltd-anchors.test.js`. Modifies
-`app/lib/anchor-tables.js` (one line registering the Ltd entry) and `app/products/ltd.js`
+`app/lib/books-interchange.js` (one line registering the Ltd entry in the product map, beside
+SE:T1's) and `app/products/ltd.js`
 (exports only: `BANK_LAYOUTS`, `BANK_ACCOUNT_FILES`, `STRADDLING_PERIOD_ROWS`,
 `STRADDLING_COLUMNS`, `STOCK_MATERIALS_PERCENT_CELL`, `STOCK_FINAL_COUNT_CELL`,
 `SCHEDULE_ASSET_CLASSES`, `SCHEDULE_NEW_ASSET_ROWS`, `CHARGE_REGISTER_ROWS`,
@@ -598,8 +603,10 @@ Files. Creates `app/lib/anchors/ltd.js` and `app/test/ltd-anchors.test.js`. Modi
 `OPENING_TAX_COLUMNS`). Must not touch `xlsx-exporter.js` (S2 owns the map recording) or
 `overtype-sidecar.js`.
 
-Interface assumed from SE:S2 and SE:T1. `anchor-tables.js` exports a table keyed by product
-then filename; each file entry is `{ requiredSheets: string[], headers: [{sheet, cell,
+Interface assumed from SE:S2 and SE:T1. `app/lib/anchors/run.js` exports
+`validateAnchors(set, table, productName)`; each product's table lives in
+`app/lib/anchors/<product>.js` keyed by filename and is registered in `books-interchange.js`;
+each file entry is `{ sheets: string[], headers: [{sheet, cell,
 label}] }` in the shape of `BST_HEADER_ANCHORS` (`xlsx-exporter.js` 276); `validateAnchors`
 runs it once per workbook in the set and throws one error whose findings carry `file`. The
 sidecar takes `templatePaths` and `isInputCell(file, sheet, cell)`. Month-tab names are a
@@ -730,6 +737,13 @@ several hundred emitted cells with an exact agreement test behind it. The delive
 the design wave is a brief in this same format plus the first cut of the pinned list;
 the constraints and questions below are its input.
 
+This wave waits on SE:S4's design output: the coding brief appended under S4 in
+`PLAN_DIYA_GL_SE_CLI_MCP_WEB.md` fixes the names this brief assumes (`refreshLinkCaches(zip,
+{ readTargetCell })`, `resultsReader`, `linkCacheValues`, `LINK_ORDER`), and the brief this
+wave writes takes those names from there. The calculator-emission half (the new emitted cells
+and the pinned list) needs no S4 code and is briefed to start first; the reader, the
+agreement test and the stale-cache test wait for S4 to land.
+
 Files. Modifies `app/lib/calculators/ltd.js` (new emitted cells), `app/products/ltd.js`
 (one export, `linkCacheReader(results)`), creates `app/test/fixtures/ltd-link-cells.json`
 and `app/test/ltd-link-caches.test.js`. Must not touch `app/lib/link-caches.js` or
@@ -737,7 +751,7 @@ and `app/test/ltd-link-caches.test.js`. Must not touch `app/lib/link-caches.js` 
 
 Interface assumed from SE:S4. `app/lib/link-caches.js` exports
 `collectExternalCellRefs(zip)` (today `spreadsheet-runner.js` 461, keyed
-`"<link index>|<sheet>"`) and `refreshExternalLinkCaches(zip, readTargetCell)` as a pure
+`"<link index>|<sheet>"`) and `refreshLinkCaches(zip, { readTargetCell })` as a pure
 function over one JSZip where `readTargetCell(file, sheet, cell)` returns a number, string,
 boolean, error string or `undefined`; `undefined` keeps the cell the cache already carries
 (the existing rule at `spreadsheet-runner.js` 599 to 606). The writer calls it once per
@@ -1128,14 +1142,15 @@ Tier: Haiku.
 Purpose: the three Ltd books load from buttons and links, and the bundle carries the files
 the Ltd engine reads.
 
-Files. Modifies `scripts/build-books-bundle.mjs` (append: `EXAMPLE_BOOKS` rows
-`["precision-code-ltd", "full"]`, `["brickwork-pro", "ltd-vat"]`, `["brickwork-pro",
-"ltd-nonvat"]`; `copyRuntimeAssets` copies `app/data/ltd-*.toml`, `app/templates/ltd/
-meta.toml` and the fourteen `template.files`) and `web/.../books/examples.js` (Ltd entries).
+Files. Modifies `scripts/example-books.json` (append the three entries below; SE:S8's build
+reads it as `EXAMPLE_BOOKS` and writes `books/examples.js`, which is generated and never
+hand-edited) and `scripts/build-books-bundle.mjs` (`copyRuntimeAssets` copies
+`app/data/ltd-*.toml`, `app/templates/ltd/meta.toml` and the fourteen `template.files`).
 Creates `web/browser-tests/books-ltd-deep-links.browser.test.js`.
 
-Interface assumed from SE:S8: `examples.js` exports `EXAMPLE_BOOKS` entries `{ key, name,
-note, dir, product }` and the shell reads `?example=<key>`; the bundle copies
+Interface assumed from SE:S8: `scripts/example-books.json` holds, per product id, entries
+`{ key, dir, product, name, note }`; the build writes them to `window.DiyaGlExamples` in
+`books/examples.js`, the shell reads `?example=<key>`, and the bundle copies
 `examples/<dir>/<product>/{book.toml,lines.jsonl}` for each.
 
 Entries: `ltd-scenario-full` "Precision Code Ltd" (dir `precision-code-ltd`, product
