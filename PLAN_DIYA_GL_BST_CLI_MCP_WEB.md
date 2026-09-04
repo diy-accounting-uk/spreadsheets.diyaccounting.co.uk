@@ -522,3 +522,365 @@ start here.
 13. **The engine's checks cannot fail from a line edit.** Both sides derive from the same
     `(book, lines)`. Anything a customer can get wrong that the sheet still totals is a
     book check, and it lives in `app/lib` so every surface runs it.
+
+## Problems met and how they were solved
+
+The defects and dead ends behind PRs #55 to #59, 2026-09-01 to 2026-09-04, with the
+mechanism that fixed each. The thirteen notes above are the rules; this is the evidence
+behind them. `[BST-shaped]` marks a fix that leans on the BST workbook's single file, a
+fixed cell address or a BST-only sheet name; the next section says what becomes of each.
+
+### Browser bundling and the Content Security Policy
+
+Three separate import-time or eval failures were found one after another, and every test
+passed before each one was fixed. The two reusable gates are a test server that sends
+production's headers and a check that imports the built bundle under Node.
+
+- **The engine read files at module scope.** `diya-gl-schema.js` compiled both schemas and
+  `xlsx-exporter.js` resolved its tax-data directory on import, through `fs` and `path`,
+  which the browser build resolves to throwing stubs. Fixed by one resource loader
+  (`app/lib/app-resources.js`) that every non-computed read goes through, with both reads made
+  lazy; Node-only paths keep a stub that throws naming the seeding call that fixes it
+  (`ed7b7d25`, `4473c58f`).
+- **ajv compiled validators with `new Function`.** Production's CSP has no `unsafe-eval`, so
+  the deployed page could not load any book while the suite stayed green. Fixed by running
+  ajv's standalone code generator once at bundle build and resolving ajv to a stub that hands
+  back the precompiled functions; Node still compiles at runtime, and a test proves both paths
+  agree on valid and invalid books, errors included (`4931f342`, `8e37e594`).
+- **The browser tests served no headers.** Five specs each ran a permissive `createServer`.
+  Fixed by `infra/main/resources/security-headers.json`, read by `SpreadsheetsStack.java` at
+  synth and by the shared `web/browser-tests/serve.js` at test time (`4522611e`, `e0c8518f`).
+- **A later import pulled import-time code back in.** `books-interchange.js` statically
+  imported `overtype-sidecar.js`, which resolves its template path from `import.meta.url` at
+  top level. Fixed by a dynamic import inside the one function that stages a workbook, and by
+  no longer re-exporting the sidecar's cells from the bundle (`2267852d`).
+- **Two schema caches, one never loaded.** `diya-gl-canonical.js` keeps its own schema cache
+  for field order and money typing, separate from the validator cache, so the new zip and JSON
+  downloads failed on click. Fixed by `ensureSchemas` loading both together (`a425de6f`,
+  `2c96bbdf`).
+- **JSZip was asked for `nodebuffer`.** The browser could write nothing. Fixed by asking for
+  `uint8array` everywhere, proved byte-identical across the three fixtures; the two real Node
+  boundaries got an explicit `Buffer` wrap, including the MCP `save_workbook` base64 encode,
+  which had silently produced a comma-joined byte list on a plain `Uint8Array` (`d7e4d085`,
+  `5e56e40c`, `e34cb27a`).
+- **The gitignored bundle was not built where it was needed.** The engine 404'd on the site
+  once and the local behaviour job served a page that never loaded, both with green tests.
+  Fixed by both jobs building the bundle before serving or syncing (`59aa36b3`, `90bca7ae`).
+  A behaviour probe now opens `bst.html`, loads an example and waits for the year total,
+  failing on any console error or CSP violation (`01ef4406`).
+- **Build by-products leaked.** esbuild's metafile was written under `public/`, which deploys
+  wholesale; the minified bundle tripped the unsafe-regex lint 35 times on ajv's own regexes.
+  Fixed by taking the module count off the in-memory result and excluding the generated
+  bundle from prettier and the security lint (`4cbf6d7d`, `b84d0656`).
+
+### The sheet's real layout against what the code assumed
+
+- **The Debtors and Creditors fiction.** The writer laid an invented per-contact ledger over
+  a sheet that is a monthly outstanding table with two entered cells, C3 and F3, every month
+  row being the template's own formula over that month's Sales or Purchases tab. The write
+  destroyed four months' formulas; the export read the same invented cells back, so the two
+  legs agreed with each other and with nothing else. Fixed by entering only the two opening
+  figures, reading them back as `openingBalances`, and following through the report, the JS
+  calculator, the reconciliation page, the view and the CONTEXT doc, which was wrong in five
+  places. Declared book paths went from 36 to 78 (`fe36d748`, `e03e610a`, `dc8ce44e`,
+  `37c7f53d`). The upload path kept reading the fiction after the writer was fixed, picking
+  up date serials as counterparty names, until `loadFromFile` read C3/F3 too; the zero-drift
+  spec now asserts the whole drift set is empty, not the views it visits (`a3b01d91`).
+  `[BST-shaped]`
+- **Sheets opened by name with nothing checking they were there.** A workbook with no Admin
+  sheet priced every mileage claim at nil and said nothing. Fixed by `validateBstAnchors`
+  covering 29 sheets and 25 header cells and failing by name, and `adminMileageRates` throwing
+  `AdminSheetMissingError` (`fe36d748`, `0c749668`, `64838188`). `[BST-shaped]`
+- **The settlement column was written by one path and never read.** `Sales!D` and
+  `Purchases!D` hold the free-text receipt the outstanding formula tests for blank-or-not.
+  The exporter never read it, and the generate path never passed `carriesPaymentLabels`, so
+  every generated BST package parked all lines as outstanding and overstated the ledger.
+  Fixed by reading D back through a coarse map to `bank-transfer` or `cash` and passing the
+  flag on the real `--data` path (`ce2fbfaa`). SE and Ltd were checked: their sheets carry no
+  settlement column, settlement being a separate bank or cash journal row. `[BST-shaped]`
+- **A hardcoded chart of accounts misrouted another product's book.** On
+  `sp-sixty-driving/bst`, account 5900 landed in capital allowances and a 200 pound dashcam
+  on 7000 dropped out of every total, because the loader and the calculator each hardcoded
+  the BST purchase map for any book run as BST while SP Sixty keeps the Taxi masters' chart.
+  Fixed by `resolveBstPurchaseCodeMap()` picking the known chart whose keys are a superset of
+  the book's own declared purchase accounts, in both callers (`c6cb6367`); the book check for
+  accounts had the same map and now reads the book's own accounts (`80d25fc1`).
+- **The assets tile added a figure that is not an asset.** What customers owe runs close to
+  turnover on a book that records few settlements, because the sheet counts every unsettled
+  sale across the year. The tile now totals written-down value plus closing stock and
+  reports the owed figure on a second line (`9ce7e969`). `[BST-shaped]`
+
+### Byte identity, ordering and fixtures
+
+Every entry here traces to one fact: the BST workbook has no entry-number cell, so a line's
+number is its row on the sheet.
+
+- **Row position was not a pure function of a line's facts.** A workbook to diya-gl to
+  workbook cycle renumbered lines, so `lines.jsonl` did not reproduce and the formats spec
+  needed an allowance. `extractBstTransactions` numbers by row while `diyaGlToScenario` wrote
+  each month's rows in arrival order. Fixed in two steps: sort before building the sheet
+  groups (`696ae207`), then sort by `sourceJournalID` and the line's own `entryNumber` rather
+  than the canonical content order, which puts date and account first and reorders two lines
+  sharing a date on one journal (`7bc4ab6d`). `[BST-shaped]`
+- **Date and account edits were composed from remove plus add.** A helper run reordered
+  every entry it touched. Fixed by `changeLinePostingDate` and `changeLineAccount` as
+  first-class ops in `diya-gl-edits.js`, addressing by `entryNumber` and rewriting in place,
+  registered in the MCP edit map; the page's composition helper was deleted (`f6e4f338`).
+- **The canonical writer typed dates by JS class.** A book read back from JSON carries ISO
+  strings, not TOML dates, so the writer quoted them and extraction disagreed. Fixed by
+  recognising a date field from the schema's `"format": "date"`; the fixture sync gate then
+  failed on three bare dates until the extractor ran again (`6a4c7edf`, `82037b7d`).
+- **A second hardcoded business description** gave the BST and SE subsets a different trade
+  from the master company. `precisionSubsetEntity` now takes it from the master entity
+  (`1696fd19`).
+- **An equivalence test compared two tax years.** `examples/bst-latest` is built for its own
+  year end while the JS side was always built for the master's 2025-26 year, so a
+  year-dependent Admin figure could only agree by chance and A3 carried a two-cell allowlist.
+  Fixed by `r-sources.js` reading bst-latest's year end off the committed report names and
+  asking `report.js` for the matching rates table; all 281 shared keys agree with no
+  allowlist (`6c685951`).
+- **A fixture dated a bill before its period.** SP Sixty's recurring Vodafone bill on the 1st
+  put the April copy five days before 6 April; `book-dates-in-period` was right. Fixed in the
+  master data and regenerated (`f5f28df8`).
+- **Refactors proved byte-identical without LibreOffice.** A PATH shim whose `--convert-to`
+  copies lets the real CLI produce reference bytes first; used for the interchange rewrite,
+  the `uint8array` change and the chart-map resolver (`a8112caa`, `d7e4d085`, `c6cb6367`).
+
+### The CLI, the MCP server and the shared engine
+
+- **`export.js` ran its CLI on import.** Reusing the `--file` pipeline re-ran the CLI against
+  the importer's argv. Fixed by factoring `extractBstFromFile` and `buildFileReportDocument`
+  out and guarding `main()` behind a direct-invocation check (`ee161f70`).
+- **Import by file extension could not be trusted.** `books-interchange.js` sniffs the bytes
+  (a zip's entry list, the OLE magic number, text starting `{`) and returns the same book and
+  lines from a workbook, a package zip, a diya-gl zip, a diya-gl JSON file or that JSON
+  zipped; `.xls` is refused by name. One module serves all three surfaces (`a8112caa`,
+  `59ce8f50`, `f26d3532`, `2b6e68a4`).
+- **The page had its own copy of the book checks**, so a check could fail on the page and not
+  for the CLI. Ported into `app/lib/book-checks.js` with five warnings, wired into `export.js`
+  as `bookchecks.json`, the MCP tools and the bundle; the page's duplicate array and chart map
+  deleted (`80d25fc1`, `acc2e802`, `3a2192e2`).
+- **The MCP SDK was too heavy for three methods.** A stdio server receives `initialize`,
+  `tools/list` and `tools/call`; the SDK pulls in express, hono, cors, jose and zod. Replaced
+  by a hand-rolled newline-delimited JSON-RPC 2.0 framing in `app/lib/mcp/jsonrpc-stdio.js`,
+  every tool a thin call into a landed function (`1924396f`).
+- **The save controls were inert on every load path** because `state.book` and `state.lines`
+  were never set from the loaded snapshot (`cbbd179d`). The archetype of a write with no
+  reader.
+
+### Page state and UX
+
+- **A view threw on open and no test opened it.** The Debtors and Creditors tab was rewritten
+  but the snapshot still handed it the old contact lists. Fixed by rendering from the engine's
+  results, with a spec that opens the tab (`25cd5019`, `0a1fc140`).
+- **The open month's grid ran off the year table's edge**, because the grid lives in a cell of
+  a table wider than its scroll container by design. Sized to the container and pinned left;
+  the grid also stopped inheriting the columnar table's cell rules (`6ddbbdf7`, `4056d7ce`).
+  A row sharing its entry number with another shows its figure with no edit controls, since
+  an edit by number would change both (`6ddbbdf7`). `[BST-shaped]` in the month-in-a-year
+  layout.
+- **The whole-pence helper rounded negatives the wrong way**; now half up away from zero,
+  matching the canonicaliser (`1cc59123`). The toast swallowed clicks underneath; now
+  `pointer-events: none` with its one button opting back in (`a425de6f`).
+- **The drift mark was driven by a list of cells**, so a corrected figure on any other view
+  carried no mark. The page now walks its own rendered `data-r-key` values after each render
+  and marks any figure whose workbook cell disagrees with the calculated book (`cdfcd714`,
+  `33f15cef`). The same keys feed a sweep over the three example books that asserts the
+  rendered key set covers the report exactly, in both directions, with the 43 unrenderable
+  keys listed with reasons in `app/data/render-unrepresentable.json` (`ddf23204`).
+- **Chart labels were clipped at every viewport.** The off-centre donut and a value label
+  tracking its own bar's length. Fixed by a centred pie with truncated direct labels,
+  fixed-position bar and line layouts, and a horizontally scrolling twelve-category chart
+  (`63ce7e64`).
+- **The axe gate failed on contrast and covered controls.** Muted ink darkened a step to clear
+  4.5:1 on the teal tint, the view scrolls inside the space above the bottom bars, controls
+  gained accessible names, the month card head became a real button (`b80112a3`, `387ac5d4`,
+  `f427a073`).
+- **Autosave degrades rather than breaks.** A throwing IndexedDB `open()` degrades to
+  no-autosave with no uncaught error; the empty state offers "continue where you left off"
+  and never loads on its own (`cbbd179d`, `4308d16c`). Deep links never read or write that
+  record, and the URL tracks example, view and month with `history.replaceState` so a link
+  adds no history entry; a reload test for the column toggle had to let the deep link load
+  the book, because the reload keeps the example in the URL (`87904061`, `66613eeb`).
+
+### Test infrastructure and flakes
+
+- **Tests moved off `file://`** because `fetch` needs an origin; that server became the
+  header-sending `serve.js` (`9eaf22af`, `4522611e`).
+- **Chromium date inputs are locale-ordered and CI is en-US.** Typed month digits landed in
+  the day segment. Pinning en-GB was the first attempt (`eeb49b1a`); the fix sets the value as
+  ISO and proves only that the field is keyboard-reachable and Enter commits (`d0fc5559`).
+  `fill()` on a date input commits at once, so a trailing Enter went looking for a row that
+  had already moved months and hung the spec for its full timeout (`9442bc10`, `09d5106f`).
+  Chromium's own Escape handling runs after the page's listener, so the Escape test dispatches
+  the `input` event a keystroke would and keeps only the Escape real (`9442bc10`).
+- **Descendant selectors matched the nested grid and the mobile drawer.** Direct-child
+  combinators for the year table's thead; the preview button scoped to `#inspector`
+  (`9442bc10`).
+- **A deliberately broken figure landed on a rounding tie.** 100.005 did not flip the engine
+  checks because the whole-pound and penny rounds coincide there; 100.006 does. Rounding the
+  line clears the book check but not the two engine checks, so only undo restores them
+  (`2a114c13`). The two mileage checks recompute from the same line by two routes that reduce
+  to one number, so no page edit can split them; the test asserts they stay green
+  (`2a114c13`).
+- **Probe pages for the CSP-sensitive parts.** `headlines-probe.html` mounts the strip alone
+  from a `report.json` snapshot over plain HTTP; `save-probe.html` did the same for save before
+  the page carried live state (`8f6264b5`, `3628603a`). A byte-identical writer says nothing
+  about a readable workbook, so a round-trip test saves a loaded book, runs the file back
+  through the CLI's own extraction and compares the full report, 313 to 320 values matching
+  (`a01e9365`).
+- **Concurrent worktrees collide on `playwright.config.js` and generated output.** Every
+  spec-adding agent appends a line there. Serialise on shared files, resolve generated
+  artefacts to one declared side per merge, and merge each agent's commit as soon as it is
+  verified (`9442bc10`, `b215bdc0`, `87ced903`).
+
+## Carrying the solution to SE, Ltd and Taxi
+
+Assessed 2026-09-04 against the code on main and the shipped 2026-04-05 packages, not
+the CONTEXT docs. The four pipeline layers under the shells are already four-product:
+`diyaGlToScenario` and `PURCHASE_CODE_MAPS` (`diya-gl-loader.js`), `calculateFromDiyaGl`,
+`extractBook` and `report-serializer` all dispatch on product, and `report.js
+--source-dir` runs all four in both modes. The edits module has no product knowledge at
+all. What is BST-shaped is four layers above them: the interchange, the writer, the
+headlines module and the browser page. Each successor plan ports those four; nothing
+underneath is rewritten.
+
+### The interchange: one file becomes a file set (SE, Ltd)
+
+`zipKind` in `books-interchange.js` sniffs a package zip as exactly one `.xlsx`, so a
+nine-file SE or Ltd zip returns `unknown`; staging writes one workbook; the read pipeline
+is hardcoded to the BST anchors and extractor; the JSON interchange refuses any `product`
+but `bst`. `export.js --source-dir` already holds the working multi-file version
+(`extractMultiFileTransactions`, `extractBankTransactions`, `extractPayrollTransactions`,
+`extractJournalEntries` reading a directory), so the extension is moving that block
+behind a product argument: a zip whose entries include `Financialaccounts.xlsx` plus
+siblings stages every workbook into the scratch directory. A bare `.xlsx` upload for SE
+or Ltd is one file of a nine-file package and is refused by name. On the page,
+`xlsx-cells.js` opens every workbook in the zip keyed by filename and `readCell` takes a
+file as well as a sheet. Taxi is single-file and holds as it is.
+
+### The anchor guard and the extraction map become per-product (all three)
+
+`validateBstAnchors` is one list over one workbook. It becomes a table keyed by product,
+and for SE and Ltd by filename, run once per staged workbook so a customer who swapped
+one leaf file is told which. `BstAnchorError` already carries a list of findings; each
+gains a file. Only the BST extractor records the extraction map the overtype sidecar
+uses to say which line a typed-over cell fed; the Taxi and multi-file extractors take
+the same optional map argument, with the map key widened to `file!sheet!cell`. The
+sidecar takes a list of template paths and a per-product input-cell predicate in place
+of the BST constants.
+
+### The writer: `bst-workbook.js` becomes a product workbook writer (all three)
+
+The writer reads `productMeta.template.spreadsheet`, which SE and Ltd metas do not have
+(they declare `template.files`); resolves the tax-year file as `se-YYYY-YYYY`, which Ltd
+does not use (`ltd-YYYY`); calls `cellWrites(scenario)` with one argument, where Ltd
+takes the start year and year-end month and Taxi the target start year; writes one
+buffer through `generateSpreadsheet` and `applyCellWrites` with no tab rename and no
+link-cache refresh; and zips one file at the root under a name that is `null` for SE
+and Ltd. `generate.js` already branches on every one of these, so the writer follows
+it: per declared file, inject the rates; for a non-March year end (Ltd ships all
+twelve) run `renameMonthTabs`, `renameExternalLinkSheetNames`, the Payslips
+reorientation and `rewriteVatinterfaceFormulas`; apply that file's writes, since the SE
+and Ltd `cellWrites` already return `{filename: {sheet: {cell: value}}}`; refresh the
+link caches; zip every file under `dirName`. Ltd's year-end month comes from
+`book.documentInfo.periodCoveredEnd`, which the book already records.
+
+### The external-link cache (SE, Ltd)
+
+The sharpest multi-file problem, so stated precisely. In CI, `runMultiFileSpreadsheet`
+walks leaves, hub, leaves, hub, calling `refreshExternalLinkCaches` before each
+LibreOffice roundtrip, because LibreOffice never re-resolves a link and computes from
+whatever `xl/externalLinks/externalLinkN.xml` holds. The refresh is pure JSZip and regex
+inside; only its edges are filesystem-bound. Two separate questions follow.
+
+- **Does a package the page saves open correctly?** Yes, with no cache work, as long as
+  the files stay together. `generateSpreadsheet` sets `fullCalcOnLoad="1"`, the rels
+  carry a relative target beside the absolute one, and Excel updates links on open. A
+  stale cache is what the customer sees before Update Links completes, or permanently
+  in a viewer that refuses to update. The package zip keeps the files together.
+- **Does the page's as-read drift layer work?** Not without the caches. It compares the
+  uploaded workbook's cached values with what the JS engine computes. A hub cell such
+  as P&L turnover is a formula over a leaf, and its cache is whatever the customer's
+  Excel last wrote; a leaf edited without the hub being opened leaves the hub stale,
+  and the page would report drift that is staleness. Drift needs a third state, "the
+  hub's cache predates the leaf it reads", found by comparing the hub's link cache
+  against the leaf's current value, which is the refresh's read half.
+
+The exporter's cached-value writing does not cover this, because `xlsx-exporter.js`
+does no writing at all. The two writers that exist are `applyCellWrites`, which drops
+the formula (right for an input cell, wrong for anything else), and
+`setCellCachedValue` in `generator.js`, which keeps the formula but is used only for the
+tax-rate date chain and one Admin link. Neither propagates a leaf's total into the hub.
+The extension: lift `refreshExternalLinkCaches` out of `spreadsheet-runner.js` as a
+buffer-in, buffer-out function over a map of filename to JSZip, with no `workDir` and no
+`fs`, export it from the engine bundle, and have the writer feed it the JS calculator's
+own results rather than a recalculated sibling. That is better than CI gets, since the
+engine knows every figure without a spreadsheet application.
+
+### Headlines become a per-product key declaration (all three)
+
+`bst-headlines.js` reads eighteen literal BST cell keys, and under `MULTI_FILE` every
+key also gains a `Financialaccounts.xlsx!` prefix. Each product module declares its
+own headline keys beside its `CELL_MAP` (turnover, cost of sales, running costs, the
+expense lines, tax, and the optional assets, stock and debtors trio) and
+`headlinesFromReport` becomes a reducer over that declaration. Tiles, pies and the
+loss-bar branch stay. Taxi's tax key is `Draft Tax calculation!E17`; it has no stock or
+debtors key, and the existing optional path reads that as zero.
+
+### The engine bundle and the shells (all three)
+
+`books-engine.js` re-exports one product module; it becomes a map keyed by product id,
+as `report.js` already has. The page picks the product from
+`entityInformation["diya-gl:product"]`, which every book carries and the schema
+already enumerates, so no field is added. The page's hardcoded structures in
+`bst-data.js` (the category list and purchase-category map, `buildAnnual`'s C4 to C35,
+the ledger sides, the SA103S layout, the tax sheet name, the PurchasesStock reads, the
+Debtors and Creditors cells) restate what each product's `CELL_MAP` and
+`reportSections()` already describe, and derive from them instead. `VIEWS` becomes a
+per-product list: Ltd gains a Companies House and dividends view and loses SA103S (a
+company files CT600); Taxi gains the vehicle-cost comparison and loses Stock and Debtors
+and Creditors, since its workbook has neither sheet. Splitting `bst-data.js` and
+`bst.js` into a shared shell plus a per-product view manifest is the shape. The MCP
+tools and `export.js --file` follow mechanically once the interchange and the writer
+take a product: four `"bst"` literals and one guard. Example books and their ids are
+served from `examples/<name>/bst/`; each product gets its own set.
+
+### Taxi's breaks are on the write side, not the week
+
+A diya-gl line already carries `postingDate`, and `extractTaxiTransactions` posts one
+line per fare day, so the week is the sheet's layout, rebuilt by `generateTaxYearWeeks`
+and `groupWeeksIntoMonths` from the year alone. Nothing in the format changes for it.
+Three things do break:
+
+- **Two lines on one date collide.** `taxi.js` gives each calendar day one Sales row
+  and writes `E{row} = amount`, so a second fare on the same day silently replaces the
+  first; `buildGrouped` groups by month and never sums by day. The Taxi writer sums the
+  day's lines before writing and concatenates their names into the description column,
+  as `monthlySalesTotals` sums a month for BST. The Taxi round trip is then lossy by
+  design, one row per day, and the page says so: the book is the record of the fares
+  and the workbook a rendering of it.
+- **A date off the pre-filled grid throws** from inside the writer, in the middle of a
+  download. The book checks only warn about an out-of-period entry and nothing blocks a
+  save. The Taxi writer refuses with the named dates, and the page offers the existing
+  "move these entries into the period" helper as the fix.
+- **The reposting account is not in the Taxi chart.** `repostAccount` prefers 5002,
+  which Taxi lacks, so the fallback reposts a stray purchase to 5100 Fuel. The preferred
+  code becomes a per-product constant (6200 Other expenses for Taxi). The month-keyed
+  gap warning holds for Taxi as it is.
+
+### What the book format must change
+
+Almost nothing. Product, period and year end, journal (`sourceJournalID` already
+enumerates every multi-file journal), bank account (`diya-gl:bankAccountID` routes a
+line to Bank, Cash or Currentaccount), settlement (`paymentMethod`, coarsened on the BST
+sheet and carried as a separate bank line for SE and Ltd) and the week are all covered.
+The one gap is which workbook a line was extracted from, needed to attribute an
+overtyped cell or a drift finding to its row. That belongs in the extraction-map
+sidecar, keyed `file!sheet!cell`, not in the schema: a `diya-gl:sourceFile` line field
+would make two books with identical economics compare unequal in `canonicalLinesJsonl`
+and break the byte-equality tests. One question to decide before SE and Ltd ship: a
+re-export into a different year's package re-dates every Taxi line through the day
+offset, and the book records the period but not the package it was last written into.
+`documentInfo.entriesComment` carries free text today; a dedicated field is worth adding
+only when a second reader needs to act on it.
