@@ -86,7 +86,7 @@ function workbookSet(sources) {
     return source;
   }
 
-  function bytes(name) {
+  async function bytes(name) {
     const source = sourceFor(name);
     if (!bytesByName.has(source.name)) bytesByName.set(source.name, source.read());
     return bytesByName.get(source.name);
@@ -96,7 +96,7 @@ function workbookSet(sources) {
     names: () => [...names],
     has: (name) => byName.has(workbookBaseName(name).toLowerCase()),
     bytes,
-    zip(name) {
+    async zip(name) {
       const source = sourceFor(name);
       if (!zipByName.has(source.name)) zipByName.set(source.name, bytes(source.name).then((buffer) => JSZip.loadAsync(buffer)));
       return zipByName.get(source.name);
