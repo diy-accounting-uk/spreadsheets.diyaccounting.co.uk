@@ -59,28 +59,47 @@ function readDeclaredPart(report, spec) {
   return readKey(report, spec);
 }
 
-// A declared list of `{label, key}` pairs, each resolved to a labelled
-// figure. Used for a tile's second line (SE's grants and interest, shown
-// beside turnover but outside the pie) and for the assets total's extra
-// parts (SE's cash at bank and in hand, summed in).
+// A declared list of `{label, key, optional}` items, each resolved to a
+// labelled figure. Used for a tile's second line (SE's grants and
+// interest, shown beside turnover but outside the pie), for the assets
+// total's extra parts (SE's cash at bank and in hand, summed in), and for
+// a turnover-pie's extra bridge slices (Ltd's dividends, optional since a
+// company need not have declared any).
 function resolveLines(report, lines = []) {
-  return lines.map(({ label, key }) => {
-    const figure = readOneCell(report, key, false);
+  return lines.map(({ label, key, optional }) => {
+    const figure = readOneCell(report, key, optional);
     return { label, value: figure.value, from: figure.from };
   });
 }
 
-// The four-slice bridge from turnover to what is left: cost of sales,
-// running costs, tax and NI, then whatever remains. A negative remainder is
-// a loss year; a negative slice is a refund year. Either way a pie cannot
-// show it honestly, so the page draws a bar instead.
-function turnoverPie(turnover, costOfSales, runningCosts, tax) {
-  const kept = turnover.value - costOfSales.value - runningCosts.value - tax.value;
+// A tile's own optional second line: one labelled figure shown beside the
+// tile's headline value and excluded from every sum (Ltd's tax-outstanding
+// and net-assets figures). Undeclared reads as no second line at all,
+// unlike `resolveLines`, whose undeclared list reads as empty.
+function resolveSecondLine(report, spec) {
+  if (!spec) return undefined;
+  const figure = readOneCell(report, spec.key, spec.optional);
+  return { label: spec.label, value: figure.value, from: figure.from };
+}
+
+// The bridge from turnover to what is left: cost of sales, running costs,
+// tax and NI, whatever extra slices the product declares (Ltd's
+// dividends), then whatever remains. A negative remainder is a loss year;
+// a negative slice is a refund year. Either way a pie cannot show it
+// honestly, so the page draws a bar instead.
+function turnoverPie(turnover, costOfSales, runningCosts, tax, pieExtra = []) {
+  const extraTotal = pieExtra.reduce((total, slice) => total + slice.value, 0);
+  const kept = turnover.value - costOfSales.value - runningCosts.value - tax.value - extraTotal;
   const slices = [
     { label: "Cost of sales", value: costOfSales.value, from: costOfSales.from },
     { label: "Running costs", value: runningCosts.value, from: runningCosts.from },
     { label: "Tax and NI", value: tax.value, from: tax.from },
-    { label: "Kept", value: kept, from: [...turnover.from, ...costOfSales.from, ...runningCosts.from, ...tax.from] },
+    ...pieExtra.map((slice) => ({ label: slice.label, value: slice.value, from: slice.from })),
+    {
+      label: "Kept",
+      value: kept,
+      from: [...turnover.from, ...costOfSales.from, ...runningCosts.from, ...tax.from, ...pieExtra.flatMap((slice) => slice.from)],
+    },
   ];
   const withShares = slices.map((slice) => ({ ...slice, share: turnover.value === 0 ? 0 : slice.value / turnover.value }));
   const negative = withShares.filter((slice) => slice.value < 0);
@@ -129,9 +148,13 @@ function outgoingsPie(costOfSales, expenseLines, outgoingsTotal) {
  *   costOfSales, runningCosts, tax (each a `{key}` or `{keys}` spec),
  *   expenseLines (`[key, label]` pairs) and assets (writtenDown, stock,
  *   debtors, each optional). turnover may add `secondLine` (an array of
- *   `{label, key}`, shown beside the tile, outside the pie); assets may add
- *   `extra` (`[{label, key}]`, summed into the assets total). Both default
- *   to empty.
+ *   `{label, key}`, shown beside the tile, outside the pie) and `pieExtra`
+ *   (an array of `{label, key, optional}`, extra bridge slices folded into
+ *   the turnover pie before "Kept" -- Ltd's dividends). assets may add
+ *   `extra` (`[{label, key}]`, summed into the assets total). tax and
+ *   assets may each add `secondLine` (one `{label, key}`, shown beside that
+ *   tile's own value, outside every sum -- Ltd's tax-outstanding and
+ *   net-assets figures). All four default to empty/absent.
  * @returns {{tiles: Object, pies: Object, keys: Object}}
  */
 export function headlinesFromReport(report, declaration) {
@@ -142,6 +165,7 @@ export function headlinesFromReport(report, declaration) {
   const turnoverFigure = readKey(report, declaration.turnover);
   const turnoverSecondLine = resolveLines(report, declaration.turnover.secondLine);
   const turnover = turnoverSecondLine.length > 0 ? { ...turnoverFigure, secondLine: turnoverSecondLine } : turnoverFigure;
+  const turnoverPieExtra = resolveLines(report, declaration.turnover.pieExtra);
 
   const costOfSales = readKey(report, declaration.costOfSales);
   const runningCosts = readKey(report, declaration.runningCosts);
@@ -160,9 +184,13 @@ export function headlinesFromReport(report, declaration) {
   // nonsense.
   const debtors = readDeclaredPart(report, assetsDecl.debtors);
   const extra = resolveLines(report, assetsDecl.extra);
-  const assetsTotal = addFigures(writtenDown, stock, ...extra);
+  const assetsTotalFigure = addFigures(writtenDown, stock, ...extra);
+  const assetsSecondLine = resolveSecondLine(report, assetsDecl.secondLine);
+  const assetsTotal = assetsSecondLine ? { ...assetsTotalFigure, secondLine: assetsSecondLine } : assetsTotalFigure;
 
-  const tax = readKey(report, declaration.tax);
+  const taxFigure = readKey(report, declaration.tax);
+  const taxSecondLine = resolveSecondLine(report, declaration.tax.secondLine);
+  const tax = taxSecondLine ? { ...taxFigure, secondLine: taxSecondLine } : taxFigure;
 
   const expenseLines = declaration.expenseLines.map(([key, label]) => {
     const figure = readOneCell(report, key, false);
@@ -177,15 +205,15 @@ export function headlinesFromReport(report, declaration) {
   };
 
   const pies = {
-    turnover: turnoverPie(turnoverFigure, costOfSales, runningCosts, tax),
+    turnover: turnoverPie(turnoverFigure, costOfSales, runningCosts, taxFigure, turnoverPieExtra),
     outgoings: outgoingsPie(costOfSales, expenseLines, outgoingsTotal),
   };
 
   const keys = {
     "headline/turnover": turnoverFigure.value,
     "headline/outgoings": outgoingsTotal.value,
-    "headline/assets": assetsTotal.value,
-    "headline/tax": tax.value,
+    "headline/assets": assetsTotalFigure.value,
+    "headline/tax": taxFigure.value,
   };
 
   return { tiles, pies, keys };

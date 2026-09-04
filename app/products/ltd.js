@@ -1320,31 +1320,42 @@ export const CELL_MAP = [
 //
 // The declaration wraps every single-cell reference as `{ key }` (or
 // `{ key, optional }`) and every summed group as `{ keys: [...] }`, the
-// shape a shared headline reducer reads across products. Ltd's `assets`
-// group carries two named parts summed into the tile (Ltd's current-assets
-// figure already includes trade debtors, so there is no separate `debtors`
-// part the way BST has one). `taxSecond`, `assetsSecond` and `dividends` add
-// a second line to the tax and assets tiles and a fifth turnover-pie slice
-// for the dividends the board declared -- Ltd-specific, since BST's book has
-// no equivalent figures.
+// shape the shared headline reducer (app/lib/headlines.js) reads across
+// products. Ltd's current-assets cell (`PubBalSht!E13`) already sums stock,
+// trade debtors and cash, so it fills the reducer's `assets.stock` part --
+// the total's other summed-in figure -- and there is no separate `debtors`
+// part the way BST has one. `tax.secondLine` and `assets.secondLine` each
+// add one labelled figure beside that tile's own value, excluded from every
+// sum: the tax charge still outstanding and the balance sheet's net-assets
+// total. `turnover.pieExtra` adds the dividends the board declared as a
+// fifth turnover-pie slice, folded into the bridge before "Kept" rather
+// than summed into the turnover total itself -- unlike `assets.extra`
+// (SE's, summed into that tile's total and never its own slice), a pie
+// slice needs its own label and value, so it takes the list shape
+// `resolveLines()` already reads for a tile's second line. It is optional:
+// a company need not have declared a dividend in the year.
 // prettier-ignore
 export const HEADLINES = {
-  turnover: { key: "cell/Financialaccounts.xlsx!MnthP&L!B9" }, // SUM(B4:B8)
+  turnover: {
+    key: "cell/Financialaccounts.xlsx!MnthP&L!B9", // SUM(B4:B8)
+    pieExtra: [{ label: "Dividends", key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }], // =TrialBalance!EJ48
+  },
   costOfSales: { keys: ["cell/Financialaccounts.xlsx!MnthP&L!B14"] }, // SUM(B11:B13)
   runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41" }, // SUM(B18:B40)
-  runningCostsLabel: "Administrative expenses",
-  tax: { key: "cell/Financialaccounts.xlsx!CorporationTax!K35" }, // SUM(I33:I34)
-  taxSecond: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
-  dividends: { key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }, // =TrialBalance!EJ48
+  tax: {
+    key: "cell/Financialaccounts.xlsx!CorporationTax!K35", // SUM(I33:I34)
+    secondLine: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
+  },
   assets: {
     writtenDown: { key: "cell/Financialaccounts.xlsx!PubBalSht!F6" }, // fixed assets NBV
-    current: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+    stock: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+    secondLine: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
   },
-  assetsSecond: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
+  // B11 to B13, cost of sales' own three lines, are not repeated here: the
+  // shared reducer's outgoings pie already adds one "Cost of sales" slice
+  // from the `costOfSales` figure above, so listing them again would count
+  // them twice.
   expenseLines: [
-    ["cell/Financialaccounts.xlsx!MnthP&L!B11", "Materials / Stock"],
-    ["cell/Financialaccounts.xlsx!MnthP&L!B12", "Sub-contractors"],
-    ["cell/Financialaccounts.xlsx!MnthP&L!B13", "Other direct costs"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B18", "Wages and salaries"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B19", "Directors Wages + Non-PAYE (code d)"],
     ["cell/Financialaccounts.xlsx!MnthP&L!B20", "Employers National Insurance"],

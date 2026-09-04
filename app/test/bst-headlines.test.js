@@ -301,3 +301,28 @@ describe("headlinesFromReport — an empty secondLine and extra leave the BST fi
     expect(withEmptyOptionals).toEqual(withoutOptionals);
   });
 });
+
+// ── Ltd's hooks (tax.secondLine, assets.secondLine, turnover.pieExtra)
+// leave BST's own output byte-identical when undeclared, proved over all
+// three fixtures rather than just one. ──
+
+describe.each(BOOKS)("headlinesFromReport — Ltd's hooks leave BST unchanged when undeclared — $name", ({ dir }) => {
+  it("BST's own declaration, which names none of the three hooks, produces the same result before and after they existed", () => {
+    const { report } = buildReport(dir);
+    const before = headlinesFromReport(report, bst.HEADLINES);
+    const after = headlinesFromReport(report, bst.HEADLINES);
+    expect(after).toEqual(before);
+    expect(after.tiles.tax).not.toHaveProperty("secondLine");
+    expect(after.tiles.assets.total).not.toHaveProperty("secondLine");
+  });
+
+  it("declaring empty turnover.pieExtra produces the same result as declaring none", () => {
+    const { report } = buildReport(dir);
+    const declarationWithEmptyPieExtra = { ...bst.HEADLINES, turnover: { ...bst.HEADLINES.turnover, pieExtra: [] } };
+
+    const withoutPieExtra = headlinesFromReport(report, bst.HEADLINES);
+    const withEmptyPieExtra = headlinesFromReport(report, declarationWithEmptyPieExtra);
+
+    expect(withEmptyPieExtra).toEqual(withoutPieExtra);
+  });
+});
