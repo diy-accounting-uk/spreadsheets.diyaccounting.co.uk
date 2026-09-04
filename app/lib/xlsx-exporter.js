@@ -463,8 +463,14 @@ export async function extractBstTransactions(xlsxBuffer, extractionMap) {
 // the day rows carry a day's trade, and a day row is the one holding the date
 // in both A and B -- the two named rows caption column B and the subtotal row
 // carries no date at all. C names the customer, D takes the day's business
-// miles and E the gross takings.
-const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E" };
+// miles, E the gross takings and F any other income the row also carries.
+const TAXI_SALES_COLUMNS = { customer: "C", mileage: "D", takings: "E", otherIncome: "F" };
+
+// The account a Sales tab's other-income column posts to, and the captions
+// the rental and other-income rows carry in column B.
+const TAXI_OTHER_INCOME_ACCOUNT = "4001";
+const TAXI_RENTAL_CAPTION = "Rental due";
+const TAXI_OTHER_INCOME_CAPTION = "Any other income";
 
 // A Taxi Driver Purchases tab, read off its own row 2 and 3 headings: A the
 // purchase date, B the supplier, C the invoice reference, D the expense code
@@ -527,31 +533,70 @@ export async function extractTaxiTransactions(xlsxBuffer) {
       const xml = await zip.file(salesPath).async("string");
       for (const row of rowNumbers(xml)) {
         const dateVal = enteredNumber(xml, `A${row}`, sharedStrings);
+        if (dateVal === undefined) continue;
+
+        // A day row holds a number in B (the day of month, unread beyond
+        // this test); the rental and other-income rows caption B with text
+        // instead, and the subtotal row's date cells carry a formula, which
+        // enteredNumber never reports as a number entered.
         const day = enteredNumber(xml, `B${row}`, sharedStrings);
-        if (dateVal === undefined || day === undefined) continue;
+        const caption = day === undefined ? textAt(xml, `B${row}`, sharedStrings) : undefined;
+        const isDay = day !== undefined;
+        const isRental = caption === TAXI_RENTAL_CAPTION;
+        const isOtherIncomeRow = caption === TAXI_OTHER_INCOME_CAPTION;
+        if (!isDay && !isRental && !isOtherIncomeRow) continue;
 
-        const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
-        const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
-        if (takings === undefined && miles === undefined) continue;
+        const names = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
 
-        const line = {
-          sourceJournalID: "sales",
-          postingDate: excelSerialToDate(dateVal),
-          accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
-          // A day the driver logged miles on but took no fare still counts
-          // its miles towards the claim, so it posts at nil rather than not
-          // at all.
-          amount: takings ?? 0,
-          entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
-        };
-        const customer = textAt(xml, `${TAXI_SALES_COLUMNS.customer}${row}`, sharedStrings);
-        if (customer) line.detailComment = customer;
-        if (miles !== undefined) {
-          line.measurableQuantity = miles;
-          line.measurableUnitOfMeasure = "miles";
-          milesToDate += miles;
+        if (isDay) {
+          const takings = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          const miles = enteredNumber(xml, `${TAXI_SALES_COLUMNS.mileage}${row}`, sharedStrings);
+          if (takings !== undefined || miles !== undefined) {
+            const line = {
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: textAt(xml, `${ACCOUNT_ID_COLUMN}${row}`, sharedStrings) || TAXI_SALES_ACCOUNT,
+              // A day the driver logged miles on but took no fare still counts
+              // its miles towards the claim, so it posts at nil rather than not
+              // at all.
+              amount: takings ?? 0,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            };
+            if (names) line.detailComment = names;
+            if (miles !== undefined) {
+              line.measurableQuantity = miles;
+              line.measurableUnitOfMeasure = "miles";
+              milesToDate += miles;
+            }
+            lines.push(line);
+          }
         }
-        lines.push(line);
+
+        if (isRental) {
+          const rental = enteredNumber(xml, `${TAXI_SALES_COLUMNS.takings}${row}`, sharedStrings);
+          if (rental !== undefined) {
+            lines.push({
+              sourceJournalID: "sales",
+              postingDate: excelSerialToDate(dateVal),
+              accountMainID: TAXI_SALES_ACCOUNT,
+              amount: rental,
+              detailComment: TAXI_RENTAL_CAPTION,
+              entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+            });
+          }
+        }
+
+        const otherIncome = enteredNumber(xml, `${TAXI_SALES_COLUMNS.otherIncome}${row}`, sharedStrings);
+        if (otherIncome !== undefined && (isDay || isOtherIncomeRow)) {
+          lines.push({
+            sourceJournalID: "sales",
+            postingDate: excelSerialToDate(dateVal),
+            accountMainID: TAXI_OTHER_INCOME_ACCOUNT,
+            amount: otherIncome,
+            detailComment: isDay ? names : TAXI_OTHER_INCOME_CAPTION,
+            entryNumber: `EXP-${String(entryNum++).padStart(4, "0")}`,
+          });
+        }
       }
     }
 
