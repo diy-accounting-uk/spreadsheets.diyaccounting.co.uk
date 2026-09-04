@@ -424,12 +424,17 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 - T2 reposting account per product `bff95e7b`, T7 Kestrel's April date `bda32d78`, T19 Class 2
   threshold and weekly rate `4dba187f`, merged 2026-09-04; the Admin echo test's Class 2
   expectation followed on the batch branch. R1 (generate-bst, -se, -taxi with skip-commit)
-  dispatched on the branch.
+  dispatched on the branch and green.
 
 - T1 writer day sums, joined names, caption rows and the off-grid refusal `a883692b`, merged
   2026-09-04. The loader's entry-order sort now covers Taxi, which swaps two tied-date rows on
   SP Sixty's `PurchasesApr` (rows 5 and 6); the Sales sheets are byte-identical on all three
   fixtures. R3 absorbs the swap.
+
+- T8 the three Taxi warnings and `previewBookHelper`/`applyBookHelper` `2fb53d4d`, merged
+  2026-09-04. It found `examples/sp-sixty-driving/taxi/lines.jsonl` TXN-0166 to TXN-0180 (the
+  March fare days) carry no miles, so `book-taxi-fare-miles` warns on that book as it stands;
+  **T20** (Haiku, after T4 in `examples/`) adds the miles to the master and regenerates.
 
 ### Verification ladder
 
