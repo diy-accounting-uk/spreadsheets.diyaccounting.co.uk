@@ -168,7 +168,11 @@ async function zipKind(bytes) {
   const hasLines = lower.includes("lines.jsonl");
   const workbookEntries = entries.filter(isWorkbookEntry);
   if (!hasLines && workbookEntries.length === 1) return "package-zip";
-  if (!hasLines && workbookEntries.length > 1 && workbookEntries.some((entry) => workbookBaseName(entry).toLowerCase() === PACKAGE_HUB.toLowerCase())) {
+  if (
+    !hasLines &&
+    workbookEntries.length > 1 &&
+    workbookEntries.some((entry) => workbookBaseName(entry).toLowerCase() === PACKAGE_HUB.toLowerCase())
+  ) {
     return "package-set";
   }
 

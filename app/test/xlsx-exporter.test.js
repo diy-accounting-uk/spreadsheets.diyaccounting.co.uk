@@ -405,7 +405,9 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 6000 } },
     });
-    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter(
+      (line) => line.documentReference === "JNL-001",
+    );
 
     expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount, line.postingDate])).toEqual([
       ["1100", "C", 4000, "2026-03-31"],
@@ -417,7 +419,9 @@ describe("extractJournalEntries — the Ltd stock movement", () => {
     const dir = await writePackage({
       "Financialaccounts.xlsx": { OpenAccounts: openAccounts, Stock: { AB30: 14000 } },
     });
-    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter((line) => line.documentReference === "JNL-001");
+    const movement = (await extractJournalEntries(await workbookSetFromDirectory(dir), "ltd", LTD_PERIOD)).filter(
+      (line) => line.documentReference === "JNL-001",
+    );
 
     expect(movement.map((line) => [line.accountMainID, line.debitCreditCode, line.amount])).toEqual([
       ["1100", "D", 4000],

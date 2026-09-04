@@ -98,7 +98,11 @@ function workbookSet(sources) {
     bytes,
     async zip(name) {
       const source = sourceFor(name);
-      if (!zipByName.has(source.name)) zipByName.set(source.name, bytes(source.name).then((buffer) => JSZip.loadAsync(buffer)));
+      if (!zipByName.has(source.name))
+        zipByName.set(
+          source.name,
+          bytes(source.name).then((buffer) => JSZip.loadAsync(buffer)),
+        );
       return zipByName.get(source.name);
     },
   };

@@ -203,13 +203,7 @@
       var entryPath = pathByName.get(key);
       if (!entryPath) return null;
       if (!cellsByName.has(key)) {
-        cellsByName.set(
-          key,
-          zip
-            .file(entryPath)
-            .async("uint8array")
-            .then(openWorkbookCells),
-        );
+        cellsByName.set(key, zip.file(entryPath).async("uint8array").then(openWorkbookCells));
       }
       return cellsByName.get(key);
     }
