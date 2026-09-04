@@ -26,8 +26,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | LT16 | Ltd T16 CONTEXT corrections and CT600 labels, then T3 headline declaration | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t16-t3` |
 | LT5 | Ltd T5 book checks and warnings with breakability proofs | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/ltd-t5` |
 | LT19 | Ltd T19 filing data: CT600 v3 boxes, computation categories, FRS 105 headings | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t19` |
-| R1 | Refine the SE plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
-| W0 | Cross-plan wave schedule: concurrent workstreams by repository area, design waves first | operator | machine | R1 | blocked-to-start | Fable agent; writes the schedule into NEXT.md's board |
+| W0 | Cross-plan wave schedule: concurrent workstreams by repository area, design waves first | operator | machine | — | in-flight | Fable agent; reconciles the three plans, emits board rows |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md`,

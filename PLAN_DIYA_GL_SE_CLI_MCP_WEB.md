@@ -412,13 +412,22 @@ The BST plan's five sources and seven assertions, over SE's three books.
 | T16 | The `SE Short` sheet prints the 2026 SA103S box numbers and gates the nine expense cells and the `A33` note on `Admin!F26` in place of the 30,000 and 67,000 literals; the calculator's threshold follows; `CELL_MAP` gains `D124` and `O124` and its SE Short labels renumber; the CONTEXT doc's SA103S table follows; regenerated and reconciled | T4 | Opus | `app/templates/se/Financialaccounts.xlsx`, `app/lib/calculators/se.js` (the threshold, `A33`, `D124`, `O124`), `app/products/se.js` (SE Short labels, two `CELL_MAP` rows, `profitBridge` labels), `CONTEXT_SELF_EMPLOYED.md`, `app/test/se-full-return-checks.test.js`, `app/test/calculator-se.test.js`, `packages/GB Accounts Self Employed */` (regenerated) |
 | H1 | Merge the batch branch to main; the four `generate-*` workflows on the branch first; the generate-se refresh after | all | human | — |
 
-The rows share `app/lib/xlsx-exporter.js` (S1, S2, T3, S7's one export) and
-`app/products/se.js` (T1, T3, T2, T4, T16): those land in that order, each rebasing on the
-last. `app/lib/calculators/se.js` is touched by T1 (exports), S4 (the row-1 block) and T16
-(the threshold), in that order. `app/lib/books-engine.js` gains one re-export line from
-each of S2, S3, S4, S5, S6, S7, T5 and T6; merge in row order. `playwright.config.js` is
-appended by T7, T11, T12 and T13 in series; `scripts/build-books-bundle.mjs` by T2, S8
-and T8; `scripts/example-books.json` by S8, T7 and T9. Every agent commits before it waits
+The rows share `app/lib/xlsx-exporter.js` (Taxi T3, S1, Taxi T6, S2, T3, S7's one export,
+Taxi T9) and `app/products/se.js` (T1, T3, T2, T4, T16): those land in that order, each
+rebasing on the last. `app/lib/calculators/se.js` is touched by T1 (exports), S4 (the row-1
+block) and T16 (the threshold), in that order. `app/lib/books-engine.js` gains one re-export
+line from each of S3, S5, T5, S2, S6, S7, S4, T6 and Taxi T13; merge in that order.
+`app/lib/book-checks.js` lands Taxi T2, Ltd T5's hook, Taxi T8, T5, T6.
+`app/lib/books-interchange.js` lands S1, S2, T1, Taxi T10, Ltd T2. `app/lib/product-workbook.js`
+lands S3, Ltd T1, Taxi T11, S4, T2. `app/lib/headlines.js` lands S5, Ltd T3, Taxi T12.
+`app/lib/diya-gl-loader.js` lands Taxi T1, Taxi T19, Taxi T4, T5's export (S7 drops its
+duplicate). `app/lib/mcp/diya-gl-tools.js` lands S3, S6, Taxi T11, T6, T14, Ltd T15.
+`playwright.config.js` is appended by T7, T11, T12, Taxi T17, T13, Taxi T18 and Ltd T18 in
+series; `scripts/build-books-bundle.mjs` by T2, S8, T8, Taxi T16 and Ltd T10;
+`scripts/example-books.json` by S8, T7, Taxi T16, Ltd T10 and T9;
+`web/browser-tests/r-sources.js` by T7, T11, Taxi T17 and Ltd T11;
+`behaviour-tests/spreadsheets.behaviour.test.js` by Taxi T16, T9 and Ltd T17. Every agent
+commits before it waits
 and never ends a turn with a Playwright run going, per the BST plan's as-built note 11.
 
 ### Verification ladder
