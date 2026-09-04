@@ -17,13 +17,12 @@ own open items (the Rust port plan and the operator's research for it).
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| P1 | Draft `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, carrying the shared generalisation rows S1 to S8 | operator | machine | — | in-flight | Fable agent drafting; form research folds in |
-| P2 | Draft `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md` | operator | machine | — | in-flight | Fable agent drafting; form research folds in |
-| P3 | Draft `PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md` | operator | machine | — | in-flight | Fable agent drafting; CT600 research folds in |
 ## Plans not tracked here
 
-- `PLAN_DIYA_GL_[SE|TAXI|LTD]_CLI_MCP_WEB.md` — being drafted (P1 to P3) from the BST
-  plan's as-built notes. `PLAN_DIYA_GL_LAUNCH.md` decides SE next.
+- `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md`,
+  `PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md` — drafted 2026-09-04; their task rows are not on the
+  board. The SE plan owns the shared generalisation rows S1 to S8 that the other two name
+  as precursors. `PLAN_DIYA_GL_LAUNCH.md` decides SE next.
 
 ## Discipline
 

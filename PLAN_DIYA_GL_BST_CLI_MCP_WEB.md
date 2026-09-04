@@ -736,6 +736,12 @@ number is its row on the sheet.
 
 ## Carrying the solution to SE, Ltd and Taxi
 
+The successor plans are the plans of record for these extensions:
+`PLAN_DIYA_GL_SE_CLI_MCP_WEB.md` owns the shared rows S1 to S8 (its S1 replaces staging
+with a workbook set the extractors read through directory and zip adapters);
+`PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md` and `PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md` name those rows
+as precursors. What follows is the assessment they were drafted from.
+
 Assessed 2026-09-04 against the code on main and the shipped 2026-04-05 packages, not
 the CONTEXT docs. The four pipeline layers under the shells are already four-product:
 `diyaGlToScenario` and `PURCHASE_CODE_MAPS` (`diya-gl-loader.js`), `calculateFromDiyaGl`,
