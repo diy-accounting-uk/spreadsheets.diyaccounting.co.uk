@@ -17,6 +17,7 @@
 
 import { changeLinePostingDate, changeLineAccount, changeLineAmount } from "./diya-gl-edits.js";
 import { LTD_PRODUCT_RULES } from "./book-checks/ltd.js";
+import { TAXI_PRODUCT_RULES } from "./book-checks/taxi.js";
 
 // ============================== shared helpers ==============================
 
@@ -251,7 +252,7 @@ const CHECK_SPECS = [
 // book states in entityInformation["diya-gl:product"]. A book naming a
 // product with no entry here runs the shared rules alone.
 
-const PRODUCT_RULES = { Company: LTD_PRODUCT_RULES };
+const PRODUCT_RULES = { Company: LTD_PRODUCT_RULES, TaxiDriver: TAXI_PRODUCT_RULES };
 const SHARED_RULES_ONLY = { checks: [], warnings: [], sharedOffenders: {} };
 
 function productRulesFor(book) {
@@ -514,6 +515,46 @@ export function applyHelper({ book, lines }, checkId) {
   const spec = checkSpecById(ctx, checkId);
   if (!spec || !spec.apply) throw new Error('No helper called "' + checkId + '"');
   const offenders = offendersFor(spec, ctx);
+  if (offenders.length === 0) throw new Error("Nothing left for this helper to fix.");
+  return spec.apply(ctx, offenders);
+}
+
+/**
+ * The preview for a helper that changes the book rather than the lines --
+ * a product's own registry, keyed by check id, of { offenders, buildHelper,
+ * apply } specs over the same ctx the checks use. Returns null when the
+ * check passes or names no such helper.
+ * @param {{book: Object, lines: Array}} args
+ * @param {string} checkId - the id of a warning the book runs
+ * @returns {?{title: string, summary: string, changes: Array}}
+ */
+export function previewBookHelper({ book, lines }, checkId) {
+  const ctx = contextOf(book, lines);
+  const spec = (ctx.productRules.bookHelpers || {})[checkId];
+  if (!spec) return null;
+  const offenders = spec.offenders(ctx);
+  if (offenders.length === 0) return null;
+  const plan = spec.buildHelper(ctx, offenders);
+  if (!plan) return null;
+  return {
+    title: plan.title,
+    summary: "This will add " + plan.changes.length + (plan.changes.length === 1 ? " entry" : " entries") + " to the book. Nothing else moves.",
+    changes: plan.changes,
+  };
+}
+
+/**
+ * Apply a book-changing helper's whole plan as one step, the same way
+ * applyHelper does for a lines-changing one.
+ * @param {{book: Object, lines: Array}} args
+ * @param {string} checkId - the id of a warning the book runs
+ * @returns {Object} a new book with the plan applied; the input book is unchanged
+ */
+export function applyBookHelper({ book, lines }, checkId) {
+  const ctx = contextOf(book, lines);
+  const spec = (ctx.productRules.bookHelpers || {})[checkId];
+  if (!spec || !spec.apply) throw new Error('No helper called "' + checkId + '"');
+  const offenders = spec.offenders(ctx);
   if (offenders.length === 0) throw new Error("Nothing left for this helper to fix.");
   return spec.apply(ctx, offenders);
 }
