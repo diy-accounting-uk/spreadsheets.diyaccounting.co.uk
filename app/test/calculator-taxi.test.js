@@ -112,6 +112,34 @@ describe("Taxi calculator — the mileage claim", () => {
   });
 });
 
+// ── Other business income ────────────────────────────────────────────────
+
+describe("Taxi calculator — other business income", () => {
+  it("is kept out of turnover and reaches the four cells that print it", () => {
+    const dir = resolve(ROOT, "examples", "basic-taxi-driver", "taxi");
+    const { results, scenario } = runFixture(dir);
+    const pl = results["Profit & Loss Acc"];
+    expect(pl.B5).toBe(36045);
+    expect(pl.B24).toBe(500);
+    expect(results.VitalTax.D6).toBe(500); // September is Q2, column D
+    expect(results.VitalTax.G6).toBe(500);
+    expect(results["SE Short"].O99).toBe(500);
+
+    const withoutGrant = runFixture(dir, (lines) => lines.filter((l) => l.accountMainID !== "4001"));
+    expect(scenario.expected.total_other_income).toBe(500);
+    expect(results["SE Short"].D106).toBe(withoutGrant.results["SE Short"].D106 + 500);
+  });
+
+  it("a Rental due line is takings in its week's tab month", () => {
+    const dir = resolve(ROOT, "examples", "kestrel-executive-cars", "taxi");
+    const { results } = runFixture(dir);
+    const withoutRental = runFixture(dir, (lines) => lines.filter((l) => l.detailComment !== "Rental due"));
+
+    expect(results["Profit & Loss Acc"].E5).toBe(withoutRental.results["Profit & Loss Acc"].E5 + 300);
+    expect(results["Profit & Loss Acc"].B24).toBe(withoutRental.results["Profit & Loss Acc"].B24);
+  });
+});
+
 // ── Breakability ────────────────────────────────────────────────────────
 
 describe("Taxi calculator checks are breakable", () => {
@@ -198,6 +226,50 @@ describe("Taxi calculator checks are breakable", () => {
       .filter((n) => !brokenBefore.includes(n));
 
     expect(newlyBroken).toContain("Purchases: cash journal total = general expenses + vehicle running costs + capitalised vehicles");
+  });
+
+  it("a corrupted P&L other income total fails only the checks anchored on it", () => {
+    const basicDir = resolve(ROOT, "examples", "basic-taxi-driver", "taxi");
+    const { book, lines } = loadDiyaGlData(basicDir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const results = calculateTaxiResults(book, lines, taxData, anchor);
+    const before = checkCompliance(results, anchor, taxData, calculateExpectedTax);
+
+    const mutated = { ...results, "Profit & Loss Acc": { ...results["Profit & Loss Acc"], B24: 0 } };
+    const after = checkCompliance(mutated, anchor, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken.sort()).toEqual([
+      "Other business income",
+      "SA103S: Other business income (box 29) = P&L other income",
+      "VitalTax: annual other income = P&L annual other income",
+    ]);
+  });
+
+  it("a corrupted VitalTax Q2 other income fails only that quarter's check", () => {
+    const basicDir = resolve(ROOT, "examples", "basic-taxi-driver", "taxi");
+    const { book, lines } = loadDiyaGlData(basicDir);
+    const scenario = diyaGlToScenario(book, lines, "taxi");
+    const anchor = { ...scenario, ...scenario.expected };
+    const results = calculateTaxiResults(book, lines, taxData, anchor);
+    const before = checkCompliance(results, anchor, taxData, calculateExpectedTax);
+
+    const mutated = { ...results, VitalTax: { ...results.VitalTax, D6: 0 } };
+    const after = checkCompliance(mutated, anchor, taxData, calculateExpectedTax);
+
+    const brokenBefore = before.filter((c) => !c.pass).map((c) => c.name);
+    const newlyBroken = after
+      .filter((c) => !c.pass)
+      .map((c) => c.name)
+      .filter((n) => !brokenBefore.includes(n));
+
+    expect(newlyBroken).toEqual(["VitalTax: Q2 other income = P&L Q2 other income"]);
   });
 
   it("a wrong Admin tax rate fails only the Admin echo and the rate-application checks", () => {

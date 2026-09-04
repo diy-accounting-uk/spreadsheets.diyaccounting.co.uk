@@ -14,6 +14,8 @@ import {
   LTD_SALES_CODE_MAP,
   TAXI_PURCHASE_CODE_MAP,
   TAXI_BST_PURCHASE_CODE_MAP,
+  TAXI_SALES_ACCOUNT,
+  TAXI_OTHER_INCOME_ACCOUNT,
   BST_SALES_ACCOUNTS,
   SE_BANK_ACCOUNTS,
   MONTH_NAMES,
@@ -277,8 +279,17 @@ export function diyaGlToScenario(book, lines, product) {
   const vatRegistered = entity["diya-gl:vatRegistered"] === true;
 
   let totalSales;
-  if (product === "bst" || product === "taxi") {
+  // A Taxi Driver book's 4001 lines are other business income, never a fare:
+  // the P&L keeps them on their own row (B24) apart from turnover (B5), so
+  // computeGrossSales over every sales line -- which BST's one turnover
+  // account can take -- would fold a grant into the fares figure and leave
+  // nothing for the other-income checks to anchor against.
+  let taxiOtherIncomeLines = [];
+  if (product === "bst") {
     totalSales = computeGrossSales(salesLines);
+  } else if (product === "taxi") {
+    totalSales = computeGrossSales(salesLines.filter((l) => l.accountMainID === TAXI_SALES_ACCOUNT));
+    taxiOtherIncomeLines = salesLines.filter((l) => l.accountMainID === TAXI_OTHER_INCOME_ACCOUNT);
   } else {
     // SE/Ltd: net sales for turnover accounts only. The sheet's own analysis
     // columns strip VAT as a flat gross / 1.2, a business the book declares
@@ -322,6 +333,7 @@ export function diyaGlToScenario(book, lines, product) {
 
   // Build expected values
   const expected = { total_sales: totalSales };
+  if (taxiOtherIncomeLines.length > 0) expected.total_other_income = computeGrossSales(taxiOtherIncomeLines);
   const mileageLines = carriesMileage === "all" ? filteredLines : filteredLines.filter((l) => l.sourceJournalID === "purchases");
   const businessMiles = carriesMileage === "none" ? 0 : totalBusinessMiles(mileageLines);
   if (businessMiles) expected.total_mileage = businessMiles;

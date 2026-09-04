@@ -280,6 +280,11 @@ export const CELL_MAP = [
   ["VitalTax", "E5",  "Q3 Turnover",                         "gl-cor:amount (vitalTax.q3Turnover)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "F5",  "Q4 Turnover",                         "gl-cor:amount (vitalTax.q4Turnover)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "G5",  "**Annual Turnover**",                 "gl-cor:amount (vitalTax.annualTurnover)", "Quarterly Summary", 0, "money"],
+  ["VitalTax", "C6",  "Q1 Other income",                     "gl-cor:amount (vitalTax.q1OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "D6",  "Q2 Other income",                     "gl-cor:amount (vitalTax.q2OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "E6",  "Q3 Other income",                     "gl-cor:amount (vitalTax.q3OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "F6",  "Q4 Other income",                     "gl-cor:amount (vitalTax.q4OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "G6",  "**Annual Other income**",             "gl-cor:amount (vitalTax.annualOtherIncome)", "Quarterly Summary", 0, "money"],
   ["VitalTax", "C29", "Q1 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q1Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "D29", "Q2 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q2Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "E29", "Q3 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q3Expenses)",     "Quarterly Summary", 1, "money"],
@@ -485,6 +490,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const pl = results["Profit & Loss Acc"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.B5, expected.total_sales);
+  if (expected.total_other_income !== undefined) check("Other business income", pl.B24, expected.total_other_income);
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B13, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B23, expected.net_profit);
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.B16, expected.total_gen_admin);
@@ -525,6 +531,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const vtCol = vtQuarterCols[q];
       const months = QUARTER_MONTH_GROUPS[q];
       check(`VitalTax: Q${q + 1} turnover = P&L Q${q + 1} turnover`, vt[`${vtCol}5`] || 0, plQuarterSum(5, months));
+      check(`VitalTax: Q${q + 1} other income = P&L Q${q + 1} other income`, vt[`${vtCol}6`] || 0, plQuarterSum(24, months));
       check(
         `VitalTax: Q${q + 1} total allowable expenses = P&L Q${q + 1} Cost of Sales + Total Expenses`,
         vt[`${vtCol}29`] || 0,
@@ -532,6 +539,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
     }
     check("VitalTax: annual turnover = P&L annual turnover", vt.G5 || 0, pl.B5 || 0);
+    check("VitalTax: annual other income = P&L annual other income", vt.G6 || 0, pl.B24 || 0);
     check("VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses", vt.G29 || 0, (pl.B12 || 0) + (pl.B22 || 0));
   }
 
@@ -592,6 +600,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (seShort.D38 !== undefined) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B5);
     if (seShort.D71 !== undefined)
       check("SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances", seShort.D71, (pl.B23 || 0) + (pl.B10 || 0));
+    // Box 29 (verified against the template: 'SE Short'!O99 = 'Profit & Loss
+    // Acc'!B24), the same other-business-income figure VitalTax's own
+    // annual re-sum is checked against above.
+    if (seShort.O99 !== undefined) check("SA103S: Other business income (box 29) = P&L other income", seShort.O99, pl.B24 || 0);
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L Capital Allowances (B10).
