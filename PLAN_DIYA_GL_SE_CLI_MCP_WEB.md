@@ -1252,6 +1252,398 @@ hook body), `app/lib/books-engine.js`, `app/test/link-cache.test.js` (new),
 of `bst-data.js:654` to `:702` with the third state), `bst-data.js` (import lines only).
 Must not touch `app/products/*`, the MCP tools, `bst.js`.
 
+**S4 coding brief.** Tier: Fable. Precursors: S3, T3, S7 (the page files are `data.js` and
+`shell.js` after S7; if S7 has not merged, the same edits land in `bst-data.js` and `bst.js`).
+Written 2026-09-04 from the nine templates in `app/templates/se`, the shipped 2026-04-05
+package, `examples/se-latest`, `examples/ltd-latest` and the code on the batch branch. Every
+count below was measured by a script over the template XML, not taken from the design brief
+above; where the two disagree, this brief is right and the corrections are listed at the end.
+
+What the templates address. The nine SE templates carry 543 distinct link-addressed target
+cells (`file!sheet!cell`): 419 references from the hub, 84 from Vat, 40 from Purchases, 13
+each from Bank and Cash, 12 from Fixedassets. Sales, Payslips and Salesinvoice carry no
+links. After a refresh the six link-bearing files hold 591 cache cells (the union of what the
+template already caches and what its formulas address). Of the 543, 15 are blank template
+input cells that no engine value stands behind: `Sales.xlsx!<tab>!H4` on all twelve tabs (the
+flat-rate marker Purchases reads as `IF([1]Apr!$H$4>0,0,[1]Apr!$H$2)`), `Sales.xlsx!OpeningDebtors!H4`,
+`Financialaccounts.xlsx!Admin!E8` (Fixedassets `Schedule!D37`) and `Purchases.xlsx!OpeningCreditors!P1`
+(hub `StockControl!F28`, guarded by a zero test). CI's caches carry none of them: `readCellValue`
+returns `null` for an empty cell, so the refresh writes nothing, and a spreadsheet reads the
+absent link cell as blank. The remaining 528 must come from the calculator or the writer. Today
+the calculator covers 148 and the writer's inputs add none the calculator does not already emit;
+380 are uncovered. T3 lands 24 of them (`Sales.xlsx!<tab>!W1` and `X1`); this row lands 356.
+
+Files. Creates `app/lib/xlsx-parts.js`, `app/lib/link-caches.js`, `app/test/fixtures/se-link-cells.json`,
+`app/test/link-cache.test.js`, `web/spreadsheets.diyaccounting.co.uk/public/books/drift.js`.
+Modifies `app/lib/spreadsheet-runner.js` (`:393` to `:639` become imports and a wrapper),
+`app/lib/template-formula-map.js` (one import line), `app/lib/calculators/se.js` (the row-1
+block and the `calculateSeCells` split), `app/lib/diya-gl-calculator.js` (`calculateLinkCells`),
+`app/lib/product-workbook.js` (the refresh step), `app/lib/books-engine.js` (two lines),
+`books/data.js` (the link layer at load and the `driftFromAsRead` call), `books/shell.js`
+(the stale tag in `pencilCorrection` and `applyDriftMarks`), `books/books.css` (`.is-stale`),
+`books/xlsx-cells.js` (`zip(file)` on the set, only if S1 left it out). Must not touch
+`app/products/*`, the MCP tools, `books/products/*`, any template, any `examples/*-latest`.
+
+The module cut. `spreadsheet-runner.js` imports `fs` and `child_process`, so nothing the
+page runs may import it, and the runner will import the new module, so the new module cannot
+import the runner back. Two modules settle that:
+
+- `app/lib/xlsx-parts.js` receives, unchanged, `buildSheetMap`, `loadSharedStrings`,
+  `readCellValue`, `decodeXmlEntities` and `escapeXml` from the runner (`:141` to `:184`,
+  `:263` to `:334`). The runner imports them from there and keeps its own
+  `export { buildSheetMap, readCellValue, loadSharedStrings, ... }` line, so its five
+  importers (`xlsx-exporter.js`, `generator.js`, `xlsx-reader.js`, `overtype-sidecar.js`,
+  `template-formula-map.js`) do not change. `template-formula-map.js:53` switches its one
+  import to `./xlsx-parts.js`, which is what lets `link-caches.js` use its `colToNum`,
+  `numToCol`, `rangeCells` and `sortCellRefs` without a cycle. The import order is then
+  `xlsx-parts` <- `template-formula-map` <- `link-caches` <- `spreadsheet-runner`.
+- `app/lib/link-caches.js` holds everything from the runner's `:393` to `:536`
+  (`buildExternalLinkIndex`, `decodeFormulaText`, `EXTERNAL_REFERENCE_PATTERN`,
+  `collectExternalCellRefs`, `externalCacheCell`, the target resolution) plus the pure
+  refresh. The runner's `numToCol`, `expandRange` and `cellSortKey` go; `rangeCells` and
+  `sortCellRefs` do the same work (the runner sorted by row then column, which is
+  `sortCellRefs`'s order, so the emitted cell order does not move). No `fs`, no `path`, no
+  `child_process`. It imports `jszip` for the one byte-level helper below; the bundle already
+  carries JSZip for `books-interchange.js`.
+
+Exports of `link-caches.js`:
+
+```js
+export const HUB_FILE = "Financialaccounts.xlsx";
+// The files of each product that carry external links, in dependency order.
+export const LINK_ORDER = {
+  se: ["Purchases.xlsx", "Bank.xlsx", "Cash.xlsx", "Fixedassets.xlsx", "Financialaccounts.xlsx", "Vat.xlsx"],
+  // ltd: Ltd T4 adds its nine (Sales, Purchases, the four bank books, Fixedassets, the hub, Vatreturns).
+};
+export async function externalLinks(zip)
+//   -> [{ index, path, relsPath, targetFile, sheetNames }]   index is the [N] a formula uses (one based);
+//      targetFile is the basename of the first ".xlsx" Target in the link's rels, percent-decoded, "file:" scheme stripped
+export async function collectExternalCellRefs(zip)          // Map<"<index>|<sheet>", Set<cell>>, as today
+export async function linkAddressedCells(zip)
+//   -> [{ index, targetFile, sheet, cell, sources: ["Profit & Loss Account!C5", ...] }]   one entry per addressed cell,
+//      sources are the workbook's own cells (and "definedName") whose formulas address it
+export async function linkCacheValues(zip)                    // Map<"file!sheet!cell", number|string|boolean>
+export function externalCacheCell(cellRef, value)            // the <cell> XML, as today
+export async function refreshLinkCaches(zip, reader)          // -> { changed: boolean, cells: number }; mutates zip
+export async function refreshWorkbookLinkCaches(bytes, reader) // -> { bytes, changed, cells }; the same over a Uint8Array
+export function resultsReader(results, { hub = HUB_FILE } = {}) // a reader over a calculator results object
+export function classifyLinkCell({ hubCache, leafValue, engineValue }, canonical = canonicalValue)
+//   -> { stale: boolean, drift: boolean }
+```
+
+The reader contract. `reader` is `{ readTargetCell, hasTarget, hasSheet }`; the two
+predicates are optional and default to `() => true`. `readTargetCell(file, sheet, cell)`
+returns a number, a string, a boolean, an error string such as `#VALUE!`, or `null`/`undefined`,
+and may return a promise (the sibling reader does; the results reader is synchronous; the
+refresh awaits either). `null` and `undefined` mean the same thing: keep the cached cell if the
+cache has one, write nothing if it does not. That is the runner's rule at `:599` to `:606`
+and it is what keeps the fifteen blank cells absent. Never write `""` for a blank: a spreadsheet
+compares a text cell as greater than any number, so `" " > 0` would flip the Purchases VAT rate
+to nil. `hasTarget(file)` false leaves that link untouched, which is today's `continue` when
+the sibling is not on disk; `hasSheet(file, sheet)` false skips that `<sheetData>` block, which
+is today's `!targetSheetMap.has(sheetName)`. Both exist so the wrapper reproduces today's
+decisions exactly.
+
+The refresh, per link and block, is the runner's loop unchanged: `wanted` is the union of the
+cached cells and the addressed cells for that sheet, sorted by `sortCellRefs`; each value goes
+through `externalCacheCell`; rows are grouped as `<row r="N">`; a block is rewritten only when
+its text changes; the link part is rewritten with `date: linkFile.date`. `changed` is true when
+any part was rewritten; `cells` is the number of `<cell>` elements the rewritten or kept blocks
+carry. Value formats: numbers are written with `String(value)` (Excel and LibreOffice both read
+the exponent form JavaScript produces for very small residuals; do not round, the engine's
+figure is the figure); dates are Excel serials, which is what `buildAdmin` and the Payslips
+calendar already hold; a `Date` instance reaching the reader is a bug, so `resultsReader` throws
+naming the cell. `SHEET_BLANK` (`" "`, `calculators/shared.js:94`) is written as
+`t="str"` with `xml:space="preserve"`, the form Excel writes for a formula that returns a
+space. `SHEET_ERROR` (`#VALUE!`) is written `t="e"`.
+
+The two readers.
+
+- `siblingReader(workDir, fileName)` stays in `spreadsheet-runner.js`: `hasTarget` is
+  `existsSync(resolve(workDir, file)) && file !== fileName`; `hasSheet` and `readTargetCell`
+  open each sibling once (JSZip, `buildSheetMap`, `loadSharedStrings`, the sheet XML cached
+  per sheet) and answer with `readCellValue`. `refreshExternalLinkCaches(workDir, fileName)`
+  becomes: read the file, `refreshLinkCaches(zip, siblingReader(workDir, fileName))`, and on
+  `changed` write the zip back with DEFLATE level 1 as today; it still returns the boolean
+  `runMultiFileSpreadsheet` keys its settle loop on. Nothing else in the runner changes.
+- `resultsReader(results)`: `readTargetCell(file, sheet, cell)` returns
+  `results[file === hub ? sheet : `${file}!${sheet}`]?.[cell]`, so the hub's sheets are the
+  bare keys and every leaf sheet is `File.xlsx!Sheet`, the shape `calculateSeResults` and
+  `calculateLtdResults` already produce and the shape `report-serializer.js`'s `cellKey`
+  expects. `hasTarget` and `hasSheet` are `() => true`: every link target in these packages
+  is a package file. Order is irrelevant to this reader, since every figure is known before
+  the first file is refreshed. `LINK_ORDER` is therefore not a scheduling device. It is the
+  declared set of link-bearing files per product, in the order a sibling reader would need,
+  and it earns its place through the writer's deterministic iteration and the test that pins
+  it to the templates. The design brief's list included Sales and Payslips; they carry no
+  links, so refreshing them is a no-op and they are not in the list.
+
+Where `results` comes from. `calculateSeResults` ends in `withinReadScope` (`se.js:1139`),
+which drops every cell not in `standardReads()` or `additionalReads`, so the writer and the
+page cannot use it. Split it: `export function calculateSeCells(book, lines, taxData, scenario)`
+is the body as it stands today up to and including the row-1 block below, returning the
+unscoped object; `calculateSeResults` becomes
+`withinReadScope(calculateSeCells(book, lines, taxData, scenario))`. `diya-gl-calculator.js`
+gains `export function calculateLinkCells(book, lines, product, taxData, scenario = {})`
+dispatching `se` to `calculateSeCells` and `ltd` to `calculateLtdResults` (which does not scope
+today; Ltd T4a points it at its own `calculateLtdCells` when that lands), and throwing for
+`bst` and `taxi`: a single workbook has no link cells. That keeps the writer product-agnostic
+and keeps every product dispatch in the one module that already does it.
+
+The row-1 block in `calculators/se.js`, inside the existing `MONTH_KEYS.forEach` at `:1114`
+and the payroll loop at `:1101`, plus four ledger entries. Every figure below is one the
+sheet computes from cells the writer fills, verified against the template formulas named:
+
+- `Sales.xlsx!<tab>`: `D1` = the month's business miles on the sales side,
+  `monthMiles(scenario.sales?.[month])` (`D1 = SUM(D5:D300)`; Purchases `C2` reads it);
+  one cell per entry of `SALES_ANALYSIS_COLUMNS` (`P1` a, `Q1` b, `R1` c, `S1` d, `T1` g,
+  `U1` o, `V1` fs) = `sales.byCode[code] || 0`; `V2` = the running fs total through this
+  month (`Apr!V2 = V1`, later `V2 = V1 + <previous>!V2`; Fixedassets `FAreconciliation!K13`
+  reads `[3]Mar!$V$2`). `W1` and `X1` are T3's.
+- `Sales.xlsx!OpeningDebtors` and `ClosingDebtors`: `H2` = `rate * 100` (each is
+  `=Apr!H2` or `=Mar!H2`; Vat's straddling sheets read them); `ClosingDebtors!H4` = `0`
+  (`=Mar!H4`, a blank the formula reads as nil). `OpeningDebtors!H4` is blank in the template
+  and stays unemitted.
+- `Purchases.xlsx!<tab>`: one cell per entry of `PURCHASES_ANALYSIS_COLUMNS` (`P1` s through
+  `AB1` fa) = `purchases.byCode[code] || 0`. `byCode.v` already carries the month's mileage
+  claim (`:710`), which is what the sheet's `W1 = SUM(W2:W300)` sums through `W2`. `AB2` =
+  the running fa total through this month (`Apr!AB2 = AB1`, later `AB1 + <previous>!AB2`;
+  `FAreconciliation!E13` reads `[2]Mar!$AB$2`).
+- `Purchases.xlsx!OpeningCreditors` and `ClosingCreditors`: `H2` = `rate * 100`.
+- `Bank.xlsx!<tab>` and `Cash.xlsx!<tab>`: for each `[code, column]` of that file's
+  `BANK_LAYOUTS` `receiptColumns`, `${column}1 = month.receiptsByCode[code] || 0`; for each
+  of `paymentColumns`, `${column}1 = month.paymentsByCode[code] || 0`. The hub reads only
+  Bank `J1`, `L1`, `Y1`, `Z1`, `AB1` and Cash `J1`, `V1`, `X1` (`Profit & Loss Account!C38`,
+  `C46`, `C30`, `C31`, `C42`); emitting the whole layout costs nothing and keeps the layout
+  table the single source. The `BC` column stays nil: an opening balance is written to `A1`,
+  not to its code column, so the sheet's own `G1` is nil too.
+- `Payslips.xlsx!<tab>`: `M1` = `month.grossPay` (`M1 = M16+M26+M36+M46+M56`;
+  `Wagesinterface!C4 = [6]Apr!$M$1`); `G1` = `0` (statutory pay, `SUM(AD60:AG60)+SUM(AE62:AG62)`;
+  no payroll line carries statutory pay); `Q1` = `0` (other deductions; `Wagesinterface!F4`
+  reads `$P$1+$Q$1`). `N1`, `O1`, `P1`, `T1` are already emitted.
+- `Admin`: `buildAdmin` (`:625`) already emits every Admin cell a leaf reads (`B2` to `B20`,
+  `B25`, `B4`, `B5`, `B17`, `G4`, `G5`, `G17`, `F21:G22`) except the blank `E8`. Nothing to add.
+
+`withinReadScope` keeps every new cell out of R, so the committed reports and the
+reconciliation do not move. Extract the two running totals through a small helper
+(`runningTotals(months, code)`) rather than a second loop.
+
+The pinned list, `app/test/fixtures/se-link-cells.json`, committed:
+
+```json
+{ "addressed": ["Bank.xlsx!Apr!AB1", "..."],          // 543 keys, sorted
+  "blank": [{ "key": "Financialaccounts.xlsx!Admin!E8", "why": "empty template cell; Fixedassets Schedule!D37 reads it as blank" },
+            { "key": "Purchases.xlsx!OpeningCreditors!P1", "why": "no cell in the template; StockControl!F28 reads it behind a zero test" },
+            { "key": "Sales.xlsx!Apr!H4", "why": "flat-rate marker, empty; Purchases Apr!H2 tests it > 0" }, "... eleven more tabs ...",
+            { "key": "Sales.xlsx!OpeningDebtors!H4", "why": "empty template cell; Vat S02Y1!F4 reads it" }] }   // 15 entries
+```
+
+Ltd T4's `ltd-link-cells.json` takes the same two-key shape. The committed form is the
+default the Ltd brief already chose: a template change fails by name.
+
+The writer. In `product-workbook.js`, after every file's `applyCellWrites` and
+`setFullCalcOnLoad`, when `LINK_ORDER[product]` exists: `results = calculateLinkCells(book,
+lines, product, taxData, scenario)`, `reader = resultsReader(results)`, then for each name in
+`LINK_ORDER[product]` replace that file's bytes with `refreshWorkbookLinkCaches(bytes, reader).bytes`.
+`refreshWorkbookLinkCaches` loads the zip, calls `refreshLinkCaches`, and when `changed`
+regenerates with DEFLATE level 6 and the entry dates the file already carries, so two saves of
+the same book stay byte-identical. S3's `options.writer` hook is dropped: the CLI, the MCP
+server and the page would each have to remember to pass it, and a save that forgot would ship
+stale caches. Nothing on `options` changes.
+
+The page. `books/drift.js` is a classic script like its neighbours, exposing
+`window.DiyaGlDrift = { captureAsReadLayer, captureLinkLayer, driftFromAsRead }`.
+
+- `captureAsReadLayer(cellMap, set, hubFile)` is `bst-data.js:654` with
+  `set.readCell(hubFile, sheet, cell)` in place of `workbookCells.readCell(sheet, cell)`.
+- `captureLinkLayer(set, hubFile, engine)` runs once at load, like the as-read layer, and only
+  for a multi-file product: `hubZip = set.zip(hubFile)`; `cache = engine.linkCacheValues(hubZip)`;
+  `addressed = engine.linkAddressedCells(hubZip)`. For each addressed cell that has a cached
+  value, read the leaf's own value `leafValue = await set.readCell(targetFile, sheet, cell)`
+  and keep `{ file, sheet, cell, hubCache, leafValue, sources }`. A leaf the set does not hold,
+  or a cell it has no value for, yields no entry: S1 refuses an incomplete package before this
+  runs, and an absent cell cannot be judged.
+- `driftFromAsRead(asReadLayer, linkLayer, results, linkCells, recalculated, multiFile)`
+  returns entries `{ id, label, computed, asRead, note, recalculated, state, file, sheet, cell, leaf }`.
+  `id` is the report cell key without its `cell/` prefix, so `Financialaccounts.xlsx!Profit & Loss Account!C5`
+  for a multi-file product and `Profit & Loss Acc!C15` for BST, which is what `applyDriftMarks`
+  matches against `data-r-key`. The hub-cell comparison is today's loop with `state: "drift"`.
+  Then for each link-layer entry with an engine value `engineValue = linkCells[key][cell]`
+  (the unscoped `calculateLinkCells` result, computed once at load beside the layer),
+  `classifyLinkCell` decides, and one entry per source hub cell is pushed for each true state:
+  a `stale` entry with `computed: engineValue`, `asRead: hubCache`, `note: "the hub was saved before this leaf changed"`,
+  `leaf: "Sales.xlsx!Apr!P1"`; a `drift` entry with `computed: engineValue`, `asRead: leafValue`,
+  `note` the leaf key. A hub cell that received a `stale` entry loses its own hub-cell `drift`
+  entry: its figure is downstream of a cache that predates the leaf, so it cannot be judged
+  drifted. Link-layer entries are computed from the uploaded bytes and the first computation
+  and are carried unchanged through edits, never relabelled `recalculated`: staleness is a
+  property of the file the customer uploaded, not of the book they are editing.
+- `classifyLinkCell({ hubCache, leafValue, engineValue }, canonical)` compares the three
+  through `canonical` (the engine's `canonicalValue`, fifteen significant digits, which is what
+  makes a LibreOffice-written `25333.3333333333` equal the engine's `25333.333333333332`):
+  `drift = canonical(leafValue) !== canonical(engineValue)`;
+  `stale = canonical(hubCache) !== canonical(leafValue) && canonical(hubCache) !== canonical(engineValue)`.
+  The five cases: all three agree, nothing; hub cache differs from both while the leaf agrees
+  with the engine, `stale` only (the leaf was edited and saved, the hub was not reopened);
+  hub cache agrees with the engine while the leaf differs, `drift` only (the leaf's own figure
+  is off; the hub read the right one); hub cache and leaf agree with each other but not the
+  engine, `drift` only (a consistent disagreement, today's meaning); all three differ, both.
+  The second condition on `stale` is what stops a corrupted leaf value from reading as a
+  stale hub.
+- `shell.js`: `pencilCorrection` gains `opts.state`; for `"stale"` it appends
+  `<span class="drift-tag is-stale" title="Sales.xlsx!Apr!P1">the hub was saved before this leaf changed</span>`
+  in place of the `recalculated` tag, and `applyDriftMarks` passes `entry.state` and
+  `entry.leaf` through `correctionFor`. `books.css` styles `.drift-tag.is-stale` in the same
+  pencil grey as `.is-recalculated`, no new colour. `data.js` calls `captureLinkLayer` in the
+  package loader beside `captureAsReadLayer` and passes both layers and `linkCells` through
+  the snapshot context to `driftFromAsRead`; BST passes an empty link layer and nothing else
+  about it changes.
+- `xlsx-cells.js`: `openWorkbookSet` exposes `zip(file)` returning the loaded JSZip for that
+  entry, if S1's version does not already. The engine's link functions take any JSZip-shaped
+  object, so the page's vendored `window.JSZip` instances go straight in.
+
+`books-engine.js` gains two lines:
+`export { refreshLinkCaches, resultsReader, linkCacheValues, linkAddressedCells, classifyLinkCell, LINK_ORDER, HUB_FILE } from "./link-caches.js";`
+and `calculateLinkCells` appended to the existing `diya-gl-calculator.js` export, with
+`canonicalValue` appended to the `report-serializer.js` export.
+
+Tests, `app/test/link-cache.test.js`, Node, no LibreOffice:
+
+- "LINK_ORDER.se names exactly the SE templates that carry external links": the set of
+  `app/templates/se/*.xlsx` whose zip has an `xl/externalLinks/externalLink1.xml` equals
+  `new Set(LINK_ORDER.se)`.
+- "every link-addressed cell in the nine SE templates is pinned": `linkAddressedCells` over
+  the nine templates, keyed `targetFile!sheet!cell`, equals the fixture's `addressed` (543),
+  the failure listing additions and removals by name.
+- "every pinned cell is a calculator output, a writer input or a declared blank": for the
+  advanced book (`examples/precision-code-ltd/advanced`, `se-2025-2026`), emitted =
+  every `key!cell` of `calculateSeCells(...)` with hub sheets prefixed `Financialaccounts.xlsx!`;
+  written = every `file!sheet!cell` of `cellWrites(scenario, 2025)` plus
+  `Financialaccounts.xlsx!Admin!<cell>` for every key of `buildSeCellEdits(taxData, 2025)`'s
+  `numericEdits` and `stringEdits`; `addressed - emitted - written - blank` is empty, the
+  failure naming every leftover. Then each `blank` entry is proved blank: its template cell has
+  no `<f>` and no `<v>`, or does not exist. Expect 528 covered, 15 blank.
+- "the pure refresh over examples/se-latest agrees with the sibling workbooks and settles in
+  one pass": load the nine files into a `Map<name, JSZip>`; a reader over the map (`hasTarget`
+  is `map.has`, `readTargetCell` through `buildSheetMap`, `loadSharedStrings`, `readCellValue`);
+  refresh every file in `LINK_ORDER.se`; assert for every entry of `linkAddressedCells` whose
+  sibling value is not null that `linkCacheValues` holds `canonicalValue` of that value; that
+  the sum of `cells` is at least 543; and that a second refresh of every file returns
+  `changed: false`. The same over `examples/ltd-latest`'s thirteen files with a `LINK_ORDER`
+  derived from the files that carry links (Ltd T4 replaces that derivation with `LINK_ORDER.ltd`),
+  asserting `cells` of at least 2,334. Ltd T4b's "the pure refresh matches CI's" is this
+  test's second half and need not be written again.
+- "the results reader gives every link cache in the saved advanced package the calculator's
+  value": `saveWorkbookFiles(book, lines)` for the advanced book; for each of the nine files,
+  `linkCacheValues(zip)`; for every key with an entry in `calculateSeCells`'s results,
+  `canonicalValue(cached) === canonicalValue(result)`; at least 528 cells compared; no key for
+  any `blank` entry.
+- "the saved caches keep the template's unaddressed cells as they are": the ten cached cells
+  no formula addresses (measured; assert the count) carry the template's `<cell>` XML
+  unchanged after the save.
+- "corrupting one cached value in the hub's externalLink2.xml is named by linkCacheValues":
+  in a copy of `examples/se-latest/Financialaccounts.xlsx`, replace the `<v>` of `Apr` `P1`
+  in the `[2]` link (`sheetId` is the position in `<sheetNames>`, so `Apr` is `sheetId="1"`);
+  the two `linkCacheValues` maps differ in exactly `Sales.xlsx!Apr!P1`.
+- "classifyLinkCell tells a stale hub from a drifted leaf": the five-row table above as
+  `it.each`, with `hubCache`, `leafValue`, `engineValue` triples and the expected booleans,
+  including a LibreOffice-form float against its JavaScript form reading as equal.
+- "the row-1 block stays out of the report": `Object.keys(calculateSeResults(...)["Sales.xlsx!Apr"])`
+  equals `["H1", "I1", "H2"]` and the Purchases tab's keys equal `additionalReads`' list; the
+  reconciliation gate is the proof at scale.
+- In `app/test/calculator-se.test.js`, one case per new group asserting the value against the
+  fixture: `Sales.xlsx!Apr!P1` equals the April code-`a` net total the `[expected]` table
+  implies, `Purchases.xlsx!Mar!AB2` equals the year's net `fa` total summed from the
+  fixture's purchase lines, `Bank.xlsx!Apr!J1` equals the April code-`K` receipts,
+  `Payslips.xlsx!Apr!M1` equals the April gross pay.
+
+The capture-and-compare. Before the first edit to the runner, from the batch branch:
+
+```
+S=<scratch>; for set in se-latest ltd-latest; do rm -rf $S/capture/$set; mkdir -p $S/capture/$set; cp examples/$set/*.xlsx $S/capture/$set/; done
+node --input-type=module -e '
+import { refreshExternalLinkCaches } from "./app/lib/spreadsheet-runner.js"; import { readdirSync } from "fs";
+for (const set of ["se-latest","ltd-latest"]) { const dir = `${process.env.S}/capture/${set}`;
+  for (const f of readdirSync(dir).filter(f => f.endsWith(".xlsx"))) console.log(set, f, await refreshExternalLinkCaches(dir, f)); }'
+for f in $S/capture/*/*.xlsx; do d=${f%.xlsx}; mkdir -p $d; unzip -q -o "$f" 'xl/externalLinks/*.xml' -d $d; done
+```
+
+After the refactor, the same three commands into `$S/after`, then `diff -r $S/capture $S/after`
+over the extracted XML must be silent for all fifteen link-bearing files (six SE, nine Ltd),
+and the printed booleans must match line for line. The committed XML in `examples/*-latest`
+is not the reference: LibreOffice wrote it, with two `<row r="1">` elements per block and a
+single relative rels target, and today's refresh rewrites every one of those files on its first
+pass. The reference is the runner's own output, and this pair of runs is its only proof, so
+paste both boolean listings into the commit message. Digest pinning was considered and
+rejected: `examples/*-latest` is refreshed by the generate workflows, so a committed digest
+would need re-pinning every refresh.
+
+Commands, in order: the capture above; then
+`npx vitest run --fileParallelism=false app/test/link-cache.test.js app/test/calculator-se.test.js app/test/product-workbook.test.js app/test/bst-workbook.test.js app/test/se-precision-code.test.js`
+(the last drives `runMultiFileSpreadsheet` through the wrapper and needs LibreOffice); the
+compare; `node app/bin/report.js --package se --data examples/precision-code-ltd/advanced --years se-2025-2026 --mode recalculate --output-dir <scratch>/r-se`
+must print RECONCILES; the BST regression net from the rules above; `npm run test:browser`.
+Before the PR, `npm test` and `npm run test:browser`.
+
+Acceptance: `grep -n "resolveLinkTarget\|externalCacheCell\|collectExternalCellRefs\|buildExternalLinkIndex\|cellSortKey\|expandRange" app/lib/spreadsheet-runner.js`
+shows only the import line; `grep -rn "from \"fs\"\|from \"path\"\|child_process" app/lib/link-caches.js app/lib/xlsx-parts.js`
+is empty; the compare is silent for fifteen files; the fixture pins 543 addressed and 15 blank
+and the coverage test passes with T3 merged (before T3 it fails naming exactly the 24
+`Sales.xlsx!<tab>!W1` and `X1` cells, which is the order check); the agreement test compares
+at least 528 cells; the recalculate report RECONCILES with the same check count as before;
+the BST net and browser suite are green with no allowance; T11's A7 can then assert, for the
+`examples/se-latest` package zipped, an empty drift set; for the `[2]` `Apr!P1` cache corrupted
+in the hub, exactly one entry `{ state: "stale", id: "Financialaccounts.xlsx!Profit & Loss Account!C5", leaf: "Sales.xlsx!Apr!P1" }`
+and the rendered `.drift-tag.is-stale` reading "the hub was saved before this leaf changed";
+for `Sales.xlsx!Apr!P1`'s own `<v>` corrupted, exactly one entry `{ state: "drift", id: "...!C5", leaf: "Sales.xlsx!Apr!P1" }`
+whose `asRead` is the corrupted figure, and no stale entry.
+
+Names Ltd T4 takes from here: `refreshLinkCaches(zip, reader)` with
+`reader = { readTargetCell, hasTarget?, hasSheet? }`; `resultsReader(results)` (product-agnostic,
+so `app/products/ltd.js` needs no `linkCacheReader`; `hub` defaults to `HUB_FILE`);
+`refreshWorkbookLinkCaches(bytes, reader)`; `linkCacheValues(zip)`; `linkAddressedCells(zip)`;
+`collectExternalCellRefs(zip)` with its `"<index>|<sheet>"` key; `classifyLinkCell`;
+`LINK_ORDER.ltd` (Ltd T4 fills it with the nine link-bearing Ltd files); `calculateLinkCells`
+(Ltd T4a adds `calculateLtdCells` to the dispatch); the fixture shape `{ addressed, blank }`;
+the test names "every link-addressed cell ... is pinned" and "every pinned cell is a calculator
+output, a writer input or a declared blank". Measured over `app/templates/ltd`: 2,214 distinct
+addressed cells and 2,334 cache cells after refresh, so the Ltd plan's 2,334 is the cache-cell
+count and its pinned `addressed` list will hold 2,214.
+
+Corrections to the design brief above, from the measurements:
+
+- Hub `[2]` addresses Sales `P1` to `U1` and `W1` (not `V1`), plus `X1` and `V2` on `Mar`,
+  `D1` and `H4` from Purchases and Vat; the shipped cache holds `P1` to `U1` and `W1`.
+- Bank row 1 is addressed at `J1`, `L1`, `Y1`, `Z1`, `AB1` only, Cash at `J1`, `V1`, `X1`;
+  no `F1`, `T1`, `E1`, `G1` to `M1` or `U1` to `AC1` beyond those.
+- Purchases row 1 is addressed at `P1` to `AA1` (not `AB1`), plus `AB2` on `Mar` and the
+  ledgers' `H2` and `OpeningCreditors!P1`. Payslips is addressed at `G1`, `M1`, `N1`, `O1`,
+  `P1`, `Q1`, `T1`; the brief omitted `Q1`.
+- "Every leaf read of the hub is an `Admin` constant the generator writes" misses `Admin!E8`,
+  which is empty.
+- `collectExternalCellRefs`, `buildExternalLinkIndex`, `externalCacheCell` and `cellSortKey`
+  are not exported by the runner and no test references them; only `refreshExternalLinkCaches`
+  is exported. There is nothing to re-export "for its tests".
+- No rels target in the tree carries a `file:` scheme. Excel writes two targets per link (the
+  bare filename and a percent-encoded absolute path); LibreOffice keeps only the relative
+  one. The basename rule covers all three forms, which is why it is chosen over a per-product
+  table: the file states its own target, and a table would break the moment a customer renamed
+  a workbook.
+- `examples/se-latest` (2026-09-02) predates the fixture change of 2026-09-03: its
+  `Fixedassets.xlsx!Schedule` `R1`, `S1`, `Y1` caches disagree with the calculator by that
+  change. No test compares `se-latest`'s caches to the calculator; the sibling-reader test
+  compares them to their own leaves.
+- Ltd T4's "compare byte for byte with the committed `examples/ltd-latest` link XML" cannot
+  pass, for the LibreOffice-format reason above; the capture-and-compare here is the proof,
+  and the committed test is the sibling-agreement and idempotence test.
+
+Horizon, named not decided: a hub cell that sums or otherwise derives from a stale
+link-fed cell without addressing a link itself (`Profit & Loss Account!B5 = SUM(C5:N5)`,
+everything downstream on `SE Full` and `Income Tax`) keeps today's `drift` mark while its
+input carries `stale`. Marking those needs the hub's intra-workbook dependency graph, which
+`template-formula-map.js`'s `workbookFormulaMap` could feed; until it is designed, the
+per-cell stale mark and the drift summary's count of stale leaf cells are what the page says.
+
 ### S5 Headline keys declared per product
 
 Tier: Sonnet. Precursor: none.
