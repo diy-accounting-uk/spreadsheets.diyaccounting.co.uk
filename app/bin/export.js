@@ -55,7 +55,7 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument, serializeReportDocument } from "../lib/report-serializer.js";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/bst-workbook.js";
+import { loadTaxDataForBook } from "../lib/product-workbook.js";
 import {
   readBookSource,
   BstAnchorError,
