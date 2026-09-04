@@ -36,13 +36,18 @@ export function calculateIncomeTax(profit, taxRates) {
   };
 }
 
+// Half up to the penny, for the voluntary Class 2 figure below.
+function round2(value) {
+  return Math.round(value * 100) / 100;
+}
+
 /**
  * Backward-compatible wrapper matching reconcile.js calculateExpectedTax signature.
  * Computes income tax + NI Class 4 from profit and full tax data.
  * @param {number} profit - taxable profit
  * @param {Object} taxData - full tax data object (from app/data/*.toml)
  * @returns {{ income_tax, personal_allowance, income_tax_basic, income_tax_higher, income_tax_additional,
- *   ni_class4_lower, ni_class4_upper, total_tax_and_ni }}
+ *   ni_class4_lower, ni_class4_upper, total_tax_and_ni, ni_class2_weekly, ni_class2_threshold, ni_class2 }}
  */
 export function calculateExpectedTax(profit, taxData) {
   const { totalIncomeTax, personalAllowance, basicRateTax, higherRateTax, additionalRateTax } = calculateIncomeTax(
@@ -57,6 +62,14 @@ export function calculateExpectedTax(profit, taxData) {
   const niLower = profit > lowerLimit ? (Math.min(profit, upperLimit) - lowerLimit) * lowerRate : 0;
   const niUpper = profit > upperLimit ? (profit - upperLimit) * upperRate : 0;
 
+  // Class 2 is voluntary below the small profits threshold (a customer may
+  // choose to pay it to protect their state pension record) and nil above
+  // it, where the NI record is credited without payment. Both fields stay
+  // undefined for a tax year with no declared threshold.
+  const class2Weekly = taxData.national_insurance.class2_weekly_rate;
+  const class2Threshold = taxData.national_insurance.class2_small_profits_threshold;
+  const hasClass2Threshold = class2Threshold !== undefined;
+
   return {
     income_tax: Math.round(totalIncomeTax),
     personal_allowance: personalAllowance,
@@ -66,5 +79,8 @@ export function calculateExpectedTax(profit, taxData) {
     ni_class4_lower: Math.round(niLower * 10) / 10,
     ni_class4_upper: Math.round(niUpper * 10) / 10,
     total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),
+    ni_class2_weekly: hasClass2Threshold ? class2Weekly : undefined,
+    ni_class2_threshold: hasClass2Threshold ? class2Threshold : undefined,
+    ni_class2: hasClass2Threshold ? (profit < class2Threshold && class2Threshold > 0 ? round2(class2Weekly * 52) : 0) : undefined,
   };
 }

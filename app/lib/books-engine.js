@@ -73,7 +73,7 @@ export {
 export { calculateFromDiyaGl, aggregateByAccountAndMonth, annualTotal, sumValues, aggregateByCode } from "./diya-gl-calculator.js";
 
 // The checks and the report shape.
-export { reportSections, checkCompliance, cellLabels, profitBridge, standardReads, CELL_MAP, TAX_SHEET, PRODUCT } from "../products/bst.js";
+export { reportSections, checkCompliance, cellLabels, profitBridge, standardReads, CELL_MAP, HEADLINES, TAX_SHEET, PRODUCT } from "../products/bst.js";
 export { calculateExpectedTax } from "./tax/income-tax.js";
 
 // Editing it.
@@ -83,10 +83,19 @@ export { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLineP
 export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./book-checks.js";
 
 // The year-at-a-glance headline figures, derived from R.
-export { headlinesFromReport } from "./bst-headlines.js";
+export { headlinesFromReport } from "./headlines.js";
 
 // Saving it back out as a workbook or the package zip.
-export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
+export {
+  saveWorkbook,
+  saveWorkbookFiles,
+  savePackageZip,
+  productOf,
+  taxYearFileName,
+  loadTaxDataForBook,
+  BookFieldError,
+  SingleFileOnlyError,
+} from "./product-workbook.js";
 
 // The resource-loader contract a caller has to satisfy.
 export {
