@@ -21,8 +21,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | TX1 | Taxi T1 writer: day sums, joined names, caption rows, off-grid refusal | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t1`, `claude/wt-taxi-t1` |
-| SE-S1d | S1 design: the workbook set's coding brief | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 2, `.worktrees/spreadsheets/se-s1-design` |
-| SE-S1 | S1 the workbook set: adapters, `package-set`, product sniff, `openWorkbookSet` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1d, TX3 | blocked-to-start | Opus, wave 3 |
+| SE-S1 | S1 the workbook set: adapters, `package-set`, product sniff, `openWorkbookSet` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 3, `.worktrees/spreadsheets/se-s1` |
 | SE-S2 | S2 anchor runner over per-product tables; extraction map keyed by file | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1 | blocked-to-start | Sonnet, wave 4, after TX-T6 in `xlsx-exporter.js` |
 | SE-S3 | S3 `product-workbook.js`: any product, `fullCalcOnLoad` on every file, package zip | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 2, `.worktrees/spreadsheets/se-s3` |
 | SE-S4d | S4 design: the pure link-cache refresh's coding brief | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 2, `.worktrees/spreadsheets/se-s4-design` |
