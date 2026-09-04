@@ -5,7 +5,7 @@
 // phase 1 already tests: extract_book wraps export.js's --file pipeline
 // (books-interchange.js underneath, so every kind it reads loads here too),
 // report and edit_lines wrap the diya-gl-calculator/report-serializer loop
-// and diya-gl-edits.js, save_workbook wraps bst-workbook.js for a workbook
+// and diya-gl-edits.js, save_workbook wraps product-workbook.js for a workbook
 // or package zip and books-interchange.js for the two diya-gl formats. No
 // engine code lives here.
 //
@@ -30,7 +30,7 @@ import { resolve as resolvePath } from "path";
 import { extractBstFromFile, buildFileReportDocument } from "../../bin/export.js";
 import { canonicalBookToml, canonicalLinesJsonl } from "../diya-gl-canonical.js";
 import { writeDiyaGlZip, writeBookJson } from "../books-interchange.js";
-import { saveBstWorkbook, saveBstPackageZip, loadTaxDataForBook } from "../bst-workbook.js";
+import { saveWorkbook, savePackageZip, loadTaxDataForBook } from "../product-workbook.js";
 import { addSaleLine, addPurchaseLine, changeLineAmount, removeLine, changeLinePostingDate, changeLineAccount } from "../diya-gl-edits.js";
 import { runBookChecks, bookChecksJson } from "../book-checks.js";
 import * as bst from "../../products/bst.js";
@@ -174,14 +174,14 @@ function editLines(session, { edit, params, book: explicitBook, lines: explicitL
  * recalculating workbook, its package zip, or D (and the R and the book
  * checks just computed from it) as a diya-gl zip or a single JSON file.
  */
-async function saveWorkbook(session, params = {}) {
+async function buildDownload(session, params = {}) {
   const book = params.book ?? session.book;
   const lines = params.lines ?? session.lines;
   if (!book || !lines) requireLoaded(session);
 
   const format = ["zip", "diya-gl-zip", "json"].includes(params.format) ? params.format : "xlsx";
   if (format === "zip") {
-    const { zip, filename } = await saveBstPackageZip(book, lines);
+    const { zip, filename } = await savePackageZip(book, lines);
     return { filename, format, base64: Buffer.from(zip).toString("base64") };
   }
   if (format === "diya-gl-zip") {
@@ -197,7 +197,7 @@ async function saveWorkbook(session, params = {}) {
     const json = writeBookJson(book, lines);
     return { filename: "book-diya-gl.json", format, base64: Buffer.from(json, "utf8").toString("base64") };
   }
-  const { workbook, filename } = await saveBstWorkbook(book, lines);
+  const { workbook, filename } = await saveWorkbook(book, lines);
   return { filename, format, base64: Buffer.from(workbook).toString("base64") };
 }
 
@@ -261,6 +261,6 @@ export const TOOLS = {
         lines: { type: "array", description: "Optional: diya-gl lines, bypassing the session" },
       },
     },
-    handler: saveWorkbook,
+    handler: buildDownload,
   },
 };
