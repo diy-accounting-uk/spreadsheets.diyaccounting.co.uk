@@ -154,5 +154,79 @@
     };
   }
 
-  global.DiyaGlXlsxCells = { xlsxBytesFrom, openWorkbookCells };
+  // The same four rules app/lib/workbook-set.js keeps: a workbook is a
+  // .xlsx entry, addressed by the last segment of its path whatever case it
+  // arrived in, and a macOS re-zip's __MACOSX entries and ._ shadows are not
+  // workbooks. The page cannot import app/lib, so they are stated twice; the
+  // browser test reads one real package through both.
+  function workbookBaseName(entryPath) {
+    var segments = entryPath.split("/");
+    return segments[segments.length - 1];
+  }
+
+  function isWorkbookEntry(entryPath) {
+    var segments = entryPath.split("/");
+    if (segments.indexOf("__MACOSX") !== -1) return false;
+    var base = segments[segments.length - 1];
+    if (base.indexOf("._") === 0) return false;
+    return /\.xlsx$/i.test(base);
+  }
+
+  /**
+   * Every workbook in an uploaded package zip, addressed by file name. Each
+   * one opens on the first question asked of it and stays open, so a page
+   * that reads two cells off the hub decompresses nothing else.
+   * @param {Uint8Array} zipBytes
+   * @returns {Promise<{names: () => string[], has: (file: string) => boolean, hasSheet: (file: string, sheet: string) => Promise<boolean>, readCell: (file: string, sheet: string, cellRef: string) => Promise<*>}>}
+   */
+  async function openWorkbookSet(zipBytes) {
+    var zip = await global.JSZip.loadAsync(zipBytes);
+    var pathByName = new Map();
+    Object.keys(zip.files).forEach(function (entryPath) {
+      if (zip.files[entryPath].dir || !isWorkbookEntry(entryPath)) return;
+      pathByName.set(workbookBaseName(entryPath).toLowerCase(), entryPath);
+    });
+
+    var names = [];
+    pathByName.forEach(function (entryPath) {
+      names.push(workbookBaseName(entryPath));
+    });
+    names.sort(function (left, right) {
+      var a = left.toLowerCase();
+      var b = right.toLowerCase();
+      return a < b ? -1 : a > b ? 1 : 0;
+    });
+
+    var cellsByName = new Map();
+    function cellsFor(file) {
+      var key = workbookBaseName(file).toLowerCase();
+      var entryPath = pathByName.get(key);
+      if (!entryPath) return null;
+      if (!cellsByName.has(key)) {
+        cellsByName.set(key, zip.file(entryPath).async("uint8array").then(openWorkbookCells));
+      }
+      return cellsByName.get(key);
+    }
+
+    return {
+      names: function () {
+        return names.slice();
+      },
+      has: function (file) {
+        return pathByName.has(workbookBaseName(file).toLowerCase());
+      },
+      async hasSheet(file, sheetName) {
+        var pending = cellsFor(file);
+        if (!pending) return false;
+        return (await pending).hasSheet(sheetName);
+      },
+      async readCell(file, sheetName, cellRef) {
+        var pending = cellsFor(file);
+        if (!pending) return undefined;
+        return (await pending).readCell(sheetName, cellRef);
+      },
+    };
+  }
+
+  global.DiyaGlXlsxCells = { xlsxBytesFrom, openWorkbookCells, openWorkbookSet };
 })(window);
