@@ -92,6 +92,22 @@ function formatMoney(value) {
   return sign + "£" + Math.abs(value).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function byEntryNumber(a, b) {
+  const ka = a.entryNumber || "";
+  const kb = b.entryNumber || "";
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
+
+function offenderOf(line) {
+  return {
+    entryNumber: line.entryNumber,
+    postingDate: line.postingDate,
+    accountMainID: line.accountMainID,
+    detail: line.detailComment || "",
+    amount: line.amount,
+  };
+}
+
 function isBankLine(line) {
   return line.sourceJournalID === "bank";
 }
@@ -278,7 +294,9 @@ export const LTD_CHECK_SPECS = [
       for (const line of assetSales.slice(disposalRows)) offenders.push(line);
 
       for (const agreement of agreements.slice(HP_AGREEMENT_ROWS.length)) {
-        offenders.push(scheduleOffender(agreement.agreementID, agreement.startDate, agreement.financeCompany || "", agreement.amountFinanced));
+        offenders.push(
+          scheduleOffender(agreement.agreementID, agreement.startDate, agreement.financeCompany || "", agreement.amountFinanced),
+        );
       }
       return offenders;
     },
@@ -301,17 +319,19 @@ export const LTD_CHECK_SPECS = [
 // a save. Each takes (ctx, taxData, results) and returns its own result.
 
 function transferCounterLegWarning(ctx) {
-  const offenders = ctx.lines.filter(function (line) {
-    if (!isBankLine(line)) return false;
-    const sibling = TRANSFER_SIBLING_ACCOUNTS[line["diya-gl:bankCode"]];
-    if (!sibling) return false;
-    if (isOpeningBankBalance(line, ctx.period)) return false;
-    return !ctx.lines.some(function (other) {
-      if (other === line) return false;
-      const onSibling = other["diya-gl:bankAccountID"] === sibling || String(other.accountMainID) === sibling;
-      return onSibling && other.postingDate === line.postingDate && other.amount === line.amount;
-    });
-  });
+  const offenders = ctx.lines
+    .filter(function (line) {
+      if (!isBankLine(line)) return false;
+      const sibling = TRANSFER_SIBLING_ACCOUNTS[line["diya-gl:bankCode"]];
+      if (!sibling) return false;
+      if (isOpeningBankBalance(line, ctx.period)) return false;
+      return !ctx.lines.some(function (other) {
+        if (other === line) return false;
+        const onSibling = other["diya-gl:bankAccountID"] === sibling || String(other.accountMainID) === sibling;
+        return onSibling && other.postingDate === line.postingDate && other.amount === line.amount;
+      });
+    })
+    .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
     id: "ltd-transfer-has-counter-leg",
@@ -322,15 +342,7 @@ function transferCounterLegWarning(ctx) {
     consequence: warn
       ? "A transfer entered on one account only moves money the other account never loses, so one of the two closing balances is wrong by the amount transferred and the trial balance nets it away under intra-account transfers."
       : null,
-    offenders: offenders.map(function (line) {
-      return {
-        entryNumber: line.entryNumber,
-        postingDate: line.postingDate,
-        accountMainID: line.accountMainID,
-        detail: line.detailComment || "",
-        amount: line.amount,
-      };
-    }),
+    offenders: offenders.map(offenderOf),
   };
 }
 
@@ -346,7 +358,9 @@ function dividendsWarning(ctx, taxData, results) {
       id: "ltd-dividend-within-distributable-profits",
       tier: "warning",
       label:
-        "Dividends declared are " + formatMoney(declared) + "; the profits available to distribute are not known without the calculated accounts.",
+        "Dividends declared are " +
+        formatMoney(declared) +
+        "; the profits available to distribute are not known without the calculated accounts.",
       result: "pass",
       actual: declared,
       consequence: null,
@@ -375,13 +389,15 @@ function dividendsWarning(ctx, taxData, results) {
 }
 
 function cisAccountWarning(ctx) {
-  const offenders = ctx.lines.filter(function (line) {
-    return (
-      line.sourceJournalID === "purchases" &&
-      line["diya-gl:cisDeduction"] !== undefined &&
-      String(line.accountMainID) !== SUBCONTRACTOR_ACCOUNT
-    );
-  });
+  const offenders = ctx.lines
+    .filter(function (line) {
+      return (
+        line.sourceJournalID === "purchases" &&
+        line["diya-gl:cisDeduction"] !== undefined &&
+        String(line.accountMainID) !== SUBCONTRACTOR_ACCOUNT
+      );
+    })
+    .sort(byEntryNumber);
   const warn = offenders.length > 0;
   return {
     id: "ltd-cis-on-subcontractor-line",
@@ -394,15 +410,7 @@ function cisAccountWarning(ctx) {
         SUBCONTRACTOR_ACCOUNT +
         ". On any other account the deduction is still totalled into what is owed to HMRC while the spend it came from is analysed somewhere the CIS return never looks."
       : null,
-    offenders: offenders.map(function (line) {
-      return {
-        entryNumber: line.entryNumber,
-        postingDate: line.postingDate,
-        accountMainID: line.accountMainID,
-        detail: line.detailComment || "",
-        amount: line.amount,
-      };
-    }),
+    offenders: offenders.map(offenderOf),
   };
 }
 
