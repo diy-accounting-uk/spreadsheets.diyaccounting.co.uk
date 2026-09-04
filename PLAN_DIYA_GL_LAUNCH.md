@@ -429,6 +429,18 @@ Filing exists), a merge story for concurrent edits, and any second price.
    Fable 5.1 as coordinator.
 7. **VAT position.** Not VAT registered; the price stands as written.
 
+## Open items
+
+Tracked here, not on the board in `NEXT.md`, at the operator's request.
+
+- **X1 — draft `PLAN_DIYA_GL_RUST.md`.** The port's design wave first: the type model, the
+  float and half-up rounding contract that reproduces the JS serializer byte-for-byte, the
+  module map, the oracle harness that diffs `report.json` and `bookchecks.json` against the
+  JS over the three books, and the CI parity job; then the code waves and the closing
+  ladder, sized from section 5b's estimate. Fable 5.1 coordinates; Sonnet and Opus workers.
+- **H6 — the operator's research** into Rust porting references, skills and MCP servers for
+  the port's builder. X1 does not wait on it.
+
 ## Where this changes the DIYA Cloud plan
 
 `_developers/PLAN_DIYA_CLOUD.md` decided server-side computation in Lambda with LibreOffice
