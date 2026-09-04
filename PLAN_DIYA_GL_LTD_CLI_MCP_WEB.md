@@ -469,6 +469,14 @@ each rebasing on the last.
   reducer has no label hook, so Ltd's pie says "Running costs" and "Tax and NI" until **T22**
   (Sonnet, before Taxi T12 in `headlines.js`) adds `runningCosts.label` and `tax.label`.
 
+- T1 was read, not started, when the batch paused on 2026-09-04. What the reading settled: S3's
+  `composeFile` already copies the docx byte for byte, runs `applyYearEndSequence` and sets
+  `fullCalcOnLoad` on every file, and `saveWorkbook` already refuses a multi-file product, so T1 is
+  the tax-file rule, the book as the source of `endDate`, `yearEndMonth` and `targetStartYear` for
+  Ltd only (BST and SE keep the tax file's year end or their package names change), the
+  twelve-month refusal, and the tests. `targetStartYear` is `endYear - 1` as `generate.js:317`
+  passes it, not the period start's year; the two differ for a December year end.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
