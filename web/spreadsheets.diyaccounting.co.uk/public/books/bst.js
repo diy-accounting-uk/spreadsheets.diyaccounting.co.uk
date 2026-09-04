@@ -78,7 +78,18 @@
     renderSheetTabs();
     bindGlobalControls();
     render();
-    checkForSavedBook();
+
+    // A link carrying ?example=... loads that book on its own -- it never
+    // reads or writes the autosave record, so whatever a reader had saved
+    // stays untouched and is still offered the next time they arrive
+    // without a link. Any other arrival (no example, or view/month alone)
+    // is a plain arrival: the continue offer works exactly as before.
+    var deepLink = parseDeepLinkParams();
+    if (deepLink.example) {
+      bootFromDeepLink(deepLink);
+    } else {
+      checkForSavedBook();
+    }
   }
 
   // The saved-book check runs after the first render so the picker appears
@@ -91,6 +102,100 @@
       state.savedBook = record || null;
       if (!state.loaded) render();
     });
+  }
+
+  // ============================== deep links ==============================
+  // ?example=<id> loads the named example the moment the page boots, using
+  // the same loader the example buttons use. &view=<data-view id> and
+  // &month=YYYY-MM land on a view or an open month once it has loaded.
+  // Unknown view/month values are ignored; an unknown example shows the
+  // empty state with a message naming the three ids the page knows.
+
+  function parseDeepLinkParams() {
+    var params = new URLSearchParams(window.location.search);
+    return {
+      example: params.get("example"),
+      view: params.get("view"),
+      month: params.get("month"),
+    };
+  }
+
+  function bootFromDeepLink(deepLink) {
+    var known = EXAMPLE_BOOKS.some(function (example) {
+      return example.key === deepLink.example;
+    });
+    if (!known) {
+      showEmptyStateMessage(
+        'Unknown example "' +
+          deepLink.example +
+          '". The three this page knows are: ' +
+          EXAMPLE_BOOKS.map(function (example) {
+            return example.key;
+          }).join(", ") +
+          ".",
+        true,
+      );
+      return;
+    }
+    setPickerBusy(true);
+    showEmptyStateMessage("Loading " + deepLink.example + "…", false);
+    window.DiyaGlBooksLoader.loadExample(deepLink.example)
+      .then(function (snapshot) {
+        applyLoadedSnapshot(snapshot, { skipAutosave: true });
+        applyDeepLinkViewAndMonth(deepLink, snapshot);
+        showToast("Loaded " + snapshot.businessDetails.organizationIdentifier + " (example)");
+      })
+      .catch(function (error) {
+        setPickerBusy(false);
+        showEmptyStateMessage(error && error.message ? error.message : String(error), true);
+      });
+  }
+
+  // Applied once the example has loaded: a valid view id lands on that view,
+  // a valid month key opens that month (with its entries) in the year view
+  // applyLoadedSnapshot already put the reader on by default. Neither
+  // overrides the other -- a reader can ask for both.
+  function applyDeepLinkViewAndMonth(deepLink, snapshot) {
+    var changed = false;
+    if (
+      deepLink.view &&
+      VIEWS.some(function (v) {
+        return v.id === deepLink.view;
+      })
+    ) {
+      state.view = deepLink.view;
+      changed = true;
+    }
+    if (
+      deepLink.month &&
+      snapshot.months.some(function (m) {
+        return m.key === deepLink.month;
+      })
+    ) {
+      state.openMonth = deepLink.month;
+      state.entriesOpen = true;
+      changed = true;
+    }
+    if (changed) {
+      render();
+      scrollViewToTop();
+    }
+  }
+
+  // Keeps the URL current with the loaded example, the view and the open
+  // month, so the reader's own address bar is a link they can copy back
+  // out -- replaceState only, never a history entry per click. An uploaded
+  // or freshly-created book carries no example id and the URL is left as
+  // the reader navigated it.
+  function syncDeepLinkUrl() {
+    if (!state.loaded || !SNAPSHOT.source || SNAPSHOT.source.kind !== "example") return;
+    var params = new URLSearchParams();
+    params.set("example", SNAPSHOT.source.label);
+    params.set("view", state.view);
+    if (state.openMonth) params.set("month", state.openMonth);
+    var next = window.location.pathname + "?" + params.toString() + window.location.hash;
+    var current = window.location.pathname + window.location.search + window.location.hash;
+    if (next !== current) window.history.replaceState(null, "", next);
   }
 
   // ============================== formatting ==============================
@@ -276,6 +381,7 @@
     bindInspectorInteractions();
     renderMobileTabbar();
     restoreEditFocus();
+    syncDeepLinkUrl();
   }
 
   // A commit re-renders the whole grid, so the row the reader was working in
@@ -836,18 +942,21 @@
     render();
   }
 
-  function applySnapshot(snapshot) {
+  function applySnapshot(snapshot, opts) {
+    opts = opts || {};
     SNAPSHOT = snapshot;
     window.DIYA_BST_SNAPSHOT = snapshot;
     state.book = snapshot.book;
     state.lines = snapshot.lines;
     state.context = snapshot.context;
     state.bookChecks = window.DiyaGlBooksEdits.bookChecks(snapshot);
-    autosaveCurrentBook();
+    // A deep link never writes the autosave record -- whatever a reader had
+    // saved before following the link stays exactly as it was.
+    if (!opts.skipAutosave) autosaveCurrentBook();
   }
 
-  function applyLoadedSnapshot(snapshot) {
-    applySnapshot(snapshot);
+  function applyLoadedSnapshot(snapshot, opts) {
+    applySnapshot(snapshot, opts);
     state.loaded = true;
     state.view = "year";
     state.openMonth = snapshot.months[0].key;
