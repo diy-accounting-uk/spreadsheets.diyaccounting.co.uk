@@ -278,7 +278,7 @@ takes the largest of B6 to B9 or B11, and B14 to B21.
 
 ### The HMRC look-alike form and the tax computation
 
-The research record is `hmrc-forms-sole-trader.md` (the coordinator's scratchpad, sections
+The research record is `_developers/hmrc-references/hmrc-forms-sole-trader.md` (sections
 1, 5 and 6: SA103S 2026, SA110 2026 with the SA302 order, and HMRC's box-to-API mapping).
 Only what it changes here is stated.
 

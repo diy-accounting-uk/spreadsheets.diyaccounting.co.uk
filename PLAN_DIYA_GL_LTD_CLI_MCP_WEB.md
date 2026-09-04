@@ -261,7 +261,7 @@ line, net recomputed) and the book-field commits for dividends, members and char
 
 Three forms, all rendered from `R`, no HMRC or Companies House branding, the microcopy
 "check these against your return". The box lists, formats and sources are in the research
-note `hmrc-forms-company.md` (scratchpad, 2026-09-04); this section names only what the
+note `_developers/hmrc-references/hmrc-forms-company.md`; this section names only what the
 page renders and which sheet cell feeds each box.
 
 **CT600.** The page renders the CT600 (2026) Version 3 boxes, the form HMRC publishes as of

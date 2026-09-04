@@ -110,7 +110,7 @@ box 81. The VAT return is `Vat.xlsx!VATQtr1..5`: `G5` the period end, `G9` box 1
 `LOOKUP` on `Vatinterface!B:B`. The tax computation is the `Income Tax` sheet, and its `E5`
 is `'SE Full'!O210`, the return's own taxable profit; the P&L's `B39` feeds it through the return.
 
-Against the 2026 forms (the research cut of 2026-09-04, sources at the end of this section):
+Against the 2026 forms (the research note `_developers/hmrc-references/hmrc-forms-sole-trader.md`, sources at the end of this section):
 the `SE Full` sheet prints the current SA103F numbering (its `A52` says 15, `A120` 31,
 `A126` 47, `A136` 49, `L206` 76, `A228` 81). The `SE Short` sheet prints a numbering the
 form left behind: its `A35` says 8 for turnover where SA103S 2026 says 9, and every box
