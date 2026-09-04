@@ -1314,6 +1314,63 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
 
+// The year-at-a-glance strip's four tiles and two pies for a Company book.
+// Every key is a report-serializer.js cell key, verified against
+// `report.js --package ltd --data examples/precision-code-ltd/full`.
+//
+// The declaration wraps every single-cell reference as `{ key }` (or
+// `{ key, optional }`) and every summed group as `{ keys: [...] }`, the
+// shape a shared headline reducer reads across products. Ltd's `assets`
+// group carries two named parts summed into the tile (Ltd's current-assets
+// figure already includes trade debtors, so there is no separate `debtors`
+// part the way BST has one). `taxSecond`, `assetsSecond` and `dividends` add
+// a second line to the tax and assets tiles and a fifth turnover-pie slice
+// for the dividends the board declared -- Ltd-specific, since BST's book has
+// no equivalent figures.
+// prettier-ignore
+export const HEADLINES = {
+  turnover: { key: "cell/Financialaccounts.xlsx!MnthP&L!B9" }, // SUM(B4:B8)
+  costOfSales: { keys: ["cell/Financialaccounts.xlsx!MnthP&L!B14"] }, // SUM(B11:B13)
+  runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41" }, // SUM(B18:B40)
+  runningCostsLabel: "Administrative expenses",
+  tax: { key: "cell/Financialaccounts.xlsx!CorporationTax!K35" }, // SUM(I33:I34)
+  taxSecond: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
+  dividends: { key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }, // =TrialBalance!EJ48
+  assets: {
+    writtenDown: { key: "cell/Financialaccounts.xlsx!PubBalSht!F6" }, // fixed assets NBV
+    current: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+  },
+  assetsSecond: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
+  expenseLines: [
+    ["cell/Financialaccounts.xlsx!MnthP&L!B11", "Materials / Stock"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B12", "Sub-contractors"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B13", "Other direct costs"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B18", "Wages and salaries"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B19", "Directors Wages + Non-PAYE (code d)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B20", "Employers National Insurance"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B21", "Premises (code r)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B22", "Light, Heat, Power (code p)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B23", "Distribution (code t)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B24", "Equipment Hire (code q)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B25", "Repairs & Maintenance (code m)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B26", "Consumables (code u)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B27", "Advertising (code a)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B28", "Telephone, Postage & Stationery (code g)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B29", "Travel & Hotel (code h)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B30", "Motor Vehicle (code v)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B31", "Insurance (code n)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B32", "Leasing (code f)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B33", "Legal & Professional (code l)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B34", "Bad Debts (from Sales)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B35", "Bank Interest Paid"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B36", "Bank Charges"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B37", "Charitable Donations (code y)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B38", "Goodwill written off (code z)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B39", "Loss on disposal of assets"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B40", "Depreciation"],
+  ],
+};
+
 // Month tab order (matching the scenario key order) and the MnthP&L column
 // each month occupies — verified against the template (C = month 1 .. N =
 // month 12).
