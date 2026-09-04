@@ -67,6 +67,13 @@ describe("the three example books", () => {
     expect(summary).toEqual({ pass: 8, warn: 0, fail: 0 });
   });
 
+  it("Kestrel Executive Cars: every entry sits inside the declared period", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "kestrel-executive-cars", "taxi"));
+    const { results } = runBookChecks({ book, lines, taxData: TAX_DATA });
+
+    expect(resultFor(results, "book-dates-in-period").result).toBe("pass");
+  });
+
   it("BrickWork Pro (non-VAT): every check and every warning pass", () => {
     const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "brickwork-pro", "bst-nonvat"));
     const { results, summary } = runBookChecks({ book, lines, taxData: TAX_DATA });
