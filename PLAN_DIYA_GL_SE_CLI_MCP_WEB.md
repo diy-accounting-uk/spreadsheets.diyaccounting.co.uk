@@ -432,13 +432,13 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
-- S1 the workbook set (, the three adapters, ,
-  , , the sheet-name product sniff,  in
-  )  to , merged 2026-09-04; the four  outputs
+- S1 the workbook set (`app/lib/workbook-set.js`, the three adapters, `extractLines`,
+  `productIdOf`, `SCHEMA_PRODUCT_NAMES`, the sheet-name product sniff, `openWorkbookSet` in
+  `xlsx-cells.js`) `cb939928` to `05af3a27`, merged 2026-09-04; the four `--source-dir` outputs
   byte-identical; the Node net 358 and the browser suite 160 green on the merged branch. A diya-gl
   zip that declares no product is refused, a decision the brief did not make. On merge the browser
   suite exposed the Class 2 field split (see the Taxi plan's T19 note); both tax-year files now
-  carry .
+  carry `class2_rate = 3.50`.
 - The S7 coding brief gains five seam lines the Taxi T13 brief needs, per that brief's "seams"
   paragraph: `yearTable.monthDetail` and `bindMonthDetail`; `journals[i].entriesGrid === false`;
   `derive(row, monthKey, ctx)`; `monthlyCell(monthLabel, productMod, categoryKey)` called per
