@@ -4,8 +4,8 @@
 // save.js — the current book turned into a download, through the same
 // engine bundle the rest of the page reads from.
 //
-// saveBstWorkbook and saveBstPackageZip are the exact functions the CLI and
-// the MCP server write a workbook through (app/lib/bst-workbook.js), bundled
+// saveWorkbook and savePackageZip are the exact functions the CLI and
+// the MCP server write a workbook through (app/lib/product-workbook.js), bundled
 // for the browser by scripts/build-books-bundle.mjs. bst.js's save controls
 // call buildSaveArtifact() then downloadArtifact(); the save browser test
 // calls the same two functions directly against a book it loaded itself, so
@@ -72,10 +72,10 @@ export async function buildSaveArtifact(book, lines, format, extras) {
     return buildDiyaGlArtifact(engine, book, lines, format, extras || {});
   }
   if (format === "zip") {
-    const { zip, filename } = await engine.saveBstPackageZip(book, lines, { resources });
+    const { zip, filename } = await engine.savePackageZip(book, lines, { resources });
     return { bytes: zip, filename, mimeType: ZIP_MIME };
   }
-  const { workbook, filename } = await engine.saveBstWorkbook(book, lines, { resources });
+  const { workbook, filename } = await engine.saveWorkbook(book, lines, { resources });
   return { bytes: workbook, filename, mimeType: XLSX_MIME };
 }
 

@@ -14,13 +14,14 @@
 //
 // The Node side of the equivalence: app/bin/report.js builds R the same
 // way the reconciliation pipeline does, from the precision-code-ltd/bst
-// fixture, and app/lib/bst-headlines.js's own headlinesFromReport() turns
-// that R into the expected tiles and pies directly in Node. The browser
-// side goes the long way round -- a synthetic books-page snapshot, built
-// from the same R's cell values, through headlines.js's own R adapter,
-// through the same headlinesFromReport() (esbuilt into a browser global,
-// never a copy under public/) -- so the two paths meeting on the same
-// numbers proves the adapter round-trips.
+// fixture, and app/lib/headlines.js's own headlinesFromReport() turns that
+// R into the expected tiles and pies directly in Node, reduced over BST's
+// own HEADLINES declaration. The browser side goes the long way round -- a
+// synthetic books-page snapshot, built from the same R's cell values,
+// through books/headlines.js's own R adapter, through the same
+// headlinesFromReport() (esbuilt into a browser global, never a copy under
+// public/) -- so the two paths meeting on the same numbers proves the
+// adapter round-trips.
 
 import { test, expect } from "@playwright/test";
 import fs from "node:fs";
@@ -28,7 +29,8 @@ import path from "node:path";
 import http from "node:http";
 import { execFileSync } from "node:child_process";
 import * as esbuild from "esbuild";
-import { headlinesFromReport } from "../../app/lib/bst-headlines.js";
+import { headlinesFromReport } from "../../app/lib/headlines.js";
+import { HEADLINES } from "../../app/products/bst.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 const screenshotsDir = path.join(process.cwd(), "target");
@@ -208,14 +210,14 @@ test.beforeAll(async () => {
     { stdio: "pipe" },
   );
   realReport = JSON.parse(fs.readFileSync(path.join(outputDir, "report.json"), "utf8"));
-  expectedHeadlines = headlinesFromReport(realReport);
+  expectedHeadlines = headlinesFromReport(realReport, HEADLINES);
 
-  // bst-headlines.js is ESM; the page loads classic scripts only, so it is
-  // esbuilt into a browser global for the probe page's own use -- built
+  // app/lib/headlines.js is ESM; the page loads classic scripts only, so it
+  // is esbuilt into a browser global for the probe page's own use -- built
   // into target/, never copied under public/.
-  engineBundlePath = path.join(process.cwd(), "target", "bst-headlines.browser.js");
+  engineBundlePath = path.join(process.cwd(), "target", "headlines.browser.js");
   await esbuild.build({
-    entryPoints: [path.join(process.cwd(), "app/lib/bst-headlines.js")],
+    entryPoints: [path.join(process.cwd(), "app/lib/headlines.js")],
     bundle: true,
     format: "iife",
     globalName: "DiyaGlHeadlinesEngine",
@@ -237,19 +239,28 @@ test.afterAll(async () => {
 async function mountStrip(page, snapshotJson) {
   await page.goto(`${baseUrl}/books/headlines-probe.html`);
   await page.addScriptTag({ path: engineBundlePath });
-  await page.evaluate((snapshot) => {
-    var fmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
-    window.__headlinesMount = window.DiyaGlHeadlines.mountHeadlines(document.getElementById("root"), {
-      snapshot: snapshot,
-      headlinesFromReport: window.DiyaGlHeadlinesEngine.headlinesFromReport,
-      formatMoney: function (n) {
-        return fmt.format(n);
-      },
-    });
-  }, snapshotJson);
+  // books/headlines.js calls opts.headlinesFromReport(report) with a single
+  // argument, so the declaration is bound in here rather than passed
+  // through mountHeadlines -- the same shape bst-data.js's own wrapper uses
+  // in the real page.
+  await page.evaluate(
+    ({ snapshot, headlines }) => {
+      var fmt = new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP", minimumFractionDigits: 2 });
+      window.__headlinesMount = window.DiyaGlHeadlines.mountHeadlines(document.getElementById("root"), {
+        snapshot: snapshot,
+        headlinesFromReport: function (report) {
+          return window.DiyaGlHeadlinesEngine.headlinesFromReport(report, headlines);
+        },
+        formatMoney: function (n) {
+          return fmt.format(n);
+        },
+      });
+    },
+    { snapshot: snapshotJson, headlines: HEADLINES },
+  );
 }
 
-test.describe("DIYA-GL headlines strip — tiles equal bst-headlines.js's own figures", () => {
+test.describe("DIYA-GL headlines strip — tiles equal headlines.js's own figures", () => {
   test("the four tile values equal headlinesFromReport(report.json) computed in Node", async ({ page }) => {
     await mountStrip(page, snapshotFromReport(realReport));
 
