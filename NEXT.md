@@ -50,7 +50,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T9 | Taxi T9 extraction map and the sidecar's Taxi baseline | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2, TX-T6 | blocked-to-start | Sonnet, wave 6 |
 | TX-T10 | Taxi T10 anchor table in `anchors/taxi.js` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 6, before LT-T2 in `books-interchange.js` |
 | TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S6 | blocked-to-start | Sonnet, wave 5 |
-| TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T6, LT-T3b | blocked-to-start | Sonnet, wave 5 |
+| TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T6, LT-T22 | blocked-to-start | Sonnet, wave 5 |
 | TX-T13d | Taxi T13 design: manifest brief plus T14 and T15 briefs | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 3, `.worktrees/spreadsheets/taxi-t13-design` |
 | TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d, SE-S7, TX-T6 | blocked-to-start | tier per brief, wave 6 |
 | TX-T14d | Taxi T14 design: the takings view brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d | blocked-to-start | Fable, wave 4, brief appended under T14 |
@@ -61,9 +61,8 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T11, TX-T14, TX-T15, TX-T16, TX-H1, SE-T12 | blocked-to-start | Sonnet, wave 9 |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | TX-T6 | blocked-to-start | after R3 is green |
-| LT-T1 | Ltd T1 writer profile: docx copy, twelve-month refusal, Ltd branch | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T3b | blocked-to-start | Opus, wave 4 |
+| LT-T1 | Ltd T1 writer profile: docx copy, twelve-month refusal, Ltd branch; the ltd tax-file year and the book's year end | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 4, `.worktrees/spreadsheets/ltd-t1` |
 | LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S2, SE-T1, LT-T1, TX-T10 | blocked-to-start | Sonnet, wave 6 |
-| LT-T3b | Ltd T3 tail: declaration swaps to `headlines.js`; `dividends` and second-line keys | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 3, `.worktrees/spreadsheets/ltd-t3b` |
 | LT-T4d | Ltd T4 design: link-cache feed brief, first cut of `ltd-link-cells.json` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 3, `.worktrees/spreadsheets/ltd-t4-design` |
 | LT-T4a | Ltd T4 calculator emits every link-addressed leaf cell; pinned list | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4d | blocked-to-start | tier per brief, wave 4, needs no S4 code |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4a, SE-S4, LT-T1, LT-T2 | blocked-to-start | tier per brief, wave 7 |

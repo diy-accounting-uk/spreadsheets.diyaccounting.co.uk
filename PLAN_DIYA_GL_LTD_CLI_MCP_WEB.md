@@ -463,6 +463,12 @@ each rebasing on the last.
   with R6) points them at column I in the template and regenerates; until then the layout takes
   boxes 690, 705 and 710 from `CorporationTax!I15`, `I16+I17` and `-I18`.
 
+- T3b `6272e953`, merged 2026-09-04: the declaration runs through `headlines.js`, which gains
+  `tax.secondLine`, `assets.secondLine` and `turnover.pieExtra` (the dividends slice); B11 to B13
+  left `expenseLines` because the reducer already carries cost of sales as one slice. The shared
+  reducer has no label hook, so Ltd's pie says "Running costs" and "Tax and NI" until **T22**
+  (Sonnet, before Taxi T12 in `headlines.js`) adds `runningCosts.label` and `tax.label`.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
