@@ -21,7 +21,6 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | TX1 | Taxi T1 writer: day sums, joined names, caption rows, off-grid refusal | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t1`, `claude/wt-taxi-t1` |
-| TX3 | Taxi T3 extractor: rental and other-income rows, column F | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t3` |
 | TX2 | Taxi T2 reposting account, T7 Kestrel fixture date, T19 Class 2 threshold | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t2-t7-t19` |
 | LT16 | Ltd T16 CONTEXT corrections and CT600 labels, then T3 headline declaration | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t16-t3` |
 | LT5 | Ltd T5 book checks and warnings with breakability proofs | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/ltd-t5` |
