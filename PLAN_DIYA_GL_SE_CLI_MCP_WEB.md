@@ -430,6 +430,12 @@ series; `scripts/build-books-bundle.mjs` by T2, S8, T8, Taxi T16 and Ltd T10;
 commits before it waits
 and never ends a turn with a Playwright run going, per the BST plan's as-built note 11.
 
+### Landed
+
+- T15 the SA103 box-to-API mapping `777d5ee0`, merged to `claude/diya-gl-products` 2026-09-04. It
+  found `se.js`'s `SE Short` `CELL_MAP` box labels one behind the 2026 form on `O71` (22), `O80`
+  (25), `O85` (26), `O94` (29) and `O99` (30); T16 relabels them with the sheet.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md's reconciliation-bug method. Blast-radius tests serially for each row

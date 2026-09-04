@@ -418,6 +418,14 @@ and acceptance; the per-file landing order and the wave table sit at their end.
 | T19 | Tax data: `class2_small_profits_threshold` (6,845) and the 3.50 weekly rate in `se-2025-2026.toml` and `se-2026-2027.toml`; `calculateExpectedTax` returns the Class 2 line; the computation view prints it (T15) | — | Sonnet | `app/data/se-2025-2026.toml`, `app/data/se-2026-2027.toml`, `app/lib/tax/income-tax.js`, `app/lib/diya-gl-loader.js` (one field), `app/test/tax/income-tax.test.js`, `app/test/tax/national-insurance.test.js` |
 | H1 | Merge each verified row's commit into the batch branch; regenerate on main after T6 | human | — | — |
 
+### Landed
+
+- T3 extractor caption rows and column F, `5d20bb32`, merged to `claude/diya-gl-products` 2026-09-04.
+- T2 reposting account per product `bff95e7b`, T7 Kestrel's April date `bda32d78`, T19 Class 2
+  threshold and weekly rate `4dba187f`, merged 2026-09-04; the Admin echo test's Class 2
+  expectation followed on the batch branch. R1 (generate-bst, -se, -taxi with skip-commit)
+  dispatched on the branch.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
