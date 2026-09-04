@@ -514,14 +514,16 @@ function taxiSheets({ salesRows = {}, purchaseRows = {} } = {}) {
       E5: 174,
       A6: TAXI_FIRST_DAY + 1,
       B6: TAXI_FIRST_DAY + 1,
+      C6: "Daily fares; Grant",
       D6: 112,
       E6: 198,
+      F6: 25,
       A7: TAXI_FIRST_DAY + 1,
       B7: "Rental due",
       E7: 300,
       A8: TAXI_FIRST_DAY + 1,
       B8: "Any other income",
-      E8: 50,
+      F8: 50,
       A9: carried,
       B9: carried,
       E9: { formula: "SUM(E5:E8)", value: 722 },
@@ -544,16 +546,15 @@ const taxiJournal = async (sheets, journal) =>
 describe("extractTaxiTransactions — the Sales week", () => {
   it("takes a day's takings and the miles driven to earn them", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.map((line) => [line.postingDate, line.amount, line.measurableQuantity, line.measurableUnitOfMeasure])).toEqual([
+    const fares = sales.filter((line) => line.measurableQuantity !== undefined);
+    expect(fares.map((line) => [line.postingDate, line.amount, line.measurableQuantity, line.measurableUnitOfMeasure])).toEqual([
       ["2025-04-06", 174, 94, "miles"],
       ["2025-04-07", 198, 112, "miles"],
     ]);
   });
 
-  it("leaves the rental, other-income and subtotal rows to the week's own arithmetic", async () => {
+  it("leaves the subtotal row to the week's own arithmetic", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.map((line) => line.amount)).not.toContain(300);
-    expect(sales.map((line) => line.amount)).not.toContain(50);
     expect(sales.map((line) => line.amount)).not.toContain(722);
   });
 
@@ -564,14 +565,57 @@ describe("extractTaxiTransactions — the Sales week", () => {
     expect(sales[1]).toMatchObject({ amount: 0, measurableQuantity: 112 });
   });
 
-  it("posts the day to the one income account the taxi chart keeps", async () => {
+  it("posts a fare or rental line to the one income account the taxi chart keeps", async () => {
     const sales = await taxiJournal(taxiSheets(), "sales");
-    expect(sales.every((line) => line.accountMainID === "4000")).toBe(true);
+    const income = sales.filter((line) => line.accountMainID !== "4001");
+    expect(income).toHaveLength(3);
+    expect(income.every((line) => line.accountMainID === "4000")).toBe(true);
   });
 
   it("keeps a row's own income account where the sheet carries one", async () => {
     const sales = await taxiJournal(taxiSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}5`]: "4001" } }), "sales");
     expect(sales[0].accountMainID).toBe("4001");
+  });
+
+  it("reads the rental row as a fare dated the week's last day, named Rental due", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const rental = sales.find((line) => line.detailComment === "Rental due");
+    expect(rental).toMatchObject({ postingDate: "2025-04-07", amount: 300, accountMainID: "4000" });
+    expect(rental.measurableQuantity).toBeUndefined();
+  });
+
+  it("reads the other-income row as a 4001 line named Any other income", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const otherIncome = sales.find((line) => line.detailComment === "Any other income");
+    expect(otherIncome).toMatchObject({ amount: 50, accountMainID: "4001" });
+  });
+
+  it("reads column F on a day row as a 4001 line sharing the day's name", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const grant = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(grant).toMatchObject({ postingDate: "2025-04-07", amount: 25, accountMainID: "4001" });
+  });
+
+  it("numbers the fare before the other income on a shared row", async () => {
+    const sales = await taxiJournal(taxiSheets(), "sales");
+    const fare = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.measurableQuantity !== undefined);
+    const otherIncome = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(fare.entryNumber < otherIncome.entryNumber).toBe(true);
+  });
+
+  it("a rental row with nothing in E produces nothing", async () => {
+    const sheets = taxiSheets();
+    delete sheets.SalesApr.E7;
+    const sales = await taxiJournal(sheets, "sales");
+    expect(sales.find((line) => line.detailComment === "Rental due")).toBeUndefined();
+  });
+
+  it("BZ names the fare's account and never the other income's", async () => {
+    const sales = await taxiJournal(taxiSheets({ salesRows: { [`${ACCOUNT_ID_COLUMN}6`]: "4005" } }), "sales");
+    const fare = sales.find((line) => line.measurableQuantity === 112);
+    const grant = sales.find((line) => line.detailComment === "Daily fares; Grant" && line.accountMainID === "4001");
+    expect(fare.accountMainID).toBe("4005");
+    expect(grant.accountMainID).toBe("4001");
   });
 });
 
@@ -585,7 +629,7 @@ describe("extractTaxiTransactions — the Purchases block", () => {
         accountMainID: "5100",
         amount: 52,
         detailComment: "Shell",
-        entryNumber: "EXP-0003",
+        entryNumber: "EXP-0006",
       },
     ]);
   });
