@@ -425,6 +425,10 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   threshold and weekly rate `4dba187f`, merged 2026-09-04; the Admin echo test's Class 2
   expectation followed on the batch branch. R1 (generate-bst, -se, -taxi with skip-commit)
   dispatched on the branch and green.
+  T19 had left  beside ; every earlier tax year keeps
+  the two equal, and the BST generator, calculator, check and page read  for Admin
+  L17, so the page and the saved BST workbook disagreed with the book on eleven browser tests.
+  Both files now say 3.50 for both; generate-bst re-dispatched at the pause.
 
 - T1 writer day sums, joined names, caption rows and the off-grid refusal `a883692b`, merged
   2026-09-04. The loader's entry-order sort now covers Taxi, which swaps two tied-date rows on
@@ -435,6 +439,19 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   2026-09-04. It found `examples/sp-sixty-driving/taxi/lines.jsonl` TXN-0166 to TXN-0180 (the
   March fare days) carry no miles, so `book-taxi-fare-miles` warns on that book as it stands;
   **T20** (Haiku, after T4 in `examples/`) adds the miles to the master and regenerates.
+
+- T4 other income end to end `9408ce08`, merged 2026-09-04. The calculator had filtered sales on
+  `BST_SALES_ACCOUNTS`, which includes 4001, so a 4001 line inflated turnover; it now reads
+  `TAXI_SALES_ACCOUNT` alone and `otherBusinessIncome` is computed. `formatScenarioToml` had no case
+  for `total_other_income`. Local reconciliation against the committed packages fails
+  `Admin: NI Class 2 Weekly Rate = tax data` on every Taxi scenario until the main-side refresh
+  rewrites them; CI regenerates first and is green.
+
+- T13 design `f2606bf8`, 2026-09-04: the T13 coding brief with the T14 and T15 briefs inside it
+  (tiers Opus, Fable, Opus). Corrections it made to later rows: T17's A7 proof corrupts
+  `Profit & Loss Acc!D5`, since `SalesMay!E1` is read by nothing; T18's boxes 33 to 38 are present
+  with no key, as SE T8 has them; `app/products/taxi.js` lands in the order T1, T4, T5, T6, T12,
+  T13 (T13 adds 48 monthly `CELL_MAP` rows), and the H1 refresh runs again after T13, before T17.
 
 ### Verification ladder
 
@@ -1369,6 +1386,851 @@ under `render-unrepresentable/` listing the 43-style absences for Taxi (the week
 `Business Details!D29` and `O29`, the drawings rows), a Node test that the manifest's view ids
 match the plan's table, and briefs for T14 and T15 naming the snapshot fields, the `data-*`
 hooks and the CSS classes they render into.
+
+#### T13 coding brief
+
+Tier: Opus. Precursors: SE:S7 merged carrying the five seam lines below, SE:S8 merged, T6 and
+T12 merged (T13 is the last writer of `app/products/taxi.js`). Wave D. This brief also carries
+the T14 and T15 coding briefs, under their own headings at its end. All three agents work from
+this text; where a brief above and this one disagree, this one wins and the commit message says
+so.
+
+Purpose: `books/taxi.html` mounts the shared shell with a Taxi manifest whose every structure
+derives from `app/products/taxi.js`; the year table's month rows carry the sheet's own monthly
+cells; the takings grain (weeks, days, fares) is grouped once, in the manifest, for T14 to
+render; two engine edits and two engine exports the views need exist.
+
+##### Facts this brief settles against the design briefs above
+
+Every cell below was read from `packages/GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel
+2007/Financialaccountsyearto050426.xlsx` on 2026-09-04.
+
+- `SE Short` prints its box numbers in columns `A` and `L`, three rows above each entry cell:
+  `A35 = 8` heads `D38`, `L35 = 9` heads `O38`; `A44 = 10` heads `D46`, `L44 = 15` heads `O46`;
+  `A48 = 11` heads `D51`, `L48 = 16` heads `O51`; `A53 = 12` heads `D55`, `L53 = 17` heads `O55`;
+  `A57 = 13` heads `D60`, `L57 = 18` heads `O60`; `A62 = 14` heads `D64`, `L62 = 19` heads `O64`.
+  The sheet's expense block is ten boxes, 10 to 19, not nine: `D51` (sheet box 11) and `D64`
+  (sheet box 14) hold the text "." and no formula. So the 2026 form's box 15 (repairs) does have a
+  sheet cell, `D64`, and it is blank; and the sheet's box 11 (`D51`) is blank too. The plan's
+  "nine boxes", "15 repairs has no cell" and "`D51` empty" are corrected by this. The cell to 2026
+  box mapping in "The HMRC look-alike form" is right for every cell that carries a formula.
+- A corrupted cached `<v>` moves only its own cell's as-read value. Nothing reads `SalesMay!E1`
+  as a cell of its own (it is not in `CELL_MAP` or `standardReads()`), so corrupting it shows
+  nothing on the page. The A7 proof corrupts `Profit & Loss Acc!D5`'s `<v>` and expects exactly
+  the May takings cell in the year table to carry the mark. T17's brief names the wrong cell.
+- `data.js`'s `captureAsReadLayer` walks `CELL_MAP` rows, not `standardReads()`. A month cell
+  is captured for drift only when a `CELL_MAP` row names it. The monthly rows this brief adds
+  to `CELL_MAP` (below) are what make the year table's month figures drift-markable.
+- `render-unrepresentable/taxi.json` declares keys R actually carries and the page does not
+  render. `Business Details!D29` and `O29` are never emitted by the calculator, the week
+  subtotal cells and the P&L drawings rows are never read, and an absent value is no entry in R
+  (`report-serializer.js`, `collectCellEntries`). None of them has a key to declare. The T13
+  design brief's list is wrong; the file declares the profit-bridge section rows, as BST's does.
+- S7's `months.build(book)` and `months.keyOf(line)` are the month-grouping seam. The
+  calculator groups sales by the tab month of the week's Sunday and purchases by the plain
+  calendar month name (`aggregateByCodeAndMonth` uses `getMonthKey`, so a purchase dated
+  3 April 2026 lands on `PurchasesApr`, column `C`). `keyOf` follows both rules so a month row
+  holds what the P&L's column holds.
+- `helpers.rkFor(sheet, cell)` returns `""` for a cell `CELL_MAP` does not name, and
+  `applyDriftMarks` skips inputs and requires a `data-r-key` element to carry text. A key is
+  attached only when `results[sheet][cell]` is present: `Profit & Loss Acc!C1` is absent on the
+  actual-cost route, the `Fixed Assets` cells are absent on a book with no register, `SE
+  Short!O38` is absent everywhere.
+- `Draft Tax calculation!D25 = Admin!B21` and `D26 = Admin!B22`: 46418 and 46599 in the Apr26
+  package, 31 January and 31 July 2027, the year after the period end. `E16` and `B16` hold the
+  text "TOTAL Income Tax & NI Liability", which `E17 = SUM(E11:E16)` ignores.
+- `Fixed Assets!J4 = Admin!G$5` (0.18), `J47 = IF(D47>0,D47*J$4*(1-F47)," ")`, `K47 =
+  IF(D47>0,D47-J47," ")`, `K1 = K33+K62`.
+- `Profit & Loss Acc` rows 26 to 33: `A26` "Financial Business Health Check"; `A27` "Forecast
+  Profit" with `C27 = 'Wages Forecast'!D30` per month and `B27 = SUM(C27:N27)`; `A28` to `A31`
+  "Drawings Week 1" to "Drawings Week 4", entered by month, `B28 = SUM(C28:N28)` and so on;
+  `A32` "Income Tax & NI Liability", `C32 = 'Wages Forecast'!C$41/12`; `A33` "Financial Health
+  Check", `C33 = C27-SUM(C28:C31)-C32`. None is in `CELL_MAP`.
+- `SE Short!O80 = IF(('Fixed Assets'!J1+'Fixed Assets'!P1)>0, ..., 0)` does not read the
+  route. SP Sixty carries a £200 dashcam on its register and takes the mileage route, so the
+  sheet prints the dashcam's £36 WDA in 2026 box 25 beside the mileage claim in box 12. The
+  form allows no capital allowance on a vehicle claimed at the mileage rate, but a dashcam is
+  not the vehicle, so the sheet is right on SP Sixty and would be wrong for a book whose
+  register holds the car. The SA103S render keys boxes 23 to 26 to the sheet's cells on both
+  routes and adds a margin note when the mileage route and a register both apply (T15).
+- The year table cannot carry a Miles column. S7's `classify(line, book, ctx)` returns one key
+  per line and `derive(row)` sees the row alone, so a fare's miles have nowhere to accumulate
+  in the shared month row. Miles appear in the month summary line and the week strip (T14) and
+  in the comparison panel and tile. The alternative, a `quantity` field on `classify`'s result
+  merged additively into the row, is a shared `data.js` change and is not taken.
+- `DiyaGlBooksEdits.addEntry` builds a line with no miles and `documentType: "invoice"`, and
+  `ACTION_LABELS[r.id]` in `edits.js`'s `bookChecks` throws for any helper id it does not
+  list. T8's two helpers (`kind: "book"`, `kind: "focus"`) reach the inspector through that
+  path. The seam list below names what the shell and `edits.js` need.
+
+##### The four design questions, answered
+
+1. **How the shell hands the manifest its snapshot hook.** S7's `manifest.snapshot(ctx)` returns
+   the product half and `assembleSnapshot` merges it on top of the shared half with
+   `Object.assign`. Taxi's half is its own top-level fields (`annual`, `takings`, `vehicle`,
+   `register`, `computation`, `quarterly`, `forecast`, `healthCheck`, `admin`); it never returns
+   `months`, `monthly` or `entries`, so nothing shared is overwritten. `ctx.months` is the array
+   `months.build(book)` returned, and the weeks come from `engine.generateTaxYearWeeks` and
+   `engine.groupWeeksIntoMonths`, exported here.
+2. **Whether `data.js` takes a product month key.** It does, through S7's `months.build(book)`
+   and `months.keyOf(line)`. Taxi's `build` returns the twelve tab months; `keyOf` maps a sales
+   line by the grid (the tab of its week's Sunday) and a purchase line by its calendar month
+   name to the tab of that name. Both mirror where `cellWrites` puts the line. A sales date the
+   grid lacks returns `null`; `buildMonthlyAndEntries` skips it, the book check warns, and the
+   takings view lists it (`snapshot.takings.offGrid`).
+3. **Where the week and day structures live.** `snapshot.takings = { months: { [monthKey]:
+   MonthTakings }, offGrid: [ISO...] }`, shapes below. Keyed by month key so T14's
+   `monthDetail(monthKey)` reads one entry, and separate from `snapshot.entries` so the shared
+   purchases grid is untouched.
+4. **How the drift walk marks a monthly figure.** The month row's takings cell carries
+   `helpers.rkFor("Profit & Loss Acc", "D5")`, which is `cell/Profit & Loss Acc!D5 ||
+   section/monthly-takings/may` once the `CELL_MAP` rows below exist; `applyDriftMarks`
+   matches the `cell/` half against the drift entry id `Profit & Loss Acc!D5`, which
+   `captureAsReadLayer` now captures because the row is in `CELL_MAP`. The same holds for the
+   vehicle-costs, running-costs and other-income cells (rows 12, 22, 24). No shell change.
+
+##### The S7 seam T13 needs
+
+Five additive lines on the shared shell and data module, each leaving BST's behaviour as it
+is. They belong to the S7 row (in its coding brief if S7 has not been coded, else one
+follow-up line on the S7 row in `NEXT.md`). T13 blocks on them and does not edit `shell.js`,
+`data.js` or `edits.js` itself.
+
+1. `manifest.yearTable.monthDetail(monthKey, state, helpers)` returns HTML the shared
+   `renderMonthDetail` places after the month summary grid and before the entries toggle;
+   `manifest.yearTable.bindMonthDetail(root, state, helpers)` is called at the end of
+   `bindYearView`. Both optional; BST sets neither. The month cards call `renderMonthDetail`,
+   so the hook reaches mobile portrait unchanged.
+2. `manifest.months.journals[i].entriesGrid === false` leaves that journal out of the shared
+   entries grid (its lines render through the hook instead). With one journal left there is no
+   `.journal-switch` and the grid is one table.
+3. `manifest.months.derive(row, monthKey, ctx)`: the shared loop passes the month key and the
+   ctx object. BST's `derive` keeps ignoring them.
+4. `manifest.yearTable.monthlyCell(monthLabel, productMod, categoryKey)`: the shared year view
+   calls it for every column of every month row and keys the cell through `rkFor` when it
+   returns a `[sheet, cell]` pair. BST's returns its "Monthly Sales" row for `"sales"` and
+   `null` for every other key, so BST's table is keyed exactly as today.
+5. Helper kinds. `edits.js`'s `bookChecks` uses `ACTION_LABELS[r.id]` when present and
+   `r.helper.label` otherwise, so an unlisted id never throws. The inspector applies a helper of
+   `kind: "book"` through `engine.applyBookHelper` and `helpers.commitBook` (one undo step,
+   label from the helper), and renders a helper of `kind: "focus"` as one
+   `button[data-helper-focus="<checkId>"][data-focus-entry="<entryNumber>"]` per offender
+   (text "Go to <date>") which sets `state.openMonth = manifest.months.keyOf(offender)`,
+   `state.focusEntry = offender.entryNumber`, `state.focusField = helper.field` and re-renders.
+   `restoreEditFocus` looks the field up in `manifest.focusFieldAttr` before `FOCUS_FIELD_ATTR`.
+
+##### Files
+
+Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi.js`,
+`app/data/render-unrepresentable/taxi.json`, `app/test/taxi-books-manifest.test.js`,
+`app/test/diya-gl-edits-taxi.test.js`. Modifies `app/products/taxi.js` (one new `CELL_MAP`
+block, nothing else), `app/lib/diya-gl-edits.js` (two functions appended),
+`app/lib/books-engine.js` (four names on two lines). Must not touch `shell.js`, `data.js`,
+`edits.js`, `books.css`, `products/bst.js`, `products/se.js`, the calculator, the extractor,
+`checkCompliance`, `HEADLINES`.
+
+##### `CELL_MAP`: the monthly rows
+
+Four blocks of twelve rows appended after the "Profit & Loss Account" block, before the
+VitalTax block, label the month's short name, indent 0, unit money, section as named:
+
+```js
+// ── Monthly columns C:N of the four P&L rows the sheet fills a month at a time.
+["Profit & Loss Acc", "C5",  "Apr", "gl-cor:amount (monthlyTakings.apr)",      "Monthly Takings",       0, "money"],
+// ... D5 "May" through N5 "Mar"
+["Profit & Loss Acc", "C12", "Apr", "gl-cor:amount (monthlyVehicleCosts.apr)", "Monthly Vehicle Costs", 0, "money"],
+// ... through N12
+["Profit & Loss Acc", "C22", "Apr", "gl-cor:amount (monthlyRunningCosts.apr)", "Monthly Running Costs", 0, "money"],
+// ... through N22
+["Profit & Loss Acc", "C24", "Apr", "gl-cor:amount (monthlyOtherIncome.apr)",  "Monthly Other Income",  0, "money"],
+// ... through N24
+```
+
+`standardReads()` already reads these 48 cells (the `monthlyProfitAndLossCells` loop; leave it,
+its `includes` guard makes it a no-op), so no read, check or comparison changes. R gains 48
+section keys (`section/monthly-takings/may` and so on) and the reports gain four twelve-row
+sections; the H1 refresh after this row re-pins `reports/*taxi*` before T17 reads them. The
+month labels repeat across the four sections, so `report-serializer.js`'s label-to-cell source
+link resolves by value and may be null where two of a month's four cells coincide; `source` is
+informational and nothing asserts it.
+
+##### The engine
+
+`app/lib/diya-gl-edits.js` gains, in the shape of `changeLineAmount`:
+
+```js
+export function changeLineDetail(book, lines, params)   // { entryNumber, detailComment } -> new lines; throws when no line carries entryNumber
+export function changeLineQuantity(book, lines, params) // { entryNumber, quantity, unit }
+```
+
+`changeLineQuantity` with `quantity > 0` sets `measurableQuantity: quantity`,
+`measurableUnitOfMeasure: unit`, `measurableDescription: "Business miles driven"` when `unit`
+is `"miles"` (any other unit keeps the caller's description, `params.description`); with
+`quantity` `0` or `null` it removes the three fields. `books-engine.js` adds the two names to
+its `diya-gl-edits.js` line and adds one line `export { generateTaxYearWeeks,
+groupWeeksIntoMonths } from "./generator.js";` (join an existing generator line if one exists).
+
+##### The manifest, `books/products/taxi.js`
+
+A classic script in the S7 shape. It assigns `DiyaGlProducts.taxi` and nothing else on the
+global. View renderers live in T14's and T15's modules; the manifest reaches them by name at
+render time so script order among the four product files does not matter, and it loads the
+three siblings itself when it was fetched by `loadManifest` onto another product's page.
+
+```js
+(function (global) {
+  "use strict";
+  global.DiyaGlProducts = global.DiyaGlProducts || {};
+
+  var PL_KEYS = {
+    B5: { key: "sales", label: "Takings" }, B6: { key: "fuel" }, B7: { key: "carHire" }, B8: { key: "repairs" },
+    B9: { key: "roadTaxInsurance" }, B10: { key: "capitalAllowances" }, B11: { key: "mileageAllowance" },
+    B12: { key: "costOfSales", label: "Vehicle costs" }, B13: { key: "grossProfit" }, B14: { key: "employeeCosts" },
+    B15: { key: "premisesCosts" }, B16: { key: "generalAdmin" }, B17: { key: "advertising" }, B18: { key: "legalProfessional" },
+    B19: { key: "interestFinance" }, B20: { key: "bankCharges" }, B21: { key: "otherExpenses" },
+    B22: { key: "totalExpenses", label: "Running costs" }, B23: { key: "netProfit", label: "Profit" }, B24: { key: "otherIncome", label: "Other income" },
+  };
+  var LAST_CATEGORY_CELL = "B24";
+  var DERIVED = { capitalAllowances: 1, mileageAllowance: 1, costOfSales: 1, grossProfit: 1, totalExpenses: 1, netProfit: 1 };
+  var LETTER_KEYS = { d: "fuel", h: "carHire", r: "repairs", t: "roadTaxInsurance", e: "employeeCosts", p: "premisesCosts",
+    g: "generalAdmin", a: "advertising", l: "legalProfessional", i: "interestFinance", b: "bankCharges", o: "otherExpenses", f: "capex" };
+  var MONTH_COL = { Apr: "C", May: "D", Jun: "E", Jul: "F", Aug: "G", Sep: "H", Oct: "I", Nov: "J", Dec: "K", Jan: "L", Feb: "M", Mar: "N" };
+  var MONTHLY_ROW = { sales: 5, costOfSales: 12, totalExpenses: 22, otherIncome: 24 };
+  var TAKINGS_ACCOUNT = "4000", OTHER_INCOME_ACCOUNT = "4001";
+  var RENTAL_CAPTION = "Rental due", OTHER_INCOME_CAPTION = "Any other income";
+  var SIBLINGS = ["taxi-takings", "taxi-views", "taxi-forms"];   // products/<name>.js, each defining DiyaGlTaxi<Name>
+
+  var GRID = null;   // built by months.build, read by months.keyOf and snapshot
+
+  global.DiyaGlProducts.taxi = {
+    id: "taxi",
+    schemaName: "TaxiDriver",
+    title: "Taxi Driver",
+    page: "taxi.html",
+    stylesheet: "taxi.css",
+    multiFile: false,
+    emptyState: { intro: "Open a Taxi Driver workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine." },
+    views: [
+      { id: "home", label: "Home", sheets: "Home", shared: "home" },
+      { id: "year", label: "Year", sheets: "SalesApr–Mar, PurchasesApr–Mar", shared: "year" },
+      { id: "profit-loss", label: "P&L", sheets: "Profit & Loss Acc", render: viaModule("Views", "renderProfitLoss") },
+      { id: "fixed-assets", label: "Vehicles", sheets: "Fixed Assets", render: viaModule("Views", "renderVehicles") },
+      { id: "tax-computation", label: "Tax", sheets: "Draft Tax calculation", render: viaModule("Views", "renderComputation") },
+      { id: "sa103s", label: "SA103S", sheets: "SE Short", render: viaModule("Forms", "renderSa103s") },
+      { id: "quarterly", label: "Quarterly", sheets: "VitalTax", render: viaModule("Views", "renderQuarterly") },
+      { id: "forecast", label: "Forecast", sheets: "Wages Forecast", render: viaModule("Views", "renderForecast") },
+      { id: "business-details", label: "Business Details", sheets: "Business Details", render: renderBusinessDetails, bind: bindBusinessDetails },
+      { id: "admin", label: "Admin", sheets: "Admin", render: renderAdmin },
+    ],
+    months: {
+      journals: [{ id: "sales", label: "Takings", entriesGrid: false }, { id: "purchases", label: "Purchases" }],
+      build: buildTabMonths,          // (book) -> the twelve tab months, sets GRID
+      keyOf: tabMonthKeyOf,           // (line) -> month key or null
+      categories: categories,         // (productMod) -> CELL_MAP "Profit & Loss Account" rows B5..B24 -> [{ key, label, cell, computed }]
+      classify: classify,             // (line, book, ctx) -> { journal, key }
+      derive: derive,                 // (row, monthKey, ctx)
+    },
+    yearTable: {
+      defaultColumns: ["sales", "otherIncome", "costOfSales", "totalExpenses", "netProfit"],
+      alwaysHidden: ["capitalAllowances", "mileageAllowance", "grossProfit"],
+      composite: [],
+      monthlyCell: monthlyCell,       // (monthLabel, productMod, categoryKey) -> ["Profit & Loss Acc", "<col><row>"] or null
+      summary: [["Takings", "sales", true], ["Other income", "otherIncome"], ["Vehicle costs", "costOfSales"], ["Running costs", "totalExpenses"], ["Profit", "netProfit"]],
+      sticky: [["Takings", "sales"], ["Profit", "netProfit"]],
+      card: { headline: "netProfit", figures: [["Takings", "sales", true], ["Vehicle costs", "costOfSales"], ["Running costs", "totalExpenses"]] },
+      monthDetail: function (monthKey, state, helpers) { return module("Takings").renderMonthDetail(monthKey, state, helpers); },
+      bindMonthDetail: function (root, state, helpers) { module("Takings").bind(root, state, helpers); },
+    },
+    focusFieldAttr: { miles: "data-miles-entry", detail: "data-detail-entry" },
+    snapshot: snapshot,
+    newBook: {
+      fields: [
+        { id: "new-book-name", name: "businessName", label: "Business name", type: "text", required: "Enter a business name." },
+        { id: "new-book-year-end", name: "yearEnd", label: "Year end (5 April)", type: "date", required: "Enter a real year-end date." },
+      ],
+      build: buildNewBook,            // "diya-gl:product": "TaxiDriver"; chart from TAXI_NEW_BOOK_CHART below; fixedAssets: []
+      label: function (values) { return values.businessName; },
+    },
+    upload: {
+      validate: function (engine, xlsxBytes) { /* the Taxi guard T10 landed in books-interchange.js's Taxi entry; name it in the commit */ },
+      extract: function (engine, xlsxBytes) { /* engine.extractTaxiTransactions with the map T9 landed, or without one if T9 has not merged */ },
+      bookFromWorkbook: async function (cells, lines, ctx) { /* entity from the four CELL_MAP Business Details rows; period from Admin!B4 (the year's 6 April serial) else periodFromLines; fixedAssets from Fixed Assets A47:D51; chart from the lines as the BST manifest builds it */ },
+    },
+    bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
+    drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: { "Admin (Generator Injected)": 1 } },
+    save: { singleFile: true, workbookName: "taxi-excel.xlsx" },
+    internals: { buildTabMonths: buildTabMonths, tabMonthKeyOf: tabMonthKeyOf, groupTakings: groupTakings, classify: classify, derive: derive },
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+```
+
+`viaModule(name, fn)` returns `function (snapshot, state, helpers) { return module(name)[fn](snapshot, state, helpers); }`.
+`module(name)` returns `global["DiyaGlTaxi" + name]` when defined; otherwise it appends
+`<script src="products/taxi-<lower>.js">` for each missing sibling once, registers
+`helpers.render` on the script's `load` event, and returns a stub whose every render returns
+`<p class="view-loading">Loading the Taxi views…</p>` and whose `bind` does nothing. On
+`taxi.html` (T16) the four scripts are listed, so the stub is never seen there.
+
+`TAXI_NEW_BOOK_CHART`: sales `4000` "Gross takings including tips", `4001` "Other business
+income"; purchases `5100` to `6200` and `7000` with the descriptions
+`examples/basic-taxi-driver/taxi/book.toml` carries. Copy them; do not invent wording.
+
+##### The derivations
+
+`buildTabMonths(book)`. Start year from `book.documentInfo.periodCoveredStart`. Weeks from
+`engine.generateTaxYearWeeks(startYear)`, grouped by `engine.groupWeeksIntoMonths`. For each
+tab in the order apr to mar: `key` is `YYYY-MM` of the calendar month the tab is named for
+(apr to dec in the start year, jan to mar in the next), `label` the short name, `sheet`
+`"Sales" + label`, `start` and `end` the ISO dates of the first day of the first week and the
+last day of the last week, `caption` `"from Mon 28 Apr"` when `start` falls in the calendar
+month before the tab's, else `null`. Sets `GRID = { dayMonth: Map<ISO, key>, weeks: [...] }`
+where each week is `{ index, monthKey, start, end, days: [ISO...] }` (the first week may be
+one day; the last week ends 5 April). Returns the twelve months. The shared year view reads
+`key` and `label` only.
+
+`tabMonthKeyOf(line)`. Sales: `GRID.dayMonth.get(line.postingDate) || null`. Purchases: the
+tab month whose `label` is the calendar month name of `line.postingDate` (so 3 April 2026 is
+`2025-04`, as `PurchasesApr` is). Throws if `GRID` is null (build was not called).
+
+`categories(productMod)`. The "Profit & Loss Account" rows of `productMod.CELL_MAP` up to
+`LAST_CATEGORY_CELL`, each `{ key: PL_KEYS[cell].key, label: PL_KEYS[cell].label || the
+CELL_MAP label with "**" stripped, cell, computed: key in DERIVED }`. Twenty entries.
+
+`classify(line, book, ctx)`. Sales: `"4000"` posts `sales`, `"4001"` posts `otherIncome`, any
+other code posts `null` (unposted, shown flagged). Purchases: `engine.TAXI_PURCHASE_CODE_MAP[code]`
+then `LETTER_KEYS`; no letter posts `null`. Export `TAXI_PURCHASE_CODE_MAP` through the engine
+if S6 did not (one name on the `scenario-extractor.js` line).
+
+`derive(row, monthKey, ctx)`. `row.directCosts = 0`. The four cells the sheet fills a month at
+a time replace the line aggregation: for `col = MONTH_COL[label of monthKey]`, `row.sales =
+num(pl[col + "5"])`, `row.costOfSales = num(pl[col + "12"])`, `row.totalExpenses = num(pl[col
++ "22"])`, `row.otherIncome = num(pl[col + "24"])` where `pl = ctx.results["Profit & Loss
+Acc"]`. `row.grossProfit = row.sales - row.costOfSales`, `row.netProfit = row.grossProfit -
+row.totalExpenses` (the sheet has no monthly net profit; other income stays below the line as
+`B24` does). `row.capitalAllowances = 0` and `row.mileageAllowance = 0` on month rows (both
+columns are `alwaysHidden`; the year total row reads `annual`). The six vehicle lines and eight
+expense lines keep their line aggregation, which is what was spent; on the mileage route the
+month's `costOfSales` is the claim's share and the comparison panel says the spend is recorded,
+not charged. `headlines.js`'s monthly charts read `sales`, `costOfSales`, `directCosts`,
+`totalExpenses`, `netProfit`, all set.
+
+`monthlyCell(monthLabel, productMod, categoryKey)`. `MONTHLY_ROW[categoryKey]` gives the row,
+`MONTH_COL[monthLabel]` the column; returns `["Profit & Loss Acc", col + row]` for the four keyed
+categories and `null` otherwise.
+
+`snapshot(ctx)` returns:
+
+- `annual`: every `PL_KEYS` cell read from `ctx.results["Profit & Loss Acc"]`, plus `capex` from
+  `results.PurchasesMar.T1` (the year's vehicle purchases, the cell `CELL_MAP` names).
+- `takings`: `groupTakings(ctx.lines, ctx.months)`, shape:
+
+```js
+{ months: { "2025-05": { key, label, sheet, start, end, caption, miles, daysTraded, takings, rental, otherIncome,
+      weeks: [ { index, start, end, sheet, daysTraded, takings, rental, otherIncome, miles, total,
+                 days: [ { date, dow, lines: [Fare...], takings, miles, other, names, isMissingMiles } ],   // seven or fewer, every calendar day of the week
+                 rentalLines: [Fare...], otherIncomeLines: [Fare...] } ] } , ... },
+  offGrid: [ { entryNumber, postingDate, amount, detail } ] }
+```
+
+  A `Fare` is `{ entryNumber, account, amount, detail, miles, other: account === "4001",
+  addressable }` (`addressable` as `data.js` computes it: one line per entry number). Grouping
+  rules mirror `cellWrites`: a `4000` line whose trimmed `detailComment` is exactly "Rental due"
+  is the week's rental; a `4001` line whose trimmed detail is exactly "Any other income" is the
+  week's other income; everything else is a day line, `4001` on the day's `other` and `4000` on
+  the day's `takings`. `names` joins distinct details with "; " in line order (the loader has
+  already sorted). `isMissingMiles` is true when the book carries miles on any sales line and
+  this day has takings above 0 and no miles (the T8 rule, per day). `miles` counts sales-line
+  miles only (purchase mileage logs are purchases). `total` is takings plus rental plus other
+  income, the sheet's subtotal. A sales line whose date the grid lacks goes to `offGrid`.
+- `vehicle`: `{ present: miles > 0, miles: v("PurchasesMar","A1"), allowance: v("PurchasesMar","A2"),
+  running: v("PurchasesMar","I2"), compared: v("Profit & Loss Acc","J1"), charged: v("Profit & Loss Acc","B12"),
+  route: results["Profit & Loss Acc"].C1 === "MILEAGE ALLOWANCE" ? "mileage" : "actual",
+  routeText: results["Profit & Loss Acc"].C1 || null, forgone: route === "mileage" ? compared : allowance }`.
+  `v` reads a number or 0.
+- `register`: `book.fixedAssets` mapped to `{ assetID, description, cost, acquiredDate, wda:
+  cost * ctx.taxData.capital_allowances.writing_down_allowance, writtenDown: cost - wda }` in
+  book order, plus `unregistered`: the `capex` lines (7000) with no register entry sharing date
+  and amount (T8's rule), and `totals` from `results["Fixed Assets"]`: `D47`, `I1`, `J1`, `K1`,
+  `P1`, `Q1`, and `results.PurchasesMar.T1`.
+- `computation`: cells only, `{ profit: "E5", allowance: "E6", taxable: "E7", bands: [["D8","C9","E8"],
+  ["D9","C10","E9"], ["D10",null,"E10"]], incomeTax: "E11", class4: ["E14","E15"], total: "E17",
+  paymentsOnAccount: [["E25", firstDue], ["E26", secondDue]] }` with the due dates 31 January
+  and 31 July of the year after `period.end`'s year, as ISO strings; plus `class2 =
+  engine.calculateExpectedTax(num(tax.E5), ctx.taxData)` reduced to `{ amount: ni_class2,
+  weekly: ni_class2_weekly, threshold: ni_class2_threshold, voluntary: amount > 0 }` (all
+  `undefined` when the tax data has no threshold, and the view then omits the line).
+- `quarterly`: `helpers.sectionRows("Quarterly Summary")` arranged as three rows (turnover,
+  other income, allowable expenses) by five columns (Q1 to Q4, Year) of `{ sheet, cell, value }`.
+- `forecast`: `helpers.sectionRows("Wages Forecast")` with `monthsTraded = num(C19)`.
+- `healthCheck`: `{ forecastProfit: v("Wages Forecast","C30"), liabilityTwelfth: v("Wages
+  Forecast","C41") / 12, drawings: [null, null, null, null] }`.
+- `admin`: the "Admin (Generator Injected)" rows as BST's, with `ADMIN_FORMATS = { F21: "number",
+  F22: "number", G21: "pence", G22: "pence" }` and the year label from `taxData.tax_year.label`.
+
+`renderBusinessDetails(snapshot, state, helpers)` and `bindBusinessDetails` follow BST's through
+`helpers.field`: name (`C5`), description (`C8`), postcode (`C17`), UTR (`O5`), each keyed with
+`rkFor` when the results carry the cell; address and town as book fields with the hint "kept
+in the book; the workbook has no cell for it"; the period dates through `bookFields`.
+`renderAdmin` follows BST's.
+
+##### `app/data/render-unrepresentable/taxi.json`
+
+Generate the key list, do not type it: `node app/bin/report.js --package taxi --data
+examples/basic-taxi-driver/taxi --output-dir <scratch>/r-basic` and copy every
+`section/accounting-profit-to-tax-profit-bridge/...` key from `report.json` (fourteen after
+T6's relabelling: the eleven bridge rows, the two tax-profit rows and the residue). One reason
+for all of them: "The bridge is the reconciliation's own walk from the accounting profit to
+the taxable profit; the SA103S view prints every box it passes through and the tax view prints
+the profit it lands on, so the bridge rows themselves are not re-rendered." Nothing else is
+declared; every other key R carries for the three fixtures is rendered by T13, T14 or T15. The
+Taxi describe in `books-render-coverage.browser.test.js` is T17's (it needs the views), in the
+per-product shape SE:T10 lands.
+
+##### Tests
+
+`app/test/taxi-books-manifest.test.js`, Node, imports the manifest file (which assigns
+`globalThis.DiyaGlProducts`), `app/products/taxi.js` and the calculator, and loads the three
+Taxi fixtures plus `autumn-start-cabs` through `loadDiyaGlData`:
+
+- "the manifest lists the ten view ids in the plan's order" (`home, year, profit-loss,
+  fixed-assets, tax-computation, sa103s, quarterly, forecast, business-details, admin`) and
+  none of `stock`, `debtors-creditors`, `income-tax`.
+- "categories() names the twenty P&L cells B5 to B24 in CELL_MAP order, six computed".
+- "build() returns twelve tab months whose keys run 2025-04 to 2026-03, May captioned from Mon
+  28 Apr, April and June uncaptioned" on the basic book (2025-26). A second case on a book
+  whose period starts 2027-04-06 (6 April 2027 is a Tuesday) checks the first week is six days
+  and April carries no caption.
+- "keyOf puts 28 April 2025 in 2025-05, 5 April 2026 in 2026-03, a purchase dated 3 April 2026
+  in 2025-04, and a sales line dated 2 April 2025 nowhere".
+- "classify() and derive() agree with the engine's own cells" over the four books: run
+  `calculateFromDiyaGl`, group each fixture's lines through `classify`, run `derive(row,
+  monthKey, ctx)` per month, and assert: the sum over months of each general-expense key is
+  within 1 below its annual cell (the sheet rounds each `B14` to `B21` up); the four vehicle
+  keys sum to `PurchasesMar!I2` to the penny; `capex` sums to `PurchasesMar!T1`; each month
+  row's `sales`, `costOfSales`, `totalExpenses` and `otherIncome` equal the results' monthly
+  cells. Corrupt one `LETTER_KEYS` entry in a copy and the test names that key.
+- "groupTakings puts a two-fare day on one day row with the sum and the joined names" (basic
+  after T4: 2025-04-07 has 174 plus 45 and names "Daily fares; Airport run"); "a Rental due
+  line is the week's rental, dated inside the week" (kestrel's 2025-06-13); "an Any other
+  income line is the week's other income" (kestrel's 2025-11-14); "a grant named anything else
+  is a day line on `other`" (basic's 2025-09-15); "a sales line off the grid lands in offGrid
+  and in no month" (one line re-dated 2026-04-07 on a copy); "isMissingMiles marks a fare day
+  without miles only when the book carries miles" (sp-sixty with one fare's miles cleared;
+  basic never).
+- "every cell the snapshot keys is in standardReads()" (walk `PL_KEYS`, the vehicle cells, the
+  register totals, the computation cells, the quarterly and forecast cells).
+- "monthlyCell keys the four monthly rows and nothing else".
+- "the manifest file defines DiyaGlProducts.taxi and nothing else on the global".
+
+`app/test/diya-gl-edits-taxi.test.js`: "changeLineDetail replaces the detail and nothing else";
+"changeLineQuantity sets the three measurable fields for miles"; "changeLineQuantity with zero
+removes them"; "both throw for an unknown entry number"; "both return a new array and leave the
+input untouched".
+
+Breakability for the browser half is T17's coverage sweep: remove one `rkFor` call in a copy
+of `products/taxi.js` and the sweep names the missing key.
+
+##### Commands
+
+```
+npx vitest run --fileParallelism=false app/test/taxi-books-manifest.test.js app/test/diya-gl-edits-taxi.test.js app/test/calculator-taxi.test.js app/test/taxi-headlines.test.js app/test/report-serializer.test.js 2>&1 | tee <scratch>/t13-unit.log
+node scripts/build-books-bundle.mjs 2>&1 | tee <scratch>/t13-bundle.log
+npx playwright test --project=browser-tests web/browser-tests/books-shell.browser.test.js web/browser-tests/books-bundle-gate.browser.test.js 2>&1 | tee <scratch>/t13-shell.log
+npm test 2>&1 | tee <scratch>/t13-npm-test.log
+```
+
+Commit before waiting; wait with `timeout 900 bash -c 'while pgrep -f "playwright test"
+>/dev/null; do sleep 15; done'`. With LibreOffice, `npm run reconciliation -- --package taxi
+--year-end 2026-04-05` and confirm every `reports/*taxi*.md` still reads `Status: RECONCILES`
+with the four new sections printed.
+
+##### Acceptance
+
+- The two Node tests pass; `bst-headlines`, `books-shell` and `books-bundle-gate` are unchanged
+  in outcome.
+- `grep -c "Profit & Loss Acc" web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi.js`
+  counts only the `PL_KEYS`, `MONTHLY_ROW` and `v()` reads (no literal cell list for any view);
+  `grep -c "rk2(" .../products/taxi.js` is 0.
+- `git diff --stat main -- app/lib` names `books-engine.js` and `diya-gl-edits.js` only;
+  `git diff main -- app/products/taxi.js` is one contiguous block of 48 added rows.
+- `report.json` for `examples/basic-taxi-driver/taxi` carries 48 `section/monthly-*` keys and
+  the same `cell/` set as before this row.
+- `taxi.json` holds exactly the bridge keys `report.json` carries, each with the reason above.
+
+##### Landing order and the plan's own text
+
+T13 lands after S7 (with the seam), S8, T6 and T12, and before T14, T15 and T16. The H1 refresh
+runs after it so the reports carry the four monthly sections before T17. The Collisions
+section's `app/products/taxi.js` order becomes T1, T4, T5, T6, T12, T13; its
+`app/lib/books-engine.js` note gains T13's two lines; T17's A7 proof corrupts `Profit & Loss
+Acc!D5`, not `SalesMay!E1`.
+
+##### T14 coding brief
+
+Tier: Fable. Precursors: T13 merged; `books/taxi.html` and the `taxi-scenario-basic` example row
+(T16). If T16 has not merged, add both exactly as T16's brief specifies and say so in the
+commit; T16 then finds them in place and adds the other two rows.
+
+Purpose: the takings grain under the shared year table: month summary, week strip, day grid,
+fares; add a fare, add rental, add other income; edits through `commit`; keyboard and the
+four layouts.
+
+Files. Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-takings.js`,
+`web/spreadsheets.diyaccounting.co.uk/public/books/taxi.css`,
+`web/browser-tests/books-taxi-takings.browser.test.js`; appends one line to
+`playwright.config.js` after SE's rows. Modifies `books/edits.js` in one region: `addEntry`
+passes `entry.miles` (when above 0) as the three measurable fields and `entry.documentType`
+(default `"invoice"`), and two wrappers `changeDetail(book, lines, entryNumber, detail)` and
+`changeMiles(book, lines, entryNumber, miles)` reach `changeLineDetail` and
+`changeLineQuantity` (unit `"miles"`). Must not touch `shell.js`, `data.js`, `books.css`,
+`products/taxi.js`, the engine.
+
+The module: `window.DiyaGlTaxiTakings = { renderMonthDetail(monthKey, state, helpers),
+bind(root, state, helpers) }`. View state through `helpers.viewState("taxi-takings", {
+openWeek: null, openDay: null, draft: null, pendingFocus: null })`; `openWeek` is a week
+`start` ISO, `openDay` an ISO date, `draft` `{ kind: "fare" | "rental" | "other-income", day,
+weekStart, amount, detail, miles }`. All figures come from `snapshot.takings.months[monthKey]`;
+the module reads no `results` and names no sheet.
+
+Rendering, desktop and mobile landscape (a table inside the shared `.month-detail`):
+
+- `.takings-month`: a `.takings-summary` line ("Miles 1,640 · 22 days traded · from Mon 28
+  Apr" when captioned), then `#takings-save-note.entries-note` once: "The workbook carries one
+  row per day; your fares stay in the book." When `snapshot.takings.offGrid` is non-empty, a
+  `.takings-offgrid` banner above the strip: "N fares are dated outside this year's grid, so
+  the workbook cannot hold them" listing dates, with `button[data-offgrid-helper]` "Move them
+  into the period" which runs `DiyaGlBooksEdits.applyHelper(snapshot, "book-dates-in-period")`
+  inside `helpers.commit`.
+- `table.week-strip[data-month]`: head Week, Days, Takings, Rental, Other income, Miles, Total;
+  one `tr.week-row[data-week="<start ISO>"][tabindex=0][role=button][aria-expanded]` per week,
+  its first cell "w/c Mon 7 Apr" (the first week reads "Sun 6 Apr" alone). Book figures, no
+  `data-r-key`. The open week is followed by `tr.week-detail-row` holding `.week-detail`.
+- `.week-detail` holds `table.day-grid[data-week]`: head Day, Fares, Miles, Takings, and a
+  control column. One `tr.day-row[data-day="YYYY-MM-DD"][data-lines="n"]` per calendar day:
+  - `n = 0`: the day name, an empty names cell, `button.add-fare[data-add-fare="<date>"]` "Add a
+    fare".
+  - `n = 1`: `input[data-detail-entry="<entryNumber>"]`, `input[data-miles-entry][inputmode=decimal]`,
+    `input[data-amount-entry="<entryNumber>"][inputmode=decimal]`, `button[data-delete-entry]`
+    with an accessible name, and `button.add-fare[data-add-fare]` for a second fare. The
+    attribute names `data-amount-entry` and `data-delete-entry` are the shared grid's on
+    purpose: the shell's `bindEntriesGrid` already commits an amount change and a delete for
+    them and restores focus after the re-render, so this module binds only detail, miles and
+    the add controls.
+  - `n > 1`: the row shows `names`, the day's miles and the sum, `tabindex=0 role=button
+    aria-expanded`; open, it is followed by `tr.day-detail-row` holding `table.fare-list[data-day]`
+    with one `tr.fare-row[data-entry]` per line carrying the same four controls, and the add
+    control in its foot.
+  - A `.day-row.is-missing-miles` carries `<span class="entry-flag">no miles</span>` after the
+    names.
+  Then `tr.caption-row[data-caption="rental"]` "Rental due" and
+  `tr.caption-row[data-caption="other-income"]` "Any other income": each shows its amount, one
+  `input[data-amount-entry]` and `button[data-delete-entry]` per caption line when any, and
+  `button[data-add-caption="rental"|"other-income"][data-week]` "Add rental" / "Add other income".
+  Then `tr.week-total-row` with the week's total.
+- A draft renders as `tr.fare-draft[data-day]` (or `[data-week]` for a caption) with
+  `input[data-draft-field="amount"]`, `[data-draft-field="detail"]` (absent for a caption; the
+  detail is fixed), `[data-draft-field="miles"]` (absent for a caption and for other income),
+  `button[data-draft-commit]` "Add", `button[data-draft-cancel]` "Cancel". Enter in a field
+  commits, Escape cancels. Commit builds `{ journal: "sales", date, account, detail, amount,
+  miles, documentType: "receipt" }`: a fare is `4000` dated the day with the typed detail; a
+  rental is `4000`, "Rental due", dated the week's last day; other income is `4001`, "Any other
+  income", dated the week's last day. Refusals as the shared add row ("Give the new entry an
+  amount first."). Every commit goes through `helpers.commit(fn, label, toast)` so undo works.
+- Detail and miles inputs commit on change and on Enter; the module sets `pendingFocus =
+  { attr, entryNumber }` before the commit and focuses that input in `bind` after the re-render.
+  When `state.focusEntry` names a line in this month and `state.focusField === "miles"` (seam
+  item 5), `renderMonthDetail` opens that line's week and day so the shell's `restoreEditFocus`
+  finds `[data-miles-entry="<entryNumber>"]`.
+
+Mobile portrait (`helpers.isMobilePortrait()`): the same data in cards. `.week-cards
+.week-card[data-week-card="<start>"]` with `button.week-card-head[aria-expanded]` and
+`.week-card-figures`; the open card holds `.day-list .day-card[data-day-card="<date>"]` with
+`button.day-card-head[aria-expanded]` for `n > 1`, and the same inputs, buttons and draft
+markup inside. One copy of any control is ever in the document.
+
+Keyboard: week rows and multi-fare day rows toggle on Enter and Space as the year rows do;
+every control is a `button` or `input`; focus rings come from `books.css`.
+
+`taxi.css`: the licence header, `@import url("books.css");`, then Taxi rules only: the strip
+and grid at the shared table idiom (`.entries-table` metrics), `.week-row.is-open`,
+`.day-row.is-missing-miles .entry-flag`, the four layouts: desktop landscape leaves the strip
+inside `.month-detail` (already sticky-left and `100cqw`); desktop portrait and mobile landscape
+wrap the strip in `.week-strip-scroll { overflow-x: auto }` with the first column sticky; mobile
+portrait shows `.week-cards` and hides the tables, mirroring the `@media (max-width: 899px) and
+(orientation: portrait)` block in `books.css`. Reduced motion collapses the one expand to a cut.
+
+Tests, `web/browser-tests/books-taxi-takings.browser.test.js`, on `books/taxi.html?example=taxi-scenario-basic`
+(2025-26) at desktop landscape unless stated, `report.json` figures through `r-sources.js`'s
+`s2` with `--package taxi` (T17 adds the product argument; add it here if T17 has not, default
+`bst`):
+
+- "May opens to a week strip captioned from Mon 28 Apr with five week rows" (28 Apr to 1 Jun).
+- "a week opens to seven day rows, a rental row, an other-income row and a total; the first
+  week of April is one day".
+- "the month's takings cell carries the sheet's key and equals S2" (`[data-r-key*="cell/Profit
+  & Loss Acc!D5"]` on the May row equals `s2(...).get("cell/Profit & Loss Acc!D5")`).
+- "adding a fare on a day that has one shows the sum on the day row and moves the month, the
+  quarter and the year by the amount" (read the May takings cell, `cell/VitalTax!C5` on the
+  quarterly view and `tfoot.year-totals` before and after; `window.DIYA_BOOKS_SNAPSHOT.lines`
+  gains one `4000` line dated that day with `documentType: "receipt"`).
+- "adding a rental posts a 4000 line dated the week's last day with the caption; the caption
+  row shows it; the day rows do not" and the same for other income, which moves
+  `cell/Profit & Loss Acc!B24` and not `B5`.
+- "a day's miles commit through changeLineQuantity and the mileage figures appear" (basic has
+  no miles; type 50 on one day, then `cell/PurchasesMar!A1` on the P&L view reads 50 and the
+  vehicle tile appears).
+- "a fare dated off the grid is listed with the helper and the helper moves it" (set one
+  line's `postingDate` to `2026-04-07` through `window.DiyaGlBooksPage.setLines`, read the
+  banner, apply, banner gone).
+- "undo reverses the last takings edit" (Ctrl+Z after an add restores the line count).
+- "year, month, week, day, add a fare, commit, save menu, keyboard only" in the shape of
+  `books-layouts.browser.test.js`'s traversal, with a focus ring at each stop.
+- "mobile portrait shows week cards that open to day cards" at 390 by 844, and axe at the four
+  viewports on the open week through the helper `books-layouts.browser.test.js` uses.
+
+Commands: `node scripts/build-books-bundle.mjs`; `npx playwright test --project=browser-tests
+web/browser-tests/books-taxi-takings.browser.test.js 2>&1 | tee <scratch>/t14.log`; then `npm
+run test:browser 2>&1 | tee <scratch>/t14-browser.log`; `npm test` before the push. Commit before
+waiting.
+
+Acceptance: the spec passes; every BST and SE spec is unchanged in count and outcome; `grep -c
+"Profit & Loss Acc\|results\[" .../products/taxi-takings.js` is 0; axe reports no serious or
+critical violation at the four viewports with a week open; `git diff --stat main -- web/.../books/edits.js`
+shows the one region.
+
+Selectors T17 uses, fixed here: `.takings-month`, `#takings-save-note`, `.takings-offgrid`,
+`[data-offgrid-helper]`, `table.week-strip[data-month]`, `tr.week-row[data-week][aria-expanded]`,
+`tr.week-detail-row`, `table.day-grid[data-week]`, `tr.day-row[data-day][data-lines]`,
+`.day-row.is-missing-miles`, `tr.day-detail-row`, `table.fare-list[data-day]`, `tr.fare-row[data-entry]`,
+`[data-detail-entry]`, `[data-miles-entry]`, `[data-amount-entry]`, `[data-delete-entry]`,
+`button.add-fare[data-add-fare]`, `tr.caption-row[data-caption]`, `[data-add-caption][data-week]`,
+`tr.week-total-row`, `tr.fare-draft`, `[data-draft-field]`, `[data-draft-commit]`,
+`[data-draft-cancel]`, `.week-cards .week-card[data-week-card]`, `.week-card-head[aria-expanded]`,
+`.day-list .day-card[data-day-card]`, `.day-card-head[aria-expanded]`.
+
+##### T15 coding brief
+
+Tier: Opus. Precursors: T13 and T19 merged; SE:T8 merged (for its layout shape and, if it
+exposes one, its renderer).
+
+Purpose: the P&L with the comparison panel and the health check, the vehicle register, the tax
+computation in the SA110 working-sheet order with Class 2 and payments on account, the
+quarterly summary, the forecast, and the SA103S with the 2026 numbers.
+
+Files. Creates `web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-views.js`,
+`web/spreadsheets.diyaccounting.co.uk/public/books/products/taxi-forms.js`,
+`app/data/hmrc/form-layouts/taxi.json`, `app/test/taxi-form-layout.test.js`,
+`web/browser-tests/books-taxi-views.browser.test.js`; appends one line to
+`playwright.config.js` after T14's. Modifies `scripts/build-books-bundle.mjs` only if T8's copy
+of `app/data/hmrc/form-layouts/` is per file rather than the directory. Must not touch
+`shell.js`, `data.js`, `books.css`, `products/taxi.js`, `taxi-takings.js`, the engine, the
+template.
+
+The modules: `window.DiyaGlTaxiViews = { renderProfitLoss, renderVehicles, renderComputation,
+renderQuarterly, renderForecast }` and `window.DiyaGlTaxiForms = { renderSa103s }`, each
+`(snapshot, state, helpers) -> HTML`. Keys through `helpers.rkFor` guarded by presence; the
+guard is one local `keyed(sheet, cell)` returning `""` when `snapshot.results[sheet][cell]` is
+undefined. No module reads `results` for a figure the snapshot already carries.
+
+**The P&L view.** Order: the comparison panel, the statement, the health check.
+
+- `.vehicle-comparison[data-route="mileage"|"actual"]` (`.panel-card`): five
+  `.comparison-figure[data-figure="miles"|"allowance"|"running"|"compared"|"charged"]`, each a
+  `.caps-label` and a keyed value (`PurchasesMar!A1` as a count, `A2`, `I2`, `Profit & Loss
+  Acc!J1`, `B12`); `.comparison-sentence` from the two templates in "The mileage comparison"
+  with the figures in words ("The mileage allowance is £7,000 and running the car cost £4,640,
+  so this year's accounts claim the allowance; fuel, repairs, road tax and insurance receipts
+  are recorded but not charged." / "Running the car cost £N and the mileage allowance would be
+  £M, so this year's accounts charge the running costs and the vehicle's capital allowances;
+  the allowance forgone is £M."); `.comparison-route-cell` small text "the sheet says: MILEAGE
+  ALLOWANCE" carrying `keyed("Profit & Loss Acc","C1")` (present on the mileage route only).
+  When `vehicle.present` is false the panel says "This book records no business miles, so the
+  accounts charge the vehicle's running costs" and shows running, compared and charged only.
+- The statement: `helpers.sectionRows("Profit & Loss Account")` in a `.panel-card.panel-form-width
+  table.kv-table`, each row keyed through `rkFor`, `tr.total` on `B12`, `B13`, `B22`, `B23`,
+  indent from the row. Twenty rows, `B24` last under a `tr.below-the-line` caption "Below the
+  line".
+- `<details class="health-check">` with `<summary>Financial business health check</summary>` and a
+  `kv-table`: "Forecast profit" keyed `Wages Forecast!C30`; four rows "Drawings week 1" to
+  "week 4" each an `input.readonly-input[disabled]` with `.field-hint` "an input on the
+  workbook; the book has no field for it"; "Income tax and NI liability, one twelfth"
+  (`healthCheck.liabilityTwelfth`, unkeyed, `.derived`); "Health check" (forecast profit less
+  the twelfth, unkeyed).
+
+**The vehicle register** (`fixed-assets`): `table.register-table.vehicle-register` with head
+Bought, Vehicle, Cost, Personal use, WDA, Written down; one `tr[data-asset="<assetID>"]` per
+register entry; the first row's cost keyed `Fixed Assets!D47` (the cell holds the first asset's
+cost, not a total); Personal use prints "—" with title "the workbook's F column; the book has no
+field for it"; WDA and written down from the snapshot. Foot: cost total keyed
+`PurchasesMar!T1`, WDA total `Fixed Assets!J1`, written-down total `K1`. Below, a `kv-table`
+"Capital allowances": AIA `I1`, disposals `P1`, balancing charge `Q1`, each keyed when present.
+`register.unregistered` renders as `.entries-note` "N vehicle purchases are not on the register;
+the checks panel offers to register them." An empty register on a book with no `capex` line
+prints "This book records no vehicles." with no keys.
+
+**The computation** (`tax-computation`), through `helpers.form` in the SA110 working-sheet order,
+`form-name` "Tax computation", `form-microcopy` the sheet's own words "an indication and for your
+information only"; every `form-row` carries `data-line="<cell>"` and a `.working-sheet-ref`
+small-text chip:
+
+| Section | Row | Cell | Ref |
+|---|---|---|---|
+| Income | Profit from self-employment (SA103S box 31) | `E5` | D1 |
+| Allowances | Personal allowance, tapered above £100,000 | `E6` | A125 |
+| Taxable income | Total income on which tax is due | `E7` | A131 |
+| Income tax | Basic rate (`D8`) to `C9`; Higher rate (`D9`) to `C10`; Additional rate (`D10`) | `E8`, `E9`, `E10` | Section 6 |
+| Income tax | Income tax due | `E11` | A328 |
+| National Insurance | Class 4, main rate 6% | `E14` | D15 |
+| National Insurance | Class 4, 2% above the upper limit | `E15` | D17 |
+| National Insurance | Class 4 due (`E14 + E15`, unkeyed, `.derived`) | | D18 |
+| National Insurance | Class 2 | none | D19 |
+| Total | Income tax and Class 4 NI | `E17` | A331 |
+| Payments on account | First payment, due 31 January 2027 | `E25` | SA110 box 11 |
+| Payments on account | Second payment, due 31 July 2027 | `E26` | |
+
+The band rows use `helpers.form.rateRow` with the rate and ceiling cells keyed as BST's income
+tax form keys them. The Class 2 row prints `computation.class2`: "nil; profits are above the
+£6,845 small profits threshold, so the year is credited without payment" when `amount` is 0,
+"£182.00 voluntary; profits are below the £6,845 small profits threshold" when above 0, and the
+row is omitted when `class2.threshold` is undefined. The dates come from
+`computation.paymentsOnAccount`, printed "31 January 2027". A `.view-lede` under the masthead:
+"Follows HMRC's SA110 working sheet, top to bottom."
+
+**The quarterly summary**: `table.quarterly-table` with head Quarter, Apr to Jun, Jul to Sep, Oct
+to Dec, Jan to Mar, Year and three rows Turnover (`C5` to `G5`), Other income (`C6` to `G6`),
+Allowable expenses (`C29` to `G29`), every cell keyed. A `.view-lede`: "The shape a cumulative
+period summary takes."
+
+**The forecast**: `kv-table` from `forecast.rows` with `C19` printed as a count ("11 of 12
+months"), `tr.total` on `C30` and `C41`; a `.view-lede` when `monthsTraded < 12`: "N of 12
+months traded. The forecast repeats each traded month and spreads the year across the rest."
+
+**The SA103S.** The layout module decision, shared with SE:T8: the layout shape is T8's
+(`form`, `year`, `sheet`, `sections[].boxes[] = { box, label, cell }`), one file per product
+under `app/data/hmrc/form-layouts/`, because the cell maps differ per product and the box list
+is data both files carry. Taxi adds one optional field a box may carry instead of `cell`:
+`"derived": "<name>"`, resolved by `taxi-forms.js`. If T8 exposed its renderer as a global that
+takes `(layout, resolveBox, helpers)`, use it and pass a `resolveBox` that handles `derived`;
+otherwise `taxi-forms.js` carries its own `renderLayout` over `helpers.form` (about sixty
+lines) and the commit says which. The layout is fetched once at script load from
+`assets/data/hmrc/form-layouts/taxi.json` into a module promise; `renderSa103s` returns
+`<p class="view-loading">` until it resolves and calls `helpers.render()` then (the fetch
+finishes long before a book loads). `app/data/hmrc/form-layouts/taxi.json`:
+
+```json
+{ "sa103s": { "form": "SA103S", "year": 2026, "sheet": "SE Short", "sections": [
+  { "heading": "Business income", "boxes": [
+    { "box": "9", "label": "Your turnover", "cell": "D38" },
+    { "box": "10", "label": "Any other business income not included in box 9", "cell": "O38" },
+    { "box": "10.1", "label": "Trading income allowance", "cell": null } ] },
+  { "heading": "Allowable business expenses", "boxes": [
+    { "box": "11", "label": "Costs of goods bought for resale or goods used", "cell": null, "derived": "goodsForResale" },
+    { "box": "12", "label": "Car, van and travel expenses", "cell": null, "derived": "vehicleTravel" },
+    { "box": "13", "label": "Wages, salaries and other staff costs", "cell": null, "derived": "pl:B14" },
+    { "box": "14", "label": "Rent, rates, power and insurance costs", "cell": null, "derived": "pl:B15" },
+    { "box": "15", "label": "Repairs and maintenance of property and equipment", "cell": null, "derived": "repairs" },
+    { "box": "16", "label": "Accountancy, legal and other professional fees", "cell": null, "derived": "pl:B18" },
+    { "box": "17", "label": "Interest and bank and credit card financial charges", "cell": null, "derived": "sum:B19,B20" },
+    { "box": "18", "label": "Phone, fax, stationery and other office costs", "cell": null, "derived": "pl:B16" },
+    { "box": "19", "label": "Other allowable business expenses", "cell": null, "derived": "sum:B17,B21" },
+    { "box": "20", "label": "Total allowable expenses", "cell": null, "derived": "totalExpenses", "total": true } ] },
+  { "heading": "Net profit or loss", "boxes": [
+    { "box": "21", "label": "Net profit", "cell": "D71" }, { "box": "22", "label": "Or, net loss", "cell": "O71" } ] },
+  { "heading": "Tax allowances for vehicles and equipment (capital allowances)", "boxes": [
+    { "box": "23", "label": "Annual Investment Allowance", "cell": "D80" },
+    { "box": "24", "label": "Allowance for small balance of unrelieved expenditure", "cell": "D85" },
+    { "box": "24.1", "label": "Zero-emission car allowance", "cell": null },
+    { "box": "25", "label": "Other capital allowances", "cell": "O80" },
+    { "box": "25.1", "label": "The Structures and Buildings Allowance", "cell": null },
+    { "box": "25.2", "label": "Freeport and Investment Zones Structures and Buildings Allowance", "cell": null },
+    { "box": "26", "label": "Total balancing charges", "cell": "O85" } ] },
+  { "heading": "Calculating your taxable profits", "boxes": [
+    { "box": "27", "label": "Goods and/or services for your own use", "cell": "D94" },
+    { "box": "28", "label": "Net business profit for tax purposes", "cell": "D99", "total": true },
+    { "box": "29", "label": "Loss brought forward from earlier years set off against this year's profits", "cell": "O94" },
+    { "box": "30", "label": "Any other business income not included in box 9 or box 10", "cell": "O99" } ] },
+  { "heading": "Total taxable profits or net business loss", "boxes": [
+    { "box": "31", "label": "Total taxable profits from this business", "cell": "D106", "total": true },
+    { "box": "32", "label": "Net business loss for tax purposes", "cell": null } ] },
+  { "heading": "Losses, Class 2 and Class 4 NICs and CIS deductions", "boxes": [
+    { "box": "33", "cell": null }, { "box": "34", "cell": null }, { "box": "35", "cell": null },
+    { "box": "36", "label": "Voluntary Class 2 NICs", "cell": null }, { "box": "37", "label": "Exempt from Class 4 NICs", "cell": null },
+    { "box": "38", "label": "Total CIS deductions taken from your payments by contractors", "cell": null } ] } ] } }
+```
+
+Labels for 33 to 35 are the form's, from `_developers/hmrc-references/hmrc-forms-sole-trader.md`
+section 1. `O106` (box 32) is not a `CELL_MAP` cell and the calculator does not emit it, so box
+32 is `cell: null` and prints empty. Boxes 33 to 38 print present and empty, as SE:T8's do (T18's
+"33 to 38 absent" reads "present, with no key").
+
+Resolution rules in `taxi-forms.js`, `route = snapshot.vehicle.route`, `pl = "Profit & Loss Acc"`:
+
+- A box with a `cell` prints `snapshot.results["SE Short"][cell]` keyed through `keyed("SE
+  Short", cell)`; an absent value prints empty (`O38` always).
+- `pl:Bn` prints the P&L cell keyed `rkFor(pl, "Bn")`.
+- `sum:B19,B20` prints the sum with no `data-r-key` on the box and a `.box-parts` line under the
+  label, "interest £x · bank charges £y", each part keyed to its own cell. The same for
+  `sum:B17,B21`.
+- `goodsForResale` (box 11) prints empty. Its `.form-row-margin` carries a static
+  `.sheet-placement` note (not a drift mark): "The sheet prints £N here: vehicle costs less
+  capital allowances (P&L B12 − B10)." with N computed from the two P&L cells; no key.
+- `vehicleTravel` (box 12): mileage route prints `B11` keyed `rkFor(pl, "B11")`; actual route
+  prints `B6 + B7 + B9` unkeyed with `.box-parts` "fuel · car hire · road tax and insurance"
+  each keyed. Its margin note on both routes: "The sheet files this under box 11."
+- `repairs` (box 15): actual route prints `B8` keyed; mileage route prints empty with the margin
+  note "Repairs are inside the mileage rate this year; the sheet records £N under box 11."
+- `totalExpenses` (box 20): the sum of boxes 11 to 19 as printed, unkeyed. On both routes it
+  equals the sheet's `O64` (`B12 + B22 − B10`); the test below asserts it.
+- Boxes 23 to 26 print the sheet's cells on both routes. When `route === "mileage"` and
+  `register.length > 0` and `O80 > 0`, box 25's margin note reads: "The form allows no capital
+  allowance on a vehicle claimed at the mileage rate. This register holds <descriptions>."
+- Whole pounds where the sheet rounds (`helpers.fmtBoxWhole`), as BST's form.
+
+The `form-name` is "SA103S, Self-employment (short) 2026" and the microcopy "Check these against
+your return. Box numbers match the 2026 form; nothing here is the HMRC document."
+
+Tests.
+
+`app/test/taxi-form-layout.test.js`: "every cell the layout names is a CELL_MAP SE Short cell or
+exists on the template" (open `app/templates/taxi/taxi-excel.xlsx`, sheet `SE Short`, assert the
+`<c r>` element exists); "every CELL_MAP SE Short row is named by exactly one box"; "the box list
+is exactly 9, 10, 10.1, 11 to 20, 21, 22, 23, 24, 24.1, 25, 25.1, 25.2, 26 to 38 in order";
+"every derived name is one taxi-forms.js resolves" (read the module's exported `DERIVED_NAMES`
+list; the module assigns it on its global).
+
+`web/browser-tests/books-taxi-views.browser.test.js`, on `taxi-scenario-basic` (actual route) and
+`taxi-scenario-sp-sixty` (mileage route):
+
+- "each of the six views renders with no console error and at least one keyed figure".
+- "the comparison panel names the route the sheet took" (`[data-route="actual"]` on basic,
+  `"mileage"` on sp-sixty with the sentence carrying £7,000 and £4,640 and the route cell
+  reading MILEAGE ALLOWANCE).
+- "the computation's total equals S2's E17 and its Class 2 line reads nil on both books".
+- "the payments on account read 31 January 2027 and 31 July 2027 and equal half of E17".
+- "the SA103S box 20 equals P&L B12 + B22 − B10 from S2 on both routes".
+- "box 12 carries B11's key on sp-sixty and no key on basic; box 15 carries B8's key on basic
+  and is empty on sp-sixty" (T18 proves the whole box table).
+- "the quarterly table's Year column equals S2's G5, G6 and G29".
+- "the register lists basic's vehicle with an 18% WDA of £1,440 and a written-down value of
+  £6,560, and totals keyed to J1 and K1".
+
+Commands: `npx vitest run --fileParallelism=false app/test/taxi-form-layout.test.js 2>&1 | tee
+<scratch>/t15-unit.log`; `node scripts/build-books-bundle.mjs`; `npx playwright test
+--project=browser-tests web/browser-tests/books-taxi-views.browser.test.js 2>&1 | tee
+<scratch>/t15.log`; `npm run test:browser 2>&1 | tee <scratch>/t15-browser.log`; `npm test`
+before the push. Commit before waiting.
+
+Acceptance: both tests pass; `grep -c '"cell": "' app/data/hmrc/form-layouts/taxi.json` is 13;
+`grep -c "Profit & Loss Acc" .../products/taxi-views.js .../products/taxi-forms.js` counts only
+the `pl` constant and the `keyed` reads named above; no BST or SE spec changes; every view
+renders on kestrel (no register, no miles) without a console error.
+
+Selectors T17 and T18 use, fixed here: `.vehicle-comparison[data-route]`,
+`.comparison-figure[data-figure]`, `.comparison-sentence`, `.comparison-route-cell`,
+`details.health-check`, `.readonly-input`, `table.vehicle-register tr[data-asset]`,
+`.form-row[data-line]`, `.working-sheet-ref`, `table.quarterly-table`, `.form-render .form-row
+.box-chip` (the box number), `.form-amount-box[data-r-key]`, `.box-parts`, `.form-row-margin
+.sheet-placement`.
 
 ### T14 The takings view
 
