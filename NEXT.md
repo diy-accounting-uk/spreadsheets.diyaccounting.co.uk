@@ -20,7 +20,6 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| TX1 | Taxi T1 writer: day sums, joined names, caption rows, off-grid refusal | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t1`, `claude/wt-taxi-t1` |
 | SE-S1 | S1 the workbook set: adapters, `package-set`, product sniff, `openWorkbookSet` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 3, `.worktrees/spreadsheets/se-s1` |
 | SE-S2 | S2 anchor runner over per-product tables; extraction map keyed by file | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1 | blocked-to-start | Sonnet, wave 4, after TX-T6 in `xlsx-exporter.js` |
 | SE-S3 | S3 `product-workbook.js`: any product, `fullCalcOnLoad` on every file, package zip | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 2, `.worktrees/spreadsheets/se-s3` |
@@ -47,12 +46,11 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | SE-T14 | T14 CLI and MCP on SE | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S6, SE-T2 | blocked-to-start | Sonnet, wave 7 |
 | SE-T16 | T16 `SE Short` prints the 2026 numbers; gates on `Admin!F26`; regenerated | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T4 | blocked-to-start | Opus, wave 8, R5 after merge |
 | SE-H1 | Merge the batch to main; four `generate-*` on the branch first; generate-se refresh | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | human | SE-T9, SE-T10, SE-T11, SE-T12, SE-T13, SE-T14, SE-T15, SE-T16 | blocked-to-start | after wave 10 and R6 |
-| TX-T4 | Taxi T4 other income end to end: 4001, fixtures, calculator, checks | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX1 | ready-to-start | Sonnet, wave 2 |
-| TX-T5 | Taxi T5 partial-year Wages Forecast, autumn-start master | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4 | blocked-to-start | Opus, wave 3 |
-| TX-T6 | Taxi T6 `CELL_MAP` additions, Business Details move, CONTEXT doc; regeneration point | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX1, TX3, TX-T4, TX-T5 | blocked-to-start | Sonnet, wave 4, R3 after merge |
-| TX-T8 | Taxi T8 warnings: fare miles, vehicle register, miles band | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T9 | Taxi T9 extraction map and the sidecar's Taxi baseline | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2, TX3, TX-T6 | blocked-to-start | Sonnet, wave 6 |
+| TX-T4 | Taxi T4 other income end to end: 4001, fixtures, calculator, checks | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T5 | Taxi T5 partial-year Wages Forecast, autumn-start master | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4 | blocked-to-start | Opus, wave 3 |
+| TX-T6 | Taxi T6 `CELL_MAP` additions, Business Details move, CONTEXT doc; regeneration point | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4, TX-T5 | blocked-to-start | Sonnet, wave 4, R3 after merge |
+| TX-T8 | Taxi T8 warnings: fare miles, vehicle register, miles band | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T9 | Taxi T9 extraction map and the sidecar's Taxi baseline | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2, TX-T6 | blocked-to-start | Sonnet, wave 6 |
 | TX-T10 | Taxi T10 anchor table in `anchors/taxi.js` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 6, before LT-T2 in `books-interchange.js` |
-| TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S3, SE-S6, TX1 | blocked-to-start | Sonnet, wave 5 |
+| TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S3, SE-S6 | blocked-to-start | Sonnet, wave 5 |
 | TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S5, TX-T6, LT-T3b | blocked-to-start | Sonnet, wave 5 |
 | TX-T13d | Taxi T13 design: manifest brief plus T14 and T15 briefs | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S7d | blocked-to-start | Fable, wave 3, brief appended under T13 |
 | TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d, SE-S7, TX-T6 | blocked-to-start | tier per brief, wave 6 |

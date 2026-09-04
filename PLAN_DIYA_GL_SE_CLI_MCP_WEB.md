@@ -1481,6 +1481,488 @@ skipped; `wc -l books/shell.js books/data.js books/products/bst.js` sums to no m
 the two files' current 4,020 lines plus 10 percent; `grep -c "Profit & Loss Acc" books/products/bst.js`
 is 0 (every BST cell comes from `CELL_MAP`); the behaviour probe is green.
 
+#### S7 coding brief
+
+Tier: Fable. Precursors: S6 merged (it carries S1, S3 and S5) and S2 merged. Wave 5 in
+`_developers/WAVES_DIYA_GL_PRODUCTS.md`. Before the first edit, run the regression net on
+the merged batch branch and keep the log; S5 changes `headlinesFromReport`'s arity and
+`books-headlines.browser.test.js:211` and `:244` call it with one argument, so if S5 left
+that spec red, stop and say so rather than fixing another row's file.
+
+Purpose: `bst.js` and `bst-data.js` become a shared shell, a shared data module and a BST
+manifest, so `se.html`, `taxi.html` and `ltd.html` mount their own views on one page engine.
+Nothing the page shows changes. Every browser spec passes with the edits listed below and
+no other.
+
+##### Facts this brief settles against the design brief above
+
+- The books specs hold 139 tests in 13 files (`npx playwright test --project=browser-tests --list`);
+  with `spreadsheets-content.browser.test.js` the project runs 160 in 14. The "63" and
+  "fourteen existing specs" above are wrong.
+- `app/data/render-unrepresentable.json` holds 35 keys, not 43.
+- `books-engine.js` keeps its BST-named exports (`reportSections`, `checkCompliance`,
+  `CELL_MAP`, `TAX_SHEET`, `PRODUCT`, `HEADLINES`, `extractBstTransactions`, `validateBstAnchors`).
+  `probe.js` and `books-bundle-gate.browser.test.js:20` to `:30` import them and compare the
+  bundle against Node. S6's line "S7 removes them" does not happen in this row. The page
+  stops reading them; it reaches the product through `engine.productModule(id)`.
+- No resolver step is needed for `HEADLINES` or `CELL_MAP`. Every manifest function that
+  needs the engine receives it as an argument (`ctx.engine`, `ctx.productMod`), so the
+  manifest is plain data plus functions and loads as a classic script before the engine.
+- The purchase category map derives from `engine.resolveBstPurchaseCodeMap(book)`
+  (`diya-gl-loader.js:74`), the map `diyaGlToScenario` itself picks for a BST book. The
+  fixed `PURCHASE_CODE_MAPS.bst` the brief above names would group SP Sixty's 5900 as a
+  fixed asset where the calculator reads it as legal fees. The sales set is
+  `engine.BST_SALES_ACCOUNTS` (`scenario-extractor.js:175`, already inside the bundle
+  through the loader).
+- `window.DIYA_BST_SNAPSHOT` becomes `window.DIYA_BOOKS_SNAPSHOT`. An SE page setting a
+  BST-named global is the kind of literal this row removes. The specs read it about twenty
+  times in five files; that rename is the one non-selector spec edit and is listed below.
+- `headlines.js` keeps `reportFromSnapshot`. The headlines spec builds snapshots by hand
+  (`snapshotFromReport`, `lossSnapshot`) and mounts through it, so removing it is more than
+  a selector edit. The shell stops calling it: it passes `report: snapshot.report`, the R
+  document `buildReport` already makes, and `mountHeadlines` uses `opts.report` when given
+  and the adapter otherwise.
+
+##### The manifest, `books/products/bst.js`
+
+A classic script. It assigns one object and touches nothing else on the global.
+
+```js
+(function (global) {
+  "use strict";
+  global.DiyaGlProducts = global.DiyaGlProducts || {};
+
+  // Snapshot key per Profit & Loss Acc cell. Labels, sections and units come
+  // from CELL_MAP; this table only names the key a month row and the annual
+  // row carry, and the one display label the sheet's own is too long for.
+  var PL_KEYS = {
+    C4: { key: "sales" }, C6: { key: "costOfSales", label: "Cost of Sales" }, C7: { key: "directCosts" },
+    C9: { key: "grossProfit" }, C11: { key: "employeeCosts" }, C12: { key: "premisesCosts" }, C13: { key: "repairs" },
+    C14: { key: "generalAdmin" }, C15: { key: "motorExpenses" }, C16: { key: "travel" }, C17: { key: "advertising" },
+    C18: { key: "legalProfessional" }, C19: { key: "badDebts" }, C20: { key: "interestFinance" }, C21: { key: "otherExpenses" },
+    C22: { key: "totalExpenses" }, C24: { key: "netProfit" },
+    C30: { key: "otherIncome" }, C32: { key: "incomeTaxLessCis" }, C33: { key: "niClass4" }, C35: { key: "netIncomeAfterTax" },
+  };
+  var LAST_CATEGORY_CELL = "C24";           // the year table's columns stop here; C30 to C35 print below the line
+  var DERIVED = { grossProfit: 1, totalExpenses: 1, netProfit: 1 };
+  // BST code letter (the value resolveBstPurchaseCodeMap gives a code) to snapshot key.
+  var LETTER_KEYS = { s: "costOfSales", d: "directCosts", e: "employeeCosts", p: "premisesCosts", r: "repairs", g: "generalAdmin",
+    m: "motorExpenses", t: "travel", a: "advertising", l: "legalProfessional", i: "interestFinance", b: "badDebts", o: "otherExpenses", f: "capex" };
+
+  global.DiyaGlProducts.bst = {
+    id: "bst",
+    schemaName: "BasicSoleTrader",
+    title: "Basic Sole Trader",
+    page: "bst.html",
+    stylesheet: "bst.css",
+    multiFile: false,                       // rkFor builds cell/<sheet>!<cell>; SE sets hub: "Financialaccounts.xlsx"
+    emptyState: { intro: "Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine." },
+    examples: [                             // S8 moves this list to the generated examples.js
+      { key: "bst-scenario-basic", name: "Precision Code Trading", note: "full ledger", dir: "precision-code-ltd", product: "bst" },
+      { key: "bst-brickwork-pro-nonvat", name: "BrickWork Pro Trading", note: "bricklaying trade", dir: "brickwork-pro", product: "bst-nonvat" },
+      { key: "bst-sp-sixty", name: "SP Sixty Driving", note: "no ledger, mileage route", dir: "sp-sixty-driving", product: "bst" },
+    ],
+    views: [
+      { id: "home", label: "Home", sheets: "Home", shared: "home" },
+      { id: "year", label: "Year", sheets: "SalesApr–Mar, PurchasesApr–Mar", shared: "year" },
+      { id: "profit-loss", label: "P&L", sheets: "Profit & Loss Acc", render: renderProfitLoss },
+      { id: "stock", label: "Stock", sheets: "PurchasesStock", render: renderStock },
+      { id: "debtors-creditors", label: "Debtors/Creditors", sheets: "Debtors & Creditors", render: renderDebtorsCreditors },
+      { id: "fixed-assets", label: "Fixed Assets", sheets: "Fixed Assets", render: renderFixedAssets },
+      { id: "income-tax", label: "Income Tax", sheets: "Income Tax", render: renderIncomeTaxForm },
+      { id: "sa103s", label: "SA103S", sheets: "SE Short", render: renderSa103sForm },
+      { id: "business-details", label: "Business Details", sheets: "Business Details", render: renderBusinessDetails, bind: bindBusinessDetails },
+      { id: "admin", label: "Admin", sheets: "Admin", render: renderAdmin },
+    ],
+    months: {
+      journals: [{ id: "sales", label: "Sales" }, { id: "purchases", label: "Purchases" }],
+      categories: function (productMod) { /* CELL_MAP "Profit & Loss Account" rows up to LAST_CATEGORY_CELL -> [{ key, label, cell, computed }] */ },
+      classify: function (line, book, ctx) { /* -> { journal, key } ; key null when the code reaches no account */ },
+      derive: function (row) { /* grossProfit, totalExpenses (sum of the eleven expense keys), netProfit */ },
+      closeYear: function (lastRow, book) { /* costOfSales += opening - closing stock */ },
+    },
+    yearTable: {
+      defaultColumns: ["sales", "totalExpenses", "netProfit"],
+      alwaysHidden: ["costOfSales", "directCosts", "grossProfit"],
+      composite: [{ key: "costOfSalesComposite", label: "Cost of Sales", from: ["costOfSales", "directCosts"] }],
+      monthlyCell: function (monthLabel, productMod) { /* the "Monthly Sales" CELL_MAP row whose label is monthLabel -> ["Profit & Loss Acc", "D4"] */ },
+      summary: [["Sales Turnover", "sales", true], ["Gross Profit", "grossProfit"], ["Total Expenses", "totalExpenses"], ["Net Profit", "netProfit"]],
+      sticky: [["Sales Turnover", "sales"], ["Net Profit", "netProfit"]],
+      card: { headline: "netProfit", figures: [["Sales", "sales", true], ["Total expenses", "totalExpenses"]] },
+    },
+    snapshot: function (ctx) { /* -> { annual, stock, debtors, creditors, fixedAssets, incomeTax, sa103s, admin } */ },
+    newBook: {
+      fields: [
+        { id: "new-book-name", name: "businessName", label: "Business name", type: "text", required: "Enter a business name." },
+        { id: "new-book-year-end", name: "yearEnd", label: "Year end", type: "date", required: "Enter a real year-end date." },
+      ],
+      build: function (values, ctx) { /* -> the book: documentInfo from periodFromYearEnd, entityInformation, STANDARD_NEW_BOOK_CHART */ },
+      label: function (values) { return values.businessName; },
+    },
+    upload: {
+      validate: function (engine, xlsxBytes) { return engine.validateBstAnchors(xlsxBytes); },
+      extract: function (engine, xlsxBytes) { return engine.extractBstTransactions(xlsxBytes, engine.extractionMap()); },
+      bookFromWorkbook: async function (cells, lines, ctx) { /* entity from CELL_MAP Business Details rows, opening balances from the ledger C3/F3 rows, stock from STOCK_CELLS.bst, chart from the lines */ },
+    },
+    bookFields: { documentInfo: ["periodCoveredStart", "periodCoveredEnd"] },
+    drift: { units: { money: 1, rate: 1, count: 1 }, excludedSections: { "Admin (Generator Injected)": 1 } },
+    save: { singleFile: true, workbookName: "bst-excel.xlsx" },
+  };
+})(typeof window !== "undefined" ? window : globalThis);
+```
+
+`ctx` is the same object everywhere a manifest function receives one:
+`{ engine, productMod, book, lines, results, taxData, taxYearName, months, helpers }`.
+`productMod` is `engine.productModule(manifest.id)` from S6. `helpers` is the shell's
+helper object described below, so a `snapshot()` derivation and a `render()` share one
+`rkFor`.
+
+The shape a view entry takes. `shared: "home" | "year"` names a view the shell renders.
+Otherwise `render(snapshot, state, helpers)` returns HTML and the optional
+`bind(root, state, helpers)` attaches listeners after the shell has set `innerHTML` and
+run the drift walker. A view with neither `shared` nor `render` fails `mount()` with an
+error naming the view id.
+
+##### Where each restated structure goes
+
+| Today | Source after S7 |
+|---|---|
+| `CATEGORIES` (`bst-data.js:87`) | `months.categories(productMod)`: the "Profit & Loss Account" rows of `CELL_MAP` up to `C24`, label from column 2 with `**` stripped (`C6` overridden by `PL_KEYS`), `computed` when the key is in `DERIVED` |
+| `BST_PURCHASE_CATEGORY`, `BST_SALES_ACCOUNTS` (`:113`, `:137`) | `months.classify`: sales post when `engine.BST_SALES_ACCOUNTS.has(code)`; purchases map through `engine.resolveBstPurchaseCodeMap(book)[code]` then `LETTER_KEYS` |
+| `LEDGER_SIDES`, `buildLedgerSide` (`:143`, `:158`) | `snapshot()`: the "Debtors & Creditors" rows of `CELL_MAP` split by column letter; the first row is the opening figure, the twelve middle rows the months, the last the total; labels from `CELL_MAP`; the caption "Sales not yet received, month by month" is the first monthly label with its month prefix cut |
+| `buildAnnual` (`:391`) | `snapshot().annual`: every `PL_KEYS` cell read from `results["Profit & Loss Acc"]`, plus `capex` from the "Fixed Assets" `E1` row |
+| `buildIncomeTax`, `INCOME_TAX_BAND_R_KEYS`, `INCOME_TAX_BAND_TAX_ROW_SLUG` (`:443`, `bst.js:2238`) | `snapshot().incomeTax` names cells only (`E5`, `E6`, `E7`, the bands `[D8, C9, E8]`, `[D9, C10, E9]`, `[D10, null, E10]`, `E11`, `E12`, `E15`, `E16`, `E18`); the form's display wording stays in `renderIncomeTaxForm`; every key comes from `helpers.rkFor` |
+| `TAX_SHEET_NAME` (`:462`) | `productMod.TAX_SHEET` |
+| `SA103S_LAYOUT`, `buildSa103s`, `SA103S_BOX_R_KEY` (`:470`, `:508`, `bst.js:2346`) | a `sa103s` box table in the manifest, `[{ heading, boxes: [{ box, label, cell }] }]`, the same box shape T8's layout file uses; `label` is the form's wording; `cell` must be a `CELL_MAP` "Self Assessment (SA103S)" cell or `null` (box 50); keys through `rkFor` |
+| `buildAdmin`, `ADMIN_RATE_R_KEYS` (`:522`, `bst.js:2183`) | `snapshot().admin`: the "Admin (Generator Injected)" rows of `CELL_MAP`, value from `results.Admin[cell]`, format from the row's unit, with `ADMIN_FORMATS = { F21: "number", F22: "number", G21: "pence", G22: "pence" }` overriding the four the unit misdescribes; the year label from `taxData.tax_year.label` |
+| `buildStock`, `PurchasesStock` reads in `loadFromFile` (`:438`, `:1053`) | `engine.STOCK_CELLS.bst` (export it from `xlsx-exporter.js`) for the upload reads; the view reads the "Stock" rows `D5` and `D30` through `rkFor` |
+| `PL_ANNUAL_CELL`, `PL_ANNUAL_ROW_SLUG`, `MONTH_SALES_CELL`, `LEDGER_R_KEYS` (`bst.js:1088`, `:1107`, `:1135`, `:1919`) | gone; `helpers.rkFor(sheet, cell)` derives both keys from `CELL_MAP` |
+| the fixed-asset builders (`:583` to `:652`) | `snapshot().fixedAssets`, unchanged logic, moved into the manifest; the `capex` test is `classify(line).key === "capex"` |
+| `STANDARD_NEW_BOOK_CHART` (`:41`) | stays as data in `newBook.build`; it is the product's starting chart, not a sheet cell |
+| `EXAMPLE_BOOKS` twice (`bst.js:591`, `bst-data.js:67`) | one `examples` list in the manifest until S8 |
+
+`helpers.rkFor(sheet, cell)` finds the `CELL_MAP` row for `[sheet, cell]`, and returns the
+`data-r-key` attribute carrying `cell/<sheet>!<cell>` (or the multi-file form per
+`report-serializer.js:107` when the manifest sets `hub`) and
+`section/<slug(section)>/<slug(label)>`, with the `#n` suffix `report-serializer.js:190`
+adds when the same label repeats inside one section. `slug` is the serializer's own,
+re-exported through the engine. A cell `CELL_MAP` does not name returns an empty string,
+the same as `rk()` with no arguments. The old `rk`, `rk2`, `cellKey` and `sectionKey` stay
+for figures keyed by hand; after this row `products/bst.js` calls `rk2` nowhere.
+
+##### The shell, `books/shell.js`
+
+A classic script, one IIFE, booting on `DOMContentLoaded` from
+`document.body.dataset.product`. Its sections, in file order, and what each owns.
+
+1. Boot and mount. `mount(manifest)` validates the view list, sets `active = manifest`,
+   renders the tab strip from `manifest.views`, and renders the empty state. `loadManifest(id)`
+   returns `window.DiyaGlProducts[id]` when present, else appends
+   `<script src="products/<id>.js">` and `<link rel="stylesheet" href="<id>.css">`, and
+   resolves when the global appears, rejecting with `products/<id>.js did not define
+   DiyaGlProducts.<id>` on the script's `error` event. `ensureManifest(id)` is
+   `loadManifest` followed by `mount` when `id` differs from the active one. This is how a
+   BST workbook dropped on `se.html` mounts the BST manifest (T11's E4), and how a saved
+   book of another product continues.
+2. State. Shell-owned fields, and nothing else on `state`: `loaded`, `view`, `openMonth`,
+   `drawerOpen`, `mobileTab`, `newBookFormOpen`, `savedBook`, `book`, `lines`, `context`,
+   `bookChecks`, `openHelper`, `committing`, `focusEntry`, `focusField`, `views`.
+   `openMonth` is shell-owned because the URL's `month` parameter and every product's
+   month rows use it. `state.views` is a bag per view id, created on first use by
+   `helpers.viewState(id, init)` and emptied on every load. The year view's bag is
+   `{ entriesOpen: true, allCategories: <localStorage "diya-books-all-categories">, addDraft: {}, journal: null }`.
+3. Routing and deep links. `parseDeepLinkParams`, `bootFromDeepLink`,
+   `applyDeepLinkViewAndMonth`, `syncDeepLinkUrl`, the tab strip, `scrollActiveTabIntoView`,
+   `updateTabStripFades`, `scrollViewToTop`, `renderMobileTabbar`, `openDrawer`,
+   `closeDrawer`. The unknown-example message lists `manifest.examples` keys.
+4. Rendering. `render()` as today; `renderView(view)` looks the id up in
+   `manifest.views`, calls the shared renderer or `view.render(SNAPSHOT, state, helpers)`,
+   runs `applyDriftMarks`, then the shared `bind` or `view.bind(els.viewRoot, state, helpers)`.
+   `renderTopbarTitle` prints `"DIYA-GL — " + manifest.title + " books"` before a load.
+5. The empty state. `renderEmptyState` from `manifest.emptyState.intro` and `manifest.examples`;
+   `renderNewBookForm` from `manifest.newBook.fields` (types `text`, `date`, `checkbox`;
+   ids and labels from the field; the error paragraph keeps `#new-book-error`; the buttons
+   keep "Create book" and `#new-book-cancel`); `handleCreateNewBook` collects values by
+   field name, applies each field's `required` message and `parseRealDate` for `date`,
+   then calls `DiyaGlBooksLoader.createNewBook(values, manifest)`. The continue offer,
+   discard, picker, drop zone and `LEGACY_XLS_MESSAGE` move as they are. `closeCurrentBook`
+   and `autosaveCurrentBook` write `source.product = manifest.id` into the record.
+6. Loading. `loadExample(key)`, `loadFromAnySource(file)` and `handleContinueSavedBook`
+   go through one `loadThrough(promiseOfSniff)` path: `DiyaGlBooksLoader.sniff(file)` (or
+   `productIdOfBook(book)` for a saved or example book) yields a product id; the shell
+   calls `ensureManifest(id)`, then the loader's load with the active manifest, then
+   `applyLoadedSnapshot`. `applySnapshot` sets `window.DIYA_BOOKS_SNAPSHOT`.
+7. The edit path. `commit`, `setLines`, `undoLastEdit`, and `commitBook(nextBook, label)`
+   (the generalised `commitBookDetail`, using `recalculateWithBook`). `bookWithField(book,
+   path, value)` sets a dotted path; the shared `bindBookFields(root)` binds every
+   `[data-book-field]` input, reading `data-book-path` when present and defaulting to
+   `entityInformation.<field>`, with `manifest.bookFields.documentInfo` naming the
+   fields that live under `documentInfo` instead.
+8. Shared views. `home` (from `manifest.views`) and `year`: the sticky summary
+   (`yearTable.sticky`), the year table (`yearTableColumns()` from `SNAPSHOT.categories`
+   and `manifest.yearTable`), the month detail (`yearTable.summary`), the entries grid
+   (one `.entries-table[data-journal]` per journal in `months.journals`; with more than
+   two journals a `.journal-switch` of `button.journal-switch-btn[data-journal-switch]`
+   sits above the table and the grid shows the chosen journal alone, `state.views.year.journal`),
+   the add row, the month cards (`yearTable.card`), `bindYearView`, `bindEntriesGrid`,
+   `parseAmount`. The `monthlySalesRk` call becomes `rkFor` over `yearTable.monthlyCell(label)`.
+9. Form builders. `helpers.form = { render(name, microcopy, sectionsHtml), section(heading, rowsHtml),
+   row({ box, label, amount, rKeyAttr, total, wholePounds }), rateRow(...) }` wrapping the
+   classes `form-render`, `form-masthead`, `form-name`, `form-microcopy`, `form-section`,
+   `form-row`, `total-row`, `box-chip`, `form-row-label`, `form-amount-wrap`,
+   `form-amount-box`, `whole-pounds-note`, `form-rate-pencil`. `applyDriftMarks` puts a form
+   box's mark in `.form-row-margin` as today. BST's two forms render through these; T8 and
+   Ltd T8 render their layout files through the same builders.
+10. The inspector, the drift walker (`pencilCorrection`, `applyDriftMarks`, `correctionFor`),
+    global controls, the save menu (formats `xlsx`, `zip`, `diya-gl-zip`, `json`; the xlsx
+    item is dropped when `manifest.save.singleFile` is false and its label is
+    `"Download " + manifest.save.workbookName`), `runSave`, `buildBookChecksForZip`, the toast.
+11. The public surface. `window.DiyaGlBooksPage = { setLines, undo, mount, loadManifest, helpers, get manifest() }`.
+
+`helpers`, one frozen object built once: `rk`, `rk2`, `rkFor`, `cellKey`, `sectionKey`,
+`fmtMoney`, `fmtWhole`, `fmtBoxMoney`, `fmtBoxWhole`, `fmtRate`, `fmtPence`, `esc`,
+`commit`, `commitBook`, `setLines`, `showToast`, `render`, `viewState`, `isMobilePortrait`,
+`form`, `field(label, bookField, value, opts)`, `readOnlyField(label, value)`, `kvRows(rows)`
+(a `kv-table` from `[{ label, value, rKeyAttr, total }]`), `sectionRows(section, filter)`
+(the `CELL_MAP` rows of one section joined to `SNAPSHOT.results`, as `[{ sheet, cell, label, value, indent, unit }]`).
+`rkFor` and `sectionRows` read the active `productMod`, which `data.js` puts on
+`snapshot.context.productMod`.
+
+The four layouts are CSS and the two `isMobilePortrait()` branches (`renderYearTableScroll`,
+`renderMonthCards`); both move into the shared year view unchanged.
+
+##### The data module, `books/data.js`
+
+`git mv bst-data.js data.js`. A module script, as today. It sets `window.DiyaGlBooksLoader`:
+
+```js
+{
+  sniff(file)                 // -> { kind, bytes, productId, set? }: detectBookSource, then sniffProduct (S1) for a workbook or package, or readBookSource's product for a diya-gl source
+  productIdOfBook(book)       // -> engine.productIdOf(book.entityInformation["diya-gl:product"]) (S1)
+  loadSniffed(sniffed, manifest)          // the old loadFromFile / readBookSource halves, through manifest.upload
+  loadExample(key, manifest)
+  createNewBook(values, manifest)
+  loadFromBookAndLines(book, lines, label, sourceKind, manifest)
+  recalculate(book, lines, context)       // manifest travels in context
+  recalculateWithBook(book, lines, context, edited)
+  headlinesFor(report, context)          // engine.headlinesFromReport(report, context.productMod.HEADLINES)
+}
+```
+
+`context` gains `manifest` and `productMod`. `buildSnapshot` calls
+`engine.diyaGlToScenario(book, lines, manifest.id)`, `engine.calculateFromDiyaGl(book, lines, manifest.id, ...)`,
+`productMod.checkCompliance(...)`, then `assembleSnapshot`. `buildReport` passes
+`packageName: manifest.id` and `productMod` from S6. The shared half of the snapshot is
+`scenario, book, lines, chart, period, months, categories, monthly, entries, results, drift, checks, report, context, edited, source, businessDetails`;
+`Object.assign` merges `manifest.snapshot(ctx)` on top. `results` joins the snapshot so
+`helpers.sectionRows` can read cells the derivations did not copy. `buildMonthlyAndEntries`
+takes `manifest.months`: rows start from `categories` keys at zero plus `capex`; each line
+goes through `classify`; `closeYear` runs on the last month; `derive` runs on every row.
+`monthKeyOf` and `buildMonths` stay as the defaults; a manifest may set `months.keyOf(line)`
+and `months.build(book)` (Taxi's tab months). `buildChart(book)` lists `book.accounts[journal.id]`
+per journal. The drift block (`captureAsReadLayer`, `driftFromAsRead`, `canonicalise`,
+`roundHalfUp`) stays one contiguous block at the top of the file, reading
+`manifest.drift.units` and `manifest.drift.excludedSections`; S4 lifts that block into
+`drift.js` and leaves import lines.
+
+Every month row carries at least `sales`, `costOfSales`, `directCosts`, `totalExpenses` and
+`netProfit`. `headlines.js`'s monthly charts read those five and every product's `derive`
+fills them.
+
+##### The split by line range
+
+`bst.js` (2,874 lines):
+
+| Lines | Content | Goes to |
+|---|---|---|
+| 1 to 56 | header, `VIEWS`, `state`, `els`, the `DOMContentLoaded` hook | `shell.js`; `VIEWS` becomes `manifest.views`; `state` gains `views`, loses `entriesOpen`, `addDraft`, `allCategories` |
+| 58 to 105 | `init`, `checkForSavedBook` | `shell.js` (`init` reads `body.dataset.product`, calls `mount`) |
+| 107 to 199 | deep links | `shell.js` |
+| 201 to 261 | formatting, `rk`, `cellKey`, `sectionKey`, `rk2` | `shell.js`, joined by `rkFor` |
+| 263 to 353 | `pencilCorrection`, `applyDriftMarks`, `correctionFor` | `shell.js` |
+| 355 to 582 | `render`, focus restore, undo controls, headlines mount, topbar, tab strip, mobile tabbar, `renderView`, `bindViewInteractions` | `shell.js`; the switch at 539 to 564 becomes the manifest lookup; `mountHeadlinesStrip` passes `report: SNAPSHOT.report` and `headlinesFromReport: (r) => DiyaGlBooksLoader.headlinesFor(r, SNAPSHOT.context)` |
+| 584 to 700 | empty state, `EXAMPLE_BOOKS`, `exampleButton`, `renderEmptyState`, `renderNewBookForm`, continue offer | `shell.js`, driven by the manifest; the list at 591 to 595 goes |
+| 695 to 867 | `parseRealDate`, the picker, `handleCreateNewBook`, continue and discard, `loadExample`, `loadFromAnySource` | `shell.js`, through `loadThrough` |
+| 869 to 984 | drop zone, `closeCurrentBook`, `applySnapshot`, `applyLoadedSnapshot`, `autosaveCurrentBook` | `shell.js` |
+| 986 to 1052 | `commit`, `setLines`, `undoLastEdit` | `shell.js` |
+| 1054 to 1081 | `renderHome` | `shell.js` shared view `home` |
+| 1083 to 1152 | `PL_ANNUAL_CELL`, `PL_ANNUAL_ROW_SLUG`, `plAnnualRk`, `MONTH_SALES_CELL`, `monthlySalesRk` | gone; `rkFor` |
+| 1154 to 1658 | the year view, the year table, month detail, entries grid renderers, month cards, `bindYearView` | `shell.js` shared view `year`, reading `manifest.yearTable` and `months.journals`; `YEAR_TABLE_TOGGLE_KEYS` and `YEAR_TABLE_ALWAYS_HIDDEN_KEYS` become the complement of `defaultColumns` and the `alwaysHidden` list |
+| 1660 to 1822 | `parseAmount`, `bindEntriesGrid` | `shell.js` |
+| 1824 to 1890 | `renderProfitLoss` | `products/bst.js`; rows from `sectionRows("Profit & Loss Account")` with the `C26` and `C28` rows swapped for the Fixed Assets `K1` and Income Tax `E5` figures as today |
+| 1892 to 2057 | `renderStock`, `LEDGER_R_KEYS`, `renderDebtorsCreditors`, `renderAssetRegister`, `renderFixedAssets` | `products/bst.js`; `LEDGER_R_KEYS` goes |
+| 2059 to 2177 | `renderBusinessDetails`, `field`, `readOnlyField`, `BOOK_PERIOD_FIELDS`, `bookWithDetail`, `bindBusinessDetails`, `commitBookDetail` | render and bind to `products/bst.js`; `field`, `readOnlyField`, `bookWithField`, `bindBookFields`, `commitBook` to `shell.js` |
+| 2179 to 2231 | `ADMIN_RATE_R_KEYS`, `renderAdmin` | `products/bst.js`; the table goes |
+| 2233 to 2399 | the two form renders and their key tables | `products/bst.js`, through `helpers.form`; the tables go |
+| 2401 to 2632 | the inspector | `shell.js` |
+| 2634 to 2873 | global controls, drawer, save menu, `runSave`, toast, the public surface | `shell.js` |
+
+`bst-data.js` (1,146 lines):
+
+| Lines | Content | Goes to |
+|---|---|---|
+| 1 to 65 | header, `STANDARD_NEW_BOOK_CHART` | chart to `products/bst.js` (`newBook.build`) |
+| 67 to 83 | `EXAMPLE_BOOKS` | `manifest.examples` |
+| 85 to 170 | `CATEGORIES`, the two BST maps, `LEDGER_SIDES`, `buildLedgerSide` | gone; the derivations above |
+| 172 to 196 | canonicalisation | `data.js` (the drift block) |
+| 198 to 247 | engine, resources, schemas | `data.js`; `headlinesFromReport` becomes `headlinesFor` |
+| 249 to 386 | months, entries, `buildMonthlyAndEntries` | `data.js`, driven by `manifest.months` |
+| 388 to 436 | `buildAnnual`, `buildChecks` | `buildAnnual` to the manifest derivation; `buildChecks` to `data.js` |
+| 438 to 520 | `buildStock`, `buildIncomeTax`, `TAX_SHEET_NAME`, `SA103S_LAYOUT`, `buildSa103s` | `products/bst.js`, as the derivations above |
+| 522 to 576 | `buildAdmin`, `buildBusinessDetails`, `isoDate` | `buildAdmin` to the manifest derivation; the other two to `data.js` |
+| 578 to 652 | the fixed-asset builders | `products/bst.js` |
+| 654 to 695 | the drift layer | `data.js` (the drift block) |
+| 697 to 722 | upload limit, `unwrapPackageZip` | `data.js` |
+| 724 to 795 | `periodFromLines`, `buildAccountsChart`, the two workbook readers, `buildChart` | `periodFromLines`, `buildAccountsChart` and `buildChart` to `data.js`; the two workbook readers into `upload.bookFromWorkbook` |
+| 797 to 824 | `assembleSnapshot` | `data.js`, shared half plus the merge |
+| 826 to 935 | `buildReport`, `buildSnapshot`, `recalculate`, `recalculateWithBook`, `computeAndAssemble` | `data.js` |
+| 937 to 1024 | `loadExample`, `periodFromYearEnd`, `createNewBook`, `loadFromBookAndLines` | `data.js`; the book literal at 987 to 1003 into `newBook.build`; `periodFromYearEnd` stays shared |
+| 1026 to 1121 | `loadFromFile`, `loadFromAnySource` | `data.js` as `sniff` and `loadSniffed`; the BST calls at 1044 to 1053 into `upload` |
+| 1123 to 1146 | `reachesAnAccount`, the export object | `reachesAnAccount` becomes `manifest.months.classify(line, book, ctx).key !== null`; the export object as listed above |
+
+`git mv bst-edits.js edits.js` in the same commit; its global `DiyaGlBooksEdits` and its
+content do not change. Its `addEntry` journal switch is the one seam T7 extends
+(`months.journals[i].addLine` naming the engine edit); leave it as it stands.
+
+##### The hooks and classes the Taxi and Ltd manifests rely on
+
+The shell renders these and the existing specs select them. A manifest's own views render
+into the same classes so the layouts, the axe gate and the drift walker apply.
+
+| Hook | Rendered by | Meaning |
+|---|---|---|
+| `body[data-product]`, `body.is-loaded` | the page, the shell | the manifest to mount; a book is loaded |
+| `.tab-btn[data-view][aria-selected]` in `#sheet-tabs` | shell | one per `manifest.views` entry, in order |
+| `.mobile-tab[data-tab]` | shell | `books`, `checks` |
+| `[data-example]`, `.example-name`, `.example-id`, `#file-picker`, `#drop-hint`, `#new-book-btn`, `#new-book-form`, `#new-book-error`, `#new-book-cancel`, `#continue-btn`, `#discard-btn`, `#empty-state-message`, `.continue-offer` | shell | the empty state; new-book field ids come from `newBook.fields` |
+| `#year-summary-sticky .ys-row`, `.year-table`, `.year-row[data-month][aria-expanded]`, `td.month-cell`, `.col-toggle`, `.col-hidden-always`, `.col-computed`, `tfoot.year-totals`, `#all-categories-toggle`, `.show-all-categories`, `.month-detail-row`, `.month-detail`, `.month-summary-item`, `#entries-toggle` | shared year view | the year table and its drill |
+| `.entries-table[data-journal]`, `tr.entry-row[data-entry]`, `.is-unposted`, `[data-amount-entry]`, `[data-date-entry]`, `[data-account-entry]`, `[data-delete-entry]`, `.entry-add-row[data-add-journal]`, `[data-add-field]`, `[data-add-entry]`, `.entry-account-name`, `.entry-account-code`, `.entry-detail`, `.entry-flag` | shared year view | the entries grid |
+| `.journal-switch button.journal-switch-btn[data-journal-switch][aria-pressed]` | shared year view, three or more journals | SE's and Ltd's journal switch |
+| `.month-cards .month-card[data-month-card]`, `.month-card-head[aria-expanded]`, `.month-card-figures .figure-value` | shared year view | mobile portrait |
+| `[data-r-key]` | every view | the report keys, `" || "`-joined; inputs carry it on the element |
+| `.pencil-correction`, `.computed-value`, `.as-read`, `.drift-amount`, `.drift-tag`, `.in-margin`, `.is-recalculated`, `.form-row-margin` | the drift walker | the correction mark |
+| `.panel-grid`, `.panel-card`, `.panel-form-width`, `.kv-table`, `tr.total`, `.register-table`, `.rate-provenance`, `.view-lede`, `.view-period`, `.entries-note` | product views | panels and tables |
+| `.editable-field`, `[data-book-field]`, `[data-book-path]`, `.field-hint` | product views through `helpers.field` | book fields the shell commits |
+| `.form-render`, `.form-masthead`, `.form-name`, `.form-microcopy`, `.form-section`, `.form-row`, `.total-row`, `.box-chip`, `.form-row-label`, `.form-amount-wrap`, `.form-amount-box`, `.whole-pounds-note`, `.form-rate-pencil` | `helpers.form` | the HMRC form idiom |
+| `#inspector`, `#inspector-drawer`, `.drift-summary`, `.checks-list`, `.book-checks-list`, `.check-item.pass|warn|fail`, `.is-warning`, `.check-tier`, `.checks-passing`, `[data-book-check]`, `[data-helper-preview]`, `[data-helper-apply]`, `[data-helper-cancel]`, `.helper-changes`, `.check-offenders`, `#inspector-save-btn` | shell | checks and helpers |
+| `#headlines-strip-mount`, `.headlines-strip`, `.headline-tiles [data-r-key^="headline/"]` | `headlines.js` | the strip |
+| `#save-btn`, `#save-btn-mobile`, `#save-menu [role=menuitem]`, `#undo-btn`, `#undo-btn-mobile`, `#drawer-toggle-btn`, `#theme-toggle`, `#toast`, `.toast-action-btn`, `#mobile-action-bar`, `#mobile-tabbar`, `#app-title .title-business`, `.title-view` | shell | chrome |
+
+##### Booting a product page
+
+`bst.html`: `<body class="diya-books" data-product="bst">`; the scripts become
+`assets/vendor/jszip.min.js`, `xlsx-cells.js`, `autosave.js`, `data.js` (module),
+`edits.js`, `headlines.js`, `products/bst.js`, `shell.js`. The module script runs before
+`DOMContentLoaded`, so `DiyaGlBooksLoader` exists when the shell boots. `se.html` (T7) is
+the same file with `data-product="se"`, `products/se.js` in place of `products/bst.js`,
+`se.css` for `bst.css`, and its own title, description and back link. A second product's
+manifest reaches a page only through `loadManifest`, after a sniff or a continue.
+
+##### `books.css`
+
+`git mv bst.css books.css`. The new `bst.css` is the licence header and
+`@import url("books.css");`. `bst.html` keeps its `bst.css` link; `headlines-probe.html`
+links `books.css`. No rule moves or changes. T7's `se.css` and Taxi's `taxi.css` import the
+same sheet and add product rules only.
+
+##### The existing specs
+
+Selector and path edits only, no expectation changes, no skips:
+
+- `books-render-coverage.browser.test.js:62` and `books-equivalence.browser.test.js:21`
+  read `app/data/render-unrepresentable/bst.json` (`git mv` the file; T10 lands `se.json`
+  beside it).
+- `window.DIYA_BST_SNAPSHOT` becomes `window.DIYA_BOOKS_SNAPSHOT` wherever the specs read
+  it: `books-bst.browser.test.js`, `books-bst-edits.browser.test.js`,
+  `books-empty-state.browser.test.js`, `books-formats.browser.test.js` (find them with
+  `grep -rn DIYA_BST_SNAPSHOT web/browser-tests`). Same reads, new name.
+- Every other spec is unchanged, including `books-bundle-gate` (the engine exports it
+  imports stay), `books-headlines` (the adapter stays), `books-save` (`save-probe.js` does
+  not reach `data.js`), `books-layouts` (four menu items on BST) and
+  `books-deep-links` (the message still names the three ids).
+
+##### Tests to add
+
+`web/browser-tests/books-shell.browser.test.js`, appended to `playwright.config.js` after
+`books-formats`:
+
+- "the tab strip lists the mounted manifest's views in order" (load `bst-scenario-basic`;
+  the `.tab-btn[data-view]` ids equal `window.DiyaGlBooksPage.manifest.views.map(v => v.id)`).
+- "the empty state's example buttons and the unknown-example message come from the manifest"
+  (`[data-example]` keys equal `manifest.examples` keys; `?example=nope` lists the same keys).
+- "the new-book form renders the manifest's fields" (input ids equal `manifest.newBook.fields[].id`;
+  the labels match; "Create book" builds a book whose product field is `manifest.schemaName`).
+- "rkFor gives every CELL_MAP row the cell key and the section key S2 prints" (for each
+  `CELL_MAP` row, `page.evaluate(([s, c]) => DiyaGlBooksPage.helpers.rkFor(s, c))` splits
+  into two keys, both present in `s2("examples/precision-code-ltd/bst")`'s key set).
+- "a manifest view without a renderer is refused at mount" (`DiyaGlBooksPage.mount({...views: [{ id: "x" }]})`
+  rejects naming `x`; the page keeps its current manifest).
+- "loadManifest rejects for a product the site has no manifest for" (`loadManifest("nope")`
+  rejects naming `products/nope.js`).
+- "the headlines strip is fed the snapshot's own report" (after a load, the turnover tile
+  equals `headlinesFromReport(snapshot.report, HEADLINES).tiles.turnover.value` computed in
+  the page from `window.DIYA_BOOKS_SNAPSHOT.report`).
+
+`app/test/books-product-manifest.test.js` (Node, imports the manifest file, which assigns
+`globalThis.DiyaGlProducts`):
+
+- "the BST manifest lists the ten view ids the page had" (the order at `bst.js:17` to `:28`).
+- "categories() names the seventeen Profit & Loss cells from C4 to C24 in CELL_MAP order,
+  with three computed".
+- "classify() sums to the engine's own annual cells" over the three fixtures: group each
+  fixture's lines through `classify`, apply `closeYear` and `derive`, and assert each
+  additive key's total equals `results["Profit & Loss Acc"][cell]` within a penny, `capex`
+  equals `results["Fixed Assets"].E1`. This is the proof the year table's month rows add up
+  to the year total; corrupt one `LETTER_KEYS` entry in a copy and the test names that key.
+- "the SA103S boxes name CELL_MAP SA103S cells, box 50 alone has none".
+- "the income tax layout names every Income Tax CELL_MAP cell exactly once".
+- "ADMIN_FORMATS names Admin CELL_MAP cells only".
+- "the manifest file defines DiyaGlProducts.bst and nothing else on the global".
+
+Breakability for the browser half is the existing coverage sweep: remove one `rkFor` call
+in a copy of `products/bst.js` and the render-coverage spec names the missing key.
+
+##### Commands
+
+```
+node scripts/build-books-bundle.mjs
+npx vitest run --fileParallelism=false app/test/books-product-manifest.test.js
+npx playwright test --project=browser-tests web/browser-tests/books-shell.browser.test.js 2>&1 | tee <scratch>/shell.log
+npm run test:browser 2>&1 | tee <scratch>/browser.log
+npm start &   # then
+npm run test:spreadsheetsBehaviour-local 2>&1 | tee <scratch>/behaviour.log
+npx vitest run --fileParallelism=false app/test/books-interchange.test.js app/test/export-file.test.js app/test/diya-gl-mcp.test.js app/test/bst-workbook.test.js app/test/bst-workbook-roundtrip.test.js app/test/bst-headlines.test.js app/test/overtype-sidecar.test.js app/test/book-checks.test.js
+```
+
+Commit before waiting; wait with `timeout 900 bash -c 'while pgrep -f "playwright test" >/dev/null; do sleep 15; done'`.
+
+##### Acceptance
+
+- `npm run test:browser` green, 160 tests plus the new spec, no skip, no allowance.
+- `wc -l web/spreadsheets.diyaccounting.co.uk/public/books/shell.js .../data.js .../products/bst.js`
+  sums to 4,422 or fewer.
+- `grep -c "Profit & Loss Acc" web/spreadsheets.diyaccounting.co.uk/public/books/products/bst.js` is 0;
+  `grep -c "rk2(" .../products/bst.js` is 0; `grep -rn "DIYA_BST_SNAPSHOT\|bst-data\|bst-edits" web app scripts --include=*.js --include=*.html --include=*.mjs` returns nothing.
+- `ls web/spreadsheets.diyaccounting.co.uk/public/books/bst.js` fails; `books.css`, `shell.js`, `data.js`, `edits.js`, `products/bst.js` exist.
+- `git diff --stat main -- app/lib` touches only `books-engine.js` (three names: `resolveBstPurchaseCodeMap`
+  joined to the loader line, `slug` joined to the serializer line, one new line for
+  `BST_SALES_ACCOUNTS`), `xlsx-exporter.js` (`export` on `STOCK_CELLS`) and, only if T5 left
+  it unexported, `diya-gl-loader.js` (`export` on `PURCHASE_CODE_MAPS`).
+- The behaviour probe passes locally.
+- `app/products/*`, `app/lib/mcp/*`, `app/bin/export.js`, `scripts/build-books-bundle.mjs` unchanged.
+
+##### Landing order
+
+S7 lands after S6 and S2 and before S8, S4's page half, T7, T8, Taxi T13 and Ltd T7.
+`data.js` is written by S7, then S8 (the example list out), then S4 (import lines for
+`drift.js`). `shell.js` is written by S7 then S8; T7, T13, Taxi's rows and Ltd's rows must
+not touch `shell.js`, `data.js` or `books.css`; a shared fix comes back as one line on the
+S7 row in `NEXT.md`. `books-engine.js` takes S7's three names after S6 and before S4, T6
+and Taxi T13. `app/data/render-unrepresentable/` gains `bst.json` here, then `se.json` (T10),
+`taxi.json` (Taxi T13), `ltd.json` (Ltd T9). `playwright.config.js` takes
+`books-shell.browser.test.js` here, then T7, T11, T12, Taxi T17, T13, Taxi T18, Ltd T18 in
+series.
+
 ### S8 Example books served per product
 
 Tier: Haiku. Precursor: S7.

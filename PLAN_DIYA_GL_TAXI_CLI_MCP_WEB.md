@@ -426,6 +426,11 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   expectation followed on the batch branch. R1 (generate-bst, -se, -taxi with skip-commit)
   dispatched on the branch.
 
+- T1 writer day sums, joined names, caption rows and the off-grid refusal `a883692b`, merged
+  2026-09-04. The loader's entry-order sort now covers Taxi, which swaps two tied-date rows on
+  SP Sixty's `PurchasesApr` (rows 5 and 6); the Sales sheets are byte-identical on all three
+  fixtures. R3 absorbs the swap.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
