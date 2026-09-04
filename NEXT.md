@@ -34,7 +34,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | SE-T2 | T2 SE writer inputs; five throws become skips; nine-file package reconciles | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S3, SE-T1, SE-T5 | blocked-to-start | Opus, wave 6 |
 | SE-T3 | T3 CIS both ways; BrickWork CIS-suffered sale; regeneration point | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Opus, wave 5, R4 after merge |
 | SE-T4 | T4 SE headline declaration | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S5, SE-T3, SE-T2 | blocked-to-start | Sonnet, wave 7 |
-| SE-T5 | T5 SE book checks, warnings, helpers, `bankBalancesByMonth` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T8, TX-T4 | blocked-to-start | Opus, wave 3 |
+| SE-T5 | T5 SE book checks, warnings, helpers, `bankBalancesByMonth` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | TX-T4 | blocked-to-start | Opus, wave 3 |
 | SE-T6 | T6 settlement helpers and `addBankLine` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T5, SE-S6 | blocked-to-start | Opus, wave 6 |
 | SE-T7 | T7 SE view manifest, renders, new-book form | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S7, SE-S4, SE-T5, SE-T6 | blocked-to-start | Opus, wave 7 |
 | SE-T8 | T8 SE forms as layout modules: SA103S, SA103F, VAT, computation | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S7, SE-T7 | blocked-to-start | Sonnet, wave 7, after SE-T7 |
@@ -49,7 +49,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T4 | Taxi T4 other income end to end: 4001, fixtures, calculator, checks | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 2, `.worktrees/spreadsheets/taxi-t4` |
 | TX-T5 | Taxi T5 partial-year Wages Forecast, autumn-start master | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4 | blocked-to-start | Opus, wave 3 |
 | TX-T6 | Taxi T6 `CELL_MAP` additions, Business Details move, CONTEXT doc; regeneration point | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4, TX-T5 | blocked-to-start | Sonnet, wave 4, R3 after merge |
-| TX-T8 | Taxi T8 warnings: fare miles, vehicle register, miles band | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, wave 2, `.worktrees/spreadsheets/taxi-t8` |
+| TX-T20 | Taxi T20 SP Sixty's last fifteen fare days carry their miles in the master; fixtures regenerated | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T4 | blocked-to-start | Haiku, wave 3, after TX-T4 in `examples/` |
 | TX-T9 | Taxi T9 extraction map and the sidecar's Taxi baseline | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2, TX-T6 | blocked-to-start | Sonnet, wave 6 |
 | TX-T10 | Taxi T10 anchor table in `anchors/taxi.js` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 6, before LT-T2 in `books-interchange.js` |
 | TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S3, SE-S6 | blocked-to-start | Sonnet, wave 5 |
