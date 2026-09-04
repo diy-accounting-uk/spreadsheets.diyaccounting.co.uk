@@ -395,6 +395,43 @@ describe("the fix-it helpers", () => {
   });
 });
 
+// ============================== the reposting account follows the book's product ==============================
+
+describe("the reposting account follows the book's product", () => {
+  it("a Taxi book reposts to 6200", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes).toHaveLength(1);
+    expect(preview.changes[0].becomes).toBe("6200 — " + book.accounts.purchases["6200"].accountMainDescription);
+
+    const applied = applyHelper({ book, lines }, "book-accounts-in-chart");
+    const fixedLine = applied.find((l) => l.entryNumber === offender.entryNumber);
+    expect(fixedLine.accountMainID).toBe("6200");
+  });
+
+  it("a Taxi book whose chart drops 6200 falls to its first account", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+    delete book.accounts.purchases["6200"];
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes[0].becomes.startsWith("5100")).toBe(true);
+  });
+
+  it("a BST book still prefers 5002", () => {
+    const { book, lines } = loadDiyaGlData(resolve(REPO_ROOT, "examples", "precision-code-ltd", "bst"));
+    const offender = lines.find((l) => l.sourceJournalID === "purchases");
+    offender.accountMainID = "9999";
+
+    const preview = previewHelper({ book, lines }, "book-accounts-in-chart");
+    expect(preview.changes[0].becomes.startsWith("5002")).toBe(true);
+  });
+});
+
 // ============================== bookChecksJson ==============================
 
 describe("bookChecksJson", () => {

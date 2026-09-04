@@ -75,13 +75,19 @@ function reachesAnAccount(chart, line) {
 }
 
 // The account an offending line is reposted to: the book's own chart for
-// that journal, preferring the code the sheet files miscellaneous spend
-// under, falling back to whichever account the chart declares first. A
-// book whose chart declares nothing on that side gets no fix-it.
-function repostAccount(chart, journal) {
-  const side = journal === "sales" ? chart.sales : chart.purchases;
-  const preferred = journal === "sales" ? "4000" : "5002";
-  const list = side || [];
+// that journal, preferring the code each product's sheet files
+// miscellaneous spend under, falling back to whichever account the chart
+// declares first. A book whose chart declares nothing on that side, or
+// whose product has no entry here, gets no preferred code and falls back.
+const REPOST_PREFERRED = {
+  BasicSoleTrader: { sales: "4000", purchases: "5002" },
+  TaxiDriver: { sales: "4000", purchases: "6200" },
+};
+
+function repostAccount(ctx, journal) {
+  const product = (ctx.book && ctx.book.entityInformation && ctx.book.entityInformation["diya-gl:product"]) || "";
+  const preferred = (REPOST_PREFERRED[product] || {})[journal];
+  const list = (journal === "sales" ? ctx.chart.sales : ctx.chart.purchases) || [];
   return list.find((account) => account.code === preferred) || list[0] || null;
 }
 
@@ -179,7 +185,7 @@ const CHECK_SPECS = [
     buildHelper: function (ctx, offenders) {
       const changes = [];
       for (const line of offenders) {
-        const account = repostAccount(ctx.chart, line.sourceJournalID);
+        const account = repostAccount(ctx, line.sourceJournalID);
         if (!account) return null;
         changes.push({
           entryNumber: line.entryNumber,
@@ -197,7 +203,7 @@ const CHECK_SPECS = [
     },
     apply: function (ctx, offenders) {
       return offenders.reduce(function (currentLines, line) {
-        const account = repostAccount(ctx.chart, line.sourceJournalID);
+        const account = repostAccount(ctx, line.sourceJournalID);
         if (!account) throw new Error("No account in the book's chart to repost this entry to.");
         return changeLineAccount(ctx.book, currentLines, { entryNumber: line.entryNumber, newAccountMainID: account.code });
       }, ctx.lines);
