@@ -1198,7 +1198,7 @@ export const CELL_MAP = [
   [TAX_SHEET, "K26", "Less: losses brought forward","gl-cor:amount (ct600.lossesBf)", "Corporation Tax working sheet", 1],
   [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
-  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
+  [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box600)","Corporation Tax working sheet", 0],
   // ── The CT600's own tax boxes, Version 3 (2026) numbering, so the report
   // states what the form files as well as what the working sheet charges.
   // Boxes 330 to 345 are the first financial year the accounting period

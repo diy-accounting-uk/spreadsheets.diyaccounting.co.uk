@@ -569,7 +569,7 @@ D2 carries the balance sheet date (`='PubP&L'!D3`).
 | K26 | Less: losses brought forward | `gl-cor:amount (ct600.lossesBf)` | `ct-comp:LossesBroughtForward` | 160 |
 | K28 | **Profit Chargeable to CT** | `gl-cor:amount (ct600.box315)` | `ct-comp:AdjustedProfitForThePeriod` | 315 |
 | K35 | **Corporation Tax** | `gl-cor:taxAmount (ct600.box430)` | CT600 `CorporationTax` | 430 |
-| K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box515)` | CT600 `TaxPayable` | 515 |
+| K39 | Tax Outstanding | `gl-cor:taxAmount (ct600.box600)` | CT600 `TaxOutstanding` | 600 |
 
 Rows 33 and 34 are the two dated tax rows the charge is built from: A33/A34 the days each
 covers, F33/F34 the share of the chargeable profit, G33/G34 the rate and I33/I34 the tax. K37
