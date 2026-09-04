@@ -308,23 +308,28 @@ async function readDiyaGlZipSource(bytes) {
   const bookToml = await zip.file(bookEntry).async("string");
   const linesRaw = await zip.file(linesEntry).async("string");
   const { book, lines } = parseDiyaGlData(bookToml, linesRaw);
-  return validated("diya-gl-zip", book, lines);
+  const source = validated("diya-gl-zip", book, lines);
+  // A zip carries no product of its own beside the book, the way the JSON
+  // form does, so the book's own field is the only thing that names it.
+  const product = declaredProductOf(source.book);
+  if (!product) throw new InvalidDiyaGlBookError([`the book declares no product: ${undeclaredProduct(source.book)}`]);
+  return { ...source, product };
 }
 
-// The product a book declares for itself, which is what writeBookJson stamps
-// the document with. The schema leaves the field optional and its enum also
-// carries three Payslip products, so a book reaching here without one of the
-// four is refused rather than written under a guess.
+// The product a book declares for itself. The schema leaves the field
+// optional and its enum also carries three Payslip products, so a book can
+// reach here declaring nothing this pipeline reads or writes.
 function declaredProductOf(book) {
   const schemaName = book.entityInformation?.["diya-gl:product"];
-  const product = schemaName === undefined ? undefined : productIdOf(schemaName);
-  if (!product) {
-    throw new Error(
-      `This book declares no product to write: entityInformation."diya-gl:product" is ${JSON.stringify(schemaName)}, ` +
-        `and diya-gl writes ${Object.values(SCHEMA_PRODUCT_NAMES).join(", ")}.`,
-    );
-  }
-  return product;
+  return schemaName === undefined ? undefined : productIdOf(schemaName);
+}
+
+function undeclaredProduct(book) {
+  const schemaName = book.entityInformation?.["diya-gl:product"];
+  return (
+    `entityInformation."diya-gl:product" is ${JSON.stringify(schemaName)}, ` +
+    `and the products diya-gl carries are ${Object.values(SCHEMA_PRODUCT_NAMES).join(", ")}`
+  );
 }
 
 // { "format": "diya-gl-books", "version": 1, "product": "bst", "book": {...}, "lines": [...] }
@@ -362,7 +367,7 @@ function parseJsonDocument(text) {
 
 function readJsonSource(bytes) {
   const document = parseJsonDocument(decodeText(bytes));
-  return validated("json", document.book, document.lines);
+  return { ...validated("json", document.book, document.lines), product: document.product };
 }
 
 async function readJsonZipSource(bytes) {
@@ -370,8 +375,7 @@ async function readJsonZipSource(bytes) {
   const entryName = Object.keys(zip.files).find((name) => !zip.files[name].dir);
   const text = await zip.file(entryName).async("string");
   const document = parseJsonDocument(text);
-  const { book, lines } = validated("json-zip", document.book, document.lines);
-  return { kind: "json-zip", book, lines };
+  return { ...validated("json-zip", document.book, document.lines), product: document.product };
 }
 
 /**
@@ -418,10 +422,12 @@ export async function readBookSource(bytes, name, deps = {}) {
  * @returns {string}
  */
 export function writeBookJson(book, lines) {
+  const product = declaredProductOf(book);
+  if (!product) throw new Error(`This book declares no product to write: ${undeclaredProduct(book)}.`);
   const document = {
     format: JSON_FORMAT,
     version: JSON_VERSION,
-    product: declaredProductOf(book),
+    product,
     book: orderedBookTopLevel(book),
     lines: [...lines].sort(compareLines).map(orderedLine),
   };

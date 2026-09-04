@@ -444,6 +444,19 @@ describe("the JSON interchange's product, at all four ids", () => {
     expect(caught.message).toContain('"BasicSoleTrader"');
   });
 
+  it("names the product a diya-gl zip's book declares", async () => {
+    const source = await readBookSource(referenceDiyaGlZipBytes, "book-diya-gl.zip");
+    expect(source.product).toBe("bst");
+  });
+
+  it("refuses a diya-gl zip whose book declares no product, naming the field", async () => {
+    const withoutProduct = referenceBookToml.replace(/^"diya-gl:product" = .*\n/m, "");
+    expect(withoutProduct).not.toBe(referenceBookToml);
+    const bytes = await zipOf({ "book.toml": withoutProduct, "lines.jsonl": referenceLinesJsonl });
+    await expect(readBookSource(bytes, "no-product.zip")).rejects.toThrow(InvalidDiyaGlBookError);
+    await expect(readBookSource(bytes, "no-product.zip")).rejects.toThrow(/diya-gl:product/);
+  });
+
   it("refuses a JSON document at a product id no product carries", async () => {
     const document = JSON.parse(referenceJson);
     document.product = "payslip";
