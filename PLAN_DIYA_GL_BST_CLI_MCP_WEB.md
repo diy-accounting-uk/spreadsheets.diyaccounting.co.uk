@@ -451,19 +451,17 @@ while they were open:
   UX pass (`061c4c42`); T11 date and account row editors, the five-column year table
   (`77bfa74b`); T15 the edit and warning proofs (`2a114c13`).
 
-Open:
+Landed after the batch, on their own branches:
 
-- **R4** — refresh `examples/bst-latest` through the generate-bst workflow on main, then
-  drop the two-cell allowlist in `books-equivalence.browser.test.js` (A3) and the
-  entry-number normalisation in `books-formats.browser.test.js` (E3). Runs after the merge
-  as the operator's main-side generate refresh.
-- **T16 deep links** (operator, 2026-09-03) — `books/bst.html?example=<id>` loads the named
-  example on arrival, using the ids the example buttons already carry (`bst-scenario-basic`,
-  `bst-brickwork-pro-nonvat`, `bst-sp-sixty`); `&view=<data-view id>` and `&month=YYYY-MM`
-  land on a view or an open month; an unknown id shows the empty state with a plain
-  message; the page keeps the URL current as the user moves so a link can be copied back
-  out; a deep link never touches the autosave record. A Playwright spec proves each
-  parameter and the unknown-id case.
+- **R4** byte equality with no test allowances (`claude/byte-equality`, PR #58, merged
+  2026-09-03): the generate-bst refresh on main committed `c3e206d2`, then the two-cell
+  allowlist in `books-equivalence.browser.test.js` and the entry-number normalisation in
+  `books-formats.browser.test.js` went, replaced by entry-order rows, the master's
+  description and like-for-like year-ends.
+- **T16** deep links (`claude/deep-links`, PR #59, merged 2026-09-04): `?example=<id>`,
+  `&view=<id>` and `&month=YYYY-MM` on `books/bst.html`, the URL kept current as the user
+  moves, an unknown id showing the empty state, the autosave record untouched;
+  `books-deep-links.browser.test.js` proves each parameter and the unknown-id case.
 
 ### Horizons named, not decided
 

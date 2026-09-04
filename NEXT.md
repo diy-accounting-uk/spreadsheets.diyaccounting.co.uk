@@ -7,9 +7,10 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 ## In flight
 
 `PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`'s batch (`claude/bst-ledger`, PR #57) merged to main on
-2026-09-03 and is live in production. The generate-bst refresh committed `c3e206d2`; R4b's
-fixes merged as PR #58. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
-plan of record; its seven decisions were taken on 2026-09-04 and are recorded in it, and it carries its
+2026-09-03 and is live in production. Its two follow-ons landed after it: R4, byte equality
+with no test allowances (PR #58, 2026-09-03, after the generate-bst refresh `c3e206d2`), and
+T16, deep links into the example books (PR #59, 2026-09-04). The plan has no open rows.
+`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record; its seven decisions were taken on 2026-09-04 and are recorded in it, and it carries its
 own open items (the Rust port plan and the operator's research for it).
 
 ## Board
