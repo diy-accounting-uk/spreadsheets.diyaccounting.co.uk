@@ -443,6 +443,12 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   `Admin: NI Class 2 Weekly Rate = tax data` on every Taxi scenario until the main-side refresh
   rewrites them; CI regenerates first and is green.
 
+- T13 design `f2606bf8`, 2026-09-04: the T13 coding brief with the T14 and T15 briefs inside it
+  (tiers Opus, Fable, Opus). Corrections it made to later rows: T17's A7 proof corrupts
+  `Profit & Loss Acc!D5`, since `SalesMay!E1` is read by nothing; T18's boxes 33 to 38 are present
+  with no key, as SE T8 has them; `app/products/taxi.js` lands in the order T1, T4, T5, T6, T12,
+  T13 (T13 adds 48 monthly `CELL_MAP` rows), and the H1 refresh runs again after T13, before T17.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

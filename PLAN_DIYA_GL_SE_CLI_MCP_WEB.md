@@ -432,6 +432,11 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- The S7 coding brief gains five seam lines the Taxi T13 brief needs, per that brief's "seams"
+  paragraph: `yearTable.monthDetail` and `bindMonthDetail`; `journals[i].entriesGrid === false`;
+  `derive(row, monthKey, ctx)`; `monthlyCell(monthLabel, productMod, categoryKey)` called per
+  column; helper kinds `book` and `focus` in the inspector with an `ACTION_LABELS` fallback in
+  `edits.js`. The S7 coder reads that paragraph before starting.
 - S3 `product-workbook.js` writes any product (`saveWorkbook`, `saveWorkbookFiles`,
   `savePackageZip`, `productOf`, `taxYearFileName`; `setFullCalcOnLoad` and
   `applyYearEndSequence` in the generator) `3dc296c9`, `4275ecdf`, `91767d78`, merged 2026-09-04;

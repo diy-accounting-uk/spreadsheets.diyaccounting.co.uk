@@ -55,12 +55,11 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-T10 | Taxi T10 anchor table in `anchors/taxi.js` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S2 | blocked-to-start | Sonnet, wave 6, before LT-T2 in `books-interchange.js` |
 | TX-T11 | Taxi T11 through the product writer, CLI and MCP | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S6 | blocked-to-start | Sonnet, wave 5 |
 | TX-T12 | Taxi T12 headline declaration and the comparison tile | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T6, LT-T22 | blocked-to-start | Sonnet, wave 5 |
-| TX-T13d | Taxi T13 design: manifest brief plus T14 and T15 briefs | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 3, `.worktrees/spreadsheets/taxi-t13-design` |
-| TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d, SE-S7, TX-T6 | blocked-to-start | tier per brief, wave 6 |
-| TX-T14d | Taxi T14 design: the takings view brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d | blocked-to-start | Fable, wave 4, brief appended under T14 |
-| TX-T14 | Taxi T14 the takings view: year, month, week, day, fares | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T14d, TX-T13 | blocked-to-start | tier per brief, wave 7 |
-| TX-T15d | Taxi T15 design: comparison panel, computation, SA103S brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T13d, TX2 | blocked-to-start | Opus, wave 4, brief appended under T15 |
-| TX-T15 | Taxi T15 the remaining views and the SA103S render | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15d, TX-T13, SE-T8, TX2 | blocked-to-start | tier per brief, wave 8 |
+| TX-T13 | Taxi T13 view manifest, derivations, `render-unrepresentable/taxi.json` | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S7, TX-T6 | blocked-to-start | Opus, wave 6 |
+| TX-T14d | Taxi T14 design: the takings view brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Fable, wave 4, brief appended under T14 |
+| TX-T14 | Taxi T14 the takings view: year, month, week, day, fares | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T14d, TX-T13 | blocked-to-start | Fable, wave 7 |
+| TX-T15d | Taxi T15 design: comparison panel, computation, SA103S brief | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus, wave 4, brief appended under T15 |
+| TX-T15 | Taxi T15 the remaining views and the SA103S render | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15d, TX-T13, SE-T8, TX2 | blocked-to-start | Opus, wave 8 |
 | TX-T16 | Taxi T16 example books, `taxi.html`, download panel, behaviour probe | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | SE-S8, TX2, TX-T13, LT-T7 | blocked-to-start | Sonnet, wave 7, one worktree with LT-T10 |
 | TX-T17 | Taxi T17 equivalence, formats, edits, layouts; `r-sources.js` takes a product | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T11, TX-T14, TX-T15, TX-T16, TX-H1, SE-T12 | blocked-to-start | Sonnet, wave 9 |
 | TX-T18 | Taxi T18 the form-box proof on both routes | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | TX-T15, TX-T17, SE-T13 | blocked-to-start | Sonnet, wave 10 |
