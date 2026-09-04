@@ -443,6 +443,19 @@ each rebasing on the last.
   `taxSecond`, `assetsSecond` and `dividends` extensions, merged 2026-09-04; R2 (generate-ltd
   with skip-commit) dispatched on the branch.
 
+- T5 eight Ltd rules behind a product hook `d4728805`, `7b3c0c42`, `820edc69`; T6a the four Company
+  edits `3b45d079`; merged 2026-09-04. T5 found five remainders, carried as **T20** (Sonnet,
+  after Taxi T8 in `book-checks.js`): `TXN-0155` in `examples/precision-code-ltd/lines.jsonl`
+  has no counter leg on 1200 for 2025-06-10 (add it to the master, run the extractor); the E37 and
+  D91 checks at `app/products/ltd.js:2303` sit behind `expected.opening_balance`, which
+  `diyaGlToScenario` never sets, so they never run from a book (both compare a cell to 0 and
+  need no `expected`); `book-duplicate-entries` counts a balanced journal's second leg as a
+  duplicate (six offenders on the full fixture, none on BST); `export.js`'s `writeBookChecksJson`
+  and the MCP `report` tool pass no `results`, so the dividend warning cannot see distributable
+  profits there; `app/lib/diya-gl-loader.js:550` reads `book.dividends[0]` only. T6a found that
+  raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
+  payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
