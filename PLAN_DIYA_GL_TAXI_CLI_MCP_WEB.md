@@ -152,8 +152,9 @@ template: `Business Details!C3` "Your name", `SE Short!O1` "Self-employment (sho
 allowable expenses ", `Fixed Assets!A46` "Vehicles under £12,000 bought after", `Draft Tax
 calculation!B17` "TOTAL Income Tax & NI Liability", `Wages Forecast!B41` "TAX & NI
 LIABILITY", `SalesApr!E2` "Gross takings including tips", `SalesApr!C2` "Customer Name
-(rental/other income)", `PurchasesApr!D2` " Enter Expense Code Letter" (leading space),
-`PurchasesApr!U2` "Mileage Allowance", `Admin!D19` "Mileage Allowances". The JSON form
+(rental/other income)", `PurchasesApr!D2` "Enter Expense Code Letter" (the sheet carries a leading space; the guard
+compares trimmed text), `PurchasesApr!U2` "Mileage Allowance", `Admin!D19` "Mileage
+Allowances". The JSON form
 carries `"product": "taxi"`. A BST workbook on the Taxi page is refused naming `Draft Tax
 calculation`.
 
@@ -177,7 +178,7 @@ and gated on nothing:
   writes `E` on its week's rental row; an other-income line writes `F` on the "Any other
   income" row when its detail is that caption and on its day row otherwise. Other income
   is a second sales account, 4001 "Other business income", declared in the book's chart;
-  the calculator routes it to F and B24 (T5) and the extractor reads it back (T3). The week
+  the calculator routes it to F and B24 (T4) and the extractor reads it back (T3). The week
   is found from the same `generateTaxYearWeeks` grid the row map uses.
 - **A date off the grid is refused by name.** `cellWrites` collects every sales date the
   grid lacks and throws one `TaxiDateOffGridError` naming them; the page's save shows the
@@ -344,8 +345,8 @@ The comparison tile joins the strip on every layout.
 The five sources and the seven assertions from the BST plan run per Taxi fixture, with
 `r-sources.js` taking a product: S2 through `report.js --package taxi --data`, S3 from
 `examples/taxi-latest` at the year end read off `reports/*_taxi-scenario-basic.md`, S4 the
-page's zip, S5 the `[data-r-key]` figures. A5's declared absences for Taxi live beside
-BST's in `app/data/render-unrepresentable.json`, keyed by product.
+page's zip, S5 the `[data-r-key]` figures. A5's declared absences for Taxi live in
+`app/data/render-unrepresentable/taxi.json`, the per-product shape the SE plan's T10 lands.
 
 Product-specific:
 
@@ -377,10 +378,11 @@ Product-specific:
   week, day, add a fare, save.
 - **E7 forms.** T18: the SA103S render's boxes against the research file's list, both routes; the computation's lines against `calculateExpectedTax`, Class 2 included.
 - **Node.** `app/test/taxi-writer.test.js` (day sums, joined names, caption rows, off-grid
-  refusal, Business Details cells), `xlsx-exporter` cases for the rental and other-income
-  rows and column F, `calculator-taxi.test.js` for 4001 and the partial-year forecast,
-  `book-checks.test.js` for the three Taxi warnings and the 6200 repost. The behaviour probe
-  opens `books/taxi.html`, loads `taxi-scenario-basic` and asserts the four tiles.
+  refusal, Business Details cells), `app/test/xlsx-exporter.test.js` cases for the rental and
+  other-income rows and column F, `calculator-taxi.test.js` for 4001 and the partial-year
+  forecast, `book-checks.test.js` for the three Taxi warnings and the 6200 repost. The
+  behaviour probe in `behaviour-tests/spreadsheets.behaviour.test.js` opens `books/taxi.html`,
+  loads `taxi-scenario-basic` and asserts the four tiles.
 
 ## Task list
 
@@ -389,37 +391,39 @@ Taxi waits on SE:S2 (the guard table and the widened extraction map), SE:S3 (the
 writer), SE:S5 (headline declaration), SE:S6 (product map, CLI and MCP selection), SE:S7
 (shell and view manifest) and SE:S8 (example books per product). It does not wait on SE:S1
 (single file; the JSON product field arrives with S6's product map) or SE:S4 (no external
-links). T1 to T8 and T19 gate on nothing and can start today.
+links). T1, T2, T3, T7 and T19 gate on nothing and start today; T4, T5, T6 and T8 follow
+them and still need no SE row. The briefs below carry each row's design, tests, commands
+and acceptance; the per-file landing order and the wave table sit at their end.
 
 | # | Item | Precursors | Tier | Files |
 |---|---|---|---|---|
-| T1 | Writer: sum a day's lines into `E{row}`, join names into `C{row}`, write the rental and other-income caption rows, refuse off-grid dates with `TaxiDateOffGridError` naming them, Business Details to C5, C8, C17, O5 | — | Opus | `app/products/taxi.js`, `app/test/taxi-writer.test.js` |
+| T1 | Writer: sum a day's lines into `E{row}`, join names into `C{row}`, write the rental and other-income caption rows, refuse off-grid dates with `TaxiDateOffGridError` naming them; the loader sorts Taxi lines by entry number as it sorts BST's | — | Sonnet | `app/products/taxi.js` (the sales block of `cellWrites`), `app/lib/diya-gl-loader.js` (one condition), `app/test/taxi-writer.test.js` |
 | T2 | The reposting account per product: 6200 for Taxi, read from the book's product | — | Sonnet | `app/lib/book-checks.js`, `app/test/book-checks.test.js` |
-| T3 | Extractor: read the "Rental due" and "Any other income" rows and column F as 4000 and 4001 lines; `ENTITY_CELLS.taxi` to C5, C8, C17, O5 | — | Opus | `app/lib/xlsx-exporter.js`, `app/test/xlsx-exporter-taxi.test.js` |
-| T4 | Chart: 4001 "Other business income" in the Taxi fixtures' books and `filterTaxi` | — | Sonnet | `app/lib/diya-gl-loader.js`, `app/lib/scenario-extractor.js`, `app/bin/extract-scenarios.js`, `examples/*/book.toml` (the masters; the `taxi/` subsets regenerate) |
-| T5 | Calculator: 4001 to F, B24, `VitalTax` row 6 and `SE Short!O99`; the Wages Forecast spread for a year with fewer than twelve trading months, proved against LibreOffice on a partial-year book | T4 | Opus | `app/lib/calculators/taxi.js`, `app/test/calculator-taxi.test.js`, `examples/<new partial-year book>/taxi` |
-| T6 | `CELL_MAP` gains `Profit & Loss Acc!J1` and `C1`, `Fixed Assets!K1`, `Draft Tax calculation!E25` and `E26`, and its SA103S labels take the 2026 box numbers; `CONTEXT_TAXI.md` corrected (Business Details cells, O29 is goods for own use, the caption rows, the box numbers); regenerate and re-pin the Taxi reports | T1, T3 | Sonnet | `app/products/taxi.js`, `CONTEXT_TAXI.md`, `reports/*taxi*`, `examples/taxi-latest` |
-| T7 | Kestrel's 3 April fuel settlement moved into the period in the master data; `extract-scenarios.js` rerun; the sync gate green | — | Haiku | `examples/kestrel-executive-cars/lines.jsonl`, `examples/kestrel-executive-cars/taxi/`, `app/test/fixtures/taxi-scenario-kestrel.toml` |
-| T8 | Book warnings: fare day with no miles, vehicle purchase not on the register (with the register helper), miles past the band; breakability proofs | T2 | Sonnet | `app/lib/book-checks.js`, `app/test/book-checks.test.js` |
-| T9 | Taxi extractor records the extraction map and the overtype sidecar reads Taxi's template with a Taxi input-cell predicate (day rows' C, D, E, F; purchases A to F; the asset block; Business Details) | SE:S2, T3 | Sonnet | `app/lib/xlsx-exporter.js`, `app/lib/overtype-sidecar.js` |
-| T10 | Anchor guard table for Taxi: the 33 sheets and the header cells above | SE:S2 | Sonnet | `app/lib/xlsx-exporter.js`, `app/test/books-interchange.test.js` |
-| T11 | Writer through the product writer: Taxi template directory, `cellWrites(scenario)`, the Sales grid rebuild, package naming; `export.js --file` and the MCP tools accept `taxi` | SE:S3, SE:S6, T1 | Sonnet | `app/lib/bst-workbook.js` (or its successor), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `.mcp.json` |
-| T12 | Headline declaration beside Taxi's `CELL_MAP` and the comparison tile's figures | SE:S5, T6 | Sonnet | `app/products/taxi.js`, `app/lib/bst-headlines.js` (or its successor), `app/test/bst-headlines.test.js` |
-| T13 | Taxi view manifest: the view list above, `bst-data.js`'s Taxi derivations from `CELL_MAP` and `reportSections()`, the render-unrepresentable entries for Taxi | SE:S7, T6 | Fable | `web/.../books/taxi-data.js`, `app/data/render-unrepresentable.json` |
-| T14 | The takings view: year, month, week, day, fares; add-a-fare, add-rental, add-other-income; the four layouts | T13 | Fable | `web/.../books/taxi-views.js`, `web/.../books/bst.css` |
-| T15 | The comparison panel, the P&L health-check block, the vehicle register, the tax computation in the SA302 order with payments on account, the quarterly summary, the forecast, the SA103S render with the 2026 boxes and the box-12 placement | T13, T19 | Opus | `web/.../books/taxi-views.js` |
-| T16 | Example books and deep links: the three Taxi fixtures served under `books/assets/examples/`, `books/taxi.html`, the download page's panel | SE:S8, T7 | Sonnet | `scripts/build-books-bundle.mjs`, `web/.../books/taxi.html`, `web/.../public/download.html` |
-| T17 | The equivalence suite, round trips, warning proofs, layouts and axe for Taxi; `r-sources.js` takes a product; the behaviour probe | T11, T14, T15, T16 | Sonnet | `web/browser-tests/books-taxi-*.browser.test.js`, `web/browser-tests/r-sources.js`, `playwright.config.js`, `web/behaviour-tests/` |
-| T18 | The form-box proof: every 2026 box the page prints carries the right key, the mileage and actual-cost routes place the vehicle figures as specified, and the margin carries the sheet's figure where the two differ | T15 | Sonnet | `web/browser-tests/books-taxi-forms.browser.test.js` |
-| T19 | Tax data: `class2_small_profits_threshold` (6,845) and the 3.50 weekly rate in `se-2025-2026.toml` and later years; `calculateExpectedTax` returns the Class 2 line; the computation view prints it | — | Sonnet | `app/data/se-*.toml`, `app/lib/tax/income-tax.js`, `app/test/income-tax.test.js` |
+| T3 | Extractor: read the "Rental due" and "Any other income" rows and column F as 4000 and 4001 lines | — | Sonnet | `app/lib/xlsx-exporter.js` (the Taxi Sales loop), `app/test/xlsx-exporter.test.js` |
+| T4 | Other income end to end: 4001 "Other business income" in two masters' charts with the lines the sheet has rows for (a two-fare day, a grant, two rentals); the fixture path keeps caption and 4001 lines' names; the calculator routes 4001 to F, B24, `VitalTax` row 6 and `SE Short!O99`; the checks anchored to `expected.total_other_income` | T1, T7 | Sonnet | `examples/basic-taxi-driver/`, `examples/kestrel-executive-cars/`, `app/lib/scenario-extractor.js`, `app/lib/diya-gl-loader.js`, `app/lib/calculators/taxi.js`, `app/products/taxi.js` (`checkCompliance`, the VitalTax rows), `app/test/calculator-taxi.test.js`, the regenerated fixtures and subsets |
+| T5 | Calculator: the Wages Forecast spread for a year with fewer than twelve trading months, proved against LibreOffice on a new partial-year master | T4 | Opus | `examples/autumn-start-cabs/` (new), `app/bin/extract-scenarios.js`, `app/lib/calculators/taxi.js` (the Forecast block), `app/products/taxi.js` (the Forecast checks), `app/test/calculator-taxi.test.js`, `app/test/taxi-wages-forecast-checks.test.js` |
+| T6 | `CELL_MAP` gains `Profit & Loss Acc!J1` and `C1`, `Fixed Assets!K1`, `Draft Tax calculation!E25` and `E26`, `Business Details!D29` and `O29`, and its SA103S labels take the 2026 box numbers; Business Details move to C5, C8, C17, O5 across the writer, `ENTITY_CELLS.taxi`, `extractMetadata` and the calculator; `CONTEXT_TAXI.md` corrected; regenerate and re-pin the Taxi reports | T1, T3, T4, T5 | Sonnet | `app/products/taxi.js`, `app/lib/xlsx-exporter.js` (entity cells), `app/lib/calculators/taxi.js`, `CONTEXT_TAXI.md`, `app/test/calculator-taxi.test.js`, `app/test/xlsx-exporter.test.js`, `reports/*taxi*`, `examples/taxi-latest` (the refresh) |
+| T7 | Kestrel's 3 April fuel settlement moved into the period in the master data; `extract-scenarios.js` rerun; the sync gate green | — | Haiku | `examples/kestrel-executive-cars/lines.jsonl`, `examples/kestrel-executive-cars/taxi/`, `app/test/fixtures/taxi-scenario-kestrel.toml`, `app/test/book-checks.test.js` (one case) |
+| T8 | Book warnings: fare day with no miles, vehicle purchase not on the register (with the register helper, a book-changing apply), miles past the band; breakability proofs | T2 | Sonnet | `app/lib/book-checks.js`, `app/test/book-checks.test.js` |
+| T9 | Taxi extractor records the extraction map and the overtype sidecar reads a generated Taxi baseline with a Taxi input-cell predicate (Sales C, D, E, F; purchases A to F and BZ; the asset block; the four Business Details cells and D29, O29) | SE:S2, T3, T6 | Sonnet | `app/lib/xlsx-exporter.js`, `app/lib/overtype-sidecar.js`, `app/test/overtype-sidecar.test.js`, `app/test/xlsx-exporter.test.js` |
+| T10 | Anchor guard table for Taxi: the 33 sheets and the 13 header cells above | SE:S2 | Sonnet | `app/lib/anchor-tables.js` (the Taxi entry), `app/test/books-interchange.test.js` |
+| T11 | Writer through the product writer: Taxi template directory, `cellWrites(scenario)`, the Sales grid rebuild, package naming; `export.js --file` and the MCP tools accept `taxi` | SE:S3, SE:S6, T1 | Sonnet | `app/lib/product-workbook.js` (the Taxi entry), `app/bin/export.js`, `app/lib/mcp/diya-gl-tools.js`, `app/test/taxi-workbook.test.js` (new), `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js` |
+| T12 | Headline declaration beside Taxi's `CELL_MAP` and the comparison tile's figures | SE:S5, T6 | Sonnet | `app/products/taxi.js` (the declaration), `app/lib/headlines.js` (only if the reducer needs a field), `app/test/taxi-headlines.test.js` (new) |
+| T13 | Taxi view manifest: the view list above, the Taxi derivations from `CELL_MAP` and `reportSections()`, the render-unrepresentable entries for Taxi; the briefs for T14 and T15 | SE:S7, T6 | Fable (design wave) | `web/.../books/products/taxi.js` (new), `app/data/render-unrepresentable/taxi.json` (new) |
+| T14 | The takings view: year, month, week, day, fares; add-a-fare, add-rental, add-other-income; the four layouts | T13 | Fable (design wave) | `web/.../books/products/taxi-takings.js` (new), `web/.../books/taxi.css` (new) |
+| T15 | The comparison panel, the P&L health-check block, the vehicle register, the tax computation in the SA302 order with payments on account, the quarterly summary, the forecast, the SA103S render with the 2026 boxes and the box-12 placement | T13, T19 | Opus (design wave) | `web/.../books/products/taxi-views.js`, `web/.../books/products/taxi-forms.js` (new) |
+| T16 | Example books and deep links: the three Taxi fixtures served under `books/assets/examples/`, `books/taxi.html`, the download page's panel, the behaviour probe | SE:S8, T7 | Sonnet | `web/.../books/examples.js` (Taxi entries), `scripts/build-books-bundle.mjs` (the Taxi template assets), `web/.../books/taxi.html` (new), `web/.../public/download.html`, `behaviour-tests/spreadsheets.behaviour.test.js` |
+| T17 | The equivalence suite, round trips, warning proofs, layouts and axe for Taxi; `r-sources.js` takes a product | T11, T14, T15, T16 | Sonnet | `web/browser-tests/books-taxi-{equivalence,formats,edits,layouts}.browser.test.js` (new), `web/browser-tests/r-sources.js`, `playwright.config.js` |
+| T18 | The form-box proof: every 2026 box the page prints carries the right key, the mileage and actual-cost routes place the vehicle figures as specified, and the margin carries the sheet's figure where the two differ | T15, T17 | Sonnet | `web/browser-tests/books-taxi-forms.browser.test.js` (new), `playwright.config.js` |
+| T19 | Tax data: `class2_small_profits_threshold` (6,845) and the 3.50 weekly rate in `se-2025-2026.toml` and `se-2026-2027.toml`; `calculateExpectedTax` returns the Class 2 line; the computation view prints it (T15) | — | Sonnet | `app/data/se-2025-2026.toml`, `app/data/se-2026-2027.toml`, `app/lib/tax/income-tax.js`, `app/lib/diya-gl-loader.js` (one field), `app/test/tax/income-tax.test.js`, `app/test/tax/national-insurance.test.js` |
 | H1 | Merge each verified row's commit into the batch branch; regenerate on main after T6 | human | — | — |
 
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
 (`npx vitest run --fileParallelism=false app/test/taxi-*.test.js app/test/calculator-taxi.test.js
-app/test/book-checks.test.js`); `taxi-scenario-basic` and `taxi-scenario-sp-sixty` reconcile
-RECONCILES through `npm run reconciliation -- --package taxi`; full `npm test` before any
+app/test/book-checks.test.js`); every Taxi fixture reconciles RECONCILES through
+`npm run reconciliation -- --package taxi --year-end 2026-04-05`; full `npm test` before any
 push; `generate-taxi.yml` dispatched with skip-commit on the branch, then `test.yml`'s
 `roundtrip-taxi`; merge; the generate-commit refresh so `examples/taxi-latest` and the
 reports match the writer; `test:browser` serially; the ci behaviour probe. Every new check
@@ -435,3 +439,1132 @@ row carries no drift mark of its own. Class 2 NI has no line on the sheet. A boo
 the Taxi chart and opened as BST (SP Sixty's twin) is the loader's existing chart
 resolution, not this plan's. The quarterly summary as an MTD quarterly update belongs to
 the launch plan's Filing rung.
+
+## Briefs
+
+One brief per row. Each is written for an agent with no conversation context, working in a
+worktree forked from main that opens by merging `claude/diya-gl-products`. Rules every brief
+shares: read `CLAUDE.md`, `.claude/skills/excel/SKILL.md` and `.claude/skills/plain-prose/SKILL.md`
+first; `git add` only your own files; commit before any long run; wait on your own run with one
+blocking call; never end a turn with a run going. `npm test` runs the unit project; a test that
+needs LibreOffice skips itself when `soffice` is absent, so a brief that needs one says so. Every
+cell address below was read from `packages/GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel
+2007/Financialaccountsyearto050426.xlsx` or `examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx`
+on 2026-09-04.
+
+Facts the briefs lean on, beyond "Where the product stands":
+
+- `Business Details` pairs a label with the entry cell two rows down: `C3` "Your name" and
+  `C5`; `C7` "Description of business" and `C8` (the template ships "Taxi Driver" there);
+  `C15` "Postcode of your business" and `C17`; `N3` "Your unique taxpayer reference (UTR)"
+  and `O5`; `C27` "ENTER: Total losses brought forward from earlier years" and `D29`; `N27`
+  "ENTER: Value of goods and services for your own use" and `O29`. `SE Short` reads them:
+  `C13 = IF('Business Details'!C8>0,C8," ")` is box 1, `C15` and `C17` read `C10` and `C12`
+  as box 1's continuation lines, `C22` reads `C17` and `F22` reads `F17` for box 2, `O8` reads
+  `O5` for the UTR box, `D94` reads `O29`, `O94` reads `D29`. No formula reads `C7`. Today's
+  writer puts the description in `C7` (over the label), the address in `C8`, the town in
+  `C10` and the postcode in `C12`, so `examples/taxi-latest` prints "17 Station Road" as box
+  1 and nothing as box 2.
+- `Draft Tax calculation`: `D14 = Admin!L$20`, `D15 = Admin!L$23`, `E24 = E17`, `D25 =
+  Admin!B$21` (31 January after the year end), `E25 = E24/2`, `D26 = Admin!B$22` (31 July),
+  `E26 = E24/2`. `B20` reads "FUTURE TAX LIABILITY (if over £500)". No Class 2 row.
+- `Wages Forecast`: the actual half reads the P&L's monthly columns (`D5 = 'Profit & Loss
+  Acc'!C5`, `D7 = C24`, `D9 = C12`, `D13 = C22`, `C5 = SUM(D5:O5)` and so on down); `D19 =
+  IF(D5>0,1," ")`, `C19 = SUM(D19:O19)`; the forecast half per month is `D20 =
+  IF(C5>0,IF(D5>0,D5,C5/C19),0)`, `D22 = D7`, `D24 = IF($C5>0,IF(D5>0,D9,($C9-'Profit & Loss
+  Acc'!$B10)/$C19+'Profit & Loss Acc'!$B10/12),0)`, `D28 = IF($C5>0,IF(D5>0,D13,$C13/$C19),0)`,
+  `D26 = D20+D22-D24`, `D30 = D26-D28`; `C20` to `C30` sum their rows; `C34 = C30-C33`.
+- `Fixed Assets`: `K1 = K33+K62`, `K47 = IF(D47>0,D47-J47," ")`, `D62 = D44+D52+D60`.
+  `Profit & Loss Acc!J1 = ROUND(PurchasesMar!$I$2 + 'Fixed Assets'!I1 + J1 + P1 - Q1 (less the
+  older blocks' rows 15 and 44), 0)`, `I1 = IF(J1>=B1,"VEHICLE EXPENSES"," ")`. `VitalTax!C6 =
+  SUM('Profit & Loss Acc'!C24:E24)`, `G6 = SUM(C6:F6)`.
+- A Sales tab for 2025-26: 6 April 2025 is a Sunday, so the first week is one day (row 5,
+  rental row 6, other-income row 7, subtotal 8, blank 9) and Monday 7 April is row 10. The
+  week 7 to 13 April sits on rows 10 to 16 with rental row 17 and other-income row 18.
+  `SalesMay` starts Monday 28 April at row 5; its first rental row is 12 and other-income
+  row 13. `buildSalesSheetXml` (`app/lib/generator.js:830`) is the source of that layout.
+- `textAt` in `xlsx-exporter.js` trims, so an anchor label is compared without its leading or
+  trailing space: `PurchasesApr!D2` matches "Enter Expense Code Letter" and `VitalTax!B29`
+  matches "Total allowable expenses".
+- The exported chart names a Taxi sales account "Account 4000" (the Sales tab has no code
+  letters for `analysisHeadings` to read); a 4001 line exports as "Account 4001".
+- Reference bytes for a writer change: compose the workbook the way
+  `app/test/bst-workbook.test.js`'s `workbookTheGeneratePathComposes` does (`generateSpreadsheet`
+  on the template with `se-2025-2026.toml` and the taxi `meta.toml` `sheets` block, then
+  `applyCellWrites` with `cellWrites(diyaGlToScenario(book, lines, "taxi"))`). No LibreOffice is
+  involved, so the bytes are deterministic. For a command that would call `soffice`
+  (`generate.js --data`, `report.js --mode recalculate`), put a shim first on `PATH` whose
+  `--convert-to xls` and `--convert-to xlsx` copy the input into `--outdir` under the target
+  extension, as `app/test/spreadsheet-runner-recalculation.test.js` does; the real CLI then
+  writes reference bytes from the saved values.
+
+### T1 Writer: day sums, joined names, caption rows, off-grid refusal
+
+Purpose: make `cellWrites` in `app/products/taxi.js` a rendering of the book, one row a day,
+that never throws from inside a download.
+
+Files. Modifies `app/products/taxi.js`, the region from `buildDateRowMap` (line 24) to the end
+of the `if (scenario.sales)` block (line 115), plus one new export; modifies
+`app/lib/diya-gl-loader.js` at one condition (line 275); creates `app/test/taxi-writer.test.js`.
+Must not touch the Business Details block or the purchases block of `cellWrites`, `CELL_MAP`,
+`checkCompliance`, `app/lib/xlsx-exporter.js`, `app/lib/calculators/taxi.js`, `examples/`.
+
+Design.
+
+```js
+// app/products/taxi.js
+export class TaxiDateOffGridError extends Error {
+  constructor(dates) {            // dates: string[], ISO, sorted, unique
+    super(`${dates.length} sales ${dates.length === 1 ? "entry is" : "entries are"} dated outside the package's year: ${dates.join(", ")}. Move them into the period or change the book's period.`);
+    this.name = "TaxiDateOffGridError";
+    this.dates = dates;
+  }
+}
+```
+
+`buildDateRowMap(startYear)` becomes `buildSalesGrid(startYear)` and returns
+`{ days: Map<serial, { monthKey, row, week }>, weeks: Array<{ monthKey, lastSerial, rentalRow,
+otherIncomeRow }> }`. The row arithmetic is unchanged (first day row 5, then per week the day
+rows, rental row, other-income row, subtotal, and a blank row between weeks). `week` is the
+index into `weeks`. `findRowInDateMap` goes; `grid.days.get(serial)` replaces it.
+
+The sales block of `cellWrites` groups before it writes:
+
+```
+days   = Map serial -> { takings: 0, miles: 0, other: 0, names: [], hasTakings: false }
+rental = Map weekIndex -> amount        (4000 lines whose customer is exactly "Rental due")
+other  = Map weekIndex -> amount        (4001 lines whose customer is exactly "Any other income")
+offGrid = Set of ISO dates
+for each tx in every scenario.sales[month]:
+  serial = the shifted serial, as today
+  cell = grid.days.get(serial); if none: offGrid.add(iso); continue
+  caption = String(tx.customer || "").trim(); isOther = tx.account === "4001"
+  if (!isOther && caption === "Rental due")        rental[cell.week] += tx.amount
+  else if (isOther && caption === "Any other income") other[cell.week] += tx.amount
+  else day = days[serial]:
+       isOther ? day.other += amount : (day.takings += amount; day.miles += tx.mileage || 0; day.hasTakings = true)
+       if (caption && !day.names.includes(caption)) day.names.push(caption)
+if (offGrid.size) throw new TaxiDateOffGridError([...offGrid].sort())
+```
+
+Then the writes, `round2 = v => Math.round(v * 100) / 100`, sheet `Sales${MONTH_SHEETS[monthKey]}`:
+per day, `E{row} = round2(takings)` when `hasTakings` (a day with miles and no fare writes 0,
+which the extractor reads back as a nil fare, as today), `D{row} = miles` when miles > 0,
+`F{row} = round2(other)` when other > 0, `C{row} = names.join("; ")` when any; per week,
+`E{rentalRow} = round2(amount)` and `F{otherIncomeRow} = round2(amount)`. Delete the
+`tx.other_income` branch (nothing sets it; `grep other_income app/` finds only the two writers).
+A caption on the wrong account (a 4001 "Rental due", a 4000 "Any other income") is an ordinary
+line on its day row. Purchases are not gridded and are unchanged; the refusal is for sales
+dates only.
+
+Order of the joined names: `diyaGlToScenario` already sorts BST lines by `sourceJournalID`,
+`entryNumber` and `compareLines` before grouping (`diya-gl-loader.js:275`). Change that
+condition to `product === "bst" || product === "taxi"` so a Taxi day's names join in entry
+order whatever order the caller holds the lines in. `roundtrip-taxi` stays a fixed point:
+`extractTaxiTransactions` numbers lines in row order, and that sort puts them back on the same
+rows.
+
+Tests, `app/test/taxi-writer.test.js`, pure Node, scenarios built inline with `startYear` 2025
+(rows from the facts above):
+
+- "two fares on one day write one E cell holding their sum": `sales.apr` = `[{date:
+  "2025-04-07", amount: 120, customer: "Daily fares"}, {date: "2025-04-07", amount: 45.5,
+  customer: "Airport run"}]` gives `SalesApr.E10 === 165.5`, `C10 === "Daily fares; Airport
+  run"`, and no other `E` key on `SalesApr`.
+- "a repeated name joins once": two lines both "Daily fares" give `C10 === "Daily fares"`.
+- "the day's miles add up": `mileage` 40 and 30 give `D10 === 70`.
+- "a day driven with no fare writes a nil fare": `amount: 0, mileage: 30` gives `E10 === 0`,
+  `D10 === 30`.
+- "a Rental due line lands on its week's rental row": `{date: "2025-04-09", amount: 300,
+  customer: "Rental due", account: "4000"}` gives `SalesApr.E17 === 300` and no `E12`.
+- "an Any other income line lands on its week's other-income row": `{date: "2025-04-09",
+  amount: 50, customer: "Any other income", account: "4001"}` gives `F18 === 50`.
+- "other income named anything else lands on its day": `{date: "2025-04-09", amount: 500,
+  customer: "Council grant", account: "4001"}` gives `F12 === 500`, `C12 === "Council grant"`,
+  no `E12`.
+- "a fare and other income on one day share the row": a 4000 "Daily fares" 120 and a 4001
+  "Grant" 500 on 2025-04-09 give `E12 === 120`, `F12 === 500`, `C12 === "Daily fares; Grant"`.
+- "a week that spans two calendar months writes on the tab of its Sunday": a fare dated
+  2025-04-28 writes `SalesMay.E5`, not `SalesApr`.
+- "a date the grid lacks is refused by name, all of them at once": lines dated 2025-04-03,
+  2026-04-07 and one good line: `expect(() => cellWrites(s)).toThrow(TaxiDateOffGridError)`,
+  `.dates` equals `["2025-04-03", "2026-04-07"]`, the message contains both.
+- "the loader hands the writer a Taxi book in entry order": `diyaGlToScenario(book, [lineB,
+  lineA], "taxi")` with `entryNumber` TXN-0002 and TXN-0001 on one date yields
+  `scenario.sales.apr[0].customer === lineA.detailComment`.
+
+Byte identity, run before the first edit and again after the last, from the worktree root.
+Save this as `<scratchpad>/taxi-writer-bytes.mjs` and run it with a directory argument:
+
+```js
+import { readFileSync, writeFileSync, mkdirSync } from "fs";
+import { parse as parseTOML } from "smol-toml";
+import { generateSpreadsheet } from "./app/lib/generator.js";
+import { applyCellWrites } from "./app/lib/spreadsheet-runner.js";
+import { loadDiyaGlData, diyaGlToScenario } from "./app/lib/diya-gl-loader.js";
+import { cellWrites } from "./app/products/taxi.js";
+const out = process.argv[2]; mkdirSync(out, { recursive: true });
+const taxData = parseTOML(readFileSync("app/data/se-2025-2026.toml", "utf8"));
+const meta = parseTOML(readFileSync("app/templates/taxi/meta.toml", "utf8"));
+const template = readFileSync("app/templates/taxi/taxi-excel.xlsx");
+for (const name of ["basic-taxi-driver", "sp-sixty-driving", "kestrel-executive-cars"]) {
+  const { book, lines } = loadDiyaGlData(`examples/${name}/taxi`);
+  const generated = await generateSpreadsheet(template, taxData, meta.sheets);
+  writeFileSync(`${out}/${name}.xlsx`, await applyCellWrites(generated, cellWrites(diyaGlToScenario(book, lines, "taxi"))));
+}
+```
+
+Copy it into the worktree root to run it (the imports are relative), then delete the copy.
+`cmp <scratchpad>/before/<name>.xlsx <scratchpad>/after/<name>.xlsx` prints nothing for all
+three: no fixture has two lines on a day, a caption line or a 4001 line, so the new writer
+produces the same bytes. Record the three `cmp` results in the commit message.
+
+Commands, in order: the byte capture; `npx vitest run --fileParallelism=false
+app/test/taxi-writer.test.js app/test/diya-gl-loader.test.js app/test/calculator-taxi.test.js`;
+`npm run test:taxi-only` (LibreOffice; skips without it); the byte compare; `npm test` before
+the push.
+
+Acceptance: the eleven tests above pass; `cmp` is silent for the three fixtures;
+`TaxiDateOffGridError` is exported from `app/products/taxi.js`; `git diff --stat` names only the
+three files. No package or report changes on this row; the regeneration rides T6.
+
+Tier: Sonnet.
+
+### T2 The reposting account per product
+
+Purpose: `book-accounts-in-chart`'s helper reposts a stray Taxi purchase to 6200 Other expenses,
+never to 5100 Fuel.
+
+Files. Modifies `app/lib/book-checks.js` (the `repostAccount` function at line 81 and its two
+callers at 182 and 200) and `app/test/book-checks.test.js`. Must not touch anything else.
+
+Design. The preferred code becomes a lookup on the book's product, read from
+`book.entityInformation["diya-gl:product"]` (the schema names: `BasicSoleTrader`, `TaxiDriver`):
+
+```js
+const REPOST_PREFERRED = {
+  BasicSoleTrader: { sales: "4000", purchases: "5002" },
+  TaxiDriver: { sales: "4000", purchases: "6200" },
+};
+function repostAccount(ctx, journal) {
+  const product = (ctx.book && ctx.book.entityInformation && ctx.book.entityInformation["diya-gl:product"]) || "";
+  const preferred = (REPOST_PREFERRED[product] || {})[journal];
+  const list = (journal === "sales" ? ctx.chart.sales : ctx.chart.purchases) || [];
+  return list.find((account) => account.code === preferred) || list[0] || null;
+}
+```
+
+A product with no entry falls to the chart's first account, as today; the SE plan's T5 adds its
+own entry. Both call sites pass `ctx` instead of `ctx.chart`.
+
+Tests, a new `describe("the reposting account follows the book's product")` in
+`app/test/book-checks.test.js`, written and run before the code change so the first one fails
+with "5100":
+
+- "a Taxi book reposts to 6200": load `examples/basic-taxi-driver/taxi`, change one purchase's
+  `accountMainID` to "9999", `previewHelper(..., "book-accounts-in-chart")` has one change whose
+  `becomes` is `"6200 — " + book.accounts.purchases["6200"].accountMainDescription`;
+  `applyHelper` yields that line on "6200".
+- "a Taxi book whose chart drops 6200 falls to its first account": delete
+  `book.accounts.purchases["6200"]`, the change's `becomes` starts with "5100".
+- "a BST book still prefers 5002": the existing test at line 346 covers it; add one line
+  asserting `becomes` starts with "5002".
+
+Commands: `npx vitest run --fileParallelism=false app/test/book-checks.test.js`; `npm test`
+before the push.
+
+Acceptance: the three tests pass; no other test file changes; the BST test at line 346 is
+unchanged in outcome.
+
+Tier: Sonnet.
+
+### T3 Extractor: the rental and other-income rows and column F
+
+Purpose: `extractTaxiTransactions` reads back everything T1 writes, as 4000 and 4001 lines.
+
+Files. Modifies `app/lib/xlsx-exporter.js` in the Taxi Sales loop of `extractTaxiTransactions`
+(lines 526 to 556) and the constants above it (461 to 484); modifies `app/test/xlsx-exporter.test.js`
+(the `taxiSheets` helper at line 505 and the Sales-week tests from 544). Must not touch the
+Purchases loop, `ENTITY_CELLS`, `extractBook`, the BST code or the extraction-map block.
+
+Design. Constants: `TAXI_SALES_COLUMNS` gains `otherIncome: "F"`; add `const
+TAXI_OTHER_INCOME_ACCOUNT = "4001"`, `const TAXI_RENTAL_CAPTION = "Rental due"`, `const
+TAXI_OTHER_INCOME_CAPTION = "Any other income"`. The loop:
+
+```
+for (const row of rowNumbers(xml)) {
+  const dateVal = enteredNumber(xml, `A${row}`);         // subtotal and blank rows: none
+  if (dateVal === undefined) continue;
+  const dayCell = enteredNumber(xml, `B${row}`);
+  const caption = dayCell === undefined ? textAt(xml, `B${row}`) : undefined;
+  const isDay = dayCell !== undefined;
+  const isRental = caption === TAXI_RENTAL_CAPTION;
+  const isOtherIncomeRow = caption === TAXI_OTHER_INCOME_CAPTION;
+  if (!isDay && !isRental && !isOtherIncomeRow) continue;
+  const names = textAt(xml, `C${row}`);
+  if (isDay) { ...the existing takings/miles read, unchanged, detailComment = names... }
+  if (isRental) { const e = enteredNumber(xml, `E${row}`); if (e !== undefined) push 4000 line
+      { postingDate: excelSerialToDate(dateVal), amount: e, detailComment: "Rental due" } }
+  const otherIncome = enteredNumber(xml, `F${row}`);
+  if (otherIncome !== undefined && (isDay || isOtherIncomeRow)) push
+      { sourceJournalID: "sales", postingDate, accountMainID: "4001", amount: otherIncome,
+        detailComment: isDay ? names : "Any other income" }
+}
+```
+
+Entry numbers run in row order, the fare line before the other-income line on a shared row.
+`ACCOUNT_ID_COLUMN` (`BZ`) is read for the fare line only; the F line is always 4001. A rental
+row reads back dated its week's last day (the row's own `A`), which is the one place the round
+trip moves a date, and the plan's E3 says so.
+
+Tests. In `taxiSheets` move the 50 from `E8` to `F8`, add `C6: "Daily fares; Grant"` and
+`F6: 25`, keep `E7: 300`. Rewrite the test at line 553 as "leaves the subtotal row to the week's
+own arithmetic" (row 9 produces nothing). Add:
+
+- "reads the rental row as a fare dated the week's last day, named Rental due": one line with
+  `postingDate` of `TAXI_FIRST_DAY + 1`, `amount 300`, `accountMainID "4000"`, `detailComment
+  "Rental due"`, no `measurableQuantity`.
+- "reads the other-income row as a 4001 line named Any other income": `amount 50`,
+  `accountMainID "4001"`.
+- "reads column F on a day row as a 4001 line sharing the day's name": `amount 25`,
+  `detailComment "Daily fares; Grant"`, dated the day.
+- "numbers the fare before the other income on a shared row": the 4000 line's `entryNumber`
+  sorts before the 4001 line's.
+- "a rental row with nothing in E produces nothing": `salesRows: { E7: undefined }` style
+  override (omit the cell) gives no "Rental due" line.
+- "BZ names the fare's account and never the other income's": `BZ6: "4005"` gives the E line
+  on 4005 and the F line on 4001.
+
+Byte identity: before the first edit run `node app/bin/export.js --package taxi --source-dir
+examples/taxi-latest --output-dir <scratchpad>/export-before`; after the last, the same to
+`export-after`; `diff -r` of the two directories prints nothing (taxi-latest carries no caption
+amounts and no column F). Record it in the commit message.
+
+Commands: the export capture; `npx vitest run --fileParallelism=false
+app/test/xlsx-exporter.test.js app/test/export-file.test.js`; the export compare; `npm test`
+before the push. `test.yml`'s `roundtrip-taxi` proves the fixed point on the push.
+
+Acceptance: the six new tests and the rewritten one pass; `diff -r` is silent; the Purchases
+loop is untouched in the diff. No package or report changes on this row.
+
+Tier: Sonnet.
+
+### T4 Other income end to end: chart, fixtures, calculator, checks
+
+Purpose: a 4001 "Other business income" line reaches `F`, `B24`, `VitalTax` row 6 and `SE
+Short!O99`, and the fixtures carry the lines the sheet has rows for.
+
+Files. Modifies `examples/basic-taxi-driver/{book.toml,lines.jsonl,README.md}`,
+`examples/kestrel-executive-cars/{book.toml,lines.jsonl,README.md}`,
+`app/lib/scenario-extractor.js` (`takingsOnlySales` at 613, `taxiExpectedFigures` at 884),
+`app/lib/diya-gl-loader.js` (the `totalSales` branch at 275 to 290 and `expected`),
+`app/lib/calculators/taxi.js`, `app/products/taxi.js` (only `checkCompliance` and the VitalTax
+rows of `CELL_MAP`), `app/test/calculator-taxi.test.js`; regenerates
+`app/test/fixtures/taxi-scenario-{basic,kestrel,sp-sixty}.toml` and `examples/*/taxi/` through
+`node app/bin/extract-scenarios.js`. Must not touch `cellWrites` (T1), the P&L, Fixed Assets,
+Draft Tax and Business Details rows of `CELL_MAP` (T6), the Wages Forecast block of the
+calculator and of `checkCompliance` (T5), `sp-sixty-driving/`.
+
+Design.
+
+Masters. `basic-taxi-driver/book.toml` and `kestrel-executive-cars/book.toml` gain
+`[accounts.sales."4001"]` with `accountMainDescription = "Other business income"`. Lines,
+appended with the next `TXN-` numbers and the neighbouring lines' `documentType`, `taxCode`,
+`taxRate` and `paymentMethod`:
+
+- basic: a second fare on 2025-04-07, 4000, 45.00, `detailComment "Airport run"`; a grant on
+  2025-09-15, 4001, 500.00, `detailComment "Start-up grant"`, `lineItemComment "Council small
+  business grant"`. The README's sales count becomes 182 and the fares table shows 36,045
+  plus 500 other income.
+- kestrel: two rentals, 4000, 150.00 each, dated 2025-06-13 and 2025-06-20, `detailComment
+  "Rental due"`, `lineItemComment "Weekly vehicle rental from the second driver"`; one 4001
+  on 2025-11-14, 80.00, `detailComment "Any other income"`, `lineItemComment "Advertising panel
+  fee"`. README totals follow.
+
+`takingsOnlySales` keeps `customer` and `account` on a sales row when the account is 4001 or
+the customer is one of the two captions, and strips them otherwise (plain fares stay as they
+are, so the packages' `C` column is unchanged). `taxiExpectedFigures` computes `total_sales`
+from 4000 lines only and adds `total_other_income` (rounded to the penny) when any 4001 line
+exists. `diyaGlToScenario`'s taxi branch does the same for `expected.total_sales` and
+`expected.total_other_income` (`computeGrossSales` rounds to the pound; keep that).
+
+Calculator (`calculateTaxiResults`): `salesLines` becomes the 4000 lines (`TAXI_TAKINGS_ACCOUNT
+= "4000"`; the exporter names it `TAXI_SALES_ACCOUNT`, keep one name and export it from
+`scenario-extractor.js`), `otherIncomeLines` the 4001 lines. Per month, keyed by
+`byDate.get(postingDate)` exactly as `monthlySales` is: `monthlyOther[month]`. `pl[col24] =
+Math.round(monthlyOther[month] * 100) / 100` (the sheet's `F1` is `SUM(F4:F41)/2`, unrounded);
+`B24 = Math.floor(sum of monthlyOther)`; `otherBusinessIncome = B24` feeds `O99` and `D106` as
+the code already wires it; `VitalTax.C6..F6` are the quarter sums of row 24 and `G6` their
+total; Wages Forecast `C22` becomes `B24` when twelve months traded (T5 generalises it).
+
+`CELL_MAP` gains, in the VitalTax block, `["VitalTax","C6","Q1 Other income","gl-cor:amount
+(vitalTax.q1OtherIncome)","Quarterly Summary",1,"money"]` through `F6` and `G6` "**Annual Other
+income**". `standardReads` and `cellLabels` follow from the table.
+
+`checkCompliance` gains, anchored to the fixture: `if (expected.total_other_income !==
+undefined) check("Other business income", pl.B24, expected.total_other_income)`; per quarter
+`check("VitalTax: Qn other income = P&L Qn other income", vt[col6], plQuarterSum(24, months))`
+and the annual `G6` against `B24`; `check("SA103S: Other business income (box 30) = P&L other
+income", seShort.O99, pl.B24)`.
+
+Tests, `app/test/calculator-taxi.test.js`:
+
+- The `describe.each(FIXTURES)` block picks up the new checks on all three fixtures.
+- "other income is kept out of turnover and reaches the four cells that print it" on
+  basic-taxi-driver: `B5 === 36045`, `B24 === 500`, `VitalTax.D6 === 500` (September is Q2,
+  column D), `G6 === 500`, `SE Short.O99 === 500`; `D106` is 500 more than a run with the 4001
+  line removed through `linesOverride`.
+- "a Rental due line is takings in its week's tab month" on kestrel: the June column `E5`
+  carries 300 more than a run with the two rental lines removed; `B24` is unmoved.
+- Breakability: run `checkCompliance` on a copy of the basic results with `B24` set to 0 and
+  assert the failing set is exactly {"Other business income", "VitalTax: annual other income =
+  P&L annual other income", "SA103S: Other business income (box 30) = P&L other income",
+  "Forecast: other business income = P&L other business income"} and nothing else; a second
+  copy with `VitalTax.D6` set to 0 fails exactly the Q2 and annual VitalTax other-income checks.
+
+Commands, in order: the master edits; `node app/bin/extract-scenarios.js && git diff --stat
+app/test/fixtures/ examples/` (only the taxi fixtures and subsets move); `npx vitest run
+--fileParallelism=false app/test/calculator-taxi.test.js app/test/diya-gl-loader.test.js
+app/test/taxi-writer.test.js`; with LibreOffice, `npm run reconciliation -- --package taxi
+--year-end 2026-04-05` and check every `reports/*taxi*.md` reads `Status: RECONCILES`; `node
+app/bin/extract-scenarios.js && git diff --exit-code app/test/fixtures/ examples/` (clean);
+`npm test` before the push.
+
+Acceptance: the sync gate is clean; the three fixtures reconcile against the Apr26 package with
+the new checks passing; the basic fixture's `[expected]` reads `total_sales = 36045` and
+`total_other_income = 500`; `sp-sixty-driving/` is untouched. The regeneration and re-pin of
+`reports/*taxi*` ride T6.
+
+Tier: Sonnet.
+
+### T5 Calculator: the partial-year forecast, proved against LibreOffice
+
+Purpose: `Wages Forecast` for a business that traded fewer than twelve months computes in the
+JS engine as the sheet computes it.
+
+Files. Creates `examples/autumn-start-cabs/{book.toml,lines.jsonl,README.md}` and its `taxi/`
+subset and `app/test/fixtures/taxi-scenario-autumn-start.toml` (both through
+`extract-scenarios.js`); modifies `app/bin/extract-scenarios.js` (a `writeTaxiScenario` call and
+the subsets list at 1225), `app/lib/calculators/taxi.js` (the Wages Forecast block only),
+`app/products/taxi.js` (the Forecast section of `checkCompliance` only),
+`app/test/calculator-taxi.test.js`, `app/test/taxi-wages-forecast-checks.test.js`. Must not touch
+the other calculator blocks (T4, T6), `cellWrites`, `CELL_MAP`, the other masters.
+
+Design.
+
+The master: an owner-driver who started trading on Monday 6 October 2025, period
+2025-04-06 to 2026-04-05 (the package's year), fares five days a week from 6 October to 27
+March, fuel monthly from October, one insurance line, one licence line, no vehicle purchase, not
+VAT registered, on the Taxi chart (copy `basic-taxi-driver/book.toml`'s chart and `[tax]`
+tables). Six months trade (oct to mar in tab-month terms; check that no October week's Sunday
+falls in September). `expected.months_traded = 6` is added by `taxiExpectedFigures` as the count
+of tab months with any 4000 amount, using `buildTaxMonthByDate` from the calculator (export it).
+
+Calculator, replacing the `if (monthsTraded === MONTH_ORDER.length)` block:
+
+```
+const n = monthsTraded;                                   // C19
+const T = Σ pl[col5], O = Σ pl[col24], CoS = Σ pl[col12], G = Σ pl[col22] over MONTH_ORDER
+if (n > 0) {
+  let c20 = 0, c22 = 0, c24 = 0, c28 = 0;
+  for each month: traded = pl[col5] > 0
+    c20 += traded ? pl[col5]  : T / n
+    c22 += pl[col24]
+    c24 += traded ? pl[col12] : (CoS - pl.B10) / n + pl.B10 / 12
+    c28 += traded ? pl[col22] : G / n
+  forecast.C20 = round2(c20); C22 = round2(c22); C24 = round2(c24); C28 = round2(c28)
+  forecast.C30 = round2(c20 + c22 - c24 - c28); C34 = C30; the tax block as today
+}
+```
+
+When `n === 12` every month trades and the figures equal today's. When `n === 0` the sheet
+prints zeros and so does this (leave `C20` to `C41` unset, as today, since the sheet's zeros
+canonicalise to 0 and the JS side's absence to nothing; check the `noExcelValue` count in
+`verify-roundtrip` stays 0 on the basic fixture, and if it does not, emit zeros).
+
+`checkCompliance`'s Forecast section: keep the twelve-month equalities under their guard and add
+for every year `check("Forecast: turnover = the traded months plus the year spread over the
+rest", forecast.C20, spread(5))` with `spread(row)` computed from `pl`'s monthly cells by the
+formula above, the same for `C24` (with `B10`) and `C28`, `check("Forecast: other income = the
+year's other income", forecast.C22, monthTotal(24))`, and `check("Forecast: months of actual
+trade = the fixture's", forecast.C19, expected.months_traded, 0)` when the fixture states it.
+
+Tests.
+
+- `app/test/calculator-taxi.test.js`: the new fixture joins `FIXTURES`; "a six-month year spreads
+  the forecast": on autumn-start-cabs `C19 === 6`, `C20 === 2 * B5` within a pound, `C28 === 2 *
+  B22` within a pound, `C30 === C20 + C22 - C24 - C28`; breakability: a results copy with `C20`
+  plus 1 fails exactly the turnover-spread check and the profit check.
+- `app/test/taxi-wages-forecast-checks.test.js`: a second `describeCalc` block "spreads a partial
+  year the way the sheet does": `generateSpreadsheet` on the template with `se-2025-2026.toml`,
+  `runSpreadsheet` with `taxiCellWrites(loadScenario(taxi-scenario-autumn-start.toml))` and
+  `taxiReads()`, then `calculateTaxiResults` on the subset's book and lines; `C19`, `C20`,
+  `C22`, `C24`, `C28`, `C30`, `C35` to `C41` agree within 1; the corrupted-`<v>` proof: copy the
+  recalculated workbook, set `Wages Forecast!C20`'s cached `<v>` to 1 with the
+  `corruptCachedValue` helper `taxi-purchases-nag.test.js` carries, read it back through
+  `runSpreadsheet` in saved mode (or `readCellValue` directly), and assert `checkCompliance` fails
+  exactly the two turnover-spread checks. Needs LibreOffice; skips without it.
+
+Commands: `node app/bin/extract-scenarios.js && git diff --stat`; `npx vitest run
+--fileParallelism=false app/test/calculator-taxi.test.js app/test/taxi-wages-forecast-checks.test.js`;
+with LibreOffice `npm run reconciliation -- --package taxi --scenario autumn-start --year-end
+2026-04-05` reads RECONCILES; `node app/bin/extract-scenarios.js && git diff --exit-code
+app/test/fixtures/ examples/`; `npm test` before the push.
+
+Acceptance: four fixtures in `calculator-taxi.test.js`, all checks passing; the LibreOffice
+block passes locally and is recorded in the commit message with its cell-by-cell figures; the
+sync gate is clean; `generate-taxi.yml` still reconciles `--scenario basic` only (CI is not
+widened by this row).
+
+Tier: Opus.
+
+### T6 CELL_MAP additions, the Business Details move, the CONTEXT doc, regenerate and re-pin
+
+Purpose: the report carries every cell the views need; the writer, extractor and calculator
+agree on the four Business Details cells the form reads; the committed packages and reports
+match.
+
+Files. Modifies `app/products/taxi.js` (`CELL_MAP`'s Business Details, P&L, Fixed Assets and
+Draft Tax rows; the Business Details block of `cellWrites`, lines 73 to 87; new checks in
+`checkCompliance`), `app/lib/xlsx-exporter.js` (`ENTITY_CELLS.taxi` at 1534, `extractMetadata` at
+1477), `app/lib/calculators/taxi.js` (the Business Details block, `J1`, `C1`, `K1`, `E25`,
+`E26`), `CONTEXT_TAXI.md`, `app/test/calculator-taxi.test.js`, `app/test/xlsx-exporter.test.js`;
+the refresh regenerates `reports/*taxi*` and `examples/taxi-latest`. Must not touch the sales
+block of `cellWrites` (T1), the Taxi Sales loop of the extractor (T3), the Forecast block (T5).
+
+Design.
+
+Writer: `bd.C5 = name`, `bd.C8 = biz.description` (when set), `bd.C17 = biz.postcode` (when
+set), `bd.O5 = biz.utr` (when set; `SE Short!O8` prints it and no arithmetic reads it). Nothing
+is written to `C7`, `C10`, `C12` or `O29`; the address and town stay in the book. The old
+comment about `O29` goes with the write it explained.
+
+`CELL_MAP`, Business Details block becomes: `C5` "Business Name"
+(`entityInformation.organizationIdentifier`, text), `C8` "Description of business"
+(`entityInformation.organizationDescription`, text), `C17` "Postcode"
+(`entityInformation.organizationPostcode`, text), `O5` "UTR"
+(`entityInformation.taxRegistrationNumber`, identifier), `D29` "Losses brought forward (box 29)"
+(`gl-cor:amount (sa103s.lossBroughtForwardInput)`, money), `O29` "Goods and services for own use
+(box 27)" (`gl-cor:amount (sa103s.ownUseInput)`, money). New rows: `["Profit & Loss Acc","J1",
+"Running costs plus capital allowances","accounts.purchases (vehicleCostsCompared)","Profit & Loss
+Account",1,"money"]`, `["Profit & Loss Acc","C1","Route the sheet takes","gl-cor:amount
+(vehicleRoute)","Profit & Loss Account",1,"text"]`, `["Fixed Assets","K1","Written-down value
+carried forward","fixedAssets (writtenDownValue)","Fixed Assets",0,"money"]`, `[TAX_SHEET,"E25",
+"First payment on account (31 January)","gl-cor:taxAmount (paymentOnAccount1)","Draft Tax
+Calculation",1,"money"]`, `[TAX_SHEET,"E26","Second payment on account (31 July)",...
+(paymentOnAccount2)...]`. SA103S labels take the 2026 numbers: `O38` box 10, `D71` box 21,
+`O71` box 22, `D80` box 23, `D85` box 24, `O80` box 25, `O85` box 26, `D94` box 27, `D99` box 28,
+`O94` box 29, `O99` box 30, `D38` box 9, `D106` box 31; `profitBridge`'s labels follow.
+
+Extractor: `ENTITY_CELLS.taxi = { file: null, sheet: "Business Details", organizationIdentifier:
+"C5", organizationDescription: "C8", organizationPostcode: "C17", taxRegistrationNumber: "O5" }`.
+`extractMetadata` reads the description from `C8` for taxi and `C7` for bst (a product-keyed
+cell, not a branch on strings).
+
+Calculator: `"Business Details"` holds `C5`, `C8` (description), `C17` (postcode, when set),
+`O5` (`biz.utr`, when set); `D29` and `O29` are never emitted (the sheet's cells are blank and
+the roundtrip budget counts a JS value with no Excel value). `pl.J1 = Math.round(
+vehicleRunningCosts + capitalAllowances)`; `pl.C1 = takesMileageRoute ? "MILEAGE ALLOWANCE" :
+undefined` (the sheet's " " canonicalises to nothing); `Fixed Assets.K1 = round2(fa.K1)` inside
+the existing `if (assetAdditions.length > 0)`; `Draft Tax calculation.E25 = E26 = totalTaxAndNI
+/ 2`.
+
+`checkCompliance` gains: "Tax: each payment on account is half the liability" (`E25` and `E26`
+against `E17 / 2`); "Fixed Assets: written-down value = cost less the allowance" (`K1` against
+`Σ cost - J1`, inside the additions guard); "P&L: the comparison figure = running costs plus the
+schedule's allowances" (`J1` against `round(I2 + I1 + J1 + P1 - Q1)` of `PurchasesMar` and
+`Fixed Assets`); "P&L: the route follows the comparison" (`C1` reads "MILEAGE ALLOWANCE" exactly
+when `round(A2) > J1`, else blank).
+
+`CONTEXT_TAXI.md`: the Business Details paragraph (six entered fields) becomes the four cells
+above plus `D29` and `O29` as manual inputs; `O29` is goods for own use; the caption rows and
+column F are described under the Sales sheet; the SA103S table's box column takes the 2026
+numbers; the `cellWrites` description says one row a day, joined names, the two caption rows,
+the off-grid refusal.
+
+Tests.
+
+- `app/test/calculator-taxi.test.js`: the fixtures pick up the new checks; "the four Business
+  Details cells are the ones the form reads": basic gives `C5`, `C8`, `C17`, `O5` equal to the
+  book's identifier, description, postcode and `taxRegistrationNumber`, and no `C7`, `C10`,
+  `C12`, `D29`, `O29` keys; "the route cell is present only on the mileage route": sp-sixty has
+  `C1 === "MILEAGE ALLOWANCE"`, basic has no `C1` key; breakability: results copies with `E25`
+  plus 1, with `K1` plus 1, with `J1` plus 1, with `C1` deleted on sp-sixty, each failing exactly
+  its own check.
+- `app/test/xlsx-exporter.test.js`: `taxiSheets`'s Business Details block becomes `{ C5, C8, C17,
+  O5 }`; "carries the trade, postcode and UTR off the cells the form reads" through
+  `extractBook` on the synthesised workbook; `extractMetadata` for taxi reads `C8`.
+- `app/test/taxi-writer.test.js` (T1's file, one added test): "Business Details go to the cells
+  the form reads": a scenario with `business = { name, description, postcode, utr }` writes
+  `C5`, `C8`, `C17`, `O5` and nothing else on that sheet.
+
+Byte identity is not expected here (the writer's cells change on purpose). Instead: the export
+capture as in T3 before and after shows exactly the four `entityInformation` fields changing in
+`book.toml` and `lines.jsonl` unchanged.
+
+Commands: `npx vitest run --fileParallelism=false app/test/calculator-taxi.test.js
+app/test/xlsx-exporter.test.js app/test/taxi-writer.test.js app/test/export-file.test.js`; with
+LibreOffice `npm run reconciliation -- --package taxi --year-end 2026-04-05` (every report
+RECONCILES, and `reports/populated/*taxi-scenario-basic*.xlsx` shows `SE Short!C13` as the
+description and `C22` as the postcode); `npm test` before the push.
+
+Regeneration rides this row: dispatch `generate-taxi.yml` with `skip-commit` on the batch branch
+and read the reconcile matrix green (seven year ends) and the roundtrip scorecard within
+`app/data/roundtrip-budget.json`'s taxi entry (`differing 0, noJsValue 0, noExcelValue 0`); after
+the merge the operator runs the refresh, which re-pins `reports/*taxi*`,
+`reports/judge-verdict-taxi.json` and `examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx`. No
+committed test reads those files today; T17's `books-taxi-equivalence` S3 will, so T17 lands
+after the refresh.
+
+Acceptance: `reports/populated`'s basic workbook prints box 1 as "Owner-driver private hire and
+taxi services", box 2 as "DE1 2GH" and the UTR box as 5566778899; the scorecard budget holds;
+`CONTEXT_TAXI.md` no longer says six entered fields or "O29 (UTR)"; `grep -n 'C7\|C10\|C12'
+app/products/taxi.js app/lib/calculators/taxi.js` finds nothing under Business Details.
+
+Tier: Sonnet.
+
+### T7 Kestrel's 3 April settlement moved into the period
+
+Purpose: `examples/kestrel-executive-cars` loads with `book-dates-in-period` passing.
+
+Files. Modifies `examples/kestrel-executive-cars/lines.jsonl` (one line), and through
+`extract-scenarios.js` the regenerated `examples/kestrel-executive-cars/taxi/lines.jsonl` and
+`app/test/fixtures/taxi-scenario-kestrel.toml`. Must not touch any other master or fixture.
+
+Design. Line `TXN-0053` (`"postingDate": "2025-04-03"`, 5100, 2620, Fleetcard Fuels) is the
+April copy of a monthly settlement dated the 3rd (May's is 2025-05-03 and so on to
+2026-03-03). Move it to `2025-04-06`, the first day of the period; keep every other field. No
+counter-leg exists on a Taxi book. Rerun `node app/bin/extract-scenarios.js`; only the two
+Kestrel outputs change, each by that one date.
+
+Tests: none new. `app/test/calculator-taxi.test.js` and `app/test/book-checks.test.js` cover the
+change (Kestrel's checks pass as before). Add to `book-checks.test.js`'s "the three example
+books" describe one case: "Kestrel Executive Cars: every entry sits inside the declared period"
+asserting `book-dates-in-period` passes on `examples/kestrel-executive-cars/taxi`.
+
+Commands: the edit; `node app/bin/extract-scenarios.js && git diff --stat app/test/fixtures/
+examples/` (two files); `npx vitest run --fileParallelism=false app/test/book-checks.test.js
+app/test/calculator-taxi.test.js`; `node app/bin/extract-scenarios.js && git diff --exit-code
+app/test/fixtures/ examples/`; `npm test` before the push.
+
+Acceptance: `grep -c '2025-04-03' examples/kestrel-executive-cars/lines.jsonl` is 0; the sync
+gate is clean; the new book-checks test passes.
+
+Tier: Haiku.
+
+### T8 Book warnings: no miles on a fare day, a vehicle off the register, miles past the band
+
+Purpose: three Taxi warnings in `app/lib/book-checks.js`, each with the helper the plan names,
+each breakable by one change.
+
+Files. Modifies `app/lib/book-checks.js` (a new per-product warnings block after the five
+warnings, and `runWarnings`), `app/test/book-checks.test.js`. Must not touch the three checks or
+the five existing warnings beyond `runWarnings`. Lands after T2 and rebases on whatever the SE
+plan's T5 and T6 have put in the same file; the Taxi block is its own region.
+
+Design. A product-keyed table, read from `ctx.book.entityInformation["diya-gl:product"]`:
+
+```js
+const PRODUCT_WARNINGS = { TaxiDriver: [fareDayNoMilesWarning, vehicleNotOnRegisterWarning, milesPastBandWarning] };
+function runWarnings(ctx, taxData) {
+  const product = ...;
+  return [...the five...].concat((PRODUCT_WARNINGS[product] || []).map((rule) => rule(ctx, taxData)));
+}
+```
+
+Each result keeps the existing shape (`id`, `tier: "warning"`, `label`, `result`, `actual`,
+`consequence`, `offenders`) and, when it warns and has a helper, `helper: { id, label, kind }`
+with `kind` one of `"lines"` (applied through `applyHelper`), `"book"` (applied through a new
+`applyBookHelper`), `"focus"` (the page focuses a field; no engine apply).
+
+- `book-taxi-fare-miles` "Every fare day carrying miles elsewhere carries its own": warns when
+  at least one 4000 line has `measurableUnitOfMeasure === "miles"` and at least one other 4000
+  line with `amount > 0` has none; offenders are the lines without; `helper = { id, label: "Enter
+  the day's miles", kind: "focus" }`; consequence names the mileage claim the year is short.
+- `book-taxi-vehicle-register` "Every vehicle bought is on the Fixed Assets register": offenders
+  are 7000 lines with no `book.fixedAssets[]` entry whose `acquiredDate` equals the line's
+  `postingDate` and `cost` equals its `amount` (compare as numbers to the penny); `helper = {
+  id, label: "Register these vehicles", kind: "book" }`; consequence: the vehicle earns no
+  allowance and `PurchasesMar!T2` asks for the schedule.
+  `previewBookHelper({book, lines}, id)` returns `{ title, summary, changes: [{ entryNumber, what:
+  "asset", becomes: "<description> £<cost> bought <date>" }] }`; `applyBookHelper({book,
+  lines}, id)` returns a new book whose `fixedAssets` is the old list plus one entry per
+  offender: `{ assetID: "FA-" + zero-padded next index, description: lineItemComment ||
+  detailComment, cost: amount, acquiredDate: postingDate }`. It never mutates the input.
+- `book-taxi-miles-band` "Business miles stay inside the higher-rate band": advisory, no helper;
+  walks the lines in `postingDate` order summing miles (sales and purchases), and the first month
+  whose running total crosses `taxData.mileage.higher_rate_limit` is the one offender `{ month:
+  "YYYY-MM", milesToDate }`; consequence names the month and that later miles claim at the
+  lower rate. Passes when the total never crosses or no miles exist.
+
+Exports: `previewBookHelper`, `applyBookHelper` beside the existing `previewHelper` and
+`applyHelper`; `applyHelper` keeps returning a lines array.
+
+Tests, `app/test/book-checks.test.js`, a new describe "the Taxi warnings", each on a copy of
+`examples/sp-sixty-driving/taxi` (miles on 165 fare days) or `basic-taxi-driver/taxi` (a
+registered 8,000 vehicle):
+
+- The three pass on all three Taxi books as they stand (sp-sixty crosses 10,000 miles, so
+  `book-taxi-miles-band` warns there; assert the month it names and that basic and kestrel
+  pass).
+- Breakability, one change flips one rule: clear `measurableQuantity` on one sp-sixty fare with
+  `amount > 0` flips only `book-taxi-fare-miles` with that line as the offender; delete
+  basic's `fixedAssets[0]` flips only `book-taxi-vehicle-register`; add 5,000 miles to one
+  basic fare flips only `book-taxi-miles-band`. Read every rule id before and after and assert
+  the exact set that moved.
+- The register helper: `previewBookHelper` names the 7000 line; `applyBookHelper` returns a book
+  with one more `fixedAssets` entry carrying the line's date, detail and amount, and the
+  warning then passes on the new book; the input book is unchanged.
+- A BST book carries none of the three ids.
+- `bookChecksJson` stays byte-stable with the new ids present.
+
+Commands: `npx vitest run --fileParallelism=false app/test/book-checks.test.js`; `npm test`
+before the push (the BST browser specs assert exact rule sets on BST books, which carry none of
+the new ids).
+
+Acceptance: eight rules on a BST book, eleven on a Taxi book; the three flip tests pass; the
+exports exist; `bookchecks.json` for `examples/basic-taxi-driver/taxi` through `export.js`
+carries the three new ids once T11 lands `--file --package taxi` (until then, through
+`runBookChecks` in the test).
+
+Tier: Sonnet.
+
+### T9 The Taxi extraction map and the sidecar's Taxi predicate
+
+Purpose: an overtyped cell on a Taxi workbook names the line or figure it fed.
+
+Files. Modifies `app/lib/xlsx-exporter.js` (`extractTaxiTransactions` records into the map;
+a `taxiBookFieldCells()` and `isTaxiInputCell()` beside the BST ones), `app/lib/overtype-sidecar.js`
+(a Taxi baseline), `app/test/overtype-sidecar.test.js`, `app/test/xlsx-exporter.test.js`. Follows
+the shapes SE:S2 lands (the map key `file!sheet!cell`, the `templatePaths` and `isInputCell`
+options); read `app/lib/anchor-tables.js` and the sidecar as they are on the batch branch before
+writing a line.
+
+Design. Regions for the recorder, one per row kind: Sales day row `{ postingDate: "A",
+detailComment: "C", measurableQuantity: "D", amount: "E" }`, Sales day-row other income `{
+amount: "F", detailComment: "C" }`, rental row `{ postingDate: "A", amount: "E" }`,
+other-income row `{ postingDate: "A", amount: "F" }`, Purchases `{ postingDate: "A",
+detailComment: "B", documentReference: "C", expenseCode: "D", measurableQuantity: "E", amount: "F",
+accountMainID: "BZ" }`. `extractTaxiTransactions(xlsxBuffer, extractionMap)` calls
+`extractionMap.recordLine(line, region, row, index)` for every line it pushes, exactly as the BST
+extractor does; a row producing two lines records twice with different regions, and
+`lineForCell` answers the region whose columns hold the cell.
+
+`isTaxiInputCell(sheet, cellRef)`: on a `Sales*` sheet columns C, D, E, F at any row from 5; on a
+`Purchases*` sheet columns A to F and BZ, rows 5 to 199; `Fixed Assets` columns A to D and F on
+rows 47 to 51; the book-field cells from `taxiBookFieldCells()` (`ENTITY_CELLS.taxi`, `Admin!B23`,
+the three Admin mileage cells, and `Business Details!D29` and `O29` as manual inputs).
+
+The baseline. The generator rebuilds the twelve Sales sheets per year, so `taxi-excel.xlsx`'s
+Sales formulas sit on the wrong rows for any given package. The Taxi baseline is
+`generateSpreadsheet(template, taxData for the book's year, meta.sheets)`, cached per year in the
+sidecar's map under a key like `taxi:se-2025-2026`; the caller passes the tax data it already
+loaded (`loadTaxDataForBook`). Every other sheet's formulas are the template's own.
+
+Tests. `app/test/overtype-sidecar.test.js`: "a typed-over Sales subtotal names nothing but the
+sheet's own sum" (corrupt `SalesMay!E14`'s formula to a value on a copy of `examples/taxi-latest`
+and expect one entry keyed `SalesMay!E14`, kind `literal`, attribution null); "a typed-over
+P&L B5 names the reported figure"; "a fare typed into E on a day row is an input, not an
+overtype" (no entry); "a cleared `Draft Tax calculation!E17` is kind cleared with the reported
+figure". `app/test/xlsx-exporter.test.js`: "records every Sales and Purchases line it exports"
+on the synthesised week (six records, the shared row recorded twice, `lineForCell("SalesApr",
+"F6").readAs === "amount"` on the 4001 line).
+
+Commands: `npx vitest run --fileParallelism=false app/test/overtype-sidecar.test.js
+app/test/xlsx-exporter.test.js`; `npm test` before the push.
+
+Acceptance: `overtyped.json` for `examples/taxi-latest` through the sidecar is `{}` (nothing
+typed over on a generated package); the five tests pass; the BST tests in the same files are
+unchanged.
+
+Tier: Sonnet.
+
+### T10 The Taxi anchor table
+
+Purpose: a Taxi workbook passes the guard and a BST workbook on the Taxi table is refused
+naming `Draft Tax calculation`.
+
+Files. Modifies `app/lib/anchor-tables.js` (the Taxi entry, in the shape SE:S2 landed for BST)
+and `app/test/books-interchange.test.js`. Must not touch the BST or SE entries.
+
+Design. Sheets: the 33 in `xl/workbook.xml` order (Home, Business Details, SE Short, Profit &
+Loss Acc, VitalTax, Fixed Assets, Draft Tax calculation, Wages Forecast, SalesApr, PurchasesApr,
+... SalesMar, PurchasesMar, Admin). Header cells, compared trimmed: `Business Details!C3` "Your
+name", `SE Short!O1` "Self-employment (short)", `Profit & Loss Acc!A5` "Sales Turnover", `A11`
+"Mileage Allowance", `VitalTax!B29` "Total allowable expenses", `Fixed Assets!A46` "Vehicles under
+£12,000 bought after", `Draft Tax calculation!B17` "TOTAL Income Tax & NI Liability", `Wages
+Forecast!B41` "TAX & NI LIABILITY", `SalesApr!C2` "Customer Name (rental/other income)", `E2`
+"Gross takings including tips", `PurchasesApr!D2` "Enter Expense Code Letter", `U2` "Mileage
+Allowance", `Admin!D19` "Mileage Allowances".
+
+Tests: "accepts examples/taxi-latest"; "refuses a BST workbook by name" (`examples/bst-latest`
+against the Taxi table names `Draft Tax calculation` among the missing sheets); "refuses a Taxi
+workbook against the BST table naming PurchasesStock"; "names a retyped header": copy
+taxi-latest, overwrite `SalesApr!E2` with "Takings" through JSZip, expect the error to name
+`SalesApr`, `E2` and both strings.
+
+Commands: `npx vitest run --fileParallelism=false app/test/books-interchange.test.js`; `npm test`
+before the push.
+
+Acceptance: the four tests pass; the table lists 33 sheets and 13 header cells.
+
+Tier: Sonnet.
+
+### T11 Taxi through the product writer, the CLI and the MCP tools
+
+Purpose: `save_workbook`, `export.js --file --package taxi` and the page's save produce the
+Taxi package from a Taxi book.
+
+Files. Modifies `app/lib/product-workbook.js` (the Taxi registration, in the shape SE:S3 landed),
+`app/bin/export.js` (the `--file` guard at line 122 and the `"bst"` literals in
+`extractBstFromFile` and `runFileMode`, in the shape SE:S6 landed), `app/lib/mcp/diya-gl-tools.js`
+(the product literal), `app/test/export-file.test.js`, `app/test/diya-gl-mcp.test.js`; creates
+`app/test/taxi-workbook.test.js`. Must not touch `.mcp.json` (SE:S6 renames the server) or
+`app/products/taxi.js`.
+
+Design. The Taxi entry: template directory `templates/taxi`, `meta.template.spreadsheet`
+(`taxi-excel.xlsx`), `meta.sheets` (the Admin edits through `buildTaxiCellEdits`, the twelve
+Sales sheets rebuilt, `calcChain.xml` dropped, `fullCalcOnLoad` set, all inside
+`generateSpreadsheet`), writes from `cellWrites(scenario)` with no target year (the book's own
+period is the grid; `extractTaxYearStart` reads it off the scenario's first date), naming from
+`packageNaming(productMeta, sharedMeta, endDate)` (`Financialaccountsyearto050426.xlsx` under
+`GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007.zip`). A `TaxiDateOffGridError` from
+`cellWrites` propagates unchanged (the save path throws it before any bytes are written, as
+`BookFieldError` does). `export.js --file` accepts `taxi`; the product comes from the sniff
+(S6) or `--package`; the CLI prints `Package: taxi`.
+
+Tests.
+
+- `app/test/taxi-workbook.test.js`, mirroring `bst-workbook.test.js`: for the three Taxi fixtures
+  the writer's bytes equal the composed bytes (`generateSpreadsheet` plus `applyCellWrites`, the
+  T1 script's composition); the filename is `Financialaccountsyearto050426.xlsx`; the package zip
+  is named `GB Accounts Taxi Driver 2026-04-05 (Apr26) Excel 2007.zip` and holds the workbook at
+  its root; `fullCalcOnLoad="1"` is set; `SalesMay!A5` is 45775 (the grid is the book's year);
+  a book with one fare dated 2026-04-07 rejects with `TaxiDateOffGridError` naming the date and
+  writes nothing.
+- `app/test/export-file.test.js`: "reads a Taxi workbook with --package taxi to the same bytes as
+  --source-dir" on `examples/taxi-latest` (`book.toml`, `lines.jsonl` byte-equal;
+  `report.json`'s `package` is `taxi`); the test at line 329 ("rejects --file for a package other
+  than bst") becomes "rejects --file for a package it cannot read" using a made-up name.
+- `app/test/diya-gl-mcp.test.js`: "extract_book on a Taxi package zip matches export.js --file"
+  (zip `examples/taxi-latest`'s workbook into a package zip in a temp dir); "save_workbook hands
+  back Financialaccountsyearto050426.xlsx for a Taxi book"; "save_workbook returns the named
+  refusal for an off-grid fare".
+
+Commands: `npx vitest run --fileParallelism=false app/test/taxi-workbook.test.js
+app/test/export-file.test.js app/test/diya-gl-mcp.test.js app/test/bst-workbook.test.js`; `npm
+test` before the push.
+
+Acceptance: `node app/bin/export.js --package taxi --file examples/taxi-latest/GB_Accounts_Taxi_Driver.xlsx
+--output-dir <scratchpad>/t11` writes the five files and `diff` against `--source-dir` output is
+silent for `book.toml` and `lines.jsonl`; the BST tests in the same files still pass.
+
+Tier: Sonnet.
+
+### T12 The Taxi headline declaration and the comparison tile
+
+Purpose: the year-at-a-glance strip computes Taxi's tiles and pies from Taxi's keys, plus the
+vehicle-cost tile.
+
+Files. Modifies `app/products/taxi.js` (the declaration beside `CELL_MAP`, in the shape SE:S5
+landed for BST) and `app/lib/headlines.js` (only if the reducer lacks a field the declaration
+needs); creates `app/test/taxi-headlines.test.js`. Must not touch `CELL_MAP`,
+`bst.js`'s declaration or the page.
+
+Design. The declaration, keys as `report-serializer.js` writes them:
+
+```js
+export const HEADLINES = {
+  turnover: { key: "cell/Profit & Loss Acc!B5" },
+  costOfSales: { key: "cell/Profit & Loss Acc!B12", label: "vehicle costs" },
+  runningCosts: { key: "cell/Profit & Loss Acc!B22", label: "running the business" },
+  assets: { writtenDown: { key: "cell/Fixed Assets!K1", optional: true } },   // no stock, no debtors
+  tax: { key: "cell/Draft Tax calculation!E17", label: "income tax and Class 4 NI" },
+  pieLines: [
+    ["cell/Profit & Loss Acc!B6", "Fuel"], ["...B7", "Car hire"], ["...B8", "Repairs and servicing"],
+    ["...B9", "Road tax and insurance"], ["...B10", "Capital allowances"], ["...B11", "Mileage allowance"],
+    ["...B14", "Employee costs"], ["...B15", "Premises"], ["...B16", "General admin"], ["...B17", "Advertising"],
+    ["...B18", "Legal and professional"], ["...B19", "Interest"], ["...B20", "Bank charges"], ["...B21", "Other expenses"],
+  ],
+  vehicle: { miles: "cell/PurchasesMar!A1", allowance: "cell/PurchasesMar!A2", running: "cell/PurchasesMar!I2",
+             compared: "cell/Profit & Loss Acc!J1", route: "cell/Profit & Loss Acc!C1", charged: "cell/Profit & Loss Acc!B12" },
+};
+```
+
+The outgoings pie's candidates are `pieLines` (the six vehicle lines and the eight expense
+lines; `B10` is included so the slices sum to `B12 + B22`), never a single "Cost of sales"
+slice. If S5's reducer has no `pieLines`, add it and give BST's declaration `pieLines` of its
+cost-of-sales key followed by its eleven expense keys, so BST's pie is unchanged (prove it with
+the existing `bst-headlines.test.js`). `headlinesFromReport` returns `tiles.vehicle` only when
+the declaration has `vehicle` and the miles key is above 0: `{ charged, allowance, running,
+compared, route: "mileage" | "actual", miles }` with `from` trails, and `keys["headline/vehicle-costs"]
+= charged.value`; the route is `"mileage"` when the route key's value is "MILEAGE ALLOWANCE".
+
+Tests, `app/test/taxi-headlines.test.js`, built as `bst-headlines.test.js` builds R (the
+calculator into `buildReportDocument` with `taxi`), over the three Taxi fixtures plus
+autumn-start-cabs: turnover equals the fixture's `total_sales`; outgoings equals `B12 + B22`;
+assets equals `K1` on basic and 0 with `missing` on kestrel (no vehicle); tax equals `E17`; the
+outgoings pie's slices sum to outgoings and its shares to 1, never more than six slices; the
+turnover pie is a pie on every fixture; the vehicle tile exists on sp-sixty with route
+`"mileage"`, `allowance 7000` and `running 4640`, and is absent on basic (no miles); the four
+DOM hook keys plus `headline/vehicle-costs` on sp-sixty.
+
+Commands: `npx vitest run --fileParallelism=false app/test/taxi-headlines.test.js
+app/test/bst-headlines.test.js`; `npm test` before the push.
+
+Acceptance: the tests pass; `bst-headlines.test.js` is unchanged in outcome; the declaration
+carries no key `CELL_MAP` does not read (a test asserts every key's `sheet!cell` is in
+`standardReads()`).
+
+Tier: Sonnet.
+
+### T13 The Taxi view manifest and derivations
+
+`design-wave: Fable`. This row waits on SE:S7, whose shell and manifest shape are not settled,
+so the deliverable is the landed manifest plus a brief in this format for T14 and T15.
+
+Purpose: the page renders a Taxi book through `books/products/taxi.js` with every structure
+derived from `app/products/taxi.js` and nothing restated.
+
+Constraints: the manifest lists the views in the plan's Views table (year, profit-loss with the
+comparison panel and the health check, fixed-assets, tax-computation, sa103s, quarterly,
+forecast, business-details, admin, home) and none of Stock, Debtors/Creditors, Income Tax; the
+year table's rows are tab months from `generateTaxYearWeeks` and `groupWeeksIntoMonths`
+(export both through `books-engine.js`), each row captioned "from Mon 28 Apr" when its first
+week starts in the calendar month before; the month rows' categories derive from `CELL_MAP`'s
+P&L rows (B5 to B24) and `TAXI_PURCHASE_CODE_MAP`; the annual figures come from the results,
+never re-derived; the unrepresentable list is `app/data/render-unrepresentable/taxi.json` in
+the shape the SE plan's T10 lands; `data-r-key` values use the same `cell/` and `section/` keys
+as BST.
+
+Design questions to answer before coding: how S7's `shell.js` hands a product manifest its
+`buildSnapshot` hook (so `assembleSnapshot`'s Taxi shape can carry `weeks` under each month);
+whether `data.js`'s month grouping takes a product-supplied `monthKeyOf(postingDate)` (Taxi's
+is the tab month, BST's the calendar month); where the takings grain's week and day structures
+live in the snapshot (proposal: `snapshot.months[i].weeks[j] = { start, end, days: [{ date,
+lines, takings, miles, names }], rental, otherIncome, total }`); how the drift walk marks a
+figure whose key is a monthly cell (`cell/Profit & Loss Acc!D5` for May's takings).
+
+Deliverable: `web/.../books/products/taxi.js` with the manifest and derivations, `taxi.json`
+under `render-unrepresentable/` listing the 43-style absences for Taxi (the week subtotal cells,
+`Business Details!D29` and `O29`, the drawings rows), a Node test that the manifest's view ids
+match the plan's table, and briefs for T14 and T15 naming the snapshot fields, the `data-*`
+hooks and the CSS classes they render into.
+
+### T14 The takings view
+
+`design-wave: Fable`. Waits on T13's brief.
+
+Purpose: year, month, week, day and fares, opening in place, keyboard-reachable, on the four
+layouts, with add-a-fare, add-rental and add-other-income.
+
+Constraints from the plan: the four levels in "The takings view"; a day with one line edits in
+the day row, a day with several opens to the list with the row showing the sum; "Add a fare"
+adds a 4000 line dated that day through `addSaleLine`; "Add rental" adds a 4000 line dated the
+week's Sunday with `detailComment "Rental due"`; "Add other income" adds a 4001 line dated the
+Sunday with `detailComment "Any other income"`; every edit goes through `commit()` so undo
+works; the save control's note "the workbook carries one row per day; your fares stay in the
+book" appears once; the off-grid refusal from `TaxiDateOffGridError` shows the dates and a
+button that opens the `book-dates-in-period` helper; the `book-taxi-fare-miles` helper focuses
+the day row's miles field. Files: `web/.../books/products/taxi-takings.js` and
+`web/.../books/taxi.css` (imports the shared sheet as `se.css` does). Selectors the tests will
+use are fixed in T13's brief.
+
+Deliverable: the view, its CSS, and the selector list T17 needs.
+
+### T15 The comparison panel, the statement, the register, the computation, the summaries and the SA103S
+
+`design-wave: Opus`. Waits on T13's brief and T19.
+
+Purpose: the remaining Taxi views, each keyed to the report so drift marks work.
+
+Constraints: the comparison panel's five keys are the table in "The mileage comparison"; its
+sentence follows the two templates there; the P&L view folds rows 26 to 33 below the statement
+with the four drawings rows shown as read-only inputs the book has no field for; the register
+lists `book.fixedAssets` with date, description, cost, WDA (`J47`'s formula: cost times
+`Admin!G5`) and written-down value, and `data-r-key` on `Fixed Assets!D47`, `J1`, `K1`; the tax
+computation follows the SA302 order in the plan with the working-sheet box refs in small text,
+the Class 2 line from `calculateExpectedTax`'s `ni_class2` field (T19) and the payments on
+account from `E25` and `E26` with 31 January and 31 July of the year after the period end; the
+quarterly summary keys `VitalTax!C5..G5`, `C6..G6`, `C29..G29`; the forecast keys the Wages
+Forecast cells; the SA103S prints the 2026 numbers with the box-12 placement and the margin
+figure exactly as "The HMRC look-alike form" states, and reuses the SE plan's T8 SA103S layout
+module if it has landed, else carries its own layout keyed by the 2026 box numbers in
+`app/data/hmrc/form-layouts/taxi.json`. Files: `web/.../books/products/taxi-views.js`,
+`web/.../books/products/taxi-forms.js`.
+
+Design questions: whether the SA103S layout module is shared with SE (one file keyed by box
+number with per-product cell maps) or per product; how a form box that has no cell (box 15
+repairs on the actual-cost route) carries its `data-r-key` (proposal: the P&L key it derives
+from, `cell/Profit & Loss Acc!B8`); how the margin shows the sheet's own placement without a
+second drift mark.
+
+Deliverable: the views and the selector list T17 and T18 need.
+
+### T16 Example books, the page, deep links and the behaviour probe
+
+Purpose: `books/taxi.html` loads the three Taxi fixtures by button and by `?example=`, and the
+download page links it.
+
+Files. Modifies `web/.../books/examples.js` (three entries, in the shape SE:S8 landed),
+`scripts/build-books-bundle.mjs` only if S8 left a per-product asset list there (the Taxi
+template `templates/taxi/{meta.toml,taxi-excel.xlsx}` must reach `books/assets/templates/taxi/`
+for the save path), `web/.../public/download.html` (the panel at line 130 gains a Taxi link
+`books/taxi.html`, `id="books-taxi-link"`), `behaviour-tests/spreadsheets.behaviour.test.js` (a
+probe after the BST one at line 936); creates `web/.../books/taxi.html` from `se.html`'s shape
+with the title "DIYA-GL Books — Taxi Driver", the back link
+`../download.html?product=TaxiDriver`, and the Taxi manifest script. Must not touch `bst.html`,
+`se.html` or the shell.
+
+Design. Example ids are the fixture names: `taxi-scenario-basic` from `basic-taxi-driver/taxi`,
+`taxi-scenario-sp-sixty` from `sp-sixty-driving/taxi`, `taxi-scenario-kestrel` from
+`kestrel-executive-cars/taxi`; the featured one is `taxi-scenario-basic`. Deep links reuse the
+BST parameters (`?example=`, `&view=`, `&month=YYYY-MM`). The probe opens `books/taxi.html`, clicks
+`taxi-scenario-basic`, waits for the year total, asserts the four tiles are present and fails on
+any console error or CSP violation, as the BST probe does.
+
+Tests: the probe; `web/browser-tests/books-deep-links.browser.test.js` gains a Taxi case only if
+its helpers take a page URL, else T17 covers it.
+
+Commands: `npm run build:books-bundle` and check `books/assets/examples/*/taxi/` and
+`books/assets/templates/taxi/`; `npm run test:browser` (serially, as configured); `npm run
+test:spreadsheetsBehaviour-local` against `npm start`.
+
+Acceptance: the three buttons load; `books/taxi.html?example=taxi-scenario-sp-sixty&view=profit-loss`
+opens on the P&L; the download page shows both links; the probe passes locally and on ci after
+the deploy.
+
+Tier: Sonnet.
+
+### T17 The Taxi equivalence, round trips, warnings, layouts and axe
+
+Purpose: the BST plan's seven assertions and the Taxi E1 to E6 cases run on the three Taxi books.
+
+Files. Creates `web/browser-tests/books-taxi-equivalence.browser.test.js`,
+`books-taxi-formats.browser.test.js`, `books-taxi-edits.browser.test.js`,
+`books-taxi-layouts.browser.test.js`; modifies `web/browser-tests/r-sources.js` (`SCENARIOS`
+gains the three Taxi entries with `product: "taxi"`, `page: "books/taxi.html"`; `s2`, `s2ForPackage`
+and `s3` take a product and pass `--package` through; `s3` for taxi reads `examples/taxi-latest`
+at the year end off `reports/*_taxi-scenario-basic.md`) and `playwright.config.js` (four lines
+appended, after T16's and SE's rows have appended theirs). Must not touch the BST specs.
+
+Design, per file:
+
+- Equivalence: A1 to A4 and A6 over the three books as the BST spec does; A7 zero drift on
+  `examples/taxi-latest` uploaded, with the corrupted-`<v>` proof: overwrite `SalesMay!E1`'s
+  cached value on a copy and assert exactly `cell/SalesMay!E1`'s dependants show drift (May's
+  takings row, `cell/Profit & Loss Acc!D5`, `B5`, the Q1 cells) and no other figure.
+- Formats (E3, E4): the Taxi workbook, its package zip with a PDF entry beside the workbook, the
+  diya-gl zip, the JSON and the zipped JSON load to the same D; a BST workbook is refused naming
+  `Draft Tax calculation`; `.xls` by name; the round trip workbook to page to zip to page to
+  workbook is lossy by the three rules (one 4000 line per day with names joined and sums equal,
+  a rental line dated its Sunday, an "Any other income" line dated its Sunday) and by nothing
+  else, asserted on a book that has a two-fare day, a rental and a grant added through the page;
+  JSON to page to JSON identical.
+- Edits (E1, E2): the four E1 cases in "Test approach" with figures read from `data-r-key`
+  and each case's `report.json` equal to Node's through `report.js --package taxi --data`; the
+  E2 rows for the three Taxi warnings and the 6200 repost, reading every rule id before and after.
+- Layouts (E6): the four viewports of `books-layouts.browser.test.js` with axe, plus the
+  keyboard-only run year, month, week, day, add a fare, save.
+
+Commands: `npm run test:browser` runs every spec serially; while iterating, `npx playwright test
+--project=browser-tests web/browser-tests/books-taxi-*.browser.test.js`; wait with `timeout 900
+bash -c 'while pgrep -f "playwright test" >/dev/null; do sleep 15; done'`; `npm test` and
+`npm run test:browser` before the push.
+
+Acceptance: the four specs pass; the BST specs are unchanged in count and outcome; the A7 proof
+names exactly the expected key set.
+
+Tier: Sonnet.
+
+### T18 The form-box proof
+
+Purpose: every 2026 box the SA103S render prints carries the right key, on both routes.
+
+Files. Creates `web/browser-tests/books-taxi-forms.browser.test.js`; appends one line to
+`playwright.config.js` after T17's.
+
+Design. Load `taxi-scenario-basic` (actual-cost route) and `taxi-scenario-sp-sixty` (mileage
+route); for each box in the plan's table read the rendered figure and its `data-r-key`; assert
+the key set equals the table's (boxes 9, 10, 11 to 14, 16 to 22, 23 to 26, 27 to 32 present;
+33 to 38 absent); on sp-sixty box 12 carries the claim (`cell/Profit & Loss Acc!B11`) and box 11
+is empty; on basic box 12 carries `B6 + B7 + B9`, box 15 carries `B8`, boxes 23 to 25 carry
+`SE Short!D80`, `D85`, `O80`; the margin beside boxes 11, 12 and 15 shows the sheet's own
+placement (`SE Short!D46`'s figure) on both routes; the computation's lines equal
+`calculateExpectedTax(profit, taxData)` computed in Node for the same book, Class 2 included
+(nil above the threshold on both books).
+
+Commands: as T17.
+
+Acceptance: the spec passes on both books; no BST spec changes.
+
+Tier: Sonnet.
+
+### T19 Class 2: the small profits threshold and the weekly rate
+
+Purpose: the tax data carries what a Class 2 line needs and `calculateExpectedTax` returns it.
+
+Files. Modifies `app/data/se-2025-2026.toml` and `app/data/se-2026-2027.toml`
+(`[national_insurance]` gains `class2_small_profits_threshold = 6845` and
+`class2_weekly_rate = 3.50`; `class2_rate` stays 0), `app/lib/tax/income-tax.js`
+(`calculateExpectedTax`), `app/lib/diya-gl-loader.js` (`extractTaxDataFromBook` maps
+`class2SmallProfitsThreshold` when a book carries it), `app/test/tax/income-tax.test.js`,
+`app/test/tax/national-insurance.test.js`. Must not touch the exporter's `taxTablesFromRateData`
+(the book side stays as it is), the earlier years' TOMLs, any template.
+
+Design. No template formula reads `Admin!L16` or `L17` (checked across the Taxi, BST and SE
+workbooks), so the rate change moves only the injected cell and its echo check. `calculateNIClass2`
+in `national-insurance.js` already applies the threshold. `calculateExpectedTax` adds
+`ni_class2_weekly: rate`, `ni_class2_threshold: threshold` and `ni_class2: profit < threshold
+&& threshold > 0 ? round2(rate * 52) : 0`, all absent (`undefined`) when the tax data has no
+threshold; `total_tax_and_ni` is unchanged (Class 2 above the threshold is treated as paid;
+below it the line is voluntary and the view says so).
+
+Tests: `income-tax.test.js`: "returns the voluntary Class 2 amount below the small profits
+threshold" (profit 5,000 on 2025-26 gives `ni_class2 === 182` and the total unchanged); "returns
+nil Class 2 above it" (profit 30,000 gives 0); "omits the Class 2 fields for a year with no
+threshold" (2024-25 data gives `undefined`). `national-insurance.test.js`: "applies the
+threshold" (5,000 gives 182, 7,000 gives 0). The BST, SE and Taxi Admin echo checks pick up the
+new rate through the existing `Admin: NI Class 2 Weekly Rate = tax data` check.
+
+Commands: `npx vitest run --fileParallelism=false app/test/tax/ app/test/calculator-taxi.test.js
+app/test/calculator-bst.test.js app/test/calculator-se.test.js`; `npm test` before the push; the
+three SE-regime `generate-*` workflows on the branch with `skip-commit` (their Admin echo checks
+read the new rate).
+
+Acceptance: the five tests pass; `grep -c class2_small_profits_threshold app/data/se-*.toml`
+finds exactly the two files; no `packages/` change on this row (the rate lands in the Admin
+cell on the next regeneration, which rides T6).
+
+Tier: Sonnet.
+
+### Collisions and landing order
+
+- `app/products/taxi.js`: T1 owns the sales block of `cellWrites` and `buildSalesGrid`; T4 owns
+  `checkCompliance`'s other-income checks and the VitalTax rows of `CELL_MAP`; T5 owns the
+  Forecast block of `checkCompliance`; T6 owns the Business Details block of `cellWrites` and
+  every other `CELL_MAP` row; T12 adds the declaration at the end. Order: T1, T4, T5, T6, T12.
+- `app/lib/xlsx-exporter.js`: T3 owns the Taxi Sales loop; T6 owns `ENTITY_CELLS.taxi` and
+  `extractMetadata`; T9 owns the extraction-map block. Order: T3, T6, T9 (T9 after SE:S2).
+- `app/lib/calculators/taxi.js`: T4 (income path), then T5 (Forecast block), then T6 (Business
+  Details, `J1`, `C1`, `K1`, `E25`, `E26`).
+- `app/lib/diya-gl-loader.js`: T1 (the sort condition at 275), then T4 (the taxi `totalSales`
+  branch), then T19 (`extractTaxDataFromBook`). Distinct lines; rebase in that order.
+- `app/lib/book-checks.js`: T2 first, then SE's T5 and T6, then T8 in its own block.
+- `examples/`: T7, then T4, then T5 (a new master only).
+- `playwright.config.js`: T16 (if it appends), T17, T18, after SE's rows, in series.
+- `web/.../books/products/`: T13 writes `taxi.js`; T14 writes `taxi-takings.js`; T15 writes
+  `taxi-views.js` and `taxi-forms.js`; T16 writes `taxi.html`. No shared file.
+
+### Waves
+
+| Wave | Rows | Why concurrent |
+|---|---|---|
+| A, starts now, no SE row needed | T1, T2, T3, T7, T19 | five files with no overlap: the writer block and one loader line; `book-checks.js`; the extractor's Sales loop; Kestrel's master; the tax module and two TOMLs |
+| B, after A, no SE row needed | T4 with T8; then T5; then T6 | T4 owns the calculator's income path and `checkCompliance`, T8 owns `book-checks.js`; T5 needs T4's calculator; T6 closes the writer, extractor and calculator set and carries the regeneration and re-pin |
+| C, after SE:S2, S3, S5, S6 | T9, T10, T11, T12 | four files: the extractor and sidecar; `anchor-tables.js`; the product writer, CLI and tools; `headlines.js` and the declaration |
+| D, after SE:S7, S8 | T13 first; then T14 with T15; T16 alongside | T13 writes the manifest the other two render into; T14 and T15 own separate modules; T16 owns the page and the examples |
+| E, after D and T11 | T17, then T18 | both append `playwright.config.js` and both read T14's and T15's selectors |
+
+Waves A and B run before any SE row lands. Wave C starts when SE:S6 is merged (it carries S2,
+S3 and S5 with it); wave D when SE:S8 is merged.
