@@ -619,6 +619,7 @@ export function extractTaxDataFromBook(book, product) {
       // class1* fields are never a fallback for them.
       class2_rate: ni.class2WeeklyRate ?? 0,
       class2_weekly_rate: ni.class2WeeklyRate ?? 0,
+      class2_small_profits_threshold: ni.class2SmallProfitsThreshold,
       class4_lower_rate: ni.class4MainRate ?? 0.06,
       class4_lower_limit: ni.class4LowerProfits ?? 12570,
       class4_upper_rate: ni.class4UpperRate ?? 0.02,

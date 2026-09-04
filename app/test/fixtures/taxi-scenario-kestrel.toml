@@ -223,7 +223,7 @@ date = 2026-03-27
 amount = 5150
 
 [[purchases.apr]]
-date = 2025-04-03
+date = 2025-04-06
 supplier = "Fleetcard Fuels"
 description = "Monthly fuel card settlement"
 code = "d"
