@@ -86,7 +86,16 @@ export { runBookChecks, bookChecksJson, previewHelper, applyHelper } from "./boo
 export { headlinesFromReport } from "./headlines.js";
 
 // Saving it back out as a workbook or the package zip.
-export { saveBstWorkbook, saveBstPackageZip, taxYearFileName, loadTaxDataForBook, BookFieldError } from "./bst-workbook.js";
+export {
+  saveWorkbook,
+  saveWorkbookFiles,
+  savePackageZip,
+  productOf,
+  taxYearFileName,
+  loadTaxDataForBook,
+  BookFieldError,
+  SingleFileOnlyError,
+} from "./product-workbook.js";
 
 // The resource-loader contract a caller has to satisfy.
 export {

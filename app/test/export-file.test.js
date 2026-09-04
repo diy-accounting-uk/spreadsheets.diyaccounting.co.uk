@@ -17,7 +17,7 @@ import { join, resolve, dirname, basename } from "path";
 import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
-import { loadTaxDataForBook } from "../lib/bst-workbook.js";
+import { loadTaxDataForBook } from "../lib/product-workbook.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
