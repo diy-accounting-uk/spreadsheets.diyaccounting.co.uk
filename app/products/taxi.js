@@ -19,40 +19,58 @@ export const PRODUCT = {
   prefix: "GB Accounts Taxi Driver",
 };
 
+// A sales line dated outside the package's own tax year: the Sales grid
+// (buildSalesGrid) has no row for it, so nothing in the workbook can hold
+// it. Thrown with every off-grid date at once rather than the first one
+// found, so a customer fixing a download does not have to run it repeatedly
+// to find each bad date in turn.
+export class TaxiDateOffGridError extends Error {
+  constructor(dates) {
+    super(
+      `${dates.length} sales ${dates.length === 1 ? "entry is" : "entries are"} dated outside the package's year: ${dates.join(", ")}. Move them into the period or change the book's period.`,
+    );
+    this.name = "TaxiDateOffGridError";
+    this.dates = dates;
+  }
+}
+
+const round2 = (v) => Math.round(v * 100) / 100;
+
 // ── Date-to-row mapping for pre-filled Sales sheets ────────────────────────
 
-function buildDateRowMap(startYear) {
-  const weeks = generateTaxYearWeeks(startYear);
-  const monthly = groupWeeksIntoMonths(weeks);
+// Every day of the tax year mapped to its row on the month's Sales sheet,
+// plus every week's rental and other-income rows, in the same layout
+// buildSalesSheetXml (generator.js) writes: a week's days, then its rental
+// row, its other-income row and its subtotal, with a blank row between
+// weeks. `week` is the index into the returned `weeks` array, shared by
+// every day the week covers.
+function buildSalesGrid(startYear) {
+  const taxYearWeeks = generateTaxYearWeeks(startYear);
+  const monthly = groupWeeksIntoMonths(taxYearWeeks);
 
-  const map = {};
+  const days = new Map();
+  const weeks = [];
+
   for (const [monthKey, monthWeeks] of Object.entries(monthly)) {
     if (!monthWeeks.length) continue;
-    const dateMap = {};
     let row = 5;
 
     for (let w = 0; w < monthWeeks.length; w++) {
-      for (const date of monthWeeks[w]) {
-        dateMap[dateToSerial(date)] = row;
+      const weekDays = monthWeeks[w];
+      const week = weeks.length;
+      for (const date of weekDays) {
+        days.set(dateToSerial(date), { monthKey, row, week });
         row++;
       }
+      const rentalRow = row;
+      const otherIncomeRow = row + 1;
+      weeks.push({ monthKey, lastSerial: dateToSerial(weekDays[weekDays.length - 1]), rentalRow, otherIncomeRow });
       row += 3; // rental + other income + subtotal
       if (w < monthWeeks.length - 1) row += 1; // blank separator
     }
-
-    map[monthKey] = dateMap;
   }
 
-  return map;
-}
-
-function findRowInDateMap(dateRowMap, serial) {
-  for (const [monthKey, dateMap] of Object.entries(dateRowMap)) {
-    if (dateMap[serial] !== undefined) {
-      return { monthKey, row: dateMap[serial] };
-    }
-  }
-  return null;
+  return { days, weeks };
 }
 
 // ── Scenario cell writes ───────────────────────────────────────────────────
@@ -87,7 +105,16 @@ export function cellWrites(scenario, targetStartYear = null) {
   }
 
   if (scenario.sales) {
-    const dateRowMap = buildDateRowMap(startYear);
+    const grid = buildSalesGrid(startYear);
+
+    // One entry per day carrying a fare or a mileage log, gathered before any
+    // write: a day with two lines writes one E cell holding their sum and one
+    // C cell joining their names, rather than the second line overwriting the
+    // first.
+    const days = new Map(); // serial -> { monthKey, row, takings, miles, other, names, hasTakings }
+    const rental = new Map(); // week index -> amount (SalesXxx!E<rentalRow>)
+    const other = new Map(); // week index -> amount (SalesXxx!F<otherIncomeRow>)
+    const offGrid = new Set();
 
     for (const [, transactions] of Object.entries(scenario.sales)) {
       for (const tx of transactions) {
@@ -95,22 +122,65 @@ export function cellWrites(scenario, targetStartYear = null) {
         const targetDate = new Date(d.getTime() + dayOffsetMs);
         const serial = toExcelSerial(targetDate.getUTCFullYear(), targetDate.getUTCMonth() + 1, targetDate.getUTCDate());
 
-        const match = findRowInDateMap(dateRowMap, serial);
-        if (!match)
-          throw new Error(
-            `Date ${targetDate.toISOString().split("T")[0]} (from ${d.toISOString().split("T")[0]}) not found in any Sales sheet row map`,
-          );
+        const cell = grid.days.get(serial);
+        if (!cell) {
+          offGrid.add(targetDate.toISOString().split("T")[0]);
+          continue;
+        }
 
-        const sheetName = `Sales${MONTH_SHEETS[match.monthKey]}`;
-        if (!writes[sheetName]) writes[sheetName] = {};
-        if (tx.customer) writes[sheetName][`C${match.row}`] = tx.customer;
-        writes[sheetName][`E${match.row}`] = tx.amount;
-        // The day's business miles, beside the day's takings. SalesApr!D1 sums
-        // the column into PurchasesApr!A1, the running mileage total the P&L's
-        // own vehicle-cost comparison is made on.
-        if (tx.mileage) writes[sheetName][`D${match.row}`] = tx.mileage;
-        if (tx.other_income) writes[sheetName][`F${match.row}`] = tx.other_income;
+        const caption = String(tx.customer || "").trim();
+        const isOther = tx.account === "4001";
+        const amount = tx.amount || 0;
+
+        if (!isOther && caption === "Rental due") {
+          rental.set(cell.week, (rental.get(cell.week) || 0) + amount);
+        } else if (isOther && caption === "Any other income") {
+          other.set(cell.week, (other.get(cell.week) || 0) + amount);
+        } else {
+          if (!days.has(serial))
+            days.set(serial, { monthKey: cell.monthKey, row: cell.row, takings: 0, miles: 0, other: 0, names: [], hasTakings: false });
+          const day = days.get(serial);
+          if (isOther) {
+            day.other += amount;
+          } else {
+            day.takings += amount;
+            // The day's business miles, beside the day's takings. SalesApr!D1
+            // sums the column into PurchasesApr!A1, the running mileage total
+            // the P&L's own vehicle-cost comparison is made on.
+            day.miles += tx.mileage || 0;
+            day.hasTakings = true;
+          }
+          if (caption && !day.names.includes(caption)) day.names.push(caption);
+        }
       }
+    }
+
+    if (offGrid.size) throw new TaxiDateOffGridError([...offGrid].sort());
+
+    for (const day of days.values()) {
+      const sheetName = `Sales${MONTH_SHEETS[day.monthKey]}`;
+      if (!writes[sheetName]) writes[sheetName] = {};
+      const sheet = writes[sheetName];
+      // A day driven with no fare still writes a nil fare, so its miles still
+      // count towards the year's mileage claim.
+      if (day.hasTakings) sheet[`E${day.row}`] = round2(day.takings);
+      if (day.miles > 0) sheet[`D${day.row}`] = day.miles;
+      if (day.other > 0) sheet[`F${day.row}`] = round2(day.other);
+      if (day.names.length) sheet[`C${day.row}`] = day.names.join("; ");
+    }
+
+    for (const [week, amount] of rental) {
+      const { monthKey, rentalRow } = grid.weeks[week];
+      const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
+      if (!writes[sheetName]) writes[sheetName] = {};
+      writes[sheetName][`E${rentalRow}`] = round2(amount);
+    }
+
+    for (const [week, amount] of other) {
+      const { monthKey, otherIncomeRow } = grid.weeks[week];
+      const sheetName = `Sales${MONTH_SHEETS[monthKey]}`;
+      if (!writes[sheetName]) writes[sheetName] = {};
+      writes[sheetName][`F${otherIncomeRow}`] = round2(amount);
     }
   }
 
@@ -210,6 +280,11 @@ export const CELL_MAP = [
   ["VitalTax", "E5",  "Q3 Turnover",                         "gl-cor:amount (vitalTax.q3Turnover)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "F5",  "Q4 Turnover",                         "gl-cor:amount (vitalTax.q4Turnover)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "G5",  "**Annual Turnover**",                 "gl-cor:amount (vitalTax.annualTurnover)", "Quarterly Summary", 0, "money"],
+  ["VitalTax", "C6",  "Q1 Other income",                     "gl-cor:amount (vitalTax.q1OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "D6",  "Q2 Other income",                     "gl-cor:amount (vitalTax.q2OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "E6",  "Q3 Other income",                     "gl-cor:amount (vitalTax.q3OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "F6",  "Q4 Other income",                     "gl-cor:amount (vitalTax.q4OtherIncome)",     "Quarterly Summary", 1, "money"],
+  ["VitalTax", "G6",  "**Annual Other income**",             "gl-cor:amount (vitalTax.annualOtherIncome)", "Quarterly Summary", 0, "money"],
   ["VitalTax", "C29", "Q1 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q1Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "D29", "Q2 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q2Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "E29", "Q3 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q3Expenses)",     "Quarterly Summary", 1, "money"],
@@ -415,6 +490,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
 
   const pl = results["Profit & Loss Acc"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.B5, expected.total_sales);
+  if (expected.total_other_income !== undefined) check("Other business income", pl.B24, expected.total_other_income);
   if (expected.gross_profit !== undefined) check("Gross Profit", pl.B13, expected.gross_profit);
   if (expected.net_profit !== undefined) check("Net Profit", pl.B23, expected.net_profit);
   if (expected.total_gen_admin !== undefined) check("Gen Admin", pl.B16, expected.total_gen_admin);
@@ -455,6 +531,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       const vtCol = vtQuarterCols[q];
       const months = QUARTER_MONTH_GROUPS[q];
       check(`VitalTax: Q${q + 1} turnover = P&L Q${q + 1} turnover`, vt[`${vtCol}5`] || 0, plQuarterSum(5, months));
+      check(`VitalTax: Q${q + 1} other income = P&L Q${q + 1} other income`, vt[`${vtCol}6`] || 0, plQuarterSum(24, months));
       check(
         `VitalTax: Q${q + 1} total allowable expenses = P&L Q${q + 1} Cost of Sales + Total Expenses`,
         vt[`${vtCol}29`] || 0,
@@ -462,6 +539,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       );
     }
     check("VitalTax: annual turnover = P&L annual turnover", vt.G5 || 0, pl.B5 || 0);
+    check("VitalTax: annual other income = P&L annual other income", vt.G6 || 0, pl.B24 || 0);
     check("VitalTax: annual total allowable expenses = P&L Cost of Sales + Total Expenses", vt.G29 || 0, (pl.B12 || 0) + (pl.B22 || 0));
   }
 
@@ -522,6 +600,10 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     if (seShort.D38 !== undefined) check("SA103S: Turnover = P&L Sales", seShort.D38, pl.B5);
     if (seShort.D71 !== undefined)
       check("SA103S: Net profit (pre-capital-allowance) = P&L Net + Capital Allowances", seShort.D71, (pl.B23 || 0) + (pl.B10 || 0));
+    // Box 29 (verified against the template: 'SE Short'!O99 = 'Profit & Loss
+    // Acc'!B24), the same other-business-income figure VitalTax's own
+    // annual re-sum is checked against above.
+    if (seShort.O99 !== undefined) check("SA103S: Other business income (box 29) = P&L other income", seShort.O99, pl.B24 || 0);
   }
 
   // Fixed asset chain: Fixed Assets sheet -> P&L Capital Allowances (B10).

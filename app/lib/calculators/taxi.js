@@ -3,7 +3,7 @@
 //
 // taxi.js — JS calculation engine for the Taxi Driver product.
 
-import { BST_SALES_ACCOUNTS, TAXI_PURCHASE_CODE_MAP, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
+import { TAXI_SALES_ACCOUNT, TAXI_OTHER_INCOME_ACCOUNT, TAXI_PURCHASE_CODE_MAP, MONTH_ORDER, getMonthKey } from "../scenario-extractor.js";
 import { fixedAssetAdditions } from "../scenario-loader.js";
 import { generateTaxYearWeeks, groupWeeksIntoMonths } from "../generator.js";
 import { calculateIncomeTax } from "../tax/income-tax.js";
@@ -108,7 +108,12 @@ function aggregateByCodeAndMonth(lines, codeMap) {
 }
 
 export function calculateTaxiResults(book, lines, taxData, scenario) {
-  const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && BST_SALES_ACCOUNTS.has(String(l.accountMainID)));
+  const salesLines = lines.filter((l) => l.sourceJournalID === "sales" && String(l.accountMainID) === TAXI_SALES_ACCOUNT);
+  // A 4001 line is other business income, never a fare: the P&L keeps it off
+  // turnover (B5) and on its own row (B24), so it is gathered separately
+  // rather than folded into salesLines the way a second fare account would
+  // be on a package with more than one turnover account.
+  const otherIncomeLines = lines.filter((l) => l.sourceJournalID === "sales" && String(l.accountMainID) === TAXI_OTHER_INCOME_ACCOUNT);
   const purchaseLines = lines.filter((l) => l.sourceJournalID === "purchases" && TAXI_PURCHASE_CODE_MAP[l.accountMainID] !== undefined);
 
   const entity = book.entityInformation || {};
@@ -129,6 +134,13 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const monthlySales = {};
   for (const month of MONTH_ORDER) monthlySales[month] = 0;
   for (const line of salesLines) monthlySales[byDate.get(line.postingDate)] += line.amount;
+
+  // Other business income, month by month on the same week-based tab a
+  // fare's date falls in -- the Sales tab's rental and other-income rows
+  // belong to a week exactly as a fare day does.
+  const monthlyOther = {};
+  for (const month of MONTH_ORDER) monthlyOther[month] = 0;
+  for (const line of otherIncomeLines) monthlyOther[byDate.get(line.postingDate)] += line.amount;
 
   // Capital allowances, from the fixed asset register cellWrites registers
   // (the same additions cellWrites itself derives via fixedAssetAdditions()).
@@ -199,7 +211,10 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const otherExpenses = Math.ceil(byCode.o || 0);
   const totalGenExpenses = Math.ceil(employee + premises + genAdmin + advertising + legal + interest + bankCharges + otherExpenses);
   const netProfit = Math.floor(grossProfit - totalGenExpenses);
-  const otherBusinessIncome = 0; // "Any other business income" (B24) — no source in the diya-gl pipeline
+  // "Any other business income" (B24), verified against the template:
+  // 'Profit & Loss Acc'!B24 = ROUNDDOWN(SUM(C24:N24),0), the same floor the
+  // turnover total (B5) takes over its own monthly row.
+  const otherBusinessIncome = Math.floor(MONTH_ORDER.reduce((sum, month) => sum + monthlyOther[month], 0));
 
   // SE Short (SA103S), computed ahead of the Draft Tax calculation sheet
   // because that sheet's own profit input reads this form's box 27
@@ -353,7 +368,10 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     const monthCostOfSales = takesMileageRoute ? monthlyMileageClaim[month] : monthVehicleCosts + monthlyCapitalAllowance;
     results["Profit & Loss Acc"][`${col}12`] = Math.round(monthCostOfSales * 100) / 100;
     results["Profit & Loss Acc"][`${col}22`] = Math.ceil(monthGenExpenses);
-    results["Profit & Loss Acc"][`${col}24`] = 0; // other business income, no source in the diya-gl pipeline
+    // The sheet's own monthly other-income cell reads SalesXxx!$F$1 straight
+    // through with no ROUND wrapping it, unlike B24's own floor -- verified
+    // against the template: 'Profit & Loss Acc'!C24 = SalesApr!$F$1.
+    results["Profit & Loss Acc"][`${col}24`] = Math.round(monthlyOther[month] * 100) / 100;
   }
 
   // VitalTax's quarterly re-sum (verified against the template: VitalTax!C5
@@ -369,16 +387,21 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const vtCols = ["C", "D", "E", "F"];
   const pl = results["Profit & Loss Acc"];
   let annualTurnover = 0;
+  let annualOther = 0;
   let annualExpenses = 0;
   quarterGroups.forEach((months, q) => {
     const turnover = months.reduce((s, m) => s + (pl[`${MONTH_COLS[m]}5`] || 0), 0);
+    const other = months.reduce((s, m) => s + (pl[`${MONTH_COLS[m]}24`] || 0), 0);
     const expenses = months.reduce((s, m) => s + (pl[`${MONTH_COLS[m]}12`] || 0) + (pl[`${MONTH_COLS[m]}22`] || 0), 0);
     results.VitalTax[`${vtCols[q]}5`] = turnover;
+    results.VitalTax[`${vtCols[q]}6`] = Math.round(other * 100) / 100;
     results.VitalTax[`${vtCols[q]}29`] = Math.round(expenses * 100) / 100;
     annualTurnover += turnover;
+    annualOther += other;
     annualExpenses += expenses;
   });
   results.VitalTax.G5 = annualTurnover;
+  results.VitalTax.G6 = Math.round(annualOther * 100) / 100;
   results.VitalTax.G29 = Math.round(annualExpenses * 100) / 100;
 
   // Wages Forecast — the projected year. Every fixture this calculator sees
@@ -392,7 +415,7 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   if (monthsTraded === MONTH_ORDER.length) {
     const forecast = results["Wages Forecast"];
     forecast.C20 = totalSales;
-    forecast.C22 = 0;
+    forecast.C22 = otherBusinessIncome;
     forecast.C24 = costOfSales;
     forecast.C28 = totalGenExpenses;
     forecast.C30 = Math.round((forecast.C20 + forecast.C22 - forecast.C24 - forecast.C28) * 100) / 100;

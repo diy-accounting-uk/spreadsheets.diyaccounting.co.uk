@@ -48,4 +48,10 @@ describe("calculateNIClass2", () => {
   it("calculates annual amount from weekly rate", () => {
     expect(calculateNIClass2(50000, { class2_weekly_rate: 3.45 })).toBeCloseTo(179.4, 1);
   });
+
+  it("applies the threshold", () => {
+    const rates = { class2_weekly_rate: 3.5, class2_small_profits_threshold: 6845 };
+    expect(calculateNIClass2(5000, rates)).toBe(0);
+    expect(calculateNIClass2(7000, rates)).toBe(182);
+  });
 });

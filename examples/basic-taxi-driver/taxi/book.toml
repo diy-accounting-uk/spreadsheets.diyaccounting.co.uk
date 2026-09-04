@@ -24,6 +24,9 @@ taxAuthorityIdentifier = "HMRC"
 [accounts.sales."4000"]
 accountMainDescription = "Fares income"
 
+[accounts.sales."4001"]
+accountMainDescription = "Other business income"
+
 [accounts.purchases."5100"]
 accountMainDescription = "Fuel"
 "diya-gl:column" = "G"
