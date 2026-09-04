@@ -6,17 +6,24 @@ to do next — completed work lives in `git log`). Plans of record: `PLAN_*.md` 
 
 ## In flight
 
-`PLAN_DIYA_GL_BST_CLI_MCP_WEB.md`'s batch (`claude/bst-ledger`, PR #57) merged to main on
-2026-09-03 and is live in production. Its two follow-ons landed after it: R4, byte equality
-with no test allowances (PR #58, 2026-09-03, after the generate-bst refresh `c3e206d2`), and
-T16, deep links into the example books (PR #59, 2026-09-04). The plan has no open rows.
-`PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue plan of record; its seven decisions were taken on 2026-09-04 and are recorded in it, and it carries its
-own open items (the Rust port plan and the operator's research for it).
+The three successor plans (`PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md`,
+`PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md`) are being executed as one coordinated batch, started
+2026-09-04. Batch branch: `claude/diya-gl-products` (from main; every sub-agent worktree forks
+from main and opens by merging the batch branch; the coordinator merges each verified commit
+into the batch branch and pushes in batches; a draft PR to main opens with the first merge).
+Wave 0 is the refinement: each plan gains a `## Briefs` section rich enough for Sonnet and Haiku
+agents, then one wave plan across the three. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
+plan of record; its seven decisions were taken on 2026-09-04 and it carries its own open items
+(the Rust port plan and the operator's research for it).
 
 ## Board
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
+| R1 | Refine the SE plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
+| R2 | Refine the Taxi plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
+| R3 | Refine the Ltd plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
+| W0 | Cross-plan wave schedule: concurrent workstreams by repository area, design waves first | operator | machine | R1, R2, R3 | blocked-to-start | Fable agent; writes the schedule into NEXT.md's board |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md`,
