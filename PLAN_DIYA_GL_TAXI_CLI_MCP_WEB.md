@@ -436,6 +436,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   March fare days) carry no miles, so `book-taxi-fare-miles` warns on that book as it stands;
   **T20** (Haiku, after T4 in `examples/`) adds the miles to the master and regenerates.
 
+- T4 other income end to end `9408ce08`, merged 2026-09-04. The calculator had filtered sales on
+  `BST_SALES_ACCOUNTS`, which includes 4001, so a 4001 line inflated turnover; it now reads
+  `TAXI_SALES_ACCOUNT` alone and `otherBusinessIncome` is computed. `formatScenarioToml` had no case
+  for `total_other_income`. Local reconciliation against the committed packages fails
+  `Admin: NI Class 2 Weekly Rate = tax data` on every Taxi scenario until the main-side refresh
+  rewrites them; CI regenerates first and is green.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
