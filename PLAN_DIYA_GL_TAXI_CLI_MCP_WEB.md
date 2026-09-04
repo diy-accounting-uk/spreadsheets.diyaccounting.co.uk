@@ -425,6 +425,10 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   threshold and weekly rate `4dba187f`, merged 2026-09-04; the Admin echo test's Class 2
   expectation followed on the batch branch. R1 (generate-bst, -se, -taxi with skip-commit)
   dispatched on the branch and green.
+  T19 had left  beside ; every earlier tax year keeps
+  the two equal, and the BST generator, calculator, check and page read  for Admin
+  L17, so the page and the saved BST workbook disagreed with the book on eleven browser tests.
+  Both files now say 3.50 for both; generate-bst re-dispatched at the pause.
 
 - T1 writer day sums, joined names, caption rows and the off-grid refusal `a883692b`, merged
   2026-09-04. The loader's entry-order sort now covers Taxi, which swaps two tied-date rows on

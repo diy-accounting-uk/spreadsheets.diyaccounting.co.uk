@@ -14,7 +14,8 @@ The three successor plans (`PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_
 merges each verified commit into the batch branch and pushes; docs go to main). Each plan carries
 a `## Briefs` section, one per row; the cross-plan schedule, shared-file landing order and
 regeneration points are in `_developers/WAVES_DIYA_GL_PRODUCTS.md`. R1 and R2 are green on the
-branch. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
+branch; generate-bst run 33925096957 (BST Admin L17 moves to 3.50) was dispatched at the pause and is
+unread. To resume: read the board below; rows marked `ready-to-resume` have a worktree with
 committed partial work (its last commit message says what remains); rows marked
 `ready-to-start` with a worktree named have a fresh worktree and no agent yet; merge the batch
 branch into any worktree before dispatching. `PLAN_DIYA_GL_LAUNCH.md` is the launch and revenue
@@ -25,10 +26,9 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
-| SE-S1 | S1 the workbook set: adapters, `package-set`, product sniff, `openWorkbookSet` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 3, `.worktrees/spreadsheets/se-s1` |
-| SE-S2 | S2 anchor runner over per-product tables; extraction map keyed by file | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1 | blocked-to-start | Sonnet, wave 4, after TX-T6 in `xlsx-exporter.js` |
+| SE-S2 | S2 anchor runner over per-product tables; extraction map keyed by file | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 4, after TX-T6 in `xlsx-exporter.js` |
 | SE-S4 | S4 `link-caches.js`, the calculator's leaf cells, the stale-cache state | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-T3, SE-S7 | blocked-to-start | Fable, wave 6 |
-| SE-S6 | S6 engine product map; MCP server becomes `diya-gl` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1 | blocked-to-start | Sonnet, wave 4, after SE-S2 |
+| SE-S6 | S6 engine product map; MCP server becomes `diya-gl` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | ready-to-start | Sonnet, wave 4, after SE-S2 in books-engine.js |
 | SE-S7d | S7 design: shell and per-product manifest coding brief | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 2, `.worktrees/spreadsheets/se-s7-design` |
 | SE-S7 | S7 the shell, `data.js`, `products/bst.js`, `books.css` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S6 | blocked-to-start | Fable, wave 5 |
 | SE-S8 | S8 example books per product from `scripts/example-books.json` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Haiku, wave 6, after SE-T2 in the bundle script |
@@ -66,7 +66,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | TX-T6 | blocked-to-start | after R3 is green |
 | LT-T1 | Ltd T1 writer profile: docx copy, twelve-month refusal, Ltd branch; the ltd tax-file year and the book's year end | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-start | Opus, wave 4, worktree `.worktrees/spreadsheets/ltd-t1` made, agent read only |
 | LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S2, SE-T1, LT-T1, TX-T10 | blocked-to-start | Sonnet, wave 6 |
-| LT-T4d | Ltd T4 design: link-cache feed brief, first cut of `ltd-link-cells.json` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Fable, wave 3, `.worktrees/spreadsheets/ltd-t4-design` |
+| LT-T4d | Ltd T4 design: link-cache feed brief, first cut of `ltd-link-cells.json` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | ready-to-resume | Fable, wave 3, partial brief committed in  |
 | LT-T4a | Ltd T4 calculator emits every link-addressed leaf cell; pinned list | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4d | blocked-to-start | tier per brief, wave 4, needs no S4 code |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4a, SE-S4, LT-T1, LT-T2 | blocked-to-start | tier per brief, wave 7 |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Sonnet, wave 6 |
@@ -77,7 +77,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | LT-T12 | Ltd T12 formats suite: E3 on both year ends, E4, E5 | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T1, LT-T2, LT-T11 | blocked-to-start | Sonnet, wave 10 |
 | LT-T13 | Ltd T13 edits and warnings suites | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T6b, LT-T7 | blocked-to-start | Sonnet, wave 8 |
 | LT-T14 | Ltd T14 layouts and axe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, LT-T8 | blocked-to-start | Sonnet, wave 9 |
-| LT-T15 | Ltd T15 CLI and MCP harness; Ltd edits in the edit map | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S1, SE-S6, LT-T1, LT-T2, SE-T14 | blocked-to-start | Sonnet, wave 7 |
+| LT-T15 | Ltd T15 CLI and MCP harness; Ltd edits in the edit map | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S6, LT-T1, LT-T2, SE-T14 | blocked-to-start | Sonnet, wave 7 |
 | LT-T17 | Ltd T17 behaviour probe | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T10, LT-T11, SE-T9 | blocked-to-start | Sonnet, wave 10 |
 | LT-T18 | Ltd T18 register the Ltd specs in `playwright.config.js` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, TX-T18 | blocked-to-start | Haiku, wave 11 |
 | LT-M1 | Merge the batch PR; generate-ltd with skip-commit on the branch; refresh on main | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | human | LT-T9, LT-T11, LT-T12, LT-T13, LT-T14, LT-T15, LT-T17, LT-T18 | blocked-to-start | after wave 11 and R6 |
