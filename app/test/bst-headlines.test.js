@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright (C) 2026 DIY Accounting Ltd
 //
-// bst-headlines.test.js — proves headlinesFromReport() against the three
-// diya-gl BST fixtures, built the same way app/bin/report.js's --data mode
-// builds R: no LibreOffice, no xlsx, the JS calculator straight into
-// buildReportDocument().
+// Proves headlinesFromReport() against BST's own HEADLINES declaration over
+// the three diya-gl BST fixtures, built the same way app/bin/report.js's
+// --data mode builds R: no LibreOffice, no xlsx, the JS calculator straight
+// into buildReportDocument().
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
@@ -17,7 +17,7 @@ import * as bst from "../products/bst.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { loadScenario } from "../lib/scenario-loader.js";
-import { headlinesFromReport } from "../lib/bst-headlines.js";
+import { headlinesFromReport } from "../lib/headlines.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -60,7 +60,7 @@ function sumShares(slices) {
 
 describe.each(BOOKS)("headlinesFromReport — $name", ({ dir, expectedFile }) => {
   const { report, results } = buildReport(dir);
-  const headlines = headlinesFromReport(report);
+  const headlines = headlinesFromReport(report, bst.HEADLINES);
   const expected = expectedTotals(expectedFile);
   const pl = results["Profit & Loss Acc"];
 
@@ -127,7 +127,7 @@ describe.each(BOOKS)("headlinesFromReport — $name", ({ dir, expectedFile }) =>
 
 describe("headlinesFromReport — outgoings pie folds the smallest categories into Other", () => {
   const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
-  const { pies } = headlinesFromReport(report);
+  const { pies } = headlinesFromReport(report, bst.HEADLINES);
 
   it("shows the five largest categories by label, largest first", () => {
     const labels = pies.outgoings.slices.map((slice) => slice.label);
@@ -136,7 +136,7 @@ describe("headlinesFromReport — outgoings pie folds the smallest categories in
 
   it("keeps what customers owe out of the assets total, which it would otherwise dwarf", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
-    const { tiles } = headlinesFromReport(report);
+    const { tiles } = headlinesFromReport(report, bst.HEADLINES);
     // This book records few settlements, so the sheet's "Amount owed by
     // customers" runs close to the year's turnover -- far past anything the
     // business actually holds.
@@ -160,7 +160,7 @@ describe("headlinesFromReport — an absent optional key reads as zero with an e
   it("a book with no fixed-asset write-down states writtenDown as 0 and missing:true", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "sp-sixty-driving", "bst"));
     const withoutAssets = { ...report, values: report.values.filter((entry) => entry.key !== "cell/Fixed Assets!M1") };
-    const headlines = headlinesFromReport(withoutAssets);
+    const headlines = headlinesFromReport(withoutAssets, bst.HEADLINES);
     expect(headlines.tiles.assets.writtenDown).toEqual({ value: 0, from: [], missing: true });
     expect(headlines.tiles.assets.total.value).toBeCloseTo(headlines.tiles.assets.stock.value, 6);
   });
@@ -179,7 +179,7 @@ describe("headlinesFromReport — the loss branch draws a bar, not a pie", () =>
   it("a turnover cut below outgoings puts the turnover pie in bar mode with a loss reason", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
     const lossReport = withValue(report, "cell/Profit & Loss Acc!C4", 1000);
-    const headlines = headlinesFromReport(lossReport);
+    const headlines = headlinesFromReport(lossReport, bst.HEADLINES);
 
     expect(headlines.tiles.turnover.value).toBe(1000);
     const kept = headlines.pies.turnover.slices.find((slice) => slice.label === "Kept");
@@ -195,7 +195,7 @@ describe("headlinesFromReport — the loss branch draws a bar, not a pie", () =>
   it("a negative tax slice also puts the turnover pie in bar mode, with a different reason", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
     const refundReport = withValue(report, "cell/Income Tax!E18", -500);
-    const headlines = headlinesFromReport(refundReport);
+    const headlines = headlinesFromReport(refundReport, bst.HEADLINES);
 
     expect(headlines.pies.turnover.mode).toBe("bar");
     expect(headlines.pies.turnover.reason).not.toMatch(/loss/);
@@ -208,7 +208,7 @@ describe("headlinesFromReport — a required key with no value in R is an error 
   it("throws naming the missing key rather than defaulting to zero", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
     const withoutTurnover = { ...report, values: report.values.filter((entry) => entry.key !== "cell/Profit & Loss Acc!C4") };
-    expect(() => headlinesFromReport(withoutTurnover)).toThrow("cell/Profit & Loss Acc!C4");
+    expect(() => headlinesFromReport(withoutTurnover, bst.HEADLINES)).toThrow("cell/Profit & Loss Acc!C4");
   });
 
   it("throws when a required key's value cannot be read as a number", () => {
@@ -217,7 +217,7 @@ describe("headlinesFromReport — a required key with no value in R is an error 
       ...report,
       values: report.values.map((entry) => (entry.key === "cell/Income Tax!E18" ? { ...entry, value: "n/a" } : entry)),
     };
-    expect(() => headlinesFromReport(corrupted)).toThrow("cell/Income Tax!E18");
+    expect(() => headlinesFromReport(corrupted, bst.HEADLINES)).toThrow("cell/Income Tax!E18");
   });
 });
 
@@ -229,12 +229,12 @@ describe("headlinesFromReport is breakable: corrupting one R value moves only th
   // outgoings pie's own slice for that line -- every tile stays byte-equal.
   it("corrupting the general admin expense line moves only its own outgoings-pie slice", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
-    const before = headlinesFromReport(report);
+    const before = headlinesFromReport(report, bst.HEADLINES);
     const corrupted = {
       ...report,
       values: report.values.map((entry) => (entry.key === "cell/Profit & Loss Acc!C14" ? { ...entry, value: "999999" } : entry)),
     };
-    const after = headlinesFromReport(corrupted);
+    const after = headlinesFromReport(corrupted, bst.HEADLINES);
 
     expect(after.tiles).toEqual(before.tiles);
     expect(after.pies.turnover).toEqual(before.pies.turnover);
@@ -247,12 +247,12 @@ describe("headlinesFromReport is breakable: corrupting one R value moves only th
 
   it("corrupting the fixed-asset written-down value moves only the assets tile", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
-    const before = headlinesFromReport(report);
+    const before = headlinesFromReport(report, bst.HEADLINES);
     const corrupted = {
       ...report,
       values: report.values.map((entry) => (entry.key === "cell/Fixed Assets!M1" ? { ...entry, value: "12345" } : entry)),
     };
-    const after = headlinesFromReport(corrupted);
+    const after = headlinesFromReport(corrupted, bst.HEADLINES);
 
     expect(after.tiles.turnover).toEqual(before.tiles.turnover);
     expect(after.tiles.outgoings).toEqual(before.tiles.outgoings);
@@ -264,15 +264,40 @@ describe("headlinesFromReport is breakable: corrupting one R value moves only th
 
   it("corrupting what customers owe moves that figure and leaves the assets total alone", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
-    const before = headlinesFromReport(report);
+    const before = headlinesFromReport(report, bst.HEADLINES);
     const corrupted = {
       ...report,
       values: report.values.map((entry) => (entry.key === "cell/Debtors & Creditors!C29" ? { ...entry, value: "999" } : entry)),
     };
-    const after = headlinesFromReport(corrupted);
+    const after = headlinesFromReport(corrupted, bst.HEADLINES);
 
     expect(after.tiles.assets.debtors.value).toBe(999);
     expect(after.tiles.assets.total.value).toBe(before.tiles.assets.total.value);
     expect(after.keys["headline/assets"]).toBe(before.keys["headline/assets"]);
+  });
+});
+
+// ── The declaration argument ──
+
+describe("headlinesFromReport — the declaration is required", () => {
+  it("throws naming the declaration when called with one argument", () => {
+    const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+    expect(() => headlinesFromReport(report)).toThrow("declaration");
+  });
+});
+
+describe("headlinesFromReport — an empty secondLine and extra leave the BST figures unchanged", () => {
+  it("declaring empty turnover.secondLine and assets.extra produces the same result as declaring neither", () => {
+    const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "bst"));
+    const declarationWithEmptyOptionals = {
+      ...bst.HEADLINES,
+      turnover: { ...bst.HEADLINES.turnover, secondLine: [] },
+      assets: { ...bst.HEADLINES.assets, extra: [] },
+    };
+
+    const withoutOptionals = headlinesFromReport(report, bst.HEADLINES);
+    const withEmptyOptionals = headlinesFromReport(report, declarationWithEmptyOptionals);
+
+    expect(withEmptyOptionals).toEqual(withoutOptionals);
   });
 });
