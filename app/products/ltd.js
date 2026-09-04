@@ -1199,23 +1199,23 @@ export const CELL_MAP = [
   [TAX_SHEET, "K28", "**Profit Chargeable to CT**", "gl-cor:amount (ct600.box315)",  "Corporation Tax working sheet", 0],
   [TAX_SHEET, "K35", "**Corporation Tax**",         "gl-cor:taxAmount (ct600.box430)","Corporation Tax working sheet", 0],
   [TAX_SHEET, "K39", "Tax Outstanding",             "gl-cor:taxAmount (ct600.box515)","Corporation Tax working sheet", 0],
-  // ── The CT600's own tax boxes, so the report states what the form files
-  // as well as what the working sheet charges. Boxes 43 to 46 are the first
-  // financial year the accounting period falls in and boxes 53 to 56 the
-  // second, which stays blank when the period lies in one. Boxes 46 and 56
-  // are the tax before relief, box 64 the relief and box 65 the tax the
-  // company bears. ──
-  ["CT600", "C126",  "Box 43: financial year",      "gl-cor:period (ct600.box43)",     "CT600 as filed", 1],
-  ["CT600", "N126",  "Box 44: amount of profit",    "gl-cor:amount (ct600.box44)",     "CT600 as filed", 1],
-  ["CT600", "AA126", "Box 45: rate of tax",         "gl-cor:rate (ct600.box45)",       "CT600 as filed", 1],
-  ["CT600", "AJ126", "Box 46: tax",                 "gl-cor:taxAmount (ct600.box46)",  "CT600 as filed", 1],
-  ["CT600", "C128",  "Box 53: financial year",      "gl-cor:period (ct600.box53)",     "CT600 as filed", 1],
-  ["CT600", "N128",  "Box 54: amount of profit",    "gl-cor:amount (ct600.box54)",     "CT600 as filed", 1],
-  ["CT600", "AA128", "Box 55: rate of tax",         "gl-cor:rate (ct600.box55)",       "CT600 as filed", 1],
-  ["CT600", "AJ128", "Box 56: tax",                 "gl-cor:taxAmount (ct600.box56)",  "CT600 as filed", 1],
-  ["CT600", "AJ131", "**Box 63: corporation tax**", "gl-cor:taxAmount (ct600.box63)",  "CT600 as filed", 0],
-  ["CT600", "Y133",  "Box 64: marginal rate relief","gl-cor:taxAmount (ct600.box64)",  "CT600 as filed", 1],
-  ["CT600", "Y135",  "**Box 65: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box65)", "CT600 as filed", 0],
+  // ── The CT600's own tax boxes, Version 3 (2026) numbering, so the report
+  // states what the form files as well as what the working sheet charges.
+  // Boxes 330 to 345 are the first financial year the accounting period
+  // falls in and boxes 380 to 395 the second, which stays blank when the
+  // period lies in one. Boxes 345 and 395 are the tax before relief, box 435
+  // the relief and box 440 the tax the company bears. ──
+  ["CT600", "C126",  "Box 330: financial year",      "gl-cor:period (ct600.box330)",     "CT600 as filed", 1],
+  ["CT600", "N126",  "Box 335: amount of profit",    "gl-cor:amount (ct600.box335)",     "CT600 as filed", 1],
+  ["CT600", "AA126", "Box 340: rate of tax",         "gl-cor:rate (ct600.box340)",       "CT600 as filed", 1],
+  ["CT600", "AJ126", "Box 345: tax",                 "gl-cor:taxAmount (ct600.box345)",  "CT600 as filed", 1],
+  ["CT600", "C128",  "Box 380: financial year",      "gl-cor:period (ct600.box380)",     "CT600 as filed", 1],
+  ["CT600", "N128",  "Box 385: amount of profit",    "gl-cor:amount (ct600.box385)",     "CT600 as filed", 1],
+  ["CT600", "AA128", "Box 390: rate of tax",         "gl-cor:rate (ct600.box390)",       "CT600 as filed", 1],
+  ["CT600", "AJ128", "Box 395: tax",                 "gl-cor:taxAmount (ct600.box395)",  "CT600 as filed", 1],
+  ["CT600", "AJ131", "**Box 430: corporation tax**", "gl-cor:taxAmount (ct600.box430)",  "CT600 as filed", 0],
+  ["CT600", "Y133",  "Box 435: marginal rate relief","gl-cor:taxAmount (ct600.box435)",  "CT600 as filed", 1],
+  ["CT600", "Y135",  "**Box 440: corporation tax net of marginal rate relief**", "gl-cor:taxAmount (ct600.box440)", "CT600 as filed", 0],
   // ── Published P&L (column B is last year, column F this year) ──
   ["PubP&L", "F7",  "Sales Turnover",              "gl-cor:amount (pubPL.salesTurnover)","Published P&L", 1],
   ["PubP&L", "F8",  "Investment Grants",           "gl-cor:amount (pubPL.grants)",    "Published P&L", 1],
@@ -1313,6 +1313,63 @@ export const CELL_MAP = [
   ["TrialBalance", "EJ48","Final: Dividends declared",                 "gl-cor:amount (dividendsDeclared)",  "Trial Balance", 1],
   ["TrialBalance", "EJ91", "**Audit Accuracy Check**", "gl-cor:amount (trialBalanceCheck)", "Trial Balance", 0],
 ];
+
+// The year-at-a-glance strip's four tiles and two pies for a Company book.
+// Every key is a report-serializer.js cell key, verified against
+// `report.js --package ltd --data examples/precision-code-ltd/full`.
+//
+// The declaration wraps every single-cell reference as `{ key }` (or
+// `{ key, optional }`) and every summed group as `{ keys: [...] }`, the
+// shape a shared headline reducer reads across products. Ltd's `assets`
+// group carries two named parts summed into the tile (Ltd's current-assets
+// figure already includes trade debtors, so there is no separate `debtors`
+// part the way BST has one). `taxSecond`, `assetsSecond` and `dividends` add
+// a second line to the tax and assets tiles and a fifth turnover-pie slice
+// for the dividends the board declared -- Ltd-specific, since BST's book has
+// no equivalent figures.
+// prettier-ignore
+export const HEADLINES = {
+  turnover: { key: "cell/Financialaccounts.xlsx!MnthP&L!B9" }, // SUM(B4:B8)
+  costOfSales: { keys: ["cell/Financialaccounts.xlsx!MnthP&L!B14"] }, // SUM(B11:B13)
+  runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41" }, // SUM(B18:B40)
+  runningCostsLabel: "Administrative expenses",
+  tax: { key: "cell/Financialaccounts.xlsx!CorporationTax!K35" }, // SUM(I33:I34)
+  taxSecond: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
+  dividends: { key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }, // =TrialBalance!EJ48
+  assets: {
+    writtenDown: { key: "cell/Financialaccounts.xlsx!PubBalSht!F6" }, // fixed assets NBV
+    current: { key: "cell/Financialaccounts.xlsx!PubBalSht!E13" }, // stock, trade debtors, cash
+  },
+  assetsSecond: { label: "Net assets", key: "cell/Financialaccounts.xlsx!PubBalSht!F33" },
+  expenseLines: [
+    ["cell/Financialaccounts.xlsx!MnthP&L!B11", "Materials / Stock"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B12", "Sub-contractors"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B13", "Other direct costs"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B18", "Wages and salaries"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B19", "Directors Wages + Non-PAYE (code d)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B20", "Employers National Insurance"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B21", "Premises (code r)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B22", "Light, Heat, Power (code p)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B23", "Distribution (code t)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B24", "Equipment Hire (code q)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B25", "Repairs & Maintenance (code m)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B26", "Consumables (code u)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B27", "Advertising (code a)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B28", "Telephone, Postage & Stationery (code g)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B29", "Travel & Hotel (code h)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B30", "Motor Vehicle (code v)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B31", "Insurance (code n)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B32", "Leasing (code f)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B33", "Legal & Professional (code l)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B34", "Bad Debts (from Sales)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B35", "Bank Interest Paid"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B36", "Bank Charges"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B37", "Charitable Donations (code y)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B38", "Goodwill written off (code z)"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B39", "Loss on disposal of assets"],
+    ["cell/Financialaccounts.xlsx!MnthP&L!B40", "Depreciation"],
+  ],
+};
 
 // Month tab order (matching the scenario key order) and the MnthP&L column
 // each month occupies — verified against the template (C = month 1 .. N =

@@ -10,11 +10,11 @@
 | Product module | `app/products/ltd.js` |
 | Tax data files | `app/data/ltd-YYYY.toml` (one per financial year, FY2020-FY2027) |
 | Tax regime | `ltd` (Corporation Tax financial years, 1 Apr - 31 Mar) |
-| MULTI_FILE | `true` -- 14 xlsx + 1 docx per package (was 15 xlsx before CT600OnlineLookALike removal) |
+| MULTI_FILE | `true` -- 13 xlsx + 1 docx per package |
 | Year-end months | All 12 (Apr through Mar), generated from a single "Any" template |
 | CT scope | Small profits rate only (19% for profits up to 50,000) |
 
-The Ltd product generates a complete limited company accounts package. Each package directory contains 14 Excel workbooks and 1 Word document covering financial accounts, sales/purchases ledgers, bank accounts, VAT returns, payslips, fixed assets, company secretary records, sales invoicing, expenses, and dividend vouchers. CT600 data is extracted from the CorporationTax and CT600 sheets within Financialaccounts.xlsx (CT600OnlineLookALike.xlsx has been removed from the template).
+The Ltd product generates a complete limited company accounts package. Each package directory contains 13 Excel workbooks and 1 Word document covering financial accounts, sales/purchases ledgers, bank accounts, VAT returns, payslips, fixed assets, company secretary records, sales invoicing, expenses, and dividend vouchers. CT600 data is extracted from the CorporationTax and CT600 sheets within Financialaccounts.xlsx (CT600OnlineLookALike.xlsx has been removed from the template).
 
 For each `ltd-YYYY.toml` financial year data file, the generator produces up to 12 packages (one per possible month-end within the FY), subject to a 14-month-ahead cutoff from today.
 
@@ -101,9 +101,9 @@ For each `ltd-YYYY.toml` financial year data file, the generator produces up to 
 
 Sales.xlsx, Purchases.xlsx, Currentaccount.xlsx, Savingaccount.xlsx, Cashaccount.xlsx, Creditcardaccount.xlsx, Payslips.xlsx.
 
-### Files with no month-specific content (7)
+### Files with no month-specific content (4)
 
-Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Vatreturns.xlsx (VATQtr1-5 + Vatinterface + S/P sheets), Dividend Voucher.docx. (CT600OnlineLookALike.xlsx has been removed.)
+Companysecretary.xlsx, Salesinvoice.xlsx, expensesform.xlsx (tabs always "Month 01"-"Month 12"), Dividend Voucher.docx. Financialaccounts.xlsx and Fixedassets.xlsx have their link sheet names renamed for a non-March year end even though neither has tabs to rename, and Vatreturns.xlsx has its Vatinterface formulas rewritten, so all three carry month-specific content despite not being in the tab-renaming list above.
 
 ## Inter-Workbook Link Diagram
 
@@ -118,24 +118,30 @@ Financialaccounts.xlsx (dates driven by Admin F21), Fixedassets.xlsx, Companysec
             |     |    +-----+  +-----+    |        |
             v     v    v        v      v   v        v
          [1]FA [2]Purch [3]Sales [4]Curr [5]Sav [6]CC [7]Cash
-                  |
-                  | [2] links to:
-                  +-->  Financialaccounts (Admin rates)
-                  +-->  Sales (mileage transfer)
+            |     |
+            |     | [2] links to:
+            |     +-->  Financialaccounts (Admin rates)
+            |     +-->  Sales!G2/G4 (VAT rate and flat-rate cells, every tab -- Ltd carries no mileage column)
+            |
+            | [1] links to:
+            +-->  Financialaccounts (opening balance sheet, tax rates)
+            +-->  Purchases (asset purchases)
+            +-->  Sales (asset sales)
 
          [8]CompSec  <-- Financialaccounts
          [9]Payslips <-- Financialaccounts
 
          (CT600 data extracted in reconciliation report from
           CorporationTax + CT600 sheets in Financialaccounts.xlsx)
-                              --> Fixedassets
 
          Vatreturns --> Financialaccounts (Admin dates)
                     --> Sales (monthly totals)
                     --> Purchases (monthly totals)
 ```
 
-Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). Vatreturns has 3 inbound links. All other workbooks either have no links or are linked only from Financialaccounts.
+Financialaccounts.xlsx is the hub with 9 outbound external links (link indices [1]-[9]). Twenty-two links exist in the package overall: Sales links to the hub; Purchases links to the hub and Sales; each of the four bank books links to the hub; Fixedassets links to the hub, Purchases and Sales; Vatreturns links to the hub, Sales and Purchases. Payslips, Companysecretary, Salesinvoice and expensesform carry no outbound links of their own.
+
+Six hub sheets hold formulas over a link: TrialBalance (1,362 of its 1,666 formulas), CorporationTax (129 of 210), WagesInterface (132 of 149), Stock (48 of 171), PubNotes (36 of 59) and Report (6 of 31). MnthP&L, PubP&L, PubBalSht, CT600, OpenAccounts and Admin carry none; they read the leaves through TrialBalance.
 
 ## Intra-Workbook Data Flow
 
@@ -571,20 +577,36 @@ holds the tax already deducted at source.
 
 ### CT600 as filed
 
-| Cell | Box | DIY Label |
-|------|-----|-----------|
-| AK66 | 145 | Turnover |
-| Z70 | 155 | Trading profits |
-| Z72 | 160 | Losses brought forward |
-| AJ74 | 165 | Net trading profits |
-| AJ76 | 170 | Non-trade interest |
-| AJ92 | 235 | Profits before deductions |
-| AJ110 | 315 | Profits chargeable to corporation tax |
-| N126 / AA126 / AJ126 | 44 / 45 / 46 | First financial year: profit, rate, tax |
-| N128 / AA128 / AJ128 | 54 / 55 / 56 | Second financial year: no formula in the shipped template |
-| AJ131 | 63 | Corporation tax chargeable |
-| AJ145 | 525 | Self assessment of tax payable |
-| AJ159 / AJ163 / AJ166 | 595 / 600 / 605 | Tax already paid, repayable, outstanding |
+The `CT600` sheet mirrors an older layout: it prints no box numbers on its profit and tax
+lines, and its only printed numbers, the capital-allowance ranges "105 - 106" to "109 - 110"
+at rows 175 to 179, are Version 2 (2008) numbers. The table below is the CT600 (2026)
+Version 3 numbering (gov.uk, "Company Tax Return (CT600) 2015 Version 3", refreshed 1 April
+2026), which the page renders; the `R` keys stay as the sheet names them.
+
+| Sheet cell | Version 3 box |
+|------------|---------------|
+| B19, B21, U21/Y21/AE21 | 1 company name, 2 registration number, 3 tax reference |
+| B33, M33 (`Admin!L6`, `N7`) | 30 from, 35 to |
+| AK66 | 145 total turnover from trade |
+| Z70, Z72, AJ74 | 155 trading profits, 160 losses brought forward, 165 net trading profits |
+| AJ76 | 170 bank interest and non-trading loan relationship profits |
+| AJ92 | 235 profits before other deductions and reliefs |
+| AJ110 | 315 profits chargeable to corporation tax; boxes 295, 300 and 305 read nil, since the sheet carries no deductions, reliefs or qualifying donations |
+| C126, N126, AA126, AJ126 | 330 financial year, 335 profit, 340 rate, 345 tax (first financial year, one rate line) |
+| C128, N128, AA128, AJ128 | 380, 385, 390, 395 (second financial year); blank when `CorporationTax!A34` is nil |
+| AJ131, Y133, Y135 | 430 corporation tax, 435 marginal relief, 440 corporation tax chargeable; box 329 ticked when 435 is above nil or the small profits rate applies |
+| AJ145 | 475 net liability and 510 tax chargeable, both equal to 440 since boxes 445 to 505 are nil |
+| AJ154, AJ159 | 515 income tax deducted, 525 self-assessment of tax payable (528 equals it) |
+| AJ163, AJ166, AJ169 | 595 tax already paid (an input), 600 outstanding, 605 overpaid |
+| AA177/AL177, AA179 | 705/710 main pool allowances and balancing charges; the "cars outside general pool" line joins 705 (Version 3 has no separate cars box) |
+| AA175/AL175 | 695/700 special rate pool (long-life assets) |
+| AL194 | 760 machinery and plant on which first-year allowance is claimed; the AIA claimed on `Schedule` feeds 690 |
+| B274 | 975 declaration name; 980 date and 985 status are entered on the page |
+| W137 | none; the underlying rate is a working figure and stays on the computation view |
+
+Boxes 80 (accounts and computations attached) and 326 to 328 (associated companies) are
+inputs the page shows with their default (80 ticked, associated companies nil, which is
+what the sheet's marginal relief assumes).
 
 ### Management P&L (MnthP&L) — DPL Taxonomy
 
