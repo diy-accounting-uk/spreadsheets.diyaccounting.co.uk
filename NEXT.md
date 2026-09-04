@@ -20,10 +20,14 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
+| TX1 | Taxi T1 writer: day sums, joined names, caption rows, off-grid refusal | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t1`, `claude/wt-taxi-t1` |
+| TX3 | Taxi T3 extractor: rental and other-income rows, column F | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t3` |
+| TX2 | Taxi T2 reposting account, T7 Kestrel fixture date, T19 Class 2 threshold | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t2-t7-t19` |
+| LT16 | Ltd T16 CONTEXT corrections and CT600 labels, then T3 headline declaration | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t16-t3` |
+| LT5 | Ltd T5 book checks and warnings with breakability proofs | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/ltd-t5` |
+| LT19 | Ltd T19 filing data: CT600 v3 boxes, computation categories, FRS 105 headings | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t19` |
 | R1 | Refine the SE plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
-| R2 | Refine the Taxi plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
-| R3 | Refine the Ltd plan into per-row briefs and a per-plan wave table | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Fable agent, edits the plan in the main tree |
-| W0 | Cross-plan wave schedule: concurrent workstreams by repository area, design waves first | operator | machine | R1, R2, R3 | blocked-to-start | Fable agent; writes the schedule into NEXT.md's board |
+| W0 | Cross-plan wave schedule: concurrent workstreams by repository area, design waves first | operator | machine | R1 | blocked-to-start | Fable agent; writes the schedule into NEXT.md's board |
 ## Plans not tracked here
 
 - `PLAN_DIYA_GL_SE_CLI_MCP_WEB.md`, `PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md`,
