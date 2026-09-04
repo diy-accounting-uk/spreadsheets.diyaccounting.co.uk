@@ -456,6 +456,12 @@ each rebasing on the last.
   raising a payslip's gross fails only `Trial Balance: audit accuracy (EJ91)` because the bank
   payment is a separate line, so T7's payroll view pairs a payslip change with its bank line.
 
+- SE S3 landed the product writer on 2026-09-04 as `app/lib/product-workbook.js` with
+  `saveWorkbook`, `saveWorkbookFiles` and `savePackageZip` and a `PRODUCT_MODULES` map, not the
+  `saveProductWorkbook` names T1's brief assumed. T1 also corrects `taxYearFileName`'s ltd branch
+  (the 1 April on or before the year end, so 2026-03-31 is `ltd-2025`) and supplies the book's own
+  year end in place of the tax file's `financial_year.end`, updating S3's pinned test.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
