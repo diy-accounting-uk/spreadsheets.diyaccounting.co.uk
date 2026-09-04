@@ -596,6 +596,358 @@ four `--source-dir` exports are byte-identical to the captured references;
 `app/templates/se/` is refused with the package message; `grep -n "tmpdir\|rmSync\|mkdirSync" app/lib/books-interchange.js`
 returns nothing.
 
+#### S1 coding brief
+
+Tier: Opus. Precursor: none. In `xlsx-exporter.js` this row lands after Taxi T3, which is
+already on the batch branch, and before Taxi T6 and S2.
+
+Purpose: one `WorkbookSet` replaces every `sourceDir` string, so the same extractors serve a
+directory under Node and a package zip in the browser, and `books-interchange.js` stops
+writing to `tmpdir()`.
+
+Files. Creates `app/lib/workbook-set.js` and `app/test/workbook-set.test.js`. Modifies
+`app/lib/xlsx-exporter.js` (the six exported signatures, the three internal openers, one new
+exported function, `findXlsxName` deleted), `app/lib/books-interchange.js`, `app/bin/export.js`
+(three regions, named below), `web/spreadsheets.diyaccounting.co.uk/public/books/xlsx-cells.js`,
+`app/test/books-interchange.test.js`, `app/test/xlsx-exporter.test.js`,
+`app/test/se-sales-mileage-checks.test.js`, `app/test/se-purchases-mileage-route.test.js`,
+`web/browser-tests/books-formats.browser.test.js` (one new test). Must not touch
+`app/products/*`, `app/lib/mcp/*`, `app/lib/xlsx-reader.js`, `bst-data.js`, `bst.js`,
+`app/lib/overtype-sidecar.js`, `app/lib/books-engine.js`.
+
+Two departures from the file list above the design wave was given, both deliberate.
+`app/test/workbook-set.test.js` is new because the three adapters need their own proofs and
+no other row owns them. `app/bin/export.js` is edited in three places, not only the
+`--source-dir` block: the import and `NAMED_BOOK_SOURCE_ERRORS` list at `:76` gains the two
+new error classes, `extractBstFromFile` at `:189` passes `deps.products` in place of
+`deps.productMod`, and `main()`'s `--source-dir` block at `:276` to `:297` builds a set. The
+alternative is a call site that no longer matches the module it calls.
+
+**Design.**
+
+*The set.* `app/lib/workbook-set.js` imports nothing at module scope. The one Node read is a
+dynamic `import("fs")` inside the directory adapter, so this module loads in any bundle
+whether or not that bundle stubs `fs`.
+
+```js
+/**
+ * A set of workbooks addressed by file name.
+ *   names(): string[]                     // .xlsx basenames, sorted, case-insensitive
+ *   has(name): boolean                    // by basename, case-insensitive
+ *   zip(name): Promise<JSZip>             // cached per name; rejects for a name not in names()
+ *   bytes(name): Promise<Uint8Array>      // cached per name; rejects the same way
+ */
+export async function workbookSetFromDirectory(dir);        // Node only
+export async function workbookSetFromZipBytes(zipBytes);    // a package zip's entries
+export async function workbookSetFromWorkbook(name, bytes); // one workbook
+export function isWorkbookEntry(entryPath);                 // a zip entry that is a workbook
+export function workbookBaseName(entryPath);                // the last path segment
+export class WorkbookSetError extends Error;                // duplicate basename, unknown name
+```
+
+All three factories are async, including the one that needs no I/O, so every call site obeys
+one rule. `names()` and `has()` are synchronous because `zipKind`, `sniffProduct` and every
+`if (set.has("Bank.xlsx"))` in the extractors ask them inside loops and awaiting there would
+spread through the whole file for nothing. `zip()` and `bytes()` are async because JSZip is.
+
+Name matching is on the basename, lower-cased. The zip adapter takes it from the entry path,
+so a package saved under its `dirName` (S3 zips that way) and a package downloaded from the
+site (flat entries, `zip -r` from inside the directory, `build-packages.js:36`) both work.
+Entries that are not workbooks are ignored, which is what keeps the two PDF guides in a
+shipped SE package out of `names()`. Entries under a `__MACOSX` segment, and basenames
+starting `._`, are ignored too: a customer who re-zips the folder in Finder ships them.
+Two entries with the same basename throw `WorkbookSetError` naming both paths, because
+nothing downstream could say which one it read.
+
+Opening is lazy and cached. `zip(name)` decompresses that one entry, or reads that one file,
+loads it with `JSZip.loadAsync` and keeps the instance in a `Map`; a second call returns the
+same instance. `bytes(name)` caches in its own `Map`. Nothing is opened until asked, which
+matters twice: a populated SE package is about 2 MB over nine files and the extract path
+never opens `Vat.xlsx` at all, and the browser holds the whole thing in memory. A set owns no
+file handles, so there is no release call: the page keeps one on its loaded-book state and
+drops it when the book closes or the next upload lands. The cache means a test that corrupts
+a file on disk between two reads has to build a fresh set for the second read. Every test
+below does.
+
+*The signatures.* Every `sourceDir` parameter becomes `set`.
+
+| Now | After |
+|---|---|
+| `extractMultiFileTransactions(sourceDir, product)` `:650` | `extractMultiFileTransactions(set, product)` |
+| `extractBankTransactions(sourceDir, product, period)` `:841` | `extractBankTransactions(set, product, period)` |
+| `extractPayrollTransactions(sourceDir)` `:956` | `extractPayrollTransactions(set)` |
+| `extractJournalEntries(sourceDir, product, period)` `:1328` | `extractJournalEntries(set, product, period)` |
+| `extractPeriodStartMonth(sourceDir, product)` `:1439` | `extractPeriodStartMonth(set, product)` |
+| `extractBook(sourceDir, product, lines, cellMap)` `:2252` | `extractBook(set, product, lines, cellMap)` |
+
+The internal openers follow. `openWorkbook(sourceDir, fileName)` `:1669` becomes
+`openWorkbook(set, fileName)` and is `set.has(fileName) ? set.zip(fileName) : null`, keeping
+the null return every caller already branches on. `scheduleSheet(sourceDir)` `:1126` and
+`seAdminMileageRates(sourceDir)` `:638` take a set. `findXlsxName(sourceDir)` `:2523` is
+deleted; its two call sites (`singleFileAssetRegisterFrom` `:1140`, `extractBook` `:2254`)
+use `set.names()[0]`. The `findXlsx` import from `xlsx-reader.js` at `:44` goes with it, and
+`xlsx-reader.js` itself is untouched: `report.js` and `reconcile.js` still call `findXlsx`
+on real directories. `names()` is sorted, so a directory holding more than one `.xlsx` for a
+single-file product now picks the alphabetically first rather than whatever `readdirSync`
+listed first. The four byte-identity captures cover that.
+
+Inside the bodies, `resolve(sourceDir, name)` plus `readFileSync` plus `JSZip.loadAsync`
+becomes `await set.zip(name)`, `existsSync` becomes `set.has(name)`, and every
+`await import("fs")` and `await import("path")` in these six functions goes. The
+`readdirSync` in `extractMultiFileTransactions`'s import at `:651` is unused today and goes
+with it. The static `fs` import at `:26` stays: `taxDataDir()` is a different read.
+
+*One extraction path, not two.* The block `export.js:276` to `:295` chooses extractors by
+product. It moves into `xlsx-exporter.js` so the CLI and the interchange cannot drift:
+
+```js
+/**
+ * Every transaction line a package carries, whichever product it is.
+ * @param {WorkbookSet} set
+ * @param {"bst"|"taxi"|"se"|"ltd"} product
+ * @param {Object} [extractionMap] - passed to the single-file extractor; S2 widens it
+ */
+export async function extractLines(set, product, extractionMap);
+```
+
+Its body is that block verbatim, with `findXlsx` and `readFileSync` replaced by
+`set.bytes(set.names()[0])`. `export.js`'s `--source-dir` path becomes
+`const lines = await extractLines(await workbookSetFromDirectory(resolvedSource), packageName)`
+followed by the unchanged `extractBook` call. `readBookSource` calls the same function. This
+is the mechanism behind the byte-identity acceptance: there is one path, so the two cannot
+differ.
+
+*`zipKind`.* `books-interchange.js:130` gains one clause, using the set module's own entry
+rules so "which entries are workbooks" is defined once:
+
+```js
+const workbookEntries = entries.filter(isWorkbookEntry);
+if (lower.includes("xl/workbook.xml")) return "workbook";
+if (!hasLines && workbookEntries.length === 1) return "package-zip";
+if (!hasLines && workbookEntries.length > 1 &&
+    workbookEntries.some((e) => workbookBaseName(e).toLowerCase() === "financialaccounts.xlsx")) return "package-set";
+if (hasLines) return "diya-gl-zip";
+```
+
+`lines.jsonl` still wins over any count, and a multi-workbook zip with no hub is still
+`unknown`. A thirteen-file Ltd package is `package-set` too; which product it is comes next.
+
+*The product sniff.* `sniffProduct(set)` in `books-interchange.js`:
+
+```js
+// A single workbook that is one file of a package, recognised by the sheets it
+// carries and never by the name it arrived under. Every sheet listed must be
+// present; month tabs are left out because a non-March year end renames them.
+const PACKAGE_PART_SHEETS = [
+  { part: "the hub workbook of a nine-file Self Employed package",
+    sheets: ["Business Details", "SE Full", "Profit & Loss Account", "Wagesinterface", "StockControl"] },
+  { part: "the hub workbook of a multi-file Company package",
+    sheets: ["OpenAccounts", "TrialBalance", "CorporationTax", "CT600"] },
+  { part: "the sales journal of a multi-file package", sheets: ["OpeningDebtors", "ClosingDebtors"] },
+  { part: "the purchases journal of a multi-file package", sheets: ["OpeningCreditors", "ClosingCreditors"] },
+  { part: "the fixed asset schedule of a multi-file package", sheets: ["Schedule", "FAreconciliation", "HPfinance"] },
+  { part: "the VAT workbook of a multi-file package", sheets: ["VATQtr1", "Vatinterface"] },
+  { part: "the invoice workbook of a multi-file package", sheets: ["Invoice Template", "Invoice Database", "Customer Details"] },
+  { part: "the payslips workbook of a package, or of the Payslip package", sheets: ["Employee", "Payslips", "Payment"] },
+];
+// A bank or cash book carries the twelve month tabs and nothing else, in any
+// rotation, so it has no named sheet of its own to key on.
+```
+
+The order is: a set holding `Financialaccounts.xlsx` and `Bank.xlsx` is `se`; holding
+`Financialaccounts.xlsx` and `Currentaccount.xlsx` is `ltd`; a set of one workbook is checked
+against `PACKAGE_PART_SHEETS` and the month-tabs rule first and refused if it matches, then
+put through `validateBstAnchors` and returned as `bst`. Taxi joins that last step when S2's
+table lands; until then a single workbook that is neither a package part nor a BST book
+throws the BST anchor error exactly as today. Any other set throws
+`UnknownBookSourceError`; `zipKind` never produces one, so this branch only keeps the
+function total.
+
+The package-part check runs before the anchor guard on purpose. The BST template also
+carries `Business Details` and `SE Short`, so the SE hub is told apart by `SE Full`,
+`Wagesinterface` and `StockControl`, which BST and Taxi have not got. Verified against
+`app/templates/{bst,taxi,se,ltd}/*.xlsx` `xl/workbook.xml`.
+
+*Two new errors*, both exported from `books-interchange.js` and both added to
+`NAMED_BOOK_SOURCE_ERRORS` in `export.js:76` so the CLI prints a message rather than a stack:
+
+```js
+class PackagePartError extends Error   // `"Financialaccounts.xlsx" is the hub workbook of a
+                                       //  nine-file Self Employed package; upload the package zip.`
+class ProductNotAvailableError extends Error // `"pkg.zip" is a Self Employed package; this build
+                                             //  reads Basic Sole Trader books only.`
+```
+
+*`readBookSource`.* Returns `{kind, product, book, lines, overtyped?, workbookSet?}` and
+touches no `fs`, `os` or `path`. `freshStageDir`, `stageWorkbookBytes` and
+`stagePackageZipBytes` (`:181` to `:206`) are deleted with their imports. The workbook path
+becomes: build the set (`workbookSetFromWorkbook(name, bytes)` for `workbook`,
+`workbookSetFromZipBytes(bytes)` for `package-zip` and `package-set`), sniff the product,
+look it up in `deps.products`, then `extractLines` and `extractBook`. The anchor guard runs
+once, inside the sniff, and is not run again. `overtyped` is computed for `bst` only, by
+passing `await set.bytes(set.names()[0])` to today's `overtypedCells`; the other three
+products get it in S2, when the sidecar takes a set. `workbookBytes` goes: only
+`books-interchange.test.js:112` reads it, and `workbookSet` replaces it.
+
+`deps.productMod` becomes `deps.products`, a map of product id to module, defaulting to
+`{ bst }`. A sniffed product with no entry throws `ProductNotAvailableError`.
+`extractBstFromFile(filePath, productMod)` in `export.js:189` keeps its name and its
+signature in this row, and builds `{ products: { bst: productMod } }` internally, so
+`app/lib/mcp/diya-gl-tools.js:114` does not change. S6 renames it when `--file` learns the
+four products. It passes the returned `product` to `buildFileReportDocument` in place of the
+literal `"bst"`; with a one-entry products map that is the same value today.
+
+*The JSON's product.* `xlsx-exporter.js` exports
+`productIdOf(schemaName)`, the inverse of `SCHEMA_PRODUCT_NAMES` (`:1649`), returning
+undefined for anything else. `JSON_PRODUCT` (`:52`) goes. `writeBookJson` takes the id from
+`book.entityInformation["diya-gl:product"]` and throws a plain `Error` naming the field and
+the four names when there is none; the schema leaves that field optional and its enum also
+holds three Payslip names, so the check is real. The reader accepts the four ids, and refuses
+a document whose `product` disagrees with its own book's field, naming both. A book with no
+field at all takes the document's product, since the schema gate is what judges the book.
+
+*The page.* `xlsx-cells.js` gains one function beside the two it has, which keep their
+signatures so `bst-data.js` does not change in this row:
+
+```js
+/**
+ * Every workbook in an uploaded package zip, addressed by file name.
+ *   names(): string[]                              // sync, from the outer zip's entry list
+ *   has(file): boolean                             // sync, by basename, case-insensitive
+ *   hasSheet(file, sheet): Promise<boolean>        // async: the workbook opens on first ask
+ *   readCell(file, sheet, cell): Promise<*>
+ */
+async function openWorkbookSet(zipBytes)
+```
+
+It is one `openWorkbookCells` per entry, built on first ask and cached, with the same
+basename and `__MACOSX` rules as `app/lib/workbook-set.js`. The page cannot import `app/lib`,
+so those four lines are stated twice; the browser test below reads a real SE package through
+both to keep them honest. `hasSheet` is async here and sync in `openWorkbookCells` because
+here the workbook is not open yet. `xlsxBytesFrom` (`:97`) has no caller anywhere in the
+repo today: leave it alone, and do not build the set on it.
+
+*What this row does not do.* The BST page's `loadFromFile` (`bst-data.js:1031`) builds its
+book itself and never calls `readBookSource`, so dropping an SE workbook on `bst.html` still
+ends at the BST anchor guard's message. `books-formats.browser.test.js`'s "an SE workbook
+fails the anchor guard by name" keeps its current expectation, and the
+`PackagePartError` text is pinned by a Node test instead. That message reaches the page when
+S6 and S7 route uploads through `readBookSource`; whichever row does it owns the expectation
+change. The design wave's question 4 assumed this row could change it, and the file it would
+have to change is one this row must not touch.
+
+The sidecar keeps its `overtypedCells(workbookBuffer, options)` signature here. S2's brief
+already names what it becomes: `overtypedCells(set, options)` with `options.templates` keyed
+by file and `options.isInputCell(file, sheet, cell)`. The extraction map keeps its BST shape
+here and is widened to `file!sheet!cell` by S2.
+
+**Tests.**
+
+`app/test/workbook-set.test.js` (new):
+
+- "names every workbook in a directory and nothing else" (a temp directory with two `.xlsx`
+  and a `.pdf`).
+- "matches a name by basename whatever case it arrived in".
+- "reads a package zip whose entries sit under the package's own directory".
+- "ignores a macOS re-zip's `__MACOSX` entries and its `._` shadows".
+- "refuses two entries with the same basename, naming both paths".
+- "opens each workbook once and hands back the same instance" (`toBe` on two `zip()` calls).
+- "opens nothing until asked" (a zip of one good workbook and one entry of junk bytes named
+  `.xlsx`: `names()` and `zip(good)` work, `zip(junk)` rejects).
+- "hands back the file's own bytes" (`Buffer.equals` against the source).
+- "names the one workbook a single-workbook set was built with".
+
+`app/test/books-interchange.test.js`:
+
+- "detects an SE package zip as a package set" and "detects it the same way when its entries
+  sit under the package's directory" (both zips built in the test from `examples/se-latest`).
+- "reads an SE package zip to the same D as `export.js --package se --source-dir`": run the
+  CLI with `execFileSync` the way `export-file.test.js:127` does, then compare
+  `canonicalBookToml` and `canonicalLinesJsonl` from `readBookSource(zipBytes, "se.zip",
+  { products: { bst, taxi, se, ltd } })` against the two written files.
+- "sniffs the product from the files a set carries": `se` for that zip, `ltd` for one built
+  from `examples/ltd-latest`, `bst` for the BST workbook.
+- "refuses a lone hub workbook, naming the package" (`app/templates/se/Financialaccounts.xlsx`,
+  `PackagePartError`, message asserted).
+- "refuses a zip whose only workbook is Payslips.xlsx, naming the payslip package".
+- "refuses a bank book, which carries twelve month tabs and nothing else".
+- "refuses an SE package when only the Basic Sole Trader module is available"
+  (`ProductNotAvailableError`, the `--file` path's default `deps`).
+- "reads the sheet list, not the file name": rename `SE Full` to `SE Fullx` in a copy of the
+  hub through JSZip and assert the refusal becomes the BST anchor error instead of
+  `PackagePartError`, and that renaming any other sheet of the five does the same. This is
+  the sniff's breakability proof.
+- "returns the workbook set for a workbook and for a package set, and none for a diya-gl zip"
+  (replaces the `workbookBytes` assertion at `:112`).
+- "writes the JSON product from the book's own field" (a `SelfEmployed` book writes `"se"`).
+- "refuses a JSON document whose product disagrees with its book, naming both".
+- "reads a JSON document at each product id it accepts".
+- The existing "propagates BstAnchorError ... for a workbook that fails the anchor guard"
+  case stays exactly as it is. It proves the sniff did not swallow the guard.
+
+`app/test/xlsx-exporter.test.js`: mechanical. Every `extractBook`, `extractBankTransactions`,
+`extractPayrollTransactions` and `extractJournalEntries` call takes
+`await workbookSetFromDirectory(dir)`, built fresh at each call site, never hoisted into a
+variable shared by a before-and-after pair. Six of those tests corrupt a file on disk between
+two reads and a shared set would serve the first read's cache to both. One new case: "reads a
+set of one whatever the workbook is named", replacing what `findXlsxName` covered.
+
+`app/test/se-sales-mileage-checks.test.js` and `app/test/se-purchases-mileage-route.test.js`:
+the five `extractMultiFileTransactions(dir, "se")` calls take a set the same way. No
+assertion changes.
+
+`web/browser-tests/books-formats.browser.test.js`: one new test, "the page opens every
+workbook in a package zip by name". Zip `examples/se-latest` in Node, pass it to the page as
+base64 and decode with `atob` (no `eval`, so the production CSP is satisfied), call
+`DiyaGlXlsxCells.openWorkbookSet`, and assert `names()` holds the nine, `hasSheet
+("Financialaccounts.xlsx", "SE Full")` is true, `hasSheet("Sales.xlsx", "SE Full")` is false,
+and `readCell("Sales.xlsx", "Apr", "D1")` equals the value the test reads Node-side from the
+same file. That gives `openWorkbookSet` a reader on the day it is written.
+
+**Byte identity.** Before the first edit, on the merged batch branch:
+
+```
+mkdir -p <scratch>/ref
+for p in bst taxi se ltd; do
+  node app/bin/export.js --package $p --source-dir examples/$p-latest --output-dir <scratch>/ref/$p 2>&1 | tee <scratch>/ref/$p.log
+done
+```
+
+After the change, the same four runs into `<scratch>/after/$p`, then
+`diff -r <scratch>/ref/$p <scratch>/after/$p` for each, all four empty. Those are the four
+`book.toml` and `lines.jsonl` pairs the whole row rests on: every extractor is exercised, and
+the SE and Ltd runs cover the multi-file path end to end.
+
+**Commands.** Serial, teed, and commit before waiting on any of them.
+
+```
+npx vitest run --fileParallelism=false app/test/workbook-set.test.js app/test/books-interchange.test.js \
+  app/test/xlsx-exporter.test.js app/test/se-sales-mileage-checks.test.js \
+  app/test/se-purchases-mileage-route.test.js app/test/export-file.test.js \
+  app/test/diya-gl-mcp.test.js app/test/overtype-sidecar.test.js app/test/book-checks.test.js \
+  app/test/bst-workbook.test.js app/test/bst-workbook-roundtrip.test.js app/test/bst-headlines.test.js \
+  2>&1 | tee <scratch>/s1-node.log
+npm test 2>&1 | tee <scratch>/s1-full.log
+npm run test:browser 2>&1 | tee <scratch>/s1-browser.log
+npm start & npm run test:spreadsheetsBehaviour-local 2>&1 | tee <scratch>/s1-probe.log
+```
+
+**Acceptance.** The BST regression net named at the head of this Briefs section is green
+with no allowance added. The four `--source-dir` exports are byte-identical to the captured
+references. `readBookSource` over the zipped `examples/se-latest` returns `product: "se"` and
+the same `canonicalBookToml` and `canonicalLinesJsonl` as
+`export.js --package se --source-dir examples/se-latest`. `detectBookSource` returns
+`package-set` for that zip. A lone `app/templates/se/Financialaccounts.xlsx` is refused with
+the package message. `grep -n "tmpdir\|rmSync\|mkdirSync" app/lib/books-interchange.js`
+returns nothing. `grep -n "sourceDir" app/lib/xlsx-exporter.js` returns nothing.
+`grep -n "from \"fs\"\|from \"path\"" app/lib/workbook-set.js` returns nothing.
+
+**Landing order.** `xlsx-exporter.js`: Taxi T3 (landed), then this row, then Taxi T6, S2, T3,
+S7's one export, Taxi T9. Rebase on the batch branch head before pushing and confirm the diff
+touches no line of `extractTaxiTransactions`'s Sales loop (Taxi T3's region) and no line of
+`ENTITY_CELLS` or `extractMetadata` (Taxi T6's). `books-interchange.js`: this row, then S2,
+T1, Taxi T10, Ltd T2. S2 rebases on the signatures this row fixes.
+
 ### S2 The anchor guard as a table and the extraction map keyed by file
 
 Tier: Sonnet. Precursor: S1.
