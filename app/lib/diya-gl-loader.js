@@ -235,7 +235,12 @@ export function diyaGlToScenario(book, lines, product) {
   // extract cycle byte for byte. compareLines() only breaks a tie between
   // two lines that share an entryNumber (a book with no workbook history
   // of its own, where entryNumber is absent or repeated).
-  if (product === "bst") {
+  //
+  // Taxi has no such row-position dependency -- a day's row comes from its
+  // date, not from arrival order -- but two lines sharing a day join into
+  // one C cell in whatever order taxi.js's cellWrites() meets them, so the
+  // same sort keeps a Taxi day's joined names in entry order too.
+  if (product === "bst" || product === "taxi") {
     filteredLines = [...filteredLines].sort((a, b) => {
       if (a.sourceJournalID !== b.sourceJournalID) return a.sourceJournalID < b.sourceJournalID ? -1 : 1;
       const aEntry = a.entryNumber;
