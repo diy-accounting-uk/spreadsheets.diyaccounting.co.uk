@@ -2,10 +2,10 @@
 // Copyright (C) 2026 DIY Accounting Ltd
 //
 // The writer on a product whose package is a set of workbooks rather than one.
-// bst-workbook.test.js holds the single-file proof, byte for byte against the
-// generate path; this file covers what a multi-file package adds: the product
-// read off the book, the tax file each regime names, the refusal to hand back
-// one workbook, and the zip the nine files land in.
+// The Basic Sole Trader spec holds the single-file proof, byte for byte
+// against the generate path; this file covers what a multi-file package adds:
+// the product read off the book, the tax file each regime names, the refusal
+// to hand back one workbook, and the zip the nine files land in.
 
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "fs";
