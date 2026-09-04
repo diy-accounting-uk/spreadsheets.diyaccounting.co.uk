@@ -66,6 +66,18 @@ amount = 5700
 date = 2025-06-27
 amount = 5150
 
+[[sales.jun]]
+date = 2025-06-13
+customer = "Rental due"
+amount = 150
+account = "4000"
+
+[[sales.jun]]
+date = 2025-06-20
+customer = "Rental due"
+amount = 150
+account = "4000"
+
 [[sales.jul]]
 date = 2025-07-04
 amount = 4950
@@ -153,6 +165,12 @@ amount = 5300
 [[sales.nov]]
 date = 2025-11-28
 amount = 5000
+
+[[sales.nov]]
+date = 2025-11-14
+customer = "Any other income"
+amount = 80
+account = "4001"
 
 [[sales.dec]]
 date = 2025-12-05
@@ -1054,5 +1072,6 @@ reference = "NBF-0512"
 cost = 900
 
 [expected]
-total_sales = 269200
+total_sales = 269500
+total_other_income = 80
 fixed_asset_cost = 900
