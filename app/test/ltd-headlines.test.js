@@ -3,15 +3,8 @@
 //
 // ltd-headlines.test.js — proves the Ltd HEADLINES declaration in
 // app/products/ltd.js against the three diya-gl Ltd fixtures, built the same
-// way app/bin/report.js --data builds R.
-//
-// The shared, product-agnostic headline reducer has not landed yet, so
-// there is no app/lib/headlines.js to import: headlinesFromReport(report,
-// declaration) does not exist. This file runs the declaration through a
-// local copy of bst-headlines.js's reducer functions (readCell, addFigures,
-// turnoverPie, outgoingsPie), adapted to read the wrapped {key}/{keys}
-// declaration shape the shared reducer is designed around. Once it lands,
-// this local copy is replaced by the real import.
+// way app/bin/report.js --data builds R, through the real shared reducer,
+// headlinesFromReport() in app/lib/headlines.js.
 
 import { describe, it, expect } from "vitest";
 import { resolve, dirname } from "path";
@@ -21,6 +14,7 @@ import { calculateFromDiyaGl } from "../lib/diya-gl-calculator.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
 import { buildReportDocument } from "../lib/report-serializer.js";
 import { loadScenario } from "../lib/scenario-loader.js";
+import { headlinesFromReport } from "../lib/headlines.js";
 import * as ltd from "../products/ltd.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -54,140 +48,28 @@ function expectedTotals(expectedFile) {
   return loadScenario(resolve(FIXTURES_DIR, expectedFile)).expected;
 }
 
-// ── A local reducer copy of bst-headlines.js's functions, reading the
-// wrapped declaration shape: {key}, {key, optional} or {keys: [...]}
-// summed. Replace with the real import once the shared reducer lands. ──
-
-function readCell(report, key, { optional = false } = {}) {
-  const entry = report.values.find((value) => value.key === key);
-  if (!entry) {
-    if (optional) return { value: 0, from: [], missing: true };
-    throw new Error(`local reducer: report carries no value for ${key}`);
-  }
-  const value = Number(entry.value);
-  if (!Number.isFinite(value)) {
-    throw new Error(`local reducer: ${key} is "${entry.value}", not a number`);
-  }
-  return { value, from: [key] };
-}
-
-function addFigures(...figures) {
-  return {
-    value: figures.reduce((total, figure) => total + figure.value, 0),
-    from: figures.flatMap((figure) => figure.from),
-  };
-}
-
-function readSpec(report, spec) {
-  if (spec.keys) return addFigures(...spec.keys.map((key) => readCell(report, key)));
-  return readCell(report, spec.key, { optional: spec.optional });
-}
-
+// Every cell key the declaration names, gathered the same way the shared
+// reducer reads them, so "every key is present in R" and "no cell is
+// absent from standardReads()" check the declaration as it is actually
+// used rather than a hand-picked subset.
 function allDeclaredKeys(declaration) {
   const keys = [];
   const collect = (spec) => {
+    if (!spec) return;
     if (spec.keys) keys.push(...spec.keys);
-    else keys.push(spec.key);
+    else if (spec.key) keys.push(spec.key);
   };
   collect(declaration.turnover);
+  for (const line of declaration.turnover.pieExtra ?? []) keys.push(line.key);
   collect(declaration.costOfSales);
   collect(declaration.runningCosts);
   collect(declaration.tax);
-  collect(declaration.taxSecond);
-  collect(declaration.dividends);
+  collect(declaration.tax.secondLine);
   collect(declaration.assets.writtenDown);
-  collect(declaration.assets.current);
-  collect(declaration.assetsSecond);
+  collect(declaration.assets.stock);
+  collect(declaration.assets.secondLine);
   for (const [key] of declaration.expenseLines) keys.push(key);
   return keys;
-}
-
-const OUTGOINGS_SLICE_CAP = 5;
-
-// The five-slice bridge from turnover to what is left: cost of sales,
-// administrative expenses, corporation tax, dividends, then whatever
-// remains. A negative remainder or a negative slice cannot be shown as a
-// pie, so a bar mode is signalled instead -- this is the reducer's own
-// branch, mirrored here only so the fixtures' profitable years prove the
-// pie branch.
-function turnoverPie(turnover, costOfSales, runningCosts, runningCostsLabel, tax, dividends) {
-  const kept = turnover.value - costOfSales.value - runningCosts.value - tax.value - dividends.value;
-  const slices = [
-    { label: "Cost of sales", value: costOfSales.value, from: costOfSales.from },
-    { label: runningCostsLabel, value: runningCosts.value, from: runningCosts.from },
-    { label: "Corporation tax", value: tax.value, from: tax.from },
-    { label: "Dividends", value: dividends.value, from: dividends.from },
-    {
-      label: "Kept",
-      value: kept,
-      from: [...turnover.from, ...costOfSales.from, ...runningCosts.from, ...tax.from, ...dividends.from],
-    },
-  ];
-  const withShares = slices.map((slice) => ({ ...slice, share: turnover.value === 0 ? 0 : slice.value / turnover.value }));
-  const negative = withShares.filter((slice) => slice.value < 0);
-  if (negative.length > 0) {
-    const reason =
-      kept < 0
-        ? "the year ran at a loss, so turnover cannot be split into positive slices"
-        : "one of the turnover slices is negative, so it cannot be split into positive slices";
-    return { mode: "bar", reason, slices: withShares };
-  }
-  return { mode: "pie", slices: withShares };
-}
-
-// The largest of the twenty-six P&L lines, up to five, everything else
-// folded into one "Other" slice.
-function outgoingsPie(expenseLines, outgoingsTotal) {
-  const candidates = expenseLines.filter((candidate) => candidate.value !== 0);
-  const ranked = [...candidates].sort((a, b) => b.value - a.value);
-  const shown = ranked.slice(0, OUTGOINGS_SLICE_CAP);
-  const rest = ranked.slice(OUTGOINGS_SLICE_CAP);
-  const slices = [...shown];
-  if (rest.length > 0) {
-    slices.push({
-      label: "Other",
-      value: rest.reduce((total, candidate) => total + candidate.value, 0),
-      from: rest.flatMap((candidate) => candidate.from),
-    });
-  }
-  return {
-    slices: slices
-      .filter((slice) => slice.value !== 0)
-      .map((slice) => ({ ...slice, share: outgoingsTotal.value === 0 ? 0 : slice.value / outgoingsTotal.value })),
-  };
-}
-
-function headlinesFromDeclaration(report, declaration) {
-  const turnover = readSpec(report, declaration.turnover);
-  const costOfSales = readSpec(report, declaration.costOfSales);
-  const runningCosts = readSpec(report, declaration.runningCosts);
-  const tax = readSpec(report, declaration.tax);
-  const taxSecond = readSpec(report, declaration.taxSecond);
-  const dividends = readSpec(report, declaration.dividends);
-  const writtenDown = readSpec(report, declaration.assets.writtenDown);
-  const current = readSpec(report, declaration.assets.current);
-  const assetsTotal = addFigures(writtenDown, current);
-  const assetsSecond = readSpec(report, declaration.assetsSecond);
-  const outgoingsTotal = addFigures(costOfSales, runningCosts);
-
-  const expenseLines = declaration.expenseLines.map(([key, label]) => {
-    const figure = readCell(report, key);
-    return { label, value: figure.value, from: figure.from };
-  });
-
-  const tiles = {
-    turnover,
-    outgoings: { total: outgoingsTotal, costOfSales, runningCosts },
-    assets: { total: assetsTotal, writtenDown, current, second: assetsSecond },
-    tax: { ...tax, second: taxSecond },
-  };
-
-  const pies = {
-    turnover: turnoverPie(turnover, costOfSales, runningCosts, declaration.runningCostsLabel, tax, dividends),
-    outgoings: outgoingsPie(expenseLines, outgoingsTotal),
-  };
-
-  return { tiles, pies };
 }
 
 function sumShares(slices) {
@@ -215,7 +97,7 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
   });
 
   it("the outgoings pie sums to cost of sales plus administrative expenses and shows at most six slices", () => {
-    const headlines = headlinesFromDeclaration(report, ltd.HEADLINES);
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
     const { slices } = headlines.pies.outgoings;
     expect(slices.length).toBeLessThanOrEqual(6);
     const total = slices.reduce((sum, slice) => sum + slice.value, 0);
@@ -224,7 +106,7 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
   });
 
   it("the five turnover-pie slices sum to turnover", () => {
-    const headlines = headlinesFromDeclaration(report, ltd.HEADLINES);
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
     const { slices } = headlines.pies.turnover;
     expect(slices).toHaveLength(5);
     const total = slices.reduce((sum, slice) => sum + slice.value, 0);
@@ -232,9 +114,37 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
   });
 
   it("the tax tile carries the working sheet's charge and its second line, tax outstanding", () => {
-    const headlines = headlinesFromDeclaration(report, ltd.HEADLINES);
-    expect(headlines.tiles.tax.value).toBeCloseTo(report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!CorporationTax!K35").value, 6);
-    expect(headlines.tiles.tax.second.value).toBeCloseTo(report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!CorporationTax!K39").value, 6);
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
+    expect(headlines.tiles.tax.value).toBeCloseTo(
+      report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!CorporationTax!K35").value,
+      6,
+    );
+    expect(headlines.tiles.tax.secondLine).toEqual({
+      label: "Tax outstanding",
+      value: expect.any(Number),
+      from: ["cell/Financialaccounts.xlsx!CorporationTax!K39"],
+    });
+    expect(headlines.tiles.tax.secondLine.value).toBeCloseTo(
+      report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!CorporationTax!K39").value,
+      6,
+    );
+  });
+
+  it("the assets tile's total carries its second line, net assets, and stays out of the sum", () => {
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
+    expect(headlines.tiles.assets.total.secondLine.label).toBe("Net assets");
+    const netAssetsCell = report.values.find((v) => v.key === "cell/Financialaccounts.xlsx!PubBalSht!F33").value;
+    expect(headlines.tiles.assets.total.secondLine.value).toBeCloseTo(netAssetsCell, 6);
+    expect(headlines.tiles.assets.total.value).toBeCloseTo(headlines.tiles.assets.writtenDown.value + headlines.tiles.assets.stock.value, 6);
+    // Net assets is a different figure from the assets total (it nets off
+    // liabilities), so nothing says they must be close on a real book --
+    // this only proves the second line traces to its own cell, not the sum.
+    expect(headlines.tiles.assets.total.from).not.toContain("cell/Financialaccounts.xlsx!PubBalSht!F33");
+  });
+
+  it("Ltd declares no separate debtors part, since the current-assets cell already includes it", () => {
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
+    expect(headlines.tiles.assets.debtors).toEqual({ value: 0, from: [], missing: true });
   });
 });
 
@@ -245,7 +155,7 @@ describe("Ltd HEADLINES — precision-code-ltd/full", () => {
   const expected = expectedTotals("ltd-scenario-full.toml");
 
   it("the turnover tile equals the fixture's own expected total_sales", () => {
-    const headlines = headlinesFromDeclaration(report, ltd.HEADLINES);
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
     // The fixture's own [expected] figure is rounded to the pound, the same
     // tolerance the "Total Sales" compliance check applies.
     expect(Math.abs(headlines.tiles.turnover.value - expected.total_sales)).toBeLessThan(1);
@@ -253,7 +163,7 @@ describe("Ltd HEADLINES — precision-code-ltd/full", () => {
   });
 
   it("the turnover pie stays in pie mode for a profitable year, dividends included", () => {
-    const headlines = headlinesFromDeclaration(report, ltd.HEADLINES);
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
     expect(headlines.pies.turnover.mode).toBe("pie");
     const dividends = headlines.pies.turnover.slices.find((slice) => slice.label === "Dividends");
     expect(dividends.value).toBeCloseTo(15000, 6);
@@ -266,12 +176,12 @@ describe("Ltd HEADLINES — precision-code-ltd/full", () => {
 describe("Ltd HEADLINES is breakable: corrupting the dividends cell moves only the tiles that trace to it", () => {
   it("zeroing PubP&L!F52 moves the dividends slice and Kept, and leaves every other tile and slice byte-equal", () => {
     const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "full"));
-    const before = headlinesFromDeclaration(report, ltd.HEADLINES);
+    const before = headlinesFromReport(report, ltd.HEADLINES);
     const corrupted = {
       ...report,
       values: report.values.map((entry) => (entry.key === "cell/Financialaccounts.xlsx!PubP&L!F52" ? { ...entry, value: "0" } : entry)),
     };
-    const after = headlinesFromDeclaration(corrupted, ltd.HEADLINES);
+    const after = headlinesFromReport(corrupted, ltd.HEADLINES);
 
     expect(after.tiles.turnover).toEqual(before.tiles.turnover);
     expect(after.tiles.outgoings).toEqual(before.tiles.outgoings);
@@ -288,10 +198,18 @@ describe("Ltd HEADLINES is breakable: corrupting the dividends cell moves only t
     expect(afterKept.value).not.toBe(beforeKept.value);
     expect(afterKept.value).toBeCloseTo(beforeKept.value + beforeDividends.value, 6);
 
-    for (const label of ["Cost of sales", "Administrative expenses", "Corporation tax"]) {
+    for (const label of ["Cost of sales", "Running costs", "Tax and NI"]) {
       const b = before.pies.turnover.slices.find((slice) => slice.label === label);
       const a = after.pies.turnover.slices.find((slice) => slice.label === label);
       expect(a).toEqual(b);
     }
+  });
+
+  it("a book that declares no dividend reads the pie slice as zero with an empty trail", () => {
+    const { report } = buildReport(resolve(ROOT, "examples", "precision-code-ltd", "full"));
+    const withoutDividends = { ...report, values: report.values.filter((entry) => entry.key !== "cell/Financialaccounts.xlsx!PubP&L!F52") };
+    const headlines = headlinesFromReport(withoutDividends, ltd.HEADLINES);
+    const dividends = headlines.pies.turnover.slices.find((slice) => slice.label === "Dividends");
+    expect(dividends).toEqual({ label: "Dividends", value: 0, from: [], share: 0 });
   });
 });
