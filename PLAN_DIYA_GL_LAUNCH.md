@@ -283,15 +283,28 @@ JSON envelope); put the same version in `book.toml`.
 Dockerfile, useful for CI users. A Homebrew formula needs a tap and a release artefact; it is
 a morning's work once the npm package is stable. Both follow the package; neither leads.
 
-**A Rust port.** The provenance tests are the asset here: the CI reconciliations, the
-byte-for-byte `report.json` on three fixtures, the check catalogue, and the roundtrip
-budgets give a port a complete oracle. What a port buys: a single static binary with no
-runtime, a few megabytes, embeddable in other tools, and a conversation with the plain-text
-accounting community that the npm package alone will not start. What it costs: the tax
-engine, the calculator, the checks and the serializer re-expressed and kept in step with
-every tax-year change, which is a second implementation to maintain. Recommendation: hold
-it as a horizon until the package has users; if a contributor arrives, the oracle is ready
-for them.
+**A Rust port, funded (operator, 2026-09-04).** The provenance tests are the asset here:
+the CI reconciliations, the byte-for-byte `report.json` on three fixtures, the check
+catalogue and the roundtrip budgets give a port a complete oracle. What a port buys: a
+single static binary with no runtime, a few megabytes, embeddable in other tools, and a
+conversation with the plain-text accounting community that the npm package alone will not
+start. What it costs, estimated from this repository's own last seven days (1,045 commits,
+191 merges, sixteen coordinated tasks landed in one day on 2026-09-03 under the coordinator
+model with a Fable coordinator and Sonnet/Opus workers): the recalculation core is about
+4,800 lines of JavaScript (loader, canonical form, calculator, the tax modules, the check
+catalogue, the report serializer, book checks, headlines, interchange); the workbook layer is
+another 5,000 (the xlsx exporter, generator, template map, sidecar). A port of the core is
+two to three coordinator days: a design wave (the type model, the rounding contract, which
+must reproduce JavaScript's float arithmetic and the serializer's half-up canonicalisation
+byte-for-byte, and the oracle harness that runs the binary over the three books and diffs
+`report.json` and `bookchecks.json` against the JS), then concurrent code waves (loader and
+canonical; calculator and tax; checks and serializer; the zip and JSON interchange with a
+CLI), then a closing ladder that adds the Rust parity job to CI beside the JS scorecard. The
+workbook layer is a second step of the same size once the core is proven, with the
+template surgery as its one real risk. Four to six coordinator days in all, kept in step
+with each tax year by the same oracle. The earlier estimate that it would consume the
+year's engineering budget was wrong; the measured throughput says days. Its plan of record
+is `PLAN_DIYA_GL_RUST.md`, drafted next.
 
 **The launch itself.** A Show HN post and an AccountingWEB piece with the same three facts:
 15 KB for a year of accounts, recalculates without Excel, byte-identical across CLI, MCP and
@@ -373,9 +386,8 @@ community, the thing they check first. It costs a build step and a page.
 | 4. The other products | SE, Taxi and Ltd on the page and in the package, in that order (their plans exist as successors of the BST plan) | phase 3 revenue covering the operator's time | each product reconciles in CI and loads on the page | per product, the BST spike's own record: about a week each with the learnings applied |
 | 5. Filing | Income Tax recognition on the 2027–28 cycle; quarterly updates from the stored book via Submit; the Filing rung's price | phase 3; the HMRC window for 2027–28 products | production credentials granted; the first ten customers' quarterly updates accepted | the recognition process runs months; start it during phase 3 |
 
-What to leave: the Rust port (a horizon with its oracle ready), Tauri (until the HTML
-runner's users ask for an app), white-label (until Filing exists), a merge story for
-concurrent edits, and any monthly-billed 99p option.
+What to leave: Tauri (until the HTML runner's users ask for an app), white-label (until
+Filing exists), a merge story for concurrent edits, and any second price.
 
 ## 8. Risks
 
@@ -400,28 +412,22 @@ concurrent edits, and any monthly-billed 99p option.
   writer-order defect by testing byte equality. The releases page makes every such drift
   visible; the discipline is to fix at source, never to allowlist.
 
-## Decisions for the operator
+## Decisions taken (operator, 2026-09-04)
 
-1. **Cognito tier for the shared pool.** Move Submit's pool from Plus (threat protection,
-   $0.02 per MAU, no free tier) to Essentials ($0.015 per MAU above 10,000 free), which
-   makes the first ten thousand spreadsheets users free but drops the threat-protection
-   features Plus carries; or keep Plus and pay about 1.5p per user per month.
-2. **Sign-in domain.** Submit's hosted sign-in page with a redirect to the spreadsheets site
-   (recommended), or a second custom domain on the same pool, which Cognito allows one of
-   and would mean moving Submit's.
-3. **Where the runner is built.** From this repository's bundle (recommended; the engine is
-   proven here), or from the published npm package (cleaner as a consumer, but a second
-   build to keep reconciled).
-4. **Which products follow BST onto the page.** SE next (closest to BST and the largest
-   audience), or Ltd (where FRS 105 alignment can be demonstrated), or Taxi (cheapest,
-   smallest audience).
-5. **The HMRC application.** Start the Developer Hub application for Income Tax in phase 3
-   so the 2027–28 window is met, or wait for phase 3's revenue to prove the demand and
-   accept the 2028–29 window.
-6. **The Rust port.** Hold it as a horizon (recommended), or fund it as the tech-community
-   launch's headline.
-7. **VAT position.** Confirm the company's VAT registration status; the price in section 3
-   assumes unregistered.
+1. **Cognito tier.** Keep Plus on the shared pool; about 1.5p per spreadsheets user per
+   month, threat protection kept.
+2. **Sign-in domain.** Submit's hosted sign-in page with a redirect to the spreadsheets
+   site; nothing moves.
+3. **Runner build.** From this repository's bundle, cut from a reconciled commit.
+4. **Next product.** Self Employed.
+5. **HMRC application.** Start the Developer Hub application for Income Tax during phase 3
+   for the 2027–28 window, and ask HMRC for special consideration for 2026–27 if the
+   product is solid by then: a non-zero chance at a low cost to ask.
+6. **The Rust port.** Funded, as the tech-community launch's headline; the estimate is in
+   section 5b and the plan of record is `PLAN_DIYA_GL_RUST.md`. The operator is
+   researching Rust porting references, skills and MCP servers for the builder, which is
+   Fable 5.1 as coordinator.
+7. **VAT position.** Not VAT registered; the price stands as written.
 
 ## Where this changes the DIYA Cloud plan
 
