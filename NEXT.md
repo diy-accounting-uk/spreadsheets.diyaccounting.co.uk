@@ -68,8 +68,7 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | LT-T4a | Ltd T4 calculator emits every link-addressed leaf cell; pinned list | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4d | blocked-to-start | tier per brief, wave 4, needs no S4 code |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4a, SE-S4, LT-T1, LT-T2 | blocked-to-start | tier per brief, wave 7 |
 | LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Sonnet, wave 6 |
-| LT-T8d | Ltd T8 design: forms half brief, `form-layouts/ltd.json` draft | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 3, `.worktrees/spreadsheets/ltd-t8-design` |
-| LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8d, LT-T7, SE-T8 | blocked-to-start | tier per brief, wave 8 |
+| LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, SE-T8 | blocked-to-start | tier per brief, wave 8 |
 | LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, LT-T8 | blocked-to-start | Haiku, wave 9 |
 | LT-T10 | Ltd T10 example rows in `scripts/example-books.json`, bundle assets, deep links | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S8, LT-T7, SE-T8 | blocked-to-start | Sonnet, wave 7, one worktree with TX-T16 |
 | LT-T11 | Ltd T11 equivalence suite; S3 from ltd-latest with the seven-month shift | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T1, LT-T2, LT-T4b, LT-T7, LT-T8, SE-T11, TX-T17 | blocked-to-start | Opus, wave 9 |
