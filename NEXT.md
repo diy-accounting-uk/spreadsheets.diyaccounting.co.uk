@@ -21,7 +21,6 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | # | Item | Source | Owner | Precursors | State | Status |
 |---|---|---|---|---|---|---|
 | TX1 | Taxi T1 writer: day sums, joined names, caption rows, off-grid refusal | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/taxi-t1`, `claude/wt-taxi-t1` |
-| LT16 | Ltd T16 CONTEXT corrections and CT600 labels, then T3 headline declaration | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Sonnet, `.worktrees/spreadsheets/ltd-t16-t3` |
 | LT5 | Ltd T5 book checks and warnings with breakability proofs | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | — | in-flight | Opus, `.worktrees/spreadsheets/ltd-t5` |
 | SE-S1d | S1 design: the workbook set's coding brief | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | — | in-flight | Opus, wave 2, `.worktrees/spreadsheets/se-s1-design` |
 | SE-S1 | S1 the workbook set: adapters, `package-set`, product sniff, `openWorkbookSet` | PLAN_DIYA_GL_SE_CLI_MCP_WEB.md | machine | SE-S1d, TX3 | blocked-to-start | Opus, wave 3 |
@@ -71,14 +70,14 @@ plan of record; its seven decisions were taken on 2026-09-04 and it carries its 
 | TX-H1 | Merge the batch to main after TX-T6; generate-taxi refresh on main | PLAN_DIYA_GL_TAXI_CLI_MCP_WEB.md | human | TX-T6 | blocked-to-start | after R3 is green |
 | LT-T1 | Ltd T1 writer profile: docx copy, twelve-month refusal, Ltd branch | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S3, LT-T3b | blocked-to-start | Opus, wave 4 |
 | LT-T2 | Ltd T2 anchor table for thirteen workbooks; input-cell predicate | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S2, SE-T1, LT-T1, TX-T10 | blocked-to-start | Sonnet, wave 6 |
-| LT-T3b | Ltd T3 tail: declaration swaps to `headlines.js`; `dividends` and second-line keys | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT16, SE-S5 | blocked-to-start | Sonnet, wave 3 |
+| LT-T3b | Ltd T3 tail: declaration swaps to `headlines.js`; `dividends` and second-line keys | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S5 | blocked-to-start | Sonnet, wave 3 |
 | LT-T4d | Ltd T4 design: link-cache feed brief, first cut of `ltd-link-cells.json` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S4d | blocked-to-start | Fable, wave 3, brief appended under T4 |
 | LT-T4a | Ltd T4 calculator emits every link-addressed leaf cell; pinned list | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4d | blocked-to-start | tier per brief, wave 4, needs no S4 code |
 | LT-T4b | Ltd T4 `linkCacheReader`, cache-agreement test, stale-cache test | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T4a, SE-S4, LT-T1, LT-T2 | blocked-to-start | tier per brief, wave 7 |
 | LT-T6a | Ltd T6 `changePayrollLine`, `setDividend`, `setMembers`, `setCharges` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT5 | in-flight | Opus, wave 2, `.worktrees/spreadsheets/ltd-t6a` |
 | LT-T6b | Ltd T6 settlement helpers proved on Ltd books | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T6a, SE-T6, LT5 | blocked-to-start | Sonnet, wave 7 |
-| LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7, LT16 | blocked-to-start | Sonnet, wave 6 |
-| LT-T8d | Ltd T8 design: forms half brief, `form-layouts/ltd.json` draft | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7d, LT16 | blocked-to-start | Opus, wave 3, brief appended under T8 |
+| LT-T7 | Ltd T7 view manifest, ledger half; `ltd.html`, `ltd.css` | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7 | blocked-to-start | Sonnet, wave 6 |
+| LT-T8d | Ltd T8 design: forms half brief, `form-layouts/ltd.json` draft | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S7d | blocked-to-start | Opus, wave 3, brief appended under T8 |
 | LT-T8 | Ltd T8 forms: Accounts, Corporation tax, CT600, VAT, Payroll, Company | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T8d, LT-T7, SE-T8 | blocked-to-start | tier per brief, wave 8 |
 | LT-T9 | Ltd T9 unrepresentable list and render coverage | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | LT-T7, LT-T8 | blocked-to-start | Haiku, wave 9 |
 | LT-T10 | Ltd T10 example rows in `scripts/example-books.json`, bundle assets, deep links | PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md | machine | SE-S8, LT-T7, SE-T8 | blocked-to-start | Sonnet, wave 7, one worktree with TX-T16 |

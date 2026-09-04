@@ -438,6 +438,10 @@ each rebasing on the last.
 ### Landed
 
 - T19 filing data, `b36c11ca`, merged to `claude/diya-gl-products` 2026-09-04.
+- T16 CONTEXT corrections and CT600 Version 3 labels `695594de` (K39's tag corrected to box 600
+  on the batch branch), T3 headline declaration `9d22b67c` in the S5 wrapped shape with Ltd's
+  `taxSecond`, `assetsSecond` and `dividends` extensions, merged 2026-09-04; R2 (generate-ltd
+  with skip-commit) dispatched on the branch.
 
 ### Verification ladder
 
