@@ -25,12 +25,15 @@ import { generateSpreadsheet } from "../lib/generator.js";
 import { loadScenario } from "../lib/scenario-loader.js";
 import { cellWrites as taxiCellWrites, standardReads as taxiReads, checkCompliance as taxiCheckCompliance } from "../products/taxi.js";
 import { calculateExpectedTax } from "../lib/tax/income-tax.js";
+import { loadDiyaGlData, diyaGlToScenario } from "../lib/diya-gl-loader.js";
+import { calculateTaxiResults } from "../lib/calculators/taxi.js";
 
 const SKIP = !hasLibreOffice();
 const describeCalc = SKIP ? describe.skip : describe;
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_DIR = resolve(__dirname, "..");
+const ROOT = resolve(APP_DIR, "..");
 const TAXI_DIR = resolve(APP_DIR, "templates", "taxi");
 const DATA_DIR = resolve(APP_DIR, "data");
 const FIXTURES_DIR = resolve(APP_DIR, "test", "fixtures");
@@ -64,6 +67,10 @@ function failureNames(checks) {
 
 const FORECAST_CHECK_NAMES = [
   "Forecast: months of actual trade = P&L months with turnover",
+  "Forecast: months of actual trade = the fixture's",
+  "Forecast: turnover = the traded months plus the year spread over the rest",
+  "Forecast: cost of sales = the traded months plus the year spread over the rest",
+  "Forecast: general expenses = the traded months plus the year spread over the rest",
   "Forecast: turnover = P&L turnover",
   "Forecast: other business income = P&L other business income",
   "Forecast: cost of sales = P&L cost of sales",
@@ -124,46 +131,75 @@ describeCalc("Taxi wages forecast checks catch a broken workbook", () => {
     const forecast = results[FORECAST_SHEET];
     const pl = results["Profit & Loss Acc"];
     expect(forecast.C19).toBe(12);
-    expect(forecast.C30).toBeCloseTo(144878, 2);
-    expect(forecast.C30).toBeCloseTo(pl.B23, 0);
+    expect(forecast.C30).toBeCloseTo(145258, 2);
+    // The forecast profit is the net profit plus the year's other business
+    // income: the P&L takes its own net profit before that row, the forecast
+    // adds it in.
+    expect(forecast.C30).toBeCloseTo(pl.B23 + pl.B24, 0);
   });
 
-  // Hand-computed from the 2025-26 rates on the forecast profit of 144,878:
+  // Hand-computed from the 2025-26 rates on the forecast profit of 145,258:
   // the allowance is nil because the profit is more than 25,140 above the
   // 100,000 taper threshold; 37,700 at 20% is 7,540; 37,700 to 125,140 at 40%
-  // is 34,976; the remaining 19,738 at 45% is 8,882.10. Class 4 is 6% between
-  // 12,570 and 50,270 (2,262) plus 2% on the 94,608 above (1,892.16).
+  // is 34,976; the remaining 20,118 at 45% is 9,053.10. Class 4 is 6% between
+  // 12,570 and 50,270 (2,262) plus 2% on the 94,988 above (1,899.76).
   it("charges the forecast profit the statutory amount", () => {
     const forecast = results[FORECAST_SHEET];
-    expect(forecast.C34).toBeCloseTo(144878, 2);
+    expect(forecast.C34).toBeCloseTo(145258, 2);
     expect(forecast.C35).toBe(0);
-    expect(forecast.C36).toBeCloseTo(144878, 2);
+    expect(forecast.C36).toBeCloseTo(145258, 2);
     expect(forecast.C37).toBeCloseTo(7540, 2);
     expect(forecast.C38).toBeCloseTo(34976, 2);
-    expect(forecast.C39).toBeCloseTo(8882.1, 2);
-    expect(forecast.C40).toBeCloseTo(4154.16, 2);
-    expect(forecast.C41).toBeCloseTo(55552.26, 2);
+    expect(forecast.C39).toBeCloseTo(9053.1, 2);
+    expect(forecast.C40).toBeCloseTo(4161.76, 2);
+    expect(forecast.C41).toBeCloseTo(55730.86, 2);
   });
 
   it.each([
-    [FORECAST_SHEET, "C19", 1, ["Forecast: months of actual trade = P&L months with turnover"]],
+    [
+      FORECAST_SHEET,
+      "C19",
+      1,
+      ["Forecast: months of actual trade = P&L months with turnover", "Forecast: months of actual trade = the fixture's"],
+    ],
     [
       FORECAST_SHEET,
       "C20",
       1,
-      ["Forecast: turnover = P&L turnover", "Forecast: profit = turnover + other income - cost of sales - expenses"],
+      [
+        "Forecast: turnover = P&L turnover",
+        "Forecast: turnover = the traded months plus the year spread over the rest",
+        "Forecast: profit = turnover + other income - cost of sales - expenses",
+      ],
+    ],
+    [
+      FORECAST_SHEET,
+      "C22",
+      1,
+      [
+        "Forecast: other business income = P&L other business income",
+        "Forecast: profit = turnover + other income - cost of sales - expenses",
+      ],
     ],
     [
       FORECAST_SHEET,
       "C24",
       1,
-      ["Forecast: cost of sales = P&L cost of sales", "Forecast: profit = turnover + other income - cost of sales - expenses"],
+      [
+        "Forecast: cost of sales = P&L cost of sales",
+        "Forecast: cost of sales = the traded months plus the year spread over the rest",
+        "Forecast: profit = turnover + other income - cost of sales - expenses",
+      ],
     ],
     [
       FORECAST_SHEET,
       "C28",
       1,
-      ["Forecast: general expenses = P&L general expenses", "Forecast: profit = turnover + other income - cost of sales - expenses"],
+      [
+        "Forecast: general expenses = P&L general expenses",
+        "Forecast: general expenses = the traded months plus the year spread over the rest",
+        "Forecast: profit = turnover + other income - cost of sales - expenses",
+      ],
     ],
     [FORECAST_SHEET, "C30", 1, ["Forecast: profit = turnover + other income - cost of sales - expenses"]],
     [FORECAST_SHEET, "C34", 1, TAX_BLOCK_CHECKS],
@@ -182,5 +218,60 @@ describeCalc("Taxi wages forecast checks catch a broken workbook", () => {
     expect(value).toBe(corruptedValue);
     const corrupted = checksWithCorruptedCell(sheet, cellRef, value);
     expect(failureNames(corrupted).sort()).toEqual([...expectedFailures].sort());
+  });
+});
+
+describeCalc("Taxi wages forecast spreads a partial year the way the sheet does", () => {
+  let sheetResults;
+  let jsResults;
+  let expected;
+  let taxData;
+  let populatedPath;
+
+  beforeAll(async () => {
+    const templateBuffer = readFileSync(resolve(TAXI_DIR, "taxi-excel.xlsx"));
+    taxData = parseTOML(readFileSync(resolve(DATA_DIR, "se-2025-2026.toml"), "utf8"));
+    const productMeta = parseTOML(readFileSync(resolve(TAXI_DIR, "meta.toml"), "utf8"));
+    const xlsxBuffer = await generateSpreadsheet(templateBuffer, taxData, productMeta.sheets);
+
+    const scenario = loadScenario(resolve(FIXTURES_DIR, "taxi-scenario-autumn-start.toml"));
+    expected = { ...scenario, ...scenario.expected };
+
+    populatedPath = join(mkdtempSync(join(tmpdir(), "taxi-autumn-start-")), "populated.xlsx");
+    sheetResults = await runSpreadsheet(xlsxBuffer, taxiCellWrites(scenario), taxiReads(), { saveRecalculatedTo: populatedPath });
+
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "autumn-start-cabs", "taxi"));
+    const bookScenario = diyaGlToScenario(book, lines, "taxi");
+    jsResults = calculateTaxiResults(book, lines, taxData, { ...bookScenario, ...bookScenario.expected });
+  }, 120000);
+
+  it("counts the six months that traded", () => {
+    expect(sheetResults[FORECAST_SHEET].C19).toBe(6);
+    expect(expected.months_traded).toBe(6);
+  });
+
+  it.each(["C19", "C20", "C22", "C24", "C28", "C30", "C34", "C35", "C36", "C37", "C38", "C39", "C40", "C41"])(
+    "the JS engine lands on the sheet's %s",
+    (cellRef) => {
+      expect(jsResults[FORECAST_SHEET][cellRef]).toBeCloseTo(sheetResults[FORECAST_SHEET][cellRef], 0);
+    },
+  );
+
+  it("passes every forecast check on the recalculated book", () => {
+    const checks = taxiCheckCompliance(sheetResults, expected, taxData, calculateExpectedTax);
+    for (const check of checks.filter((c) => c.name.startsWith("Forecast:"))) {
+      expect(check.pass, `${check.name}: expected ${check.expected}, actual ${check.actual}`).toBe(true);
+    }
+  });
+
+  it("corrupting the sheet's forecast turnover fails the spread check and the profit check", async () => {
+    const value = await readCorruptedCell(populatedPath, FORECAST_SHEET, "C20", 1);
+    expect(value).toBe(1);
+    const corrupted = { ...sheetResults, [FORECAST_SHEET]: { ...sheetResults[FORECAST_SHEET], C20: value } };
+    const checks = taxiCheckCompliance(corrupted, expected, taxData, calculateExpectedTax);
+    expect(failureNames(checks).sort()).toEqual([
+      "Forecast: profit = turnover + other income - cost of sales - expenses",
+      "Forecast: turnover = the traded months plus the year spread over the rest",
+    ]);
   });
 });
