@@ -1333,7 +1333,12 @@ export const CELL_MAP = [
 // (SE's, summed into that tile's total and never its own slice), a pie
 // slice needs its own label and value, so it takes the list shape
 // `resolveLines()` already reads for a tile's second line. It is optional:
-// a company need not have declared a dividend in the year.
+// a company need not have declared a dividend in the year. `runningCosts`
+// and `tax` each add `label`, the turnover pie's own name for that slice --
+// the shared reducer defaults to BST's "Running costs" and "Tax and NI",
+// so without this Ltd's pie would carry the wrong sheet's words; here it
+// names the Ltd sheet's own, "Administrative expenses" and "Corporation
+// tax".
 // prettier-ignore
 export const HEADLINES = {
   turnover: {
@@ -1341,9 +1346,10 @@ export const HEADLINES = {
     pieExtra: [{ label: "Dividends", key: "cell/Financialaccounts.xlsx!PubP&L!F52", optional: true }], // =TrialBalance!EJ48
   },
   costOfSales: { keys: ["cell/Financialaccounts.xlsx!MnthP&L!B14"] }, // SUM(B11:B13)
-  runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41" }, // SUM(B18:B40)
+  runningCosts: { key: "cell/Financialaccounts.xlsx!MnthP&L!B41", label: "Administrative expenses" }, // SUM(B18:B40)
   tax: {
     key: "cell/Financialaccounts.xlsx!CorporationTax!K35", // SUM(I33:I34)
+    label: "Corporation tax",
     secondLine: { label: "Tax outstanding", key: "cell/Financialaccounts.xlsx!CorporationTax!K39" }, // K35-K37
   },
   assets: {

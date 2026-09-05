@@ -113,6 +113,15 @@ describe.each(BOOKS)("Ltd HEADLINES — $name", ({ dir, expectedFile }) => {
     expect(total).toBeCloseTo(headlines.tiles.turnover.value, 6);
   });
 
+  it("the turnover pie names the running-costs and tax slices with the Ltd sheet's own words, not BST's", () => {
+    const headlines = headlinesFromReport(report, ltd.HEADLINES);
+    const labels = headlines.pies.turnover.slices.map((slice) => slice.label);
+    expect(labels).toContain("Administrative expenses");
+    expect(labels).toContain("Corporation tax");
+    expect(labels).not.toContain("Running costs");
+    expect(labels).not.toContain("Tax and NI");
+  });
+
   it("the tax tile carries the working sheet's charge and its second line, tax outstanding", () => {
     const headlines = headlinesFromReport(report, ltd.HEADLINES);
     expect(headlines.tiles.tax.value).toBeCloseTo(
@@ -198,7 +207,7 @@ describe("Ltd HEADLINES is breakable: corrupting the dividends cell moves only t
     expect(afterKept.value).not.toBe(beforeKept.value);
     expect(afterKept.value).toBeCloseTo(beforeKept.value + beforeDividends.value, 6);
 
-    for (const label of ["Cost of sales", "Running costs", "Tax and NI"]) {
+    for (const label of ["Cost of sales", "Administrative expenses", "Corporation tax"]) {
       const b = before.pies.turnover.slices.find((slice) => slice.label === label);
       const a = after.pies.turnover.slices.find((slice) => slice.label === label);
       expect(a).toEqual(b);
