@@ -118,13 +118,10 @@ describe("every SE Full and SE Short CELL_MAP box has an entry", () => {
   it("every SE Short CELL_MAP cell carrying a (box N) label has a SA103S entry for that cell", () => {
     const rows = cellMapBoxRows("SE Short");
     expect(rows.length).toBeGreaterThan(0);
-    for (const { cell, label } of rows) {
+    for (const { cell, box, label } of rows) {
       const entry = byFormAndCell.get(`SA103S!SE Short!${cell}`);
-      // se.js's own inline "(box N)" labels on SE Short are off by one
-      // against the 2026 form (see the caveats on boxes 22, 25, 26, 29 and
-      // 30 below) -- so this proves the cell is covered, not that the
-      // entry's box number echoes the label's possibly-wrong number.
       expect(entry, `SE Short!${cell} (${label}) has no SA103S entry`).toBeTruthy();
+      expect(entry.box).toBe(box);
     }
   });
 });

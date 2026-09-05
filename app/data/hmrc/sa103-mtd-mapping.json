@@ -706,7 +706,7 @@
       "label": "Total Construction Industry Scheme (CIS) deductions taken from your payments by contractors - CIS subcontractors only",
       "cell": "SE Full!D231",
       "reason": "another API",
-      "otherApi": "CIS Deductions — Create CIS Deductions for Subcontractor: periodData.deductionAmount"
+      "otherApi": "CIS Deductions \u2014 Create CIS Deductions for Subcontractor: periodData.deductionAmount"
     },
     {
       "form": "SA103F",
@@ -987,7 +987,7 @@
       "label": "Or, net loss, if your expenses exceed your business income",
       "cell": "SE Short!O71",
       "reason": "calculated by HMRC",
-      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 21)'; the 2026 SA103S numbering (and the CSV's SSE22 ref) makes it box 22 -- the CELL_MAP label is wrong and needs fixing when T8 lands"
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box."
     },
     {
       "form": "SA103S",
@@ -1012,7 +1012,7 @@
       "label": "Other capital allowances",
       "cell": "SE Short!O80",
       "reason": "calculated by HMRC",
-      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 24)'; the 2026 SA103S numbering makes it box 25 -- the CELL_MAP label is wrong and needs fixing when T8 lands. The CSV's SSE25 ref points to FSE57 'Total capital allowances', a total, not the 'other capital allowances' component the 2026 form prints at box 25 -- a mismatch the research note flags"
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. The CSV's SSE25 ref points to FSE57 'Total capital allowances', a total, not the 'other capital allowances' component the 2026 form prints at box 25 -- a mismatch the research note flags"
     },
     {
       "form": "SA103S",
@@ -1021,7 +1021,7 @@
       "cell": "SE Short!O85",
       "field": "adjustments.balancingChargeOther | adjustments.balancingChargeBpra",
       "route": "annual",
-      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 25)'; the 2026 SA103S numbering makes it box 26 -- the CELL_MAP label is wrong and needs fixing when T8 lands"
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box."
     },
     {
       "form": "SA103S",
@@ -1046,7 +1046,7 @@
       "label": "Loss brought forward from earlier years set off against this year's profits, up to the amount in box 28",
       "cell": "SE Short!O94",
       "reason": "calculated by HMRC",
-      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 28)'; the 2026 SA103S numbering makes it box 29 -- the CELL_MAP label is wrong and needs fixing when T8 lands. No SSE ref for box 29 in the CSV; matched to FSE74 by description"
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. No SSE ref for box 29 in the CSV; matched to FSE74 by description"
     },
     {
       "form": "SA103S",
@@ -1055,7 +1055,15 @@
       "cell": "SE Short!O99",
       "field": "adjustments.outstandingBusinessIncome",
       "route": "annual",
-      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. se.js's own CELL_MAP inline comment labels this cell '(box 29)'; the 2026 SA103S numbering makes it box 30 -- the CELL_MAP label is wrong and needs fixing when T8 lands. No SSE ref for box 30 in the CSV; matched to FSE75 by description"
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. No SSE ref for box 30 in the CSV; matched to FSE75 by description"
+    },
+    {
+      "form": "SA103S",
+      "box": "35",
+      "label": "Total loss to carry forward after all other set-offs, including unused losses brought forward",
+      "cell": "SE Short!D124",
+      "reason": "calculated by HMRC",
+      "caveat": "the CSV's SA103S column is incomplete; mapped through the SA103F box. FSE80 SSE35 in the CSV, 'Not available. Calculated by HMRC'"
     },
     {
       "form": "SA103S",
