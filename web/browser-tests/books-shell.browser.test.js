@@ -7,17 +7,23 @@
 // (books/products/bst.js): the tab strip, the empty state and the new-book
 // form come from the manifest and nothing else; rkFor derives the keys S2
 // prints from CELL_MAP alone; a manifest with a view nothing renders is
-// refused; a product with no manifest on the site is refused by name; and
-// the headlines strip is fed the snapshot's own report.
+// refused; a product with no manifest on the site is refused by name; the
+// headlines strip is fed the snapshot's own report; and the header's two
+// book-level controls are New and Save, with no link off the page.
 
 import { test, expect } from "@playwright/test";
+import fs from "node:fs";
 import path from "node:path";
 import { startStaticServer } from "./serve.js";
 import { s2 } from "./r-sources.js";
 import { CELL_MAP } from "../../app/products/bst.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const screenshotsDir = path.join(process.cwd(), "reports/screenshots");
+fs.mkdirSync(screenshotsDir, { recursive: true });
 const PROFIT_BRIDGE_SECTION = "section/accounting-profit-to-tax-profit-bridge/";
+const MOBILE_PORTRAIT = { width: 390, height: 844 };
+const EXAMPLE_KEY = "bst-scenario-basic";
 
 let closeServer;
 let baseUrl;
@@ -44,8 +50,12 @@ async function openEmptyPage(page) {
 
 async function openLoadedBook(page) {
   await openEmptyPage(page);
-  await page.locator('[data-example="bst-scenario-basic"]').click();
+  await page.locator(`[data-example="${EXAMPLE_KEY}"]`).click();
   await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+}
+
+function businessName(page) {
+  return page.evaluate(() => window.DIYA_BOOKS_SNAPSHOT.businessDetails.organizationIdentifier);
 }
 
 function parseMoney(text) {
@@ -182,5 +192,121 @@ test.describe("DIYA-GL books shell — the mounted manifest drives the page", ()
     const tile = parseMoney(await page.locator('[data-r-key="headline/turnover"]').textContent());
     expect(tile).toBe(fromReport);
     expect(fromReport).toBeGreaterThan(0);
+  });
+});
+
+test.describe("DIYA-GL books shell — New sits beside Save", () => {
+  test("neither product page links out to the download page", async ({ page }) => {
+    for (const file of ["bst.html", "se.html"]) {
+      await page.goto(`${baseUrl}/books/${file}`, { waitUntil: "domcontentloaded" });
+      await expect(page.locator(".app-topbar .app-mark")).toBeVisible();
+      await expect(page.locator(".app-back")).toHaveCount(0);
+      await expect(page.locator('a[href*="download.html"]')).toHaveCount(0);
+      await expect(page.locator("#new-btn")).toHaveCount(1);
+    }
+  });
+
+  test("New is enabled beside Save once a book is loaded, on desktop and on a phone", async ({ page }) => {
+    await openEmptyPage(page);
+    await expect(page.locator("#new-btn")).toBeHidden();
+
+    await page.locator(`[data-example="${EXAMPLE_KEY}"]`).click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    const newBtn = page.locator("#new-btn");
+    const saveBtn = page.locator("#save-btn");
+    await expect(newBtn).toBeVisible();
+    await expect(newBtn).toBeEnabled();
+    await expect(page.locator("#new-btn .btn-label")).toHaveText("New");
+
+    // Same treatment as Save: the header's two book-level controls read as a
+    // pair, not as a control and an afterthought.
+    const style = (locator) =>
+      locator.evaluate((el) => {
+        const css = getComputedStyle(el);
+        return { border: css.borderColor, background: css.backgroundColor, height: el.getBoundingClientRect().height };
+      });
+    expect(await style(newBtn)).toEqual(await style(saveBtn));
+    const saveFollowsNew = await newBtn.evaluate(
+      (el) => !!(el.compareDocumentPosition(document.getElementById("save-btn")) & Node.DOCUMENT_POSITION_FOLLOWING),
+    );
+    expect(saveFollowsNew).toBe(true);
+
+    await page.setViewportSize(MOBILE_PORTRAIT);
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+    const newMobile = page.locator("#new-btn-mobile");
+    const saveMobile = page.locator("#save-btn-mobile");
+    await expect(newMobile).toBeVisible();
+    await expect(newMobile).toBeEnabled();
+
+    // Equal prominence in the action bar: same fill, same width.
+    const boxes = await Promise.all([newMobile.boundingBox(), saveMobile.boundingBox()]);
+    expect(Math.abs(boxes[0].width - boxes[1].width)).toBeLessThan(2);
+    const fills = await Promise.all(
+      [newMobile, saveMobile].map((locator) => locator.evaluate((el) => getComputedStyle(el).backgroundColor)),
+    );
+    expect(fills[0]).toBe(fills[1]);
+  });
+
+  test("New returns to the chooser, offering the book just left back", async ({ page }) => {
+    await openLoadedBook(page);
+    const loadedName = await businessName(page);
+
+    await page.locator("#new-btn").click();
+
+    await expect(page.locator(".empty-state")).toBeVisible();
+    await expect(page.locator('label[for="file-picker"]')).toHaveText("Choose a file");
+    await expect(page.locator("[data-example]").first()).toBeVisible();
+    await expect(page.locator("#new-btn")).toBeHidden();
+    await expect(page.locator("#mobile-action-bar")).toBeHidden();
+
+    const offer = page.locator(".continue-offer");
+    await expect(offer).toBeVisible();
+    await expect(offer).toContainText(EXAMPLE_KEY);
+
+    await page.locator("#continue-btn").click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    expect(await businessName(page)).toBe(loadedName);
+  });
+
+  // A deep link never writes the autosave record, so this is the case where
+  // the store holds nothing: the offer New leaves behind still restores the
+  // book, which is why New discards nothing and asks nothing.
+  test("New drops the deep-link parameters and still offers a book autosave never saw", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(bstUrl(`?example=${EXAMPLE_KEY}&view=year`), { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    const loadedName = await businessName(page);
+    expect(await page.evaluate(() => window.DiyaBooksAutosave.loadWorkingBook())).toBeFalsy();
+
+    await page.locator("#new-btn").click();
+    await expect(page.locator(".empty-state")).toBeVisible();
+
+    expect(new URL(page.url()).search).toBe("");
+    expect(new URL(page.url()).pathname).toBe("/books/bst.html");
+
+    await expect(page.locator(".continue-offer")).toContainText(EXAMPLE_KEY);
+    await page.locator("#continue-btn").click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+    expect(await businessName(page)).toBe(loadedName);
+    // The reader is looking at that example again, so the address bar names
+    // it again -- a link they can copy back out, exactly as before New.
+    expect(new URL(page.url()).searchParams.get("example")).toBe(EXAMPLE_KEY);
+  });
+
+  test("the header and the chooser New returns to", async ({ page }) => {
+    await openLoadedBook(page);
+    const toast = page.locator("#toast");
+    await expect(toast).not.toHaveClass(/is-visible/, { timeout: 15_000 });
+    await page.locator(".app-topbar").screenshot({ path: path.join(screenshotsDir, "ui-1-header-desktop.png") });
+
+    await page.setViewportSize(MOBILE_PORTRAIT);
+    await expect(page.locator("#mobile-action-bar")).toBeVisible();
+    await page.screenshot({ path: path.join(screenshotsDir, "ui-1-header-mobile.png") });
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.locator("#new-btn").click();
+    await expect(page.locator(".continue-offer")).toBeVisible();
+    await page.screenshot({ path: path.join(screenshotsDir, "ui-1-empty-state-after-new.png") });
   });
 });
