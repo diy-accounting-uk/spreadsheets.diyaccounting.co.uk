@@ -27,6 +27,7 @@ import JSZip from "jszip";
 import { startStaticServer } from "./serve.js";
 import { applyNamedEdit, parseFigure } from "./r-sources.js";
 import { loadDiyaGlData } from "../../app/lib/diya-gl-loader.js";
+import { changeLineAmount } from "../../app/lib/diya-gl-edits.js";
 import { loadTaxDataForBook } from "../../app/lib/product-workbook.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
@@ -310,6 +311,46 @@ test.describe("DIYA-GL Self Employed page — E1: an edit moves the figure it sh
     expect(browserReport).toBe(nodeReport.text);
   });
 
+  // The entries grid's own amount field reaches changeLineAmount
+  // (diya-gl-edits.js), not the grossPay-only edit above. Every payroll line
+  // the exporter writes carries amount === diya-gl:grossPay
+  // (xlsx-exporter.js), so changeLineAmount keeps the two fields together --
+  // otherwise this edit would report as applied while the wages interface
+  // and the P&L wages row, both keyed off diya-gl:grossPay, stayed put.
+  test("the grid's own amount field on a payroll line also moves its gross, Wagesinterface and the P&L wages row", async ({ page }) => {
+    await openAdvanced(page);
+
+    await openView(page, "payroll");
+    const wagesBefore = await cellValue(page, "cell/Financialaccounts.xlsx!Wagesinterface!C4");
+    await openView(page, "profit-loss");
+    const plWagesBefore = await cellValue(page, "cell/Financialaccounts.xlsx!Profit & Loss Account!B21");
+
+    const entryNumber = "TXN-0074"; // Alice Johnson, April salary, amount and grossPay both 3500.
+    const delta = 300;
+    await openMonthEntries(page, "2025-04");
+    await switchJournal(page, "payroll");
+    const amountField = page.locator(`.entries-table[data-journal="payroll"] tr.entry-row[data-entry="${entryNumber}"] .entry-amount-input`);
+    const was = Number(await amountField.inputValue());
+    const newAmount = was + delta;
+    await amountField.fill(String(newAmount));
+    await amountField.press("Enter");
+    await expect(page.locator("#toast")).toContainText("Changed " + entryNumber);
+
+    await openView(page, "payroll");
+    await expect.poll(() => cellValue(page, "cell/Financialaccounts.xlsx!Wagesinterface!C4")).toBe(wagesBefore + delta);
+    await openView(page, "profit-loss");
+    await expect.poll(() => cellValue(page, "cell/Financialaccounts.xlsx!Profit & Loss Account!B21")).toBe(plWagesBefore + delta);
+
+    const browserReport = await downloadDiyaGlReport(page);
+    const nodeReport = applyNamedEdit(
+      SE_ADVANCED_DIR,
+      (book, lines) => changeLineAmount(book, lines, { entryNumber, newAmount }),
+      "se",
+      await advancedTaxData(),
+    );
+    expect(browserReport).toBe(nodeReport.text);
+  });
+
   test("undo restores the downloaded report byte for byte", async ({ page }) => {
     await openAdvanced(page);
     const before = await downloadDiyaGlReport(page);
@@ -406,18 +447,7 @@ test.describe("DIYA-GL Self Employed page — E2: each rule flips on its own cra
     await expect.poll(() => ruleState(page, id)).toBe("pass");
   });
 
-  // Defect (app/lib/scenario-extractor.js:824): a bank line whose
-  // debitCreditCode is neither "D" nor "C" throws out of diyaGlToScenario
-  // ("Bank line ... has no debitCreditCode; cannot tell a receipt from a
-  // payment") before book-checks.js ever runs, on every load and every
-  // commit alike -- the calculator, not the check, is what a reader meets.
-  // shell.js's commit() catches the throw and refuses the whole edit (a
-  // toast, the book unchanged), so book-bank-line-has-side can never
-  // actually surface in the inspector: the one input it exists to flag
-  // never reaches it. The check should get first look at an offending line
-  // the way book-bank-code-analysed's consequence text describes ("the
-  // package cannot be written" is the fix-it's job to say, not a crash).
-  test.fixme("book-bank-line-has-side: a bank entry that is neither a receipt nor a payment", async ({ page }) => {
+  test("book-bank-line-has-side: a bank entry that is neither a receipt nor a payment", async ({ page }) => {
     await openSeNonVat(page);
     const id = "book-bank-line-has-side";
     const before = await ruleStates(page);

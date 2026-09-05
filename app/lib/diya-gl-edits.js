@@ -84,7 +84,11 @@ export function addBankLine(book, lines, params) {
 
 /**
  * Change one existing line's amount, identified by its entryNumber. Every
- * other field on the line is carried over unchanged.
+ * other field on the line is carried over unchanged, except a payroll
+ * line's diya-gl:grossPay, which moves with amount: every payroll line the
+ * exporter writes carries amount === diya-gl:grossPay (xlsx-exporter.js),
+ * and diya-gl-loader.js reads grossPay ahead of amount, so leaving the old
+ * grossPay in place would make this edit invisible to the payroll view.
  * @param {Object} book - parsed book.toml (unused; see addSaleLine)
  * @param {Array} lines - the book's current lines.jsonl entries
  * @param {{entryNumber: string, newAmount: number}} params
@@ -96,7 +100,11 @@ export function changeLineAmount(book, lines, params) {
   const changed = lines.map((line) => {
     if (line.entryNumber !== entryNumber) return line;
     found = true;
-    return { ...line, amount: newAmount };
+    const updated = { ...line, amount: newAmount };
+    if (line.sourceJournalID === "payroll" && line["diya-gl:grossPay"] !== undefined) {
+      updated["diya-gl:grossPay"] = newAmount;
+    }
+    return updated;
   });
   if (!found) throw new Error(`No line carries entryNumber ${entryNumber}`);
   return changed;
