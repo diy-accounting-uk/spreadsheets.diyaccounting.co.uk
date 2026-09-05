@@ -9,10 +9,17 @@
 //
 // Every module below is imported as it stands. Nothing here is a browser fork.
 
-// Reading a populated workbook back into diya-gl data.
+// Reading a populated workbook back into diya-gl data. extractLines is the
+// one entry point that reads any product's lines off a workbook set -- a
+// single workbook for Basic Sole Trader and Taxi Driver, the whole set of
+// journals, bank books and payroll for Self Employed and Company -- so a
+// page-side upload for a multi-file product calls this rather than
+// extractMultiFileTransactions, which alone would leave out the bank,
+// payroll and journal-entry lines extractLines also collects.
 export {
   extractBstTransactions,
   extractTaxiTransactions,
+  extractLines,
   extractMetadata,
   bstExtractionMap,
   bookFieldCells,

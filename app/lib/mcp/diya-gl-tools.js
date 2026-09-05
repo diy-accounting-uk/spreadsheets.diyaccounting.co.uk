@@ -40,6 +40,7 @@ import {
   removeLine,
   changeLinePostingDate,
   changeLineAccount,
+  changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
 } from "../diya-gl-edits.js";
@@ -53,6 +54,7 @@ const EDITS = {
   removeLine,
   changeLinePostingDate,
   changeLineAccount,
+  changeLineBankAccount,
   changeLineDetail,
   changeLineQuantity,
 };
