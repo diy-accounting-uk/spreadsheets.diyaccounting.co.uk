@@ -178,7 +178,6 @@ test.describe("DIYA-GL books — the Self Employed page", () => {
 
     // The gross the reader types is 1,200 more; the statement's turnover is
     // net of VAT, so it moves by 1,000 on this registered book.
-    await expect(total).not.toHaveText(String(before));
     await expect.poll(async () => Math.round((money(await total.innerText()) - before) * 100) / 100, { timeout: 30_000 }).toBe(1000);
     expect(errors).toEqual([]);
   });
