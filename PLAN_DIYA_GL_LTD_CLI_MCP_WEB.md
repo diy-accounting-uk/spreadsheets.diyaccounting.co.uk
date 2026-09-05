@@ -467,6 +467,11 @@ each rebasing on the last.
   with R6) points them at column I in the template and regenerates; until then the layout takes
   boxes 690, 705 and 710 from `CorporationTax!I15`, `I16+I17` and `-I18`.
 
+- T4 design finished `d6c99a2d`, 2026-09-05: 257 of the 2,214 addressed cells emitted today; T4a
+  and T4b both Opus; the agreement test compares canonical values on addressed non-blank keys with
+  no per-cell allowance. T11's A7 corrupts `Sales.xlsx!<first>!O1`, since the hub caches no
+  `Apr!H1`.
+
 ### Verification ladder
 
 Per the repo CLAUDE.md "Reconciliation-bug method": blast-radius tests serially
