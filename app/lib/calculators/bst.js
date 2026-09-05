@@ -154,10 +154,11 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const taxableProfit = netProfit - capitalAllowances;
 
   // SE Short (SA103S), computed ahead of the Income Tax sheet because that
-  // sheet's own profit input reads this form's box 28 (verified against the
-  // template: Income Tax!E5 = 'SE Short'!D106). O38, D94 and O94 are each a
-  // manual entry on Business Details the diya-gl pipeline never sets, so
-  // they and the loss/carry-forward boxes they feed are nil in every fixture.
+  // sheet's own profit input reads this form's box 31, total taxable profits
+  // (verified against the template: Income Tax!E5 = 'SE Short'!D106). O38,
+  // D94 and O94 are each a manual entry on Business Details the diya-gl
+  // pipeline never sets, so they and the loss/carry-forward boxes they feed
+  // are nil in every fixture.
   const otherBusinessIncomeBox10 = 0;
   const seShortNetProfitRaw = totalSales + otherBusinessIncomeBox10 - (Math.round(costOfSales) + directCosts + totalExpenses);
   const seShortNetProfit = Math.max(0, Math.round(seShortNetProfitRaw * 100) / 100);
@@ -307,7 +308,7 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   seShort.O80 = Math.round(seShortCA.o80 * 100) / 100;
   seShort.D85 = Math.round(seShortCA.d85 * 100) / 100;
   seShort.O85 = Math.round(seShortCA.o85 * 100) / 100;
-  seShort.D94 = 0; // Business Details' own "other business income" cell, unset in every fixture
+  seShort.D94 = 0; // Business Details' own "goods and services for own use" cell (box 27), unset in every fixture
   seShort.D99 = seShortD99;
   seShort.O94 = 0; // Loss brought forward — Business Details' own carry-forward cell, unset in every fixture
   seShort.O99 = otherIncomeReceived;

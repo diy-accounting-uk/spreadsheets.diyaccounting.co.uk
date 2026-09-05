@@ -108,50 +108,6 @@
   var ADMIN_FORMATS = { F21: "number", F22: "number", G21: "pence", G22: "pence" };
   var UNIT_FORMATS = { money: "currency", rate: "rate", count: "number" };
 
-  var SA103S_SHEET = "SE Short";
-  // The form's own section order and box numbers, each paired with the
-  // SE Short cell CELL_MAP names for it. Box 50 has no cell of its own in this
-  // template -- Business premises renovation allowance is a relief this sheet
-  // never claims -- so it stays a real, present zero rather than being
-  // dropped from the form.
-  var SA103S_BOXES = [
-    { heading: "Business income", boxes: [{ box: "8", label: "Turnover", cell: "D38" }] },
-    {
-      heading: "Allowable business expenses",
-      boxes: [
-        { box: "16", label: "Cost of goods bought for resale or goods used", cell: "D46" },
-        { box: "19", label: "Car, van and travel expenses", cell: "D51" },
-        { box: "20", label: "Wages, salaries and other staff costs", cell: "D55" },
-        { box: "21", label: "Rent, rates, power and insurance costs", cell: "D60" },
-        { box: "23", label: "Repairs and renewals of property and equipment", cell: "D64" },
-      ],
-    },
-    {
-      heading: "Net profit",
-      boxes: [
-        { box: "31", label: "Net profit", cell: "D71", total: true },
-        { box: "32", label: "Or net loss", cell: "O71" },
-      ],
-    },
-    {
-      heading: "Capital allowances",
-      boxes: [
-        { box: "49", label: "Annual investment allowance", cell: "D80" },
-        { box: "50", label: "Business premises renovation allowance", cell: null },
-        { box: "51", label: "All other capital allowances", cell: "O80" },
-        { box: "52", label: "Balancing charges", cell: "O85" },
-      ],
-    },
-    {
-      heading: "Taxable profit",
-      boxes: [
-        { box: "57", label: "Total taxable profits", cell: "D99", total: true },
-        { box: "70", label: "Loss brought forward", cell: "O94" },
-        { box: "71", label: "Any other business income", cell: "O99" },
-      ],
-    },
-  ];
-
   // The Income Tax sheet's cells, named once so the snapshot and the form
   // read the same ones. The Additional band carries no ceiling of its own.
   var INCOME_TAX_CELLS = {
@@ -435,25 +391,6 @@
     };
   }
 
-  function buildSa103s(ctx) {
-    return {
-      sections: SA103S_BOXES.map(function (section) {
-        return {
-          heading: section.heading,
-          rows: section.boxes.map(function (b) {
-            return {
-              box: b.box,
-              label: b.label,
-              cell: b.cell,
-              amount: b.cell ? cellValue(ctx.results, SA103S_SHEET, b.cell) : 0,
-              total: b.total,
-            };
-          }),
-        };
-      }),
-    };
-  }
-
   function buildAdmin(ctx) {
     var rows = sectionRows(ctx.productMod, ADMIN_SECTION);
     return {
@@ -479,7 +416,6 @@
       creditors: sides.creditors,
       fixedAssets: buildFixedAssets(ctx),
       incomeTax: buildIncomeTax(ctx),
-      sa103s: buildSa103s(ctx),
       admin: buildAdmin(ctx),
     };
   }
@@ -684,33 +620,6 @@
     );
   }
 
-  function renderSa103sForm(snap, state, helpers) {
-    var form = helpers.form;
-    return form.render(
-      "SA103S — Self-employment (short)",
-      "Check these against your return. Box numbers match the form; nothing here is the actual HMRC document.",
-      snap.sa103s.sections
-        .map(function (section) {
-          return form.section(
-            section.heading,
-            section.rows
-              .map(function (r) {
-                return form.row({
-                  box: r.box,
-                  label: r.label,
-                  amount: helpers.fmtBoxWhole(r.amount),
-                  rKeyAttr: r.cell ? helpers.rkFor(SA103S_SHEET, r.cell) : "",
-                  total: r.total,
-                  wholePounds: true,
-                });
-              })
-              .join(""),
-          );
-        })
-        .join(""),
-    );
-  }
-
   // The book's own details, editable in place. Every change goes through
   // the same route an entry edit takes: one undo step, the whole book
   // recomputed, every check run again. Changing the year end resolves the
@@ -853,7 +762,14 @@
       { id: "debtors-creditors", label: "Debtors/Creditors", sheets: "Debtors & Creditors", render: renderDebtorsCreditors },
       { id: "fixed-assets", label: "Fixed Assets", sheets: "Fixed Assets", render: renderFixedAssets },
       { id: "income-tax", label: "Income Tax", sheets: "Income Tax", render: renderIncomeTaxForm },
-      { id: "sa103s", label: "SA103S", sheets: "SE Short", render: renderSa103sForm },
+      {
+        id: "sa103s",
+        label: "SA103S",
+        sheets: "SE Short",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlBstForms.renderSa103s(snap, state, helpers);
+        },
+      },
       {
         id: "business-details",
         label: "Business Details",
