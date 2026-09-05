@@ -356,6 +356,7 @@ The generator (`app/lib/generator.js` function `buildSeCellEdits()`) writes tax 
 | Cell | Value | Source field |
 |------|-------|-------------|
 | L16 | Class 2 weekly rate | `national_insurance.class2_weekly_rate` |
+| N16 | Class 2 small profits threshold (6845) | `national_insurance.class2_small_profits_threshold` |
 | L20 | Class 4 lower rate (0.06) | `national_insurance.class4_lower_rate` |
 | N20 | Class 4 lower limit (12570) | `national_insurance.class4_lower_limit` |
 | L23 | Class 4 upper rate (0.02) | `national_insurance.class4_upper_rate` |
@@ -509,6 +510,12 @@ Note: SE Short's own net profit (D71, box 21) is not a direct reference to `'Pro
 Box numbers are the 2026 form's, verified against the template's own box-number cells (column A/L) and the D/O-column formulas beside them.
 
 Boxes 11 to 19 are gated on `Admin!F26`, the VAT registration threshold: turnover at or below it leaves the nine expense cells blank and the return states box 20 alone, which is the permission the form gives.
+
+Boxes 36 (voluntary Class 2) and 37 (Class 4 exemption) are tick captions with no
+value cell, so they carry no row below. Box 36's caption reads the Class 2 small
+profits threshold live from `Admin!N16` and the tax year from `Admin!G2`; box 37's
+text names no figure. The old Class 4 NICs deferment certificate box the sheet
+carried at this position is gone from the 2026 form.
 
 | Cell | DIY Label | diya-gl Property | XBRL Concept | SA103S Box |
 |------|-----------|-----------------|-------------|-----------|
