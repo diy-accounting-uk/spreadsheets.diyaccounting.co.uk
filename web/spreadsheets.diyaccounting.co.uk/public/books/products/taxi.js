@@ -200,9 +200,10 @@
 
   var requested = {};
 
-  // Renders while a sibling module is still on its way. taxi.html lists all
-  // four scripts, so this is only ever seen on another product's page, in
-  // the moment between the manifest arriving and its views following.
+  // Renders while a sibling module is still on its way. taxi.html lists
+  // every product script, so this is only ever seen on another product's
+  // page, in the moment between the manifest arriving and its views
+  // following it.
   var LOADING_HTML = '<p class="view-loading">Loading the Taxi views…</p>';
   var LOADING_MODULE = {
     renderMonthDetail: function () {
@@ -232,14 +233,14 @@
   function viaModule(name, fn) {
     return function (snapshot, state, helpers) {
       var mod = module(name);
-      return mod[fn] ? mod[fn](snapshot, state, helpers) : LOADING_HTML;
+      return mod === LOADING_MODULE ? LOADING_HTML : mod[fn](snapshot, state, helpers);
     };
   }
 
   function bindViaModule(name, fn) {
     return function (root, state, helpers) {
       var mod = module(name);
-      if (mod[fn]) mod[fn](root, state, helpers);
+      if (mod !== LOADING_MODULE) mod[fn](root, state, helpers);
     };
   }
 
@@ -483,20 +484,19 @@
     return { date: date, dow: DAY_NAMES[new Date(utcOf(date)).getUTCDay()], lines: [], takings: 0, miles: 0, other: 0, names: [] };
   }
 
-  function emptyWeek(week) {
-    var days = week.days.map(emptyDay);
+  function emptyWeek(week, sheet) {
     return {
       index: week.index,
       start: week.start,
       end: week.end,
-      sheet: null,
+      sheet: sheet,
       daysTraded: 0,
       takings: 0,
       rental: 0,
       otherIncome: 0,
       miles: 0,
       total: 0,
-      days: days,
+      days: week.days.map(emptyDay),
       rentalLines: [],
       otherIncomeLines: [],
     };
@@ -542,8 +542,7 @@
     GRID.weeks.forEach(function (week) {
       var month = byMonth[week.monthKey];
       if (!month) return;
-      var built = emptyWeek(week);
-      built.sheet = monthOf[week.monthKey].sheet;
+      var built = emptyWeek(week, monthOf[week.monthKey].sheet);
       month.weeks.push(built);
       week.days.forEach(function (date) {
         weekOfDay[date] = built;
