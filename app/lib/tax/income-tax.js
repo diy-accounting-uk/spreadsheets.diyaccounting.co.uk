@@ -64,11 +64,9 @@ export function calculateExpectedTax(profit, taxData) {
 
   // Class 2 is voluntary below the small profits threshold (a customer may
   // choose to pay it to protect their state pension record) and nil above
-  // it, where the NI record is credited without payment. Both fields stay
-  // undefined for a tax year with no declared threshold.
+  // it, where the NI record is credited without payment.
   const class2Weekly = taxData.national_insurance.class2_weekly_rate;
   const class2Threshold = taxData.national_insurance.class2_small_profits_threshold;
-  const hasClass2Threshold = class2Threshold !== undefined;
 
   return {
     income_tax: Math.round(totalIncomeTax),
@@ -79,8 +77,8 @@ export function calculateExpectedTax(profit, taxData) {
     ni_class4_lower: Math.round(niLower * 10) / 10,
     ni_class4_upper: Math.round(niUpper * 10) / 10,
     total_tax_and_ni: Math.round(totalIncomeTax + niLower + niUpper),
-    ni_class2_weekly: hasClass2Threshold ? class2Weekly : undefined,
-    ni_class2_threshold: hasClass2Threshold ? class2Threshold : undefined,
-    ni_class2: hasClass2Threshold ? (profit < class2Threshold && class2Threshold > 0 ? round2(class2Weekly * 52) : 0) : undefined,
+    ni_class2_weekly: class2Weekly,
+    ni_class2_threshold: class2Threshold,
+    ni_class2: profit < class2Threshold ? round2(class2Weekly * 52) : 0,
   };
 }
