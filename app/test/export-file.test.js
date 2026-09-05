@@ -18,6 +18,7 @@ import { fileURLToPath } from "url";
 import { parse as parseTOML } from "smol-toml";
 import { runBookChecks, bookChecksJson } from "../lib/book-checks.js";
 import { loadTaxDataForBook } from "../lib/product-workbook.js";
+import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..", "..");
@@ -352,12 +353,94 @@ describe("export.js --file mode", () => {
 
     expect(readFileSync(resolve(fileOutput, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
     expect(readFileSync(resolve(fileOutput, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
-    // T1's input-cell predicate widens the sidecar to SE; until then the
-    // package carries nothing typed over a template formula.
+    // --source-dir writes no report.json (there is no workbook there to read
+    // an as-read overtype layer or a checkCompliance year end from) -- only
+    // --file does, so report.json is asserted on its own shape here, anchored
+    // in the book.toml the same run also wrote.
+    const report = JSON.parse(readFileSync(resolve(fileOutput, "report.json"), "utf8"));
+    expect(report.package).toBe("se");
+    expect(report.engine).toBe("js");
+    expect(report.values.length).toBeGreaterThan(0);
+    expect(report.values.some((entry) => entry.key.startsWith("check/"))).toBe(true);
+    const book = parseTOML(readFileSync(resolve(fileOutput, "book.toml"), "utf8"));
+    expect(book.entityInformation["diya-gl:product"]).toBe("SelfEmployed");
+    // The package carries nothing typed over a template formula.
     const overtypedPath = resolve(fileOutput, "overtyped.json");
     if (existsSync(overtypedPath)) {
       expect(JSON.parse(readFileSync(overtypedPath, "utf8"))).toEqual({});
     }
+  }, 30000);
+
+  it("settles the product by content as se when --package is omitted", async () => {
+    const zipDir = tempDir("export-file-se-sniff-zip-");
+    const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
+
+    const withPackageOutput = tempDir("export-file-se-sniff-with-out-");
+    run(["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", withPackageOutput]);
+
+    const sniffedOutput = tempDir("export-file-se-sniff-out-");
+    run(["app/bin/export.js", "--file", zipPath, "--output-dir", sniffedOutput]);
+
+    for (const name of ["book.toml", "lines.jsonl", "report.json", "bookchecks.json"]) {
+      expect(readFileSync(resolve(sniffedOutput, name)).equals(readFileSync(resolve(withPackageOutput, name))), name).toBe(true);
+    }
+  }, 30000);
+
+  it("carries the SE-specific rules in bookchecks.json", async () => {
+    const zipDir = tempDir("export-file-se-checks-zip-");
+    const zipPath = await packageZipOf(SE_PACKAGE_DIR, resolve(zipDir, "se-package.zip"));
+
+    const outputDir = tempDir("export-file-se-checks-out-");
+    run(["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", outputDir]);
+
+    const bookChecks = JSON.parse(readFileSync(resolve(outputDir, "bookchecks.json"), "utf8"));
+    const ids = bookChecks.map((rule) => rule.id);
+    for (const id of [
+      "book-bank-account-has-workbook",
+      "book-bank-code-analysed",
+      "book-bank-line-has-side",
+      "book-bank-overdrawn",
+      "book-cash-never-overdrawn",
+      "book-employee-paid-every-month",
+      "book-fixed-asset-rows-fit",
+      "book-payslip-names-employee",
+      "book-vat-threshold",
+    ]) {
+      expect(ids, id).toContain(id);
+    }
+  }, 30000);
+
+  // The package zip is patched here rather than the fixture on disk: one
+  // formula cell on the hub workbook loses its <f> and keeps only its
+  // cached value, the shape a customer's own typed-over cell takes. SE's
+  // multi-file package keys an overtyped entry by file as well as sheet and
+  // cell, unlike a single-file product's "sheet!cell" key.
+  it("keys an SE package's overtyped.json entries by file, sheet and cell", async () => {
+    const hubBytes = readFileSync(resolve(SE_PACKAGE_DIR, "Financialaccounts.xlsx"));
+    const hubZip = await JSZip.loadAsync(hubBytes);
+    const sheetMap = await buildSheetMap(hubZip);
+    const sheetPath = sheetMap.get("Profit & Loss Account");
+    const xml = await hubZip.file(sheetPath).async("string");
+    const element = xml.match(/<c r="B9"[^>]*(?:\/>|>[\s\S]*?<\/c>)/)?.[0];
+    expect(element, "Profit & Loss Account!B9 has no <c> element in the fixture").toBeTruthy();
+    const stripped = element.replace(/<f[^>]*(?:\/>|>[\s\S]*?<\/f>)/, "");
+    expect(stripped, "no <f> to strip from B9").not.toBe(element);
+    hubZip.file(sheetPath, xml.replace(element, stripped));
+    const patchedHub = await hubZip.generateAsync({ type: "nodebuffer" });
+
+    const packageZip = new JSZip();
+    for (const name of readdirSync(SE_PACKAGE_DIR).filter((file) => file.endsWith(".xlsx"))) {
+      packageZip.file(name, name === "Financialaccounts.xlsx" ? patchedHub : readFileSync(resolve(SE_PACKAGE_DIR, name)));
+    }
+    const zipDir = tempDir("export-file-se-overtyped-zip-");
+    const zipPath = resolve(zipDir, "se-package.zip");
+    writeFileSync(zipPath, await packageZip.generateAsync({ type: "nodebuffer" }));
+
+    const outputDir = tempDir("export-file-se-overtyped-out-");
+    run(["app/bin/export.js", "--package", "se", "--file", zipPath, "--output-dir", outputDir]);
+
+    const overtyped = JSON.parse(readFileSync(resolve(outputDir, "overtyped.json"), "utf8"));
+    expect(Object.keys(overtyped)).toEqual(["Financialaccounts.xlsx!Profit & Loss Account!B9"]);
   }, 30000);
 
   // A Taxi workbook fed to --file still runs books-interchange.js's single-
