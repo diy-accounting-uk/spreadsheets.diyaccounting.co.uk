@@ -311,7 +311,9 @@ export async function refreshLinkCaches(zip, reader) {
 
     let updated = linkXml;
     for (const { from, to } of rewrites) updated = updated.replace(from, to);
-    zip.file(link.path, updated, { date: linkFile.date });
+    // JSZip adds a folder entry dated now for a path's parent unless told
+    // not to; the workbook carried none, and two saves must stay identical.
+    zip.file(link.path, updated, { date: linkFile.date, createFolders: false });
     changed = true;
   }
 

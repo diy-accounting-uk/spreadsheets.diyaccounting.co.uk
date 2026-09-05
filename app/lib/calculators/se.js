@@ -1168,6 +1168,9 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
       V2: salesFixedAssetsToDate[index],
       ...analysisTotals(sales, SALES_ANALYSIS_COLUMNS),
     };
+    // H4, the flat-rate marker, is blank on the April tab and every later tab
+    // quotes the one before it, so from May on it reads as nil.
+    if (index > 0) results[`Sales.xlsx!${tab}`].H4 = 0;
     results[`Purchases.xlsx!${tab}`] = {
       G1: purchases.gross,
       H1: purchases.vat,

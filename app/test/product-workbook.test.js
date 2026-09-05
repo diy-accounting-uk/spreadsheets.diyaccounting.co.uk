@@ -94,7 +94,10 @@ describe("saveWorkbookFiles", () => {
     }
   }, 300000);
 
-  it("carries one line's changed amount into the sales workbook and nowhere else", async () => {
+  // The hub and the VAT workbook cache the Sales totals they read, so a
+  // changed sale reaches them too; the workbooks that read nothing of Sales
+  // stay as they were.
+  it("carries one line's changed amount into the sales workbook and the caches that quote it", async () => {
     const { book, lines } = bookAt(SE_BOOK);
     const before = await saveWorkbookFiles(book, lines);
 
@@ -104,7 +107,7 @@ describe("saveWorkbookFiles", () => {
     const moved = before.files
       .filter((file, index) => Buffer.compare(Buffer.from(file.bytes), Buffer.from(after.files[index].bytes)) !== 0)
       .map((file) => file.name);
-    expect(moved).toEqual(["Sales.xlsx"]);
+    expect(moved).toEqual(["Financialaccounts.xlsx", "Sales.xlsx", "Vat.xlsx"]);
   }, 300000);
 });
 
