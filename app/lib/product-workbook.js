@@ -191,12 +191,17 @@ async function resolveInputs(book, lines, options) {
   const { dirName, xlsxFilename } = packageNaming(productMeta, sharedMeta, endDate);
 
   const scenario = diyaGlToScenario(book, lines, product);
+  const multiFile = Boolean(productMod.MULTI_FILE);
   // The tax year the writes are dated into: the year a statutory year opened
   // in, and for a company the year before the one its year end falls in, which
   // is what cellWrites turns into the payroll year the package opens with and
   // what generate.js takes off the package directory's own year-end date.
+  // A single-file product's own book period is already the grid its dates
+  // are written onto, so its writer takes no target year at all -- passing
+  // one through would shift its dates by whatever the loaded tax file's
+  // year happens to disagree with the scenario's own dates by.
   const targetStartYear = yearEndFromBook ? endDate.getUTCFullYear() - 1 : new Date(yearInfo.start).getUTCFullYear();
-  const writes = productMod.cellWrites(scenario, targetStartYear, yearEndMonth);
+  const writes = productMod.cellWrites(scenario, multiFile ? targetStartYear : undefined, yearEndMonth);
 
   const templateFiles = productMeta.template.files || [productMeta.template.spreadsheet];
 
@@ -205,7 +210,7 @@ async function resolveInputs(book, lines, options) {
     product,
     templateDir,
     templateFiles,
-    multiFile: Boolean(productMod.MULTI_FILE),
+    multiFile,
     taxData,
     yearInfo,
     endDate,

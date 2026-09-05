@@ -25,6 +25,7 @@ const NODE = process.execPath;
 const EXPORT_BIN = resolve(ROOT, "app", "bin", "export.js");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
 const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+const TAXI_SOURCE_DIR = resolve(ROOT, "examples", "taxi-latest");
 
 const tempDirs = [];
 function tempDir(prefix) {
@@ -359,6 +360,36 @@ describe("export.js --file mode", () => {
     }
   }, 30000);
 
+  // A Taxi workbook fed to --file still runs books-interchange.js's single-
+  // workbook sniff, which has no Taxi anchor table yet (that table is a
+  // separate row) and so refuses any single-file workbook that is not BST.
+  // The diya-gl JSON format carries its own declared product and skips that
+  // sniff, which is enough to prove --package taxi's generic --file plumbing
+  // (product resolution, report.json's package field, bookchecks.json)
+  // against the same book --source-dir reads off examples/taxi-latest.
+  it("reads a Taxi book through the diya-gl JSON format to the same bytes as --source-dir", async () => {
+    const sourceDirOutput = tempDir("export-file-taxi-source-out-");
+    run(["app/bin/export.js", "--package", "taxi", "--source-dir", TAXI_SOURCE_DIR, "--output-dir", sourceDirOutput]);
+
+    const book = parseTOML(readFileSync(resolve(sourceDirOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(sourceDirOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const jsonDir = tempDir("export-file-taxi-json-src-");
+    const jsonPath = resolve(jsonDir, "book-diya-gl.json");
+    writeFileSync(jsonPath, writeBookJson(book, lines));
+
+    const fileOutput = tempDir("export-file-taxi-file-out-");
+    run(["app/bin/export.js", "--package", "taxi", "--file", jsonPath, "--output-dir", fileOutput]);
+
+    expect(readFileSync(resolve(fileOutput, "book.toml")).equals(readFileSync(resolve(sourceDirOutput, "book.toml")))).toBe(true);
+    expect(readFileSync(resolve(fileOutput, "lines.jsonl")).equals(readFileSync(resolve(sourceDirOutput, "lines.jsonl")))).toBe(true);
+    const report = JSON.parse(readFileSync(resolve(fileOutput, "report.json"), "utf8"));
+    expect(report.package).toBe("taxi");
+  }, 30000);
+
   it("settles the product by content when --package is omitted", () => {
     const bstOutput = tempDir("export-file-sniff-bst-out-");
     run(["app/bin/export.js", "--package", "bst", "--file", BST_XLSX, "--output-dir", bstOutput]);
@@ -375,6 +406,13 @@ describe("export.js --file mode", () => {
     const err = runExpectingFailure(["app/bin/export.js", "--package", "se", "--file", BST_XLSX]);
     expect(err.status).toBe(1);
     expect(err.stderr).toContain("--package se was given but the file is a Basic Sole Trader workbook");
+  });
+
+  it("rejects --file for a package it cannot read", () => {
+    const err = runExpectingFailure(["app/bin/export.js", "--package", "not-a-real-package", "--file", BST_XLSX]);
+    expect(err.status).toBe(1);
+    expect(err.stderr).toContain("Unknown package: not-a-real-package");
+    expect(err.stderr).toContain("bst, taxi, se, ltd");
   });
 
   it("rejects --source-dir and --file given together", () => {
