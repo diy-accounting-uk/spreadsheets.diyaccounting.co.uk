@@ -432,6 +432,12 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- S7 `ab5c82d9`, `105777a9`, `2afdf60b`, `63934d1b`, merged 2026-09-05: `books/shell.js`, `data.js`,
+  `edits.js`, `books.css`, `products/bst.js` as the first manifest under `window.DiyaGlProducts`,
+  `window.DiyaGlBooksLoader` and `window.DiyaGlBooksPage`, the five seam lines, the regime passed
+  to `taxYearFileName`; `wc -l` 4,418 against the 4,422 gate; the browser suite 168 with one red,
+  the bst-latest A3. `sniffProduct` is not exported, so `data.js` restates the package rule; S8 or
+  T7 exports it. SP Sixty's month rows now group 5900 and 7000 by the calculator's own map.
 - T6 `731748c8`, `1ff365dd`, `2051dc53`, merged 2026-09-05: `addBankLine`, `settlementSuggestions`
   and `applySettlement` (four kinds, matched as a multiset by counterparty and amount, entries
   numbered `SET-0001` on), `EDITS` at seven; the twelve BrickWork drawings lines are numbered
