@@ -307,8 +307,8 @@ describe("buildIndicators for the Self Employed", () => {
   it("itemises every capital allowance box so the drop to the taxable profit is exact", () => {
     expect(text).toContain(
       "Self assessment: net profit 183,429.68, less 64,000.00 of capital allowances " +
-        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances (box 24) 11,500.00), " +
-        "plus balancing charges (box 25) 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,429.68.",
+        "(Capital allowances 52,500.00, AIA / WDA claimed 0.00, Other capital allowances 11,500.00), " +
+        "plus balancing charges 0.00 and other tax adjustments 0.00, gives a taxable profit of 119,429.68.",
     );
   });
 

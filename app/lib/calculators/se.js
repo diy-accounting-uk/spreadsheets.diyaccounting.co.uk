@@ -127,10 +127,6 @@ const STOCK_CLOSING_COUNT_CELL = "AB30";
 // The two HPfinance rows a scenario's agreements land on.
 const HP_AGREEMENT_ROWS = [8, 10];
 
-// The turnover below which the short return leaves its expense analysis blank
-// and states one total instead.
-const EXPENSE_ANALYSIS_TURNOVER = 30000;
-
 /**
  * A scenario says whether the business is registered in its own metadata.
  * Anything that does not say is registered.
@@ -863,12 +859,17 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   });
 
   // ── The two self assessment returns ──
-  // Boxes 26, 28, 50, 52, 53, 57 and 61 have no formula behind them: the
-  // customer fills them in on the Business Details sheet or on the return, and
-  // nothing the scenario carries reaches them.
+  // Short return boxes 27, 29 and 35 and full return boxes 50, 52, 53, 57 and
+  // 61 have no formula behind them: the customer fills them in on the Business
+  // Details sheet or on the return, and nothing the scenario carries reaches
+  // them.
   const goodsForOwnUse = 0;
   const lossesBroughtForward = 0;
-  const analysesExpenses = pl.B9 > EXPENSE_ANALYSIS_TURNOVER;
+  const lossToCarryForward = 0;
+  // Turnover at or below the VAT threshold lets the short return state one
+  // total and leave the expense analysis blank, which is what the sheet's own
+  // nine expense cells gate on.
+  const analysesExpenses = pl.B9 > admin.F26;
   const analysed = (value) => (analysesExpenses ? value : SHEET_BLANK);
   const contractorDeductions = sheetSum(salesMonths.map((month) => month.cis));
 
@@ -930,6 +931,7 @@ export function calculateSeCells(book, lines, taxData, scenario = {}) {
   seShort.D106 = carry([seShort.D99, seShort.O94], () =>
     seShort.D99 + seShort.O99 - seShort.O94 > 0 ? seShort.D99 + seShort.O99 - seShort.O94 : 0,
   );
+  seShort.D124 = lossToCarryForward;
   seShort.O124 = contractorDeductions;
 
   const seFull = {};

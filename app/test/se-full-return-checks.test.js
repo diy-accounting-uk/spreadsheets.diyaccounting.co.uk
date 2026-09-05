@@ -14,7 +14,12 @@
 // checks it is expected to flip, so a check that fires on the wrong cell
 // fails here too.
 //
-// Requires: LibreOffice installed (brew install --cask libreoffice)
+// The short return's own box numbers, gates and captions are read straight
+// out of the shipped template's XML at the foot of this file, with no
+// LibreOffice: they are printed text, not computed figures.
+//
+// Requires: LibreOffice installed (brew install --cask libreoffice) for the
+// recalculated half.
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, mkdtempSync, rmSync } from "fs";
@@ -271,7 +276,7 @@ const SA103F_CORRUPTIONS = [
     [
       TOTAL_CAPITAL_ALLOWANCES,
       TOTAL_DEDUCTIONS,
-      "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 22, 23 and 24",
+      "SA103F box 57 total capital allowances (O154) = the short return's allowance boxes 23, 24 and 25",
     ],
   ],
   [
@@ -299,7 +304,14 @@ const SA103F_CORRUPTIONS = [
     [TOTAL_TAXABLE_PROFITS, "SA103F box 74 loss brought forward set against this year: full return (O199) = short return (O94)"],
   ],
   ["O210", 145715.391666666, [TOTAL_TAXABLE_PROFITS, "SA103F box 76 total taxable profits: full return (O210) = short return (D106)"]],
-  ["D231", 1000, ["SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124)"]],
+  [
+    "D231",
+    1000,
+    [
+      "SA103F box 81 contractor deductions taken off: full return (D231) = short return (O124)",
+      "SA103F box 81 contractor deductions taken off (D231) = the year's CIS suffered on the sales journal",
+    ],
+  ],
   ["Q2", 46753, ["SA103F: the period the return covers starts on the Admin tax year start (Q2 = B4)"]],
   ["V2", 47117, ["SA103F: the period the return covers ends on the Admin tax year end (V2 = B17)"]],
   ["G141", 1000.18, ["SA103F: the writing down allowance rate the return prints (G141) = the Admin rate (G5)"]],
@@ -398,4 +410,121 @@ describeCalc("SA103F checks catch a broken full return", () => {
       expect(failureNames(checksWithCorruptedCell("SE Full", cellRef, value))).toEqual(expectedFailures);
     },
   );
+});
+
+// ── The shipped SE Short sheet ──────────────────────────────────────────────
+//
+// The SA103S look-alike prints its box numbers as literals in columns A and L
+// and gates its expense analysis on the VAT threshold. Both are in the
+// template as saved, so this half reads the file rather than recalculating it.
+
+// The 2026 form's numbering, cell by cell. Boxes 1 to 7 are the business
+// details; box 8 is the traditional-accounting tick the sheet has no cell
+// for, so the sheet jumps from 7 to 9.
+const SE_SHORT_BOX_CELLS = {
+  A12: 1,
+  A20: 2,
+  A24: 3,
+  L12: 4,
+  L17: 5,
+  L23: 6,
+  L28: 7,
+  A35: 9,
+  L35: 10,
+  A44: 11,
+  A48: 12,
+  A53: 13,
+  A57: 14,
+  A62: 15,
+  L44: 16,
+  L48: 17,
+  L53: 18,
+  L57: 19,
+  L62: 20,
+  A68: 21,
+  L68: 22,
+  A78: 23,
+  A82: 24,
+  L78: 25,
+  L82: 26,
+  A91: 27,
+  A96: 28,
+  L91: 29,
+  L96: 30,
+  A103: 31,
+  L103: 32,
+  A111: 33,
+  A116: 34,
+  A121: 35,
+  L111: 36,
+  L116: 37,
+  L121: 38,
+};
+
+// The nine expense cells, and the note above them, each gated on the
+// threshold rather than on a figure of its own.
+const SE_SHORT_GATED_CELLS = ["D46", "O46", "D51", "O51", "D55", "O55", "D60", "O60", "D64", "A33"];
+
+// Every caption on the sheet that names a box number.
+const SE_SHORT_CAPTIONS = {
+  N35: "Any other business income not included in box 9",
+  A42: "you may just put your total expenses in box 20, rather than filling in the whole section.",
+  N62: "Total allowable expenses - total of boxes 11 to 19",
+  C69: "expenses (box 9 + box 10 minus box 20)",
+  N69: "income (box 9 + box 10 minus box 20 is negative)",
+  N92: "this year's profits - up to the amount in box 28",
+  C96: "Net business profit for tax purposes (if box 21 + box 26 +",
+  C97: "box 27 minus boxes 22 to 25) is positive)",
+  N96: "Any other business income not included in boxes 9 or 10",
+  N103: "Net business loss for tax purposes (if boxes 22 to 25",
+  C104: "if box 28 + box 30 minus box 29 is positive",
+  N104: "minus (box 21 + box 26 + box 27) is positive)",
+  A109: "If you have made a loss for tax purposes (box 32), read page SESN 7 of the notes and fill in boxes 33 to 35 as appropriate.",
+};
+
+function formulaAt(xml, cellRef) {
+  const cell = xml.match(new RegExp(`<c\\s+r="${cellRef}"(?=[\\s/>])[^>]*>.*?</c>`, "s"));
+  if (!cell) throw new Error(`SE Short!${cellRef} not found`);
+  const formula = cell[0].match(/<f[^>]*>(.*?)<\/f>/s);
+  if (!formula) throw new Error(`SE Short!${cellRef} carries no formula`);
+  return formula[1].replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&amp;/g, "&");
+}
+
+describe("the shipped SE Short sheet", () => {
+  let xml;
+  let sharedStrings;
+
+  beforeAll(async () => {
+    const zip = await JSZip.loadAsync(readFileSync(resolve(SE_DIR, "Financialaccounts.xlsx")));
+    const sheetMap = await buildSheetMap(zip);
+    sharedStrings = await loadSharedStrings(zip);
+    xml = await zip.file(sheetMap.get("SE Short")).async("string");
+  });
+
+  it("prints the 2026 SA103S box numbers", () => {
+    for (const [cell, box] of Object.entries(SE_SHORT_BOX_CELLS)) {
+      expect(readCellValue(xml, cell, sharedStrings), `SE Short!${cell}`).toBe(box);
+    }
+  });
+
+  it("numbers its boxes once each, 1 to 7 and 9 to 38", () => {
+    const printed = Object.values(SE_SHORT_BOX_CELLS).sort((a, b) => a - b);
+    const expected = [1, 2, 3, 4, 5, 6, 7];
+    for (let box = 9; box <= 38; box++) expected.push(box);
+    expect(printed).toEqual(expected);
+  });
+
+  it("gates the expense analysis and the turnover note on Admin!F26", () => {
+    for (const cell of SE_SHORT_GATED_CELLS) {
+      expect(formulaAt(xml, cell), `SE Short!${cell}`).toContain("Admin!F26");
+    }
+    expect(xml).not.toContain("30000");
+    expect(xml).not.toContain("67000");
+  });
+
+  it("prints captions that name the boxes beside them", () => {
+    for (const [cell, caption] of Object.entries(SE_SHORT_CAPTIONS)) {
+      expect(readCellValue(xml, cell, sharedStrings), `SE Short!${cell}`).toBe(caption);
+    }
+  });
 });

@@ -43,7 +43,7 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 const FIXTURES = [
   { name: "se-scenario-advanced", checkCount: 868 },
   { name: "se-brickwork-pro-vat", checkCount: 802 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 797 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 791 },
 ];
 
 function loadFixture(name) {
@@ -151,11 +151,27 @@ describe("Self Employed engine: the return boxes against the statutory computati
         expect(short.D71 - short.O71).toBeCloseTo(short.D38 + short.O38 - short.O64, 6);
       });
 
-      it("SA103S box 31 taxable profit is the net profit with the capital allowances taken off", () => {
+      it("SA103S box 28 net business profit is the net profit with the capital allowances taken off", () => {
         const short = results["SE Short"];
         const allowances = short.D80 + short.D85 + short.O80;
         const chargeable = short.D71 - short.O71 + short.O85 + short.D94 - allowances;
         expect(short.D99).toBeCloseTo(Math.max(0, chargeable), 6);
+      });
+
+      it("the nine expense boxes are filled only when turnover clears the VAT threshold", () => {
+        const short = results["SE Short"];
+        const threshold = TAX_DATA.vat.registration_threshold;
+        const expenseBoxes = ["D46", "D51", "D55", "D60", "D64", "O46", "O51", "O55", "O60"];
+        const filled = results["Profit & Loss Account"].B9 > threshold;
+        for (const box of expenseBoxes) {
+          expect(typeof short[box] === "number", `${box} with turnover ${results["Profit & Loss Account"].B9}`).toBe(filled);
+        }
+        // The total the boxes roll into is stated either way.
+        expect(typeof short.O64).toBe("number");
+      });
+
+      it("SA103S box 35 total loss to carry forward is the figure the customer enters", () => {
+        expect(results["SE Short"].D124).toBe(0);
       });
 
       it("the annual investment allowance is the year's capital spend, which claims it in full", () => {

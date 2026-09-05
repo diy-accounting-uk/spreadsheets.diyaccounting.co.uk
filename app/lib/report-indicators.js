@@ -340,10 +340,10 @@ function seIndicators(report, vatRegistered) {
   const gross = requireValue(report, "Profit & Loss Account", "Gross Profit");
   const pbt = requireValue(report, "Profit & Loss Account", "Profit Before Tax");
   const split = allowances(report, {
-    deductions: ["Capital allowances", "AIA / WDA claimed", "Other capital allowances (box 24)"],
-    additions: ["Balancing charges (box 25)", "Other tax adjustments"],
+    deductions: ["Capital allowances", "AIA / WDA claimed", "Other capital allowances"],
+    additions: ["Balancing charges", "Other tax adjustments"],
   });
-  const grants = requireValue(report, SA103S, "Grants as other business income (box 29)");
+  const grants = requireValue(report, SA103S, "Grants as other business income");
   const forTax = requireValue(report, SA103S, "Net profit for tax calc");
 
   return [
