@@ -40,6 +40,7 @@ const MCP_BIN = resolve(ROOT, "app", "bin", "diya-gl-mcp.js");
 const EXPORT_BIN = resolve(ROOT, "app", "bin", "export.js");
 const BST_XLSX = resolve(ROOT, "examples", "bst-latest", "GB_Accounts_Basic_Sole_Trader.xlsx");
 const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
+const TAXI_SOURCE_DIR = resolve(ROOT, "examples", "taxi-latest");
 
 // A multi-file package zipped flat, the way a customer's own download ships
 // it -- every workbook in the directory, at the zip root.
@@ -242,6 +243,99 @@ describe("save_workbook: the base64 payload decodes to a real workbook", () => {
       expect(entries.length).toBe(9);
       const dirName = saved.filename.replace(/\.zip$/, "");
       for (const entry of entries) expect(entry.startsWith(`${dirName}/`)).toBe(true);
+    } finally {
+      client.close();
+    }
+  }, 30000);
+});
+
+// ============================================================================
+// save_workbook on a Taxi book, seeded straight into the session
+// (loadIntoSession) rather than through extract_book: a raw Taxi workbook has
+// no anchor table yet (a separate row), so extract_book on one still refuses
+// it as a Basic Sole Trader mismatch. save_workbook itself needs no anchor
+// guard -- it writes from D, not from a workbook -- so it is fully exercised
+// here independently of that gap.
+// ============================================================================
+
+describe("save_workbook: a Taxi book", () => {
+  it("hands back Financialaccountsyearto050426.xlsx, recalculating on open", async () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const session = createSession();
+    loadIntoSession(session, book, lines);
+    const methods = createMethods(session);
+
+    const response = await methods["tools/call"]({ name: "save_workbook", arguments: {} });
+    const saved = response.structuredContent;
+
+    expect(saved.filename).toBe("Financialaccountsyearto050426.xlsx");
+    const bytes = Buffer.from(saved.base64, "base64");
+    const zip = await JSZip.loadAsync(bytes);
+    const workbookXml = await zip.file("xl/workbook.xml").async("string");
+    expect(workbookXml).toContain('fullCalcOnLoad="1"');
+  });
+
+  it("returns the named refusal for an off-grid fare", async () => {
+    const { book, lines } = loadDiyaGlData(resolve(ROOT, "examples", "basic-taxi-driver", "taxi"));
+    const offGridLine = {
+      // Sorts after every TXN-* entry (diya-gl-loader.js's sourceJournalID-
+      // then-entryNumber sort) so the book's own earliest fare stays the one
+      // extractTaxYearStart reads the tax year off, and this line alone lands
+      // off-grid.
+      entryNumber: "ZZZ-TEST-OFFGRID-1",
+      sourceJournalID: "sales",
+      postingDate: "2026-04-07",
+      accountMainID: "4000",
+      amount: 50,
+      documentType: "receipt",
+      detailComment: "Daily fares",
+      lineItemComment: "Gross fares taken",
+      taxCode: "OS",
+      taxRate: 0,
+      paymentMethod: "cash",
+    };
+    const session = createSession();
+    loadIntoSession(session, book, [...lines, offGridLine]);
+    const methods = createMethods(session);
+
+    await expect(methods["tools/call"]({ name: "save_workbook", arguments: {} })).rejects.toThrow("2026-04-07");
+  });
+});
+
+// ============================================================================
+// extract_book on a Taxi book, byte-for-byte with export.js --file. A raw
+// Taxi workbook (or its package zip) still runs into the same missing anchor
+// table as above, so this reaches --file's generic per-product plumbing
+// (product resolution, report.json's package field) through the diya-gl JSON
+// format instead, which carries its own declared product and skips the sniff.
+// ============================================================================
+
+describe("extract_book: a Taxi book, byte-for-byte with export.js --file", () => {
+  it("matches lines.jsonl and reports product taxi", async () => {
+    const sourceDirOutput = tempDir("mcp-extract-taxi-source-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "taxi", "--source-dir", TAXI_SOURCE_DIR, "--output-dir", sourceDirOutput], {
+      cwd: ROOT,
+    });
+
+    const book = parseTOML(readFileSync(resolve(sourceDirOutput, "book.toml"), "utf8"));
+    const lines = readFileSync(resolve(sourceDirOutput, "lines.jsonl"), "utf8")
+      .split("\n")
+      .filter((line) => line.trim())
+      .map((line) => JSON.parse(line));
+    const { writeBookJson } = await import("../lib/books-interchange.js");
+    const jsonDir = tempDir("mcp-extract-taxi-json-src-");
+    const jsonPath = resolve(jsonDir, "book-diya-gl.json");
+    writeFileSync(jsonPath, writeBookJson(book, lines));
+
+    const cliFileOutput = tempDir("mcp-extract-taxi-cli-file-out-");
+    execFileSync(NODE, [EXPORT_BIN, "--package", "taxi", "--file", jsonPath, "--output-dir", cliFileOutput], { cwd: ROOT });
+    const cliLinesJsonl = readFileSync(resolve(cliFileOutput, "lines.jsonl"), "utf8");
+
+    const client = startMcpClient();
+    try {
+      const extracted = await client.callTool("extract_book", { path: jsonPath, product: "taxi" });
+      expect(extracted.report.package).toBe("taxi");
+      expect(extracted.linesJsonl).toBe(cliLinesJsonl);
     } finally {
       client.close();
     }
