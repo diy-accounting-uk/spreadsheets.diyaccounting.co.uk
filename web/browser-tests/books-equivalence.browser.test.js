@@ -18,7 +18,7 @@ import { startStaticServer } from "./serve.js";
 import { s1, s2, s2ForPackage, s3, s3YearEnd, canonical, parseFigure, SCENARIOS } from "./r-sources.js";
 
 const publicDir = path.join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
-const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable.json"), "utf-8"));
+const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/bst.json"), "utf-8"));
 const FRESH_PACKAGE_PATH = path.join(process.cwd(), "examples/bst-latest/GB_Accounts_Basic_Sole_Trader.xlsx");
 
 let closeServer;
