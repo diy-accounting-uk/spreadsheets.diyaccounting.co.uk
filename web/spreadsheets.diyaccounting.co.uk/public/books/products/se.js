@@ -1377,6 +1377,38 @@
       { id: "ledgers", label: "Ledgers", sheets: "Opening/Closing Debtors & Creditors", render: renderLedgers },
       { id: "fixed-assets", label: "Fixed assets", sheets: "Schedule, HPfinance", render: renderFixedAssets },
       {
+        id: "income-tax",
+        label: "Income Tax",
+        sheets: "Income Tax",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlSeForms.renderComputation(snap, state, helpers);
+        },
+      },
+      {
+        id: "sa103s",
+        label: "SA103S",
+        sheets: "SE Short",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlSeForms.renderSa103s(snap, state, helpers);
+        },
+      },
+      {
+        id: "sa103f",
+        label: "SA103F",
+        sheets: "SE Full",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlSeForms.renderSa103f(snap, state, helpers);
+        },
+      },
+      {
+        id: "vat",
+        label: "VAT return",
+        sheets: "VATQtr1–5",
+        render: function (snap, state, helpers) {
+          return global.DiyaGlSeForms.renderVat(snap, state, helpers);
+        },
+      },
+      {
         id: "business-details",
         label: "Book details",
         sheets: BUSINESS_DETAILS_SHEET,
