@@ -442,3 +442,46 @@ for (const fixture of FIXTURES) {
     });
   });
 }
+
+// changeLineAmount on a payroll line has to move diya-gl:grossPay too: every
+// payroll line the exporter writes carries amount === diya-gl:grossPay
+// (xlsx-exporter.js), and diya-gl-loader.js reads grossPay ahead of amount
+// (grossPay: line["diya-gl:grossPay"] || line.amount), so a stale grossPay
+// would leave the payroll view and the P&L wages row unmoved by an amount
+// edit the grid otherwise reports as applied.
+describe("diya-gl edit-recalc: se payroll gross via changeLineAmount", () => {
+  const SE_ADVANCED_DIR = resolve(ROOT, "examples", "precision-code-ltd", "advanced");
+  const { book, lines } = loadDiyaGlData(SE_ADVANCED_DIR);
+
+  function seResults(currentLines) {
+    const scenario = diyaGlToScenario(book, currentLines, "se");
+    const merged = { ...scenario, ...scenario.expected };
+    return calculateFromDiyaGl(book, currentLines, "se", taxData, merged);
+  }
+
+  it("moves the line's own diya-gl:grossPay field to the new amount", () => {
+    const entryNumber = "TXN-0074"; // Alice Johnson, April salary, grossPay 3500.
+    const oldLine = lines.find((line) => line.entryNumber === entryNumber);
+    const newAmount = oldLine.amount + 300;
+
+    const edited = changeLineAmount(book, lines, { entryNumber, newAmount });
+    const editedLine = edited.find((line) => line.entryNumber === entryNumber);
+
+    expect(editedLine.amount).toBe(newAmount);
+    expect(editedLine["diya-gl:grossPay"]).toBe(newAmount);
+  });
+
+  it("moves Wagesinterface's April column and the P&L wages row by the same amount", () => {
+    const entryNumber = "TXN-0074";
+    const oldLine = lines.find((line) => line.entryNumber === entryNumber);
+    const delta = 300;
+    const newAmount = oldLine.amount + delta;
+
+    const before = seResults(lines);
+    const edited = changeLineAmount(book, lines, { entryNumber, newAmount });
+    const after = seResults(edited);
+
+    expect(after.Wagesinterface.C4 - before.Wagesinterface.C4).toBeCloseTo(delta, 6);
+    expect(after["Profit & Loss Account"].B21 - before["Profit & Loss Account"].B21).toBeCloseTo(delta, 6);
+  });
+});
