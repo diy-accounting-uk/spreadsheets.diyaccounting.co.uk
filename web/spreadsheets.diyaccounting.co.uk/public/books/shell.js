@@ -194,8 +194,13 @@
     };
   }
 
+  function getExamples() {
+    var generated = window.DiyaGlExamples && window.DiyaGlExamples[active.id];
+    return generated || active.examples || [];
+  }
+
   function exampleKeys() {
-    return active.examples.map(function (example) {
+    return getExamples().map(function (example) {
       return example.key;
     });
   }
@@ -206,7 +211,7 @@
         'Unknown example "' +
           deepLink.example +
           '". The ' +
-          countWord(active.examples.length) +
+          countWord(getExamples().length) +
           " this page knows are: " +
           exampleKeys().join(", ") +
           ".",
@@ -729,7 +734,7 @@
       (state.newBookFormOpen ? renderNewBookForm() : "") +
       '<div class="example-list">' +
       '<span class="caps-label">Or load an example</span>' +
-      active.examples.map(exampleButton).join("") +
+      getExamples().map(exampleButton).join("") +
       "</div>" +
       "</div>" +
       '<p id="empty-state-message" class="view-lede" aria-live="polite"></p>' +

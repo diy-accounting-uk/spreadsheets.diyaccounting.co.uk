@@ -22,7 +22,7 @@
 //   node scripts/build-books-bundle.mjs
 
 import { build } from "esbuild";
-import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from "fs";
+import { cpSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 import { generateStandaloneValidatorSource } from "../app/lib/diya-gl-schema.js";
@@ -116,20 +116,30 @@ export default Ajv2020Stub;`,
   };
 }
 
-// Each entry is a path under examples/, as [directory, product]. The three
-// BST reconciliation fixtures the books page offers as examples (W1): the
-// full-ledger Precision Code subset, the BrickWork non-VAT subset and the
-// no-ledger mileage-route book.
-const EXAMPLE_BOOKS = [
-  ["precision-code-ltd", "bst"],
-  ["brickwork-pro", "bst-nonvat"],
-  ["sp-sixty-driving", "bst"],
-];
+// Each entry is a path under examples/, as [directory, product], read from
+// scripts/example-books.json. The three BST reconciliation fixtures the books
+// page offers as examples (W1): the full-ledger Precision Code subset, the
+// BrickWork non-VAT subset and the no-ledger mileage-route book. Taxi (T16) and
+// Ltd (T10) append their products' rows to the same file.
+let EXAMPLE_BOOKS = [];
 
 // The files the engine reads that are not the book itself: the tax year data
-// the save path applies, and the BST template with its meta. The two v2
-// schemas are left where they are — the site already publishes them at
-// /schema/, which is the root the resource loader names them under.
+// the save path applies, the BST template with its meta, and the generated
+// examples.js. The two v2 schemas are left where they are — the site already
+// publishes them at /schema/, which is the root the resource loader names them under.
+function generateExamplesJs() {
+  const examplesJson = JSON.parse(readFileSync(resolve(ROOT, "scripts", "example-books.json"), "utf8"));
+  const examplesJs = `window.DiyaGlExamples = ${JSON.stringify(examplesJson)};`;
+  writeFileSync(resolve(BOOKS_DIR, "examples.js"), examplesJs);
+
+  // Flatten the examples for copyRuntimeAssets: each product's array becomes [dir, product] pairs.
+  for (const [product, examples] of Object.entries(examplesJson)) {
+    for (const example of examples) {
+      EXAMPLE_BOOKS.push([example.dir, example.product]);
+    }
+  }
+}
+
 function copyRuntimeAssets() {
   rmSync(ASSETS_DIR, { recursive: true, force: true });
 
@@ -147,7 +157,7 @@ function copyRuntimeAssets() {
   }
 
   // Example books, copied under the path the resource loader names them by:
-  // examples/<name>/<product>/{book.toml,lines.jsonl}. The probe page needs
+  // examples/<dir>/<product>/{book.toml,lines.jsonl}. The probe page needs
   // one; an example the page offers is added to this list.
   for (const example of EXAMPLE_BOOKS) {
     const out = resolve(ASSETS_DIR, "examples", ...example);
@@ -175,6 +185,7 @@ const LINES_SCHEMA_ID = "https://spreadsheets.diyaccounting.co.uk/schema/diya-gl
 
 async function main() {
   mkdirSync(ENGINE_DIR, { recursive: true });
+  mkdirSync(BOOKS_DIR, { recursive: true });
 
   const bookSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-book-v2.schema.json"), "utf8"));
   const linesSchema = JSON.parse(readFileSync(resolve(SCHEMA_DIR, "diya-gl-lines-v2.schema.json"), "utf8"));
@@ -198,6 +209,7 @@ async function main() {
     define: { "process.env.NODE_ENV": '"production"' },
   });
 
+  generateExamplesJs();
   const assets = copyRuntimeAssets();
   const bytes = statSync(BUNDLE_FILE).size;
   const inputCount = Object.keys(result.metafile.inputs).length;

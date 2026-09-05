@@ -845,17 +845,6 @@
       intro:
         "Open a Basic Sole Trader workbook as editable books in your browser. Nothing is uploaded; the file never leaves your machine.",
     },
-    examples: [
-      { key: "bst-scenario-basic", name: "Precision Code Trading", note: "full ledger", dir: "precision-code-ltd", product: "bst" },
-      {
-        key: "bst-brickwork-pro-nonvat",
-        name: "BrickWork Pro Trading",
-        note: "bricklaying trade",
-        dir: "brickwork-pro",
-        product: "bst-nonvat",
-      },
-      { key: "bst-sp-sixty", name: "SP Sixty Driving", note: "no ledger, mileage route", dir: "sp-sixty-driving", product: "bst" },
-    ],
     views: [
       { id: "home", label: "Home", sheets: "Home", shared: "home" },
       { id: "year", label: "Year", sheets: "SalesApr–Mar, PurchasesApr–Mar", shared: "year" },
