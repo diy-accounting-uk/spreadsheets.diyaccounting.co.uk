@@ -432,6 +432,10 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- The BrickWork master `examples/brickwork-pro/lines.jsonl` keeps date order (`31882a5c`): the
+  Ltd non-VAT twin and the BST subset read it in file order while the VAT and SE twins sort, so an
+  appended line splits the twins' journal shape. Insert in date order; entry numbers are identifiers,
+  not positions.
 - T3 `6f7d3e6a` to `c37e62c8`, merged 2026-09-05: CIS both ways (Purchases `AD` read back, Sales `W`
   written and read, `Income Tax!E12`, `SE Full!D231` and `SE Short!O124` no longer agree by
   absence), a CIS-suffered sale in the BrickWork master with May's and June's figures adjusted so
