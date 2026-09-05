@@ -7,7 +7,7 @@
 // PLAN_DIYA_GL_BST_CLI_MCP_WEB.md): every cell/, section/ and check/ key
 // report-serializer.js gives a scenario's R either carries a data-r-key
 // somewhere on the books page, or is named with a reason in
-// app/data/render-unrepresentable.json. Neither side may run short --
+// app/data/render-unrepresentable/bst.json. Neither side may run short --
 // an undeclared absence fails, and so does a data-r-key the page invented.
 
 import { test, expect } from "@playwright/test";
@@ -59,7 +59,7 @@ const EXAMPLES = [
   { button: /bst-sp-sixty/, dataDir: "examples/sp-sixty-driving/bst", outDir: "sp-sixty" },
 ];
 
-const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable.json"), "utf-8"));
+const DECLARED = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/render-unrepresentable/bst.json"), "utf-8"));
 
 function s2KeysFor(outDir, dataDir) {
   const outputDir = path.join(targetDir, outDir);

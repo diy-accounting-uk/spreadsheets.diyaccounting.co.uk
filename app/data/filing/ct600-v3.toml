@@ -1,0 +1,2329 @@
+# CT600 (2026) Version 3 -- full box list, HMRC form.
+#
+# Sources:
+# - gov.uk, "Company Tax Return (CT600) 2015 Version 3", published 1 April 2026:
+#   https://www.gov.uk/government/publications/corporation-tax-company-tax-return-ct600-2015-version-3
+# - Form PDF, footer stamp HMRC 04/26:
+#   https://assets.publishing.service.gov.uk/media/69c543424a06660f085442bd/ct600.pdf
+# - Box list transcribed in _developers/hmrc-references/hmrc-forms-company.md, section 1.
+# - element/xmlPath/format: HMRC RIM artefacts V1.994 (10 October 2025), CT-specDoc-v1-994.xml,
+#   downloaded from https://assets.publishing.service.gov.uk/media/68e8a35c1c8b2a3b5069080c/HMRC-CT-2014-v1-994.zip
+#   (research note section 7 names this download; the zip is not committed to this repo --
+#   this agent fetched it once while building this file). format is read from each element's
+#   XML Schema base type (e.g. CTwholePoundStructure -> "whole", CT_YesType -> "tick"); boxes
+#   with no matching schema element (a tick box folded into a parent, a free-text field, or a
+#   box the schema does not carry standalone, such as 980 the declaration date) get format
+#   "unresolved" rather than a guessed one, or "tick"/"date"/"text" only when the research
+#   note's own Notes column says so.
+# - sheetCell: the CT600-sheet mapping in "The look-alike forms" section of
+#   PLAN_DIYA_GL_LTD_CLI_MCP_WEB.md, cross-checked against CELL_MAP/standardReads() in
+#   app/products/ltd.js. Only boxes whose cell is already read by the product carry one;
+#   the rest are unmapped pending T2/T7/T8 wiring the remaining CT600-sheet cells.
+version = "CT600 (2026) Version 3"
+formFooter = "HMRC 04/26"
+source = "https://assets.publishing.service.gov.uk/media/69c543424a06660f085442bd/ct600.pdf"
+rimArtefactVersion = "V1.994"
+rimArtefactDate = "2025-10-10"
+rimArtefactSource = "https://assets.publishing.service.gov.uk/media/68e8a35c1c8b2a3b5069080c/HMRC-CT-2014-v1-994.zip"
+
+[[box]]
+number = 1
+label = "Company name"
+section = "Company information"
+format = "text"
+element = "CompanyName"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/CompanyName"
+
+[[box]]
+number = 2
+label = "Company registration number"
+section = "Company information"
+format = "text"
+notes = "Companies House number"
+element = "RegistrationNumber"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/RegistrationNumber"
+
+[[box]]
+number = 3
+label = "Tax reference"
+section = "Company information"
+format = "text"
+notes = "UTR"
+element = "Reference"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/Reference"
+
+[[box]]
+number = 4
+label = "Type of company"
+section = "Company information"
+format = "integer"
+notes = "Code from the CT600 Guide"
+element = "CompanyType"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/CompanyType"
+
+[[box]]
+number = 5
+label = "NI trading activity"
+section = "Northern Ireland"
+format = "tick"
+element = "NItradingActivity"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/NorthernIreland/NItradingActivity"
+
+[[box]]
+number = 6
+label = "SME"
+section = "Northern Ireland"
+format = "tick"
+element = "SME"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/NorthernIreland/SME"
+
+[[box]]
+number = 7
+label = "NI employer"
+section = "Northern Ireland"
+format = "tick"
+element = "NIemployer"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/NorthernIreland/NIemployer"
+
+[[box]]
+number = 8
+label = "Special circumstances"
+section = "Northern Ireland"
+format = "tick"
+element = "SpecialCircumstances"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/NorthernIreland/SpecialCircumstances"
+
+[[box]]
+number = 30
+label = "from DD MM YYYY"
+section = "About this return"
+format = "date"
+notes = "Start of the return period"
+element = "From"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/PeriodCovered/From"
+sheetCell = "Financialaccounts.xlsx!CT600!B33"
+
+[[box]]
+number = 35
+label = "to DD MM YYYY"
+section = "About this return"
+format = "date"
+notes = "End of the return period, max 12 months"
+element = "To"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyInformation/PeriodCovered/To"
+sheetCell = "Financialaccounts.xlsx!CT600!M33"
+
+[[box]]
+number = 40
+label = "A repayment is due for this return period"
+section = "About this return"
+format = "tick"
+element = "ThisPeriod"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/ThisPeriod"
+
+[[box]]
+number = 45
+label = "Claim or relief affecting an earlier period"
+section = "About this return"
+format = "tick"
+element = "EarlierPeriod"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/EarlierPeriod"
+
+[[box]]
+number = 50
+label = "Making more than one return for this company now"
+section = "About this return"
+format = "tick"
+element = "MultipleReturns"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/MultipleReturns"
+
+[[box]]
+number = 55
+label = "This return contains estimated figures"
+section = "About this return"
+format = "tick"
+element = "ProvisionalFigures"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/ProvisionalFigures"
+
+[[box]]
+number = 60
+label = "Company part of a group that is not small"
+section = "About this return"
+format = "tick"
+element = "PartOfNonSmallGroup"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/PartOfNonSmallGroup"
+
+[[box]]
+number = 65
+label = "Notice of disclosable avoidance schemes"
+section = "About this return"
+format = "tick"
+element = "RegisteredAvoidanceScheme"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/RegisteredAvoidanceScheme"
+
+[[box]]
+number = 70
+label = "Compensating adjustment claimed"
+section = "About this return"
+format = "tick"
+notes = "X, transfer pricing"
+element = "Adjustment"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/TransferPricing/Adjustment"
+
+[[box]]
+number = 75
+label = "Company qualifies for SME exemption"
+section = "About this return"
+format = "tick"
+notes = "X, transfer pricing"
+element = "SME"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/TransferPricing/SME"
+
+[[box]]
+number = 80
+label = "I attach accounts and computations for the period to which this return relates"
+section = "Accounts and computations"
+format = "tick"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 85
+label = "I attach accounts and computations for a different period"
+section = "Accounts and computations"
+format = "tick"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 90
+label = "If you're not attaching the accounts and computations, explain why"
+section = "Accounts and computations"
+format = "text"
+notes = "Free text"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 95
+label = "Loans and arrangements to participators by close companies - form CT600A"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600A"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600A"
+
+[[box]]
+number = 96
+label = "Creative industries - form CT600P"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600P"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600P"
+
+[[box]]
+number = 100
+label = "Controlled foreign companies, foreign permanent establishment exemptions, hybrid and other mismatches - form CT600B"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600B"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600B"
+
+[[box]]
+number = 105
+label = "Group and consortium - form CT600C"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600C"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600C"
+
+[[box]]
+number = 110
+label = "Insurance - form CT600D"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600D"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600D"
+
+[[box]]
+number = 115
+label = "Charities and Community Amateur Sports Clubs (CASCs) - form CT600E"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600E"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600E"
+
+[[box]]
+number = 120
+label = "Tonnage tax - form CT600F"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600F"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600F"
+
+[[box]]
+number = 125
+label = "Northern Ireland - form CT600G"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600G"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600G"
+
+[[box]]
+number = 130
+label = "Cross-border royalties - form CT600H"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600H"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600H"
+
+[[box]]
+number = 135
+label = "Supplementary charge in respect of ring fence trades - form CT600I"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600I"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600I"
+
+[[box]]
+number = 140
+label = "Disclosure of Tax Avoidance Schemes - form CT600J"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600J"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600J"
+
+[[box]]
+number = 141
+label = "Restitution tax - form CT600K"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600K"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600K"
+
+[[box]]
+number = 142
+label = "Research and Development - form CT600L"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600L"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600L"
+
+[[box]]
+number = 143
+label = "Freeports and Investment Zones - form CT600M"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600M"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600M"
+
+[[box]]
+number = 144
+label = "Residential Property Developer Tax (RPDT) - form CT600N"
+section = "Supplementary pages enclosed"
+format = "tick"
+element = "CT600N"
+xmlPath = "/IRenvelope/CompanyTaxReturn/ReturnInfoSummary/SupplementaryPages/CT600N"
+
+[[box]]
+number = 145
+label = "Total turnover from trade"
+section = "Tax calculation: turnover"
+format = "whole"
+notes = "Whole pounds"
+element = "Total"
+xmlPath = "/IRenvelope/CompanyTaxReturn/Turnover/Total"
+sheetCell = "Financialaccounts.xlsx!CT600!AK66"
+
+[[box]]
+number = 150
+label = "Banks, building societies, insurance companies and other financial concerns - put an 'X' in this box if you do not have a recognised turnover and have not made an entry in box 145"
+section = "Tax calculation: turnover"
+format = "tick"
+element = "OtherFinancialConcerns"
+xmlPath = "/IRenvelope/CompanyTaxReturn/Turnover/OtherFinancialConcerns"
+
+[[box]]
+number = 155
+label = "Trading profits"
+section = "Income"
+format = "whole"
+notes = "Tax-adjusted trading profit from the computation"
+element = "Profits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/Trading/Profits"
+sheetCell = "Financialaccounts.xlsx!CT600!Z70"
+
+[[box]]
+number = 160
+label = "Trading losses brought forward set against trading profits"
+section = "Income"
+format = "whole"
+element = "LossesBroughtForward"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/Trading/LossesBroughtForward"
+sheetCell = "Financialaccounts.xlsx!CT600!Z72"
+
+[[box]]
+number = 165
+label = "Net trading profits - box 155 minus box 160"
+section = "Income"
+format = "whole"
+computed = true
+notes = "Computed"
+element = "NetProfits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/Trading/NetProfits"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ74"
+
+[[box]]
+number = 170
+label = "Bank, building society or other interest, and profits from non-trading loan relationships"
+section = "Income"
+format = "whole"
+element = "NonTradingLoanProfitsAndGains"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/NonTradingLoanProfitsAndGains"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ76"
+
+[[box]]
+number = 172
+label = "Put an 'X' in box 172 if the figure in box 170 is net of carrying back a deficit from a later accounting period"
+section = "Income"
+format = "tick"
+element = "IncomeStatedNet"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/IncomeStatedNet"
+
+[[box]]
+number = 175
+label = "Annual payments not otherwise charged to Corporation Tax and from which Income Tax has not been deducted"
+section = "Income"
+format = "whole"
+element = "NonLoanAnnuitiesAnnualPaymentsDiscounts"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/NonLoanAnnuitiesAnnualPaymentsDiscounts"
+
+[[box]]
+number = 180
+label = "Non-exempt dividends or distributions from non-UK resident companies"
+section = "Income"
+format = "whole"
+element = "NonUKdividends"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/NonUKdividends"
+
+[[box]]
+number = 185
+label = "Income from which Income Tax has been deducted"
+section = "Income"
+format = "whole"
+element = "DeductedIncome"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/DeductedIncome"
+
+[[box]]
+number = 190
+label = "Income from a property business"
+section = "Income"
+format = "whole"
+element = "PropertyBusinessIncome"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/PropertyBusinessIncome"
+
+[[box]]
+number = 195
+label = "Non-trading gains on intangible fixed assets"
+section = "Income"
+format = "whole"
+element = "NonTradingGainsIntangibles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/NonTradingGainsIntangibles"
+
+[[box]]
+number = 200
+label = "Tonnage tax profits"
+section = "Income"
+format = "whole"
+element = "TonnageTaxProfits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/TonnageTaxProfits"
+
+[[box]]
+number = 205
+label = "Income not falling under any other heading"
+section = "Income"
+format = "whole"
+element = "OtherIncome"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/Income/OtherIncome"
+
+[[box]]
+number = 210
+label = "Gross chargeable gains"
+section = "Chargeable gains"
+format = "whole"
+element = "GrossGains"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargeableGains/GrossGains"
+
+[[box]]
+number = 215
+label = "Allowable losses including losses brought forward"
+section = "Chargeable gains"
+format = "whole"
+element = "AllowableLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargeableGains/AllowableLosses"
+
+[[box]]
+number = 220
+label = "Net chargeable gains - box 210 minus box 215"
+section = "Chargeable gains"
+format = "whole"
+computed = true
+notes = "Computed"
+element = "NetChargeableGains"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargeableGains/NetChargeableGains"
+
+[[box]]
+number = 225
+label = "Losses brought forward against certain investment income"
+section = "Profits before deductions and reliefs"
+format = "whole"
+element = "LossesBroughtForward"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/LossesBroughtForward"
+
+[[box]]
+number = 230
+label = "Non-trade deficits on loan relationships (including interest) and derivative contracts (financial instruments) brought forward set against non-trading profits"
+section = "Profits before deductions and reliefs"
+format = "whole"
+element = "NonTradeDeficitsOnLoans"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/NonTradeDeficitsOnLoans"
+
+[[box]]
+number = 235
+label = "Profits before other deductions and reliefs - net sum of boxes 165 to 205 and 220 minus sum of boxes 225 and 230"
+section = "Profits before deductions and reliefs"
+format = "whole"
+computed = true
+notes = "Computed"
+element = "ProfitsBeforeOtherDeductions"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ProfitsBeforeOtherDeductions"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ92"
+
+[[box]]
+number = 240
+label = "Losses on unquoted shares"
+section = "Deductions and reliefs"
+format = "whole"
+element = "UnquotedShares"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/UnquotedShares"
+
+[[box]]
+number = 245
+label = "Management expenses"
+section = "Deductions and reliefs"
+format = "whole"
+element = "ManagementExpenses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/ManagementExpenses"
+
+[[box]]
+number = 250
+label = "UK property business losses for this or previous accounting period"
+section = "Deductions and reliefs"
+format = "whole"
+element = "UKpropertyBusinessLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/UKpropertyBusinessLosses"
+
+[[box]]
+number = 255
+label = "Capital allowances for the purposes of management of the business"
+section = "Deductions and reliefs"
+format = "whole"
+element = "CapitalAllowances"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/CapitalAllowances"
+
+[[box]]
+number = 260
+label = "Non-trade deficits for this accounting period from loan relationships and derivative contracts (financial instruments)"
+section = "Deductions and reliefs"
+format = "whole"
+element = "NonTradeDeficits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/NonTradeDeficits"
+
+[[box]]
+number = 263
+label = "Carried forward non-trade deficits from loan relationships and derivative contracts (financial instruments)"
+section = "Deductions and reliefs"
+format = "whole"
+element = "CarriedForwardNonTradeDeficits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/CarriedForwardNonTradeDeficits"
+
+[[box]]
+number = 265
+label = "Non-trading losses on intangible fixed assets"
+section = "Deductions and reliefs"
+format = "whole"
+element = "NonTradingLossIntangibles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/NonTradingLossIntangibles"
+
+[[box]]
+number = 275
+label = "Total trading losses of this or a later accounting period"
+section = "Deductions and reliefs"
+format = "whole"
+element = "TradingLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/TradingLosses"
+
+[[box]]
+number = 280
+label = "Put an 'X' in box 280 if amounts carried back from later accounting periods are included in box 275"
+section = "Deductions and reliefs"
+format = "tick"
+element = "TradingLossesCarriedBack"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/TradingLossesCarriedBack"
+
+[[box]]
+number = 285
+label = "Trading losses carried forward and claimed against total profits"
+section = "Deductions and reliefs"
+format = "whole"
+element = "TradingLossesCarriedForward"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/TradingLossesCarriedForward"
+
+[[box]]
+number = 290
+label = "Non-trade capital allowances"
+section = "Deductions and reliefs"
+format = "whole"
+element = "NonTradeCapitalAllowances"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/NonTradeCapitalAllowances"
+
+[[box]]
+number = 295
+label = "Total of deductions and reliefs - total of boxes 240 to 275, 285 and 290"
+section = "Deductions and reliefs"
+format = "whole"
+computed = true
+notes = "Computed"
+status = "nil-on-this-template"
+statusNote = "the template carries no deductions and reliefs, group relief or qualifying donations, so this box always reads nil"
+element = "Total"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/DeductionsAndReliefs/Total"
+
+[[box]]
+number = 300
+label = "Profits before qualifying donations and group relief - box 235 minus box 295"
+section = "Deductions and reliefs"
+format = "whole"
+computed = true
+notes = "Computed"
+status = "nil-on-this-template"
+statusNote = "the template carries no deductions and reliefs, group relief or qualifying donations, so this box always reads nil"
+element = "ProfitsBeforeDonationsAndGroupRelief"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargesAndReliefs/ProfitsBeforeDonationsAndGroupRelief"
+
+[[box]]
+number = 305
+label = "Qualifying donations"
+section = "Deductions and reliefs"
+format = "whole"
+status = "nil-on-this-template"
+statusNote = "the template carries no deductions and reliefs, group relief or qualifying donations, so this box always reads nil"
+element = "QualifyingDonations"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargesAndReliefs/QualifyingDonations"
+
+[[box]]
+number = 310
+label = "Group relief"
+section = "Deductions and reliefs"
+format = "whole"
+element = "GroupRelief"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargesAndReliefs/GroupRelief"
+
+[[box]]
+number = 312
+label = "Group relief for carried forward losses"
+section = "Deductions and reliefs"
+format = "whole"
+element = "GroupReliefForCarriedForwardLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargesAndReliefs/GroupReliefForCarriedForwardLosses"
+
+[[box]]
+number = 315
+label = "Profits chargeable to Corporation Tax - box 300 minus boxes 305, 310 and 312"
+section = "Deductions and reliefs"
+format = "whole"
+computed = true
+notes = "Computed. This is PCTCT / taxable total profits"
+element = "ChargeableProfits"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/ChargeableProfits"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ110"
+
+[[box]]
+number = 320
+label = "Ring fence profits included"
+section = "Deductions and reliefs"
+format = "whole"
+element = "RingFenceProfitsIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/RingFenceProfitsIncluded"
+
+[[box]]
+number = 325
+label = "Northern Ireland profits included"
+section = "Deductions and reliefs"
+format = "whole"
+element = "NorthernIrelandProfitsIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/NorthernIrelandProfitsIncluded"
+
+[[box]]
+number = 326
+label = "Number of associated companies in this period"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "integer"
+notes = "Guide: the number of companies associated with your company for any part of the accounting period, excluding the company itself. Quarterly instalment payers use the number at the end of the previous accounting period"
+element = "ThisPeriod"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/ThisPeriod"
+
+[[box]]
+number = 327
+label = "Number of associated companies in the first financial year"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "integer"
+notes = "Use when the AP straddles two financial years with different limits. Not for quarterly instalment payers"
+element = "FirstYear"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/AssociatedCompaniesFinancialYears/FirstYear"
+
+[[box]]
+number = 328
+label = "Number of associated companies in the second financial year"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "integer"
+notes = "As box 327"
+element = "SecondYear"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/AssociatedCompaniesFinancialYears/SecondYear"
+
+[[box]]
+number = 329
+label = "Put an 'X' in box 329 if the company is chargeable at the small profit rate or is entitled to marginal relief"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "tick"
+element = "StartingOrSmallCompaniesRate"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/AssociatedCompanies/StartingOrSmallCompaniesRate"
+
+[[box]]
+number = 330
+label = "Financial year (yyyy) - first financial year"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "year"
+element = "Year"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearOne/Year"
+sheetCell = "Financialaccounts.xlsx!CT600!C126"
+
+[[box]]
+number = 335
+label = "Amount of profit (first FY, first rate line)"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "whole"
+element = "Profit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearOne/Details/Profit"
+sheetCell = "Financialaccounts.xlsx!CT600!N126"
+
+[[box]]
+number = 340
+label = "Rate of tax % (first FY, first rate line)"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+element = "TaxRate"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearOne/Details/TaxRate"
+sheetCell = "Financialaccounts.xlsx!CT600!AA126"
+
+[[box]]
+number = 345
+label = "Tax (first FY, first rate line)"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "pounds-and-pence"
+notes = "Pounds and pence"
+element = "Tax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearOne/Details/Tax"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ126"
+
+[[box]]
+number = 350
+label = "Amount of profit - first FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 355
+label = "Rate of tax % - first FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 360
+label = "Tax - first FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 365
+label = "Amount of profit - first FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 370
+label = "Rate of tax % - first FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 375
+label = "Tax - first FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 380
+label = "Financial year (yyyy) - second financial year"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "year"
+element = "Year"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearTwo/Year"
+sheetCell = "Financialaccounts.xlsx!CT600!C128"
+
+[[box]]
+number = 385
+label = "Amount of profit - second FY, first rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "whole"
+element = "Profit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearTwo/Details/Profit"
+sheetCell = "Financialaccounts.xlsx!CT600!N128"
+
+[[box]]
+number = 390
+label = "Rate of tax % - second FY, first rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+element = "TaxRate"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearTwo/Details/TaxRate"
+sheetCell = "Financialaccounts.xlsx!CT600!AA128"
+
+[[box]]
+number = 395
+label = "Tax - second FY, first rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "pounds-and-pence"
+element = "Tax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTaxChargeable/FinancialYearTwo/Details/Tax"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ128"
+
+[[box]]
+number = 400
+label = "Amount of profit - second FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 405
+label = "Rate of tax % - second FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 410
+label = "Tax - second FY, second rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 415
+label = "Amount of profit - second FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 420
+label = "Rate of tax % - second FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "rate"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 425
+label = "Tax - second FY, third rate line"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 430
+label = "Corporation Tax - total of boxes 345, 360, 375, 395, 410 and 425"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "CorporationTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CorporationTax"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ131"
+
+[[box]]
+number = 435
+label = "Marginal relief"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "pounds-and-pence"
+notes = "Guide: Enter the amount of Marginal Relief due, referring to CTM03905"
+element = "MarginalReliefForRingFenceTrades"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/MarginalReliefForRingFenceTrades"
+sheetCell = "Financialaccounts.xlsx!CT600!Y133"
+
+[[box]]
+number = 440
+label = "Corporation Tax chargeable - box 430 minus box 435"
+section = "Tax calculation: rates, associated companies, marginal relief"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "NetCorporationTaxChargeable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/NetCorporationTaxChargeable"
+sheetCell = "Financialaccounts.xlsx!CT600!Y135"
+
+[[box]]
+number = 445
+label = "Community Investment Tax Relief"
+section = "Reliefs and deductions in terms of tax"
+format = "pounds-and-pence"
+element = "CommunityInvestmentRelief"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/CommunityInvestmentRelief"
+
+[[box]]
+number = 450
+label = "Double Taxation Relief"
+section = "Reliefs and deductions in terms of tax"
+format = "pounds-and-pence"
+element = "DoubleTaxationRelief"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/DoubleTaxation/DoubleTaxationRelief"
+
+[[box]]
+number = 455
+label = "Put an 'X' in box 455 if box 450 includes an underlying rate relief claim"
+section = "Reliefs and deductions in terms of tax"
+format = "tick"
+element = "UnderlyingRate"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/DoubleTaxation/UnderlyingRate"
+
+[[box]]
+number = 460
+label = "Put an 'X' in box 460 if box 450 includes an amount carried back from a later period"
+section = "Reliefs and deductions in terms of tax"
+format = "tick"
+element = "AmountCarriedBack"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/DoubleTaxation/AmountCarriedBack"
+
+[[box]]
+number = 465
+label = "Advance Corporation Tax"
+section = "Reliefs and deductions in terms of tax"
+format = "pounds-and-pence"
+element = "AdvancedCorporationTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/AdvancedCorporationTax"
+
+[[box]]
+number = 470
+label = "Total reliefs and deduction in terms of tax - total of boxes 445, 450 and 465"
+section = "Reliefs and deductions in terms of tax"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TotalReliefsAndDeductions"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/TaxReliefsAndDeductions/TotalReliefsAndDeductions"
+
+[[box]]
+number = 471
+label = "Coronavirus Job Retention Scheme (CJRS) received"
+section = "Coronavirus support schemes and overpayments"
+format = "pounds-and-pence"
+element = "CJRSreceived"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CJRS/CJRSreceived"
+
+[[box]]
+number = 472
+label = "CJRS entitlement"
+section = "Coronavirus support schemes and overpayments"
+format = "pounds-and-pence"
+element = "CJRSdue"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CJRS/CJRSdue"
+
+[[box]]
+number = 473
+label = "CJRS overpayment already assessed or voluntary disclosed"
+section = "Coronavirus support schemes and overpayments"
+format = "pounds-and-pence"
+element = "CJRSoverpaymentAlreadyAssessed"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CJRS/CJRSoverpaymentAlreadyAssessed"
+
+[[box]]
+number = 474
+label = "Other coronavirus overpayments"
+section = "Coronavirus support schemes and overpayments"
+format = "pounds-and-pence"
+element = "JobRetentionBonusOverpayment"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CompanyTaxCalculation/CJRS/JobRetentionBonusOverpayment"
+
+[[box]]
+number = 475
+label = "Net Corporation Tax liability - box 440 minus box 470"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "NetCorporationTaxLiability"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/NetCorporationTaxLiability"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ145"
+
+[[box]]
+number = 480
+label = "Tax payable on loans and arrangements to participators"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+notes = "Copied from box A80 on CT600A"
+element = "LoansToParticipators"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/LoansToParticipators"
+
+[[box]]
+number = 485
+label = "Put an 'X' in box 485 if you completed box A70 in the supplementary pages CT600A"
+section = "Calculation of tax outstanding or overpaid"
+format = "tick"
+element = "CT600AreliefDue"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/CT600AreliefDue"
+
+[[box]]
+number = 490
+label = "Controlled Foreign Companies (CFC) tax payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "CFCtaxPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/CFCtaxPayable"
+
+[[box]]
+number = 495
+label = "Bank levy payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "BankLevyPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/BankLevyPayable"
+
+[[box]]
+number = 496
+label = "Bank surcharge payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "BankSurchargePayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/BankSurchargePayable"
+
+[[box]]
+number = 497
+label = "Residential Property Developer Tax (RPDT) payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "RPDTpayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/RPDTpayable"
+
+[[box]]
+number = 500
+label = "CFC tax, bank levy, bank surcharge and RPDT payable - total of boxes 490, 495, 496 and 497"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "CFCandBankLevyTotal"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/CFCandBankLevyTotal"
+
+[[box]]
+number = 501
+label = "EOGPL payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "EOGPLpayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/EOGPLpayable"
+
+[[box]]
+number = 502
+label = "EGL payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "EGLpayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/EGLpayable"
+
+[[box]]
+number = 505
+label = "Supplementary charge (ring fence trades) payable"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "SupplementaryCharge"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/SupplementaryCharge"
+
+[[box]]
+number = 510
+label = "Tax chargeable - total of boxes 475, 480, 500, 501, 502 and 505"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TaxChargeable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/TaxChargeable"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ145"
+
+[[box]]
+number = 515
+label = "Income Tax deducted from gross income included in profits"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "DeductedIncomeTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/IncomeTax/DeductedIncomeTax"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ154"
+
+[[box]]
+number = 520
+label = "Income Tax repayable to the company"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "TaxRepayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/IncomeTax/TaxRepayable"
+
+[[box]]
+number = 525
+label = "Self-assessment of tax payable before restitution tax and coronavirus support scheme overpayments - box 510 minus box 515"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TaxPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/TaxPayable"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ159"
+
+[[box]]
+number = 526
+label = "Coronavirus support schemes overpayment now due - total of boxes 471 and 474 minus boxes 472 and 473"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "CJRSoverpaymentsNowDue"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/CJRSoverpaymentsNowDue"
+
+[[box]]
+number = 527
+label = "Restitution tax"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+element = "RestitutionTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/RestitutionTax"
+
+[[box]]
+number = 528
+label = "Self-assessment of tax payable - total of boxes 525, 526 and 527"
+section = "Calculation of tax outstanding or overpaid"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TaxPayableIncludingRestitutionTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/CalculationOfTaxOutstandingOrOverpaid/TaxPayableIncludingRestitutionTax"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ159"
+
+[[box]]
+number = 530
+label = "Research and Development credit"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "ResearchAndDevelopmentCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/ResearchAndDevelopmentCredit"
+
+[[box]]
+number = 535
+label = "(Not currently used)"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "VaccineCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/VaccineCredit"
+
+[[box]]
+number = 540
+label = "Creatives tax credit"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "CreativeCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/CreativeCredit"
+
+[[box]]
+number = 541
+label = "Audio-Visual expenditure credit (AVEC) and Video Games expenditure credit (VGEC)"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "AVECandVGEC"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/AVECandVGEC"
+
+[[box]]
+number = 545
+label = "Total of Research and Development credit, creatives tax credit and AVEC/VGEC - total box 530 to 541"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "ResearchAndDevelopmentVaccineOrCreativeTaxCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/ResearchAndDevelopmentVaccineOrCreativeTaxCredit"
+
+[[box]]
+number = 550
+label = "Land remediation tax credit"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "LandRemediationCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/LandRemediationCredit"
+
+[[box]]
+number = 555
+label = "Life assurance company tax credit"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "LifeAssuranceCompanyCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/LifeAssuranceCompanyCredit"
+
+[[box]]
+number = 560
+label = "Total land remediation and life assurance company tax credit - total box 550 and 555"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "LandOrLifeCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/LandOrLifeCredit"
+
+[[box]]
+number = 565
+label = "Capital allowances first-year tax credit"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "CapitalAllowancesFirstYearCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/CapitalAllowancesFirstYearCredit"
+
+[[box]]
+number = 570
+label = "Surplus Research and Development credits and creatives tax credit payable - box 545 minus box 525"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "SurplusResearchAndDevelopmentCreditsOrCreativeCreditPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/SurplusResearchAndDevelopmentCreditsOrCreativeCreditPayable"
+
+[[box]]
+number = 575
+label = "Land remediation or life assurance company tax credit payable - total of boxes 545 and 560 minus boxes 525 and 570"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "LandOrLifeCreditPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/LandOrLifeCreditPayable"
+
+[[box]]
+number = 580
+label = "Capital allowances first-year tax credit payable - boxes 545, 560 and 565 minus boxes 525, 570 and 575"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "CapitalAllowancesFirstYearCreditPayable"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/CapitalAllowancesFirstYearCreditPayable"
+
+[[box]]
+number = 585
+label = "Ring fence Corporation Tax included"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "RingFenceCorpTaxIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/RingFenceCorpTaxIncluded"
+
+[[box]]
+number = 586
+label = "NI Corporation Tax included"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "NIcorporationTaxIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/NIcorporationTaxIncluded"
+
+[[box]]
+number = 590
+label = "Ring fence supplementary charge included"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "RingFenceSupplementaryChargeIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/RingFenceSupplementaryChargeIncluded"
+
+[[box]]
+number = 595
+label = "Tax already paid (and not already repaid)"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "TaxAlreadyPaid"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/TaxAlreadyPaid"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ163"
+
+[[box]]
+number = 600
+label = "Tax outstanding - box 525 minus boxes 545, 560, 565 and 595"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TaxOutstanding"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/TaxOutstandingOrOverpaid/TaxOutstanding"
+sheetCell = "Financialaccounts.xlsx!CT600!AJ166"
+
+[[box]]
+number = 605
+label = "Tax overpaid including surplus or payable credits - total sum of boxes 545, 560, 565 and 595 minus 525"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+computed = true
+notes = "Computed"
+element = "TaxOverpaid"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/TaxOutstandingOrOverpaid/TaxOverpaid"
+
+[[box]]
+number = 610
+label = "Group tax refunds surrendered to this company"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "RefundsSurrendered"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/RefundsSurrendered"
+
+[[box]]
+number = 614
+label = "Audio-Visual expenditure credit and Video Games expenditure credit surrendered to this company"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "AVECVGECsurrenderedToThisCompany"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/AVECVGECsurrenderedToThisCompany"
+
+[[box]]
+number = 615
+label = "Research and Development expenditure credits surrendered to this company"
+section = "Tax reconciliation"
+format = "pounds-and-pence"
+element = "RandDExpenditureCreditsSurrendered"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/RandDExpenditureCreditsSurrendered"
+
+[[box]]
+number = 616
+label = "Yes - goods"
+section = "Exporter information"
+format = "tick"
+element = "GoodsExported"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/ExporterInformation/GoodsExported"
+
+[[box]]
+number = 617
+label = "Yes - services"
+section = "Exporter information"
+format = "tick"
+element = "ServicesExported"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/ExporterInformation/ServicesExported"
+
+[[box]]
+number = 618
+label = "No - neither"
+section = "Exporter information"
+format = "tick"
+element = "NeitherGoodsNorServicesExported"
+xmlPath = "/IRenvelope/CompanyTaxReturn/TaxReconciliation/ExporterInformation/NeitherGoodsNorServicesExported"
+
+[[box]]
+number = 620
+label = "Franked investment income/Exempt ABGH distributions"
+section = "Indicators and information"
+format = "whole"
+notes = "Guide notes franked investment income was repealed on 6 April 2016; enter exempt ABGH distributions per CTA 2010 s.1000(1), excluding certain intra-group distributions. Feeds augmented profits for marginal relief"
+element = "FrankedInvestmentIncome"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/FrankedInvestmentIncome"
+
+[[box]]
+number = 625
+label = "Number of 51% group companies"
+section = "Indicators and information"
+format = "integer"
+element = "NumberOf51groupCompanies"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/NumberOf51groupCompanies"
+
+[[box]]
+number = 630
+label = "should have made (whether it has or not) instalment payments as a large company under the Corporation Tax (Instalment Payments) Regulations"
+section = "Indicators and information"
+format = "tick"
+element = "InstalmentPayments"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/InstalmentPayments"
+
+[[box]]
+number = 631
+label = "should have made (whether it has or not) instalment payments as a very large company under the Corporation Tax (Instalment Payments) Regulations"
+section = "Indicators and information"
+format = "tick"
+element = "VeryLargeQIPs"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/VeryLargeQIPs"
+
+[[box]]
+number = 635
+label = "is within a group payments arrangement for the period"
+section = "Indicators and information"
+format = "tick"
+element = "GroupPayment"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/GroupPayment"
+
+[[box]]
+number = 640
+label = "has written down or sold intangible assets"
+section = "Indicators and information"
+format = "tick"
+element = "IntangibleAssets"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/IntangibleAssets"
+
+[[box]]
+number = 645
+label = "has made cross-border royalty payments"
+section = "Indicators and information"
+format = "tick"
+element = "CrossBorderRoyalty"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/CrossBorderRoyalty"
+
+[[box]]
+number = 647
+label = "Eat Out to Help Out Scheme: reimbursed discounts included as taxable income"
+section = "Indicators and information"
+format = "whole"
+element = "EatOutToHelpOutScheme"
+xmlPath = "/IRenvelope/CompanyTaxReturn/IndicatorsAndInformation/EatOutToHelpOutScheme"
+
+[[box]]
+number = 650
+label = "Put an 'X' in box 650 if an R&D claim is made by a small or medium-sized enterprise (SME), including a SME subcontractor to a large company"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "SMEclaim"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/SMEclaim"
+
+[[box]]
+number = 653
+label = "Put an 'X' in box 653 if the claim is made by an R&D intensive SME"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "RAndDIntensiveSMEclaim"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/RAndDIntensiveSMEclaim"
+
+[[box]]
+number = 655
+label = "Put an 'X' in box 655 if the claim is made by a large company"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "LargeCompanyClaim"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/LargeCompanyClaim"
+
+[[box]]
+number = 656
+label = "Put an 'X' in box 656 to confirm that an R&D claim notification form has been submitted"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "RAndDClaimNotificationForm"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/RAndDClaimNotificationForm"
+
+[[box]]
+number = 657
+label = "Put an 'X' in box 657 to confirm that an R&D additional information form has been submitted"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "AdditionalRAndDForm"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/AdditionalRAndDForm"
+
+[[box]]
+number = 658
+label = "Put an 'X' in box 658 to confirm that a Creatives additional information form has been submitted"
+section = "R&D and creatives enhanced expenditure"
+format = "tick"
+element = "AdditionalCreativesForm"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/AdditionalCreativesForm"
+
+[[box]]
+number = 659
+label = "R&D expenditure qualifying for SME/R&D intensive SME relief"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "RAndDExpenditureSME"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/RAndDExpenditureSME"
+
+[[box]]
+number = 660
+label = "R&D enhanced expenditure"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "RandDEnhancedExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/RandDEnhancedExpenditure"
+
+[[box]]
+number = 663
+label = "Creatives core expenditure"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "CreativesCoreExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/CreativesCoreExpenditure"
+
+[[box]]
+number = 665
+label = "Creatives additional deduction"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "CreativeEnhancedExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/CreativeEnhancedExpenditure"
+
+[[box]]
+number = 670
+label = "R&D enhanced expenditure and creatives additional deduction - total box 660 and box 665"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "RandDAndCreativeEnhancedExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/RandDAndCreativeEnhancedExpenditure"
+
+[[box]]
+number = 675
+label = "R&D enhanced expenditure of a SME on work subcontracted to it by a large company"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "SMEclaimAsLargeCompany"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/SMEclaimAsLargeCompany"
+
+[[box]]
+number = 680
+label = "Vaccine research expenditure"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "VaccineResearch"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnhancedExpenditure/VaccineResearch"
+
+[[box]]
+number = 685
+label = "Land remediation: enter the total enhanced expenditure"
+section = "R&D and creatives enhanced expenditure"
+format = "whole"
+element = "LandRemediationEnhancedExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LandRemediationEnhancedExpenditure"
+
+[[box]]
+number = 688
+label = "Full expensing: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "FullExpensing"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/FullExpensing"
+
+[[box]]
+number = 689
+label = "Full expensing: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "FullExpensing"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/FullExpensing"
+
+[[box]]
+number = 690
+label = "Annual investment allowance: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "whole"
+element = "AIACapitalAllowancesInc"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/AIACapitalAllowancesInc"
+
+[[box]]
+number = 691
+label = "Machinery and plant - super-deduction: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSuperDeduction"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSuperDeduction"
+
+[[box]]
+number = 692
+label = "Machinery and plant - super-deduction: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSuperDeduction"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSuperDeduction"
+
+[[box]]
+number = 693
+label = "Machinery and plant - special rate allowance: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRateAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSpecialRateAllowance"
+
+[[box]]
+number = 694
+label = "Machinery and plant - special rate allowance: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRateAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSpecialRateAllowance"
+
+[[box]]
+number = 695
+label = "Machinery and plant - special rate pool: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRatePool"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSpecialRatePool"
+
+[[box]]
+number = 700
+label = "Machinery and plant - special rate pool: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRatePool"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantSpecialRatePool"
+
+[[box]]
+number = 705
+label = "Machinery and plant - main pool: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantMainPool"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantMainPool"
+
+[[box]]
+number = 710
+label = "Machinery and plant - main pool: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantMainPool"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/MachineryAndPlantMainPool"
+
+[[box]]
+number = 711
+label = "Structures and buildings: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "whole"
+element = "StructuresAndBuildingsCapitalAllowances"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/StructuresAndBuildingsCapitalAllowances"
+
+[[box]]
+number = 713
+label = "Electric vehicle charge-points: capital allowances"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ElectricChargePoints"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ElectricChargePoints"
+
+[[box]]
+number = 714
+label = "Electric vehicle charge-points: disposal value"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ElectricChargePoints"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ElectricChargePoints"
+
+[[box]]
+number = 715
+label = "Business premises renovation: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "BusinessPremisesRenovationIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/BusinessPremisesRenovationIncluded"
+
+[[box]]
+number = 720
+label = "Business premises renovation: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "BusinessPremisesRenovationIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/BusinessPremisesRenovationIncluded"
+
+[[box]]
+number = 721
+label = "Enterprise zones: capital allowances"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "EnterpriseZones"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/EnterpriseZones"
+
+[[box]]
+number = 722
+label = "Enterprise zones: disposal value"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "EnterpriseZones"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/EnterpriseZones"
+
+[[box]]
+number = 723
+label = "Zero-emission goods vehicles: capital allowances"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsGoodsVehicles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ZeroEmissionsGoodsVehicles"
+
+[[box]]
+number = 724
+label = "Zero-emission goods vehicles: disposal value"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsGoodsVehicles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ZeroEmissionsGoodsVehicles"
+
+[[box]]
+number = 725
+label = "Other allowances and charges: capital allowances"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "Others"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/Others"
+
+[[box]]
+number = 726
+label = "Zero-emission cars: capital allowances"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsCars"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ZeroEmissionsCars"
+
+[[box]]
+number = 727
+label = "Zero-emission cars: disposal value"
+section = "Capital allowances: in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsCars"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/ZeroEmissionsCars"
+
+[[box]]
+number = 730
+label = "Other allowances and charges: balancing charges"
+section = "Capital allowances and balancing charges: in the calculation of trading profits and losses"
+format = "money-composite"
+element = "Others"
+xmlPath = "/IRenvelope/CompanyTaxReturn/AllowancesAndCharges/Others"
+
+[[box]]
+number = 733
+label = "Full expensing: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "FullExpensing"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/FullExpensing"
+
+[[box]]
+number = 734
+label = "Full expensing: balancing charges"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "FullExpensing"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/FullExpensing"
+
+[[box]]
+number = 735
+label = "Annual investment allowance: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "whole"
+element = "AIACapitalAllowancesNotInc"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/AIACapitalAllowancesNotInc"
+
+[[box]]
+number = 736
+label = "Structures and buildings: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "whole"
+element = "StructuresAndBuildingsCapitalAllowances"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/StructuresAndBuildingsCapitalAllowances"
+
+[[box]]
+number = 737
+label = "Electric vehicle charge-points: capital allowances"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ElectricChargePoints"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ElectricChargePoints"
+
+[[box]]
+number = 738
+label = "Electric vehicle charge-points: disposal value"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ElectricChargePoints"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ElectricChargePoints"
+
+[[box]]
+number = 740
+label = "Business premises renovation: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "BusinessPremisesRenovationNotIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/BusinessPremisesRenovationNotIncluded"
+
+[[box]]
+number = 741
+label = "Machinery and plant - super-deduction: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSuperDeduction"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/MachineryAndPlantSuperDeduction"
+
+[[box]]
+number = 742
+label = "Machinery and plant - super-deduction: balancing charges"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSuperDeduction"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/MachineryAndPlantSuperDeduction"
+
+[[box]]
+number = 743
+label = "Machinery and plant - special rate allowance: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRateAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/MachineryAndPlantSpecialRateAllowance"
+
+[[box]]
+number = 744
+label = "Machinery and plant - special rate allowance: balancing charges"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "MachineryAndPlantSpecialRateAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/MachineryAndPlantSpecialRateAllowance"
+
+[[box]]
+number = 745
+label = "Business premises renovation: balancing charges"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "BusinessPremisesRenovationNotIncluded"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/BusinessPremisesRenovationNotIncluded"
+
+[[box]]
+number = 746
+label = "Enterprise zones: capital allowances"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "EnterpriseZones"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/EnterpriseZones"
+
+[[box]]
+number = 747
+label = "Enterprise zones: disposal value"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "EnterpriseZones"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/EnterpriseZones"
+
+[[box]]
+number = 748
+label = "Zero-emission goods vehicles: capital allowances"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsGoodsVehicles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ZeroEmissionsGoodsVehicles"
+
+[[box]]
+number = 749
+label = "Zero-emission goods vehicles: disposal value"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsGoodsVehicles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ZeroEmissionsGoodsVehicles"
+
+[[box]]
+number = 750
+label = "Other allowances and charges: capital allowances"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "OtherAllowancesAndCharges"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/OtherAllowancesAndCharges"
+
+[[box]]
+number = 751
+label = "Zero-emission cars: capital allowances"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsCars"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ZeroEmissionsCars"
+
+[[box]]
+number = 752
+label = "Zero-emission cars: disposal value"
+section = "Capital allowances: not in the trading calculation, with disposal value"
+format = "money-composite"
+element = "ZeroEmissionsCars"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/ZeroEmissionsCars"
+
+[[box]]
+number = 755
+label = "Other allowances and charges: balancing charges"
+section = "Capital allowances and balancing charges: not in the calculation of trading profits and losses"
+format = "money-composite"
+element = "OtherAllowancesAndCharges"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NotIncluded/OtherAllowancesAndCharges"
+
+[[box]]
+number = 760
+label = "Machinery and plant on which first year allowance is claimed"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "MachineryAndPlantExpenditure"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/MachineryAndPlantExpenditure"
+
+[[box]]
+number = 765
+label = "Designated environmentally friendly machinery and plant"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "DesignatedEnvironmentallyFriendlyMachineryAndPlant"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/DesignatedEnvironmentallyFriendlyMachineryAndPlant"
+
+[[box]]
+number = 770
+label = "Machinery and plant on long-life assets and integral features"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "MachineryAndPlantLongLife"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/MachineryAndPlantLongLife"
+
+[[box]]
+number = 771
+label = "Structures and buildings"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "StructuresAndBuildings"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/StructuresAndBuildings"
+
+[[box]]
+number = 772
+label = "Machinery and plant - super-deduction"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "MachineryAndPlantSuperDeduction"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/MachineryAndPlantSuperDeduction"
+
+[[box]]
+number = 773
+label = "Machinery and plant - special rate allowance"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "MachineryAndPlantSpecialRateAllowance"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/MachineryAndPlantSpecialRateAllowance"
+
+[[box]]
+number = 775
+label = "Other machinery and plant"
+section = "Capital allowances: qualifying expenditure"
+format = "whole"
+element = "OtherMachineryAndPlant"
+xmlPath = "/IRenvelope/CompanyTaxReturn/QualifyingExpenditure/OtherMachineryAndPlant"
+
+[[box]]
+number = 780
+label = "Losses of trades carried on wholly or partly in the UK: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "LossesOfTradesUK"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/LossesOfTradesUK"
+
+[[box]]
+number = 785
+label = "Losses of trades carried on wholly or partly in the UK: maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "LossesOfTradesUK"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/LossesOfTradesUK"
+
+[[box]]
+number = 790
+label = "Losses of trades carried on wholly outside the UK: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "LossesOfTradesOutsideUK"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/LossesOfTradesOutsideUK"
+
+[[box]]
+number = 795
+label = "Non-trade deficits on loan relationships and derivative contracts: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "Loans"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/Loans"
+
+[[box]]
+number = 800
+label = "Non-trade deficits on loan relationships and derivative contracts: maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "Loans"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/Loans"
+
+[[box]]
+number = 805
+label = "UK property business losses: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "UKpropertyBusinessLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/UKpropertyBusinessLosses"
+
+[[box]]
+number = 810
+label = "UK property business losses: maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "UKpropertyBusinessLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/UKpropertyBusinessLosses"
+
+[[box]]
+number = 815
+label = "Overseas property business losses: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "OverseasPropertyBusinessLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/OverseasPropertyBusinessLosses"
+
+[[box]]
+number = 820
+label = "Losses from miscellaneous transactions: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "MiscLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/MiscLosses"
+
+[[box]]
+number = 825
+label = "Capital losses: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "CapitalLosses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/CapitalLosses"
+
+[[box]]
+number = 830
+label = "Non-trading losses on intangible fixed assets: amount arising"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "NonTradingLossesIntangibles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/NonTradingLossesIntangibles"
+
+[[box]]
+number = 835
+label = "Non-trading losses on intangible fixed assets: maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "NonTradingLossesIntangibles"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/AmountArising/NonTradingLossesIntangibles"
+
+[[box]]
+number = 840
+label = "Non-trade capital allowances (excess): maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "NonTradeCapital"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/ExcessAmounts/NonTradeCapital"
+
+[[box]]
+number = 845
+label = "Qualifying donations (excess): maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "whole"
+element = "QualifyingDonations"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/ExcessAmounts/QualifyingDonations"
+
+[[box]]
+number = 850
+label = "Management expenses (excess): amount arising"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "ManagementExpenses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/ExcessAmounts/ManagementExpenses"
+
+[[box]]
+number = 855
+label = "Management expenses (excess): maximum available for surrender as group relief"
+section = "Losses, deficits and excess amounts"
+format = "money-composite"
+element = "ManagementExpenses"
+xmlPath = "/IRenvelope/CompanyTaxReturn/LossesDeficitsAndExcess/ExcessAmounts/ManagementExpenses"
+
+[[box]]
+number = 856
+label = "Amount of group relief claimed which relates to NI trading losses used against rest of UK/mainstream profits"
+section = "Northern Ireland information"
+format = "whole"
+element = "NIagainstUK"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NorthernIrelandInformation/NIagainstUK"
+
+[[box]]
+number = 857
+label = "Amount of group relief claimed which relates to NI trading losses used against NI trading profits"
+section = "Northern Ireland information"
+format = "whole"
+element = "NIagainstNI"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NorthernIrelandInformation/NIagainstNI"
+
+[[box]]
+number = 858
+label = "Amount of group relief claimed which relates to rest of UK/mainstream losses used against NI trading profits"
+section = "Northern Ireland information"
+format = "whole"
+element = "UKagainstNI"
+xmlPath = "/IRenvelope/CompanyTaxReturn/NorthernIrelandInformation/UKagainstNI"
+
+[[box]]
+number = 860
+label = "Do not repay sums of GBP___ or less"
+section = "Overpayments and repayments"
+format = "whole"
+element = "OwnRepaymentsLowerLimit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/OwnRepaymentsLowerLimit"
+
+[[box]]
+number = 865
+label = "Repayment of Corporation Tax"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "CorporationTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/CorporationTax"
+
+[[box]]
+number = 870
+label = "Repayment of Income Tax"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "IncomeTax"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/IncomeTax"
+
+[[box]]
+number = 875
+label = "Payable Research and Development tax credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "RandDTaxCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/RandDTaxCredit"
+
+[[box]]
+number = 880
+label = "Payable Research and Development expenditure credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "RandDExpenditureCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/RandDExpenditureCredit"
+
+[[box]]
+number = 885
+label = "Payable creatives tax credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "CreativeCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/CreativeCredit"
+
+[[box]]
+number = 886
+label = "Payable Audio-Visual expenditure credit and Video Games expenditure credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "PayableAVECandVGEC"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/PayableAVECandVGEC"
+
+[[box]]
+number = 890
+label = "Payable land remediation or life assurance company tax credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "LandRemediationCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/LandRemediationCredit"
+
+[[box]]
+number = 895
+label = "Payable capital allowances first-year tax credit"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "PayableCapitalAllowancesFirstYearCredit"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RepaymentsForThePeriodCoveredByThisReturn/PayableCapitalAllowancesFirstYearCredit"
+
+[[box]]
+number = 900
+label = "The following amount is to be surrendered (surrender of tax refund within group)"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "Amount"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/Surrender/Amount"
+
+[[box]]
+number = 905
+label = "the joint Notice is attached"
+section = "Overpayments and repayments"
+format = "tick"
+element = "Attached"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/Surrender/JointNotice/Attached"
+
+[[box]]
+number = 910
+label = "or will follow"
+section = "Overpayments and repayments"
+format = "tick"
+element = "WillFollow"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/Surrender/JointNotice/WillFollow"
+
+[[box]]
+number = 915
+label = "Please stop repayment of the following amount until we send you the Notice"
+section = "Overpayments and repayments"
+format = "pounds-and-pence"
+element = "StopUntilNotice"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/Surrender/StopUntilNotice"
+
+[[box]]
+number = 920
+label = "Name of bank or building society"
+section = "Bank details and nominee"
+format = "text"
+element = "BankName"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/BankAccountDetails/BankName"
+
+[[box]]
+number = 925
+label = "Branch sort code"
+section = "Bank details and nominee"
+format = "text"
+element = "SortCode"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/BankAccountDetails/SortCode"
+
+[[box]]
+number = 930
+label = "Account number"
+section = "Bank details and nominee"
+format = "text"
+element = "AccountNumber"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/BankAccountDetails/AccountNumber"
+
+[[box]]
+number = 935
+label = "Name of account"
+section = "Bank details and nominee"
+format = "text"
+element = "AccountName"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/BankAccountDetails/AccountName"
+
+[[box]]
+number = 940
+label = "Building society reference"
+section = "Bank details and nominee"
+format = "text"
+element = "BuildingSocReference"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/BankAccountDetails/BuildingSocReference"
+
+[[box]]
+number = 943
+label = "Put an 'X' in box 943 if there is a R&D payable credit and one of the conditions listed in the CT600 Guide is applicable"
+section = "Bank details and nominee"
+format = "tick"
+element = "RAndDCreditWithCondition"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/RAndDCreditWithCondition"
+
+[[box]]
+number = 945
+label = "I, as (enter status - for example, company secretary, treasurer, liquidator or authorised agent)"
+section = "Bank details and nominee"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 950
+label = "of (enter company name)"
+section = "Bank details and nominee"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 955
+label = "authorise (enter name)"
+section = "Bank details and nominee"
+format = "text"
+element = "Recipient"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/PaymentToPerson/Recipient"
+
+[[box]]
+number = 960
+label = "of address (enter address)"
+section = "Bank details and nominee"
+format = "text"
+element = "Address"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/PaymentToPerson/Address"
+
+[[box]]
+number = 965
+label = "Nominee reference"
+section = "Bank details and nominee"
+format = "text"
+element = "NomineeReference"
+xmlPath = "/IRenvelope/CompanyTaxReturn/OverpaymentsAndRepayments/PaymentToPerson/NomineeReference"
+
+[[box]]
+number = 970
+label = "Name"
+section = "Bank details and nominee"
+format = "unresolved"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 975
+label = "Name"
+section = "Declaration"
+format = "text"
+element = "Name"
+xmlPath = "/IRenvelope/CompanyTaxReturn/Declaration/Name"
+
+[[box]]
+number = 980
+label = "Date DD MM YYYY"
+section = "Declaration"
+format = "date"
+elementStatus = "unresolved"
+elementStatusNote = "no matching id in CT-specDoc-v1-994.xml; likely a tick box folded into a parent element, or a free-text/date field the schema does not carry standalone"
+
+[[box]]
+number = 985
+label = "Status"
+section = "Declaration"
+format = "text"
+element = "Status"
+xmlPath = "/IRenvelope/CompanyTaxReturn/Declaration/Status"
+
+[[box]]
+number = 986
+label = "Energy (Oil and Gas) Profits Levy (EOGPL) amounts liable"
+section = "Energy levies"
+format = "whole"
+element = "EOGPLamounts"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnergyProfitsLevy/EOGPLamounts"
+
+[[box]]
+number = 987
+label = "Electricity Generator Levy (EGL) exceptional generation receipts"
+section = "Energy levies"
+format = "whole"
+element = "EGLamounts"
+xmlPath = "/IRenvelope/CompanyTaxReturn/EnergyProfitsLevy/EGLamounts"
