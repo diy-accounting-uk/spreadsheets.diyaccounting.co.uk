@@ -154,15 +154,15 @@ export function calculateBstResults(book, lines, taxData, scenario) {
   const taxableProfit = netProfit - capitalAllowances;
 
   // SE Short (SA103S), computed ahead of the Income Tax sheet because that
-  // sheet's own profit input reads this form's box 27 (verified against the
+  // sheet's own profit input reads this form's box 28 (verified against the
   // template: Income Tax!E5 = 'SE Short'!D106). O38, D94 and O94 are each a
   // manual entry on Business Details the diya-gl pipeline never sets, so
   // they and the loss/carry-forward boxes they feed are nil in every fixture.
-  const otherBusinessIncomeBox9 = 0;
-  const seShortNetProfitRaw = totalSales + otherBusinessIncomeBox9 - (Math.round(costOfSales) + directCosts + totalExpenses);
+  const otherBusinessIncomeBox10 = 0;
+  const seShortNetProfitRaw = totalSales + otherBusinessIncomeBox10 - (Math.round(costOfSales) + directCosts + totalExpenses);
   const seShortNetProfit = Math.max(0, Math.round(seShortNetProfitRaw * 100) / 100);
   const seShortNetLoss = Math.max(0, Math.round(-seShortNetProfitRaw * 100) / 100);
-  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 26 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
+  const seShortD99Raw = seShortNetProfit + seShortCA.o85 + 0 /* box 27 */ - seShortNetLoss - seShortCA.d80 - seShortCA.d85 - seShortCA.o80;
   const seShortD99 = Math.max(0, Math.round(seShortD99Raw * 100) / 100);
   // Other business income received (verified against the template: Profit &
   // Loss Acc!C30 = ROUND(SUM(D30:O30),0), each month reading that month's own

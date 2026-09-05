@@ -239,14 +239,14 @@ describeCalc("Taxi closure identities catch a broken workbook", () => {
     const bridge = taxiProfitBridge(results);
 
     // The P&L charges the allowances inside cost of sales; the return takes
-    // them back out at box 20 and claims them again at boxes 22 to 24.
+    // them back out at box 21 and claims them again at boxes 23 to 25.
     expect(bridge.rows[0].value).toBe(results["Profit & Loss Acc"].B23);
     expect(bridge.rows[1].value).toBe(results["Profit & Loss Acc"].B10);
     expect(bridge.computed).toBeCloseTo(results["Draft Tax calculation"].E5, 6);
     expect(bridge.residue).toBeCloseTo(0, 6);
   });
 
-  it("breaks only the bridge, by the allowance it lost, when the box 24 allowance is corrupted", async () => {
+  it("breaks only the bridge, by the allowance it lost, when the box 25 allowance is corrupted", async () => {
     const reads = taxiReads();
     const intact = await readWithCorruption(populatedPath, reads, null, null, null);
     const claimed = intact["SE Short"].O80;
