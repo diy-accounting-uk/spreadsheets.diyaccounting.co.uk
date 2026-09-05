@@ -35,7 +35,14 @@
 
   // The P&L row each cell a "sum:" rule names is called by on the form's
   // own terms, for the parts line under the box that adds them together.
-  var SUM_PART_LABELS = { C6: "cost of sales", C7: "direct costs", C17: "advertising", C19: "bad debts", C21: "other expenses", C22: "total expenses" };
+  var SUM_PART_LABELS = {
+    C6: "cost of sales",
+    C7: "direct costs",
+    C17: "advertising",
+    C19: "bad debts",
+    C21: "other expenses",
+    C22: "total expenses",
+  };
 
   // The layout is fetched on the first render, never at load: a Node test
   // evaluates this file with neither fetch nor document in its global.
