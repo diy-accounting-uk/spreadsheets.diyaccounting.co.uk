@@ -310,7 +310,7 @@ jobs:
         with:
           name: taxi-examples
           retention-days: 1
-          path: examples/
+          path: examples/taxi-latest/
 
   commit:
     runs-on: ubuntu-24.04
@@ -334,7 +334,7 @@ jobs:
         continue-on-error: true
         with:
           name: taxi-examples
-          path: examples/
+          path: examples/taxi-latest/
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
@@ -347,7 +347,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git rm -rf --ignore-unmatch reports/screenshots/ reports/populated/
-          git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+          git add packages/ reports/ examples/taxi-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

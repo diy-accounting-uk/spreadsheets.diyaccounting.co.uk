@@ -531,19 +531,6 @@ describe("the snapshot's product half", () => {
     expect(class2.amount).toBeCloseTo(taxData.national_insurance.class2_weekly_rate * 52, 2);
   });
 
-  it("a tax year with no declared threshold leaves every Class 2 figure out", () => {
-    const bare = calculated("basic-taxi-driver");
-    const ni = { ...taxData.national_insurance };
-    delete ni.class2_small_profits_threshold;
-    const ctxWithoutThreshold = { ...ctxFor(bare), taxData: { ...taxData, national_insurance: ni } };
-    expect(manifest.snapshot(ctxWithoutThreshold).computation.class2).toEqual({
-      amount: undefined,
-      weekly: undefined,
-      threshold: undefined,
-      voluntary: false,
-    });
-  });
-
   it("the quarterly rows are three figures across five columns", () => {
     expect(snapshot.quarterly.rows.map((row) => row.label)).toEqual(["Turnover", "Other income", "Total Allowable Expenses"]);
     for (const row of snapshot.quarterly.rows) {

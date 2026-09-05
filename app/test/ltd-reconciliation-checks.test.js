@@ -367,7 +367,7 @@ describeCalc(
       // published line parts company with both of them.
       expect(failureNames(corrupted)).toEqual([
         name,
-        "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts",
+        "Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered",
       ]);
     });
 
@@ -1355,7 +1355,7 @@ describeCalc(
       expect(value).toBe(1600);
       const corrupted = checksWithCorruptedCell("TrialBalance", "EJ32", value);
       expect(failureNames(corrupted)).toEqual([
-        "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC",
+        "Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC",
       ]);
     });
 

@@ -2035,23 +2035,32 @@ function taxTablesFromRateData(raw, { includeVat = true } = {}) {
   return tax;
 }
 
+// One app/data/<year>.toml as text, or null where app/data has no such file.
+// This is the Node reader; a browser has no file system, so extractBook takes
+// a reader of its own and the books page hands one backed by the resource
+// loader it reads every other app/ file through.
+function rateDataFileText(fileName) {
+  const filePath = resolvePath(taxDataDir(), fileName);
+  return fileExists(filePath) ? readSchemaFile(filePath, "utf8") : null;
+}
+
 /**
  * The book's tax.* tables for a package, reconstructed from the same
  * app/data/<year>.toml the generator drew its rates from. Returns an empty
- * object where the package names no year, or names one app/data/ has no
+ * object where the package names no year, or names one the reader has no
  * file for.
  * @param {string} adminXml - the package's Admin sheet
  * @param {Object} adminSharedStrings
  * @param {string} product - bst, taxi, se or ltd
- * @returns {Object}
+ * @param {Function} [readRateData] - (fileName) => the file's text, or null where it has none
+ * @returns {Promise<Object>}
  */
-export function taxTablesForPackage(adminXml, adminSharedStrings, product) {
+export async function taxTablesForPackage(adminXml, adminSharedStrings, product, readRateData = rateDataFileText) {
   const fileName = packageTaxDataFile(adminXml, adminSharedStrings, product);
   if (!fileName) return {};
-  const filePath = resolvePath(taxDataDir(), fileName);
-  if (!fileExists(filePath)) return {};
-  const raw = parseTOML(readSchemaFile(filePath, "utf8"));
-  return taxTablesFromRateData(raw, { includeVat: Boolean(VAT_RATE_CELLS[product]) });
+  const text = await readRateData(fileName);
+  if (text === null) return {};
+  return taxTablesFromRateData(parseTOML(text), { includeVat: Boolean(VAT_RATE_CELLS[product]) });
 }
 
 function numberAt(xml, cellRef, sharedStrings) {
@@ -2347,9 +2356,13 @@ async function stockFrom(hubZip, product) {
  * @param {string} product - bst, taxi, se or ltd
  * @param {Array} lines - the transaction lines already exported, for the chart of accounts
  * @param {Array} cellMap - the product module's CELL_MAP, retained for callers; no longer consulted for tax
+ * @param {Object} [options]
+ * @param {Function} [options.readRateData] - (fileName) => the text of the app/data/<year>.toml the
+ *   package declares itself generated from, or null where the caller has no such file; Node reads
+ *   app/data itself, a browser hands its own reader
  * @returns {Object} a book that validates against the published v2 book schema
  */
-export async function extractBook(set, product, lines, cellMap) {
+export async function extractBook(set, product, lines, cellMap, options = {}) {
   const multiFile = product === "se" || product === "ltd";
   const hubZip = await openWorkbook(set, multiFile ? "Financialaccounts.xlsx" : singleWorkbookName(set));
   if (!hubZip) throw new Error("This package has no workbook to read a book from");
@@ -2397,7 +2410,7 @@ export async function extractBook(set, product, lines, cellMap) {
   }
 
   const adminSheet = await openSheet(hubZip, "Admin");
-  const tax = adminSheet ? taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product) : {};
+  const tax = adminSheet ? await taxTablesForPackage(adminSheet.xml, adminSheet.sharedStrings, product, options.readRateData) : {};
 
   const period = periodCovered(await extractPeriodStartMonth(set, product), lines);
   const book = {

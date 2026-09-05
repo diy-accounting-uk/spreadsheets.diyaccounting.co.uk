@@ -41,7 +41,7 @@ Trade: Bricklaying, plastering and general building
 | Stock: loss adjustment = count - calculated | -500 | -500 | 0 | PASS |
 | Published balance sheet: stock = year-end stock | 2500 | 2500 | 0 | PASS |
 | Published balance sheet: trade debtors = closing debtors | 6700 | 6700 | 0 | PASS |
-| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts | 6700 | 6700 | 0 | PASS |
+| Published balance sheet: trade debtors = opening debtors plus invoices less customer receipts and the CIS suffered | 6700 | 6700 | 0 | PASS |
 | VAT: Q1-Q4 box 1 = Sales VAT | 0 | 0 | 0 | PASS |
 | VAT: Q1-Q4 box 4 = Purchases VAT | 0 | 0 | 0 | PASS |
 | VAT Q1: box 5 = box 3 - box 4 | 0 | 0 | 0 | PASS |
@@ -266,7 +266,7 @@ Trade: Bricklaying, plastering and general building
 | Trial Balance: trade creditors = opening plus purchases, less creditor payments, CIS withheld and the amounts financed | 1510 | 1510 | 0 | PASS |
 | Trial Balance: PAYE creditor = the year's payroll deductions less the payments coded RP | 126.70000000000005 | 126.7 | -4.263256414560601e-14 | PASS |
 | Trial Balance: VAT creditor = opening plus output VAT, less input VAT and the payments coded RV | 0 | 0 | 0 | PASS |
-| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the remittances paid under RC | 800 | 800 | 0 | PASS |
+| Trial Balance: CIS creditor = the tax withheld from sub-contractors less the CIS suffered and the remittances paid under RC | 600 | 600 | 0 | PASS |
 | Trial Balance: corporation tax creditor = opening plus the year's charge, less the interest tax credit and the payments coded RT | 0 | 0 | 0 | PASS |
 | Fixed assets: Schedule additions = Purchases.xlsx fixed asset total | 12000 | 12000 | 0 | PASS |
 | Fixed assets: Schedule disposals = Sales.xlsx fixed asset sales total | 0 | 0 | 0 | PASS |
@@ -277,15 +277,15 @@ Trade: Bricklaying, plastering and general building
 | P&L: depreciation = fixed asset note charge for the year | 1200 | 1200 | 0 | PASS |
 | P&L: loss on disposal = Schedule cost less depreciation less proceeds | 0 | 0 | 0 | PASS |
 | P&L: HP interest and charges reach the Bank Charges line (B36) | 0 | 0 | 0 | PASS |
-| Currentaccount.xlsx: closing balance = opening + receipts - payments | 11380.699999999997 | 11380.7 | +3.637978807091713e-12 | PASS |
+| Currentaccount.xlsx: closing balance = opening + receipts - payments | 11180.699999999997 | 11180.7 | +3.637978807091713e-12 | PASS |
 | Savingaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Cashaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
 | Creditcardaccount.xlsx: closing balance = opening + receipts - payments | 0 | 0 | 0 | PASS |
-| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 11380.699999999997 | 11380.7 | +3.637978807091713e-12 | PASS |
+| Trial Balance: Currentaccount.xlsx closing balance echo (EJ22) | 11180.699999999997 | 11180.7 | +3.637978807091713e-12 | PASS |
 | Trial Balance: Savingaccount.xlsx closing balance echo (EJ23) | 0 | 0 | 0 | PASS |
 | Trial Balance: Cashaccount.xlsx closing balance echo (EJ25) | 0 | 0 | 0 | PASS |
 | Trial Balance: Creditcardaccount.xlsx closing balance echo (EJ24) | 0 | 0 | 0 | PASS |
-| Published balance sheet: cash at bank = Trial Balance bank account aggregate | 11380.7 | 11380.7 | 0 | PASS |
+| Published balance sheet: cash at bank = Trial Balance bank account aggregate | 11180.7 | 11180.7 | 0 | PASS |
 | P&L Nov C4 = Sales.xlsx "a" net | 6500 | 6500 | 0 | PASS |
 | P&L Nov C5 = Sales.xlsx "b" net | 0 | 0 | 0 | PASS |
 | P&L Nov C6 = Sales.xlsx "c" net | 0 | 0 | 0 | PASS |
@@ -1124,17 +1124,17 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 
 | | Amount |
 |---|------:|
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 43: financial year | 2,026 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 44: amount of profit | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 45: rate of tax | 19 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 46: tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 53: financial year | 2,027 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 54: amount of profit | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 55: rate of tax | 19 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 56: tax | 0 |
-| **Box 63: corporation tax** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Box 64: marginal rate relief | 0 |
-| **Box 65: corporation tax net of marginal rate relief** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 330: financial year | 2,026 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 335: amount of profit | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 340: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 345: tax | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 380: financial year | 2,027 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 385: amount of profit | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 390: rate of tax | 19 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 395: tax | 0 |
+| **Box 430: corporation tax** | 0 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Box 435: marginal rate relief | 0 |
+| **Box 440: corporation tax net of marginal rate relief** | 0 |
 
 ## Published P&L
 
@@ -1160,12 +1160,12 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | Fixed Assets (NBV) | 10,800 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Stock at cost | 2,500 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Debtors | 6,700 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 11,380.7 |
-| Current Assets | 20,580.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Cash at bank and in hand | 11,180.7 |
+| Current Assets | 20,380.7 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Trade Creditors | 1,510 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Corporation Tax | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 926.7 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 2,436.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Taxation and Social Security | 726.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Current Liabilities | 2,236.7 |
 | **Net Current Assets** | 18,144 |
 | **Total Assets less CL** | 28,944 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Directors Loan | 0 |
@@ -1240,7 +1240,7 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Share Capital | -100 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Opening: Revenue Reserve P&L Account | -27,090 |
 | **Opening Balances Audit Check** | 0 |
-| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 11,380.7 |
+| &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Current Account | 11,180.7 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Bank Savings Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Credit Card Account | 0 |
 | &nbsp;&nbsp;&nbsp;&nbsp;Final: Cash Account | 0 |
@@ -1684,7 +1684,7 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | K26 | Less: losses brought forward | 0 | gl-cor:amount (ct600.lossesBf) |
 | K28 | **Profit Chargeable to CT** | -9046 | gl-cor:amount (ct600.box315) |
 | K35 | **Corporation Tax** | 0 | gl-cor:taxAmount (ct600.box430) |
-| K39 | Tax Outstanding | 0 | gl-cor:taxAmount (ct600.box515) |
+| K39 | Tax Outstanding | 0 | gl-cor:taxAmount (ct600.box600) |
 | E5 |  | 46327 |  |
 | H5 |  | 46691 |  |
 | I15 |  | 12000 |  |
@@ -1712,17 +1712,17 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| C126 | Box 43: financial year | 2026 | gl-cor:period (ct600.box43) |
-| N126 | Box 44: amount of profit | 0 | gl-cor:amount (ct600.box44) |
-| AA126 | Box 45: rate of tax | 19 | gl-cor:rate (ct600.box45) |
-| AJ126 | Box 46: tax | 0 | gl-cor:taxAmount (ct600.box46) |
-| C128 | Box 53: financial year | 2027 | gl-cor:period (ct600.box53) |
-| N128 | Box 54: amount of profit | 0 | gl-cor:amount (ct600.box54) |
-| AA128 | Box 55: rate of tax | 19 | gl-cor:rate (ct600.box55) |
-| AJ128 | Box 56: tax | 0 | gl-cor:taxAmount (ct600.box56) |
-| AJ131 | **Box 63: corporation tax** | 0 | gl-cor:taxAmount (ct600.box63) |
-| Y133 | Box 64: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box64) |
-| Y135 | **Box 65: corporation tax net of marginal rate relief** | 0 | gl-cor:taxAmount (ct600.box65) |
+| C126 | Box 330: financial year | 2026 | gl-cor:period (ct600.box330) |
+| N126 | Box 335: amount of profit | 0 | gl-cor:amount (ct600.box335) |
+| AA126 | Box 340: rate of tax | 19 | gl-cor:rate (ct600.box340) |
+| AJ126 | Box 345: tax | 0 | gl-cor:taxAmount (ct600.box345) |
+| C128 | Box 380: financial year | 2027 | gl-cor:period (ct600.box380) |
+| N128 | Box 385: amount of profit | 0 | gl-cor:amount (ct600.box385) |
+| AA128 | Box 390: rate of tax | 19 | gl-cor:rate (ct600.box390) |
+| AJ128 | Box 395: tax | 0 | gl-cor:taxAmount (ct600.box395) |
+| AJ131 | **Box 430: corporation tax** | 0 | gl-cor:taxAmount (ct600.box430) |
+| Y133 | Box 435: marginal rate relief | 0 | gl-cor:taxAmount (ct600.box435) |
+| Y135 | **Box 440: corporation tax net of marginal rate relief** | 0 | gl-cor:taxAmount (ct600.box440) |
 | B33 |  | 46327 |  |
 | M33 |  | 46691 |  |
 | AK66 |  | 75000 |  |
@@ -1764,12 +1764,12 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | F6 | Fixed Assets (NBV) | 10800 | gl-cor:amount (pubBS.fixedAssets) |
 | E10 | Stock at cost | 2500 | accounts.assets.1100 (pubBS) |
 | E11 | Trade Debtors | 6700 | accounts.assets.1300 (pubBS) |
-| E12 | Cash at bank and in hand | 11380.7 | gl-cor:amount (pubBS.bankCash) |
-| E13 | Current Assets | 20580.7 | gl-cor:amount (pubBS.currentAssets) |
+| E12 | Cash at bank and in hand | 11180.7 | gl-cor:amount (pubBS.bankCash) |
+| E13 | Current Assets | 20380.7 | gl-cor:amount (pubBS.currentAssets) |
 | E16 | Trade Creditors | 1510 | accounts.liabilities.2100 (pubBS) |
 | E17 | Corporation Tax | 0 | accounts.liabilities.2300 (pubBS) |
-| E18 | Taxation and Social Security | 926.7 | gl-cor:amount (pubBS.taxAndSocial) |
-| E20 | Current Liabilities | 2436.7 | gl-cor:amount (pubBS.creditors) |
+| E18 | Taxation and Social Security | 726.7 | gl-cor:amount (pubBS.taxAndSocial) |
+| E20 | Current Liabilities | 2236.7 | gl-cor:amount (pubBS.creditors) |
 | F22 | **Net Current Assets** | 18144 | gl-cor:amount (pubBS.netCurrent) |
 | F26 | **Total Assets less CL** | 28944 | gl-cor:amount (pubBS.totalAssetsLessCL) |
 | E29 | Directors Loan | 0 | accounts.liabilities.2500 (pubBS) |
@@ -1899,7 +1899,7 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | D42 | Opening: Share Capital | -100 | accounts.capital.3000 (opening) |
 | D43 | Opening: Revenue Reserve P&L Account | -27090 | accounts.capital.3100 (opening) |
 | D91 | **Opening Balances Audit Check** | 0 | gl-cor:amount (openingColumnCheck) |
-| EJ22 | Final: Bank Current Account | 11380.7 | accounts.assets.1200 (final) |
+| EJ22 | Final: Bank Current Account | 11180.7 | accounts.assets.1200 (final) |
 | EJ23 | Final: Bank Savings Account | 0 | accounts.assets.1210 (final) |
 | EJ24 | Final: Credit Card Account | 0 | accounts.assets.1230 (final) |
 | EJ25 | Final: Cash Account | 0 | accounts.assets.1220 (final) |
@@ -1911,7 +1911,7 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 | EJ91 | **Audit Accuracy Check** | 0 | gl-cor:amount (trialBalanceCheck) |
 | EJ66 |  | 12576 |  |
 | EJ28 |  | -1510 |  |
-| EJ32 |  | -800 |  |
+| EJ32 |  | -600 |  |
 | EJ33 |  | 0 |  |
 | EJ34 |  | -126.7 |  |
 | EJ35 |  | 0 |  |
@@ -3125,8 +3125,8 @@ The books charge VAT at 0%. Gross equals net for all 9 journal categories that c
 
 | Cell | DIY Label | Value | diya-gl mapping |
 |------|-----------|-------|-----------------|
-| A1 |  | 12138.7 |  |
-| A2 |  | 11380.7 |  |
+| A1 |  | 11938.7 |  |
+| A2 |  | 11180.7 |  |
 
 ### Savingaccount.xlsx!Oct
 

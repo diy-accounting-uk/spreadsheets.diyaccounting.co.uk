@@ -4,9 +4,9 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createServer } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
-import { join, extname } from "node:path";
+import { join, extname, resolve, sep } from "node:path";
 
-const PUBLIC_DIR = join(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
+const PUBLIC_DIR = resolve(process.cwd(), "web/spreadsheets.diyaccounting.co.uk/public");
 
 const MIME_TYPES = {
   ".html": "text/html",
@@ -27,8 +27,9 @@ let baseUrl;
 beforeAll(async () => {
   server = createServer((req, res) => {
     const urlPath = req.url === "/" ? "/index.html" : req.url;
-    const filePath = join(PUBLIC_DIR, urlPath);
-    if (!existsSync(filePath)) {
+    const filePath = resolve(join(PUBLIC_DIR, urlPath));
+    const isWithinPublicDir = filePath === PUBLIC_DIR || filePath.startsWith(PUBLIC_DIR + sep);
+    if (!isWithinPublicDir || !existsSync(filePath)) {
       res.writeHead(404, { "Content-Type": "text/plain" });
       res.end("Not Found");
       return;

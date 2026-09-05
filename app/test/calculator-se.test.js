@@ -41,9 +41,9 @@ const TAX_DATA = parseTOML(readFileSync(resolve(APP_DIR, "data", "se-2025-2026.t
 // cannot quietly empty itself: a check that stops being raised fails here
 // rather than passing by absence.
 const FIXTURES = [
-  { name: "se-scenario-advanced", checkCount: 869 },
-  { name: "se-brickwork-pro-vat", checkCount: 803 },
-  { name: "se-brickwork-pro-nonvat", checkCount: 792 },
+  { name: "se-scenario-advanced", checkCount: 870 },
+  { name: "se-brickwork-pro-vat", checkCount: 804 },
+  { name: "se-brickwork-pro-nonvat", checkCount: 793 },
 ];
 
 function loadFixture(name) {
@@ -257,6 +257,84 @@ describe("Self Employed engine: the checks are breakable", () => {
   }
 });
 
+// se-loss-no-expected carries no [expected] table and nets to a loss on
+// every trading month: SE Short's D71 (net profit) and the SE Full/Income
+// Tax chain it feeds all floor at nil the way the template's own IF()
+// formulas do, and only O71 (net loss) and the SE Full loss boxes carry a
+// live figure. Before the SE-T27 fix, checkCompliance raised four mismatches
+// on this book that were artefacts of the check arithmetic, not the sheet:
+// D71's identity check and the SA103F box 47 counterpart it feeds compared
+// an unclamped turnover-less-expenses figure against D71's own clamped
+// value; the box 65/box 106 counterpart compared against SE Short!O106,
+// which was never in CELL_MAP so it always read as 0; the profit bridge
+// subtracted SE Short!O71 on top of Profit & Loss Account!B39 already
+// carrying that same loss, double-counting it; and the Forecast personal
+// allowance check compared the sheet's own IF(C39<=0,0,...) floor against
+// calculateExpectedTax's unfloored figure.
+//
+// A fifth, related bug surfaced once the engine's own Income Tax!E6 was
+// floored to match the template's IF(E5<=0,0,...): the JS engine had never
+// applied that floor, always handing back the unfloored personal allowance,
+// and checkCompliance's own "Tax: Personal allowance after taper" check
+// compared against that same unfloored figure -- two wrongs that agreed with
+// each other on every loss-making book, so the check could not fail no
+// matter which side was wrong. Flooring the engine's E6 alone (without
+// flooring the check) turned that silent agreement into a false failure on
+// this very fixture; flooring both is what makes the check test anything.
+describe("Self Employed engine: a loss-making book with no [expected] table", () => {
+  it("reports no compliance mismatches", () => {
+    const { scenario, expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    expect(pl.B39).toBeLessThan(0);
+    expect(scenario.expected).toBeUndefined();
+
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map(describeFailure)).toEqual([]);
+  });
+
+  it("still reports a real mismatch when the book carries an [expected] table", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    const pl = results["Profit & Loss Account"];
+    const wrongExpected = { ...expected, total_sales: pl.B9 + 12345 };
+
+    const broken = failures(checkCompliance(results, wrongExpected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Total Sales"]);
+  });
+
+  it("fails on the net loss identity and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Short"].O71 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      ["SA103S: net loss = total expenses - turnover - other business income", "SA103F box 48 net loss: full return (O129) = short return (O71)"].sort(),
+    );
+  });
+
+  it("fails on the profit bridge and the box 63 deduction total when SE Full's box 62 is corrupted", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["SE Full"].D179 = 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken.sort()).toEqual(
+      [
+        "Accounting profit to tax profit bridge closes to zero",
+        "SA103F box 63 total deductions from net profit (O169) = boxes 57 and 62",
+      ].sort(),
+    );
+  });
+
+  it("fails on the Income Tax personal allowance and nothing else", () => {
+    const { expected, results } = loadFixture("se-loss-no-expected");
+    expect(failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax))).toEqual([]);
+
+    results["Income Tax"].E6 += 500;
+    const broken = failures(checkCompliance(results, expected, TAX_DATA, calculateExpectedTax)).map((check) => check.name);
+    expect(broken).toEqual(["Tax: Personal allowance after taper"]);
+  });
+});
+
 describe("Self Employed engine: the read scope", () => {
   it("computes a value for every cell the reconciliation reads", () => {
     const { results } = loadFixture("se-scenario-advanced");
@@ -291,17 +369,11 @@ describe("Self Employed engine: the read scope", () => {
         "Vat.xlsx!Vatinterface!I5",
         "Vat.xlsx!Vatinterface!K4",
         "Vat.xlsx!Vatinterface!K5",
-        // The tax code column: a scenario TOML names no code for an
-        // employee, so every row of the block keeps the placeholder space
-        // the template ships there.
-        "Payslips.xlsx!Jul!D51",
-        "Payslips.xlsx!Jul!D52",
-        "Payslips.xlsx!Jul!D53",
+        // The tax code column: the three employees on the payroll each carry
+        // a code, so only the two rows no employee sits on keep the
+        // placeholder space the template ships there.
         "Payslips.xlsx!Jul!D54",
         "Payslips.xlsx!Jul!D55",
-        "Payslips.xlsx!Aug!D51",
-        "Payslips.xlsx!Aug!D52",
-        "Payslips.xlsx!Aug!D53",
         "Payslips.xlsx!Aug!D54",
         "Payslips.xlsx!Aug!D55",
         // A monthly block row no employee sits on: the template ships the

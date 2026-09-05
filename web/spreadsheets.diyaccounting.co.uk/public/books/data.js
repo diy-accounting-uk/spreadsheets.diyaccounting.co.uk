@@ -40,22 +40,6 @@
   // drift.js (window.DiyaGlDrift); this file captures them at load and hands
   // them to every snapshot.
 
-  // A single uploaded workbook read through the set contract, so both kinds
-  // of upload capture their layers through one reader.
-  function singleWorkbookSet(workbookCells) {
-    return {
-      has: function () {
-        return true;
-      },
-      hasSheet: function (file, sheetName) {
-        return workbookCells.hasSheet(sheetName);
-      },
-      readCell: function (file, sheetName, cellRef) {
-        return workbookCells.readCell(sheetName, cellRef);
-      },
-    };
-  }
-
   // ============================== engine loading ==============================
 
   var enginePromise = null;
@@ -270,51 +254,20 @@
     }
   }
 
-  // The workbook inside a package zip, found by content -- the single
-  // .xlsx entry -- never by the zip's own file name. detectBookSource
-  // already named this kind "package-zip" by the same rule (one .xlsx
-  // entry, no lines.jsonl), so a .zip renamed .xlsx reaches here exactly
-  // the same way a properly named one does.
-  async function unwrapPackageZip(fileBytes) {
-    var zip = await global.JSZip.loadAsync(fileBytes);
-    var entryName = Object.keys(zip.files).filter(function (name) {
-      return !zip.files[name].dir && /\.xlsx$/i.test(name);
-    })[0];
-    if (!entryName) throw new Error("No .xlsx workbook found inside this zip.");
-    return zip.file(entryName).async("uint8array");
-  }
-
-  // Which product a workbook set came from, by the files it carries: the
-  // same rule books-interchange.js's own sniff applies to a package. A set
-  // with the multi-file hub is Self Employed when it carries the bank book
-  // and Company when it carries the current account; a single workbook is
-  // the Basic Sole Trader's, and its anchor guard says so by name when it is
-  // not.
-  var PACKAGE_HUB = "Financialaccounts.xlsx";
-  var SE_BANK_BOOK = "Bank.xlsx";
-  var LTD_CURRENT_ACCOUNT = "Currentaccount.xlsx";
-  var SINGLE_WORKBOOK_PRODUCT = "bst";
-
-  function productIdOfSet(set) {
-    if (set.has(PACKAGE_HUB)) {
-      if (set.has(SE_BANK_BOOK)) return "se";
-      if (set.has(LTD_CURRENT_ACCOUNT)) return "ltd";
-    }
-    return SINGLE_WORKBOOK_PRODUCT;
-  }
-
   /**
    * What a File is, dispatched by content and never by the name it arrived
    * under: the kind detectBookSource gives it and the product it belongs
    * to, so the shell can mount that product's manifest before loading. A
-   * workbook or package keeps its bytes for the manifest's own upload path,
-   * which carries the as-read layer and reads book fields off cells a
-   * diya-gl source has none of; a diya-gl zip, a diya-gl JSON file or that
-   * JSON zipped are read here through the engine's own readBookSource. The
-   * legacy .xls and anything unrecognised reach readBookSource too, purely
-   * to raise its own named refusal.
+   * workbook or a package opens as a workbook set and keeps it for the
+   * manifest's own upload path, which carries the as-read layer and reads
+   * book fields off cells a diya-gl source has none of; the engine's own
+   * sniffProduct names the product from that set, and refuses one workbook
+   * of a package by the part it is. A diya-gl zip, a diya-gl JSON file or
+   * that JSON zipped are read here through the engine's own readBookSource.
+   * The legacy .xls and anything unrecognised reach readBookSource too,
+   * purely to raise its own named refusal.
    * @param {File} file
-   * @returns {Promise<{kind: string, name: string, productId: string, bytes?: Uint8Array, book?: Object, lines?: Array}>}
+   * @returns {Promise<{kind: string, name: string, productId: string, set?: Object, book?: Object, lines?: Array}>}
    */
   async function sniff(file) {
     var engine = await loadEngine();
@@ -322,10 +275,12 @@
     assertWithinUploadLimit(fileBytes);
 
     var kind = await engine.detectBookSource(fileBytes, file.name);
-    if (kind === "workbook") return { kind: kind, name: file.name, productId: SINGLE_WORKBOOK_PRODUCT, bytes: fileBytes };
-    if (kind === "package-zip" || kind === "package-set") {
-      var set = await global.DiyaGlXlsxCells.openWorkbookSet(fileBytes);
-      return { kind: kind, name: file.name, productId: productIdOfSet(set), bytes: fileBytes };
+    if (kind === "workbook" || kind === "package-zip" || kind === "package-set") {
+      var set =
+        kind === "workbook"
+          ? await global.DiyaGlXlsxCells.openWorkbookSetFromWorkbook(file.name, fileBytes)
+          : await global.DiyaGlXlsxCells.openWorkbookSet(fileBytes);
+      return { kind: kind, name: file.name, productId: await engine.sniffProduct(set, file.name), set: set };
     }
     // readBookSource validates a diya-gl zip/JSON's book and lines against
     // the published schemas as it reads them, so the schemas have to be in
@@ -614,9 +569,10 @@
   /**
    * Load what sniff() found, with the manifest the shell mounted for it. A
    * diya-gl source already carries its book and lines; a workbook or
-   * package goes through the manifest's upload path: the anchor guard, the
-   * real extraction, a book from the same cells CELL_MAP names, live
-   * calculation, and the as-read layer read off the same bytes.
+   * package goes through the manifest's upload path over the same workbook
+   * set the sniff opened: the anchor guard, the real extraction, the book
+   * the product reads back off its own workbooks, live calculation, and the
+   * as-read layer read off the same bytes.
    * @param {Object} sniffed - what sniff() returned
    * @param {Object} manifest
    */
@@ -626,21 +582,21 @@
     var loaded = await loadEngineAndResources();
     var engine = loaded.engine;
     var productMod = engine.productModule(manifest.id);
-    var xlsxBytes = sniffed.kind === "package-zip" ? await unwrapPackageZip(sniffed.bytes) : sniffed.bytes;
+    var set = sniffed.set;
 
-    // validate throws the product's own anchor error, named by sheet and
-    // header -- never a silent short read. Let it propagate; the shell
+    // validate throws the product's own anchor error, named by file, sheet
+    // and header -- never a silent short read. Let it propagate; the shell
     // shows it.
-    await manifest.upload.validate(engine, xlsxBytes);
+    await manifest.upload.validate(engine, set);
 
-    var lines = await manifest.upload.extract(engine, xlsxBytes);
+    var lines = await manifest.upload.extract(engine, set);
     if (lines.length === 0) throw new Error("This file carries no transaction lines to build a book from.");
 
-    var workbookCells = await global.DiyaGlXlsxCells.openWorkbookCells(xlsxBytes);
-    var book = await manifest.upload.bookFromWorkbook(workbookCells, lines, {
+    var book = await manifest.upload.bookFromWorkbook(set, lines, {
       engine: engine,
       productMod: productMod,
       manifest: manifest,
+      resources: loaded.resources,
       period: periodFromLines(lines),
       accounts: buildAccountsChart(lines, manifest),
       fileName: sniffed.name,
@@ -651,13 +607,15 @@
 
     var taxYearName = taxYearFor(engine, productMod, book);
     var taxData = await engine.loadTaxDataForBook(book, { resources: loaded.resources, taxYearName: taxYearName });
-    // A multi-file package's hub caches every leaf cell it reads, so its
+    // CELL_MAP names cells on one workbook: the hub of a package, and a
+    // single-file product's own workbook whatever it arrived named. A
+    // multi-file package's hub caches every leaf cell it reads, so its
     // upload captures the link layer too, and the engine's unscoped link
     // cells once, beside it.
+    var cellMapFile = manifest.multiFile ? engine.HUB_FILE : set.names()[0];
     var hubFile = manifest.multiFile ? engine.HUB_FILE : null;
-    var set = manifest.multiFile ? await global.DiyaGlXlsxCells.openWorkbookSet(sniffed.bytes) : singleWorkbookSet(workbookCells);
-    var asReadLayer = await global.DiyaGlDrift.captureAsReadLayer(productMod.CELL_MAP, set, hubFile, manifest);
-    var linkLayer = manifest.multiFile ? await global.DiyaGlDrift.captureLinkLayer(set, hubFile, engine) : null;
+    var asReadLayer = await global.DiyaGlDrift.captureAsReadLayer(productMod.CELL_MAP, productMod.cellLabels(), set, cellMapFile, manifest);
+    var linkLayer = hubFile ? await global.DiyaGlDrift.captureLinkLayer(set, hubFile, engine) : null;
     var linkCells = null;
     if (manifest.multiFile) {
       var scenario = engine.diyaGlToScenario(book, lines, manifest.id);

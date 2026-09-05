@@ -161,10 +161,10 @@ describe("calculateExpectedTax", () => {
     expect(result.ni_class2).toBe(0);
   });
 
-  it("omits the Class 2 fields for a year with no threshold", () => {
+  it("carries the year's own threshold and a nil voluntary amount where the weekly rate is nil", () => {
     const result = calculateExpectedTax(5000, taxDataFor("se-2024-2025"));
-    expect(result.ni_class2_weekly).toBeUndefined();
-    expect(result.ni_class2_threshold).toBeUndefined();
-    expect(result.ni_class2).toBeUndefined();
+    expect(result.ni_class2_weekly).toBe(0);
+    expect(result.ni_class2_threshold).toBe(6725);
+    expect(result.ni_class2).toBe(0);
   });
 });

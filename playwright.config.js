@@ -36,6 +36,7 @@ export default defineConfig({
         "**/books-se.browser.test.js",
         "**/books-se-equivalence.browser.test.js",
         "**/books-se-formats.browser.test.js",
+        "**/books-se-edits.browser.test.js",
       ],
       workers: 1,
       outputDir: "./target/browser-test-results/",

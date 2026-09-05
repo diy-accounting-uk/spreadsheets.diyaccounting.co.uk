@@ -293,7 +293,7 @@ jobs:
         with:
           name: bst-examples
           retention-days: 1
-          path: examples/
+          path: examples/bst-latest/
 
   reconcile-extra:
     runs-on: ubuntu-24.04
@@ -369,7 +369,7 @@ jobs:
         continue-on-error: true
         with:
           name: bst-examples
-          path: examples/
+          path: examples/bst-latest/
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
@@ -390,7 +390,7 @@ jobs:
           if [[ -n "$LATEST" ]]; then
             find reports \( -name "*bst-brickwork-pro-*.md" -o -name "*bst-sp-sixty.md" \) ! -name "*${LATEST//-/_}*" -delete
           fi
-          git add packages/ reports/ examples/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
+          git add packages/ reports/ examples/bst-latest/ web/spreadsheets.diyaccounting.co.uk/public/reconciliation/
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else

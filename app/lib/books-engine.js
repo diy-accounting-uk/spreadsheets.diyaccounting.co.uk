@@ -20,6 +20,7 @@ export {
   extractBstTransactions,
   extractTaxiTransactions,
   extractLines,
+  extractBook,
   extractMetadata,
   bstExtractionMap,
   bookFieldCells,
@@ -34,7 +35,8 @@ export {
 // and the one error class every product's table throws.
 export { validateAnchors, AnchorError } from "./anchors/run.js";
 export { validateBstAnchors, BST_ANCHORS } from "./anchors/bst.js";
-export { validateTaxiAnchors } from "./anchors/taxi.js";
+export { validateTaxiAnchors, TAXI_ANCHORS } from "./anchors/taxi.js";
+export { SE_ANCHORS } from "./anchors/se.js";
 
 // Loading a book that is already diya-gl, and turning it into a scenario.
 export { parseDiyaGlData, diyaGlToScenario, applyOffset, resolveBstPurchaseCodeMap } from "./diya-gl-loader.js";
@@ -75,10 +77,12 @@ export { buildReportDocument, serializeReportDocument, slug, canonicalValue } fr
 // writing D back out as a diya-gl zip or a single JSON file.
 export {
   detectBookSource,
+  sniffProduct,
   readBookSource,
   writeBookJson,
   writeDiyaGlZip,
   UnknownBookSourceError,
+  PackagePartError,
   XlsBookSourceError,
   InvalidDiyaGlBookError,
   InvalidDiyaGlJsonError,

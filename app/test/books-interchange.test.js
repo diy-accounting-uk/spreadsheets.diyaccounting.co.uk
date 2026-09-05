@@ -33,6 +33,8 @@ import { buildSheetMap } from "../lib/spreadsheet-runner.js";
 import { buildFileReportDocument } from "../bin/export.js";
 import { validateBstAnchors } from "../lib/anchors/bst.js";
 import { validateTaxiAnchors } from "../lib/anchors/taxi.js";
+import { loadDiyaGlData } from "../lib/diya-gl-loader.js";
+import { saveWorkbook } from "../lib/product-workbook.js";
 import * as bst from "../products/bst.js";
 import * as taxi from "../products/taxi.js";
 import * as se from "../products/se.js";
@@ -48,6 +50,23 @@ const SE_PACKAGE_DIR = resolve(ROOT, "examples", "se-latest");
 const LTD_PACKAGE_DIR = resolve(ROOT, "examples", "ltd-latest");
 const SE_TEMPLATE_DIR = resolve(ROOT, "app", "templates", "se");
 const EVERY_PRODUCT = { bst, taxi, se, ltd };
+
+// A Taxi workbook written fresh from the current template through the
+// product writer, rather than read from examples/taxi-latest. Its overtype
+// baseline (taxiOvertypeTemplate() in books-interchange.js) is always built
+// from the live template, so checking a stale committed workbook against it
+// reports whatever the template has moved on to, not a real overtype -- the
+// two "finding nothing typed over" checks below need the upload itself to be
+// as current as the baseline it's read against.
+const FRESH_TAXI_BOOK_DIR = resolve(ROOT, "examples", "autumn-start-cabs");
+
+async function freshTaxiWorkbookBytes() {
+  const { book, lines } = loadDiyaGlData(FRESH_TAXI_BOOK_DIR);
+  const { workbook } = await saveWorkbook(book, lines);
+  return Buffer.from(workbook);
+}
+
+const FRESH_TAXI_XLSX_BYTES = await freshTaxiWorkbookBytes();
 
 async function zipOf(entries) {
   const zip = new JSZip();
@@ -382,14 +401,18 @@ describe("the Taxi anchor table", () => {
   // fresh for the book's own tax year (see taxiOvertypeTemplate() in
   // books-interchange.js), not a static template file the way BST's and SE's
   // are -- this is the one place that baseline is actually built and read
-  // back, proving the wiring rather than just the sidecar's own diffing.
-  it("reads examples/taxi-latest against its own freshly generated baseline, finding nothing typed over", async () => {
-    const source = await readBookSource(TAXI_XLSX_BYTES, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
+  // back, proving the wiring rather than just the sidecar's own diffing. The
+  // upload read here is FRESH_TAXI_XLSX_BYTES rather than examples/taxi-latest
+  // for the same reason: the baseline is always the live template, so a
+  // committed package that has gone stale since its last CI refresh would
+  // report a real template change as a false overtype.
+  it("reads a freshly generated Taxi workbook against its own current-template baseline, finding nothing typed over", async () => {
+    const source = await readBookSource(FRESH_TAXI_XLSX_BYTES, "GB_Accounts_Taxi_Driver.xlsx", { products: EVERY_PRODUCT });
     expect(source.overtyped).toEqual({});
   }, 30000);
 
   it("names a Sales week subtotal typed over, attributed to no line", async () => {
-    const zip = await JSZip.loadAsync(TAXI_XLSX_BYTES);
+    const zip = await JSZip.loadAsync(FRESH_TAXI_XLSX_BYTES);
     const sheetMap = await buildSheetMap(zip);
     const sheetPath = sheetMap.get("SalesMay");
     const xml = await zip.file(sheetPath).async("string");

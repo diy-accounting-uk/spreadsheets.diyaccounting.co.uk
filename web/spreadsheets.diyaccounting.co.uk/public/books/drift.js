@@ -53,20 +53,28 @@
    * read once off the uploaded hub. Text cells carry no meaningful drift in
    * the pencil-correction sense, so only the manifest's units are read, and
    * the sections it excludes are skipped.
+   *
+   * The unit comes from the product module's own cellLabels(), which is
+   * where the report reads it from too: a product declares it as a column of
+   * CELL_MAP or as a function of the sheet the cell sits on, and this side
+   * needs the answer, not the shape it was written in.
+   *
    * @param {Array} cellMap - the product's CELL_MAP rows
+   * @param {Object} labels - the product module's cellLabels(), keyed sheet!cell
    * @param {Object} set - a workbook set: hasSheet(file, sheet), readCell(file, sheet, cell)
    * @param {string} hubFile - the workbook the CELL_MAP names cells on
    * @param {Object} manifest - the product manifest, for drift.units and drift.excludedSections
    */
-  async function captureAsReadLayer(cellMap, set, hubFile, manifest) {
+  async function captureAsReadLayer(cellMap, labels, set, hubFile, manifest) {
     var captured = [];
     for (var i = 0; i < cellMap.length; i++) {
       var entry = cellMap[i];
       var sheet = entry[0],
         cell = entry[1],
         label = entry[2],
-        section = entry[4],
-        unit = entry[6];
+        section = entry[4];
+      var declared = labels[sheet + "!" + cell];
+      var unit = declared ? declared.unit : undefined;
       if (!manifest.drift.units[unit]) continue;
       if (manifest.drift.excludedSections[section]) continue;
       if (!(await set.hasSheet(hubFile, sheet))) continue;
@@ -148,6 +156,7 @@
     var prefix = links && links.hubFile ? links.hubFile + "!" : "";
     var drift = [];
     var staleIds = {};
+    var linkedIds = {};
 
     if (links) {
       for (var i = 0; i < links.layer.length; i++) {
@@ -176,6 +185,7 @@
             drift.push(Object.assign({ computed: engineValue, asRead: entry.hubCache, note: STALE_NOTE, state: "stale" }, common));
           }
           if (verdict.drift) {
+            linkedIds[common.id] = true;
             drift.push(Object.assign({ computed: engineValue, asRead: entry.leafValue, note: entry.key, state: "drift" }, common));
           }
         }
@@ -185,7 +195,7 @@
     for (var j = 0; j < asReadLayer.length; j++) {
       var read = asReadLayer[j];
       var id = prefix + read.sheet + "!" + read.cell;
-      if (staleIds[id]) continue;
+      if (staleIds[id] || linkedIds[id]) continue;
       var computedRaw = results[read.sheet] && results[read.sheet][read.cell];
       if (typeof computedRaw !== "number") continue;
       var computed = canonicalise(computedRaw, read.unit);

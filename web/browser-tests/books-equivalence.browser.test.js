@@ -90,7 +90,7 @@ async function sweepPage(page, exampleButton) {
 // XML-escaped in workbook.xml, so the lookup escapes before it matches.
 
 function xmlEscapeAttr(text) {
-  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 async function sheetPathByName(zip, sheetName) {
@@ -304,5 +304,135 @@ test.describe("DIYA-GL books page — no drift on a true upload (A7)", () => {
     // Nothing else picked one up: the computed side never reads that cell.
     await page.locator('.tab-btn[data-view="profit-loss"]').click();
     await expect(page.locator(".pencil-correction")).toHaveCount(0);
+  });
+});
+
+// ── A9: the SA103S form prints the form ──────────────────────────────────
+// Mirrors books-se-equivalence.browser.test.js's own A9: every box in
+// app/data/hmrc/form-layouts/bst.json's declared order, keyed to the cell
+// it names where S2 carries one, and empty otherwise -- the same box-list
+// SE's A9 walks, adapted to bst.json's single-workbook shape (a bare cell,
+// no file prefix) and its two derived rule kinds ("pl:" and "sum:").
+
+const SA103S_LAYOUT = JSON.parse(fs.readFileSync(path.join(process.cwd(), "app/data/hmrc/form-layouts/bst.json"), "utf-8"));
+
+// The four boxes bst-forms.js blanks together with box 11's own cell
+// (D46) below the sheet's £30,000 turnover gate; box 20's own derived rule
+// carries no such gate.
+const GATED_BOXES = new Set(["16", "17", "18", "19"]);
+
+// A form row's own three facts: the box number on its chip, whether the
+// amount box carries a report key, and what it prints.
+async function sa103sRows(page) {
+  await page.locator('.tab-btn[data-view="sa103s"]').click();
+  await expect(page.locator("#view-root .form-render").first()).toBeAttached({ timeout: 30_000 });
+  return page.locator("#view-root .form-row").evaluateAll((rows) =>
+    rows.map((row) => {
+      const chip = row.querySelector(".box-chip");
+      const box = row.querySelector(".form-amount-box");
+      return {
+        box: chip ? chip.textContent : null,
+        hasAmountBox: !!box,
+        rKey: box ? box.getAttribute("data-r-key") : null,
+        amount: box ? box.textContent.trim() : null,
+      };
+    }),
+  );
+}
+
+function plValue(s2Map, cell) {
+  const entry = s2Map.get(`cell/Profit & Loss Acc!${cell}`);
+  return entry ? Number(entry.value) : 0;
+}
+
+// The value a "pl:" or "sum:" derived rule prints, read the same way
+// bst-forms.js's own resolveDerived reads it.
+function derivedValue(rule, s2Map) {
+  if (rule.startsWith("pl:")) return plValue(s2Map, rule.slice(3));
+  if (rule.startsWith("sum:")) {
+    return rule
+      .slice(4)
+      .split(",")
+      .reduce((sum, cell) => sum + plValue(s2Map, cell), 0);
+  }
+  throw new Error(`bst.json: unknown derived rule "${rule}"`);
+}
+
+function amountAsNumber(text) {
+  return text === "" ? null : Number(String(text).replace(/,/g, ""));
+}
+
+// rkFor() (shell.js) joins a cell key to a CELL_MAP-derived section key with
+// " || "; a box's own data-r-key carries both, so a check against the bare
+// cell key reads only the first half.
+function cellKeyOf(rKey) {
+  return rKey === null ? null : rKey.split(" || ")[0];
+}
+
+test.describe("DIYA-GL books page — the SA103S form prints the form (A9)", () => {
+  test("SA103S prints the 2026 short-return boxes in order, each keyed to its cell where the sheet has one", async ({ page }) => {
+    const basic = SCENARIOS.find((example) => example.scenario === "bst-scenario-basic");
+    const s2Map = s2(basic.bookDir, basic.scenario);
+    const sheet = SA103S_LAYOUT.forms.sa103s.sheet;
+    const boxes = SA103S_LAYOUT.forms.sa103s.sections.flatMap((section) => section.boxes);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(bstUrl(), { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: basic.button }).click();
+    await expect(page.locator(".year-table-scroll, .month-cards").first()).toBeAttached({ timeout: 30_000 });
+
+    const rows = await sa103sRows(page);
+    expect(rows.map((row) => row.box)).toEqual(boxes.map((box) => box.box));
+
+    // The fixture's turnover is above the sheet's £30,000 gate, so every
+    // gated box prints; a fixture that fell below it would need the gate
+    // exercised the other way, which is bst-forms.js's own unit-level cost.
+    const expensesShown = s2Map.has(`cell/${sheet}!D46`);
+    expect(expensesShown, "the fixture's turnover is above the sheet's gate, so boxes 16 to 19 print").toBe(true);
+
+    const problems = [];
+    rows.forEach((row, i) => {
+      const box = boxes[i];
+      if (!row.hasAmountBox) {
+        problems.push(`box ${box.box} has no amount box`);
+        return;
+      }
+      if (box.cell) {
+        const key = `cell/${sheet}!${box.cell}`;
+        const entry = s2Map.get(key);
+        if (entry) {
+          if (cellKeyOf(row.rKey) !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected cell key "${key}"`);
+          if (amountAsNumber(row.amount) !== Math.round(Number(entry.value))) {
+            problems.push(`box ${box.box} prints "${row.amount}", expected ${Math.round(Number(entry.value))}`);
+          }
+        } else {
+          if (row.rKey !== null) problems.push(`box ${box.box} names a cell R carries nothing for, yet carries "${row.rKey}"`);
+          if (row.amount !== "") problems.push(`box ${box.box} names a cell R carries nothing for, yet prints "${row.amount}"`);
+        }
+        return;
+      }
+      if (box.derived) {
+        const gated = GATED_BOXES.has(box.box) && !expensesShown;
+        if (gated) {
+          if (row.amount !== "") problems.push(`box ${box.box} is gated below turnover, yet prints "${row.amount}"`);
+          return;
+        }
+        const expected = Math.round(derivedValue(box.derived, s2Map));
+        if (amountAsNumber(row.amount) !== expected) problems.push(`box ${box.box} prints "${row.amount}", expected ${expected}`);
+        // "pl:" keys its own cell; "sum:" carries no top-level key, only its parts do.
+        if (box.derived.startsWith("pl:")) {
+          const key = `cell/Profit & Loss Acc!${box.derived.slice(3)}`;
+          if (cellKeyOf(row.rKey) !== key) problems.push(`box ${box.box} carries "${row.rKey}", expected cell key "${key}"`);
+        } else if (row.rKey !== null) {
+          problems.push(`box ${box.box} is a "sum:" total, expected no top-level key, carries "${row.rKey}"`);
+        }
+        return;
+      }
+      // Neither cell nor derived: the paper form's own "leave it blank".
+      if (row.rKey !== null) problems.push(`box ${box.box} carries no cell or rule, yet carries "${row.rKey}"`);
+      if (row.amount !== "") problems.push(`box ${box.box} carries no cell or rule, yet prints "${row.amount}"`);
+    });
+
+    expect(problems, problems.join("\n")).toEqual([]);
   });
 });

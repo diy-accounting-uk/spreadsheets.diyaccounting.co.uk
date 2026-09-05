@@ -1,0 +1,51 @@
+[metadata]
+name = "SE-T27 loss, no expected table"
+description = "A small trade whose purchases outrun its sales, carrying no [expected] table, for the checkCompliance regression on a loss-making book with no expected figures to compare against."
+product = "se"
+tax_regime = "se"
+vat_registered = false
+
+[business]
+name = "Loss Making Trading"
+description = "Odd jobs"
+address = "1 Nowhere Lane"
+town = "Leeds"
+postcode = "LS1 1AA"
+utr = "1112223334"
+nino = "AB123456C"
+
+[[sales.apr]]
+date = 2025-04-10
+customer = "Only Customer"
+reference = "INV-1"
+description = "Small job"
+code = "a"
+amount = 1000
+account = "4000"
+
+[[sales.oct]]
+date = 2025-10-10
+customer = "Only Customer"
+reference = "INV-2"
+description = "Small job"
+code = "a"
+amount = 1000
+account = "4000"
+
+[[purchases.apr]]
+date = 2025-04-05
+supplier = "Big Supplier"
+reference = "PUR-1"
+description = "Materials"
+code = "s"
+amount = 6000
+account = "5000"
+
+[[purchases.oct]]
+date = 2025-10-05
+supplier = "Big Supplier"
+reference = "PUR-2"
+description = "Materials"
+code = "s"
+amount = 6000
+account = "5000"

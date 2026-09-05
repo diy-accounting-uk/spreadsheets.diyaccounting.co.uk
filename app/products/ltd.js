@@ -43,6 +43,7 @@ import {
   vatCycleRows,
   vatReturnCoverage,
 } from "../lib/report-generator.js";
+import { canonicalForUnit } from "../lib/canonical-report-value.js";
 
 export const PRODUCT = {
   id: "ltd",
@@ -1246,6 +1247,8 @@ export const CELL_MAP = [
   ["TrialBalance", "D24", "Opening: Credit Card Account",              "accounts.assets.1230 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D25", "Opening: Cash Account",                     "accounts.assets.1220 (opening)",     "Trial Balance", 1],
   ["TrialBalance", "D28", "Opening: Trade Creditors",                  "accounts.liabilities.2100 (opening)","Trial Balance", 1],
+  ["TrialBalance", "D29", "Opening: Net Wages Creditor",               "openingBalance.net_wages_due",       "Trial Balance", 1],
+  ["TrialBalance", "D30", "Opening: Other Deductions from Wages",      "openingBalance.wage_deductions_due", "Trial Balance", 1],
   ["TrialBalance", "D31", "Opening: Dividends Creditor",               "accounts.capital.3200 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D33", "Opening: Creditor HMRC Vat",                "accounts.liabilities.2200 (opening)","Trial Balance", 1],
   ["TrialBalance", "D35", "Opening: Creditor HMRC Corporation Tax",    "accounts.liabilities.2300 (opening)","Trial Balance", 1],
@@ -1254,11 +1257,14 @@ export const CELL_MAP = [
   ["TrialBalance", "D42", "Opening: Share Capital",                    "accounts.capital.3000 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D43", "Opening: Revenue Reserve P&L Account",      "accounts.capital.3100 (opening)",    "Trial Balance", 1],
   ["TrialBalance", "D91", "**Opening Balances Audit Check**",          "gl-cor:amount (openingColumnCheck)", "Trial Balance", 0],
+  ["TrialBalance", "EJ20", "Final: Trade Debtors",                     "accounts.assets.1300 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ22", "Final: Bank Current Account",              "accounts.assets.1200 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ23", "Final: Bank Savings Account",              "accounts.assets.1210 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ24", "Final: Credit Card Account",               "accounts.assets.1230 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ25", "Final: Cash Account",                      "accounts.assets.1220 (final)",       "Trial Balance", 1],
   ["TrialBalance", "EJ26", "Final: Intra Cash & Bank Transfers",       "gl-cor:amount (intraTransfers)",     "Trial Balance", 1],
+  ["TrialBalance", "EJ29", "Final: Net Wages Creditor",                "openingBalance.net_wages_due (final)", "Trial Balance", 1],
+  ["TrialBalance", "EJ30", "Final: Other Deductions from Wages",       "openingBalance.wage_deductions_due (final)", "Trial Balance", 1],
   ["TrialBalance", "EJ31","Final: Dividends Creditor",                 "accounts.capital.3200 (final)",      "Trial Balance", 1],
   ["TrialBalance", "EJ39","Final: Directors Loan Account",             "accounts.liabilities.2500 (final)",  "Trial Balance", 1],
   ["TrialBalance", "EJ40","Final: Creditor Long Term",                 "accounts.liabilities.2600 (final)",  "Trial Balance", 1],
@@ -1855,7 +1861,7 @@ export function reportSections(results) {
   for (const [sheet, cell, label, , section, indent] of CELL_MAP) {
     if (!sectionMap.has(section)) sectionMap.set(section, []);
     const val = results[sheet]?.[cell];
-    sectionMap.get(section).push({ label, value: fmt(val), indent });
+    sectionMap.get(section).push({ label, value: fmt(val, unitFor(sheet, cell)), indent });
   }
   const sections = [...sectionMap.entries()].map(([title, rows]) => ({ title, rows }));
   const vat = vatSection(results);
@@ -2122,11 +2128,14 @@ export function cellLabels() {
   return labels;
 }
 
-function fmt(v) {
+export function fmt(v, unit = "money") {
   if (v === null || v === undefined || v === "" || v === " ") return "—";
-  // A nil that arrived by negation carries a sign bit and prints as "-0",
-  // which reads as a defect in a statement.
-  if (typeof v === "number") return (v === 0 ? 0 : v).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  if (typeof v === "number") {
+    const canonical = Number(canonicalForUnit(v, unit));
+    // A nil that arrived by negation carries a sign bit and prints as "-0",
+    // which reads as a defect in a statement.
+    return (canonical === 0 ? 0 : canonical).toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  }
   return String(v);
 }
 

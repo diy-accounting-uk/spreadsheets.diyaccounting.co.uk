@@ -16,6 +16,12 @@ function readFile(filePath) {
   return fs.readFileSync(filePath, "utf-8");
 }
 
+// Helper: escape all regex metacharacters, not just ".", so a literal
+// string can be embedded in a RegExp without matching more than itself
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 // Helper: extract URLs from sitemap XML
 function extractSitemapUrls(xml) {
   const urls = [];
@@ -80,7 +86,7 @@ describe("Sitemap validation", () => {
     const urls = extractSitemapUrls(xml);
     expect(urls.length).toBeGreaterThan(0);
     for (const url of urls) {
-      expect(url, `URL ${url} should start with ${site.domain}`).toMatch(new RegExp(`^${site.domain.replace(/\./g, "\\.")}`));
+      expect(url, `URL ${url} should start with ${site.domain}`).toMatch(new RegExp(`^${escapeRegExp(site.domain)}`));
     }
   });
 
