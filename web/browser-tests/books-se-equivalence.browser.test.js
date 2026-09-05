@@ -36,7 +36,6 @@ const PUBLIC_DIR = path.join(ROOT, "web/spreadsheets.diyaccounting.co.uk/public"
 const ASSETS_EXAMPLE_DIR = path.join(PUBLIC_DIR, "books/assets/examples/precision-code-ltd/advanced");
 const TARGET_DIR = path.join(ROOT, "target", "books-se-equivalence");
 const LAYOUT = JSON.parse(fs.readFileSync(path.join(ROOT, "app/data/hmrc/form-layouts/se.json"), "utf-8"));
-const TAX_DATA = parseTOML(fs.readFileSync(path.join(ROOT, "app/data/se-2025-2026.toml"), "utf-8"));
 
 const FEATURED = SCENARIOS_SE[0];
 
@@ -438,7 +437,9 @@ test.describe("DIYA-GL books page — a true package upload (A7)", () => {
 function calculatorCellsByLinkKey(bookDir) {
   const { book, lines } = loadDiyaGlData(path.join(ROOT, bookDir));
   const scenario = diyaGlToScenario(book, lines, "se");
-  const cells = calculateSeCells(book, lines, TAX_DATA, scenario);
+  const taxYear = taxYearFileName(new Date(book.documentInfo.periodCoveredEnd), "se");
+  const taxData = parseTOML(fs.readFileSync(path.join(ROOT, "app/data", `${taxYear}.toml`), "utf-8"));
+  const cells = calculateSeCells(book, lines, taxData, scenario);
   const keys = new Map();
   for (const [sheetKey, sheet] of Object.entries(cells)) {
     const prefix = sheetKey.includes("!") ? sheetKey : `${HUB_FILE}!${sheetKey}`;
