@@ -57,8 +57,8 @@ describe("productOf", () => {
 });
 
 describe("taxYearFileName", () => {
-  it("names a company's file for the year its period ends in", () => {
-    expect(taxYearFileName(new Date("2026-03-31"), "ltd")).toBe("ltd-2026");
+  it("names a company's file for the financial year its year end falls in", () => {
+    expect(taxYearFileName(new Date("2026-03-31"), "ltd")).toBe("ltd-2025");
     expect(taxYearFileName(new Date("2026-06-30"), "ltd")).toBe("ltd-2026");
   });
 
