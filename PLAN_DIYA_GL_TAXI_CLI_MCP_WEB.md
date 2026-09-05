@@ -486,6 +486,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   `save_workbook` and `extract_book`, with the off-grid refusal surfacing as a named error. The raw
   Taxi workbook sniff landed with T10 in the same batch.
 
+- T6 `0cc1a7d6`, merged 2026-09-05: the writer, `ENTITY_CELLS.taxi`, `extractMetadata` and the
+  calculator agree on `C5`, `C8`, `C17` and `O5`; `D29`, `O29`, `J1`, `C1`, `K1`, `E25` and `E26` join
+  `CELL_MAP` with four anchored checks proved breakable; CONTEXT_TAXI.md corrected. `CELL_MAP`'s
+  SA103S labels follow the sheet's own printed numbers (`D38` box 8 through `D106` box 30), which
+  sit one behind the 2026 form; the page's layout (T15) renders the form's numbers. R3 dispatched;
+  `reports/*taxi*`, the judge verdict and `examples/taxi-latest` move on the refresh.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially

@@ -45,16 +45,6 @@ amount = 3200
 account = "4000"
 
 [[sales.may]]
-date = 2025-05-20
-customer = "HomeStyle Renovations"
-reference = "INV-201"
-description = "Plastering and rendering"
-payment = "Bank"
-code = "a"
-amount = 1800
-account = "4000"
-
-[[sales.may]]
 date = 2025-05-14
 customer = "Northgate Contracts"
 reference = "INV-300"
@@ -62,6 +52,16 @@ description = "Bricklaying sub-contract"
 payment = "Bank"
 code = "a"
 amount = 1000
+account = "4000"
+
+[[sales.may]]
+date = 2025-05-20
+customer = "HomeStyle Renovations"
+reference = "INV-201"
+description = "Plastering and rendering"
+payment = "Bank"
+code = "a"
+amount = 1800
 account = "4000"
 
 [[sales.jun]]
