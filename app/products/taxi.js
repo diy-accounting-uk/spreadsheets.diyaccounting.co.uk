@@ -88,20 +88,18 @@ export function cellWrites(scenario, targetStartYear = null) {
   const targetEpoch = Date.UTC(startYear, 3, 6);
   const dayOffsetMs = targetEpoch - scenarioEpoch;
 
-  // Business Details
+  // Business Details. 'SE Short'!C13 reads C8 back as box 1, C22/F22 read
+  // C17 for box 2, and O8 reads O5 for the UTR box -- C7 (the label row),
+  // C10, C12 and O29 are never written, and the address and town stay in
+  // the book with no cell of their own.
   if (scenario.business || scenario.metadata) {
     writes["Business Details"] = {};
     const bd = writes["Business Details"];
     const biz = scenario.business || {};
     bd.C5 = biz.name || scenario.metadata?.name || "";
-    if (biz.description) bd.C7 = biz.description;
-    if (biz.address) bd.C8 = biz.address;
-    if (biz.town) bd.C10 = biz.town;
-    if (biz.postcode) bd.C12 = biz.postcode;
-    // O29 (UTR) is deliberately never written here: 'SE Short'!D94 reads it
-    // back as a number and folds it into the taxable profit chain (box 26),
-    // so a real ten-digit UTR there corrupts the whole tax calculation by
-    // billions. The cell stays blank, matching the template's own default.
+    if (biz.description) bd.C8 = biz.description;
+    if (biz.postcode) bd.C17 = biz.postcode;
+    if (biz.utr) bd.O5 = biz.utr;
   }
 
   if (scenario.sales) {
@@ -244,11 +242,11 @@ export const FORECAST_SHEET = "Wages Forecast";
 export const CELL_MAP = [
   // ── Business Details ──
   ["Business Details", "C5",  "Business Name",       "entityInformation.organizationIdentifier",  "Business Details", 0, "text"],
-  ["Business Details", "C7",  "Description",         "entityInformation.organizationDescription", "Business Details", 0, "text"],
-  ["Business Details", "C8",  "Address",             "entityInformation.organizationAddressLine", "Business Details", 0, "text"],
-  ["Business Details", "C10", "Town",                "entityInformation.organizationTown",        "Business Details", 0, "text"],
-  ["Business Details", "C12", "Postcode",            "entityInformation.organizationPostcode",     "Business Details", 0, "text"],
-  ["Business Details", "O29", "UTR",                 "entityInformation.taxRegistrationNumber",   "Business Details", 0, "identifier"],
+  ["Business Details", "C8",  "Description of business", "entityInformation.organizationDescription", "Business Details", 0, "text"],
+  ["Business Details", "C17", "Postcode",            "entityInformation.organizationPostcode",     "Business Details", 0, "text"],
+  ["Business Details", "O5",  "UTR",                 "entityInformation.taxRegistrationNumber",   "Business Details", 0, "identifier"],
+  ["Business Details", "D29", "Losses brought forward (box 28)", "gl-cor:amount (sa103s.lossBroughtForwardInput)", "Business Details", 0, "money"],
+  ["Business Details", "O29", "Goods and services for own use (box 26)", "gl-cor:amount (sa103s.ownUseInput)", "Business Details", 0, "money"],
   // ── Profit & Loss Account (column B) ──
   ["Profit & Loss Acc", "B5",  "Turnover (Total Fares)",           "gl-cor:amount (salesTurnover)",     "Profit & Loss Account", 0, "money"],
   ["Profit & Loss Acc", "B6",  "Fuel",                             "accounts.purchases.5100 (fuel)",    "Profit & Loss Account", 1, "money"],
@@ -270,6 +268,8 @@ export const CELL_MAP = [
   ["Profit & Loss Acc", "B22", "Total General Expenses",           "gl-cor:amount (totalGeneral)",      "Profit & Loss Account", 0, "money"],
   ["Profit & Loss Acc", "B23", "**Net Profit**",                   "gl-cor:amount (netProfit)",         "Profit & Loss Account", 0, "money"],
   ["Profit & Loss Acc", "B24", "Any Other Business Income",        "gl-cor:amount (otherIncome)",       "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "J1",  "Running costs plus capital allowances", "accounts.purchases (vehicleCostsCompared)", "Profit & Loss Account", 1, "money"],
+  ["Profit & Loss Acc", "C1",  "Route the sheet takes",            "gl-cor:amount (vehicleRoute)",      "Profit & Loss Account", 1, "text"],
   // ── VitalTax — quarterly re-sum of P&L monthly columns C:N into its own
   // C:F quarter columns and G annual column (verified against the template:
   // C5=SUM(P&L!C5:E5) through F5=SUM(P&L!L5:N5), G5=SUM(C5:F5); the same
@@ -291,9 +291,9 @@ export const CELL_MAP = [
   ["VitalTax", "F29", "Q4 Total Allowable Expenses",         "gl-cor:amount (vitalTax.q4Expenses)",     "Quarterly Summary", 1, "money"],
   ["VitalTax", "G29", "**Annual Total Allowable Expenses**", "gl-cor:amount (vitalTax.annualExpenses)", "Quarterly Summary", 0, "money"],
   // ── SE Short (SA103S) — formula cells only ──
-  ["SE Short", "D38",  "Turnover",                               "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D38",  "Turnover (box 8)",                       "gl-cor:amount (sa103s.turnover)",           "Self Assessment (SA103S)", 0, "money"],
   ["SE Short", "O38",  "Other business income (box 9)",          "gl-cor:amount (sa103s.otherIncome)",        "Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D71",  "**Net profit/loss**",                    "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D71",  "**Net profit/loss (box 20)**",           "gl-cor:amount (sa103s.netProfit)",          "Self Assessment (SA103S)", 0, "money"],
   ["SE Short", "O71",  "Net loss (box 21)",                      "gl-cor:amount (sa103s.netLoss)",            "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D80",  "Annual investment allowance (box 22)",   "tax.capitalAllowances.aia (sa103s)",        "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "D85",  "Small-balance allowance (box 23)",       "tax.capitalAllowances.smallPool (sa103s)",  "Self Assessment (SA103S)", 1, "money"],
@@ -303,7 +303,7 @@ export const CELL_MAP = [
   ["SE Short", "D99",  "**Net business profit (box 27)**",       "gl-cor:amount (sa103s.taxableProfit)",      "Self Assessment (SA103S)", 0, "money"],
   ["SE Short", "O94",  "Loss brought forward (box 28)",          "gl-cor:amount (sa103s.lossBroughtForward)", "Self Assessment (SA103S)", 1, "money"],
   ["SE Short", "O99",  "Other business income (box 29)",         "gl-cor:amount (sa103s.otherBusinessIncome)","Self Assessment (SA103S)", 1, "money"],
-  ["SE Short", "D106", "**Net profit for tax calc**",            "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
+  ["SE Short", "D106", "**Net profit for tax calc (box 30)**",   "gl-cor:amount (sa103s.profitForTax)",       "Self Assessment (SA103S)", 0, "money"],
   // ── Draft Tax Calculation ──
   [TAX_SHEET, "E5",  "Profit from Self Employment",  "gl-cor:amount (profitSE)",             "Draft Tax Calculation", 0, "money"],
   [TAX_SHEET, "E6",  "Less: Personal Allowance",     "tax.incomeTax.personalAllowance",      "Draft Tax Calculation", 1, "money"],
@@ -320,6 +320,8 @@ export const CELL_MAP = [
   [TAX_SHEET, "E14", "NI Class 4 (lower band)",      "tax.nationalInsurance.class4MainRate", "Draft Tax Calculation", 1, "money"],
   [TAX_SHEET, "E15", "NI Class 4 (upper band)",      "tax.nationalInsurance.class4UpperRate","Draft Tax Calculation", 1, "money"],
   [TAX_SHEET, "E17", "**Total Tax + NI**",           "gl-cor:taxAmount (totalTaxNI)",        "Draft Tax Calculation", 0, "money"],
+  [TAX_SHEET, "E25", "First payment on account (31 January)", "gl-cor:taxAmount (paymentOnAccount1)", "Draft Tax Calculation", 1, "money"],
+  [TAX_SHEET, "E26", "Second payment on account (31 July)",  "gl-cor:taxAmount (paymentOnAccount2)", "Draft Tax Calculation", 1, "money"],
   // ── Wages Forecast — the projected year the customer plans against.
   // The actual half (rows 5 to 15) pulls the P&L's monthly columns; the
   // forecast half (rows 19 to 30) repeats each month that traded and spreads
@@ -350,6 +352,7 @@ export const CELL_MAP = [
   ["Fixed Assets", "J1",  "Total Writing Down Allowance",           "tax.capitalAllowances.wda (schedule)",            "Fixed Assets", 1, "money"],
   ["Fixed Assets", "P1",  "Total Capital Allowance on Disposal",    "tax.capitalAllowances.disposals (schedule)",      "Fixed Assets", 1, "money"],
   ["Fixed Assets", "Q1",  "Total Balancing Charge",                 "tax.capitalAllowances.balancingCharge (schedule)", "Fixed Assets", 1, "money"],
+  ["Fixed Assets", "K1",  "Written-down value carried forward",      "fixedAssets (writtenDownValue)",                  "Fixed Assets", 0, "money"],
   // ── Admin (generator-injected tax data) ──
   ["Admin", "N4",  "Personal Allowance",                 "tax.incomeTax.personalAllowance",         "Admin (Generator Injected)", 0, "money"],
   ["Admin", "N5",  "Personal Allowance Taper Threshold",  "tax.incomeTax.personalAllowanceTaperThreshold", "Admin (Generator Injected)", 0, "money"],
@@ -488,6 +491,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     checks.push({ name, actual, expected: expectedVal, pass, diff: actual - expectedVal, tolerance });
   }
 
+  // Some of the workbook's own cells hold wording rather than arithmetic.
+  // The report shows both sides as text and the diff column stays empty.
+  function checkText(name, actual, expectedText) {
+    checks.push({ name, actual, expected: expectedText, pass: actual === expectedText, diff: "" });
+  }
+
   const pl = results["Profit & Loss Acc"];
   if (expected.total_sales !== undefined) check("Total Sales", pl.B5, expected.total_sales);
   if (expected.total_other_income !== undefined) check("Other business income", pl.B24, expected.total_other_income);
@@ -585,6 +594,22 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     );
   }
 
+  // The sheet's own comparison figure (Profit & Loss Acc!J1) and the route
+  // cell it drives (C1) are read straight off the sheet here, independently
+  // of the fixture's own miles, so corrupting either one, or the Purchases
+  // and Fixed Assets cells J1 is built from, breaks its own check and
+  // nothing else.
+  if (purchases && pl.J1 !== undefined) {
+    check(
+      "P&L: the comparison figure = running costs plus the schedule's allowances",
+      pl.J1,
+      Math.round((purchases.I2 || 0) + scheduleAllowance),
+      0,
+    );
+    const sheetRoute = Math.round(purchases.A2 || 0) > pl.J1 ? "MILEAGE ALLOWANCE" : "";
+    checkText("P&L: the route follows the comparison", String(pl.C1 ?? "").trim(), sheetRoute);
+  }
+
   // SA103S cross-check: SE Short is fed entirely from the P&L and, in turn,
   // feeds the Draft Tax calculation -- an independent formula chain that
   // should land on the same figures.
@@ -616,6 +641,7 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
     const fa = results["Fixed Assets"];
     const assetCost = expectedAdditions.reduce((s, a) => s + a.cost, 0);
     check("Fixed Assets: New asset cost recorded", fa.D47 || 0, expected.fixed_asset_cost ?? assetCost);
+    check("Fixed Assets: written-down value = cost less the allowance", fa.K1 || 0, assetCost - (fa.J1 || 0), 0);
 
     if (results.Admin) {
       const wdaRate = results.Admin.G5;
@@ -674,6 +700,12 @@ export function checkCompliance(results, expected, taxData, calculateExpectedTax
       check("Income Tax", tax.E11 || 0, expectedTax.income_tax);
       check("NI Class 4 (lower)", tax.E14 || 0, expectedTax.ni_class4_lower);
       check("Total Tax + NI", tax.E17 || 0, expectedTax.total_tax_and_ni);
+
+      // Each payment on account is half the liability the sheet itself
+      // charges, read independently of any expected figure so a wrong split
+      // between the two halves fails on its own.
+      if (tax.E25 !== undefined) check("Tax: first payment on account is half the liability", tax.E25, (tax.E17 || 0) / 2, 0.01);
+      if (tax.E26 !== undefined) check("Tax: second payment on account is half the liability", tax.E26, (tax.E17 || 0) / 2, 0.01);
 
       // The allowance the sheet hands out, not the headline one. Above
       // 100,000 of profit it falls by a pound for every two, and reaches nil

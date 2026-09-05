@@ -233,10 +233,10 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
   const results = {
     "Business Details": {
       C5: biz.name || entity.organizationIdentifier || "",
-      C7: biz.description || entity.organizationDescription || "",
-      // C8, C10, C12 are set below, once they are known. O29 (UTR) is never
-      // written by cellWrites (see its own comment) and stays unset here to
-      // match.
+      C8: biz.description || entity.organizationDescription || "",
+      // C17 and O5 are set below, once they are known. D29 and O29 have no
+      // book field and stay unset: cellWrites never writes them, so the
+      // sheet's own cells are blank rather than nil.
     },
     "Profit & Loss Acc": {
       B5: totalSales,
@@ -259,6 +259,9 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       B22: totalGenExpenses,
       B23: netProfit,
       B24: otherBusinessIncome,
+      // The sheet's own comparison figure (J1), always present whichever
+      // route the sheet takes -- it is what C1 below is decided against.
+      J1: Math.round(vehicleRunningCosts + capitalAllowances),
     },
     "VitalTax": {},
     "SE Short": {
@@ -270,12 +273,13 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       O80: Math.round(seShortCA.o80 * 100) / 100,
       D85: Math.round(seShortCA.d85 * 100) / 100,
       O85: Math.round(seShortCA.o85 * 100) / 100,
-      // D94 reads 'Business Details'!O29 (the UTR), which cellWrites never
-      // writes there -- see the note in app/products/taxi.js's cellWrites --
-      // so the sheet's own value is nil, same as here.
+      // D94 reads 'Business Details'!O29 (goods and services for own use)
+      // and O94 reads 'Business Details'!D29 (losses brought forward); the
+      // book has no field for either, cellWrites never writes them, and the
+      // sheet's own values stay nil, same as here.
       D94: 0,
       D99: seShortD99,
-      O94: 0, // Loss brought forward — no source in the diya-gl pipeline
+      O94: 0,
       O99: seShortOtherIncomeBox29,
       D106: seShortD106,
     },
@@ -295,6 +299,8 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
       E14: niLower,
       E15: niUpper,
       E17: totalTaxAndNI,
+      E25: totalTaxAndNI / 2,
+      E26: totalTaxAndNI / 2,
     },
     "Fixed Assets": {},
     "PurchasesMar": {
@@ -330,14 +336,18 @@ export function calculateTaxiResults(book, lines, taxData, scenario) {
     },
   };
 
-  if (biz.address) results["Business Details"].C8 = biz.address;
-  if (biz.town) results["Business Details"].C10 = biz.town;
-  if (biz.postcode) results["Business Details"].C12 = biz.postcode;
+  if (biz.postcode) results["Business Details"].C17 = biz.postcode;
+  if (biz.utr) results["Business Details"].O5 = biz.utr;
+
+  // The sheet's own " " reads as nothing once trimmed, so the route cell is
+  // left unset rather than carrying that space across.
+  if (takesMileageRoute) results["Profit & Loss Acc"].C1 = "MILEAGE ALLOWANCE";
 
   if (assetAdditions.length > 0) {
     results["Fixed Assets"].D47 = fa.D47;
     results["Fixed Assets"].I1 = Math.round(fa.I1 * 100) / 100;
     results["Fixed Assets"].J1 = Math.round(fa.J1 * 100) / 100;
+    results["Fixed Assets"].K1 = Math.round(fa.K1 * 100) / 100;
     results["Fixed Assets"].P1 = Math.round(fa.P1 * 100) / 100;
     results["Fixed Assets"].Q1 = Math.round(fa.Q1 * 100) / 100;
   }
