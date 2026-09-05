@@ -612,8 +612,8 @@ export async function extractMultiFileTransactions(set, product, extractionMap) 
   // Deducted". The columns sit at different letters per product: Ltd's are
   // AK and V, SE's are AD and W. On SE the sales column feeds a running
   // year-to-date total in X, which the tax return reads (Income Tax!E12 and
-  // SE Full!D231 both read Mar!X1); Ltd's sales column carries no such
-  // column.
+  // SE Full!D231 both read Mar!X1); the Ltd sheet keeps no such running
+  // total, and its trial balance reads each month's V1 directly.
   const purchasesCisColumn = product === "ltd" ? "AK" : "AD";
   const salesCisColumn = product === "ltd" ? "V" : "W";
   // SE's Sales sheet gives D to the day's business miles (see the codeCol
