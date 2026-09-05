@@ -614,20 +614,28 @@
 
   // ============================== the views ==============================
 
+  // The statement's own rows, in the order the sheet prints them: the year
+  // table's columns are the same list, so the two views never disagree about
+  // which rows the account has.
+  function statementRows(productMod) {
+    return categories(productMod).filter(function (category) {
+      return category.cell;
+    });
+  }
+
   function renderProfitLoss(snap, state, helpers) {
     var view = helpers.viewState("profit-loss", { monthsOpen: false });
     var productMod = snap.context.productMod;
-    var rows = helpers.sectionRows(PL_SECTION);
+    var rows = statementRows(productMod);
     var statement =
       '<div class="panel-card panel-form-width">' +
       helpers.kvRows(
         rows.map(function (row) {
-          var meta = PL_KEYS[row.cell] || {};
           return {
             label: row.label,
-            value: num(row.value),
+            value: cellValue(snap.results, row.sheet, row.cell),
             rKeyAttr: cellRk(snap, helpers, row.sheet, row.cell),
-            total: !!meta.total,
+            total: !!(PL_KEYS[row.cell] || {}).total,
           };
         }),
       ) +
@@ -645,8 +653,8 @@
   }
 
   // The statement's own month columns, C through N, for the rows that carry
-  // them. The rows the sheet only totals for the year -- cost of sales, the
-  // expense total and the profit lines -- have no month cell to print.
+  // them. The rows the read scope only totals for the year -- cost of sales,
+  // the expense total and the profit lines -- have no month cell to print.
   function renderProfitLossMonths(snap, helpers, productMod, rows) {
     var months = snap.months;
     var head =
@@ -661,7 +669,7 @@
       .map(function (row) {
         var cells = months
           .map(function (month) {
-            var pair = monthlyCell(month.label, productMod, (PL_KEYS[row.cell] || {}).key);
+            var pair = monthlyCell(month.label, productMod, row.key);
             if (!pair) return '<td class="num">—</td>';
             var value = snap.results[pair[0]] && snap.results[pair[0]][pair[1]];
             if (value === undefined) return '<td class="num">—</td>';
