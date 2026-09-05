@@ -432,6 +432,12 @@ and never ends a turn with a Playwright run going, per the BST plan's as-built n
 
 ### Landed
 
+- T4 `53d653de`, merged 2026-09-05: `HEADLINES` in `se.js` (turnover B9 with grants and interest as
+  the second line, cost of sales B17, admin expenses B35, tax `Income Tax!E18`, assets from the
+  Schedule's K1, StockControl AB30, the two bank closing balances and closing debtors, fourteen
+  expense lines), two breakability proofs; the SE page shows the strip. `CELL_MAP`'s label for
+  `Profit & Loss Account!B22` reads "Light, Heat, Power" where the sheet says "Premises Rent Rates
+  Power"; T16 relabels it with the SE Short rows.
 - T17 `f86b224f`, merged 2026-09-05: `se-workbook.test.js` compares a save against the generate path
   plus the same link-cache refresh, and the two "leaves out" cases compare every part except the
   link caches; no writer defect.
