@@ -462,6 +462,13 @@ and acceptance; the per-file landing order and the wave table sit at their end.
   the year table carries no Miles column; and T8's `book-taxi-fare-miles` helper gains
   `field: "miles"` in T14's scope so the shell's focus route reaches it.
 
+- T15 design `cc4c3421`, 2026-09-05: the T15 coding brief rewritten to implementation depth, with
+  `app/data/hmrc/form-layouts/taxi.json` in T8's shape plus a `derived` field and `taxi-forms.js`
+  rendering it. From the XML: the sheet's loss block is not empty (`D123` reads
+  `Business Details!O34`, `O123` is an input) and its box numbers shift unevenly against the 2026
+  form (the sheet's 35 is the form's 37, the sheet's 36 has no 2026 box); `O106` carries a formula;
+  `B17`, not `B16`, holds the total liability; Kestrel has a register.
+
 ### Verification ladder
 
 Per the repo's reconciliation-bug method: blast-radius tests serially
